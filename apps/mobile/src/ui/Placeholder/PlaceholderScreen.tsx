@@ -9,12 +9,14 @@ import { Text } from '@/ui/Text';
 
 export type PlaceholderScreenProps = {
   title: string;
-  /** The build phase in which the real screen lands. */
-  phase: number;
+  /** The build phase in which the real screen lands; omit when nothing is designed yet. */
+  phase?: number;
   /** Figma screen names this route will implement. */
   figmaScreens: readonly string[];
   /** Optional extra content rendered under the Figma list (e.g. a data-layer smoke test). */
   children?: ReactNode;
+  /** Tab screens reserve the floating bar inset; pushed routes don't need it. */
+  withTabBarInset?: boolean;
 };
 
 /** Temporary tab content while the real screens are built out phase by phase. */
@@ -23,17 +25,18 @@ export function PlaceholderScreen({
   phase,
   figmaScreens,
   children,
+  withTabBarInset = true,
 }: PlaceholderScreenProps) {
   const { colors, spacing, radii } = useTheme();
 
   return (
-    <Screen scroll tabBarInset>
+    <Screen scroll tabBarInset={withTabBarInset} edges={withTabBarInset ? ['top'] : []}>
       <View style={{ paddingTop: spacing[8], gap: spacing[2] }}>
         <Text {...a11yHeader()} variant="displayLg">
           {title}
         </Text>
         <Text variant="bodyMedium" color="brand">
-          Coming in Phase {phase}
+          {phase != null ? `Coming in Phase ${phase}` : 'Not designed yet'}
         </Text>
       </View>
 
@@ -52,6 +55,11 @@ export function PlaceholderScreen({
         <Text variant="captionSemiBold" color="textSecondary">
           Figma screens
         </Text>
+        {figmaScreens.length === 0 ? (
+          <Text variant="body" color="textBody">
+            No artboard yet — share one and this route becomes the real screen.
+          </Text>
+        ) : null}
         {figmaScreens.map((name) => (
           <Text key={name} variant="body" color="textBody">
             {'•'} {name}

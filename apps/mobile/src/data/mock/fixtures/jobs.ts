@@ -9,6 +9,9 @@ const aud = (min: number, max: number) => ({ min, max, currency: 'AUD', period: 
 
 /* prettier-ignore */
 const seeds: JobSeed[] = [
+  // Home "Top Job Matches" cards (DESIGN 2 artboard copy).
+  { id: 'job_google', title: 'Lead UX Designer', company: 'Google', companyLogoUrl: 'asset:logo-google', location: 'Mountain View, CA', remote: 'hybrid', salary: usd(185_000, 240_000), postedDaysAgo: 2, applicantsCount: 80, source: 'jsearch', tags: ['Design systems', 'Search', 'Figma'], isPick: true, match: { score: 0.98, states: 'mmmmm' } },
+  { id: 'job_adobe', title: 'Sr. UX Designer', company: 'Adobe', companyLogoUrl: 'asset:logo-adobe', location: 'San Jose, CA', remote: 'hybrid', salary: usd(160_000, 200_000), postedDaysAgo: 1, applicantsCount: 60, source: 'adzuna', tags: ['Creative tools', 'Prototyping', 'Figma'], isPick: true, match: { score: 0.94, states: 'mmmmo' } },
   { id: 'job_1', title: 'Senior Product Designer', company: 'Stripe', location: 'San Francisco, CA', remote: 'hybrid', salary: usd(165_000, 210_000), postedDaysAgo: 1, source: 'adzuna', tags: ['Design systems', 'Fintech', 'Figma'], isPick: true, match: { score: 0.92, states: 'mmmmo' } },
   { id: 'job_2', title: 'Product Designer', company: 'Figma', location: 'New York, NY', remote: 'hybrid', salary: usd(140_000, 180_000), postedDaysAgo: 2, source: 'jsearch', tags: ['Collaboration', 'Prototyping', 'Tools'], isPick: true, isSaved: true, match: { score: 0.86, states: 'mmmxo' } },
   { id: 'job_3', title: 'Design Systems Engineer', company: 'Zalando', location: 'Berlin, DE', remote: 'hybrid', salary: eur(70_000, 90_000), postedDaysAgo: 3, source: 'adzuna', tags: ['Design systems', 'React', 'Storybook'], isSaved: true, match: { score: 0.64, states: 'mmxxo' } },

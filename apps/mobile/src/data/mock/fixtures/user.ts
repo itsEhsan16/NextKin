@@ -1,4 +1,4 @@
-import type { Subscription, User } from '@/data/models';
+import type { DashboardStats, Subscription, User } from '@/data/models';
 
 import { daysAgo, daysFromNow } from './time';
 
@@ -9,7 +9,7 @@ export const userFixture: User = {
   email: 'george.miller@example.com',
   firstName: 'George',
   lastName: 'Miller',
-  avatarUrl: undefined,
+  avatarUrl: 'asset:avatar-george',
   createdAt: daysAgo(74),
 };
 
@@ -23,4 +23,11 @@ export const subscriptionFixture: Subscription = {
     coverLettersUsed: 1,
     coverLettersLimit: 2,
   },
+};
+
+/** Home shortcut-grid counters (DESIGN 2 artboard copy). */
+export const dashboardStatsFixture: DashboardStats = {
+  resumesCount: 12,
+  activitiesCount: 24,
+  savedJobsCount: 18,
 };

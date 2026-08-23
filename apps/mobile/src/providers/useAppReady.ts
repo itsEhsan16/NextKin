@@ -1,5 +1,6 @@
 // Per-weight entries: the package root re-exports every weight/italic, which Metro would
 // bundle as ~1MB of unused font assets.
+import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
 import { PlusJakartaSans_400Regular } from '@expo-google-fonts/plus-jakarta-sans/400Regular';
 import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/500Medium';
 import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
@@ -32,6 +33,8 @@ export function useAppReady(): AppReadyState {
     PlusJakartaSans_500Medium,
     PlusJakartaSans_600SemiBold,
     PlusJakartaSans_700Bold,
+    // Brand wordmark only.
+    Inter_700Bold,
   });
   const scheme = useResolvedScheme();
 

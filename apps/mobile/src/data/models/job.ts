@@ -16,6 +16,16 @@ export type MatchCriterion = {
   state: MatchCriterionState;
 };
 
+export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'internship' | 'freelance';
+
+export const EMPLOYMENT_TYPE_LABEL: Record<EmploymentType, string> = {
+  full_time: 'Full-time',
+  part_time: 'Part-time',
+  contract: 'Contract',
+  internship: 'Internship',
+  freelance: 'Freelance',
+};
+
 export type Job = {
   id: string;
   title: string;
@@ -23,6 +33,9 @@ export type Job = {
   companyLogoUrl?: string;
   location: string;
   remote: RemoteType;
+  employmentType: EmploymentType;
+  /** Provider-reported applicant count, when known ("80+ applied"). */
+  applicantsCount?: number;
   salary?: SalaryRange;
   /** ISO-8601 */
   postedAt: string;

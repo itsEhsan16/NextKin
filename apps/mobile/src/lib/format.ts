@@ -16,6 +16,22 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
   return formatShortDate(iso, now);
 }
 
+/**
+ * Longhand relative time ("2 days ago") for spots where the design spells it out, as opposed
+ * to the compact "2d ago" used on dense cards.
+ */
+export function formatRelativeTimeLong(iso: string, now: Date = new Date()): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
+  const diff = now.getTime() - then;
+  if (diff < MINUTE) return 'just now';
+  if (diff < HOUR) return pluralize(Math.floor(diff / MINUTE), 'minute') + ' ago';
+  if (diff < DAY) return pluralize(Math.floor(diff / HOUR), 'hour') + ' ago';
+  if (diff < WEEK) return pluralize(Math.floor(diff / DAY), 'day') + ' ago';
+  if (diff < 5 * WEEK) return pluralize(Math.floor(diff / WEEK), 'week') + ' ago';
+  return formatShortDate(iso, now);
+}
+
 /** "12 Aug" or "12 Aug 2025" when not the current year. */
 export function formatShortDate(iso: string, now: Date = new Date()): string {
   const d = new Date(iso);

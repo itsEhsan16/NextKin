@@ -28,3 +28,10 @@ export type Subscription = {
   renewsAt?: string;
   usage: SubscriptionUsage;
 };
+
+/** V2 §7.2 dashboard usage statistics (the Home shortcut grid counters). */
+export type DashboardStats = {
+  resumesCount: number;
+  activitiesCount: number;
+  savedJobsCount: number;
+};

@@ -5,9 +5,11 @@ const supported = Platform.OS === 'ios' || Platform.OS === 'android';
 
 const safe = (fn: () => Promise<void>) => {
   if (!supported) return;
-  fn().catch(() => {
-    // Haptics are decorative; never surface errors.
-  });
+  Promise.resolve()
+    .then(fn)
+    .catch(() => {
+      // Haptics are decorative; never surface errors.
+    });
 };
 
 /**

@@ -19,6 +19,7 @@ import { fontFamily, typography } from './typography';
 export * from './tokens';
 export * from './typography';
 export * from './motion';
+export * from './scale';
 export { useAppearanceStore, type AppearancePreference } from './appearance';
 
 export type Theme = {

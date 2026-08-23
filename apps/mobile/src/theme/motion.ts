@@ -16,6 +16,10 @@ export const durations = {
   sheetIn: 300,
   accordion: 260,
   slow: 400,
+  /** Cross-fade for images decoding in (expo-image transition). */
+  imageFade: 150,
+  /** One half-cycle of the skeleton pulse. */
+  pulse: 900,
   meter: 800,
 } as const;
 

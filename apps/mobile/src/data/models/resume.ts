@@ -16,9 +16,19 @@ export type Resume = {
   currentVersionId: string;
   /** 0–100; absent until scoring completes. */
   atsScore?: number;
+  /** 0–1 — how complete the resume content is (sections filled, review gates passed). */
+  completeness?: number;
+  /** Outcome of the V2 §7.7 / §7.8 validation passes, shown as checks on the dashboard. */
+  validation?: ResumeValidation;
   status: GenerationStatus;
   linkedJobId?: string;
   tags: string[];
+};
+
+export type ResumeValidation = {
+  timelineValid: boolean;
+  atsOptimized: boolean;
+  jdMatched: boolean;
 };
 
 export type ResumeVersion = {

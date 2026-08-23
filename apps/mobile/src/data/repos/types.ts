@@ -1,5 +1,6 @@
 import type {
   Application,
+  DashboardStats,
   AtsScore,
   Generation,
   Job,
@@ -28,6 +29,7 @@ export type Page<T> = {
 export type UserRepo = {
   getCurrentUser(): Promise<User>;
   getSubscription(): Promise<Subscription>;
+  getDashboardStats(): Promise<DashboardStats>;
 };
 
 export type ProfileRepo = {

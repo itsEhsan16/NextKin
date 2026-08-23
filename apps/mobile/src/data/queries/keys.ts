@@ -9,6 +9,7 @@ export const qk = {
     all: ['user'] as const,
     me: () => ['user', 'me'] as const,
     subscription: () => ['user', 'subscription'] as const,
+    dashboardStats: () => ['user', 'dashboard-stats'] as const,
   },
   profile: {
     all: ['profile'] as const,

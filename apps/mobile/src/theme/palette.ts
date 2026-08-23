@@ -11,18 +11,28 @@ export const palette = {
   ink700: '#4B5563',
   ink500: '#6B7280',
   ink400: '#9CA3AF',
+  /** Darkened from Figma's #9CA3AF: that value is 2.54:1 on white, below WCAG AA. */
+  ink450: '#767E8B',
   ink300: '#C4C4C6',
 
   gray50: '#F9FAFB',
   gray100: '#F3F4F6',
   gray150: '#F1F2F4',
   gray200: '#E5E7EB',
+  gray300: '#D1D5DB',
+
+  slate600: '#545974',
+
+  blue600: '#2563EB',
+  blue500: '#3B82F6',
 
   brand500: '#4733F9',
   brand200: '#E0DDFE',
   brand50: '#F4F3FF',
 
   green600: '#16A34A',
+  green500: '#22C55E',
+  green400: '#4ADE80',
   green50: '#F0FDF4',
 
   red600: '#DC2626',

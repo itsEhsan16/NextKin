@@ -7,5 +7,6 @@ export function createMockUserRepo(store: MockStore): UserRepo {
   return {
     getCurrentUser: () => simulate(() => clone(store.state.user)),
     getSubscription: () => simulate(() => clone(store.state.subscription)),
+    getDashboardStats: () => simulate(() => clone(store.state.dashboardStats)),
   };
 }

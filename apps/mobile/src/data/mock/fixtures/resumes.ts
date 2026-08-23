@@ -1,25 +1,29 @@
 import type { AtsScore, Resume, ResumeVersion } from '@/data/models';
 import { atsBandFor } from '@/data/models';
 
-import { daysAgo, hoursAgo, minutesAgo } from './time';
+import { daysAgo, minutesAgo } from './time';
 
 /** Resume currently being generated (paired with the active generation fixture). */
 export const GENERATING_RESUME_ID = 'res_6';
 
 export const resumesFixture: Resume[] = [
+  // Home "Your Resume Progress" card (DESIGN 2 artboard copy) — must stay the most recent.
   {
     id: 'res_1',
-    title: 'Senior Product Designer — Stripe',
-    targetCompany: 'Stripe',
-    targetRole: 'Senior Product Designer',
+    title: 'UX Designer Resume',
+    targetCompany: 'Google',
+    targetRole: 'Lead UX Designer',
+    thumbnailUrl: 'asset:resume-thumb',
     createdAt: daysAgo(12),
-    updatedAt: hoursAgo(5),
+    updatedAt: daysAgo(2),
     versionCount: 3,
     currentVersionId: 'ver_1_3',
-    atsScore: 91,
+    atsScore: 92,
+    completeness: 0.45,
+    validation: { timelineValid: true, atsOptimized: true, jdMatched: true },
     status: 'ready',
-    linkedJobId: 'job_1',
-    tags: ['Fintech', 'Design systems'],
+    linkedJobId: 'job_google',
+    tags: ['Design systems', 'Search'],
   },
   {
     id: 'res_2',
@@ -27,7 +31,7 @@ export const resumesFixture: Resume[] = [
     targetCompany: 'Figma',
     targetRole: 'Product Designer',
     createdAt: daysAgo(9),
-    updatedAt: daysAgo(1),
+    updatedAt: daysAgo(3),
     versionCount: 2,
     currentVersionId: 'ver_2_2',
     atsScore: 84,
@@ -52,7 +56,7 @@ export const resumesFixture: Resume[] = [
     targetCompany: 'Atlassian',
     targetRole: 'UX Lead',
     createdAt: daysAgo(6),
-    updatedAt: daysAgo(2),
+    updatedAt: daysAgo(5),
     versionCount: 1,
     currentVersionId: 'ver_4_1',
     atsScore: 68,

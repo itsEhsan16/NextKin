@@ -6,6 +6,8 @@ module.exports = {
   resolver: 'react-native-worklets/jest/resolver',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    // react-native-svg-transformer is Metro-only; tests get a View stand-in.
+    '\\.svg$': '<rootDir>/__mocks__/svgMock.tsx',
   },
   testPathIgnorePatterns: ['/node_modules/', '/.expo/'],
   // jest-expo's built-in transformIgnorePatterns already allow-list .pnpm, react-native, expo, etc.

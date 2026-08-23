@@ -95,9 +95,16 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
         return clone(updated);
       }),
 
+    // "Top Job Matches": best match first, newest breaks ties.
     listPicks: () =>
-      simulate(() => clone(store.state.jobs.filter((job) => job.isPick).sort(byPostedDesc)), {
-        empty: () => [],
-      }),
+      simulate(
+        () =>
+          clone(
+            store.state.jobs
+              .filter((job) => job.isPick)
+              .sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0) || byPostedDesc(a, b)),
+          ),
+        { empty: () => [] },
+      ),
   };
 }

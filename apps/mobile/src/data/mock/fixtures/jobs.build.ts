@@ -1,4 +1,5 @@
 import type {
+  EmploymentType,
   Job,
   JobSource,
   MatchCriterion,
@@ -15,8 +16,11 @@ export type JobSeed = {
   id: string;
   title: string;
   company: string;
+  companyLogoUrl?: string;
   location: string;
   remote: RemoteType;
+  employmentType?: EmploymentType;
+  applicantsCount?: number;
   salary?: SalaryRange;
   /** Fractional days are fine ("0.5" → 12 hours ago). */
   postedDaysAgo: number;
@@ -54,11 +58,19 @@ function buildCriteria(seed: JobSeed, states: string): MatchCriterion[] {
 }
 
 export function buildJob(seed: JobSeed): Job {
-  const { match, postedDaysAgo, isPick = false, isSaved = false, ...rest } = seed;
+  const {
+    match,
+    postedDaysAgo,
+    isPick = false,
+    isSaved = false,
+    employmentType = 'full_time',
+    ...rest
+  } = seed;
   const [primaryTag = 'product design', secondaryTag = 'cross-functional collaboration'] =
     seed.tags;
   return {
     ...rest,
+    employmentType,
     postedAt: daysAgo(postedDaysAgo),
     description:
       `${seed.company} is hiring a ${seed.title} to join a ${remoteCopy[seed.remote]} team in ` +

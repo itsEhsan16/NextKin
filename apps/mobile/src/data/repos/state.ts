@@ -1,6 +1,7 @@
 import {
   applicationsFixture,
   atsScoresFixture,
+  dashboardStatsFixture,
   generationsFixture,
   jobsFixture,
   notificationPrefsFixture,
@@ -14,6 +15,7 @@ import {
 import type {
   Application,
   AtsScore,
+  DashboardStats,
   Generation,
   Job,
   Notification,
@@ -32,6 +34,7 @@ import type {
 export type MockState = {
   user: User;
   subscription: Subscription;
+  dashboardStats: DashboardStats;
   profile: Profile;
   resumes: Resume[];
   resumeVersions: ResumeVersion[];
@@ -50,6 +53,7 @@ function freshState(): MockState {
   return {
     user: clone(userFixture),
     subscription: clone(subscriptionFixture),
+    dashboardStats: clone(dashboardStatsFixture),
     profile: clone(profileFixture),
     resumes: clone(resumesFixture),
     resumeVersions: clone(resumeVersionsFixture),

@@ -61,18 +61,23 @@ describe('typography', () => {
   const families = Object.values(fontFamily) as string[];
   const roles = Object.entries(typography);
 
-  it('registers four Plus Jakarta Sans weights', () => {
-    expect(families).toHaveLength(4);
-    for (const family of families) expect(family).toMatch(/^PlusJakartaSans_\d{3}\w+$/);
+  it('registers four Plus Jakarta Sans weights plus the Inter wordmark face', () => {
+    expect(families).toHaveLength(5);
+    const jakarta = families.filter((family) => family !== fontFamily.brand);
+    expect(jakarta).toHaveLength(4);
+    for (const family of jakarta) expect(family).toMatch(/^PlusJakartaSans_\d{3}\w+$/);
+    // Figma uses Inter Bold for the "NextKin" logotype only.
+    expect(fontFamily.brand).toBe('Inter_700Bold');
   });
 
   it('has at least one text role', () => {
     expect(roles.length).toBeGreaterThan(0);
   });
 
-  it.each(roles)('role "%s" uses a Plus Jakarta Sans family', (_name, role) => {
+  it.each(roles)('role "%s" uses a registered font family', (name, role) => {
     expect(typeof role.fontFamily).toBe('string');
-    expect(role.fontFamily).toMatch(/^PlusJakartaSans_/);
+    // Every role is Plus Jakarta Sans except the brand wordmark, which is Inter Bold.
+    expect(role.fontFamily).toMatch(name === 'wordmark' ? /^Inter_/ : /^PlusJakartaSans_/);
     expect(families).toContain(role.fontFamily);
   });
 

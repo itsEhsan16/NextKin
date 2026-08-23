@@ -17,3 +17,11 @@ export function useSubscription() {
     queryFn: () => repos.user.getSubscription(),
   });
 }
+
+/** V2 §7.2 dashboard counters for the Home shortcut grid. */
+export function useDashboardStats() {
+  return useQuery({
+    queryKey: qk.user.dashboardStats(),
+    queryFn: () => repos.user.getDashboardStats(),
+  });
+}

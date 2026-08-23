@@ -1,8 +1,15 @@
 import { useMemo, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  type ScrollViewProps,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/theme';
+import { useTabBarLayout, useTheme } from '@/theme';
 
 export type ScreenProps = {
   /** Safe-area edges to pad. Defaults to `['top']`; add `'bottom'` for screens without a tab bar. */
@@ -14,6 +21,8 @@ export type ScreenProps = {
   /** Reserve space under the content for the floating tab bar + FAB overhang. */
   tabBarInset?: boolean;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  /** Pull-to-refresh control (scroll mode only). */
+  refreshControl?: ScrollViewProps['refreshControl'];
   children: ReactNode;
 };
 
@@ -29,14 +38,14 @@ export function Screen({
   padded = true,
   tabBarInset = false,
   contentContainerStyle,
+  refreshControl,
   children,
 }: ScreenProps) {
-  const { colors, spacing, sizes } = useTheme();
+  const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
+  const tabBar = useTabBarLayout();
 
-  const tabBarSpace = tabBarInset
-    ? sizes.tabBarHeight + sizes.tabBarBottomOffset + sizes.fabOverhang + insets.bottom
-    : 0;
+  const tabBarSpace = tabBarInset ? tabBar.contentInset : 0;
 
   const safeAreaStyle = useMemo<ViewStyle>(
     () => ({
@@ -67,6 +76,7 @@ export function Screen({
           contentInsetAdjustmentBehavior="never"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
         >
           {children}
         </ScrollView>

@@ -8,4 +8,4 @@ export {
   resumeVersionsFixture,
   resumesFixture,
 } from './resumes';
-export { USER_ID, subscriptionFixture, userFixture } from './user';
+export { USER_ID, dashboardStatsFixture, subscriptionFixture, userFixture } from './user';

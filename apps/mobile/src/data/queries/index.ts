@@ -22,4 +22,4 @@ export {
   useResumes,
 } from './useResumes';
 export { applySaveToggle, useToggleSaveJob } from './useToggleSaveJob';
-export { useCurrentUser, useSubscription } from './useUser';
+export { useCurrentUser, useDashboardStats, useSubscription } from './useUser';
