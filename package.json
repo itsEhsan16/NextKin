@@ -1,0 +1,13 @@
+{
+  "name": "nextkin",
+  "private": true,
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "mobile": "pnpm --filter @nextkin/mobile start",
+    "mobile:android": "pnpm --filter @nextkin/mobile android",
+    "mobile:ios": "pnpm --filter @nextkin/mobile ios",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  }
+}

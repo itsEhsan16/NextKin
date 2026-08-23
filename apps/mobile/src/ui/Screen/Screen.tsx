@@ -1,0 +1,86 @@
+import { useMemo, type ReactNode } from 'react';
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
+
+import { useTheme } from '@/theme';
+
+export type ScreenProps = {
+  /** Safe-area edges to pad. Defaults to `['top']`; add `'bottom'` for screens without a tab bar. */
+  edges?: readonly Edge[];
+  /** Render inside a vertical ScrollView. */
+  scroll?: boolean;
+  /** Apply the 24pt horizontal gutter. Defaults to true. */
+  padded?: boolean;
+  /** Reserve space under the content for the floating tab bar + FAB overhang. */
+  tabBarInset?: boolean;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+  children: ReactNode;
+};
+
+const DEFAULT_EDGES: readonly Edge[] = ['top'];
+
+/**
+ * Safe-area aware page container. Every route renders exactly one `Screen` at its root so
+ * backgrounds, gutters and tab-bar insets stay consistent across the app.
+ */
+export function Screen({
+  edges = DEFAULT_EDGES,
+  scroll = false,
+  padded = true,
+  tabBarInset = false,
+  contentContainerStyle,
+  children,
+}: ScreenProps) {
+  const { colors, spacing, sizes } = useTheme();
+  const insets = useSafeAreaInsets();
+
+  const tabBarSpace = tabBarInset
+    ? sizes.tabBarHeight + sizes.tabBarBottomOffset + sizes.fabOverhang + insets.bottom
+    : 0;
+
+  const safeAreaStyle = useMemo<ViewStyle>(
+    () => ({
+      backgroundColor: colors.surfacePage,
+      paddingTop: edges.includes('top') ? insets.top : 0,
+      paddingLeft: edges.includes('left') ? insets.left : 0,
+      paddingRight: edges.includes('right') ? insets.right : 0,
+      // When the tab bar reserves space it already accounts for the bottom inset.
+      paddingBottom: !tabBarInset && edges.includes('bottom') ? insets.bottom : 0,
+    }),
+    [colors.surfacePage, edges, insets, tabBarInset],
+  );
+
+  const contentStyle = useMemo<ViewStyle>(
+    () => ({
+      paddingHorizontal: padded ? spacing.gutter : 0,
+      paddingBottom: tabBarSpace,
+    }),
+    [padded, spacing.gutter, tabBarSpace],
+  );
+
+  if (scroll) {
+    return (
+      <View style={[styles.root, safeAreaStyle]}>
+        <ScrollView
+          style={styles.root}
+          contentContainerStyle={[contentStyle, contentContainerStyle]}
+          contentInsetAdjustmentBehavior="never"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {children}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.root, safeAreaStyle, contentStyle, contentContainerStyle]}>
+      {children}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});
