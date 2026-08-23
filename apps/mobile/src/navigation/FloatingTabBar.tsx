@@ -1,4 +1,4 @@
-import type { BottomTabBarProps } from 'expo-router/js-tabs';
+import { useRouter, useSegments } from 'expo-router';
 import { memo, useCallback, useEffect, useRef, type FC } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -11,18 +11,51 @@ import ResumesIcon from '../../assets/icons/nav/resumes.svg';
 import { haptics } from '@/lib';
 import { useLayoutScale, useTabBarLayout, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
+import { sheetBackgroundA11yProps } from '@/ui/Sheet';
 import { Text } from '@/ui/Text';
 
-/** `w`/`h` are the Figma icon boxes — each glyph has its own aspect ratio, so they are not square. */
-type TabMeta = { label: string; Icon: FC<SvgProps>; w: number; h: number };
+import { useCreateSheet } from './createSheet';
 
-/** Route name (file) → presentation. Order comes from the navigator state. */
-const TABS: Record<string, TabMeta> = {
+/** Route file names inside the `(tabs)` group. */
+type TabName = 'index' | 'jobs' | 'resumes' | 'profile';
+
+/** The typed hrefs for the four tab routes. */
+type TabHref = '/(tabs)' | '/(tabs)/jobs' | '/(tabs)/resumes' | '/(tabs)/profile';
+
+/** `w`/`h` are the Figma icon boxes — each glyph has its own aspect ratio, so they are not square. */
+type TabMeta = { name: TabName; label: string; href: TabHref; Icon: FC<SvgProps>; w: number; h: number };
+
+/** Presentation + destination per tab, in the order they sit in the pill. */
+const TABS: readonly TabMeta[] = [
   // Figma nodes 77:4 / 77:8 / 77:16 / 77:22 (matches each SVG's intrinsic size).
-  index: { label: 'Home', Icon: HomeIcon, w: 20.4975, h: 23.885 },
-  jobs: { label: 'Jobs', Icon: JobsIcon, w: 22.6085, h: 21.7917 },
-  resumes: { label: 'Resumes', Icon: ResumesIcon, w: 21.1013, h: 18.7122 },
-  profile: { label: 'Profile', Icon: ProfileIcon, w: 21.1013, h: 21.1013 },
+  { name: 'index', label: 'Home', href: '/(tabs)', Icon: HomeIcon, w: 20.4975, h: 23.885 },
+  { name: 'jobs', label: 'Jobs', href: '/(tabs)/jobs', Icon: JobsIcon, w: 22.6085, h: 21.7917 },
+  {
+    name: 'resumes',
+    label: 'Resumes',
+    href: '/(tabs)/resumes',
+    Icon: ResumesIcon,
+    w: 21.1013,
+    h: 18.7122,
+  },
+  {
+    name: 'profile',
+    label: 'Profile',
+    href: '/(tabs)/profile',
+    Icon: ProfileIcon,
+    w: 21.1013,
+    h: 21.1013,
+  },
+];
+
+/**
+ * Router segment → tab. `index` is deliberately absent: inside the group its segments are just
+ * `['(tabs)']`, so "no tab segment matched" *is* the Home tab.
+ */
+const TAB_BY_SEGMENT: Record<string, TabName> = {
+  jobs: 'jobs',
+  resumes: 'resumes',
+  profile: 'profile',
 };
 
 /** Index after which the FAB slot is inserted (2 tabs | FAB | 2 tabs). */
@@ -34,32 +67,38 @@ const FAB_SLOT_AFTER = 1;
  */
 const ICON_MIN_RATIO = 18 / 21;
 
+function activeTabFor(segments: readonly string[]): TabName {
+  for (const segment of segments) {
+    const tab = TAB_BY_SEGMENT[segment];
+    if (tab) return tab;
+  }
+  return 'index';
+}
+
 type TabItemProps = {
-  routeKey: string;
+  name: TabName;
   label: string;
   Icon: FC<SvgProps>;
   focused: boolean;
   iconWidth: number;
   iconHeight: number;
-  onPress: (routeKey: string) => void;
-  onLongPress: (routeKey: string) => void;
+  onPress: (name: TabName) => void;
 };
 
 /**
  * Memoised: each tab renders TWO SVG trees for the colour cross-fade, so an unmemoised item
  * would put eight SVG re-renders in the same frame as every navigation transition. All props
- * are primitives or module-level constants, and the handlers are stable, so only the two tabs
+ * are primitives or module-level constants, and the handler is stable, so only the two tabs
  * whose `focused` actually flipped re-render.
  */
 const TabItem = memo(function TabItem({
-  routeKey,
+  name,
   label,
   Icon,
   focused,
   iconWidth,
   iconHeight,
   onPress,
-  onLongPress,
 }: TabItemProps) {
   const { colors, motion } = useTheme();
   const active = useSharedValue(focused ? 1 : 0);
@@ -72,8 +111,7 @@ const TabItem = memo(function TabItem({
   const activeStyle = useAnimatedStyle(() => ({ opacity: active.value }));
   const inactiveStyle = useAnimatedStyle(() => ({ opacity: 1 - active.value }));
 
-  const handlePress = useCallback(() => onPress(routeKey), [onPress, routeKey]);
-  const handleLongPress = useCallback(() => onLongPress(routeKey), [onLongPress, routeKey]);
+  const handlePress = useCallback(() => onPress(name), [onPress, name]);
 
   return (
     <Pressable
@@ -83,7 +121,6 @@ const TabItem = memo(function TabItem({
       feedback="subtle"
       haptic="none"
       onPress={handlePress}
-      onLongPress={handleLongPress}
       style={styles.tab}
     >
       <View style={{ width: iconWidth, height: iconHeight }}>
@@ -102,44 +139,54 @@ const TabItem = memo(function TabItem({
 });
 
 /**
- * Floating pill tab bar from the Home artboard. Rendered by the Tabs navigator via `tabBar`;
- * the FAB itself is a sibling above the create sheet (see `(tabs)/_layout.tsx`), so this bar
- * only reserves the centre slot.
+ * Floating pill tab bar from the Home artboard.
+ *
+ * Rendered as a sibling of the tab navigator — *after* the create sheet — rather than through the
+ * navigator's `tabBar` prop, because Figma CREATE 01/02 paint the pill on top of both the scrim
+ * and the sheet (nodes 77:226 / 77:290 are the last children of the frame). That puts it outside
+ * the navigator, so it drives itself: active tab from `useSegments()`, navigation through the
+ * typed hrefs. The FAB is a later sibling still, so the centre slot here stays empty.
+ *
+ * The bar positions itself absolutely and reserves no layout space — `Screen`'s `tabBarInset`
+ * remains the single source of bottom padding for scrolling content.
  */
-export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function FloatingTabBar() {
   const { colors, shadows } = useTheme();
   const layout = useTabBarLayout();
   const { s } = useLayoutScale();
+  const router = useRouter();
+  const segments = useSegments();
+  const { isOpen } = useCreateSheet();
 
-  // The navigator hands us a new `state` object on every transition. Read it through a ref so
-  // the press handlers keep a stable identity and the memoised tabs stay put.
-  const live = useRef({ state, navigation });
+  const active = activeTabFor(segments);
+
+  // Both the active tab and the router identity change across navigations. Read them through a
+  // ref so the press handler keeps a stable identity and the memoised tabs stay put.
+  const live = useRef({ active, router });
   useEffect(() => {
-    live.current = { state, navigation };
+    live.current = { active, router };
   });
 
-  const handlePress = useCallback((routeKey: string) => {
-    const { state: navState, navigation: nav } = live.current;
-    const route = navState.routes.find((candidate) => candidate.key === routeKey);
-    if (!route) return;
-    const focused = navState.routes[navState.index]?.key === routeKey;
+  const handlePress = useCallback((name: TabName) => {
+    const { active: current, router: nav } = live.current;
+    if (name === current) return;
+    const target = TABS.find((tab) => tab.name === name);
+    if (!target) return;
 
-    const event = nav.emit({ type: 'tabPress', target: routeKey, canPreventDefault: true });
-    if (!focused && !event.defaultPrevented) {
-      haptics.selection();
-      nav.navigate(route.name, route.params);
-    }
-  }, []);
-
-  const handleLongPress = useCallback((routeKey: string) => {
-    live.current.navigation.emit({ type: 'tabLongPress', target: routeKey });
+    haptics.selection();
+    nav.navigate(target.href);
   }, []);
 
   return (
     <View
-      pointerEvents="box-none"
+      // Paints above the create sheet, but must not be tappable through it: the scrim owns taps
+      // while the sheet is open, so a tab press can never navigate behind an open modal.
+      pointerEvents={isOpen ? 'none' : 'box-none'}
       style={[styles.host, { bottom: layout.bottomOffset }]}
-      // The bar floats; content scrolls underneath (Screen reserves the inset).
+      // Paints above the create sheet (Figma), but sits behind it semantically: while the sheet
+      // is open the pill leaves the accessibility tree. The FAB is a separate sibling and stays
+      // reachable so its rotated "✕" can dismiss the sheet.
+      {...sheetBackgroundA11yProps(isOpen)}
     >
       <View
         accessibilityRole="tablist"
@@ -154,25 +201,23 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
           },
         ]}
       >
-        {state.routes.flatMap((route, index) => {
-          const meta = TABS[route.name];
-          if (!meta) return [];
-
+        {TABS.flatMap((tab, index) => {
           const item = (
             <TabItem
-              key={route.key}
-              routeKey={route.key}
-              label={descriptors[route.key]?.options.title ?? meta.label}
-              Icon={meta.Icon}
-              focused={state.index === index}
-              iconWidth={s(meta.w, meta.w * ICON_MIN_RATIO)}
-              iconHeight={s(meta.h, meta.h * ICON_MIN_RATIO)}
+              key={tab.name}
+              name={tab.name}
+              label={tab.label}
+              Icon={tab.Icon}
+              focused={tab.name === active}
+              iconWidth={s(tab.w, tab.w * ICON_MIN_RATIO)}
+              iconHeight={s(tab.h, tab.h * ICON_MIN_RATIO)}
               onPress={handlePress}
-              onLongPress={handleLongPress}
             />
           );
           // Centre slot is reserved for the FAB, which renders above the sheet scrim.
-          return index === FAB_SLOT_AFTER ? [item, <View key="fab-slot" style={styles.fabSlot} />] : [item];
+          return index === FAB_SLOT_AFTER
+            ? [item, <View key="fab-slot" style={styles.fabSlot} />]
+            : [item];
         })}
       </View>
     </View>

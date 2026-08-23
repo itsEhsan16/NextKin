@@ -53,6 +53,7 @@ export const typography = {
   caption: role('medium', 13, 20), // meta, subtitles
   captionRegular: role('regular', 13, 20),
   captionSemiBold: role('semiBold', 13, 20), // selected segment, match pill
+  rowDescription: role('medium', 13, 19), // sheet row descriptions (Figma 13/19)
   micro: role('medium', 11, 16.5),
   microRegular: role('regular', 11, 16),
   microSemiBold: role('semiBold', 12, 18),

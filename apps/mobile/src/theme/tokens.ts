@@ -214,7 +214,7 @@ export const shadows = {
   fab: shadow(0, 6, 12, 0.18, 10),
   stickyBarUp: shadow(0, -2, 7, 0.07, 6),
   card: shadow(0, 1, 2, 0.05, 1),
-  sheet: shadow(0, -4, 16, 0.1, 12),
+  sheet: shadow(0, -4, 32, 0.18, 12),
 } as const;
 
 export const opacity = {

@@ -4,7 +4,9 @@ import {
   Pressable,
   StyleSheet,
   View,
+  useWindowDimensions,
   type AccessibilityProps,
+  type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -26,7 +28,13 @@ export type SheetProps = {
   open: boolean;
   /** Called for every dismiss path: scrim tap, swipe-down, Android back. */
   onClose: () => void;
-  /** Sheet height in px (excluding the bottom safe-area inset, which is added). */
+  /**
+   * Design height in px, excluding the bottom safe-area inset. Treated as a FLOOR: the sheet
+   * grows past it whenever its content is taller (narrow screens wrap text, Dynamic Type
+   * enlarges it), because a fixed height plus overflow:'hidden' would silently clip rows —
+   * and a clipped row is untappable on Android. Changing it morphs the sheet on the UI thread
+   * (the CREATE 01 -> 02 push shrinks 600 -> 520).
+   */
   height: number;
   /**
    * Optional external progress (0 = closed, 1 = open). Lets other chrome — the FAB's "+ → ✕"
@@ -63,6 +71,36 @@ export function sheetBackgroundA11yProps(
     : { accessibilityElementsHidden: false, importantForAccessibility: 'auto' };
 }
 
+export type SheetHeightInput = {
+  /** The artboard height for this sheet, excluding safe-area insets. */
+  designHeight: number;
+  /** Measured height of the sheet's own content column; 0 before the first layout pass. */
+  contentHeight: number;
+  insetBottom: number;
+  insetTop: number;
+  windowHeight: number;
+};
+
+/**
+ * The design height is a FLOOR, not a fixed size.
+ *
+ * Figma artboards are 520pt wide; on a narrower phone the sheet's text wraps and the row stack
+ * outgrows the scaled artboard height. Because the sheet clips (overflow: 'hidden'), a fixed
+ * height would silently cut the last row off — and a clipped row is untappable on Android. So
+ * the sheet takes whichever is taller, and never exceeds the screen below the top inset.
+ */
+export function resolveSheetHeight({
+  designHeight,
+  contentHeight,
+  insetBottom,
+  insetTop,
+  windowHeight,
+}: SheetHeightInput): number {
+  const maxHeight = windowHeight - insetTop;
+  const wanted = Math.max(designHeight, contentHeight) + insetBottom;
+  return Math.min(maxHeight, wanted);
+}
+
 /**
  * Bottom sheet primitive. Motion per the Figma annotation: springs in (damping ≈ 0.8, ~300ms,
  * slight overshoot), exits faster (~200ms); the scrim cross-fades from the same progress value.
@@ -84,6 +122,7 @@ export function Sheet({
 }: SheetProps) {
   const { colors, radii, sizes, shadows, spacing, motion } = useTheme();
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const reduced = useReducedMotion();
 
   const internalProgress = useSharedValue(0);
@@ -92,7 +131,22 @@ export function Sheet({
   // Derived state: mount synchronously in the render that opens, unmount after the exit animation.
   if (open && !mounted) setMounted(true);
 
-  const totalHeight = height + insets.bottom;
+  const [contentHeight, setContentHeight] = useState(0);
+  const targetHeight = resolveSheetHeight({
+    designHeight: height,
+    contentHeight,
+    insetBottom: insets.bottom,
+    insetTop: insets.top,
+    windowHeight,
+  });
+  // Animating the height (rather than re-laying out) keeps the morph on the UI thread and lets
+  // the drag maths read the live value.
+  const animatedHeight = useSharedValue(targetHeight);
+
+  const measureContent = useCallback((event: LayoutChangeEvent) => {
+    const measured = Math.ceil(event.nativeEvent.layout.height);
+    setContentHeight((current) => (current === measured ? current : measured));
+  }, []);
 
   const unmount = useCallback(() => setMounted(false), []);
 
@@ -108,6 +162,11 @@ export function Sheet({
       }),
     );
   }, [hapticOnOpen, motion.springs.sheetIn, motion.timings.sheetOut, open, progress, reduced, unmount]);
+
+  useEffect(() => {
+    // No-op on mount (the shared value already holds the target); animates on later changes.
+    animatedHeight.set(withSpring(targetHeight, withReducedMotion(reduced, motion.springs.sheetIn)));
+  }, [animatedHeight, motion.springs.sheetIn, reduced, targetHeight]);
 
   // Android hardware back closes the sheet instead of popping the route underneath.
   useEffect(() => {
@@ -137,12 +196,12 @@ export function Sheet({
             progress.set(1);
             return;
           }
-          progress.set(Math.max(0, 1 - event.translationY / totalHeight));
+          progress.set(Math.max(0, 1 - event.translationY / animatedHeight.value));
         })
         .onEnd((event) => {
           const shouldDismiss =
             event.velocityY > motion.sheet.swipeDismissVelocity ||
-            event.translationY > totalHeight * motion.sheet.swipeDismissFraction;
+            event.translationY > animatedHeight.value * motion.sheet.swipeDismissFraction;
           if (shouldDismiss) {
             runOnJS(onClose)();
           } else {
@@ -150,18 +209,19 @@ export function Sheet({
           }
         }),
     [
+      animatedHeight,
       motion.sheet.swipeDismissFraction,
       motion.sheet.swipeDismissVelocity,
       onClose,
       progress,
       snapBackSpring,
-      totalHeight,
     ],
   );
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (1 - progress.value) * totalHeight }],
+    height: animatedHeight.value,
+    transform: [{ translateY: (1 - progress.value) * animatedHeight.value }],
   }));
 
   if (!mounted) return null;
@@ -186,7 +246,6 @@ export function Sheet({
           style={[
             styles.sheet,
             {
-              height: totalHeight,
               paddingBottom: insets.bottom,
               backgroundColor: colors.surfaceSheet,
               borderTopLeftRadius: radii.sheet,
@@ -196,21 +255,24 @@ export function Sheet({
             sheetStyle,
           ]}
         >
-          {showHandle ? (
-            <View
-              style={[
-                styles.handle,
-                {
-                  width: sizes.grabHandleWidth,
-                  height: sizes.grabHandleHeight,
-                  borderRadius: radii.full,
-                  backgroundColor: colors.grabHandle,
-                  marginTop: spacing[2],
-                },
-              ]}
-            />
-          ) : null}
-          <View style={[styles.content, contentStyle]}>{children}</View>
+          {/* Measured column: whatever this reports is the height the sheet must be able to show. */}
+          <View onLayout={measureContent} style={styles.column}>
+            {showHandle ? (
+              <View
+                style={[
+                  styles.handle,
+                  {
+                    width: sizes.grabHandleWidth,
+                    height: sizes.grabHandleHeight,
+                    borderRadius: radii.full,
+                    backgroundColor: colors.grabHandle,
+                    marginTop: spacing[3],
+                  },
+                ]}
+              />
+            ) : null}
+            <View style={contentStyle}>{children}</View>
+          </View>
         </Animated.View>
       </GestureDetector>
     </View>
@@ -219,6 +281,8 @@ export function Sheet({
 
 const styles = StyleSheet.create({
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, overflow: 'hidden' },
+  // The column hugs its content so onLayout reports the content's natural height rather than
+  // the sheet's (a flex:1 child would just echo the sheet height back and never grow it).
+  column: { position: 'absolute', left: 0, right: 0, top: 0 },
   handle: { alignSelf: 'center' },
-  content: { flex: 1 },
 });

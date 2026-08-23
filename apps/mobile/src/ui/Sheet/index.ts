@@ -1,1 +1,7 @@
-export { Sheet, sheetBackgroundA11yProps, type SheetProps } from './Sheet';
+export {
+  Sheet,
+  resolveSheetHeight,
+  sheetBackgroundA11yProps,
+  type SheetHeightInput,
+  type SheetProps,
+} from './Sheet';

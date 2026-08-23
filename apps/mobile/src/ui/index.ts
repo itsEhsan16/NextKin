@@ -1,3 +1,4 @@
+export * from './AiBadge';
 export * from './Avatar';
 export * from './Badge';
 export * from './Button';
@@ -12,6 +13,7 @@ export * from './Progress';
 export * from './Screen';
 export * from './SectionHeader';
 export * from './Sheet';
+export * from './SheetRow';
 export * from './Skeleton';
 export * from './StateView';
 export * from './Text';
