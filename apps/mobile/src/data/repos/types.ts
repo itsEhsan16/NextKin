@@ -1,10 +1,11 @@
 import type {
-  Application,
+  ApplicationWithJob,
   DashboardStats,
   AtsScore,
   Generation,
   Job,
   JobFilters,
+  JobSort,
   Notification,
   NotificationPrefs,
   Profile,
@@ -49,10 +50,13 @@ export type ResumesRepo = {
 };
 
 export type JobsRepo = {
-  list(filters: JobFilters, cursor?: string): Promise<Page<Job>>;
+  list(filters: JobFilters, cursor?: string, sort?: JobSort): Promise<Page<Job>>;
+  /** Editorial carousel on the Jobs tab, distinct from Home's match-ranked picks. */
+  listTodaysPicks(): Promise<Job[]>;
   get(id: string): Promise<Job>;
   listSaved(): Promise<Job[]>;
-  listApplications(): Promise<Application[]>;
+  /** Joined with the listing so the Applied tab never has to look jobs up itself. */
+  listApplications(): Promise<ApplicationWithJob[]>;
   toggleSave(id: string): Promise<Job>;
   listPicks(): Promise<Job[]>;
 };

@@ -39,6 +39,7 @@ export const palette = {
   red500: '#EF4444',
   red50: '#FEF2F2',
 
+  amber700: '#B45309',
   amber600: '#D97706',
   amber50: '#FFFBEB',
 

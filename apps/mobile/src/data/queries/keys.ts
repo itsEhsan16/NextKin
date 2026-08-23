@@ -1,4 +1,4 @@
-import type { JobFilters } from '@/data/models';
+import type { JobFilters, JobSort } from '@/data/models';
 
 /**
  * Query key factory. Every key is a tuple starting with the aggregate name so
@@ -25,10 +25,12 @@ export const qk = {
   jobs: {
     all: ['jobs'] as const,
     lists: () => ['jobs', 'list'] as const,
-    list: (filters: JobFilters) => ['jobs', 'list', filters] as const,
+    list: (filters: JobFilters, sort: JobSort = 'relevance') =>
+      ['jobs', 'list', filters, sort] as const,
     detail: (id: string) => ['jobs', 'detail', id] as const,
     saved: () => ['jobs', 'saved'] as const,
     picks: () => ['jobs', 'picks'] as const,
+    todaysPicks: () => ['jobs', 'todays-picks'] as const,
     applications: () => ['jobs', 'applications'] as const,
   },
   notifications: {

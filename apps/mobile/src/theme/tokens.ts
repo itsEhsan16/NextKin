@@ -23,6 +23,8 @@ export const colorsByScheme = {
     surfaceSheet: palette.white,
     surfaceInverse: palette.ink900,
     surfaceBlack: palette.black,
+    /** Selected filter chip / count badge fill. */
+    surfaceSelected: palette.ink900,
 
     // Borders
     borderDefault: palette.gray200,
@@ -54,6 +56,8 @@ export const colorsByScheme = {
     dangerSurface: palette.red50,
     warning: palette.amber600,
     warningSurface: palette.amber50,
+    /** "Good match" pill text (Figma 1:352) — darker than  for contrast on the tint. */
+    warningStrong: palette.amber700,
 
     // Chrome
     tabBarBackground: palette.white,
@@ -84,6 +88,7 @@ export const colorsByScheme = {
     surfaceSheet: palette.dark800,
     surfaceInverse: palette.white,
     surfaceBlack: palette.white,
+    surfaceSelected: palette.white,
 
     borderDefault: palette.dark600,
     borderHairline: palette.dark700,
@@ -110,6 +115,7 @@ export const colorsByScheme = {
     dangerSurface: '#2A1414',
     warning: '#FBBF24',
     warningSurface: '#2A2110',
+    warningStrong: '#FBBF24',
 
     tabBarBackground: palette.dark800,
     tabActive: '#F5F6F8',
@@ -178,6 +184,11 @@ export const sizes = {
   emptyStateTile: 96,
   sheetStep1Height: 600,
   sheetStep2Height: 520,
+  /** Jobs chrome (Figma JOBS 01). */
+  searchField: 52,
+  segmentedControl: 48,
+  segmentedPill: 40,
+  filterBadge: 22,
   /** Header chrome from the Home screen. */
   headerButton: 48,
   unreadDot: 8,
@@ -215,6 +226,10 @@ export const shadows = {
   stickyBarUp: shadow(0, -2, 7, 0.07, 6),
   card: shadow(0, 1, 2, 0.05, 1),
   sheet: shadow(0, -4, 32, 0.18, 12),
+  /** Segmented-control active pill (Figma 1:284). */
+  segmentPill: shadow(0, 1, 3, 0.08, 2),
+  /** Jobs cards use a slightly tighter shadow than the Home cards (Figma 1:301). */
+  jobCard: shadow(0, 1, 1, 0.05, 1),
 } as const;
 
 export const opacity = {

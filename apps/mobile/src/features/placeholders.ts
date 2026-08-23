@@ -17,6 +17,9 @@ export type PlaceholderKey =
   | 'interview-prep'
   | 'ai-assistant'
   | 'job-detail'
+  | 'job-filters'
+  | 'job-sort'
+  | 'job-location'
   | 'resume-detail';
 
 export type PlaceholderMeta = {
@@ -47,6 +50,9 @@ export const PLACEHOLDERS: Record<PlaceholderKey, PlaceholderMeta> = {
   'interview-prep': { title: 'Interview Prep', figmaScreens: [] },
   'ai-assistant': { title: 'AI Assistant', figmaScreens: [] },
   'job-detail': { title: 'Job Detail', phase: 3, figmaScreens: ['JOBS 05 — Job Detail'] },
+  'job-filters': { title: 'Filters', phase: 3, figmaScreens: ['JOBS 04 — Filters'] },
+  'job-sort': { title: 'Sort jobs', figmaScreens: [] },
+  'job-location': { title: 'Location', figmaScreens: [] },
   'resume-detail': { title: 'Resume', phase: 4, figmaScreens: ['RESUMES 04 — Score panel'] },
 };
 

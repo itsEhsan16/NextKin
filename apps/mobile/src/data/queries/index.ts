@@ -1,7 +1,14 @@
 export { createQueryClient } from './client';
 export { qk } from './keys';
 export { useActiveGeneration } from './useActiveGeneration';
-export { useApplications, useJob, useJobPicks, useJobs, useSavedJobs } from './useJobs';
+export {
+  useApplications,
+  useJob,
+  useJobPicks,
+  useJobs,
+  useSavedJobs,
+  useTodaysPicks,
+} from './useJobs';
 export {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,

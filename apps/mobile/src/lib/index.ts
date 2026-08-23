@@ -3,3 +3,4 @@ export * from './format';
 export * from './haptics';
 export * from './reducedMotion';
 export * from './storage';
+export * from './useDebouncedValue';

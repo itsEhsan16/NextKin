@@ -9,7 +9,7 @@ import type {
 import { matchBandFor } from '@/data/models';
 import type { SalaryRange } from '@/lib';
 
-import { daysAgo } from './time';
+import { daysAgo, daysFromNow } from './time';
 
 /** Compact seed row; `buildJob` expands it into a full Job with placeholder copy. */
 export type JobSeed = {
@@ -27,7 +27,11 @@ export type JobSeed = {
   source: JobSource;
   tags: string[];
   isPick?: boolean;
+  isTodaysPick?: boolean;
   isSaved?: boolean;
+  savedDaysAgo?: number;
+  /** Days until the posting closes; drives the Saved tab urgency pill. */
+  closingInDays?: number;
   /** Only the first page of jobs is matched; `states` is one char per criterion (m/x/o). */
   match?: { score: number; states: string };
 };
@@ -57,11 +61,14 @@ function buildCriteria(seed: JobSeed, states: string): MatchCriterion[] {
   }));
 }
 
-export function buildJob(seed: JobSeed): Job {
+export function buildJob(seed: JobSeed, index = 0): Job {
   const {
     match,
     postedDaysAgo,
+    savedDaysAgo,
+    closingInDays,
     isPick = false,
+    isTodaysPick = false,
     isSaved = false,
     employmentType = 'full_time',
     ...rest
@@ -89,7 +96,12 @@ export function buildJob(seed: JobSeed): Job {
       'Comfortable writing clear product narratives and specs',
     ],
     isPick,
+    isTodaysPick,
     isSaved,
+    // Seed order IS the relevance order the provider would return.
+    relevanceRank: index,
+    ...(savedDaysAgo != null ? { savedAt: daysAgo(savedDaysAgo) } : {}),
+    ...(closingInDays != null ? { closingAt: daysFromNow(closingInDays) } : {}),
     ...(match
       ? {
           matchScore: match.score,

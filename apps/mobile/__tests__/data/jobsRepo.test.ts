@@ -20,11 +20,19 @@ describe('JobsRepo (mock)', () => {
   });
 
   describe('list() pagination', () => {
-    it('returns the first 20 jobs newest-first with a cursor for the rest', async () => {
+    it('returns the first 20 jobs in relevance order with a cursor for the rest', async () => {
+      // "Relevance" is the default sort on the Jobs artboard (Figma 1:326), not recency.
       const page = await flush(repos.jobs.list(EMPTY_JOB_FILTERS));
 
       expect(page.items).toHaveLength(JOBS_PAGE_SIZE);
       expect(page.nextCursor).toBeDefined();
+      const ranks = page.items.map((job) => job.relevanceRank);
+      expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
+    });
+
+    it('re-orders by recency when the sort control asks for it', async () => {
+      const page = await flush(repos.jobs.list(EMPTY_JOB_FILTERS, undefined, 'recent'));
+
       const posted = page.items.map((job) => job.postedAt);
       expect(posted).toEqual([...posted].sort((a, b) => b.localeCompare(a)));
     });

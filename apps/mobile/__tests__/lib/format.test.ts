@@ -1,4 +1,6 @@
 import {
+  formatDaysAgo,
+  formatJobMeta,
   formatPercent,
   formatRelativeTime,
   formatSalary,
@@ -226,5 +228,56 @@ describe('pluralize', () => {
     expect(pluralize(2, 'match', 'matches')).toBe('2 matches');
     expect(pluralize(1, 'match', 'matches')).toBe('1 match');
     expect(pluralize(0, 'person', 'people')).toBe('0 people');
+  });
+});
+
+describe('formatSalary — INR (Jobs artboards)', () => {
+  const inr = (min: number, max: number, estimated = false) =>
+    ({ min, max, currency: 'INR', period: 'year', estimated }) as const;
+
+  it('quotes the symbol and the lakh unit once across the range', () => {
+    // Figma 1:307 / 1:319 — "₹28–38L · est." and "₹32–42L".
+    expect(formatSalary(inr(2_800_000, 3_800_000, true))).toBe('₹28–38L · est.');
+    expect(formatSalary(inr(3_200_000, 4_200_000))).toBe('₹32–42L');
+  });
+
+  it('keeps one decimal for part-lakh figures', () => {
+    expect(formatSalary(inr(2_850_000, 3_800_000))).toBe('₹28.5–38L');
+  });
+
+  it('handles open-ended ranges', () => {
+    expect(formatSalary({ min: 2_000_000, currency: 'INR', period: 'year' })).toBe('₹20L+');
+    expect(formatSalary({ max: 2_000_000, currency: 'INR', period: 'year' })).toBe('Up to ₹20L');
+    expect(formatSalary({ currency: 'INR', period: 'year' })).toBe('Salary not listed');
+  });
+
+  it('appends the estimated suffix to the Western currencies too', () => {
+    expect(formatSalary({ min: 120_000, max: 150_000, currency: 'USD', period: 'year', estimated: true })).toBe(
+      '$120k–$150k / yr · est.',
+    );
+  });
+});
+
+describe('formatDaysAgo', () => {
+  const NOW = new Date('2026-08-23T12:00:00.000Z');
+  const daysBefore = (n: number) => new Date(NOW.getTime() - n * 24 * 60 * 60 * 1000).toISOString();
+
+  it('counts in days well past a week, unlike formatRelativeTime', () => {
+    // The Applied artboard shows "Applied 12d ago" and "Applied 21d ago".
+    expect(formatDaysAgo(daysBefore(12), NOW)).toBe('12d ago');
+    expect(formatDaysAgo(daysBefore(21), NOW)).toBe('21d ago');
+    expect(formatRelativeTime(daysBefore(12), NOW)).toBe('1w ago');
+  });
+
+  it('falls back to hours and a date at the edges', () => {
+    expect(formatDaysAgo(new Date(NOW.getTime() - 3 * 60 * 60 * 1000).toISOString(), NOW)).toBe('3h ago');
+    expect(formatDaysAgo(daysBefore(45), NOW)).toBe(formatShortDate(daysBefore(45), NOW));
+  });
+});
+
+describe('formatJobMeta', () => {
+  it('joins the parts with the artboard separator and drops blanks', () => {
+    expect(formatJobMeta(['Razorpay', 'Bengaluru', 'Hybrid'])).toBe('Razorpay · Bengaluru · Hybrid');
+    expect(formatJobMeta(['Linear', undefined, 'Remote'])).toBe('Linear · Remote');
   });
 });

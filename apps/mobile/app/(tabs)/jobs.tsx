@@ -1,11 +1,5 @@
-import { PlaceholderScreen } from '@/ui';
+import { JobsScreen } from '@/features/jobs';
 
 export default function JobsRoute() {
-  return (
-    <PlaceholderScreen
-      title="Jobs"
-      phase={4}
-      figmaScreens={['Jobs', 'Jobs – Filters', 'Job detail', 'Job detail – Match breakdown']}
-    />
-  );
+  return <JobsScreen />;
 }

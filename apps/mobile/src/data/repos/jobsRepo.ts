@@ -1,5 +1,5 @@
 import { simulate } from '@/data/mock';
-import type { Job, JobFilters, PostedWithin } from '@/data/models';
+import type { Job, JobFilters, JobSort, PostedWithin } from '@/data/models';
 
 import { clone, findOrThrow, type MockStore } from './state';
 import type { JobsRepo, Page } from './types';
@@ -14,6 +14,16 @@ const POSTED_WITHIN_MS: Record<PostedWithin, number> = {
 };
 
 const byPostedDesc = (a: Job, b: Job): number => b.postedAt.localeCompare(a.postedAt);
+const byRelevance = (a: Job, b: Job): number => a.relevanceRank - b.relevanceRank;
+const bySavedDesc = (a: Job, b: Job): number =>
+  (b.savedAt ?? b.postedAt).localeCompare(a.savedAt ?? a.postedAt);
+const bySalaryDesc = (a: Job, b: Job): number => (b.salary?.max ?? 0) - (a.salary?.max ?? 0);
+
+const COMPARATORS: Record<JobSort, (a: Job, b: Job) => number> = {
+  relevance: byRelevance,
+  recent: byPostedDesc,
+  salary: bySalaryDesc,
+};
 
 const normalise = (value: string): string => value.trim().toLowerCase();
 
@@ -28,6 +38,8 @@ export function matchesFilters(job: Job, filters: JobFilters, now = Date.now()):
     if (!filters.locations.some((wanted) => location.includes(normalise(wanted)))) return false;
   }
   if (filters.remote.length > 0 && !filters.remote.includes(job.remote)) return false;
+  if (filters.employmentTypes.length > 0 && !filters.employmentTypes.includes(job.employmentType))
+    return false;
   if (filters.salaryMin != null) {
     const upper = job.salary?.max ?? job.salary?.min;
     if (upper == null || upper < filters.salaryMin) return false;
@@ -54,13 +66,13 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
   const emptyPage = (): Page<Job> => ({ items: [] });
 
   return {
-    list: (filters, cursor) =>
+    list: (filters, cursor, sort = 'relevance') =>
       simulate(
         () => {
           const offset = parseCursor(cursor);
           const matching = store.state.jobs
             .filter((job) => matchesFilters(job, filters))
-            .sort(byPostedDesc);
+            .sort(COMPARATORS[sort]);
           const items = matching.slice(offset, offset + JOBS_PAGE_SIZE);
           const end = offset + items.length;
           return clone({
@@ -74,7 +86,7 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
     get: (id) => simulate(() => clone(find(id))),
 
     listSaved: () =>
-      simulate(() => clone(store.state.jobs.filter((job) => job.isSaved).sort(byPostedDesc)), {
+      simulate(() => clone(store.state.jobs.filter((job) => job.isSaved).sort(bySavedDesc)), {
         empty: () => [],
       }),
 
@@ -82,7 +94,13 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
       simulate(
         () =>
           clone(
-            [...store.state.applications].sort((a, b) => b.appliedAt.localeCompare(a.appliedAt)),
+            // Declaration order is the provider's ranking (see applicationsFixture): the
+            // artboard leads with the actionable interview, not the newest submission.
+            store.state.applications.flatMap((application) => {
+                const job = store.state.jobs.find((item) => item.id === application.jobId);
+                // An application whose listing has aged out of the catalogue is not renderable.
+                return job ? [{ application, job }] : [];
+              }),
           ),
         { empty: () => [] },
       ),
@@ -95,7 +113,14 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
         return clone(updated);
       }),
 
-    // "Top Job Matches": best match first, newest breaks ties.
+    // Jobs tab "Today's picks": editorial carousel, newest first.
+    listTodaysPicks: () =>
+      simulate(
+        () => clone(store.state.jobs.filter((job) => job.isTodaysPick).sort(byPostedDesc)),
+        { empty: () => [] },
+      ),
+
+    // Home "Top Job Matches": best match first, newest breaks ties.
     listPicks: () =>
       simulate(
         () =>

@@ -36,6 +36,7 @@ export const typography = {
   /** "NextKin" logotype — scale with useLayoutScale(). */
   wordmark: role('brand', 43, 43),
   displayLg: role('bold', 28, 36, -0.4), // hero numbers / greeting name
+  screenTitle: role('bold', 28, 34), // "Jobs" (Figma 1:264)
   display: role('bold', 22, 30, -0.3), // screen titles, stat values
   headline: role('bold', 20, 28, -0.2), // sheet / section titles
   greetingLabel: role('regular', 15, 19), // header "Hi" line (Figma 15/18.75)
@@ -52,13 +53,19 @@ export const typography = {
   bodySemiBold: role('semiBold', 15, 22),
   caption: role('medium', 13, 20), // meta, subtitles
   captionRegular: role('regular', 13, 20),
+  jobMeta: role('medium', 13, 19.5), // job card meta line (Figma 1:334)
   captionSemiBold: role('semiBold', 13, 20), // selected segment, match pill
+  segment: role('medium', 14, 20), // segmented-control label
+  segmentActive: role('semiBold', 14, 20),
+  pill: role('regular', 12, 18), // pick-card pills
+  pillStrong: role('semiBold', 12, 18),
   rowDescription: role('medium', 13, 19), // sheet row descriptions (Figma 13/19)
   micro: role('medium', 11, 16.5),
   microRegular: role('regular', 11, 16),
   microSemiBold: role('semiBold', 12, 18),
   tiny: role('regular', 10, 15), // shortcut sub-labels, ring caption
   badge: role('bold', 10, 14, 0.2), // "AI" badge
+  badgeCount: role('bold', 11, 22), // filter count badge (Figma 1:274)
   tabLabel: role('semiBold', 9, 13, 0.1),
   statLg: role('bold', 22, 28, -0.3),
   statRegular: role('regular', 20, 30), // ATS ring value
