@@ -7,9 +7,8 @@ The current milestone is **UI end-to-end**: every screen runs against a typed mo
 shaped like the V2 spec's data model and API, so the real API client drops in later without
 touching screens. There is no backend, auth or network access yet.
 
-- Binding product spec: `doc/NextKin-Apply-V2-Project-Specification.md` (repo root)
-- Implementation plan: `doc/NextKin-Mobile-UI-Implementation-Plan.md`
-- Agent conventions: `CLAUDE.md` at the repo root
+The binding product specification and the UI implementation plan are kept internally and are not
+part of this repository.
 
 ## Run it in Expo Go
 
