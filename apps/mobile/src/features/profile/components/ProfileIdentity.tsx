@@ -1,11 +1,9 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { Image } from 'expo-image';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
-import { resolveImageSource } from '@/assets';
 import { AVAILABILITY_LABEL, type Profile, type User } from '@/data/models';
 import { a11yButton, formatPercent, useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
@@ -31,17 +29,22 @@ const RING_STROKE = 5;
 const AVATAR = 88;
 const BADGE = { width: 44, height: 22 } as const;
 const DOT = 7;
-const BADGE_DROP = 8;
-const DETAILS_TOP = 8;
+const BADGE_DROP = 10;
+const DETAILS_TOP = 10;
 const PILL_PAD_X = 12;
 const PILL_PAD_Y = 5;
-const EDIT_TOP = 8;
+const EDIT_TOP = 18;
+const DETAILS_GAP = 2;
+const PILL_TOP = 8;
 
 /**
  * Avatar wrapped in the animated completeness ring. One shared value drives the arc sweep and
  * the badge's count-up, so they can never drift (the ScoreRing contract, with an avatar where
- * the number would be). PROFILE 01 draws initials; the photo wins when the account has one,
- * with the artboard's two-letter monogram as the fallback.
+ * the number would be).
+ *
+ * PROFILE 01 (1:2198) draws the two-letter monogram, not the photo — deliberately, so the ring
+ * reads as a progress meter rather than as a frame around a face. The Home header (1:6) is the
+ * surface that shows the photo. Each follows its own artboard.
  */
 function CompletenessRing({ user, completeness }: { user: User; completeness: number }) {
   const { colors, motion, radii, sizes, s } = useTheme();
@@ -62,7 +65,6 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
     strokeDashoffset: circumference * (1 - progress.value),
   }));
 
-  const photo = resolveImageSource(user.avatarUrl);
   const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
 
   return (
@@ -107,13 +109,9 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
           justifyContent: 'center',
         }}
       >
-        {photo ? (
-          <Image source={photo} style={{ width: avatar, height: avatar }} contentFit="cover" />
-        ) : (
-          <Text variant="displayLg" color="textPrimary">
-            {initials}
-          </Text>
-        )}
+        <Text variant="displayLg" color="textPrimary">
+          {initials}
+        </Text>
       </View>
 
       <View
@@ -155,7 +153,7 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
     <View style={[styles.row, { gap: spacing[4] }]}>
       <CompletenessRing user={user} completeness={profile.completeness} />
 
-      <View style={[styles.details, { gap: spacing[1] + 2, paddingTop: s(DETAILS_TOP) }]}>
+      <View style={[styles.details, { gap: s(DETAILS_GAP), paddingTop: s(DETAILS_TOP) }]}>
         <Text variant="displaySemiBold" numberOfLines={1}>
           {`${user.firstName} ${user.lastName}`}
         </Text>
@@ -176,7 +174,7 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
                 paddingVertical: s(PILL_PAD_Y),
                 borderRadius: radii.full,
                 backgroundColor: colors.successSurface,
-                marginTop: spacing[1],
+                marginTop: s(PILL_TOP),
               },
             ]}
           >

@@ -21,6 +21,8 @@ import { useResumesStore } from '../resumesStore';
 
 /** Column gap from the artboard: 228 + 16 + 228 fills the 472pt content width. */
 const GRID_GAP = 16;
+/** 1:1392 usage bar ends at 262; the first card 1:1394 starts at 294. */
+const HEADER_GAP = 32;
 /** The dashed tile keeps the artboard card proportions so both grid columns align. */
 const NEW_TILE_RATIO = 228 / 306;
 
@@ -126,7 +128,7 @@ export function ResumesScreen() {
       scroll
       tabBarInset
       scrollRef={scrollRef}
-      contentContainerStyle={{ paddingTop: spacing[4], gap: spacing[5] }}
+      contentContainerStyle={{ paddingTop: spacing[4], gap: s(HEADER_GAP) }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <ResumesHeader

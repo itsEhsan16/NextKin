@@ -28,7 +28,7 @@ const ICON = 16;
 const ICON_SLOT = 20;
 const CHEVRON = 11;
 /** Figma 1:2239: icon at x19, label at x55 → the divider inset below. */
-const PADDING_X = 19;
+const PADDING_X = 20;
 const GUTTER = 16;
 const DIVIDER_INSET = PADDING_X + ICON_SLOT + GUTTER;
 
@@ -63,7 +63,7 @@ export function ListRow({
         style,
       ]}
     >
-      <View style={styles.iconSlot}>
+      <View style={[styles.iconSlot, { width: s(ICON_SLOT) }]}>
         <FontAwesome5
           name={icon}
           size={s(ICON)}
@@ -107,7 +107,7 @@ export function RowGroup({ title, children, style }: RowGroupProps) {
   const rows = Array.isArray(children) ? children : [children];
 
   return (
-    <View style={[{ gap: spacing[2] + 4 }, style]}>
+    <View style={[{ gap: spacing[2] }, style]}>
       {title ? (
         <Text variant="overline" color="textSecondary" accessibilityRole="header">
           {title}
@@ -135,6 +135,6 @@ export function RowGroup({ title, children, style }: RowGroupProps) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
-  iconSlot: { width: ICON_SLOT, alignItems: 'center' },
+  iconSlot: { alignItems: 'center' },
   label: { flex: 1 },
 });

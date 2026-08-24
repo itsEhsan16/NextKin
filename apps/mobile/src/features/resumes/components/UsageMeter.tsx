@@ -1,5 +1,5 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Subscription } from '@/data/models';
 import { a11yButton, hitSlop8 } from '@/lib';
@@ -11,6 +11,7 @@ import { Text } from '@/ui/Text';
 export type UsageMeterProps = {
   subscription: Subscription;
   onUpgrade: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
 const CHEVRON = 9;
@@ -19,7 +20,7 @@ const CHEVRON = 9;
  * "2 of 2 free resumes used · Upgrade ›" over the amber usage bar (Figma 1:1388–1:1393).
  * Free plan only — Pro has no cap to meter.
  */
-export function UsageMeter({ subscription, onUpgrade }: UsageMeterProps) {
+export function UsageMeter({ subscription, onUpgrade, style }: UsageMeterProps) {
   const { colors, spacing, s } = useTheme();
   if (subscription.plan !== 'free') return null;
 
@@ -27,7 +28,7 @@ export function UsageMeter({ subscription, onUpgrade }: UsageMeterProps) {
   const label = `${resumesUsed} of ${resumesLimit} free resumes used`;
 
   return (
-    <View style={{ gap: spacing[2] }}>
+    <View style={[{ gap: spacing[2] }, style]}>
       <View style={styles.row}>
         <Text variant="caption" color="textSecondary">
           {label}

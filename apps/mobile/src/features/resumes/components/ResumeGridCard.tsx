@@ -107,6 +107,6 @@ export const ResumeGridCard = memo(function ResumeGridCard({
 
 const useStyles = scaledSheet((s) => ({
   badge: { position: 'absolute', right: s(3), bottom: 0 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', marginTop: s(2) },
+  titleRow: { flexDirection: 'row', alignItems: 'center', marginTop: s(12) },
   title: { flex: 1 },
 }));

@@ -60,7 +60,7 @@ const STATUS_CHIPS = [
 
 /** JOBS 01–03 — Discover, Saved and Applied as three segments of one screen. */
 export function JobsScreen() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const actions = useJobsActions();
   const listRef = useRef<FlashListRef<JobRow>>(null);
 
@@ -244,7 +244,7 @@ export function JobsScreen() {
             onRetry={() => void picks.refetch()}
           />
 
-          <View style={styles.filterRow}>
+          <View style={[styles.filterRow, { marginTop: s(PICKS_TO_LIST_EXTRA) }]}>
             <Text accessibilityRole="header" variant="section">
               All jobs
             </Text>
@@ -323,6 +323,13 @@ type JobRow =
   | { kind: 'discover'; job: Job }
   | { kind: 'saved'; job: Job }
   | { kind: 'applied'; job: Job; application: Application };
+
+/**
+ * The picks carousel sits further from the list than the rest of the header stack:
+ * 1:301 ends at 596 and the "All jobs" row 1:325 starts at 628, against the 20 the
+ * header container gaps by. The remainder is added here.
+ */
+const PICKS_TO_LIST_EXTRA = 12;
 
 const rowKey = (row: JobRow) => (row.kind === 'applied' ? row.application.id : row.job.id);
 

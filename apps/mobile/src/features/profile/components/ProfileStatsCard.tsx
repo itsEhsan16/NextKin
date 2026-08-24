@@ -55,5 +55,5 @@ export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
 const useStyles = scaledSheet((s) => ({
   card: { flexDirection: 'row', alignItems: 'center' },
   cellWrap: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  cell: { flex: 1, alignItems: 'center', gap: s(2) },
+  cell: { flex: 1, alignItems: 'center', gap: s(3) },
 }));

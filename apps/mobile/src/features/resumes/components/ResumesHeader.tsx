@@ -39,6 +39,15 @@ const TYPE_PILLS: readonly { key: ResumeTypeFilter; label: string }[] = [
 
 const SORT_CHEVRON = 9;
 
+/**
+ * Section spacing is not uniform on the artboard: title 1:1367 ends at 64 and the search
+ * field 1:1371 starts at 96; the field ends at 148 and the type pills 1:1378 start at 170;
+ * the pills end at 202 and the usage meter 1:1388 starts at 230.
+ */
+const SEARCH_TOP = 32;
+const FILTERS_TOP = 22;
+const METER_TOP = 28;
+
 /** Figma 1:1367–1:1393 — title + bell, search + layout toggle, type pills + sort, usage meter. */
 export function ResumesHeader({
   query,
@@ -75,10 +84,10 @@ export function ResumesHeader({
   if (firstRun) return titleRow;
 
   return (
-    <View style={{ gap: spacing[4] }}>
+    <View>
       {titleRow}
 
-      <View style={[styles.searchRow, { gap: spacing[3] }]}>
+      <View style={[styles.searchRow, { gap: spacing[3], marginTop: s(SEARCH_TOP) }]}>
         <SearchField
           value={query}
           onChangeText={onChangeQuery}
@@ -89,7 +98,7 @@ export function ResumesHeader({
         <ViewModeToggle value={viewMode} onChange={onChangeViewMode} />
       </View>
 
-      <View style={styles.filterRow}>
+      <View style={[styles.filterRow, { marginTop: s(FILTERS_TOP) }]}>
         <View style={[styles.pills, { gap: spacing[2] }]}>
           {TYPE_PILLS.map((pill) => (
             <FilterChip
@@ -116,7 +125,13 @@ export function ResumesHeader({
         </Pressable>
       </View>
 
-      {subscription ? <UsageMeter subscription={subscription} onUpgrade={onPressUpgrade} /> : null}
+      {subscription ? (
+        <UsageMeter
+          subscription={subscription}
+          onUpgrade={onPressUpgrade}
+          style={{ marginTop: s(METER_TOP) }}
+        />
+      ) : null}
     </View>
   );
 }
