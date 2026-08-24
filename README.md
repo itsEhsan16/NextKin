@@ -17,9 +17,11 @@ types/schemas package follow later, per the V2 specification.
 
 ## Status
 
-**Milestone: UI end-to-end on a mock data layer.** There is no backend, auth or network access
-yet — every screen runs against a typed fixture layer shaped like the V2 data model and API, so
-the real API client drops in later without touching a single screen.
+**Milestone reached: the UI is end-to-end on the mock data layer.** All 27 designed screens
+from the Figma file are built. There is no backend, auth or network access yet — every screen
+runs against a typed fixture layer shaped like the V2 data model and API, so the real API
+client drops in later without touching a single screen. What remains is device-bound QA
+(screen-reader and performance passes, Maestro runs) and the EAS/account-gated release work.
 
 | Area | Screens | State |
 | --- | --- | --- |
@@ -27,11 +29,11 @@ the real API client drops in later without touching a single screen.
 | App shell | Floating tab bar, FAB, create sheet | ✅ Done |
 | Home | `DESIGN 2` | ✅ Done |
 | Create | `CREATE 01`, `CREATE 02` | ✅ Done |
-| Jobs | `JOBS 01`–`JOBS 03` (Discover / Saved / Applied) | ✅ Done |
-| Jobs | `JOBS 04`–`JOBS 08` (Filters, Detail, empty states) | ⏳ Next |
-| Resumes | `RESUMES 01`–`RESUMES 05` | ⏳ Planned |
-| Profile | `PROFILE 01`–`PROFILE 02` | ⏳ Planned |
-| Notifications | `NOTIF 01`–`NOTIF 07` | ⏳ Planned |
+| Jobs | `JOBS 01`–`JOBS 08` (Discover / Saved / Applied, Filters, Detail, empty states) | ✅ Done |
+| Resumes | `RESUMES 01`–`RESUMES 05` (Grid / List, card menu, ATS score panel, first run) | ✅ Done |
+| Profile | `PROFILE 01`–`PROFILE 02` (Overview, settings & account, picker sheets) | ✅ Done |
+| Notifications | `NOTIF 01`–`NOTIF 07` (Feed, swipe actions, row menu, preferences, push primer) | ✅ Done |
+| QA & release | Maestro flows, audits · device + EAS passes pending | 🧪 Flows in `.maestro/` |
 
 Screens are delivered from Figma **one at a time**, each as a self-contained unit that ships all
 four states (default, loading, empty, error), press feedback, motion and accessibility before it

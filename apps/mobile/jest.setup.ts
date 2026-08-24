@@ -20,6 +20,17 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
+// Permission STATE only (plan §Phase 6): default to "never asked". Suites that exercise the
+// push primer re-mock these per file to observe the request.
+jest.mock('expo-notifications', () => ({
+  getPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: false, canAskAgain: true, status: 'undetermined' }),
+  ),
+  requestPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: true, canAskAgain: false, status: 'granted' }),
+  ),
+}));
+
 jest.mock('expo-sqlite/kv-store', () => {
   const store = new Map<string, string>();
   return {

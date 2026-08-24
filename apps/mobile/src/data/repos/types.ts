@@ -1,4 +1,5 @@
 import type {
+  Application,
   ApplicationWithJob,
   DashboardStats,
   AtsScore,
@@ -9,6 +10,7 @@ import type {
   Notification,
   NotificationPrefs,
   Profile,
+  ProfilePreferences,
   Resume,
   ResumeVersion,
   Subscription,
@@ -37,6 +39,8 @@ export type ProfileRepo = {
   getProfile(): Promise<Profile>;
   /** Marks a next-step as done and bumps completeness. Returns the updated profile. */
   completeNextStep(id: string): Promise<Profile>;
+  /** Partial update from the preference pickers (availability, min salary, language, …). */
+  updatePreferences(patch: Partial<ProfilePreferences>): Promise<Profile>;
 };
 
 export type ResumesRepo = {
@@ -46,18 +50,26 @@ export type ResumesRepo = {
   getVersions(id: string): Promise<ResumeVersion[]>;
   duplicate(id: string): Promise<Resume>;
   rename(id: string, title: string): Promise<Resume>;
+  /** Moves the "Base" flag to this resume. Returns the full list — two documents change. */
+  setAsBase(id: string): Promise<Resume[]>;
   remove(id: string): Promise<void>;
 };
 
 export type JobsRepo = {
   list(filters: JobFilters, cursor?: string, sort?: JobSort): Promise<Page<Job>>;
+  /** Total matches for a filter set, without paging — the filter sheet's live result count. */
+  count(filters: JobFilters): Promise<number>;
   /** Editorial carousel on the Jobs tab, distinct from Home's match-ranked picks. */
   listTodaysPicks(): Promise<Job[]>;
   get(id: string): Promise<Job>;
+  /** Tag-related roles at other companies — the "Similar jobs" rail on JOBS 05. */
+  listSimilar(id: string, limit?: number): Promise<Job[]>;
   listSaved(): Promise<Job[]>;
   /** Joined with the listing so the Applied tab never has to look jobs up itself. */
   listApplications(): Promise<ApplicationWithJob[]>;
   toggleSave(id: string): Promise<Job>;
+  /** Submits an application (NOTIF 07's post-apply flow). Idempotent per job. */
+  apply(id: string): Promise<Application>;
   listPicks(): Promise<Job[]>;
 };
 

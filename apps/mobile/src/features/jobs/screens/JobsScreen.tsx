@@ -13,6 +13,7 @@ import {
   useUnreadCount,
 } from '@/data/queries';
 import { a11yButton, hitSlop8, pluralize, useDebouncedValue } from '@/lib';
+import { useTabScrollToTop } from '@/navigation';
 import { useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { Pressable } from '@/ui/Pressable';
@@ -122,6 +123,13 @@ export function JobsScreen() {
 
   const status = STATUS_OF[segment]({ discover, saved, applications });
   const activeQuery = segment === 'discover' ? discover : segment === 'saved' ? saved : applications;
+
+  // Re-tapping the Jobs tab returns the list to the top (animated, unlike a segment switch —
+  // here the user asked for the movement, so it should be visible).
+  useTabScrollToTop(
+    'jobs',
+    useCallback(() => listRef.current?.scrollToOffset({ offset: 0, animated: true }), []),
+  );
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -289,7 +297,9 @@ export function JobsScreen() {
               else if (segment === 'saved') void saved.refetch();
               else void applications.refetch();
             }}
-            onBrowse={() => setSegment('discover')}
+            onBrowse={() => selectSegment('discover')}
+            onWidenFilters={actions.openFilters}
+            onClearFilters={clearFilters}
           />
         }
         ItemSeparatorComponent={RowSeparator}
@@ -340,11 +350,15 @@ function ListPlaceholder({
   segment,
   onRetry,
   onBrowse,
+  onWidenFilters,
+  onClearFilters,
 }: {
   status: 'pending' | 'error' | 'success';
   segment: JobsSegment;
   onRetry: () => void;
   onBrowse: () => void;
+  onWidenFilters: () => void;
+  onClearFilters: () => void;
 }) {
   const { spacing } = useTheme();
 
@@ -373,33 +387,53 @@ function ListPlaceholder({
   }
 
   const empty = EMPTY_COPY[segment];
+  const discover = segment === 'discover';
   return (
     <StateView
       icon={empty.icon}
+      {...(empty.iconStyle ? { iconStyle: empty.iconStyle } : {})}
       title={empty.title}
       message={empty.message}
-      actionLabel={segment === 'discover' ? undefined : 'Browse jobs'}
-      onAction={segment === 'discover' ? undefined : onBrowse}
+      actionLabel={empty.actionLabel}
+      // Discover's dead end is the filters, so its CTA opens them; the other two tabs are empty
+      // because nothing has been saved or applied to yet, and the way out is the Discover list.
+      onAction={discover ? onWidenFilters : onBrowse}
+      // Only Discover can be "un-emptied" without leaving the tab (JOBS 06, 1:964).
+      {...(discover ? { secondaryLabel: 'Clear all filters', onSecondary: onClearFilters } : {})}
       style={{ marginTop: spacing[6] }}
     />
   );
 }
 
-const EMPTY_COPY: Record<JobsSegment, { icon: string; title: string; message: string }> = {
+type EmptyCopy = {
+  icon: string;
+  iconStyle?: 'solid' | 'regular';
+  title: string;
+  message: string;
+  actionLabel: string;
+};
+
+/** JOBS 06 (1:958), 07 (1:992) and 08 (1:1025), transcribed verbatim. */
+const EMPTY_COPY: Record<JobsSegment, EmptyCopy> = {
   discover: {
-    icon: 'briefcase',
+    icon: 'search',
     title: 'No jobs match these filters',
-    message: 'Try widening your filters or clearing a few.',
+    message: 'Try removing a filter, widening your salary range, or including hybrid roles.',
+    actionLabel: 'Widen my filters',
   },
   saved: {
     icon: 'bookmark',
+    iconStyle: 'regular',
     title: 'Nothing saved yet',
-    message: 'Tap the bookmark on a job to keep it here.',
+    message:
+      'Bookmark jobs to compare them here — salary, match criteria and requirements side by side.',
+    actionLabel: "Browse today's picks",
   },
   applied: {
     icon: 'paper-plane',
     title: 'No applications yet',
-    message: 'Jobs you apply to will show up here with their status.',
+    message: 'Applications you submit appear here, with status updates as employers respond.',
+    actionLabel: 'Find jobs to apply to',
   },
 };
 

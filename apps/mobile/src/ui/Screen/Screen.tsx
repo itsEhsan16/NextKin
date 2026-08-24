@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode, type RefObject } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -23,6 +23,8 @@ export type ScreenProps = {
   contentContainerStyle?: StyleProp<ViewStyle>;
   /** Pull-to-refresh control (scroll mode only). */
   refreshControl?: ScrollViewProps['refreshControl'];
+  /** Handle on the underlying ScrollView (scroll mode only) — e.g. tab re-tap scroll-to-top. */
+  scrollRef?: RefObject<ScrollView | null>;
   children: ReactNode;
 };
 
@@ -39,6 +41,7 @@ export function Screen({
   tabBarInset = false,
   contentContainerStyle,
   refreshControl,
+  scrollRef,
   children,
 }: ScreenProps) {
   const { colors, spacing } = useTheme();
@@ -71,6 +74,7 @@ export function Screen({
     return (
       <View style={[styles.root, safeAreaStyle]}>
         <ScrollView
+          ref={scrollRef}
           style={styles.root}
           contentContainerStyle={[contentStyle, contentContainerStyle]}
           contentInsetAdjustmentBehavior="never"

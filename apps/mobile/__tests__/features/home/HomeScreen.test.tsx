@@ -5,7 +5,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore, type MockMode } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
-import { resetMockRepos } from '@/data/repos';
+import { GENERATION_TICK_MS, resetMockRepos } from '@/data/repos';
 import { HomeScreen } from '@/features/home';
 import { CreateSheetProvider } from '@/navigation';
 
@@ -89,18 +89,16 @@ describe('HomeScreen (DESIGN 2)', () => {
     expect(screen.getByText('18 Saved')).toBeOnTheScreen();
   });
 
-  it('routes taps: Find Jobs → Jobs tab, bell → notifications placeholder', async () => {
+  it('routes taps: Find Jobs → Jobs tab, bell → the notifications feed', async () => {
     await renderHome();
     await settle(NORMAL_MS);
 
     await act(async () => fireEvent.press(screen.getByLabelText('Find Jobs')));
     expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/jobs');
 
+    // Phase 6 made the feed real.
     await act(async () => fireEvent.press(screen.getByLabelText('Notifications, unread')));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'notifications' },
-    });
+    expect(mockPush).toHaveBeenCalledWith('/notifications');
   });
 
   it('renders section-level empty states in "empty" mock mode', async () => {
@@ -117,5 +115,22 @@ describe('HomeScreen (DESIGN 2)', () => {
 
     expect(screen.getByText('Something went wrong')).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
+  });
+
+  describe('live generation progress', () => {
+    it('shows the in-flight generation, then clears itself when it completes', async () => {
+      await renderHome();
+      await settle(NORMAL_MS);
+
+      // The fixture ships one generation mid-flight, so the card is present on first paint.
+      expect(screen.getByText('Tailoring your resume')).toBeOnTheScreen();
+      expect(
+        screen.getByLabelText(/^Tailoring your resume\. Generating, \d+% complete\.$/),
+      ).toBeOnTheScreen();
+
+      // Ticks at 1.2s a step from 0.45 — four of them carry it past 1.0 and the card retires.
+      await settle(GENERATION_TICK_MS * 5);
+      expect(screen.queryByText('Tailoring your resume')).toBeNull();
+    });
   });
 });

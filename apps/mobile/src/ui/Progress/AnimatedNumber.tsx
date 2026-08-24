@@ -27,11 +27,18 @@ export type AnimatedNumberProps = {
   progress?: SharedValue<number>;
   variant?: TypographyRole;
   color?: ColorToken;
+  /**
+   * MUST be a worklet (open the body with 'worklet'): it runs per frame on the UI runtime,
+   * and a plain JS closure there throws "Tried to synchronously call a Remote Function".
+   */
   format?: (n: number) => string;
   style?: StyleProp<TextStyle>;
 };
 
-const defaultFormat = (n: number) => String(Math.round(n));
+const defaultFormat = (n: number) => {
+  'worklet';
+  return String(Math.round(n));
+};
 
 /**
  * Count-up number rendered through a non-editable TextInput so the text updates on the UI

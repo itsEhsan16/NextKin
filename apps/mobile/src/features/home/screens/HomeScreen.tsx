@@ -1,10 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { RefreshControl } from 'react-native';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { RefreshControl, type ScrollView } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
   qk,
+  useActiveGeneration,
   useCurrentUser,
   useDashboardStats,
   useJobPicks,
@@ -12,11 +13,13 @@ import {
   useUnreadCount,
 } from '@/data/queries';
 import { useReducedMotion } from '@/lib';
+import { useTabScrollToTop } from '@/navigation';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { StateView } from '@/ui/StateView';
 
 import { BrandBlock } from '../components/BrandBlock';
+import { GenerationProgressCard } from '../components/GenerationProgressCard';
 import { HeroBlock } from '../components/HeroBlock';
 import { HomeHeader } from '../components/HomeHeader';
 import { HomeSkeleton } from '../components/HomeSkeleton';
@@ -54,6 +57,15 @@ export function HomeScreen() {
   const resumes = useResumes();
   const stats = useDashboardStats();
   const unread = useUnreadCount();
+  // Subscribes to live progress ticks while a generation is in flight, and drops back to null
+  // once it finishes — so the card below is transient by construction.
+  const generation = useActiveGeneration();
+
+  const scrollRef = useRef<ScrollView>(null);
+  useTabScrollToTop(
+    'index',
+    useCallback(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), []),
+  );
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -101,6 +113,7 @@ export function HomeScreen() {
     <Screen
       scroll
       tabBarInset
+      scrollRef={scrollRef}
       contentContainerStyle={{ paddingTop: 16, gap: SECTION_GAP }}
       refreshControl={refreshControl}
     >
@@ -117,6 +130,16 @@ export function HomeScreen() {
         <HomeSkeleton />
       ) : (
         <>
+          {/* `ready` is the end of the pipeline and the resume list already reflects it, so the
+              card retires rather than lingering on 100%. `failed` is terminal too but still needs
+              surfacing, hence the status check rather than `isGenerationTerminal`. */}
+          {generation.data && generation.data.status !== 'ready' ? (
+            <GenerationProgressCard
+              generation={generation.data}
+              onView={actions.viewAllResumes}
+              onRetry={actions.createResume}
+            />
+          ) : null}
           <Section index={0} animate={animate}>
             <BrandBlock />
           </Section>

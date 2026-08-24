@@ -14,6 +14,7 @@ const ROWS: readonly GalleryRow[] = [
   { href: '/dev/typography', title: 'Typography', subtitle: 'Plus Jakarta Sans type ramp' },
   { href: '/dev/motion', title: 'Motion', subtitle: 'Springs, timings, stagger, meter' },
   { href: '/dev/mock', title: 'Mock data', subtitle: 'Latency / empty / error modes' },
+  { href: '/dev/filters', title: 'Filters', subtitle: 'Filter chips and the salary range slider' },
 ];
 
 const APPEARANCE: readonly { key: AppearancePreference; label: string }[] = [

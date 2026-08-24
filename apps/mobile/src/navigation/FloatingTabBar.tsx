@@ -15,9 +15,7 @@ import { sheetBackgroundA11yProps } from '@/ui/Sheet';
 import { Text } from '@/ui/Text';
 
 import { useCreateSheet } from './createSheet';
-
-/** Route file names inside the `(tabs)` group. */
-type TabName = 'index' | 'jobs' | 'resumes' | 'profile';
+import { scrollTabToTop, type TabName } from './tabScroll';
 
 /** The typed hrefs for the four tab routes. */
 type TabHref = '/(tabs)' | '/(tabs)/jobs' | '/(tabs)/resumes' | '/(tabs)/profile';
@@ -169,7 +167,11 @@ export function FloatingTabBar() {
 
   const handlePress = useCallback((name: TabName) => {
     const { active: current, router: nav } = live.current;
-    if (name === current) return;
+    // Re-tapping the focused tab scrolls it to the top instead of re-navigating to itself.
+    if (name === current) {
+      if (scrollTabToTop(name)) haptics.selection();
+      return;
+    }
     const target = TABS.find((tab) => tab.name === name);
     if (!target) return;
 

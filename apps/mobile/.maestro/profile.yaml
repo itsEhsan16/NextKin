@@ -1,0 +1,12 @@
+# Profile picker sheet: Appearance → Dark → back to System (PROFILE 01/02).
+appId: host.exp.exponent
+---
+- tapOn: "Profile"
+- assertVisible: "George Smith"
+- tapOn: "Appearance, System"
+- assertVisible: "Follows your device setting"
+- tapOn: "Dark"
+- assertVisible: "Appearance, Dark"
+- tapOn: "Appearance, Dark"
+- tapOn: "System"
+- assertVisible: "Appearance, System"

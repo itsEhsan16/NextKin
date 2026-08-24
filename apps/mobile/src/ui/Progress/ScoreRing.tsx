@@ -4,7 +4,7 @@ import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-na
 import Svg, { Circle } from 'react-native-svg';
 
 import { useReducedMotion, withReducedMotion } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { useTheme, type ColorToken, type TypographyRole } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { AnimatedNumber } from './AnimatedNumber';
@@ -21,6 +21,10 @@ export type ScoreRingProps = {
   ringColor?: ColorToken;
   trackColor?: ColorToken;
   labelColor?: ColorToken;
+  /** Type role of the count-up digits — the 44px card badge sets 13 Bold, the hero 42 Bold. */
+  numberVariant?: TypographyRole;
+  numberColor?: ColorToken;
+  labelVariant?: TypographyRole;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
 };
@@ -42,6 +46,9 @@ export function ScoreRing({
   // green circle, and a grey remainder reads as a gap in it.
   trackColor = 'successSurface',
   labelColor = 'success',
+  numberVariant = 'statRegular',
+  numberColor = 'textBlack',
+  labelVariant = 'tiny',
   accessibilityLabel,
   style,
 }: ScoreRingProps) {
@@ -92,9 +99,9 @@ export function ScoreRing({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
-      <AnimatedNumber value={animatedScore} variant="statRegular" />
+      <AnimatedNumber value={animatedScore} variant={numberVariant} color={numberColor} />
       {label ? (
-        <Text variant="tiny" color={labelColor} style={{ marginTop: -2 }}>
+        <Text variant={labelVariant} color={labelColor} style={{ marginTop: -2 }}>
           {label}
         </Text>
       ) : null}

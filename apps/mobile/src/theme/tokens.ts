@@ -31,6 +31,13 @@ export const colorsByScheme = {
     borderHairline: palette.gray100,
     divider: palette.gray100,
     grabHandle: palette.gray200,
+    /** Dashed "+ New" affordances (Figma 1:1394 draws #d1d5db dashes on near-white). */
+    borderDashed: palette.gray300,
+
+    /** Fill of the dashed "+ New" tile — a step quieter than surfaceSubtle. */
+    surfaceFaint: palette.gray50,
+    /** Ghost document pages behind the first-run illustration (Figma 1:2065). */
+    surfaceGhost: palette.gray100,
 
     // Icons
     iconDefault: palette.ink500,
@@ -41,6 +48,8 @@ export const colorsByScheme = {
     brand: palette.brand500,
     brandSurface: palette.brand50,
     brandBorder: palette.brand200,
+    /** Unread notification rows: the "3% indigo tint" (Figma note 1:2497). */
+    surfaceUnread: palette.brand25,
     /** Inline text links ("View all"). */
     link: palette.blue600,
 
@@ -58,6 +67,8 @@ export const colorsByScheme = {
     warningSurface: palette.amber50,
     /** "Good match" pill text (Figma 1:352) — darker than  for contrast on the tint. */
     warningStrong: palette.amber700,
+    /** Amber meters: the resume-usage fill and mid-band ATS arcs (Figma 1:1393 / 1:1470). */
+    warningAccent: palette.amber500,
 
     // Chrome
     tabBarBackground: palette.white,
@@ -94,6 +105,10 @@ export const colorsByScheme = {
     borderHairline: palette.dark700,
     divider: palette.dark700,
     grabHandle: palette.dark500,
+    borderDashed: palette.dark500,
+
+    surfaceFaint: palette.dark800,
+    surfaceGhost: palette.dark700,
 
     iconDefault: '#9AA1AE',
     iconMuted: '#6B7280',
@@ -102,6 +117,7 @@ export const colorsByScheme = {
     brand: '#7C6CFF',
     brandSurface: '#1E1B3A',
     brandBorder: '#2F2A5C',
+    surfaceUnread: '#17152E',
     link: '#60A5FA',
 
     success: '#4ADE80',
@@ -116,6 +132,7 @@ export const colorsByScheme = {
     warning: '#FBBF24',
     warningSurface: '#2A2110',
     warningStrong: '#FBBF24',
+    warningAccent: '#FBBF24',
 
     tabBarBackground: palette.dark800,
     tabActive: '#F5F6F8',
@@ -184,6 +201,14 @@ export const sizes = {
   emptyStateTile: 96,
   sheetStep1Height: 600,
   sheetStep2Height: 520,
+  /** Filters sheet (Figma JOBS 04, 1:760) — scrolls internally, so this is a fixed height. */
+  sheetFiltersHeight: 830,
+  /** Resume card menu (Figma RESUMES 03, 1:2020). */
+  sheetResumeMenuHeight: 600,
+  /** Notification row menu (NOTIF 03, 1:2696) and the push primer (NOTIF 07, 1:2928). */
+  sheetNotifHeight: 440,
+  /** Floor for picker/confirm sheets — they hug their option list past this. */
+  sheetPickerHeight: 320,
   /** Jobs chrome (Figma JOBS 01). */
   searchField: 52,
   segmentedControl: 48,
@@ -230,6 +255,14 @@ export const shadows = {
   segmentPill: shadow(0, 1, 3, 0.08, 2),
   /** Jobs cards use a slightly tighter shadow than the Home cards (Figma 1:301). */
   jobCard: shadow(0, 1, 1, 0.05, 1),
+  /** Salary range slider thumb (Figma 1:801). */
+  sliderThumb: shadow(0, 1, 4, 0.15, 3),
+  /** Floating page in the resumes first-run illustration (Figma 1:2067). */
+  docFloat: shadow(0, 6, 20, 0.1, 6),
+  /** Toggle knob (Figma 1:2722). */
+  knob: shadow(0, 1, 2, 0.18, 2),
+  /** Toast over a scrim-less page (Figma 1:2924). */
+  toast: shadow(0, 4, 9, 0.28, 8),
 } as const;
 
 export const opacity = {

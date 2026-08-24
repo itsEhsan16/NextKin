@@ -23,15 +23,35 @@ export function statusForProgress(progress: number): GenerationStatus {
 const completedScore = (): AtsScore => ({
   total: COMPLETED_SCORE,
   band: atsBandFor(COMPLETED_SCORE),
-  breakdown: [
-    { key: 'keywords', label: 'Keywords', score: 33, max: 40 },
-    { key: 'format', label: 'Formatting', score: 18, max: 20 },
-    { key: 'experience', label: 'Experience match', score: 20, max: 25 },
-    { key: 'readability', label: 'Readability', score: 12, max: 15 },
+  summary: 'Solid foundation — a few fixes will push this into the green.',
+  sections: [
+    {
+      key: 'content',
+      label: 'Content',
+      items: [
+        { id: 'quantified', label: 'Quantified achievements in 3+ bullets', passed: true },
+        { id: 'verbs', label: 'Action verbs open every bullet', passed: true },
+        { id: 'summary', label: 'Summary under 60 words', passed: true },
+      ],
+    },
+    {
+      key: 'format',
+      label: 'Format',
+      items: [
+        { id: 'column', label: 'Single column — parser safe', passed: true },
+        { id: 'headings', label: 'Standard section headings', passed: true },
+      ],
+    },
+    {
+      key: 'keywords',
+      label: 'Keywords',
+      items: [
+        { id: 'kw_1', label: '"creative tools" appears 3 times', passed: true },
+        { id: 'kw_miss_0', label: 'Missing: "illustration"', passed: false, fixable: true },
+        { id: 'kw_miss_1', label: 'Missing: "brand"', passed: false, fixable: true },
+      ],
+    },
   ],
-  matchedKeywords: ['Figma', 'Design systems', 'Mobile', 'Creative tools'],
-  missingKeywords: ['Illustration', 'Brand'],
-  suggestions: [{ id: 'sug_new_1', text: 'Mention brand or illustration work', impact: 'medium' }],
 });
 
 type Ticker = { timer: ReturnType<typeof setInterval>; listeners: Set<(g: Generation) => void> };

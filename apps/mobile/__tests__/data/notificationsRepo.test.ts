@@ -19,11 +19,11 @@ describe('NotificationsRepo (mock)', () => {
     jest.useRealTimers();
   });
 
-  it('lists all notifications newest first with 5 unread', async () => {
+  it('lists all notifications newest first with 4 unread (NOTIF 01)', async () => {
     const list = await flush(repos.notifications.list());
 
     expect(list).toHaveLength(notificationsFixture.length);
-    expect(unreadCount(list)).toBe(5);
+    expect(unreadCount(list)).toBe(4);
     const dates = list.map((n) => n.createdAt);
     expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));
   });
@@ -36,14 +36,14 @@ describe('NotificationsRepo (mock)', () => {
     expect(updated.read).toBe(true);
 
     const list = await flush(repos.notifications.list());
-    expect(unreadCount(list)).toBe(4);
+    expect(unreadCount(list)).toBe(3);
     expect(list.find((n) => n.id === unread!.id)?.read).toBe(true);
   });
 
   it('markRead() is idempotent', async () => {
-    await flush(repos.notifications.markRead('ntf_1'));
-    await flush(repos.notifications.markRead('ntf_1'));
-    expect(unreadCount(await flush(repos.notifications.list()))).toBe(4);
+    await flush(repos.notifications.markRead('ntf_digest'));
+    await flush(repos.notifications.markRead('ntf_digest'));
+    expect(unreadCount(await flush(repos.notifications.list()))).toBe(3);
   });
 
   it('markAllRead() clears the unread count', async () => {
@@ -52,21 +52,26 @@ describe('NotificationsRepo (mock)', () => {
   });
 
   it('remove() drops the notification', async () => {
-    await flush(repos.notifications.remove('ntf_2'));
+    await flush(repos.notifications.remove('ntf_stripe_viewed'));
     const list = await flush(repos.notifications.list());
-    expect(list.map((n) => n.id)).not.toContain('ntf_2');
-    expect(unreadCount(list)).toBe(4);
+    expect(list.map((n) => n.id)).not.toContain('ntf_stripe_viewed');
+    expect(unreadCount(list)).toBe(3);
   });
 
-  it('setPrefs() round-trips', async () => {
+  it('setPrefs() round-trips the NOTIF 04 shape', async () => {
     const prefs = await flush(repos.notifications.getPrefs());
-    const next = { ...prefs, push: false, categories: { ...prefs.categories, jobs: false } };
+    expect(prefs.categories.billing).toBe(false); // the artboard's one off switch
+    const next = {
+      ...prefs,
+      quietHours: false,
+      categories: { ...prefs.categories, applications: false },
+    };
     await flush(repos.notifications.setPrefs(next));
     expect(await flush(repos.notifications.getPrefs())).toEqual(next);
   });
 
   it('does not mutate the fixture', async () => {
     await flush(repos.notifications.markAllRead());
-    expect(unreadCount(notificationsFixture)).toBe(5);
+    expect(unreadCount(notificationsFixture)).toBe(4);
   });
 });

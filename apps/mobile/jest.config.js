@@ -11,4 +11,9 @@ module.exports = {
   },
   testPathIgnorePatterns: ['/node_modules/', '/.expo/'],
   // jest-expo's built-in transformIgnorePatterns already allow-list .pnpm, react-native, expo, etc.
+  // Every screen suite runs a full RN render pipeline on real timers; at jest's default
+  // cores-1 parallelism the 40-suite run oversubscribes a laptop and time-sensitive waits
+  // start missing their windows (a different suite flakes each run). Half the cores keeps
+  // the full run deterministic; single suites are unaffected.
+  maxWorkers: '50%',
 };

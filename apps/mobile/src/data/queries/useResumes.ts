@@ -72,6 +72,19 @@ export function useDuplicateResume() {
   });
 }
 
+export function useSetResumeAsBase() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => repos.resumes.setAsBase(id),
+    // The repo returns the whole list because two documents change (the flag moves).
+    onSuccess: (resumes) => {
+      queryClient.setQueryData(qk.resumes.list(), resumes);
+      resumes.forEach((resume) => queryClient.setQueryData(qk.resumes.detail(resume.id), resume));
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: qk.resumes.list() }),
+  });
+}
+
 export function useRenameResume() {
   const queryClient = useQueryClient();
   return useMutation({

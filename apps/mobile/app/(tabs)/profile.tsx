@@ -1,11 +1,5 @@
-import { PlaceholderScreen } from '@/ui';
+import { ProfileScreen } from '@/features/profile';
 
 export default function ProfileRoute() {
-  return (
-    <PlaceholderScreen
-      title="Profile"
-      phase={6}
-      figmaScreens={['Profile', 'Profile – Completeness', 'Appearance', 'Notification settings']}
-    />
-  );
+  return <ProfileScreen />;
 }

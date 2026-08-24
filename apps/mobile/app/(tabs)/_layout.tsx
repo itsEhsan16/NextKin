@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router/js-tabs';
-import { memo } from 'react';
+import { memo, type PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { FiltersSheetHost, useJobsStore } from '@/features/jobs';
+import { ProfileSheetsHost, useProfileStore } from '@/features/profile';
+import { ResumeMenuHost, useResumesStore } from '@/features/resumes';
 import {
   CreateSheetHost,
   CreateSheetProvider,
@@ -10,6 +13,17 @@ import {
   useCreateSheet,
 } from '@/navigation';
 import { sheetBackgroundA11yProps } from '@/ui/Sheet';
+
+/**
+ * Every sheet hosted OVER the chrome (scrim covering the pill and FAB). The create sheet is
+ * absent on purpose: its artboards paint the pill above the sheet.
+ */
+function useChromeSheetOpen(): boolean {
+  const filtersOpen = useJobsStore((state) => state.filtersOpen);
+  const resumeMenuOpen = useResumesStore((state) => state.menuOpen);
+  const profileSheetOpen = useProfileStore((state) => state.sheetOpen);
+  return filtersOpen || resumeMenuOpen || profileSheetOpen;
+}
 
 /**
  * The navigator renders no bar of its own: the pill is a sibling below, so it can paint above
@@ -52,19 +66,45 @@ const TabsNavigator = memo(function TabsNavigator() {
  */
 function TabsBackdrop() {
   const { isOpen } = useCreateSheet();
+  const chromeSheetOpen = useChromeSheetOpen();
 
   return (
-    <View style={styles.fill} {...sheetBackgroundA11yProps(isOpen)}>
+    <View style={styles.fill} {...sheetBackgroundA11yProps(isOpen || chromeSheetOpen)}>
       <TabsNavigator />
     </View>
   );
 }
 
 /**
+ * Wraps the pill and the FAB so the filters sheet can neutralise them.
+ *
+ * Both are painted *under* the filters scrim (JOBS 04 draws the bottom nav before the scrim), but
+ * being covered is only a visual fact: the FAB carries no background-a11y props of its own — by
+ * design, since its rotated "✕" is the create sheet's dismiss control — so without this it would
+ * stay focusable behind the scrim and could open the create sheet underneath the filters sheet.
+ * Doing it here leaves `Fab` and `FloatingTabBar` untouched and their create-sheet roles intact.
+ */
+function ChromeLayer({ children }: PropsWithChildren) {
+  const chromeSheetOpen = useChromeSheetOpen();
+
+  return (
+    <View
+      style={StyleSheet.absoluteFill}
+      pointerEvents={chromeSheetOpen ? 'none' : 'box-none'}
+      {...sheetBackgroundA11yProps(chromeSheetOpen)}
+    >
+      {children}
+    </View>
+  );
+}
+
+/**
  * Tab shell. Z-order (bottom → top): tab screens → create sheet scrim + sheet → floating pill
- * → FAB. Figma CREATE 01/02 put the pill (nodes 77:226 / 77:290) last in the frame, so it paints
- * undimmed over the sheet and drops its shadow onto it; the FAB stays above both so its rotated
- * "✕" is the visible dismiss affordance (Figma motion note 1:1364).
+ * → FAB → filters scrim + sheet. Figma CREATE 01/02 put the pill (nodes 77:226 / 77:290) last in
+ * the frame, so it paints undimmed over the create sheet and drops its shadow onto it; the FAB
+ * stays above both so its rotated "✕" is the visible dismiss affordance (Figma motion note
+ * 1:1364). JOBS 04 inverts that for the filters sheet — node 1:748 "bottom nav" is drawn *before*
+ * the scrim (1:759) — so the filters host goes last and dims the chrome instead.
  *
  * `useCreateSheet` must run under the provider, hence the inner `TabsBackdrop`.
  */
@@ -73,8 +113,16 @@ export default function TabsLayout() {
     <CreateSheetProvider>
       <TabsBackdrop />
       <CreateSheetHost />
-      <FloatingTabBar />
-      <Fab />
+      <ChromeLayer>
+        <FloatingTabBar />
+        <Fab />
+      </ChromeLayer>
+      {/* Last, so their scrims cover the pill and the FAB — the z-order JOBS 04 and
+          RESUMES 03 draw. Only one of these can be open at a time (each is raised from its
+          own tab), so their order among themselves is moot. */}
+      <FiltersSheetHost />
+      <ResumeMenuHost />
+      <ProfileSheetsHost />
     </CreateSheetProvider>
   );
 }

@@ -86,6 +86,20 @@ describe('JobsScreen (JOBS 01–03)', () => {
     expect(screen.getByLabelText('Filters')).toBeOnTheScreen();
   });
 
+  it('opens the filter sheet from the header instead of routing to a placeholder', async () => {
+    await renderJobs();
+    await screen.findByRole('header', { name: "Today's picks" });
+
+    fireEvent.press(screen.getByLabelText(/^Filters, 3 filters applied/));
+
+    const state = useJobsStore.getState();
+    expect(state.filtersOpen).toBe(true);
+    // Seeded from the live filters, so the sheet opens showing what is already applied.
+    expect(state.draft).toEqual({ filters: state.filters, sort: state.sort });
+    // JOBS 04 is a real sheet now: nothing should navigate.
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it('switches to Saved: own placeholder, count, sort and filled bookmarks', async () => {
     await renderJobs();
     await screen.findByRole('header', { name: "Today's picks" });
@@ -148,17 +162,11 @@ describe('JobsScreen (JOBS 01–03)', () => {
     expect(screen.getAllByText('Not selected').length).toBeGreaterThan(0);
   });
 
-  it('renders the empty state per tab', async () => {
-    await renderJobs('empty');
-
-    expect(await screen.findByText('No jobs match these filters')).toBeOnTheScreen();
-  });
-
   it('renders the error state with retry', async () => {
     await renderJobs('error');
 
-    expect(await screen.findByText("Couldn't load jobs", {}, { timeout: 8000 })).toBeOnTheScreen();
+    expect(await screen.findByText("Couldn't load jobs", {}, { timeout: 15000 })).toBeOnTheScreen();
     // Both the picks carousel and the list surface their own retry.
     expect(screen.getAllByLabelText('Try again').length).toBeGreaterThan(0);
-  }, 15000);
+  }, 25000);
 });

@@ -57,12 +57,27 @@ export const typography = {
   captionSemiBold: role('semiBold', 13, 20), // selected segment, match pill
   segment: role('medium', 14, 20), // segmented-control label
   segmentActive: role('semiBold', 14, 20),
+  groupLabel: role('semiBold', 14, 20), // filter-sheet group headings (Figma 1:766)
+  rowLabel: role('medium', 14, 21), // match-criteria rows (Figma 1:857)
+  prose: role('regular', 15, 25), // long-form body copy (Figma 1:876)
+  bulletBody: role('regular', 15, 23), // responsibility bullets (Figma 1:878)
+  captionSm: role('medium', 12, 18), // slider scale ends (Figma 1:803)
   pill: role('regular', 12, 18), // pick-card pills
   pillStrong: role('semiBold', 12, 18),
   rowDescription: role('medium', 13, 19), // sheet row descriptions (Figma 13/19)
   micro: role('medium', 11, 16.5),
   microRegular: role('regular', 11, 16),
   microSemiBold: role('semiBold', 12, 18),
+  microBadge: role('semiBold', 11, 16), // doc-type pills on resume cards (Figma 1:1423)
+  rowTitle: role('medium', 17, 24), // grouped settings rows (Figma 1:2240)
+  menuRow: role('medium', 16, 24), // action-sheet rows (Figma 1:2036)
+  headlineLg: role('bold', 24, 32), // first-run title (Figma 1:2082)
+  pageTitle: role('bold', 26, 34), // "Notification preferences" (Figma 1:2714)
+  displaySemiBold: role('semiBold', 22, 30), // profile name (Figma 1:2201)
+  overline: role('semiBold', 13, 20, 0.3), // group labels "CAREER PROFILE" (Figma 1:2237)
+  microOverline: role('bold', 10, 14, 0.6), // "ATS SCORE" ring caption (Figma 1:2117)
+  scoreHero: role('bold', 42, 48), // score-panel ring value (Figma 1:2116)
+  scoreSm: role('bold', 13, 20), // mini ATS badge value (Figma 1:1418)
   tiny: role('regular', 10, 15), // shortcut sub-labels, ring caption
   badge: role('bold', 10, 14, 0.2), // "AI" badge
   badgeCount: role('bold', 11, 22), // filter count badge (Figma 1:274)

@@ -37,6 +37,20 @@ export type SheetProps = {
    */
   height: number;
   /**
+   * Fill `height` exactly instead of hugging content — for a sheet that scrolls internally and
+   * pins its own footer (JOBS 04 Filters). Content measurement is skipped, so `height` clamped to
+   * the screen below the top inset IS the sheet height, and the body can flex inside it. Without
+   * this the measured column hugs its content and a `flex: 1` body would collapse to nothing.
+   */
+  fill?: boolean;
+  /**
+   * Swipe-down to dismiss. Turn OFF for a sheet whose body scrolls or contains its own horizontal
+   * drag targets (the filter sheet's salary thumbs) — the dismiss pan would otherwise compete with
+   * them for the gesture. The dismiss hierarchy survives: the close control, the scrim and Android
+   * back all remain, so swipe is never the only exit either way.
+   */
+  swipeToDismiss?: boolean;
+  /**
    * Optional external progress (0 = closed, 1 = open). Lets other chrome — the FAB's "+ → ✕"
    * morph — animate from the exact same value so nothing drifts out of sync.
    */
@@ -113,6 +127,8 @@ export function Sheet({
   open,
   onClose,
   height,
+  fill = false,
+  swipeToDismiss = true,
   progress: externalProgress,
   showHandle = true,
   hapticOnOpen = true,
@@ -134,7 +150,8 @@ export function Sheet({
   const [contentHeight, setContentHeight] = useState(0);
   const targetHeight = resolveSheetHeight({
     designHeight: height,
-    contentHeight,
+    // A filling sheet owns its own scrolling, so its content never dictates the sheet height.
+    contentHeight: fill ? 0 : contentHeight,
     insetBottom: insets.bottom,
     insetTop: insets.top,
     windowHeight,
@@ -190,6 +207,7 @@ export function Sheet({
   const pan = useMemo(
     () =>
       Gesture.Pan()
+        .enabled(swipeToDismiss)
         .activeOffsetY(8)
         .onUpdate((event) => {
           if (event.translationY <= 0) {
@@ -215,6 +233,7 @@ export function Sheet({
       onClose,
       progress,
       snapBackSpring,
+      swipeToDismiss,
     ],
   );
 
@@ -256,7 +275,10 @@ export function Sheet({
           ]}
         >
           {/* Measured column: whatever this reports is the height the sheet must be able to show. */}
-          <View onLayout={measureContent} style={styles.column}>
+          <View
+            onLayout={fill ? undefined : measureContent}
+            style={fill ? styles.fill : styles.column}
+          >
             {showHandle ? (
               <View
                 style={[
@@ -271,7 +293,7 @@ export function Sheet({
                 ]}
               />
             ) : null}
-            <View style={contentStyle}>{children}</View>
+            <View style={[fill ? styles.fill : null, contentStyle]}>{children}</View>
           </View>
         </Animated.View>
       </GestureDetector>
@@ -284,5 +306,7 @@ const styles = StyleSheet.create({
   // The column hugs its content so onLayout reports the content's natural height rather than
   // the sheet's (a flex:1 child would just echo the sheet height back and never grow it).
   column: { position: 'absolute', left: 0, right: 0, top: 0 },
+  // `fill` mode instead: the body stretches to the sheet's own height and scrolls inside it.
+  fill: { flex: 1 },
   handle: { alignSelf: 'center' },
 });

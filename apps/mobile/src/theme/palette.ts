@@ -29,6 +29,8 @@ export const palette = {
   brand500: '#4733F9',
   brand200: '#E0DDFE',
   brand50: '#F4F3FF',
+  /** Unread-notification row wash (Figma 1:2422) — a step quieter than brand50. */
+  brand25: '#F7F6FF',
 
   green600: '#16A34A',
   green500: '#22C55E',
@@ -41,6 +43,7 @@ export const palette = {
 
   amber700: '#B45309',
   amber600: '#D97706',
+  amber500: '#F59E0B',
   amber50: '#FFFBEB',
 
   // Dark scheme foundations (provisional — Figma only ships light; refine when dark screens exist)
