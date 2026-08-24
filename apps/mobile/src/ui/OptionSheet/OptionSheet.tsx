@@ -36,7 +36,7 @@ export function OptionSheetBody<K extends string = string>({
   onSelect,
   onClose,
 }: OptionSheetBodyProps<K>) {
-  const { colors, sizes, spacing } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -75,7 +75,7 @@ export function OptionSheetBody<K extends string = string>({
                 ) : null}
               </View>
               {selected ? (
-                <FontAwesome5 name="check" size={CHECK} color={colors.textPrimary} solid />
+                <FontAwesome5 name="check" size={s(CHECK)} color={colors.textPrimary} solid />
               ) : null}
             </Pressable>
           );

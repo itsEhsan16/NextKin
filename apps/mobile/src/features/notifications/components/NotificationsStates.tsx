@@ -14,7 +14,7 @@ const MARK_ICON = 36;
 
 /** NOTIF 05 (Figma 1:2766) — the feed with nothing left to show under the active filter. */
 export function NotificationsCaughtUp({ onExplore }: { onExplore: () => void }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -23,8 +23,8 @@ export function NotificationsCaughtUp({ onExplore }: { onExplore: () => void }) 
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
         style={{
-          width: MARK,
-          height: MARK,
+          width: s(MARK),
+          height: s(MARK),
           borderRadius: radii.emptyTile,
           backgroundColor: colors.successSurface,
           alignItems: 'center',
@@ -32,7 +32,7 @@ export function NotificationsCaughtUp({ onExplore }: { onExplore: () => void }) 
           marginBottom: spacing[3],
         }}
       >
-        <FontAwesome5 name="check" size={MARK_ICON} color={colors.success} solid />
+        <FontAwesome5 name="check" size={s(MARK_ICON)} color={colors.success} solid />
       </View>
       <Text {...a11yHeader()} variant="headline" align="center">
         {"You're all caught up"}
@@ -101,7 +101,7 @@ const TONE: Record<'brand' | 'warning' | 'neutral', { bg: ColorToken; fg: ColorT
 
 /** NOTIF 06 (Figma 1:2788) — the feed before anything has ever arrived. */
 export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => void }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -111,8 +111,8 @@ export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => 
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
           style={{
-            width: MARK,
-            height: MARK,
+            width: s(MARK),
+            height: s(MARK),
             borderRadius: radii.emptyTile,
             backgroundColor: colors.surfaceSubtle,
             alignItems: 'center',
@@ -120,7 +120,7 @@ export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => 
             marginBottom: spacing[5],
           }}
         >
-          <FontAwesome5 name="bell" size={MARK_ICON} color={colors.iconMuted} />
+          <FontAwesome5 name="bell" size={s(MARK_ICON)} color={colors.iconMuted} />
         </View>
         <Text {...a11yHeader()} variant="displaySemiBold" align="center">
           Nothing here yet
@@ -144,24 +144,24 @@ export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => 
                 <View
                   style={[
                     styles.arrivalDivider,
-                    { backgroundColor: colors.divider, left: 67 },
+                    { backgroundColor: colors.divider, left: s(67) },
                   ]}
                 />
               ) : null}
               <View
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 11,
+                  width: s(36),
+                  height: s(36),
+                  borderRadius: s(11),
                   backgroundColor: colors[tone.bg],
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
                 {row.kind === 'sparkle' ? (
-                  <SparkleIcon width={14} height={14} color={colors.brand} />
+                  <SparkleIcon width={s(14)} height={s(14)} color={colors.brand} />
                 ) : (
-                  <FontAwesome5 name={row.icon ?? ''} size={14} color={colors[tone.fg]} solid />
+                  <FontAwesome5 name={row.icon ?? ''} size={s(14)} color={colors[tone.fg]} solid />
                 )}
               </View>
               <View style={styles.arrivalText}>

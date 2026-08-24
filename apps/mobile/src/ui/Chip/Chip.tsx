@@ -16,7 +16,7 @@ export type ChipProps = {
  * 13px regular secondary text. Removable filter chips are a separate component (Phase 3).
  */
 export function Chip({ label, tone = 'neutral', style }: ChipProps) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, s } = useTheme();
   const palette = {
     neutral: { bg: colors.surfaceSubtle, fg: 'textSecondary' as const },
     brand: { bg: colors.brandSurface, fg: 'brand' as const },
@@ -29,9 +29,9 @@ export function Chip({ label, tone = 'neutral', style }: ChipProps) {
         {
           backgroundColor: palette.bg,
           borderRadius: radii.sm,
-          paddingHorizontal: 14,
-          paddingTop: 4,
-          paddingBottom: 6,
+          paddingHorizontal: s(14),
+          paddingTop: s(4),
+          paddingBottom: s(6),
           alignSelf: 'flex-start',
         },
         style,

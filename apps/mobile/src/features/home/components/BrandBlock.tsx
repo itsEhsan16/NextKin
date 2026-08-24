@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Mark1 from '../../../../assets/brand/mark-1.svg';
 import Mark2 from '../../../../assets/brand/mark-2.svg';
 import Mark3 from '../../../../assets/brand/mark-3.svg';
-import { useLayoutScale } from '@/theme';
+import { useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
 /** Figma 1:23 — the mark is three layered vectors inside a 51×53 box; wordmark at x=65. */
@@ -18,7 +18,7 @@ const TAGLINE = "WITH AI THAT WON'T LIE ON YOUR RESUME.";
 
 /** Logo lock-up + tagline (Figma 1:20). Geometry scales with the artboard ratio. */
 export function BrandBlock() {
-  const { s } = useLayoutScale();
+  const { s } = useTheme();
 
   return (
     <View accessible accessibilityRole="header" accessibilityLabel={`NextKin. ${TAGLINE}`}>
@@ -40,7 +40,7 @@ export function BrandBlock() {
           NextKin
         </Text>
       </View>
-      <Text variant="caption" color="textSecondary" style={{ letterSpacing: 0.325, marginTop: 6 }}>
+      <Text variant="caption" color="textSecondary" style={{ letterSpacing: s(0.325), marginTop: s(6) }}>
         {TAGLINE}
       </Text>
     </View>

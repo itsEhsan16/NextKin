@@ -44,7 +44,7 @@ const BAND_TEXT: Record<AtsBand, ColorToken> = {
  * left to fix.
  */
 export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
-  const { colors, radii, shadows, spacing } = useTheme();
+  const { colors, radii, shadows, spacing, s } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const actions = useResumesActions();
@@ -69,11 +69,11 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
   if (resume.isPending || score.isPending) {
     return body(
       <View style={{ padding: spacing.gutter, gap: spacing[4], alignItems: 'center' }}>
-        <Skeleton width={RING} height={RING} radius="full" style={{ marginTop: spacing[4] }} />
-        <Skeleton width={120} height={30} radius="full" />
-        <Skeleton width="90%" height={20} />
-        <Skeleton height={120} radius="card" style={{ alignSelf: 'stretch', marginTop: spacing[4] }} />
-        <Skeleton height={120} radius="card" style={{ alignSelf: 'stretch' }} />
+        <Skeleton width={s(RING)} height={s(RING)} radius="full" style={{ marginTop: spacing[4] }} />
+        <Skeleton width={s(120)} height={s(30)} radius="full" />
+        <Skeleton width="90%" height={s(20)} />
+        <Skeleton height={s(120)} radius="card" style={{ alignSelf: 'stretch', marginTop: spacing[4] }} />
+        <Skeleton height={s(120)} radius="card" style={{ alignSelf: 'stretch' }} />
       </View>,
     );
   }
@@ -113,8 +113,8 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
           <ScoreRing
             score={current.total}
             label="ATS SCORE"
-            size={RING}
-            strokeWidth={RING_STROKE}
+            size={s(RING)}
+            strokeWidth={s(RING_STROKE)}
             ringColor={atsBandColor(current.band)}
             trackColor="surfaceSubtle"
             numberVariant="scoreHero"
@@ -128,8 +128,8 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
             style={{
               borderRadius: radii.full,
               backgroundColor: colors[BAND_SURFACE[current.band]],
-              paddingHorizontal: 14,
-              paddingVertical: 6,
+              paddingHorizontal: s(14),
+              paddingVertical: s(6),
             }}
           >
             <Text variant="captionSemiBold" color={BAND_TEXT[current.band]}>
@@ -165,7 +165,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
         </View>
 
         <View style={[styles.recalcRow, { gap: spacing[2], marginTop: spacing[6] }]}>
-          <FontAwesome5 name="sync-alt" size={11} color={colors.iconMuted} solid />
+          <FontAwesome5 name="sync-alt" size={s(11)} color={colors.iconMuted} solid />
           <Text variant="caption" color="textSecondary" style={styles.fill}>
             Green checks appear the moment a fix lands — no re-scan needed.
           </Text>
@@ -194,14 +194,14 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
             style={[
               styles.cta,
               {
-                height: CTA_HEIGHT,
+                height: s(CTA_HEIGHT),
                 gap: spacing[2] + 2,
                 borderRadius: radii.xl,
                 backgroundColor: colors.surfaceInverse,
               },
             ]}
           >
-            <SparkleIcon width={15} height={15} color={colors.textOnDark} />
+            <SparkleIcon width={s(15)} height={s(15)} color={colors.textOnDark} />
             <Text variant="label" color="textOnDark">
               {`Fix ${pluralize(quickWins, 'quick win')}`}
             </Text>

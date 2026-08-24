@@ -50,7 +50,7 @@ const REFRESH_ICON = 8;
 
 /** Amber "Update available" pill overlaid on stale documents (Figma 1:1440). */
 export function UpdateAvailablePill({ style }: { style?: StyleProp<ViewStyle> }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
   return (
     <View
@@ -66,7 +66,7 @@ export function UpdateAvailablePill({ style }: { style?: StyleProp<ViewStyle> })
         style,
       ]}
     >
-      <FontAwesome5 name="sync-alt" size={REFRESH_ICON} color={colors.warningStrong} solid />
+      <FontAwesome5 name="sync-alt" size={s(REFRESH_ICON)} color={colors.warningStrong} solid />
       <Text variant="microBadge" color="warningStrong" numberOfLines={1}>
         Update available
       </Text>

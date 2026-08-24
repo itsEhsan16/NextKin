@@ -14,10 +14,14 @@ export type AvatarStackProps = {
  * Three overlapping placeholder avatars (Figma: 24px, 2px white ring, -8 overlap) used as
  * social proof on job cards. Purely decorative until applicant avatars exist in the API.
  */
-export function AvatarStack({ caption, size = 24, style }: AvatarStackProps) {
-  const { colors, radii, spacing } = useTheme();
+/** Artboard size; callers pass device-space values, so the default is scaled to match. */
+const DEFAULT_SIZE = 24;
+
+export function AvatarStack({ caption, size, style }: AvatarStackProps) {
+  const { colors, radii, spacing, s } = useTheme();
   const fills = [colors.avatarStack1, colors.avatarStack2, colors.avatarStack3];
-  const overlap = Math.round(size / 3);
+  const box = size ?? s(DEFAULT_SIZE);
+  const overlap = Math.round(box / 3);
 
   return (
     <View
@@ -30,11 +34,11 @@ export function AvatarStack({ caption, size = 24, style }: AvatarStackProps) {
           <View
             key={fill}
             style={{
-              width: size,
-              height: size,
+              width: box,
+              height: box,
               borderRadius: radii.full,
               backgroundColor: fill,
-              borderWidth: 2,
+              borderWidth: s(2),
               borderColor: colors.surfaceCard,
               marginLeft: index === 0 ? 0 : -overlap,
             }}

@@ -45,7 +45,7 @@ export type ResumeThumbnailProps = {
  * like the "Update available" pill sit on top of it in the caller too.
  */
 export function ResumeThumbnail({ style }: ResumeThumbnailProps) {
-  const { colors } = useTheme();
+  const { colors, s } = useTheme();
 
   return (
     <View
@@ -62,8 +62,8 @@ export function ResumeThumbnail({ style }: ResumeThumbnailProps) {
             top: `${line.top * 100}%`,
             width: `${line.width * 100}%`,
             height: `${Math.max(1.2, line.height * 100)}%`,
-            maxHeight: 7,
-            borderRadius: 2,
+            maxHeight: s(7),
+            borderRadius: s(2),
             backgroundColor: colors[line.tone],
           }}
         />

@@ -48,7 +48,7 @@ export function StateView({
   compact = false,
   style,
 }: StateViewProps) {
-  const { colors, radii, sizes, spacing } = useTheme();
+  const { colors, radii, sizes, spacing, s } = useTheme();
   const tile = compact ? 48 : sizes.emptyStateTile;
 
   return (
@@ -96,7 +96,7 @@ export function StateView({
           align="center"
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
-          style={{ maxWidth: 300 }}
+          style={{ maxWidth: s(300) }}
         >
           {message}
         </Text>

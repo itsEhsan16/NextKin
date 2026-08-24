@@ -26,25 +26,30 @@ export type IconButtonProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+/** Artboard sizes; callers pass device-space values, so the defaults are scaled to match. */
+const DEFAULT_ICON = 16;
+
 /** 48px circular icon control from the Home header (1px #e5e7eb ring, FA5 glyph). */
 export function IconButton({
   icon,
   iconStyle = 'solid',
-  iconSize = 16,
+  iconSize,
   iconColor = 'textBlack',
   label,
   dot = false,
-  size = 48,
+  size,
   variant = 'outline',
   haptic = 'light',
   onPress,
   disabled,
   style,
 }: IconButtonProps) {
-  const { colors, radii, sizes } = useTheme();
+  const { colors, radii, sizes, s } = useTheme();
+  const box = size ?? sizes.iconButton;
+  const glyph = iconSize ?? s(DEFAULT_ICON);
 
   const surface = {
-    outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.borderDefault },
+    outline: { backgroundColor: 'transparent', borderWidth: s(1), borderColor: colors.borderDefault },
     filled: { backgroundColor: colors.surfaceSubtle, borderWidth: 0, borderColor: 'transparent' },
     ghost: { backgroundColor: 'transparent', borderWidth: 0, borderColor: 'transparent' },
   }[variant];
@@ -55,13 +60,13 @@ export function IconButton({
       accessibilityState={{ disabled: !!disabled }}
       feedback="scale"
       haptic={haptic}
-      hitSlop={hitSlopFor(size)}
+      hitSlop={hitSlopFor(box)}
       onPress={onPress}
       disabled={disabled}
       style={[
         {
-          width: size,
-          height: size,
+          width: box,
+          height: box,
           borderRadius: radii.full,
           alignItems: 'center',
           justifyContent: 'center',
@@ -72,7 +77,7 @@ export function IconButton({
     >
       <FontAwesome5
         name={icon}
-        size={iconSize}
+        size={glyph}
         color={colors[iconColor]}
         solid={iconStyle === 'solid'}
       />
@@ -80,8 +85,8 @@ export function IconButton({
         <View
           style={{
             position: 'absolute',
-            top: size / 4,
-            right: size / 4,
+            top: box / 4,
+            right: box / 4,
             width: sizes.unreadDot,
             height: sizes.unreadDot,
             borderRadius: radii.full,

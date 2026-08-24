@@ -16,7 +16,7 @@ export type StatBadgeProps = {
 
 /** Two-line stat pill from the job match card: tinted surface, r12, 12/3/4 padding. */
 export function StatBadge({ value, label, tone = 'success', style }: StatBadgeProps) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, s } = useTheme();
   const palette = {
     success: { bg: colors.successSurface, fg: 'success' as const },
     brand: { bg: colors.brandSurface, fg: 'brand' as const },
@@ -32,15 +32,15 @@ export function StatBadge({ value, label, tone = 'success', style }: StatBadgePr
         {
           backgroundColor: palette.bg,
           borderRadius: radii.md,
-          paddingHorizontal: 12,
-          paddingTop: 3,
-          paddingBottom: 4,
+          paddingHorizontal: s(12),
+          paddingTop: s(3),
+          paddingBottom: s(4),
           alignItems: 'center',
         },
         style,
       ]}
     >
-      <Text variant="body" color={palette.fg} style={{ marginBottom: -1 }}>
+      <Text variant="body" color={palette.fg} style={{ marginBottom: -s(1) }}>
         {value}
       </Text>
       <Text variant="microRegular" color={palette.fg}>

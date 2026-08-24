@@ -327,7 +327,8 @@ type JobRow =
 const rowKey = (row: JobRow) => (row.kind === 'applied' ? row.application.id : row.job.id);
 
 function RowSeparator() {
-  return <View style={{ height: 14 }} />;
+  const { s } = useTheme();
+  return <View style={{ height: s(14) }} />;
 }
 
 const STATUS_OF: Record<
@@ -360,13 +361,13 @@ function ListPlaceholder({
   onWidenFilters: () => void;
   onClearFilters: () => void;
 }) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
 
   if (status === 'pending') {
     return (
-      <View style={{ gap: 14 }}>
+      <View style={{ gap: s(14) }}>
         {[0, 1, 2].map((index) => (
-          <Skeleton key={index} height={168} radius="cardLg" />
+          <Skeleton key={index} height={s(168)} radius="cardLg" />
         ))}
       </View>
     );

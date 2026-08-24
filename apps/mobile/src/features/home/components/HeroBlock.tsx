@@ -2,7 +2,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 
 import { a11yButton } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -15,8 +15,7 @@ const TILE_ICON = 26;
 
 /** Figma 1:29 — "Build better. / Land faster." next to the black "Find Jobs" tile. */
 export function HeroBlock({ onFindJobs }: HeroBlockProps) {
-  const { colors, radii, spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { colors, radii, spacing, s } = useTheme();
   const tile = s(TILE);
 
   return (
@@ -36,7 +35,7 @@ export function HeroBlock({ onFindJobs }: HeroBlockProps) {
             height: tile,
             borderRadius: radii.cardLg,
             backgroundColor: colors.surfaceBlack,
-            gap: 11,
+            gap: s(11),
           },
         ]}
       >

@@ -50,7 +50,7 @@ const feedKey = (item: FeedItem) =>
  * header — FlashList exposes no "currently pinned" signal to key it off.
  */
 export function NotificationsScreen() {
-  const { colors, sizes, spacing } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const actions = useNotificationsActions();
@@ -174,7 +174,7 @@ export function NotificationsScreen() {
       {status === 'pending' ? (
         <View style={{ padding: spacing.gutter, gap: spacing[3] }}>
           {[0, 1, 2, 3, 4].map((index) => (
-            <Skeleton key={index} height={78} radius="card" />
+            <Skeleton key={index} height={s(78)} radius="card" />
           ))}
         </View>
       ) : status === 'error' ? (
@@ -219,7 +219,7 @@ export function NotificationsScreen() {
               style={[styles.manage, { padding: spacing.gutter, gap: spacing[1] + 2 }]}
             >
               <Text variant="segmentActive">Manage notification types</Text>
-              <FontAwesome5 name="chevron-right" size={10} color={colors.textPrimary} solid />
+              <FontAwesome5 name="chevron-right" size={s(10)} color={colors.textPrimary} solid />
             </Pressable>
           }
         />

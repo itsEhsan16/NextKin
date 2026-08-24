@@ -5,22 +5,22 @@ import { Skeleton } from '@/ui/Skeleton';
 
 /** Loading shape of PROFILE 01: identity row, stats bar, completeness card, plan row, a group. */
 export function ProfileSkeleton() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
 
   return (
     <View style={{ gap: spacing[5] }}>
       <View style={[styles.identity, { gap: spacing[4] }]}>
-        <Skeleton width={104} height={104} radius="full" />
+        <Skeleton width={s(104)} height={s(104)} radius="full" />
         <View style={[styles.lines, { gap: spacing[2] }]}>
-          <Skeleton width="70%" height={26} />
-          <Skeleton width="55%" height={18} />
-          <Skeleton width={110} height={26} radius="full" />
+          <Skeleton width="70%" height={s(26)} />
+          <Skeleton width="55%" height={s(18)} />
+          <Skeleton width={s(110)} height={s(26)} radius="full" />
         </View>
       </View>
-      <Skeleton height={84} radius="card" />
-      <Skeleton height={154} radius="card" />
-      <Skeleton height={72} radius="card" />
-      <Skeleton height={290} radius="card" />
+      <Skeleton height={s(84)} radius="card" />
+      <Skeleton height={s(154)} radius="card" />
+      <Skeleton height={s(72)} radius="card" />
+      <Skeleton height={s(290)} radius="card" />
     </View>
   );
 }

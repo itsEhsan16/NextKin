@@ -64,7 +64,7 @@ export function FiltersSheetBody({
   onSalary,
   onSort,
 }: FiltersSheetBodyProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const { filters } = draft;
 
   // An absent bound means the thumb sits on that end stop of the scale.
@@ -80,9 +80,9 @@ export function FiltersSheetBody({
       >
         <IconButton
           icon="times"
-          iconSize={14}
+          iconSize={s(14)}
           iconColor="textPrimary"
-          size={40}
+          size={s(40)}
           variant="filled"
           label="Close filters"
           onPress={onClose}

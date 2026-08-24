@@ -43,7 +43,7 @@ function matchesQuery(resume: Resume, query: string): boolean {
  * caps it; even heavy Pro use is dozens, not hundreds), so virtualisation buys nothing here.
  */
 export function ResumesScreen() {
-  const { motion, spacing } = useTheme();
+  const { motion, spacing, s } = useTheme();
   const { contentWidth } = useLayoutScale();
   const reduced = useReducedMotion();
   const actions = useResumesActions();
@@ -144,7 +144,7 @@ export function ResumesScreen() {
       />
 
       {status === 'pending' ? (
-        <View style={[styles.grid, { gap: GRID_GAP }]}>
+        <View style={[styles.grid, { gap: s(GRID_GAP) }]}>
           {[0, 1, 2, 3].map((index) => (
             <Skeleton key={index} width={cardWidth} height={cardWidth / NEW_TILE_RATIO} radius="card" />
           ))}

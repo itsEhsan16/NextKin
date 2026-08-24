@@ -4,7 +4,7 @@ import { View, type AccessibilityActionEvent } from 'react-native';
 
 import { EMPLOYMENT_TYPE_LABEL, MATCH_BAND_LABEL, type Job } from '@/data/models';
 import { a11yButton, formatJobMeta, formatSalary, hitSlopFor } from '@/lib';
-import { scaledSheet, useLayoutScale, useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { LogoTile } from '@/ui/LogoTile';
 import { Pressable } from '@/ui/Pressable';
@@ -37,9 +37,8 @@ export const JobPickCard = memo(function JobPickCard({
   onPress,
   onToggleSave,
 }: JobPickCardProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
-  const { s } = useLayoutScale();
 
   const meta = formatJobMeta([job.company, job.location, REMOTE_LABEL[job.remote]]);
   const salary = job.salary ? formatSalary(job.salary) : undefined;
@@ -79,7 +78,7 @@ export const JobPickCard = memo(function JobPickCard({
           >
             <FontAwesome5
               name="bookmark"
-              size={BOOKMARK}
+              size={s(BOOKMARK)}
               color={job.isSaved ? colors.textPrimary : colors.iconMuted}
               solid={job.isSaved}
             />
@@ -89,11 +88,11 @@ export const JobPickCard = memo(function JobPickCard({
         <Text variant="title" numberOfLines={1} style={{ marginTop: spacing[3] }}>
           {job.title}
         </Text>
-        <Text variant="jobMeta" color="textSecondary" numberOfLines={1} style={{ marginTop: 4 }}>
+        <Text variant="jobMeta" color="textSecondary" numberOfLines={1} style={{ marginTop: s(4) }}>
           {meta}
         </Text>
         {salary ? (
-          <Text variant="titleSm" style={{ marginTop: 4 }}>
+          <Text variant="titleSm" style={{ marginTop: s(4) }}>
             {salary}
           </Text>
         ) : null}

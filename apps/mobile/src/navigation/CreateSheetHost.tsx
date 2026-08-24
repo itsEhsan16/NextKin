@@ -21,7 +21,7 @@ const STEP_HEIGHT: Record<CreateStep, 'sheetStep1Height' | 'sheetStep2Height'> =
  */
 export function CreateSheetHost() {
   const { isOpen, close, progress } = useCreateSheet();
-  const { sizes, motion } = useTheme();
+  const { sizes, motion, s } = useTheme();
   const router = useRouter();
 
   const [step, setStep] = useState<CreateStep>('root');
@@ -52,7 +52,7 @@ export function CreateSheetHost() {
       height={height}
       progress={progress}
       accessibilityLabel={step === 'root' ? 'Create' : 'New resume'}
-      contentStyle={{ paddingTop: 13 }}
+      contentStyle={{ paddingTop: s(13) }}
     >
       <CreateSheetBody step={step} onStepChange={setStep} onAction={handleAction} />
     </Sheet>

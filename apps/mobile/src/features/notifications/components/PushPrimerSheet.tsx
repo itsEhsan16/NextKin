@@ -20,7 +20,7 @@ const BELL = 26;
  * return after a later application because an iOS denial is permanent.
  */
 export function PushPrimerHost() {
-  const { colors, radii, sizes, spacing } = useTheme();
+  const { colors, radii, sizes, spacing, s } = useTheme();
   const styles = useStyles();
 
   const open = useNotificationsStore((state) => state.primerOpen);
@@ -42,15 +42,15 @@ export function PushPrimerHost() {
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
             style={{
-              width: BELL_TILE,
-              height: BELL_TILE,
+              width: s(BELL_TILE),
+              height: s(BELL_TILE),
               borderRadius: radii.card,
               backgroundColor: colors.brandSurface,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <FontAwesome5 name="bell" size={BELL} color={colors.brand} solid />
+            <FontAwesome5 name="bell" size={s(BELL)} color={colors.brand} solid />
           </View>
           <Text {...a11yHeader()} variant="headline" align="center" style={{ marginTop: spacing[5] }}>
             {`Get notified when ${company} responds`}

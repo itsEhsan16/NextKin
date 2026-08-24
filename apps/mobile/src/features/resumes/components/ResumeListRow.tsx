@@ -46,7 +46,7 @@ export const ResumeListRow = memo(function ResumeListRow({
   onOpenScore,
   style,
 }: ResumeListRowProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
 
   const footerPill = resume.updateAvailable ? (
@@ -67,10 +67,10 @@ export const ResumeListRow = memo(function ResumeListRow({
       >
         <View
           style={{
-            width: THUMB.width,
-            height: THUMB.height,
-            borderRadius: 10,
-            borderWidth: 1,
+            width: s(THUMB.width),
+            height: s(THUMB.height),
+            borderRadius: s(10),
+            borderWidth: s(1),
             borderColor: colors.borderDefault,
             overflow: 'hidden',
           }}
@@ -102,7 +102,7 @@ export const ResumeListRow = memo(function ResumeListRow({
             onPress={() => onOpenMenu(resume)}
             style={styles.menu}
           >
-            <FontAwesome5 name="ellipsis-h" size={MENU_ICON} color={colors.iconMuted} solid />
+            <FontAwesome5 name="ellipsis-h" size={s(MENU_ICON)} color={colors.iconMuted} solid />
           </Pressable>
           {resume.atsScore != null ? (
             <AtsBadge score={resume.atsScore} onPress={() => onOpenScore(resume)} />

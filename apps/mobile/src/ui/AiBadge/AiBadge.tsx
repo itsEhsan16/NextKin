@@ -16,7 +16,7 @@ const SPARKLE = 10;
  * fully rounded, 8/9 horizontal padding.
  */
 export function AiBadge({ label = 'AI', style }: AiBadgeProps) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, s } = useTheme();
 
   return (
     // Not accessible on its own: SheetRow folds "AI powered" into the row's label, and a nested
@@ -28,17 +28,17 @@ export function AiBadge({ label = 'AI', style }: AiBadgeProps) {
         {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 4,
-          paddingLeft: 8,
-          paddingRight: 9,
-          paddingVertical: 4,
+          gap: s(4),
+          paddingLeft: s(8),
+          paddingRight: s(9),
+          paddingVertical: s(4),
           borderRadius: radii.full,
           backgroundColor: colors.brandSurface,
         },
         style,
       ]}
     >
-      <SparkleIcon width={SPARKLE} height={SPARKLE} color={colors.brand} />
+      <SparkleIcon width={s(SPARKLE)} height={s(SPARKLE)} color={colors.brand} />
       <Text variant="badge" color="brand">
         {label}
       </Text>

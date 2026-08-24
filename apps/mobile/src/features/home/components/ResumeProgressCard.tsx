@@ -6,7 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { resolveImageSource } from '@/assets';
 import type { Resume } from '@/data/models';
 import { a11yButton, formatPercent, formatRelativeTimeLong } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar, ScoreRing } from '@/ui/Progress';
@@ -54,8 +54,7 @@ export function ResumeProgressCard({
   onCreateResume,
   onRetry,
 }: ResumeProgressCardProps) {
-  const { colors, radii, spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { colors, radii, spacing, s } = useTheme();
   const thumb = { width: s(THUMB.width), height: s(THUMB.height) };
   const ring = s(RING);
   // Resolve once: for a remote URL this allocates a new { uri } object per call, which would
@@ -73,9 +72,9 @@ export function ResumeProgressCard({
         <View style={[styles.row, { gap: spacing[4] }]}>
           <Skeleton width={thumb.width} height={thumb.height} radius="xs" />
           <View style={{ flex: 1, gap: spacing[2] }}>
-            <Skeleton width="70%" height={20} />
-            <Skeleton width="50%" height={14} />
-            <Skeleton height={8} radius="full" style={{ marginTop: spacing[2] }} />
+            <Skeleton width="70%" height={s(20)} />
+            <Skeleton width="50%" height={s(14)} />
+            <Skeleton height={s(8)} radius="full" style={{ marginTop: spacing[2] }} />
           </View>
           <Skeleton width={ring} height={ring} radius="full" />
         </View>
@@ -111,7 +110,7 @@ export function ResumeProgressCard({
                 width: thumb.width,
                 height: thumb.height,
                 borderRadius: radii.xs,
-                borderWidth: 1,
+                borderWidth: s(1),
                 borderColor: colors.borderDefault,
                 overflow: 'hidden',
                 backgroundColor: colors.surfaceSubtle,
@@ -137,7 +136,7 @@ export function ResumeProgressCard({
               <ProgressBar
                 value={resume.completeness ?? 0}
                 accessibilityLabel="Resume completeness"
-                style={{ marginTop: 13 }}
+                style={{ marginTop: s(13) }}
               />
             </View>
 
@@ -155,11 +154,11 @@ export function ResumeProgressCard({
                     key={key}
                     accessible
                     accessibilityLabel={`${label}: ${ok ? 'passed' : 'pending'}`}
-                    style={[styles.row, { gap: 4 }]}
+                    style={[styles.row, { gap: s(4) }]}
                   >
                     <FontAwesome5
                       name={ok ? 'check-circle' : 'circle'}
-                      size={13}
+                      size={s(13)}
                       color={ok ? colors.successIcon : colors.iconMuted}
                       solid={ok}
                     />

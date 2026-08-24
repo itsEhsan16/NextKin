@@ -39,7 +39,7 @@ export function GenerationProgressCard({
   onView,
   onRetry,
 }: GenerationProgressCardProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
   const failed = generation.status === 'failed';
   const step = stepFor(generation);
@@ -66,8 +66,8 @@ export function GenerationProgressCard({
           style={[
             styles.tile,
             {
-              width: TILE,
-              height: TILE,
+              width: s(TILE),
+              height: s(TILE),
               borderRadius: radii.lg,
               backgroundColor: failed ? colors.dangerSurface : colors.brandSurface,
             },
@@ -75,7 +75,7 @@ export function GenerationProgressCard({
         >
           <FontAwesome5
             name={failed ? 'exclamation-triangle' : 'magic'}
-            size={17}
+            size={s(17)}
             color={failed ? colors.danger : colors.brand}
             solid
           />

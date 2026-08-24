@@ -29,7 +29,7 @@ export function JobsHeader({
   onPressNotifications,
   onPressFilters,
 }: JobsHeaderProps) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
 
   return (
     <View style={{ gap: spacing[4] }}>
@@ -40,7 +40,7 @@ export function JobsHeader({
         <IconButton
           icon="bell"
           iconStyle="regular"
-          iconSize={18}
+          iconSize={s(18)}
           label={hasUnread ? 'Notifications, unread' : 'Notifications'}
           dot={hasUnread}
           onPress={onPressNotifications}

@@ -27,7 +27,7 @@ const TRAVEL = TRACK.width - KNOB - INSET * 2;
  * thumbs").
  */
 export function Toggle({ value, onChange, label, disabled = false, style }: ToggleProps) {
-  const { colors, motion, radii, shadows } = useTheme();
+  const { colors, motion, radii, shadows, s } = useTheme();
   const reduced = useReducedMotion();
 
   const position = useSharedValue(value ? 1 : 0);
@@ -55,8 +55,8 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
       }}
       style={[
         {
-          width: TRACK.width,
-          height: TRACK.height,
+          width: s(TRACK.width),
+          height: s(TRACK.height),
           borderRadius: radii.full,
           backgroundColor: value ? colors.surfaceSelected : colors.progressTrack,
           justifyContent: 'center',
@@ -67,7 +67,7 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
       <Animated.View
         style={[
           shadows.knob,
-          { width: KNOB, height: KNOB, borderRadius: radii.full, backgroundColor: colors.surfaceCard },
+          { width: s(KNOB), height: s(KNOB), borderRadius: radii.full, backgroundColor: colors.surfaceCard },
           knobStyle,
         ]}
       />

@@ -20,7 +20,7 @@ const CHEVRON = 9;
  * Free plan only — Pro has no cap to meter.
  */
 export function UsageMeter({ subscription, onUpgrade }: UsageMeterProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   if (subscription.plan !== 'free') return null;
 
   const { resumesUsed, resumesLimit } = subscription.usage;
@@ -41,12 +41,12 @@ export function UsageMeter({ subscription, onUpgrade }: UsageMeterProps) {
           style={[styles.upgrade, { gap: spacing[1] + 1 }]}
         >
           <Text variant="captionSemiBold">Upgrade</Text>
-          <FontAwesome5 name="chevron-right" size={CHEVRON} color={colors.textPrimary} solid />
+          <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.textPrimary} solid />
         </Pressable>
       </View>
       <ProgressBar
         value={resumesLimit > 0 ? resumesUsed / resumesLimit : 0}
-        height={4}
+        height={s(4)}
         trackColor="progressTrack"
         fillColor="warningAccent"
         accessibilityLabel={label}

@@ -20,7 +20,7 @@ const CHEVRON = 10;
 
 /** Figma 1:2229 — "NextKin Free · 2 of 2 resumes · 5 AI credits left · Upgrade ›". */
 export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
   const { usage } = subscription;
   const summary = `${usage.resumesUsed} of ${usage.resumesLimit} resumes · ${usage.aiCreditsLeft} AI credits left`;
@@ -37,15 +37,15 @@ export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
       >
         <View
           style={{
-            width: TILE,
-            height: TILE,
+            width: s(TILE),
+            height: s(TILE),
             borderRadius: radii.md,
             backgroundColor: colors.brandSurface,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <SparkleIcon width={SPARKLE} height={SPARKLE} color={colors.brand} />
+          <SparkleIcon width={s(SPARKLE)} height={s(SPARKLE)} color={colors.brand} />
         </View>
 
         <View style={styles.copy}>
@@ -60,7 +60,7 @@ export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
         {subscription.plan === 'free' ? (
           <View style={[styles.upgrade, { gap: spacing[1] + 2 }]}>
             <Text variant="segmentActive">Upgrade</Text>
-            <FontAwesome5 name="chevron-right" size={CHEVRON} color={colors.textPrimary} solid />
+            <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.textPrimary} solid />
           </View>
         ) : null}
       </Pressable>

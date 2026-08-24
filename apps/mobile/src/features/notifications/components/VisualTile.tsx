@@ -16,16 +16,16 @@ const GLYPH_TONE: Record<'brand' | 'warning' | 'neutral', { bg: ColorToken; fg: 
 
 /** The 40pt leading tile a feed row and the row menu share (Figma 1:2423/1:2439/1:2446). */
 export function VisualTile({ visual }: { visual: NotificationVisual }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, s } = useTheme();
 
-  if (visual.kind === 'logo') return <LogoTile name={visual.company} size={TILE} />;
+  if (visual.kind === 'logo') return <LogoTile name={visual.company} size={s(TILE)} />;
 
   const tone = visual.kind === 'sparkle' ? GLYPH_TONE.brand : GLYPH_TONE[visual.tone];
   return (
     <View
       style={{
-        width: TILE,
-        height: TILE,
+        width: s(TILE),
+        height: s(TILE),
         borderRadius: radii.md,
         backgroundColor: colors[tone.bg],
         alignItems: 'center',
@@ -33,9 +33,9 @@ export function VisualTile({ visual }: { visual: NotificationVisual }) {
       }}
     >
       {visual.kind === 'sparkle' ? (
-        <SparkleIcon width={16} height={16} color={colors.brand} />
+        <SparkleIcon width={s(16)} height={s(16)} color={colors.brand} />
       ) : (
-        <FontAwesome5 name={visual.icon} size={16} color={colors[tone.fg]} solid />
+        <FontAwesome5 name={visual.icon} size={s(16)} color={colors[tone.fg]} solid />
       )}
     </View>
   );

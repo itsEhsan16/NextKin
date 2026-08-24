@@ -29,7 +29,7 @@ type PrefRowProps = {
 };
 
 function PrefRow({ title, caption, ai, value, divider, onChange }: PrefRowProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
   return (
     <View>
@@ -37,12 +37,12 @@ function PrefRow({ title, caption, ai, value, divider, onChange }: PrefRowProps)
         <View
           style={{
             height: StyleSheet.hairlineWidth,
-            marginHorizontal: 19,
+            marginHorizontal: s(19),
             backgroundColor: colors.divider,
           }}
         />
       ) : null}
-      <View style={[styles.prefRow, { paddingHorizontal: 19, paddingVertical: spacing[3] + 1, gap: spacing[3] }]}>
+      <View style={[styles.prefRow, { paddingHorizontal: s(19), paddingVertical: spacing[3] + 1, gap: spacing[3] }]}>
         <View style={styles.prefText}>
           <View style={[styles.prefTitle, { gap: spacing[2] }]}>
             <Text variant="label">{title}</Text>
@@ -72,7 +72,7 @@ const PERMISSION_COPY = {
  * system-permission line. Everything writes through the prefs repo optimistically.
  */
 export function NotificationPreferencesScreen() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useNotificationsActions();
   const { status } = usePushPermission();
@@ -104,8 +104,8 @@ export function NotificationPreferencesScreen() {
 
       {prefs.isPending ? (
         <View style={{ gap: spacing[3], marginTop: spacing[6] }}>
-          <Skeleton height={360} radius="card" />
-          <Skeleton height={144} radius="card" />
+          <Skeleton height={s(360)} radius="card" />
+          <Skeleton height={s(144)} radius="card" />
         </View>
       ) : prefs.isError || !prefs.data ? (
         <StateView

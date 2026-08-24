@@ -25,7 +25,7 @@ const PENDING = 14;
  * the "Fix" pill.
  */
 export function ScoreSection({ section, staggerBase, onFix }: ScoreSectionProps) {
-  const { colors, motion, radii, spacing } = useTheme();
+  const { colors, motion, radii, spacing, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
 
@@ -46,7 +46,7 @@ export function ScoreSection({ section, staggerBase, onFix }: ScoreSectionProps)
 
       <ProgressBar
         value={total > 0 ? passed / total : 0}
-        height={4}
+        height={s(4)}
         trackColor="surfaceSubtle"
         fillColor={complete ? 'success' : 'surfaceInverse'}
         accessibilityLabel={`${section.label}: ${passed} of ${total} checks passed`}
@@ -63,7 +63,7 @@ export function ScoreSection({ section, staggerBase, onFix }: ScoreSectionProps)
                     Math.min(staggerBase + index, motion.stagger.maxItems) * motion.stagger.row,
                   ).duration(motion.durations.base)
             }
-            style={[styles.itemRow, { gap: spacing[3], minHeight: 28 }]}
+            style={[styles.itemRow, { gap: spacing[3], minHeight: s(28) }]}
           >
             <View
               accessible

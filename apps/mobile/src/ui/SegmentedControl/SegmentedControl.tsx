@@ -32,7 +32,7 @@ export function SegmentedControl<K extends string = string>({
   onChange,
   style,
 }: SegmentedControlProps<K>) {
-  const { colors, radii, sizes, shadows, motion } = useTheme();
+  const { colors, radii, sizes, shadows, motion, s } = useTheme();
   const reduced = useReducedMotion();
 
   const [trackWidth, setTrackWidth] = useState(0);
@@ -85,7 +85,7 @@ export function SegmentedControl<K extends string = string>({
           height: sizes.segmentedControl,
           borderRadius: radii.xl,
           backgroundColor: colors.surfaceSubtle,
-          padding: INSET,
+          padding: s(INSET),
         },
         style,
       ]}

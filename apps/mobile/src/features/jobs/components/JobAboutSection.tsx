@@ -24,13 +24,13 @@ const COLLAPSED_BULLETS = 4;
 const BULLET = 5;
 
 function Bullet({ label }: { label: string }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   return (
     <View style={[styles.bulletRow, { gap: spacing[3] }]}>
       <View
         style={{
-          width: BULLET,
-          height: BULLET,
+          width: s(BULLET),
+          height: s(BULLET),
           marginTop: spacing[2] + 1,
           borderRadius: radii.full,
           backgroundColor: colors.iconMuted,
@@ -55,7 +55,7 @@ export function JobAboutSection({
   responsibilities,
   requirements,
 }: JobAboutSectionProps) {
-  const { colors, spacing, motion } = useTheme();
+  const { colors, spacing, motion, s } = useTheme();
   const reduced = useReducedMotion();
   const [expanded, setExpanded] = useState(false);
 
@@ -108,7 +108,7 @@ export function JobAboutSection({
         >
           <Text variant="captionSemiBold">{expanded ? 'Show less' : 'Show more'}</Text>
           <Animated.View style={chevronStyle}>
-            <FontAwesome5 name="chevron-down" size={9} color={colors.textPrimary} solid />
+            <FontAwesome5 name="chevron-down" size={s(9)} color={colors.textPrimary} solid />
           </Animated.View>
         </Pressable>
       ) : null}

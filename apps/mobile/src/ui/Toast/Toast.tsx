@@ -27,7 +27,7 @@ const ICON = 15;
  * itself, so it never traps focus.
  */
 export function Toast({ visible, message, icon = 'check', durationMs = 3000, onHide }: ToastProps) {
-  const { colors, motion, radii, shadows, spacing, zIndex } = useTheme();
+  const { colors, motion, radii, shadows, spacing, zIndex, s } = useTheme();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
 
@@ -56,7 +56,7 @@ export function Toast({ visible, message, icon = 'check', durationMs = 3000, onH
           styles.bar,
           shadows.toast,
           {
-            height: HEIGHT,
+            height: s(HEIGHT),
             gap: spacing[2] + 2,
             borderRadius: radii.xl,
             backgroundColor: colors.surfaceInverse,
@@ -64,7 +64,7 @@ export function Toast({ visible, message, icon = 'check', durationMs = 3000, onH
           },
         ]}
       >
-        <FontAwesome5 name={icon} size={ICON} color={colors.successRing} solid />
+        <FontAwesome5 name={icon} size={s(ICON)} color={colors.successRing} solid />
         <Text variant="bodySemiBold" color="textOnDark" numberOfLines={1} style={styles.label}>
           {message}
         </Text>

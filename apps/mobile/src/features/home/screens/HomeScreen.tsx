@@ -48,6 +48,7 @@ function Section({ index, animate, children }: SectionProps) {
 
 /** DESIGN 2 — Spacing Fixed (Figma 1:2). */
 export function HomeScreen() {
+  const { s } = useTheme();
   const actions = useHomeActions();
   const queryClient = useQueryClient();
   const reduced = useReducedMotion();
@@ -114,7 +115,7 @@ export function HomeScreen() {
       scroll
       tabBarInset
       scrollRef={scrollRef}
-      contentContainerStyle={{ paddingTop: 16, gap: SECTION_GAP }}
+      contentContainerStyle={{ paddingTop: s(16), gap: s(SECTION_GAP) }}
       refreshControl={refreshControl}
     >
       <HomeHeader

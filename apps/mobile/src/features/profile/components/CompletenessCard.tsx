@@ -22,7 +22,7 @@ const PLUS = 9;
  * ring above, which reads the same completeness — animates up.
  */
 export function CompletenessCard({ profile, onCompleteStep }: CompletenessCardProps) {
-  const { colors, motion, radii, spacing } = useTheme();
+  const { colors, motion, radii, spacing, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
 
@@ -69,7 +69,7 @@ export function CompletenessCard({ profile, onCompleteStep }: CompletenessCardPr
                   },
                 ]}
               >
-                <FontAwesome5 name="plus" size={PLUS} color={colors.textPrimary} solid />
+                <FontAwesome5 name="plus" size={s(PLUS)} color={colors.textPrimary} solid />
                 <Text variant="captionSemiBold">{step.label}</Text>
               </Pressable>
             </Animated.View>

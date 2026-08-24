@@ -54,7 +54,7 @@ export function ResumesHeader({
   onPressSort,
   onPressUpgrade,
 }: ResumesHeaderProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
 
   const titleRow = (
     <View style={styles.titleRow}>
@@ -64,7 +64,7 @@ export function ResumesHeader({
       <IconButton
         icon="bell"
         iconStyle="regular"
-        iconSize={18}
+        iconSize={s(18)}
         label={hasUnread ? 'Notifications, unread' : 'Notifications'}
         dot={hasUnread}
         onPress={onPressNotifications}
@@ -112,7 +112,7 @@ export function ResumesHeader({
           <Text variant="caption" color="textSecondary">
             Last edited
           </Text>
-          <FontAwesome5 name="chevron-down" size={SORT_CHEVRON} color={colors.iconMuted} solid />
+          <FontAwesome5 name="chevron-down" size={s(SORT_CHEVRON)} color={colors.iconMuted} solid />
         </Pressable>
       </View>
 

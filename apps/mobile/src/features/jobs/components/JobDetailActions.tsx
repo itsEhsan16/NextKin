@@ -24,7 +24,7 @@ const ICON = 14;
  * Carries the bottom safe-area inset itself — canvas note 1:1043's "sticky bar carries 44px".
  */
 export function JobDetailActions({ saved, onToggleSave, onApply }: JobDetailActionsProps) {
-  const { colors, radii, sizes, spacing } = useTheme();
+  const { colors, radii, sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
 
@@ -59,7 +59,7 @@ export function JobDetailActions({ saved, onToggleSave, onApply }: JobDetailActi
           },
         ]}
       >
-        <FontAwesome5 name="bookmark" size={ICON} color={colors.textPrimary} solid={saved} />
+        <FontAwesome5 name="bookmark" size={s(ICON)} color={colors.textPrimary} solid={saved} />
         <Text variant="label">{saved ? 'Saved' : 'Save'}</Text>
       </Pressable>
 

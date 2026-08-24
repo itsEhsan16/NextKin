@@ -14,9 +14,19 @@ export type LogoTileProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+/** Artboard sizes: the tile's corner radius steps with it (Figma 40 / 44–48 / 64). */
+const DEFAULT_SIZE = 44;
+const RADIUS_STEPS = [
+  { min: 48, radius: 'xxl' },
+  { min: 44, radius: 'lg' },
+] as const;
+
 /** Company mark. Figma job cards: 44px, bare logo; unknown companies get an initial tile. */
-export function LogoTile({ name, logoUrl, size = 44, style }: LogoTileProps) {
-  const { colors, radii } = useTheme();
+export function LogoTile({ name, logoUrl, size, style }: LogoTileProps) {
+  const { colors, radii, s } = useTheme();
+  const box = size ?? s(DEFAULT_SIZE);
+  // Compare in device space on both sides, so the step is scale-invariant.
+  const radius = RADIUS_STEPS.find((step) => box >= s(step.min))?.radius ?? 'md';
   const renderLogo = resolveLogoSvg(logoUrl);
 
   if (renderLogo) {
@@ -24,9 +34,9 @@ export function LogoTile({ name, logoUrl, size = 44, style }: LogoTileProps) {
       <View
         accessibilityRole="image"
         accessibilityLabel={`${name} logo`}
-        style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}
+        style={[{ width: box, height: box, alignItems: 'center', justifyContent: 'center' }, style]}
       >
-        {renderLogo({ width: size, height: size })}
+        {renderLogo({ width: box, height: box })}
       </View>
     );
   }
@@ -37,9 +47,9 @@ export function LogoTile({ name, logoUrl, size = 44, style }: LogoTileProps) {
       accessibilityLabel={`${name} logo`}
       style={[
         {
-          width: size,
-          height: size,
-          borderRadius: size >= 48 ? radii.xxl : size >= 44 ? radii.lg : radii.md,
+          width: box,
+          height: box,
+          borderRadius: radii[radius],
           backgroundColor: colors.surfaceSubtle,
           alignItems: 'center',
           justifyContent: 'center',

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { EMPLOYMENT_TYPE_LABEL, type Job } from '@/data/models';
 import { a11yButton, formatPercent, formatRelativeTime } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { AvatarStack } from '@/ui/Avatar';
 import { StatBadge } from '@/ui/Badge';
 import { Card } from '@/ui/Card';
@@ -37,8 +37,7 @@ function jobSummary(job: Job): string {
 
 /** Figma 1:101 — 288px card: logo + match badge, company, role, meta chips, social proof. */
 export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: JobMatchCardProps) {
-  const { spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { spacing, s } = useTheme();
 
   return (
     <Pressable

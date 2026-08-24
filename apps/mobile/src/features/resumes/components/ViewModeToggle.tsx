@@ -33,7 +33,7 @@ const MODES: readonly { key: ResumesViewMode; icon: string; label: string }[] = 
  * sliding-pill spring; two fixed cells keep the geometry static so no measuring pass is needed.
  */
 export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) {
-  const { colors, radii, shadows, motion } = useTheme();
+  const { colors, radii, shadows, motion, s } = useTheme();
   const reduced = useReducedMotion();
 
   const index = value === 'grid' ? 0 : 1;
@@ -60,8 +60,8 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
       style={[
         styles.track,
         {
-          width: TRACK_WIDTH,
-          height: TRACK_HEIGHT,
+          width: s(TRACK_WIDTH),
+          height: s(TRACK_HEIGHT),
           borderRadius: radii.xl,
           backgroundColor: colors.surfaceSubtle,
         },
@@ -73,8 +73,8 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
           styles.pill,
           shadows.segmentPill,
           {
-            width: CELL,
-            height: PILL_HEIGHT,
+            width: s(CELL),
+            height: s(PILL_HEIGHT),
             borderRadius: radii.md,
             backgroundColor: colors.surfaceCard,
           },
@@ -100,7 +100,7 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
           >
             <FontAwesome5
               name={mode.icon}
-              size={ICON}
+              size={s(ICON)}
               color={selected ? colors.textPrimary : colors.iconMuted}
               solid
             />

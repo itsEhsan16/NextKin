@@ -19,14 +19,14 @@ const LOGO = 64;
  * artboard puts "51–200 employees" here and "8,000+ employees" there for the same company.
  */
 export function JobDetailHero({ job }: JobDetailHeroProps) {
-  const { spacing, radii } = useTheme();
+  const { spacing, radii, s } = useTheme();
 
   return (
     <View style={{ gap: spacing[4] }}>
       <LogoTile
         name={job.company}
         logoUrl={job.companyLogoUrl}
-        size={LOGO}
+        size={s(LOGO)}
         style={{ borderRadius: radii.xxl }}
       />
 

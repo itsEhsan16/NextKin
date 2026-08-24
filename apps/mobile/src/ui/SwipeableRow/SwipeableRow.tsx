@@ -47,7 +47,7 @@ export type SwipeableRowProps = {
  * Horizontal intent is claimed via activeOffsetX so the vertical list keeps scrolling.
  */
 export function SwipeableRow({ actions, onFullSwipe, children }: SwipeableRowProps) {
-  const { colors, motion } = useTheme();
+  const { colors, motion, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
 
@@ -142,9 +142,9 @@ export function SwipeableRow({ actions, onFullSwipe, children }: SwipeableRowPro
                 offset.set(withTiming(0, withReducedMotion(reduced, motion.timings.fast)));
                 action.onPress();
               }}
-              style={[styles.action, { width: SWIPE_ACTION_WIDTH, backgroundColor: look.bg }]}
+              style={[styles.action, { width: s(SWIPE_ACTION_WIDTH), backgroundColor: look.bg }]}
             >
-              <FontAwesome5 name={action.icon} size={17} color={colors[look.fg]} solid />
+              <FontAwesome5 name={action.icon} size={s(17)} color={colors[look.fg]} solid />
               <Text variant="microBadge" color={look.fg} align="center">
                 {action.label}
               </Text>

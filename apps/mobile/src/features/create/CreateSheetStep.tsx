@@ -52,7 +52,7 @@ export function CreateSheetStep({
   visible,
   style,
 }: CreateSheetStepProps) {
-  const { spacing, motion } = useTheme();
+  const { spacing, motion, s } = useTheme();
   const reduced = useReducedMotion();
 
   // Nothing mounts or unmounts when the steps slide past each other, so a screen reader would
@@ -81,16 +81,16 @@ export function CreateSheetStep({
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing[4],
-          height: HEADER_HEIGHT,
+          height: s(HEADER_HEIGHT),
         }}
       >
         {onBack ? (
           <IconButton
             icon="chevron-left"
-            iconSize={14}
+            iconSize={s(14)}
             iconColor="textPrimary"
             label="Back"
-            size={BACK_BUTTON}
+            size={s(BACK_BUTTON)}
             variant="filled"
             onPress={onBack}
           />
@@ -100,7 +100,7 @@ export function CreateSheetStep({
         </Text>
       </View>
 
-      <View style={{ marginTop: HEADER_GAP, gap: ROW_GAP }}>
+      <View style={{ marginTop: s(HEADER_GAP), gap: s(ROW_GAP) }}>
         {rows.map((row, index) => {
           const content = (
             <SheetRow
@@ -129,7 +129,7 @@ export function CreateSheetStep({
       </View>
 
       {footnote ? (
-        <Text variant="rowDescription" color="textSecondary" style={{ marginTop: FOOTNOTE_GAP }}>
+        <Text variant="rowDescription" color="textSecondary" style={{ marginTop: s(FOOTNOTE_GAP) }}>
           {footnote}
         </Text>
       ) : null}

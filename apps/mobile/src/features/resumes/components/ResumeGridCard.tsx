@@ -43,7 +43,7 @@ export const ResumeGridCard = memo(function ResumeGridCard({
   onOpenScore,
   style,
 }: ResumeGridCardProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -60,15 +60,15 @@ export const ResumeGridCard = memo(function ResumeGridCard({
           <View
             style={{
               aspectRatio: THUMB_RATIO,
-              borderRadius: 10,
-              borderWidth: 1,
+              borderRadius: s(10),
+              borderWidth: s(1),
               borderColor: colors.borderDefault,
               overflow: 'hidden',
             }}
           >
             <ResumeThumbnail style={StyleSheet.absoluteFill} />
             {resume.updateAvailable ? (
-              <UpdateAvailablePill style={{ position: 'absolute', top: 9, left: 9 }} />
+              <UpdateAvailablePill style={{ position: 'absolute', top: s(9), left: s(9) }} />
             ) : null}
           </View>
           {resume.atsScore != null ? (
@@ -91,7 +91,7 @@ export const ResumeGridCard = memo(function ResumeGridCard({
             hitSlop={hitSlopFor(MENU_ICON)}
             onPress={() => onOpenMenu(resume)}
           >
-            <FontAwesome5 name="ellipsis-h" size={MENU_ICON} color={colors.iconMuted} solid />
+            <FontAwesome5 name="ellipsis-h" size={s(MENU_ICON)} color={colors.iconMuted} solid />
           </Pressable>
         </View>
 

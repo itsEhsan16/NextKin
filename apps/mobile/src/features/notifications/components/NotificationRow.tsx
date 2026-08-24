@@ -31,7 +31,7 @@ export const NotificationRow = memo(function NotificationRow({
   onMarkRead,
   onMore,
 }: NotificationRowProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
   const unread = !notification.read;
 
@@ -106,8 +106,8 @@ export const NotificationRow = memo(function NotificationRow({
                       style={[
                         styles.stacked,
                         {
-                          width: STACKED,
-                          height: STACKED,
+                          width: s(STACKED),
+                          height: s(STACKED),
                           borderRadius: STACKED / 2,
                           borderColor: unread ? colors.surfacePage : colors.surfaceCard,
                           backgroundColor:
@@ -137,7 +137,7 @@ export const NotificationRow = memo(function NotificationRow({
             <View
               style={[
                 styles.dot,
-                { width: DOT, height: DOT, borderRadius: DOT / 2, backgroundColor: colors.brand },
+                { width: s(DOT), height: s(DOT), borderRadius: DOT / 2, backgroundColor: colors.brand },
               ]}
             />
           ) : null}
@@ -146,7 +146,7 @@ export const NotificationRow = memo(function NotificationRow({
       <View
         style={{
           height: StyleSheet.hairlineWidth,
-          marginLeft: 76,
+          marginLeft: s(76),
           backgroundColor: colors.divider,
         }}
       />

@@ -23,7 +23,7 @@ const STROKE = 3.5;
  * score panel (RESUMES 04).
  */
 export function AtsBadge({ score, onPress, style }: AtsBadgeProps) {
-  const { colors, radii, shadows } = useTheme();
+  const { colors, radii, shadows, s } = useTheme();
 
   return (
     <Pressable
@@ -35,8 +35,8 @@ export function AtsBadge({ score, onPress, style }: AtsBadgeProps) {
       disabled={!onPress}
       style={[
         {
-          width: BADGE,
-          height: BADGE,
+          width: s(BADGE),
+          height: s(BADGE),
           borderRadius: radii.full,
           backgroundColor: colors.surfaceCard,
           alignItems: 'center',
@@ -51,8 +51,8 @@ export function AtsBadge({ score, onPress, style }: AtsBadgeProps) {
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <ScoreRing
           score={score}
-          size={RING}
-          strokeWidth={STROKE}
+          size={s(RING)}
+          strokeWidth={s(STROKE)}
           ringColor={atsScoreColor(score)}
           trackColor="surfaceSubtle"
           numberVariant="scoreSm"

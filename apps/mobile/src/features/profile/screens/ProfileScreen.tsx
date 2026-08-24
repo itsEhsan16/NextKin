@@ -49,7 +49,7 @@ const VERSION_LINE = `NextKin ${Constants.expoConfig?.version ?? '1.0.0'} (build
  * profileStore; everything else links out (undesigned flows land on placeholders).
  */
 export function ProfileScreen() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useProfileActions();
   const queryClient = useQueryClient();
@@ -88,7 +88,7 @@ export function ProfileScreen() {
       <IconButton
         icon="bell"
         iconStyle="regular"
-        iconSize={18}
+        iconSize={s(18)}
         label={(unread.data ?? 0) > 0 ? 'Notifications, unread' : 'Notifications'}
         dot={(unread.data ?? 0) > 0}
         onPress={actions.openNotifications}
@@ -278,8 +278,8 @@ export function ProfileScreen() {
 }
 
 function SignOutIcon() {
-  const { colors } = useTheme();
-  return <FontAwesome5 name="sign-out-alt" size={16} color={colors.danger} solid />;
+  const { colors, s } = useTheme();
+  return <FontAwesome5 name="sign-out-alt" size={s(16)} color={colors.danger} solid />;
 }
 
 const useStyles = scaledSheet((s) => ({

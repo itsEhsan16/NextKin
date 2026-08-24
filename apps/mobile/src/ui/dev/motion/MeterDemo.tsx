@@ -21,7 +21,7 @@ const BAR_HEIGHT = 10;
  * thread via `useAnimatedProps` on a non-editable TextInput (no per-frame React renders).
  */
 export function MeterDemo() {
-  const { colors, spacing, radii, typography, motion } = useTheme();
+  const { colors, spacing, radii, typography, motion, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
   const progress = useSharedValue(0);
@@ -54,7 +54,7 @@ export function MeterDemo() {
       </View>
       <View
         style={{
-          height: BAR_HEIGHT,
+          height: s(BAR_HEIGHT),
           borderRadius: radii.full,
           backgroundColor: colors.surfaceSubtle,
           overflow: 'hidden',

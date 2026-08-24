@@ -41,7 +41,7 @@ type MenuRowProps = {
 };
 
 function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const color: ColorToken = tone === 'danger' ? 'danger' : 'textBody';
   return (
     <Pressable
@@ -49,10 +49,10 @@ function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowPro
       feedback="subtle"
       haptic="light"
       onPress={onPress}
-      style={[styles.menuRow, { minHeight: ROW_HEIGHT, gap: spacing[3] }]}
+      style={[styles.menuRow, { minHeight: s(ROW_HEIGHT), gap: spacing[3] }]}
     >
       <View style={styles.iconSlot}>
-        <FontAwesome5 name={icon} size={ICON} color={colors[color]} solid />
+        <FontAwesome5 name={icon} size={s(ICON)} color={colors[color]} solid />
       </View>
       <View style={styles.menuText}>
         <Text variant="menuRow" color={tone === 'danger' ? 'danger' : 'textPrimary'}>
@@ -79,7 +79,7 @@ export function RowMenuSheetBody({
   onMuteCategory,
   onDelete,
 }: RowMenuSheetBodyProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const meta = categoryMeta(notification.category);
   const runs = parseBold(notification.body);
 
@@ -103,7 +103,7 @@ export function RowMenuSheetBody({
               ),
             )}
           </Text>
-          <Text variant="captionSm" color="textTertiary" style={{ marginTop: 2 }}>
+          <Text variant="captionSm" color="textTertiary" style={{ marginTop: s(2) }}>
             {`${meta.singular} · ${formatFeedTime(notification.createdAt)}`}
           </Text>
         </View>

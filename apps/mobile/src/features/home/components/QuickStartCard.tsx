@@ -5,7 +5,7 @@ import AtsCheckIcon from '../../../../assets/icons/quick-start/ats-check.svg';
 import BuildResumeIcon from '../../../../assets/icons/quick-start/build-resume.svg';
 import CoverLetterIcon from '../../../../assets/icons/quick-start/cover-letter.svg';
 import ZeroResumeIcon from '../../../../assets/icons/quick-start/zero-resume.svg';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { IconTileGrid, type IconTile } from '@/ui/IconTileGrid';
 import { Text } from '@/ui/Text';
@@ -67,8 +67,7 @@ const SPECS: readonly Spec[] = [
 const ICON_ROW_HEIGHT = 65;
 
 export function QuickStartCard({ onAction }: QuickStartCardProps) {
-  const { spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { spacing, s } = useTheme();
 
   const items = useMemo<IconTile<QuickStartAction>[]>(
     () =>

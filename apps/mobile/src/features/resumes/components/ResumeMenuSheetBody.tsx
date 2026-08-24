@@ -45,7 +45,7 @@ type MenuRowProps = {
 };
 
 function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: MenuRowProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
   const color: ColorToken = tone === 'brand' ? 'brand' : tone === 'danger' ? 'danger' : 'textBody';
   const labelColor: ColorToken =
@@ -57,10 +57,10 @@ function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: M
       feedback="subtle"
       haptic="light"
       onPress={onPress}
-      style={[styles.row, { minHeight: ROW_HEIGHT, gap: spacing[3] }]}
+      style={[styles.row, { minHeight: s(ROW_HEIGHT), gap: spacing[3] }]}
     >
       <View style={styles.iconSlot}>
-        <FontAwesome5 name={icon} size={ICON} color={colors[color]} solid />
+        <FontAwesome5 name={icon} size={s(ICON)} color={colors[color]} solid />
       </View>
       <Text variant="menuRow" color={labelColor} numberOfLines={1}>
         {label}
@@ -95,7 +95,7 @@ export function ResumeMenuSheetBody({
   onConfirmDelete,
   onCancelDelete,
 }: ResumeMenuSheetBodyProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
 
   if (step === 'confirm-delete') {
@@ -119,10 +119,10 @@ export function ResumeMenuSheetBody({
       <View style={[styles.header, { gap: spacing[4], paddingVertical: spacing[4] }]}>
         <View
           style={{
-            width: THUMB.width,
-            height: THUMB.height,
-            borderRadius: 10,
-            borderWidth: 1,
+            width: s(THUMB.width),
+            height: s(THUMB.height),
+            borderRadius: s(10),
+            borderWidth: s(1),
             borderColor: colors.borderDefault,
             overflow: 'hidden',
           }}

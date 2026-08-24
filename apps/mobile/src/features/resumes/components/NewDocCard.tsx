@@ -16,7 +16,7 @@ const ROW_PLUS = 44;
 
 /** Dashed "+ New" tile leading the grid (Figma 1:1394). Opens the create sheet. */
 export function NewDocTile({ onPress, style }: NewDocProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -40,15 +40,15 @@ export function NewDocTile({ onPress, style }: NewDocProps) {
         style={[
           styles.plus,
           {
-            width: GRID_PLUS,
-            height: GRID_PLUS,
+            width: s(GRID_PLUS),
+            height: s(GRID_PLUS),
             borderRadius: radii.full,
             backgroundColor: colors.surfaceInverse,
             marginBottom: spacing[2],
           },
         ]}
       >
-        <FontAwesome5 name="plus" size={20} color={colors.textOnDark} solid />
+        <FontAwesome5 name="plus" size={s(20)} color={colors.textOnDark} solid />
       </View>
       <Text variant="label" align="center">
         New
@@ -62,7 +62,7 @@ export function NewDocTile({ onPress, style }: NewDocProps) {
 
 /** The list layout's dashed "+ New resume or cover letter" row (Figma 1:1616). */
 export function NewDocRow({ onPress, style }: NewDocProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -87,14 +87,14 @@ export function NewDocRow({ onPress, style }: NewDocProps) {
         style={[
           styles.plus,
           {
-            width: ROW_PLUS,
-            height: ROW_PLUS,
+            width: s(ROW_PLUS),
+            height: s(ROW_PLUS),
             borderRadius: radii.full,
             backgroundColor: colors.surfaceInverse,
           },
         ]}
       >
-        <FontAwesome5 name="plus" size={17} color={colors.textOnDark} solid />
+        <FontAwesome5 name="plus" size={s(17)} color={colors.textOnDark} solid />
       </View>
       <Text variant="label">New resume or cover letter</Text>
     </Pressable>

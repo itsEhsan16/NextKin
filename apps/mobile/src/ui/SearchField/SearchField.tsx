@@ -24,7 +24,7 @@ export function SearchField({
   accessibilityLabel = 'Search jobs',
   style,
 }: SearchFieldProps) {
-  const { colors, radii, sizes, spacing, typography } = useTheme();
+  const { colors, radii, sizes, spacing, typography, s } = useTheme();
 
   return (
     <View
@@ -34,13 +34,13 @@ export function SearchField({
           height: sizes.searchField,
           borderRadius: radii.xl,
           backgroundColor: colors.surfaceSubtle,
-          paddingHorizontal: 18,
+          paddingHorizontal: s(18),
           gap: spacing[3],
         },
         style,
       ]}
     >
-      <FontAwesome5 name="search" size={ICON} color={colors.textSecondary} solid />
+      <FontAwesome5 name="search" size={s(ICON)} color={colors.textSecondary} solid />
       <TextInput
         accessibilityLabel={accessibilityLabel}
         value={value}

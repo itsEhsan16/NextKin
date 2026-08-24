@@ -47,7 +47,7 @@ export function ListRow({
   accessibilityHint,
   style,
 }: ListRowProps) {
-  const { colors, sizes, spacing } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const danger = tone === 'danger';
 
   return (
@@ -59,14 +59,14 @@ export function ListRow({
       onPress={onPress}
       style={[
         styles.row,
-        { minHeight: sizes.listRow, paddingHorizontal: PADDING_X, gap: GUTTER },
+        { minHeight: sizes.listRow, paddingHorizontal: s(PADDING_X), gap: s(GUTTER) },
         style,
       ]}
     >
       <View style={styles.iconSlot}>
         <FontAwesome5
           name={icon}
-          size={ICON}
+          size={s(ICON)}
           color={danger ? colors.danger : colors.iconDefault}
           solid
         />
@@ -85,7 +85,7 @@ export function ListRow({
         </Text>
       ) : null}
       {showChevron ? (
-        <FontAwesome5 name="chevron-right" size={CHEVRON} color={colors.iconChevron} solid />
+        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
       ) : null}
     </Pressable>
   );
@@ -103,7 +103,7 @@ export type RowGroupProps = {
  * exactly as the artboard insets them (x=55).
  */
 export function RowGroup({ title, children, style }: RowGroupProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const rows = Array.isArray(children) ? children : [children];
 
   return (
@@ -120,7 +120,7 @@ export function RowGroup({ title, children, style }: RowGroupProps) {
               <View
                 style={{
                   height: StyleSheet.hairlineWidth,
-                  marginLeft: DIVIDER_INSET,
+                  marginLeft: s(DIVIDER_INSET),
                   backgroundColor: colors.divider,
                 }}
               />

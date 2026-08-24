@@ -73,7 +73,7 @@ export function FilterChip({
   onPress,
   style,
 }: FilterChipProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
 
   const filled = variant !== 'removable' && variant !== 'picker' && selected;
   const boxed = BOXED.includes(variant);
@@ -117,11 +117,11 @@ export function FilterChip({
       ]}
     >
       {checked ? (
-        <FontAwesome5 name="check" size={TOGGLE_ICON} color={colors.textOnBrand} solid />
+        <FontAwesome5 name="check" size={s(TOGGLE_ICON)} color={colors.textOnBrand} solid />
       ) : icon ? (
         <FontAwesome5
           name={icon}
-          size={LEADING_ICON}
+          size={s(LEADING_ICON)}
           color={filled ? colors.textOnBrand : colors.textSecondary}
           solid
         />
@@ -145,9 +145,9 @@ export function FilterChip({
       </Text>
 
       {variant === 'removable' ? (
-        <FontAwesome5 name="times" size={TRAILING_ICON} color={colors.iconMuted} solid />
+        <FontAwesome5 name="times" size={s(TRAILING_ICON)} color={colors.iconMuted} solid />
       ) : variant === 'picker' ? (
-        <FontAwesome5 name="chevron-down" size={TRAILING_ICON} color={colors.iconMuted} solid />
+        <FontAwesome5 name="chevron-down" size={s(TRAILING_ICON)} color={colors.iconMuted} solid />
       ) : null}
     </Pressable>
   );

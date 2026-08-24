@@ -76,7 +76,7 @@ export function RangeSlider({
   format,
   style,
 }: RangeSliderProps) {
-  const { colors, radii, shadows, motion } = useTheme();
+  const { colors, radii, shadows, motion, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
 
@@ -195,8 +195,8 @@ export function RangeSlider({
   }));
 
   const thumbStyle = {
-    width: THUMB,
-    height: THUMB,
+    width: s(THUMB),
+    height: s(THUMB),
     borderRadius: radii.full,
     backgroundColor: colors.surfaceCard,
     borderColor: colors.surfaceInverse,
@@ -207,7 +207,7 @@ export function RangeSlider({
       <View
         style={[
           styles.rail,
-          { height: TRACK_HEIGHT, borderRadius: radii.full, backgroundColor: colors.progressTrack },
+          { height: s(TRACK_HEIGHT), borderRadius: radii.full, backgroundColor: colors.progressTrack },
         ]}
       />
       {/* Spans thumb centre to thumb centre, so the unselected part of the range reads as unfilled. */}
@@ -215,7 +215,7 @@ export function RangeSlider({
         style={[
           styles.fill,
           {
-            height: TRACK_HEIGHT,
+            height: s(TRACK_HEIGHT),
             borderRadius: radii.full,
             backgroundColor: colors.surfaceInverse,
           },

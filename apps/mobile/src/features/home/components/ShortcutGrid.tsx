@@ -8,7 +8,7 @@ import MyResumesIcon from '../../../../assets/icons/shortcuts/my-resumes.svg';
 import SavedJobsIcon from '../../../../assets/icons/shortcuts/saved-jobs.svg';
 import type { DashboardStats } from '@/data/models';
 import { pluralize } from '@/lib';
-import { useLayoutScale } from '@/theme';
+import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { IconTileGrid, type IconTile } from '@/ui/IconTileGrid';
 
@@ -67,7 +67,7 @@ function subLabel(key: Shortcut, stats: DashboardStats | undefined): string | un
 }
 
 export function ShortcutGrid({ stats, onShortcut }: ShortcutGridProps) {
-  const { s } = useLayoutScale();
+  const { s } = useTheme();
 
   const items = useMemo<IconTile<Shortcut>[]>(
     () =>

@@ -9,7 +9,7 @@ import JobsIcon from '../../assets/icons/nav/jobs.svg';
 import ProfileIcon from '../../assets/icons/nav/profile.svg';
 import ResumesIcon from '../../assets/icons/nav/resumes.svg';
 import { haptics } from '@/lib';
-import { scaledSheet, useLayoutScale, useTabBarLayout, useTheme } from '@/theme';
+import { scaledSheet, useTabBarLayout, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { sheetBackgroundA11yProps } from '@/ui/Sheet';
 import { Text } from '@/ui/Text';
@@ -149,10 +149,9 @@ const TabItem = memo(function TabItem({
  * remains the single source of bottom padding for scrolling content.
  */
 export function FloatingTabBar() {
-  const { colors, shadows } = useTheme();
+  const { colors, shadows, s } = useTheme();
   const styles = useStyles();
   const layout = useTabBarLayout();
-  const { s } = useLayoutScale();
   const router = useRouter();
   const segments = useSegments();
   const { isOpen } = useCreateSheet();

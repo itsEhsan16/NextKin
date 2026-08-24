@@ -14,7 +14,7 @@ const DIVIDER_HEIGHT = 40;
 
 /** Figma 1:2208 — 12 Applications · 2 Interviews · 87 Avg ATS score, values counting up. */
 export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
 
   const cells = [
@@ -31,7 +31,7 @@ export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
             <View
               style={{
                 width: StyleSheet.hairlineWidth,
-                height: DIVIDER_HEIGHT,
+                height: s(DIVIDER_HEIGHT),
                 backgroundColor: colors.divider,
               }}
             />

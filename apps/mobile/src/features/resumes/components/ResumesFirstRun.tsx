@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
 import { a11yButton, a11yHeader } from '@/lib';
-import { scaledSheet, useLayoutScale, useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -34,7 +34,7 @@ function Cta({
   label: string;
   onPress: () => void;
 }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
   const surface = {
@@ -52,7 +52,7 @@ function Cta({
       style={[
         styles.cta,
         {
-          height: CTA_HEIGHT,
+          height: s(CTA_HEIGHT),
           gap: spacing[2] + 2,
           borderRadius: radii.xxl,
           backgroundColor: surface.bg,
@@ -62,9 +62,9 @@ function Cta({
       ]}
     >
       {tone === 'brand' ? (
-        <SparkleIcon width={15} height={15} color={colors.brand} />
+        <SparkleIcon width={s(15)} height={s(15)} color={colors.brand} />
       ) : icon ? (
-        <FontAwesome5 name={icon} size={CTA_ICON} color={colors[surface.fg]} solid />
+        <FontAwesome5 name={icon} size={s(CTA_ICON)} color={colors[surface.fg]} solid />
       ) : null}
       <Text variant="label" color={surface.fg}>
         {label}
@@ -75,9 +75,8 @@ function Cta({
 
 /** RESUMES 05 (Figma 1:2061) — the whole tab before the first document exists. */
 export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: ResumesFirstRunProps) {
-  const { colors, shadows, spacing } = useTheme();
+  const { colors, shadows, spacing, s } = useTheme();
   const styles = useStyles();
-  const { s } = useLayoutScale();
 
   const ghost = { width: s(GHOST.width), height: s(GHOST.height) };
   const page = { width: s(PAGE.width), height: s(PAGE.height) };
@@ -93,7 +92,7 @@ export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: R
           style={[
             styles.ghost,
             ghost,
-            { borderRadius: 14, backgroundColor: colors.surfaceGhost, left: '50%' },
+            { borderRadius: s(14), backgroundColor: colors.surfaceGhost, left: '50%' },
             { transform: [{ translateX: -ghost.width - 6 }, { translateY: 8 }] },
           ]}
         />
@@ -101,7 +100,7 @@ export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: R
           style={[
             styles.ghost,
             ghost,
-            { borderRadius: 14, backgroundColor: colors.surfaceSubtle, left: '50%' },
+            { borderRadius: s(14), backgroundColor: colors.surfaceSubtle, left: '50%' },
             { transform: [{ translateX: 6 }, { translateY: 8 }] },
           ]}
         />
@@ -111,8 +110,8 @@ export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: R
             styles.page,
             shadows.docFloat,
             {
-              borderRadius: 10,
-              borderWidth: 1,
+              borderRadius: s(10),
+              borderWidth: s(1),
               borderColor: colors.borderDefault,
               backgroundColor: colors.surfaceCard,
             },

@@ -19,7 +19,7 @@ export const SimilarJobCard = memo(function SimilarJobCard({
   job,
   onPress,
 }: SimilarJobCardProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
   const meta = formatJobMeta([job.company, job.location, REMOTE_TYPE_LABEL[job.remote]]);
   const salary = job.salary ? formatSalary(job.salary) : undefined;
@@ -36,7 +36,7 @@ export const SimilarJobCard = memo(function SimilarJobCard({
           <LogoTile
             name={job.company}
             logoUrl={job.companyLogoUrl}
-            size={LOGO}
+            size={s(LOGO)}
             style={{ borderRadius: radii.md }}
           />
           <View style={styles.copy}>
@@ -48,7 +48,7 @@ export const SimilarJobCard = memo(function SimilarJobCard({
             </Text>
             {salary ? <Text variant="captionSemiBold">{salary}</Text> : null}
           </View>
-          <FontAwesome5 name="chevron-right" size={12} color={colors.iconMuted} solid />
+          <FontAwesome5 name="chevron-right" size={s(12)} color={colors.iconMuted} solid />
         </View>
       </Card>
     </Pressable>

@@ -25,14 +25,14 @@ export function Card({
   style,
   children,
 }: CardProps) {
-  const { colors, radii: r, shadows: shadowTokens, spacing } = useTheme();
+  const { colors, radii: r, shadows: shadowTokens, spacing, s } = useTheme();
   return (
     <View
       style={[
         {
           backgroundColor: colors.surfaceCard,
           borderRadius: r[radius],
-          borderWidth: 1,
+          borderWidth: s(1),
           borderColor: colors.borderHairline,
           padding: padding ?? spacing[4],
         },

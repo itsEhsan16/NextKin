@@ -39,7 +39,7 @@ const CRITERION_A11Y: Record<MatchCriterionState, string> = {
  * is one accessibility element so the state is announced with its label rather than as a bare icon.
  */
 export function JobMatchCard({ band, criteria, onSeeFullCriteria }: JobMatchCardProps) {
-  const { colors, spacing, motion } = useTheme();
+  const { colors, spacing, motion, s } = useTheme();
   const reduced = useReducedMotion();
 
   return (
@@ -65,7 +65,7 @@ export function JobMatchCard({ band, criteria, onSeeFullCriteria }: JobMatchCard
             >
               <FontAwesome5
                 name={icon.name}
-                size={ICON}
+                size={s(ICON)}
                 color={colors[icon.color]}
                 solid={icon.solid}
               />
@@ -99,7 +99,7 @@ export function JobMatchCard({ band, criteria, onSeeFullCriteria }: JobMatchCard
         style={[styles.link, { gap: spacing[2] - 2 }]}
       >
         <Text variant="captionSemiBold">See full criteria</Text>
-        <FontAwesome5 name="chevron-right" size={9} color={colors.textPrimary} solid />
+        <FontAwesome5 name="chevron-right" size={s(9)} color={colors.textPrimary} solid />
       </Pressable>
     </Card>
   );

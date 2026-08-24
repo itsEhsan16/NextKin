@@ -24,7 +24,7 @@ export function HomeHeader({
   onPressNotifications,
   onPressMenu,
 }: HomeHeaderProps) {
-  const { spacing, sizes } = useTheme();
+  const { spacing, sizes, s } = useTheme();
   const avatarSize = sizes.avatarHeader;
 
   return (
@@ -40,7 +40,7 @@ export function HomeHeader({
             Hi
           </Text>
           {loading ? (
-            <Skeleton width={84} height={20} style={{ marginTop: 4 }} />
+            <Skeleton width={s(84)} height={s(20)} style={{ marginTop: s(4) }} />
           ) : (
             <Text variant="greeting" numberOfLines={1}>
               {firstName}
@@ -53,12 +53,12 @@ export function HomeHeader({
         <IconButton
           icon="bell"
           iconStyle="regular"
-          iconSize={18}
+          iconSize={s(18)}
           label={hasUnread ? 'Notifications, unread' : 'Notifications'}
           dot={hasUnread}
           onPress={onPressNotifications}
         />
-        <IconButton icon="bars" iconSize={16} label="Menu" onPress={onPressMenu} />
+        <IconButton icon="bars" iconSize={s(16)} label="Menu" onPress={onPressMenu} />
       </View>
     </View>
   );

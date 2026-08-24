@@ -14,9 +14,13 @@ export type AvatarProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+/** Artboard size; callers pass device-space values, so the default has to be scaled too. */
+const DEFAULT_SIZE = 56;
+
 /** Circular user avatar. Figma header: 56px, #e5e7eb backing. */
-export function Avatar({ source, name, size = 56, style }: AvatarProps) {
-  const { colors, radii, motion } = useTheme();
+export function Avatar({ source, name, size, style }: AvatarProps) {
+  const { colors, radii, motion, s } = useTheme();
+  const box = size ?? s(DEFAULT_SIZE);
   const resolved = resolveImageSource(source);
 
   return (
@@ -25,8 +29,8 @@ export function Avatar({ source, name, size = 56, style }: AvatarProps) {
       accessibilityLabel={`${name}'s avatar`}
       style={[
         {
-          width: size,
-          height: size,
+          width: box,
+          height: box,
           borderRadius: radii.full,
           backgroundColor: colors.borderDefault,
           overflow: 'hidden',
@@ -39,7 +43,7 @@ export function Avatar({ source, name, size = 56, style }: AvatarProps) {
       {resolved ? (
         <Image
           source={resolved}
-          style={{ width: size, height: size }}
+          style={{ width: box, height: box }}
           contentFit="cover"
           recyclingKey={source}
           transition={motion.durations.imageFade}

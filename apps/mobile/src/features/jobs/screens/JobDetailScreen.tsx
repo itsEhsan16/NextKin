@@ -30,7 +30,7 @@ export type JobDetailScreenProps = { id: string };
  * reachable through the platform gesture and the Android hardware button once it scrolls away.
  */
 export function JobDetailScreen({ id }: JobDetailScreenProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const insets = useSafeAreaInsets();
   const actions = useJobsActions();
 
@@ -49,11 +49,11 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
   if (job.isPending) {
     return body(
       <View style={{ padding: spacing.gutter, gap: spacing[4] }}>
-        <Skeleton width={64} height={64} radius="xxl" />
-        <Skeleton width="80%" height={34} />
-        <Skeleton width="60%" height={22} />
-        <Skeleton height={294} radius="cardLg" style={{ marginTop: spacing[4] }} />
-        <Skeleton height={84} radius="card" />
+        <Skeleton width={s(64)} height={s(64)} radius="xxl" />
+        <Skeleton width="80%" height={s(34)} />
+        <Skeleton width="60%" height={s(22)} />
+        <Skeleton height={s(294)} radius="cardLg" style={{ marginTop: spacing[4] }} />
+        <Skeleton height={s(84)} radius="card" />
       </View>,
     );
   }
@@ -93,7 +93,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
             <IconButton
               icon="bookmark"
               iconStyle={current.isSaved ? 'solid' : 'regular'}
-              iconSize={17}
+              iconSize={s(17)}
               label={current.isSaved ? 'Remove from saved' : 'Save job'}
               onPress={() => toggleSave.mutate(current.id)}
             />
@@ -135,7 +135,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
           {similar.isPending ? (
             <View style={{ gap: spacing[3] }}>
               {[0, 1, 2].map((index) => (
-                <Skeleton key={index} height={88} radius="card" />
+                <Skeleton key={index} height={s(88)} radius="card" />
               ))}
             </View>
           ) : similar.data?.length ? (

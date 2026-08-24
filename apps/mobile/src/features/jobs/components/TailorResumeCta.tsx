@@ -12,7 +12,7 @@ const TILE = 44;
 
 /** The brand-tinted "Tailor resume to this job" row (Figma 1:869) — the screen's AI entry point. */
 export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -28,10 +28,10 @@ export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
         styles.row,
         {
           gap: spacing[4],
-          padding: 17,
+          padding: s(17),
           borderRadius: radii.card,
           backgroundColor: colors.brandSurface,
-          borderWidth: 1,
+          borderWidth: s(1),
           borderColor: colors.brandBorder,
         },
       ]}
@@ -39,10 +39,10 @@ export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
       <View
         style={[
           styles.tile,
-          { width: TILE, height: TILE, borderRadius: radii.lg, backgroundColor: colors.surfaceCard },
+          { width: s(TILE), height: s(TILE), borderRadius: radii.lg, backgroundColor: colors.surfaceCard },
         ]}
       >
-        <FontAwesome5 name="magic" size={17} color={colors.brand} solid />
+        <FontAwesome5 name="magic" size={s(17)} color={colors.brand} solid />
       </View>
       <View style={styles.copy}>
         <Text variant="label" color="brand">
@@ -52,7 +52,7 @@ export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
           Creates a linked variant · match updates live
         </Text>
       </View>
-      <FontAwesome5 name="chevron-right" size={14} color={colors.brand} solid />
+      <FontAwesome5 name="chevron-right" size={s(14)} color={colors.brand} solid />
     </Pressable>
   );
 }

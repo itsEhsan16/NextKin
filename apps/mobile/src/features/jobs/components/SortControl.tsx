@@ -18,7 +18,7 @@ const ROW_HEIGHT = 20;
 
 /** Figma 1:326 / 1:410 — a muted label plus a small chevron that opens the sort options. */
 export function SortControl({ label, onPress, style }: SortControlProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
 
   return (
     <Pressable
@@ -32,7 +32,7 @@ export function SortControl({ label, onPress, style }: SortControlProps) {
       <Text variant="caption" color="textSecondary">
         {label}
       </Text>
-      <FontAwesome5 name="chevron-down" size={CHEVRON} color={colors.iconMuted} solid />
+      <FontAwesome5 name="chevron-down" size={s(CHEVRON)} color={colors.iconMuted} solid />
     </Pressable>
   );
 }
