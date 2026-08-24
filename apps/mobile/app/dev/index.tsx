@@ -2,7 +2,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { useArtboardStore } from '@/dev';
+import { useArtboardStore, useOverlayStore } from '@/dev';
 import { a11yButton, haptics } from '@/lib';
 import { useAppearanceStore, useTheme, type AppearancePreference } from '@/theme';
 import { Screen, Text } from '@/ui';
@@ -29,6 +29,7 @@ const CHEVRON_SIZE = 14;
 export default function DevIndexRoute() {
   const { colors, spacing, radii, sizes, opacity, scheme } = useTheme();
   const router = useRouter();
+  const showOverlay = useOverlayStore((s) => s.show);
   const artboard = useArtboardStore((s) => s.enabled);
   const setArtboard = useArtboardStore((s) => s.setEnabled);
   const preference = useAppearanceStore((s) => s.preference);
@@ -71,6 +72,20 @@ export default function DevIndexRoute() {
             </Pressable>
           ))}
         </View>
+      </DevSection>
+
+      <DevSection
+        title="Figma overlay"
+        description="Lays the artboard render over the live screen at the same logical width. Opens over whatever screen you are on, so navigate first, then flip between 0% and 100% — anything that drifts jumps out."
+      >
+        <DevButton
+          label="Show overlay"
+          onPress={() => {
+            showOverlay();
+            router.back();
+          }}
+          grow
+        />
       </DevSection>
 
       <DevSection

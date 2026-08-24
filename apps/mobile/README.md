@@ -82,16 +82,32 @@ These are enforced by code review and, where possible, by ESLint:
    only. Importing `@/data/mock/*` outside `src/data/**`, tests and the dev gallery is an ESLint
    error (`no-restricted-imports`).
 3. **Primitives stay generic.** Nothing in `src/ui` imports from `src/features`.
-4. **Tokens, never literals.** Styling is `StyleSheet.create` + `useTheme()`; every colour comes
+4. **Tokens, never literals.** Styling is `useTheme()` + `scaledSheet()`; every colour comes
    from theme tokens (hex literals live only in `src/theme`). No NativeWind / utility classes.
-5. **Motion is Reanimated 4 + motion tokens.** Animations run as worklets using
+5. **Everything measured on the artboard is scaled, type included.** The Figma frames are 520px
+   wide and phones are 360–430dp, so `useTheme()` returns tokens already projected onto the
+   device by `width / 520` — spacing, radii, sizes, shadow offsets, font sizes and line heights
+   alike. There are no per-value floors: a floor makes one element stop shrinking while its
+   neighbours carry on, which is how text ends up too large for the box drawn around it.
+   - `s(px)` off `useTheme()` scales a raw artboard number. Never pass it a value that came
+     *from* the theme — that squares the factor.
+   - Module scope cannot see the device width, so a length inside `StyleSheet.create` renders at
+     its raw 520px size. Use `scaledSheet((s) => ({ … }))` instead; ESLint warns on the rest.
+   - A component prop naming a design dimension takes a device-space value. If it also has a
+     default or branches on the number, scale those too (see `LogoTile`, `ScoreRing`).
+   - Exempt: `radii.full`, `sizes.designWidth`, `sizes.minHitTarget`, safe-area insets, shadow
+     alpha and Android elevation. `__tests__/theme/scaledTheme.test.ts` pins all of it.
+   - Two dev tools check the result on device, both in `app/dev`: **artboard mode** lays the
+     whole tree out at 520 and scales it, so anything that jumps when you toggle it is an
+     unscaled literal; the **Figma overlay** puts the artboard render over the live screen.
+6. **Motion is Reanimated 4 + motion tokens.** Animations run as worklets using
    `theme.motion` (`springs`, `timings`, `stagger`, `scales`); no inline durations, no RN core
    `Animated`. Respect `useReducedMotion()` via `withReducedMotion()`.
-6. **Every list is FlashList v2**, rows are memoised and keyed by id; images go through
+7. **Every list is FlashList v2**, rows are memoised and keyed by id; images go through
    `expo-image`.
-7. **Strict TypeScript, named exports, focused files** (< 250 lines). `tsc --noEmit` and
+8. **Strict TypeScript, named exports, focused files** (< 250 lines). `tsc --noEmit` and
    `expo lint` must pass with zero errors.
-8. **Accessibility is not optional**: roles/labels/states, 44 pt hit targets (`hitSlopFor`),
+9. **Accessibility is not optional**: roles/labels/states, 44 pt hit targets (`hitSlopFor`),
    `maxFontSizeMultiplier` on dense chrome (`maxFontScale`).
 
 ## Per-screen recipe
