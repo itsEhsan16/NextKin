@@ -21,12 +21,21 @@ export type ProfileIdentityProps = {
   onEdit: () => void;
 };
 
-/** Figma 1:2194 — 104pt ring, 88pt avatar, the 44×22 "72%" badge over the ring's south point. */
+/**
+ * Figma 1:2194 — 104pt ring, 88pt avatar, the 44×22 "72%" badge over the ring's south point.
+ * Every constant here is an artboard measurement, so every one goes through `s()` before it
+ * reaches a style.
+ */
 const RING = 104;
 const RING_STROKE = 5;
 const AVATAR = 88;
 const BADGE = { width: 44, height: 22 } as const;
 const DOT = 7;
+const BADGE_DROP = 8;
+const DETAILS_TOP = 8;
+const PILL_PAD_X = 12;
+const PILL_PAD_Y = 5;
+const EDIT_TOP = 8;
 
 /**
  * Avatar wrapped in the animated completeness ring. One shared value drives the arc sweep and
@@ -35,7 +44,7 @@ const DOT = 7;
  * with the artboard's two-letter monogram as the fallback.
  */
 function CompletenessRing({ user, completeness }: { user: User; completeness: number }) {
-  const { colors, motion, radii } = useTheme();
+  const { colors, motion, radii, sizes, s } = useTheme();
   const reduced = useReducedMotion();
   const target = Math.max(0, Math.min(1, completeness));
 
@@ -44,7 +53,10 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
     progress.set(withTiming(target, withReducedMotion(reduced, motion.timings.meter)));
   }, [motion.timings.meter, progress, reduced, target]);
 
-  const radius = (RING - RING_STROKE) / 2;
+  const ring = s(RING);
+  const stroke = s(RING_STROKE);
+  const avatar = s(AVATAR);
+  const radius = (ring - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const arcProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference * (1 - progress.value),
@@ -59,35 +71,35 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
       accessibilityRole="progressbar"
       accessibilityLabel={`Profile ${formatPercent(target)} complete`}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(target * 100) }}
-      style={styles.ring}
+      style={[styles.ring, { width: ring, height: ring }]}
     >
-      <Svg width={RING} height={RING} style={StyleSheet.absoluteFill}>
+      <Svg width={ring} height={ring} style={StyleSheet.absoluteFill}>
         <Circle
-          cx={RING / 2}
-          cy={RING / 2}
+          cx={ring / 2}
+          cy={ring / 2}
           r={radius}
           stroke={colors.surfaceSubtle}
-          strokeWidth={RING_STROKE}
+          strokeWidth={stroke}
           fill="none"
         />
         <AnimatedCircle
-          cx={RING / 2}
-          cy={RING / 2}
+          cx={ring / 2}
+          cy={ring / 2}
           r={radius}
           stroke={colors.surfaceInverse}
-          strokeWidth={RING_STROKE}
+          strokeWidth={stroke}
           strokeLinecap="round"
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}
           animatedProps={arcProps}
-          transform={`rotate(-90 ${RING / 2} ${RING / 2})`}
+          transform={`rotate(-90 ${ring / 2} ${ring / 2})`}
         />
       </Svg>
 
       <View
         style={{
-          width: AVATAR,
-          height: AVATAR,
+          width: avatar,
+          height: avatar,
           borderRadius: radii.full,
           backgroundColor: colors.surfaceSubtle,
           overflow: 'hidden',
@@ -96,7 +108,7 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
         }}
       >
         {photo ? (
-          <Image source={photo} style={{ width: AVATAR, height: AVATAR }} contentFit="cover" />
+          <Image source={photo} style={{ width: avatar, height: avatar }} contentFit="cover" />
         ) : (
           <Text variant="displayLg" color="textPrimary">
             {initials}
@@ -108,8 +120,10 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
         style={[
           styles.badge,
           {
-            width: BADGE.width,
-            height: BADGE.height,
+            width: s(BADGE.width),
+            height: s(BADGE.height),
+            bottom: -s(BADGE_DROP),
+            borderWidth: sizes.borderThick,
             borderRadius: radii.full,
             backgroundColor: colors.surfaceInverse,
             borderColor: colors.surfacePage,
@@ -134,14 +148,14 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
 
 /** Header block of PROFILE 01: ring + avatar, name, headline · city, availability, Edit. */
 export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, sizes, spacing, s } = useTheme();
   const availability = profile.preferences.availability;
 
   return (
     <View style={[styles.row, { gap: spacing[4] }]}>
       <CompletenessRing user={user} completeness={profile.completeness} />
 
-      <View style={[styles.details, { gap: spacing[1] + 2 }]}>
+      <View style={[styles.details, { gap: spacing[1] + 2, paddingTop: s(DETAILS_TOP) }]}>
         <Text variant="displaySemiBold" numberOfLines={1}>
           {`${user.firstName} ${user.lastName}`}
         </Text>
@@ -158,13 +172,15 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
               styles.pill,
               {
                 gap: spacing[1] + 2,
+                paddingHorizontal: s(PILL_PAD_X),
+                paddingVertical: s(PILL_PAD_Y),
                 borderRadius: radii.full,
                 backgroundColor: colors.successSurface,
                 marginTop: spacing[1],
               },
             ]}
           >
-            <FontAwesome5 name="circle" size={DOT} color={colors.success} solid />
+            <FontAwesome5 name="circle" size={s(DOT)} color={colors.success} solid />
             <Text variant="pillStrong" color="success">
               {AVAILABILITY_LABEL[availability]}
             </Text>
@@ -181,7 +197,9 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
           styles.edit,
           {
             borderRadius: radii.full,
+            borderWidth: sizes.border,
             borderColor: colors.borderDefault,
+            marginTop: s(EDIT_TOP),
             paddingHorizontal: spacing[5],
             paddingVertical: spacing[2] + 1,
           },
@@ -195,27 +213,14 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start' },
-  ring: {
-    width: RING,
-    height: RING,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  ring: { alignItems: 'center', justifyContent: 'center' },
   badge: {
     position: 'absolute',
-    bottom: -8,
     alignSelf: 'center',
-    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  details: { flex: 1, paddingTop: 8 },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-  },
-  edit: { borderWidth: 1, marginTop: 8 },
+  details: { flex: 1 },
+  pill: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },
+  edit: {},
 });

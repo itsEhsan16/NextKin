@@ -7,7 +7,7 @@ import {
 } from '@/data/models';
 import { useNotificationPrefs, useSetNotificationPrefs } from '@/data/queries';
 import { a11yHeader, usePushPermission } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { AiBadge } from '@/ui/AiBadge';
 import { Card } from '@/ui/Card';
 import { IconButton } from '@/ui/IconButton';
@@ -30,6 +30,7 @@ type PrefRowProps = {
 
 function PrefRow({ title, caption, ai, value, divider, onChange }: PrefRowProps) {
   const { colors, spacing } = useTheme();
+  const styles = useStyles();
   return (
     <View>
       {divider ? (
@@ -72,6 +73,7 @@ const PERMISSION_COPY = {
  */
 export function NotificationPreferencesScreen() {
   const { spacing } = useTheme();
+  const styles = useStyles();
   const actions = useNotificationsActions();
   const { status } = usePushPermission();
 
@@ -178,9 +180,9 @@ export function NotificationPreferencesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   headerRow: { flexDirection: 'row', alignItems: 'center' },
   prefRow: { flexDirection: 'row', alignItems: 'center' },
-  prefText: { flex: 1, gap: 2 },
+  prefText: { flex: 1, gap: s(2) },
   prefTitle: { flexDirection: 'row', alignItems: 'center' },
-});
+}));

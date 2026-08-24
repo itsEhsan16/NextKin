@@ -4,7 +4,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Resume } from '@/data/models';
 import { a11yButton, formatRelativeTime, hitSlopFor } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -47,6 +47,7 @@ export const ResumeListRow = memo(function ResumeListRow({
   style,
 }: ResumeListRowProps) {
   const { colors, spacing } = useTheme();
+  const styles = useStyles();
 
   const footerPill = resume.updateAvailable ? (
     <UpdateAvailablePill />
@@ -112,10 +113,10 @@ export const ResumeListRow = memo(function ResumeListRow({
   );
 });
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { flexDirection: 'row' },
-  body: { flex: 1, gap: 2 },
+  body: { flex: 1, gap: s(2) },
   footer: { flexDirection: 'row', alignItems: 'center' },
   trailing: { alignItems: 'flex-end', justifyContent: 'space-between' },
-  menu: { paddingTop: 2 },
-});
+  menu: { paddingTop: s(2) },
+}));

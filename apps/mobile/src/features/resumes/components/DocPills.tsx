@@ -1,8 +1,8 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Resume } from '@/data/models';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { docPillLabel, docPillTone } from '../docMeta';
@@ -19,6 +19,7 @@ export type DocTypePillProps = {
  */
 export function DocTypePill({ resume, style }: DocTypePillProps) {
   const { colors, radii } = useTheme();
+  const styles = useStyles();
   const tone = docPillTone(resume);
 
   const surface =
@@ -50,6 +51,7 @@ const REFRESH_ICON = 8;
 /** Amber "Update available" pill overlaid on stale documents (Figma 1:1440). */
 export function UpdateAvailablePill({ style }: { style?: StyleProp<ViewStyle> }) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
   return (
     <View
       accessibilityElementsHidden
@@ -72,12 +74,12 @@ export function UpdateAvailablePill({ style }: { style?: StyleProp<ViewStyle> })
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: s(10),
+    paddingVertical: s(5),
   },
-});
+}));

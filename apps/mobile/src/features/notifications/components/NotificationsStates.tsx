@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
 import { a11yButton, a11yHeader } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
@@ -15,6 +15,7 @@ const MARK_ICON = 36;
 /** NOTIF 05 (Figma 1:2766) — the feed with nothing left to show under the active filter. */
 export function NotificationsCaughtUp({ onExplore }: { onExplore: () => void }) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
 
   return (
     <View style={[styles.center, { paddingVertical: spacing[12], gap: spacing[3] }]}>
@@ -101,6 +102,7 @@ const TONE: Record<'brand' | 'warning' | 'neutral', { bg: ColorToken; fg: ColorT
 /** NOTIF 06 (Figma 1:2788) — the feed before anything has ever arrived. */
 export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => void }) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
 
   return (
     <View style={{ paddingVertical: spacing[6], gap: spacing[3] }}>
@@ -199,11 +201,11 @@ export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   center: { alignItems: 'center' },
-  lede: { maxWidth: 320 },
+  lede: { maxWidth: s(320) },
   arrival: { flexDirection: 'row', alignItems: 'center' },
   arrivalDivider: { position: 'absolute', top: 0, right: 0, height: StyleSheet.hairlineWidth },
-  arrivalText: { flex: 1, gap: 1 },
-  prefsCta: { height: 56, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-});
+  arrivalText: { flex: 1, gap: s(1) },
+  prefsCta: { height: s(56), borderWidth: s(1), alignItems: 'center', justifyContent: 'center' },
+}));

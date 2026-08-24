@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
 import { a11yButton, a11yHeader } from '@/lib';
-import { useLayoutScale, useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useLayoutScale, useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -35,6 +35,7 @@ function Cta({
   onPress: () => void;
 }) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
 
   const surface = {
     primary: { bg: colors.surfaceInverse, border: 'transparent', fg: 'textOnDark' as ColorToken },
@@ -75,6 +76,7 @@ function Cta({
 /** RESUMES 05 (Figma 1:2061) — the whole tab before the first document exists. */
 export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: ResumesFirstRunProps) {
   const { colors, shadows, spacing } = useTheme();
+  const styles = useStyles();
   const { s } = useLayoutScale();
 
   const ghost = { width: s(GHOST.width), height: s(GHOST.height) };
@@ -140,10 +142,10 @@ export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: R
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   illustration: { alignItems: 'center', justifyContent: 'flex-start' },
-  ghost: { position: 'absolute', top: 14 },
+  ghost: { position: 'absolute', top: s(14) },
   page: { overflow: 'hidden' },
-  lede: { alignSelf: 'center', maxWidth: 320 },
-});
+  lede: { alignSelf: 'center', maxWidth: s(320) },
+}));

@@ -1,5 +1,5 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   GENERATION_STEPS,
@@ -8,7 +8,7 @@ import {
   type GenerationStep,
 } from '@/data/models';
 import { a11yButton, formatPercent, hitSlop8 } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar } from '@/ui/Progress';
@@ -40,6 +40,7 @@ export function GenerationProgressCard({
   onRetry,
 }: GenerationProgressCardProps) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
   const failed = generation.status === 'failed';
   const step = stepFor(generation);
 
@@ -117,9 +118,9 @@ export function GenerationProgressCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
   tile: { alignItems: 'center', justifyContent: 'center' },
-  copy: { flex: 1, gap: 2 },
+  copy: { flex: 1, gap: s(2) },
   link: { alignSelf: 'flex-start' },
-});
+}));

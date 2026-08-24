@@ -21,7 +21,7 @@ import {
   useSetNotificationPrefs,
 } from '@/data/queries';
 import { a11yButton, a11yHeader, hitSlop8, pluralize } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
@@ -51,6 +51,7 @@ const feedKey = (item: FeedItem) =>
  */
 export function NotificationsScreen() {
   const { colors, sizes, spacing } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const actions = useNotificationsActions();
 
@@ -122,7 +123,7 @@ export function NotificationsScreen() {
         />
       );
     },
-    [actions.openMenu, actions.openNotification, colors, handleMarkRead, spacing.gutter],
+    [actions.openMenu, actions.openNotification, colors, handleMarkRead, spacing.gutter, styles],
   );
 
   const status = notifications.isPending ? 'pending' : notifications.isError ? 'error' : 'success';
@@ -258,13 +259,13 @@ export function NotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   root: { flex: 1 },
   headerRow: { flexDirection: 'row', alignItems: 'center' },
   headerTitle: { flex: 1 },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  pills: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 },
-  groupHeader: { height: 40, justifyContent: 'center' },
+  pills: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: s(8) },
+  groupHeader: { height: s(40), justifyContent: 'center' },
   pinnedHairline: { position: 'absolute', left: 0, right: 0, bottom: 0, height: StyleSheet.hairlineWidth },
   manage: { flexDirection: 'row', alignItems: 'center' },
-});
+}));

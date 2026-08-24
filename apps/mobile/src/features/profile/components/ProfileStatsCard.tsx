@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { ProfileStats } from '@/data/models';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { AnimatedNumber } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
@@ -15,6 +15,7 @@ const DIVIDER_HEIGHT = 40;
 /** Figma 1:2208 — 12 Applications · 2 Interviews · 87 Avg ATS score, values counting up. */
 export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
   const { colors, spacing } = useTheme();
+  const styles = useStyles();
 
   const cells = [
     { key: 'applications', value: stats.applications, label: 'Applications' },
@@ -51,8 +52,8 @@ export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   card: { flexDirection: 'row', alignItems: 'center' },
   cellWrap: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  cell: { flex: 1, alignItems: 'center', gap: 2 },
-});
+  cell: { flex: 1, alignItems: 'center', gap: s(2) },
+}));

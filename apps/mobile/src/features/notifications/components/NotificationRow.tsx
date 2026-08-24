@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import type { Notification } from '@/data/models';
 import { formatFeedTime, parseBold, stripBold } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { SwipeableRow } from '@/ui/SwipeableRow';
 import { Text } from '@/ui/Text';
@@ -32,6 +32,7 @@ export const NotificationRow = memo(function NotificationRow({
   onMore,
 }: NotificationRowProps) {
   const { colors, spacing } = useTheme();
+  const styles = useStyles();
   const unread = !notification.read;
 
   const runs = parseBold(notification.body);
@@ -153,11 +154,11 @@ export const NotificationRow = memo(function NotificationRow({
   );
 });
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { flexDirection: 'row', alignItems: 'flex-start' },
   body: { flex: 1 },
-  bodyText: { paddingRight: 8 },
+  bodyText: { paddingRight: s(8) },
   stack: { flexDirection: 'row', alignItems: 'center' },
-  stacked: { borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  dot: { marginTop: 8 },
-});
+  stacked: { borderWidth: s(2), alignItems: 'center', justifyContent: 'center' },
+  dot: { marginTop: s(8) },
+}));

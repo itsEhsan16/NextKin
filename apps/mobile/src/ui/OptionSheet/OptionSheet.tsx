@@ -1,8 +1,8 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { a11yHeader, hitSlop8 } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Sheet } from '@/ui/Sheet';
@@ -37,6 +37,7 @@ export function OptionSheetBody<K extends string = string>({
   onClose,
 }: OptionSheetBodyProps<K>) {
   const { colors, sizes, spacing } = useTheme();
+  const styles = useStyles();
 
   return (
     <View style={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing[4] }}>
@@ -106,8 +107,8 @@ export function OptionSheet<K extends string = string>({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   row: { flexDirection: 'row', alignItems: 'center' },
-  labels: { flex: 1, gap: 2 },
-});
+  labels: { flex: 1, gap: s(2) },
+}));

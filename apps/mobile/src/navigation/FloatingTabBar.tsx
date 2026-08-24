@@ -9,7 +9,7 @@ import JobsIcon from '../../assets/icons/nav/jobs.svg';
 import ProfileIcon from '../../assets/icons/nav/profile.svg';
 import ResumesIcon from '../../assets/icons/nav/resumes.svg';
 import { haptics } from '@/lib';
-import { useLayoutScale, useTabBarLayout, useTheme } from '@/theme';
+import { scaledSheet, useLayoutScale, useTabBarLayout, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { sheetBackgroundA11yProps } from '@/ui/Sheet';
 import { Text } from '@/ui/Text';
@@ -98,6 +98,7 @@ const TabItem = memo(function TabItem({
   onPress,
 }: TabItemProps) {
   const { colors, motion } = useTheme();
+  const styles = useStyles();
   const active = useSharedValue(focused ? 1 : 0);
 
   useEffect(() => {
@@ -149,6 +150,7 @@ const TabItem = memo(function TabItem({
  */
 export function FloatingTabBar() {
   const { colors, shadows } = useTheme();
+  const styles = useStyles();
   const layout = useTabBarLayout();
   const { s } = useLayoutScale();
   const router = useRouter();
@@ -225,9 +227,9 @@ export function FloatingTabBar() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   host: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  pill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 },
-  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%', gap: 3 },
+  pill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: s(6) },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%', gap: s(3) },
   fabSlot: { flex: 1 },
-});
+}));

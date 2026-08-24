@@ -1,10 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
 import { SUBSCRIPTION_PLAN_LABEL, type Subscription } from '@/data/models';
 import { a11yButton } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -21,6 +21,7 @@ const CHEVRON = 10;
 /** Figma 1:2229 — "NextKin Free · 2 of 2 resumes · 5 AI credits left · Upgrade ›". */
 export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
   const { usage } = subscription;
   const summary = `${usage.resumesUsed} of ${usage.resumesLimit} resumes · ${usage.aiCreditsLeft} AI credits left`;
   const plan = SUBSCRIPTION_PLAN_LABEL[subscription.plan];
@@ -67,8 +68,8 @@ export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
-  copy: { flex: 1, gap: 1 },
+  copy: { flex: 1, gap: s(1) },
   upgrade: { flexDirection: 'row', alignItems: 'center' },
-});
+}));

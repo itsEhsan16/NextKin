@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { useCallback, useRef, useState } from 'react';
-import { RefreshControl, StyleSheet, View, type ScrollView } from 'react-native';
+import { RefreshControl, View, type ScrollView } from 'react-native';
 
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
@@ -22,7 +22,7 @@ import {
 } from '@/data/queries';
 import { a11yButton, a11yHeader, formatLakh, pluralize } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
-import { useAppearanceStore, useTheme } from '@/theme';
+import { scaledSheet, useAppearanceStore, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { IconButton } from '@/ui/IconButton';
 import { ListRow, RowGroup } from '@/ui/ListRow';
@@ -50,6 +50,7 @@ const VERSION_LINE = `NextKin ${Constants.expoConfig?.version ?? '1.0.0'} (build
  */
 export function ProfileScreen() {
   const { spacing } = useTheme();
+  const styles = useStyles();
   const actions = useProfileActions();
   const queryClient = useQueryClient();
 
@@ -281,12 +282,12 @@ function SignOutIcon() {
   return <FontAwesome5 name="sign-out-alt" size={16} color={colors.danger} solid />;
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   signOut: {
-    minHeight: 58,
+    minHeight: s(58),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

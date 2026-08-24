@@ -1,10 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { atsSectionPassed, type AtsCheckItem, type AtsSection } from '@/data/models';
 import { a11yButton, useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
@@ -26,6 +26,7 @@ const PENDING = 14;
  */
 export function ScoreSection({ section, staggerBase, onFix }: ScoreSectionProps) {
   const { colors, motion, radii, spacing } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
 
   const passed = atsSectionPassed(section);
@@ -104,10 +105,10 @@ export function ScoreSection({ section, staggerBase, onFix }: ScoreSectionProps)
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   itemRow: { flexDirection: 'row', alignItems: 'center' },
   itemBody: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   itemLabel: { flex: 1 },
-  fixPill: { paddingHorizontal: 14, paddingVertical: 5 },
-});
+  fixPill: { paddingHorizontal: s(14), paddingVertical: s(5) },
+}));

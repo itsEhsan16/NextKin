@@ -1,3 +1,5 @@
+import { StyleSheet } from 'react-native';
+
 import {
   buildShadows,
   radii,
@@ -17,7 +19,7 @@ import { typography, type TypeRole, type TypographyRole } from './typography';
  */
 
 /** Scaled tokens are plain numbers; `as const` literals (`readonly 4: 16`) would not accept them. */
-type Widen<T> = { [K in keyof T]: T[K] extends number ? number : T[K] };
+type Widen<T> = { -readonly [K in keyof T]: T[K] extends number ? number : T[K] };
 
 export type Spacing = Widen<typeof spacing>;
 export type Radii = Widen<typeof radii>;
@@ -55,7 +57,14 @@ function scaleRecord<T extends Record<string, number>>(
 
 export const scaleSpacing = (scale: number): Spacing => scaleRecord(spacing, scale, []);
 export const scaleRadii = (scale: number): Radii => scaleRecord(radii, scale, RADII_EXEMPT);
-export const scaleSizes = (scale: number): Sizes => scaleRecord(sizes, scale, SIZES_EXEMPT);
+export function scaleSizes(scale: number): Sizes {
+  const scaled = scaleRecord(sizes, scale, SIZES_EXEMPT);
+  // Not a readability floor: a stroke that rounds to zero physical pixels disappears entirely.
+  // It never binds on a real device — a scaled 1px stroke is already thicker than a hairline.
+  scaled.border = Math.max(StyleSheet.hairlineWidth, scaled.border);
+  scaled.borderThick = Math.max(StyleSheet.hairlineWidth, scaled.borderThick);
+  return scaled;
+}
 export const scaleShadows = (scale: number): Shadows => buildShadows(scale);
 
 export function scaleTypography(scale: number): Typography {

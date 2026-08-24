@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { a11yButton } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -25,6 +25,7 @@ const ICON = 14;
  */
 export function JobDetailActions({ saved, onToggleSave, onApply }: JobDetailActionsProps) {
   const { colors, radii, sizes, spacing } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
 
   return (
@@ -73,7 +74,7 @@ export function JobDetailActions({ saved, onToggleSave, onApply }: JobDetailActi
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   bar: { flexDirection: 'row', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth },
   save: {
     flexBasis: 140,
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: s(1),
   },
   apply: { flex: 1, justifyContent: 'center' },
-});
+}));

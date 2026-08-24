@@ -85,7 +85,12 @@ module.exports = defineConfig([
       ],
       'no-restricted-syntax': [
         'warn',
-        { selector: `${IN_STYLESHEET} > Literal[value!=0]`, message: STYLESHEET_MESSAGE },
+        // `raw` starting with a digit picks out numeric literals, so percentage strings like
+        // '100%' — which are already device-relative — do not trip the rule.
+        {
+          selector: `${IN_STYLESHEET} > Literal[raw=/^[0-9]/][value!=0]`,
+          message: STYLESHEET_MESSAGE,
+        },
         {
           selector: `${IN_STYLESHEET} > UnaryExpression[operator='-']`,
           message: STYLESHEET_MESSAGE,

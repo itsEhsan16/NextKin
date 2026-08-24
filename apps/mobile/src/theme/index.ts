@@ -1,4 +1,5 @@
-import { useColorScheme, useWindowDimensions } from 'react-native';
+import { StyleSheet, useColorScheme, useWindowDimensions } from 'react-native';
+import type { ImageStyle, TextStyle, ViewStyle } from 'react-native';
 
 import { useAppearanceStore } from './appearance';
 import { motion } from './motion';
@@ -126,3 +127,36 @@ export function useTheme(): Theme {
 /** The unscaled, 1:1 artboard themes. Handy in tests; components must use `useTheme()`. */
 export const lightTheme = themeFor('light', sizes.designWidth);
 export const darkTheme = themeFor('dark', sizes.designWidth);
+
+type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle };
+
+/**
+ * `StyleSheet.create` for artboard geometry.
+ *
+ * A plain `StyleSheet.create` runs at module scope, where the device width is unknown, so any
+ * length in it renders at its raw 520px artboard value. This takes a factory instead and hands
+ * it `s()`, so the sheet is built per scale and cached — one sheet per device width, with stable
+ * identity, exactly like the static version.
+ *
+ *   const useStyles = scaledSheet((s) => ({ chip: { paddingHorizontal: s(14) } }));
+ *   // inside the component:
+ *   const styles = useStyles();
+ *
+ * Structural values (flex, alignItems, '100%', hairlineWidth) need no `s()` — only lengths that
+ * were measured on the artboard.
+ */
+export function scaledSheet<T extends NamedStyles<T>>(
+  factory: (s: (px: number) => number) => T & NamedStyles<T>,
+): () => T {
+  const cache = new Map<number, T>();
+
+  return function useScaledStyles(): T {
+    const { scale, s } = useTheme();
+    const cached = cache.get(scale);
+    if (cached) return cached;
+
+    const created = StyleSheet.create(factory(s));
+    cache.set(scale, created);
+    return created;
+  };
+}

@@ -1,8 +1,8 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { a11yButton, a11yHeader, hitSlop8, requestPushPermission } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
 import { Sheet } from '@/ui/Sheet';
@@ -21,6 +21,7 @@ const BELL = 26;
  */
 export function PushPrimerHost() {
   const { colors, radii, sizes, spacing } = useTheme();
+  const styles = useStyles();
 
   const open = useNotificationsStore((state) => state.primerOpen);
   const company = useNotificationsStore((state) => state.primerCompany);
@@ -91,8 +92,8 @@ export function PushPrimerHost() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   center: { alignItems: 'center' },
-  lede: { maxWidth: 340 },
+  lede: { maxWidth: s(340) },
   notNow: { alignSelf: 'center' },
-});
+}));

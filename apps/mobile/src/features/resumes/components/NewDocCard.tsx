@@ -1,8 +1,8 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -17,6 +17,7 @@ const ROW_PLUS = 44;
 /** Dashed "+ New" tile leading the grid (Figma 1:1394). Opens the create sheet. */
 export function NewDocTile({ onPress, style }: NewDocProps) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
 
   return (
     <Pressable
@@ -62,6 +63,7 @@ export function NewDocTile({ onPress, style }: NewDocProps) {
 /** The list layout's dashed "+ New resume or cover letter" row (Figma 1:1616). */
 export function NewDocRow({ onPress, style }: NewDocProps) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
 
   return (
     <Pressable
@@ -99,18 +101,18 @@ export function NewDocRow({ onPress, style }: NewDocProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   tile: {
-    borderWidth: 1,
+    borderWidth: s(1),
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
   },
   row: {
-    borderWidth: 1,
+    borderWidth: s(1),
     borderStyle: 'dashed',
     flexDirection: 'row',
     alignItems: 'center',
   },
   plus: { alignItems: 'center', justifyContent: 'center' },
-});
+}));

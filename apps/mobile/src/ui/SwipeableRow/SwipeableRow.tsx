@@ -1,6 +1,6 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useMemo, useState, type ReactNode } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -48,6 +48,7 @@ export type SwipeableRowProps = {
  */
 export function SwipeableRow({ actions, onFullSwipe, children }: SwipeableRowProps) {
   const { colors, motion } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
 
   const [rowWidth, setRowWidth] = useState(0);
@@ -159,7 +160,7 @@ export function SwipeableRow({ actions, onFullSwipe, children }: SwipeableRowPro
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { overflow: 'hidden' },
   actions: {
     position: 'absolute',
@@ -168,5 +169,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
   },
-  action: { alignItems: 'center', justifyContent: 'center', gap: 8 },
-});
+  action: { alignItems: 'center', justifyContent: 'center', gap: s(8) },
+}));

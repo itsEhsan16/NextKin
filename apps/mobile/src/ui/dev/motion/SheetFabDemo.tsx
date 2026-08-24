@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
 const SHEET_HEIGHT = 200;
@@ -24,6 +24,7 @@ const FAB_ICON_SIZE = 22;
  */
 export function SheetFabDemo() {
   const { colors, spacing, radii, sizes, shadows, motion } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
@@ -133,8 +134,8 @@ export function SheetFabDemo() {
   );
 }
 
-const styles = StyleSheet.create({
-  stage: { overflow: 'hidden', borderWidth: 1 },
+const useStyles = scaledSheet((s) => ({
+  stage: { overflow: 'hidden', borderWidth: s(1) },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   handle: { alignSelf: 'center' },
   fab: {
@@ -143,4 +144,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

@@ -6,7 +6,7 @@ import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
 import { ATS_BAND_LABEL, atsQuickWins, type AtsBand } from '@/data/models';
 import { useResume, useResumeScore } from '@/data/queries';
 import { a11yButton, a11yHeader, pluralize } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { ScoreRing } from '@/ui/Progress';
@@ -45,6 +45,7 @@ const BAND_TEXT: Record<AtsBand, ColorToken> = {
  */
 export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
   const { colors, radii, shadows, spacing } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const actions = useResumesActions();
 
@@ -211,14 +212,14 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   root: { flex: 1 },
   fill: { flex: 1 },
   headerRow: { flexDirection: 'row', alignItems: 'center' },
   headerTitle: { flex: 1 },
-  headerSpacer: { width: 48 },
-  summary: { maxWidth: 320 },
+  headerSpacer: { width: s(48) },
+  summary: { maxWidth: s(320) },
   recalcRow: { flexDirection: 'row', alignItems: 'center' },
   stickyBar: { borderTopWidth: StyleSheet.hairlineWidth },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-});
+}));

@@ -1,10 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { memo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { REMOTE_TYPE_LABEL, type Job } from '@/data/models';
 import { a11yButton, formatJobMeta, formatSalary } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { LogoTile } from '@/ui/LogoTile';
 import { Pressable } from '@/ui/Pressable';
@@ -20,6 +20,7 @@ export const SimilarJobCard = memo(function SimilarJobCard({
   onPress,
 }: SimilarJobCardProps) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
   const meta = formatJobMeta([job.company, job.location, REMOTE_TYPE_LABEL[job.remote]]);
   const salary = job.salary ? formatSalary(job.salary) : undefined;
 
@@ -54,7 +55,7 @@ export const SimilarJobCard = memo(function SimilarJobCard({
   );
 });
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
-  copy: { flex: 1, gap: 2 },
-});
+  copy: { flex: 1, gap: s(2) },
+}));

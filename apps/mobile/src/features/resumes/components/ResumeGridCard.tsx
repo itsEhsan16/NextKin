@@ -4,7 +4,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Resume } from '@/data/models';
 import { a11yButton, formatRelativeTime, hitSlopFor } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -44,6 +44,7 @@ export const ResumeGridCard = memo(function ResumeGridCard({
   style,
 }: ResumeGridCardProps) {
   const { colors, spacing } = useTheme();
+  const styles = useStyles();
 
   return (
     <Card radius="card" shadow="jobCard" padding={PAD} style={style}>
@@ -104,8 +105,8 @@ export const ResumeGridCard = memo(function ResumeGridCard({
   );
 });
 
-const styles = StyleSheet.create({
-  badge: { position: 'absolute', right: 3, bottom: 0 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+const useStyles = scaledSheet((s) => ({
+  badge: { position: 'absolute', right: s(3), bottom: 0 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', marginTop: s(2) },
   title: { flex: 1 },
-});
+}));

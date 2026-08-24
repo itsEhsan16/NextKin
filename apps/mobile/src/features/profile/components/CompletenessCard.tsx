@@ -1,10 +1,9 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet } from 'react-native';
 import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
 
 import type { Profile } from '@/data/models';
 import { a11yButton, formatPercent, useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar } from '@/ui/Progress';
@@ -24,6 +23,7 @@ const PLUS = 9;
  */
 export function CompletenessCard({ profile, onCompleteStep }: CompletenessCardProps) {
   const { colors, motion, radii, spacing } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
 
   return (
@@ -80,13 +80,13 @@ export function CompletenessCard({ profile, onCompleteStep }: CompletenessCardPr
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   chips: { flexDirection: 'row', flexWrap: 'wrap' },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    borderWidth: s(1),
+    paddingHorizontal: s(14),
+    paddingVertical: s(7),
   },
-});
+}));

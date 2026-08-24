@@ -1,8 +1,8 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { AiBadge } from '@/ui/AiBadge';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -39,6 +39,7 @@ export function SheetRow({
   style,
 }: SheetRowProps) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
 
   const tile: { bg: string; fg: ColorToken } =
     tone === 'brand'
@@ -81,9 +82,9 @@ export function SheetRow({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
-  text: { flex: 1, gap: 4 },
+  text: { flex: 1, gap: s(4) },
   labelRow: { flexDirection: 'row', alignItems: 'center' },
   label: { flexShrink: 1 },
-});
+}));

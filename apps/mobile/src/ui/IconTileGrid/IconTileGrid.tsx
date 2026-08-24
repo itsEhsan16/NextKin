@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
-import { useTheme, type TypographyRole } from '@/theme';
+import { scaledSheet, useTheme, type TypographyRole } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -51,6 +51,7 @@ export function IconTileGrid<K extends string = string>({
   style,
 }: IconTileGridProps<K>) {
   const { spacing } = useTheme();
+  const styles = useStyles();
 
   return (
     <View style={[styles.grid, style]}>
@@ -88,8 +89,8 @@ export function IconTileGrid<K extends string = string>({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   grid: { flexDirection: 'row', alignItems: 'flex-start' },
-  item: { flex: 1, alignItems: 'center', paddingHorizontal: 2 },
+  item: { flex: 1, alignItems: 'center', paddingHorizontal: s(2) },
   iconBox: { alignItems: 'center' },
-});
+}));

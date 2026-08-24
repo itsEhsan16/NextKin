@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  StyleSheet,
   View,
   type AccessibilityActionEvent,
   type LayoutChangeEvent,
@@ -17,7 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { hitSlopFor, useReducedMotion, withReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 
 import { clampHigh, clampLow, fractionOf, pxToValue, quantise } from './rangeMath';
 
@@ -78,6 +77,7 @@ export function RangeSlider({
   style,
 }: RangeSliderProps) {
   const { colors, radii, shadows, motion } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
 
   const [trackWidth, setTrackWidth] = useState(0);
@@ -252,10 +252,10 @@ export function RangeSlider({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   track: { height: THUMB, justifyContent: 'center' },
   rail: { position: 'absolute', left: 0, right: 0 },
   // `left`/`width` are driven by the worklet, so this one must not also pin `right`.
   fill: { position: 'absolute' },
-  thumb: { position: 'absolute', left: 0, borderWidth: 2 },
-});
+  thumb: { position: 'absolute', left: 0, borderWidth: s(2) },
+}));

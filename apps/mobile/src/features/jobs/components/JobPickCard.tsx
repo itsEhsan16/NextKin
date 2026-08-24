@@ -1,10 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { memo, useCallback, useMemo } from 'react';
-import { StyleSheet, View, type AccessibilityActionEvent } from 'react-native';
+import { View, type AccessibilityActionEvent } from 'react-native';
 
 import { EMPLOYMENT_TYPE_LABEL, MATCH_BAND_LABEL, type Job } from '@/data/models';
 import { a11yButton, formatJobMeta, formatSalary, hitSlopFor } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { scaledSheet, useLayoutScale, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { LogoTile } from '@/ui/LogoTile';
 import { Pressable } from '@/ui/Pressable';
@@ -38,6 +38,7 @@ export const JobPickCard = memo(function JobPickCard({
   onToggleSave,
 }: JobPickCardProps) {
   const { colors, radii, spacing } = useTheme();
+  const styles = useStyles();
   const { s } = useLayoutScale();
 
   const meta = formatJobMeta([job.company, job.location, REMOTE_LABEL[job.remote]]);
@@ -133,8 +134,8 @@ export const JobPickCard = memo(function JobPickCard({
   );
 });
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   topRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   pills: { flexDirection: 'row', alignItems: 'center' },
-  pill: { paddingHorizontal: 12, paddingVertical: 5 },
-});
+  pill: { paddingHorizontal: s(12), paddingVertical: s(5) },
+}));

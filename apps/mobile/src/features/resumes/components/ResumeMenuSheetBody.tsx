@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import type { Resume } from '@/data/models';
 import { a11yButton } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { AiBadge } from '@/ui/AiBadge';
 import { ConfirmSheetBody } from '@/ui/ConfirmSheet';
 import { Pressable } from '@/ui/Pressable';
@@ -46,6 +46,7 @@ type MenuRowProps = {
 
 function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: MenuRowProps) {
   const { colors, spacing } = useTheme();
+  const styles = useStyles();
   const color: ColorToken = tone === 'brand' ? 'brand' : tone === 'danger' ? 'danger' : 'textBody';
   const labelColor: ColorToken =
     tone === 'brand' ? 'brand' : tone === 'danger' ? 'danger' : 'textPrimary';
@@ -95,6 +96,7 @@ export function ResumeMenuSheetBody({
   onCancelDelete,
 }: ResumeMenuSheetBodyProps) {
   const { colors, spacing } = useTheme();
+  const styles = useStyles();
 
   if (step === 'confirm-delete') {
     const coverLetter = resume.docType === 'cover_letter';
@@ -175,11 +177,11 @@ export function ResumeMenuSheetBody({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   header: { flexDirection: 'row', alignItems: 'center' },
-  headerText: { flex: 1, gap: 2 },
+  headerText: { flex: 1, gap: s(2) },
   divider: { height: StyleSheet.hairlineWidth },
   row: { flexDirection: 'row', alignItems: 'center' },
   iconSlot: { width: ICON_SLOT, alignItems: 'center' },
   spacer: { flex: 1 },
-});
+}));
