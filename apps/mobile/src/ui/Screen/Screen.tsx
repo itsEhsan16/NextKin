@@ -44,7 +44,7 @@ export function Screen({
   scrollRef,
   children,
 }: ScreenProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, sizes } = useTheme();
   const insets = useSafeAreaInsets();
   const tabBar = useTabBarLayout();
 
@@ -66,8 +66,13 @@ export function Screen({
     () => ({
       paddingHorizontal: padded ? spacing.gutter : 0,
       paddingBottom: tabBarSpace,
+      // Past the artboard width the design stops growing and centres, rather than stretching
+      // a 520px layout across a tablet.
+      width: '100%',
+      maxWidth: sizes.designWidth,
+      alignSelf: 'center',
     }),
-    [padded, spacing.gutter, tabBarSpace],
+    [padded, sizes.designWidth, spacing.gutter, tabBarSpace],
   );
 
   if (scroll) {
