@@ -63,7 +63,6 @@ const FAB_SLOT_AFTER = 1;
  * Floor for icon shrinkage, as a fraction of the designed size — glyphs stay legible on narrow
  * screens. Applied to width and height alike so the aspect ratio survives the clamp.
  */
-const ICON_MIN_RATIO = 18 / 21;
 
 function activeTabFor(segments: readonly string[]): TabName {
   for (const segment of segments) {
@@ -211,8 +210,8 @@ export function FloatingTabBar() {
               label={tab.label}
               Icon={tab.Icon}
               focused={tab.name === active}
-              iconWidth={s(tab.w, tab.w * ICON_MIN_RATIO)}
-              iconHeight={s(tab.h, tab.h * ICON_MIN_RATIO)}
+              iconWidth={s(tab.w)}
+              iconHeight={s(tab.h)}
               onPress={handlePress}
             />
           );

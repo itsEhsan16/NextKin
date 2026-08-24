@@ -76,14 +76,14 @@ export function ShortcutGrid({ stats, onShortcut }: ShortcutGridProps) {
         label,
         // Blank (not absent) while counters load, so the tile height stays put.
         sublabel: subLabel(key, stats) ?? ' ',
-        icon: render({ width: s(w, 28), height: s(h, 28) }),
+        icon: render({ width: s(w), height: s(h) }),
       })),
     [s, stats],
   );
 
   return (
-    <Card style={{ paddingTop: s(28, 20), paddingBottom: s(20, 14), paddingHorizontal: s(20, 10) }}>
-      <IconTileGrid items={items} onPress={onShortcut} iconBoxHeight={s(ICON_ROW, 38)} />
+    <Card style={{ paddingTop: s(28), paddingBottom: s(20), paddingHorizontal: s(20) }}>
+      <IconTileGrid items={items} onPress={onShortcut} iconBoxHeight={s(ICON_ROW)} />
     </Card>
   );
 }

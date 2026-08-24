@@ -50,7 +50,7 @@ export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: 
     >
       <Card padding={spacing[4]} style={{ gap: 0 }}>
         <View style={[styles.topRow, { paddingBottom: spacing[3] }]}>
-          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(44, 36)} />
+          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(44)} />
           {job.matchScore != null ? (
             <StatBadge value={formatPercent(job.matchScore)} label="Match" />
           ) : null}

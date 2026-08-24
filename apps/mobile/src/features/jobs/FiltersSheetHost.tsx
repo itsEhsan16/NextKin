@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { EMPTY_JOB_FILTERS } from '@/data/models';
 import { useJobCount } from '@/data/queries';
 import { useDebouncedValue } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Sheet } from '@/ui/Sheet';
 
 import { FiltersSheetBody } from './components/FiltersSheetBody';
@@ -19,7 +19,6 @@ import { useJobsStore } from './jobsStore';
  */
 export function FiltersSheetHost() {
   const { sizes } = useTheme();
-  const { s } = useLayoutScale();
 
   const open = useJobsStore((state) => state.filtersOpen);
   const draft = useJobsStore((state) => state.draft);
@@ -57,7 +56,7 @@ export function FiltersSheetHost() {
       // The dismiss pan would fight both the scrolling body and the salary thumbs. The ✕, the
       // scrim and Android back all still dismiss, so swipe is not the only exit.
       swipeToDismiss={false}
-      height={s(sizes.sheetFiltersHeight, 560)}
+      height={sizes.sheetFiltersHeight}
       accessibilityLabel="Filters"
     >
       <FiltersSheetBody

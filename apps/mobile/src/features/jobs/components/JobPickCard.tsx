@@ -65,9 +65,9 @@ export const JobPickCard = memo(function JobPickCard({
       onPress={() => onPress(job)}
       style={{ width }}
     >
-      <Card padding={s(17, 13)} elevated shadow="jobCard" style={{ gap: 0 }}>
+      <Card padding={s(17)} elevated shadow="jobCard" style={{ gap: 0 }}>
         <View style={styles.topRow}>
-          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO, 34)} />
+          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO)} />
           <Pressable
             {...a11yButton(saveLabel)}
             accessibilityState={{ selected: job.isSaved }}

@@ -2,6 +2,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { useArtboardStore } from '@/dev';
 import { a11yButton, haptics } from '@/lib';
 import { useAppearanceStore, useTheme, type AppearancePreference } from '@/theme';
 import { Screen, Text } from '@/ui';
@@ -28,6 +29,8 @@ const CHEVRON_SIZE = 14;
 export default function DevIndexRoute() {
   const { colors, spacing, radii, sizes, opacity, scheme } = useTheme();
   const router = useRouter();
+  const artboard = useArtboardStore((s) => s.enabled);
+  const setArtboard = useArtboardStore((s) => s.setEnabled);
   const preference = useAppearanceStore((s) => s.preference);
   const setPreference = useAppearanceStore((s) => s.setPreference);
 
@@ -67,6 +70,16 @@ export default function DevIndexRoute() {
               <FontAwesome5 name="chevron-right" size={CHEVRON_SIZE} color={colors.iconChevron} />
             </Pressable>
           ))}
+        </View>
+      </DevSection>
+
+      <DevSection
+        title="Artboard mode"
+        description="Lays the app out at the 520px artboard width and scales it to fit. Toggle it on any screen: if nothing moves the scaling is complete; anything that jumps is an unscaled 520-space literal."
+      >
+        <View style={[styles.segments, { gap: spacing[2] }]}>
+          <DevButton label="Off" active={!artboard} onPress={() => setArtboard(false)} grow />
+          <DevButton label="On" active={artboard} onPress={() => setArtboard(true)} grow />
         </View>
       </DevSection>
 

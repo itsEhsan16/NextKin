@@ -76,20 +76,20 @@ export function QuickStartCard({ onAction }: QuickStartCardProps) {
         key,
         label,
         sublabel: hint,
-        icon: render({ width: s(w, 36), height: s(h, 40) }),
+        icon: render({ width: s(w), height: s(h) }),
       })),
     [s],
   );
 
   return (
-    <Card style={{ paddingVertical: s(25, 18), paddingHorizontal: s(21, 14), gap: spacing[4] }}>
+    <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
       <Text accessibilityRole="header" variant="section">
         Quick Start
       </Text>
       <IconTileGrid
         items={items}
         onPress={onAction}
-        iconBoxHeight={s(ICON_ROW_HEIGHT, 48)}
+        iconBoxHeight={s(ICON_ROW_HEIGHT)}
         iconAlign="flex-end"
         labelVariant="captionSemiBold"
         sublabelVariant="micro"

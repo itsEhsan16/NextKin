@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Avatar } from '@/ui/Avatar';
 import { IconButton } from '@/ui/IconButton';
 import { Skeleton } from '@/ui/Skeleton';
@@ -25,8 +25,7 @@ export function HomeHeader({
   onPressMenu,
 }: HomeHeaderProps) {
   const { spacing, sizes } = useTheme();
-  const { s } = useLayoutScale();
-  const avatarSize = s(sizes.avatarHeader, 44);
+  const avatarSize = sizes.avatarHeader;
 
   return (
     <View style={[styles.row, { height: avatarSize }]}>

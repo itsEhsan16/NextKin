@@ -26,7 +26,7 @@ const CARD_GAP = 16;
 export function TopJobMatches({ jobs, status, onViewAll, onPressJob, onRetry }: TopJobMatchesProps) {
   const { spacing } = useTheme();
   const { s } = useLayoutScale();
-  const cardWidth = s(CARD_WIDTH, 220);
+  const cardWidth = s(CARD_WIDTH);
 
   const renderItem = useCallback<ListRenderItem<Job>>(
     ({ item }) => <JobMatchCard job={item} width={cardWidth} onPress={onPressJob} />,

@@ -217,11 +217,14 @@ export const sizes = {
   /** Header chrome from the Home screen. */
   headerButton: 48,
   unreadDot: 8,
+  /** Figma's 1px stroke, and the 2px rings (avatar stack, score ring, filter button). */
+  border: 1,
+  borderThick: 2,
   /** Width of the artboards in the Figma file; see useLayoutScale(). */
   designWidth: 520,
 } as const;
 
-type ShadowStyle = {
+export type ShadowStyle = {
   boxShadow?: string;
   elevation?: number;
   shadowColor?: string;
@@ -230,40 +233,53 @@ type ShadowStyle = {
   shadowRadius?: number;
 };
 
-const shadow = (
-  x: number,
-  y: number,
-  blur: number,
-  alpha: number,
-  elevation: number,
-): ShadowStyle =>
-  // RN 0.76+ renders boxShadow natively on Android too, where `elevation` independently paints
-  // its own shadow — emitting both stacks two shadows. Elevation still owns Android's sibling
-  // z-ordering, so keep elevation there and boxShadow (which honours the Figma offsets) on iOS.
+/** A shadow as drawn in Figma. Offsets and blur are design px; alpha and elevation are not. */
+export type ShadowSpec = { x: number; y: number; blur: number; alpha: number; elevation: number };
+
+/**
+ * Shadow geometry straight off the artboards. Kept as data rather than pre-built styles so
+ * `scaleShadows()` can rebuild them at the device scale — see src/theme/scaleTheme.ts.
+ */
+export const shadowSpecs = {
+  tabBar: { x: 0, y: -3.4, blur: 8.5, alpha: 0.12, elevation: 8 },
+  fab: { x: 0, y: 6, blur: 12, alpha: 0.18, elevation: 10 },
+  stickyBarUp: { x: 0, y: -2, blur: 7, alpha: 0.07, elevation: 6 },
+  card: { x: 0, y: 1, blur: 2, alpha: 0.05, elevation: 1 },
+  sheet: { x: 0, y: -4, blur: 32, alpha: 0.18, elevation: 12 },
+  /** Segmented-control active pill (Figma 1:284). */
+  segmentPill: { x: 0, y: 1, blur: 3, alpha: 0.08, elevation: 2 },
+  /** Jobs cards use a slightly tighter shadow than the Home cards (Figma 1:301). */
+  jobCard: { x: 0, y: 1, blur: 1, alpha: 0.05, elevation: 1 },
+  /** Salary range slider thumb (Figma 1:801). */
+  sliderThumb: { x: 0, y: 1, blur: 4, alpha: 0.15, elevation: 3 },
+  /** Floating page in the resumes first-run illustration (Figma 1:2067). */
+  docFloat: { x: 0, y: 6, blur: 20, alpha: 0.1, elevation: 6 },
+  /** Toggle knob (Figma 1:2722). */
+  knob: { x: 0, y: 1, blur: 2, alpha: 0.18, elevation: 2 },
+  /** Toast over a scrim-less page (Figma 1:2924). */
+  toast: { x: 0, y: 4, blur: 9, alpha: 0.28, elevation: 8 },
+} as const satisfies Record<string, ShadowSpec>;
+
+export type ShadowToken = keyof typeof shadowSpecs | 'none';
+
+// RN 0.76+ renders boxShadow natively on Android too, where `elevation` independently paints
+// its own shadow — emitting both stacks two shadows. Elevation still owns Android's sibling
+// z-ordering, so keep elevation there and boxShadow (which honours the Figma offsets) on iOS.
+const toShadowStyle = ({ x, y, blur, alpha, elevation }: ShadowSpec, scale: number): ShadowStyle =>
   Platform.OS === 'android'
     ? { elevation }
-    : { boxShadow: `${x}px ${y}px ${blur}px rgba(0, 0, 0, ${alpha})` };
+    : { boxShadow: `${x * scale}px ${y * scale}px ${blur * scale}px rgba(0, 0, 0, ${alpha})` };
 
-export const shadows = {
-  none: {} as ShadowStyle,
-  tabBar: shadow(0, -3.4, 8.5, 0.12, 8),
-  fab: shadow(0, 6, 12, 0.18, 10),
-  stickyBarUp: shadow(0, -2, 7, 0.07, 6),
-  card: shadow(0, 1, 2, 0.05, 1),
-  sheet: shadow(0, -4, 32, 0.18, 12),
-  /** Segmented-control active pill (Figma 1:284). */
-  segmentPill: shadow(0, 1, 3, 0.08, 2),
-  /** Jobs cards use a slightly tighter shadow than the Home cards (Figma 1:301). */
-  jobCard: shadow(0, 1, 1, 0.05, 1),
-  /** Salary range slider thumb (Figma 1:801). */
-  sliderThumb: shadow(0, 1, 4, 0.15, 3),
-  /** Floating page in the resumes first-run illustration (Figma 1:2067). */
-  docFloat: shadow(0, 6, 20, 0.1, 6),
-  /** Toggle knob (Figma 1:2722). */
-  knob: shadow(0, 1, 2, 0.18, 2),
-  /** Toast over a scrim-less page (Figma 1:2924). */
-  toast: shadow(0, 4, 9, 0.28, 8),
-} as const;
+/** Builds the shadow style map at a given scale. Offsets and blur scale; alpha and elevation do not. */
+export function buildShadows(scale: number): Record<ShadowToken, ShadowStyle> {
+  const built = { none: {} } as Record<ShadowToken, ShadowStyle>;
+  for (const [key, spec] of Object.entries(shadowSpecs)) {
+    built[key as keyof typeof shadowSpecs] = toShadowStyle(spec, scale);
+  }
+  return built;
+}
+
+export const shadows = buildShadows(1);
 
 export const opacity = {
   disabled: 0.4,

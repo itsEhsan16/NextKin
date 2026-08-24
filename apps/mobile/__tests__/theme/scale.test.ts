@@ -1,8 +1,13 @@
 import { layoutScaleFor, sizes, spacing, tabBarLayoutFor } from '@/theme';
 
-/** Figma artboards are 520 wide; phones are 360–430dp. */
+/**
+ * Figma artboards are 520 wide; phones are 360–430dp. Everything measured on the artboard —
+ * type included — scales by width/520, with no per-value floors: a floor makes one element stop
+ * shrinking while its neighbours carry on, which is how text outgrows the box drawn around it.
+ */
 const IPHONE_14 = 390;
 const SMALL_ANDROID = 360;
+const NARROWEST_PHONE = 320;
 const TABLET = 700;
 
 describe('layoutScaleFor', () => {
@@ -12,26 +17,37 @@ describe('layoutScaleFor', () => {
     expect(layout.s(130)).toBe(130);
   });
 
-  it('scales fixed geometry down proportionally on phones', () => {
+  it('scales the whole artboard down proportionally on phones', () => {
     const layout = layoutScaleFor(IPHONE_14);
     expect(layout.scale).toBeCloseTo(390 / 520, 5);
     expect(layout.s(130)).toBeCloseTo(97.5, 1);
-    expect(layout.contentWidth).toBe(IPHONE_14 - spacing.gutter * 2);
+    // The gutter is artboard geometry too, so content keeps Figma's 472/520 share of the frame.
+    expect(layout.contentWidth).toBeCloseTo(IPHONE_14 - spacing.gutter * (390 / 520) * 2, 5);
+    expect(layout.contentWidth / IPHONE_14).toBeCloseTo(472 / 520, 5);
   });
 
   it('never scales above 1:1 on wide screens', () => {
     expect(layoutScaleFor(TABLET).scale).toBe(1);
   });
 
-  it('clamps at the floor so tap targets stay usable on tiny screens', () => {
-    expect(layoutScaleFor(200).scale).toBe(0.7);
+  it('stays linear all the way down instead of clamping at a readability floor', () => {
+    // 320dp is the narrowest shipping phone (iPhone SE 1st gen); nothing special happens there.
+    expect(layoutScaleFor(NARROWEST_PHONE).scale).toBeCloseTo(NARROWEST_PHONE / 520, 5);
+    expect(layoutScaleFor(SMALL_ANDROID).scale).toBeCloseTo(SMALL_ANDROID / 520, 5);
   });
 
-  it('honours the per-call minimum', () => {
+  it('bottoms out only on degenerate widths, well below any device', () => {
+    // A sanity bound, not a design floor: guards a 0-width first frame from zeroing every token.
+    expect(layoutScaleFor(0).scale).toBeGreaterThan(0);
+    expect(layoutScaleFor(0).scale).toBeLessThan(NARROWEST_PHONE / 520);
+  });
+
+  it('takes no per-call floor: every value shrinks by the same factor', () => {
     const layout = layoutScaleFor(SMALL_ANDROID);
-    // 21 * (360/520) ≈ 14.5, but nav glyphs must not drop below 18.
-    expect(layout.s(21)).toBeLessThan(18);
-    expect(layout.s(21, 18)).toBe(18);
+    // The nav glyph used to stop at 18. Holding it there while the pill around it shrank is
+    // precisely the mismatch this scale exists to remove.
+    expect(layout.s(21)).toBeCloseTo(21 * (SMALL_ANDROID / 520), 5);
+    expect(layout.s(21) / layout.s(77)).toBeCloseTo(21 / 77, 5);
   });
 });
 

@@ -77,8 +77,8 @@ export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: R
   const { colors, shadows, spacing } = useTheme();
   const { s } = useLayoutScale();
 
-  const ghost = { width: s(GHOST.width, 100), height: s(GHOST.height, 132) };
-  const page = { width: s(PAGE.width, 116), height: s(PAGE.height, 150) };
+  const ghost = { width: s(GHOST.width), height: s(GHOST.height) };
+  const page = { width: s(PAGE.width), height: s(PAGE.height) };
 
   return (
     <View style={{ gap: spacing[3] }}>

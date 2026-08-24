@@ -1,3 +1,9 @@
+/**
+ * These assertions are about the design system as drawn — the raw 520px artboard space that
+ * `src/theme/tokens.ts` and `typography.ts` export. They deliberately do NOT run against a
+ * scaled theme: on a phone a 16pt step becomes 12 and a 20pt step becomes 15, so a 4-pt grid is
+ * off-grid by construction. Scaled-output laws live in scaledTheme.test.ts.
+ */
 import {
   colorsByScheme,
   durations,

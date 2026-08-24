@@ -56,8 +56,8 @@ export function ResumeProgressCard({
 }: ResumeProgressCardProps) {
   const { colors, radii, spacing } = useTheme();
   const { s } = useLayoutScale();
-  const thumb = { width: s(THUMB.width, 60), height: s(THUMB.height, 72) };
-  const ring = s(RING, 64);
+  const thumb = { width: s(THUMB.width), height: s(THUMB.height) };
+  const ring = s(RING);
   // Resolve once: for a remote URL this allocates a new { uri } object per call, which would
   // make expo-image re-run its source-change path on every parent render.
   const thumbSource = useMemo(
@@ -66,7 +66,7 @@ export function ResumeProgressCard({
   );
 
   return (
-    <Card style={{ paddingVertical: s(25, 18), paddingHorizontal: s(21, 14), gap: spacing[4] }}>
+    <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
       <SectionHeader title="Your Resume Progress" variant="sectionBold" onAction={onViewAll} />
 
       {status === 'pending' ? (

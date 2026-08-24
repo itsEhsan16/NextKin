@@ -98,9 +98,9 @@ export const JobCard = memo(function JobCard({
       onPress={() => onPress(job)}
       style={style}
     >
-      <Card padding={s(19, 14)} elevated shadow="jobCard" style={{ gap: 0 }}>
+      <Card padding={s(19)} elevated shadow="jobCard" style={{ gap: 0 }}>
         <View style={[styles.topRow, { gap: spacing[4] }]}>
-          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO, 36)} />
+          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO)} />
 
           <View style={styles.headings}>
             <Text variant="title" numberOfLines={1}>

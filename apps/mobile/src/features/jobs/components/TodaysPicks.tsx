@@ -26,7 +26,7 @@ const GAP = 16;
 export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }: TodaysPicksProps) {
   const { spacing } = useTheme();
   const { s } = useLayoutScale();
-  const cardWidth = s(CARD_WIDTH, 240);
+  const cardWidth = s(CARD_WIDTH);
 
   const renderItem = useCallback(
     ({ item }: { item: Job }) => (

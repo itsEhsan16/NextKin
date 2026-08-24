@@ -3,10 +3,10 @@ import { resolveSheetHeight } from '@/ui/Sheet';
 
 /**
  * The create sheet is the case that forced this rule. Its artboard is 600pt tall on a 520pt-wide
- * frame, but the row stack inside it is laid out in unscaled points, so on a narrower phone the
- * descriptions wrap and the content grows past the scaled sheet height. The sheet clips
- * (overflow: 'hidden'), so a fixed height would cut the last row off — and a clipped row is
- * untappable on Android.
+ * frame. The row stack inside it now scales with the frame, so content and sheet shrink together
+ * and the design height normally wins — but it can still be outgrown by the OS font-size step or
+ * a longer localised string. The sheet clips (overflow: 'hidden'), so a fixed height would cut
+ * the last row off, and a clipped row is untappable on Android.
  */
 const IPHONE_14 = 390;
 const IPHONE_SE = 375;
@@ -24,7 +24,7 @@ const base = {
 
 /** Scaled CREATE 01 height, as CreateSheetHost computes it. */
 const designHeightAt = (width: number) =>
-  layoutScaleFor(width).s(sizes.sheetStep1Height, 420);
+  layoutScaleFor(width).s(sizes.sheetStep1Height);
 
 describe('resolveSheetHeight', () => {
   it('uses the design height when the content fits inside it', () => {
@@ -44,10 +44,11 @@ describe('resolveSheetHeight', () => {
     );
   });
 
-  it('grows on the smallest supported width, where the design height hits its floor', () => {
-    // At 360pt the scaled height clamps to the 420 floor while three rows wrap to ~466pt.
+  it('grows on the smallest supported width, with no floor propping the design height up', () => {
+    // 600 x (360/520) = 415.38 — the sheet shrinks with the frame rather than stopping at a
+    // floor, so the rows inside keep their designed share of it.
     const designHeight = designHeightAt(SMALL_ANDROID);
-    expect(designHeight).toBe(420);
+    expect(designHeight).toBeCloseTo(600 * (SMALL_ANDROID / 520), 5);
     expect(resolveSheetHeight({ ...base, designHeight, contentHeight: 466 })).toBe(
       466 + INSET_BOTTOM,
     );
