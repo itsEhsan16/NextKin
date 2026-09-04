@@ -97,7 +97,7 @@ export function HomeScreen() {
 
   if (user.isError) {
     return (
-      <Screen tabBarInset>
+      <Screen>
         <StateView
           tone="danger"
           icon="exclamation-triangle"
@@ -115,18 +115,22 @@ export function HomeScreen() {
       scroll
       tabBarInset
       scrollRef={scrollRef}
-      contentContainerStyle={{ paddingTop: s(16), gap: s(SECTION_GAP) }}
+      // The header's own top padding moved to `headerStyle`; `paddingTop` here replaces the
+      // first `gap` instance, which left with it. Not both — that would double to 24.
+      contentContainerStyle={{ paddingTop: s(SECTION_GAP), gap: s(SECTION_GAP) }}
       refreshControl={refreshControl}
+      headerStyle={{ paddingTop: s(16) }}
+      header={
+        <HomeHeader
+          firstName={user.data?.firstName}
+          avatarUrl={user.data?.avatarUrl}
+          loading={user.isPending}
+          hasUnread={(unread.data ?? 0) > 0}
+          onPressNotifications={actions.openNotifications}
+          onPressMenu={actions.openMenu}
+        />
+      }
     >
-      <HomeHeader
-        firstName={user.data?.firstName}
-        avatarUrl={user.data?.avatarUrl}
-        loading={user.isPending}
-        hasUnread={(unread.data ?? 0) > 0}
-        onPressNotifications={actions.openNotifications}
-        onPressMenu={actions.openMenu}
-      />
-
       {user.isPending ? (
         <HomeSkeleton />
       ) : (

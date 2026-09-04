@@ -123,7 +123,7 @@ export const JobCard = memo(function JobCard({
               accessibilityState={{ selected: affordance === 'saved' }}
               feedback="scale"
               haptic="light"
-              hitSlop={hitSlopFor(AFFORDANCE_ICON)}
+              hitSlop={hitSlopFor(s(AFFORDANCE_ICON))}
               onPress={() => onToggleSave?.(job)}
             >
               <FontAwesome5

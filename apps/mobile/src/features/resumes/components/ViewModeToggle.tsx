@@ -37,11 +37,15 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
   const reduced = useReducedMotion();
 
   const index = value === 'grid' ? 0 : 1;
-  const offset = useSharedValue(INSET + index * CELL);
+  // Device space, like the track and pill they position. The raw artboard form put the pill
+  // 13dp past its cell at 390 and hung it outside the track entirely.
+  const inset = s(INSET);
+  const cell = s(CELL);
+  const offset = useSharedValue(inset + index * cell);
   const mounted = useRef(false);
 
   useEffect(() => {
-    const target = INSET + index * CELL;
+    const target = inset + index * cell;
     if (!mounted.current) {
       // First paint seats the pill with no motion — a persisted "list" preference must not
       // replay a slide from grid on every entry.
@@ -50,7 +54,7 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
       return;
     }
     offset.set(withSpring(target, withReducedMotion(reduced, motion.springs.snappy)));
-  }, [index, motion.springs.snappy, offset, reduced]);
+  }, [cell, index, inset, motion.springs.snappy, offset, reduced]);
 
   const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }));
 
@@ -73,6 +77,7 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
           styles.pill,
           shadows.segmentPill,
           {
+            top: s(INSET),
             width: s(CELL),
             height: s(PILL_HEIGHT),
             borderRadius: radii.md,
@@ -113,6 +118,7 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
 
 const styles = StyleSheet.create({
   track: { flexDirection: 'row', alignItems: 'center' },
-  pill: { position: 'absolute', left: 0, top: INSET },
+  // `top` is set inline from s(INSET) — a raw artboard length here would not scale.
+  pill: { position: 'absolute', left: 0 },
   cell: { flex: 1, height: '100%', alignItems: 'center', justifyContent: 'center' },
 });

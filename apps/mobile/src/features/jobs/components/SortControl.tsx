@@ -25,7 +25,7 @@ export function SortControl({ label, onPress, style }: SortControlProps) {
       {...a11yButton(`Sort by ${label}`, 'Changes the job order')}
       feedback="subtle"
       haptic="selection"
-      hitSlop={hitSlopFor(ROW_HEIGHT)}
+      hitSlop={hitSlopFor(s(ROW_HEIGHT))}
       onPress={onPress}
       style={[styles.row, { gap: spacing[1] + 2 }, style]}
     >

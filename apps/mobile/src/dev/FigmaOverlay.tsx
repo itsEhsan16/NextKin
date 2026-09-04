@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/ui/Text';
 
 import { FIGMA_REFS, overlayGeometryFor } from './figmaRefs';
-import { OPACITY_STEPS, useOverlayStore } from './overlayStore';
+import { BOARDS, OPACITY_STEPS, useOverlayStore } from './overlayStore';
 
 /**
  * Dev-only Figma overlay. Lays the artboard render over the live screen at the same logical
@@ -15,6 +15,10 @@ import { OPACITY_STEPS, useOverlayStore } from './overlayStore';
  * screen you want, then flip it on. Nothing here reaches production — the whole module is
  * mounted behind `__DEV__` in AppProviders.
  *
+ * The file draws every screen on two pages, so the bar carries a 390/520 switch. Geometry is
+ * identical between them; type is not, which is exactly what this is for. On a 390dp phone the
+ * 390 render lands 1:1 and the two can be read glyph for glyph.
+ *
  * The overlay is `pointerEvents: 'none'`, so the app underneath stays usable; only the control
  * bar takes touches.
  */
@@ -23,8 +27,10 @@ export function FigmaOverlay() {
   const nodeId = useOverlayStore((state) => state.nodeId);
   const opacity = useOverlayStore((state) => state.opacity);
   const offsetY = useOverlayStore((state) => state.offsetY);
+  const board = useOverlayStore((state) => state.board);
   const setNodeId = useOverlayStore((state) => state.setNodeId);
   const setOpacity = useOverlayStore((state) => state.setOpacity);
+  const setBoard = useOverlayStore((state) => state.setBoard);
   const nudge = useOverlayStore((state) => state.nudge);
   const hide = useOverlayStore((state) => state.hide);
 
@@ -33,7 +39,8 @@ export function FigmaOverlay() {
 
   if (!__DEV__ || !visible) return null;
 
-  const ref = FIGMA_REFS.find((candidate) => candidate.id === nodeId) ?? FIGMA_REFS[0];
+  const onBoard = FIGMA_REFS.filter((candidate) => candidate.frameWidth === board);
+  const ref = onBoard.find((candidate) => candidate.id === nodeId) ?? onBoard[0];
   if (!ref) return null;
 
   const geometry = overlayGeometryFor(ref, width);
@@ -57,7 +64,7 @@ export function FigmaOverlay() {
 
       <View style={[styles.bar, { paddingBottom: insets.bottom + 8 }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.picker}>
-          {FIGMA_REFS.map((candidate) => (
+          {onBoard.map((candidate) => (
             <Pressable
               key={candidate.id}
               onPress={() => setNodeId(candidate.id)}
@@ -71,6 +78,17 @@ export function FigmaOverlay() {
         </ScrollView>
 
         <View style={styles.controls}>
+          {BOARDS.map((candidate) => (
+            <Pressable
+              key={candidate}
+              onPress={() => setBoard(candidate)}
+              style={[styles.chip, candidate === board && styles.chipOn]}
+            >
+              <Text variant="micro" color={candidate === board ? 'textOnDark' : 'textPrimary'}>
+                {candidate}
+              </Text>
+            </Pressable>
+          ))}
           {OPACITY_STEPS.map((step) => (
             <Pressable
               key={step}

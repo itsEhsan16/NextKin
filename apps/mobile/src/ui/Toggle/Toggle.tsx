@@ -30,13 +30,18 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
   const { colors, motion, radii, shadows, s } = useTheme();
   const reduced = useReducedMotion();
 
+  // Resolved on the JS side: these feed a worklet, and they have to be device space to match
+  // the track and knob drawn around them.
+  const inset = s(INSET);
+  const travel = s(TRAVEL);
+
   const position = useSharedValue(value ? 1 : 0);
   useEffect(() => {
     position.set(withSpring(value ? 1 : 0, withReducedMotion(reduced, motion.springs.snappy)));
   }, [motion.springs.snappy, position, reduced, value]);
 
   const knobStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: INSET + position.value * TRAVEL }],
+    transform: [{ translateX: inset + position.value * travel }],
   }));
 
   return (
@@ -47,7 +52,7 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
       accessibilityState={{ checked: value, disabled }}
       feedback="none"
       haptic="none"
-      hitSlop={hitSlopFor(TRACK.height)}
+      hitSlop={hitSlopFor(s(TRACK.height))}
       disabled={disabled}
       onPress={() => {
         haptics.selection();

@@ -8,6 +8,8 @@ import { createQueryClient } from '@/data/queries';
 import { resetMockRepos } from '@/data/repos';
 import { JobsScreen, useJobsStore } from '@/features/jobs';
 
+import { insideScroller } from '../../../testSupport/scroller';
+
 const mockPush = jest.fn();
 const clients: QueryClient[] = [];
 
@@ -168,5 +170,24 @@ describe('JobsScreen (JOBS 01–03)', () => {
     expect(await screen.findByText("Couldn't load jobs", {}, { timeout: 15000 })).toBeOnTheScreen();
     // Both the picks carousel and the list surface their own retry.
     expect(screen.getAllByLabelText('Try again').length).toBeGreaterThan(0);
+  }, 25000);
+
+  it('pins the title and search rows, leaving the chips and segments scrolling', async () => {
+    await renderJobs();
+
+    // Jobs is the one screen whose scroller is the FlashList rather than Screen's ScrollView.
+    // `jest.setup.ts` mocks FlashList to FlatList, so it bottoms out as the same host element
+    // and the same predicate covers it.
+    for (const node of [
+      screen.getByRole('header', { name: 'Jobs' }),
+      screen.getByLabelText('Search jobs'),
+    ]) {
+      expect(insideScroller(node)).toBe(false);
+    }
+
+    // Everything the crop stopped above still travels with the list.
+    expect(insideScroller(screen.getByLabelText('Remote only'))).toBe(true);
+    expect(insideScroller(screen.getByRole('tab', { name: 'Saved' }))).toBe(true);
+    expect(insideScroller(screen.getByRole('header', { name: 'All jobs' }))).toBe(true);
   }, 25000);
 });

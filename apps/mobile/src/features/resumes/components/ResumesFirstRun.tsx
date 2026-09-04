@@ -93,7 +93,7 @@ export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: R
             styles.ghost,
             ghost,
             { borderRadius: s(14), backgroundColor: colors.surfaceGhost, left: '50%' },
-            { transform: [{ translateX: -ghost.width - 6 }, { translateY: 8 }] },
+            { transform: [{ translateX: -ghost.width - s(6) }, { translateY: s(8) }] },
           ]}
         />
         <View

@@ -46,7 +46,9 @@ export function AvatarStack({ caption, size, style }: AvatarStackProps) {
         ))}
       </View>
       {caption ? (
-        <Text variant="captionRegular" color="textSecondary">
+        // "80+ applied" on the Home job card — the one caption this component renders, and one
+        // the 390 board took the full 0.75 on. See `homeCardMeta` in src/theme/typography.ts.
+        <Text variant="homeCardMeta" color="textSecondary">
           {caption}
         </Text>
       ) : null}

@@ -10,6 +10,7 @@ import {
   CreateSheetProvider,
   Fab,
   FloatingTabBar,
+  TabBarScrim,
   useCreateSheet,
 } from '@/navigation';
 import { sheetBackgroundA11yProps } from '@/ui/Sheet';
@@ -99,7 +100,7 @@ function ChromeLayer({ children }: PropsWithChildren) {
 }
 
 /**
- * Tab shell. Z-order (bottom → top): tab screens → create sheet scrim + sheet → floating pill
+ * Tab shell. Z-order (bottom → top): tab screens → bottom scrim → create sheet scrim + sheet → floating pill
  * → FAB → filters scrim + sheet. Figma CREATE 01/02 put the pill (nodes 77:226 / 77:290) last in
  * the frame, so it paints undimmed over the create sheet and drops its shadow onto it; the FAB
  * stays above both so its rotated "✕" is the visible dismiss affordance (Figma motion note
@@ -112,6 +113,9 @@ export default function TabsLayout() {
   return (
     <CreateSheetProvider>
       <TabsBackdrop />
+      {/* Above the tab screens so it can veil them, below everything else so the create and
+          filters scrims still cover it along with the rest of the chrome. */}
+      <TabBarScrim />
       <CreateSheetHost />
       <ChromeLayer>
         <FloatingTabBar />

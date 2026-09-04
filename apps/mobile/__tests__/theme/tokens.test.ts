@@ -88,12 +88,22 @@ describe('typography', () => {
   });
 
   it.each(roles)('role "%s" has a lineHeight no smaller than its fontSize', (_name, role) => {
-    expect(role.fontSize).toBeGreaterThan(0);
-    expect(role.lineHeight).toBeGreaterThanOrEqual(role.fontSize ?? 0);
+    for (const anchor of [role.at520, role.at390]) {
+      expect(anchor.fontSize).toBeGreaterThan(0);
+      expect(anchor.lineHeight).toBeGreaterThanOrEqual(anchor.fontSize);
+    }
   });
 
   it.each(roles)('role "%s" has a finite letterSpacing', (_name, role) => {
-    expect(Number.isFinite(role.letterSpacing)).toBe(true);
+    expect(Number.isFinite(role.at520.letterSpacing)).toBe(true);
+    expect(Number.isFinite(role.at390.letterSpacing)).toBe(true);
+  });
+
+  it.each(roles)('role "%s" is drawn no larger at 390 than at 520', (_name, role) => {
+    // Mobile 2 is a scale-*down*. A role that grew outright would be a transcription slip —
+    // the tab label is the one that comes closest, and it merely held still.
+    expect(role.at390.fontSize).toBeLessThanOrEqual(role.at520.fontSize);
+    expect(role.at390.lineHeight).toBeLessThanOrEqual(role.at520.lineHeight);
   });
 });
 

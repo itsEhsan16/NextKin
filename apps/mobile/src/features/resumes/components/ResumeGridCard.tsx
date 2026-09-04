@@ -47,7 +47,7 @@ export const ResumeGridCard = memo(function ResumeGridCard({
   const styles = useStyles();
 
   return (
-    <Card radius="card" shadow="jobCard" padding={PAD} style={style}>
+    <Card radius="card" shadow="jobCard" padding={s(PAD)} style={style}>
       <Pressable
         {...a11yButton(summarize(resume))}
         feedback="subtle"
@@ -88,7 +88,7 @@ export const ResumeGridCard = memo(function ResumeGridCard({
             {...a11yButton(`More actions for ${resume.title}`)}
             feedback="subtle"
             haptic="light"
-            hitSlop={hitSlopFor(MENU_ICON)}
+            hitSlop={hitSlopFor(s(MENU_ICON))}
             onPress={() => onOpenMenu(resume)}
           >
             <FontAwesome5 name="ellipsis-h" size={s(MENU_ICON)} color={colors.iconMuted} solid />
@@ -106,7 +106,11 @@ export const ResumeGridCard = memo(function ResumeGridCard({
 });
 
 const useStyles = scaledSheet((s) => ({
-  badge: { position: 'absolute', right: s(3), bottom: 0 },
+  // `bottom` is negative on purpose. RESUMES 01 draws the chip 0.8–1.4 units *below* the
+  // thumbnail's bottom edge (measured off assets/figma/1-1366.png in both card instances), and at
+  // a flat 0 the disc's 6 o'clock tangent lands exactly on the container's own s(1) border, so the
+  // grey line terminates on the arc instead of crossing it and the eye reads a flat bottom.
+  badge: { position: 'absolute', right: s(3), bottom: -s(1) },
   titleRow: { flexDirection: 'row', alignItems: 'center', marginTop: s(12) },
   title: { flex: 1 },
 }));

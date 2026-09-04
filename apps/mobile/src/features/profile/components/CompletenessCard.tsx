@@ -27,7 +27,7 @@ export function CompletenessCard({ profile, onCompleteStep }: CompletenessCardPr
   const reduced = useReducedMotion();
 
   return (
-    <Card radius="card" padding={19} style={{ gap: spacing[3] }}>
+    <Card radius="card" padding={s(19)} style={{ gap: spacing[3] }}>
       <Text variant="label" accessibilityRole="header">
         {`Profile ${formatPercent(profile.completeness)} complete`}
       </Text>

@@ -66,7 +66,7 @@ export function ResumeProgressCard({
 
   return (
     <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
-      <SectionHeader title="Your Resume Progress" variant="sectionBold" onAction={onViewAll} />
+      <SectionHeader title="Your Resume Progress" variant="homeSection" onAction={onViewAll} />
 
       {status === 'pending' ? (
         <View style={[styles.row, { gap: spacing[4] }]}>
@@ -127,10 +127,10 @@ export function ResumeProgressCard({
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text variant="label" numberOfLines={1}>
+              <Text variant="homeResumeTitle" numberOfLines={1}>
                 {resume.title}
               </Text>
-              <Text variant="captionRegular" color="textSecondary" numberOfLines={1}>
+              <Text variant="homeResumeMeta" color="textSecondary" numberOfLines={1}>
                 Last updated {formatRelativeTimeLong(resume.updatedAt)}
               </Text>
               <ProgressBar
@@ -141,7 +141,15 @@ export function ResumeProgressCard({
             </View>
 
             {resume.atsScore != null ? (
-              <ScoreRing score={resume.atsScore} label="ATS Score" size={ring} />
+              // `ringCaption` is sized to clear the ring stroke and tracks it down; the shared
+              // small roles run right up against it. See src/theme/typography.ts.
+              <ScoreRing
+                score={resume.atsScore}
+                label="ATS Score"
+                size={ring}
+                labelVariant="ringCaption"
+                numberVariant="homeRingValue"
+              />
             ) : null}
           </Pressable>
 
@@ -158,11 +166,11 @@ export function ResumeProgressCard({
                   >
                     <FontAwesome5
                       name={ok ? 'check-circle' : 'circle'}
-                      size={s(13)}
+                      size={s(11)}
                       color={ok ? colors.successIcon : colors.iconMuted}
                       solid={ok}
                     />
-                    <Text variant="captionRegular" color="textBody">
+                    <Text variant="homeCheckLabel" color="textBody">
                       {label}
                     </Text>
                   </View>

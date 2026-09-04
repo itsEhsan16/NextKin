@@ -182,6 +182,6 @@ const useStyles = scaledSheet((s) => ({
   headerText: { flex: 1, gap: s(2) },
   divider: { height: StyleSheet.hairlineWidth },
   row: { flexDirection: 'row', alignItems: 'center' },
-  iconSlot: { width: ICON_SLOT, alignItems: 'center' },
+  iconSlot: { width: s(ICON_SLOT), alignItems: 'center' },
   spacer: { flex: 1 },
 }));

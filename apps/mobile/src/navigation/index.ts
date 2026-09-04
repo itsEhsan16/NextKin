@@ -3,3 +3,4 @@ export { CreateSheetProvider, useCreateSheet, type CreateSheetApi } from './crea
 export { Fab } from './Fab';
 export { FloatingTabBar } from './FloatingTabBar';
 export { scrollTabToTop, useTabScrollToTop, type TabName } from './tabScroll';
+export { TabBarScrim } from './TabBarScrim';

@@ -14,14 +14,20 @@ const MARK_LAYERS = [
   { Icon: Mark3, x: 23, y: 21, width: 28, height: 19 },
 ] as const;
 const WORDMARK_X = 65;
-const TAGLINE = "WITH AI THAT WON'T LIE ON YOUR RESUME.";
 
-/** Logo lock-up + tagline (Figma 1:20). Geometry scales with the artboard ratio. */
+/**
+ * The logo lock-up (Figma 1:20 / 115:20).
+ *
+ * The 520 board carries a tagline under the wordmark; the 390 board does not — the container and
+ * its text node are gone, not hidden, though the frame keeps the height they used to occupy.
+ * Mobile 2 is what ships, so the tagline goes and the block hugs the wordmark rather than leaving
+ * a gap where a deleted line used to be.
+ */
 export function BrandBlock() {
   const { s } = useTheme();
 
   return (
-    <View accessible accessibilityRole="header" accessibilityLabel={`NextKin. ${TAGLINE}`}>
+    <View accessible accessibilityRole="header" accessibilityLabel="NextKin">
       <View style={[styles.row, { height: s(MARK_BOX.height) }]}>
         <View style={{ width: s(MARK_BOX.width), height: s(MARK_BOX.height) }}>
           {MARK_LAYERS.map(({ Icon, x, y, width, height }, index) => (
@@ -40,9 +46,6 @@ export function BrandBlock() {
           NextKin
         </Text>
       </View>
-      <Text variant="caption" color="textSecondary" style={{ letterSpacing: s(0.325), marginTop: s(6) }}>
-        {TAGLINE}
-      </Text>
     </View>
   );
 }

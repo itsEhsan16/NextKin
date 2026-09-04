@@ -75,8 +75,24 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
     tickers.delete(id);
   };
 
+  /**
+   * A finished generation becomes the newest ready resume, so it is what Home's "Your Resume
+   * Progress" card shows. It therefore has to arrive shaped like any other ready resume — with a
+   * thumbnail, a completeness fraction and the three validation flags. Setting only the status and
+   * the score left the card as an empty shell: blank thumbnail, unfilled meter, and no checks row
+   * at all, none of which the artboard has a state for.
+   *
+   * The three values are derived from the score rather than invented, so they cannot drift from
+   * the panel the user sees when they open it.
+   */
   const markResumeReady = (resumeId: string | undefined): void => {
     if (!resumeId) return;
+    const score = completedScore();
+    const items = score.sections.flatMap((section) => section.items);
+    const allPassed = (key: string) =>
+      score.sections.find((section) => section.key === key)?.items.every((item) => item.passed) ??
+      false;
+
     store.state.resumes = store.state.resumes.map((resume) =>
       resume.id === resumeId
         ? {
@@ -84,10 +100,18 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
             status: 'ready',
             atsScore: COMPLETED_SCORE,
             updatedAt: new Date().toISOString(),
+            thumbnailUrl: resume.thumbnailUrl ?? 'asset:resume-thumb',
+            completeness: items.filter((item) => item.passed).length / items.length,
+            validation: {
+              timelineValid: allPassed('content'),
+              atsOptimized: allPassed('format'),
+              // Two keyword misses are the whole point of this score — the card must say so.
+              jdMatched: allPassed('keywords'),
+            },
           }
         : resume,
     );
-    store.state.atsScores[resumeId] = completedScore();
+    store.state.atsScores[resumeId] = score;
   };
 
   const tick = (id: string): void => {

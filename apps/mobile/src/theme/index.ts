@@ -6,10 +6,11 @@ import { motion } from './motion';
 import { layoutScaleFor } from './scale';
 import {
   scaleRadii,
+  scaleArtboardShadows,
   scaleShadows,
   scaleSizes,
   scaleSpacing,
-  scaleTypography,
+  typographyFor,
   type Radii,
   type Shadows,
   type Sizes,
@@ -40,6 +41,14 @@ export type Theme = {
   radii: Radii;
   sizes: Sizes;
   shadows: Shadows;
+  /**
+   * The artboard's shadows as CSS, on every platform — see `buildArtboardShadows`.
+   *
+   * `shadows` hands Android a bare `{ elevation }`, which is the right trade for chrome but throws
+   * the drawn offset, blur and alpha away. Use these for a surface painted on its own colour,
+   * where the shadow is the only thing that gives it an edge.
+   */
+  artboardShadows: Shadows;
   opacity: typeof opacity;
   zIndex: typeof zIndex;
   typography: Typography;
@@ -74,9 +83,10 @@ function buildTheme(scheme: ColorScheme, frameWidth: number): Theme {
     radii: scaleRadii(scale),
     sizes: scaleSizes(scale),
     shadows: scaleShadows(scale),
+    artboardShadows: scaleArtboardShadows(scale),
     opacity,
     zIndex,
-    typography: scaleTypography(scale),
+    typography: typographyFor(frameWidth),
     fontFamily,
     motion,
     scale,

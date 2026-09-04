@@ -72,7 +72,7 @@ export function ScoreSection({ section, staggerBase, onFix }: ScoreSectionProps)
             >
               <FontAwesome5
                 name={item.passed ? 'check-circle' : 'circle'}
-                size={item.passed ? CHECK : PENDING}
+                size={s(item.passed ? CHECK : PENDING)}
                 color={item.passed ? colors.success : colors.borderDashed}
                 solid={item.passed}
               />

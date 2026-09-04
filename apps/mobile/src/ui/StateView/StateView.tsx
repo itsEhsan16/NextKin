@@ -49,7 +49,8 @@ export function StateView({
   style,
 }: StateViewProps) {
   const { colors, radii, sizes, spacing, s } = useTheme();
-  const tile = compact ? 48 : sizes.emptyStateTile;
+  // `sizes.emptyStateTile` arrives scaled, so the compact tile has to be scaled to match.
+  const tile = compact ? s(48) : sizes.emptyStateTile;
 
   return (
     <View
@@ -76,7 +77,7 @@ export function StateView({
       >
         <FontAwesome5
           name={icon}
-          size={compact ? 18 : 32}
+          size={compact ? s(18) : s(32)}
           color={tone === 'danger' ? colors.danger : colors.iconDefault}
           solid={iconStyle === 'solid'}
         />

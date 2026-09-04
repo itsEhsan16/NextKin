@@ -9,6 +9,8 @@ import { GENERATION_TICK_MS, resetMockRepos } from '@/data/repos';
 import { HomeScreen } from '@/features/home';
 import { CreateSheetProvider } from '@/navigation';
 
+import { insideScroller } from '../../../testSupport/scroller';
+
 const mockPush = jest.fn();
 const mockNavigate = jest.fn();
 const clients: QueryClient[] = [];
@@ -84,9 +86,14 @@ describe('HomeScreen (DESIGN 2)', () => {
     expect(screen.getByText('Last updated 2 days ago')).toBeOnTheScreen();
     expect(screen.getByText('Timeline Valid')).toBeOnTheScreen();
 
-    expect(screen.getByText('12 Resumes')).toBeOnTheScreen();
-    expect(screen.getByText('24 Activities')).toBeOnTheScreen();
-    expect(screen.getByText('18 Saved')).toBeOnTheScreen();
+    // The shortcut counters read as a bare number above their icon, so the tile can give its
+    // label two readable lines. The noun survives for screen readers, on the tile itself.
+    expect(screen.getByText('12')).toBeOnTheScreen();
+    expect(screen.getByText('24')).toBeOnTheScreen();
+    expect(screen.getByText('18')).toBeOnTheScreen();
+    expect(screen.getByLabelText('My Resumes, 12 Resumes')).toBeOnTheScreen();
+    expect(screen.getByLabelText('History, 24 Activities')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Saved Jobs, 18 Saved')).toBeOnTheScreen();
   });
 
   it('routes taps: Find Jobs → Jobs tab, bell → the notifications feed', async () => {
@@ -132,5 +139,23 @@ describe('HomeScreen (DESIGN 2)', () => {
       await settle(GENERATION_TICK_MS * 5);
       expect(screen.queryByText('Tailoring your resume')).toBeNull();
     });
+  });
+
+  it('pins the greeting row above the scroller', async () => {
+    await renderHome();
+    await settle(NORMAL_MS);
+
+    // Both halves are needed. On its own the first would also pass if the whole page stopped
+    // scrolling, which is why the cards below are asserted to still be inside the scroller.
+    for (const node of [
+      screen.getByRole('header', { name: 'Hi George' }),
+      screen.getByLabelText('Notifications, unread'),
+      screen.getByLabelText('Menu'),
+    ]) {
+      expect(insideScroller(node)).toBe(false);
+    }
+
+    expect(insideScroller(screen.getByText('Quick Start'))).toBe(true);
+    expect(insideScroller(screen.getByText('Top Job Matches'))).toBe(true);
   });
 });

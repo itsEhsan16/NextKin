@@ -6,7 +6,7 @@ import type { Resume } from '@/data/models';
 import { useResumes, useSubscription, useUnreadCount } from '@/data/queries';
 import { useReducedMotion } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
-import { useLayoutScale, useTheme } from '@/theme';
+import { columnWidth, useLayoutScale, useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -15,6 +15,7 @@ import { NewDocRow, NewDocTile } from '../components/NewDocCard';
 import { ResumeGridCard } from '../components/ResumeGridCard';
 import { ResumeListRow } from '../components/ResumeListRow';
 import { ResumesFirstRun } from '../components/ResumesFirstRun';
+import { ResumesFilterBar } from '../components/ResumesFilterBar';
 import { ResumesHeader } from '../components/ResumesHeader';
 import { useResumesActions } from '../hooks/useResumesActions';
 import { useResumesStore } from '../resumesStore';
@@ -93,27 +94,33 @@ export function ResumesScreen() {
   );
 
   const grid = viewMode === 'grid';
-  const cardWidth = (contentWidth - GRID_GAP) / 2;
+  // `contentWidth` is device space, so the gap taken out of it must be too, and the same value
+  // has to be the actual gap below. Both columns then come off `columnWidth`, which is what keeps
+  // the row *under* the container rather than exactly on it — see its doc for why the exact form
+  // collapsed this grid to a single column on a 411dp phone.
+  const gridGap = s(GRID_GAP);
+  const cardWidth = columnWidth(contentWidth, gridGap);
   const status = resumes.isPending ? 'pending' : resumes.isError ? 'error' : 'success';
 
   // First run replaces the whole tab (RESUMES 05) — chrome included, bar the title row.
   if (status === 'success' && library.length === 0) {
     return (
-      <Screen scroll tabBarInset scrollRef={scrollRef} contentContainerStyle={{ paddingTop: spacing[4] }}>
-        <ResumesHeader
-          query={query}
-          onChangeQuery={setQuery}
-          viewMode={viewMode}
-          onChangeViewMode={setViewMode}
-          typeFilter={typeFilter}
-          onChangeTypeFilter={setTypeFilter}
-          subscription={undefined}
-          hasUnread={(unread.data ?? 0) > 0}
-          onPressNotifications={actions.openNotifications}
-          onPressSort={actions.openSort}
-          onPressUpgrade={actions.openUpgrade}
-          firstRun
-        />
+      // No `contentContainerStyle` here on purpose: the 12 that was its `paddingTop` is now the
+      // header's, and ResumesFirstRun brings its own `marginTop: spacing[10]` — keeping both
+      // would make the seam 42 where the artboard draws 30.
+      <Screen
+        scroll
+        tabBarInset
+        scrollRef={scrollRef}
+        headerStyle={{ paddingTop: spacing[4] }}
+        header={
+          <ResumesHeader
+            firstRun
+            hasUnread={(unread.data ?? 0) > 0}
+            onPressNotifications={actions.openNotifications}
+          />
+        }
+      >
         <ResumesFirstRun
           onUpload={actions.uploadResume}
           onImportLinkedIn={actions.importLinkedIn}
@@ -128,19 +135,29 @@ export function ResumesScreen() {
       scroll
       tabBarInset
       scrollRef={scrollRef}
-      contentContainerStyle={{ paddingTop: spacing[4], gap: s(HEADER_GAP) }}
+      contentContainerStyle={{ gap: s(HEADER_GAP) }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      headerStyle={{ paddingTop: spacing[4] }}
+      header={
+        <ResumesHeader
+          query={query}
+          onChangeQuery={setQuery}
+          viewMode={viewMode}
+          onChangeViewMode={setViewMode}
+          hasUnread={(unread.data ?? 0) > 0}
+          onPressNotifications={actions.openNotifications}
+        />
+      }
     >
-      <ResumesHeader
-        query={query}
-        onChangeQuery={setQuery}
-        viewMode={viewMode}
-        onChangeViewMode={setViewMode}
+      {/*
+        Stays a single child alongside the content branch below, so `gap: s(HEADER_GAP)` keeps
+        meaning "last chrome block → first card". Promoting the meter to a third child would fire
+        the gap between it and the pills and draw 45 where the artboard wants 21.
+      */}
+      <ResumesFilterBar
         typeFilter={typeFilter}
         onChangeTypeFilter={setTypeFilter}
         subscription={subscription.data}
-        hasUnread={(unread.data ?? 0) > 0}
-        onPressNotifications={actions.openNotifications}
         onPressSort={actions.openSort}
         onPressUpgrade={actions.openUpgrade}
       />
@@ -175,7 +192,7 @@ export function ResumesScreen() {
           style={{ marginTop: spacing[6] }}
         />
       ) : (
-        <View style={[styles.grid, { gap: grid ? GRID_GAP : spacing[4] - 2 }]}>
+        <View style={[styles.grid, { gap: grid ? gridGap : spacing[4] - s(2) }]}>
           <Animated.View
             key="new"
             layout={reduced ? undefined : LinearTransition.springify().duration(motion.durations.slow)}

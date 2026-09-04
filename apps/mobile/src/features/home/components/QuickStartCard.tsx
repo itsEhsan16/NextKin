@@ -74,7 +74,10 @@ export function QuickStartCard({ onAction }: QuickStartCardProps) {
       SPECS.map(({ key, label, hint, render, w, h }) => ({
         key,
         label,
-        sublabel: hint,
+        // The board prints this under the label; at phone width that line was 6.8pt, so it now
+        // reaches screen readers only — "Build Resume, for a specific job" — and the label gets
+        // the room instead.
+        a11yHint: hint,
         icon: render({ width: s(w), height: s(h) }),
       })),
     [s],
@@ -82,7 +85,7 @@ export function QuickStartCard({ onAction }: QuickStartCardProps) {
 
   return (
     <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
-      <Text accessibilityRole="header" variant="section">
+      <Text accessibilityRole="header" variant="homeSection">
         Quick Start
       </Text>
       <IconTileGrid
@@ -90,9 +93,8 @@ export function QuickStartCard({ onAction }: QuickStartCardProps) {
         onPress={onAction}
         iconBoxHeight={s(ICON_ROW_HEIGHT)}
         iconAlign="flex-end"
-        labelVariant="captionSemiBold"
-        sublabelVariant="micro"
-        labelGap={7}
+        labelVariant="tileLabel"
+        labelGap={s(7)}
       />
     </Card>
   );

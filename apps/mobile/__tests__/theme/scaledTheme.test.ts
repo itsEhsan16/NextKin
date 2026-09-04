@@ -17,6 +17,11 @@ const DESIGN = 520;
 const IPHONE_14 = 390;
 const K = IPHONE_14 / DESIGN; // 0.75 exactly
 
+/**
+ * The two Home tile labels, which answer to neither board: both draw them on one line inside a
+ * narrow cell, which caps them below what anyone can read. They wrap to two lines instead and
+ * carry their own leading, so they are named here rather than silently skipped.
+ */
 describe('the Jest viewport this whole suite rests on', () => {
   it('reports the 750dp window that keeps every behavioural suite at scale 1', () => {
     // jest-expo's DeviceInfo mock reports a 750dp window, so `themeFor` clamps to the artboard
@@ -35,7 +40,20 @@ describe('themeFor — identity at the design width', () => {
     expect({ ...theme.spacing }).toEqual({ ...spacing });
     expect({ ...theme.radii }).toEqual({ ...radii });
     expect({ ...theme.sizes }).toEqual({ ...sizes });
-    expect({ ...theme.typography }).toEqual({ ...typography });
+
+    // Type is anchored on two artboards now, so "raw" means the 520 anchor specifically.
+    for (const [name, anchors] of Object.entries(typography)) {
+      const role = theme.typography[name as TypographyRole];
+      expect(role.fontFamily).toBe(anchors.fontFamily);
+      expect(role.fontSize).toBeCloseTo(anchors.at520.fontSize, 9);
+      expect(role.letterSpacing).toBeCloseTo(anchors.at520.letterSpacing, 9);
+      // Same half-pixel grid as the 390 assertion below. It used to be exact here only
+      // because every 520 leading happened to land on the grid already; the Home roles
+      // derive theirs from a 390 measurement, so some do not. The rounding belongs to
+      // `scaleTheme`, not to the anchor.
+      expect(role.lineHeight ?? 0).toBeGreaterThanOrEqual(anchors.at520.lineHeight);
+      expect(role.lineHeight ?? 0).toBeLessThan(anchors.at520.lineHeight + 0.5);
+    }
   });
 
   it('treats any screen wider than the artboard as the artboard', () => {
@@ -69,14 +87,30 @@ describe('themeFor — proportionality', () => {
     }
   });
 
-  it('scales the type ramp — the whole point of the change', () => {
-    for (const [role, raw] of Object.entries(typography)) {
+  it('lands every role on its Mobile 2 measurement at 390', () => {
+    // Type does not follow `K`. The 390 artboard holds the layout at exactly 0.75 and holds the
+    // font sizes back, which is what keeps text legible in boxes that shrank. Each role is
+    // measured on both boards; at 390 it must be the 390 measurement, to the pixel.
+    for (const [role, anchors] of Object.entries(typography)) {
       const scaled = theme.typography[role as TypographyRole];
-      expect(scaled.fontSize).toBeCloseTo((raw.fontSize ?? 0) * K, 9);
-      expect(scaled.letterSpacing).toBeCloseTo((raw.letterSpacing ?? 0) * K, 9);
+      expect(scaled.fontSize).toBeCloseTo(anchors.at390.fontSize, 9);
+      expect(scaled.letterSpacing).toBeCloseTo(anchors.at390.letterSpacing, 9);
       // Line heights land on a half-pixel to keep Android baselines steady.
-      expect(scaled.lineHeight).toBeGreaterThanOrEqual((raw.lineHeight ?? 0) * K);
-      expect(scaled.lineHeight).toBeLessThan((raw.lineHeight ?? 0) * K + 0.5);
+      expect(scaled.lineHeight).toBeGreaterThanOrEqual(anchors.at390.lineHeight);
+      expect(scaled.lineHeight).toBeLessThan(anchors.at390.lineHeight + 0.5);
+    }
+  });
+
+  it('scales leading by exactly width/520, the way geometry does', () => {
+    // Only the font *size* was held back. Leading scaled with the layout, which is how the
+    // glyphs grow into their line boxes instead of pushing the layout apart.
+    //
+    // There are no exemptions left. The two that used to be here — the Home tile labels,
+    // which pinned their own leading — were re-measured on 210:262 and derive their 520
+    // anchor from the 390 one, which puts them back on this line by construction.
+    for (const anchors of Object.values(typography)) {
+      expect(anchors.at390.lineHeight).toBeCloseTo(anchors.at520.lineHeight * K, 9);
+      expect(anchors.at390.letterSpacing).toBeCloseTo(anchors.at520.letterSpacing * K, 9);
     }
   });
 
@@ -89,9 +123,12 @@ describe('themeFor — proportionality', () => {
     }
   });
 
-  it('holds the artboard body-to-gutter ratio on a phone', () => {
-    // If these ever drift apart again, text starts outgrowing the box drawn around it.
-    expect((theme.typography.body.fontSize ?? 0) / theme.spacing.gutter).toBeCloseTo(15 / 24, 9);
+  it('lets type outrun the box by exactly as much as Mobile 2 does', () => {
+    // The 520 board puts body at 15 against a 24 gutter. Mobile 2 puts it at 13 against 18 —
+    // deliberately looser, and that gap *is* the readability. Pin the artboard ratio, not a
+    // hand-picked bias, so the day the boards change this fails rather than drifts.
+    expect((theme.typography.body.fontSize ?? 0) / theme.spacing.gutter).toBeCloseTo(13 / 18, 9);
+    expect(themeFor('light', DESIGN).typography.body.fontSize).toBeCloseTo(15, 9);
   });
 });
 
@@ -119,15 +156,21 @@ describe('themeFor — numeric soundness across every device width', () => {
     }
   });
 
-  it('shrinks monotonically as the screen narrows', () => {
+  it('shrinks monotonically as the screen narrows, and holds type at the narrow board', () => {
     const widths = [320, 360, IPHONE_14, 430, DESIGN];
     const bodySizes = widths.map((w) => themeFor('light', w).typography.body.fontSize ?? 0);
     const gutters = widths.map((w) => themeFor('light', w).spacing.gutter);
 
     for (let i = 1; i < widths.length; i += 1) {
-      expect(bodySizes[i]).toBeGreaterThan(bodySizes[i - 1] as number);
+      // Geometry never stops shrinking; type stops at 390, so it may repeat but never reverse.
       expect(gutters[i]).toBeGreaterThan(gutters[i - 1] as number);
+      expect(bodySizes[i]).toBeGreaterThanOrEqual(bodySizes[i - 1] as number);
     }
+
+    // The flat range is the point of the floor, so assert it rather than merely allowing it.
+    expect(bodySizes[0]).toBe(bodySizes[1]);
+    expect(bodySizes[1]).toBe(bodySizes[2]);
+    expect(bodySizes[4]).toBeGreaterThan(bodySizes[2] as number);
   });
 });
 

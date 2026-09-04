@@ -34,7 +34,7 @@ export function TopJobMatches({ jobs, status, onViewAll, onPressJob, onRetry }: 
 
   return (
     <View style={{ gap: spacing[4] }}>
-      <SectionHeader title="Top Job Matches" variant="sectionRegular" onAction={onViewAll} />
+      <SectionHeader title="Top Job Matches" variant="homeSection" onAction={onViewAll} />
 
       {status === 'pending' ? (
         <View style={{ flexDirection: 'row', gap: s(CARD_GAP) }}>
@@ -70,6 +70,13 @@ export function TopJobMatches({ jobs, status, onViewAll, onPressJob, onRetry }: 
           />
         </Card>
       ) : (
+        /*
+          Full-bleed. The row breaks out of the page gutter and pays it back as content padding,
+          so the first card still lines up with the heading at rest but a scrolling card runs off
+          the real screen edge instead of being sliced at the gutter with dead margin beside it.
+          Boxed inside the gutter, a half-scrolled card reads as chopped rather than as content
+          continuing off-screen — which is the whole difference from the reference.
+        */
         <FlashList
           horizontal
           data={jobs}
@@ -77,11 +84,14 @@ export function TopJobMatches({ jobs, status, onViewAll, onPressJob, onRetry }: 
           keyExtractor={(job) => job.id}
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={Separator}
-          snapToInterval={cardWidth + CARD_GAP}
+          // s(CARD_GAP), not CARD_GAP — see the note in TodaysPicks: mixing a scaled card width
+          // with a raw artboard gap drifts the snap point further off with every card.
+          snapToInterval={cardWidth + s(CARD_GAP)}
           snapToAlignment="start"
           decelerationRate="fast"
           // Cards cast a small shadow; don't clip it on the vertical axis.
-          contentContainerStyle={{ paddingVertical: s(2) }}
+          contentContainerStyle={{ paddingVertical: s(2), paddingHorizontal: spacing.gutter }}
+          style={{ marginHorizontal: -spacing.gutter }}
         />
       )}
     </View>

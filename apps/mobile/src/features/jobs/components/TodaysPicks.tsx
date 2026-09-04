@@ -77,6 +77,13 @@ export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }
           />
         </Card>
       ) : (
+        /*
+          Full-bleed. The row breaks out of the page gutter and pays it back as content padding,
+          so the first card still lines up with the heading at rest but a scrolling card runs off
+          the real screen edge instead of being sliced at the gutter with dead margin beside it.
+          Boxed inside the gutter, a half-scrolled card reads as chopped rather than as content
+          continuing off-screen — which is the whole difference from the reference.
+        */
         <FlashList
           horizontal
           data={picks}
@@ -84,11 +91,15 @@ export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }
           keyExtractor={(job) => job.id}
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={Separator}
-          snapToInterval={cardWidth + GAP}
+          // s(GAP), not GAP: the separator below is scaled, so an unscaled gap here would put
+          // the snap interval 4dp past the real pitch at 390 and compound it card by card, until
+          // the carousel rests mid-card and clips the title.
+          snapToInterval={cardWidth + s(GAP)}
           snapToAlignment="start"
           decelerationRate="fast"
           // Cards cast a shadow; don't clip it on the cross axis.
-          contentContainerStyle={{ paddingVertical: s(2) }}
+          contentContainerStyle={{ paddingVertical: s(2), paddingHorizontal: spacing.gutter }}
+          style={{ marginHorizontal: -spacing.gutter }}
         />
       )}
     </View>

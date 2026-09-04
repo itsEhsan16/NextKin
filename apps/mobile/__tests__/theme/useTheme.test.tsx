@@ -62,7 +62,7 @@ describe('useTheme', () => {
     if (!theme) return;
     expect(theme.spacing.gutter).toBe(24);
     expect(theme.radii.card).toBe(20);
-    expect(theme.sizes.tabBarHeight).toBe(77);
+    expect(theme.sizes.tabBarHeight).toBeCloseTo(90.396, 3);
     expect(theme.shadows.tabBar).toBeDefined();
     expect(theme.opacity.disabled).toBeGreaterThan(0);
     expect(theme.zIndex.sheet).toBeGreaterThan(theme.zIndex.tabBar);

@@ -81,7 +81,11 @@ export function RangeSlider({
   const reduced = useReducedMotion();
 
   const [trackWidth, setTrackWidth] = useState(0);
-  const travel = Math.max(0, trackWidth - THUMB);
+  // The thumb renders at s(THUMB), so the travel it has inside a measured (device-space) track
+  // is the track minus that, not minus the raw artboard value. Subtracting the raw 26 left the
+  // high thumb stranded 6.5dp short of the rail end at 390 — it could not reach its own maximum.
+  const thumb = s(THUMB);
+  const travel = Math.max(0, trackWidth - thumb);
 
   const internalLow = useSharedValue(value[0]);
   const internalHigh = useSharedValue(value[1]);
@@ -185,7 +189,7 @@ export function RangeSlider({
   const fillStyle = useAnimatedStyle(() => {
     const from = fractionOf(low.value, min, max) * travel;
     const to = fractionOf(high.value, min, max) * travel;
-    return { left: from + THUMB / 2, width: Math.max(0, to - from) };
+    return { left: from + thumb / 2, width: Math.max(0, to - from) };
   });
   const lowStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: fractionOf(low.value, min, max) * travel }],
@@ -231,7 +235,7 @@ export function RangeSlider({
           accessibilityValue={{ min, max, now: value[0], text: format(value[0]) }}
           accessibilityActions={ADJUST_ACTIONS}
           onAccessibilityAction={nudge('low')}
-          hitSlop={hitSlopFor(THUMB)}
+          hitSlop={hitSlopFor(thumb)}
           style={[styles.thumb, thumbStyle, shadows.sliderThumb, lowStyle]}
         />
       </GestureDetector>
@@ -244,7 +248,7 @@ export function RangeSlider({
           accessibilityValue={{ min, max, now: value[1], text: format(value[1]) }}
           accessibilityActions={ADJUST_ACTIONS}
           onAccessibilityAction={nudge('high')}
-          hitSlop={hitSlopFor(THUMB)}
+          hitSlop={hitSlopFor(thumb)}
           style={[styles.thumb, thumbStyle, shadows.sliderThumb, highStyle]}
         />
       </GestureDetector>
@@ -253,7 +257,7 @@ export function RangeSlider({
 }
 
 const useStyles = scaledSheet((s) => ({
-  track: { height: THUMB, justifyContent: 'center' },
+  track: { height: s(THUMB), justifyContent: 'center' },
   rail: { position: 'absolute', left: 0, right: 0 },
   // `left`/`width` are driven by the worklet, so this one must not also pin `right`.
   fill: { position: 'absolute' },

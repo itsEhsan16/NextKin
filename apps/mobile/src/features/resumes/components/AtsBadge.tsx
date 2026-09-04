@@ -1,4 +1,4 @@
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton, hitSlopFor } from '@/lib';
 import { useTheme } from '@/theme';
@@ -23,14 +23,14 @@ const STROKE = 3.5;
  * score panel (RESUMES 04).
  */
 export function AtsBadge({ score, onPress, style }: AtsBadgeProps) {
-  const { colors, radii, shadows, s } = useTheme();
+  const { artboardShadows, colors, radii, s } = useTheme();
 
   return (
     <Pressable
       {...a11yButton(`ATS score ${score}`, 'Opens the score breakdown')}
       feedback="scale"
       haptic="light"
-      hitSlop={hitSlopFor(BADGE)}
+      hitSlop={hitSlopFor(s(BADGE))}
       onPress={onPress}
       disabled={!onPress}
       style={[
@@ -39,10 +39,23 @@ export function AtsBadge({ score, onPress, style }: AtsBadgeProps) {
           height: s(BADGE),
           borderRadius: radii.full,
           backgroundColor: colors.surfaceCard,
+          // A hairline the artboard does not draw, and the one deliberate departure on this
+          // component. Figma gives the disc its edge with a shadow; Android cannot reproduce that
+          // shadow at this size, and the disc is surfaceCard on a surfaceCard thumbnail, so
+          // without an edge it is invisible. That would be survivable on its own — but the
+          // thumbnail's own s(1) border passes within 4 physical pixels of the disc's right edge
+          // and runs underneath its bottom, so the eye attaches that grey line to the disc and
+          // reads it as a cut. One hairline closes the circle and the line stops belonging to it.
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.borderDefault,
           alignItems: 'center',
           justifyContent: 'center',
         },
-        shadows.segmentPill,
+        // Not `shadows.segmentPill`: on Android that resolves to a bare `{ elevation: 2 }` and the
+        // artboard's 0 1 3 8% blur never renders. This disc is surfaceCard on a surfaceCard
+        // thumbnail, so that shadow carries what edge it can — see `artboardShadows` on the theme.
+        // Nothing here needs elevation for z: the badge is already the thumbnail's later sibling.
+        artboardShadows.segmentPill,
         style,
       ]}
     >

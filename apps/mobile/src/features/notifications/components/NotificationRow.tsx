@@ -73,7 +73,7 @@ export const NotificationRow = memo(function NotificationRow({
         style={{
           backgroundColor: unread ? colors.surfaceUnread : colors.surfacePage,
           paddingLeft: spacing.gutter,
-          paddingRight: spacing.gutter + 12,
+          paddingRight: spacing.gutter + s(12),
           paddingVertical: spacing[4],
         }}
       >
@@ -108,11 +108,11 @@ export const NotificationRow = memo(function NotificationRow({
                         {
                           width: s(STACKED),
                           height: s(STACKED),
-                          borderRadius: STACKED / 2,
+                          borderRadius: s(STACKED) / 2,
                           borderColor: unread ? colors.surfacePage : colors.surfaceCard,
                           backgroundColor:
                             item === 'more' ? colors.borderDefault : colors.surfaceSubtle,
-                          marginLeft: index === 0 ? 0 : -8,
+                          marginLeft: index === 0 ? 0 : -s(8),
                         },
                       ]}
                     >
@@ -137,7 +137,7 @@ export const NotificationRow = memo(function NotificationRow({
             <View
               style={[
                 styles.dot,
-                { width: s(DOT), height: s(DOT), borderRadius: DOT / 2, backgroundColor: colors.brand },
+                { width: s(DOT), height: s(DOT), borderRadius: s(DOT) / 2, backgroundColor: colors.brand },
               ]}
             />
           ) : null}

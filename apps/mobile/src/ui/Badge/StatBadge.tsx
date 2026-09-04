@@ -14,7 +14,13 @@ export type StatBadgeProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** Two-line stat pill from the job match card: tinted surface, r12, 12/3/4 padding. */
+/**
+ * Two-line stat pill from the job match card: tinted surface, r12, 12/3/4 padding.
+ *
+ * The Home job card is the only place this appears, and the 390 board draws both its lines
+ * below the shared ramp to keep the pill inside a card that lost a quarter of its width —
+ * hence the `home*` roles rather than `body` / `microRegular`.
+ */
 export function StatBadge({ value, label, tone = 'success', style }: StatBadgeProps) {
   const { colors, radii, s } = useTheme();
   const palette = {
@@ -40,10 +46,10 @@ export function StatBadge({ value, label, tone = 'success', style }: StatBadgePr
         style,
       ]}
     >
-      <Text variant="body" color={palette.fg} style={{ marginBottom: -s(1) }}>
+      <Text variant="homeMatchValue" color={palette.fg} style={{ marginBottom: -s(1) }}>
         {value}
       </Text>
-      <Text variant="microRegular" color={palette.fg}>
+      <Text variant="homeMatchLabel" color={palette.fg}>
         {label}
       </Text>
     </View>

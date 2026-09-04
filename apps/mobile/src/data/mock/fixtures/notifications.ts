@@ -1,6 +1,6 @@
 import type { Notification, NotificationPrefs } from '@/data/models';
 
-import { daysAgo, hoursAgo } from './time';
+import { daysAgo, earlierToday } from './time';
 
 /**
  * NOTIF 01 verbatim — nine rows over TODAY / THIS WEEK / EARLIER, four unread. Bodies are
@@ -14,7 +14,7 @@ export const notificationsFixture: Notification[] = [
     id: 'ntf_digest',
     category: 'matches',
     body: '**5 new matches** for Senior Product Designer',
-    createdAt: hoursAgo(2),
+    createdAt: earlierToday(2),
     read: false,
     deepLink: '/jobs',
     visual: { kind: 'sparkle' },
@@ -24,7 +24,7 @@ export const notificationsFixture: Notification[] = [
     id: 'ntf_stripe_viewed',
     category: 'applications',
     body: '**Stripe** viewed your application for Senior Product Designer',
-    createdAt: hoursAgo(4),
+    createdAt: earlierToday(4),
     read: false,
     deepLink: '/jobs/job_stripe',
     visual: { kind: 'logo', company: 'Stripe' },
@@ -33,7 +33,7 @@ export const notificationsFixture: Notification[] = [
     id: 'ntf_ats_ready',
     category: 'ai',
     body: 'Your **ATS score** for Stripe — Senior PD is ready. It scored **88** — two quick wins left.',
-    createdAt: hoursAgo(5),
+    createdAt: earlierToday(5),
     read: false,
     deepLink: '/resumes/res_2/score',
     visual: { kind: 'glyph', icon: 'tasks', tone: 'brand' },

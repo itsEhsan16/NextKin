@@ -31,7 +31,7 @@ export const SimilarJobCard = memo(function SimilarJobCard({
       haptic="light"
       onPress={() => onPress(job)}
     >
-      <Card radius="card" shadow="jobCard" padding={15}>
+      <Card radius="card" shadow="jobCard" padding={s(15)}>
         <View style={[styles.row, { gap: spacing[3] }]}>
           <LogoTile
             name={job.company}

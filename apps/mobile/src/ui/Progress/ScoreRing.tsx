@@ -8,6 +8,7 @@ import { useTheme, type ColorToken, type TypographyRole } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { AnimatedNumber } from './AnimatedNumber';
+import { ringRadius } from './ringMath';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -67,7 +68,8 @@ export function ScoreRing({
     animatedScore.set(withTiming(target, withReducedMotion(reduced, motion.timings.meter)));
   }, [animatedScore, motion.timings.meter, reduced, target]);
 
-  const radius = (box - stroke) / 2;
+  // Inset by a physical pixel so the stroke is not tangent to the canvas edge; see ringMath.
+  const radius = ringRadius(box, stroke);
   const circumference = 2 * Math.PI * radius;
 
   const arcProps = useAnimatedProps(() => ({
@@ -106,8 +108,14 @@ export function ScoreRing({
         />
       </Svg>
       <AnimatedNumber value={animatedScore} variant={numberVariant} color={numberColor} />
+      {/* One line, always: a second would break out of the ring on the narrowest phones. */}
       {label ? (
-        <Text variant={labelVariant} color={labelColor} style={{ marginTop: -s(2) }}>
+        <Text
+          variant={labelVariant}
+          color={labelColor}
+          numberOfLines={1}
+          style={{ marginTop: -s(2) }}
+        >
           {label}
         </Text>
       ) : null}

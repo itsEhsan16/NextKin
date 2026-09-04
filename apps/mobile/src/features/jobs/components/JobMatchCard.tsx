@@ -43,7 +43,7 @@ export function JobMatchCard({ band, criteria, onSeeFullCriteria }: JobMatchCard
   const reduced = useReducedMotion();
 
   return (
-    <Card shadow="jobCard" padding={19} style={{ gap: spacing[3] }}>
+    <Card shadow="jobCard" padding={s(19)} style={{ gap: spacing[3] }}>
       <View style={styles.headerRow}>
         <Text variant="title" accessibilityRole="header">
           Why you match

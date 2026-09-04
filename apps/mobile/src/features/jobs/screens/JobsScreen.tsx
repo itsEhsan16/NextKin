@@ -14,7 +14,7 @@ import {
 } from '@/data/queries';
 import { a11yButton, hitSlop8, pluralize, useDebouncedValue } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
-import { useTheme } from '@/theme';
+import { useTabBarLayout, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
@@ -61,6 +61,7 @@ const STATUS_CHIPS = [
 /** JOBS 01–03 — Discover, Saved and Applied as three segments of one screen. */
 export function JobsScreen() {
   const { spacing, s } = useTheme();
+  const tabBar = useTabBarLayout();
   const actions = useJobsActions();
   const listRef = useRef<FlashListRef<JobRow>>(null);
 
@@ -175,22 +176,15 @@ export function JobsScreen() {
 
   // Everything the list header renders from; changing any of it must repaint the header.
   const headerState = useMemo(
-    () => ({ segment, chips, sort, appliedStatus, query, remoteOnly, location, count: rows.length }),
-    [appliedStatus, chips, location, query, remoteOnly, rows.length, segment, sort],
+    // `query` is deliberately absent: it was here only so keystrokes repainted the search
+    // field, and that field is pinned outside the list now. Leaving it in would rebuild the whole
+    // list header on every character for nothing.
+    () => ({ segment, chips, sort, appliedStatus, remoteOnly, location, count: rows.length }),
+    [appliedStatus, chips, location, remoteOnly, rows.length, segment, sort],
   );
 
   const listHeader = (
     <View style={{ gap: spacing[5], paddingBottom: spacing[5] }}>
-      <JobsHeader
-        query={query}
-        onChangeQuery={(value) => setQuery(segment, value)}
-        placeholder={PLACEHOLDER[segment]}
-        filterCount={segment === 'discover' ? chips.length : 0}
-        hasUnread={(unread.data ?? 0) > 0}
-        onPressNotifications={actions.openNotifications}
-        onPressFilters={actions.openFilters}
-      />
-
       {segment === 'discover' ? (
         <View style={[styles.chipRow, { gap: spacing[2] }]}>
           <FilterChip
@@ -277,7 +271,24 @@ export function JobsScreen() {
   );
 
   return (
-    <Screen padded={false} tabBarInset>
+    // `padded={false}` is the FlashList's doing — it owns the gutter so TodaysPicks can break
+    // out of it — so the header box has to ask for the gutter back explicitly. The centring and
+    // maxWidth still come from the root.
+    <Screen
+      padded={false}
+      headerStyle={{ paddingTop: spacing[4], paddingHorizontal: spacing.gutter }}
+      header={
+        <JobsHeader
+          query={query}
+          onChangeQuery={(value) => setQuery(segment, value)}
+          placeholder={PLACEHOLDER[segment]}
+          filterCount={segment === 'discover' ? chips.length : 0}
+          hasUnread={(unread.data ?? 0) > 0}
+          onPressNotifications={actions.openNotifications}
+          onPressFilters={actions.openFilters}
+        />
+      }
+    >
       <FlashList
         ref={listRef}
         data={status === 'success' ? rows : []}
@@ -310,7 +321,17 @@ export function JobsScreen() {
         }}
         onEndReachedThreshold={0.6}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: spacing.gutter, paddingTop: spacing[4] }}
+        // The list is the scroller here, so the tab-bar inset belongs on its content. Put it
+        // on the Screen instead and the page box shrinks, leaving the background painted under
+        // the floating pill and the last card cut off above it.
+        contentContainerStyle={{
+          paddingHorizontal: spacing.gutter,
+          // spacing[5], not spacing[4]: the 12 was the pad above the title and left with it. What
+          // the chip row and the segments actually had above them was the list header's own
+          // `gap: spacing[5]`, and removing its first child destroyed that gap instance.
+          paddingTop: spacing[5],
+          paddingBottom: tabBar.contentInset,
+        }}
         refreshControl={
           <RefreshControl refreshing={refreshing || activeQuery.isRefetching} onRefresh={onRefresh} />
         }

@@ -57,12 +57,12 @@ export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: 
         <Text variant="cardTitle" numberOfLines={1}>
           {job.company}
         </Text>
-        <Text variant="bodyMedium" color="textSecondary" numberOfLines={1}>
+        <Text variant="homeCardRole" color="textSecondary" numberOfLines={1}>
           {job.title}
         </Text>
         <View style={[styles.chips, { paddingTop: spacing[3], gap: spacing[2] }]}>
-          <Chip label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} />
-          <Chip label={formatRelativeTime(job.postedAt)} />
+          <Chip label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} labelVariant="homeCardChip" />
+          <Chip label={formatRelativeTime(job.postedAt)} labelVariant="homeCardChip" />
         </View>
         <AvatarStack caption={applicantsCopy(job.applicantsCount)} style={{ paddingTop: spacing[3] }} />
       </Card>

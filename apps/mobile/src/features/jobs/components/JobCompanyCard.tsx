@@ -29,7 +29,7 @@ export function JobCompanyCard({ job, onPress }: JobCompanyCardProps) {
       haptic="light"
       onPress={() => onPress(job)}
     >
-      <Card shadow="jobCard" padding={19}>
+      <Card shadow="jobCard" padding={s(19)}>
         <View style={[styles.row, { gap: spacing[4] }]}>
           <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO)} />
           <View style={styles.copy}>

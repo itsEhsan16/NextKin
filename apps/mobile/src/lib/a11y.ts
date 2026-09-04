@@ -1,6 +1,13 @@
 import type { AccessibilityProps, Insets } from 'react-native';
 
-/** Expands small controls to the 44pt minimum hit target without changing layout. */
+/**
+ * Expands small controls to the 44pt minimum hit target without changing layout.
+ *
+ * `size` is the control's DEVICE-space size — what it actually renders at, i.e. `s(RAW)`. The 44
+ * is `sizes.minHitTarget`, a platform floor that is exempt from artboard scaling, so passing a
+ * raw artboard length here silently under-pads: the slop is computed against a control bigger
+ * than the one on screen, and the target lands short of 44.
+ */
 export const hitSlopFor = (size: number): Insets => {
   const pad = Math.max(0, (44 - size) / 2);
   return { top: pad, bottom: pad, left: pad, right: pad };

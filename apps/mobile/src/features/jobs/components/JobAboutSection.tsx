@@ -1,10 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   LinearTransition,
   useAnimatedStyle,
-  useDerivedValue,
+  useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -62,9 +62,18 @@ export function JobAboutSection({
   const hasMore = responsibilities.length > COLLAPSED_BULLETS || requirements.length > 0;
   const bullets = expanded ? responsibilities : responsibilities.slice(0, COLLAPSED_BULLETS);
 
-  const rotation = useDerivedValue(() =>
-    withTiming(expanded ? 180 : 0, withReducedMotion(reduced, motion.timings.accordion)),
-  );
+  // Started here, on the JS thread, rather than inside the worklet — the shape Toggle,
+  // SegmentedControl and ProgressBar already use. This was a `useDerivedValue` whose mapper
+  // called `withReducedMotion` on the UI runtime; both inputs it reads (`expanded`, `reduced`)
+  // are React state, so there was never anything for a mapper to react to, and the synchronous
+  // remote-function call took the whole job detail screen down on mount.
+  const rotation = useSharedValue(0);
+  useEffect(() => {
+    rotation.set(
+      withTiming(expanded ? 180 : 0, withReducedMotion(reduced, motion.timings.accordion)),
+    );
+  }, [expanded, motion.timings.accordion, reduced, rotation]);
+
   const chevronStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }));
 
   return (

@@ -73,7 +73,6 @@ export const colorsByScheme = {
     // Chrome
     tabBarBackground: palette.white,
     tabActive: palette.ink900,
-    tabInactive: palette.slate600,
     tabLabel: palette.ink900,
     avatarStack1: palette.gray300,
     avatarStack2: palette.ink400,
@@ -136,7 +135,6 @@ export const colorsByScheme = {
 
     tabBarBackground: palette.dark800,
     tabActive: '#F5F6F8',
-    tabInactive: '#8B90A5',
     tabLabel: '#F5F6F8',
     avatarStack1: palette.dark500,
     avatarStack2: '#6B7280',
@@ -183,11 +181,23 @@ export const radii = {
   full: 9999,
 } as const;
 
+/**
+ * The bottom nav, over the size Home Screen 215:490 draws it.
+ *
+ * That board already grew the bar once — it places the 520 component at 0.805 rather than the
+ * 0.75 everything else uses — and it still read small on a phone. This is a deliberate 10% on
+ * top, applied to the pill, the FAB and the icons together so the bar keeps its proportions.
+ * The label is sized to the pill rather than multiplied; see `tabLabel` in typography.ts.
+ */
+export const NAV_BOOST = 1.1;
+
 export const sizes = {
-  tabBarHeight: 77,
+  // Home Screen 215:490 draws the pill 61.633 tall on its 390 frame; 520-space is /0.75, then
+  // NAV_BOOST on top — see its definition below.
+  tabBarHeight: 82.178 * NAV_BOOST,
   tabBarBottomOffset: 17,
-  fab: 60,
-  fabOverhang: 17,
+  fab: 66.655 * NAV_BOOST,
+  fabOverhang: 18.262 * NAV_BOOST,
   iconButton: 48,
   filterButton: 52,
   buttonMd: 52,
@@ -269,6 +279,36 @@ const toShadowStyle = ({ x, y, blur, alpha, elevation }: ShadowSpec, scale: numb
   Platform.OS === 'android'
     ? { elevation }
     : { boxShadow: `${x * scale}px ${y * scale}px ${blur * scale}px rgba(0, 0, 0, ${alpha})` };
+
+/**
+ * The artboard's shadow as CSS, on every platform including Android.
+ *
+ * `shadows.*` deliberately hands Android `{ elevation }` instead, and for chrome that is the right
+ * trade: hwui's shadow is cheap and its sibling z-ordering is load-bearing. But elevation throws
+ * the artboard geometry away — offset, blur and alpha are all replaced by a framework curve fitted
+ * to one number.
+ *
+ * That is invisible on a card against a grey page, where the shadow only has to suggest depth, and
+ * it is fatal for a surface drawn on its own colour, where the shadow is the *only* thing
+ * separating the two. The ATS chip is a `surfaceCard` disc on a `surfaceCard` thumbnail: on Android
+ * it had no edge at all, and hwui's downward-and-outward penumbra fell across the thumbnail's own
+ * border on the bottom and right rather than onto clean white, so those two arcs fused into the
+ * border and the disc read as cropped.
+ *
+ * Reach for this only for such a surface, and only where tree order already paints it above its
+ * siblings — dropping `elevation` drops Android's z-ordering with it.
+ */
+const toBoxShadow = ({ x, y, blur, alpha }: ShadowSpec, scale: number): ShadowStyle => ({
+  boxShadow: `${x * scale}px ${y * scale}px ${blur * scale}px rgba(0, 0, 0, ${alpha})`,
+});
+
+export function buildArtboardShadows(scale: number): Record<ShadowToken, ShadowStyle> {
+  const built = { none: {} } as Record<ShadowToken, ShadowStyle>;
+  for (const [key, spec] of Object.entries(shadowSpecs)) {
+    built[key as keyof typeof shadowSpecs] = toBoxShadow(spec, scale);
+  }
+  return built;
+}
 
 /** Builds the shadow style map at a given scale. Offsets and blur scale; alpha and elevation do not. */
 export function buildShadows(scale: number): Record<ShadowToken, ShadowStyle> {

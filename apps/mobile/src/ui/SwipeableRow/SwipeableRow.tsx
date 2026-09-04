@@ -52,7 +52,9 @@ export function SwipeableRow({ actions, onFullSwipe, children }: SwipeableRowPro
   const reduced = useReducedMotion();
 
   const [rowWidth, setRowWidth] = useState(0);
-  const actionsWidth = actions.length * SWIPE_ACTION_WIDTH;
+  // The panels themselves render at s(SWIPE_ACTION_WIDTH); reserving the raw width left a
+  // third of the tray empty at 390.
+  const actionsWidth = actions.length * s(SWIPE_ACTION_WIDTH);
 
   const offset = useSharedValue(0);
   const start = useSharedValue(0);

@@ -7,7 +7,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { AVAILABILITY_LABEL, type Profile, type User } from '@/data/models';
 import { a11yButton, formatPercent, useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
-import { AnimatedNumber } from '@/ui/Progress';
+import { AnimatedNumber, ringRadius } from '@/ui/Progress';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -27,7 +27,19 @@ export type ProfileIdentityProps = {
 const RING = 104;
 const RING_STROKE = 5;
 const AVATAR = 88;
-const BADGE = { width: 44, height: 22 } as const;
+/**
+ * The board drew this pill 44 wide around "72%", and that is what `width` stays for every value
+ * it drew. `wide` is for the one string the board never showed: `profileRepo.completeNextStep`
+ * adds 0.14 per step from 0.72, so two taps land on a capped 1 and the badge reads "100%" — one
+ * glyph more than the artboard ever contemplated.
+ *
+ * 53.28 is derived, not chosen. Measured against Plus Jakarta Sans Bold, "100%" overruns the 44
+ * pill's inner box by 0.04dp at 390 and at every width below it, so the digits meet the border.
+ * 53.28 is the width at which the four-character string gets the same 3.44dp of side padding at
+ * 390 that the board gives "72%" — the drawn padding, applied to the longer string.
+ * `__tests__/theme/typeRamp.test.ts` holds that arithmetic.
+ */
+const BADGE = { width: 44, wide: 53.28, height: 22 } as const;
 const DOT = 7;
 const BADGE_DROP = 10;
 const DETAILS_TOP = 10;
@@ -50,6 +62,10 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
   const { colors, motion, radii, sizes, s } = useTheme();
   const reduced = useReducedMotion();
   const target = Math.max(0, Math.min(1, completeness));
+  // The count-up runs on the UI thread, so the badge cannot size itself from what it is drawing.
+  // The resting value is known here, though, and it is the widest string the animation reaches —
+  // "100%" is the only four-character one, and every value below it is three. See `BADGE`.
+  const percent = formatPercent(target);
 
   const progress = useSharedValue(0);
   useEffect(() => {
@@ -59,7 +75,9 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
   const ring = s(RING);
   const stroke = s(RING_STROKE);
   const avatar = s(AVATAR);
-  const radius = (ring - stroke) / 2;
+  // Same inset as ScoreRing: a stroke tangent to the canvas edge gets its antialiased fringe
+  // shaved, which flattens the circle at 12/3/6/9 o clock. See src/ui/Progress/ringMath.ts.
+  const radius = ringRadius(ring, stroke);
   const circumference = 2 * Math.PI * radius;
   const arcProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference * (1 - progress.value),
@@ -71,7 +89,7 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
     <View
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel={`Profile ${formatPercent(target)} complete`}
+      accessibilityLabel={`Profile ${percent} complete`}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(target * 100) }}
       style={[styles.ring, { width: ring, height: ring }]}
     >
@@ -118,7 +136,7 @@ function CompletenessRing({ user, completeness }: { user: User; completeness: nu
         style={[
           styles.badge,
           {
-            width: s(BADGE.width),
+            width: s(percent.length > 3 ? BADGE.wide : BADGE.width),
             height: s(BADGE.height),
             bottom: -s(BADGE_DROP),
             borderWidth: sizes.borderThick,
@@ -169,7 +187,7 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
             style={[
               styles.pill,
               {
-                gap: spacing[1] + 2,
+                gap: spacing[1] + s(2),
                 paddingHorizontal: s(PILL_PAD_X),
                 paddingVertical: s(PILL_PAD_Y),
                 borderRadius: radii.full,

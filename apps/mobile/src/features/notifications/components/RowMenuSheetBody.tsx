@@ -51,7 +51,7 @@ function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowPro
       onPress={onPress}
       style={[styles.menuRow, { minHeight: s(ROW_HEIGHT), gap: spacing[3] }]}
     >
-      <View style={styles.iconSlot}>
+      <View style={[styles.iconSlot, { width: s(ICON_SLOT) }]}>
         <FontAwesome5 name={icon} size={s(ICON)} color={colors[color]} solid />
       </View>
       <View style={styles.menuText}>
@@ -128,6 +128,8 @@ const styles = StyleSheet.create({
   headerText: { flex: 1 },
   divider: { height: StyleSheet.hairlineWidth },
   menuRow: { flexDirection: 'row', alignItems: 'center' },
-  iconSlot: { width: ICON_SLOT, alignItems: 'center' },
+  // `width` is applied at the call site from s(ICON_SLOT): this sheet is a plain
+  // StyleSheet.create, so a raw artboard length here would ship unscaled.
+  iconSlot: { alignItems: 'center' },
   menuText: { flex: 1, gap: 0 },
 });

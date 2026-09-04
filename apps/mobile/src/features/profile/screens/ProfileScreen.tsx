@@ -80,7 +80,7 @@ export function ProfileScreen() {
     }
   }, [queryClient]);
 
-  const header = (
+  const titleRow = (
     <View style={styles.titleRow}>
       <Text {...a11yHeader()} variant="screenTitle">
         Profile
@@ -98,8 +98,8 @@ export function ProfileScreen() {
 
   if (user.isPending || profile.isPending) {
     return (
-      <Screen tabBarInset contentContainerStyle={{ paddingTop: spacing[4], gap: spacing[5] }}>
-        {header}
+      <Screen contentContainerStyle={{ paddingTop: spacing[4], gap: spacing[5] }}>
+        {titleRow}
         <ProfileSkeleton />
       </Screen>
     );
@@ -107,8 +107,8 @@ export function ProfileScreen() {
 
   if (user.isError || profile.isError || !user.data || !profile.data) {
     return (
-      <Screen tabBarInset contentContainerStyle={{ paddingTop: spacing[4] }}>
-        {header}
+      <Screen contentContainerStyle={{ paddingTop: spacing[4] }}>
+        {titleRow}
         <StateView
           tone="danger"
           icon="exclamation-triangle"
@@ -133,13 +133,22 @@ export function ProfileScreen() {
       scroll
       tabBarInset
       scrollRef={scrollRef}
-      contentContainerStyle={{ paddingTop: spacing[4], gap: spacing[5] }}
+      // A fragment, not a View: fragments are not host nodes, so both rows become direct flex
+      // children of the header box and its `gap` spaces them the way the container's did.
+      header={
+        <>
+          {titleRow}
+          <ProfileIdentity user={user.data} profile={current} onEdit={actions.editProfile} />
+        </>
+      }
+      // `paddingBottom` rather than a `paddingTop` on the content, though both draw 15 at rest:
+      // the completeness badge is absolutely positioned 7.5 *below* ProfileIdentity's own box, and
+      // as content padding that ink would fall over the scroller — a later sibling, so it paints
+      // on top, and Android clips it outright. Keeping it here also means no `overflow: 'hidden'`.
+      headerStyle={{ paddingTop: spacing[4], gap: spacing[5], paddingBottom: spacing[5] }}
+      contentContainerStyle={{ gap: spacing[5] }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      {header}
-
-      <ProfileIdentity user={user.data} profile={current} onEdit={actions.editProfile} />
-
       <ProfileStatsCard stats={current.stats} />
 
       <CompletenessCard profile={current} onCompleteStep={(id) => completeStep.mutate(id)} />
