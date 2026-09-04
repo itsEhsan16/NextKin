@@ -31,6 +31,13 @@ export const colorsByScheme = {
     borderHairline: palette.gray100,
     divider: palette.gray100,
     grabHandle: palette.gray200,
+    /** Dashed "+ New" affordances (Figma 1:1394 draws #d1d5db dashes on near-white). */
+    borderDashed: palette.gray300,
+
+    /** Fill of the dashed "+ New" tile — a step quieter than surfaceSubtle. */
+    surfaceFaint: palette.gray50,
+    /** Ghost document pages behind the first-run illustration (Figma 1:2065). */
+    surfaceGhost: palette.gray100,
 
     // Icons
     iconDefault: palette.ink500,
@@ -41,6 +48,8 @@ export const colorsByScheme = {
     brand: palette.brand500,
     brandSurface: palette.brand50,
     brandBorder: palette.brand200,
+    /** Unread notification rows: the "3% indigo tint" (Figma note 1:2497). */
+    surfaceUnread: palette.brand25,
     /** Inline text links ("View all"). */
     link: palette.blue600,
 
@@ -58,11 +67,12 @@ export const colorsByScheme = {
     warningSurface: palette.amber50,
     /** "Good match" pill text (Figma 1:352) — darker than  for contrast on the tint. */
     warningStrong: palette.amber700,
+    /** Amber meters: the resume-usage fill and mid-band ATS arcs (Figma 1:1393 / 1:1470). */
+    warningAccent: palette.amber500,
 
     // Chrome
     tabBarBackground: palette.white,
     tabActive: palette.ink900,
-    tabInactive: palette.slate600,
     tabLabel: palette.ink900,
     avatarStack1: palette.gray300,
     avatarStack2: palette.ink400,
@@ -94,6 +104,10 @@ export const colorsByScheme = {
     borderHairline: palette.dark700,
     divider: palette.dark700,
     grabHandle: palette.dark500,
+    borderDashed: palette.dark500,
+
+    surfaceFaint: palette.dark800,
+    surfaceGhost: palette.dark700,
 
     iconDefault: '#9AA1AE',
     iconMuted: '#6B7280',
@@ -102,6 +116,7 @@ export const colorsByScheme = {
     brand: '#7C6CFF',
     brandSurface: '#1E1B3A',
     brandBorder: '#2F2A5C',
+    surfaceUnread: '#17152E',
     link: '#60A5FA',
 
     success: '#4ADE80',
@@ -116,10 +131,10 @@ export const colorsByScheme = {
     warning: '#FBBF24',
     warningSurface: '#2A2110',
     warningStrong: '#FBBF24',
+    warningAccent: '#FBBF24',
 
     tabBarBackground: palette.dark800,
     tabActive: '#F5F6F8',
-    tabInactive: '#8B90A5',
     tabLabel: '#F5F6F8',
     avatarStack1: palette.dark500,
     avatarStack2: '#6B7280',
@@ -166,11 +181,23 @@ export const radii = {
   full: 9999,
 } as const;
 
+/**
+ * The bottom nav, over the size Home Screen 215:490 draws it.
+ *
+ * That board already grew the bar once — it places the 520 component at 0.805 rather than the
+ * 0.75 everything else uses — and it still read small on a phone. This is a deliberate 10% on
+ * top, applied to the pill, the FAB and the icons together so the bar keeps its proportions.
+ * The label is sized to the pill rather than multiplied; see `tabLabel` in typography.ts.
+ */
+export const NAV_BOOST = 1.1;
+
 export const sizes = {
-  tabBarHeight: 77,
+  // Home Screen 215:490 draws the pill 61.633 tall on its 390 frame; 520-space is /0.75, then
+  // NAV_BOOST on top — see its definition below.
+  tabBarHeight: 82.178 * NAV_BOOST,
   tabBarBottomOffset: 17,
-  fab: 60,
-  fabOverhang: 17,
+  fab: 66.655 * NAV_BOOST,
+  fabOverhang: 18.262 * NAV_BOOST,
   iconButton: 48,
   filterButton: 52,
   buttonMd: 52,
@@ -184,6 +211,14 @@ export const sizes = {
   emptyStateTile: 96,
   sheetStep1Height: 600,
   sheetStep2Height: 520,
+  /** Filters sheet (Figma JOBS 04, 1:760) — scrolls internally, so this is a fixed height. */
+  sheetFiltersHeight: 830,
+  /** Resume card menu (Figma RESUMES 03, 1:2020). */
+  sheetResumeMenuHeight: 600,
+  /** Notification row menu (NOTIF 03, 1:2696) and the push primer (NOTIF 07, 1:2928). */
+  sheetNotifHeight: 440,
+  /** Floor for picker/confirm sheets — they hug their option list past this. */
+  sheetPickerHeight: 320,
   /** Jobs chrome (Figma JOBS 01). */
   searchField: 52,
   segmentedControl: 48,
@@ -192,11 +227,14 @@ export const sizes = {
   /** Header chrome from the Home screen. */
   headerButton: 48,
   unreadDot: 8,
+  /** Figma's 1px stroke, and the 2px rings (avatar stack, score ring, filter button). */
+  border: 1,
+  borderThick: 2,
   /** Width of the artboards in the Figma file; see useLayoutScale(). */
   designWidth: 520,
 } as const;
 
-type ShadowStyle = {
+export type ShadowStyle = {
   boxShadow?: string;
   elevation?: number;
   shadowColor?: string;
@@ -205,32 +243,83 @@ type ShadowStyle = {
   shadowRadius?: number;
 };
 
-const shadow = (
-  x: number,
-  y: number,
-  blur: number,
-  alpha: number,
-  elevation: number,
-): ShadowStyle =>
-  // RN 0.76+ renders boxShadow natively on Android too, where `elevation` independently paints
-  // its own shadow — emitting both stacks two shadows. Elevation still owns Android's sibling
-  // z-ordering, so keep elevation there and boxShadow (which honours the Figma offsets) on iOS.
+/** A shadow as drawn in Figma. Offsets and blur are design px; alpha and elevation are not. */
+export type ShadowSpec = { x: number; y: number; blur: number; alpha: number; elevation: number };
+
+/**
+ * Shadow geometry straight off the artboards. Kept as data rather than pre-built styles so
+ * `scaleShadows()` can rebuild them at the device scale — see src/theme/scaleTheme.ts.
+ */
+export const shadowSpecs = {
+  tabBar: { x: 0, y: -3.4, blur: 8.5, alpha: 0.12, elevation: 8 },
+  fab: { x: 0, y: 6, blur: 12, alpha: 0.18, elevation: 10 },
+  stickyBarUp: { x: 0, y: -2, blur: 7, alpha: 0.07, elevation: 6 },
+  card: { x: 0, y: 1, blur: 2, alpha: 0.05, elevation: 1 },
+  sheet: { x: 0, y: -4, blur: 32, alpha: 0.18, elevation: 12 },
+  /** Segmented-control active pill (Figma 1:284). */
+  segmentPill: { x: 0, y: 1, blur: 3, alpha: 0.08, elevation: 2 },
+  /** Jobs cards use a slightly tighter shadow than the Home cards (Figma 1:301). */
+  jobCard: { x: 0, y: 1, blur: 1, alpha: 0.05, elevation: 1 },
+  /** Salary range slider thumb (Figma 1:801). */
+  sliderThumb: { x: 0, y: 1, blur: 4, alpha: 0.15, elevation: 3 },
+  /** Floating page in the resumes first-run illustration (Figma 1:2067). */
+  docFloat: { x: 0, y: 6, blur: 20, alpha: 0.1, elevation: 6 },
+  /** Toggle knob (Figma 1:2722). */
+  knob: { x: 0, y: 1, blur: 2, alpha: 0.18, elevation: 2 },
+  /** Toast over a scrim-less page (Figma 1:2924). */
+  toast: { x: 0, y: 4, blur: 9, alpha: 0.28, elevation: 8 },
+} as const satisfies Record<string, ShadowSpec>;
+
+export type ShadowToken = keyof typeof shadowSpecs | 'none';
+
+// RN 0.76+ renders boxShadow natively on Android too, where `elevation` independently paints
+// its own shadow — emitting both stacks two shadows. Elevation still owns Android's sibling
+// z-ordering, so keep elevation there and boxShadow (which honours the Figma offsets) on iOS.
+const toShadowStyle = ({ x, y, blur, alpha, elevation }: ShadowSpec, scale: number): ShadowStyle =>
   Platform.OS === 'android'
     ? { elevation }
-    : { boxShadow: `${x}px ${y}px ${blur}px rgba(0, 0, 0, ${alpha})` };
+    : { boxShadow: `${x * scale}px ${y * scale}px ${blur * scale}px rgba(0, 0, 0, ${alpha})` };
 
-export const shadows = {
-  none: {} as ShadowStyle,
-  tabBar: shadow(0, -3.4, 8.5, 0.12, 8),
-  fab: shadow(0, 6, 12, 0.18, 10),
-  stickyBarUp: shadow(0, -2, 7, 0.07, 6),
-  card: shadow(0, 1, 2, 0.05, 1),
-  sheet: shadow(0, -4, 32, 0.18, 12),
-  /** Segmented-control active pill (Figma 1:284). */
-  segmentPill: shadow(0, 1, 3, 0.08, 2),
-  /** Jobs cards use a slightly tighter shadow than the Home cards (Figma 1:301). */
-  jobCard: shadow(0, 1, 1, 0.05, 1),
-} as const;
+/**
+ * The artboard's shadow as CSS, on every platform including Android.
+ *
+ * `shadows.*` deliberately hands Android `{ elevation }` instead, and for chrome that is the right
+ * trade: hwui's shadow is cheap and its sibling z-ordering is load-bearing. But elevation throws
+ * the artboard geometry away — offset, blur and alpha are all replaced by a framework curve fitted
+ * to one number.
+ *
+ * That is invisible on a card against a grey page, where the shadow only has to suggest depth, and
+ * it is fatal for a surface drawn on its own colour, where the shadow is the *only* thing
+ * separating the two. The ATS chip is a `surfaceCard` disc on a `surfaceCard` thumbnail: on Android
+ * it had no edge at all, and hwui's downward-and-outward penumbra fell across the thumbnail's own
+ * border on the bottom and right rather than onto clean white, so those two arcs fused into the
+ * border and the disc read as cropped.
+ *
+ * Reach for this only for such a surface, and only where tree order already paints it above its
+ * siblings — dropping `elevation` drops Android's z-ordering with it.
+ */
+const toBoxShadow = ({ x, y, blur, alpha }: ShadowSpec, scale: number): ShadowStyle => ({
+  boxShadow: `${x * scale}px ${y * scale}px ${blur * scale}px rgba(0, 0, 0, ${alpha})`,
+});
+
+export function buildArtboardShadows(scale: number): Record<ShadowToken, ShadowStyle> {
+  const built = { none: {} } as Record<ShadowToken, ShadowStyle>;
+  for (const [key, spec] of Object.entries(shadowSpecs)) {
+    built[key as keyof typeof shadowSpecs] = toBoxShadow(spec, scale);
+  }
+  return built;
+}
+
+/** Builds the shadow style map at a given scale. Offsets and blur scale; alpha and elevation do not. */
+export function buildShadows(scale: number): Record<ShadowToken, ShadowStyle> {
+  const built = { none: {} } as Record<ShadowToken, ShadowStyle>;
+  for (const [key, spec] of Object.entries(shadowSpecs)) {
+    built[key as keyof typeof shadowSpecs] = toShadowStyle(spec, scale);
+  }
+  return built;
+}
+
+export const shadows = buildShadows(1);
 
 export const opacity = {
   disabled: 0.4,

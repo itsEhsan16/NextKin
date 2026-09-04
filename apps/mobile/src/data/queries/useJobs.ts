@@ -1,4 +1,4 @@
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { EMPTY_JOB_FILTERS, type JobFilters, type JobSort } from '@/data/models';
 import { repos } from '@/data/repos';
@@ -18,10 +18,32 @@ export function useJobs(filters: JobFilters = EMPTY_JOB_FILTERS, sort: JobSort =
   });
 }
 
+/**
+ * How many jobs a filter set would return. Drives the filter sheet's "Show N jobs" CTA, which
+ * previews a draft the user has not applied yet — so it keeps the last count on screen rather
+ * than blanking the button while the next one resolves.
+ */
+export function useJobCount(filters: JobFilters) {
+  return useQuery({
+    queryKey: qk.jobs.count(filters),
+    queryFn: () => repos.jobs.count(filters),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useJob(id: string) {
   return useQuery({
     queryKey: qk.jobs.detail(id),
     queryFn: () => repos.jobs.get(id),
+    enabled: id.length > 0,
+  });
+}
+
+/** "Similar jobs" on the detail screen. */
+export function useSimilarJobs(id: string) {
+  return useQuery({
+    queryKey: qk.jobs.similar(id),
+    queryFn: () => repos.jobs.listSimilar(id),
     enabled: id.length > 0,
   });
 }
@@ -52,5 +74,14 @@ export function useJobPicks() {
   return useQuery({
     queryKey: qk.jobs.picks(),
     queryFn: () => repos.jobs.listPicks(),
+  });
+}
+
+/** "Apply now" → the Applied tab gains the row (NOTIF 07's post-apply flow). */
+export function useApplyToJob() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => repos.jobs.apply(id),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: qk.jobs.applications() }),
   });
 }

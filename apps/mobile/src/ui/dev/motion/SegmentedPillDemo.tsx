@@ -12,7 +12,7 @@ const SEGMENT_HEIGHT = 40;
 
 /** (e) Segmented control: the active pill slides with `springs.snappy` (critically damped). */
 export function SegmentedPillDemo() {
-  const { colors, radii, shadows, motion } = useTheme();
+  const { colors, radii, shadows, motion, s } = useTheme();
   const reduced = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [segmentWidth, setSegmentWidth] = useState(0);
@@ -43,7 +43,7 @@ export function SegmentedPillDemo() {
       onLayout={onLayout}
       style={[
         styles.track,
-        { padding: TRACK_PADDING, borderRadius: radii.lg, backgroundColor: colors.surfaceSubtle },
+        { padding: s(TRACK_PADDING), borderRadius: radii.lg, backgroundColor: colors.surfaceSubtle },
       ]}
     >
       {segmentWidth > 0 ? (
@@ -52,10 +52,10 @@ export function SegmentedPillDemo() {
           style={[
             styles.pill,
             {
-              top: TRACK_PADDING,
-              left: TRACK_PADDING,
+              top: s(TRACK_PADDING),
+              left: s(TRACK_PADDING),
               width: segmentWidth,
-              height: SEGMENT_HEIGHT,
+              height: s(SEGMENT_HEIGHT),
               borderRadius: radii.md,
               backgroundColor: colors.surfaceCard,
             },
@@ -70,7 +70,7 @@ export function SegmentedPillDemo() {
           {...a11yButton(label)}
           accessibilityState={{ selected: i === index }}
           onPress={() => select(i)}
-          style={[styles.segment, { height: SEGMENT_HEIGHT }]}
+          style={[styles.segment, { height: s(SEGMENT_HEIGHT) }]}
         >
           <Text
             variant={i === index ? 'captionSemiBold' : 'caption'}

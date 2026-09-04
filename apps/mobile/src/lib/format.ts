@@ -2,8 +2,9 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 const WEEK = 7 * DAY;
+const MONTH = 30 * DAY;
 
-/** "Just now", "5m ago", "3h ago", "2d ago", "3w ago", else a short date. */
+/** "Just now", "5m ago", "3h ago", "2d ago", "3w ago", "2mo ago", else a short date. */
 export function formatRelativeTime(iso: string, now: Date = new Date()): string {
   const then = new Date(iso).getTime();
   const diff = now.getTime() - then;
@@ -12,7 +13,10 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
   if (diff < HOUR) return `${Math.floor(diff / MINUTE)}m ago`;
   if (diff < DAY) return `${Math.floor(diff / HOUR)}h ago`;
   if (diff < WEEK) return `${Math.floor(diff / DAY)}d ago`;
-  if (diff < 5 * WEEK) return `${Math.floor(diff / WEEK)}w ago`;
+  // Weeks stop at 30 days: the resume cards read a 32-day-old doc as "Edited 1mo ago"
+  // (Figma 1:1573), so the month unit takes over where a calendar month begins.
+  if (diff < MONTH) return `${Math.floor(diff / WEEK)}w ago`;
+  if (diff < 12 * MONTH) return `${Math.max(1, Math.floor(diff / MONTH))}mo ago`;
   return formatShortDate(iso, now);
 }
 
@@ -28,7 +32,8 @@ export function formatRelativeTimeLong(iso: string, now: Date = new Date()): str
   if (diff < HOUR) return pluralize(Math.floor(diff / MINUTE), 'minute') + ' ago';
   if (diff < DAY) return pluralize(Math.floor(diff / HOUR), 'hour') + ' ago';
   if (diff < WEEK) return pluralize(Math.floor(diff / DAY), 'day') + ' ago';
-  if (diff < 5 * WEEK) return pluralize(Math.floor(diff / WEEK), 'week') + ' ago';
+  if (diff < MONTH) return pluralize(Math.floor(diff / WEEK), 'week') + ' ago';
+  if (diff < 12 * MONTH) return pluralize(Math.max(1, Math.floor(diff / MONTH)), 'month') + ' ago';
   return formatShortDate(iso, now);
 }
 
@@ -72,6 +77,7 @@ const compact = (n: number): string => {
 
 /** Indian salaries are quoted in lakh: 2_800_000 → "28L", 2_850_000 → "28.5L". */
 const lakh = (n: number): string => {
+  'worklet'; // formatLakh feeds the salary slider's UI-thread readout (RangeValueLabel).
   const value = n / 100_000;
   return `${Number.isInteger(value) ? value : value.toFixed(1)}L`;
 };
@@ -107,6 +113,47 @@ export function formatSalary(range: SalaryRange): string {
   if (range.min != null) return `${fmt(range.min)}+ / ${period}${suffix}`;
   if (range.max != null) return `Up to ${fmt(range.max)} / ${period}${suffix}`;
   return 'Salary not listed';
+}
+
+/**
+ * Salary as the detail screen spells it — "₹28–38 LPA" (Figma 1:842) where the cards say
+ * "₹28–38L". Only the Indian unit is spelled out; other currencies keep their card formatting.
+ * The "· est." qualifier is dropped because JOBS 05 sets it as a separate, smaller run.
+ */
+export function formatSalaryLong(range: SalaryRange): string {
+  const base = formatSalary({ ...range, estimated: false });
+  if (range.currency !== 'INR') return base;
+  return base.endsWith('L') ? `${base.slice(0, -1)} LPA` : base;
+}
+
+/**
+ * "₹20L", "₹0", "₹80L+" — the salary slider's scale labels. A worklet: the slider's live
+ * readout calls it per frame on the UI runtime, where a plain JS closure would throw
+ * "Tried to synchronously call a Remote Function".
+ */
+export function formatLakh(amount: number, opts: { plus?: boolean } = {}): string {
+  'worklet';
+  if (amount <= 0) return '₹0';
+  return `₹${lakh(amount)}${opts.plus ? '+' : ''}`;
+}
+
+/**
+ * Salary band copy shared by the filter slider and its applied chip (Figma 1:798 / 1:659):
+ * "₹20L – ₹45L", "₹20L+" once the upper thumb sits at the ceiling, "Up to ₹45L" with no floor.
+ * The chip passes a tighter separator than the slider's readout.
+ */
+export function formatSalaryBand(
+  min: number | undefined,
+  max: number | undefined,
+  ceiling: number,
+  separator = ' – ',
+): string {
+  const low = min != null && min > 0 ? min : undefined;
+  const high = max != null && max < ceiling ? max : undefined;
+  if (low != null && high != null) return `${formatLakh(low)}${separator}${formatLakh(high)}`;
+  if (low != null) return formatLakh(low, { plus: true });
+  if (high != null) return `Up to ${formatLakh(high)}`;
+  return 'Any salary';
 }
 
 /** "Razorpay · Bengaluru · Hybrid" — the meta line under a job title. */
@@ -149,4 +196,17 @@ export function formatWeekdayDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+/**
+ * Notification-feed timestamps (Figma NOTIF 01): "2h ago" today, the bare weekday within the
+ * week ("Tue"), then the short date ("24 Jul").
+ */
+export function formatFeedTime(iso: string, now: Date = new Date()): string {
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return '';
+  const diff = now.getTime() - then.getTime();
+  if (diff < DAY) return formatRelativeTime(iso, now);
+  if (diff < WEEK) return then.toLocaleDateString('en-GB', { weekday: 'short' });
+  return formatShortDate(iso, now);
 }

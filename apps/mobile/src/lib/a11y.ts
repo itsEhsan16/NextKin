@@ -1,6 +1,13 @@
 import type { AccessibilityProps, Insets } from 'react-native';
 
-/** Expands small controls to the 44pt minimum hit target without changing layout. */
+/**
+ * Expands small controls to the 44pt minimum hit target without changing layout.
+ *
+ * `size` is the control's DEVICE-space size — what it actually renders at, i.e. `s(RAW)`. The 44
+ * is `sizes.minHitTarget`, a platform floor that is exempt from artboard scaling, so passing a
+ * raw artboard length here silently under-pads: the slop is computed against a control bigger
+ * than the one on screen, and the target lands short of 44.
+ */
 export const hitSlopFor = (size: number): Insets => {
   const pad = Math.max(0, (44 - size) / 2);
   return { top: pad, bottom: pad, left: pad, right: pad };
@@ -20,8 +27,13 @@ export const a11yHeader = (label?: string): AccessibilityProps => ({
   ...(label ? { accessibilityLabel: label } : {}),
 });
 
-/** Dense chrome (tab labels, badges) must not scale unboundedly with Dynamic Type. */
+/**
+ * Caps on the OS font-size setting, which multiplies every size on top of the artboard scale.
+ * The screens are proportional replicas of a 520px frame, so letting text grow 60% past its
+ * designed size is what reintroduces the wrapping and truncation the scaling exists to prevent.
+ * Chrome is pinned outright; body gets one modest step.
+ */
 export const maxFontScale = {
-  chrome: 1.2,
-  body: 1.6,
+  chrome: 1,
+  body: 1.1,
 } as const;

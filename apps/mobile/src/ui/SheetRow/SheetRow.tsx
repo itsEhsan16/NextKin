@@ -1,8 +1,8 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { AiBadge } from '@/ui/AiBadge';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -38,7 +38,8 @@ export function SheetRow({
   onPress,
   style,
 }: SheetRowProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
+  const styles = useStyles();
 
   const tile: { bg: string; fg: ColorToken } =
     tone === 'brand'
@@ -51,19 +52,19 @@ export function SheetRow({
       feedback="subtle"
       haptic="light"
       onPress={onPress}
-      style={[styles.row, { gap: GUTTER }, style]}
+      style={[styles.row, { gap: s(GUTTER) }, style]}
     >
       <View
         style={{
-          width: TILE,
-          height: TILE,
+          width: s(TILE),
+          height: s(TILE),
           borderRadius: radii.xl,
           backgroundColor: tile.bg,
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <FontAwesome5 name={icon} size={TILE_ICON} color={colors[tile.fg]} solid />
+        <FontAwesome5 name={icon} size={s(TILE_ICON)} color={colors[tile.fg]} solid />
       </View>
 
       <View style={styles.text}>
@@ -81,9 +82,9 @@ export function SheetRow({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
-  text: { flex: 1, gap: 4 },
+  text: { flex: 1, gap: s(4) },
   labelRow: { flexDirection: 'row', alignItems: 'center' },
   label: { flexShrink: 1 },
-});
+}));

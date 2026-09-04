@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { Job } from '@/data/models';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -24,9 +24,8 @@ const GAP = 16;
 
 /** Figma 1:299–1:324 — the "Today's picks" heading and its horizontal carousel. */
 export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }: TodaysPicksProps) {
-  const { spacing } = useTheme();
-  const { s } = useLayoutScale();
-  const cardWidth = s(CARD_WIDTH, 240);
+  const { spacing, s } = useTheme();
+  const cardWidth = s(CARD_WIDTH);
 
   const renderItem = useCallback(
     ({ item }: { item: Job }) => (
@@ -47,13 +46,13 @@ export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }
       </View>
 
       {status === 'pending' ? (
-        <View style={{ flexDirection: 'row', gap: GAP }}>
+        <View style={{ flexDirection: 'row', gap: s(GAP) }}>
           {[0, 1].map((index) => (
             <Card key={index} style={{ width: cardWidth, gap: spacing[3] }}>
-              <Skeleton width={40} height={40} radius="md" />
-              <Skeleton width="70%" height={20} />
-              <Skeleton width="90%" height={16} />
-              <Skeleton width="45%" height={22} radius="full" />
+              <Skeleton width={s(40)} height={s(40)} radius="md" />
+              <Skeleton width="70%" height={s(20)} />
+              <Skeleton width="90%" height={s(16)} />
+              <Skeleton width="45%" height={s(22)} radius="full" />
             </Card>
           ))}
         </View>
@@ -78,6 +77,13 @@ export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }
           />
         </Card>
       ) : (
+        /*
+          Full-bleed. The row breaks out of the page gutter and pays it back as content padding,
+          so the first card still lines up with the heading at rest but a scrolling card runs off
+          the real screen edge instead of being sliced at the gutter with dead margin beside it.
+          Boxed inside the gutter, a half-scrolled card reads as chopped rather than as content
+          continuing off-screen — which is the whole difference from the reference.
+        */
         <FlashList
           horizontal
           data={picks}
@@ -85,11 +91,15 @@ export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }
           keyExtractor={(job) => job.id}
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={Separator}
-          snapToInterval={cardWidth + GAP}
+          // s(GAP), not GAP: the separator below is scaled, so an unscaled gap here would put
+          // the snap interval 4dp past the real pitch at 390 and compound it card by card, until
+          // the carousel rests mid-card and clips the title.
+          snapToInterval={cardWidth + s(GAP)}
           snapToAlignment="start"
           decelerationRate="fast"
           // Cards cast a shadow; don't clip it on the cross axis.
-          contentContainerStyle={{ paddingVertical: 2 }}
+          contentContainerStyle={{ paddingVertical: s(2), paddingHorizontal: spacing.gutter }}
+          style={{ marginHorizontal: -spacing.gutter }}
         />
       )}
     </View>
@@ -97,7 +107,8 @@ export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }
 }
 
 function Separator() {
-  return <View style={{ width: GAP }} />;
+  const { s } = useTheme();
+  return <View style={{ width: s(GAP) }} />;
 }
 
 const styles = StyleSheet.create({

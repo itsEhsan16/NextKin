@@ -1,0 +1,14 @@
+# Home → create sheet → New Resume step (DESIGN 2 + CREATE 01/02).
+# Expo Go appId; on iOS run with `maestro test --env APP_ID=host.exp.Exponent` or edit below.
+appId: host.exp.exponent
+---
+- assertVisible: "Find Jobs"
+# The FAB opens the create sheet; its label flips to the dismiss affordance while open.
+- tapOn: "Create"
+- assertVisible: "New Resume.*"
+- tapOn: "New Resume.*"
+- assertVisible: "Upload PDF or DOCX.*"
+- tapOn: "Back"
+- assertVisible: "New Resume.*"
+- tapOn: "Close create menu"
+- assertVisible: "Find Jobs"

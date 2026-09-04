@@ -4,6 +4,13 @@ import type { SalaryRange } from '@/lib';
 
 export type RemoteType = 'remote' | 'hybrid' | 'onsite';
 
+/** "Workplace" pills (Figma 1:790) and the meta line on every job card. */
+export const REMOTE_TYPE_LABEL: Record<RemoteType, string> = {
+  remote: 'Remote',
+  hybrid: 'Hybrid',
+  onsite: 'On-site',
+};
+
 export type JobSource = 'adzuna' | 'jsearch' | 'manual';
 
 export type MatchBand = 'strong' | 'good' | 'fair';
@@ -33,14 +40,33 @@ export const EMPLOYMENT_TYPE_LABEL: Record<EmploymentType, string> = {
   freelance: 'Freelance',
 };
 
+/** Seniority band behind the "Experience level" filter group (Figma 1:805). */
+export type ExperienceLevel = 'entry' | 'mid' | 'senior' | 'lead';
+
+export const EXPERIENCE_LEVEL_LABEL: Record<ExperienceLevel, string> = {
+  entry: 'Entry',
+  mid: 'Mid-level',
+  senior: 'Senior',
+  lead: 'Lead',
+};
+
 export type Job = {
   id: string;
   title: string;
   company: string;
   companyLogoUrl?: string;
+  /**
+   * Company profile shown on JOBS 05 (1:889) — "Financial infrastructure · 8,000+ employees".
+   * NOTE: the artboard also puts "51–200 employees" in the meta chip row (1:849) for the same
+   * company it later calls "8,000+ employees". One field feeds both, so they cannot disagree.
+   */
+  companyIndustry: string;
+  companySize: string;
+  companyWebsite: string;
   location: string;
   remote: RemoteType;
   employmentType: EmploymentType;
+  experienceLevel: ExperienceLevel;
   /** Provider-reported applicant count, when known ("80+ applied"). */
   applicantsCount?: number;
   salary?: SalaryRange;
@@ -79,13 +105,25 @@ export const JOB_SORT_LABEL: Record<JobSort, string> = {
 
 export type PostedWithin = '24h' | '7d' | '30d';
 
+/** "Date posted" pills (Figma 1:766). `undefined` is the artboard's selected "Any time". */
+export const POSTED_WITHIN_LABEL: Record<PostedWithin, string> = {
+  '24h': 'Last 24h',
+  '7d': 'Past week',
+  '30d': 'Past month',
+};
+
 export type JobFilters = {
   query?: string;
   locations: string[];
   remote: RemoteType[];
   employmentTypes: EmploymentType[];
-  /** Compared against the listing's upper salary bound in the listing's own currency. */
+  experienceLevels: ExperienceLevel[];
+  /**
+   * Salary band in INR, from the "Salary range" slider (Figma 1:797). Listings priced in another
+   * currency are converted before comparison, so a ₹ band never silently hides foreign roles.
+   */
   salaryMin?: number;
+  salaryMax?: number;
   postedWithin?: PostedWithin;
   tags: string[];
 };
@@ -94,8 +132,15 @@ export const EMPTY_JOB_FILTERS: JobFilters = {
   locations: [],
   remote: [],
   employmentTypes: [],
+  experienceLevels: [],
   tags: [],
 };
+
+/** Ends of the salary slider's scale, in INR (Figma 1:803 "₹0" / 1:804 "₹80L+"). */
+export const SALARY_FILTER_MIN = 0;
+export const SALARY_FILTER_MAX = 8_000_000;
+/** One lakh per notch, so the thumbs land on the values the labels can render. */
+export const SALARY_FILTER_STEP = 100_000;
 
 /** Band thresholds shared by fixtures and match meters. */
 export function matchBandFor(score: number): MatchBand {

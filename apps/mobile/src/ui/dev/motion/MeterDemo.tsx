@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
@@ -7,7 +7,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useReducedMotion, withReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { DevButton } from '@/ui/dev/DevButton';
 import { Text } from '@/ui/Text';
 
@@ -21,7 +21,8 @@ const BAR_HEIGHT = 10;
  * thread via `useAnimatedProps` on a non-editable TextInput (no per-frame React renders).
  */
 export function MeterDemo() {
-  const { colors, spacing, radii, typography, motion } = useTheme();
+  const { colors, spacing, radii, typography, motion, s } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
   const progress = useSharedValue(0);
 
@@ -53,7 +54,7 @@ export function MeterDemo() {
       </View>
       <View
         style={{
-          height: BAR_HEIGHT,
+          height: s(BAR_HEIGHT),
           borderRadius: radii.full,
           backgroundColor: colors.surfaceSubtle,
           overflow: 'hidden',
@@ -72,8 +73,8 @@ export function MeterDemo() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { padding: 0, textAlign: 'right', minWidth: 56 },
+  label: { padding: 0, textAlign: 'right', minWidth: s(56) },
   fill: { height: '100%' },
-});
+}));

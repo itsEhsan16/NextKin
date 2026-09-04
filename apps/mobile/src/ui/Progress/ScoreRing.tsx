@@ -4,10 +4,11 @@ import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-na
 import Svg, { Circle } from 'react-native-svg';
 
 import { useReducedMotion, withReducedMotion } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { useTheme, type ColorToken, type TypographyRole } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { AnimatedNumber } from './AnimatedNumber';
+import { ringRadius } from './ringMath';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -21,6 +22,10 @@ export type ScoreRingProps = {
   ringColor?: ColorToken;
   trackColor?: ColorToken;
   labelColor?: ColorToken;
+  /** Type role of the count-up digits — the 44px card badge sets 13 Bold, the hero 42 Bold. */
+  numberVariant?: TypographyRole;
+  numberColor?: ColorToken;
+  labelVariant?: TypographyRole;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
 };
@@ -32,20 +37,29 @@ export type ScoreRingProps = {
  * and the AnimatedNumber, so the count-up can never drift from the sweep; both stay on the
  * UI thread.
  */
+/** Artboard sizes; callers pass device-space values, so the defaults are scaled to match. */
+const DEFAULT_SIZE = 80;
+const DEFAULT_STROKE = 4;
+
 export function ScoreRing({
   score,
   label,
-  size = 80,
-  strokeWidth = 4,
+  size,
+  strokeWidth,
   ringColor = 'successRing',
   // The unfilled arc is a faint tint of the ring, not grey: Figma (1:169) draws an unbroken
   // green circle, and a grey remainder reads as a gap in it.
   trackColor = 'successSurface',
   labelColor = 'success',
+  numberVariant = 'statRegular',
+  numberColor = 'textBlack',
+  labelVariant = 'tiny',
   accessibilityLabel,
   style,
 }: ScoreRingProps) {
-  const { colors, motion } = useTheme();
+  const { colors, motion, s } = useTheme();
+  const box = size ?? s(DEFAULT_SIZE);
+  const stroke = strokeWidth ?? s(DEFAULT_STROKE);
   const reduced = useReducedMotion();
   const target = Math.max(0, Math.min(100, score));
   const animatedScore = useSharedValue(0);
@@ -54,7 +68,8 @@ export function ScoreRing({
     animatedScore.set(withTiming(target, withReducedMotion(reduced, motion.timings.meter)));
   }, [animatedScore, motion.timings.meter, reduced, target]);
 
-  const radius = (size - strokeWidth) / 2;
+  // Inset by a physical pixel so the stroke is not tangent to the canvas edge; see ringMath.
+  const radius = ringRadius(box, stroke);
   const circumference = 2 * Math.PI * radius;
 
   const arcProps = useAnimatedProps(() => ({
@@ -67,34 +82,40 @@ export function ScoreRing({
       accessibilityRole="progressbar"
       accessibilityLabel={accessibilityLabel ?? `${label ?? 'Score'} ${target}`}
       accessibilityValue={{ min: 0, max: 100, now: target }}
-      style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}
+      style={[{ width: box, height: box, alignItems: 'center', justifyContent: 'center' }, style]}
     >
-      <Svg width={size} height={size} style={{ position: 'absolute' }}>
+      <Svg width={box} height={box} style={{ position: 'absolute' }}>
         <Circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={box / 2}
+          cy={box / 2}
           r={radius}
           stroke={colors[trackColor]}
-          strokeWidth={strokeWidth}
+          strokeWidth={stroke}
           fill="none"
         />
         <AnimatedCircle
-          cx={size / 2}
-          cy={size / 2}
+          cx={box / 2}
+          cy={box / 2}
           r={radius}
           stroke={colors[ringColor]}
-          strokeWidth={strokeWidth}
+          strokeWidth={stroke}
           strokeLinecap="round"
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}
           animatedProps={arcProps}
           // Start the sweep at 12 o'clock.
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          transform={`rotate(-90 ${box / 2} ${box / 2})`}
         />
       </Svg>
-      <AnimatedNumber value={animatedScore} variant="statRegular" />
+      <AnimatedNumber value={animatedScore} variant={numberVariant} color={numberColor} />
+      {/* One line, always: a second would break out of the ring on the narrowest phones. */}
       {label ? (
-        <Text variant="tiny" color={labelColor} style={{ marginTop: -2 }}>
+        <Text
+          variant={labelVariant}
+          color={labelColor}
+          numberOfLines={1}
+          style={{ marginTop: -s(2) }}
+        >
           {label}
         </Text>
       ) : null}

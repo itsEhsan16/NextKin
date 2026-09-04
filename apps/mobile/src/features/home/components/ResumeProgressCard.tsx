@@ -6,7 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { resolveImageSource } from '@/assets';
 import type { Resume } from '@/data/models';
 import { a11yButton, formatPercent, formatRelativeTimeLong } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar, ScoreRing } from '@/ui/Progress';
@@ -54,10 +54,9 @@ export function ResumeProgressCard({
   onCreateResume,
   onRetry,
 }: ResumeProgressCardProps) {
-  const { colors, radii, spacing } = useTheme();
-  const { s } = useLayoutScale();
-  const thumb = { width: s(THUMB.width, 60), height: s(THUMB.height, 72) };
-  const ring = s(RING, 64);
+  const { colors, radii, spacing, s } = useTheme();
+  const thumb = { width: s(THUMB.width), height: s(THUMB.height) };
+  const ring = s(RING);
   // Resolve once: for a remote URL this allocates a new { uri } object per call, which would
   // make expo-image re-run its source-change path on every parent render.
   const thumbSource = useMemo(
@@ -66,16 +65,16 @@ export function ResumeProgressCard({
   );
 
   return (
-    <Card style={{ paddingVertical: s(25, 18), paddingHorizontal: s(21, 14), gap: spacing[4] }}>
-      <SectionHeader title="Your Resume Progress" variant="sectionBold" onAction={onViewAll} />
+    <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
+      <SectionHeader title="Your Resume Progress" variant="homeSection" onAction={onViewAll} />
 
       {status === 'pending' ? (
         <View style={[styles.row, { gap: spacing[4] }]}>
           <Skeleton width={thumb.width} height={thumb.height} radius="xs" />
           <View style={{ flex: 1, gap: spacing[2] }}>
-            <Skeleton width="70%" height={20} />
-            <Skeleton width="50%" height={14} />
-            <Skeleton height={8} radius="full" style={{ marginTop: spacing[2] }} />
+            <Skeleton width="70%" height={s(20)} />
+            <Skeleton width="50%" height={s(14)} />
+            <Skeleton height={s(8)} radius="full" style={{ marginTop: spacing[2] }} />
           </View>
           <Skeleton width={ring} height={ring} radius="full" />
         </View>
@@ -111,7 +110,7 @@ export function ResumeProgressCard({
                 width: thumb.width,
                 height: thumb.height,
                 borderRadius: radii.xs,
-                borderWidth: 1,
+                borderWidth: s(1),
                 borderColor: colors.borderDefault,
                 overflow: 'hidden',
                 backgroundColor: colors.surfaceSubtle,
@@ -128,21 +127,29 @@ export function ResumeProgressCard({
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text variant="label" numberOfLines={1}>
+              <Text variant="homeResumeTitle" numberOfLines={1}>
                 {resume.title}
               </Text>
-              <Text variant="captionRegular" color="textSecondary" numberOfLines={1}>
+              <Text variant="homeResumeMeta" color="textSecondary" numberOfLines={1}>
                 Last updated {formatRelativeTimeLong(resume.updatedAt)}
               </Text>
               <ProgressBar
                 value={resume.completeness ?? 0}
                 accessibilityLabel="Resume completeness"
-                style={{ marginTop: 13 }}
+                style={{ marginTop: s(13) }}
               />
             </View>
 
             {resume.atsScore != null ? (
-              <ScoreRing score={resume.atsScore} label="ATS Score" size={ring} />
+              // `ringCaption` is sized to clear the ring stroke and tracks it down; the shared
+              // small roles run right up against it. See src/theme/typography.ts.
+              <ScoreRing
+                score={resume.atsScore}
+                label="ATS Score"
+                size={ring}
+                labelVariant="ringCaption"
+                numberVariant="homeRingValue"
+              />
             ) : null}
           </Pressable>
 
@@ -155,15 +162,15 @@ export function ResumeProgressCard({
                     key={key}
                     accessible
                     accessibilityLabel={`${label}: ${ok ? 'passed' : 'pending'}`}
-                    style={[styles.row, { gap: 4 }]}
+                    style={[styles.row, { gap: s(4) }]}
                   >
                     <FontAwesome5
                       name={ok ? 'check-circle' : 'circle'}
-                      size={13}
+                      size={s(11)}
                       color={ok ? colors.successIcon : colors.iconMuted}
                       solid={ok}
                     />
-                    <Text variant="captionRegular" color="textBody">
+                    <Text variant="homeCheckLabel" color="textBody">
                       {label}
                     </Text>
                   </View>

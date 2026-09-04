@@ -22,5 +22,15 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
         };
         return clone(store.state.profile);
       }),
+
+    updatePreferences: (patch) =>
+      simulate(() => {
+        const { profile } = store.state;
+        store.state.profile = {
+          ...profile,
+          preferences: { ...profile.preferences, ...patch },
+        };
+        return clone(store.state.profile);
+      }),
   };
 }

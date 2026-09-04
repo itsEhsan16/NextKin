@@ -67,16 +67,18 @@ describe('formatRelativeTime', () => {
   it('formats weeks between 1w and 4w', () => {
     expect(formatRelativeTime(ago(WEEK), NOW)).toBe('1w ago');
     expect(formatRelativeTime(ago(3 * WEEK + 2 * DAY), NOW)).toBe('3w ago');
-    expect(formatRelativeTime(ago(5 * WEEK - 1), NOW)).toBe('4w ago');
+    // Weeks hand over to months at 30 days (the resume cards read 32 days as "1mo ago").
+    expect(formatRelativeTime(ago(29 * DAY), NOW)).toBe('4w ago');
   });
 
-  it('falls back to a short date at five weeks and beyond', () => {
-    const iso = ago(5 * WEEK); // 2026-07-19, same year as NOW -> no year suffix
-    const result = formatRelativeTime(iso, NOW);
-    expect(result).toBe(formatShortDate(iso, NOW));
-    expect(result).toMatch(/^Jul 19$/);
+  it('counts months past five weeks (the resume cards say "Edited 1mo ago")', () => {
+    expect(formatRelativeTime(ago(32 * DAY), NOW)).toBe('1mo ago');
+    expect(formatRelativeTime(ago(36 * DAY), NOW)).toBe('1mo ago');
+    expect(formatRelativeTime(ago(65 * DAY), NOW)).toBe('2mo ago');
+  });
 
-    const old = ago(52 * WEEK); // 2025 -> year suffix, judged against NOW not the wall clock
+  it('falls back to a short date at a year and beyond', () => {
+    const old = ago(53 * WEEK); // 2025 -> year suffix, judged against NOW not the wall clock
     expect(formatRelativeTime(old, NOW)).toBe(formatShortDate(old, NOW));
     expect(formatRelativeTime(old, NOW)).toMatch(/, 2025$/);
   });

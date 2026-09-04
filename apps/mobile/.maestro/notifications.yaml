@@ -1,0 +1,18 @@
+# Notifications feed: swipe a row, use the row menu, mark all read (NOTIF 01/02/03).
+appId: host.exp.exponent
+---
+- tapOn: "Notifications, unread"
+- assertVisible: "4 unread"
+- assertVisible: "TODAY"
+# Exercise the swipe gesture on a feed row (reveals Mark read + More).
+- swipe:
+    direction: LEFT
+# The same actions are reachable without the gesture: long-press opens the row menu.
+- longPressOn: "Freshworks.*"
+- assertVisible: "Mark as read"
+- assertVisible: "Turn off application updates"
+- tapOn: "Mark as read"
+- tapOn: "Mark all read"
+- assertNotVisible: "4 unread"
+- tapOn: "Back"
+- assertVisible: "Find Jobs"

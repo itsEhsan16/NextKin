@@ -17,12 +17,18 @@ export type FilterChipVariant =
    * One option of a single-choice row — outlined on white when unpicked (Figma 1:530/1:532/1:534),
    * ink-filled with a SemiBold white label and no glyph when picked (Figma 1:528).
    */
-  | 'select';
+  | 'select'
+  /**
+   * A filter-sheet option (Figma JOBS 04, 1:768 / 1:774). Boxed like `select` but taller and set
+   * in the 14pt segment type, and — unlike `select` — it shows a leading ✓ when picked, because
+   * the sheet's groups are multi-select and need to read as checkable rather than as a radio row.
+   */
+  | 'filter';
 
 export type FilterChipProps = {
   label: string;
   variant?: FilterChipVariant;
-  /** `toggle` and `select` only: fills the chip (and, on `toggle`, shows the check). */
+  /** `toggle`, `select` and `filter` only: fills the chip (and shows the ✓ on the first and last). */
   selected?: boolean;
   /** FA5 Solid glyph shown before the label (e.g. `map-marker-alt` on a location picker). */
   icon?: string;
@@ -34,12 +40,30 @@ const LEADING_ICON = 11;
 const TRAILING_ICON = 9;
 const TOGGLE_ICON = 10;
 
-/** `removable` and `select` are the h32 boxed chips; `picker` and `toggle` are the taller h36 ones. */
-const BOXED: readonly FilterChipVariant[] = ['removable', 'select'];
+/** The bordered-on-white chips; `picker` and `toggle` are the borderless `surfaceSubtle` ones. */
+const BOXED: readonly FilterChipVariant[] = ['removable', 'select', 'filter'];
+
+/** Each variant traces a different artboard, so the box metrics are listed rather than derived. */
+const PADDING_X: Record<FilterChipVariant, number> = {
+  removable: 13,
+  picker: 14,
+  toggle: 14,
+  select: 14,
+  filter: 16,
+};
+
+const PADDING_Y: Record<FilterChipVariant, number> = {
+  removable: 6,
+  picker: 8,
+  toggle: 8,
+  select: 6,
+  filter: 10,
+};
 
 /**
- * The four chip shapes on the Jobs header. All are fully rounded; the variant decides the fill,
- * the affordance glyph and what a tap means (remove / open a picker / toggle / pick one of a set).
+ * The five chip shapes across the Jobs screens. All are fully rounded; the variant decides the
+ * fill, the affordance glyph and what a tap means (remove / open a picker / toggle / pick one of
+ * a set / check one of a filter group).
  */
 export function FilterChip({
   label,
@@ -49,10 +73,13 @@ export function FilterChip({
   onPress,
   style,
 }: FilterChipProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
 
-  const filled = (variant === 'toggle' || variant === 'select') && selected;
+  const filled = variant !== 'removable' && variant !== 'picker' && selected;
   const boxed = BOXED.includes(variant);
+  // `select` is a radio row and reads as picked from its fill alone; `toggle` and `filter` are
+  // checkable, so they earn the glyph.
+  const checked = (variant === 'toggle' || variant === 'filter') && selected;
   // The picked `select` chip keeps its 1px border — drawn in its own fill — so toggling a chip
   // never shifts the row by 2pt.
   const borderColor = filled ? colors.surfaceSelected : colors.borderDefault;
@@ -76,8 +103,8 @@ export function FilterChip({
         {
           borderRadius: radii.full,
           gap: spacing[1] + 2,
-          paddingHorizontal: variant === 'removable' ? 13 : 14,
-          paddingVertical: boxed ? 6 : 8,
+          paddingHorizontal: PADDING_X[variant],
+          paddingVertical: PADDING_Y[variant],
           backgroundColor: filled
             ? colors.surfaceSelected
             : boxed
@@ -89,19 +116,28 @@ export function FilterChip({
         style,
       ]}
     >
-      {variant === 'toggle' && selected ? (
-        <FontAwesome5 name="check" size={TOGGLE_ICON} color={colors.textOnBrand} solid />
+      {checked ? (
+        <FontAwesome5 name="check" size={s(TOGGLE_ICON)} color={colors.textOnBrand} solid />
       ) : icon ? (
         <FontAwesome5
           name={icon}
-          size={LEADING_ICON}
+          size={s(LEADING_ICON)}
           color={filled ? colors.textOnBrand : colors.textSecondary}
           solid
         />
       ) : null}
 
       <Text
-        variant={filled ? 'captionSemiBold' : 'caption'}
+        // The sheet sets its options in the 14pt segment type; the header chips stay at 13.
+        variant={
+          variant === 'filter'
+            ? filled
+              ? 'segmentActive'
+              : 'segment'
+            : filled
+              ? 'captionSemiBold'
+              : 'caption'
+        }
         color={filled ? 'textOnBrand' : 'textBody'}
         numberOfLines={1}
       >
@@ -109,9 +145,9 @@ export function FilterChip({
       </Text>
 
       {variant === 'removable' ? (
-        <FontAwesome5 name="times" size={TRAILING_ICON} color={colors.iconMuted} solid />
+        <FontAwesome5 name="times" size={s(TRAILING_ICON)} color={colors.iconMuted} solid />
       ) : variant === 'picker' ? (
-        <FontAwesome5 name="chevron-down" size={TRAILING_ICON} color={colors.iconMuted} solid />
+        <FontAwesome5 name="chevron-down" size={s(TRAILING_ICON)} color={colors.iconMuted} solid />
       ) : null}
     </Pressable>
   );

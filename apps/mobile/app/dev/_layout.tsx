@@ -22,6 +22,7 @@ export default function DevLayout() {
       <Stack.Screen name="typography" options={{ title: 'Typography' }} />
       <Stack.Screen name="motion" options={{ title: 'Motion' }} />
       <Stack.Screen name="mock" options={{ title: 'Mock data' }} />
+      <Stack.Screen name="filters" options={{ title: 'Filters' }} />
     </Stack>
   );
 }

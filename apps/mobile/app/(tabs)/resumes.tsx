@@ -1,11 +1,5 @@
-import { PlaceholderScreen } from '@/ui';
+import { ResumesScreen } from '@/features/resumes';
 
 export default function ResumesRoute() {
-  return (
-    <PlaceholderScreen
-      title="Resumes"
-      phase={5}
-      figmaScreens={['Resumes', 'Resumes – Empty', 'Resume detail', 'ATS score', 'Version history']}
-    />
-  );
+  return <ResumesScreen />;
 }

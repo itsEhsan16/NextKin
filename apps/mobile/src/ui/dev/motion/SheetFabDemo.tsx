@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
 const SHEET_HEIGHT = 200;
@@ -23,7 +23,8 @@ const FAB_ICON_SIZE = 22;
  * contract `sheetProgress` will have in Phase 2.
  */
 export function SheetFabDemo() {
-  const { colors, spacing, radii, sizes, shadows, motion } = useTheme();
+  const { colors, spacing, radii, sizes, shadows, motion, s } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
@@ -60,7 +61,7 @@ export function SheetFabDemo() {
       style={[
         styles.stage,
         {
-          height: STAGE_HEIGHT,
+          height: s(STAGE_HEIGHT),
           borderRadius: radii.card,
           backgroundColor: colors.surfaceSubtle,
           borderColor: colors.borderHairline,
@@ -82,7 +83,7 @@ export function SheetFabDemo() {
         style={[
           styles.sheet,
           {
-            height: SHEET_HEIGHT,
+            height: s(SHEET_HEIGHT),
             backgroundColor: colors.surfaceSheet,
             borderTopLeftRadius: radii.sheet,
             borderTopRightRadius: radii.sheet,
@@ -126,15 +127,15 @@ export function SheetFabDemo() {
         ]}
       >
         <Animated.View style={glyphStyle}>
-          <FontAwesome5 name="plus" size={FAB_ICON_SIZE} color={colors.fabGlyph} />
+          <FontAwesome5 name="plus" size={s(FAB_ICON_SIZE)} color={colors.fabGlyph} />
         </Animated.View>
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  stage: { overflow: 'hidden', borderWidth: 1 },
+const useStyles = scaledSheet((s) => ({
+  stage: { overflow: 'hidden', borderWidth: s(1) },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   handle: { alignSelf: 'center' },
   fab: {
@@ -143,4 +144,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

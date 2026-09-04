@@ -32,11 +32,13 @@ export function SegmentedControl<K extends string = string>({
   onChange,
   style,
 }: SegmentedControlProps<K>) {
-  const { colors, radii, sizes, shadows, motion } = useTheme();
+  const { colors, radii, sizes, shadows, motion, s } = useTheme();
   const reduced = useReducedMotion();
 
   const [trackWidth, setTrackWidth] = useState(0);
-  const slot = trackWidth > 0 ? (trackWidth - INSET * 2) / segments.length : 0;
+  // `trackWidth` is measured device space, so the inset subtracted from it must be too.
+  const inset = s(INSET);
+  const slot = trackWidth > 0 ? (trackWidth - inset * 2) / segments.length : 0;
   const index = Math.max(
     0,
     segments.findIndex((segment) => segment.key === value),
@@ -49,7 +51,7 @@ export function SegmentedControl<K extends string = string>({
   const placed = useRef(false);
   useEffect(() => {
     if (slot === 0) return;
-    const target = INSET + index * slot;
+    const target = inset + index * slot;
     if (!placed.current) {
       // First real measurement: seat the pill under the active segment with no motion at all.
       placed.current = true;
@@ -58,7 +60,7 @@ export function SegmentedControl<K extends string = string>({
     }
     // Every deliberate switch after that animates.
     offset.set(withSpring(target, withReducedMotion(reduced, motion.springs.snappy)));
-  }, [index, motion.springs.snappy, offset, reduced, slot]);
+  }, [index, inset, motion.springs.snappy, offset, reduced, slot]);
 
   const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }));
 
@@ -85,7 +87,7 @@ export function SegmentedControl<K extends string = string>({
           height: sizes.segmentedControl,
           borderRadius: radii.xl,
           backgroundColor: colors.surfaceSubtle,
-          padding: INSET,
+          padding: s(INSET),
         },
         style,
       ]}
@@ -96,6 +98,7 @@ export function SegmentedControl<K extends string = string>({
             styles.pill,
             shadows.segmentPill,
             {
+              top: inset,
               width: slot,
               height: sizes.segmentedPill,
               borderRadius: radii.md,
@@ -136,6 +139,7 @@ export function SegmentedControl<K extends string = string>({
 
 const styles = StyleSheet.create({
   track: { flexDirection: 'row', alignItems: 'center' },
-  pill: { position: 'absolute', left: 0, top: INSET },
+  // `top` is set inline from s(INSET) — a raw artboard length here would not scale.
+  pill: { position: 'absolute', left: 0 },
   segment: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
 });

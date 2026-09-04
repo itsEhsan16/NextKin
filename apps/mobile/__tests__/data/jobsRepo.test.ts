@@ -105,6 +105,111 @@ describe('JobsRepo (mock)', () => {
     });
   });
 
+  describe('experience and salary filters (JOBS 04)', () => {
+    it('filters by experience level', async () => {
+      const page = await flush(
+        repos.jobs.list({ ...EMPTY_JOB_FILTERS, experienceLevels: ['lead'] }),
+      );
+
+      expect(page.items.length).toBeGreaterThan(0);
+      expect(page.items.every((job) => job.experienceLevel === 'lead')).toBe(true);
+    });
+
+    it('every Job type pill returns something, so no filter is a dead end', async () => {
+      for (const type of ['full_time', 'part_time', 'contract', 'internship'] as const) {
+        const total = await flush(
+          repos.jobs.count({ ...EMPTY_JOB_FILTERS, employmentTypes: [type] }),
+        );
+        expect(total).toBeGreaterThan(0);
+      }
+    });
+
+    it('every Experience pill returns something', async () => {
+      for (const level of ['entry', 'mid', 'senior', 'lead'] as const) {
+        const total = await flush(
+          repos.jobs.count({ ...EMPTY_JOB_FILTERS, experienceLevels: [level] }),
+        );
+        expect(total).toBeGreaterThan(0);
+      }
+    });
+
+    it('keeps a listing whose band overlaps the requested one', async () => {
+      // job_zoho is ₹18–24L, so it survives a ₹20L floor but not a ₹15L ceiling.
+      const above = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMin: 2_000_000 }));
+      expect(above.items.some((job) => job.id === 'job_zoho')).toBe(true);
+
+      const below = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMax: 1_500_000 }));
+      expect(below.items.some((job) => job.id === 'job_zoho')).toBe(false);
+    });
+
+    it('compares foreign salaries in INR rather than raw digits', async () => {
+      // job_9 is Shopify at USD 120–150k: worth well over ₹20L, and previously excluded outright
+      // because 120000 < 2000000 as a bare number.
+      const page = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMin: 2_000_000 }));
+      expect(page.items.some((job) => job.id === 'job_9')).toBe(true);
+
+      const capped = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMax: 2_000_000 }));
+      expect(capped.items.some((job) => job.id === 'job_9')).toBe(false);
+    });
+
+    it('excludes a listing that quotes no salary whenever a bound is set', async () => {
+      // job_21 (BMW) is the one fixture with no salary at all.
+      const unfiltered = await flush(repos.jobs.count(EMPTY_JOB_FILTERS));
+      const bounded = await flush(repos.jobs.count({ ...EMPTY_JOB_FILTERS, salaryMin: 1 }));
+
+      expect(unfiltered).toBe(jobsFixture.length);
+      expect(bounded).toBe(jobsFixture.length - 1);
+    });
+  });
+
+  describe('listSimilar()', () => {
+    it('ranks by shared tags and never returns the job itself or its own company', async () => {
+      const similar = await flush(repos.jobs.listSimilar('job_stripe'));
+
+      expect(similar.length).toBeGreaterThan(0);
+      expect(similar.length).toBeLessThanOrEqual(3);
+      expect(similar.some((job) => job.id === 'job_stripe')).toBe(false);
+      expect(similar.some((job) => job.company === 'Stripe')).toBe(false);
+      // Every result shares at least one tag with the source job.
+      const tags = new Set(['Fintech', 'Design systems', 'Figma']);
+      expect(similar.every((job) => job.tags.some((tag) => tags.has(tag)))).toBe(true);
+    });
+
+    it('honours the limit and returns nothing in empty mode', async () => {
+      expect(await flush(repos.jobs.listSimilar('job_stripe', 1))).toHaveLength(1);
+
+      useMockModeStore.setState({ mode: 'empty' });
+      expect(await flush(repos.jobs.listSimilar('job_stripe'))).toEqual([]);
+    });
+  });
+
+  describe('count()', () => {
+    it('agrees with what list() would page through', async () => {
+      const filters = { ...EMPTY_JOB_FILTERS, remote: ['remote' as const] };
+      const total = await flush(repos.jobs.count(filters));
+      const first = await flush(repos.jobs.list(filters));
+      const rest = first.nextCursor
+        ? await flush(repos.jobs.list(filters, first.nextCursor))
+        : { items: [] };
+
+      expect(total).toBe(first.items.length + rest.items.length);
+    });
+
+    it('is sort-independent', async () => {
+      const relevance = await flush(repos.jobs.count(EMPTY_JOB_FILTERS));
+      const recent = await flush(repos.jobs.count(EMPTY_JOB_FILTERS));
+      expect(relevance).toBe(recent);
+    });
+
+    it('returns 0 in empty mode and rejects in error mode', async () => {
+      useMockModeStore.setState({ mode: 'empty' });
+      expect(await flush(repos.jobs.count(EMPTY_JOB_FILTERS))).toBe(0);
+
+      useMockModeStore.setState({ mode: 'error' });
+      await expect(flush(repos.jobs.count(EMPTY_JOB_FILTERS))).rejects.toBeInstanceOf(MockError);
+    });
+  });
+
   it('reset() restores fixture state', async () => {
     await flush(repos.jobs.toggleSave('job_1'));
     resetMockRepos();

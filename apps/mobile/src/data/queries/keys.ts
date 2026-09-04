@@ -27,7 +27,10 @@ export const qk = {
     lists: () => ['jobs', 'list'] as const,
     list: (filters: JobFilters, sort: JobSort = 'relevance') =>
       ['jobs', 'list', filters, sort] as const,
+    /** Sort-independent: the filter sheet previews how many jobs match, not their order. */
+    count: (filters: JobFilters) => ['jobs', 'count', filters] as const,
     detail: (id: string) => ['jobs', 'detail', id] as const,
+    similar: (id: string) => ['jobs', 'similar', id] as const,
     saved: () => ['jobs', 'saved'] as const,
     picks: () => ['jobs', 'picks'] as const,
     todaysPicks: () => ['jobs', 'todays-picks'] as const,

@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createQueryClient } from '@/data/queries/client';
+import { ArtboardMode, FigmaOverlay } from '@/dev';
 
 export type AppProvidersProps = { children: ReactNode };
 
@@ -21,7 +22,8 @@ export function AppProviders({ children }: AppProvidersProps) {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          {children}
+          <ArtboardMode>{children}</ArtboardMode>
+          <FigmaOverlay />
           <StatusBar style="auto" />
         </QueryClientProvider>
       </SafeAreaProvider>

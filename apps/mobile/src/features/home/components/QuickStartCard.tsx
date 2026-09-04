@@ -5,7 +5,7 @@ import AtsCheckIcon from '../../../../assets/icons/quick-start/ats-check.svg';
 import BuildResumeIcon from '../../../../assets/icons/quick-start/build-resume.svg';
 import CoverLetterIcon from '../../../../assets/icons/quick-start/cover-letter.svg';
 import ZeroResumeIcon from '../../../../assets/icons/quick-start/zero-resume.svg';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { IconTileGrid, type IconTile } from '@/ui/IconTileGrid';
 import { Text } from '@/ui/Text';
@@ -67,33 +67,34 @@ const SPECS: readonly Spec[] = [
 const ICON_ROW_HEIGHT = 65;
 
 export function QuickStartCard({ onAction }: QuickStartCardProps) {
-  const { spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { spacing, s } = useTheme();
 
   const items = useMemo<IconTile<QuickStartAction>[]>(
     () =>
       SPECS.map(({ key, label, hint, render, w, h }) => ({
         key,
         label,
-        sublabel: hint,
-        icon: render({ width: s(w, 36), height: s(h, 40) }),
+        // The board prints this under the label; at phone width that line was 6.8pt, so it now
+        // reaches screen readers only — "Build Resume, for a specific job" — and the label gets
+        // the room instead.
+        a11yHint: hint,
+        icon: render({ width: s(w), height: s(h) }),
       })),
     [s],
   );
 
   return (
-    <Card style={{ paddingVertical: s(25, 18), paddingHorizontal: s(21, 14), gap: spacing[4] }}>
-      <Text accessibilityRole="header" variant="section">
+    <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
+      <Text accessibilityRole="header" variant="homeSection">
         Quick Start
       </Text>
       <IconTileGrid
         items={items}
         onPress={onAction}
-        iconBoxHeight={s(ICON_ROW_HEIGHT, 48)}
+        iconBoxHeight={s(ICON_ROW_HEIGHT)}
         iconAlign="flex-end"
-        labelVariant="captionSemiBold"
-        sublabelVariant="micro"
-        labelGap={7}
+        labelVariant="tileLabel"
+        labelGap={s(7)}
       />
     </Card>
   );

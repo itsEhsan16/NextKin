@@ -1,0 +1,13 @@
+# Discover → job detail → save → Saved tab (JOBS 01/02/05).
+appId: host.exp.exponent
+---
+- tapOn: "Jobs"
+- assertVisible: "Today's picks"
+- tapOn: "Senior Product Designer"
+- assertVisible: "Apply now"
+- assertVisible: "Why you match"
+# The pinned bar's bookmark toggles between Save and Saved.
+- tapOn: "Saved|Save"
+- tapOn: "Back"
+- tapOn: "Saved"
+- assertVisible: "Stripe"

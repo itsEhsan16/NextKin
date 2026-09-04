@@ -1,17 +1,24 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { a11yButton, hitSlop8 } from '@/lib';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
+import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 export type StateViewProps = {
   /** FA5 glyph shown in the tile. */
   icon: string;
+  /** Solid (default) or Regular outline set — JOBS 07 draws the bookmark as an outline. */
+  iconStyle?: 'solid' | 'regular';
   title: string;
   message?: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** Quieter text action under the primary button (JOBS 06 "Clear all filters", 1:964). */
+  secondaryLabel?: string;
+  onSecondary?: () => void;
   tone?: 'neutral' | 'danger';
   /** Compact inline variant for section-level states (inside cards). */
   compact?: boolean;
@@ -30,16 +37,20 @@ export type StateViewProps = {
  */
 export function StateView({
   icon,
+  iconStyle = 'solid',
   title,
   message,
   actionLabel,
   onAction,
+  secondaryLabel,
+  onSecondary,
   tone = 'neutral',
   compact = false,
   style,
 }: StateViewProps) {
-  const { colors, radii, sizes, spacing } = useTheme();
-  const tile = compact ? 48 : sizes.emptyStateTile;
+  const { colors, radii, sizes, spacing, s } = useTheme();
+  // `sizes.emptyStateTile` arrives scaled, so the compact tile has to be scaled to match.
+  const tile = compact ? s(48) : sizes.emptyStateTile;
 
   return (
     <View
@@ -66,9 +77,9 @@ export function StateView({
       >
         <FontAwesome5
           name={icon}
-          size={compact ? 18 : 32}
+          size={compact ? s(18) : s(32)}
           color={tone === 'danger' ? colors.danger : colors.iconDefault}
-          solid
+          solid={iconStyle === 'solid'}
         />
       </View>
       <Text
@@ -86,7 +97,7 @@ export function StateView({
           align="center"
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
-          style={{ maxWidth: 300 }}
+          style={{ maxWidth: s(300) }}
         >
           {message}
         </Text>
@@ -98,6 +109,20 @@ export function StateView({
           variant={tone === 'danger' ? 'secondary' : 'primary'}
           style={{ marginTop: spacing[2] }}
         />
+      ) : null}
+      {secondaryLabel && onSecondary ? (
+        <Pressable
+          {...a11yButton(secondaryLabel)}
+          feedback="subtle"
+          haptic="selection"
+          hitSlop={hitSlop8}
+          onPress={onSecondary}
+          style={{ marginTop: spacing[2] }}
+        >
+          <Text variant="segmentActive" color="textSecondary" align="center">
+            {secondaryLabel}
+          </Text>
+        </Pressable>
       ) : null}
     </View>
   );

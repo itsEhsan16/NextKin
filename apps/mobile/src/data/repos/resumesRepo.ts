@@ -74,6 +74,17 @@ export function createMockResumesRepo(store: MockStore): ResumesRepo {
         return clone(updated);
       }),
 
+    setAsBase: (id) =>
+      simulate(() => {
+        const target = find(id);
+        if (target.docType !== 'resume') throw new NotFoundError('Resume', id);
+        // The flag moves rather than accumulates: exactly one base at a time (RESUMES pill).
+        store.state.resumes = store.state.resumes.map((resume) =>
+          resume.docType === 'resume' ? { ...resume, isBase: resume.id === id } : resume,
+        );
+        return clone([...store.state.resumes].sort(byUpdatedDesc));
+      }),
+
     remove: (id) =>
       simulate(() => {
         find(id);

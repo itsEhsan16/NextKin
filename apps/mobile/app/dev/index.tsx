@@ -2,6 +2,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { useArtboardStore, useOverlayStore } from '@/dev';
 import { a11yButton, haptics } from '@/lib';
 import { useAppearanceStore, useTheme, type AppearancePreference } from '@/theme';
 import { Screen, Text } from '@/ui';
@@ -14,6 +15,7 @@ const ROWS: readonly GalleryRow[] = [
   { href: '/dev/typography', title: 'Typography', subtitle: 'Plus Jakarta Sans type ramp' },
   { href: '/dev/motion', title: 'Motion', subtitle: 'Springs, timings, stagger, meter' },
   { href: '/dev/mock', title: 'Mock data', subtitle: 'Latency / empty / error modes' },
+  { href: '/dev/filters', title: 'Filters', subtitle: 'Filter chips and the salary range slider' },
 ];
 
 const APPEARANCE: readonly { key: AppearancePreference; label: string }[] = [
@@ -27,6 +29,9 @@ const CHEVRON_SIZE = 14;
 export default function DevIndexRoute() {
   const { colors, spacing, radii, sizes, opacity, scheme } = useTheme();
   const router = useRouter();
+  const showOverlay = useOverlayStore((s) => s.show);
+  const artboard = useArtboardStore((s) => s.enabled);
+  const setArtboard = useArtboardStore((s) => s.setEnabled);
   const preference = useAppearanceStore((s) => s.preference);
   const setPreference = useAppearanceStore((s) => s.setPreference);
 
@@ -66,6 +71,30 @@ export default function DevIndexRoute() {
               <FontAwesome5 name="chevron-right" size={CHEVRON_SIZE} color={colors.iconChevron} />
             </Pressable>
           ))}
+        </View>
+      </DevSection>
+
+      <DevSection
+        title="Figma overlay"
+        description="Lays the artboard render over the live screen at the same logical width. Opens over whatever screen you are on, so navigate first, then flip between 0% and 100% — anything that drifts jumps out."
+      >
+        <DevButton
+          label="Show overlay"
+          onPress={() => {
+            showOverlay();
+            router.back();
+          }}
+          grow
+        />
+      </DevSection>
+
+      <DevSection
+        title="Artboard mode"
+        description="Lays the app out at the 520px artboard width and scales it to fit. Toggle it on any screen: if nothing moves the scaling is complete; anything that jumps is an unscaled 520-space literal."
+      >
+        <View style={[styles.segments, { gap: spacing[2] }]}>
+          <DevButton label="Off" active={!artboard} onPress={() => setArtboard(false)} grow />
+          <DevButton label="On" active={artboard} onPress={() => setArtboard(true)} grow />
         </View>
       </DevSection>
 

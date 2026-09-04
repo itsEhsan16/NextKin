@@ -8,7 +8,7 @@ import { Text } from '@/ui/Text';
 export type SectionHeaderProps = {
   title: string;
   /** Figma mixes weights per section; default is the 19px regular used by "Top Job Matches". */
-  variant?: Extract<TypographyRole, 'section' | 'sectionBold' | 'sectionRegular'>;
+  variant?: Extract<TypographyRole, 'section' | 'homeSection'>;
   /** Trailing link ("View all"). Rendered only when `onAction` is set. */
   actionLabel?: string;
   onAction?: () => void;
@@ -18,12 +18,12 @@ export type SectionHeaderProps = {
 /** Section title row with an optional trailing text link. */
 export function SectionHeader({
   title,
-  variant = 'sectionRegular',
+  variant = 'section',
   actionLabel = 'View all',
   onAction,
   style,
 }: SectionHeaderProps) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   return (
     <View
       style={[
@@ -45,10 +45,10 @@ export function SectionHeader({
           feedback="subtle"
           haptic="selection"
           // The link is ~38pt tall on its own; 22 lifts the target to the 44pt minimum.
-          hitSlop={hitSlopFor(22)}
+          hitSlop={hitSlopFor(s(22))}
           onPress={onAction}
         >
-          <Text variant="body" color="link">
+          <Text variant="viewAllLink" color="link">
             {actionLabel}
           </Text>
         </Pressable>

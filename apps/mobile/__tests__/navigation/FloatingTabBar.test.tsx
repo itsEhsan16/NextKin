@@ -1,7 +1,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
+import type { ReactNode } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { CreateSheetProvider, FloatingTabBar } from '@/navigation';
+import {
+  CreateSheetProvider,
+  FloatingTabBar,
+  useTabScrollToTop,
+  type TabName,
+} from '@/navigation';
 
 // jest.mock factories are hoisted, so they may only close over `mock*`-prefixed bindings.
 const mockNavigate = jest.fn();
@@ -22,12 +28,19 @@ const metrics: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
+/** Stands in for a tab screen, which registers its scroll handler while mounted. */
+function ScrollProbe({ tab, onScroll }: { tab: TabName; onScroll: () => void }) {
+  useTabScrollToTop(tab, onScroll);
+  return null;
+}
+
 /** The bar is self-driven now — only the current route segments decide which tab is active. */
-async function renderBar(segments: string[]) {
+async function renderBar(segments: string[], probe?: ReactNode) {
   mockRouter.segments = segments;
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
       <CreateSheetProvider>
+        {probe}
         <FloatingTabBar />
       </CreateSheetProvider>
     </SafeAreaProvider>,
@@ -76,7 +89,27 @@ describe('FloatingTabBar', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/resumes');
   });
 
-  it('does not navigate when the focused tab is pressed again', async () => {
+  it('scrolls the focused tab to the top instead of re-navigating to itself', async () => {
+    const scrollToTop = jest.fn();
+    await renderBar(['(tabs)', 'jobs'], <ScrollProbe tab="jobs" onScroll={scrollToTop} />);
+
+    fireEvent.press(screen.getByRole('tab', { name: 'Jobs' }));
+
+    expect(scrollToTop).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates past an unfocused tab without touching its scroll handler', async () => {
+    const scrollToTop = jest.fn();
+    await renderBar(['(tabs)', 'jobs'], <ScrollProbe tab="index" onScroll={scrollToTop} />);
+
+    fireEvent.press(screen.getByRole('tab', { name: 'Home' }));
+
+    expect(scrollToTop).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/(tabs)');
+  });
+
+  it('is inert on a re-tap when the focused tab has nothing scrollable', async () => {
     await renderBar(['(tabs)', 'jobs']);
 
     fireEvent.press(screen.getByRole('tab', { name: 'Jobs' }));

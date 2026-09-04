@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Avatar } from '@/ui/Avatar';
 import { IconButton } from '@/ui/IconButton';
 import { Skeleton } from '@/ui/Skeleton';
@@ -24,9 +24,8 @@ export function HomeHeader({
   onPressNotifications,
   onPressMenu,
 }: HomeHeaderProps) {
-  const { spacing, sizes } = useTheme();
-  const { s } = useLayoutScale();
-  const avatarSize = s(sizes.avatarHeader, 44);
+  const { spacing, sizes, s } = useTheme();
+  const avatarSize = sizes.avatarHeader;
 
   return (
     <View style={[styles.row, { height: avatarSize }]}>
@@ -41,7 +40,7 @@ export function HomeHeader({
             Hi
           </Text>
           {loading ? (
-            <Skeleton width={84} height={20} style={{ marginTop: 4 }} />
+            <Skeleton width={s(84)} height={s(20)} style={{ marginTop: s(4) }} />
           ) : (
             <Text variant="greeting" numberOfLines={1}>
               {firstName}
@@ -54,12 +53,12 @@ export function HomeHeader({
         <IconButton
           icon="bell"
           iconStyle="regular"
-          iconSize={18}
+          iconSize={s(18)}
           label={hasUnread ? 'Notifications, unread' : 'Notifications'}
           dot={hasUnread}
           onPress={onPressNotifications}
         />
-        <IconButton icon="bars" iconSize={16} label="Menu" onPress={onPressMenu} />
+        <IconButton icon="bars" iconSize={s(16)} label="Menu" onPress={onPressMenu} />
       </View>
     </View>
   );

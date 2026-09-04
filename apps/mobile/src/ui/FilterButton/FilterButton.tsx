@@ -17,7 +17,7 @@ const ICON = 17;
 
 /** Figma 1:271 — 52pt outlined square with the sliders glyph and an ink count badge. */
 export function FilterButton({ count, onPress, style }: FilterButtonProps) {
-  const { colors, radii, sizes } = useTheme();
+  const { colors, radii, sizes, s } = useTheme();
 
   return (
     <Pressable
@@ -33,7 +33,7 @@ export function FilterButton({ count, onPress, style }: FilterButtonProps) {
           width: sizes.filterButton,
           height: sizes.filterButton,
           borderRadius: radii.xl,
-          borderWidth: 1,
+          borderWidth: s(1),
           borderColor: colors.borderDefault,
           backgroundColor: colors.surfaceCard,
           alignItems: 'center',
@@ -42,7 +42,7 @@ export function FilterButton({ count, onPress, style }: FilterButtonProps) {
         style,
       ]}
     >
-      <FontAwesome5 name="sliders-h" size={ICON} color={colors.textPrimary} solid />
+      <FontAwesome5 name="sliders-h" size={s(ICON)} color={colors.textPrimary} solid />
 
       {count > 0 ? (
         <View
@@ -55,9 +55,9 @@ export function FilterButton({ count, onPress, style }: FilterButtonProps) {
             right: -sizes.filterBadge / 4,
             minWidth: sizes.filterBadge,
             height: sizes.filterBadge,
-            paddingHorizontal: 4,
+            paddingHorizontal: s(4),
             borderRadius: radii.full,
-            borderWidth: 2,
+            borderWidth: s(2),
             borderColor: colors.surfaceCard,
             backgroundColor: colors.surfaceSelected,
             alignItems: 'center',

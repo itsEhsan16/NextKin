@@ -1,59 +1,120 @@
-import { useMemo } from 'react';
-import { useColorScheme } from 'react-native';
+import { StyleSheet, useColorScheme, useWindowDimensions } from 'react-native';
+import type { ImageStyle, TextStyle, ViewStyle } from 'react-native';
 
 import { useAppearanceStore } from './appearance';
 import { motion } from './motion';
+import { layoutScaleFor } from './scale';
+import {
+  scaleRadii,
+  scaleArtboardShadows,
+  scaleShadows,
+  scaleSizes,
+  scaleSpacing,
+  typographyFor,
+  type Radii,
+  type Shadows,
+  type Sizes,
+  type Spacing,
+  type Typography,
+} from './scaleTheme';
 import {
   colorsByScheme,
   opacity,
-  radii,
-  shadows,
   sizes,
-  spacing,
   zIndex,
   type ColorScheme,
   type Colors,
 } from './tokens';
-import { fontFamily, typography } from './typography';
+import { fontFamily } from './typography';
 
 export * from './tokens';
 export * from './typography';
 export * from './motion';
 export * from './scale';
+export * from './scaleTheme';
 export { useAppearanceStore, type AppearancePreference } from './appearance';
 
 export type Theme = {
   scheme: ColorScheme;
   colors: Colors;
-  spacing: typeof spacing;
-  radii: typeof radii;
-  sizes: typeof sizes;
-  shadows: typeof shadows;
+  spacing: Spacing;
+  radii: Radii;
+  sizes: Sizes;
+  shadows: Shadows;
+  /**
+   * The artboard's shadows as CSS, on every platform — see `buildArtboardShadows`.
+   *
+   * `shadows` hands Android a bare `{ elevation }`, which is the right trade for chrome but throws
+   * the drawn offset, blur and alpha away. Use these for a surface painted on its own colour,
+   * where the shadow is the only thing that gives it an edge.
+   */
+  artboardShadows: Shadows;
   opacity: typeof opacity;
   zIndex: typeof zIndex;
-  typography: typeof typography;
+  typography: Typography;
   fontFamily: typeof fontFamily;
   motion: typeof motion;
+  /** Artboard→device factor these tokens were built at. 1 at the 520px design width. */
+  scale: number;
+  /** Scales a raw Figma px value. Never pass it a value taken off this theme. */
+  s: (px: number) => number;
+  /** The width the design lays out in: the screen width, capped at the 520px artboard. */
+  width: number;
+  /** Width available to content inside the (scaled) horizontal gutters. */
+  contentWidth: number;
 };
 
-const buildTheme = (scheme: ColorScheme): Theme => ({
-  scheme,
-  colors: colorsByScheme[scheme],
-  spacing,
-  radii,
-  sizes,
-  shadows,
-  opacity,
-  zIndex,
-  typography,
-  fontFamily,
-  motion,
-});
+/**
+ * One theme per (scheme, frame width). Device widths are a small finite set, so this stays tiny
+ * — and because the map *is* the memo, identity is stable across components, not merely across
+ * a component's re-renders.
+ */
+const cache = new Map<string, Theme>();
+const MAX_CACHE_ENTRIES = 32;
 
-const themes: Record<ColorScheme, Theme> = {
-  light: buildTheme('light'),
-  dark: buildTheme('dark'),
-};
+function buildTheme(scheme: ColorScheme, frameWidth: number): Theme {
+  const layout = layoutScaleFor(frameWidth);
+  const { scale } = layout;
+
+  return {
+    scheme,
+    colors: colorsByScheme[scheme],
+    spacing: scaleSpacing(scale),
+    radii: scaleRadii(scale),
+    sizes: scaleSizes(scale),
+    shadows: scaleShadows(scale),
+    artboardShadows: scaleArtboardShadows(scale),
+    opacity,
+    zIndex,
+    typography: typographyFor(frameWidth),
+    fontFamily,
+    motion,
+    scale,
+    s: layout.s,
+    width: layout.width,
+    contentWidth: layout.contentWidth,
+  };
+}
+
+/**
+ * The scaled token set for a scheme at a given screen width. Widths are quantised to whole dp
+ * and capped at the artboard width, so a 520px design frame and any wider screen share one
+ * entry — which is what keeps `themeFor('light', 750) === lightTheme` true under Jest.
+ */
+export function themeFor(scheme: ColorScheme, width: number): Theme {
+  const frameWidth = Math.min(Math.round(width) || sizes.designWidth, sizes.designWidth);
+  const key = `${scheme}:${frameWidth}`;
+
+  const cached = cache.get(key);
+  if (cached) return cached;
+
+  // A surface being dragged (Android split-screen) would otherwise grow this without bound.
+  if (cache.size >= MAX_CACHE_ENTRIES) cache.clear();
+
+  const theme = buildTheme(scheme, frameWidth);
+  cache.set(key, theme);
+  return theme;
+}
 
 /** Resolves the effective colour scheme from the OS scheme + the user's appearance preference. */
 export function useResolvedScheme(): ColorScheme {
@@ -63,11 +124,49 @@ export function useResolvedScheme(): ColorScheme {
   return preference;
 }
 
-/** The single entry point for design tokens inside components. Stable object identity per scheme. */
+/**
+ * The single entry point for design tokens inside components. Every length it returns is already
+ * projected onto this device, so components never scale anything themselves.
+ */
 export function useTheme(): Theme {
   const scheme = useResolvedScheme();
-  return useMemo(() => themes[scheme], [scheme]);
+  const { width } = useWindowDimensions();
+  return themeFor(scheme, width);
 }
 
-export const lightTheme = themes.light;
-export const darkTheme = themes.dark;
+/** The unscaled, 1:1 artboard themes. Handy in tests; components must use `useTheme()`. */
+export const lightTheme = themeFor('light', sizes.designWidth);
+export const darkTheme = themeFor('dark', sizes.designWidth);
+
+type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle };
+
+/**
+ * `StyleSheet.create` for artboard geometry.
+ *
+ * A plain `StyleSheet.create` runs at module scope, where the device width is unknown, so any
+ * length in it renders at its raw 520px artboard value. This takes a factory instead and hands
+ * it `s()`, so the sheet is built per scale and cached — one sheet per device width, with stable
+ * identity, exactly like the static version.
+ *
+ *   const useStyles = scaledSheet((s) => ({ chip: { paddingHorizontal: s(14) } }));
+ *   // inside the component:
+ *   const styles = useStyles();
+ *
+ * Structural values (flex, alignItems, '100%', hairlineWidth) need no `s()` — only lengths that
+ * were measured on the artboard.
+ */
+export function scaledSheet<T extends NamedStyles<T>>(
+  factory: (s: (px: number) => number) => T & NamedStyles<T>,
+): () => T {
+  const cache = new Map<number, T>();
+
+  return function useScaledStyles(): T {
+    const { scale, s } = useTheme();
+    const cached = cache.get(scale);
+    if (cached) return cached;
+
+    const created = StyleSheet.create(factory(s));
+    cache.set(scale, created);
+    return created;
+  };
+}

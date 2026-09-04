@@ -23,15 +23,35 @@ export function statusForProgress(progress: number): GenerationStatus {
 const completedScore = (): AtsScore => ({
   total: COMPLETED_SCORE,
   band: atsBandFor(COMPLETED_SCORE),
-  breakdown: [
-    { key: 'keywords', label: 'Keywords', score: 33, max: 40 },
-    { key: 'format', label: 'Formatting', score: 18, max: 20 },
-    { key: 'experience', label: 'Experience match', score: 20, max: 25 },
-    { key: 'readability', label: 'Readability', score: 12, max: 15 },
+  summary: 'Solid foundation — a few fixes will push this into the green.',
+  sections: [
+    {
+      key: 'content',
+      label: 'Content',
+      items: [
+        { id: 'quantified', label: 'Quantified achievements in 3+ bullets', passed: true },
+        { id: 'verbs', label: 'Action verbs open every bullet', passed: true },
+        { id: 'summary', label: 'Summary under 60 words', passed: true },
+      ],
+    },
+    {
+      key: 'format',
+      label: 'Format',
+      items: [
+        { id: 'column', label: 'Single column — parser safe', passed: true },
+        { id: 'headings', label: 'Standard section headings', passed: true },
+      ],
+    },
+    {
+      key: 'keywords',
+      label: 'Keywords',
+      items: [
+        { id: 'kw_1', label: '"creative tools" appears 3 times', passed: true },
+        { id: 'kw_miss_0', label: 'Missing: "illustration"', passed: false, fixable: true },
+        { id: 'kw_miss_1', label: 'Missing: "brand"', passed: false, fixable: true },
+      ],
+    },
   ],
-  matchedKeywords: ['Figma', 'Design systems', 'Mobile', 'Creative tools'],
-  missingKeywords: ['Illustration', 'Brand'],
-  suggestions: [{ id: 'sug_new_1', text: 'Mention brand or illustration work', impact: 'medium' }],
 });
 
 type Ticker = { timer: ReturnType<typeof setInterval>; listeners: Set<(g: Generation) => void> };
@@ -55,8 +75,24 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
     tickers.delete(id);
   };
 
+  /**
+   * A finished generation becomes the newest ready resume, so it is what Home's "Your Resume
+   * Progress" card shows. It therefore has to arrive shaped like any other ready resume — with a
+   * thumbnail, a completeness fraction and the three validation flags. Setting only the status and
+   * the score left the card as an empty shell: blank thumbnail, unfilled meter, and no checks row
+   * at all, none of which the artboard has a state for.
+   *
+   * The three values are derived from the score rather than invented, so they cannot drift from
+   * the panel the user sees when they open it.
+   */
   const markResumeReady = (resumeId: string | undefined): void => {
     if (!resumeId) return;
+    const score = completedScore();
+    const items = score.sections.flatMap((section) => section.items);
+    const allPassed = (key: string) =>
+      score.sections.find((section) => section.key === key)?.items.every((item) => item.passed) ??
+      false;
+
     store.state.resumes = store.state.resumes.map((resume) =>
       resume.id === resumeId
         ? {
@@ -64,10 +100,18 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
             status: 'ready',
             atsScore: COMPLETED_SCORE,
             updatedAt: new Date().toISOString(),
+            thumbnailUrl: resume.thumbnailUrl ?? 'asset:resume-thumb',
+            completeness: items.filter((item) => item.passed).length / items.length,
+            validation: {
+              timelineValid: allPassed('content'),
+              atsOptimized: allPassed('format'),
+              // Two keyword misses are the whole point of this score — the card must say so.
+              jdMatched: allPassed('keywords'),
+            },
           }
         : resume,
     );
-    store.state.atsScores[resumeId] = completedScore();
+    store.state.atsScores[resumeId] = score;
   };
 
   const tick = (id: string): void => {

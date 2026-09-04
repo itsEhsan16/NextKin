@@ -82,16 +82,43 @@ These are enforced by code review and, where possible, by ESLint:
    only. Importing `@/data/mock/*` outside `src/data/**`, tests and the dev gallery is an ESLint
    error (`no-restricted-imports`).
 3. **Primitives stay generic.** Nothing in `src/ui` imports from `src/features`.
-4. **Tokens, never literals.** Styling is `StyleSheet.create` + `useTheme()`; every colour comes
+4. **Tokens, never literals.** Styling is `useTheme()` + `scaledSheet()`; every colour comes
    from theme tokens (hex literals live only in `src/theme`). No NativeWind / utility classes.
-5. **Motion is Reanimated 4 + motion tokens.** Animations run as worklets using
+5. **Every length is scaled by one factor. Type is measured on two artboards.** The Figma frames
+   are 520px wide and phones are 360–430dp, so `useTheme()` returns tokens already projected
+   onto the device by `width / 520` — spacing, radii, sizes, shadow offsets, leading and
+   tracking alike. There are no per-value floors in that half: a floor makes one element stop
+   shrinking while its neighbours carry on, which is how text ends up too large for the box
+   drawn around it.
+   - Font *size* is the exception, and it is the designers'. The file draws every screen twice:
+     the "Mobile App" page at 520 and the "Mobile 2" page at 390. Mobile 2 is Mobile App at
+     exactly ×0.75 for every box, gap, radius and leading — but its font sizes were deliberately
+     held back, more the smaller the role, so text stays legible in boxes that shrank. Each role
+     in `typography.ts` therefore carries both measurements and `typographyFor()` reads between
+     them. 390 is a phone width, not a midpoint, so it is also the floor: under it the boxes keep
+     scaling but the type holds. Body lands at 13 on a 390dp phone and still 13 on a 360dp one,
+     against 11.25 and 10.38 under the old single-factor policy.
+   - `s(px)` off `useTheme()` scales a raw artboard number. Never pass it a value that came
+     *from* the theme — that squares the factor.
+   - Module scope cannot see the device width, so a length inside `StyleSheet.create` renders at
+     its raw 520px size. Use `scaledSheet((s) => ({ … }))` instead; ESLint warns on the rest.
+   - A component prop naming a design dimension takes a device-space value. If it also has a
+     default or branches on the number, scale those too (see `LogoTile`, `ScoreRing`).
+   - Exempt: `radii.full`, `sizes.designWidth`, `sizes.minHitTarget`, safe-area insets, shadow
+     alpha and Android elevation. `__tests__/theme/scaledTheme.test.ts` pins all of it, and
+     `typeRamp.test.ts` guards the hand-transcribed 390 column against a slipped digit.
+   - Two dev tools check the result on device, both in `app/dev`: **artboard mode** lays the
+     whole tree out at 520 and scales it, so anything that jumps when you toggle it is an
+     unscaled literal; the **Figma overlay** puts the artboard render over the live screen, with
+     a 390/520 switch for the two pages. On a 390dp phone the 390 render is 1:1.
+6. **Motion is Reanimated 4 + motion tokens.** Animations run as worklets using
    `theme.motion` (`springs`, `timings`, `stagger`, `scales`); no inline durations, no RN core
    `Animated`. Respect `useReducedMotion()` via `withReducedMotion()`.
-6. **Every list is FlashList v2**, rows are memoised and keyed by id; images go through
+7. **Every list is FlashList v2**, rows are memoised and keyed by id; images go through
    `expo-image`.
-7. **Strict TypeScript, named exports, focused files** (< 250 lines). `tsc --noEmit` and
+8. **Strict TypeScript, named exports, focused files** (< 250 lines). `tsc --noEmit` and
    `expo lint` must pass with zero errors.
-8. **Accessibility is not optional**: roles/labels/states, 44 pt hit targets (`hitSlopFor`),
+9. **Accessibility is not optional**: roles/labels/states, 44 pt hit targets (`hitSlopFor`),
    `maxFontSizeMultiplier` on dense chrome (`maxFontScale`).
 
 ## Per-screen recipe

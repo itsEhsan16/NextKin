@@ -37,7 +37,7 @@ export function Button({
   block = false,
   style,
 }: ButtonProps) {
-  const { colors, radii, sizes, spacing } = useTheme();
+  const { colors, radii, sizes, spacing, s } = useTheme();
 
   const palette: Record<ButtonVariant, { bg: string; fg: ColorToken; border?: string }> = {
     primary: { bg: colors.surfaceInverse, fg: 'textOnDark' },
@@ -77,7 +77,7 @@ export function Button({
         <ActivityIndicator color={colors[look.fg]} />
       ) : (
         <>
-          {icon ? <FontAwesome5 name={icon} size={14} color={colors[look.fg]} solid /> : null}
+          {icon ? <FontAwesome5 name={icon} size={s(14)} color={colors[look.fg]} solid /> : null}
           <Text variant="bodySemiBold" color={look.fg}>
             {label}
           </Text>

@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { a11yButton, haptics } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
 export type DevButtonProps = {
@@ -16,6 +16,7 @@ export type DevButtonProps = {
 /** Minimal button for the dev gallery. Not a product component — the real Button lands in Phase 2. */
 export function DevButton({ label, onPress, active = false, grow = false }: DevButtonProps) {
   const { colors, spacing, radii, sizes, opacity } = useTheme();
+  const styles = useStyles();
 
   return (
     <Pressable
@@ -45,11 +46,11 @@ export function DevButton({ label, onPress, active = false, grow = false }: DevB
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   base: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: s(1),
   },
   grow: { flex: 1 },
-});
+}));

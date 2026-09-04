@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { EMPLOYMENT_TYPE_LABEL, type Job } from '@/data/models';
 import { a11yButton, formatPercent, formatRelativeTime } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { AvatarStack } from '@/ui/Avatar';
 import { StatBadge } from '@/ui/Badge';
 import { Card } from '@/ui/Card';
@@ -37,8 +37,7 @@ function jobSummary(job: Job): string {
 
 /** Figma 1:101 — 288px card: logo + match badge, company, role, meta chips, social proof. */
 export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: JobMatchCardProps) {
-  const { spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { spacing, s } = useTheme();
 
   return (
     <Pressable
@@ -50,7 +49,7 @@ export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: 
     >
       <Card padding={spacing[4]} style={{ gap: 0 }}>
         <View style={[styles.topRow, { paddingBottom: spacing[3] }]}>
-          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(44, 36)} />
+          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(44)} />
           {job.matchScore != null ? (
             <StatBadge value={formatPercent(job.matchScore)} label="Match" />
           ) : null}
@@ -58,12 +57,12 @@ export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: 
         <Text variant="cardTitle" numberOfLines={1}>
           {job.company}
         </Text>
-        <Text variant="bodyMedium" color="textSecondary" numberOfLines={1}>
+        <Text variant="homeCardRole" color="textSecondary" numberOfLines={1}>
           {job.title}
         </Text>
         <View style={[styles.chips, { paddingTop: spacing[3], gap: spacing[2] }]}>
-          <Chip label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} />
-          <Chip label={formatRelativeTime(job.postedAt)} />
+          <Chip label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} labelVariant="homeCardChip" />
+          <Chip label={formatRelativeTime(job.postedAt)} labelVariant="homeCardChip" />
         </View>
         <AvatarStack caption={applicantsCopy(job.applicantsCount)} style={{ paddingTop: spacing[3] }} />
       </Card>

@@ -22,14 +22,17 @@ const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 /** 8px pill progress bar. Fill width animates on the UI thread with the `meter` timing. */
 export function ProgressBar({
   value,
-  height = 8,
+  height,
   trackColor = 'progressTrack',
   fillColor = 'progressFill',
   animated = true,
   accessibilityLabel,
   style,
 }: ProgressBarProps) {
-  const { colors, radii, motion } = useTheme();
+  const { colors, radii, motion, s } = useTheme();
+  // The artboard bar is 8 in 520 space — 6dp at 390. A raw 8 here rendered a third too thick,
+  // and thicker still as the screen narrowed.
+  const barHeight = height ?? s(8);
   const reduced = useReducedMotion();
   const target = clamp01(value);
   const progress = useSharedValue(animated ? 0 : target);
@@ -51,7 +54,7 @@ export function ProgressBar({
       accessibilityValue={{ min: 0, max: 100, now: Math.round(target * 100) }}
       style={[
         {
-          height,
+          height: barHeight,
           borderRadius: radii.full,
           backgroundColor: colors[trackColor],
           overflow: 'hidden',
@@ -61,7 +64,7 @@ export function ProgressBar({
     >
       <Animated.View
         style={[
-          { height, borderRadius: radii.full, backgroundColor: colors[fillColor] },
+          { height: barHeight, borderRadius: radii.full, backgroundColor: colors[fillColor] },
           fillStyle,
         ]}
       />

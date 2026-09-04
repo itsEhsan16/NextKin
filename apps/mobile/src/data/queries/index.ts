@@ -3,10 +3,13 @@ export { qk } from './keys';
 export { useActiveGeneration } from './useActiveGeneration';
 export {
   useApplications,
+  useApplyToJob,
   useJob,
+  useJobCount,
   useJobPicks,
   useJobs,
   useSavedJobs,
+  useSimilarJobs,
   useTodaysPicks,
 } from './useJobs';
 export {
@@ -18,7 +21,7 @@ export {
   useSetNotificationPrefs,
   useUnreadCount,
 } from './useNotifications';
-export { useCompleteNextStep, useProfile } from './useProfile';
+export { useCompleteNextStep, useProfile, useUpdatePreferences } from './useProfile';
 export {
   useDeleteResume,
   useDuplicateResume,
@@ -27,6 +30,7 @@ export {
   useResumeScore,
   useResumeVersions,
   useResumes,
+  useSetResumeAsBase,
 } from './useResumes';
 export { applySaveToggle, useToggleSaveJob } from './useToggleSaveJob';
 export { useCurrentUser, useDashboardStats, useSubscription } from './useUser';

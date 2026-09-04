@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { CreateSheetBody, type CreateAction, type CreateStep } from '@/features/create';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Sheet } from '@/ui/Sheet';
 
 import { useCreateSheet } from './createSheet';
@@ -21,8 +21,7 @@ const STEP_HEIGHT: Record<CreateStep, 'sheetStep1Height' | 'sheetStep2Height'> =
  */
 export function CreateSheetHost() {
   const { isOpen, close, progress } = useCreateSheet();
-  const { sizes, motion } = useTheme();
-  const { s } = useLayoutScale();
+  const { sizes, motion, s } = useTheme();
   const router = useRouter();
 
   const [step, setStep] = useState<CreateStep>('root');
@@ -44,7 +43,7 @@ export function CreateSheetHost() {
     [close, router],
   );
 
-  const height = s(sizes[STEP_HEIGHT[step]], 420);
+  const height = sizes[STEP_HEIGHT[step]];
 
   return (
     <Sheet
@@ -53,7 +52,7 @@ export function CreateSheetHost() {
       height={height}
       progress={progress}
       accessibilityLabel={step === 'root' ? 'Create' : 'New resume'}
-      contentStyle={{ paddingTop: 13 }}
+      contentStyle={{ paddingTop: s(13) }}
     >
       <CreateSheetBody step={step} onStepChange={setStep} onAction={handleAction} />
     </Sheet>

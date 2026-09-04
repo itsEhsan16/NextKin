@@ -1,10 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { RefreshControl } from 'react-native';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { RefreshControl, type ScrollView } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
   qk,
+  useActiveGeneration,
   useCurrentUser,
   useDashboardStats,
   useJobPicks,
@@ -12,11 +13,13 @@ import {
   useUnreadCount,
 } from '@/data/queries';
 import { useReducedMotion } from '@/lib';
+import { useTabScrollToTop } from '@/navigation';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { StateView } from '@/ui/StateView';
 
 import { BrandBlock } from '../components/BrandBlock';
+import { GenerationProgressCard } from '../components/GenerationProgressCard';
 import { HeroBlock } from '../components/HeroBlock';
 import { HomeHeader } from '../components/HomeHeader';
 import { HomeSkeleton } from '../components/HomeSkeleton';
@@ -45,6 +48,7 @@ function Section({ index, animate, children }: SectionProps) {
 
 /** DESIGN 2 — Spacing Fixed (Figma 1:2). */
 export function HomeScreen() {
+  const { s } = useTheme();
   const actions = useHomeActions();
   const queryClient = useQueryClient();
   const reduced = useReducedMotion();
@@ -54,6 +58,15 @@ export function HomeScreen() {
   const resumes = useResumes();
   const stats = useDashboardStats();
   const unread = useUnreadCount();
+  // Subscribes to live progress ticks while a generation is in flight, and drops back to null
+  // once it finishes — so the card below is transient by construction.
+  const generation = useActiveGeneration();
+
+  const scrollRef = useRef<ScrollView>(null);
+  useTabScrollToTop(
+    'index',
+    useCallback(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), []),
+  );
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -84,7 +97,7 @@ export function HomeScreen() {
 
   if (user.isError) {
     return (
-      <Screen tabBarInset>
+      <Screen>
         <StateView
           tone="danger"
           icon="exclamation-triangle"
@@ -101,22 +114,37 @@ export function HomeScreen() {
     <Screen
       scroll
       tabBarInset
-      contentContainerStyle={{ paddingTop: 16, gap: SECTION_GAP }}
+      scrollRef={scrollRef}
+      // The header's own top padding moved to `headerStyle`; `paddingTop` here replaces the
+      // first `gap` instance, which left with it. Not both — that would double to 24.
+      contentContainerStyle={{ paddingTop: s(SECTION_GAP), gap: s(SECTION_GAP) }}
       refreshControl={refreshControl}
+      headerStyle={{ paddingTop: s(16) }}
+      header={
+        <HomeHeader
+          firstName={user.data?.firstName}
+          avatarUrl={user.data?.avatarUrl}
+          loading={user.isPending}
+          hasUnread={(unread.data ?? 0) > 0}
+          onPressNotifications={actions.openNotifications}
+          onPressMenu={actions.openMenu}
+        />
+      }
     >
-      <HomeHeader
-        firstName={user.data?.firstName}
-        avatarUrl={user.data?.avatarUrl}
-        loading={user.isPending}
-        hasUnread={(unread.data ?? 0) > 0}
-        onPressNotifications={actions.openNotifications}
-        onPressMenu={actions.openMenu}
-      />
-
       {user.isPending ? (
         <HomeSkeleton />
       ) : (
         <>
+          {/* `ready` is the end of the pipeline and the resume list already reflects it, so the
+              card retires rather than lingering on 100%. `failed` is terminal too but still needs
+              surfacing, hence the status check rather than `isGenerationTerminal`. */}
+          {generation.data && generation.data.status !== 'ready' ? (
+            <GenerationProgressCard
+              generation={generation.data}
+              onView={actions.viewAllResumes}
+              onRetry={actions.createResume}
+            />
+          ) : null}
           <Section index={0} animate={animate}>
             <BrandBlock />
           </Section>

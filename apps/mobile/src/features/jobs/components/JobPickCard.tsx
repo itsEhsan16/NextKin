@@ -1,10 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { memo, useCallback, useMemo } from 'react';
-import { StyleSheet, View, type AccessibilityActionEvent } from 'react-native';
+import { View, type AccessibilityActionEvent } from 'react-native';
 
 import { EMPLOYMENT_TYPE_LABEL, MATCH_BAND_LABEL, type Job } from '@/data/models';
 import { a11yButton, formatJobMeta, formatSalary, hitSlopFor } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { LogoTile } from '@/ui/LogoTile';
 import { Pressable } from '@/ui/Pressable';
@@ -37,8 +37,8 @@ export const JobPickCard = memo(function JobPickCard({
   onPress,
   onToggleSave,
 }: JobPickCardProps) {
-  const { colors, radii, spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { colors, radii, spacing, s } = useTheme();
+  const styles = useStyles();
 
   const meta = formatJobMeta([job.company, job.location, REMOTE_LABEL[job.remote]]);
   const salary = job.salary ? formatSalary(job.salary) : undefined;
@@ -65,20 +65,20 @@ export const JobPickCard = memo(function JobPickCard({
       onPress={() => onPress(job)}
       style={{ width }}
     >
-      <Card padding={s(17, 13)} elevated shadow="jobCard" style={{ gap: 0 }}>
+      <Card padding={s(17)} elevated shadow="jobCard" style={{ gap: 0 }}>
         <View style={styles.topRow}>
-          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO, 34)} />
+          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO)} />
           <Pressable
             {...a11yButton(saveLabel)}
             accessibilityState={{ selected: job.isSaved }}
             feedback="scale"
             haptic="light"
-            hitSlop={hitSlopFor(BOOKMARK)}
+            hitSlop={hitSlopFor(s(BOOKMARK))}
             onPress={() => onToggleSave(job)}
           >
             <FontAwesome5
               name="bookmark"
-              size={BOOKMARK}
+              size={s(BOOKMARK)}
               color={job.isSaved ? colors.textPrimary : colors.iconMuted}
               solid={job.isSaved}
             />
@@ -88,11 +88,11 @@ export const JobPickCard = memo(function JobPickCard({
         <Text variant="title" numberOfLines={1} style={{ marginTop: spacing[3] }}>
           {job.title}
         </Text>
-        <Text variant="jobMeta" color="textSecondary" numberOfLines={1} style={{ marginTop: 4 }}>
+        <Text variant="jobMeta" color="textSecondary" numberOfLines={1} style={{ marginTop: s(4) }}>
           {meta}
         </Text>
         {salary ? (
-          <Text variant="titleSm" style={{ marginTop: 4 }}>
+          <Text variant="titleSm" style={{ marginTop: s(4) }}>
             {salary}
           </Text>
         ) : null}
@@ -133,8 +133,8 @@ export const JobPickCard = memo(function JobPickCard({
   );
 });
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   topRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   pills: { flexDirection: 'row', alignItems: 'center' },
-  pill: { paddingHorizontal: 12, paddingVertical: 5 },
-});
+  pill: { paddingHorizontal: s(12), paddingVertical: s(5) },
+}));

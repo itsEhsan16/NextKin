@@ -31,7 +31,7 @@ type JobPillProps = {
 
 /** Figma pill: fully rounded, 13/5 padding, 13/20 label. */
 function JobPill({ label, tone = 'neutral', strong = false, icon, iconSize = 7 }: JobPillProps) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const look = TONES[tone];
 
   return (
@@ -40,8 +40,8 @@ function JobPill({ label, tone = 'neutral', strong = false, icon, iconSize = 7 }
         styles.pill,
         {
           borderRadius: radii.full,
-          paddingHorizontal: 13,
-          paddingVertical: 5,
+          paddingHorizontal: s(13),
+          paddingVertical: s(5),
           gap: spacing[1] + 2,
           backgroundColor: look.bg === 'transparent' ? 'transparent' : colors[look.bg],
           borderWidth: look.border ? 1 : 0,

@@ -14,11 +14,22 @@ export type SubscriptionPlan = 'free' | 'pro';
 
 export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled';
 
+/** Plan row / usage meter copy ("NextKin Free", Figma 1:2232). */
+export const SUBSCRIPTION_PLAN_LABEL: Record<SubscriptionPlan, string> = {
+  free: 'NextKin Free',
+  pro: 'NextKin Pro',
+};
+
 export type SubscriptionUsage = {
   generationsUsed: number;
   generationsLimit: number;
   coverLettersUsed: number;
   coverLettersLimit: number;
+  /** "2 of 2 free resumes used" (Figma 1:1388) / "2 of 2 resumes" (1:2233). */
+  resumesUsed: number;
+  resumesLimit: number;
+  /** "5 AI credits left" (Figma 1:2233). */
+  aiCreditsLeft: number;
 };
 
 export type Subscription = {

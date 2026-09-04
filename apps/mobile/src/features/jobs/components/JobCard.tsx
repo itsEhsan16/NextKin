@@ -10,7 +10,7 @@ import {
 
 import type { Job } from '@/data/models';
 import { a11yButton, formatJobMeta, formatSalary, hitSlopFor } from '@/lib';
-import { useLayoutScale, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { LogoTile } from '@/ui/LogoTile';
 import { Pressable } from '@/ui/Pressable';
@@ -62,8 +62,7 @@ export const JobCard = memo(function JobCard({
   a11ySuffix,
   style,
 }: JobCardProps) {
-  const { colors, spacing } = useTheme();
-  const { s } = useLayoutScale();
+  const { colors, spacing, s } = useTheme();
 
   const meta = formatJobMeta([job.company, job.location, REMOTE_LABEL[job.remote]]);
   const salary = job.salary ? formatSalary(job.salary) : undefined;
@@ -98,9 +97,9 @@ export const JobCard = memo(function JobCard({
       onPress={() => onPress(job)}
       style={style}
     >
-      <Card padding={s(19, 14)} elevated shadow="jobCard" style={{ gap: 0 }}>
+      <Card padding={s(19)} elevated shadow="jobCard" style={{ gap: 0 }}>
         <View style={[styles.topRow, { gap: spacing[4] }]}>
-          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO, 36)} />
+          <LogoTile name={job.company} logoUrl={job.companyLogoUrl} size={s(LOGO)} />
 
           <View style={styles.headings}>
             <Text variant="title" numberOfLines={1}>
@@ -114,7 +113,7 @@ export const JobCard = memo(function JobCard({
           {affordance === 'open' ? (
             <FontAwesome5
               name="chevron-right"
-              size={CHEVRON_ICON}
+              size={s(CHEVRON_ICON)}
               color={colors.iconMuted}
               solid
             />
@@ -124,12 +123,12 @@ export const JobCard = memo(function JobCard({
               accessibilityState={{ selected: affordance === 'saved' }}
               feedback="scale"
               haptic="light"
-              hitSlop={hitSlopFor(AFFORDANCE_ICON)}
+              hitSlop={hitSlopFor(s(AFFORDANCE_ICON))}
               onPress={() => onToggleSave?.(job)}
             >
               <FontAwesome5
                 name="bookmark"
-                size={AFFORDANCE_ICON}
+                size={s(AFFORDANCE_ICON)}
                 color={affordance === 'saved' ? colors.textPrimary : colors.iconMuted}
                 solid={affordance === 'saved'}
               />

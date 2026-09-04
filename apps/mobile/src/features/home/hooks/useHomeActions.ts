@@ -20,12 +20,12 @@ export function useHomeActions() {
 
   return useMemo(
     () => ({
-      openNotifications: () => placeholder('notifications'),
+      openNotifications: () => router.push('/notifications'),
       openMenu: () => placeholder('menu'),
       findJobs: () => router.navigate('/(tabs)/jobs'),
       viewAllJobs: () => router.navigate('/(tabs)/jobs'),
       viewAllResumes: () => router.navigate('/(tabs)/resumes'),
-      openJob: (_job: Job) => placeholder('job-detail'),
+      openJob: (job: Job) => router.push({ pathname: '/jobs/[id]', params: { id: job.id } }),
       openResume: (_resume: Resume) => placeholder('resume-detail'),
       createResume: openCreateSheet,
       quickStart: (action: QuickStartAction) => placeholder(action),

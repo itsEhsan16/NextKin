@@ -13,7 +13,8 @@ import {
   useUnreadCount,
 } from '@/data/queries';
 import { a11yButton, hitSlop8, pluralize, useDebouncedValue } from '@/lib';
-import { useTheme } from '@/theme';
+import { useTabScrollToTop } from '@/navigation';
+import { useTabBarLayout, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
@@ -59,7 +60,8 @@ const STATUS_CHIPS = [
 
 /** JOBS 01–03 — Discover, Saved and Applied as three segments of one screen. */
 export function JobsScreen() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
+  const tabBar = useTabBarLayout();
   const actions = useJobsActions();
   const listRef = useRef<FlashListRef<JobRow>>(null);
 
@@ -123,6 +125,13 @@ export function JobsScreen() {
   const status = STATUS_OF[segment]({ discover, saved, applications });
   const activeQuery = segment === 'discover' ? discover : segment === 'saved' ? saved : applications;
 
+  // Re-tapping the Jobs tab returns the list to the top (animated, unlike a segment switch —
+  // here the user asked for the movement, so it should be visible).
+  useTabScrollToTop(
+    'jobs',
+    useCallback(() => listRef.current?.scrollToOffset({ offset: 0, animated: true }), []),
+  );
+
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -167,22 +176,15 @@ export function JobsScreen() {
 
   // Everything the list header renders from; changing any of it must repaint the header.
   const headerState = useMemo(
-    () => ({ segment, chips, sort, appliedStatus, query, remoteOnly, location, count: rows.length }),
-    [appliedStatus, chips, location, query, remoteOnly, rows.length, segment, sort],
+    // `query` is deliberately absent: it was here only so keystrokes repainted the search
+    // field, and that field is pinned outside the list now. Leaving it in would rebuild the whole
+    // list header on every character for nothing.
+    () => ({ segment, chips, sort, appliedStatus, remoteOnly, location, count: rows.length }),
+    [appliedStatus, chips, location, remoteOnly, rows.length, segment, sort],
   );
 
   const listHeader = (
     <View style={{ gap: spacing[5], paddingBottom: spacing[5] }}>
-      <JobsHeader
-        query={query}
-        onChangeQuery={(value) => setQuery(segment, value)}
-        placeholder={PLACEHOLDER[segment]}
-        filterCount={segment === 'discover' ? chips.length : 0}
-        hasUnread={(unread.data ?? 0) > 0}
-        onPressNotifications={actions.openNotifications}
-        onPressFilters={actions.openFilters}
-      />
-
       {segment === 'discover' ? (
         <View style={[styles.chipRow, { gap: spacing[2] }]}>
           <FilterChip
@@ -236,7 +238,7 @@ export function JobsScreen() {
             onRetry={() => void picks.refetch()}
           />
 
-          <View style={styles.filterRow}>
+          <View style={[styles.filterRow, { marginTop: s(PICKS_TO_LIST_EXTRA) }]}>
             <Text accessibilityRole="header" variant="section">
               All jobs
             </Text>
@@ -269,7 +271,24 @@ export function JobsScreen() {
   );
 
   return (
-    <Screen padded={false} tabBarInset>
+    // `padded={false}` is the FlashList's doing — it owns the gutter so TodaysPicks can break
+    // out of it — so the header box has to ask for the gutter back explicitly. The centring and
+    // maxWidth still come from the root.
+    <Screen
+      padded={false}
+      headerStyle={{ paddingTop: spacing[4], paddingHorizontal: spacing.gutter }}
+      header={
+        <JobsHeader
+          query={query}
+          onChangeQuery={(value) => setQuery(segment, value)}
+          placeholder={PLACEHOLDER[segment]}
+          filterCount={segment === 'discover' ? chips.length : 0}
+          hasUnread={(unread.data ?? 0) > 0}
+          onPressNotifications={actions.openNotifications}
+          onPressFilters={actions.openFilters}
+        />
+      }
+    >
       <FlashList
         ref={listRef}
         data={status === 'success' ? rows : []}
@@ -289,7 +308,9 @@ export function JobsScreen() {
               else if (segment === 'saved') void saved.refetch();
               else void applications.refetch();
             }}
-            onBrowse={() => setSegment('discover')}
+            onBrowse={() => selectSegment('discover')}
+            onWidenFilters={actions.openFilters}
+            onClearFilters={clearFilters}
           />
         }
         ItemSeparatorComponent={RowSeparator}
@@ -300,7 +321,17 @@ export function JobsScreen() {
         }}
         onEndReachedThreshold={0.6}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: spacing.gutter, paddingTop: spacing[4] }}
+        // The list is the scroller here, so the tab-bar inset belongs on its content. Put it
+        // on the Screen instead and the page box shrinks, leaving the background painted under
+        // the floating pill and the last card cut off above it.
+        contentContainerStyle={{
+          paddingHorizontal: spacing.gutter,
+          // spacing[5], not spacing[4]: the 12 was the pad above the title and left with it. What
+          // the chip row and the segments actually had above them was the list header's own
+          // `gap: spacing[5]`, and removing its first child destroyed that gap instance.
+          paddingTop: spacing[5],
+          paddingBottom: tabBar.contentInset,
+        }}
         refreshControl={
           <RefreshControl refreshing={refreshing || activeQuery.isRefetching} onRefresh={onRefresh} />
         }
@@ -314,10 +345,18 @@ type JobRow =
   | { kind: 'saved'; job: Job }
   | { kind: 'applied'; job: Job; application: Application };
 
+/**
+ * The picks carousel sits further from the list than the rest of the header stack:
+ * 1:301 ends at 596 and the "All jobs" row 1:325 starts at 628, against the 20 the
+ * header container gaps by. The remainder is added here.
+ */
+const PICKS_TO_LIST_EXTRA = 12;
+
 const rowKey = (row: JobRow) => (row.kind === 'applied' ? row.application.id : row.job.id);
 
 function RowSeparator() {
-  return <View style={{ height: 14 }} />;
+  const { s } = useTheme();
+  return <View style={{ height: s(14) }} />;
 }
 
 const STATUS_OF: Record<
@@ -340,19 +379,23 @@ function ListPlaceholder({
   segment,
   onRetry,
   onBrowse,
+  onWidenFilters,
+  onClearFilters,
 }: {
   status: 'pending' | 'error' | 'success';
   segment: JobsSegment;
   onRetry: () => void;
   onBrowse: () => void;
+  onWidenFilters: () => void;
+  onClearFilters: () => void;
 }) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
 
   if (status === 'pending') {
     return (
-      <View style={{ gap: 14 }}>
+      <View style={{ gap: s(14) }}>
         {[0, 1, 2].map((index) => (
-          <Skeleton key={index} height={168} radius="cardLg" />
+          <Skeleton key={index} height={s(168)} radius="cardLg" />
         ))}
       </View>
     );
@@ -373,33 +416,53 @@ function ListPlaceholder({
   }
 
   const empty = EMPTY_COPY[segment];
+  const discover = segment === 'discover';
   return (
     <StateView
       icon={empty.icon}
+      {...(empty.iconStyle ? { iconStyle: empty.iconStyle } : {})}
       title={empty.title}
       message={empty.message}
-      actionLabel={segment === 'discover' ? undefined : 'Browse jobs'}
-      onAction={segment === 'discover' ? undefined : onBrowse}
+      actionLabel={empty.actionLabel}
+      // Discover's dead end is the filters, so its CTA opens them; the other two tabs are empty
+      // because nothing has been saved or applied to yet, and the way out is the Discover list.
+      onAction={discover ? onWidenFilters : onBrowse}
+      // Only Discover can be "un-emptied" without leaving the tab (JOBS 06, 1:964).
+      {...(discover ? { secondaryLabel: 'Clear all filters', onSecondary: onClearFilters } : {})}
       style={{ marginTop: spacing[6] }}
     />
   );
 }
 
-const EMPTY_COPY: Record<JobsSegment, { icon: string; title: string; message: string }> = {
+type EmptyCopy = {
+  icon: string;
+  iconStyle?: 'solid' | 'regular';
+  title: string;
+  message: string;
+  actionLabel: string;
+};
+
+/** JOBS 06 (1:958), 07 (1:992) and 08 (1:1025), transcribed verbatim. */
+const EMPTY_COPY: Record<JobsSegment, EmptyCopy> = {
   discover: {
-    icon: 'briefcase',
+    icon: 'search',
     title: 'No jobs match these filters',
-    message: 'Try widening your filters or clearing a few.',
+    message: 'Try removing a filter, widening your salary range, or including hybrid roles.',
+    actionLabel: 'Widen my filters',
   },
   saved: {
     icon: 'bookmark',
+    iconStyle: 'regular',
     title: 'Nothing saved yet',
-    message: 'Tap the bookmark on a job to keep it here.',
+    message:
+      'Bookmark jobs to compare them here — salary, match criteria and requirements side by side.',
+    actionLabel: "Browse today's picks",
   },
   applied: {
     icon: 'paper-plane',
     title: 'No applications yet',
-    message: 'Jobs you apply to will show up here with their status.',
+    message: 'Applications you submit appear here, with status updates as employers respond.',
+    actionLabel: 'Find jobs to apply to',
   },
 };
 
