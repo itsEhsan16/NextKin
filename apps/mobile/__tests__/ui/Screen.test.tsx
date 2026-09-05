@@ -115,3 +115,123 @@ describe('Screen — pinned header', () => {
     expect(box.paddingHorizontal).toBeUndefined();
   });
 });
+
+/** The bar handed to `footer`. */
+const action = <View accessibilityLabel="action" />;
+
+/** The box `footer` renders in: the immediate parent of the node handed to the prop. */
+const footerBox = () => screen.getByLabelText('action').parent as Instance;
+
+/**
+ * The page box: the ancestor carrying `safeAreaStyle`, identified by the top inset it pads.
+ *
+ * Named by its style rather than by depth, so it keeps working when `keyboard` swaps the root
+ * element out for a different one.
+ */
+const safeAreaBox = (node: Instance): Instance => {
+  for (let n = node.parent; n; n = n.parent) {
+    if (flat(n.props.style).paddingTop === metrics.insets.top) return n;
+  }
+  throw new Error('expected a safe-area padded box above this node');
+};
+
+/**
+ * The form skeleton every Phase 9B–9I screen is built on.
+ *
+ * Both halves are structural claims, like the header's above. The footer proves it is pinned by
+ * living outside the scroller; the keyboard wrapper proves itself by the frame measurement only a
+ * `KeyboardAvoidingView` leaves behind, one level *above* the safe-area box. Neither shows up in a
+ * screenshot at rest, which is why they are pinned here.
+ */
+describe('Screen — footer and keyboard', () => {
+  it('renders the footer below the scroller rather than inside it', async () => {
+    await renderScreen(
+      <Screen scroll footer={action}>
+        {body}
+      </Screen>,
+    );
+
+    expect(insideScroller(screen.getByLabelText('action'))).toBe(false);
+    // The other half again: pinning the whole page would otherwise pass.
+    expect(insideScroller(screen.getByLabelText('body'))).toBe(true);
+  });
+
+  it('leaves the footer box full-bleed instead of framing it like the header', async () => {
+    await renderScreen(
+      <Screen scroll footer={action} footerStyle={{ paddingTop: 7 }}>
+        {body}
+      </Screen>,
+    );
+
+    // The mirror image of the header's frame test above. The header takes the gutter so its rows
+    // line up with the content below; the bar must not, because its hairline and upward shadow
+    // read as the bottom of the *window* — framed, it would stop 24pt short of both edges and cap
+    // itself at the artboard width on a tablet.
+    const box = flat(footerBox().props.style);
+
+    expect(box.paddingHorizontal).toBeUndefined();
+    expect(box.maxWidth).toBeUndefined();
+    expect(box.alignSelf).toBeUndefined();
+    // And the box is still the screen's to style — the bar's own padding lives in here.
+    expect(box.paddingTop).toBe(7);
+  });
+
+  it('hands the bottom inset to the footer', async () => {
+    await renderScreen(
+      <Screen scroll edges={['top', 'bottom']} footer={action}>
+        {body}
+      </Screen>,
+    );
+
+    // The bar pads `spacing[4] + insets.bottom` itself so its background reaches the bottom of
+    // the glass. Padding the page as well would park it above a 34pt strip of bare page.
+    expect(flat(safeAreaBox(screen.getByLabelText('body')).props.style).paddingBottom).toBe(0);
+  });
+
+  it('keeps the bottom inset on the page when there is no footer', async () => {
+    await renderScreen(
+      <Screen scroll edges={['top', 'bottom']}>
+        {body}
+      </Screen>,
+    );
+
+    expect(flat(safeAreaBox(screen.getByLabelText('body')).props.style).paddingBottom).toBe(
+      metrics.insets.bottom,
+    );
+  });
+
+  it('makes the root a keyboard-avoiding view when `keyboard` is set', async () => {
+    await renderScreen(
+      <Screen scroll keyboard edges={['top', 'bottom']}>
+        {body}
+      </Screen>,
+    );
+
+    const box = safeAreaBox(screen.getByLabelText('body'));
+
+    // RNTL 14 renders a host-only tree, so `KeyboardAvoidingView` is not itself walkable — the
+    // mark it leaves is. It measures its own frame, so the View it wraps the page in carries an
+    // `onLayout` that nothing else here would put there.
+    expect(typeof (box.parent as Instance).props.onLayout).toBe('function');
+    // And it wraps the safe-area box rather than *being* it, which is the whole point: on
+    // jest-expo's iOS it runs `behavior="padding"`, composing the keyboard's height over the
+    // style it was handed — 0 at rest, so the 34pt inset would vanish from a screen with no
+    // footer to own it. Out here that padding lands above the box and the inset survives.
+    expect(flat(box.props.style).paddingBottom).toBe(metrics.insets.bottom);
+  });
+
+  it('leaves the root a plain View when `keyboard` is not set', async () => {
+    // The prop is additive: every screen built before Phase 9A must render exactly as before.
+    await renderScreen(
+      <Screen scroll edges={['top', 'bottom']}>
+        {body}
+      </Screen>,
+    );
+
+    const box = safeAreaBox(screen.getByLabelText('body'));
+
+    expect(box.props.onLayout).toBeUndefined();
+    expect((box.parent as Instance).props.onLayout).toBeUndefined();
+    expect(flat(box.props.style).paddingBottom).toBe(metrics.insets.bottom);
+  });
+});
