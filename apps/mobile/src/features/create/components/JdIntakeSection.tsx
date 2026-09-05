@@ -117,6 +117,18 @@ export function JdIntakeSection({ value, onChange, jobId }: JdIntakeSectionProps
           <Skeleton width="70%" height={s(TITLE_SKELETON)} />
           <Skeleton width="45%" height={s(CAPTION_SKELETON)} />
         </View>
+      ) : job.isError ? (
+        // Named, not fudged into a generic "Saved job": the screen above also refuses to submit a
+        // listing it could not read, so this retry is the way forward rather than a dead end.
+        <StateView
+          compact
+          tone="danger"
+          icon="exclamation-triangle"
+          title="Couldn't load that job"
+          message="Check your connection and try again."
+          actionLabel="Try again"
+          onAction={() => void job.refetch()}
+        />
       ) : (
         <View style={{ gap: spacing[1] }}>
           <Text variant="title" numberOfLines={2}>

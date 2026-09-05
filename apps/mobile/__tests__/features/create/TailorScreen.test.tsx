@@ -68,6 +68,9 @@ describe('TailorScreen (V2 §7.5 — no artboard)', () => {
   it('preselects the base resume and shows the quota before any work starts', async () => {
     await renderTailor();
     expect(screen.getByLabelText('Loading tailor setup')).toBeOnTheScreen();
+    // The bar is pinned while loading too — it owns the bottom safe-area inset, so the viewport
+    // must not change size when the queries land.
+    expect(screen.getByLabelText('Review job description')).toBeDisabled();
 
     await settle(NORMAL_MS);
 
@@ -77,8 +80,10 @@ describe('TailorScreen (V2 §7.5 — no artboard)', () => {
     expect(screen.getByText('Base resume · 3 pages · PDF and DOCX ready')).toBeOnTheScreen();
     expect(screen.getByLabelText('Base resume, Product Designer')).toBeOnTheScreen();
 
-    // V2 §13.5: the cap is on screen before the work begins, not after it is refused.
-    expect(screen.getAllByText('1 of 3 generations left this month')).toHaveLength(2);
+    // V2 §13.5: the cap is on screen before the work begins, not after it is refused — and it is
+    // said ONCE. The banner owns that line; repeating it on the action bar would draw it twice on
+    // one page and announce it twice to a screen reader.
+    expect(screen.getAllByText('1 of 3 generations left this month')).toHaveLength(1);
 
     expect(screen.getByText('Paste the description')).toBeOnTheScreen();
     expect(screen.getByText('PDF, DOCX or TXT')).toBeOnTheScreen();

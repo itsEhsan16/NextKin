@@ -9,7 +9,7 @@ import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
-import { useJdIntakeStore } from './JdIntakeSection';
+import { useCreateStore } from '../createStore';
 
 export type JdIntakeSheetsProps = {
   value: JdInput | null;
@@ -29,8 +29,8 @@ const SKELETON_ROW_HEIGHT = 44;
  */
 export function JdIntakeSheets({ value, onChange }: JdIntakeSheetsProps) {
   const { sizes, spacing, s } = useTheme();
-  const open = useJdIntakeStore((state) => state.jobSheetOpen);
-  const close = useJdIntakeStore((state) => state.closeJobSheet);
+  const open = useCreateStore((state) => state.jobSheetOpen);
+  const close = useCreateStore((state) => state.closeJobSheet);
   const savedJobs = useSavedJobs();
 
   const options: SheetOption[] = (savedJobs.data ?? []).map((job) => ({

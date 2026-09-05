@@ -3,15 +3,26 @@ import { View } from 'react-native';
 import { useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 
-/** Block geometry: the usage banner, the base-resume row, and the card of three choices. */
-const BANNER = 78;
-const LABEL = 18;
-const ROW = 74;
-const CHOICES = 232;
+/**
+ * Block geometry, each one the composed height of the card it stands in for — Card is 16pt of
+ * padding and a 1pt hairline on both sides, so every card block carries that 34pt:
+ *
+ * - `BANNER` 34 + caption 20 + gap 12 + 4pt bar
+ * - `LABEL`  the groupLabel line
+ * - `ROW`    2 (hairline; the row's own padding is Card's) + 12 + rowTitle 24 + 2 + description
+ *            19 + 12, past the 58pt listRow floor
+ * - `CHOICES` 34 + three 52pt SheetRows + two 16pt gaps
+ */
+const BANNER = 70;
+const LABEL = 20;
+const ROW = 71;
+const CHOICES = 222;
 
 /**
  * The tailor intake's loading state. Blocks in the shape of the content that replaces them, so
- * nothing jumps when the resumes and the subscription land — never a spinner.
+ * nothing jumps when the resumes and the subscription land — never a spinner. The screen pins an
+ * inert `StickyActionBar` under it for the same reason: the bar owns the bottom inset, so a
+ * loading page without one would resize the viewport the moment the queries settle.
  */
 export function TailorSkeleton() {
   const { spacing, s } = useTheme();

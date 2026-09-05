@@ -1,10 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AccessibilityInfo, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import type { JdInput } from '@/data/models';
-import { useExtractJd, useResumes, useSubscription } from '@/data/queries';
+import { useExtractJd, useJob, useResumes, useSubscription } from '@/data/queries';
 // Deep import on purpose: the resumes barrel drags its screens in, and this file is reachable
 // from the create barrel that @/navigation imports. docMeta is pure formatting.
 import { docSubtitle } from '@/features/resumes/docMeta';
@@ -31,7 +31,26 @@ export type TailorScreenProps = { jobId?: string; resumeId?: string };
 const ROW_PADDING = 20;
 const ROW_GUTTER = 16;
 const CHEVRON = 11;
-const WARN_ICON = 13;
+
+/** The primary's label, shared with the inert copy the loading state pins. */
+const CTA = 'Review job description';
+
+/**
+ * V2 §7.6 forbids a silent hang, and extraction is the step in front of it. The reason goes on
+ * the bar that started the work — the CTA is pinned, so a line at the end of the scroll content
+ * would be off-screen below a 12 000-character paste, and pressing the button would look like
+ * nothing happening at all.
+ */
+const EXTRACT_FAILED = "We couldn't read that description. Check your connection and try again.";
+
+/**
+ * What the bar says once the allowance is gone. A plan that grants none reaches this too — 0 of 0
+ * is spent — and "This month's 0 generations are used" is not a sentence.
+ */
+const spentNote = (limit: number) =>
+  limit > 0
+    ? `This month's ${pluralize(limit, 'generation')} are used. Pro raises the monthly cap.`
+    : 'Your plan has no generations this month. Pro raises the monthly cap.';
 
 /**
  * Tailor a resume — the intake that turns a job description into a tailored one (V2 §7.5). No
@@ -57,6 +76,10 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
   // Arriving from a listing means the JD is already known, so the CTA is live on first paint.
   const [jd, setJd] = useState<JdInput | null>(() => jdInputForJob(jobId));
 
+  // The query the intake's summary card already runs, deduped by key: the CTA must not start an
+  // extraction against a listing the app could not read.
+  const jdJob = useJob(jd?.source === 'job' ? jd.jobId : '');
+
   // Cover letters are never a tailoring source, so the library is narrowed to resumes here and
   // the empty state below is about resumes rather than "documents".
   const documents = useMemo(
@@ -68,18 +91,34 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
     documents.find((resume) => resume.isBase) ??
     documents[0];
 
+  // Safe to read straight through: a subscription that failed to load never reaches here — see
+  // the error branch below — so this is the published cap rather than a zero standing in for one.
   const usage = subscription.data?.usage;
   const limit = usage?.generationsLimit ?? 0;
   const used = usage?.generationsUsed ?? 0;
-  const spent = limit > 0 && used >= limit;
+  const spent = used >= limit;
 
-  // A pasted description that is only whitespace is not a description.
-  const ready = jd != null && (jd.source !== 'paste' || jd.text.trim().length > 0);
+  // A pasted description that is only whitespace is not a description, and a saved job the app
+  // could not read is not one either.
+  const ready =
+    jd != null &&
+    (jd.source !== 'paste' || jd.text.trim().length > 0) &&
+    (jd.source !== 'job' || jdJob.data != null);
 
   const submit = useCallback(() => {
     if (!jd) return;
     extract.mutate(jd, { onSuccess: (draft) => actions.openJdReview(draft.id, base?.id) });
   }, [actions, base?.id, extract, jd]);
+
+  // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
+  // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
+  const failed = extract.isError;
+  const announced = useRef(false);
+  useEffect(() => {
+    const was = announced.current;
+    announced.current = failed;
+    if (failed && !was) AccessibilityInfo.announceForAccessibility(EXTRACT_FAILED);
+  }, [failed]);
 
   const enter = (index: number) =>
     reduced
@@ -120,7 +159,11 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
     </View>
   );
 
-  if (resumes.isPending || subscription.isPending) return page(<TailorSkeleton />);
+  // The inert bar is part of the loading state: it owns the bottom safe-area inset, so a page
+  // without one would grow a 150pt footer out of nothing the moment the queries land.
+  if (resumes.isPending || subscription.isPending) {
+    return page(<TailorSkeleton />, <StickyActionBar primary={{ label: CTA, disabled: true }} />);
+  }
 
   if (resumes.isError) {
     return page(
@@ -131,6 +174,21 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
         message="Check your connection and try again."
         actionLabel="Try again"
         onAction={() => void resumes.refetch()}
+      />,
+    );
+  }
+
+  // An allowance that could not be read is unknown, not unlimited: §13.5 wants the cap in front
+  // of the user before the work, so nothing is spent against a cap the page never showed.
+  if (subscription.isError) {
+    return page(
+      <StateView
+        tone="danger"
+        icon="exclamation-triangle"
+        title="Couldn't load your plan"
+        message="Check your connection and try again."
+        actionLabel="Try again"
+        onAction={() => void subscription.refetch()}
       />,
     );
   }
@@ -147,12 +205,9 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
     );
   }
 
-  const note =
-    limit <= 0
-      ? undefined
-      : spent
-        ? `This month's ${pluralize(limit, 'generation')} are used. Pro raises the monthly cap.`
-        : `${Math.max(0, limit - used)} of ${pluralize(limit, 'generation')} left this month`;
+  // One line on the bar, and never the quota: the banner above already says how many are left, and
+  // repeating it here draws it twice on the page and announces it twice to a screen reader.
+  const note = failed ? EXTRACT_FAILED : spent ? spentNote(limit) : undefined;
 
   return page(
     <>
@@ -194,30 +249,15 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
       <Animated.View entering={enter(2)}>
         <JdIntakeSection value={jd} onChange={setJd} jobId={jobId} />
       </Animated.View>
-
-      {/* V2 §7.6 forbids a silent hang, and extraction is the step in front of it: a failure says
-          so in place and leaves the button live, so pressing it again is the retry. */}
-      {extract.isError ? (
-        <View style={[styles.errorRow, { gap: spacing[2] }]}>
-          <FontAwesome5 name="exclamation-circle" size={s(WARN_ICON)} color={colors.danger} solid />
-          <Text
-            variant="caption"
-            color="danger"
-            accessibilityLiveRegion="polite"
-            style={styles.fill}
-          >
-            {"We couldn't read that description. Press Review job description to try again."}
-          </Text>
-        </View>
-      ) : null}
     </>,
+    // The failure leaves the button live, so pressing it again is the retry.
     <StickyActionBar
       note={note}
       primary={
         spent
           ? { label: 'See Pro plans', onPress: actions.openUpgrade }
           : {
-              label: 'Review job description',
+              label: CTA,
               icon: 'magic',
               loading: extract.isPending,
               disabled: !ready,
@@ -230,8 +270,6 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
 
 const useStyles = scaledSheet((s) => ({
   root: { flex: 1 },
-  fill: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
   rowText: { flex: 1, gap: s(2) },
-  errorRow: { flexDirection: 'row', alignItems: 'flex-start' },
 }));

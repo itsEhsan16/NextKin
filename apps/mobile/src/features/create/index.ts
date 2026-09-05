@@ -8,10 +8,10 @@ export {
   type CreateAction,
   type CreateRow,
 } from './createSteps';
+export { useCreateStore } from './createStore';
 export {
   JdIntakeSection,
   jdInputForJob,
-  useJdIntakeStore,
   type JdIntakeSectionProps,
 } from './components/JdIntakeSection';
 export { JdIntakeSheets, type JdIntakeSheetsProps } from './components/JdIntakeSheets';
