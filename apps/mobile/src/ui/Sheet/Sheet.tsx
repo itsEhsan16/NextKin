@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   BackHandler,
+  Platform,
   Pressable,
   StyleSheet,
   View,
   useWindowDimensions,
-  type AccessibilityProps,
   type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -23,6 +23,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { haptics, useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
+
+import { SheetKeyboardLift } from './SheetKeyboardLift';
+import { resolveSheetHeight } from './sheetLayout';
+import { useSheetDismissPan } from './useSheetDismissPan';
 
 export type SheetProps = {
   open: boolean;
@@ -51,6 +55,11 @@ export type SheetProps = {
    */
   swipeToDismiss?: boolean;
   /**
+   * Lift the sheet above the iOS keyboard. One text field per sheet - anything larger belongs on
+   * a pushed <Screen keyboard> instead.
+   */
+  avoidKeyboard?: boolean;
+  /**
    * Optional external progress (0 = closed, 1 = open). Lets other chrome — the FAB's "+ → ✕"
    * morph — animate from the exact same value so nothing drifts out of sync.
    */
@@ -64,64 +73,12 @@ export type SheetProps = {
 };
 
 /**
- * Modal-isolation contract for sheet hosts.
- *
- * accessibilityViewIsModal only hides the *siblings* of the view that sets it, and Android
- * ignores it outright — so the Sheet alone cannot make the screen behind it inert for a
- * screen reader. The Sheet marks its own overlay root modal (which covers iOS whenever the
- * sheet is mounted alongside the page content); the host must additionally spread these props
- * onto the background subtree it owns — the tabs layout's screen container — while the sheet
- * is open, or that content stays swipe-navigable under the sheet on Android.
- *
- * Usage: spread onto the background wrapper, e.g.
- * <View {...sheetBackgroundA11yProps(sheetOpen)}>{screens}</View>, with the Sheet rendered as
- * a sibling after it.
- */
-export function sheetBackgroundA11yProps(
-  sheetOpen: boolean,
-): Pick<AccessibilityProps, 'accessibilityElementsHidden' | 'importantForAccessibility'> {
-  return sheetOpen
-    ? { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' }
-    : { accessibilityElementsHidden: false, importantForAccessibility: 'auto' };
-}
-
-export type SheetHeightInput = {
-  /** The artboard height for this sheet, excluding safe-area insets. */
-  designHeight: number;
-  /** Measured height of the sheet's own content column; 0 before the first layout pass. */
-  contentHeight: number;
-  insetBottom: number;
-  insetTop: number;
-  windowHeight: number;
-};
-
-/**
- * The design height is a FLOOR, not a fixed size.
- *
- * Figma artboards are 520pt wide; on a narrower phone the sheet's text wraps and the row stack
- * outgrows the scaled artboard height. Because the sheet clips (overflow: 'hidden'), a fixed
- * height would silently cut the last row off — and a clipped row is untappable on Android. So
- * the sheet takes whichever is taller, and never exceeds the screen below the top inset.
- */
-export function resolveSheetHeight({
-  designHeight,
-  contentHeight,
-  insetBottom,
-  insetTop,
-  windowHeight,
-}: SheetHeightInput): number {
-  const maxHeight = windowHeight - insetTop;
-  const wanted = Math.max(designHeight, contentHeight) + insetBottom;
-  return Math.min(maxHeight, wanted);
-}
-
-/**
  * Bottom sheet primitive. Motion per the Figma annotation: springs in (damping ≈ 0.8, ~300ms,
  * slight overshoot), exits faster (~200ms); the scrim cross-fades from the same progress value.
  * Dismiss hierarchy: explicit close control (owner) > scrim tap > swipe-down — swipe is never
  * the only exit. Everything runs on the UI thread; React only learns about open/closed edges.
  *
- * Screen-reader isolation is a two-part contract — see sheetBackgroundA11yProps above.
+ * Screen-reader isolation is a two-part contract — see sheetBackgroundA11yProps in sheetLayout.
  */
 export function Sheet({
   open,
@@ -129,6 +86,7 @@ export function Sheet({
   height,
   fill = false,
   swipeToDismiss = true,
+  avoidKeyboard = false,
   progress: externalProgress,
   showHandle = true,
   hapticOnOpen = true,
@@ -195,47 +153,20 @@ export function Sheet({
     return () => sub.remove();
   }, [onClose, open]);
 
-  // `reduced` is JS-thread state, so the config is resolved here and the worklet captures a
-  // plain object; the memo below rebuilds the gesture whenever the setting flips.
+  // `reduced` is JS-thread state, so the config is resolved here and the pan's worklets capture
+  // a plain object; the gesture rebuilds off this identity whenever the setting flips.
   const snapBackSpring = useMemo(
     () => withReducedMotion(reduced, motion.springs.snappy),
     [motion.springs.snappy, reduced],
   );
-
-  // Rebuilding the gesture on every render makes GestureDetector re-attach its handlers, so it
-  // is memoised on everything the worklets capture (the documented RNGH pattern).
-  const pan = useMemo(
-    () =>
-      Gesture.Pan()
-        .enabled(swipeToDismiss)
-        .activeOffsetY(8)
-        .onUpdate((event) => {
-          if (event.translationY <= 0) {
-            progress.set(1);
-            return;
-          }
-          progress.set(Math.max(0, 1 - event.translationY / animatedHeight.value));
-        })
-        .onEnd((event) => {
-          const shouldDismiss =
-            event.velocityY > motion.sheet.swipeDismissVelocity ||
-            event.translationY > animatedHeight.value * motion.sheet.swipeDismissFraction;
-          if (shouldDismiss) {
-            runOnJS(onClose)();
-          } else {
-            progress.set(withSpring(1, snapBackSpring));
-          }
-        }),
-    [
-      animatedHeight,
-      motion.sheet.swipeDismissFraction,
-      motion.sheet.swipeDismissVelocity,
-      onClose,
-      progress,
-      snapBackSpring,
-      swipeToDismiss,
-    ],
-  );
+  const pan = useSheetDismissPan({
+    enabled: swipeToDismiss,
+    progress,
+    animatedHeight,
+    onClose,
+    snapBackSpring,
+    motionSheet: motion.sheet,
+  });
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
   const sheetStyle = useAnimatedStyle(() => ({
@@ -244,6 +175,50 @@ export function Sheet({
   }));
 
   if (!mounted) return null;
+
+  // Only this subtree lifts; the transform is outer, so sheetStyle and the drag maths are untouched.
+  const sheet = (
+    <GestureDetector gesture={pan}>
+      <Animated.View
+        accessibilityLabel={accessibilityLabel}
+        style={[
+          styles.sheet,
+          {
+            paddingBottom: insets.bottom,
+            backgroundColor: colors.surfaceSheet,
+            borderTopLeftRadius: radii.sheet,
+            borderTopRightRadius: radii.sheet,
+          },
+          shadows.sheet,
+          sheetStyle,
+        ]}
+      >
+        {/* Measured column: whatever this reports is the height the sheet must be able to show. */}
+        <View
+          onLayout={fill ? undefined : measureContent}
+          style={fill ? styles.fill : styles.column}
+        >
+          {showHandle ? (
+            <View
+              style={[
+                styles.handle,
+                {
+                  width: sizes.grabHandleWidth,
+                  height: sizes.grabHandleHeight,
+                  borderRadius: radii.full,
+                  backgroundColor: colors.grabHandle,
+                  marginTop: spacing[3],
+                },
+              ]}
+            />
+          ) : null}
+          <View style={[fill ? styles.fill : null, contentStyle]}>{children}</View>
+        </View>
+      </Animated.View>
+    </GestureDetector>
+  );
+  // Android keeps `adjustResize`: the lift is iOS-only, and only when the sheet asked for it.
+  const lifted = avoidKeyboard && Platform.OS === 'ios';
 
   return (
     // The modal flag sits on the overlay root rather than the sheet surface: on the surface it
@@ -259,44 +234,7 @@ export function Sheet({
         />
       </Animated.View>
 
-      <GestureDetector gesture={pan}>
-        <Animated.View
-          accessibilityLabel={accessibilityLabel}
-          style={[
-            styles.sheet,
-            {
-              paddingBottom: insets.bottom,
-              backgroundColor: colors.surfaceSheet,
-              borderTopLeftRadius: radii.sheet,
-              borderTopRightRadius: radii.sheet,
-            },
-            shadows.sheet,
-            sheetStyle,
-          ]}
-        >
-          {/* Measured column: whatever this reports is the height the sheet must be able to show. */}
-          <View
-            onLayout={fill ? undefined : measureContent}
-            style={fill ? styles.fill : styles.column}
-          >
-            {showHandle ? (
-              <View
-                style={[
-                  styles.handle,
-                  {
-                    width: sizes.grabHandleWidth,
-                    height: sizes.grabHandleHeight,
-                    borderRadius: radii.full,
-                    backgroundColor: colors.grabHandle,
-                    marginTop: spacing[3],
-                  },
-                ]}
-              />
-            ) : null}
-            <View style={[fill ? styles.fill : null, contentStyle]}>{children}</View>
-          </View>
-        </Animated.View>
-      </GestureDetector>
+      {lifted ? <SheetKeyboardLift sheetHeight={animatedHeight}>{sheet}</SheetKeyboardLift> : sheet}
     </View>
   );
 }

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -38,5 +38,29 @@ describe('Sheet', () => {
     // The scrim fades in via Reanimated; under the jest mock its opacity stays 0 ("hidden").
     fireEvent.press(screen.getByLabelText('Close sheet', { includeHiddenElements: true }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('wraps only the sheet surface in the keyboard lift when asked', async () => {
+    await render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <Sheet open onClose={jest.fn()} height={400} accessibilityLabel="Create" avoidKeyboard>
+          <Text>Sheet body</Text>
+        </Sheet>
+      </SafeAreaProvider>,
+    );
+
+    const lift = screen.getByTestId('sheet-keyboard-lift', { includeHiddenElements: true });
+    // The scrim stays outside the lift, so only the sheet rides up with the keyboard.
+    expect(within(lift).getByLabelText('Create')).toBeOnTheScreen();
+    expect(
+      within(lift).queryByLabelText('Close sheet', { includeHiddenElements: true }),
+    ).toBeNull();
+  });
+
+  it('does not mount the lift by default', async () => {
+    // The lift takes the app off Android's adjustResize while mounted, so a sheet that never
+    // asked for it must not carry the node at all.
+    await renderSheet(true);
+    expect(screen.queryByTestId('sheet-keyboard-lift', { includeHiddenElements: true })).toBeNull();
   });
 });
