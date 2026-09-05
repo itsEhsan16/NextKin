@@ -1,6 +1,8 @@
 import { newId, simulate } from '@/data/mock';
 import type { AtsScore, Resume } from '@/data/models';
 
+import { createResumeContentRepo } from './resumeContentRepo';
+import { createResumeExportRepo } from './resumeExportRepo';
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ResumesRepo } from './types';
 
@@ -9,7 +11,13 @@ const byUpdatedDesc = (a: Resume, b: Resume): number => b.updatedAt.localeCompar
 export function createMockResumesRepo(store: MockStore): ResumesRepo {
   const find = (id: string): Resume => findOrThrow(store.state.resumes, id, 'Resume');
 
+  // The document's metadata, its body and its renditions are one repo to a caller and three files
+  // here: the editor and the fixes are most of Phase 9C on their own, and the exports need none of
+  // the editing machinery. The `Pick` on each slice keeps all three honest against the contract.
   return {
+    ...createResumeContentRepo(store),
+    ...createResumeExportRepo(store),
+
     list: () =>
       simulate(() => clone([...store.state.resumes].sort(byUpdatedDesc)), { empty: () => [] }),
 

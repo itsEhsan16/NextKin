@@ -1,4 +1,5 @@
 import { createMockGenerationsRepo } from './generationsRepo';
+import { createMockJdRepo } from './jdRepo';
 import { createMockJobsRepo } from './jobsRepo';
 import { createMockNotificationsRepo } from './notificationsRepo';
 import { createMockProfileRepo } from './profileRepo';
@@ -12,6 +13,8 @@ export { NotFoundError } from './state';
 export * from './types';
 export { JOBS_PAGE_SIZE, matchesFilters } from './jobsRepo';
 export { GENERATION_PROGRESS_STEP, GENERATION_TICK_MS, statusForProgress } from './generationsRepo';
+export { PlanLockedError } from './state';
+export { DATA_EXPORT_MS } from './userRepo';
 
 export function createMockRepos(store: MockStore = createMockStore()): Repos {
   return {
@@ -19,6 +22,7 @@ export function createMockRepos(store: MockStore = createMockStore()): Repos {
     profile: createMockProfileRepo(store),
     resumes: createMockResumesRepo(store),
     jobs: createMockJobsRepo(store),
+    jd: createMockJdRepo(store),
     notifications: createMockNotificationsRepo(store),
     generations: createMockGenerationsRepo(store),
   };

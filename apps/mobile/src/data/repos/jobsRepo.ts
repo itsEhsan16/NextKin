@@ -1,5 +1,12 @@
 import { newId, simulate } from '@/data/mock';
-import type { Application, Job, JobFilters, JobSort, PostedWithin } from '@/data/models';
+import type {
+  Application,
+  Job,
+  JobFilters,
+  JobSort,
+  PostedWithin,
+  SavedJobsSort,
+} from '@/data/models';
 import type { SalaryCurrency, SalaryRange } from '@/lib';
 
 import { clone, findOrThrow, type MockStore } from './state';
@@ -40,9 +47,21 @@ const bySavedDesc = (a: Job, b: Job): number =>
 // Compared in INR so a mixed-currency catalogue sorts by real value, not by raw digits.
 const bySalaryDesc = (a: Job, b: Job): number => salaryCeiling(b) - salaryCeiling(a);
 
+// Soonest deadline first. A listing with no deadline is not closing, so it sorts to the end
+// rather than to the front, which is where an empty string would put it.
+const byClosingAsc = (a: Job, b: Job): number =>
+  (a.closingAt ?? '9999').localeCompare(b.closingAt ?? '9999');
+
 const COMPARATORS: Record<JobSort, (a: Job, b: Job) => number> = {
   relevance: byRelevance,
   recent: byPostedDesc,
+  salary: bySalaryDesc,
+};
+
+/** Saved has its own three (SavedJobsSort): there is no search to be relevant to once saved. */
+const SAVED_COMPARATORS: Record<SavedJobsSort, (a: Job, b: Job) => number> = {
+  recent: bySavedDesc,
+  closing: byClosingAsc,
   salary: bySalaryDesc,
 };
 
@@ -147,10 +166,23 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
         { empty: () => [] },
       ),
 
-    listSaved: () =>
-      simulate(() => clone(store.state.jobs.filter((job) => job.isSaved).sort(bySavedDesc)), {
-        empty: () => [],
-      }),
+    // Every open role at one employer — the company screen's listings section, newest first.
+    listByCompany: (company) =>
+      simulate(
+        () =>
+          clone(
+            store.state.jobs
+              .filter((job) => normalise(job.company) === normalise(company))
+              .sort(byPostedDesc),
+          ),
+        { empty: () => [] },
+      ),
+
+    listSaved: (sort = 'recent') =>
+      simulate(
+        () => clone(store.state.jobs.filter((job) => job.isSaved).sort(SAVED_COMPARATORS[sort])),
+        { empty: () => [] },
+      ),
 
     listApplications: () =>
       simulate(
