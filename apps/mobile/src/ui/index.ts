@@ -16,6 +16,7 @@ export * from './Pressable';
 export * from './Progress';
 export * from './RangeSlider';
 export * from './Screen';
+export * from './ScreenHeader';
 export * from './SearchField';
 export * from './SegmentedControl';
 export * from './SectionHeader';
