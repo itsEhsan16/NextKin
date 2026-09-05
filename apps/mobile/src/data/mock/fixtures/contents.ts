@@ -1,6 +1,7 @@
 import type { DocumentContent, ResumeContent } from '@/data/models/resumeContent';
 
-import { BASE_SKILLS, buildCoverLetterContent, buildResumeContent } from '../documentBuilder';
+import { buildCoverLetterContent, buildResumeContent } from '../documentBuilder';
+import { BASE_SKILLS } from '../documentCopy';
 
 /**
  * NextKin V2 spec §7.11 — the body of every finished document in `resumesFixture`.
