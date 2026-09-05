@@ -1,6 +1,6 @@
-import type { AtsCheckItem, AtsScore, AtsSection, Resume, ResumeVersion } from '@/data/models';
-import { atsBandFor } from '@/data/models';
+import type { AtsScore, Resume, ResumeVersion } from '@/data/models';
 
+import { buildAtsScore, buildSections } from '../atsScoreBuilder';
 import { daysAgo, minutesAgo } from './time';
 
 /** Resume currently being generated (paired with the active generation fixture). */
@@ -205,84 +205,9 @@ export const resumeVersionsFixture: ResumeVersion[] = [
   ...versionsFor(GENERATING_RESUME_ID, 1, ['Generating…']),
 ];
 
-const pass = (id: string, label: string): AtsCheckItem => ({ id, label, passed: true });
-const fix = (id: string, label: string): AtsCheckItem => ({
-  id,
-  label,
-  passed: false,
-  fixable: true,
-});
-
-/**
- * Checklist shape from RESUMES 04, parameterised so every scored doc gets a coherent panel.
- * The base resume below overrides this with the artboard's exact copy.
- */
-function buildSections(opts: {
-  contentMiss?: string;
-  present: [string, string];
-  missing: string[];
-  portfolioMiss?: boolean;
-}): AtsSection[] {
-  const { contentMiss, present, missing, portfolioMiss } = opts;
-  return [
-    {
-      key: 'content',
-      label: 'Content',
-      items: [
-        pass('quantified', 'Quantified achievements in 3+ bullets'),
-        pass('verbs', 'Action verbs open every bullet'),
-        pass('summary', 'Summary under 60 words'),
-        pass('pronouns', 'No first-person pronouns'),
-        ...(contentMiss ? [fix('content_gap', contentMiss)] : []),
-      ],
-    },
-    {
-      key: 'format',
-      label: 'Format',
-      items: [
-        pass('column', 'Single column — parser safe'),
-        pass('headings', 'Standard section headings'),
-        pass('tables', 'No tables, text boxes or images'),
-      ],
-    },
-    {
-      key: 'keywords',
-      label: 'Keywords',
-      items: [
-        pass('kw_1', `"${present[0]}" appears 3 times`),
-        pass('kw_2', `"${present[1]}" appears twice`),
-        ...missing.map((keyword, index) => fix(`kw_miss_${index}`, `Missing: "${keyword}"`)),
-      ],
-    },
-    {
-      key: 'best',
-      label: 'Best practices',
-      items: [
-        pass('contact', 'Contact details complete'),
-        pass('filename', 'File name follows convention'),
-        pass('pages', 'Two pages or fewer'),
-        ...(portfolioMiss ? [fix('portfolio', 'Add a portfolio link')] : []),
-      ],
-    },
-  ];
-}
-
-const summaryFor = (total: number, quickWins: number): string => {
-  const band = atsBandFor(total);
-  if (band === 'strong')
-    return `Parsers will read this cleanly. ${quickWins} quick wins left before it is airtight.`;
-  if (band === 'good') return 'Solid foundation — a few fixes will push this into the green.';
-  return 'Parsers may stumble here. Start with the quick wins below.';
-};
-
-const score = (total: number, sections: AtsSection[], summary?: string): AtsScore => {
-  const quickWins = sections.flatMap((s) => s.items).filter((i) => !i.passed && i.fixable).length;
-  return { total, band: atsBandFor(total), summary: summary ?? summaryFor(total, quickWins), sections };
-};
-
 export const atsScoresFixture: Record<string, AtsScore> = {
   // RESUMES 04 verbatim — four quick wins across Content / Keywords / Best practices.
-  res_base: score(
+  res_base: buildAtsScore(
     92,
     buildSections({
       contentMiss: 'Add metrics to your Zoho role',
@@ -292,11 +217,11 @@ export const atsScoresFixture: Record<string, AtsScore> = {
     }),
     'Parsers will read this cleanly. Four quick wins left before it is airtight.',
   ),
-  res_1: score(
+  res_1: buildAtsScore(
     92,
     buildSections({ present: ['design systems', 'search'], missing: ['accessibility'] }),
   ),
-  res_2: score(
+  res_2: buildAtsScore(
     88,
     buildSections({
       present: ['design systems', 'payments'],
@@ -304,7 +229,7 @@ export const atsScoresFixture: Record<string, AtsScore> = {
       portfolioMiss: true,
     }),
   ),
-  res_5: score(
+  res_5: buildAtsScore(
     84,
     buildSections({
       contentMiss: 'Add metrics to your research bullets',
@@ -312,7 +237,7 @@ export const atsScoresFixture: Record<string, AtsScore> = {
       missing: ['checkout'],
     }),
   ),
-  res_3: score(
+  res_3: buildAtsScore(
     76,
     buildSections({
       contentMiss: 'Quantify the systems adoption you drove',
@@ -321,11 +246,11 @@ export const atsScoresFixture: Record<string, AtsScore> = {
       portfolioMiss: true,
     }),
   ),
-  res_4: score(
+  res_4: buildAtsScore(
     81,
     buildSections({ present: ['prototyping', 'tools'], missing: ['developer experience'] }),
   ),
-  res_zoho: score(
+  res_zoho: buildAtsScore(
     69,
     buildSections({
       contentMiss: 'Add metrics to your Zoho role',
@@ -334,7 +259,7 @@ export const atsScoresFixture: Record<string, AtsScore> = {
       portfolioMiss: true,
     }),
   ),
-  res_atlassian: score(
+  res_atlassian: buildAtsScore(
     87,
     buildSections({ present: ['design systems', 'collaboration'], missing: ['Jira'] }),
   ),
