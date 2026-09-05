@@ -48,6 +48,15 @@ export function useSimilarJobs(id: string) {
   });
 }
 
+/** Every open role at one employer — the company screen's listings section. */
+export function useJobsByCompany(company: string) {
+  return useQuery({
+    queryKey: qk.jobs.byCompany(company),
+    queryFn: () => repos.jobs.listByCompany(company),
+    enabled: company.length > 0,
+  });
+}
+
 export function useSavedJobs() {
   return useQuery({
     queryKey: qk.jobs.saved(),

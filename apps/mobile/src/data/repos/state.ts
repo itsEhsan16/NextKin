@@ -53,10 +53,19 @@ export type MockState = {
    * yet.
    */
   contents: Record<string, DocumentContent>;
+  /**
+   * The body as it stood at each version, keyed by version id — what §7.11's restore reads.
+   *
+   * Only versions this session minted are in here, plus each seeded document's current one: the
+   * fixtures record that older versions happened without saying what they said. Restoring one of
+   * those reports that the body is gone rather than silently re-saving the current text, which
+   * would look like a restore that did nothing.
+   */
+  contentVersions: Record<string, DocumentContent>;
   generations: Generation[];
   jobs: Job[];
   applications: Application[];
-  /** Recruiter-side job description drafts, saved between wizard steps. */
+  /** Job descriptions the candidate pasted or uploaded, kept between the intake and review steps. */
   jdDrafts: JdDraft[];
   notifications: Notification[];
   notificationPrefs: NotificationPrefs;
@@ -71,6 +80,19 @@ export type MockState = {
 /** Fixtures are plain JSON (ISO strings, no Dates), so a JSON clone is a safe deep copy. */
 export const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
+/**
+ * Each seeded document's current body, filed under the version it belongs to. Everything earlier
+ * predates the fixtures, so only the head of each history has a body to restore.
+ */
+function seedContentVersions(): Record<string, DocumentContent> {
+  const seeded: Record<string, DocumentContent> = {};
+  for (const resume of resumesFixture) {
+    const body: DocumentContent | undefined = contentsFixture[resume.id];
+    if (body) seeded[resume.currentVersionId] = clone(body);
+  }
+  return seeded;
+}
+
 function freshState(): MockState {
   return {
     user: clone(userFixture),
@@ -81,6 +103,7 @@ function freshState(): MockState {
     resumeVersions: clone(resumeVersionsFixture),
     atsScores: clone(atsScoresFixture),
     contents: clone(contentsFixture),
+    contentVersions: seedContentVersions(),
     generations: clone(generationsFixture),
     jobs: clone(jobsFixture),
     applications: clone(applicationsFixture),

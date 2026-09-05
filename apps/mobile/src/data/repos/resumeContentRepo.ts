@@ -93,6 +93,9 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
   const save = (id: string, content: ResumeContent, versionId: string): ResumeContent => {
     const stored: ResumeContent = { ...content, versionId };
     store.state.contents[id] = stored;
+    // The same body filed under its version, so §7.11's restore has something to go back to.
+    // Without this a restore can only re-stamp the current text and looks like it did nothing.
+    store.state.contentVersions[versionId] = stored;
     return stored;
   };
 
@@ -208,11 +211,17 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
         const resume = find(id);
         const version = findOrThrow(store.state.resumeVersions, versionId, 'ResumeVersion');
         if (version.resumeId !== id) throw new NotFoundError('ResumeVersion', versionId);
+        // The body as it stood at that version. A version older than the fixtures has none, and
+        // saying so is the honest answer: re-saving the current text would present a restore that
+        // changed nothing as a restore that worked.
+        const body: DocumentContent | undefined = store.state.contentVersions[versionId];
+        if (!body) throw new NotFoundError('DocumentVersion', versionId);
         // §7.11: history is never rewritten. A restore lands as a new version on top of the ones
         // that followed it, so the list only ever grows.
         const restored = bumpVersion(resume, `Restored v${version.version}`);
-        const body: DocumentContent | undefined = store.state.contents[id];
-        if (body) store.state.contents[id] = { ...body, versionId: restored.versionId };
+        const stored: DocumentContent = { ...body, versionId: restored.versionId };
+        store.state.contents[id] = stored;
+        store.state.contentVersions[restored.versionId] = stored;
         return clone(restored.resume);
       }),
   };

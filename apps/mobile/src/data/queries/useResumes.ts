@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Resume } from '@/data/models';
+import type { Resume, ResumeDocType } from '@/data/models';
 import { repos } from '@/data/repos';
 
 import { qk } from './keys';
@@ -96,5 +96,51 @@ export function useRenameResume() {
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: qk.resumes.list() }),
+  });
+}
+
+/** Starts an empty document the editor fills in by hand (V2 §7.11). */
+export function useCreateResume() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { title: string; docType: ResumeDocType }) => repos.resumes.create(input),
+    onSuccess: (resume) => {
+      queryClient.setQueryData(qk.resumes.detail(resume.id), resume);
+      queryClient.setQueryData<Resume[]>(qk.resumes.list(), (old) =>
+        old ? [resume, ...old] : old,
+      );
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: qk.resumes.list() }),
+  });
+}
+
+/**
+ * Rolls the document back to an earlier version (V2 §7.11). History is never rewritten: the
+ * restore lands as a new version on top, so `versions` grew, `detail` points at a new current
+ * version, `content` is re-stamped with that new version id, and the library card's edited-at line
+ * moved.
+ *
+ * The body itself does not change yet: the mock does not snapshot a body per version, so
+ * `restoreVersion` only re-stamps the current one. The invalidation is still load-bearing (the
+ * version id moved), and it is what will carry the older body once the store keeps per-version
+ * snapshots.
+ */
+export function useRestoreVersion(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (versionId: string) => repos.resumes.restoreVersion(id, versionId),
+    onSuccess: (restored) => {
+      queryClient.setQueryData(qk.resumes.detail(restored.id), restored);
+      queryClient.setQueryData<Resume[]>(qk.resumes.list(), (old) =>
+        old?.map((resume) => (resume.id === restored.id ? restored : resume)),
+      );
+    },
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: qk.resumes.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: qk.resumes.versions(id) }),
+        queryClient.invalidateQueries({ queryKey: qk.resumes.content(id) }),
+        queryClient.invalidateQueries({ queryKey: qk.resumes.list() }),
+      ]),
   });
 }
