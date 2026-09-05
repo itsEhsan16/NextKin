@@ -24,6 +24,7 @@ export * from './Sheet';
 export * from './SheetRow';
 export * from './Skeleton';
 export * from './StateView';
+export * from './StickyActionBar';
 export * from './SwipeableRow';
 export * from './Text';
 export * from './TextField';
