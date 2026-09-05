@@ -52,9 +52,11 @@ workspace package. All three must be green before a change is considered done.
 apps/mobile/
   app.config.ts          scheme "nextkin", portrait, userInterfaceStyle automatic, typedRoutes
   app/                   expo-router routes - THIN: each file just renders a feature screen
-    _layout.tsx          providers (Query, gesture root, SafeArea, theme), font gate, splash hide
+    _layout.tsx          providers (Query, gesture root, SafeArea, theme), font gate, splash hide,
+                         and the session gate: every signed-in route is declared inside it
+    (auth)/              sign-in stub; the real §7.1 screens are design-gated
     (tabs)/              tab routes (Home, Jobs, Resumes, Profile) + the floating tab bar host
-    dev/                 __DEV__-only token gallery and motion playground
+    dev/                 __DEV__-only gallery: tokens, type, motion, mock modes, filters, forms
   src/
     theme/               tokens.ts (colours, spacing, radii, sizes, shadows), typography.ts,
                          motion.ts, appearance.ts, index.ts (useTheme)
@@ -62,12 +64,15 @@ apps/mobile/
     navigation/          FloatingTabBar, Fab, shared sheet-progress value
     providers/           app-level providers composed by app/_layout.tsx
     features/<area>/     screens/, components/, hooks/, store.ts per product area
+                         (auth holds the mock session store alongside its screen)
     data/
       models/            TypeScript types mirroring the V2 spec entities
-      mock/              fixtures (same copy as Figma), simulated latency, seed data
+      mock/              fixtures (same copy as Figma), simulated latency, seed data, and the
+                         builders that write a document or read a job description
       repos/             repository interfaces + mock implementations (the ONLY thing swapped later)
       queries/           TanStack Query hooks - screens import ONLY these
-    lib/                 haptics, storage (expo-sqlite/kv-store), format, a11y, reducedMotion
+    lib/                 haptics, storage (expo-sqlite/kv-store), format, a11y, reducedMotion, and
+                         the lazy wrappers over the native modules (pickers, share, files, browser)
   __tests__/             jest + @testing-library/react-native (mirrors src/ by folder)
   .maestro/              device E2E flows, added per area from Phase 3
 ```
@@ -120,6 +125,20 @@ These are enforced by code review and, where possible, by ESLint:
    `expo lint` must pass with zero errors.
 9. **Accessibility is not optional**: roles/labels/states, 44 pt hit targets (`hitSlopFor`),
    `maxFontSizeMultiplier` on dense chrome (`maxFontScale`).
+10. **Session gating.** `app/_layout.tsx` declares every signed-in route inside a
+    `<Stack.Protected>`; a route left outside one stays reachable, so a deep link could open over
+    the sign-in screen. New route files register in that block. The mock session defaults to
+    `signed_in` and is read synchronously, so the first frame is already correct; signing out
+    clears the query cache and the mock store *before* flipping it, because the flip unmounts the
+    tab subtree the confirm sheet lives in.
+11. **Keyboard.** A form is a pushed screen:
+    `<Screen keyboard scroll header={<ScreenHeader/>} footer={<StickyActionBar/>}>`, where the
+    footer owns the bottom safe area. A sheet holds at most one text field and sets
+    `avoidKeyboard`; anything larger belongs on a screen.
+12. **Native modules are lazily required behind `src/lib/*`** (`pushPermission.ts` is the model).
+    Screens never import an `expo-*` module directly: `@/lib` is imported by every screen, so a
+    static native import would take every route — and Jest, which mocks none of them — down with
+    it. Each wrapper degrades to `null` or `'unavailable'` rather than throwing.
 
 ## Per-screen recipe
 
@@ -158,8 +177,15 @@ Until an Expo/EAS account exists the app must run unmodified inside Expo Go, whi
 - **No custom native modules.** Only libraries bundled in the Expo Go SDK 57 runtime may be used.
   Everything currently installed qualifies (Reanimated 4 + worklets, Gesture Handler, Screens,
   Safe Area Context, FlashList v2, expo-image, expo-font, expo-haptics, expo-sqlite,
-  expo-notifications permission APIs, react-native-svg). Do not add dependencies without
+  expo-notifications permission APIs, react-native-svg, and — added in Phase 9A —
+  expo-document-picker, expo-image-picker, expo-sharing, expo-file-system, expo-print,
+  expo-clipboard, expo-web-browser and expo-store-review). Do not add dependencies without
   checking them against the Expo Go runtime first.
+- **Two of those are weaker than they look in Expo Go.** `expo-store-review` needs store URLs in
+  `app.config.ts` to have an action at all, and DOCX cannot be rendered on device — the mock's
+  export returns render inputs and the screen prints a PDF or writes text.
+- **`expo-file-system` is the SDK 57 class API** (`File`, `Paths`); the function API it replaced
+  now lives behind `expo-file-system/legacy` and is deprecated.
 - **Deferred until dev builds:** `expo-dev-client`, EAS Build/Update, `react-native-mmkv`
   (preferences use `expo-sqlite/kv-store` instead), `@react-native-vector-icons/*`
   (icons come from `@expo/vector-icons`, bundled in Expo Go).
