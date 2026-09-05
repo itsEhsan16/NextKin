@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
+import type { PlaceholderKey } from '@/features/placeholders';
+
 /**
  * Routing for the JD review step (V2 §7.5 → §7.6).
  *
@@ -21,6 +23,17 @@ export function useJdReviewActions() {
        */
       openGeneration: (id: string) =>
         router.replace({ pathname: '/generations/[id]', params: { id } }),
+      /**
+       * Where a draft id that resolves to nothing sends the user: the intake that makes one.
+       * Replace, because the form behind this never had a description to go back to.
+       */
+      openTailor: () => router.replace('/create/tailor'),
+      /** The plans screen Figma has not drawn yet (plan §8) — reached when the cap is spent. */
+      openUpgrade: () =>
+        router.push({
+          pathname: '/placeholder/[screen]',
+          params: { screen: 'upgrade' satisfies PlaceholderKey },
+        }),
     }),
     [router],
   );

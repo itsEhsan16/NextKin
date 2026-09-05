@@ -8,7 +8,7 @@ import { useExtractJd, useJob, useResumes, useSubscription } from '@/data/querie
 // Deep import on purpose: the resumes barrel drags its screens in, and this file is reachable
 // from the create barrel that @/navigation imports. docMeta is pure formatting.
 import { docSubtitle } from '@/features/resumes/docMeta';
-import { a11yButton, pluralize, useReducedMotion } from '@/lib';
+import { a11yButton, useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
@@ -23,6 +23,7 @@ import { JdIntakeSection, jdInputForJob } from '../components/JdIntakeSection';
 import { JdIntakeSheets } from '../components/JdIntakeSheets';
 import { TailorSkeleton } from '../components/TailorSkeleton';
 import { UsageBanner } from '../components/UsageBanner';
+import { spentNote } from '../generationQuota';
 import { useCreateActions } from '../hooks/useCreateActions';
 
 export type TailorScreenProps = { jobId?: string; resumeId?: string };
@@ -42,15 +43,6 @@ const CTA = 'Review job description';
  * nothing happening at all.
  */
 const EXTRACT_FAILED = "We couldn't read that description. Check your connection and try again.";
-
-/**
- * What the bar says once the allowance is gone. A plan that grants none reaches this too — 0 of 0
- * is spent — and "This month's 0 generations are used" is not a sentence.
- */
-const spentNote = (limit: number) =>
-  limit > 0
-    ? `This month's ${pluralize(limit, 'generation')} are used. Pro raises the monthly cap.`
-    : 'Your plan has no generations this month. Pro raises the monthly cap.';
 
 /**
  * Tailor a resume — the intake that turns a job description into a tailored one (V2 §7.5). No
@@ -73,7 +65,8 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
 
   const [chosenId, setChosenId] = useState<string | undefined>(resumeId);
   const [sheetOpen, setSheetOpen] = useState(false);
-  // Arriving from a listing means the JD is already known, so the CTA is live on first paint.
+  // Arriving from a listing means the JD is already chosen: nothing to pick, and the CTA goes live
+  // as soon as that listing is read.
   const [jd, setJd] = useState<JdInput | null>(() => jdInputForJob(jobId));
 
   // The query the intake's summary card already runs, deduped by key: the CTA must not start an

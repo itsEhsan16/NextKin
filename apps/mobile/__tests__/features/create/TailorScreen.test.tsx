@@ -29,6 +29,12 @@ const spentSubscription: Subscription = {
   usage: { ...subscriptionFixture.usage, generationsUsed: 3, generationsLimit: 3 },
 };
 
+/** A plan that grants no generations at all: 0 of 0 is spent, and the banner has nothing to meter. */
+const ungeneratedSubscription: Subscription = {
+  ...subscriptionFixture,
+  usage: { ...subscriptionFixture.usage, generationsUsed: 0, generationsLimit: 0 },
+};
+
 async function renderTailor(seed?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
   clients.push(queryClient);
@@ -131,5 +137,20 @@ describe('TailorScreen (V2 §7.5 — no artboard)', () => {
       pathname: '/placeholder/[screen]',
       params: { screen: 'upgrade' },
     });
+  });
+
+  it('treats a plan with no generations as spent rather than as unlimited', async () => {
+    await renderTailor((client) =>
+      client.setQueryData(qk.user.subscription(), ungeneratedSubscription),
+    );
+    await settle(NORMAL_MS);
+
+    // Nothing to meter, so the banner draws nothing — the bar carries the whole story.
+    expect(screen.queryByText(/left this month/)).toBeNull();
+    expect(
+      screen.getByText('Your plan has no generations this month. Pro raises the monthly cap.'),
+    ).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Review job description')).toBeNull();
+    expect(screen.getByLabelText('See Pro plans')).toBeOnTheScreen();
   });
 });

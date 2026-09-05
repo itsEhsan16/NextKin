@@ -9,31 +9,40 @@ import { FilterChip } from '@/ui/Chip';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
 
-/** The two groups §7.5 splits a JD's skills into, and moves them between. */
-export type SkillGroupKey = 'required' | 'preferred';
+/** The three chip groups the review screen edits: §7.5's two skill lists, plus its tools. */
+export type SkillGroupKey = 'required' | 'preferred' | 'tools';
 
 export type JdSkillGroupProps = {
   title: string;
   skills: readonly string[];
-  /** Names this group inside the add field's label — "required", "preferred". */
-  kind: string;
-  onAdd: (skill: string) => void;
+  /** Names one entry — "required skill", "preferred skill", "tool". */
+  noun: string;
+  /**
+   * Appends the entry. Returns the reason it was refused, or nothing when it went in: the field
+   * clears only on a real append, so a duplicate is never a press that silently does nothing.
+   */
+  onAdd: (skill: string) => string | undefined;
   onPressSkill: (skill: string) => void;
 };
 
 /**
- * One editable skill group on the JD review screen (V2 §7.5: skills can be moved between
+ * One editable chip group on the JD review screen (V2 §7.5: skills can be moved between
  * required and preferred, added, or removed).
  *
  * The chips are `picker` chips rather than `removable` ones on purpose. A tap here opens a menu
  * — move or remove — so the chip must not wear a ✕, and `removable` also names itself "Remove
  * filter <label>" to a screen reader, which would be a lie about both the verb and the noun.
- * `picker` announces the skill and hints that it opens one, which is what it does.
+ * The hint is overridden for the same reason: what opens is a command menu, not a picker.
+ *
+ * Each chip is named for its group as well as its skill. Three groups on one page draw the same
+ * word twice — "Figma" is a required skill and a tool in the seeded extraction — and a reader
+ * moving through them has no other way to tell which list it is landing in.
  */
-export function JdSkillGroup({ title, skills, kind, onAdd, onPressSkill }: JdSkillGroupProps) {
+export function JdSkillGroup({ title, skills, noun, onAdd, onPressSkill }: JdSkillGroupProps) {
   const { motion, spacing } = useTheme();
   const reduced = useReducedMotion();
   const [entry, setEntry] = useState('');
+  const [problem, setProblem] = useState<string | undefined>(undefined);
 
   // Reduced motion drops the transition rather than shortening it: a chip sliding between the
   // two groups is the movement the setting is asking us not to make.
@@ -42,8 +51,9 @@ export function JdSkillGroup({ title, skills, kind, onAdd, onPressSkill }: JdSki
   const add = () => {
     const skill = entry.trim();
     if (!skill) return;
-    setEntry('');
-    onAdd(skill);
+    const refused = onAdd(skill);
+    setProblem(refused);
+    if (!refused) setEntry('');
   };
 
   return (
@@ -60,7 +70,13 @@ export function JdSkillGroup({ title, skills, kind, onAdd, onPressSkill }: JdSki
               layout={layout}
               entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}
             >
-              <FilterChip label={skill} variant="picker" onPress={() => onPressSkill(skill)} />
+              <FilterChip
+                label={skill}
+                accessibilityLabel={`${skill}, ${noun}`}
+                hint="Opens skill options"
+                variant="picker"
+                onPress={() => onPressSkill(skill)}
+              />
             </Animated.View>
           ))}
         </Animated.View>
@@ -69,9 +85,13 @@ export function JdSkillGroup({ title, skills, kind, onAdd, onPressSkill }: JdSki
       <View style={[styles.addRow, { gap: spacing[3] }]}>
         <TextField
           value={entry}
-          onChangeText={setEntry}
-          placeholder="Add a skill"
-          accessibilityLabel={`Add a ${kind} skill`}
+          onChangeText={(text) => {
+            setEntry(text);
+            if (problem) setProblem(undefined);
+          }}
+          placeholder={`Add a ${noun}`}
+          accessibilityLabel={`Add a ${noun}`}
+          error={problem}
           autoCapitalize="words"
           returnKeyType="done"
           onSubmit={add}

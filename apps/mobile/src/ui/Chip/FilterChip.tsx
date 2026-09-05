@@ -32,6 +32,13 @@ export type FilterChipProps = {
   selected?: boolean;
   /** FA5 Solid glyph shown before the label (e.g. `map-marker-alt` on a location picker). */
   icon?: string;
+  /**
+   * Accessible name when the visible label is not the whole of it — a bare "Figma" among three
+   * chip groups on one page is ambiguous where "Figma, required skill" is not.
+   */
+  accessibilityLabel?: string;
+  /** Overrides the variant's default hint, for a chip that opens something other than a picker. */
+  hint?: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 };
@@ -70,6 +77,8 @@ export function FilterChip({
   variant = 'removable',
   selected = false,
   icon,
+  accessibilityLabel,
+  hint,
   onPress,
   style,
 }: FilterChipProps) {
@@ -84,12 +93,13 @@ export function FilterChip({
   // never shifts the row by 2pt.
   const borderColor = filled ? colors.surfaceSelected : colors.borderDefault;
 
+  const name = accessibilityLabel ?? label;
   const a11y =
     variant === 'removable'
-      ? a11yButton(`Remove filter ${label}`)
+      ? a11yButton(`Remove filter ${name}`, hint)
       : variant === 'picker'
-        ? a11yButton(label, 'Opens a picker')
-        : { ...a11yButton(label), accessibilityState: { selected } };
+        ? a11yButton(name, hint ?? 'Opens a picker')
+        : { ...a11yButton(name, hint), accessibilityState: { selected } };
 
   return (
     <Pressable
