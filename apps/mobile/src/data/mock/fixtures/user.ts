@@ -21,8 +21,11 @@ export const subscriptionFixture: Subscription = {
   usage: {
     generationsUsed: 2,
     generationsLimit: 3,
+    // 1 a month on Free (V2 §13.3), so this account has spent it — which is the state the
+    // cover-letter setup screen's quota upsell needs. No artboard sets this number; the "2" it
+    // held before was invented and contradicted the plan table PLAN_FEATURES renders.
     coverLettersUsed: 1,
-    coverLettersLimit: 2,
+    coverLettersLimit: 1,
     // "2 of 2 free resumes used" (Figma 1:1388) · "5 AI credits left" (1:2233).
     resumesUsed: 2,
     resumesLimit: 2,

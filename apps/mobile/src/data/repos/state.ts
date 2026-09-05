@@ -1,11 +1,15 @@
 import {
+  activityFixture,
   applicationsFixture,
   atsScoresFixture,
+  contentsFixture,
   dashboardStatsFixture,
   generationsFixture,
+  jdDraftsFixture,
   jobsFixture,
   notificationPrefsFixture,
   notificationsFixture,
+  plansFixture,
   profileFixture,
   resumeVersionsFixture,
   resumesFixture,
@@ -13,13 +17,18 @@ import {
   userFixture,
 } from '@/data/mock';
 import type {
+  ActivityEntry,
   Application,
   AtsScore,
   DashboardStats,
+  DataExportStatus,
+  DocumentContent,
   Generation,
+  JdDraft,
   Job,
   Notification,
   NotificationPrefs,
+  Plan,
   Profile,
   Resume,
   ResumeVersion,
@@ -39,11 +48,24 @@ export type MockState = {
   resumes: Resume[];
   resumeVersions: ResumeVersion[];
   atsScores: Record<string, AtsScore>;
+  /**
+   * Document bodies by resume id. Not every resume has one - a run in flight has no content
+   * yet.
+   */
+  contents: Record<string, DocumentContent>;
   generations: Generation[];
   jobs: Job[];
   applications: Application[];
+  /** Recruiter-side job description drafts, saved between wizard steps. */
+  jdDrafts: JdDraft[];
   notifications: Notification[];
   notificationPrefs: NotificationPrefs;
+  /** The purchasable plan catalogue - read-only reference data, never mutated by the app. */
+  plans: Plan[];
+  /** The account activity feed: every generation, application and billing event, newest first. */
+  activity: ActivityEntry[];
+  /** Where the account data export has got to; 'idle' until the settings row asks for one. */
+  dataExport: DataExportStatus;
 };
 
 /** Fixtures are plain JSON (ISO strings, no Dates), so a JSON clone is a safe deep copy. */
@@ -58,11 +80,16 @@ function freshState(): MockState {
     resumes: clone(resumesFixture),
     resumeVersions: clone(resumeVersionsFixture),
     atsScores: clone(atsScoresFixture),
+    contents: clone(contentsFixture),
     generations: clone(generationsFixture),
     jobs: clone(jobsFixture),
     applications: clone(applicationsFixture),
+    jdDrafts: clone(jdDraftsFixture),
     notifications: clone(notificationsFixture),
     notificationPrefs: clone(notificationPrefsFixture),
+    plans: clone(plansFixture),
+    activity: clone(activityFixture),
+    dataExport: { status: 'idle' },
   };
 }
 
@@ -87,6 +114,19 @@ export class NotFoundError extends Error {
   constructor(entity: string, id: string) {
     super(`${entity} "${id}" not found`);
     this.name = 'NotFoundError';
+  }
+}
+
+/**
+ * A Pro-only action attempted on the free plan (V2 §13.5). The UI gates before it, so reaching
+ * this means a locked control was bypassed.
+ */
+export class PlanLockedError extends Error {
+  readonly code = 'PLAN_LOCKED';
+
+  constructor(action: string) {
+    super(`"${action}" needs NextKin Pro`);
+    this.name = 'PlanLockedError';
   }
 }
 
