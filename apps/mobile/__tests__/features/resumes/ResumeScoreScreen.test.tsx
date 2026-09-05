@@ -58,7 +58,9 @@ describe('ResumeScoreScreen (RESUMES 04 — 1:2109)', () => {
     expect(screen.getByRole('header', { name: 'ATS score' })).toBeOnTheScreen();
     expect(screen.getByText('Strong')).toBeOnTheScreen();
     expect(
-      screen.getByText('Parsers will read this cleanly. Four quick wins left before it is airtight.'),
+      screen.getByText(
+        'Parsers will read this cleanly. Four quick wins left before it is airtight.',
+      ),
     ).toBeOnTheScreen();
     expect(
       screen.getByText('Product Designer — Base · recalculates as you edit'),
@@ -75,7 +77,9 @@ describe('ResumeScoreScreen (RESUMES 04 — 1:2109)', () => {
     expect(screen.getByText('3 of 4')).toBeOnTheScreen();
 
     // — A passed check, a pending one, and the artboard's keyword misses —
-    expect(screen.getByLabelText('Quantified achievements in 3+ bullets: passed')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('Quantified achievements in 3+ bullets: passed'),
+    ).toBeOnTheScreen();
     expect(screen.getByLabelText('Add metrics to your Zoho role: pending')).toBeOnTheScreen();
     expect(screen.getByText('Missing: "stakeholder management"')).toBeOnTheScreen();
     expect(screen.getByText('Missing: "A/B testing"')).toBeOnTheScreen();
@@ -97,6 +101,14 @@ describe('ResumeScoreScreen (RESUMES 04 — 1:2109)', () => {
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/placeholder/[screen]',
       params: { screen: 'ats-fix' },
+    });
+
+    // — V2 §7.8: the score display links to the published rubric —
+    mockPush.mockClear();
+    fireEvent.press(screen.getByLabelText('What this score measures'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/resumes/[id]/rubric',
+      params: { id: 'res_base' },
     });
 
     fireEvent.press(screen.getByLabelText('Back'));

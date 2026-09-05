@@ -55,7 +55,7 @@ export function ResumeMenuHost() {
           duplicate.mutate(resume.id);
           closeMenu();
         }}
-        onTailor={closeAnd(actions.tailorResume)}
+        onTailor={closeAnd(() => actions.tailorResume(resume))}
         onSetAsBase={() => {
           setAsBase.mutate(resume.id);
           closeMenu();

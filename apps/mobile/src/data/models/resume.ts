@@ -77,6 +77,60 @@ export const SCORE_LABEL = 'ATS score';
 /** The ring's label. */
 export const SCORE_LABEL_CAPS = 'ATS SCORE';
 
+/** One weighted component of the published rubric (V2 §7.8). */
+export type ScoreRubricComponent = { key: string; label: string; weight: number; detail: string };
+
+/**
+ * The five components of V2 §7.8's rubric, in the spec's order and at the spec's initial weights
+ * (they sum to 100). §7.8 requires the rubric to be published in-product and reachable from every
+ * score display, so this is the copy `ScoreRubricScreen` renders — the weights are the product's
+ * public claim about the number, not a UI detail.
+ */
+export const SCORE_RUBRIC: readonly ScoreRubricComponent[] = [
+  {
+    key: 'keywords',
+    label: 'Keyword match',
+    weight: 40,
+    detail:
+      'We compare the skills and tools the job description asks for against what your resume actually says, counting the required ones heavier than the preferred ones. Closing a required-skill gap moves this component more than anything else on the page. A keyword your profile does not back is shown as a gap, never written in for you.',
+  },
+  {
+    key: 'timeline',
+    label: 'Timeline validity',
+    weight: 20,
+    detail:
+      'Every technology on the document is checked against the dates of the role it sits under. Claims that hold up raise this component; one unresolved conflict — a tool cited years before it existed — takes it to zero on its own.',
+  },
+  {
+    key: 'sections',
+    label: 'Section completeness',
+    weight: 15,
+    detail:
+      'Summary, skills, dated experience, education and contact details each need to be there and to say something. Filling a thin section, or adding the dates a role is missing, moves this.',
+  },
+  {
+    key: 'formatting',
+    label: 'Formatting and parseability',
+    weight: 15,
+    detail:
+      'This looks at the shape of the document rather than the words: one column, standard headings, real text instead of tables or images, contact details in the body, and dates written the same way throughout. Switching to a parse-safe template usually settles it in one step.',
+  },
+  {
+    key: 'achievements',
+    label: 'Quantified achievements',
+    weight: 10,
+    detail:
+      'We look for measurable outcomes in your experience bullets — numbers, percentages, scale, time saved. Turning "improved onboarding" into "cut onboarding from five days to two" moves this component.',
+  },
+];
+
+/**
+ * V2 §7.8's honesty note, in the product's voice. It is binding on every surface that shows a
+ * score, and it is the spine of the rubric screen rather than a footnote on it: the number is a
+ * measurement against our own rubric and nothing more. Never soften it into a promise.
+ */
+export const SCORE_HONESTY_NOTE = `There is no universal ${SCORE_LABEL}. This one measures your document against NextKin's own published rubric — the five components below, and nothing else. It is not a prediction of how any particular employer's software will read, rank or filter your application: every system parses differently, and no tool can honestly promise a result in one. Use the number to make the document stronger, not to guess at an outcome.`;
+
 /**
  * Where a fixable check lands. Every editor section qualifies, plus `'links'` — that one is not an
  * editor section but `ResumeContent.links`, which is where the "Add a portfolio link" fix writes.

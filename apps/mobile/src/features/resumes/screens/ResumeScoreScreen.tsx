@@ -3,9 +3,9 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
-import { ATS_BAND_LABEL, atsQuickWins, type AtsBand } from '@/data/models';
+import { ATS_BAND_LABEL, atsQuickWins, SCORE_LABEL, type AtsBand } from '@/data/models';
 import { useResume, useResumeScore } from '@/data/queries';
-import { a11yButton, a11yHeader, pluralize } from '@/lib';
+import { a11yButton, a11yHeader, hitSlopFor, pluralize } from '@/lib';
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
@@ -23,6 +23,11 @@ export type ResumeScoreScreenProps = { id: string };
 const RING = 132;
 const RING_STROKE = 10;
 const CTA_HEIGHT = 56;
+/** The rubric link is one `captionSemiBold` line; `hitSlopFor` pads it out to the 44pt floor. */
+const LINK_HEIGHT = 20;
+/** Skeleton bars standing in for the context line (captionSm) and that link. */
+const CONTEXT_SKELETON = 200;
+const LINK_SKELETON = 160;
 
 const BAND_SURFACE: Record<AtsBand, ColorToken> = {
   strong: 'successSurface',
@@ -54,7 +59,9 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
 
   const body = (children: React.ReactNode) => (
     <View style={[styles.root, { backgroundColor: colors.surfacePage, paddingTop: insets.top }]}>
-      <View style={[styles.headerRow, { paddingHorizontal: spacing.gutter, paddingTop: spacing[2] }]}>
+      <View
+        style={[styles.headerRow, { paddingHorizontal: spacing.gutter, paddingTop: spacing[2] }]}
+      >
         <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
         <Text {...a11yHeader()} variant="title" style={styles.headerTitle} align="center">
           ATS score
@@ -69,10 +76,22 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
   if (resume.isPending || score.isPending) {
     return body(
       <View style={{ padding: spacing.gutter, gap: spacing[4], alignItems: 'center' }}>
-        <Skeleton width={s(RING)} height={s(RING)} radius="full" style={{ marginTop: spacing[4] }} />
+        <Skeleton
+          width={s(RING)}
+          height={s(RING)}
+          radius="full"
+          style={{ marginTop: spacing[4] }}
+        />
         <Skeleton width={s(120)} height={s(30)} radius="full" />
         <Skeleton width="90%" height={s(20)} />
-        <Skeleton height={s(120)} radius="card" style={{ alignSelf: 'stretch', marginTop: spacing[4] }} />
+        {/* The context line and the rubric link, so the cards below hold still when data lands. */}
+        <Skeleton width={s(CONTEXT_SKELETON)} height={s(18)} />
+        <Skeleton width={s(LINK_SKELETON)} height={s(LINK_HEIGHT)} />
+        <Skeleton
+          height={s(120)}
+          radius="card"
+          style={{ alignSelf: 'stretch', marginTop: spacing[4] }}
+        />
         <Skeleton height={s(120)} radius="card" style={{ alignSelf: 'stretch' }} />
       </View>,
     );
@@ -143,6 +162,22 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
           <Text variant="captionSm" color="textTertiary" align="center">
             {scoreContextLine(resume.data)}
           </Text>
+
+          {/* V2 §7.8 — every score display carries a link to the published rubric. */}
+          <Pressable
+            {...a11yButton(
+              'What this score measures',
+              `Opens the rubric behind the ${SCORE_LABEL}`,
+            )}
+            feedback="subtle"
+            haptic="selection"
+            hitSlop={hitSlopFor(s(LINK_HEIGHT))}
+            onPress={() => actions.openScoreRubric(id)}
+          >
+            <Text variant="captionSemiBold" color="link">
+              What this score measures
+            </Text>
+          </Pressable>
         </View>
 
         <View

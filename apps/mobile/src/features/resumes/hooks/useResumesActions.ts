@@ -28,6 +28,10 @@ export function useResumesActions() {
       openCreate: openCreateSheet,
       openScore: (resume: Resume) =>
         router.push({ pathname: '/resumes/[id]/score', params: { id: resume.id } }),
+      // V2 §7.8: every score display links to the published rubric, so this is by id — a badge,
+      // a card or the score panel can all reach it with what they already hold.
+      openScoreRubric: (resumeId: string) =>
+        router.push({ pathname: '/resumes/[id]/rubric', params: { id: resumeId } }),
       // The editor is undesigned; the score panel is the only designed per-document screen,
       // so a scored document opens it and the rest land on the editor placeholder.
       openDocument: (resume: Resume) => {
@@ -44,7 +48,9 @@ export function useResumesActions() {
       startWithAi: () => placeholder('start-from-scratch'),
       // Menu rows without designed destinations.
       renameResume: () => placeholder('resume-rename'),
-      tailorResume: () => placeholder('tailor-to-a-job'),
+      /** Carries the document through, so the intake screen starts from this resume. */
+      tailorResume: (resume: Resume) =>
+        router.push({ pathname: '/create/tailor', params: { resumeId: resume.id } }),
       downloadResume: () => placeholder('resume-download'),
       shareResume: () => placeholder('resume-share'),
       fixWithAi: () => placeholder('ats-fix'),

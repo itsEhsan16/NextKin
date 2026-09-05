@@ -17,3 +17,4 @@ export {
 } from './resumesStore';
 export { ResumeScoreScreen } from './screens/ResumeScoreScreen';
 export { ResumesScreen } from './screens/ResumesScreen';
+export { ScoreRubricScreen } from './screens/ScoreRubricScreen';
