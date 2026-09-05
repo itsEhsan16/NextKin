@@ -5,6 +5,7 @@ export * from './Button';
 export * from './Card';
 export * from './Chip';
 export * from './ConfirmSheet';
+export * from './Disclosure';
 export * from './FilterButton';
 export * from './IconButton';
 export * from './IconTileGrid';
