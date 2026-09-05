@@ -219,6 +219,14 @@ export const sizes = {
   sheetNotifHeight: 440,
   /** Floor for picker/confirm sheets — they hug their option list past this. */
   sheetPickerHeight: 320,
+  /** Floor for the multiline TextField (Phase 9A forms) — it grows past this, never under it. */
+  textArea: 140,
+  /** Month/year picker sheet (Phase 9A) — a fixed grid of months, so a fixed height. */
+  sheetMonthYearHeight: 520,
+  /** Export format sheet (Phase 9C). */
+  sheetExportHeight: 440,
+  /** Home hamburger menu sheet (Phase 9I). */
+  sheetMenuHeight: 600,
   /** Jobs chrome (Figma JOBS 01). */
   searchField: 52,
   segmentedControl: 48,

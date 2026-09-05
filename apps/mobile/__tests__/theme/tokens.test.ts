@@ -10,6 +10,7 @@ import {
   fontFamily,
   radii,
   scales,
+  sizes,
   spacing,
   springs,
   stagger,
@@ -174,5 +175,34 @@ describe('layout tokens', () => {
     const values = Object.values(radii);
     for (const value of values) expect(value).toBeGreaterThanOrEqual(0);
     expect(radii.full).toBe(Math.max(...values));
+  });
+});
+
+describe('sizes', () => {
+  it('pins the Phase 9 field and sheet heights', () => {
+    expect(sizes.textArea).toBe(140);
+    expect(sizes.sheetMonthYearHeight).toBe(520);
+    expect(sizes.sheetExportHeight).toBe(440);
+    expect(sizes.sheetMenuHeight).toBe(600);
+  });
+
+  it('gives the multiline field the same box height as the search field', () => {
+    // The TextField is the search field's box grown downwards, so the two share a height.
+    expect(sizes.searchField).toBe(52);
+    expect(sizes.buttonMd).toBe(52);
+  });
+
+  it('keeps every fixed sheet height at or under the filters sheet', () => {
+    // The filters sheet is the tallest thing Sheet fills to; anything past it would clip.
+    const sheetHeights = Object.entries(sizes).filter(([key]) => /^sheet.*Height$/.test(key));
+    expect(sheetHeights.length).toBeGreaterThan(0);
+    for (const [, value] of sheetHeights) {
+      expect(value).toBeLessThanOrEqual(sizes.sheetFiltersHeight);
+    }
+  });
+
+  it('holds the two scale-exempt keys at their fixed values', () => {
+    expect(sizes.minHitTarget).toBe(44);
+    expect(sizes.designWidth).toBe(520);
   });
 });
