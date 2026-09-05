@@ -4,7 +4,13 @@ import {
   type Availability,
   type Language,
 } from '@/data/models';
-import { useProfile, useUpdatePreferences } from '@/data/queries';
+import {
+  useDeleteAccount,
+  useProfile,
+  useResetSession,
+  useUpdatePreferences,
+} from '@/data/queries';
+import { useSessionStore } from '@/features/auth';
 import { formatLakh } from '@/lib';
 import { useAppearanceStore, type AppearancePreference } from '@/theme';
 import { ConfirmSheet } from '@/ui/ConfirmSheet';
@@ -40,8 +46,8 @@ const SALARY_OPTIONS: readonly SheetOption[] = [
 /**
  * Mounts the Profile screen's sheets once, above the tab bar and the FAB, alongside the
  * filters and resume-menu hosts. Appearance writes the real theme store (persisted); the
- * preference pickers write through the profile repo; sign-out and delete-account stop at the
- * confirm — there is no session to end until auth lands (plan §Phase 8).
+ * preference pickers write through the profile repo; sign-out and delete-account now end the
+ * mock session for real and drop the app onto the design-gated sign-in screen (plan §Phase 9A).
  */
 export function ProfileSheetsHost() {
   const sheet = useProfileStore((state) => state.sheet);
@@ -54,6 +60,13 @@ export function ProfileSheetsHost() {
   const profile = useProfile();
   const updatePreferences = useUpdatePreferences();
   const prefs = profile.data?.preferences;
+
+  const deleteAccount = useDeleteAccount();
+  const resetSession = useResetSession();
+  const signOut = useSessionStore((state) => state.signOut);
+  // Named apart from the mutation above: one asks the server to delete the account, the other
+  // ends the session on this device once it has.
+  const endAccount = useSessionStore((state) => state.deleteAccount);
 
   if (!sheet) return null;
 
@@ -126,7 +139,15 @@ export function ProfileSheetsHost() {
           title="Sign out?"
           message="You'll need to sign back in to keep tailoring resumes and tracking applications."
           confirmLabel="Sign out"
-          onConfirm={closeSheet}
+          onConfirm={() => {
+            // The order is load-bearing. Close the sheet and clear the caches while the tabs are
+            // still mounted, then flip the session LAST: that flip fails the root layout's guard
+            // and unmounts the (tabs) subtree this host lives in, so anything queued after it
+            // would run against a torn-down tree.
+            closeSheet();
+            resetSession();
+            signOut();
+          }}
           onCancel={closeSheet}
         />
       );
@@ -137,7 +158,19 @@ export function ProfileSheetsHost() {
           title="Delete your account?"
           message="Your profile, resumes and application history will be permanently removed. This cannot be undone."
           confirmLabel="Delete account"
-          onConfirm={closeSheet}
+          busy={deleteAccount.isPending}
+          onConfirm={() =>
+            // Only the server's yes ends the session — same close/clear/flip order as sign-out,
+            // and for the same reason. In the 'error' mock mode the delete rejects, `onSuccess`
+            // never runs, `isPending` clears and the sheet simply re-enables.
+            deleteAccount.mutate(undefined, {
+              onSuccess: () => {
+                closeSheet();
+                resetSession();
+                endAccount();
+              },
+            })
+          }
           onCancel={closeSheet}
         />
       );

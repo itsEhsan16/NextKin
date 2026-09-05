@@ -1,0 +1,9 @@
+# Signs into the mock account only if the app is sitting on the design-gated sign-in screen
+# (V2 §7.1). Every other flow runs this first — see README.
+appId: host.exp.exponent
+---
+- runFlow:
+    when:
+      visible: "Continue with Google"
+    commands:
+      - tapOn: "Continue with Google"

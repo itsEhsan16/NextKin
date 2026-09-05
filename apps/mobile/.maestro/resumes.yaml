@@ -1,6 +1,7 @@
 # Resumes card menu → delete confirm → cancel (RESUMES 01/03).
 appId: host.exp.exponent
 ---
+- runFlow: signIn.yaml
 - tapOn: "Resumes"
 - assertVisible: "Product Designer"
 - tapOn: "More actions for Stripe — Senior PD"

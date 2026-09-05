@@ -4,6 +4,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { createQueryClient } from '@/data/queries';
 import { mockStore, resetMockRepos } from '@/data/repos';
+import { useSessionStore } from '@/features/auth';
 import { ProfileSheetsHost, useProfileStore } from '@/features/profile';
 import { storage } from '@/lib';
 import { useAppearanceStore } from '@/theme';
@@ -22,6 +23,10 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     resetMockRepos();
     storage.remove('prefs.appearance');
     useAppearanceStore.setState({ preference: 'system' });
+    // jest.setup's kv-store stands on a module-scoped Map that nothing resets between tests, so
+    // the session this file signs out of would otherwise be the session the next file inherits.
+    storage.remove('prefs.session');
+    useSessionStore.setState({ status: 'signed_in' });
     useProfileStore.setState(INITIAL, true);
   });
 
@@ -77,17 +82,27 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
       timeout: 10000,
     });
 
-    // — Sign out and delete account stop at a confirm sheet —
+    // — Sign out ends the session synchronously and persists it —
     await act(async () => useProfileStore.getState().openSheet('sign-out'));
     expect(await screen.findByRole('header', { name: 'Sign out?' })).toBeOnTheScreen();
-    fireEvent.press(screen.getByLabelText('Cancel'));
+    fireEvent.press(screen.getByLabelText('Sign out'));
+    expect(useSessionStore.getState().status).toBe('signed_out');
     expect(useProfileStore.getState().sheetOpen).toBe(false);
+    expect(storage.get('prefs.session')).toBe('signed_out');
+    // In the app that flip takes the whole (tabs) subtree, this host included, with it; the host
+    // is mounted on its own here, so put the session back and carry on in the same mount.
+    await act(async () => useSessionStore.setState({ status: 'signed_in' }));
 
+    // — Delete account waits for the mutation, then ends the session —
     await act(async () => useProfileStore.getState().openSheet('delete-account'));
     expect(await screen.findByRole('header', { name: 'Delete your account?' })).toBeOnTheScreen();
     expect(screen.getByText(/permanently removed/)).toBeOnTheScreen();
-    // There is no session to end until auth lands (plan §Phase 8): confirming just closes.
     fireEvent.press(screen.getByLabelText('Delete account'));
+    await waitFor(() => expect(useSessionStore.getState().status).toBe('signed_out'), {
+      timeout: 10000,
+    });
     expect(useProfileStore.getState().sheetOpen).toBe(false);
+    // Removed, not set to 'signed_out': the next cold start is a fresh mock account.
+    expect(storage.get('prefs.session')).toBeNull();
   }, 60000);
 });

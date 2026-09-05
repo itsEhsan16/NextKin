@@ -1,6 +1,7 @@
 # Notifications feed: swipe a row, use the row menu, mark all read (NOTIF 01/02/03).
 appId: host.exp.exponent
 ---
+- runFlow: signIn.yaml
 - tapOn: "Notifications, unread"
 - assertVisible: "4 unread"
 - assertVisible: "TODAY"

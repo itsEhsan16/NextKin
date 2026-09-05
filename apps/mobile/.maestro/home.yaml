@@ -2,6 +2,7 @@
 # Expo Go appId; on iOS run with `maestro test --env APP_ID=host.exp.Exponent` or edit below.
 appId: host.exp.exponent
 ---
+- runFlow: signIn.yaml
 - assertVisible: "Find Jobs"
 # The FAB opens the create sheet; its label flips to the dismiss affordance while open.
 - tapOn: "Create"

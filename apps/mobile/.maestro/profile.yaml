@@ -1,6 +1,7 @@
 # Profile picker sheet: Appearance → Dark → back to System (PROFILE 01/02).
 appId: host.exp.exponent
 ---
+- runFlow: signIn.yaml
 - tapOn: "Profile"
 - assertVisible: "George Smith"
 - tapOn: "Appearance, System"

@@ -1,6 +1,7 @@
 # Discover → job detail → save → Saved tab (JOBS 01/02/05).
 appId: host.exp.exponent
 ---
+- runFlow: signIn.yaml
 - tapOn: "Jobs"
 - assertVisible: "Today's picks"
 - tapOn: "Senior Product Designer"
