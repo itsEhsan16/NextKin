@@ -25,6 +25,17 @@ export type Education = {
   current: boolean;
 };
 
+/** A credential row on the profile (V2 §10 profile aggregate; no artboard yet — plan phase 9F). */
+export type Certification = {
+  id: string;
+  name: string;
+  issuer: string;
+  /** ISO date (YYYY-MM-DD). */
+  issuedOn?: string;
+  expiresOn?: string;
+  credentialUrl?: string;
+};
+
 /** Suggested action shown on the profile completeness card. */
 export type NextStep = {
   id: string;
@@ -74,10 +85,22 @@ export type ProfilePreferences = {
   desiredRoles: string[];
 };
 
+/** What a link points at — picks the row glyph and the picker option (plan phase 9F). */
+export type LinkKind = 'portfolio' | 'linkedin' | 'github' | 'website' | 'other';
+
+export const LINK_KIND_LABEL: Record<LinkKind, string> = {
+  portfolio: 'Portfolio',
+  linkedin: 'LinkedIn',
+  github: 'GitHub',
+  website: 'Website',
+  other: 'Other',
+};
+
 export type ProfileLink = {
   id: string;
   label: string;
   url: string;
+  kind?: LinkKind;
 };
 
 /** The three counters on the profile stats card (Figma 1:2208). */
@@ -95,11 +118,26 @@ export type Profile = {
   skills: string[];
   experiences: Experience[];
   education: Education[];
-  certifications: string[];
+  certifications: Certification[];
   links: ProfileLink[];
   stats: ProfileStats;
   /** 0–1 */
   completeness: number;
   nextSteps: NextStep[];
   preferences: ProfilePreferences;
+};
+
+/** The identity fields the "Edit profile" form writes back (plan phase 9F). */
+export type ProfilePatch = Partial<Pick<Profile, 'headline' | 'location' | 'yearsExperience'>>;
+
+/**
+ * What parsing an uploaded resume yields. Nothing is committed until the user accepts the rows
+ * (V2 §7.4: abandoning the review leaves the profile byte-for-byte unchanged).
+ */
+export type ProfileDraft = {
+  headline?: string;
+  skills?: string[];
+  experiences?: Experience[];
+  education?: Education[];
+  certifications?: Certification[];
 };

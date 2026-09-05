@@ -1,4 +1,5 @@
 import type { GenerationStatus } from './generation';
+import type { ResumeSectionKey } from './resumeContent';
 
 /** NextKin V2 spec §10 — Resume aggregate (candidate app). */
 
@@ -33,6 +34,11 @@ export type Resume = {
   status: GenerationStatus;
   linkedJobId?: string;
   tags: string[];
+  /**
+   * Zero Resume Mode output the user has not confirmed yet; blocks download (V2 §7.9).
+   * duplicate() copies it deliberately — a copy of an unreviewed draft is still unreviewed.
+   */
+  needsReview?: boolean;
 };
 
 export type ResumeValidation = {
@@ -61,6 +67,22 @@ export const ATS_BAND_LABEL: Record<AtsBand, string> = {
   weak: 'Weak',
 };
 
+/**
+ * V2 §7.8 calls this the NextKin Score and requires a rubric link from every score display. The
+ * built screens say "ATS score" (Figma RESUMES 04's own label), so the built vocabulary stands and
+ * this constant is the single place to change it if design decides otherwise. Never claim
+ * compatibility with a named third-party ATS.
+ */
+export const SCORE_LABEL = 'ATS score';
+/** The ring's label. */
+export const SCORE_LABEL_CAPS = 'ATS SCORE';
+
+/**
+ * Where a fixable check lands. Every editor section qualifies, plus `'links'` — that one is not an
+ * editor section but `ResumeContent.links`, which is where the "Add a portfolio link" fix writes.
+ */
+export type AtsFixTarget = ResumeSectionKey | 'links';
+
 /** One checklist line on the score panel (Figma 1:2127–1:2178). */
 export type AtsCheckItem = {
   id: string;
@@ -68,6 +90,15 @@ export type AtsCheckItem = {
   passed: boolean;
   /** An unmet item the product can act on — it earns the "Fix" pill and counts as a quick win. */
   fixable?: boolean;
+  /** What to do about it, shown on the fix screen: 'Add "A/B testing" to your skills'. */
+  suggestion?: string;
+  /** Which editor section the fix lands in — or `'links'` for the portfolio-link fix. */
+  section?: AtsFixTarget;
+  /**
+   * false = a JD keyword the profile does not back. Shown as a gap and never inserted — V2 §7.8
+   * forbids presenting missing keywords as text to paste in.
+   */
+  supported?: boolean;
 };
 
 /** "Content", "Format", "Keywords", "Best practices" (Figma RESUMES 04). */

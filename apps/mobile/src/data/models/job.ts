@@ -28,6 +28,8 @@ export type MatchCriterion = {
   id: string;
   label: string;
   state: MatchCriterionState;
+  /** The evidence, e.g. "Required: 5+ years — you have 8". */
+  detail?: string;
 };
 
 export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'internship' | 'freelance';
@@ -63,6 +65,8 @@ export type Job = {
   companyIndustry: string;
   companySize: string;
   companyWebsite: string;
+  /** Company blurb for the company screen (plan phase 9H). */
+  companyAbout?: string;
   location: string;
   remote: RemoteType;
   employmentType: EmploymentType;
@@ -100,6 +104,19 @@ export type JobSort = 'relevance' | 'recent' | 'salary';
 export const JOB_SORT_LABEL: Record<JobSort, string> = {
   relevance: 'Relevance',
   recent: 'Most recent',
+  salary: 'Salary',
+};
+
+/**
+ * Saved jobs sort differently from Discover: `relevanceRank` is the provider's ranking of a search
+ * result, and once a job is saved there is no search to be relevant to — so the default becomes the
+ * order the user saved them in, and the deadline takes relevance's place.
+ */
+export type SavedJobsSort = 'recent' | 'closing' | 'salary';
+
+export const SAVED_JOBS_SORT_LABEL: Record<SavedJobsSort, string> = {
+  recent: 'Recently saved',
+  closing: 'Closing soon',
   salary: 'Salary',
 };
 

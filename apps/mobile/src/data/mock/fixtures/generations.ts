@@ -8,6 +8,7 @@ export const ACTIVE_GENERATION_ID = 'gen_active';
 export const generationsFixture: Generation[] = [
   {
     id: ACTIVE_GENERATION_ID,
+    kind: 'resume',
     resumeId: GENERATING_RESUME_ID,
     jobId: 'job_4',
     status: 'generating',
@@ -17,6 +18,7 @@ export const generationsFixture: Generation[] = [
   },
   {
     id: 'gen_done_1',
+    kind: 'resume',
     resumeId: 'res_1',
     jobId: 'job_1',
     status: 'ready',
@@ -26,6 +28,7 @@ export const generationsFixture: Generation[] = [
   },
   {
     id: 'gen_failed_1',
+    kind: 'resume',
     resumeId: undefined,
     jobId: 'job_7',
     status: 'failed',
