@@ -102,8 +102,10 @@ export function GenerationProgressCard({
         </View>
       )}
 
+      {/* Not "View resume": while this card is on screen the run is unfinished, and the link goes
+          to the run's own progress screen (§7.6), not to a document that does not exist yet. */}
       <Pressable
-        {...a11yButton(failed ? 'Try again' : 'View resume')}
+        {...a11yButton(failed ? 'Try again' : 'View progress')}
         feedback="subtle"
         haptic="selection"
         hitSlop={hitSlop8}
@@ -111,7 +113,7 @@ export function GenerationProgressCard({
         style={styles.link}
       >
         <Text variant="captionSemiBold" color={failed ? 'danger' : 'link'}>
-          {failed ? 'Try again' : 'View resume'}
+          {failed ? 'Try again' : 'View progress'}
         </Text>
       </Pressable>
     </Card>

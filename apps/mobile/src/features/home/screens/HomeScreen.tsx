@@ -92,6 +92,9 @@ export function HomeScreen() {
     [resumes.data],
   );
 
+  // Held in a const so the narrowing below survives into the card's callbacks.
+  const activeGeneration = generation.data;
+
   const animate = !reduced && !user.isPending;
   const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />;
 
@@ -138,11 +141,11 @@ export function HomeScreen() {
           {/* `ready` is the end of the pipeline and the resume list already reflects it, so the
               card retires rather than lingering on 100%. `failed` is terminal too but still needs
               surfacing, hence the status check rather than `isGenerationTerminal`. */}
-          {generation.data && generation.data.status !== 'ready' ? (
+          {activeGeneration && activeGeneration.status !== 'ready' ? (
             <GenerationProgressCard
-              generation={generation.data}
-              onView={actions.viewAllResumes}
-              onRetry={actions.createResume}
+              generation={activeGeneration}
+              onView={() => actions.openGeneration(activeGeneration.id)}
+              onRetry={() => actions.retryGeneration(activeGeneration.id)}
             />
           ) : null}
           <Section index={0} animate={animate}>
