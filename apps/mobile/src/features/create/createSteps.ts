@@ -8,10 +8,24 @@ import type { PlaceholderKey } from '@/features/placeholders';
  */
 export const MAX_ROWS = 5;
 
+/**
+ * What a row does, enumerated rather than derived from `PlaceholderKey`.
+ *
+ * It used to be that union, which worked only while every row led somewhere undesigned. Now that
+ * "Tailor to a Job" has a real screen the two lists have parted: a row is named here, and the host
+ * decides whether that name is a route or still a placeholder. Retiring a placeholder key no
+ * longer silently deletes a row from this sheet.
+ */
 export type CreateAction =
   /** Pushes to step 2 rather than navigating away. */
   | 'new-resume'
-  | PlaceholderKey;
+  /** Built in Phase 9B. */
+  | 'tailor-to-a-job'
+  /** Still undesigned — Phase 9D. Each is also a `PlaceholderKey`. */
+  | Extract<
+      PlaceholderKey,
+      'cover-letter' | 'ats-check' | 'upload-resume' | 'import-linkedin' | 'start-from-scratch'
+    >;
 
 export type CreateRow = {
   key: CreateAction;
