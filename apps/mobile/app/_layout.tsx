@@ -45,6 +45,9 @@ export default function RootLayout() {
           <Stack.Screen name="jobs/[id]" />
           <Stack.Screen name="notifications/index" />
           <Stack.Screen name="notifications/preferences" />
+          <Stack.Screen name="resumes/[id]/index" />
+          <Stack.Screen name="resumes/[id]/edit/[section]" />
+          <Stack.Screen name="resumes/[id]/fix" />
           <Stack.Screen name="resumes/[id]/score" />
           <Stack.Screen name="resumes/[id]/rubric" />
           <Stack.Screen name="create/tailor" />

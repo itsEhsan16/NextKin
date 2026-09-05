@@ -29,7 +29,8 @@ export function useHomeActions() {
       viewAllJobs: () => router.navigate('/(tabs)/jobs'),
       viewAllResumes: () => router.navigate('/(tabs)/resumes'),
       openJob: (job: Job) => router.push({ pathname: '/jobs/[id]', params: { id: job.id } }),
-      openResume: (_resume: Resume) => placeholder('resume-detail'),
+      openResume: (resume: Resume) =>
+        router.push({ pathname: '/resumes/[id]', params: { id: resume.id } }),
       createResume: openCreateSheet,
       /** The live run's own screen (V2 §7.6) — the progress card is a summary of it. */
       openGeneration: (generationId: string) =>

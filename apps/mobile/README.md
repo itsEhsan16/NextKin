@@ -56,6 +56,8 @@ apps/mobile/
                          and the session gate: every signed-in route is declared inside it
     (auth)/              sign-in stub; the real §7.1 screens are design-gated
     (tabs)/              tab routes (Home, Jobs, Resumes, Profile) + the floating tab bar host
+    resumes/[id]/        the document editor, its per-section editor, the score panel, the
+                         published rubric and the ATS fix list
     dev/                 __DEV__-only gallery: tokens, type, motion, mock modes, filters, forms
   src/
     theme/               tokens.ts (colours, spacing, radii, sizes, shadows), typography.ts,
@@ -139,6 +141,13 @@ These are enforced by code review and, where possible, by ESLint:
     Screens never import an `expo-*` module directly: `@/lib` is imported by every screen, so a
     static native import would take every route — and Jest, which mocks none of them — down with
     it. Each wrapper degrades to `null` or `'unavailable'` rather than throwing.
+
+13. **A sheet host raised from a pushed screen is mounted twice.** `app/(tabs)/_layout.tsx`
+    hosts the chrome sheets, but a pushed screen sits *above* that layout in the stack, so a
+    sheet raised there would paint behind the page that asked for it. Such a host takes a
+    `surface` prop (`'tabs' | 'editor'`), the store records the surface the sheet was opened
+    from, and only the matching mount renders — one paint, one scrim, one `BackHandler`.
+    `ResumeMenuHost` and `ResumeExportHost` are the two that do this today.
 
 ## Per-screen recipe
 

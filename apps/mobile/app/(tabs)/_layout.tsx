@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { FiltersSheetHost, useJobsStore } from '@/features/jobs';
 import { ProfileSheetsHost, useProfileStore } from '@/features/profile';
-import { ResumeMenuHost, useResumesStore } from '@/features/resumes';
+import { ResumeExportHost, ResumeMenuHost, useResumesStore } from '@/features/resumes';
 import {
   CreateSheetHost,
   CreateSheetProvider,
@@ -22,8 +22,9 @@ import { sheetBackgroundA11yProps } from '@/ui/Sheet';
 function useChromeSheetOpen(): boolean {
   const filtersOpen = useJobsStore((state) => state.filtersOpen);
   const resumeMenuOpen = useResumesStore((state) => state.menuOpen);
+  const exportOpen = useResumesStore((state) => state.exportOpen);
   const profileSheetOpen = useProfileStore((state) => state.sheetOpen);
-  return filtersOpen || resumeMenuOpen || profileSheetOpen;
+  return filtersOpen || resumeMenuOpen || exportOpen || profileSheetOpen;
 }
 
 /**
@@ -126,6 +127,9 @@ export default function TabsLayout() {
           own tab), so their order among themselves is moot. */}
       <FiltersSheetHost />
       <ResumeMenuHost />
+      {/* Raised from the same menu, so it shares that z-order; it also owns the library's
+          toast, which has to sit above the sheets rather than behind them. */}
+      <ResumeExportHost />
       <ProfileSheetsHost />
     </CreateSheetProvider>
   );

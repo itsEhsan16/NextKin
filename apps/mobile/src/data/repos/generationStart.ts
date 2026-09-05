@@ -123,8 +123,8 @@ export function appendStartActivity(
     title: startedTitle(input.kind, resume),
     detail: GENERATION_KIND_LABEL[input.kind],
     createdAt: now,
-    deepLink: '/placeholder/resume-detail',
-    ...(resume ? { resumeId: resume.id } : {}),
+    // An interview set produces no document, so it gets no destination rather than a broken one.
+    ...(resume ? { deepLink: `/resumes/${resume.id}` as const, resumeId: resume.id } : {}),
     ...(jobId ? { jobId } : {}),
   };
   store.state.activity = [entry, ...store.state.activity];

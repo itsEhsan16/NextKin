@@ -1,3 +1,9 @@
+/**
+ * Types and errors that cross the repo boundary into the screens. Re-exported here so a screen
+ * still imports only from @/data/queries: the export sheet names a format and has to recognise a
+ * plan-locked refusal, and neither is worth a second import path into the data layer.
+ */
+export { PlanLockedError, type CoverLetterPatch, type ExportFormat, type ResumeExport } from '@/data/repos';
 export { createQueryClient } from './client';
 export { qk } from './keys';
 export {

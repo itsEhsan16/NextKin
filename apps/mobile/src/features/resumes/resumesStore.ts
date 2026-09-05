@@ -9,8 +9,20 @@ export type ResumesViewMode = 'grid' | 'list';
 /** The All / Resumes / Cover Letters pills (Figma 1:1378). */
 export type ResumeTypeFilter = 'all' | 'resume' | 'cover_letter';
 
-/** The card menu swaps to an inline confirm before deleting (RESUMES 03 "Asks to confirm"). */
-export type ResumeMenuStep = 'actions' | 'confirm-delete';
+/**
+ * The card menu's three panes. Delete swaps to an inline confirm (RESUMES 03 "Asks to confirm");
+ * rename swaps to a single field (V2 §7.11 — renaming is a title edit, not a screen).
+ */
+export type ResumeMenuStep = 'actions' | 'rename' | 'confirm-delete';
+
+/**
+ * Which mount of a shared host is showing.
+ *
+ * A pushed screen sits ABOVE the tabs layout in the stack, so the host mounted there would raise
+ * its sheet *behind* the editor. The editor mounts its own copy, and the surface recorded when
+ * the sheet is opened decides which of the two renders — one paint, one BackHandler, one scrim.
+ */
+export type ResumeSurface = 'tabs' | 'editor';
 
 const VIEW_MODE_KEY = 'prefs.resumesView';
 
@@ -28,15 +40,33 @@ type ResumesState = {
   menuResume: Resume | null;
   menuOpen: boolean;
   menuStep: ResumeMenuStep;
+  menuSurface: ResumeSurface;
+
+  /** The same snapshot-and-retain shape for the export sheet (V2 §7.12). */
+  exportResume: Resume | null;
+  exportOpen: boolean;
+  exportSurface: ResumeSurface;
+
+  /** Transient confirmation ("Link copied", "Saved as PDF"). Hosted beside the export sheet. */
+  toast: string | null;
+  toastSurface: ResumeSurface;
 
   setViewMode: (mode: ResumesViewMode) => void;
   setTypeFilter: (filter: ResumeTypeFilter) => void;
   setQuery: (value: string) => void;
 
-  openMenu: (resume: Resume) => void;
+  openMenu: (resume: Resume, surface?: ResumeSurface) => void;
   closeMenu: () => void;
+  requestRename: () => void;
+  cancelRename: () => void;
   requestDelete: () => void;
   cancelDelete: () => void;
+
+  openExport: (resume: Resume, surface?: ResumeSurface) => void;
+  closeExport: () => void;
+
+  showToast: (message: string, surface?: ResumeSurface) => void;
+  hideToast: () => void;
 };
 
 export const useResumesStore = create<ResumesState>((set) => ({
@@ -47,6 +77,14 @@ export const useResumesStore = create<ResumesState>((set) => ({
   menuResume: null,
   menuOpen: false,
   menuStep: 'actions',
+  menuSurface: 'tabs',
+
+  exportResume: null,
+  exportOpen: false,
+  exportSurface: 'tabs',
+
+  toast: null,
+  toastSurface: 'tabs',
 
   setViewMode: (viewMode) => {
     storage.set(VIEW_MODE_KEY, viewMode);
@@ -56,9 +94,19 @@ export const useResumesStore = create<ResumesState>((set) => ({
   setQuery: (query) => set({ query }),
 
   // Re-seeds the step on every open, so a menu abandoned mid-confirm reopens on its actions.
-  openMenu: (menuResume) => set({ menuResume, menuOpen: true, menuStep: 'actions' }),
+  openMenu: (menuResume, menuSurface = 'tabs') =>
+    set({ menuResume, menuOpen: true, menuStep: 'actions', menuSurface }),
   // The snapshot is deliberately NOT cleared: the sheet must not empty during its 200ms exit.
   closeMenu: () => set({ menuOpen: false }),
+  requestRename: () => set({ menuStep: 'rename' }),
+  cancelRename: () => set({ menuStep: 'actions' }),
   requestDelete: () => set({ menuStep: 'confirm-delete' }),
   cancelDelete: () => set({ menuStep: 'actions' }),
+
+  openExport: (exportResume, exportSurface = 'tabs') =>
+    set({ exportResume, exportOpen: true, exportSurface }),
+  closeExport: () => set({ exportOpen: false }),
+
+  showToast: (toast, toastSurface = 'tabs') => set({ toast, toastSurface }),
+  hideToast: () => set({ toast: null }),
 }));

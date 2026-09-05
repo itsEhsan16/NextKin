@@ -1,11 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
-import type { Resume } from '@/data/models';
+import type { AtsCheckItem, EditableSectionKey, Resume } from '@/data/models';
 import type { PlaceholderKey } from '@/features/placeholders';
 import { useCreateSheet } from '@/navigation';
 
-import { useResumesStore } from '../resumesStore';
+import { useResumesStore, type ResumeSurface } from '../resumesStore';
 
 /** Every tap target on the Resumes screens resolves here, keeping routing out of components. */
 export function useResumesActions() {
@@ -13,6 +13,7 @@ export function useResumesActions() {
   // The "+ New" tile is the same affordance as the FAB, so it opens the same create sheet.
   const { open: openCreateSheet } = useCreateSheet();
   const openMenuFor = useResumesStore((state) => state.openMenu);
+  const openExportFor = useResumesStore((state) => state.openExport);
 
   const placeholder = useCallback(
     (screen: PlaceholderKey) =>
@@ -32,30 +33,47 @@ export function useResumesActions() {
       // a card or the score panel can all reach it with what they already hold.
       openScoreRubric: (resumeId: string) =>
         router.push({ pathname: '/resumes/[id]/rubric', params: { id: resumeId } }),
-      // The editor is undesigned; the score panel is the only designed per-document screen,
-      // so a scored document opens it and the rest land on the editor placeholder.
-      openDocument: (resume: Resume) => {
-        if (resume.atsScore != null) {
-          router.push({ pathname: '/resumes/[id]/score', params: { id: resume.id } });
-        } else {
-          placeholder('resume-detail');
-        }
-      },
-      openMenu: (resume: Resume) => openMenuFor(resume),
+      /**
+       * Both document kinds open the same editor (V2 §7.11): the score panel is a view *of* a
+       * document, not the document, and an unscored draft has no panel at all — so the library,
+       * Home and the generation result all land here and reach the score from the editor's
+       * own meta strip.
+       */
+      openDocument: (resume: Resume) =>
+        router.push({ pathname: '/resumes/[id]', params: { id: resume.id } }),
+      /** The same destination for callers that only hold an id (a deep link, a finished run). */
+      openEditor: (resumeId: string) =>
+        router.push({ pathname: '/resumes/[id]', params: { id: resumeId } }),
+      /** One section of the body, edited on its own page (V2 §7.11; §7.10 for 'letter'). */
+      openSection: (resumeId: string, section: EditableSectionKey) =>
+        router.push({
+          pathname: '/resumes/[id]/edit/[section]',
+          params: { id: resumeId, section },
+        }),
+      openMenu: (resume: Resume, surface?: ResumeSurface) => openMenuFor(resume, surface),
       // First-run CTAs (RESUMES 05) — none of these flows is designed yet (plan §8).
       uploadResume: () => placeholder('upload-resume'),
       importLinkedIn: () => placeholder('import-linkedin'),
       startWithAi: () => placeholder('start-from-scratch'),
-      // Menu rows without designed destinations.
-      renameResume: () => placeholder('resume-rename'),
       /** Carries the document through, so the intake screen starts from this resume. */
       tailorResume: (resume: Resume) =>
         router.push({ pathname: '/create/tailor', params: { resumeId: resume.id } }),
-      downloadResume: () => placeholder('resume-download'),
-      shareResume: () => placeholder('resume-share'),
-      fixWithAi: () => placeholder('ats-fix'),
+      /**
+       * A sheet, not a screen: the format choice is three rows and the file has to be handed to
+       * the OS share sheet from the surface that asked for it (V2 §7.12).
+       */
+      downloadResume: (resume: Resume, surface?: ResumeSurface) => openExportFor(resume, surface),
+      /**
+       * The quick-win list (V2 §7.8). An item id rides along when the reader tapped one specific
+       * check, so the fix screen can open with that card in view rather than at the top.
+       */
+      fixWithAi: (resumeId: string, item?: AtsCheckItem) =>
+        router.push({
+          pathname: '/resumes/[id]/fix',
+          params: item ? { id: resumeId, item: item.id } : { id: resumeId },
+        }),
       goBack: () => router.back(),
     }),
-    [openCreateSheet, openMenuFor, placeholder, router],
+    [openCreateSheet, openExportFor, openMenuFor, placeholder, router],
   );
 }

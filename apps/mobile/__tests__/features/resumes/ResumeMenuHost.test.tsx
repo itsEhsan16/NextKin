@@ -42,7 +42,7 @@ describe('ResumeMenuHost (RESUMES 03 wiring)', () => {
     clients.splice(0).forEach((client) => client.clear());
   });
 
-  it('duplicates, moves the Base flag, routes rename, and deletes only after the confirm', async () => {
+  it('duplicates, moves the Base flag, renames in place, and deletes only after the confirm', async () => {
     // No act(): nothing is mounted yet, and an un-awaited act scope here would swallow the
     // upcoming render's commits (the tree comes back empty).
     useResumesStore.getState().openMenu(stripeDoc());
@@ -74,18 +74,30 @@ describe('ResumeMenuHost (RESUMES 03 wiring)', () => {
       () => expect(mockStore.state.resumes.find((r) => r.id === 'res_2')?.isBase).toBe(true),
       { timeout: 10000 },
     );
-    expect(
-      mockStore.state.resumes.filter((r) => r.docType === 'resume' && r.isBase),
-    ).toHaveLength(1);
+    expect(mockStore.state.resumes.filter((r) => r.docType === 'resume' && r.isBase)).toHaveLength(
+      1,
+    );
 
-    // — Rename has no designed screen yet: close, then the placeholder —
+    // — Rename is a third step of this sheet, not a screen of its own (V2 §7.11) —
     await act(async () => useResumesStore.getState().openMenu(stripeDoc()));
-    fireEvent.press(screen.getByLabelText('Rename'));
-    expect(useResumesStore.getState().menuOpen).toBe(false);
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'resume-rename' },
-    });
+    await act(async () => fireEvent.press(screen.getByLabelText('Rename')));
+    expect(useResumesStore.getState().menuOpen).toBe(true);
+    expect(useResumesStore.getState().menuStep).toBe('rename');
+    expect(mockPush).not.toHaveBeenCalled();
+
+    const field = screen.getByLabelText('Name');
+    expect(field.props.value).toBe('Stripe — Senior PD');
+    await act(async () => fireEvent.changeText(field, 'Stripe — PD 2026'));
+    await act(async () => fireEvent.press(screen.getByLabelText('Save')));
+    await waitFor(
+      () =>
+        expect(mockStore.state.resumes.find((r) => r.id === 'res_2')?.title).toBe(
+          'Stripe — PD 2026',
+        ),
+      { timeout: 10000 },
+    );
+    // The sheet closes itself only once the rename has landed.
+    await waitFor(() => expect(useResumesStore.getState().menuOpen).toBe(false));
 
     // — Delete goes through the inline confirm (the artboard's "Asks to confirm") —
     await act(async () => useResumesStore.getState().openMenu(stripeDoc()));

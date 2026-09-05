@@ -63,8 +63,7 @@ export const notificationsFixture: Notification[] = [
     body: 'Your **cover letter** for Stripe is ready to review',
     createdAt: daysAgo(3.4),
     read: true,
-    // The cover-letter editor is undesigned; its placeholder is the honest destination.
-    deepLink: '/placeholder/resume-detail',
+    deepLink: '/resumes/res_cover_stripe',
     visual: { kind: 'glyph', icon: 'envelope', tone: 'brand' },
   },
   // Earlier

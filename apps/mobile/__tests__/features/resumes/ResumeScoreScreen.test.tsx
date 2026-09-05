@@ -90,17 +90,17 @@ describe('ResumeScoreScreen (RESUMES 04 — 1:2109)', () => {
     // One Fix pill per unmet actionable item = the CTA's quick-win count.
     expect(screen.getAllByLabelText(/^Fix: /)).toHaveLength(4);
 
-    // — Fix pills and the sticky CTA route to the AI fix placeholder —
+    // — The pinned CTA opens the fix list at the top; one check opens it on that check's card —
     fireEvent.press(screen.getByLabelText('Fix 4 quick wins'));
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'ats-fix' },
+      pathname: '/resumes/[id]/fix',
+      params: { id: 'res_base' },
     });
     mockPush.mockClear();
     fireEvent.press(screen.getByLabelText('Fix: Add a portfolio link'));
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'ats-fix' },
+      pathname: '/resumes/[id]/fix',
+      params: { id: 'res_base', item: 'portfolio' },
     });
 
     // — V2 §7.8: the score display links to the published rubric —

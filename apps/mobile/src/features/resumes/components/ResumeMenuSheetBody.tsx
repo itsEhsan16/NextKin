@@ -11,13 +11,20 @@ import { Text } from '@/ui/Text';
 
 import { docSubtitle } from '../docMeta';
 import type { ResumeMenuStep } from '../resumesStore';
+import { RenameSheetPane } from './RenameSheetPane';
 import { ResumeThumbnail } from './ResumeThumbnail';
 
 export type ResumeMenuSheetBodyProps = {
   resume: Resume;
   step: ResumeMenuStep;
   deleting: boolean;
+  /** The rename mutation is in flight; the Save button owns the spinner. */
+  renaming: boolean;
+  /** Switches the sheet to its rename step — renaming is a title edit, not a screen (V2 §7.11). */
   onRename: () => void;
+  /** Receives the trimmed title. */
+  onSubmitRename: (title: string) => void;
+  onCancelRename: () => void;
   onDuplicate: () => void;
   onTailor: () => void;
   onSetAsBase: () => void;
@@ -78,14 +85,18 @@ function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: M
 
 /**
  * RESUMES 03 (Figma 1:2020) — the ⋯ / long-press action sheet for one document. Fully
- * controlled so tests drive it without the Sheet. Delete swaps the whole body for an inline
- * confirm (the artboard's "Asks to confirm"); the host animates the sheet height between them.
+ * controlled so tests drive it without the Sheet. Rename and delete each swap the whole body
+ * for their own pane (the artboard's "Asks to confirm"); the host animates the sheet height
+ * between them.
  */
 export function ResumeMenuSheetBody({
   resume,
   step,
   deleting,
+  renaming,
   onRename,
+  onSubmitRename,
+  onCancelRename,
   onDuplicate,
   onTailor,
   onSetAsBase,
@@ -97,6 +108,18 @@ export function ResumeMenuSheetBody({
 }: ResumeMenuSheetBodyProps) {
   const { colors, spacing, s } = useTheme();
   const styles = useStyles();
+
+  if (step === 'rename') {
+    return (
+      <RenameSheetPane
+        key={resume.id}
+        resume={resume}
+        renaming={renaming}
+        onSubmit={onSubmitRename}
+        onCancel={onCancelRename}
+      />
+    );
+  }
 
   if (step === 'confirm-delete') {
     const coverLetter = resume.docType === 'cover_letter';

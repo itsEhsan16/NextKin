@@ -194,7 +194,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
               key={section.key}
               section={section}
               staggerBase={index * 2}
-              onFix={actions.fixWithAi}
+              onFix={(item) => actions.fixWithAi(id, item)}
             />
           ))}
         </View>
@@ -225,7 +225,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
             {...a11yButton(`Fix ${pluralize(quickWins, 'quick win')}`, 'Opens the AI fix flow')}
             feedback="scale"
             haptic="medium"
-            onPress={actions.fixWithAi}
+            onPress={() => actions.fixWithAi(id)}
             style={[
               styles.cta,
               {

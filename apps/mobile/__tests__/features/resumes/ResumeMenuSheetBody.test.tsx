@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { View } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -28,6 +28,8 @@ const doc = (overrides: Partial<Resume>): Resume => ({
 
 const handlers = {
   onRename: jest.fn(),
+  onSubmitRename: jest.fn(),
+  onCancelRename: jest.fn(),
   onDuplicate: jest.fn(),
   onTailor: jest.fn(),
   onSetAsBase: jest.fn(),
@@ -38,10 +40,19 @@ const handlers = {
   onCancelDelete: jest.fn(),
 };
 
+/** Lets React commit what the last event scheduled. */
+const flush = async () => {
+  await act(async () => {});
+};
+
 /**
  * All four variants render side by side in ONE tree, scoped with within() — both repeated
  * mounts and rerender proved able to wedge React's act queue in this environment (see the
  * plan's Phase 3 test-infra note). The component is pure, so co-rendering is free.
+ *
+ * The rename pane is the one step that holds state of its own, and editing that draft needs a
+ * tree no press has touched yet — it gets its own file, ResumeRenamePane.test.tsx. What is
+ * asserted here is the part that needs no typing: the wording, the seeded field, the way out.
  */
 describe('Resume card menu (RESUMES 03 — 1:2020)', () => {
   afterEach(async () => {
@@ -53,13 +64,20 @@ describe('Resume card menu (RESUMES 03 — 1:2020)', () => {
     await render(
       <SafeAreaProvider initialMetrics={metrics}>
         <View testID="tailored">
-          <ResumeMenuSheetBody resume={doc({})} step="actions" deleting={false} {...handlers} />
+          <ResumeMenuSheetBody
+            resume={doc({})}
+            step="actions"
+            deleting={false}
+            renaming={false}
+            {...handlers}
+          />
         </View>
         <View testID="base">
           <ResumeMenuSheetBody
             resume={doc({ id: 'res_base', title: 'Product Designer', isBase: true })}
             step="actions"
             deleting={false}
+            renaming={false}
             {...handlers}
           />
         </View>
@@ -68,6 +86,7 @@ describe('Resume card menu (RESUMES 03 — 1:2020)', () => {
             resume={doc({ id: 'res_cover', title: 'Stripe cover letter', docType: 'cover_letter' })}
             step="actions"
             deleting={false}
+            renaming={false}
             {...handlers}
           />
         </View>
@@ -76,6 +95,36 @@ describe('Resume card menu (RESUMES 03 — 1:2020)', () => {
             resume={doc({})}
             step="confirm-delete"
             deleting={false}
+            renaming={false}
+            {...handlers}
+          />
+        </View>
+        <View testID="rename">
+          <ResumeMenuSheetBody
+            resume={doc({})}
+            step="rename"
+            deleting={false}
+            renaming={false}
+            {...handlers}
+          />
+        </View>
+        <View testID="rename-cover">
+          <ResumeMenuSheetBody
+            resume={doc({ id: 'res_cover', title: 'Stripe cover letter', docType: 'cover_letter' })}
+            step="rename"
+            deleting={false}
+            renaming={false}
+            {...handlers}
+          />
+        </View>
+        {/* A document whose stored title is only spaces stands in for a field the user has
+            cleared: the pane guards on the draft, not on how the draft got that way. */}
+        <View testID="rename-blank">
+          <ResumeMenuSheetBody
+            resume={doc({ id: 'res_blank', title: '   ' })}
+            step="rename"
+            deleting={false}
+            renaming={false}
             {...handlers}
           />
         </View>
@@ -96,10 +145,34 @@ describe('Resume card menu (RESUMES 03 — 1:2020)', () => {
     expect(tailored.getByLabelText('Delete')).toBeOnTheScreen();
     expect(tailored.getByText('Asks to confirm')).toBeOnTheScreen();
 
+    // — The rename step before anything is typed into it —
+    const rename = within(screen.getByTestId('rename'));
+    expect(rename.getByRole('header', { name: 'Rename this resume' })).toBeOnTheScreen();
+    expect(rename.getByLabelText('Name').props.value).toBe('Stripe — Senior PD');
+    // Saving the name it already has is a no-op, so there is nothing to press.
+    expect(rename.getByLabelText('Save')).toBeDisabled();
+
+    const renameCover = within(screen.getByTestId('rename-cover'));
+    expect(renameCover.getByRole('header', { name: 'Rename this cover letter' })).toBeOnTheScreen();
+    expect(renameCover.getByLabelText('Name').props.value).toBe('Stripe cover letter');
+
+    // — A blank name saves nothing, and says why rather than sitting there inert —
+    const blank = within(screen.getByTestId('rename-blank'));
+    expect(blank.getByLabelText('Name').props.value).toBe('   ');
+    fireEvent.press(blank.getByLabelText('Save'));
+    await flush();
+    expect(handlers.onSubmitRename).not.toHaveBeenCalled();
+    expect(blank.getByText('Give it a name.')).toBeOnTheScreen();
+
     fireEvent.press(tailored.getByLabelText('Duplicate'));
     expect(handlers.onDuplicate).toHaveBeenCalledTimes(1);
     fireEvent.press(tailored.getByLabelText('Set as base'));
     expect(handlers.onSetAsBase).toHaveBeenCalledTimes(1);
+
+    // Rename only reports the request — swapping to that step is the store's job, not the body's.
+    fireEvent.press(tailored.getByLabelText('Rename'));
+    expect(handlers.onRename).toHaveBeenCalledTimes(1);
+    expect(handlers.onSubmitRename).not.toHaveBeenCalled();
 
     // Delete only reports the request — the step swap is the host's job.
     fireEvent.press(tailored.getByLabelText('Delete'));
@@ -125,5 +198,9 @@ describe('Resume card menu (RESUMES 03 — 1:2020)', () => {
     expect(handlers.onConfirmDelete).toHaveBeenCalledTimes(1);
     fireEvent.press(confirm.getByLabelText('Cancel'));
     expect(handlers.onCancelDelete).toHaveBeenCalledTimes(1);
+
+    // — Rename always offers a way back to the actions list —
+    fireEvent.press(renameCover.getByLabelText('Cancel'));
+    expect(handlers.onCancelRename).toHaveBeenCalledTimes(1);
   }, 30000);
 });

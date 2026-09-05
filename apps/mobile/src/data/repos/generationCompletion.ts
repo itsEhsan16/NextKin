@@ -92,7 +92,7 @@ function appendReadyActivity(
     // undefined-valued keys, so an absent detail has to be an absent key here too.
     ...(score ? { detail: `${SCORE_LABEL} ${score.total} · ${ATS_BAND_LABEL[score.band]}` } : {}),
     ...(generation.jobId ? { jobId: generation.jobId } : {}),
-    deepLink: score ? `/resumes/${resume.id}/score` : '/placeholder/resume-detail',
+    deepLink: score ? `/resumes/${resume.id}/score` : `/resumes/${resume.id}`,
   };
   store.state.activity = [entry, ...store.state.activity];
   store.state.dashboardStats = {

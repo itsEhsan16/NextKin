@@ -18,12 +18,7 @@ export type PlaceholderKey =
   | 'job-share'
   | 'company-profile'
   | 'match-criteria'
-  | 'resume-detail'
   | 'resume-sort'
-  | 'resume-rename'
-  | 'resume-download'
-  | 'resume-share'
-  | 'ats-fix'
   | 'upgrade'
   | 'profile-edit'
   | 'profile-experience'
@@ -70,14 +65,7 @@ export const PLACEHOLDERS: Record<PlaceholderKey, PlaceholderMeta> = {
   'job-share': { title: 'Share job', figmaScreens: [] },
   'company-profile': { title: 'Company', figmaScreens: [] },
   'match-criteria': { title: 'Full criteria', figmaScreens: [] },
-  // The score panel shipped in Phase 4; what remains behind this key is the undesigned editor.
-  'resume-detail': { title: 'Resume', figmaScreens: [] },
   'resume-sort': { title: 'Sort documents', figmaScreens: [] },
-  'resume-rename': { title: 'Rename', figmaScreens: [] },
-  // V2 §7.12 exports and share links have no artboard yet; the menu rows need somewhere to go.
-  'resume-download': { title: 'Download', figmaScreens: [] },
-  'resume-share': { title: 'Share link', figmaScreens: [] },
-  'ats-fix': { title: 'Fix with AI', figmaScreens: [] },
   upgrade: { title: 'Upgrade', figmaScreens: [] },
   // Profile edit flows (V2 §7.3) are undesigned; every PROFILE 01 row links out to one.
   'profile-edit': { title: 'Edit profile', figmaScreens: [] },

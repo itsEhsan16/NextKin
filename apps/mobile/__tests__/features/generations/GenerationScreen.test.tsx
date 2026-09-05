@@ -104,6 +104,14 @@ describe('GenerationScreen (V2 §7.6)', () => {
       pathname: '/resumes/[id]/score',
       params: { id: 'res_6' },
     });
+
+    // Phase 9C gave the second button a real destination: the document itself.
+    mockPush.mockClear();
+    await act(async () => fireEvent.press(screen.getByLabelText('Open resume')));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/resumes/[id]',
+      params: { id: 'res_6' },
+    });
   });
 
   it('shows a failed run its reason and a retry that actually restarts it', async () => {

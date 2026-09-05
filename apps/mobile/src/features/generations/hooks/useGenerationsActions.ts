@@ -1,17 +1,9 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
-
-import type { PlaceholderKey } from '@/features/placeholders';
+import { useMemo } from 'react';
 
 /** Every tap target on the generation progress screen resolves here (V2 §7.6). */
 export function useGenerationsActions() {
   const router = useRouter();
-
-  const placeholder = useCallback(
-    (screen: PlaceholderKey) =>
-      router.push({ pathname: '/placeholder/[screen]', params: { screen } }),
-    [router],
-  );
 
   return useMemo(
     () => ({
@@ -19,8 +11,9 @@ export function useGenerationsActions() {
       /** The finished run's score panel — the designed per-document screen (RESUMES 04). */
       openScore: (resumeId: string) =>
         router.push({ pathname: '/resumes/[id]/score', params: { id: resumeId } }),
-      // The document editor is undesigned; Phase 9C replaces this placeholder.
-      openDocument: () => placeholder('resume-detail'),
+      /** The document itself (V2 §7.11) — the editor, whether or not the run produced a score. */
+      openDocument: (resumeId: string) =>
+        router.push({ pathname: '/resumes/[id]', params: { id: resumeId } }),
       /** Where an id that no longer resolves sends the user: the library that outlived it. */
       openResumes: () => router.navigate('/(tabs)/resumes'),
       /**
@@ -37,6 +30,6 @@ export function useGenerationsActions() {
       editJobDescription: (jobId: string) =>
         router.push({ pathname: '/create/tailor', params: { jobId } }),
     }),
-    [placeholder, router],
+    [router],
   );
 }

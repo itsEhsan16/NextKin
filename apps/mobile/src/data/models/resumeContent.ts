@@ -25,6 +25,24 @@ export const RESUME_SECTION_ORDER: readonly ResumeSectionKey[] = [
   'education',
 ] as const;
 
+/**
+ * Whether a string names one of §7.11's six sections. The section editor is reached by a route
+ * param, so an arbitrary string arrives at the screen and has to be checked before it indexes
+ * anything.
+ */
+export const isResumeSectionKey = (value: string): value is ResumeSectionKey =>
+  (RESUME_SECTION_ORDER as readonly string[]).includes(value);
+
+/**
+ * Everything the section editor can open: §7.11's six resume sections, plus the letter body a
+ * cover letter has instead of them (§7.10). The route carries this rather than ResumeSectionKey,
+ * because both document kinds are edited through the same screen.
+ */
+export type EditableSectionKey = ResumeSectionKey | 'letter';
+
+export const isEditableSectionKey = (value: string): value is EditableSectionKey =>
+  value === 'letter' || isResumeSectionKey(value);
+
 /** Section headers in the editor and in the printed document. */
 export const RESUME_SECTION_LABEL: Record<ResumeSectionKey, string> = {
   summary: 'Professional summary',
@@ -33,6 +51,12 @@ export const RESUME_SECTION_LABEL: Record<ResumeSectionKey, string> = {
   projects: 'Projects',
   certifications: 'Certifications',
   education: 'Education',
+};
+
+/** The same headers, plus the one a cover letter's body is filed under in the editor. */
+export const EDITABLE_SECTION_LABEL: Record<EditableSectionKey, string> = {
+  ...RESUME_SECTION_LABEL,
+  letter: 'Letter',
 };
 
 export type ContentRole = {

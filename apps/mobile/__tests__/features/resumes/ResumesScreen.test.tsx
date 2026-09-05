@@ -126,16 +126,18 @@ describe('ResumesScreen (RESUMES 01/02)', () => {
     expect(screen.getAllByText('Edited 1mo ago')).toHaveLength(2);
     expect(screen.getAllByLabelText(/^ATS score \d+$/)).toHaveLength(8);
 
-    // — Routing: the ATS chip and scored cards push the score panel —
+    // — Routing: the ATS chip opens the score panel; the card itself opens the editor —
     fireEvent.press(screen.getByLabelText('ATS score 84'));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/resumes/[id]/score',
       params: { id: 'res_5' },
     });
     mockPush.mockClear();
+    // Phase 9C: every document opens its editor, scored or not — the panel is a view OF the
+    // document, reached from the editor's own meta strip.
     fireEvent.press(screen.getByLabelText(/^Zoho Product,/));
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/resumes/[id]/score',
+      pathname: '/resumes/[id]',
       params: { id: 'res_zoho' },
     });
 

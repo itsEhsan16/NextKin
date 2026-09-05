@@ -172,7 +172,11 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
   const ready = run.status === 'ready';
   const score = RING_KINDS.includes(run.kind) ? resume.data?.atsScore : undefined;
   const resumeId = run.resumeId;
-  const openDoc = { label: documentLabel(run.kind), onPress: actions.openDocument };
+  // A run that produced no document (an interview set, Phase 9I) still needs a way out of the
+  // finished screen, and the library is the honest one.
+  const openDoc = resumeId
+    ? { label: documentLabel(run.kind), onPress: () => actions.openDocument(resumeId) }
+    : { label: 'Back to your resumes', onPress: actions.openResumes };
   const viewScore =
     resumeId && SCORE_KINDS.includes(run.kind)
       ? { label: 'View score', onPress: () => actions.openScore(resumeId) }
