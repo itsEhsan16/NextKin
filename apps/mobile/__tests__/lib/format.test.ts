@@ -1,11 +1,13 @@
 import {
   formatDaysAgo,
   formatJobMeta,
+  formatMonthYear,
   formatPercent,
   formatRelativeTime,
   formatSalary,
   formatShortDate,
   initialOf,
+  monthYearToIso,
   pluralize,
   type SalaryRange,
 } from '@/lib';
@@ -281,5 +283,50 @@ describe('formatJobMeta', () => {
   it('joins the parts with the artboard separator and drops blanks', () => {
     expect(formatJobMeta(['Razorpay', 'Bengaluru', 'Hybrid'])).toBe('Razorpay · Bengaluru · Hybrid');
     expect(formatJobMeta(['Linear', undefined, 'Remote'])).toBe('Linear · Remote');
+  });
+});
+
+describe('formatMonthYear', () => {
+  it('renders the short month and the full year', () => {
+    expect(formatMonthYear('2022-03-01')).toBe('Mar 2022');
+    expect(formatMonthYear('2019-06-01')).toBe('Jun 2019');
+  });
+
+  it('abbreviates September to "Sep", matching the picker\'s month chips', () => {
+    expect(formatMonthYear('2022-09-01')).toBe('Sep 2022');
+    // Every month is three letters, as MonthYearSheet's MONTH_SHORT chips are. An en-GB locale
+    // would render September as "Sept" and the chip the user tapped would stop matching the
+    // field it saved.
+    for (let month = 1; month <= 12; month += 1) {
+      expect(formatMonthYear(monthYearToIso(2022, month))).toMatch(/^[A-Z][a-z]{2} 2022$/);
+    }
+  });
+
+  it('formats a month at either end of the year', () => {
+    expect(formatMonthYear('2022-01-01')).toBe('Jan 2022');
+    expect(formatMonthYear('2022-12-01')).toBe('Dec 2022');
+  });
+
+  it('returns an empty string for an unparseable timestamp', () => {
+    expect(formatMonthYear('not-a-date')).toBe('');
+    expect(formatMonthYear('')).toBe('');
+  });
+});
+
+describe('monthYearToIso', () => {
+  it('zero-pads the month to two digits', () => {
+    expect(monthYearToIso(2022, 3)).toBe('2022-03-01');
+    expect(monthYearToIso(2022, 1)).toBe('2022-01-01');
+    expect(monthYearToIso(2022, 12)).toBe('2022-12-01');
+  });
+
+  it('clamps the month into 1–12 rather than emitting an invalid date', () => {
+    expect(monthYearToIso(2022, 0)).toBe('2022-01-01');
+    expect(monthYearToIso(2022, 13)).toBe('2022-12-01');
+  });
+
+  it('round-trips through formatMonthYear', () => {
+    expect(formatMonthYear(monthYearToIso(2022, 3))).toBe('Mar 2022');
+    expect(formatMonthYear(monthYearToIso(2025, 11))).toBe('Nov 2025');
   });
 });

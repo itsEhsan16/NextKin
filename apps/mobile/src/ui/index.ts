@@ -11,6 +11,7 @@ export * from './IconButton';
 export * from './IconTileGrid';
 export * from './ListRow';
 export * from './LogoTile';
+export * from './MonthYearSheet';
 export * from './OptionSheet';
 export * from './Placeholder';
 export * from './Pressable';

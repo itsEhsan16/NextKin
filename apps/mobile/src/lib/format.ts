@@ -210,3 +210,24 @@ export function formatFeedTime(iso: string, now: Date = new Date()): string {
   if (diff < WEEK) return then.toLocaleDateString('en-GB', { weekday: 'short' });
   return formatShortDate(iso, now);
 }
+
+/** "Mar 2022". Empty string when the ISO date cannot be parsed. */
+export function formatMonthYear(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  // 'en-US' like formatShortDate, not the 'en-GB' of formatWeekdayDate: en-GB abbreviates
+  // September to "Sept", which would disagree with the month chips the picker itself draws
+  // (MonthYearSheet's MONTH_SHORT) and shifts with the engine's ICU version — Hermes and Node
+  // need not agree. The three-letter en-US set matches the chips and is stable everywhere.
+  // UTC because the picker stores date-only strings, which parse as UTC midnight and would
+  // slip a month west of Greenwich.
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+/** 1-based month → the first of that month, "2022-03-01". */
+export function monthYearToIso(year: number, month: number): string {
+  // Clamped rather than trusted: a picker index off by one would otherwise emit "2022-13-01",
+  // which every consumer of formatMonthYear would render as an empty string.
+  const clamped = Math.min(12, Math.max(1, Math.trunc(month)));
+  return `${year}-${String(clamped).padStart(2, '0')}-01`;
+}
