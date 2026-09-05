@@ -25,5 +25,6 @@ export * from './Skeleton';
 export * from './StateView';
 export * from './SwipeableRow';
 export * from './Text';
+export * from './TextField';
 export * from './Toast';
 export * from './Toggle';
