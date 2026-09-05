@@ -4,11 +4,9 @@
  */
 export type PlaceholderKey =
   | 'menu'
-  | 'build-resume'
   | 'zero-resume'
   | 'cover-letter'
   | 'ats-check'
-  | 'tailor-to-a-job'
   | 'upload-resume'
   | 'import-linkedin'
   | 'start-from-scratch'
@@ -52,13 +50,11 @@ export type PlaceholderMeta = {
 
 export const PLACEHOLDERS: Record<PlaceholderKey, PlaceholderMeta> = {
   menu: { title: 'Menu', figmaScreens: [] },
-  'build-resume': { title: 'Build Resume', figmaScreens: [] },
   'zero-resume': { title: 'Zero Resume', figmaScreens: [] },
   'cover-letter': { title: 'Cover Letter', figmaScreens: [] },
   // The score PANEL shipped in Phase 4 (`/resumes/[id]/score`); what this entry point still
   // needs is the undesigned pick-a-resume / upload step in front of it.
   'ats-check': { title: 'ATS Check', figmaScreens: [] },
-  'tailor-to-a-job': { title: 'Tailor to a Job', figmaScreens: [] },
   'upload-resume': { title: 'Upload resume', figmaScreens: [] },
   // V2 §6.2 lists LinkedIn import as out of scope (no stable public API); the row exists
   // because CREATE 02 designs it, but it has nowhere to go yet.

@@ -32,7 +32,9 @@ export function useJobsActions() {
       shareJob: () => placeholder('job-share'),
       openCompany: (_job: Job) => placeholder('company-profile'),
       openFullCriteria: () => placeholder('match-criteria'),
-      tailorResume: () => placeholder('tailor-to-a-job'),
+      /** Carries the job through, so the intake screen opens with its description already chosen. */
+      tailorResume: (job: Job) =>
+        router.push({ pathname: '/create/tailor', params: { jobId: job.id } }),
     }),
     [openFilters, placeholder, router],
   );

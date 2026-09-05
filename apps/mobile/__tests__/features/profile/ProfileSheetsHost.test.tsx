@@ -23,8 +23,8 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     resetMockRepos();
     storage.remove('prefs.appearance');
     useAppearanceStore.setState({ preference: 'system' });
-    // jest.setup's kv-store stands on a module-scoped Map that nothing resets between tests, so
-    // the session this file signs out of would otherwise be the session the next file inherits.
+    // jest.setup's kv-store stands on one module-scoped Map per file that nothing resets between
+    // the tests in it, so a test that signs out would otherwise leak into the ones after it.
     storage.remove('prefs.session');
     useSessionStore.setState({ status: 'signed_in' });
     useProfileStore.setState(INITIAL, true);

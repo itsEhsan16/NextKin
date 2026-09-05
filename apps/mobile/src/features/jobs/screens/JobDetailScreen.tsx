@@ -110,7 +110,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
           />
         ) : null}
 
-        <TailorResumeCta onPress={actions.tailorResume} />
+        <TailorResumeCta onPress={() => actions.tailorResume(current)} />
 
         <JobAboutSection
           description={current.description}

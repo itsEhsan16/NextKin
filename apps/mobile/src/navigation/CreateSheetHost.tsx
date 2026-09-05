@@ -38,6 +38,12 @@ export function CreateSheetHost() {
   const handleAction = useCallback(
     (action: Exclude<CreateAction, 'new-resume'>) => {
       close();
+      // "Tailor to a Job" is built (Phase 9B); the rest of the sheet's rows are still undesigned
+      // destinations and keep falling through to the placeholder until their phase.
+      if (action === 'tailor-to-a-job') {
+        router.push('/create/tailor');
+        return;
+      }
       router.push({ pathname: '/placeholder/[screen]', params: { screen: action } });
     },
     [close, router],

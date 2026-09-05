@@ -26,6 +26,40 @@ describe('Session store', () => {
     expect(useSessionStore.getState().status).toBe('signed_in');
   });
 
+  // The assertions above all run against the store this file imported, which was constructed once
+  // with an empty Map — a hardcoded `status: 'signed_in'` would satisfy every one of them. The two
+  // below evaluate the module again, after the key has been written, so they fail unless the
+  // initialiser actually reads storage. That read is what the route gate's "the first frame is
+  // already on the right side" rests on; break it and a cold start flashes the wrong screen.
+  // (jest.isolateModules gives the re-evaluated module a fresh registry but the same mocked
+  // kv-store, so what is seeded out here is what it reads in there.)
+  it('reads the stored session when the module is evaluated', () => {
+    storage.set('prefs.session', 'signed_out');
+
+    jest.isolateModules(() => {
+      const coldStart =
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- a fresh evaluation.
+        (require('@/features/auth/sessionStore') as typeof import('@/features/auth/sessionStore'))
+          .useSessionStore;
+      expect(coldStart.getState().status).toBe('signed_out');
+    });
+  });
+
+  it('evaluates to a signed-in fresh account after a delete', () => {
+    useSessionStore.getState().signOut();
+    useSessionStore.getState().deleteAccount();
+
+    jest.isolateModules(() => {
+      const coldStart =
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- a fresh evaluation.
+        (require('@/features/auth/sessionStore') as typeof import('@/features/auth/sessionStore'))
+          .useSessionStore;
+      // Had deleteAccount written 'signed_out' instead of removing the key, the next start would
+      // come up as the deleted account, signed out, with no way to tell it from a sign-out.
+      expect(coldStart.getState().status).toBe('signed_in');
+    });
+  });
+
   it('persists a sign-out and restores on sign-in', () => {
     useSessionStore.getState().signOut();
     expect(useSessionStore.getState().status).toBe('signed_out');

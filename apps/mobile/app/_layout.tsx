@@ -34,6 +34,11 @@ export default function RootLayout() {
           that is not declared inside a guard stays reachable, so a deep link (nextkin://jobs/j1,
           a notification tap) would push a job detail on top of the sign-in screen. Later phases
           register their routes here too.
+
+          +not-found belongs in here for the same reason plus one of its own: it catches every
+          unmatched path, and its only way out is a link to '/', which is guarded away when signed
+          out — left reachable it would strand the user. Guarded, an unmatched link signed out has
+          no route left to rehydrate and falls back to the first declared screen, (auth).
         */}
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(tabs)" />
@@ -41,7 +46,12 @@ export default function RootLayout() {
           <Stack.Screen name="notifications/index" />
           <Stack.Screen name="notifications/preferences" />
           <Stack.Screen name="resumes/[id]/score" />
+          <Stack.Screen name="resumes/[id]/rubric" />
+          <Stack.Screen name="create/tailor" />
+          <Stack.Screen name="create/jd-review" />
+          <Stack.Screen name="generations/[id]" />
           <Stack.Screen name="placeholder/[screen]" />
+          <Stack.Screen name="+not-found" />
         </Stack.Protected>
 
         {/*

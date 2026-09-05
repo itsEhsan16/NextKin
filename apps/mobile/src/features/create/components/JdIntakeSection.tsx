@@ -66,6 +66,8 @@ export const jdInputForJob = (jobId?: string): JdInput | null =>
  * and, once one is picked, the editor for it. Shared by every create flow that needs a JD
  * (tailoring, cover letters, ATS checks, Zero Resume), so it owns nothing but the input.
  *
+ * Mount `JdIntakeSheets` beside the page's `<Screen>` as well — see `JdIntakeSectionProps`.
+ *
  * `value` carries the mode once anything has been entered, so no second copy of "which path am I
  * on" can fall out of step with it; `pendingMode` covers only the gap between choosing "Upload a
  * file" and having one.
@@ -73,7 +75,7 @@ export const jdInputForJob = (jobId?: string): JdInput | null =>
 export function JdIntakeSection({ value, onChange, jobId }: JdIntakeSectionProps) {
   const { motion, spacing, s } = useTheme();
   const reduced = useReducedMotion();
-  const openJobSheet = useJdIntakeStore((state) => state.openJobSheet);
+  const openJobSheet = useCreateStore((state) => state.openJobSheet);
 
   const [pendingMode, setPendingMode] = useState<JdMode | null>(null);
   const [changing, setChanging] = useState(false);

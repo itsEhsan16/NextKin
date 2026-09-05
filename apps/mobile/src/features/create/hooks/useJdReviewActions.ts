@@ -2,9 +2,11 @@ import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
 /**
- * Routing for the JD review step (V2 §7.5 → §7.6). Screen-scoped rather than a feature-wide
- * `useCreateActions`, because the intake and tailor steps land in the same folder and each owns
- * its own destinations; fold them together once the whole create flow is in.
+ * Routing for the JD review step (V2 §7.5 → §7.6).
+ *
+ * Screen-scoped rather than folded into `useCreateActions`: the two were written side by side in
+ * the same phase, and `openGeneration` belongs in that hook once the create flow is whole — this
+ * one is a merge candidate, not a second convention.
  */
 export function useJdReviewActions() {
   const router = useRouter();
