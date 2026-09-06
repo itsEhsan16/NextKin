@@ -19,30 +19,28 @@ import { daysAgo, earlierToday } from './time';
  * dates, and they spread across ~28 days so all three groups — TODAY / THIS WEEK / EARLIER —
  * are populated (`notificationGroup`: today is the calendar day, "this week" is under 7 days).
  *
- * Every row deep-links to its exact destination, never a tab root. Score panels and job details
- * are real routes today; the resume detail, the export sheet, the standalone ATS-check step, the
- * cover-letter editor, the plan screen and the profile editors are phases 9B–9I, so those rows
- * point at their registered `/placeholder/<key>` route (`@/features/placeholders`) and land on
- * the phase placeholder until their screen ships — the same destinations ./notifications.ts
- * already uses for the same events, so a History row and its notification stay in step. Swap
- * each one for the real href as its phase lands.
+ * Every row deep-links to its exact destination, never a tab root, and every destination is a
+ * real route. A `deepLink` is a plain string, so the type system cannot tell a stale one from a
+ * live one — four of these pointed at placeholder keys for a phase after the screens had shipped.
+ * `__tests__/data/deepLinks.test.ts` is the net: it checks every fixture link against the route
+ * table, here and in ./notifications.ts, so a route that moves fails a test rather than a tap.
  */
 /* prettier-ignore */
 export const activityFixture: ActivityEntry[] = [
   // --- TODAY. `earlierToday` clamps to just after midnight so these stay in the TODAY group
   // whatever hour the app (or the suite) happens to run at. ---
   { id: 'act_gen_canva', kind: 'generation', title: 'Generating **Staff Product Designer — Canva** from your base resume', detail: 'Canva · Staff Product Designer', createdAt: earlierToday(0.05), deepLink: `/resumes/${GENERATING_RESUME_ID}`, resumeId: GENERATING_RESUME_ID, jobId: 'job_4' },
-  { id: 'act_check_upload', kind: 'ats_check', title: 'Ran an **ATS check** on an uploaded resume', detail: 'Scored 71 — the format is clean, the keywords are thin', createdAt: earlierToday(3), deepLink: '/placeholder/ats-check' },
+  { id: 'act_check_upload', kind: 'ats_check', title: 'Ran an **ATS check** on an uploaded resume', detail: 'Scored 71 — the format is clean, the keywords are thin', createdAt: earlierToday(3), deepLink: '/create/ats-check' },
   // Mirrors `ntf_ats_ready` in ./notifications.ts: same event, same score, same two quick wins.
   { id: 'act_score_stripe', kind: 'score', title: 'Your ATS score for **Stripe — Senior PD** came back **88**', detail: 'Two quick wins left', createdAt: earlierToday(5), deepLink: '/resumes/res_2/score', resumeId: 'res_2' },
   { id: 'act_export_stripe', kind: 'export', title: 'Exported **Stripe — Senior PD** as a PDF', detail: 'stripe-senior-pd.pdf', createdAt: earlierToday(6), deepLink: '/resumes/res_2', resumeId: 'res_2' },
-  { id: 'act_profile_skills', kind: 'profile', title: 'Added **3 skills** to your profile', detail: 'Design tokens, Motion design, Workshop facilitation', createdAt: earlierToday(8), deepLink: '/placeholder/profile-skills' },
+  { id: 'act_profile_skills', kind: 'profile', title: 'Added **3 skills** to your profile', detail: 'Design tokens, Motion design, Workshop facilitation', createdAt: earlierToday(8), deepLink: '/profile/skills' },
   { id: 'act_saved_stripe', kind: 'saved_job', title: 'Saved **Stripe — Senior Product Designer**', detail: 'Bengaluru · Remote · closes in 3 days', createdAt: earlierToday(9), deepLink: '/jobs/job_stripe', jobId: 'job_stripe' },
 
   // --- THIS WEEK (under 7 days). ---
   { id: 'act_export_base', kind: 'export', title: 'Exported **Product Designer** as a PDF', detail: 'product-designer.pdf · 3 pages', createdAt: daysAgo(1.5), deepLink: '/resumes/res_base', resumeId: 'res_base' },
   // The free-plan meters in `subscriptionFixture`: 2 of 2 resumes used, 5 AI credits left.
-  { id: 'act_plan_resumes', kind: 'plan', title: 'You have used **2 of 2 free resumes** this month', detail: 'NextKin Free · 5 AI credits left', createdAt: daysAgo(1.9), deepLink: '/placeholder/upgrade' },
+  { id: 'act_plan_resumes', kind: 'plan', title: 'You have used **2 of 2 free resumes** this month', detail: 'NextKin Free · 5 AI credits left', createdAt: daysAgo(1.9), deepLink: '/upgrade' },
   { id: 'act_gen_google', kind: 'generation', title: 'Tailored **UX Designer Resume** for Google — Lead UX Designer', detail: 'From your base resume', createdAt: daysAgo(2), deepLink: '/resumes/res_1', resumeId: 'res_1', jobId: 'job_google' },
   // "Four quick wins" is RESUMES 04's own summary line for res_base.
   { id: 'act_score_base', kind: 'score', title: 'Your ATS score for **Product Designer** came back **92**', detail: 'Four quick wins left', createdAt: daysAgo(2.05), deepLink: '/resumes/res_base/score', resumeId: 'res_base' },
@@ -63,5 +61,5 @@ export const activityFixture: ActivityEntry[] = [
   { id: 'act_app_razorpay', kind: 'application', title: 'Applied to **Razorpay — Senior UX Designer**', detail: 'Sent with UX Designer Resume', createdAt: daysAgo(12), deepLink: '/jobs/job_razorpay', jobId: 'job_razorpay', resumeId: 'res_1' },
   { id: 'act_score_freshworks', kind: 'score', title: 'Your ATS score for **Freshworks DS Lead** came back **76**', detail: 'Four quick wins left', createdAt: daysAgo(14.2), deepLink: '/resumes/res_3/score', resumeId: 'res_3' },
   { id: 'act_saved_postman', kind: 'saved_job', title: 'Saved **Postman — Product Designer, Growth**', detail: 'Bengaluru · Remote', createdAt: daysAgo(15), deepLink: '/jobs/job_postman', jobId: 'job_postman' },
-  { id: 'act_profile_roles', kind: 'profile', title: 'Updated your **desired roles**', detail: 'Senior UX Designer, Senior Product Designer, Design Systems Lead', createdAt: daysAgo(28), deepLink: '/placeholder/desired-roles' },
+  { id: 'act_profile_roles', kind: 'profile', title: 'Updated your **desired roles**', detail: 'Senior UX Designer, Senior Product Designer, Design Systems Lead', createdAt: daysAgo(28), deepLink: '/profile/desired-roles' },
 ];
