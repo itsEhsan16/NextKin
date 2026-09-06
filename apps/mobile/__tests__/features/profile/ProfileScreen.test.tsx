@@ -125,17 +125,11 @@ describe('ProfileScreen (PROFILE 01/02)', () => {
     expect(useProfileStore.getState().sheet).toBe('delete-account');
     expect(mockPush).not.toHaveBeenCalled();
 
-    // — Undesigned flows link out to placeholders —
+    // — Phase 9F made every career-profile row a screen of its own —
     fireEvent.press(screen.getByLabelText('Work experience, 4 roles'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'profile-experience' },
-    });
+    expect(mockPush).toHaveBeenCalledWith('/profile/experience');
     fireEvent.press(screen.getByLabelText('Edit profile'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'profile-edit' },
-    });
+    expect(mockPush).toHaveBeenCalledWith('/profile/edit');
     // Phase 6 made the preferences screen real.
     fireEvent.press(screen.getByLabelText('Notifications, 5 categories'));
     expect(mockPush).toHaveBeenCalledWith('/notifications/preferences');

@@ -66,20 +66,12 @@ describe('Resumes first run (RESUMES 05 — 1:2061)', () => {
     expect(screen.queryByLabelText('Search resumes and letters')).toBeNull();
     expect(screen.getByLabelText('Notifications')).toBeOnTheScreen();
 
+    // Phase 9D gave all three ways in a real screen.
     fireEvent.press(screen.getByLabelText('Upload PDF or DOCX'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'upload-resume' },
-    });
+    expect(mockPush).toHaveBeenCalledWith('/create/upload');
     fireEvent.press(screen.getByLabelText('Import from LinkedIn'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'import-linkedin' },
-    });
+    expect(mockPush).toHaveBeenCalledWith('/create/import-linkedin');
     fireEvent.press(screen.getByLabelText('Start with AI'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'start-from-scratch' },
-    });
+    expect(mockPush).toHaveBeenCalledWith('/resumes/new');
   }, 30000);
 });

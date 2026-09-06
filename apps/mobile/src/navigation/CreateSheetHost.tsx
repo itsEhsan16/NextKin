@@ -7,6 +7,28 @@ import { Sheet } from '@/ui/Sheet';
 
 import { useCreateSheet } from './createSheet';
 
+type CreateHref =
+  | '/create/tailor'
+  | '/create/cover-letter'
+  | '/create/ats-check'
+  | '/create/upload'
+  | '/create/import-linkedin'
+  | '/resumes/new';
+
+/**
+ * Where each row of the sheet goes. Every row has a real screen now (Phases 9B and 9D), so this
+ * is a total map rather than a special case in front of a placeholder push — adding a row without
+ * a destination stops compiling instead of shipping a dead tap.
+ */
+const CREATE_ROUTES: Record<Exclude<CreateAction, 'new-resume'>, CreateHref> = {
+  'tailor-to-a-job': '/create/tailor',
+  'cover-letter': '/create/cover-letter',
+  'ats-check': '/create/ats-check',
+  'upload-resume': '/create/upload',
+  'import-linkedin': '/create/import-linkedin',
+  'start-from-scratch': '/resumes/new',
+};
+
 /** Figma: CREATE 01 is a 600px sheet, CREATE 02 a 520px one. */
 const STEP_HEIGHT: Record<CreateStep, 'sheetStep1Height' | 'sheetStep2Height'> = {
   root: 'sheetStep1Height',
@@ -38,13 +60,7 @@ export function CreateSheetHost() {
   const handleAction = useCallback(
     (action: Exclude<CreateAction, 'new-resume'>) => {
       close();
-      // "Tailor to a Job" is built (Phase 9B); the rest of the sheet's rows are still undesigned
-      // destinations and keep falling through to the placeholder until their phase.
-      if (action === 'tailor-to-a-job') {
-        router.push('/create/tailor');
-        return;
-      }
-      router.push({ pathname: '/placeholder/[screen]', params: { screen: action } });
+      router.push(CREATE_ROUTES[action]);
     },
     [close, router],
   );

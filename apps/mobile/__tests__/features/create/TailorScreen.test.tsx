@@ -134,8 +134,8 @@ describe('TailorScreen (V2 §7.5 — no artboard)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText('See Pro plans')));
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'upgrade' },
+      pathname: '/upgrade',
+      params: { reason: 'generations' },
     });
   });
 

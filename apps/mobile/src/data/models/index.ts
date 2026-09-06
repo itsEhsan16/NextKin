@@ -7,4 +7,5 @@ export * from './plan';
 export * from './profile';
 export * from './resume';
 export * from './resumeContent';
+export * from './suggestions';
 export * from './user';

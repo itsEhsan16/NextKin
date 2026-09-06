@@ -128,8 +128,8 @@ describe('ResumeExportHost (V2 §7.12 / §13.5 wiring)', () => {
     await press('Export as DOCX, Pro feature');
     expect(useResumesStore.getState().exportOpen).toBe(false);
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/placeholder/[screen]',
-      params: { screen: 'upgrade' },
+      pathname: '/upgrade',
+      params: { reason: 'docx' },
     });
     expect(mockRenderPdf).toHaveBeenCalledTimes(1);
     expect(mockWriteTextFile).toHaveBeenCalledTimes(1);

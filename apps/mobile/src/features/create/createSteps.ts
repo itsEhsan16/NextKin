@@ -1,5 +1,3 @@
-import type { PlaceholderKey } from '@/features/placeholders';
-
 /**
  * Rows of the create sheet, transcribed from Figma CREATE 01 (1:1044) and CREATE 02 (1:1208).
  *
@@ -9,23 +7,22 @@ import type { PlaceholderKey } from '@/features/placeholders';
 export const MAX_ROWS = 5;
 
 /**
- * What a row does, enumerated rather than derived from `PlaceholderKey`.
+ * What a row does, enumerated rather than derived from the placeholder registry.
  *
- * It used to be that union, which worked only while every row led somewhere undesigned. Now that
- * "Tailor to a Job" has a real screen the two lists have parted: a row is named here, and the host
- * decides whether that name is a route or still a placeholder. Retiring a placeholder key no
- * longer silently deletes a row from this sheet.
+ * It used to be Extract<PlaceholderKey, ...>, which worked only while every row led somewhere
+ * undesigned. Every row has a real screen now (Phases 9B and 9D), and CREATE_ROUTES in the
+ * sheet host is a total map over this union — so adding a row without a destination stops
+ * compiling rather than shipping a dead tap.
  */
 export type CreateAction =
   /** Pushes to step 2 rather than navigating away. */
   | 'new-resume'
-  /** Built in Phase 9B. */
   | 'tailor-to-a-job'
-  /** Still undesigned — Phase 9D. Each is also a `PlaceholderKey`. */
-  | Extract<
-      PlaceholderKey,
-      'cover-letter' | 'ats-check' | 'upload-resume' | 'import-linkedin' | 'start-from-scratch'
-    >;
+  | 'cover-letter'
+  | 'ats-check'
+  | 'upload-resume'
+  | 'import-linkedin'
+  | 'start-from-scratch';
 
 export type CreateRow = {
   key: CreateAction;

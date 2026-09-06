@@ -91,7 +91,7 @@ export const notificationsFixture: Notification[] = [
     body: 'Your free plan renews monthly. You have used **2 of 2 resumes**.',
     createdAt: daysAgo(36),
     read: true,
-    deepLink: '/placeholder/upgrade',
+    deepLink: '/upgrade',
     visual: { kind: 'glyph', icon: 'credit-card', tone: 'neutral' },
   },
 ];

@@ -72,7 +72,7 @@ export function ResumeExportHost({ surface = 'tabs' }: ResumeExportHostProps) {
               // §13.5: the upsell replaces the action. The sheet gets out of the way first, so
               // the comparison screen is not raised behind a scrim.
               closeExport();
-              actions.openUpgrade();
+              actions.openUpgrade('docx');
             }}
           />
         </Sheet>

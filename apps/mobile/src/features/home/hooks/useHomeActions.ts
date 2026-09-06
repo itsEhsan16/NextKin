@@ -9,6 +9,21 @@ import { useCreateSheet } from '@/navigation';
 import type { QuickStartAction } from '../components/QuickStartCard';
 import type { Shortcut } from '../components/ShortcutGrid';
 
+/**
+ * Where each card on the quick-start row goes (V2 §7.5, §7.9, §7.10, §7.8). Written out rather
+ * than derived: the four actions are a designed set (Figma 1:38), and a route map that a rename
+ * could silently repoint is not worth the four lines it saves.
+ */
+const QUICK_START_ROUTES: Record<
+  QuickStartAction,
+  '/create/tailor' | '/create/zero-resume' | '/create/cover-letter' | '/create/ats-check'
+> = {
+  'build-resume': '/create/tailor',
+  'zero-resume': '/create/zero-resume',
+  'cover-letter': '/create/cover-letter',
+  'ats-check': '/create/ats-check',
+};
+
 /** Every tap target on Home resolves here, so routing stays out of the presentational tree. */
 export function useHomeActions() {
   const router = useRouter();
@@ -49,17 +64,9 @@ export function useHomeActions() {
             router.push({ pathname: '/generations/[id]', params: { id: generationId } }),
         });
       },
-      /**
-       * "Build Resume" is the tailor flow (Phase 9B). The other three are still undesigned
-       * destinations — 9D builds them — so they keep falling through to the placeholder, which is
-       * why this is a switch rather than a straight pass-through.
-       */
+      /** All four quick starts are real intakes now (Phases 9B and 9D). */
       quickStart: (action: QuickStartAction) => {
-        if (action === 'build-resume') {
-          router.push('/create/tailor');
-          return;
-        }
-        placeholder(action);
+        router.push(QUICK_START_ROUTES[action]);
       },
       shortcut: (shortcut: Shortcut) => {
         switch (shortcut) {

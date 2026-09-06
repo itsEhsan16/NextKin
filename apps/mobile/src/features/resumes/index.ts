@@ -21,6 +21,7 @@ export {
   type ResumeTypeFilter,
 } from './resumesStore';
 export { AtsFixScreen } from './screens/AtsFixScreen';
+export { NewResumeScreen } from './screens/NewResumeScreen';
 export { ResumeEditorScreen } from './screens/ResumeEditorScreen';
 export { ResumeScoreScreen } from './screens/ResumeScoreScreen';
 export { ResumesScreen } from './screens/ResumesScreen';

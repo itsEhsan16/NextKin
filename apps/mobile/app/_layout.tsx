@@ -52,7 +52,27 @@ export default function RootLayout() {
           <Stack.Screen name="resumes/[id]/rubric" />
           <Stack.Screen name="create/tailor" />
           <Stack.Screen name="create/jd-review" />
+          <Stack.Screen name="create/cover-letter" />
+          <Stack.Screen name="create/ats-check" />
+          <Stack.Screen name="create/zero-resume" />
+          <Stack.Screen name="create/upload" />
+          <Stack.Screen name="create/upload-review" />
+          <Stack.Screen name="create/import-linkedin" />
+          <Stack.Screen name="resumes/new" />
           <Stack.Screen name="generations/[id]" />
+          <Stack.Screen name="upgrade" />
+          <Stack.Screen name="profile/edit" />
+          <Stack.Screen name="profile/skills" />
+          <Stack.Screen name="profile/desired-roles" />
+          <Stack.Screen name="profile/locations" />
+          <Stack.Screen name="profile/experience/index" />
+          <Stack.Screen name="profile/experience/[id]" />
+          <Stack.Screen name="profile/education/index" />
+          <Stack.Screen name="profile/education/[id]" />
+          <Stack.Screen name="profile/certifications/index" />
+          <Stack.Screen name="profile/certifications/[id]" />
+          <Stack.Screen name="profile/links/index" />
+          <Stack.Screen name="profile/links/[id]" />
           <Stack.Screen name="placeholder/[screen]" />
           <Stack.Screen name="+not-found" />
         </Stack.Protected>

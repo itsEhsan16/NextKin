@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
 import type { AtsCheckItem, EditableSectionKey, Resume } from '@/data/models';
+import type { UpgradeReason } from '@/features/billing';
 import type { PlaceholderKey } from '@/features/placeholders';
 import { useCreateSheet } from '@/navigation';
 
@@ -25,7 +26,9 @@ export function useResumesActions() {
     () => ({
       openNotifications: () => router.push('/notifications'),
       openSort: () => placeholder('resume-sort'),
-      openUpgrade: () => placeholder('upgrade'),
+      /** §13.5: a gated control names the limit it hit rather than opening a generic pitch. */
+      openUpgrade: (reason?: UpgradeReason) =>
+        router.push(reason ? { pathname: '/upgrade', params: { reason } } : '/upgrade'),
       openCreate: openCreateSheet,
       openScore: (resume: Resume) =>
         router.push({ pathname: '/resumes/[id]/score', params: { id: resume.id } }),
@@ -51,10 +54,10 @@ export function useResumesActions() {
           params: { id: resumeId, section },
         }),
       openMenu: (resume: Resume, surface?: ResumeSurface) => openMenuFor(resume, surface),
-      // First-run CTAs (RESUMES 05) — none of these flows is designed yet (plan §8).
-      uploadResume: () => placeholder('upload-resume'),
-      importLinkedIn: () => placeholder('import-linkedin'),
-      startWithAi: () => placeholder('start-from-scratch'),
+      // First-run CTAs (RESUMES 05).
+      uploadResume: () => router.push('/create/upload'),
+      importLinkedIn: () => router.push('/create/import-linkedin'),
+      startWithAi: () => router.push('/resumes/new'),
       /** Carries the document through, so the intake screen starts from this resume. */
       tailorResume: (resume: Resume) =>
         router.push({ pathname: '/create/tailor', params: { resumeId: resume.id } }),

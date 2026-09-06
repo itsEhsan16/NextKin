@@ -1,4 +1,16 @@
 export { ProfileSheetsHost } from './ProfileSheetsHost';
 export { useProfileActions } from './hooks/useProfileActions';
 export { useProfileStore, type ProfileSheet } from './profileStore';
+export { CertificationFormScreen } from './screens/CertificationFormScreen';
+export { CertificationsListScreen } from './screens/CertificationsListScreen';
+export { DesiredRolesScreen } from './screens/DesiredRolesScreen';
+export { EditProfileScreen } from './screens/EditProfileScreen';
+export { EducationFormScreen } from './screens/EducationFormScreen';
+export { EducationListScreen } from './screens/EducationListScreen';
+export { ExperienceFormScreen } from './screens/ExperienceFormScreen';
+export { ExperienceListScreen } from './screens/ExperienceListScreen';
+export { LinkFormScreen } from './screens/LinkFormScreen';
+export { LinksListScreen } from './screens/LinksListScreen';
+export { LocationsScreen } from './screens/LocationsScreen';
 export { ProfileScreen } from './screens/ProfileScreen';
+export { SkillsScreen } from './screens/SkillsScreen';

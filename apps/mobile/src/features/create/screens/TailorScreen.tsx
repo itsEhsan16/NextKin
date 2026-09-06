@@ -248,7 +248,7 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
       note={note}
       primary={
         spent
-          ? { label: 'See Pro plans', onPress: actions.openUpgrade }
+          ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('generations') }
           : {
               label: CTA,
               icon: 'magic',

@@ -56,8 +56,13 @@ apps/mobile/
                          and the session gate: every signed-in route is declared inside it
     (auth)/              sign-in stub; the real §7.1 screens are design-gated
     (tabs)/              tab routes (Home, Jobs, Resumes, Profile) + the floating tab bar host
+    create/              the intakes that start a run: tailor, JD review, cover letter,
+                         ATS check, Zero Resume, upload + its review, LinkedIn (unavailable)
     resumes/[id]/        the document editor, its per-section editor, the score panel, the
                          published rubric and the ATS fix list
+    profile/             the §7.3 editors: identity, skills, desired roles, locations, and a
+                         list + form pair for experience, education, certifications and links
+    upgrade.tsx          the plan screen - the single destination for every paywall (§13.5)
     dev/                 __DEV__-only gallery: tokens, type, motion, mock modes, filters, forms
   src/
     theme/               tokens.ts (colours, spacing, radii, sizes, shadows), typography.ts,
@@ -66,7 +71,8 @@ apps/mobile/
     navigation/          FloatingTabBar, Fab, shared sheet-progress value
     providers/           app-level providers composed by app/_layout.tsx
     features/<area>/     screens/, components/, hooks/, store.ts per product area
-                         (auth holds the mock session store alongside its screen)
+                         (auth holds the mock session store alongside its screen; billing is
+                         the plan screen and its pure price/copy module)
     data/
       models/            TypeScript types mirroring the V2 spec entities
       mock/              fixtures (same copy as Figma), simulated latency, seed data, and the
@@ -142,7 +148,16 @@ These are enforced by code review and, where possible, by ESLint:
     static native import would take every route — and Jest, which mocks none of them — down with
     it. Each wrapper degrades to `null` or `'unavailable'` rather than throwing.
 
-13. **A sheet host raised from a pushed screen is mounted twice.** `app/(tabs)/_layout.tsx`
+13. **A gated control names the limit it hit.** Every paywall routes to `/upgrade` with an
+    `UpgradeReason` (`src/features/billing/upgradeReasons.ts`), and the plan screen leads with
+    that line instead of a generic pitch (V2 §13.5). Three rules travel with it: the cap is on
+    screen *before* the work, not after it is refused; a spent quota **replaces** the primary
+    action rather than interrupting with an alert; and an allowance that could not be *read* is
+    unknown, not unlimited — so a failed subscription query is an error state, never an open gate.
+    Say the number **once** per page: the usage banner owns it, and the action bar's note says
+    what the press costs.
+
+14. **A sheet host raised from a pushed screen is mounted twice.** `app/(tabs)/_layout.tsx`
     hosts the chrome sheets, but a pushed screen sits *above* that layout in the stack, so a
     sheet raised there would paint behind the page that asked for it. Such a host takes a
     `surface` prop (`'tabs' | 'editor'`), the store records the surface the sheet was opened

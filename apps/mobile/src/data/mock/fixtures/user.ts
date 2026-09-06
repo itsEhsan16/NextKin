@@ -30,6 +30,14 @@ export const subscriptionFixture: Subscription = {
     resumesUsed: 2,
     resumesLimit: 2,
     aiCreditsLeft: 5,
+    // The remaining §13.3 meters. No artboard sets them; these are the Free-tier caps from the
+    // spec's own table (PLAN_FEATURES), part-spent so the plan screen has something to draw.
+    atsChecksUsed: 1,
+    atsChecksLimit: 3,
+    assistantMessagesUsed: 12,
+    assistantMessagesLimit: 20,
+    interviewSetsUsed: 1,
+    interviewSetsLimit: 1,
   },
 };
 

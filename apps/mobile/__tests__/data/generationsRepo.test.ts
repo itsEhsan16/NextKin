@@ -74,12 +74,15 @@ describe('GenerationsRepo (mock)', () => {
       await flush(repos.generations.start({ kind: 'cover_letter', jdId: 'jd_stripe' }));
       expect(store.state.subscription.usage.coverLettersUsed).toBe(before.coverLettersUsed + 1);
 
-      // Optional meters: absent on the seeded free plan, so the first run starts the count.
+      // The §13.3 meters the fixture seeds part-spent. Deltas, like the rows above: an absolute
+      // here only held while these fields were undefined and the first run started the count.
       await flush(repos.generations.start({ kind: 'ats_check', sourceResumeId: 'res_base' }));
-      expect(store.state.subscription.usage.atsChecksUsed).toBe(1);
+      expect(store.state.subscription.usage.atsChecksUsed).toBe((before.atsChecksUsed ?? 0) + 1);
 
       await flush(repos.generations.start({ kind: 'interview', sourceResumeId: 'res_base' }));
-      expect(store.state.subscription.usage.interviewSetsUsed).toBe(1);
+      expect(store.state.subscription.usage.interviewSetsUsed).toBe(
+        (before.interviewSetsUsed ?? 0) + 1,
+      );
     });
 
     it('never throws on a spent quota — V2 §13.5 gates in the UI before the work begins', async () => {
