@@ -111,6 +111,14 @@ describe('ResumeScoreScreen (RESUMES 04 — 1:2109)', () => {
       params: { id: 'res_base' },
     });
 
+    // - V2 section 7.16: the score panel opens the assistant about this document -
+    mockPush.mockClear();
+    fireEvent.press(screen.getByLabelText('Ask about this score'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/assistant',
+      params: { resumeId: 'res_base' },
+    });
+
     fireEvent.press(screen.getByLabelText('Back'));
     expect(mockBack).toHaveBeenCalledTimes(1);
   }, 60000);

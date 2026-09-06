@@ -178,6 +178,18 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
               What this score measures
             </Text>
           </Pressable>
+          {/* V2 §7.16 — the assistant opens with this document as its context. */}
+          <Pressable
+            {...a11yButton('Ask about this score', 'Opens the AI assistant about this document')}
+            feedback="subtle"
+            haptic="selection"
+            hitSlop={hitSlopFor(s(LINK_HEIGHT))}
+            onPress={() => actions.askAboutScore(id)}
+          >
+            <Text variant="captionSemiBold" color="link">
+              Ask about this score
+            </Text>
+          </Pressable>
         </View>
 
         <View

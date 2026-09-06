@@ -6,7 +6,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { useMockModeStore, type MockMode } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
 import { GENERATION_TICK_MS, resetMockRepos } from '@/data/repos';
-import { HomeScreen } from '@/features/home';
+import { HomeScreen, useHomeStore } from '@/features/home';
 import { CreateSheetProvider } from '@/navigation';
 
 import { insideScroller } from '../../../testSupport/scroller';
@@ -16,7 +16,12 @@ const mockNavigate = jest.fn();
 const clients: QueryClient[] = [];
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, navigate: mockNavigate, back: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({
+    push: mockPush,
+    navigate: mockNavigate,
+    back: jest.fn(),
+    replace: jest.fn(),
+  }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
@@ -50,6 +55,7 @@ describe('HomeScreen (DESIGN 2)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
+    useHomeStore.setState({ menuOpen: false });
     mockPush.mockClear();
     mockNavigate.mockClear();
   });
@@ -106,6 +112,20 @@ describe('HomeScreen (DESIGN 2)', () => {
     // Phase 6 made the feed real.
     await act(async () => fireEvent.press(screen.getByLabelText('Notifications, unread')));
     expect(mockPush).toHaveBeenCalledWith('/notifications');
+
+    // Phase 9I: the hamburger opens a sheet hosted over the tab bar, and the three shortcuts
+    // that stood on placeholders are real screens.
+    await act(async () => fireEvent.press(screen.getByLabelText('Menu')));
+    expect(useHomeStore.getState().menuOpen).toBe(true);
+    await act(async () => fireEvent.press(screen.getByLabelText('History, 25 Activities')));
+    expect(mockPush).toHaveBeenCalledWith('/history');
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Interview Prep/)));
+    expect(mockPush).toHaveBeenCalledWith('/interview');
+    await act(async () => fireEvent.press(screen.getByLabelText(/^AI Assistant/)));
+    expect(mockPush).toHaveBeenCalledWith('/assistant');
+    expect(mockPush).not.toHaveBeenCalledWith(
+      expect.objectContaining({ pathname: '/placeholder/[screen]' }),
+    );
   });
 
   it('renders section-level empty states in "empty" mock mode', async () => {

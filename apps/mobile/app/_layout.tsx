@@ -85,7 +85,6 @@ export default function RootLayout() {
           <Stack.Screen name="profile/certifications/[id]" />
           <Stack.Screen name="profile/links/index" />
           <Stack.Screen name="profile/links/[id]" />
-          <Stack.Screen name="placeholder/[screen]" />
           <Stack.Screen name="+not-found" />
         </Stack.Protected>
 

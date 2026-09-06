@@ -1,9 +1,8 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import type { AtsCheckItem, EditableSectionKey, Resume } from '@/data/models';
 import type { UpgradeReason } from '@/features/billing';
-import type { PlaceholderKey } from '@/features/placeholders';
 import { useCreateSheet } from '@/navigation';
 
 import { useResumesStore, type ResumeSurface } from '../resumesStore';
@@ -15,17 +14,16 @@ export function useResumesActions() {
   const { open: openCreateSheet } = useCreateSheet();
   const openMenuFor = useResumesStore((state) => state.openMenu);
   const openExportFor = useResumesStore((state) => state.openExport);
-
-  const placeholder = useCallback(
-    (screen: PlaceholderKey) =>
-      router.push({ pathname: '/placeholder/[screen]', params: { screen } }),
-    [router],
-  );
+  const openSortSheet = useResumesStore((state) => state.openSort);
 
   return useMemo(
     () => ({
       openNotifications: () => router.push('/notifications'),
-      openSort: () => placeholder('resume-sort'),
+      /** The sort sheet is hosted over the tab bar (ResumeSortSheetHost), not pushed. */
+      openSort: openSortSheet,
+      /** V2 §7.16 context awareness: the assistant opens knowing which document is meant. */
+      askAboutScore: (resumeId: string) =>
+        router.push({ pathname: '/assistant', params: { resumeId } }),
       /** §13.5: a gated control names the limit it hit rather than opening a generic pitch. */
       openUpgrade: (reason?: UpgradeReason) =>
         router.push(reason ? { pathname: '/upgrade', params: { reason } } : '/upgrade'),
@@ -77,6 +75,6 @@ export function useResumesActions() {
         }),
       goBack: () => router.back(),
     }),
-    [openCreateSheet, openExportFor, openMenuFor, placeholder, router],
+    [openCreateSheet, openExportFor, openMenuFor, openSortSheet, router],
   );
 }

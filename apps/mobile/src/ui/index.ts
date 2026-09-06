@@ -13,7 +13,6 @@ export * from './ListRow';
 export * from './LogoTile';
 export * from './MonthYearSheet';
 export * from './OptionSheet';
-export * from './Placeholder';
 export * from './Pressable';
 export * from './Progress';
 export * from './RangeSlider';

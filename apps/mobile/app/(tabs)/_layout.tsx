@@ -2,9 +2,20 @@ import { Tabs } from 'expo-router/js-tabs';
 import { memo, type PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { FiltersSheetHost, JobSortSheetHost, LocationSheetHost, useJobsStore } from '@/features/jobs';
+import { HomeMenuHost, useHomeStore } from '@/features/home';
+import {
+  FiltersSheetHost,
+  JobSortSheetHost,
+  LocationSheetHost,
+  useJobsStore,
+} from '@/features/jobs';
 import { ProfileSheetsHost, ProfileToastHost, useProfileStore } from '@/features/profile';
-import { ResumeExportHost, ResumeMenuHost, useResumesStore } from '@/features/resumes';
+import {
+  ResumeExportHost,
+  ResumeMenuHost,
+  ResumeSortSheetHost,
+  useResumesStore,
+} from '@/features/resumes';
 import {
   CreateSheetHost,
   CreateSheetProvider,
@@ -24,9 +35,20 @@ function useChromeSheetOpen(): boolean {
   const sortOpen = useJobsStore((state) => state.sortOpen);
   const locationOpen = useJobsStore((state) => state.locationOpen);
   const resumeMenuOpen = useResumesStore((state) => state.menuOpen);
+  const resumeSortOpen = useResumesStore((state) => state.sortOpen);
   const exportOpen = useResumesStore((state) => state.exportOpen);
   const profileSheetOpen = useProfileStore((state) => state.sheetOpen);
-  return filtersOpen || sortOpen || locationOpen || resumeMenuOpen || exportOpen || profileSheetOpen;
+  const menuOpen = useHomeStore((state) => state.menuOpen);
+  return (
+    filtersOpen ||
+    sortOpen ||
+    locationOpen ||
+    resumeMenuOpen ||
+    resumeSortOpen ||
+    exportOpen ||
+    profileSheetOpen ||
+    menuOpen
+  );
 }
 
 /**
@@ -132,6 +154,8 @@ export default function TabsLayout() {
       <JobSortSheetHost />
       <LocationSheetHost />
       <ResumeMenuHost />
+      <ResumeSortSheetHost />
+      <HomeMenuHost />
       {/* Raised from the same menu, so it shares that z-order; it also owns the library's
           toast, which has to sit above the sheets rather than behind them. */}
       <ResumeExportHost />

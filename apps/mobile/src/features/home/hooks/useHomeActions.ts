@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import type { Job, Resume } from '@/data/models';
 import { useRetryGeneration } from '@/data/queries';
-import type { PlaceholderKey } from '@/features/placeholders';
 import { useCreateSheet } from '@/navigation';
 
 import type { QuickStartAction } from '../components/QuickStartCard';
 import type { Shortcut } from '../components/ShortcutGrid';
+import { useHomeStore } from '../homeStore';
 
 /**
  * Where each card on the quick-start row goes (V2 §7.5, §7.9, §7.10, §7.8). Written out rather
@@ -30,16 +30,13 @@ export function useHomeActions() {
   const { open: openCreateSheet } = useCreateSheet();
   // `mutate` is stable across renders, so the memo below survives the mutation's own state.
   const { mutate: retryGeneration } = useRetryGeneration();
-
-  const placeholder = useCallback(
-    (screen: PlaceholderKey) => router.push({ pathname: '/placeholder/[screen]', params: { screen } }),
-    [router],
-  );
+  const openMenuSheet = useHomeStore((state) => state.openMenu);
 
   return useMemo(
     () => ({
       openNotifications: () => router.push('/notifications'),
-      openMenu: () => placeholder('menu'),
+      /** The hamburger sheet is hosted over the tab bar (HomeMenuHost), not pushed. */
+      openMenu: openMenuSheet,
       findJobs: () => router.navigate('/(tabs)/jobs'),
       viewAllJobs: () => router.navigate('/(tabs)/jobs'),
       viewAllResumes: () => router.navigate('/(tabs)/resumes'),
@@ -76,11 +73,18 @@ export function useHomeActions() {
           case 'saved-jobs':
             router.navigate({ pathname: '/(tabs)/jobs', params: { segment: 'saved' } });
             return;
-          default:
-            placeholder(shortcut);
+          case 'history':
+            router.push('/history');
+            return;
+          case 'interview-prep':
+            router.push('/interview');
+            return;
+          case 'ai-assistant':
+            router.push('/assistant');
+            return;
         }
       },
     }),
-    [openCreateSheet, placeholder, retryGeneration, router],
+    [openCreateSheet, openMenuSheet, retryGeneration, router],
   );
 }

@@ -1,5 +1,6 @@
 export { ResumeExportHost } from './ResumeExportHost';
 export { ResumeMenuHost } from './ResumeMenuHost';
+export { ResumeSortSheetHost } from './ResumeSortSheetHost';
 export { ExportSheetBody } from './components/ExportSheetBody';
 export { ResumeMenuSheetBody } from './components/ResumeMenuSheetBody';
 export {

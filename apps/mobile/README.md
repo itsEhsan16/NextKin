@@ -66,6 +66,9 @@ apps/mobile/
     support/             help and the contact form; legal/[doc] holds terms and privacy
     account/             email, password and sessions; the §8.5 data export
     upgrade.tsx          the plan screen - the single destination for every paywall (§13.5)
+    history.tsx          the activity record (§7.6), grouped by age and filterable
+    interview/           §7.15: the practice-set library, the setup form, and practice itself
+    assistant.tsx        §7.16: the one persistent conversation, streaming, read-and-advise only
     dev/                 __DEV__-only gallery: tokens, type, motion, mock modes, filters, forms
   src/
     theme/               tokens.ts (colours, spacing, radii, sizes, shadows), typography.ts,
@@ -76,7 +79,10 @@ apps/mobile/
     features/<area>/     screens/, components/, hooks/, store.ts per product area
                          (auth holds the mock session store alongside its screen; billing is
                          the plan screen and its pure price/copy module; support and account are
-                         the help, contact, legal and account screens and their pure copy modules)
+                         the help, contact, legal and account screens and their pure copy modules;
+                         history, interview and assistant are the §7.6 / §7.15 / §7.16 screens
+                         with their pure row, quota and practice modules; home also hosts the
+                         hamburger menu sheet)
     data/
       models/            TypeScript types mirroring the V2 spec entities
       mock/              fixtures (same copy as Figma), simulated latency, seed data, and the

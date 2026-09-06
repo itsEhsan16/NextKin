@@ -57,8 +57,10 @@ export function ResumesScreen() {
   const setTypeFilter = useResumesStore((state) => state.setTypeFilter);
   const query = useResumesStore((state) => state.query);
   const setQuery = useResumesStore((state) => state.setQuery);
+  const sort = useResumesStore((state) => state.sort);
 
-  const resumes = useResumes();
+  // Sorted in the query's `select`, so the filters below never re-order and the cache is shared.
+  const resumes = useResumes(sort);
   const subscription = useSubscription();
   const unread = useUnreadCount();
 
@@ -158,6 +160,7 @@ export function ResumesScreen() {
         typeFilter={typeFilter}
         onChangeTypeFilter={setTypeFilter}
         subscription={subscription.data}
+        sort={sort}
         onPressSort={actions.openSort}
         onPressUpgrade={actions.openUpgrade}
       />
@@ -165,7 +168,12 @@ export function ResumesScreen() {
       {status === 'pending' ? (
         <View style={[styles.grid, { gap: s(GRID_GAP) }]}>
           {[0, 1, 2, 3].map((index) => (
-            <Skeleton key={index} width={cardWidth} height={cardWidth / NEW_TILE_RATIO} radius="card" />
+            <Skeleton
+              key={index}
+              width={cardWidth}
+              height={cardWidth / NEW_TILE_RATIO}
+              radius="card"
+            />
           ))}
         </View>
       ) : status === 'error' ? (
@@ -195,7 +203,9 @@ export function ResumesScreen() {
         <View style={[styles.grid, { gap: grid ? gridGap : spacing[4] - s(2) }]}>
           <Animated.View
             key="new"
-            layout={reduced ? undefined : LinearTransition.springify().duration(motion.durations.slow)}
+            layout={
+              reduced ? undefined : LinearTransition.springify().duration(motion.durations.slow)
+            }
             style={grid ? { width: cardWidth } : styles.fullWidth}
           >
             {grid ? (

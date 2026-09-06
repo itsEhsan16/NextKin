@@ -7,8 +7,9 @@ that were deliberately deferred, and the ones only a real device can settle.
 
 Add to this file whenever a judgement call gets made rather than burying it in a commit message.
 
-**Status:** Phases 9A–9H shipped. Five placeholder destinations remain: the four 9I flows
-(`menu`, `history`, `interview-prep`, `ai-assistant`) and `resume-sort`, which is item 2 below.
+**Status:** Phases 9A–9I shipped. **No placeholder destination remains** — `src/features/placeholders.ts`,
+`app/placeholder/[screen].tsx` and `src/ui/Placeholder` are deleted, so a new dead link cannot be
+typed. Everything undesigned is now built from the spec; what is left is this file and the device.
 
 ---
 
@@ -97,6 +98,62 @@ out of the seeded Discover list the artboard specifies. It would also need the l
 **Decide:** leave it as a label (and consider wording it so it does not read like a filter), or
 make it filter and accept a different seeded Discover list than JOBS 01 draws.
 
+### 1.8 The interview cap is read per resume, and its upsell names no reset date (conflict C1)
+
+§13.3 gives Free "1 question set per generated resume". `SubscriptionUsage` models it as a flat
+`interviewSetsUsed / interviewSetsLimit` pair and the fixture account is seeded **at** it (1/1),
+so a `used >= limit` gate would put `/interview/new` behind an upsell the demo could never clear —
+the `resumesUsed` trap of 1.1 again. `interviewAllowance()` therefore counts the sets that
+**exist for the chosen resume** and gates on that; the seeded Stripe set blocks only the Stripe
+resume. Standalone role-title sets have no resume to be capped per and §13.3 does not mention
+them, so they share one bucket under the same per-target limit. `interviewSetsUsed` is still
+bumped on every completed set and drawn on `/upgrade`, but it is **informational** — nothing gates
+on it.
+
+§13.5's upsell table asks for a **quota reset date**. There is none the app can honestly know:
+this cap has no period, and the assistant's (1.9) is daily with no clock in the mock that rolls
+it. `renewsAt` is the billing renewal, a different fact. Both upsells state the cap and what Pro
+does instead, and a test on each pins that the word "resets" never appears.
+
+**Decide:** whether the real API will expose a per-resume cap (then this is right as built) or
+a flat monthly count (then `interviewAllowance` collapses to the flat gate and the fixture must
+start below it), and whether §13.5's reset-date row should be struck for these two caps.
+
+### 1.9 The assistant's daily counter never rolls over in the mock
+
+`assistantMessagesUsed` (12 of 20) moves on every send — a refusal counts, per §13.3 — and the
+meter says "left **today**", but nothing resets it at midnight. In a long Expo Go session the
+demo account will spend its 8 remaining messages and then only see the upsell until the app's
+storage is cleared. A rollover needs a date the counter was last reset, which `SubscriptionUsage`
+does not carry.
+
+**Decide:** add a `usageDay` (or a `resetsAt` per counter) to the model now, so the real API's
+shape is not guessed later, or accept the mock as-is for the demo.
+
+### 1.10 The domain lock is a keyword classifier, not a model
+
+§7.16 specifies a model classifier plus a system prompt. `assistantDomain.ts` is a keyword and
+phrase matcher with a small deny list, and its doc comment says what that cannot do: it
+**over-refuses** paraphrases with none of the listed words ("what should I put at the top of the
+page?") and **under-refuses** off-topic questions that happen to contain one ("how's the weather
+for an *interview* in Delhi?"). The canned answers are keyed by the same topics, so an accepted
+question always gets a relevant paragraph, never a wrong one. This is the right stand-in for a
+mock and the wrong thing to ship against a real model.
+
+**Decide:** nothing now — but when the API lands, the classifier and `answerFor()` are the two
+files that go, and the screen should not need to change.
+
+### 1.11 Two assistant calls that are yours
+
+- **The transcript is a `ScrollView`, not a `FlashList`.** The plan said a static `Screen` with
+  its own list and keyboard bar. A daily cap of 20 means a thread of at most ~40 bubbles a day,
+  which a plain scroller handles, and `Screen keyboard scroll footer` gives the pinned composer
+  the same keyboard behaviour as every other form for free. If §7.16's "persistent history"
+  grows into weeks of thread, this becomes a list — the bubbles are already `memo`.
+- **`AssistantRepo.clear()` exists and no screen calls it.** The rule on the screen is "no control
+  mutates anything", and a Clear thread control would be the first exception. Wiring it is a
+  five-line change once you decide it belongs; leaving it out was the conservative reading.
+
 ---
 
 ## 2. Gaps in the plan itself
@@ -106,8 +163,8 @@ say Phase 9 is complete.
 
 | Gap | Detail | Suggested home |
 |---|---|---|
-| `resume-sort` | A placeholder key in no phase table. Same `OptionSheet`-over-the-tab-bar shape as the jobs sort sheet. | 9H, beside `job-sort` |
-| Version history | `useRestoreVersion` and `useResumeVersions` exist and work; **nothing consumes them**. The editor shows "v3" with no way to see or restore the other two, and §7.11 requires append-only history to be visible. | needs a phase |
+| ~~`resume-sort`~~ | **Built in 9I** (`ResumeSortSheetHost`, sorted in `useResumes(sort)`'s `select` so every other reader of the list is untouched). Kept here so the row's history is not lost. | done |
+| Version history | `useRestoreVersion` and `useResumeVersions` exist and work; **nothing consumes them**. The editor shows "v3" with no way to see or restore the other two, and §7.11 requires append-only history to be visible. `useGenerations` was deleted in 9I (History reads activity entries, not runs), so the version hooks are now the only orphans in `@/data/queries`. | needs a phase |
 | Rewrite a letter in another tone | 9D built the tone picker for a *new* letter. The editor's `LetterBody` deliberately has none, because regenerating spends a cover-letter generation and §13.5 wants the cap on screen first. So an existing letter cannot be rewritten in another tone at all. | needs a phase |
 | Zero Resume cap | §13.3 publishes "Zero Resume drafts: 1/month on Free" as its own row. `SubscriptionUsage` has no counter for it, so `/create/zero-resume` meters against the generations quota instead. | data-layer change |
 | Saved-jobs cap | §13.3 says "Up to 10" on Free. Home's fixture ships 18 saved jobs and the job fixtures 12; both predate the cap and neither is enforced. | fixtures + 9H |
@@ -141,6 +198,13 @@ What only a device can settle:
   for sheet open/close, chip insert/remove, and the generation ticker.
 - **Artboard mode** toggled on the new screens, to catch any unscaled length literal that ESLint's
   property list does not cover.
+- **9I specifically — the worst phase to skip.** A reply streaming into the transcript while the
+  keyboard is up (does the composer stay above it, does the list keep its place?); the Home menu
+  sheet over the tab bar (scrim dims the pill and FAB, Android back closes it); the interview
+  practice card's reveal at 1.3× Dynamic Type; and the full walk — Home menu → each row; History →
+  filter, tap a row, land on the right screen; Interview → new set → run → practice → mark → leave
+  → return and the marks are still there; Assistant → suggested prompt → streaming reply →
+  off-domain refusal → meter at 0 → upsell.
 
 ---
 

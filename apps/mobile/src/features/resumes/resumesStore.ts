@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { Resume } from '@/data/models';
+import type { Resume, ResumeSort } from '@/data/models';
 import { storage } from '@/lib';
 
 /** Grid ⇄ list presentation of the library (Figma RESUMES 01 vs 02). */
@@ -31,6 +31,9 @@ type ResumesState = {
   viewMode: ResumesViewMode;
   typeFilter: ResumeTypeFilter;
   query: string;
+  /** The library's order (RESUMES 01 "Last edited ▾"); the sheet behind it is `sortOpen`. */
+  sort: ResumeSort;
+  sortOpen: boolean;
 
   /**
    * The document the card menu is about — a snapshot taken on open, so the sheet keeps
@@ -54,6 +57,9 @@ type ResumesState = {
   setViewMode: (mode: ResumesViewMode) => void;
   setTypeFilter: (filter: ResumeTypeFilter) => void;
   setQuery: (value: string) => void;
+  setSort: (sort: ResumeSort) => void;
+  openSort: () => void;
+  closeSort: () => void;
 
   openMenu: (resume: Resume, surface?: ResumeSurface) => void;
   closeMenu: () => void;
@@ -73,6 +79,8 @@ export const useResumesStore = create<ResumesState>((set) => ({
   viewMode: storage.get<ResumesViewMode>(VIEW_MODE_KEY) ?? 'grid',
   typeFilter: 'all',
   query: '',
+  sort: 'edited',
+  sortOpen: false,
 
   menuResume: null,
   menuOpen: false,
@@ -92,6 +100,9 @@ export const useResumesStore = create<ResumesState>((set) => ({
   },
   setTypeFilter: (typeFilter) => set({ typeFilter }),
   setQuery: (query) => set({ query }),
+  setSort: (sort) => set({ sort }),
+  openSort: () => set({ sortOpen: true }),
+  closeSort: () => set({ sortOpen: false }),
 
   // Re-seeds the step on every open, so a menu abandoned mid-confirm reopens on its actions.
   openMenu: (menuResume, menuSurface = 'tabs') =>

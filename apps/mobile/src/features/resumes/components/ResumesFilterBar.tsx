@@ -1,7 +1,7 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 
-import type { Subscription } from '@/data/models';
+import { RESUME_SORT_LABEL, type ResumeSort, type Subscription } from '@/data/models';
 import { a11yButton, hitSlopFor } from '@/lib';
 import { useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
@@ -15,6 +15,7 @@ export type ResumesFilterBarProps = {
   typeFilter: ResumeTypeFilter;
   onChangeTypeFilter: (filter: ResumeTypeFilter) => void;
   subscription: Subscription | undefined;
+  sort: ResumeSort;
   onPressSort: () => void;
   onPressUpgrade: () => void;
 };
@@ -51,10 +52,12 @@ export function ResumesFilterBar({
   typeFilter,
   onChangeTypeFilter,
   subscription,
+  sort,
   onPressSort,
   onPressUpgrade,
 }: ResumesFilterBarProps) {
   const { colors, spacing, s } = useTheme();
+  const sortLabel = RESUME_SORT_LABEL[sort];
 
   return (
     <View>
@@ -71,7 +74,7 @@ export function ResumesFilterBar({
           ))}
         </View>
         <Pressable
-          {...a11yButton('Sort by Last edited', 'Changes the document order')}
+          {...a11yButton(`Sort by ${sortLabel}`, 'Changes the document order')}
           feedback="subtle"
           haptic="selection"
           hitSlop={hitSlopFor(s(20))}
@@ -79,7 +82,7 @@ export function ResumesFilterBar({
           style={[styles.sort, { gap: spacing[1] + 2 }]}
         >
           <Text variant="caption" color="textSecondary">
-            Last edited
+            {sortLabel}
           </Text>
           <FontAwesome5 name="chevron-down" size={s(SORT_CHEVRON)} color={colors.iconMuted} solid />
         </Pressable>
