@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 import type { LegalDocKey, SupportTopic } from '@/data/models';
 
-/** Every navigation the Help, Contact and Legal screens make (V2 §7.14, §8.5). */
+/** Every navigation the Help, Contact and Legal screens make (PROFILE 02 Support rows; V2 §8.5 for legal). */
 export function useSupportActions() {
   const router = useRouter();
 
@@ -19,8 +19,7 @@ export function useSupportActions() {
           topic ? { pathname: '/support/contact', params: { topic } } : '/support/contact',
         ),
       openHelp: () => router.push('/support/help'),
-      openLegal: (doc: LegalDocKey) =>
-        router.push({ pathname: '/legal/[doc]', params: { doc } }),
+      openLegal: (doc: LegalDocKey) => router.push({ pathname: '/legal/[doc]', params: { doc } }),
     }),
     [router],
   );

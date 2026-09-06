@@ -32,7 +32,8 @@ const CONTACT_SECONDARY = 'Message support instead';
 const NO_ITEMS: readonly FaqItem[] = [];
 
 /**
- * HELP & FAQ (V2 §7.14), reached from Profile → Support. No artboard covers it (plan §8, phase
+ * HELP & FAQ, reached from the Support rows Figma PROFILE 02 draws. The spec has no help
+ * section — §7.14 is Skills Explorer, a public web surface. No artboard covers this screen (plan §8, phase
  * 9G), so it is assembled from the built primitives only: the search field the Jobs and Resumes
  * headers wear, the filter chips the Filters sheet wears, and the carded accordion the published
  * score rubric wears.
@@ -101,7 +102,7 @@ export function HelpScreen() {
 
   // (a) The repo has no help content at all. Not a failure and not a search result — there is
   //     nothing to search, so the field and the chips are not drawn either. The way out is still
-  //     a person: §7.14 answers by message whether or not the FAQ loaded.
+  //     a person: a person answers by message whether or not the FAQ loaded.
   if (all.length === 0) {
     return page(
       <StateView

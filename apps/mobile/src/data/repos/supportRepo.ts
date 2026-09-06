@@ -5,8 +5,9 @@ import { clone, type MockStore, NotFoundError } from './state';
 import type { SupportRepo } from './types';
 
 /**
- * NextKin V2 spec §7.14 (help and contact) and §8.5 (the legal documents) — the read-only help
- * content, plus the one thing this corner of the app writes.
+ * Help, contact and the legal documents — the read-only reference content behind the Support
+ * rows Figma PROFILE 02 draws, plus the one thing this corner of the app writes. The spec has no
+ * help section (§7.14 is Skills Explorer); only the legal half has one, §8.5.
  *
  * The FAQ and the legal documents are reference data: the mock returns the fixtures, and the real
  * API will return the same shapes from a CMS. Searching and filtering the FAQ is deliberately NOT
@@ -35,7 +36,7 @@ export function createMockSupportRepo(store: MockStore): SupportRepo {
           id: newId('tkt'),
           topic: input.topic,
           message: input.message.trim(),
-          // The account address, not one the form asked for: §7.14 replies to the account, and a
+          // The account address, not one the form asked for: replies go to the account, and a
           // second address on the form would be one more thing to get wrong.
           email: store.state.user.email,
           createdAt: new Date().toISOString(),

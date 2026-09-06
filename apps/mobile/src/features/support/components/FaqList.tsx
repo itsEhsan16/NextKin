@@ -19,7 +19,7 @@ export type FaqListProps = {
 const ROW_INSET = 19;
 
 /**
- * The FAQ itself (V2 §7.14): one `Disclosure` row per entry, the question as the row title and
+ * The FAQ itself: one `Disclosure` row per entry, the question as the row title and
  * the answer as prose underneath. Spec-derived — no artboard covers help — so it is the same
  * carded accordion the published score rubric draws.
  */

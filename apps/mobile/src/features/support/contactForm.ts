@@ -1,5 +1,5 @@
 /**
- * NextKin V2 §7.14 — the rules and the wording behind the contact form, with no React in them.
+ * The rules and the wording behind the contact form, with no React in them.
  *
  * The same split as `profile/profileForms.ts`: the screen holds the draft in `useState` and
  * everything that *decides* something about it — whether the message is worth sending, which

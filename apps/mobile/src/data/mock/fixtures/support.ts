@@ -1,7 +1,9 @@
 import type { FaqItem } from '@/data/models/support';
 
 /**
- * NextKin V2 spec §7.14 — the help content the FAQ screen searches and filters.
+ * The help content the FAQ screen searches and filters. Its entry point is the Support rows on
+ * Figma PROFILE 02 — the spec has no help section — and the answers are the product's own claims,
+ * kept in step with the screens that make them.
  *
  * Written in the product's own voice and, deliberately, in its own limits: the answers about the
  * score repeat §7.8's honesty note rather than softening it, the one about LinkedIn says there is

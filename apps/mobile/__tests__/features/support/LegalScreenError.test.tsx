@@ -1,5 +1,5 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -82,8 +82,12 @@ describe('LegalScreen error state (V2 §8.5)', () => {
 
     // Try again refetches; still failing, so the state holds rather than blanking the page.
     await act(async () => fireEvent.press(screen.getByLabelText('Try again')));
-    expect(
-      await screen.findByText("Couldn't load this document", {}, { timeout: 15000 }),
-    ).toBeOnTheScreen();
+    // `waitFor` around the assertion, not `findBy` then assert: the retry puts the page back
+    // through its skeleton before the second failure lands, and the gap between an awaited find
+    // and the next line is enough for React to commit it. Only re-running the whole assertion
+    // tolerates the transient state — and it only ever showed up under full-suite load.
+    await waitFor(() => expect(screen.getByText("Couldn't load this document")).toBeOnTheScreen(), {
+      timeout: 15000,
+    });
   }, 60000);
 });

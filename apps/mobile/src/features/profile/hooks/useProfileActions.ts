@@ -61,7 +61,7 @@ export function useProfileActions() {
       deleteAccount: sheet('delete-account'),
       openNotificationPrefs: () => router.push('/notifications/preferences'),
       goBack: () => router.back(),
-      // Support, legal and account (V2 §7.14, §8.5).
+      // Support, legal and account (PROFILE 02 Support rows; V2 §7.1, §8.5).
       openHelp: () => router.push('/support/help'),
       openContact: () => router.push('/support/contact'),
       /** No screen: the OS owns the prompt, so this asks and then says what happened. */

@@ -81,7 +81,7 @@ export type MockState = {
   activity: ActivityEntry[];
   /** Where the account data export has got to; 'idle' until the settings row asks for one. */
   dataExport: DataExportStatus;
-  /** Help content and the two legal documents — read-only reference data (V2 §7.14, §8.5). */
+  /** Help content and the two legal documents — read-only reference data (PROFILE 02 Support rows; V2 §8.5). */
   faq: FaqItem[];
   legal: Record<LegalDocKey, LegalDoc>;
   /** Support messages sent this session. The mock has no inbox; sending is the whole flow. */

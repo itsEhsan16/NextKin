@@ -42,7 +42,8 @@ export type ContactFormProps = {
 };
 
 /**
- * The contact form's fields (V2 §7.14). No artboard draws them (plan §8, phase 9G), so the page
+ * The contact form's fields. No artboard draws them (plan §8, phase 9G) and the spec has no
+ * section for them — the entry point is PROFILE 02's Support rows — so the page
  * is grouped rows plus one textarea, exactly as the profile forms are.
  */
 export function ContactForm({

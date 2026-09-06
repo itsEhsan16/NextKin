@@ -1,8 +1,9 @@
 /**
- * NextKin V2 spec §7.14 (help and support) and §8.5 (the legal documents and the rights they
- * describe) — the reference content behind the Support and Legal rows on the Profile tab.
+ * The reference content behind the Support and Legal rows on the Profile tab: help and contact,
+ * which enter from the Support rows Figma PROFILE 02 draws and have no spec section of their own
+ * (§7.14 is Skills Explorer), and the legal documents and the rights they describe (V2 §8.5).
  *
- * No artboard covers any of it (plan §8, phase 9G), so the citations here are spec sections. Both
+ * No artboard covers any of the screens themselves (plan §8, phase 9G). Both
  * halves are reference data the server will own: the FAQ and the two legal documents are read,
  * never written, and a support ticket is the one thing this file lets the app send.
  */
@@ -57,7 +58,7 @@ export const SUPPORT_TOPIC_ORDER: readonly SupportTopic[] = [
   'feedback',
 ];
 
-/** §7.14's published reply window. The contact screen promises this and nothing shorter. */
+/** The reply window the product publishes. The contact screen promises this and nothing shorter. */
 export const SUPPORT_REPLY_WINDOW = 'We reply within 2 business days.';
 
 /** The longest message the form accepts; the counter under the field reads against it. */

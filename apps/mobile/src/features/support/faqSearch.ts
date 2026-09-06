@@ -1,5 +1,5 @@
 /**
- * NextKin V2 §7.14 — the rules behind the help screen's search, with no React in them.
+ * The rules behind the help screen's search, with no React in them.
  *
  * The FAQ is a dozen entries the repo hands over whole (`supportRepo.listFaq`), so the filtering
  * happens here rather than on the server: a round trip per keystroke would be a worse product for

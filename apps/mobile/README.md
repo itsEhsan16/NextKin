@@ -76,7 +76,7 @@ apps/mobile/
     features/<area>/     screens/, components/, hooks/, store.ts per product area
                          (auth holds the mock session store alongside its screen; billing is
                          the plan screen and its pure price/copy module; support and account are
-                         the §7.14 / §8.5 screens and their pure copy modules)
+                         the help, contact, legal and account screens and their pure copy modules)
     data/
       models/            TypeScript types mirroring the V2 spec entities
       mock/              fixtures (same copy as Figma), simulated latency, seed data, and the

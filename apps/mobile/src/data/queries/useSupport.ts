@@ -6,7 +6,8 @@ import { repos } from '@/data/repos';
 import { qk } from './keys';
 
 /**
- * NextKin V2 spec §7.14 (help and contact) and §8.5 (the legal documents).
+ * Help and contact (the Support rows on Figma PROFILE 02; the spec has no help section) and the
+ * legal documents (V2 §8.5).
  *
  * The FAQ and the two documents are reference content: they do not change while the app is open,
  * so both are plain queries with no invalidation anywhere. Sending a message is the only write,
@@ -31,7 +32,7 @@ export function useLegal(doc: LegalDocKey) {
 }
 
 /**
- * Sends a support message (V2 §7.14). Not optimistic: there is nothing on screen to update
+ * Sends a support message. Not optimistic: there is nothing on screen to update
  * ahead of the server, and a message that quietly failed after showing "Sent" would be the one
  * failure a support form must never have.
  */

@@ -32,7 +32,8 @@ export type ContactScreenProps = {
 };
 
 /**
- * CONTACT — write to support (V2 §7.14). No artboard covers it (plan §8, phase 9G), so it is
+ * CONTACT — write to support. No artboard covers it (plan §8, phase 9G) and the spec has no
+ * section for it: the entry point is the Support rows on Figma PROFILE 02. So it is
  * assembled from built primitives: a topic row over a sheet, the account address read-only, one
  * textarea, and the pinned Send bar every form in the app wears.
  *
