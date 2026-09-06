@@ -130,9 +130,15 @@ export function createMockUserRepo(store: MockStore): UserRepo {
           title: `Upgraded to **${plan.name}**`,
           detail: `₹${plan.price.amount} per ${plan.price.period}`,
           createdAt,
-          deepLink: '/placeholder/upgrade',
+          deepLink: '/upgrade',
         };
         store.state.activity = [entry, ...store.state.activity];
+        // Every other writer of the audit trail bumps the dashboard counter with it; this one
+        // did not, so Home's "Activities" tile under-counted by one after every upgrade.
+        store.state.dashboardStats = {
+          ...store.state.dashboardStats,
+          activitiesCount: store.state.dashboardStats.activitiesCount + 1,
+        };
 
         const welcome: Notification = {
           id: newId('ntf'),
@@ -140,7 +146,7 @@ export function createMockUserRepo(store: MockStore): UserRepo {
           body: `Welcome to **${SUBSCRIPTION_PLAN_LABEL[plan.tier]}** — your higher caps are live.`,
           createdAt,
           read: false,
-          deepLink: '/placeholder/upgrade',
+          deepLink: '/upgrade',
           visual: { kind: 'glyph', icon: 'credit-card', tone: 'brand' },
         };
         store.state.notifications = [welcome, ...store.state.notifications];
