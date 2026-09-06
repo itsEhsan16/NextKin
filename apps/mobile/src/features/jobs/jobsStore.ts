@@ -14,6 +14,7 @@ import {
   type JobSort,
   type PostedWithin,
   type RemoteType,
+  type SavedJobsSort,
 } from '@/data/models';
 import { formatSalaryBand } from '@/lib';
 
@@ -45,6 +46,19 @@ type JobsState = {
   /** Null until the sheet is first opened; retained after close — see `closeFilters`. */
   draft: JobFilterDraft | null;
 
+  /**
+   * Saved jobs sort by their own union, not `JobSort`: once a job is saved there is no search for
+   * it to be relevant to, so the default is the order they were saved in and the deadline takes
+   * relevance's place (see SAVED_JOBS_SORT_LABEL).
+   */
+  savedSort: SavedJobsSort;
+  /** The sort picker, hosted over the tab bar like the filters sheet rather than pushed. */
+  sortOpen: boolean;
+  /** The location picker, same hosting. */
+  locationOpen: boolean;
+  /** Transient confirmation for share, which has no screen and no visible result of its own. */
+  toast: string | null;
+
   setSegment: (segment: JobsSegment) => void;
   setQuery: (segment: JobsSegment, value: string) => void;
   setSort: (sort: JobSort) => void;
@@ -52,6 +66,15 @@ type JobsState = {
   toggleRemoteOnly: () => void;
   removeFilter: (key: string) => void;
   clearFilters: () => void;
+
+  setSavedSort: (sort: SavedJobsSort) => void;
+  openSort: () => void;
+  closeSort: () => void;
+  openLocation: () => void;
+  closeLocation: () => void;
+  setLocation: (location: string) => void;
+  showToast: (message: string) => void;
+  hideToast: () => void;
 
   openFilters: () => void;
   closeFilters: () => void;
@@ -107,11 +130,25 @@ export const useJobsStore = create<JobsState>((set) => {
     location: 'Bengaluru, India',
     filtersOpen: false,
     draft: null,
+    savedSort: 'recent',
+    sortOpen: false,
+    locationOpen: false,
+    toast: null,
 
     setSegment: (segment) => set({ segment }),
     setQuery: (segment, value) =>
       set((state) => ({ queries: { ...state.queries, [segment]: value } })),
     setSort: (sort) => set({ sort }),
+    setSavedSort: (savedSort) => set({ savedSort }),
+    // Each picker closes itself on choose; nothing is retained, because both render from a
+    // static option list rather than from a snapshot that could empty mid-exit.
+    openSort: () => set({ sortOpen: true }),
+    closeSort: () => set({ sortOpen: false }),
+    openLocation: () => set({ locationOpen: true }),
+    closeLocation: () => set({ locationOpen: false }),
+    setLocation: (location) => set({ location }),
+    showToast: (toast) => set({ toast }),
+    hideToast: () => set({ toast: null }),
     setAppliedStatus: (appliedStatus) => set({ appliedStatus }),
     // The chip and the removable "Remote" pill are the same filter, so they can never disagree.
     toggleRemoteOnly: () =>

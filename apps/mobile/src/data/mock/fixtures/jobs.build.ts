@@ -57,18 +57,58 @@ const remoteCopy: Record<RemoteType, string> = {
 };
 
 /** Company profiles for JOBS 05's card. Only the companies an artboard names are hand-written. */
-type CompanyProfile = { industry: string; size: string };
+type CompanyProfile = { industry: string; size: string; about?: string };
 
 const COMPANY_PROFILES: Record<string, CompanyProfile> = {
   // Figma 1:893, verbatim.
-  Stripe: { industry: 'Financial infrastructure', size: '8,000+ employees' },
-  Linear: { industry: 'Developer tools', size: '51–200 employees' },
-  Razorpay: { industry: 'Payments', size: '3,000+ employees' },
-  Zoho: { industry: 'Business software', size: '15,000+ employees' },
-  Freshworks: { industry: 'Customer software', size: '5,000+ employees' },
-  Atlassian: { industry: 'Team collaboration', size: '10,000+ employees' },
-  Postman: { industry: 'API platform', size: '500–1,000 employees' },
-  CRED: { industry: 'Consumer fintech', size: '1,000+ employees' },
+  Stripe: {
+    industry: 'Financial infrastructure',
+    size: '8,000+ employees',
+    about:
+      'Stripe builds the payments and financial infrastructure a large share of the internet runs on — checkout, billing, payouts and the reporting around them. Design sits close to the API surface: much of the work is making genuinely complex money movement legible to the people operating it.',
+  },
+  Linear: {
+    industry: 'Developer tools',
+    size: '51–200 employees',
+    about:
+      'Linear makes issue tracking and project planning for software teams. It is a small company with an unusually high bar for craft, and the product is the argument — speed, keyboard-first interaction and restraint are the design brief rather than a nice-to-have.',
+  },
+  Razorpay: {
+    industry: 'Payments',
+    size: '3,000+ employees',
+    about:
+      'Razorpay handles payments, payouts and banking for Indian businesses, from one-person shops to listed companies. Much of the design work is UPI flows and the dashboards merchants live in all day.',
+  },
+  Zoho: {
+    industry: 'Business software',
+    size: '15,000+ employees',
+    about:
+      'Zoho builds a very broad suite of business software — CRM, finance, HR, support — out of Chennai and a set of rural campuses. It is privately held and takes a deliberately long view, which shows in how it treats both products and people.',
+  },
+  Freshworks: {
+    industry: 'Customer software',
+    size: '5,000+ employees',
+    about:
+      'Freshworks makes customer support, sales and IT service software sold largely to mid-market companies. The design organisation is built around a shared system across a wide product surface.',
+  },
+  Atlassian: {
+    industry: 'Team collaboration',
+    size: '10,000+ employees',
+    about:
+      'Atlassian builds the tools software teams plan and ship with — Jira, Confluence and the rest. Work at this scale is mostly systems work: the interesting problems are consistency and migration across products millions of people already have habits in.',
+  },
+  Postman: {
+    industry: 'API platform',
+    size: '500–1,000 employees',
+    about:
+      'Postman is where a very large number of developers design, test and document APIs. The users are technical and opinionated, so research tends to be direct and the feedback loop is short.',
+  },
+  CRED: {
+    industry: 'Consumer fintech',
+    size: '1,000+ employees',
+    about:
+      'CRED is an Indian consumer fintech built around credit card payments and a members-only positioning. It is known for spending unusual attention on motion, typography and the feel of a screen — the visual bar is the point.',
+  },
 };
 
 const DEFAULT_PROFILE: CompanyProfile = { industry: 'Technology', size: '1,000+ employees' };
@@ -131,6 +171,12 @@ export function buildJob(seed: JobSeed, index = 0): Job {
     experienceLevel,
     companyIndustry: profile.industry,
     companySize: profile.size,
+    // Only the companies an artboard names carry hand-written copy. The rest get a line built
+    // from what we actually know, because the company screen saying nothing is worse than it
+    // saying something plain — and inventing a history for Duolingo would be worse than both.
+    companyAbout:
+      profile.about ??
+      `${seed.company} works in ${profile.industry.toLowerCase()} and is a ${profile.size.replace(/ employees$/, '')}-person company. We do not have a fuller description of them yet — the listing below is what the job board gave us.`,
     companyWebsite: websiteFor(seed.company),
     postedAt: daysAgo(postedDaysAgo),
     description:

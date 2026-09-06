@@ -5,6 +5,7 @@ import { createMockNotificationsRepo } from './notificationsRepo';
 import { createMockProfileRepo } from './profileRepo';
 import { createMockResumesRepo } from './resumesRepo';
 import { createMockStore, type MockStore } from './state';
+import { createMockSupportRepo } from './supportRepo';
 import type { Repos } from './types';
 import { createMockUserRepo } from './userRepo';
 
@@ -25,6 +26,7 @@ export function createMockRepos(store: MockStore = createMockStore()): Repos {
     jd: createMockJdRepo(store),
     notifications: createMockNotificationsRepo(store),
     generations: createMockGenerationsRepo(store),
+    support: createMockSupportRepo(store),
   };
 }
 

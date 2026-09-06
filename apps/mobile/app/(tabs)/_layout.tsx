@@ -2,8 +2,8 @@ import { Tabs } from 'expo-router/js-tabs';
 import { memo, type PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { FiltersSheetHost, useJobsStore } from '@/features/jobs';
-import { ProfileSheetsHost, useProfileStore } from '@/features/profile';
+import { FiltersSheetHost, JobSortSheetHost, LocationSheetHost, useJobsStore } from '@/features/jobs';
+import { ProfileSheetsHost, ProfileToastHost, useProfileStore } from '@/features/profile';
 import { ResumeExportHost, ResumeMenuHost, useResumesStore } from '@/features/resumes';
 import {
   CreateSheetHost,
@@ -21,10 +21,12 @@ import { sheetBackgroundA11yProps } from '@/ui/Sheet';
  */
 function useChromeSheetOpen(): boolean {
   const filtersOpen = useJobsStore((state) => state.filtersOpen);
+  const sortOpen = useJobsStore((state) => state.sortOpen);
+  const locationOpen = useJobsStore((state) => state.locationOpen);
   const resumeMenuOpen = useResumesStore((state) => state.menuOpen);
   const exportOpen = useResumesStore((state) => state.exportOpen);
   const profileSheetOpen = useProfileStore((state) => state.sheetOpen);
-  return filtersOpen || resumeMenuOpen || exportOpen || profileSheetOpen;
+  return filtersOpen || sortOpen || locationOpen || resumeMenuOpen || exportOpen || profileSheetOpen;
 }
 
 /**
@@ -126,11 +128,16 @@ export default function TabsLayout() {
           RESUMES 03 draw. Only one of these can be open at a time (each is raised from its
           own tab), so their order among themselves is moot. */}
       <FiltersSheetHost />
+      {/* Raised from the same header row as the filters sheet, so they share its z-order. */}
+      <JobSortSheetHost />
+      <LocationSheetHost />
       <ResumeMenuHost />
       {/* Raised from the same menu, so it shares that z-order; it also owns the library's
           toast, which has to sit above the sheets rather than behind them. */}
       <ResumeExportHost />
       <ProfileSheetsHost />
+      {/* Last of all: a toast has to sit above every sheet, including the ones just above. */}
+      <ProfileToastHost />
     </CreateSheetProvider>
   );
 }

@@ -3,7 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import type { Application, Job } from '@/data/models';
-import { JOB_SORT_LABEL } from '@/data/models';
+import { JOB_SORT_LABEL, SAVED_JOBS_SORT_LABEL } from '@/data/models';
 import {
   useApplications,
   useJobs,
@@ -37,6 +37,7 @@ import {
 } from '../components/jobPillRows';
 import { useJobsActions } from '../hooks/useJobsActions';
 import { appliedFilterChips, isRemoteOnly, useJobsStore, type JobsSegment } from '../jobsStore';
+import { sortSavedJobs } from '../sortOptions';
 
 const SEGMENTS: readonly Segment<JobsSegment>[] = [
   { key: 'discover', label: 'Discover' },
@@ -71,6 +72,7 @@ export function JobsScreen() {
   const setQuery = useJobsStore((state) => state.setQuery);
   const filters = useJobsStore((state) => state.filters);
   const sort = useJobsStore((state) => state.sort);
+  const savedSort = useJobsStore((state) => state.savedSort);
   const appliedStatus = useJobsStore((state) => state.appliedStatus);
   const setAppliedStatus = useJobsStore((state) => state.setAppliedStatus);
   const location = useJobsStore((state) => state.location);
@@ -113,17 +115,29 @@ export function JobsScreen() {
         .map((job) => ({ kind: 'discover' as const, job }));
     }
     if (segment === 'saved') {
-      const items = filterByQuery(saved.data ?? [], query);
+      // The repo's `listSaved(sort)` already orders these three ways; `useSavedJobs()` takes no
+      // argument yet, so the ordering happens here until the hook passes the sort through.
+      const items = filterByQuery(sortSavedJobs(saved.data ?? [], savedSort), query);
       return items.map((job) => ({ kind: 'saved' as const, job }));
     }
     return (applications.data ?? [])
       .filter((row) => matchesStatusChip(row.application, appliedStatus))
       .filter((row) => matchesQuery(row.job, query))
       .map((row) => ({ kind: 'applied' as const, job: row.job, application: row.application }));
-  }, [appliedStatus, applications.data, discover.data, picks.data, query, saved.data, segment]);
+  }, [
+    appliedStatus,
+    applications.data,
+    discover.data,
+    picks.data,
+    query,
+    saved.data,
+    savedSort,
+    segment,
+  ]);
 
   const status = STATUS_OF[segment]({ discover, saved, applications });
-  const activeQuery = segment === 'discover' ? discover : segment === 'saved' ? saved : applications;
+  const activeQuery =
+    segment === 'discover' ? discover : segment === 'saved' ? saved : applications;
 
   // Re-tapping the Jobs tab returns the list to the top (animated, unlike a segment switch —
   // here the user asked for the movement, so it should be visible).
@@ -179,8 +193,17 @@ export function JobsScreen() {
     // `query` is deliberately absent: it was here only so keystrokes repainted the search
     // field, and that field is pinned outside the list now. Leaving it in would rebuild the whole
     // list header on every character for nothing.
-    () => ({ segment, chips, sort, appliedStatus, remoteOnly, location, count: rows.length }),
-    [appliedStatus, chips, location, remoteOnly, rows.length, segment, sort],
+    () => ({
+      segment,
+      chips,
+      sort,
+      savedSort,
+      appliedStatus,
+      remoteOnly,
+      location,
+      count: rows.length,
+    }),
+    [appliedStatus, chips, location, remoteOnly, rows.length, savedSort, segment, sort],
   );
 
   const listHeader = (
@@ -250,16 +273,14 @@ export function JobsScreen() {
           <Text variant="caption" color="textSecondary">
             {pluralize(rows.length, 'saved job')}
           </Text>
-          <SortControl label="Recently saved" onPress={actions.openSort} />
+          <SortControl label={SAVED_JOBS_SORT_LABEL[savedSort]} onPress={actions.openSort} />
         </View>
       ) : (
         <View style={[styles.chipRow, { gap: spacing[2] }]}>
           {STATUS_CHIPS.map((chip) => (
             <FilterChip
               key={chip.key}
-              label={
-                chip.key === 'all' ? `All · ${applications.data?.length ?? 0}` : chip.label
-              }
+              label={chip.key === 'all' ? `All · ${applications.data?.length ?? 0}` : chip.label}
               variant="select"
               selected={appliedStatus === chip.key}
               onPress={() => setAppliedStatus(chip.key)}
@@ -333,7 +354,10 @@ export function JobsScreen() {
           paddingBottom: tabBar.contentInset,
         }}
         refreshControl={
-          <RefreshControl refreshing={refreshing || activeQuery.isRefetching} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing || activeQuery.isRefetching}
+            onRefresh={onRefresh}
+          />
         }
       />
     </Screen>
@@ -490,7 +514,6 @@ function matchesStatusChip(application: Application, chip: string): boolean {
       return true;
   }
 }
-
 
 const styles = StyleSheet.create({
   chipRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },

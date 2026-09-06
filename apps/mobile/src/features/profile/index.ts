@@ -1,4 +1,5 @@
 export { ProfileSheetsHost } from './ProfileSheetsHost';
+export { ProfileToastHost } from './ProfileToastHost';
 export { useProfileActions } from './hooks/useProfileActions';
 export { useProfileStore, type ProfileSheet } from './profileStore';
 export { CertificationFormScreen } from './screens/CertificationFormScreen';

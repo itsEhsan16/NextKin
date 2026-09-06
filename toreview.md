@@ -7,7 +7,8 @@ that were deliberately deferred, and the ones only a real device can settle.
 
 Add to this file whenever a judgement call gets made rather than burying it in a commit message.
 
-**Status:** Phases 9A–9F shipped (`fd5c5bd`). Seven placeholder destinations remain, for 9G–9I.
+**Status:** Phases 9A–9H shipped. Five placeholder destinations remain: the four 9I flows
+(`menu`, `history`, `interview-prep`, `ai-assistant`) and `resume-sort`, which is item 2 below.
 
 ---
 
@@ -68,6 +69,34 @@ constant in `src/data/models/resume.ts`, so changing it is a one-line change.
 
 **Decide:** which vocabulary ships.
 
+### 1.6 Sharing a job carries no link
+
+`Job` has `companyWebsite` but no URL for the listing itself, and the ingest sources
+(`adzuna`, `jsearch`, `manual`) do not supply one in the fixtures. So "Share this job" sends the
+role, the company, the location and the work arrangement as text, and no link.
+
+I did not use `companyWebsite` as a stand-in: a share that looks like a job posting and opens
+stripe.com is worse than one that plainly names the role.
+
+**Decide:** add `applyUrl` to `Job` (and to the fixtures) so the share carries the posting, or
+accept that a shared job is a text handoff.
+
+### 1.7 The Discover location control labels, it does not filter
+
+Picking a city or "Remote only" changes the header chip and **nothing else** — the job list is
+unchanged. That is what the designed screen does: JOBS 01 draws this control reading
+"Bengaluru, India" over a list containing Zoho in Chennai and Linear at "Remote (India)", and the
+store seeds it the same way (`location` is "Bengaluru, India" while `INITIAL_FILTERS.locations`
+is empty). The header names where you are, not what you are filtered to.
+
+Making it filter is a **design** change, not a wiring one: it would drop Chennai and remote roles
+out of the seeded Discover list the artboard specifies. It would also need the label and
+`filters.locations` written in one action so they cannot disagree, a `locations` case in
+`appliedFilterChips` so the filter is removable, and `clearFilters` resetting the label with it.
+
+**Decide:** leave it as a label (and consider wording it so it does not read like a filter), or
+make it filter and accept a different seeded Discover list than JOBS 01 draws.
+
 ---
 
 ## 2. Gaps in the plan itself
@@ -82,6 +111,7 @@ say Phase 9 is complete.
 | Rewrite a letter in another tone | 9D built the tone picker for a *new* letter. The editor's `LetterBody` deliberately has none, because regenerating spends a cover-letter generation and §13.5 wants the cap on screen first. So an existing letter cannot be rewritten in another tone at all. | needs a phase |
 | Zero Resume cap | §13.3 publishes "Zero Resume drafts: 1/month on Free" as its own row. `SubscriptionUsage` has no counter for it, so `/create/zero-resume` meters against the generations quota instead. | data-layer change |
 | Saved-jobs cap | §13.3 says "Up to 10" on Free. Home's fixture ships 18 saved jobs and the job fixtures 12; both predate the cap and neither is enforced. | fixtures + 9H |
+| Saved-jobs sort is client-side | `listSaved(sort?)` on the repo can order the list, but `useSavedJobs()` takes no argument and query hooks were off limits during the 9H build, so the Saved tab sorts in the screen. Harmless at 12 rows; wrong the moment the list is paged. | a query-layer change |
 
 ---
 

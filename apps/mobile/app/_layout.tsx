@@ -42,7 +42,9 @@ export default function RootLayout() {
         */}
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="jobs/[id]" />
+          <Stack.Screen name="jobs/[id]/index" />
+          <Stack.Screen name="jobs/[id]/company" />
+          <Stack.Screen name="jobs/[id]/criteria" />
           <Stack.Screen name="notifications/index" />
           <Stack.Screen name="notifications/preferences" />
           <Stack.Screen name="resumes/[id]/index" />
@@ -61,6 +63,11 @@ export default function RootLayout() {
           <Stack.Screen name="resumes/new" />
           <Stack.Screen name="generations/[id]" />
           <Stack.Screen name="upgrade" />
+          <Stack.Screen name="support/help" />
+          <Stack.Screen name="support/contact" />
+          <Stack.Screen name="legal/[doc]" />
+          <Stack.Screen name="account/email" />
+          <Stack.Screen name="account/export" />
           <Stack.Screen name="profile/edit" />
           <Stack.Screen name="profile/skills" />
           <Stack.Screen name="profile/desired-roles" />

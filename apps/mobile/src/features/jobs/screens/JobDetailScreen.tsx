@@ -89,7 +89,11 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         <View style={styles.headerRow}>
           <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
           <View style={[styles.headerRight, { gap: spacing[3] }]}>
-            <IconButton icon="share-alt" label="Share this job" onPress={actions.shareJob} />
+            <IconButton
+              icon="share-alt"
+              label="Share this job"
+              onPress={() => actions.shareJob(current)}
+            />
             <IconButton
               icon="bookmark"
               iconStyle={current.isSaved ? 'solid' : 'regular'}
@@ -106,7 +110,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
           <JobMatchCard
             band={current.matchBand}
             criteria={current.matchCriteria}
-            onSeeFullCriteria={actions.openFullCriteria}
+            onSeeFullCriteria={() => actions.openFullCriteria(current)}
           />
         ) : null}
 

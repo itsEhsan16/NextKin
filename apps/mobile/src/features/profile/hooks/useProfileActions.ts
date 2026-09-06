@@ -2,22 +2,31 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
 import type { UpgradeReason } from '@/features/billing';
-import type { PlaceholderKey } from '@/features/placeholders';
+import { requestStoreReview } from '@/lib';
 
 import { useProfileStore, type ProfileSheet } from '../profileStore';
+
+/**
+ * `requestStoreReview` is a no-op in Expo Go and silently rate-limited even in a store build —
+ * the OS decides whether the prompt appears and never says. So the tap always confirms something
+ * rather than looking broken on the run where the OS stays quiet.
+ */
+export const RATE_REQUESTED = 'Thanks — the rating prompt is up to your app store';
+export const RATE_UNAVAILABLE = 'Rating opens once the app is on the store';
 
 /** Every tap target on the Profile screens resolves here, keeping routing out of components. */
 export function useProfileActions() {
   const router = useRouter();
   const openSheet = useProfileStore((state) => state.openSheet);
 
-  const placeholder = useCallback(
-    (screen: PlaceholderKey) =>
-      router.push({ pathname: '/placeholder/[screen]', params: { screen } }),
-    [router],
-  );
-
   const sheet = useCallback((kind: ProfileSheet) => () => openSheet(kind), [openSheet]);
+
+  const showToast = useProfileStore((state) => state.showToast);
+  const rate = useCallback(() => {
+    void requestStoreReview().then((result) =>
+      showToast(result === 'requested' ? RATE_REQUESTED : RATE_UNAVAILABLE),
+    );
+  }, [showToast]);
 
   return useMemo(
     () => ({
@@ -52,15 +61,16 @@ export function useProfileActions() {
       deleteAccount: sheet('delete-account'),
       openNotificationPrefs: () => router.push('/notifications/preferences'),
       goBack: () => router.back(),
-      // Support, legal and account rows are still undesigned (plan §8, Phase 9G).
-      openHelp: () => placeholder('help'),
-      openContact: () => placeholder('contact'),
-      openRate: () => placeholder('rate'),
-      openTerms: () => placeholder('terms'),
-      openPrivacy: () => placeholder('privacy'),
-      openAccountEmail: () => placeholder('account-email'),
-      openExportData: () => placeholder('account-export'),
+      // Support, legal and account (V2 §7.14, §8.5).
+      openHelp: () => router.push('/support/help'),
+      openContact: () => router.push('/support/contact'),
+      /** No screen: the OS owns the prompt, so this asks and then says what happened. */
+      openRate: rate,
+      openTerms: () => router.push({ pathname: '/legal/[doc]', params: { doc: 'terms' } }),
+      openPrivacy: () => router.push({ pathname: '/legal/[doc]', params: { doc: 'privacy' } }),
+      openAccountEmail: () => router.push('/account/email'),
+      openExportData: () => router.push('/account/export'),
     }),
-    [placeholder, router, sheet],
+    [rate, router, sheet],
   );
 }

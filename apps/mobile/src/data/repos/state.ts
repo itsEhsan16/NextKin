@@ -6,7 +6,9 @@ import {
   dashboardStatsFixture,
   generationsFixture,
   jdDraftsFixture,
+  faqFixture,
   jobsFixture,
+  legalFixture,
   notificationPrefsFixture,
   notificationsFixture,
   plansFixture,
@@ -18,12 +20,15 @@ import {
 } from '@/data/mock';
 import type {
   ActivityEntry,
+  FaqItem,
   Application,
   AtsScore,
   DashboardStats,
   DataExportStatus,
   DocumentContent,
   Generation,
+  LegalDoc,
+  LegalDocKey,
   JdDraft,
   Job,
   Notification,
@@ -33,6 +38,7 @@ import type {
   Resume,
   ResumeVersion,
   Subscription,
+  SupportTicket,
   User,
 } from '@/data/models';
 
@@ -75,6 +81,11 @@ export type MockState = {
   activity: ActivityEntry[];
   /** Where the account data export has got to; 'idle' until the settings row asks for one. */
   dataExport: DataExportStatus;
+  /** Help content and the two legal documents — read-only reference data (V2 §7.14, §8.5). */
+  faq: FaqItem[];
+  legal: Record<LegalDocKey, LegalDoc>;
+  /** Support messages sent this session. The mock has no inbox; sending is the whole flow. */
+  tickets: SupportTicket[];
 };
 
 /** Fixtures are plain JSON (ISO strings, no Dates), so a JSON clone is a safe deep copy. */
@@ -113,6 +124,9 @@ function freshState(): MockState {
     plans: clone(plansFixture),
     activity: clone(activityFixture),
     dataExport: { status: 'idle' },
+    faq: clone(faqFixture) as FaqItem[],
+    legal: clone(legalFixture),
+    tickets: [],
   };
 }
 

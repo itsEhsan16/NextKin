@@ -8,4 +8,5 @@ export * from './profile';
 export * from './resume';
 export * from './resumeContent';
 export * from './suggestions';
+export * from './support';
 export * from './user';

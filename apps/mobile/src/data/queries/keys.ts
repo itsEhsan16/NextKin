@@ -56,6 +56,11 @@ export const qk = {
     list: () => ['generations', 'list'] as const,
     detail: (id: string) => ['generations', 'detail', id] as const,
   },
+  support: {
+    all: ['support'] as const,
+    faq: () => ['support', 'faq'] as const,
+    legal: (doc: string) => ['support', 'legal', doc] as const,
+  },
   jd: {
     all: ['jd'] as const,
     detail: (id: string) => ['jd', 'detail', id] as const,

@@ -62,6 +62,9 @@ apps/mobile/
                          published rubric and the ATS fix list
     profile/             the §7.3 editors: identity, skills, desired roles, locations, and a
                          list + form pair for experience, education, certifications and links
+    jobs/[id]/           the listing, the employer behind it, and the full match breakdown
+    support/             help and the contact form; legal/[doc] holds terms and privacy
+    account/             email, password and sessions; the §8.5 data export
     upgrade.tsx          the plan screen - the single destination for every paywall (§13.5)
     dev/                 __DEV__-only gallery: tokens, type, motion, mock modes, filters, forms
   src/
@@ -72,7 +75,8 @@ apps/mobile/
     providers/           app-level providers composed by app/_layout.tsx
     features/<area>/     screens/, components/, hooks/, store.ts per product area
                          (auth holds the mock session store alongside its screen; billing is
-                         the plan screen and its pure price/copy module)
+                         the plan screen and its pure price/copy module; support and account are
+                         the §7.14 / §8.5 screens and their pure copy modules)
     data/
       models/            TypeScript types mirroring the V2 spec entities
       mock/              fixtures (same copy as Figma), simulated latency, seed data, and the

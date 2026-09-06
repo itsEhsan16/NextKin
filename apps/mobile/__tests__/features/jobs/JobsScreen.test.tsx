@@ -1,9 +1,10 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore, type MockMode } from '@/data/mock';
+import { SAVED_JOBS_SORT_LABEL } from '@/data/models';
 import { createQueryClient } from '@/data/queries';
 import { resetMockRepos } from '@/data/repos';
 import { JobsScreen, useJobsStore } from '@/features/jobs';
@@ -35,6 +36,16 @@ async function renderJobs(mode: MockMode = 'normal') {
     </SafeAreaProvider>,
   );
 }
+
+/**
+ * Every saved card's accessibility label, in list order — the label carries the title, the meta
+ * line and the saved/closing suffix, which is what makes the row order readable from the tree.
+ */
+const savedCardLabels = (): string[] =>
+  screen
+    .getAllByRole('button')
+    .map((node) => String(node.props.accessibilityLabel ?? ''))
+    .filter((label) => /, (saved|closing in) /.test(label));
 
 const INITIAL = useJobsStore.getState();
 
@@ -108,7 +119,10 @@ describe('JobsScreen (JOBS 01–03)', () => {
 
     fireEvent.press(screen.getByRole('tab', { name: 'Saved' }));
 
-    expect(await screen.findByLabelText('Sort by Recently saved')).toBeOnTheScreen();
+    // The label is the store's saved sort rather than a fixed string; 'recent' is the default.
+    expect(
+      await screen.findByLabelText(`Sort by ${SAVED_JOBS_SORT_LABEL[INITIAL.savedSort]}`),
+    ).toBeOnTheScreen();
     expect(screen.getByLabelText('Search jobs')).toHaveProp('placeholder', 'Search saved jobs');
     // Saved drops the Discover-only chrome.
     expect(screen.queryByLabelText('Remote only')).toBeNull();
@@ -118,6 +132,23 @@ describe('JobsScreen (JOBS 01–03)', () => {
     expect(await screen.findByText('12 saved jobs')).toBeOnTheScreen();
     // Every row on Saved is already saved, so its bookmark reads as selected.
     expect(screen.getAllByLabelText(/^Remove .* from saved/).length).toBeGreaterThan(0);
+  });
+
+  it('re-sorts the saved rows when the saved sort changes', async () => {
+    await renderJobs();
+    await screen.findByRole('header', { name: "Today's picks" });
+
+    fireEvent.press(screen.getByRole('tab', { name: 'Saved' }));
+    await screen.findByText('12 saved jobs');
+
+    // Saved's default is the order they were saved in, and Stripe was saved 12 hours ago.
+    expect(savedCardLabels()[0]).toMatch(/^Senior Product Designer, Stripe/);
+
+    await act(async () => useJobsStore.setState({ savedSort: 'salary' }));
+
+    expect(screen.getByLabelText('Sort by Salary')).toBeOnTheScreen();
+    // Salary orders by real value, so Notion's $230k outranks Atlassian's ₹60L.
+    expect(savedCardLabels()[0]).toMatch(/^Lead Product Designer, Notion/);
   });
 
   it('switches to Applied: status chips, status pills and no bookmarks', async () => {

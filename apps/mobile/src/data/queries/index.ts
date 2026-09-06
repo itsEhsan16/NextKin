@@ -82,5 +82,6 @@ export {
   useSetResumeAsBase,
 } from './useResumes';
 export { useResetSession } from './useSession';
+export { useFaq, useLegal, useSubmitTicket } from './useSupport';
 export { applySaveToggle, useToggleSaveJob } from './useToggleSaveJob';
 export { useCurrentUser, useDashboardStats, useSubscription } from './useUser';

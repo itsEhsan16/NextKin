@@ -10,6 +10,7 @@ import type {
   DocumentContent,
   Education,
   Experience,
+  FaqItem,
   Generation,
   GenerationInput,
   JdDraft,
@@ -18,6 +19,8 @@ import type {
   JdInput,
   Job,
   JobFilters,
+  LegalDoc,
+  LegalDocKey,
   JobSort,
   Notification,
   NotificationPrefs,
@@ -35,6 +38,8 @@ import type {
   ResumeVersion,
   SavedJobsSort,
   Subscription,
+  SupportTicket,
+  TicketInput,
   User,
 } from '@/data/models';
 
@@ -236,6 +241,19 @@ export type GenerationsRepo = {
   subscribe(id: string, onChange: (generation: Generation) => void): Unsubscribe;
 };
 
+/**
+ * Help content, the two legal documents, and the one message the app can send (V2 §7.14, §8.5).
+ * Reference data on the way in, a single write on the way out.
+ */
+export type SupportRepo = {
+  /** The whole FAQ. Search and topic filtering are the screen's job — see the repo's header. */
+  listFaq(): Promise<FaqItem[]>;
+  /** One legal document, with the "last updated" stamp §8.5 requires it to carry. */
+  getLegal(doc: LegalDocKey): Promise<LegalDoc>;
+  /** Sends a support message; the reply goes to the account address (V2 §7.14). */
+  submitTicket(input: TicketInput): Promise<SupportTicket>;
+};
+
 export type Repos = {
   user: UserRepo;
   profile: ProfileRepo;
@@ -244,4 +262,5 @@ export type Repos = {
   notifications: NotificationsRepo;
   jd: JdRepo;
   generations: GenerationsRepo;
+  support: SupportRepo;
 };
