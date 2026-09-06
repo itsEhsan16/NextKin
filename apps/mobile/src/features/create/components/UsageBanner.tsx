@@ -13,8 +13,12 @@ export type UsageBannerProps = {
   limit: number;
   /** Singular noun for the metered thing: 'generation', 'cover letter', 'ATS check'. */
   noun: string;
+  /** The period the cap is over. Every §13.3 meter is monthly except the assistant's. */
+  period?: 'month' | 'day';
   style?: StyleProp<ViewStyle>;
 };
+
+const PERIOD_SUFFIX: Record<'month' | 'day', string> = { month: 'this month', day: 'today' };
 
 /** Matches the resume usage meter (Figma 1:1393): amber fill on the neutral track. */
 const BAR_HEIGHT = 4;
@@ -30,13 +34,13 @@ const BAR_HEIGHT = 4;
  * The bar is hidden from the reader: the line above it already says the number, and a progressbar
  * repeating it is a second stop that adds nothing.
  */
-export function UsageBanner({ used, limit, noun, style }: UsageBannerProps) {
+export function UsageBanner({ used, limit, noun, period = 'month', style }: UsageBannerProps) {
   const { spacing, s } = useTheme();
 
   if (limit <= 0) return null;
 
   const left = Math.max(0, limit - used);
-  const line = `${left} of ${pluralize(limit, noun)} left this month`;
+  const line = `${left} of ${pluralize(limit, noun)} left ${PERIOD_SUFFIX[period]}`;
 
   return (
     <Card radius="card" style={style}>

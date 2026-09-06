@@ -191,10 +191,10 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
             // Declaration order is the provider's ranking (see applicationsFixture): the
             // artboard leads with the actionable interview, not the newest submission.
             store.state.applications.flatMap((application) => {
-                const job = store.state.jobs.find((item) => item.id === application.jobId);
-                // An application whose listing has aged out of the catalogue is not renderable.
-                return job ? [{ application, job }] : [];
-              }),
+              const job = store.state.jobs.find((item) => item.id === application.jobId);
+              // An application whose listing has aged out of the catalogue is not renderable.
+              return job ? [{ application, job }] : [];
+            }),
           ),
         { empty: () => [] },
       ),
@@ -226,10 +226,9 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
 
     // Jobs tab "Today's picks": editorial carousel, newest first.
     listTodaysPicks: () =>
-      simulate(
-        () => clone(store.state.jobs.filter((job) => job.isTodaysPick).sort(byPostedDesc)),
-        { empty: () => [] },
-      ),
+      simulate(() => clone(store.state.jobs.filter((job) => job.isTodaysPick).sort(byPostedDesc)), {
+        empty: () => [],
+      }),
 
     // Home "Top Job Matches": best match first, newest breaks ties.
     listPicks: () =>

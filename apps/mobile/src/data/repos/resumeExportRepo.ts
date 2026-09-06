@@ -39,11 +39,7 @@ const bulletsToHtml = (bullets: readonly string[]): string =>
   bullets.length ? `<ul>${bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : '';
 
 const escapeHtml = (value: string): string =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /**
  * A self-contained document: the style is inline and no asset is referenced, because iOS's
@@ -74,7 +70,10 @@ function renderHtml(name: string, content: DocumentContent): string {
   const body = [
     `<h1>${escapeHtml(name)}</h1>`,
     content.summary ? `<p>${escapeHtml(content.summary)}</p>` : '',
-    section('Skills', content.skills.length ? `<p>${escapeHtml(content.skills.join(' · '))}</p>` : ''),
+    section(
+      'Skills',
+      content.skills.length ? `<p>${escapeHtml(content.skills.join(' · '))}</p>` : '',
+    ),
     section(
       'Experience',
       content.experience

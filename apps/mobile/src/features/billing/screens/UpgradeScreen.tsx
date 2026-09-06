@@ -178,7 +178,7 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
           <ProStatusCard renewal={renewalLine(sub.renewsAt)} />
         </Animated.View>
         <Animated.View entering={enter(1)}>
-          <PlanUsageCard usage={sub.usage} />
+          <PlanUsageCard usage={sub.usage} plan={sub.plan} />
         </Animated.View>
         <Animated.View entering={enter(2)}>
           <PlanComparison />
@@ -205,7 +205,11 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
       ) : null}
 
       <Animated.View entering={enter(1)}>
-        <PlanUsageCard usage={sub.usage} emphasis={reason ? REASON_METER[reason] : undefined} />
+        <PlanUsageCard
+          usage={sub.usage}
+          plan={sub.plan}
+          emphasis={reason ? REASON_METER[reason] : undefined}
+        />
       </Animated.View>
 
       <Animated.View entering={enter(2)} style={{ gap: spacing[3] }}>

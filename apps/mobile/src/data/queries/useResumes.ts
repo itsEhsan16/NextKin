@@ -1,14 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Resume, ResumeDocType } from '@/data/models';
+import { sortResumes, type Resume, type ResumeDocType, type ResumeSort } from '@/data/models';
 import { repos } from '@/data/repos';
 
 import { qk } from './keys';
 
-export function useResumes() {
+/**
+ * The library. The sort is applied with `select` over the ONE cached list rather than baked into
+ * the key: a key of `['resumes','list',sort]` would fork the cache that eight invalidations and six
+ * optimistic writers address, and every one of them would then write only the default order. One
+ * fetch, one cache, and TanStack memoises the selection per observer. `RESUME_SORT_COMPARATORS`
+ * lives beside the model so the repo's `list()` can adopt them verbatim when paging arrives.
+ */
+export function useResumes(sort: ResumeSort = 'edited') {
   return useQuery({
     queryKey: qk.resumes.list(),
     queryFn: () => repos.resumes.list(),
+    select: (resumes) => sortResumes(resumes, sort),
   });
 }
 

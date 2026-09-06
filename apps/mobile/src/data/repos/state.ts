@@ -1,10 +1,12 @@
 import {
   activityFixture,
+  conversationFixture,
   applicationsFixture,
   atsScoresFixture,
   contentsFixture,
   dashboardStatsFixture,
   generationsFixture,
+  interviewSetsFixture,
   jdDraftsFixture,
   faqFixture,
   jobsFixture,
@@ -20,6 +22,7 @@ import {
 } from '@/data/mock';
 import type {
   ActivityEntry,
+  AssistantConversation,
   FaqItem,
   Application,
   AtsScore,
@@ -27,6 +30,7 @@ import type {
   DataExportStatus,
   DocumentContent,
   Generation,
+  InterviewSet,
   LegalDoc,
   LegalDocKey,
   JdDraft,
@@ -86,6 +90,10 @@ export type MockState = {
   legal: Record<LegalDocKey, LegalDoc>;
   /** Support messages sent this session. The mock has no inbox; sending is the whole flow. */
   tickets: SupportTicket[];
+  /** Practice sets, newest first (V2 §7.15). Marks live on the questions and persist. */
+  interviewSets: InterviewSet[];
+  /** The account's one assistant conversation (V2 §7.16). Token buffers are NOT here. */
+  assistant: AssistantConversation;
 };
 
 /** Fixtures are plain JSON (ISO strings, no Dates), so a JSON clone is a safe deep copy. */
@@ -127,6 +135,8 @@ function freshState(): MockState {
     faq: clone(faqFixture) as FaqItem[],
     legal: clone(legalFixture),
     tickets: [],
+    interviewSets: clone(interviewSetsFixture),
+    assistant: clone(conversationFixture),
   };
 }
 

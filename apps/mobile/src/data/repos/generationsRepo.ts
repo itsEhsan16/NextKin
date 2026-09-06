@@ -2,12 +2,8 @@ import { getMockMode, newId, simulate } from '@/data/mock';
 import type { Generation, GenerationStatus, JdDraft, Job, Resume } from '@/data/models';
 import { isGenerationTerminal } from '@/data/models';
 
-import { completeGeneration } from './generationCompletion';
-import {
-  appendStartActivity,
-  bumpGenerationUsage,
-  createGenerationShell,
-} from './generationStart';
+import { completeGeneration, GENERATION_ACTIVITY_KIND } from './generationCompletion';
+import { appendStartActivity, bumpGenerationUsage, createGenerationShell } from './generationStart';
 import { clone, findOrThrow, type MockStore } from './state';
 import type { GenerationsRepo, Unsubscribe } from './types';
 
@@ -39,6 +35,35 @@ const byStartedDesc = (a: Generation, b: Generation): number =>
   b.startedAt.localeCompare(a.startedAt);
 
 type Ticker = { timer: ReturnType<typeof setInterval>; listeners: Set<(g: Generation) => void> };
+
+/**
+ * History records a run at both ends. A failure is the end nothing used to write, so a run that
+ * died left a "Generating…" entry and then silence; the entry points at the run's own screen,
+ * where the retry is.
+ */
+function appendFailureActivity(store: MockStore, generation: Generation, now: string): void {
+  const resume = generation.resumeId
+    ? store.state.resumes.find((item) => item.id === generation.resumeId)
+    : undefined;
+  const subject = resume?.title ?? generation.title ?? 'that run';
+  store.state.activity = [
+    {
+      id: newId('act'),
+      kind: GENERATION_ACTIVITY_KIND[generation.kind],
+      title: `**${subject}** couldn't be generated`,
+      createdAt: now,
+      deepLink: `/generations/${generation.id}`,
+      ...(generation.error ? { detail: generation.error } : {}),
+      ...(resume ? { resumeId: resume.id } : {}),
+      ...(generation.jobId ? { jobId: generation.jobId } : {}),
+    },
+    ...store.state.activity,
+  ];
+  store.state.dashboardStats = {
+    ...store.state.dashboardStats,
+    activitiesCount: store.state.dashboardStats.activitiesCount + 1,
+  };
+}
 
 export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
   const tickers = new Map<string, Ticker>();
@@ -80,6 +105,7 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
       generation.id === id ? next : generation,
     );
     if (next.status === 'ready') completeGeneration(store, next);
+    if (next.status === 'failed') appendFailureActivity(store, next, now);
     if (isGenerationTerminal(next.status)) stopTicker(id);
     ticker.listeners.forEach((listener) => listener(clone(next)));
   };
@@ -134,6 +160,8 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
           ...(input.jdId ? { jdId: input.jdId } : {}),
           ...(jobId ? { jobId } : {}),
           ...(input.tone ? { tone: input.tone } : {}),
+          // A standalone interview set has no resume and no JD; the role title travels here.
+          ...(input.title?.trim() ? { title: input.title.trim() } : {}),
         };
 
         // Newest first: `getActive` and History both read this list in declaration order.

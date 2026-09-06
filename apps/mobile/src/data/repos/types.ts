@@ -1,6 +1,8 @@
 import type {
   ActivityEntry,
   Application,
+  AssistantConversation,
+  AssistantMessage,
   ApplicationWithJob,
   AtsScore,
   Certification,
@@ -13,6 +15,8 @@ import type {
   FaqItem,
   Generation,
   GenerationInput,
+  InterviewMark,
+  InterviewSet,
   JdDraft,
   JdDraftPatch,
   JdFile,
@@ -223,12 +227,54 @@ export type JdRepo = {
 
 export type Unsubscribe = () => void;
 
+/**
+ * V2 §7.15 — practice sets once they exist. There is no `create`: a set is produced by
+ * `GenerationsRepo.start({ kind: 'interview' })` finishing, so both modes run as the async job
+ * the spec asks for and there is one progress screen. Marks persist here because the spec's
+ * acceptance criterion is that they survive the session.
+ */
+export type InterviewRepo = {
+  /** Every set, newest first. */
+  list(): Promise<InterviewSet[]>;
+  get(id: string): Promise<InterviewSet>;
+  /** The set a finished run produced; null while the run is still in flight. */
+  getByGeneration(generationId: string): Promise<InterviewSet | null>;
+  /**
+   * Persists a practice mark. Returns the WHOLE set: the counts on the card move with the mark,
+   * so a caller handed only the question would draw a stale summary — the rule ProfileRepo states.
+   */
+  markQuestion(setId: string, questionId: string, mark: InterviewMark): Promise<InterviewSet>;
+  /** Clears every mark, so a second pass starts clean. */
+  resetMarks(setId: string): Promise<InterviewSet>;
+  remove(id: string): Promise<void>;
+};
+
+export type AssistantSendInput = { text: string; resumeId?: string };
+
+/**
+ * V2 §7.16 — read-and-advise only. Deliberately no verb that writes user data: no regenerate,
+ * no edit, no delete of a message, nothing that touches a resume or the profile. The interface
+ * having no way to is the cheapest proof of the "cannot take actions" acceptance criterion.
+ */
+export type AssistantRepo = {
+  /** The one conversation the account keeps (§7.16: history persists per user). */
+  getConversation(): Promise<AssistantConversation>;
+  /**
+   * Appends the user's turn and the assistant's, and returns both. An allowed reply arrives
+   * `status: 'streaming'` with empty text and `subscribe` fills it; a refusal arrives whole.
+   */
+  send(input: AssistantSendInput): Promise<{ user: AssistantMessage; reply: AssistantMessage }>;
+  /** Emits the reply as it grows, until it reaches a terminal status. */
+  subscribe(messageId: string, onChange: (message: AssistantMessage) => void): Unsubscribe;
+  clear(): Promise<AssistantConversation>;
+};
+
 export type GenerationsRepo = {
   /** The in-flight generation, if any. */
   getActive(): Promise<Generation | null>;
   /** One run, so a result screen opened from a deep link can stand on its own (V2 §7.6). */
   get(id: string): Promise<Generation>;
-  /** Every run, newest first — the generation rows behind History (V2 §7.2). */
+  /** Every run, newest first. History reads the activity trail, not this — a run writes two entries there. */
   list(): Promise<Generation[]>;
   /**
    * Starts a run and creates the document it will fill. Idempotency is the caller's (V2 §11 puts
@@ -263,4 +309,6 @@ export type Repos = {
   jd: JdRepo;
   generations: GenerationsRepo;
   support: SupportRepo;
+  interview: InterviewRepo;
+  assistant: AssistantRepo;
 };

@@ -1,4 +1,4 @@
-import type { Plan, PlanFeature, SubscriptionUsage } from '@/data/models';
+import type { Plan, PlanFeature, SubscriptionPlan, SubscriptionUsage } from '@/data/models';
 import { formatShortDate } from '@/lib';
 
 import type { UpgradeReason } from './upgradeReasons';
@@ -23,10 +23,11 @@ export const REASON_LINE: Record<UpgradeReason, string> = {
   saved_jobs: 'Free saves up to 10 jobs. Pro lifts that cap.',
   versions: 'Free keeps the last 3 versions of a document. Pro keeps the last 20.',
   assistant: 'The assistant runs to a daily cap on Free. Pro raises it and answers first.',
+  interview: 'Free includes one question set per resume. Pro regenerates as often as you like.',
 };
 
 /** The meters the fixtures actually carry, in the order the usage card draws them. */
-export type UsageMeterKey = 'generations' | 'cover_letters' | 'ats_checks';
+export type UsageMeterKey = 'generations' | 'cover_letters' | 'ats_checks' | 'assistant';
 
 export type UsageMeter = {
   key: UsageMeterKey;
@@ -35,6 +36,8 @@ export type UsageMeter = {
   limit: number;
   /** "2 of 3 used" — the published cap, never a bare percentage. */
   line: string;
+  /** Which period the cap is over. The assistant's is daily; the rest are monthly. */
+  period: 'month' | 'day';
   /** 0–1, for the bar. */
   fraction: number;
 };
@@ -44,12 +47,21 @@ export const REASON_METER: Partial<Record<UpgradeReason, UsageMeterKey>> = {
   generations: 'generations',
   cover_letters: 'cover_letters',
   ats_checks: 'ats_checks',
+  assistant: 'assistant',
 };
 
 const METER_LABEL: Record<UsageMeterKey, string> = {
   generations: 'Resume generations',
   cover_letters: 'Cover letters',
   ats_checks: 'ATS checks',
+  assistant: 'Assistant messages',
+};
+
+const METER_PERIOD: Record<UsageMeterKey, 'month' | 'day'> = {
+  generations: 'month',
+  cover_letters: 'month',
+  ats_checks: 'month',
+  assistant: 'day',
 };
 
 const meter = (key: UsageMeterKey, used: number, limit?: number): UsageMeter | undefined => {
@@ -63,6 +75,7 @@ const meter = (key: UsageMeterKey, used: number, limit?: number): UsageMeter | u
     used,
     limit,
     line: `${Math.min(used, limit)} of ${limit} used`,
+    period: METER_PERIOD[key],
     fraction: Math.max(0, Math.min(1, used / limit)),
   };
 };
@@ -73,7 +86,31 @@ export function usageMeters(usage: SubscriptionUsage): UsageMeter[] {
     meter('generations', usage.generationsUsed, usage.generationsLimit),
     meter('cover_letters', usage.coverLettersUsed, usage.coverLettersLimit),
     meter('ats_checks', usage.atsChecksUsed ?? 0, usage.atsChecksLimit),
+    meter('assistant', usage.assistantMessagesUsed ?? 0, usage.assistantMessagesLimit),
   ].filter((row): row is UsageMeter => row != null);
+}
+
+/**
+ * Caps §13.3 publishes per DOCUMENT rather than per period: one line and no bar. Interview
+ * practice on Free is "1 question set per resume", so "1 of 1 used" under a bar would be a lie —
+ * the account is not out of sets, it is out of sets for one resume. §13.1 still wants the cap
+ * published, so it is said in words.
+ */
+export type PublishedCap = { key: 'interview'; label: string; line: string };
+
+export function publishedCaps(usage: SubscriptionUsage, plan: SubscriptionPlan): PublishedCap[] {
+  const limit = usage.interviewSetsLimit;
+  if (limit == null || limit <= 0) return [];
+  return [
+    {
+      key: 'interview',
+      label: 'Interview practice',
+      line:
+        plan === 'pro'
+          ? 'Regenerate as often as you like'
+          : `${limit === 1 ? '1 set' : `${limit} sets`} per resume on Free`,
+    },
+  ];
 }
 
 const CURRENCY_SYMBOL: Record<Plan['price']['currency'], string> = { INR: '₹' };

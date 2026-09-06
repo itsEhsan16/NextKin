@@ -44,6 +44,6 @@ export const subscriptionFixture: Subscription = {
 /** Home shortcut-grid counters (DESIGN 2 artboard copy). */
 export const dashboardStatsFixture: DashboardStats = {
   resumesCount: 12,
-  activitiesCount: 24,
+  activitiesCount: 25,
   savedJobsCount: 18,
 };

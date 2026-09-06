@@ -33,6 +33,11 @@ export type Generation = {
   jobId?: string;
   /** Cover letters only — the tone the draft was written in (V2 §7.10). */
   tone?: CoverLetterTone;
+  /**
+   * What the run is for, when nothing else on it says: a standalone interview set (§7.15) has no
+   * resume and no JD, so this is the only place the role title can travel to completion.
+   */
+  title?: string;
   status: GenerationStatus;
   /** 0–1 */
   progress: number;

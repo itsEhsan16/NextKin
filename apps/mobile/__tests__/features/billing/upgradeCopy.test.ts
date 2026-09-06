@@ -114,6 +114,13 @@ describe('upgradeCopy — the usage meters (V2 §13.5)', () => {
         line: '1 of 1 used',
       }),
       expect.objectContaining({ key: 'ats_checks', label: 'ATS checks', line: '1 of 3 used' }),
+      // The one daily cap in §13.3 (the fixture seeds 12 of 20).
+      expect.objectContaining({
+        key: 'assistant',
+        label: 'Assistant messages',
+        line: '12 of 20 used',
+        period: 'day',
+      }),
     ]);
   });
 
@@ -122,6 +129,7 @@ describe('upgradeCopy — the usage meters (V2 §13.5)', () => {
       ...subscriptionFixture.usage,
       atsChecksLimit: undefined,
       coverLettersLimit: 0,
+      assistantMessagesLimit: undefined,
     });
     expect(rows.map((row) => row.key)).toEqual(['generations']);
   });

@@ -1,5 +1,7 @@
 export * from './activity';
+export * from './assistant';
 export * from './generation';
+export * from './interview';
 export * from './jd';
 export * from './job';
 export * from './notification';

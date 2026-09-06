@@ -1,4 +1,10 @@
-import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { EMPTY_JOB_FILTERS, type JobFilters, type JobSort } from '@/data/models';
 import { repos } from '@/data/repos';

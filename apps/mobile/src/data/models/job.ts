@@ -172,13 +172,7 @@ export function matchBandFor(score: number): MatchBand {
  * employer has opened ("Applied · Viewed").
  */
 export type ApplicationStatus =
-  | 'applied'
-  | 'viewed'
-  | 'in_review'
-  | 'interview'
-  | 'offer'
-  | 'not_selected'
-  | 'withdrawn';
+  'applied' | 'viewed' | 'in_review' | 'interview' | 'offer' | 'not_selected' | 'withdrawn';
 
 export type ApplicationTone = 'neutral' | 'success' | 'warning' | 'danger';
 

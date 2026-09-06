@@ -59,21 +59,15 @@ export function useGeneration(id: string) {
         void queryClient.invalidateQueries({ queryKey: qk.user.activity() });
         void queryClient.invalidateQueries({ queryKey: qk.user.dashboardStats() });
         // The whole aggregate, not just `active`: the tick that landed rewrote the row in the
-        // store, so History's `list()` is holding a run it still shows as generating.
+        // store, so anything holding the list still shows a run as generating.
         void queryClient.invalidateQueries({ queryKey: qk.generations.all });
+        // An interview run writes a practice set on completion (§7.15).
+        void queryClient.invalidateQueries({ queryKey: qk.interview.all });
       }
     });
   }, [liveId, queryClient]);
 
   return query;
-}
-
-/** Every run, newest first — the generation rows behind History (V2 §7.2). */
-export function useGenerations() {
-  return useQuery({
-    queryKey: qk.generations.list(),
-    queryFn: () => repos.generations.list(),
-  });
 }
 
 /**

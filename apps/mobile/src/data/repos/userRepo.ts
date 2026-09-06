@@ -1,11 +1,5 @@
 import { getMockMode, newId, simulate } from '@/data/mock';
-import type {
-  ActivityEntry,
-  Notification,
-  PlanId,
-  SubscriptionUsage,
-  User,
-} from '@/data/models';
+import type { ActivityEntry, Notification, PlanId, SubscriptionUsage, User } from '@/data/models';
 import { SUBSCRIPTION_PLAN_LABEL } from '@/data/models';
 
 import { clone, findOrThrow, type MockStore } from './state';

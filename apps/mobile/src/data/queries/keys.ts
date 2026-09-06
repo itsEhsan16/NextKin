@@ -61,6 +61,20 @@ export const qk = {
     faq: () => ['support', 'faq'] as const,
     legal: (doc: string) => ['support', 'legal', doc] as const,
   },
+  interview: {
+    all: ['interview'] as const,
+    list: () => ['interview', 'list'] as const,
+    detail: (id: string) => ['interview', 'detail', id] as const,
+    byGeneration: (generationId: string) => ['interview', 'by-generation', generationId] as const,
+  },
+  assistant: {
+    all: ['assistant'] as const,
+    conversation: () => ['assistant', 'conversation'] as const,
+    /** Every in-flight reply, for one sweep. */
+    messages: () => ['assistant', 'message'] as const,
+    /** One reply as it streams — its own key, so a token never re-renders the transcript. */
+    message: (id: string) => ['assistant', 'message', id] as const,
+  },
   jd: {
     all: ['jd'] as const,
     detail: (id: string) => ['jd', 'detail', id] as const,

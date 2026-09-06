@@ -4,7 +4,14 @@
  * reason and the screen leads with that line.
  */
 export type UpgradeReason =
-  'docx' | 'generations' | 'cover_letters' | 'ats_checks' | 'saved_jobs' | 'versions' | 'assistant';
+  | 'docx'
+  | 'generations'
+  | 'cover_letters'
+  | 'ats_checks'
+  | 'saved_jobs'
+  | 'versions'
+  | 'assistant'
+  | 'interview';
 
 export const UPGRADE_REASONS: readonly UpgradeReason[] = [
   'docx',
@@ -14,6 +21,7 @@ export const UPGRADE_REASONS: readonly UpgradeReason[] = [
   'saved_jobs',
   'versions',
   'assistant',
+  'interview',
 ] as const;
 
 export const isUpgradeReason = (value: string): value is UpgradeReason =>

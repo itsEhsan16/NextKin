@@ -1,8 +1,10 @@
 export { activityFixture } from './activity';
+export { conversationFixture } from './assistant';
 export { contentsFixture } from './contents';
 export { ACTIVE_GENERATION_ID, generationsFixture } from './generations';
 export { SKILL_DICTIONARY, jdDraftsFixture } from './jd';
 export { applicationsFixture, jobsFixture } from './jobs';
+export { interviewSetsFixture } from './interview';
 export { legalFixture } from './legal';
 export { notificationPrefsFixture, notificationsFixture } from './notifications';
 export { plansFixture } from './plans';

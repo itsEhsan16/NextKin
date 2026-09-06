@@ -28,7 +28,11 @@ const UNTITLED: Record<GenerationKind, string> = {
 };
 
 /** "Stripe — Senior Product Designer": the shape `resumesFixture` already lists documents in. */
-function shellTitle(input: GenerationInput, draft: JdDraft | undefined, job: Job | undefined): string {
+function shellTitle(
+  input: GenerationInput,
+  draft: JdDraft | undefined,
+  job: Job | undefined,
+): string {
   const explicit = input.title?.trim();
   if (explicit) return explicit;
   const company = draft?.company ?? job?.company;
@@ -103,7 +107,9 @@ export function bumpGenerationUsage(store: MockStore, kind: GenerationKind): voi
 }
 
 /** History records the run at both ends, so a failed run still leaves a trace of being asked for. */
-function startedTitle(kind: GenerationKind, resume: Resume | undefined): string {
+function startedTitle(kind: GenerationKind, resume: Resume | undefined, title?: string): string {
+  if (!resume && kind === 'interview' && title)
+    return `Writing **interview questions** for **${title}**`;
   if (!resume) return `Started **${GENERATION_KIND_LABEL[kind]}**`;
   if (kind === 'ats_check') return `Running an **ATS check** on **${resume.title}**`;
   if (kind === 'interview') return `Writing **interview questions** for **${resume.title}**`;
@@ -120,11 +126,16 @@ export function appendStartActivity(
   const entry: ActivityEntry = {
     id: newId('act'),
     kind: GENERATION_ACTIVITY_KIND[input.kind],
-    title: startedTitle(input.kind, resume),
+    title: startedTitle(input.kind, resume, input.title),
     detail: GENERATION_KIND_LABEL[input.kind],
     createdAt: now,
-    // An interview set produces no document, so it gets no destination rather than a broken one.
-    ...(resume ? { deepLink: `/resumes/${resume.id}` as const, resumeId: resume.id } : {}),
+    // A document run links to the document it is filling. An interview run links nowhere yet:
+    // its set does not exist until completion, which writes the entry that points at it.
+    ...(resume && input.kind !== 'interview'
+      ? { deepLink: `/resumes/${resume.id}` as const, resumeId: resume.id }
+      : resume
+        ? { resumeId: resume.id }
+        : {}),
     ...(jobId ? { jobId } : {}),
   };
   store.state.activity = [entry, ...store.state.activity];

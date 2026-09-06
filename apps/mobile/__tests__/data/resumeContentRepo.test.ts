@@ -59,9 +59,7 @@ describe('ResumesRepo — content, versions and exports (mock)', () => {
       expect(keyword).toBeDefined();
 
       const content = asResume(await flush(repos.resumes.getContent(BASE)));
-      await flush(
-        repos.resumes.updateSection(BASE, 'skills', [...content.skills, keyword ?? '']),
-      );
+      await flush(repos.resumes.updateSection(BASE, 'skills', [...content.skills, keyword ?? '']));
 
       const after = await flush(repos.resumes.get(BASE));
       const rescored = await flush(repos.resumes.getScore(BASE));

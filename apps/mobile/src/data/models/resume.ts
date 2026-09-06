@@ -179,6 +179,32 @@ export function atsBandFor(total: number): AtsBand {
   return 'weak';
 }
 
+/** The library's sort control (Figma 1:1378 draws it reading "Last edited"). */
+export type ResumeSort = 'edited' | 'created' | 'name' | 'score';
+
+export const RESUME_SORT_LABEL: Record<ResumeSort, string> = {
+  edited: 'Last edited',
+  created: 'Newest first',
+  name: 'Name',
+  score: `Highest ${SCORE_LABEL}`,
+};
+
+/**
+ * Comparators kept beside the model so the repo's `list()` can adopt them verbatim when paging
+ * arrives; until then the query sorts in memory (see `useResumes`). Unscored documents sort after
+ * scored ones under 'score' rather than as zero, and every order breaks ties on the title so the
+ * list is stable across refetches.
+ */
+export const RESUME_SORT_COMPARATORS: Record<ResumeSort, (a: Resume, b: Resume) => number> = {
+  edited: (a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.title.localeCompare(b.title),
+  created: (a, b) => b.createdAt.localeCompare(a.createdAt) || a.title.localeCompare(b.title),
+  name: (a, b) => a.title.localeCompare(b.title),
+  score: (a, b) => (b.atsScore ?? -1) - (a.atsScore ?? -1) || a.title.localeCompare(b.title),
+};
+
+export const sortResumes = (resumes: readonly Resume[], sort: ResumeSort): Resume[] =>
+  [...resumes].sort(RESUME_SORT_COMPARATORS[sort]);
+
 /** Unmet, actionable items — the count behind "Fix 4 quick wins" (Figma 1:2187). */
 export function atsQuickWins(score: AtsScore): AtsCheckItem[] {
   return score.sections.flatMap((section) => section.items.filter((i) => !i.passed && i.fixable));

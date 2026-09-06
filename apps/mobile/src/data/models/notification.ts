@@ -142,6 +142,38 @@ export const NOTIFICATION_GROUP_LABEL: Record<NotificationGroup, string> = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * The feed's items in TODAY / THIS WEEK / EARLIER order, ready for a list with sticky headers:
+ * each group that has anything in it contributes a header item followed by its rows, and
+ * `stickyIndices` names the header positions. Generic over the row, because the notifications
+ * feed and the History feed bucket different things by the same rule — the second copy of this
+ * loop was the one that would have drifted.
+ */
+export type AgedFeedItem<T> =
+  { type: 'header'; group: NotificationGroup } | { type: 'row'; row: T };
+
+export function groupByAge<T>(
+  rows: readonly T[],
+  createdAtOf: (row: T) => string,
+  now: Date = new Date(),
+): { items: AgedFeedItem<T>[]; stickyIndices: number[] } {
+  const byGroup = new Map<NotificationGroup, T[]>();
+  for (const row of rows) {
+    const group = notificationGroup(createdAtOf(row), now);
+    byGroup.set(group, [...(byGroup.get(group) ?? []), row]);
+  }
+  const items: AgedFeedItem<T>[] = [];
+  const stickyIndices: number[] = [];
+  for (const group of ['today', 'week', 'earlier'] as const) {
+    const bucket = byGroup.get(group);
+    if (!bucket?.length) continue;
+    stickyIndices.push(items.length);
+    items.push({ type: 'header', group });
+    bucket.forEach((row) => items.push({ type: 'row', row }));
+  }
+  return { items, stickyIndices };
+}
+
 export function notificationGroup(createdAt: string, now: Date = new Date()): NotificationGroup {
   const then = new Date(createdAt);
   if (

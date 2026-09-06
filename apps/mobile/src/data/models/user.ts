@@ -35,10 +35,18 @@ export type SubscriptionUsage = {
   /** V2 §13.3 — the standalone ATS resume check (§4.1): upload a resume, JD optional. */
   atsChecksUsed?: number;
   atsChecksLimit?: number;
-  /** V2 §13.3 — assistant messages per billing period. */
+  /**
+   * V2 §13.3 — assistant messages, capped PER DAY on Free (the other meters are per month). The
+   * mock has no clock that rolls this at midnight, so it only ever climbs; the screens say "today"
+   * and never name a reset time.
+   */
   assistantMessagesUsed?: number;
   assistantMessagesLimit?: number;
-  /** V2 §13.3 — generated interview question sets. */
+  /**
+   * V2 §13.3 — "1 question set per generated resume" on Free. `interviewSetsLimit` is that
+   * per-resume cap; `interviewSetsUsed` is the running total of sets made and gates nothing —
+   * the gate reads the sets that exist for the resume in question (see `interviewAllowance`).
+   */
   interviewSetsUsed?: number;
   interviewSetsLimit?: number;
 };

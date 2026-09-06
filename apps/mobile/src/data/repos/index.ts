@@ -1,4 +1,6 @@
+import { createMockAssistantRepo } from './assistantRepo';
 import { createMockGenerationsRepo } from './generationsRepo';
+import { createMockInterviewRepo } from './interviewRepo';
 import { createMockJdRepo } from './jdRepo';
 import { createMockJobsRepo } from './jobsRepo';
 import { createMockNotificationsRepo } from './notificationsRepo';
@@ -16,6 +18,7 @@ export { JOBS_PAGE_SIZE, matchesFilters } from './jobsRepo';
 export { GENERATION_PROGRESS_STEP, GENERATION_TICK_MS, statusForProgress } from './generationsRepo';
 export { PlanLockedError } from './state';
 export { DATA_EXPORT_MS } from './userRepo';
+export { ASSISTANT_TICK_MS } from './assistantRepo';
 
 export function createMockRepos(store: MockStore = createMockStore()): Repos {
   return {
@@ -27,6 +30,8 @@ export function createMockRepos(store: MockStore = createMockStore()): Repos {
     notifications: createMockNotificationsRepo(store),
     generations: createMockGenerationsRepo(store),
     support: createMockSupportRepo(store),
+    interview: createMockInterviewRepo(store),
+    assistant: createMockAssistantRepo(store),
   };
 }
 

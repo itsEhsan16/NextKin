@@ -53,4 +53,3 @@ export async function simulate<T>(produce: () => T, opts: SimulateOptions<T> = {
     }
   }
 }
-

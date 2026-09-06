@@ -3,7 +3,13 @@
  * still imports only from @/data/queries: the export sheet names a format and has to recognise a
  * plan-locked refusal, and neither is worth a second import path into the data layer.
  */
-export { PlanLockedError, type CoverLetterPatch, type ExportFormat, type ResumeExport } from '@/data/repos';
+export {
+  PlanLockedError,
+  type AssistantSendInput,
+  type CoverLetterPatch,
+  type ExportFormat,
+  type ResumeExport,
+} from '@/data/repos';
 export { createQueryClient } from './client';
 export { qk } from './keys';
 export {
@@ -18,13 +24,23 @@ export {
   useUpdateName,
 } from './useAccount';
 export { useActiveGeneration } from './useActiveGeneration';
-export { usePlans, useUpgradePlan } from './useBilling';
 export {
-  useGeneration,
-  useGenerations,
-  useRetryGeneration,
-  useStartGeneration,
-} from './useGenerations';
+  useAssistantConversation,
+  useAssistantReply,
+  useClearAssistant,
+  useSendAssistantMessage,
+  type AssistantReplyState,
+} from './useAssistant';
+export { usePlans, useUpgradePlan } from './useBilling';
+export { useGeneration, useRetryGeneration, useStartGeneration } from './useGenerations';
+export {
+  useInterviewSet,
+  useInterviewSetForGeneration,
+  useInterviewSets,
+  useMarkInterviewQuestion,
+  useRemoveInterviewSet,
+  useResetInterviewMarks,
+} from './useInterview';
 export { useExtractJd, useJdDraft, useUpdateJdDraft } from './useJd';
 export {
   useApplications,

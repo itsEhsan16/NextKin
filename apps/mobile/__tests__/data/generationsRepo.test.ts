@@ -35,7 +35,9 @@ describe('GenerationsRepo (mock)', () => {
 
   describe('start()', () => {
     it('queues the run and the document it will fill, newest first', async () => {
-      const generation = await flush(repos.generations.start({ kind: 'resume', jobId: 'job_stripe' }));
+      const generation = await flush(
+        repos.generations.start({ kind: 'resume', jobId: 'job_stripe' }),
+      );
 
       expect(generation.status).toBe('queued');
       expect(generation.progress).toBe(0);
@@ -179,7 +181,9 @@ describe('GenerationsRepo (mock)', () => {
     });
 
     it('re-queues the linked document too', async () => {
-      const generation = await flush(repos.generations.start({ kind: 'resume', jdId: 'jd_stripe' }));
+      const generation = await flush(
+        repos.generations.start({ kind: 'resume', jdId: 'jd_stripe' }),
+      );
       store.state.generations = store.state.generations.map((item) =>
         item.id === generation.id ? { ...item, status: 'failed', error: 'boom' } : item,
       );

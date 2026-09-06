@@ -8,7 +8,7 @@ import { daysAgo, earlierToday } from './time';
  * History screen (plan phase 9I). No artboard exists, so the copy follows the vocabulary the
  * built screens already use and the `**bold**` run convention of `Notification.body`.
  *
- * EXACTLY 24 entries, because `dashboardStatsFixture.activitiesCount` in ./user.ts is 24 and
+ * EXACTLY 25 entries, because `dashboardStatsFixture.activitiesCount` in ./user.ts is 25 and
  * Home's shortcut grid promises that number before History renders the list. Add or remove a
  * row here and change that counter in the same commit, or the two screens contradict.
  *
@@ -49,6 +49,7 @@ export const activityFixture: ActivityEntry[] = [
   { id: 'act_app_linear', kind: 'application', title: 'Applied to **Linear — Product Designer**', detail: 'Sent with Linear PD', createdAt: daysAgo(3), deepLink: '/jobs/job_linear', jobId: 'job_linear', resumeId: 'res_4' },
   // Timed to `ntf_cover_ready`, not to res_cover_stripe.updatedAt (5.5d): the notification and
   // the History row describe the same event and must not sit two days apart on screen.
+  { id: 'act_interview_stripe', kind: 'interview', title: 'Wrote **12 practice questions** for Stripe — Senior Product Designer', detail: '6 technical, 6 behavioural, drawn from your Stripe resume', createdAt: daysAgo(3.4), deepLink: '/interview/int_stripe', resumeId: 'res_2', jobId: 'job_stripe' },
   { id: 'act_cover_stripe', kind: 'cover_letter', title: 'Your **Stripe cover letter** is ready to review', detail: 'One page, matched to the Senior Product Designer post', createdAt: daysAgo(3.4), deepLink: '/resumes/res_cover_stripe', resumeId: 'res_cover_stripe', jobId: 'job_stripe' },
   { id: 'act_saved_razorpay', kind: 'saved_job', title: 'Saved **Razorpay — Senior UX Designer**', detail: 'Bengaluru · Hybrid', createdAt: daysAgo(4), deepLink: '/jobs/job_razorpay', jobId: 'job_razorpay' },
   { id: 'act_app_stripe', kind: 'application', title: 'Applied to **Stripe — Senior Product Designer**', detail: 'Sent with Stripe — Senior PD', createdAt: daysAgo(5), deepLink: '/jobs/job_stripe', jobId: 'job_stripe', resumeId: 'res_2' },

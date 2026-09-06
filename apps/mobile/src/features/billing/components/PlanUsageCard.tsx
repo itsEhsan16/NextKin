@@ -1,15 +1,17 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { SubscriptionUsage } from '@/data/models';
+import type { SubscriptionPlan, SubscriptionUsage } from '@/data/models';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
-import { usageMeters, type UsageMeterKey } from '../upgradeCopy';
+import { publishedCaps, usageMeters, type UsageMeterKey } from '../upgradeCopy';
 
 export type PlanUsageCardProps = {
   usage: SubscriptionUsage;
+  /** Decides how the per-document caps read: a Free cap, or Pro's "as often as you like". */
+  plan: SubscriptionPlan;
   /** The allowance that sent the reader here; drawn on its own tinted plate. */
   emphasis?: UsageMeterKey;
 };
@@ -23,16 +25,18 @@ const PLATE_PADDING = 12;
  * upsell argues for a bigger one. Every row names its published cap ("2 of 3 used"), never a bare
  * percentage, and an allowance the account does not meter is left out rather than drawn at zero.
  */
-export function PlanUsageCard({ usage, emphasis }: PlanUsageCardProps) {
+export function PlanUsageCard({ usage, plan, emphasis }: PlanUsageCardProps) {
   const { colors, radii, spacing, s } = useTheme();
   const meters = usageMeters(usage);
+  const caps = publishedCaps(usage, plan);
 
-  if (meters.length === 0) return null;
+  if (meters.length === 0 && caps.length === 0) return null;
 
   return (
     <Card radius="card">
       <View style={{ gap: spacing[4] }}>
-        <Text variant="groupLabel">This month</Text>
+        {/* The assistant's cap is daily, so the heading cannot say "This month" for every row. */}
+        <Text variant="groupLabel">Usage</Text>
 
         {meters.map((row) => {
           const lit = row.key === emphasis;
@@ -57,7 +61,7 @@ export function PlanUsageCard({ usage, emphasis }: PlanUsageCardProps) {
                   {row.label}
                 </Text>
                 <Text variant="caption" color="textSecondary">
-                  {row.line}
+                  {`${row.line} ${row.period === 'day' ? 'today' : 'this month'}`}
                 </Text>
               </View>
               {/* Hidden from the reader: the line above already says the number, and a
@@ -73,6 +77,23 @@ export function PlanUsageCard({ usage, emphasis }: PlanUsageCardProps) {
             </View>
           );
         })}
+
+        {/* Caps published per document rather than per period: a line, and no bar that would lie. */}
+        {caps.map((cap) => (
+          <View
+            key={cap.key}
+            accessible
+            accessibilityLabel={`${cap.label}, ${cap.line}`}
+            style={[styles.row, { gap: spacing[3] }]}
+          >
+            <Text variant="caption" style={styles.label} numberOfLines={1}>
+              {cap.label}
+            </Text>
+            <Text variant="caption" color="textSecondary">
+              {cap.line}
+            </Text>
+          </View>
+        ))}
       </View>
     </Card>
   );

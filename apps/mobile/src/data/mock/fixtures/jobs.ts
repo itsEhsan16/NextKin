@@ -8,7 +8,13 @@ const eur = (min: number, max: number) => ({ min, max, currency: 'EUR', period: 
 const aud = (min: number, max: number) => ({ min, max, currency: 'AUD', period: 'year' }) as const;
 /** Indian listings quote lakh; `est` renders the artboard's "· est." suffix. */
 const inr = (min: number, max: number, est = false) =>
-  ({ min: min * 100_000, max: max * 100_000, currency: 'INR', period: 'year', estimated: est }) as const;
+  ({
+    min: min * 100_000,
+    max: max * 100_000,
+    currency: 'INR',
+    period: 'year',
+    estimated: est,
+  }) as const;
 
 /* prettier-ignore */
 const seeds: JobSeed[] = [
@@ -64,15 +70,47 @@ export const jobsFixture: Job[] = seeds.map((seed, index) => buildJob(seed, inde
  * interview rather than the newest submission; the repo preserves it.
  */
 export const applicationsFixture: Application[] = [
-  { id: 'app_razorpay', jobId: 'job_razorpay', status: 'interview', appliedAt: daysAgo(12), interviewAt: daysFromNow(4), resumeId: 'res_1' },
-  { id: 'app_stripe', jobId: 'job_stripe', status: 'viewed', appliedAt: daysAgo(5), resumeId: 'res_2' },
-  { id: 'app_freshworks', jobId: 'job_freshworks', status: 'in_review', appliedAt: daysAgo(8), resumeId: 'res_3' },
+  {
+    id: 'app_razorpay',
+    jobId: 'job_razorpay',
+    status: 'interview',
+    appliedAt: daysAgo(12),
+    interviewAt: daysFromNow(4),
+    resumeId: 'res_1',
+  },
+  {
+    id: 'app_stripe',
+    jobId: 'job_stripe',
+    status: 'viewed',
+    appliedAt: daysAgo(5),
+    resumeId: 'res_2',
+  },
+  {
+    id: 'app_freshworks',
+    jobId: 'job_freshworks',
+    status: 'in_review',
+    appliedAt: daysAgo(8),
+    resumeId: 'res_3',
+  },
   { id: 'app_zoho', jobId: 'job_zoho', status: 'applied', appliedAt: daysAgo(2) },
   { id: 'app_cred', jobId: 'job_cred', status: 'not_selected', appliedAt: daysAgo(21) },
-  { id: 'app_linear', jobId: 'job_linear', status: 'viewed', appliedAt: daysAgo(3), resumeId: 'res_4' },
+  {
+    id: 'app_linear',
+    jobId: 'job_linear',
+    status: 'viewed',
+    appliedAt: daysAgo(3),
+    resumeId: 'res_4',
+  },
   { id: 'app_atlassian', jobId: 'job_atlassian_blr', status: 'in_review', appliedAt: daysAgo(15) },
   { id: 'app_postman', jobId: 'job_postman', status: 'applied', appliedAt: daysAgo(9) },
-  { id: 'app_figma', jobId: 'job_2', status: 'interview', appliedAt: daysAgo(19), interviewAt: daysFromNow(9), resumeId: 'res_2' },
+  {
+    id: 'app_figma',
+    jobId: 'job_2',
+    status: 'interview',
+    appliedAt: daysAgo(19),
+    interviewAt: daysFromNow(9),
+    resumeId: 'res_2',
+  },
   { id: 'app_notion', jobId: 'job_8', status: 'not_selected', appliedAt: daysAgo(27) },
   { id: 'app_github', jobId: 'job_18', status: 'viewed', appliedAt: daysAgo(6) },
   { id: 'app_zalando', jobId: 'job_3', status: 'withdrawn', appliedAt: daysAgo(24) },

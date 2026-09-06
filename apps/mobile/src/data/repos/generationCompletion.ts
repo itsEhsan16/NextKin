@@ -10,6 +10,7 @@ import type {
 import { ATS_BAND_LABEL, SCORE_LABEL } from '@/data/models';
 
 import { contentFor, jdDraftFor, scoreFor } from './generationOutput';
+import { completeInterviewSet } from './interviewCompletion';
 import { clone, type MockStore } from './state';
 /**
  * NextKin V2 spec §7.6 — what "ready" means.
@@ -66,13 +67,12 @@ function readyResume(resume: Resume, score: AtsScore | undefined, now: string): 
   };
 }
 
-/** History has no 'interview' filter yet, so a question set files under the generic kind. */
 export const GENERATION_ACTIVITY_KIND: Record<GenerationKind, ActivityKind> = {
   resume: 'generation',
   zero_resume: 'generation',
   cover_letter: 'cover_letter',
   ats_check: 'ats_check',
-  interview: 'generation',
+  interview: 'interview',
 };
 
 function appendReadyActivity(
@@ -107,8 +107,13 @@ function appendReadyActivity(
  * since been deleted — so the ticker never has to ask.
  */
 export function completeGeneration(store: MockStore, generation: Generation): void {
-  // §7.15 produces a question set, not a document; there is nothing here to leave finished.
-  if (generation.kind === 'interview') return;
+  // §7.15 produces a question set, not a document. It has its own completion, and it must NOT
+  // fall through to `readyResume`: re-stamping the source resume for a run that changed nothing
+  // about it would float it to the top of the library.
+  if (generation.kind === 'interview') {
+    completeInterviewSet(store, generation);
+    return;
+  }
   const resumeId = generation.resumeId;
   if (!resumeId) return;
   const resume = store.state.resumes.find((item) => item.id === resumeId);

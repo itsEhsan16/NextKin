@@ -89,10 +89,10 @@ describe('HomeScreen (DESIGN 2)', () => {
     // The shortcut counters read as a bare number above their icon, so the tile can give its
     // label two readable lines. The noun survives for screen readers, on the tile itself.
     expect(screen.getByText('12')).toBeOnTheScreen();
-    expect(screen.getByText('24')).toBeOnTheScreen();
+    expect(screen.getByText('25')).toBeOnTheScreen();
     expect(screen.getByText('18')).toBeOnTheScreen();
     expect(screen.getByLabelText('My Resumes, 12 Resumes')).toBeOnTheScreen();
-    expect(screen.getByLabelText('History, 24 Activities')).toBeOnTheScreen();
+    expect(screen.getByLabelText('History, 25 Activities')).toBeOnTheScreen();
     expect(screen.getByLabelText('Saved Jobs, 18 Saved')).toBeOnTheScreen();
   });
 
