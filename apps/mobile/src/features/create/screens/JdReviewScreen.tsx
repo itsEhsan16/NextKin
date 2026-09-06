@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
-import type { JdDraft, JdDraftPatch } from '@/data/models';
 import { useJdDraft, useStartGeneration, useSubscription, useUpdateJdDraft } from '@/data/queries';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
@@ -15,6 +14,7 @@ import type { SkillGroupKey } from '../components/JdSkillGroup';
 import { JdSkillMenuSheet, type JdSkillCommand } from '../components/JdSkillMenuSheet';
 import { UsageBanner } from '../components/UsageBanner';
 import { GENERATION_COST_NOTE, spentNote } from '../generationQuota';
+import { addSkill as addSkillTo, moveSkill, removeSkill } from '../jdSkillEdits';
 import { useJdReviewActions } from '../hooks/useJdReviewActions';
 
 export type JdReviewScreenProps = {
@@ -34,20 +34,6 @@ const CTA = 'Generate resume';
  * stays live so a second press is the retry.
  */
 const START_FAILED = "We couldn't start it. Check your connection and try again.";
-
-const listOf = (draft: JdDraft, group: SkillGroupKey): readonly string[] =>
-  group === 'required'
-    ? draft.requiredSkills
-    : group === 'preferred'
-      ? draft.preferredSkills
-      : draft.tools;
-
-const patchFor = (group: SkillGroupKey, next: string[]): JdDraftPatch =>
-  group === 'required'
-    ? { requiredSkills: next }
-    : group === 'preferred'
-      ? { preferredSkills: next }
-      : { tools: next };
 
 /**
  * CREATE — JD review (V2 §7.5). What the user confirms here is what generation, scoring and
@@ -91,23 +77,13 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
 
   const data = draft.data;
 
+  // The rules — which list a group names, and that a skill may not sit in both — are
+  // `jdSkillEdits`; this only turns a refusal into the field's error line.
   const addSkill = (group: SkillGroupKey, skill: string): string | undefined => {
     if (!data) return 'There is nothing to add it to yet.';
-    const lower = skill.toLowerCase();
-    const has = (list: readonly string[]) => list.some((entry) => entry.toLowerCase() === lower);
-
-    if (has(listOf(data, group))) return 'Already in this list.';
-    // Required and preferred are the same question asked twice: the same skill in both would
-    // undo the split §7.5 asks this screen to maintain, so the other list is checked too and the
-    // chip's own menu is what moves it across.
-    if (group === 'required' && has(data.preferredSkills)) {
-      return 'Already a preferred skill — move it from there.';
-    }
-    if (group === 'preferred' && has(data.requiredSkills)) {
-      return 'Already a required skill — move it from there.';
-    }
-
-    patchDraft(patchFor(group, [...listOf(data, group), skill]));
+    const result = addSkillTo(data, group, skill);
+    if ('refused' in result) return result.refused;
+    patchDraft(result.patch);
     return undefined;
   };
 
@@ -117,25 +93,12 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
     const { group, skill } = menu;
 
     if (action === 'remove') {
-      patchDraft(
-        patchFor(
-          group,
-          listOf(data, group).filter((entry) => entry !== skill),
-        ),
-      );
+      patchDraft(removeSkill(data, group, skill));
       return;
     }
+    // Tools have no other group to move to; the menu never offers it for them.
     if (group === 'tools') return;
-
-    const required = data.requiredSkills.filter((entry) => entry !== skill);
-    const preferred = data.preferredSkills.filter((entry) => entry !== skill);
-    // One patch carries both lists: the chip has to leave one group and land in the other in the
-    // same optimistic write, or it blinks off the page in between.
-    patchDraft(
-      group === 'required'
-        ? { requiredSkills: required, preferredSkills: [...preferred, skill] }
-        : { preferredSkills: preferred, requiredSkills: [...required, skill] },
-    );
+    patchDraft(moveSkill(data, group, skill));
   };
 
   const menuCommands: readonly JdSkillCommand<MenuAction>[] =
