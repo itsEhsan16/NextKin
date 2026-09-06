@@ -34,7 +34,13 @@ export function completeInterviewSet(store: MockStore, generation: Generation): 
   const resumeId = generation.resumeId;
   const resume = resumeId ? store.state.resumes.find((item) => item.id === resumeId) : undefined;
   const content = resumeId ? store.state.contents[resumeId] : undefined;
-  const draft = jdDraftFor(store, generation);
+  // By id when the run carries one; otherwise by the job the resume was tailored to, which is
+  // what the setup screen knows about a library document (Resume.linkedJobId, not a draft id).
+  const draft =
+    jdDraftFor(store, generation) ??
+    (generation.jobId
+      ? store.state.jdDrafts.find((item) => item.jobId === generation.jobId)
+      : undefined);
   const now = new Date().toISOString();
 
   // Regenerating produces a NEW set and never deletes the old one (§7.15 AC). The newest earlier

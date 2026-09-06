@@ -2,7 +2,12 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { GENERATION_KIND_LABEL, type Generation, type GenerationKind } from '@/data/models';
-import { useGeneration, useResume, useRetryGeneration } from '@/data/queries';
+import {
+  useGeneration,
+  useInterviewSetForGeneration,
+  useResume,
+  useRetryGeneration,
+} from '@/data/queries';
 import { haptics } from '@/lib';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
@@ -38,6 +43,9 @@ function isMissing(error: unknown): boolean {
 const documentLabel = (kind: GenerationKind): string =>
   kind === 'cover_letter' ? 'Open cover letter' : 'Open resume';
 
+/** An interview run finishes on its practice set, which does not exist until it is ready. */
+const INTERVIEW_CTA = 'Start practising';
+
 /**
  * GENERATION — one run, watched (V2 §7.6). The spec is emphatic that every state transition is
  * visible and that a failure shows a reason and a working retry, "never a silent hang", so this
@@ -56,6 +64,11 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
   const run: Generation | undefined = generation.data;
   const status = run?.status;
   const resume = useResume(run?.resumeId ?? '');
+  // Disabled until the run is ready — a disabled query stays pending, so the CTA above tests the
+  // same flag before it reads `isPending`.
+  const interviewSet = useInterviewSetForGeneration(
+    generation.data?.kind === 'interview' && generation.data.status === 'ready' ? id : '',
+  );
 
   // One buzz per finished run: the ticker keeps writing into the cache after 'ready' lands, and
   // a re-render must not buzz again.
@@ -172,6 +185,7 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
   const ready = run.status === 'ready';
   const score = RING_KINDS.includes(run.kind) ? resume.data?.atsScore : undefined;
   const resumeId = run.resumeId;
+  const interview = run.kind === 'interview';
   // A run that produced no document (an interview set, Phase 9I) still needs a way out of the
   // finished screen, and the library is the honest one.
   const openDoc = resumeId
@@ -181,6 +195,16 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
     resumeId && SCORE_KINDS.includes(run.kind)
       ? { label: 'View score', onPress: () => actions.openScore(resumeId) }
       : undefined;
+  // §7.15: the run's output is a set, found by the run's id once it exists. A set that has since
+  // been deleted resolves null, and the library is the honest fallback rather than a dead link.
+  const setId = interviewSet.data?.id;
+  const openSet = interview
+    ? setId
+      ? { label: INTERVIEW_CTA, onPress: () => actions.openInterviewSet(setId) }
+      : interviewSet.isPending
+        ? { label: INTERVIEW_CTA, loading: true }
+        : { label: 'Back to Interview prep', onPress: actions.openInterviewLibrary }
+    : undefined;
 
   return page(
     <>
@@ -193,7 +217,10 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
       )}
     </>,
     ready ? (
-      <StickyActionBar primary={viewScore ?? openDoc} secondary={viewScore ? openDoc : undefined} />
+      <StickyActionBar
+        primary={openSet ?? viewScore ?? openDoc}
+        secondary={openSet ? undefined : viewScore ? openDoc : undefined}
+      />
     ) : undefined,
   );
 }

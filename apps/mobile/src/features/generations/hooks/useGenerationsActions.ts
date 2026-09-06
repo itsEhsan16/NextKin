@@ -14,6 +14,10 @@ export function useGenerationsActions() {
       /** The document itself (V2 §7.11) — the editor, whether or not the run produced a score. */
       openDocument: (resumeId: string) =>
         router.push({ pathname: '/resumes/[id]', params: { id: resumeId } }),
+      /** An interview run's output is a practice set, not a document (V2 §7.15). */
+      openInterviewSet: (setId: string) =>
+        router.replace({ pathname: '/interview/[id]', params: { id: setId } }),
+      openInterviewLibrary: () => router.replace('/interview'),
       /** Where an id that no longer resolves sends the user: the library that outlived it. */
       openResumes: () => router.navigate('/(tabs)/resumes'),
       /**
