@@ -7,10 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   NOTIFICATION_FILTERS,
   NOTIFICATION_GROUP_LABEL,
+  groupByAge,
   matchesNotificationFilter,
-  notificationGroup,
+  type AgedFeedItem,
   type Notification,
-  type NotificationGroup,
 } from '@/data/models';
 import {
   useMarkAllNotificationsRead,
@@ -36,12 +36,9 @@ import { NotificationsCaughtUp, NotificationsFirstUse } from '../components/Noti
 import { useNotificationsActions } from '../hooks/useNotificationsActions';
 import { useNotificationsStore } from '../notificationsStore';
 
-type FeedItem =
-  | { type: 'header'; group: NotificationGroup }
-  | { type: 'row'; notification: Notification };
+type FeedItem = AgedFeedItem<Notification>;
 
-const feedKey = (item: FeedItem) =>
-  item.type === 'header' ? `header-${item.group}` : item.notification.id;
+const feedKey = (item: FeedItem) => (item.type === 'header' ? `header-${item.group}` : item.row.id);
 
 /**
  * NOTIF 01–03 + 05/06 — the feed. Chrome (back/title/gear, unread meta, filter pills) is
@@ -71,24 +68,15 @@ export function NotificationsScreen() {
   const list = useMemo(() => notifications.data ?? [], [notifications.data]);
   const unreadCount = useMemo(() => list.filter((item) => !item.read).length, [list]);
 
-  const { items, stickyIndices } = useMemo(() => {
-    const filtered = list.filter((item) => matchesNotificationFilter(item, filter));
-    const byGroup = new Map<NotificationGroup, Notification[]>();
-    for (const notification of filtered) {
-      const group = notificationGroup(notification.createdAt);
-      byGroup.set(group, [...(byGroup.get(group) ?? []), notification]);
-    }
-    const result: FeedItem[] = [];
-    const sticky: number[] = [];
-    for (const group of ['today', 'week', 'earlier'] as const) {
-      const rows = byGroup.get(group);
-      if (!rows?.length) continue;
-      sticky.push(result.length);
-      result.push({ type: 'header', group });
-      rows.forEach((notification) => result.push({ type: 'row', notification }));
-    }
-    return { items: result, stickyIndices: sticky };
-  }, [filter, list]);
+  // The grouping is shared with the History feed, which buckets its rows by the same rule.
+  const { items, stickyIndices } = useMemo(
+    () =>
+      groupByAge(
+        list.filter((item) => matchesNotificationFilter(item, filter)),
+        (notification) => notification.createdAt,
+      ),
+    [filter, list],
+  );
 
   const handleMarkRead = useCallback(
     (notification: Notification) => {
@@ -116,7 +104,7 @@ export function NotificationsScreen() {
       }
       return (
         <NotificationRow
-          notification={item.notification}
+          notification={item.row}
           onOpen={actions.openNotification}
           onMarkRead={handleMarkRead}
           onMore={actions.openMenu}
@@ -132,7 +120,9 @@ export function NotificationsScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.surfacePage, paddingTop: insets.top }]}>
-      <View style={[styles.headerRow, { paddingHorizontal: spacing.gutter, paddingTop: spacing[2] }]}>
+      <View
+        style={[styles.headerRow, { paddingHorizontal: spacing.gutter, paddingTop: spacing[2] }]}
+      >
         <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
         <Text {...a11yHeader()} variant="headline" align="center" style={styles.headerTitle}>
           Notifications
@@ -141,7 +131,9 @@ export function NotificationsScreen() {
       </View>
 
       {!firstUse && !caughtUp && status === 'success' && unreadCount > 0 ? (
-        <View style={[styles.metaRow, { paddingHorizontal: spacing.gutter, marginTop: spacing[3] }]}>
+        <View
+          style={[styles.metaRow, { paddingHorizontal: spacing.gutter, marginTop: spacing[3] }]}
+        >
           <Text variant="caption" color="textSecondary">
             {pluralize(unreadCount, 'unread', 'unread')}
           </Text>
@@ -158,7 +150,12 @@ export function NotificationsScreen() {
       ) : null}
 
       {!firstUse ? (
-        <View style={[styles.pills, { paddingHorizontal: spacing.gutter, gap: spacing[2], marginTop: spacing[3] }]}>
+        <View
+          style={[
+            styles.pills,
+            { paddingHorizontal: spacing.gutter, gap: spacing[2], marginTop: spacing[3] },
+          ]}
+        >
           {NOTIFICATION_FILTERS.map((entry) => (
             <FilterChip
               key={entry.key}
@@ -207,7 +204,10 @@ export function NotificationsScreen() {
           keyExtractor={feedKey}
           getItemType={(item) => item.type}
           stickyHeaderIndices={stickyIndices}
-          contentContainerStyle={{ paddingTop: spacing[2], paddingBottom: insets.bottom + spacing[8] }}
+          contentContainerStyle={{
+            paddingTop: spacing[2],
+            paddingBottom: insets.bottom + spacing[8],
+          }}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={
             <Pressable
@@ -266,6 +266,12 @@ const useStyles = scaledSheet((s) => ({
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   pills: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: s(8) },
   groupHeader: { height: s(40), justifyContent: 'center' },
-  pinnedHairline: { position: 'absolute', left: 0, right: 0, bottom: 0, height: StyleSheet.hairlineWidth },
+  pinnedHairline: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: StyleSheet.hairlineWidth,
+  },
   manage: { flexDirection: 'row', alignItems: 'center' },
 }));

@@ -63,6 +63,11 @@ export default function RootLayout() {
           <Stack.Screen name="resumes/new" />
           <Stack.Screen name="generations/[id]" />
           <Stack.Screen name="upgrade" />
+          <Stack.Screen name="history" />
+          <Stack.Screen name="interview/index" />
+          <Stack.Screen name="interview/new" />
+          <Stack.Screen name="interview/[id]" />
+          <Stack.Screen name="assistant" />
           <Stack.Screen name="support/help" />
           <Stack.Screen name="support/contact" />
           <Stack.Screen name="legal/[doc]" />
