@@ -14,6 +14,7 @@ import { Toast } from '@/ui/Toast';
 
 import { JobAboutSection } from '../components/JobAboutSection';
 import { JobCompanyCard } from '../components/JobCompanyCard';
+import { JobsToastHost } from '../JobsToastHost';
 import { JobDetailActions } from '../components/JobDetailActions';
 import { JobDetailHero } from '../components/JobDetailHero';
 import { JobMatchCard } from '../components/JobMatchCard';
@@ -170,6 +171,12 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         message={applyFlow.toastMessage}
         onHide={applyFlow.hideToast}
       />
+      {/*
+        The share fallback's toast. Share has no screen and no visible result of its own, so
+        without this a share on a device with no OS sheet is a completely silent tap — which is
+        what it was until now: the host shipped in 9H and was mounted nowhere.
+      */}
+      <JobsToastHost />
       <PushPrimerHost />
     </>,
   );
