@@ -24,8 +24,6 @@ const brandLogos: Record<string, LogoRenderer> = {
   'logo-adobe': (props) => <AdobeLogo {...props} />,
 };
 
-export const assetKey = (key: string): string => `${ASSET_SCHEME}${key}`;
-
 const keyOf = (url: string): string | null =>
   url.startsWith(ASSET_SCHEME) ? url.slice(ASSET_SCHEME.length) : null;
 

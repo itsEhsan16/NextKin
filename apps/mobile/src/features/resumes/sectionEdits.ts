@@ -72,11 +72,6 @@ export const removeBullet = <T extends Bulleted>(entry: T, index: number): T => 
   bullets: removeAt(entry.bullets, index),
 });
 
-export const setBullet = <T extends Bulleted>(entry: T, index: number, text: string): T => ({
-  ...entry,
-  bullets: replaceAt(entry.bullets, index, text),
-});
-
 /* --------------------------------------------------------------- new rows */
 
 // The repo stores whatever id the draft carries, so a row added here needs one of its own. Not

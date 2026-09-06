@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { JdReviewScreen } from '@/features/create/screens/JdReviewScreen';
+import { JdReviewScreen } from '@/features/create';
 
 export default function JdReviewRoute() {
   const { draftId, baseResumeId } = useLocalSearchParams<{

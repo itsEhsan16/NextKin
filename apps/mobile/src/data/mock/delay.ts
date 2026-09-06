@@ -54,4 +54,3 @@ export async function simulate<T>(produce: () => T, opts: SimulateOptions<T> = {
   }
 }
 
-export const isMockError = (error: unknown): error is MockError => error instanceof MockError;

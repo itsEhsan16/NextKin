@@ -24,6 +24,7 @@ export {
   type CoverLetterSetupScreenProps,
 } from './screens/CoverLetterSetupScreen';
 export { LinkedInUnavailableScreen } from './screens/LinkedInUnavailableScreen';
+export { JdReviewScreen, type JdReviewScreenProps } from './screens/JdReviewScreen';
 export { TailorScreen, type TailorScreenProps } from './screens/TailorScreen';
 export { UploadResumeScreen } from './screens/UploadResumeScreen';
 export { UploadReviewScreen } from './screens/UploadReviewScreen';
