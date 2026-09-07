@@ -14,13 +14,7 @@ import { pluralize } from '@/lib';
 /** How many suggestions the row under the add field offers at once. */
 const SUGGESTION_LIMIT = 6;
 
-/** §7.6 forbids a silent failure; this goes on the bar that started the save. */
-export const SAVE_FAILED = "We couldn't save that. Check your connection and try again.";
-
 export const DISCARD_TITLE = 'Discard changes?';
-
-export const discardMessage = (noun: string): string =>
-  `Your ${noun} changes have not been saved. Going back now leaves your profile as it was.`;
 
 const same = (a: string, b: string): boolean => a.toLowerCase() === b.toLowerCase();
 

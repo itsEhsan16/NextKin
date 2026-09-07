@@ -146,7 +146,12 @@ export function ProfileScreen() {
       // as content padding that ink would fall over the scroller — a later sibling, so it paints
       // on top, and Android clips it outright. Keeping it here also means no `overflow: 'hidden'`.
       headerStyle={{ paddingTop: spacing[4], gap: spacing[5], paddingBottom: spacing[5] }}
-      contentContainerStyle={{ gap: spacing[5] }}
+      // 28 rather than the artboard's 20, and the one place this screen leaves it. A device pass
+      // read the groups as a single wall: the rows inside a group sit flush against a hairline,
+      // so the gap between one card and the next is the only thing separating CAREER PROFILE from
+      // JOB PREFERENCES from SETTINGS — and at 0.75 the drawn 20 lands at 15dp, less than the
+      // 18dp gutter beside it. The cards no longer read as one block at 21.
+      contentContainerStyle={{ gap: spacing[7] }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <ProfileStatsCard stats={current.stats} />

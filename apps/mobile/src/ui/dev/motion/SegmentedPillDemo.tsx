@@ -43,7 +43,11 @@ export function SegmentedPillDemo() {
       onLayout={onLayout}
       style={[
         styles.track,
-        { padding: s(TRACK_PADDING), borderRadius: radii.lg, backgroundColor: colors.surfaceSubtle },
+        {
+          padding: s(TRACK_PADDING),
+          borderRadius: radii.lg,
+          backgroundColor: colors.surfaceSubtle,
+        },
       ]}
     >
       {segmentWidth > 0 ? (

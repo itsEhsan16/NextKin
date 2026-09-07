@@ -49,7 +49,11 @@ export const ATS_CHECK_TITLE = 'ATS check';
 export const RUN_CTA = 'Run the check';
 export const OPEN_CTA = `See the ${SCORE_LABEL}`;
 export const UPGRADE_CTA = 'See Pro plans';
-export const FILE_CTA = 'Check a file instead';
+/**
+ * Not "Check a file instead": the only branch that uses this is the one where the library is
+ * empty, so there is nothing for it to be instead of.
+ */
+export const FILE_CTA = 'Check a file from your device';
 export const RUBRIC_CTA = `How the ${SCORE_LABEL} works`;
 
 /**

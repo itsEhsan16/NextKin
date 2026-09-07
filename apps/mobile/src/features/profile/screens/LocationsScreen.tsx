@@ -12,7 +12,7 @@ import { ChipListEditor } from '../components/ChipListEditor';
 import { useProfileActions } from '../hooks/useProfileActions';
 
 const EMPTY =
-  'Where would you take a job? Add the cities you would work in — "Remote" and "Anywhere in India" count as answers too.';
+  'The cities you would work in — "Remote" and "Anywhere in India" count as answers too.';
 
 /** The caption under the chooser, which is also the promise §7.3 makes about these fields. */
 const PRIVATE_NOTE = 'Only used for matching — never shown on your resume.';

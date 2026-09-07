@@ -120,9 +120,7 @@ export function InterviewListScreen() {
       <StateView
         icon="comments"
         title="No practice sets yet"
-        message="Questions are written from a resume and the job it was tailored to, so you can defend every line — or from a role title alone."
-        actionLabel={CTA}
-        onAction={() => actions.openNew()}
+        message="Written from a resume and the job it was tailored to, or from a role title alone."
       />,
       <StickyActionBar primary={{ label: CTA, icon: 'plus', onPress: () => actions.openNew() }} />,
     );

@@ -99,7 +99,7 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
       <StateView
         icon="user-edit"
         title="We can't score this match yet"
-        message="Matching reads the skills and experience on your profile. Add a few and we'll score this job against them."
+        message="Matching reads the skills and experience on your profile."
         actionLabel="Complete your profile"
         onAction={actions.openProfileSkills}
       />,

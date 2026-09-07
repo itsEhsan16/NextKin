@@ -20,7 +20,12 @@ export type ChipProps = {
  * Static meta chip ("Full-time", "2d ago"). Figma: #f1f2f4 fill, r9, 14/4/6 padding,
  * 13px regular secondary text. Removable filter chips are a separate component (Phase 3).
  */
-export function Chip({ label, tone = 'neutral', labelVariant = 'captionRegular', style }: ChipProps) {
+export function Chip({
+  label,
+  tone = 'neutral',
+  labelVariant = 'captionRegular',
+  style,
+}: ChipProps) {
   const { colors, radii, s } = useTheme();
   const palette = {
     neutral: { bg: colors.surfaceSubtle, fg: 'textSecondary' as const },

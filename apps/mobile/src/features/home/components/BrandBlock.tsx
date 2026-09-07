@@ -33,16 +33,19 @@ export function BrandBlock() {
           {MARK_LAYERS.map(({ Icon, x, y, width, height }, index) => (
             <View
               key={index}
-              style={{ position: 'absolute', left: s(x), top: s(y), width: s(width), height: s(height) }}
+              style={{
+                position: 'absolute',
+                left: s(x),
+                top: s(y),
+                width: s(width),
+                height: s(height),
+              }}
             >
               <Icon width={s(width)} height={s(height)} />
             </View>
           ))}
         </View>
-        <Text
-          variant="wordmark"
-          style={{ marginLeft: s(WORDMARK_X - MARK_BOX.width) }}
-        >
+        <Text variant="wordmark" style={{ marginLeft: s(WORDMARK_X - MARK_BOX.width) }}>
           NextKin
         </Text>
       </View>

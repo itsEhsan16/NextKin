@@ -41,8 +41,8 @@ describe('entryRows (V2 §7.3 row copy)', () => {
     expect(experienceRow(experience)).toEqual({
       id: 'exp_1',
       icon: 'briefcase',
-      label: 'Senior UX Designer',
-      value: 'Flipkart · Mar 2022 – Present',
+      title: 'Senior UX Designer',
+      meta: 'Flipkart · Mar 2022 – Present',
     });
 
     expect(
@@ -52,32 +52,53 @@ describe('entryRows (V2 §7.3 row copy)', () => {
         current: false,
         startDate: '2019-06-01',
         endDate: '2022-02-28',
-      }).value,
+      }).meta,
     ).toBe('Swiggy · Jun 2019 – Feb 2022');
   });
 
   it('drops a date the picker never wrote instead of printing an unparseable one', () => {
-    expect(experienceRow({ ...experience, current: false, startDate: '' }).value).toBe('Flipkart');
+    expect(experienceRow({ ...experience, current: false, startDate: '' }).meta).toBe('Flipkart');
   });
 
   it('labels education by its degree and dates it from the institution', () => {
     expect(educationRow(education)).toEqual({
       id: 'edu_1',
       icon: 'graduation-cap',
-      label: 'M.Des.',
-      value: 'National Institute of Design · Jul 2014 – May 2016',
+      title: 'M.Des.',
+      meta: 'National Institute of Design · Jul 2014 – May 2016',
     });
+  });
+
+  it('surfaces the per-role skill tags, which §7.3 makes load-bearing', () => {
+    // §7.7 validates a generated resume against these, so the list is the one place a user can
+    // check them without opening the edit form. They were not rendered anywhere before.
+    const tagged = experienceRow({
+      ...experience,
+      skills: ['Design systems', 'Figma', 'Mobile UX'],
+    });
+
+    expect(tagged.tags).toEqual(['Design systems', 'Figma', 'Mobile UX']);
+    expect(tagged.title).toBe('Senior UX Designer');
+  });
+
+  it('carries the field of study, and omits the line entirely when a fact is missing', () => {
+    expect(educationRow({ ...education, field: 'Interaction Design' }).tags).toEqual([
+      'Interaction Design',
+    ]);
+    // Absent rather than an empty array: a row with nothing to tag draws no third line at all.
+    expect(educationRow(education).tags).toBeUndefined();
+    expect(experienceRow(experience).tags).toBeUndefined();
   });
 
   it('adds the issued year when there is one and omits it when there is not', () => {
     expect(certificationRow(certification, NOW)).toEqual({
       id: 'cert_1',
       icon: 'certificate',
-      label: 'Certified Usability Analyst',
-      value: 'HFI · 2021',
+      title: 'Certified Usability Analyst',
+      meta: 'HFI · 2021',
     });
 
-    expect(certificationRow({ ...certification, issuedOn: undefined }, NOW).value).toBe('HFI');
+    expect(certificationRow({ ...certification, issuedOn: undefined }, NOW).meta).toBe('HFI');
   });
 
   it('says so when a credential has lapsed, and stays quiet while it has not', () => {
@@ -88,8 +109,8 @@ describe('entryRows (V2 §7.3 row copy)', () => {
     expect(certificationExpired(live, NOW)).toBe(false);
     expect(certificationExpired(certification, NOW)).toBe(false);
 
-    expect(certificationRow(lapsed, NOW).value).toBe('HFI · 2021 · Expired');
-    expect(certificationRow(live, NOW).value).toBe('HFI · 2021');
+    expect(certificationRow(lapsed, NOW).meta).toBe('HFI · 2021 · Expired');
+    expect(certificationRow(live, NOW).meta).toBe('HFI · 2021');
   });
 
   it('tidies a link down to what says where it goes', () => {
@@ -118,8 +139,8 @@ describe('entryRows (V2 §7.3 row copy)', () => {
     expect(linkRow(link)).toEqual({
       id: 'link_portfolio',
       icon: 'palette',
-      label: 'Portfolio',
-      value: 'georgesmith.design',
+      title: 'Portfolio',
+      meta: 'georgesmith.design',
     });
   });
 });

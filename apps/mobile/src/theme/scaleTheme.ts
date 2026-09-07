@@ -15,10 +15,12 @@ import { typography, type TypeRole, type TypographyRole } from './typography';
  * Every token in `tokens.ts` is a Figma value measured on the 520px artboard. These helpers
  * project them onto the device by one factor, applied to everything, so a screen is a true
  * proportional replica of its frame rather than an approximation that reflows. The Figma
- * "Mobile 2" page confirms that policy for geometry: at 390 it is the 520 page at exactly 0.75,
+ * "Mobile 2" page confirms that policy for composition: at 390 it is the 520 page at exactly 0.75,
  * node for node, which is what `scale` already computes on a 390dp phone.
  *
- * Type is the one exception, and it is the designers' exception, not ours — see `typographyFor`.
+ * Two things are read between the boards instead. Type, which is the designers' exception rather
+ * than ours — see `typographyFor` — and the heights of the boxes a thumb has to hit, which is ours
+ * and is argued at `CONTROL_AT390`.
  *
  * Consumed once per (scheme, width) by `themeFor()` — never call these from a component.
  */
@@ -55,8 +57,43 @@ function scaleRecord<T extends Record<string, number>>(
 
 export const scaleSpacing = (scale: number): Spacing => scaleRecord(spacing, scale, []);
 export const scaleRadii = (scale: number): Radii => scaleRecord(radii, scale, RADII_EXEMPT);
-export function scaleSizes(scale: number): Sizes {
+
+/**
+ * Control heights read between the two artboards, exactly as type does — and for the same reason.
+ *
+ * A single factor is right for *composition*: a card, a ring and a gutter are proportions of the
+ * frame, and shrinking them together is what keeps a screen a replica of its artboard. It is wrong
+ * for the boxes a thumb has to hit, because a thumb is not proportional to the screen. The design
+ * team already conceded this half of it for type, holding font sizes back on the 390 board so text
+ * stayed legible in boxes that shrank; the boxes themselves were left on the flat factor, so at 390
+ * they landed at 43.5 / 42 / 39 / 36 against a 44pt floor the project's own rules require
+ * (CLAUDE.md rule 5). Text grew, its container did not, and the result reads as cramped.
+ *
+ * These are the interactive heights only. Composition — `scale`, spacing, radii, the gutter, the
+ * tab bar, rings and tiles — still answers to the single factor, so `artboardFidelity` holds.
+ * At 520 every value below is its drawn one, so the artboard is untouched at the design width.
+ */
+const CONTROL_AT390: Partial<Record<keyof typeof sizes, number>> = {
+  listRow: 52,
+  buttonLg: 50,
+  buttonMd: 46,
+  filterButton: 46,
+  searchField: 46,
+  iconButton: 44,
+  headerButton: 44,
+  segmentedControl: 44,
+  // Not a control: the sliding pill inside `segmentedControl`. It is re-anchored so the track's
+  // inset stays even — SegmentedControl derives that inset from the difference, so the two cannot
+  // drift apart at any width.
+  segmentedPill: 38,
+};
+
+export function scaleSizes(scale: number, width: number): Sizes {
   const scaled = scaleRecord(sizes, scale, SIZES_EXEMPT);
+  for (const key of Object.keys(CONTROL_AT390) as (keyof typeof sizes)[]) {
+    const at390 = CONTROL_AT390[key];
+    if (at390 != null) scaled[key] = between(at390, sizes[key], width);
+  }
   // Not a readability floor: a stroke that rounds to zero physical pixels disappears entirely.
   // It never binds on a real device — a scaled 1px stroke is already thicker than a hairline.
   scaled.border = Math.max(StyleSheet.hairlineWidth, scaled.border);

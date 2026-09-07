@@ -173,7 +173,10 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
       <StateView
         icon="magic"
         title="Tailor a resume first"
-        message="A cover letter is written from a resume and the job it was tailored to."
+        // §7.10's constraint, and it must be stated rather than implied: this branch fires with a
+        // library full of resumes, none of them linked to a job. Without it the reader sees five
+        // documents and a screen that will not use any of them, which reads as a bug.
+        message="A letter is written from a resume and the job it was tailored to."
         actionLabel="Tailor a resume"
         onAction={actions.openTailor}
       />,

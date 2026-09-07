@@ -26,11 +26,15 @@ describe('dataExportCopy — the four export states (V2 §8.5)', () => {
     expect(dataExportBlock(status({ status: 'failed' })).cta).toBe('Try again');
 
     // The spec's own wording, and the only time claim anywhere on the screen.
-    expect(dataExportBlock(status({ status: 'preparing' })).body).toContain('Usually under a minute');
+    expect(dataExportBlock(status({ status: 'preparing' })).body).toContain(
+      'Usually under a minute',
+    );
   });
 
   it('shows a failure its own reason rather than a generic one', () => {
-    const withReason = dataExportBlock(status({ status: 'failed', error: 'The archive timed out.' }));
+    const withReason = dataExportBlock(
+      status({ status: 'failed', error: 'The archive timed out.' }),
+    );
     expect(withReason.body).toBe('The archive timed out.');
 
     // A blank reason is no reason: the generic body stands rather than an empty line.
@@ -40,9 +44,9 @@ describe('dataExportCopy — the four export states (V2 §8.5)', () => {
   });
 
   it('quotes the file name and size the export itself reported, and nothing it did not', () => {
-    expect(dataExportFileLine(status({ fileName: 'nextkin-export.json', sizeLabel: '4.2 MB' }))).toBe(
-      'nextkin-export.json · 4.2 MB',
-    );
+    expect(
+      dataExportFileLine(status({ fileName: 'nextkin-export.json', sizeLabel: '4.2 MB' })),
+    ).toBe('nextkin-export.json · 4.2 MB');
     // No size reported means no size printed — not "0 MB".
     expect(dataExportFileLine(status({ fileName: 'nextkin-export.json' }))).toBe(
       'nextkin-export.json',
@@ -136,7 +140,13 @@ describe('dataExportCopy — the file itself (V2 §8.5)', () => {
       NOW.toISOString(),
     );
     expect(payload.savedJobs).toEqual([
-      { id: 'j1', title: 'Product Designer', company: 'Stripe', location: 'Bengaluru', savedAt: null },
+      {
+        id: 'j1',
+        title: 'Product Designer',
+        company: 'Stripe',
+        location: 'Bengaluru',
+        savedAt: null,
+      },
     ]);
   });
 

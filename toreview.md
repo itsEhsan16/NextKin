@@ -7,9 +7,11 @@ that were deliberately deferred, and the ones only a real device can settle.
 
 Add to this file whenever a judgement call gets made rather than burying it in a commit message.
 
-**Status:** Phases 9A–9I shipped. **No placeholder destination remains** — `src/features/placeholders.ts`,
+**Status:** Phases 9A–9I shipped, and **Phase 10** — the first device-feedback pass — has landed on
+top of them. No placeholder destination remains: `src/features/placeholders.ts`,
 `app/placeholder/[screen].tsx` and `src/ui/Placeholder` are deleted, so a new dead link cannot be
-typed. Everything undesigned is now built from the spec; what is left is this file and the device.
+typed. Everything undesigned is built from the spec; what is left is this file and a second device
+pass over the Phase 10 changes.
 
 ---
 
@@ -154,6 +156,152 @@ files that go, and the screen should not need to change.
   mutates anything", and a Clear thread control would be the first exception. Wiring it is a
   five-line change once you decide it belongs; leaving it out was the conservative reading.
 
+### 1.12 Control geometry now reads between the two artboards — a deliberate rule-7 deviation
+
+**This is the one to overrule if you disagree with anything in Phase 10.**
+
+Geometry was a single factor: every length is `width / 520`, so on a 390dp phone everything is
+×0.75 and on a 360dp one ×0.69. Type stopped following that factor in an earlier round of exactly
+this complaint — the design team drew a 390 board with the layout at ×0.75 and the font sizes
+deliberately held back, and `typographyFor` reads between the two boards. **The boxes were never
+given the same treatment**, so text grew relative to its container and the result read as cramped.
+It also put every interactive control under the 44pt floor `CLAUDE.md` rule 5 requires:
+
+| token | drawn | was @390 | was @360 | now |
+|---|---|---|---|---|
+| `listRow` | 58 | 43.5 | 40.2 | **52** |
+| `buttonLg` | 56 | 42.0 | 38.8 | **50** |
+| `buttonMd` / `searchField` / `filterButton` | 52 | 39.0 | 36.0 | **46** |
+| `iconButton` / `headerButton` / `segmentedControl` | 48 | 36.0 | 33.2 | **44** |
+
+`CONTROL_AT390` in `src/theme/scaleTheme.ts` holds the anchors. Composition is untouched — `scale`,
+spacing, radii, the gutter, the tab bar, rings and tiles still answer to the single factor, which
+is why `artboardFidelity.test.ts` stayed green without being edited. At 520 every control is still
+its drawn size, node for node.
+
+`ProfileScreen`'s group gap also went from the drawn 20 (15dp at 390) to 28 (21dp) — the only
+per-screen deviation, and the only one on a screen that has an artboard.
+
+**Decide:** whether a phone may diverge from the artboard for touch ergonomics. If the answer is
+no, revert `CONTROL_AT390` and the Profile gap and we accept 40dp rows on a 360dp device.
+
+### 1.13 The type ramp is still flat on a phone — the other half of 1.12
+
+Eleven roles collapse onto **exactly 11.5pt** at 390: `caption`, `captionRegular`,
+`captionSemiBold`, `jobMeta`, `rowDescription`, `overline`, `scoreSm`, `captionSm`, `pill`,
+`pillStrong`, `microSemiBold`. A subtitle, a footnote and a section header are typographically
+identical, which is a real part of why secondary text reads as one grey mush.
+
+You chose geometry only for Phase 10, so this was deliberately left. Fixing it means giving those
+roles distinct `at390` anchors, and it changes the look of every screen, so it wants its own device
+pass.
+
+**Decide:** whether to do it next.
+
+### 1.14 Two versions of the same §7.8 honesty claim
+
+`SCORE_HONESTY_NOTE` (70 words, `data/models/resume.ts`, on the rubric screen) and
+`ATS_CHECK_HONESTY_NOTE` (29 words, `create/atsCheckSetup.ts`, on the ATS check screen) make the
+same promise at two lengths. Both were kept — neither screen shows both, and cutting either would
+be cutting a §7.8 obligation on the judgement that the other covers it.
+
+**Decide:** whether the short one should simply be the long one, or whether two registers are right.
+
+### 1.15 Three things from the device pass that were *not* defects
+
+Recorded so they are not re-investigated:
+
+- **The floating gear** overlapping the password field and the Profile tab label is **Expo Go's own
+  dev-menu launcher**, drawn by the host outside the React tree. Not in this codebase, not
+  repositionable from app code, absent from a real build.
+- **Content under the floating tab pill** is by design — an opaque pill plus `TabBarScrim`, with
+  `tabBarInset` reserving 101.6dp + safe area so the *last* row always clears. A screenshot showing
+  a half-hidden row is mid-scroll.
+- **The Profile screen's stats / completeness / plan cards** are implemented and rendered
+  (`ProfileScreen.tsx:152-158`). The identity header is pinned, so a screenshot can be scrolled past
+  them and look as though they are missing.
+
+### 1.16b The second device pass — three defects no test could have caught, and what now catches them
+
+You found three more on the device. All three are fixed; each one is recorded here because the fix
+carries a judgement.
+
+**1. A focused field sat under the keyboard.** `Screen keyboard` gives iOS a
+`KeyboardAvoidingView` and Android its window resize. Both make the field *reachable*; neither moves
+the scroll offset, and React Native's `ScrollView` does not scroll to a focused `TextInput` on
+Android at all. **14 screens** were affected — every form in the app. `src/ui/Screen/revealOnFocus.tsx`
+now provides a reveal through context, `TextField` asks for it on focus, and the arithmetic is a
+pure `revealTarget()` with its own test. Pure JS on purpose: `react-native-keyboard-controller` is a
+native module and would break Expo Go (rule 1).
+**Decide:** whether `SearchField` should do the same. It is in a pinned header on all three of its
+screens today, so it cannot be covered — but that is a property of those screens, not of the control.
+
+**2. A sheet was painted under the page's own action bar.** `zIndex.sheet: 50` was in the tokens and
+**never applied**, while `StickyActionBar` declares 10 — and an explicit z-index beats document
+order. So the profile date picker's "Done" was half-covered by the page's "Save", and the scrim did
+not dim it. One line in `Sheet.tsx`. `__tests__/ui/SheetLayering.test.tsx` now pins the order.
+
+**3. The end date was destroyed by the "I currently work here" switch.** Not a load bug — the draft
+builder was always right and a test already covered it. Toggling the switch ON patched
+`{ current: true, endDate: '' }` and toggling it OFF restored only `current`, so a flick of the
+switch turned "Feb 2022" into "Not set" and saving persisted the loss. The same code was in the
+education form. The date is now hidden rather than cleared; `experienceEntry` already dropped it at
+serialisation, so the clear was never needed.
+
+**Why no test caught any of it, and what changed.** Jest renders without layout — no keyboard, no
+z-order, no measured heights — so the first two are structurally invisible to it. The third was
+invisible for a different and more interesting reason: *each half was correct on its own, and only
+the sequence lost data*. `__tests__/features/profile/profileDrafts.test.ts` now tests the property
+instead of the path — every entry type goes through draft → entry and must come back identical,
+including across a toggle round trip — so a form added later inherits the check.
+
+That test found a fourth thing on its first run: **both seeded profile links had no `kind`**, so they
+drew the generic chain glyph instead of a palette and an ID badge, and opening one put the picker on
+"Other" — a Save that changed nothing still rewrote the record. Fixture fixed.
+
+### 1.16c The prose trim, and the seven regressions the verify pass caught
+
+74 cuts across the Phase 9 screens, each checked by a second agent that re-read the files rather
+than trusting the report. It found **seven** problems, all fixed before the gate:
+
+- **Two rule-7 breaks.** `ResumeScoreScreen`'s "Green checks appear the moment a fix lands" and
+  `ResumesFirstRun`'s "most people are done in under ten minutes" are **drawn on the artboards**
+  (1:2109 and 1:2061 — the verifier opened the PNGs). Both reverted, with their test assertions.
+  §1.12's claim that the Profile group gap is the only artboard deviation therefore still holds.
+- **A §7.10 limit deleted.** The cover-letter screen's "written from a resume and the job it was
+  tailored to" was cut on the reasoning that the title carries it. The title is an instruction, not
+  the rule, and that branch fires with a library *full* of resumes — so the screen read as broken.
+  Restored, shortened.
+- **A layout change disguised as a copy change.** Dropping the Full name helper stopped `TextField`
+  reserving its helper row, so the first validation error would shove the rest of the form down a
+  line and the skeleton would over-draw. Restored as "Required.", which also marks the form's two
+  required inputs the same way.
+- **An irreversible action left undisclosed.** Removing "Saves as soon as you pick it" left the
+  discard sheet's "leaves your profile exactly as it was" false, because the avatar writes on pick.
+- **A §7.9 obligation.** `EntryCard` lost the only text saying how to clear a review flag, while the
+  download gate still requires it be cleared.
+- **A Pro-plan note** removed on the strength of a state the data layer cannot produce.
+
+**Changes of mine the verifier flagged as undeclared, kept deliberately:** removing the duplicate
+"Message support instead" from Help's no-results state (the "Still stuck?" card is on screen in that
+same branch), the duplicate Add CTAs on the four entry lists and Interview prep, and renaming
+`FILE_CTA` to "Check a file from your device" (its only branch has nothing to do it *instead* of).
+
+**Not acted on — overrule if you disagree:** §7.4's "nothing reaches your profile until you say so"
+now appears once, on the review screen rather than before the file is picked; `LinkFormScreen`'s
+delete confirm no longer mentions generated documents while its three siblings do;
+`ResumeEditorScreen`'s two error branches are now worded identically; and `DataExportState`'s
+skeleton block is measured for a body that got shorter.
+
+### 1.16 One same-destination pair kept on purpose
+
+`NotificationsScreen` reaches preferences twice: the header cog (`:128`) and a "Manage notification
+types" row at the end of the feed (`:221`). Left alone — different labels, different affordances,
+different moments (before reading vs after), and the header is artboard chrome. Every *identical*
+duplicate was removed.
+
+**Decide:** overrule if you want strictly one route per destination per screen.
+
 ---
 
 ## 2. Gaps in the plan itself
@@ -172,12 +320,23 @@ say Phase 9 is complete.
 
 ---
 
-## 3. Never verified on a device
+## 3. Device verification
 
-**Nothing since Phase 9A has run in Expo Go.** The project's own definition of done requires a
-device check, and every phase since has been signed off on `typecheck + lint + test` alone. The
-artboard-comparison half of that rule does not apply — these screens have no artboard — but the
-behavioural half very much does.
+**Phase 9 finally ran in Expo Go, and it found four real defects** — a Yoga starvation bug that was
+rendering row titles at zero width, controls under the 44pt floor, duplicated actions, and 5–6× the
+prose of the designed screens. All four are fixed in Phase 10. That is the argument for this rule,
+made in one session: `typecheck + lint + test` was green through all of it.
+
+**Phase 10's own changes have not been on a device yet**, and they are geometry changes, so they
+need one:
+- every screen at 360dp and at 430dp — the control anchors are a *floor* below 390, so the smallest
+  phones changed the most;
+- the segmented control's pill, which now derives its inset from the two heights rather than a
+  drawn 4pt — check it is centred in its track on Jobs, Practice and the new-set screen;
+- the four profile lists at 1.3× Dynamic Type, where a two-line row plus a tag line is tallest;
+- Profile itself against the PROFILE 01/02 artboard, to confirm only the group gap moved.
+
+What still needs a device from the earlier phases:
 
 What only a device can settle:
 

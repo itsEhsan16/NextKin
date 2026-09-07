@@ -54,7 +54,6 @@ export function EducationFields({ draft, patch, errors, blur, onPickDate }: Educ
         onChangeText={(field) => patch({ field })}
         onBlur={() => blur('field')}
         placeholder="Optional"
-        helper="Leave this out if the qualification already says it."
         autoCapitalize="words"
         returnKeyType="next"
       />
@@ -69,7 +68,9 @@ export function EducationFields({ draft, patch, errors, blur, onPickDate }: Educ
           <ToggleFieldRow
             label={STILL_STUDYING}
             value={draft.current}
-            onChange={(current) => patch(current ? { current, endDate: '' } : { current })}
+            // Hidden, not cleared — see the same row on ExperienceFields. `educationEntry` omits
+            // the end date when `current` is true, so clearing it here only destroyed the value.
+            onChange={(current) => patch({ current })}
           />
           {draft.current ? null : (
             <DateFieldRow label="End" value={draft.endDate} onPress={() => onPickDate('endDate')} />

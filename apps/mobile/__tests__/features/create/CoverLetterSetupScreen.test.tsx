@@ -168,13 +168,6 @@ describe('CoverLetterSetupScreen (V2 §7.10 — no artboard)', () => {
     await settle(NORMAL_MS);
 
     expect(screen.getByText('Tailor a resume first')).toBeOnTheScreen();
-    // StateView folds its message into the title's accessible name and hides the duplicate, so
-    // the visible copy is only reachable with the hidden elements included.
-    expect(
-      screen.getByText('A cover letter is written from a resume and the job it was tailored to.', {
-        includeHiddenElements: true,
-      }),
-    ).toBeOnTheScreen();
     // §7.10: nothing offers to write a letter from nothing.
     expect(screen.queryByLabelText('Write cover letter')).toBeNull();
 

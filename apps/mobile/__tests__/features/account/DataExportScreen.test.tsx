@@ -75,9 +75,9 @@ describe('DataExportScreen (V2 §8.5 — no artboard)', () => {
     );
     await settle();
 
-    // — Idle: the explainer names what the file holds, and the request changes nothing —
+    // — Idle: the card names the file, and the bullets below name what is in it —
     expect(screen.getByRole('header', { name: DATA_EXPORT_TITLE })).toBeOnTheScreen();
-    expect(screen.getByText(/Asking for it changes nothing in your account/)).toBeOnTheScreen();
+    expect(screen.getByText(/A JSON file of what NextKin holds about you/)).toBeOnTheScreen();
     expect(lib.writeTextFile).not.toHaveBeenCalled();
 
     await press('Request export');

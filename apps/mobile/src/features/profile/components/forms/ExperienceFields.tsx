@@ -66,9 +66,12 @@ export function ExperienceFields({
           <ToggleFieldRow
             label={STILL_HERE}
             value={draft.current}
-            // Leaving the switch on drops the end date rather than hiding a stale one: the role
-            // is ongoing, so there is no month it ended in.
-            onChange={(current) => patch(current ? { current, endDate: '' } : { current })}
+            // The date is HIDDEN while the switch is on, never cleared. Clearing it destroyed a
+            // saved value on a flick of the switch that turning it back off could not undo: an
+            // existing role's "Feb 2022" became "Not set", and saving persisted the loss. The end
+            // date is already dropped where it belongs — at serialisation, in `experienceEntry`,
+            // which omits it whenever `current` is true.
+            onChange={(current) => patch({ current })}
           />
           {draft.current ? null : (
             <DateFieldRow label="End" value={draft.endDate} onPress={() => onPickDate('endDate')} />

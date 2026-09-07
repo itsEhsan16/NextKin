@@ -18,6 +18,7 @@ import Animated, {
 
 import { haptics, maxFontScale, useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
+import { useRevealOnFocus } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
 export type TextFieldProps = {
@@ -98,6 +99,8 @@ export function TextField({
   style,
 }: TextFieldProps) {
   const { colors, motion, opacity, radii, sizes, spacing, typography, s } = useTheme();
+  const revealOnFocus = useRevealOnFocus();
+  const fieldRef = useRef<View>(null);
   const reduced = useReducedMotion();
 
   // Resolved here, on the JS side, for the reason Toggle resolves its scaled lengths there: the
@@ -142,7 +145,10 @@ export function TextField({
   const showsHelperRow = Boolean(message) || (showCount && maxLength != null);
 
   return (
-    <View style={[{ gap: spacing[2] }, style]}>
+    // The measured node is the whole field, label and helper row included — scrolling the input
+    // box alone into view would leave its label under the keyboard, which is the half that says
+    // what you are typing into.
+    <View ref={fieldRef} style={[{ gap: spacing[2] }, style]}>
       {label ? <Text variant="groupLabel">{label}</Text> : null}
 
       <Animated.View
@@ -195,6 +201,9 @@ export function TextField({
           }
           onFocus={() => {
             focus.set(withTiming(1, withReducedMotion(reduced, motion.timings.fast)));
+            // Asks the page to scroll this field clear of the keyboard. `null` outside a
+            // keyboard-aware scrolling Screen — in a sheet, the sheet does its own lifting.
+            revealOnFocus?.(fieldRef.current);
             onFocus?.();
           }}
           onBlur={() => {

@@ -94,7 +94,7 @@ export function Sheet({
   contentStyle,
   children,
 }: SheetProps) {
-  const { colors, radii, sizes, shadows, spacing, motion } = useTheme();
+  const { colors, radii, sizes, shadows, spacing, motion, zIndex } = useTheme();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const reduced = useReducedMotion();
@@ -136,11 +136,21 @@ export function Sheet({
         if (finished) runOnJS(unmount)();
       }),
     );
-  }, [hapticOnOpen, motion.springs.sheetIn, motion.timings.sheetOut, open, progress, reduced, unmount]);
+  }, [
+    hapticOnOpen,
+    motion.springs.sheetIn,
+    motion.timings.sheetOut,
+    open,
+    progress,
+    reduced,
+    unmount,
+  ]);
 
   useEffect(() => {
     // No-op on mount (the shared value already holds the target); animates on later changes.
-    animatedHeight.set(withSpring(targetHeight, withReducedMotion(reduced, motion.springs.sheetIn)));
+    animatedHeight.set(
+      withSpring(targetHeight, withReducedMotion(reduced, motion.springs.sheetIn)),
+    );
   }, [animatedHeight, motion.springs.sheetIn, reduced, targetHeight]);
 
   // Android hardware back closes the sheet instead of popping the route underneath.
@@ -224,8 +234,19 @@ export function Sheet({
     // The modal flag sits on the overlay root rather than the sheet surface: on the surface it
     // hides its own sibling — the scrim's "Close sheet" target — from VoiceOver while leaving
     // the page behind it fully reachable, which is exactly backwards.
-    <View accessibilityViewIsModal style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrimStyle]}>
+    // `zIndex.sheet` is load-bearing, not decoration. The token existed and was never applied, so
+    // the overlay sat at an implicit 0 while `StickyActionBar` declares 10 — and an explicit
+    // z-index beats document order. Every sheet raised over a page with a pinned bar was therefore
+    // painted *under* that bar: on the profile forms the page's "Save" covered the bottom of the
+    // date picker's own "Done", and the scrim never dimmed it.
+    <View
+      accessibilityViewIsModal
+      style={[StyleSheet.absoluteFill, { zIndex: zIndex.sheet }]}
+      pointerEvents="box-none"
+    >
+      <Animated.View
+        style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrimStyle]}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close sheet"

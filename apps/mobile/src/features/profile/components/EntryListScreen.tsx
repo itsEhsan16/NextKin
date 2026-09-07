@@ -7,8 +7,9 @@ import { useProfile } from '@/data/queries';
 import { useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
+import { EntryRow as EntryRowView } from '@/ui/EntryRow';
 import { IconButton } from '@/ui/IconButton';
-import { ListRow, RowGroup } from '@/ui/ListRow';
+import { RowGroup } from '@/ui/ListRow';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Skeleton } from '@/ui/Skeleton';
@@ -32,7 +33,11 @@ export type EntryListScreenProps = {
   addLabel: string;
   /** Opens one entry's form; `'new'` is the same form with nothing in it. */
   onOpen: (id: string) => void;
-  empty: { icon: string; title: string; message: string; actionLabel: string };
+  /**
+   * No `actionLabel`: the sticky bar carries Add in every branch, so an empty state that repeated
+   * it put the same words on screen twice — which is what the Certifications screen was doing.
+   */
+  empty: { icon: string; title: string; message: string };
   /** One quiet line under the group — the Links list uses it for the §6.2 note. */
   note?: string;
   /** Rendered as a sibling of the page, never inside its scroller (toasts, sheets). */
@@ -127,13 +132,7 @@ export function EntryListScreen({
   if (rows.length === 0) {
     return page(
       <>
-        <StateView
-          icon={empty.icon}
-          title={empty.title}
-          message={empty.message}
-          actionLabel={empty.actionLabel}
-          onAction={() => onOpen(NEW)}
-        />
+        <StateView icon={empty.icon} title={empty.title} message={empty.message} />
         {note ? <Footnote text={note} /> : null}
       </>,
     );
@@ -167,10 +166,11 @@ function EntryRowItem({ row, onPress }: { row: EntryListRow; onPress: () => void
   const styles = useStyles();
 
   const listRow = (
-    <ListRow
+    <EntryRowView
       icon={row.icon}
-      label={row.label}
-      value={row.value}
+      title={row.title}
+      meta={row.meta}
+      tags={row.tags}
       showChevron={!row.action}
       accessibilityHint="Opens this entry"
       onPress={onPress}

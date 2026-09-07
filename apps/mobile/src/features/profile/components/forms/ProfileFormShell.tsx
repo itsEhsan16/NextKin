@@ -9,6 +9,7 @@ import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
 
+import { DISCARD_MESSAGE, FIX_FIRST, SAVE_FAILED } from '../../profileForms';
 import { ProfileFormSkeleton } from './ProfileFormSkeleton';
 
 export type ProfileFormStatus = 'loading' | 'error' | 'missing' | 'ready';
@@ -42,13 +43,8 @@ export type ProfileFormShellProps = {
   children: ReactNode;
 };
 
-const DISCARD =
-  'This entry has not been saved. Going back now leaves your profile exactly as it was.';
-
 /** V2 §7.6 forbids a silent failure; the reason goes on the bar that started the work. */
-export const SAVE_FAILED = "We couldn't save that. Check your connection and try again.";
 export const DELETE_FAILED = "We couldn't delete that. Check your connection and try again.";
-export const FIX_FIRST = 'Fix the highlighted fields to save.';
 
 /** The note the bar carries: a failure first, then whatever is still wrong on the form. */
 export function formError(
@@ -124,7 +120,6 @@ export function ProfileFormShell({
       <StateView
         icon="folder-open"
         title="That entry no longer exists"
-        message="It may have been removed already. Nothing else on your profile has changed."
         actionLabel={`Back to ${listLabel}`}
         onAction={onLeave}
       />
@@ -183,7 +178,7 @@ export function ProfileFormShell({
       <ConfirmSheet
         open={discardOpen}
         title="Discard changes?"
-        message={DISCARD}
+        message={DISCARD_MESSAGE}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
         onConfirm={() => {

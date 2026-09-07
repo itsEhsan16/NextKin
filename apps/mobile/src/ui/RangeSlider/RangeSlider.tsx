@@ -211,7 +211,11 @@ export function RangeSlider({
       <View
         style={[
           styles.rail,
-          { height: s(TRACK_HEIGHT), borderRadius: radii.full, backgroundColor: colors.progressTrack },
+          {
+            height: s(TRACK_HEIGHT),
+            borderRadius: radii.full,
+            backgroundColor: colors.progressTrack,
+          },
         ]}
       />
       {/* Spans thumb centre to thumb centre, so the unselected part of the range reads as unfilled. */}

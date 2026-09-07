@@ -71,11 +71,77 @@ describe('themeFor — proportionality', () => {
     }
   });
 
+  /**
+   * The heights a thumb has to hit are read between the two artboards instead of following `K`,
+   * for the reason argued at `CONTROL_AT390`: a thumb is not proportional to the screen, and the
+   * flat factor put every one of these under the 44pt floor that CLAUDE.md rule 5 requires.
+   * Composition still follows `K` — which is what the assertion below still proves for everything
+   * else, and what keeps `artboardFidelity` green.
+   */
+  const CONTROL_AT390: Record<string, number> = {
+    listRow: 52,
+    buttonLg: 50,
+    buttonMd: 46,
+    filterButton: 46,
+    searchField: 46,
+    iconButton: 44,
+    headerButton: 44,
+    segmentedControl: 44,
+    segmentedPill: 38,
+  };
+
   it('scales every size by exactly width/520, bar the documented exemptions', () => {
     for (const [key, raw] of Object.entries(sizes)) {
       const scaled = theme.sizes[key as keyof typeof sizes];
       if (key === 'designWidth' || key === 'minHitTarget') expect(scaled).toBe(raw);
+      else if (key in CONTROL_AT390) expect(scaled).toBeCloseTo(CONTROL_AT390[key] ?? 0, 9);
       else expect(scaled).toBeCloseTo(raw * K, 9);
+    }
+  });
+
+  it('lands every control on its drawn size at the design width', () => {
+    // The exception is a phone-width one. At 520 the frame *is* the artboard, so every control
+    // must still be exactly what Figma draws — otherwise this would be a redesign, not a fit.
+    const wide = themeFor('light', sizes.designWidth);
+    for (const key of Object.keys(CONTROL_AT390)) {
+      expect(wide.sizes[key as keyof typeof sizes]).toBeCloseTo(
+        sizes[key as keyof typeof sizes],
+        9,
+      );
+    }
+  });
+
+  it('keeps every interactive control at or above the 44pt floor on every real phone', () => {
+    // The rule that was silently broken: at 390 these were 43.5 / 42 / 39 / 36. Widths are real
+    // devices, narrowest first — the narrow board is a floor, so the smallest screens are the
+    // case that has to hold.
+    const INTERACTIVE = [
+      'listRow',
+      'buttonLg',
+      'buttonMd',
+      'filterButton',
+      'searchField',
+      'iconButton',
+      'headerButton',
+      'segmentedControl',
+    ] as const;
+
+    for (const width of [320, 360, 375, 390, 412, 430, 520]) {
+      const at = themeFor('light', width);
+      for (const key of INTERACTIVE) {
+        expect(at.sizes[key]).toBeGreaterThanOrEqual(at.sizes.minHitTarget);
+      }
+    }
+  });
+
+  it('keeps the segmented pill centred in its track at every width', () => {
+    // SegmentedControl derives its inset from the difference, so an uneven one would park the
+    // pill off-centre. Both are read between the boards; this is what stops them drifting.
+    for (const width of [320, 360, 375, 390, 412, 430, 520]) {
+      const at = themeFor('light', width);
+      const inset = (at.sizes.segmentedControl - at.sizes.segmentedPill) / 2;
+      expect(inset).toBeGreaterThan(0);
+      expect(at.sizes.segmentedPill + inset * 2).toBeCloseTo(at.sizes.segmentedControl, 9);
     }
   });
 

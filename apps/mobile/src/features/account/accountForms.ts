@@ -16,7 +16,7 @@
 
 export type Validation = { ok: true } | { ok: false; errors: Record<string, string> };
 
-/** The floor the sign-in service enforces; said in the field's helper before it is enforced. */
+/** The floor the sign-in service enforces; quoted in the error when a password misses it. */
 export const PASSWORD_MIN = 8;
 
 const verdict = (errors: Record<string, string>): Validation =>
@@ -65,7 +65,8 @@ export function validatePasswordChange(draft: PasswordDraft): Validation {
   if (draft.current.length === 0) errors.current = 'Enter the password you use now.';
 
   if (draft.next.length === 0) errors.next = 'Choose a new password.';
-  else if (draft.next.length < PASSWORD_MIN) errors.next = `Use at least ${PASSWORD_MIN} characters.`;
+  else if (draft.next.length < PASSWORD_MIN)
+    errors.next = `Use at least ${PASSWORD_MIN} characters.`;
   else if (draft.next === draft.current) errors.next = 'That is the password you already use.';
 
   if (draft.confirm.length === 0) errors.confirm = 'Type the new password again.';
@@ -77,11 +78,12 @@ export function validatePasswordChange(draft: PasswordDraft): Validation {
 /* -------------------------------------------------------------------------- copy */
 
 /** Said before the send, so nobody presses it expecting the address to change on the spot. */
+// 'the link' needs the sentence that introduces it: before the first press nothing else on the
+// screen mentions one, and the button only says 'Send verification'.
 export const EMAIL_HELPER =
-  'We send a verification link there. It becomes your sign-in address once you open the link.';
+  'We send a verification link there; it becomes your sign-in address once you open it.';
 
-export const emailSentNote = (address: string): string =>
-  `Verification sent to ${address}. Open the link in that email to finish the change.`;
+export const emailSentNote = (address: string): string => `Verification sent to ${address}.`;
 
 export const EMAIL_SEND_FAILED =
   "We couldn't send that verification email. Check your connection and try again.";

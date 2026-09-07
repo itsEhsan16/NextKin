@@ -8,7 +8,6 @@ import {
   useSendAssistantMessage,
   useSubscription,
 } from '@/data/queries';
-import { REASON_LINE } from '@/features/billing';
 // Deep import on purpose: the create barrel drags its screens in. The banner is a plain card.
 import { UsageBanner } from '@/features/create/components/UsageBanner';
 import { useReducedMotion } from '@/lib';
@@ -19,7 +18,6 @@ import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
-import { Text } from '@/ui/Text';
 
 import { AssistantComposer } from '../components/AssistantComposer';
 import { MessageBubble, StreamingBubble } from '../components/MessageBubble';
@@ -189,11 +187,10 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
         ),
       )}
 
-      {spent ? (
-        <Text variant="caption" color="textSecondary" align="center">
-          {REASON_LINE.assistant}
-        </Text>
-      ) : messages.length > 0 && draft.length === 0 && !streaming ? (
+      {/* Nothing here when the cap is spent: the meter above already says "0 of 20 left today"
+          and the bar below says what Pro does about it. A third line saying it again was the
+          screen telling the reader the same fact three ways. */}
+      {!spent && messages.length > 0 && draft.length === 0 && !streaming ? (
         <SuggestedPrompts onPick={setDraft} />
       ) : null}
     </>,

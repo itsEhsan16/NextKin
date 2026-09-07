@@ -102,10 +102,8 @@ describe('NewInterviewSetScreen (V2 §7.15 / §13.5 — no artboard)', () => {
     await settle(NORMAL_MS);
 
     expect(screen.getByLabelText('Resume, UX Designer Resume', shown)).toBeOnTheScreen();
-    // That one is tailored to a job, so the technical questions come from the overlap.
-    expect(
-      screen.getByText(/skills this resume claims that the job asks for/, shown),
-    ).toBeOnTheScreen();
+    // That one is tailored to a job, and the caption says so.
+    expect(screen.getByText(/Tailored to the linked job description/, shown)).toBeOnTheScreen();
     // A cover letter is never offered as a source.
     expect(screen.queryByText('Stripe cover letter', shown)).toBeNull();
   });

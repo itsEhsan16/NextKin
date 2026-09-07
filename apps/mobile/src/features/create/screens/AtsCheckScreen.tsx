@@ -178,11 +178,7 @@ export function AtsCheckScreen({ resumeId }: AtsCheckScreenProps) {
   // point of the standalone check.
   if (!resume && !file) {
     return page(
-      <StateView
-        icon="file-alt"
-        title="No resumes to check yet"
-        message="Pick a file from your device and we'll read it and score it."
-      />,
+      <StateView icon="file-alt" title="No resumes to check yet" />,
       <StickyActionBar
         note={failure ?? undefined}
         primary={{

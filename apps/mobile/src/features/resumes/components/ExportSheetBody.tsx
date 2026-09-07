@@ -24,7 +24,6 @@ export type ExportSheetBodyProps = {
 const HEADER_TOP = 24;
 const HEADER_GAP = 30;
 const ROW_GAP = 28;
-const FOOTNOTE_GAP = 28;
 
 const noop = () => undefined;
 
@@ -162,10 +161,6 @@ export function ExportSheetBody({
           );
         })}
       </View>
-
-      <Text variant="rowDescription" color="textSecondary" style={{ marginTop: s(FOOTNOTE_GAP) }}>
-        Every format holds the same words in the same order.
-      </Text>
     </View>
   );
 }

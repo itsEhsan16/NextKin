@@ -129,7 +129,7 @@ export function HistoryScreen() {
         <StateView
           icon="history"
           title="Nothing here yet"
-          message="Everything you do — a resume you generate, a job you save, an export — is recorded here."
+          message="Resumes, saved jobs and exports are recorded here."
           actionLabel="Find jobs"
           onAction={actions.findJobs}
           style={{ marginTop: spacing[10], marginHorizontal: spacing.gutter }}
@@ -138,7 +138,6 @@ export function HistoryScreen() {
         <StateView
           icon="filter"
           title="Nothing under this filter"
-          message="Your history has entries, just not of this kind."
           actionLabel="Show all"
           onAction={() => setFilter('all')}
           style={{ marginTop: spacing[10], marginHorizontal: spacing.gutter }}

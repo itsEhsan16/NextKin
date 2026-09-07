@@ -63,7 +63,6 @@ export function EducationEditor({
                 label="Dates"
                 accessibilityLabel={`${name}, dates`}
                 placeholder="2014 — 2016"
-                helper="Write it the way it should print."
                 value={entry.period}
                 onChangeText={(text) => patch(index, { ...entry, period: text })}
                 onBlur={() => onBlurField?.(`${entry.id}.period`)}

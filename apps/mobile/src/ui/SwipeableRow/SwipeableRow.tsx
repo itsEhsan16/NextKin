@@ -15,12 +15,7 @@ import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
-import {
-  COMMIT_FRACTION,
-  SWIPE_ACTION_WIDTH,
-  clampSwipe,
-  resolveSwipeSnap,
-} from './swipeMath';
+import { COMMIT_FRACTION, SWIPE_ACTION_WIDTH, clampSwipe, resolveSwipeSnap } from './swipeMath';
 
 export type SwipeAction = {
   key: string;

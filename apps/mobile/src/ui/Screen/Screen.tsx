@@ -1,10 +1,13 @@
-import { useMemo, type ReactNode, type RefObject } from 'react';
+import { useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   View,
+  type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type ScrollViewProps,
   type StyleProp,
   type ViewStyle,
@@ -12,6 +15,8 @@ import {
 import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 
 import { useTabBarLayout, useTheme } from '@/theme';
+
+import { RevealProvider } from './revealOnFocus';
 
 type ScreenBaseProps = {
   /** Safe-area edges to pad. Defaults to `['top']`; add `'bottom'` for screens without a tab bar. */
@@ -136,6 +141,14 @@ export function Screen({
   const insets = useSafeAreaInsets();
   const tabBar = useTabBarLayout();
 
+  // The three things `RevealProvider` needs to lift a focused field clear of the keyboard. Refs
+  // rather than state on purpose: a scroll offset in state would re-render the page on every
+  // frame of every scroll, and nothing here paints from these values.
+  const ownScrollRef = useRef<ScrollView>(null);
+  const activeScrollRef = scrollRef ?? ownScrollRef;
+  const scrollOffset = useRef(0);
+  const footerHeight = useRef(0);
+
   // Only ever non-zero in scroll mode — the types see to that, but state it here too: this
   // lands on the ScrollView's content container, where it lets content pass under the pill.
   const tabBarSpace = scroll && tabBarInset ? tabBar.contentInset : 0;
@@ -194,10 +207,16 @@ export function Screen({
       */}
       {header != null ? <View style={[frameStyle, headerStyle]}>{header}</View> : null}
       <ScrollView
-        ref={scrollRef}
+        ref={activeScrollRef}
         style={styles.root}
         contentContainerStyle={[contentStyle, contentContainerStyle]}
         contentInsetAdjustmentBehavior="never"
+        // Tracked so `RevealProvider` can turn a window-space delta into a scroll target. Written
+        // to a ref, so this costs no render.
+        onScroll={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+          scrollOffset.current = event.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={16}
         // Also what dismisses the keyboard on a tap outside a field: the tap reaches the control
         // under it instead of being spent closing the keyboard.
         keyboardShouldPersistTaps="handled"
@@ -210,7 +229,18 @@ export function Screen({
         No `frameStyle` here, unlike the header: the bar spans edge to edge — its hairline and
         upward shadow read as the bottom of the window — and pads its own gutter inside that.
       */}
-      {footer != null ? <View style={footerStyle}>{footer}</View> : null}
+      {footer != null ? (
+        <View
+          style={footerStyle}
+          // The bar rides above the keyboard, so it hides a field just as the keyboard does; the
+          // reveal has to clear both.
+          onLayout={(event: LayoutChangeEvent) => {
+            footerHeight.current = event.nativeEvent.layout.height;
+          }}
+        >
+          {footer}
+        </View>
+      ) : null}
     </>
   ) : (
     <>
@@ -222,21 +252,30 @@ export function Screen({
   if (!keyboard) return <View style={rootStyle}>{page}</View>;
 
   return (
-    <KeyboardAvoidingView
-      // Only the flex lives out here, never `rootStyle`. `behavior="padding"` *composes* the
-      // keyboard's height over the style it is handed, and that height is 0 while the keyboard
-      // is down — handing it the safe-area box would zero the bottom inset out from under every
-      // keyboard screen that has no footer to own it.
-      style={styles.root}
-      // iOS gets no help from the OS, so the wrapper is padded by the keyboard's height and the
-      // `flex: 1` box inside it shrinks to match, carrying the footer up. Android already resizes
-      // the window through `windowSoftInputMode`, and padding on top of that would shift the page
-      // twice — hence `undefined` there, and a zero offset on both.
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
+    <RevealProvider
+      scrollRef={activeScrollRef}
+      offsetRef={scrollOffset}
+      footerRef={footerHeight}
+      // Only a scrolling page can reveal anything. On a static one the provider hands fields a
+      // `null` and they leave the keyboard alone.
+      enabled={scroll}
     >
-      <View style={rootStyle}>{page}</View>
-    </KeyboardAvoidingView>
+      <KeyboardAvoidingView
+        // Only the flex lives out here, never `rootStyle`. `behavior="padding"` *composes* the
+        // keyboard's height over the style it is handed, and that height is 0 while the keyboard
+        // is down — handing it the safe-area box would zero the bottom inset out from under every
+        // keyboard screen that has no footer to own it.
+        style={styles.root}
+        // iOS gets no help from the OS, so the wrapper is padded by the keyboard's height and the
+        // `flex: 1` box inside it shrinks to match, carrying the footer up. Android already resizes
+        // the window through `windowSoftInputMode`, and padding on top of that would shift the page
+        // twice — hence `undefined` there, and a zero offset on both.
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <View style={rootStyle}>{page}</View>
+      </KeyboardAvoidingView>
+    </RevealProvider>
   );
 }
 

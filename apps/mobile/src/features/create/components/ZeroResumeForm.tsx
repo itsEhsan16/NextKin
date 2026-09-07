@@ -88,11 +88,15 @@ export function ZeroResumeForm({ draft, errors, onChange, onBlurField }: ZeroRes
         onChangeText={(fullName) => set({ fullName })}
         onBlur={() => onBlurField('fullName')}
         placeholder="The name to print at the top"
-        helper="This is the only name on the draft. Change it if you go by another one."
         autoCapitalize="words"
         autoComplete="name"
         maxLength={NAME_MAX}
         returnKeyType="next"
+        // Short, but not nothing. `TextField` draws its helper row only when it has something to
+        // say, so dropping this on the form's one REQUIRED field would leave the row unreserved —
+        // and the first validation error would then push the three fields below it, and the whole
+        // JD section, down a line. It is also the height `ZeroResumeSkeleton` draws.
+        helper="Required."
         {...(errors.fullName ? { error: errors.fullName } : {})}
       />
 
@@ -114,7 +118,7 @@ export function ZeroResumeForm({ draft, errors, onChange, onBlurField }: ZeroRes
         onChangeText={(targetTitle) => set({ targetTitle })}
         onBlur={() => onBlurField('targetTitle')}
         placeholder="Product Designer"
-        helper="Optional. It names the draft and steers what the summary aims at."
+        helper="Optional."
         autoCapitalize="words"
         maxLength={TITLE_MAX}
         {...(errors.targetTitle ? { error: errors.targetTitle } : {})}
@@ -126,7 +130,7 @@ export function ZeroResumeForm({ draft, errors, onChange, onBlurField }: ZeroRes
         onChangeText={(location) => set({ location })}
         onBlur={() => onBlurField('location')}
         placeholder="City, country"
-        helper="Optional. Left out of the draft entirely if you leave it blank."
+        helper="Optional."
         icon="map-marker-alt"
         autoCapitalize="words"
         maxLength={LOCATION_MAX}

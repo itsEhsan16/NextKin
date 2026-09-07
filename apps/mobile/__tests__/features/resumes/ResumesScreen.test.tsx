@@ -88,7 +88,9 @@ describe('ResumesScreen (RESUMES 01/02)', () => {
     expect(screen.getByLabelText('Sort by Last edited')).toBeOnTheScreen();
 
     // Usage meter (Figma 1:1388) from the subscription fixture.
-    expect(await screen.findByText('2 of 2 free resumes used', {}, { timeout: 5000 })).toBeOnTheScreen();
+    expect(
+      await screen.findByText('2 of 2 free resumes used', {}, { timeout: 5000 }),
+    ).toBeOnTheScreen();
     expect(screen.getByLabelText('Upgrade')).toBeOnTheScreen();
 
     // The dashed tile leads the grid.
@@ -149,9 +151,7 @@ describe('ResumesScreen (RESUMES 01/02)', () => {
 
     // — List layout (RESUMES 02): subtitles appear and the choice persists —
     fireEvent.press(screen.getByLabelText('List view'));
-    expect(
-      await screen.findByText('Base resume · 3 pages · PDF and DOCX ready'),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText('Base resume · 3 pages · PDF and DOCX ready')).toBeOnTheScreen();
     expect(screen.getByText('Tailored · Razorpay · Senior UX Designer')).toBeOnTheScreen();
     expect(screen.getByText('New resume or cover letter')).toBeOnTheScreen();
     expect(storage.get('prefs.resumesView')).toBe('list');

@@ -70,7 +70,6 @@ export function UploadReviewScreen() {
       <StateView
         icon="file-upload"
         title="Nothing to review"
-        message="A parsed resume lands on this page. Upload one and we'll read it."
         actionLabel="Upload a resume"
         onAction={actions.openUpload}
       />,
@@ -89,6 +88,8 @@ export function UploadReviewScreen() {
       <StateView
         icon="file-alt"
         title="We couldn't find anything to add"
+        // The action opens the DOCUMENT, not the profile, so the manual route has to be named:
+        // without it this state is a profile dead end that offers no way to a profile at all.
         message="Your resume is in your library. You can add your roles and skills by hand instead."
         actionLabel="Open the document"
         onAction={skip}
@@ -111,8 +112,7 @@ export function UploadReviewScreen() {
   return page(
     <>
       <Text variant="body" color="textSecondary">
-        This is what we read out of your file. Turn off anything that is wrong or that you would
-        rather not keep — nothing is added to your profile until you press Add.
+        Nothing is added to your profile until you press Add.
       </Text>
 
       <ImportRowGroups

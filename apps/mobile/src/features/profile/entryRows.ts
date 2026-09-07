@@ -8,15 +8,25 @@ import { formatMonthYear } from '@/lib';
  * `resumes/sectionEdits.ts` and `create/jdSkillEdits.ts`.
  */
 
+/**
+ * A title on its own line, a muted meta line under it, and optionally a line of tags.
+ *
+ * It was `{ label, value }` until a device pass found the rows empty: `value` is `ListRow`'s
+ * *trailing* value, and a 49-character subtitle handed to it starved the label to width 0, so
+ * "M.Des." rendered no glyphs at all. The doc comments here always said "X over Y" — the copy was
+ * written for a two-line row that had not been built. It has now (`@/ui/EntryRow`).
+ */
 export type EntryRow = {
   id: string;
   /** FontAwesome 5 Free Solid glyph name. */
   icon: string;
-  label: string;
-  value?: string;
+  title: string;
+  meta?: string;
+  /** A third line — the facts a list of entries is actually scanned for. */
+  tags?: string[];
 };
 
-/** " · " joins the parts of a row's value, skipping the ones that are missing. */
+/** " · " joins the parts of a row's meta line, skipping the ones that are missing. */
 const meta = (parts: readonly (string | undefined)[]): string | undefined => {
   const kept = parts.filter((part): part is string => !!part && part.length > 0);
   return kept.length > 0 ? kept.join(' · ') : undefined;
@@ -39,26 +49,35 @@ export function formatEntryDates(
   return end ? `${start} – ${end}` : start;
 }
 
-/** "Senior UX Designer" over "Flipkart · Mar 2022 – Present". */
+/**
+ * "Senior UX Designer" over "Flipkart · Mar 2022 – Present", over the skills claimed for that role.
+ *
+ * The tags are not decoration. V2 §7.3 makes per-role skill tags load-bearing — they are what the
+ * Timeline Validation Engine (§7.7) checks a generated resume against — and until now the profile
+ * had nowhere that showed them, so the one field a user most needs to check was invisible outside
+ * the edit form.
+ */
 export function experienceRow(entry: Experience): EntryRow {
   return {
     id: entry.id,
     icon: 'briefcase',
-    label: entry.title,
-    value: meta([entry.company, formatEntryDates(entry.startDate, entry.endDate, entry.current)]),
+    title: entry.title,
+    meta: meta([entry.company, formatEntryDates(entry.startDate, entry.endDate, entry.current)]),
+    ...(entry.skills.length > 0 ? { tags: [...entry.skills] } : {}),
   };
 }
 
-/** "M.Des." over "National Institute of Design · Jul 2014 – May 2016". */
+/** "M.Des." over "National Institute of Design · Jul 2014 – May 2016", over the field of study. */
 export function educationRow(entry: Education): EntryRow {
   return {
     id: entry.id,
     icon: 'graduation-cap',
-    label: entry.degree,
-    value: meta([
+    title: entry.degree,
+    meta: meta([
       entry.institution,
       formatEntryDates(entry.startDate, entry.endDate, entry.current),
     ]),
+    ...(entry.field ? { tags: [entry.field] } : {}),
   };
 }
 
@@ -89,8 +108,8 @@ export function certificationRow(entry: Certification, now: Date = new Date()): 
   return {
     id: entry.id,
     icon: 'certificate',
-    label: entry.name,
-    value: meta([
+    title: entry.name,
+    meta: meta([
       entry.issuer,
       issuedYear(entry.issuedOn),
       certificationExpired(entry, now) ? EXPIRED : undefined,
@@ -132,7 +151,7 @@ export function linkRow(entry: ProfileLink): EntryRow {
   return {
     id: entry.id,
     icon: linkIcon(entry.kind),
-    label: entry.label,
-    value: tidyUrl(entry.url),
+    title: entry.label,
+    meta: tidyUrl(entry.url),
   };
 }

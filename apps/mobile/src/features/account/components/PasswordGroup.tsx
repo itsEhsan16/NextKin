@@ -7,7 +7,7 @@ import { RowGroup } from '@/ui/ListRow';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
 
-import { PASSWORD_MIN, PASSWORD_NOTE, type PasswordDraft } from '../accountForms';
+import { PASSWORD_NOTE, type PasswordDraft } from '../accountForms';
 import { AccountStatusLine } from './AccountStatusLine';
 
 export const CHANGE_PASSWORD = 'Change password';
@@ -71,7 +71,6 @@ export function PasswordGroup({
           onChangeText={(value) => onChange('next', value)}
           onBlur={() => onBlurField('next')}
           error={errors.next}
-          helper={`At least ${PASSWORD_MIN} characters, and not the one you use now.`}
           secureTextEntry
           autoCapitalize="none"
           autoComplete="new-password"

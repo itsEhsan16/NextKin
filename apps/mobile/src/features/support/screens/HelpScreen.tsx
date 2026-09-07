@@ -108,7 +108,7 @@ export function HelpScreen() {
       <StateView
         icon="life-ring"
         title="Help is unavailable right now"
-        message={`We can't show the FAQ at the moment. Write to us and we'll answer directly. ${SUPPORT_REPLY_WINDOW}`}
+        message={SUPPORT_REPLY_WINDOW}
         actionLabel={CONTACT_CTA}
         onAction={contact}
       />,
@@ -161,11 +161,8 @@ export function HelpScreen() {
               ? `No answers matched "${debouncedQuery.trim()}"`
               : 'No answers in this topic'
           }
-          message="Try a different word, or put the topic back to All."
           actionLabel="Clear search"
           onAction={clearSearch}
-          secondaryLabel={CONTACT_SECONDARY}
-          onSecondary={contact}
         />
       ) : (
         <FaqList
@@ -180,7 +177,7 @@ export function HelpScreen() {
           Still stuck?
         </Text>
         <Text variant="prose" color="textSecondary">
-          {`Tell us what happened and we'll take a look. ${SUPPORT_REPLY_WINDOW}`}
+          {SUPPORT_REPLY_WINDOW}
         </Text>
         <Button label={CONTACT_CTA} icon="envelope" onPress={contact} />
       </Card>

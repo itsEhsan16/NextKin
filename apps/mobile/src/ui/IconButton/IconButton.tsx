@@ -49,7 +49,11 @@ export function IconButton({
   const glyph = iconSize ?? s(DEFAULT_ICON);
 
   const surface = {
-    outline: { backgroundColor: 'transparent', borderWidth: s(1), borderColor: colors.borderDefault },
+    outline: {
+      backgroundColor: 'transparent',
+      borderWidth: s(1),
+      borderColor: colors.borderDefault,
+    },
     filled: { backgroundColor: colors.surfaceSubtle, borderWidth: 0, borderColor: 'transparent' },
     ghost: { backgroundColor: 'transparent', borderWidth: 0, borderColor: 'transparent' },
   }[variant];

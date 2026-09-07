@@ -72,7 +72,12 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
       <Animated.View
         style={[
           shadows.knob,
-          { width: s(KNOB), height: s(KNOB), borderRadius: radii.full, backgroundColor: colors.surfaceCard },
+          {
+            width: s(KNOB),
+            height: s(KNOB),
+            borderRadius: radii.full,
+            backgroundColor: colors.surfaceCard,
+          },
           knobStyle,
         ]}
       />

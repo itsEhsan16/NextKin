@@ -7,11 +7,8 @@ import { countOf, listsEqual } from '../chipEdits';
 import { ChipListEditor } from '../components/ChipListEditor';
 import { useProfileActions } from '../hooks/useProfileActions';
 
-/**
- * Honest about what the list does and does not do: it drives matching here and it is what the
- * document's keyword coverage is measured against — not a promise about any employer's software.
- */
-const EMPTY = `Skills are how NextKin matches you to jobs, and they are what the ${SCORE_LABEL} counts when it reads a resume. Add the ones you would want a recruiter to search for.`;
+/** A claim about our own rubric — never about any employer's software. */
+const EMPTY = `Skills are what the ${SCORE_LABEL} counts when it reads a resume.`;
 
 /**
  * The skill list on the career profile (V2 §7.3). Uncapped: the count line says how many there

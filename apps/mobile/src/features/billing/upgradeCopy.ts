@@ -226,7 +226,7 @@ export const MANAGE_CTA = 'Manage on the web';
  * disabled, it promises nothing while it stands in.
  */
 export const LOADING_CTA = 'Upgrade to Pro';
-export const MANAGE_NOTE = 'Change or cancel your plan from your account on the web.';
+export const MANAGE_NOTE = 'Change or cancel your plan on the web.';
 export const MANAGE_UNAVAILABLE =
   "We couldn't open the browser. Go to nextkin.app/account on any device to manage your plan.";
 /** The account page the manage action opens; the app never takes payment itself (§13.4). */

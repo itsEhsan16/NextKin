@@ -38,7 +38,9 @@ describe('accountForms — email (V2 §7.1)', () => {
    * verification for the address you already have would look like it worked and change nothing.
    */
   it('refuses the address the account already has, whatever the casing', () => {
-    expect(errorsOf(validateNewEmail(CURRENT, CURRENT)).email).toBe('That is already your address.');
+    expect(errorsOf(validateNewEmail(CURRENT, CURRENT)).email).toBe(
+      'That is already your address.',
+    );
     expect(errorsOf(validateNewEmail(CURRENT.toUpperCase(), CURRENT)).email).toBe(
       'That is already your address.',
     );
@@ -60,7 +62,9 @@ describe('accountForms — password (V2 §7.1, §8.4)', () => {
 
   it('accepts a long enough new password typed the same way twice', () => {
     expect(
-      validatePasswordChange(draft({ current: 'old-one-here', next: 'new-one-here', confirm: 'new-one-here' })),
+      validatePasswordChange(
+        draft({ current: 'old-one-here', next: 'new-one-here', confirm: 'new-one-here' }),
+      ),
     ).toEqual({ ok: true });
   });
 
@@ -100,7 +104,9 @@ describe('accountForms — password (V2 §7.1, §8.4)', () => {
    */
   it('never trims a password', () => {
     expect(
-      validatePasswordChange(draft({ current: 'old-one-here', next: ' padded pw ', confirm: ' padded pw ' })),
+      validatePasswordChange(
+        draft({ current: 'old-one-here', next: ' padded pw ', confirm: ' padded pw ' }),
+      ),
     ).toEqual({ ok: true });
     const mismatch = validatePasswordChange(
       draft({ current: 'old-one-here', next: ' padded pw ', confirm: 'padded pw' }),

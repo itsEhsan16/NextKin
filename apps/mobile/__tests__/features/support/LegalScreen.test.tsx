@@ -123,11 +123,7 @@ describe('LegalScreen (V2 §8.5 — the documents, readable in-product)', () => 
 
     await act(async () => fireEvent.press(screen.getByLabelText('Open on the web')));
 
-    expect(
-      screen.getByText(
-        'Nothing on this device could open the web copy. The full text is on this page.',
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Nothing on this device could open the web copy.')).toBeOnTheScreen();
   }, 60000);
 
   it('publishes the privacy rights §8.5 names — GDPR and the Australian Privacy Act', async () => {

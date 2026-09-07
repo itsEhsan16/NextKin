@@ -86,8 +86,21 @@ export const profileFixture: Profile = {
   certifications: [],
   // "Links — Portfolio, LinkedIn" (Figma 1:2261).
   links: [
-    { id: 'link_portfolio', label: 'Portfolio', url: 'https://georgesmith.design' },
-    { id: 'link_linkedin', label: 'LinkedIn', url: 'https://linkedin.com/in/george-smith' },
+    // `kind` is what picks the row's glyph and seeds the form's kind picker. Without it both rows
+    // drew the generic chain and the picker opened on "Other", so a Save that changed nothing
+    // still rewrote the record.
+    {
+      id: 'link_portfolio',
+      label: 'Portfolio',
+      url: 'https://georgesmith.design',
+      kind: 'portfolio',
+    },
+    {
+      id: 'link_linkedin',
+      label: 'LinkedIn',
+      url: 'https://linkedin.com/in/george-smith',
+      kind: 'linkedin',
+    },
   ],
   // Stats card (Figma 1:2208): 12 applications · 2 interviews · 87 avg ATS.
   stats: { applications: 12, interviews: 2, avgAtsScore: 87 },

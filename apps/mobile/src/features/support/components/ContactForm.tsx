@@ -13,7 +13,6 @@ import {
   CONTACT_EMAIL_CAPTION,
   CONTACT_EMAIL_GROUP,
   CONTACT_LEDE,
-  CONTACT_MESSAGE_HELPER,
   CONTACT_MESSAGE_LABEL,
   CONTACT_MESSAGE_PLACEHOLDER,
   CONTACT_TOPIC_GROUP,
@@ -112,7 +111,6 @@ export function ContactForm({
       <TextField
         label={CONTACT_MESSAGE_LABEL}
         placeholder={CONTACT_MESSAGE_PLACEHOLDER}
-        helper={CONTACT_MESSAGE_HELPER}
         {...(error ? { error } : {})}
         value={message}
         onChangeText={onChangeMessage}
@@ -128,7 +126,7 @@ export function ContactForm({
 }
 
 /** The composed heights of the blocks above: the lede, the two rows and the textarea. */
-const LEDE = 75;
+const LEDE = 25;
 const LABEL = 20;
 const ROW = 60;
 const MESSAGE = 190;

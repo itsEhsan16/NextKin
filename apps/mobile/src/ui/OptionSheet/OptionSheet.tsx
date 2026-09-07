@@ -90,10 +90,7 @@ export type OptionSheetProps<K extends string = string> = OptionSheetBodyProps<K
 };
 
 /** Single-choice picker sheet (Profile → Appearance / Language / Availability / Min salary). */
-export function OptionSheet<K extends string = string>({
-  open,
-  ...body
-}: OptionSheetProps<K>) {
+export function OptionSheet<K extends string = string>({ open, ...body }: OptionSheetProps<K>) {
   const { sizes } = useTheme();
   return (
     <Sheet

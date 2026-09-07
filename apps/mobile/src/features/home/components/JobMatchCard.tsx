@@ -64,7 +64,10 @@ export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: 
           <Chip label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} labelVariant="homeCardChip" />
           <Chip label={formatRelativeTime(job.postedAt)} labelVariant="homeCardChip" />
         </View>
-        <AvatarStack caption={applicantsCopy(job.applicantsCount)} style={{ paddingTop: spacing[3] }} />
+        <AvatarStack
+          caption={applicantsCopy(job.applicantsCount)}
+          style={{ paddingTop: spacing[3] }}
+        />
       </Card>
     </Pressable>
   );

@@ -191,7 +191,6 @@ export function TailorScreen({ jobId, resumeId }: TailorScreenProps) {
       <StateView
         icon="file-alt"
         title="Add a base resume first"
-        message="Tailoring starts from a resume you already have."
         actionLabel="Upload a resume"
         onAction={actions.openUpload}
       />,

@@ -180,7 +180,7 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
       <StateView
         icon="file-alt"
         title="We couldn't find that job description"
-        message="It may have been removed. Paste or upload it again and we'll read it fresh."
+        message="It may have been removed."
         actionLabel="Start a new one"
         onAction={actions.openTailor}
       />,

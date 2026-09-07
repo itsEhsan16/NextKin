@@ -120,7 +120,7 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
         <StateView
           icon="comments"
           title="That practice set is gone"
-          message="It may have been deleted. Your other sets are still here."
+          message="It may have been deleted."
           actionLabel="Back to Interview prep"
           onAction={actions.openLibrary}
         />
@@ -188,7 +188,6 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
           compact
           icon="check-circle"
           title={filter === 'needs_work' ? 'Nothing needs work' : 'Everything is marked'}
-          message="Every question under this filter has been dealt with."
           actionLabel="Show all questions"
           onAction={() => {
             setFilter('all', data);

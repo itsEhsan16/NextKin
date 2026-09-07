@@ -55,7 +55,6 @@ export function LinksListScreen() {
         icon: 'link',
         title: 'No links yet',
         message: 'A portfolio or profile gives an employer somewhere to look next.',
-        actionLabel: ADD,
       }}
       overlay={
         <Toast

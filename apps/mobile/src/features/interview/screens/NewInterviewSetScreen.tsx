@@ -12,7 +12,6 @@ import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
-import { Text } from '@/ui/Text';
 
 import {
   InterviewSourcePicker,
@@ -194,25 +193,19 @@ export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) 
       : INTERVIEW_COST_NOTE;
 
   return page(
-    <>
-      <Text variant="body" color="textSecondary">
-        A practice set of 10 to 20 questions with model answers — technical ones drawn from what
-        your resume claims, behavioural ones from what the role asks.
-      </Text>
-      <InterviewSourcePicker
-        mode={mode}
-        onChangeMode={setMode}
-        resume={resumeMode ? resume : undefined}
-        onChooseResume={() => setSheetOpen(true)}
-        roleTitle={roleTitle}
-        onChangeRoleTitle={(value) => {
-          setRoleTitle(value);
-          setRefused(false);
-        }}
-        roleError={roleError}
-        libraryEmpty={libraryEmpty}
-      />
-    </>,
+    <InterviewSourcePicker
+      mode={mode}
+      onChangeMode={setMode}
+      resume={resumeMode ? resume : undefined}
+      onChooseResume={() => setSheetOpen(true)}
+      roleTitle={roleTitle}
+      onChangeRoleTitle={(value) => {
+        setRoleTitle(value);
+        setRefused(false);
+      }}
+      roleError={roleError}
+      libraryEmpty={libraryEmpty}
+    />,
     // §13.5: the upsell REPLACES the action rather than interrupting the page.
     <StickyActionBar
       note={note}

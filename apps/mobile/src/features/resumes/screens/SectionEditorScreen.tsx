@@ -166,7 +166,6 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
     <StateView
       icon="file-alt"
       title="That section isn't part of this document"
-      message="A cover letter has a letter body; a resume has sections. Open the document to see what it holds."
       actionLabel="Back to the document"
       onAction={() => router.back()}
     />,

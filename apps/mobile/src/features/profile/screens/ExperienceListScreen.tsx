@@ -25,7 +25,6 @@ export function ExperienceListScreen() {
         icon: 'briefcase',
         title: 'No roles yet',
         message: 'Your work history is what everything else is generated from.',
-        actionLabel: ADD,
       }}
     />
   );

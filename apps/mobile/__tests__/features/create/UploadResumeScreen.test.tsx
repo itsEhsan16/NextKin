@@ -77,7 +77,7 @@ describe('UploadResumeScreen (V2 §7.4 — no artboard)', () => {
     jest.useRealTimers();
   });
 
-  it('rests on the explanation and offers the picker', async () => {
+  it('rests on what it can read and offers the picker', async () => {
     await renderUpload();
 
     expect(screen.getByRole('header', { name: 'Upload a resume' })).toBeOnTheScreen();
@@ -85,10 +85,6 @@ describe('UploadResumeScreen (V2 §7.4 — no artboard)', () => {
     ['PDF', 'DOCX', 'TXT'].forEach((format) => {
       expect(screen.getByText(format, shown)).toBeOnTheScreen();
     });
-    // §7.4's promise, made before the file is picked rather than after it is parsed.
-    expect(
-      screen.getByText(/nothing reaches your profile until you say so/, shown),
-    ).toBeOnTheScreen();
     expect(screen.getByLabelText('Choose a file')).not.toBeDisabled();
   });
 

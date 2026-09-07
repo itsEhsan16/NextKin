@@ -9,7 +9,9 @@
  * the rules are the product's, not a schema library's.
  *
  * The draft shapes and what leaves them on Save are next door in `profileDrafts`, re-exported
- * here so a caller only ever imports one module.
+ * here so a caller only ever imports one module. The two sentences every editing page in this
+ * feature says — a failed save, and the discard question — live here too, so they are written
+ * once rather than once per page.
  */
 import {
   looksLikeUrl,
@@ -20,6 +22,18 @@ import {
 } from './profileDrafts';
 
 export * from './profileDrafts';
+
+/* -------------------------------------------------------------- shared copy */
+
+/** §7.6 forbids a silent failure; this goes on the bar that started the work. */
+/** The bar's note while a form refuses to save. Shared, like SAVE_FAILED below it. */
+export const FIX_FIRST = 'Fix the highlighted fields to save.';
+
+export const SAVE_FAILED = "We couldn't save that. Check your connection and try again.";
+
+/** Said under "Discard changes?", wherever this feature asks it. */
+export const DISCARD_MESSAGE =
+  'Your changes have not been saved. Going back now leaves your profile as it was.';
 
 export type Validation = { ok: true } | { ok: false; errors: Record<string, string> };
 

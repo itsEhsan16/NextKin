@@ -63,7 +63,7 @@ export function InterviewSourcePicker({
         <SegmentedControl segments={MODES} value={mode} onChange={onChangeMode} />
       ) : (
         <Text variant="caption" color="textSecondary">
-          No resume in your library yet, so this set is written from a role title.
+          No resume in your library yet.
         </Text>
       )}
 
@@ -104,8 +104,8 @@ export function InterviewSourcePicker({
           </Card>
           <Text variant="caption" color="textSecondary">
             {resume.linkedJobId
-              ? 'Technical questions come from the skills this resume claims that the job asks for.'
-              : 'No job description linked — technical questions come from every skill this resume claims.'}
+              ? 'Tailored to the linked job description.'
+              : 'No job description linked — technical questions come from the resume alone.'}
           </Text>
         </View>
       ) : (

@@ -59,7 +59,14 @@ export function ListRow({
       onPress={onPress}
       style={[
         styles.row,
-        { minHeight: sizes.listRow, paddingHorizontal: s(PADDING_X), gap: s(GUTTER) },
+        {
+          minHeight: sizes.listRow,
+          paddingHorizontal: s(PADDING_X),
+          // Real padding, not only a `minHeight`: the floor alone centres one line in the box and
+          // gives a second line nothing to grow into.
+          paddingVertical: spacing[2],
+          gap: s(GUTTER),
+        },
         style,
       ]}
     >
@@ -80,7 +87,12 @@ export function ListRow({
         {label}
       </Text>
       {value ? (
-        <Text variant="segment" color="textSecondary" numberOfLines={1} style={{ marginRight: spacing[1] }}>
+        <Text
+          variant="segment"
+          color="textSecondary"
+          numberOfLines={1}
+          style={[styles.value, { marginRight: spacing[1] }]}
+        >
           {value}
         </Text>
       ) : null}
@@ -137,4 +149,18 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
   iconSlot: { alignItems: 'center' },
   label: { flex: 1 },
+  /**
+   * Both are load-bearing, and neither is cosmetic.
+   *
+   * `flex: 1` on the label means `flexBasis: 0` — it has no width of its own and lives on leftover
+   * space. Yoga defaults `flexShrink` to 0 (the web defaults it to 1), so a value with no flex
+   * props is unshrinkable at its full measured width, and the label's scaled shrink factor is
+   * `1 × 0 = 0`. Nothing can absorb an overflow, so the label resolves to width 0 and vanishes —
+   * which is exactly what happened to the education degree on a 390dp phone.
+   *
+   * `flexShrink` lets the value give way, and `maxWidth` stops it claiming so much that the label
+   * is squeezed to a couple of glyphs before shrinking even starts. Every artboard value fits well
+   * under the cap, so PROFILE 01/02 renders unchanged; only overflow behaves differently.
+   */
+  value: { flexShrink: 1, maxWidth: '55%' },
 });

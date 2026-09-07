@@ -66,7 +66,7 @@ export function JdResponsibilities({ lines, onChange }: JdResponsibilitiesProps)
 
       {lines.length === 0 ? (
         <Text variant="body" color="textSecondary">
-          None found in this description. Add the ones that matter.
+          None found.
         </Text>
       ) : (
         rows(0, VISIBLE)

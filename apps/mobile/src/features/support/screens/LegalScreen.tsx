@@ -20,8 +20,7 @@ export type LegalScreenProps = { doc?: LegalDocKey };
 const OPEN_LABEL = 'Open on the web';
 
 /** Said on the page, not through a toast: nothing hosts one above a pushed screen. */
-const OPEN_FAILED =
-  'Nothing on this device could open the web copy. The full text is on this page.';
+const OPEN_FAILED = 'Nothing on this device could open the web copy.';
 
 /**
  * The canonical addresses. The document itself carries its `url`, and that is what is used
@@ -58,7 +57,6 @@ function MissingDocument() {
       <StateView
         icon="file-alt"
         title="That document doesn't exist"
-        message="Only the terms of service and the privacy policy are published here."
         actionLabel="Go back"
         onAction={actions.goBack}
       />

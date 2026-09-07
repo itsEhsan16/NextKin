@@ -157,9 +157,8 @@ export function acceptedDraft(draft: ProfileDraft, accepted: ReadonlySet<string>
   };
 }
 
-/** What the bar says when every row is off: why the button is inert, and the way past it. */
-export const NOTHING_ACCEPTED_NOTE =
-  'Nothing selected. Turn on a row to add it, or skip and keep your profile as it is.';
+/** What the bar says when every row is off: why the button is inert. */
+export const NOTHING_ACCEPTED_NOTE = 'Nothing selected. Turn on a row to add it.';
 
 const joinList = (parts: readonly string[]): string =>
   parts.length <= 1

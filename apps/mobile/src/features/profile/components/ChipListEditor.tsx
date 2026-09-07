@@ -8,7 +8,8 @@ import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
 
-import { discardMessage, DISCARD_TITLE, SAVE_FAILED } from '../chipEdits';
+import { DISCARD_TITLE } from '../chipEdits';
+import { DISCARD_MESSAGE, SAVE_FAILED } from '../profileForms';
 import { ChipListBody, ChipListSkeleton, type ChipListBodyProps } from './ChipListParts';
 
 export type ChipListEditorProps = ChipListBodyProps & {
@@ -85,7 +86,7 @@ export function ChipListEditor({
       <ConfirmSheet
         open={confirmOpen}
         title={DISCARD_TITLE}
-        message={discardMessage(body.noun)}
+        message={DISCARD_MESSAGE}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
         onConfirm={() => {

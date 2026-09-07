@@ -123,9 +123,7 @@ export function ProfileSheetsHost() {
           onSelect={(key) => {
             updatePreferences.mutate({
               minSalary:
-                key === 'none'
-                  ? undefined
-                  : { min: Number(key), currency: 'INR', period: 'year' },
+                key === 'none' ? undefined : { min: Number(key), currency: 'INR', period: 'year' },
             });
             closeSheet();
           }}

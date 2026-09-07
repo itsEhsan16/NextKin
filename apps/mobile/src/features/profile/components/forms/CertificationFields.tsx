@@ -74,7 +74,6 @@ export function CertificationFields({
         onChangeText={(credentialUrl) => patch({ credentialUrl })}
         onBlur={() => blur('credentialUrl')}
         placeholder="Optional"
-        helper="Where the credential can be checked."
         error={errors.credentialUrl}
         keyboardType="url"
         autoCapitalize="none"

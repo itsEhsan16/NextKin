@@ -128,10 +128,7 @@ describe('MatchCriteriaScreen (V2 §7.13 — no artboard)', () => {
     expect(screen.getByText("We can't score this match yet")).toBeOnTheScreen();
     // StateView folds its message into the title's accessible name and hides the duplicate.
     expect(
-      screen.getByText(
-        "Matching reads the skills and experience on your profile. Add a few and we'll score this job against them.",
-        hidden,
-      ),
+      screen.getByText('Matching reads the skills and experience on your profile.', hidden),
     ).toBeOnTheScreen();
     // Nothing pretends to a number it could not compute, and the bar is gone with it.
     expect(screen.queryByLabelText('Tailor resume to this job')).toBeNull();

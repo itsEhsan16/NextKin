@@ -68,7 +68,6 @@ export function ExperienceEditor({
                 label="Dates"
                 accessibilityLabel={`${name}, dates`}
                 placeholder="Mar 2022 — Present"
-                helper="Write it the way it should print."
                 value={role.period}
                 onChangeText={(text) => patch(index, { ...role, period: text })}
                 onBlur={() => onBlurField?.(`${role.id}.period`)}

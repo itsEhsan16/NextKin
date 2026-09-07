@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
@@ -19,12 +25,10 @@ export type SegmentedControlProps<K extends string = string> = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** Figma 1:283 — 48pt track, 4pt inset, 40pt pill with r12 and a soft shadow. */
-const INSET = 4;
-
 /**
- * Sliding-pill segmented control. The pill translates on the UI thread between equal slots, so
- * switching stays smooth while the list underneath re-queries.
+ * Sliding-pill segmented control (Figma 1:283 — 48pt track, 4pt inset, 40pt pill at r12 with a
+ * soft shadow). The pill translates on the UI thread between equal slots, so switching stays
+ * smooth while the list underneath re-queries.
  */
 export function SegmentedControl<K extends string = string>({
   segments,
@@ -32,12 +36,14 @@ export function SegmentedControl<K extends string = string>({
   onChange,
   style,
 }: SegmentedControlProps<K>) {
-  const { colors, radii, sizes, shadows, motion, s } = useTheme();
+  const { colors, radii, sizes, shadows, motion } = useTheme();
   const reduced = useReducedMotion();
 
   const [trackWidth, setTrackWidth] = useState(0);
-  // `trackWidth` is measured device space, so the inset subtracted from it must be too.
-  const inset = s(INSET);
+  // Derived from the two heights rather than scaled from the drawn 4pt: the track is read between
+  // the artboards (see CONTROL_AT390) and the pill with it, so a hard-coded inset would drift from
+  // their difference at some widths and park the pill off-centre. This cannot.
+  const inset = (sizes.segmentedControl - sizes.segmentedPill) / 2;
   const slot = trackWidth > 0 ? (trackWidth - inset * 2) / segments.length : 0;
   const index = Math.max(
     0,
@@ -87,7 +93,7 @@ export function SegmentedControl<K extends string = string>({
           height: sizes.segmentedControl,
           borderRadius: radii.xl,
           backgroundColor: colors.surfaceSubtle,
-          padding: s(INSET),
+          padding: inset,
         },
         style,
       ]}
@@ -139,7 +145,7 @@ export function SegmentedControl<K extends string = string>({
 
 const styles = StyleSheet.create({
   track: { flexDirection: 'row', alignItems: 'center' },
-  // `top` is set inline from s(INSET) — a raw artboard length here would not scale.
+  // `top` is set inline from the derived inset — a raw artboard length here would not scale.
   pill: { position: 'absolute', left: 0 },
   segment: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
 });

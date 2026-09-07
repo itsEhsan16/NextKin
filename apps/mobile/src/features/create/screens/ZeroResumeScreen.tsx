@@ -51,8 +51,8 @@ const DRAFT_FAILED = "We couldn't start your draft. Check your connection and tr
 const FIX_FIRST = 'Fill in the highlighted fields to start.';
 const NEED_JD = 'Add the job description you want the draft written against.';
 
-/** §7.9 lists the JD among its three inputs, so the section says so rather than implying it. */
-const JD_REQUIRED = 'Required. The draft is written against this posting, not from a blank page.';
+/** §7.9 lists the JD among its three inputs, so the section is marked rather than left implied. */
+const JD_REQUIRED = 'Required.';
 
 /**
  * CREATE — Zero Resume Mode (V2 §7.9): a first draft for someone who has no resume at all. No

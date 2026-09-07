@@ -27,7 +27,6 @@ export function CertificationsListScreen() {
         icon: 'certificate',
         title: 'No certifications yet',
         message: 'Credentials you have earned back up the skills you list.',
-        actionLabel: ADD,
       }}
     />
   );

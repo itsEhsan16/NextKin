@@ -21,22 +21,20 @@ export const DATA_EXPORT_CONTENTS: readonly string[] = [
   'Your activity history — generations, exports and applications.',
 ];
 
-/** Where "what we hold and why" is actually answered; the screen links the row underneath it. */
-export const DATA_EXPORT_PRIVACY_NOTE =
-  'The privacy policy sets out what NextKin holds about you and why.';
-
 export type DataExportBlock = { title: string; body: string; cta: string };
 
 const IDLE: DataExportBlock = {
   title: 'Take a copy of your data',
-  body: 'We build a JSON file from what NextKin holds about you. Asking for it changes nothing in your account.',
+  // The second sentence is the §8.5 one: asking is inert. Without it the only statement that a
+  // request changes nothing lives in the FAILED block, which the reader hopes never to see.
+  body: 'A JSON file of what NextKin holds about you. Asking for it changes nothing in your account.',
   cta: 'Request export',
 };
 
 const PREPARING: DataExportBlock = {
   title: 'Building your file',
   // The spec's own line. The mock is faster, but nothing here promises a number.
-  body: 'Usually under a minute. You can leave this screen — the file keeps building.',
+  body: 'Usually under a minute.',
   cta: 'Preparing',
 };
 
@@ -48,7 +46,7 @@ const READY: DataExportBlock = {
 
 const FAILED: DataExportBlock = {
   title: "The export didn't finish",
-  body: 'Something went wrong while the file was being built.',
+  body: 'Something went wrong.',
   cta: 'Try again',
 };
 

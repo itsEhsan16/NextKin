@@ -42,7 +42,8 @@ export const CONTACT_TITLE = 'Message support';
 export const CONTACT_CTA = 'Send';
 export const CONTACT_DONE = 'Done';
 
-export const CONTACT_LEDE = `Send this and it reaches the NextKin support team with your account address attached, so there is nothing else to fill in. ${SUPPORT_REPLY_WINDOW}`;
+/** The one promise the form owes the reader; the rest of the page is the form itself. */
+export const CONTACT_LEDE = SUPPORT_REPLY_WINDOW;
 
 export const CONTACT_TOPIC_GROUP = 'ABOUT';
 export const CONTACT_TOPIC_LABEL = 'Topic';
@@ -50,12 +51,10 @@ export const CONTACT_TOPIC_SHEET = 'What is this about?';
 export const CONTACT_TOPIC_HINT = 'Choose what your message is about';
 
 export const CONTACT_EMAIL_GROUP = 'REPLY GOES TO';
-export const CONTACT_EMAIL_CAPTION = 'The address on your account. Change it in Account settings.';
+export const CONTACT_EMAIL_CAPTION = 'Change it in Account settings.';
 
 export const CONTACT_MESSAGE_LABEL = 'Your message';
 export const CONTACT_MESSAGE_PLACEHOLDER = 'What happened?';
-export const CONTACT_MESSAGE_HELPER =
-  'Say what you were doing when it went wrong and what you expected instead.';
 
 /** Said in words rather than "invalid", the way every other form in the app says it. */
 export const CONTACT_MESSAGE_BLANK = 'Write your message before sending it.';
@@ -72,8 +71,7 @@ export const contactSentMessage = (email: string): string =>
   `We have it, and the reply goes to ${email}. ${SUPPORT_REPLY_WINDOW}`;
 
 export const CONTACT_ERROR_TITLE = "Couldn't load your account";
-export const CONTACT_ERROR_MESSAGE =
-  'The reply goes to your account address, and the form will not promise one it cannot read. Check your connection and try again.';
+export const CONTACT_ERROR_MESSAGE = 'Check your connection and try again.';
 
 /* ------------------------------------------------------------- validation */
 

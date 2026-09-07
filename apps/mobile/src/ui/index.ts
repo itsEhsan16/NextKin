@@ -6,6 +6,7 @@ export * from './Card';
 export * from './Chip';
 export * from './ConfirmSheet';
 export * from './Disclosure';
+export * from './EntryRow';
 export * from './FilterButton';
 export * from './IconButton';
 export * from './IconTileGrid';

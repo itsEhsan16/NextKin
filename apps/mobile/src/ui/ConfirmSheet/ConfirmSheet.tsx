@@ -32,7 +32,9 @@ export function ConfirmSheetBody({
   const { spacing } = useTheme();
 
   return (
-    <View style={{ paddingHorizontal: spacing.gutter, paddingVertical: spacing[4], gap: spacing[3] }}>
+    <View
+      style={{ paddingHorizontal: spacing.gutter, paddingVertical: spacing[4], gap: spacing[3] }}
+    >
       <Text {...a11yHeader(title)} variant="headline">
         {title}
       </Text>

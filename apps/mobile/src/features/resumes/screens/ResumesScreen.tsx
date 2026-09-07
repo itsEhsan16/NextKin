@@ -191,7 +191,6 @@ export function ResumesScreen() {
         <StateView
           icon="search"
           title="No documents match"
-          message="Try a different search, or switch the type filter back to All."
           actionLabel="Clear search"
           onAction={() => {
             setQuery('');

@@ -56,9 +56,7 @@ describe('HelpScreen — the states where there is nothing to read (V2 §7.14)',
     useMockModeStore.setState({ mode: 'error' });
     await mount();
 
-    expect(
-      await screen.findByText("Couldn't load help", {}, { timeout: 15000 }),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Couldn't load help", {}, { timeout: 15000 })).toBeOnTheScreen();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Try again')));
     // `waitFor` around BOTH assertions, not `findBy` followed by them: pressing retry puts the

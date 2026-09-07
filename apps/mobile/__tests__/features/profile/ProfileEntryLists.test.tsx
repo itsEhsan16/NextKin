@@ -81,15 +81,24 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
     await mount(<ExperienceListScreen />);
 
     expect(screen.getByRole('header', { name: 'Work experience' })).toBeOnTheScreen();
-    expect(
-      screen.getByLabelText('Senior UX Designer, Flipkart · Mar 2022 – Present', shown),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByLabelText('Product Designer, Swiggy · Jun 2019 – Feb 2022', shown),
-    ).toBeOnTheScreen();
 
+    // The regression this pass exists for. These titles were handed to `ListRow`'s trailing
+    // `value` slot, which starved them to width 0 — "Senior UX Designer" rendered as "Senior U…"
+    // and the education degree as nothing at all. Title and meta are separate lines now, so each
+    // clamps on its own and neither can take the other's width.
+    expect(screen.getByText('Senior UX Designer', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Flipkart · Mar 2022 – Present', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Product Designer', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Swiggy · Jun 2019 – Feb 2022', shown)).toBeOnTheScreen();
+
+    // §7.3 makes per-role skill tags load-bearing (§7.7 validates against them); the list is now
+    // where they can be checked without opening the form.
+    expect(screen.getByText('Design systems', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Payments', shown)).toBeOnTheScreen();
+
+    // One focus stop per entry, reading the whole row rather than each chip.
     await act(async () =>
-      fireEvent.press(screen.getByLabelText('UX Designer, PhonePe · Aug 2017 – May 2019', shown)),
+      fireEvent.press(screen.getByLabelText(/^UX Designer, PhonePe · Aug 2017 – May 2019/, shown)),
     );
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/profile/experience/[id]',
@@ -106,12 +115,18 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
   it('labels education by degree and dates it from the institution', async () => {
     await mount(<EducationListScreen />);
 
+    // The worst case of the starvation bug: this degree is the shortest title in the app and its
+    // meta line the longest, so it rendered zero glyphs on a 390dp phone.
+    expect(screen.getByText('M.Des.', shown)).toBeOnTheScreen();
     expect(
-      screen.getByLabelText('M.Des., National Institute of Design · Jul 2014 – May 2016', shown),
+      screen.getByText('National Institute of Design · Jul 2014 – May 2016', shown),
     ).toBeOnTheScreen();
+    expect(screen.getByText('Interaction Design', shown)).toBeOnTheScreen();
 
     await act(async () =>
-      fireEvent.press(screen.getByLabelText('B.E., Anna University · Aug 2010 – May 2014', shown)),
+      fireEvent.press(
+        screen.getByLabelText(/^B\.E\., Anna University · Aug 2010 – May 2014/, shown),
+      ),
     );
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/profile/education/[id]',
@@ -119,21 +134,22 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
     });
   }, 60000);
 
-  it('offers the form from the empty state and keeps the Add bar beside it', async () => {
+  it('offers Add exactly once when the list is empty', async () => {
     // The fixture profile has no certifications, so this list is empty as it stands.
     await mount(<CertificationsListScreen />);
 
     expect(screen.getByText('No certifications yet')).toBeOnTheScreen();
+    // The message is hidden from the reader — StateView folds it into the title's label.
     expect(
-      // The message is hidden from the reader — StateView folds it into the title's label.
       screen.getByText('Credentials you have earned back up the skills you list.', shown),
     ).toBeOnTheScreen();
 
-    // Two ways forward, and both reach the same form.
-    const [emptyAction, stickyAction] = screen.getAllByLabelText('Add a certification');
-    expect(stickyAction).toBeDefined();
+    // The bar carries Add in every branch, so the empty state repeating it put the same words on
+    // screen twice — the duplication the device pass caught. One affordance, not two.
+    const actions = screen.getAllByLabelText('Add a certification', shown);
+    expect(actions).toHaveLength(1);
 
-    await act(async () => fireEvent.press(emptyAction as NonNullable<typeof emptyAction>));
+    await act(async () => fireEvent.press(actions[0] as NonNullable<(typeof actions)[0]>));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/profile/certifications/[id]',
       params: { id: 'new' },

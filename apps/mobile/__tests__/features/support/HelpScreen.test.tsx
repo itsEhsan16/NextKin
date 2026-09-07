@@ -121,8 +121,10 @@ describe('HelpScreen (V2 §7.14 — no artboard)', () => {
     await settle();
     expect(screen.getByText('No answers matched "kombucha"')).toBeOnTheScreen();
     expect(screen.getByLabelText('Search help')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Message support instead')).toBeOnTheScreen();
     expect(screen.queryByLabelText('Try again')).toBeNull();
+    // The way through to a person is the "Still stuck?" card below, which is on screen in this
+    // branch too — so the empty state offering its own second copy of it said it twice.
+    expect(screen.getAllByLabelText('Message support')).toHaveLength(1);
 
     await act(async () => fireEvent.press(screen.getByLabelText('Clear search')));
     await settle();

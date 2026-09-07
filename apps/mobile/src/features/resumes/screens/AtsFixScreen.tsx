@@ -176,7 +176,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
       <StateView
         icon="check-circle"
         title="Nothing to fix yet"
-        message={`This document hasn't been scored. Once it has an ${SCORE_LABEL}, the checks we can act on show up here.`}
+        message={`This document has no ${SCORE_LABEL} yet.`}
         actionLabel="Back to the document"
         onAction={actions.goBack}
         style={{ marginTop: spacing[10] }}
@@ -189,7 +189,6 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
       <StateView
         icon="check-circle"
         title="Nothing left to fix"
-        message="Every check we can act on has passed."
         actionLabel="Back to the score"
         onAction={actions.goBack}
         style={{ marginTop: spacing[10] }}

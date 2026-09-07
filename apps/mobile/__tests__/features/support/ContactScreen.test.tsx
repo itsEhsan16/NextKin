@@ -90,9 +90,7 @@ describe('ContactScreen (V2 §7.14 — no artboard)', () => {
     // The published window is said once, in the lede, from the model constant.
     expect(screen.getByText(new RegExp(SUPPORT_REPLY_WINDOW))).toBeOnTheScreen();
     expect(screen.getByText(userFixture.email)).toBeOnTheScreen();
-    expect(
-      screen.getByText('The address on your account. Change it in Account settings.'),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Change it in Account settings.')).toBeOnTheScreen();
   });
 
   it('refuses a message it cannot act on and says what is missing', async () => {

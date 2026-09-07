@@ -90,7 +90,6 @@ export function NewResumeScreen() {
         }}
         placeholder="Product Designer — 2026"
         error={refused && title == null ? NAME_REQUIRED : undefined}
-        helper="You can rename it any time."
         maxLength={TITLE_MAX}
         autoFocus
         returnKeyType="done"

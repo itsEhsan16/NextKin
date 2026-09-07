@@ -120,7 +120,13 @@ export function DataExportState({ status }: DataExportStateProps) {
     <View style={{ gap: spacing[6] }}>
       <Card>
         {status.status === 'failed' ? (
-          <StateView compact tone="danger" icon="exclamation-triangle" title={block.title} message={block.body} />
+          <StateView
+            compact
+            tone="danger"
+            icon="exclamation-triangle"
+            title={block.title}
+            message={block.body}
+          />
         ) : (
           <View style={{ gap: spacing[3] }}>
             <Text variant="headline" accessibilityRole="header">

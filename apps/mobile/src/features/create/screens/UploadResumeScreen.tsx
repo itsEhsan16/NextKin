@@ -109,18 +109,10 @@ export function UploadResumeScreen() {
   if (parsing && file) return page(<UploadProgress fileName={file.name} />);
 
   // The resting state is also the empty one — there is nothing to be empty of until a file is
-  // picked, and the explanation below is what belongs on the page either way.
+  // picked, and the formats card is what belongs on the page either way.
   return page(
     <>
       <Animated.View entering={enter(0)}>
-        <Text variant="body" color="textSecondary">
-          We read the text out of your file and turn it into a draft — your roles, education and
-          skills. You check every line on the next screen, and nothing reaches your profile until
-          you say so.
-        </Text>
-      </Animated.View>
-
-      <Animated.View entering={enter(1)}>
         <Card radius="card">
           <View style={{ gap: spacing[3] }}>
             <Text variant="title">What we can read</Text>
@@ -138,7 +130,7 @@ export function UploadResumeScreen() {
       </Animated.View>
 
       {file && !parsing ? (
-        <Animated.View entering={enter(2)}>
+        <Animated.View entering={enter(1)}>
           <Card radius="card">
             <Text variant="title" numberOfLines={2}>
               {file.name}

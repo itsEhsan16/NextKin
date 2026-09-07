@@ -17,7 +17,6 @@ import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
-import { Text } from '@/ui/Text';
 
 import { DataExportSkeleton, DataExportState } from '../components/DataExportState';
 import {
@@ -25,7 +24,6 @@ import {
   dataExportBlock,
   dataExportJson,
   DATA_EXPORT_FAILED_NOTE,
-  DATA_EXPORT_PRIVACY_NOTE,
   DATA_EXPORT_REQUEST_FAILED,
   DATA_EXPORT_SHARE_UNAVAILABLE,
   DATA_EXPORT_SHARED,
@@ -160,10 +158,7 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
         <DataExportState status={current} />
       </Animated.View>
 
-      <Animated.View entering={enter(1)} style={{ gap: spacing[3] }}>
-        <Text variant="caption" color="textSecondary">
-          {DATA_EXPORT_PRIVACY_NOTE}
-        </Text>
+      <Animated.View entering={enter(1)}>
         <RowGroup>
           <ListRow icon="shield-alt" label="Privacy policy" onPress={actions.openPrivacy} />
         </RowGroup>
@@ -186,4 +181,3 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
     />,
   );
 }
-

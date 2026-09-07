@@ -116,13 +116,11 @@ describe('ZeroResumeScreen (V2 §7.9 — no artboard)', () => {
     expect(screen.getByText(ZERO_RESUME_GUARDRAIL_TITLE, shown)).toBeOnTheScreen();
     expect(screen.getByText(ZERO_RESUME_GUARDRAIL_BODY, shown)).toBeOnTheScreen();
 
-    // The JD is one of §7.9's three inputs, and the page says so rather than implying it.
-    expect(
-      screen.getByText(
-        'Required. The draft is written against this posting, not from a blank page.',
-        shown,
-      ),
-    ).toBeOnTheScreen();
+    // Both of §7.9's required inputs are marked, and marked the same way: the name that prints at
+    // the top of the draft, and the JD the draft is written against. The name's marker also
+    // reserves its helper row, so a validation error swaps the line instead of pushing the rest of
+    // the form down — which is the height `ZeroResumeSkeleton` draws.
+    expect(screen.getAllByText('Required.', shown)).toHaveLength(2);
   });
 
   it('refuses the press with a visible reason until the required fields are filled', async () => {

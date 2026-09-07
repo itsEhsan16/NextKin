@@ -114,6 +114,11 @@ describe('UploadReviewScreen (V2 §7.4 — no artboard)', () => {
     expect(screen.getByLabelText('Consultant, No end date found', shown)).not.toBeChecked();
     expect(screen.getByLabelText('Design Lead', shown)).toBeChecked();
 
+    // §7.4's promise, made on the screen where the rows are actually accepted.
+    expect(
+      screen.getByText('Nothing is added to your profile until you press Add.', shown),
+    ).toBeOnTheScreen();
+
     // The count is on screen BEFORE the press, and it counts only what is switched on.
     expect(screen.getByText('Adds a headline, 1 role and 2 skills')).toBeOnTheScreen();
   });
@@ -138,11 +143,7 @@ describe('UploadReviewScreen (V2 §7.4 — no artboard)', () => {
       await press(label);
     }
 
-    expect(
-      screen.getByText(
-        'Nothing selected. Turn on a row to add it, or skip and keep your profile as it is.',
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Nothing selected. Turn on a row to add it.')).toBeOnTheScreen();
     expect(screen.getByLabelText('Add to profile')).toBeDisabled();
     expect(screen.getByLabelText('Skip')).not.toBeDisabled();
   });

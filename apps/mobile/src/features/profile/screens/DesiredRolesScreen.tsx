@@ -7,8 +7,7 @@ import { countCapped, listsEqual } from '../chipEdits';
 import { ChipListEditor } from '../components/ChipListEditor';
 import { useProfileActions } from '../hooks/useProfileActions';
 
-const EMPTY =
-  'Name the titles you are going for. Matching and tailoring both aim at these, so keep them to jobs you would actually take.';
+const EMPTY = 'Matching and tailoring aim at the titles you add here.';
 
 /**
  * The desired-role list on the career profile (V2 §7.3), capped at `MAX_DESIRED_ROLES` — the same

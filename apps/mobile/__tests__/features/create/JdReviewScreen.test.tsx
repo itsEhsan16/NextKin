@@ -66,7 +66,7 @@ describe('JdReviewScreen (V2 §7.5)', () => {
     expect(titleField).toHaveProp('value', 'Senior Product Designer');
     expect(screen.getByLabelText('Company')).toHaveProp('value', 'Stripe');
     // The caption names where the extraction came from (JD_SOURCE_LABEL).
-    expect(screen.getByText('From a job listing · edit anything we misread.')).toBeOnTheScreen();
+    expect(screen.getByText('From a job listing')).toBeOnTheScreen();
 
     // §7.5: "every extracted field is editable" — location, industry and seniority included.
     expect(screen.getByLabelText('Location')).toHaveProp('value', 'Bengaluru');

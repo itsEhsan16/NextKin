@@ -52,7 +52,11 @@ export function EmailGroup({
   return (
     <RowGroup title={GROUP_TITLE}>
       <View style={{ padding: spacing[4], gap: spacing[4] }}>
-        <View accessible accessibilityLabel={`Current address, ${currentEmail}`} style={{ gap: spacing[1] }}>
+        <View
+          accessible
+          accessibilityLabel={`Current address, ${currentEmail}`}
+          style={{ gap: spacing[1] }}
+        >
           <Text variant="caption" color="textSecondary">
             Current address
           </Text>

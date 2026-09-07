@@ -12,7 +12,7 @@ import { blankLink, linkDraft, linkEntry, validateLink } from '../profileForms';
 
 export type LinkFormScreenProps = { id: string };
 
-const DELETE_MESSAGE = 'This link comes off your profile. The page it points at is untouched.';
+const DELETE_MESSAGE = 'This link comes off your profile.';
 
 /** Built from the shipped vocabulary rather than a list of our own (V2 §7.3). */
 const KIND_OPTIONS: readonly SheetOption<LinkKind>[] = (

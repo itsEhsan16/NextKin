@@ -23,7 +23,13 @@ const CARD_WIDTH = 288;
 const CARD_GAP = 16;
 
 /** Figma 1:95 + 1:100 — header row and the horizontally scrolling match cards. */
-export function TopJobMatches({ jobs, status, onViewAll, onPressJob, onRetry }: TopJobMatchesProps) {
+export function TopJobMatches({
+  jobs,
+  status,
+  onViewAll,
+  onPressJob,
+  onRetry,
+}: TopJobMatchesProps) {
   const { spacing, s } = useTheme();
   const cardWidth = s(CARD_WIDTH);
 
@@ -34,7 +40,13 @@ export function TopJobMatches({ jobs, status, onViewAll, onPressJob, onRetry }: 
 
   return (
     <View style={{ gap: spacing[4] }}>
-      <SectionHeader title="Top Job Matches" variant="homeSection" onAction={onViewAll} />
+      {/* "View all" is withheld while there is nothing to view all of — it would otherwise sit a
+          few points above the empty state's own "Find jobs", both going to the same tab. */}
+      <SectionHeader
+        title="Top Job Matches"
+        variant="homeSection"
+        onAction={jobs && jobs.length > 0 ? onViewAll : undefined}
+      />
 
       {status === 'pending' ? (
         <View style={{ flexDirection: 'row', gap: s(CARD_GAP) }}>

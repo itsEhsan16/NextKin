@@ -74,7 +74,7 @@ export function JdReviewForm({
 
       <Section index={1}>
         <Text variant="caption" color="textSecondary">
-          {`${JD_SOURCE_LABEL[draft.source]} · edit anything we misread.`}
+          {JD_SOURCE_LABEL[draft.source]}
         </Text>
       </Section>
 
@@ -138,14 +138,7 @@ export function JdReviewForm({
       <Section index={4}>
         <View style={{ gap: spacing[4] }}>
           {/* Section-level, not page-level: the rest of the form is still usable. */}
-          {noSkills ? (
-            <StateView
-              compact
-              icon="tags"
-              title="No skills found"
-              message="Add what this job asks for — that is what the resume gets tailored to."
-            />
-          ) : null}
+          {noSkills ? <StateView compact icon="tags" title="No skills found" /> : null}
           <JdSkillGroup
             title="Required skills"
             noun="required skill"

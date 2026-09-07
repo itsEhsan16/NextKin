@@ -121,7 +121,6 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
       <StateView
         icon="magic"
         title="We're still writing this one"
-        message="It'll be here the moment the run finishes."
         actionLabel="Back to your resumes"
         // `navigate`, not `goBack`. This screen is reachable from a notification deep link, and
         // `back()` on a cold start has no entry to pop — it would do nothing at all, which is the
@@ -140,7 +139,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
         tone="danger"
         icon="exclamation-triangle"
         title="Couldn't load this document"
-        message="The body of this document didn't come back. Check your connection and try again."
+        message="Check your connection and try again."
         actionLabel="Try again"
         onAction={() => void content.refetch()}
       />,
@@ -158,7 +157,6 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
       <StateView
         icon="file-alt"
         title="Nothing here yet"
-        message="Start with a summary — the rest can follow."
         actionLabel={isLetter ? 'Write the letter' : 'Add summary'}
         onAction={() => actions.openSection(id, isLetter ? 'letter' : 'summary')}
       />,

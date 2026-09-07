@@ -139,9 +139,10 @@ describe('InterviewListScreen (V2 §7.15 — no artboard)', () => {
     expect(mockStore.state.interviewSets.find((set) => set.id === seeded.id)).toBeUndefined();
     expect(screen.getByText('No practice sets yet', shown)).toBeOnTheScreen();
 
-    // The empty state's action and the bar's primary are the same destination.
+    // One affordance, not two: the bar carries the primary in every branch, so the empty state
+    // repeating it put the same words on screen twice.
     const ctas = screen.getAllByLabelText('New question set', shown);
-    expect(ctas).toHaveLength(2);
+    expect(ctas).toHaveLength(1);
     await act(async () => fireEvent.press(ctas[0] as NonNullable<(typeof ctas)[0]>));
     expect(mockPush).toHaveBeenCalledWith('/interview/new');
   });

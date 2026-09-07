@@ -1,5 +1,11 @@
 import type { Resume } from '@/data/models';
-import { atsBandColor, atsScoreColor, docPillLabel, docSubtitle, scoreContextLine } from '@/features/resumes';
+import {
+  atsBandColor,
+  atsScoreColor,
+  docPillLabel,
+  docSubtitle,
+  scoreContextLine,
+} from '@/features/resumes';
 
 const doc = (overrides: Partial<Resume>): Resume => ({
   id: 'res_x',

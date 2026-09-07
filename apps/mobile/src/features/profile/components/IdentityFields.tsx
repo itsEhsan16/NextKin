@@ -71,7 +71,6 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
         onChangeText={(value) => onChange('headline', value)}
         onBlur={() => onBlurField('headline')}
         error={errors.headline}
-        helper="The line under your name, wherever NextKin shows you."
         maxLength={HEADLINE_MAX}
         showCount
       />
@@ -111,11 +110,13 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
 
       <TextField
         label="Years of experience"
+        // Carries what the cut helper carried: the validator only speaks after a bad value is
+        // typed, so nothing else says this one may be left blank.
+        placeholder="Optional"
         value={draft.yearsExperience}
         onChangeText={(value) => onChange('yearsExperience', value)}
         onBlur={() => onBlurField('yearsExperience')}
         error={errors.yearsExperience}
-        helper="Whole years. Leave it blank if you would rather not say."
         keyboardType="number-pad"
         maxLength={3}
       />

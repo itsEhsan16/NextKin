@@ -24,7 +24,6 @@ export function EducationListScreen() {
         icon: 'graduation-cap',
         title: 'No education yet',
         message: 'A degree or a course gives a recruiter the rest of the picture.',
-        actionLabel: ADD,
       }}
     />
   );

@@ -69,7 +69,7 @@ export function JdIntakeSheets({ value, onChange }: JdIntakeSheetsProps) {
             icon="bookmark"
             iconStyle="regular"
             title="No saved jobs yet"
-            message="Save a job from the Jobs tab and it turns up here."
+            message="Save one from the Jobs tab."
             actionLabel="Close"
             onAction={close}
           />

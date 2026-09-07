@@ -17,14 +17,7 @@ import {
   type Spacing,
   type Typography,
 } from './scaleTheme';
-import {
-  colorsByScheme,
-  opacity,
-  sizes,
-  zIndex,
-  type ColorScheme,
-  type Colors,
-} from './tokens';
+import { colorsByScheme, opacity, sizes, zIndex, type ColorScheme, type Colors } from './tokens';
 import { fontFamily } from './typography';
 
 export * from './tokens';
@@ -81,7 +74,7 @@ function buildTheme(scheme: ColorScheme, frameWidth: number): Theme {
     colors: colorsByScheme[scheme],
     spacing: scaleSpacing(scale),
     radii: scaleRadii(scale),
-    sizes: scaleSizes(scale),
+    sizes: scaleSizes(scale, frameWidth),
     shadows: scaleShadows(scale),
     artboardShadows: scaleArtboardShadows(scale),
     opacity,

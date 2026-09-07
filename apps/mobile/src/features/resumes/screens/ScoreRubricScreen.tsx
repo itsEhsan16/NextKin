@@ -129,11 +129,6 @@ export function ScoreRubricScreen({ id }: ScoreRubricScreenProps) {
           </Animated.View>
         ))}
       </Card>
-
-      <Text variant="caption" color="textSecondary" style={{ marginTop: spacing[6] }}>
-        Your score panel lists these checks one by one, and every unmet check names the change that
-        would lift it. The fix flow works through them with you.
-      </Text>
     </Screen>
   );
 }

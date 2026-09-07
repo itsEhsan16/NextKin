@@ -2,12 +2,7 @@ import { create } from 'zustand';
 
 /** Sheets the Profile screen can raise (plan §Phase 5: pickers + confirms). */
 export type ProfileSheet =
-  | 'appearance'
-  | 'language'
-  | 'availability'
-  | 'min-salary'
-  | 'sign-out'
-  | 'delete-account';
+  'appearance' | 'language' | 'availability' | 'min-salary' | 'sign-out' | 'delete-account';
 
 type ProfileState = {
   /** Which sheet the host renders. Retained after close — see `closeSheet`. */

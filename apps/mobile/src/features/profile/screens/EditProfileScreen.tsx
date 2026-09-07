@@ -32,12 +32,10 @@ import {
   validateIdentity,
   type IdentityDraft,
 } from '../identityForm';
+import { DISCARD_MESSAGE, FIX_FIRST, SAVE_FAILED } from '../profileForms';
 
-/** V2 §7.6 forbids a silent failure; the reason goes on the bar that started the work. */
-const SAVE_FAILED = "We couldn't save that. Check your connection and try again.";
-const FIX_FIRST = 'Fix the highlighted fields to save.';
+/** V2 §7.6 forbids a silent failure; this one goes under the photo button, not on the bar. */
 const AVATAR_FAILED = "That photo didn't save. Your old one is back — try again.";
-const DISCARD = 'Your edits have not been saved. Going back now leaves your profile as it was.';
 
 /** The photo card, the five fields and the account group, in the heights they settle at. */
 const SKELETON_ROWS = [104, 76, 76, 112, 76, 82, 86];
@@ -161,7 +159,7 @@ export function EditProfileScreen() {
       <ConfirmSheet
         open={confirmOpen}
         title="Discard changes?"
-        message={DISCARD}
+        message={DISCARD_MESSAGE}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
         onConfirm={() => {
