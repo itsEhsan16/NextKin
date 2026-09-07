@@ -259,6 +259,31 @@ That test found a fourth thing on its first run: **both seeded profile links had
 drew the generic chain glyph instead of a palette and an ID badge, and opening one put the picker on
 "Other" — a Save that changed nothing still rewrote the record. Fixture fixed.
 
+### 1.16d Third device pass — and the reason the 44pt fix did not reach everywhere
+
+Two more, both fixed.
+
+**A sheet opened on top of a live keyboard.** Tapping a date row straight from a focused "Job
+title" opened the picker *and* left the keyboard up, and the OS draws the keyboard above everything
+in the React tree — so no z-index could have saved it. `Sheet` now dismisses the keyboard as it
+opens, unless it declares `avoidKeyboard` (the rename pane and the location sheet raise their own,
+and dismissing would fight their autofocus).
+
+**The notification row menu was still cramped, because it never used the tokens.** `RowMenuSheetBody`
+declared its own `const ROW_HEIGHT = 56`, which takes the flat scale factor and lands at **42dp** —
+under the floor, and untouched by `CONTROL_AT390`. Its label and caption also sat at `gap: 0`.
+
+That is the general lesson, and it is worth stating plainly: **the 44pt floor is only enforced on
+tokens, and a local constant silently opts out of it.** A sweep found three tappable rows doing this
+— `RowMenuSheetBody` (42dp), `ResumeMenuSheetBody` (42dp) and Profile's Sign out (43.5dp) — all now
+on `sizes.listRow`. Everything else the sweep turned up is a skeleton block or a non-tappable row,
+or already pads itself with `hitSlopFor`.
+
+**Decide / worth doing next:** there is no automated guard for this. The scaled-theme test asserts
+the *tokens* clear 44pt, but nothing stops a component hard-coding a height. An ESLint rule in the
+shape of the existing unscaled-literal one — flag `minHeight: s(<number>)` inside a `Pressable` —
+would close it. Until then the grep is `ROW_HEIGHT\s*=|minHeight: s\(`.
+
 ### 1.16c The prose trim, and the seven regressions the verify pass caught
 
 74 cuts across the Phase 9 screens, each checked by a second agent that re-read the files rather

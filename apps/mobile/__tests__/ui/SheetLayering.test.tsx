@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { Keyboard, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { zIndex } from '@/theme';
@@ -60,5 +60,40 @@ describe('overlay layering', () => {
     // Both must be numbers: an undefined z-index on the sheet is exactly the bug.
     expect(typeof sheetLayer.zIndex).toBe('number');
     expect(sheetLayer.zIndex).toBeGreaterThan(barLayer.zIndex as number);
+  });
+});
+
+/**
+ * The OS draws the keyboard above everything in the React tree, so no z-index can rescue a sheet
+ * raised while a field still has focus. Tapping a date row straight from a focused "Job title"
+ * opened both, and the sheet was buried.
+ */
+describe('a sheet and the keyboard', () => {
+  afterEach(async () => {
+    await cleanup();
+    jest.restoreAllMocks();
+  });
+
+  const renderWith = async (props: { avoidKeyboard?: boolean }) =>
+    render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <Sheet open onClose={() => {}} height={400} accessibilityLabel="Picker" {...props}>
+          <Text>Done</Text>
+        </Sheet>
+      </SafeAreaProvider>,
+    );
+
+  it('takes the keyboard down when it has no field of its own', async () => {
+    const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+    await renderWith({});
+    expect(dismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the keyboard alone for a sheet that carries a field', async () => {
+    // The rename pane and the location sheet raise their own keyboard; dismissing here would
+    // fight their autofocus.
+    const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+    await renderWith({ avoidKeyboard: true });
+    expect(dismiss).not.toHaveBeenCalled();
   });
 });

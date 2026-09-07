@@ -52,11 +52,23 @@ export function PushPrimerHost() {
           >
             <FontAwesome5 name="bell" size={s(BELL)} color={colors.brand} solid />
           </View>
-          <Text {...a11yHeader()} variant="headline" align="center" style={{ marginTop: spacing[5] }}>
+          <Text
+            {...a11yHeader()}
+            variant="headline"
+            align="center"
+            style={{ marginTop: spacing[5] }}
+          >
             {`Get notified when ${company} responds`}
           </Text>
-          <Text variant="body" color="textSecondary" align="center" style={[styles.lede, { marginTop: spacing[3] }]}>
-            {"We'll tell you when your application is viewed, changes stage, or gets a decision. Nothing else."}
+          <Text
+            variant="body"
+            color="textSecondary"
+            align="center"
+            style={[styles.lede, { marginTop: spacing[3] }]}
+          >
+            {
+              "We'll tell you when your application is viewed, changes stage, or gets a decision. Nothing else."
+            }
           </Text>
         </View>
 
@@ -84,7 +96,12 @@ export function PushPrimerHost() {
             Not now
           </Text>
         </Pressable>
-        <Text variant="captionSm" color="textTertiary" align="center" style={{ marginTop: spacing[5] }}>
+        <Text
+          variant="captionSm"
+          color="textTertiary"
+          align="center"
+          style={{ marginTop: spacing[5] }}
+        >
           You can change this any time in Profile › Notifications
         </Text>
       </View>

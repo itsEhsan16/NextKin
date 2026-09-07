@@ -1,7 +1,12 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 
-import { categoryMeta, NOTIFICATION_CATEGORIES, type Notification, type NotificationPrefs } from '@/data/models';
+import {
+  categoryMeta,
+  NOTIFICATION_CATEGORIES,
+  type Notification,
+  type NotificationPrefs,
+} from '@/data/models';
 import { a11yButton, formatFeedTime, parseBold, stripBold } from '@/lib';
 import { useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
@@ -20,10 +25,12 @@ export type RowMenuSheetBodyProps = {
 
 const ICON = 17;
 const ICON_SLOT = 24;
-const ROW_HEIGHT = 56;
 
 /** "You keep matches, closing alerts and AI results" (Figma 1:2707). */
-export function keepCaption(notification: Notification, prefs: NotificationPrefs | undefined): string {
+export function keepCaption(
+  notification: Notification,
+  prefs: NotificationPrefs | undefined,
+): string {
   const kept = NOTIFICATION_CATEGORIES.filter(
     (meta) => meta.key !== notification.category && (prefs?.categories[meta.key] ?? true),
   ).map((meta) => meta.keepName);
@@ -41,7 +48,7 @@ type MenuRowProps = {
 };
 
 function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const color: ColorToken = tone === 'danger' ? 'danger' : 'textBody';
   return (
     <Pressable
@@ -49,12 +56,18 @@ function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowPro
       feedback="subtle"
       haptic="light"
       onPress={onPress}
-      style={[styles.menuRow, { minHeight: s(ROW_HEIGHT), gap: spacing[3] }]}
+      // `sizes.listRow`, not the drawn 56. A local constant is scaled by the flat factor and so
+      // landed at 42dp on a phone — under the 44pt floor, and read as cramped on a device. The
+      // token is read between the two artboards (see CONTROL_AT390) and clears the floor.
+      style={[
+        styles.menuRow,
+        { minHeight: sizes.listRow, paddingVertical: spacing[2], gap: spacing[3] },
+      ]}
     >
       <View style={[styles.iconSlot, { width: s(ICON_SLOT) }]}>
         <FontAwesome5 name={icon} size={s(ICON)} color={colors[color]} solid />
       </View>
-      <View style={styles.menuText}>
+      <View style={[styles.menuText, { gap: s(2) }]}>
         <Text variant="menuRow" color={tone === 'danger' ? 'danger' : 'textPrimary'}>
           {label}
         </Text>
@@ -131,5 +144,7 @@ const styles = StyleSheet.create({
   // `width` is applied at the call site from s(ICON_SLOT): this sheet is a plain
   // StyleSheet.create, so a raw artboard length here would ship unscaled.
   iconSlot: { alignItems: 'center' },
-  menuText: { flex: 1, gap: 0 },
+  // The `gap` is applied at the call site: a caption jammed against its label was the other half
+  // of what read as clustered on a device.
+  menuText: { flex: 1 },
 });

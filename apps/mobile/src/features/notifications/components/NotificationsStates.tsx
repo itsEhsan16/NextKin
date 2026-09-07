@@ -142,10 +142,7 @@ export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => 
             >
               {index > 0 ? (
                 <View
-                  style={[
-                    styles.arrivalDivider,
-                    { backgroundColor: colors.divider, left: s(67) },
-                  ]}
+                  style={[styles.arrivalDivider, { backgroundColor: colors.divider, left: s(67) }]}
                 />
               ) : null}
               <View

@@ -88,7 +88,11 @@ export const NotificationRow = memo(function NotificationRow({
             >
               {runs.map((run, index) =>
                 run.bold ? (
-                  <Text key={index} variant="bodySemiBold" color={unread ? 'textPrimary' : 'textBody'}>
+                  <Text
+                    key={index}
+                    variant="bodySemiBold"
+                    color={unread ? 'textPrimary' : 'textBody'}
+                  >
                     {run.text}
                   </Text>
                 ) : (
@@ -137,7 +141,12 @@ export const NotificationRow = memo(function NotificationRow({
             <View
               style={[
                 styles.dot,
-                { width: s(DOT), height: s(DOT), borderRadius: s(DOT) / 2, backgroundColor: colors.brand },
+                {
+                  width: s(DOT),
+                  height: s(DOT),
+                  borderRadius: s(DOT) / 2,
+                  backgroundColor: colors.brand,
+                },
               ]}
             />
           ) : null}

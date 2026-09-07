@@ -37,7 +37,6 @@ export type ResumeMenuSheetBodyProps = {
 
 const ICON = 17;
 const ICON_SLOT = 24;
-const ROW_HEIGHT = 56;
 const THUMB = { width: 48, height: 62 } as const;
 
 type MenuRowProps = {
@@ -52,7 +51,7 @@ type MenuRowProps = {
 };
 
 function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: MenuRowProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const color: ColorToken = tone === 'brand' ? 'brand' : tone === 'danger' ? 'danger' : 'textBody';
   const labelColor: ColorToken =
@@ -64,7 +63,8 @@ function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: M
       feedback="subtle"
       haptic="light"
       onPress={onPress}
-      style={[styles.row, { minHeight: s(ROW_HEIGHT), gap: spacing[3] }]}
+      // The token, not the drawn 56: a local constant takes the flat factor and landed at 42dp.
+      style={[styles.row, { minHeight: sizes.listRow, gap: spacing[3] }]}
     >
       <View style={styles.iconSlot}>
         <FontAwesome5 name={icon} size={s(ICON)} color={colors[color]} solid />

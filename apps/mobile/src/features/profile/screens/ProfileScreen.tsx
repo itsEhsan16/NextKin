@@ -49,7 +49,7 @@ const VERSION_LINE = `NextKin ${Constants.expoConfig?.version ?? '1.0.0'} (build
  * profileStore; everything else links out (undesigned flows land on placeholders).
  */
 export function ProfileScreen() {
-  const { spacing, s } = useTheme();
+  const { sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useProfileActions();
   const queryClient = useQueryClient();
@@ -275,7 +275,7 @@ export function ProfileScreen() {
           feedback="subtle"
           haptic="light"
           onPress={actions.signOut}
-          style={[styles.signOut, { gap: spacing[2] + 2 }]}
+          style={[styles.signOut, { minHeight: sizes.listRow, gap: spacing[2] + 2 }]}
         >
           <SignOutIcon />
           <Text variant="title" color="danger">
@@ -298,8 +298,9 @@ function SignOutIcon() {
 
 const useStyles = scaledSheet((s) => ({
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  // The height comes from sizes.listRow at the call site: a raw 58 here takes the flat scale
+  // factor and lands at 43.5dp, under the 44pt floor.
   signOut: {
-    minHeight: s(58),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

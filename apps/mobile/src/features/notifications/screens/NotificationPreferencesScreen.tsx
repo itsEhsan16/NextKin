@@ -42,7 +42,12 @@ function PrefRow({ title, caption, ai, value, divider, onChange }: PrefRowProps)
           }}
         />
       ) : null}
-      <View style={[styles.prefRow, { paddingHorizontal: s(19), paddingVertical: spacing[3] + 1, gap: spacing[3] }]}>
+      <View
+        style={[
+          styles.prefRow,
+          { paddingHorizontal: s(19), paddingVertical: spacing[3] + 1, gap: spacing[3] },
+        ]}
+      >
         <View style={styles.prefText}>
           <View style={[styles.prefTitle, { gap: spacing[2] }]}>
             <Text variant="label">{title}</Text>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   BackHandler,
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
@@ -128,6 +129,11 @@ export function Sheet({
   useEffect(() => {
     if (open) {
       if (hapticOnOpen) haptics.light();
+      // A sheet with no field of its own takes the keyboard down with it on the way up. Tapping
+      // a date row straight from a focused text field otherwise opened both at once, and the
+      // keyboard — which the OS draws above everything in the React tree — buried the sheet.
+      // Sheets that DO carry a field (`avoidKeyboard`) are left alone: they raise their own.
+      if (!avoidKeyboard) Keyboard.dismiss();
       progress.set(withSpring(1, withReducedMotion(reduced, motion.springs.sheetIn)));
       return;
     }
@@ -137,6 +143,7 @@ export function Sheet({
       }),
     );
   }, [
+    avoidKeyboard,
     hapticOnOpen,
     motion.springs.sheetIn,
     motion.timings.sheetOut,
