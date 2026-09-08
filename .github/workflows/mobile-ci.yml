@@ -1,0 +1,145 @@
+# Gate for the Expo app (apps/mobile).
+#
+# Mirrors the definition of done in CLAUDE.md — typecheck, lint, test must all be green — and
+# adds the two checks that only a release-style bundle can make. Everything runs on a GitHub
+# runner; nothing here touches EAS or costs a build credit. Queuing an actual build is
+# mobile-eas-build.yml, which is manual on purpose.
+#
+# This is a pnpm workspace, so the install happens at the repo root and only the app-specific
+# commands run inside apps/mobile.
+name: mobile-ci
+
+# Read-only by default. Nothing here comments on PRs, pushes tags or publishes anything, so the
+# token needs nothing else — and leaving it unset inherits a repo/org default that may be
+# read-write.
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/mobile-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/mobile-ci.yml"
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, lint, test, bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      # Must come before setup-node: `cache: pnpm` needs the pnpm binary to already exist.
+      # v6 or newer is REQUIRED — v4 bootstraps through a bundled pnpm 8 that looks for
+      # bin/pnpm.cjs, and pnpm 11 renamed that to bin/pnpm.mjs, so v4 cannot install the
+      # version this repo pins. No `version:` here: action-setup reads it from the root
+      # package.json `packageManager` field (pnpm@11.1.2), so the runner and this machine
+      # cannot drift apart.
+      - uses: pnpm/action-setup@v6
+
+      # Pinned to the same Node the EAS builders use (apps/mobile/eas.json -> build.*.node).
+      # A bare "22" would let the runner and the builder disagree on a minor.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Resolution guard. THIS is the check that would have caught the EAS failure of
+      # 2026-09-08, and neither the test suite nor `expo start` could.
+      #
+      # React Native's toolchain resolves several packages it never declares. Under pnpm's
+      # isolated linker they were only reachable through the NODE_PATH that pnpm's own bin
+      # shims inject — so every pnpm entry point (jest, expo start, npx expo export) found
+      # them, while Gradle, which spawns node directly from the JVM with no shim, did not.
+      # The build died at :app:createBundleReleaseJsAndAssets on "Cannot find module
+      # 'babel-preset-expo'".
+      #
+      # A GitHub `run:` step has no NODE_PATH of its own, so `env -u` is belt-and-braces
+      # rather than the mechanism; what this really asserts is that the four packages resolve
+      # from a plain node process, which is the condition Gradle runs under. Keep it ahead of
+      # the bundle smoke: it fails in milliseconds and names the missing package.
+      - name: Resolve without NODE_PATH (mirrors the EAS builder)
+        working-directory: apps/mobile
+        run: |
+          env -u NODE_PATH node -e '
+            const required = [
+              "babel-preset-expo",
+              "@babel/core",
+              "@babel/runtime/helpers/interopRequireDefault",
+              "@react-native/assets-registry/registry",
+            ];
+            const missing = required.filter((m) => {
+              try { require.resolve(m); return false } catch { return true }
+            });
+            if (missing.length) {
+              console.error("Unresolvable from a plain node process:\n  " + missing.join("\n  "));
+              console.error("\nThe EAS builder runs node with no pnpm shim, so it will fail the");
+              console.error("same way. Check nodeLinker in pnpm-workspace.yaml is still hoisted,");
+              console.error("and that eas.json pins a pnpm new enough to read it (>= 10.6).");
+              process.exit(1);
+            }
+            console.log("All " + required.length + " resolve.");
+          '
+
+      # Bundle smoke — the strongest automated check there is: it resolves every route, runs
+      # the SVG transformer over assets/, and exercises metro.config.js's release-only swap of
+      # figmaRefs.generated for its stub. Expo Go never does this (Metro only bundles when a
+      # device connects), which is why a release bundle could be broken while everything local
+      # looked green.
+      - name: expo export (bundle smoke)
+        working-directory: apps/mobile
+        run: npx expo export --platform android --output-dir /tmp/nextkin-dist
+
+      # `expo export` does NOT write .expo/types or expo-env.d.ts, and both are gitignored, so
+      # on a clean runner tsconfig's `include` of .expo/types resolves to nothing and typed
+      # routes — the whole point of experiments.typedRoutes — go unchecked. Without this step
+      # the typecheck below is a false green: a bad `href` compiles fine.
+      - name: generate route types
+        run: pnpm --filter @nextkin/mobile routes:types
+
+      - name: typecheck
+        run: pnpm typecheck
+
+      - name: lint
+        run: pnpm lint
+
+      - name: test
+        run: pnpm test
+
+      # NOT blocking, and that is a deliberate, temporary choice — expo-doctor is RED on this
+      # repo today for two known reasons, both recorded in toreview.md: a duplicate
+      # expo-file-system (57.0.6 vs 57.0.5, a stale-lockfile artifact autolinking only warns
+      # about) and 14 packages behind the SDK 57 version map. Blocking would paint CI red on
+      # day one and teach everyone to ignore it.
+      #
+      # When `npx expo install --check` has been run and the duplicate deduped, make this
+      # blocking — drift is exactly the class of problem that surfaces as a failed EAS build
+      # rather than a red test. At that point also add expo-doctor as a pinned devDependency
+      # and switch to `pnpm exec`: `npx` resolves it from the registry at run time, so today
+      # the version is whatever was published this morning. That is tolerable only while a
+      # failure here cannot fail the job.
+      - name: expo-doctor
+        working-directory: apps/mobile
+        continue-on-error: true
+        run: npx expo-doctor

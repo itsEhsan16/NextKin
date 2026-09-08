@@ -1,0 +1,126 @@
+# Manually-triggered EAS build for the Expo app (apps/mobile).
+#
+# The Expo/EAS project is @nextkin-edu/nextkin. This repo needs exactly one secret to queue a
+# build — an access token — because the signing credentials live on EAS, not here.
+#
+# Required repository configuration
+#   (itsEhsan16/NextKin -> Settings -> Secrets and variables -> Actions):
+#
+#     secret  EXPO_TOKEN — expo.dev -> the account that owns nextkin-edu -> Account settings
+#             -> Access tokens. Use a ROBOT token scoped to the nextkin-edu organisation
+#             rather than a personal one, so the workflow keeps working if a person leaves.
+#
+# Builds run on EAS's servers and this workflow only QUEUES them (--no-wait), so it never ties
+# up an Actions runner for the 20-40 minutes a build can take.
+#
+# THEREFORE: a green run here means the build was QUEUED, nothing more. --no-wait returns
+# before EAS compiles anything, so a build that later fails still leaves this workflow green.
+# The real result is on the dashboard (linked in the job summary) or in Expo's email:
+#   https://expo.dev/accounts/nextkin-edu/projects/nextkin/builds
+#
+# Trigger: Actions -> mobile-eas-build -> Run workflow, then pick platform + profile.
+#
+# Profiles (apps/mobile/eas.json):
+#   preview     Android APK, internal distribution. Installable from a link, no store account
+#               needed. This is what goes to a client for review.
+#   production  Android app-bundle (AAB) with autoIncrement. The only thing Play accepts, and
+#               the input to mobile-eas-submit.yml.
+#
+# iOS is offered here but WILL FAIL until Apple credentials exist on EAS: an Apple Developer
+# account, then `eas credentials` to register them. Nothing in this repo needs to change.
+name: mobile-eas-build
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build
+        type: choice
+        default: android
+        options: [android, ios, all]
+      profile:
+        description: EAS build profile
+        type: choice
+        default: preview
+        options: [preview, production]
+      message:
+        description: Build message (shown in the EAS dashboard)
+        type: string
+        required: false
+
+# Never cancel a queued build in progress — cancelling the runner would orphan a build that is
+# already consuming EAS capacity, and the artifact would still appear with nothing watching it.
+concurrency:
+  group: mobile-eas-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: EAS build (${{ inputs.platform }} / ${{ inputs.profile }})
+    runs-on: ubuntu-latest
+    # Queue-only, so this should finish in a couple of minutes. If it does not, something is
+    # wrong with the upload rather than with the build.
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      # Before setup-node, and v6+ because v4 cannot install pnpm 11. Version-less so it reads
+      # `packageManager` from the root package.json.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+
+      - name: Set up EAS CLI + auth
+        uses: expo/expo-github-action@v9
+        with:
+          # Pinned for the same reason node is — a build path should not change behaviour
+          # without a commit. Keep in step with cli.version in apps/mobile/eas.json.
+          eas-version: ^23.2.0
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # A workspace install, from the root. EAS re-installs on its own builders from the
+      # uploaded tarball; this install exists so eas-cli can read the project and compute a
+      # fingerprint before uploading.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Inputs go through `env:`, never straight into the script. `message` is free text typed
+      # by whoever clicks Run workflow, and a ${{ }} substituted into a run: block is expanded
+      # by GitHub before bash parses it — so a message containing a quote and a semicolon would
+      # execute as shell, in a job that holds EXPO_TOKEN. As env vars they are just data.
+      - name: Queue EAS build
+        working-directory: apps/mobile
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          PROFILE: ${{ inputs.profile }}
+          BUILD_MESSAGE: ${{ inputs.message || format('{0} via GitHub Actions', github.sha) }}
+        run: |
+          eas build \
+            --platform "$PLATFORM" \
+            --profile "$PROFILE" \
+            --message "$BUILD_MESSAGE" \
+            --non-interactive \
+            --no-wait
+
+      - name: Summary
+        if: always()
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          PROFILE: ${{ inputs.profile }}
+        run: |
+          {
+            echo "### EAS build queued"
+            echo ""
+            echo "\`$PLATFORM\` / \`$PROFILE\` — **queued, not finished.**"
+            echo ""
+            echo "This workflow returns as soon as EAS accepts the upload, so a green check"
+            echo "here does not mean the build succeeded. Watch it at:"
+            echo ""
+            echo "<https://expo.dev/accounts/nextkin-edu/projects/nextkin/builds>"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,123 @@
+# Manually-triggered store submission for the Expo app (apps/mobile).
+#
+# Separate from mobile-eas-build.yml on purpose. Building is cheap and reversible; submitting
+# puts a binary in front of a review queue and, on Android, into a track real testers install
+# from. Keeping them apart means nobody ships by accident, and a failed submit never costs a
+# rebuild.
+#
+# ── BEFORE THIS CAN WORK ──────────────────────────────────────────────────────────────────
+#
+# Android (Google Play)
+#   1. A Google Play Console account, with the app created under the package name in
+#      app.config.ts: com.nextkin.app
+#   2. NOT required: a manual first upload. `eas submit` creates the app's first release
+#      itself, on the internal testing track. (If you would rather do the first one by hand:
+#      https://docs.expo.dev/submit/android-manual/ .) The app stays in draft in Play Console
+#      until the store listing and setup tasks are done — that gates promotion, not the upload.
+#   3. A Google Cloud service account, in a project with the "Google Play Android Developer
+#      API" ENABLED, invited in Play Console -> Users and permissions with: App access "View
+#      app information (read-only)" and "Edit and delete draft apps"; Releases "Release apps to
+#      testing tracks" and "Manage testing tracks and edit tester lists"; plus "Manage store
+#      presence". Then store its JSON key ON EAS:
+#        eas credentials --platform android      (Google Service Account -> upload the key)
+#      Store it on EAS rather than committing it or adding a GitHub secret: the key can push
+#      releases to your listing, and eas.json's serviceAccountKeyPath would put its location
+#      in git.
+#   4. eas.json already targets the `internal` track. Widen it there when you are ready.
+#
+# iOS (App Store Connect)
+#   1. An Apple Developer Program membership.
+#   2. `eas credentials --platform ios` to register the signing identity.
+#   3. Add the ios block to submit.production in apps/mobile/eas.json — appleId, appleTeamId
+#      and ascAppId. It is deliberately absent today rather than filled with placeholders,
+#      because a wrong ascAppId submits to the wrong app.
+#
+# Until those exist this workflow fails fast with a credentials error, which costs nothing.
+#
+# Required secret: EXPO_TOKEN, the same one mobile-eas-build.yml uses.
+name: mobile-eas-submit
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to submit
+        type: choice
+        default: android
+        options: [android, ios]
+      build:
+        description: 'Which build — "latest" for the newest store-distribution build on this platform (it may still be queued or building), or paste an EAS build ID'
+        type: string
+        default: latest
+
+# One submission at a time, and never cancelled mid-flight: a half-finished upload to Play is
+# worse than a slow one.
+concurrency:
+  group: mobile-eas-submit
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    name: EAS submit (${{ inputs.platform }})
+    runs-on: ubuntu-latest
+    # eas submit WAITS by default (unlike the build workflow's --no-wait), so this job holds a
+    # runner for the whole upload and Play's processing.
+    timeout-minutes: 60
+    # A store submission is worth a second pair of eyes. NOTE: GitHub AUTO-CREATES a referenced
+    # environment on first run, WITH NO PROTECTION RULES — so until someone adds a required
+    # reviewer under Settings -> Environments -> store-submission, this line gates nothing and
+    # the job runs unreviewed. Required reviewers need a public repo, or Pro/Team on a private
+    # one; if neither applies, delete this line rather than leave a gate that cannot exist.
+    environment: store-submission
+    steps:
+      - uses: actions/checkout@v5
+
+      # v6+ because v4 cannot install pnpm 11.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+
+      - name: Set up EAS CLI + auth
+        uses: expo/expo-github-action@v9
+        with:
+          # Pinned for the same reason node is — a submit path should not change behaviour
+          # without a commit. Keep in step with cli.version in apps/mobile/eas.json.
+          eas-version: ^23.2.0
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # --latest = the newest store-distribution build for the platform in ANY of New /
+      # InQueue / InProgress / Finished — it does NOT filter on status, and it does not filter
+      # on build profile. Use an explicit --id whenever a build may still be running, which
+      # after a --no-wait queue from mobile-eas-build.yml is most of the time.
+      #
+      # Inputs go through env: rather than into the script, for the reason spelled out in
+      # mobile-eas-build.yml — and it matters more here, where the job can reach this
+      # environment's secrets and drive a key that publishes releases.
+      - name: Submit to store
+        working-directory: apps/mobile
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          BUILD_REF: ${{ inputs.build }}
+        run: |
+          if [ "$BUILD_REF" = "latest" ]; then
+            eas submit \
+              --platform "$PLATFORM" \
+              --profile production \
+              --latest \
+              --non-interactive
+          else
+            eas submit \
+              --platform "$PLATFORM" \
+              --profile production \
+              --id "$BUILD_REF" \
+              --non-interactive
+          fi
