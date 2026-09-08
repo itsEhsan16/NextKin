@@ -3,6 +3,7 @@ import type { ExpoConfig } from 'expo/config';
 const config: ExpoConfig = {
   name: 'NextKin',
   slug: 'nextkin',
+  owner: 'nextkin-edu',
   version: '0.1.0',
   scheme: 'nextkin',
   orientation: 'portrait',
@@ -38,6 +39,7 @@ const config: ExpoConfig = {
       },
     ],
   ],
+  extra: { eas: { projectId: '3573538a-72e7-4602-8167-8ffee307795e' } },
   experiments: { typedRoutes: true },
 };
 
