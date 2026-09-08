@@ -770,3 +770,114 @@ against it**, not once per session.
 - **The extracted icons were lifted out of their exports by string surgery** on the `<g>` tree,
   not by an exporter. They render, but nothing checks that a re-export would produce the same
   subtree names, so re-running that extraction after a Figma change needs an eye on it.
+
+---
+
+## 7. The build pipeline
+
+### 7.1 Why the first EAS build failed, and the correction to how it was verified
+
+The preview build failed at `:app:createBundleReleaseJsAndAssets` on
+`Cannot find module 'babel-preset-expo'`. Not a code defect: pnpm 11 stopped reading non-auth
+settings from `.npmrc`, so the `node-linker=hoisted` that lived there had silently stopped
+applying. `.modules.yaml` recorded `nodeLinker: isolated` and `pnpm config get node-linker`
+returned `undefined`.
+
+React Native's toolchain resolves several packages it never declares. Under an isolated tree
+four were unreachable from `apps/mobile` — `babel-preset-expo`, `@babel/runtime`,
+`@react-native/assets-registry` and `@babel/core`. **Declaring the first would only have moved
+the failure to the second, at a build cycle each**, which is what a diagnostic pass established
+before anything was changed. `nodeLinker: hoisted` in `pnpm-workspace.yaml` fixes all four, and
+the lockfile is unchanged, so it is cheap to revert.
+
+**A correction, because it was stated wrongly at the time and is in the body of commit e40fe88.**
+It was claimed that `expo export --platform android` reproduces the failure locally and should
+become the pre-build check. It does not. pnpm's bin shims inject
+`NODE_PATH=<root>/node_modules/.pnpm/node_modules`, where those packages were privately hoisted,
+so *every* pnpm entry point — jest, `expo start`, and `npx expo export` — resolves them and
+passes. Gradle spawns node directly from the JVM with no shim, which is why only it failed. The
+honest check is a plain node process:
+
+    env -u NODE_PATH node -e "require.resolve('babel-preset-expo')"
+
+which is what `mobile-ci.yml` now runs, across all four packages. `expo export` is still in CI
+and still worth having — it catches route, transformer and release-only-config breakage — but it
+would not have caught this.
+
+### 7.2 The builder's pnpm was never pinned, and the successful build was partly luck
+
+`eas.json` pinned `node` in both profiles and nothing pinned pnpm, so the EAS builder installed
+with whatever its image shipped. Expo's images range from pnpm 7 to 11. `nodeLinker` now lives
+only in `pnpm-workspace.yaml`, and **pnpm below 10.6 reads neither that nor the `.npmrc` that was
+deleted** — so an image carrying an older pnpm would have installed isolated and reproduced the
+outage with nothing in this repo changing.
+
+The build that eventually succeeded did so because the image happened to ship a new enough pnpm.
+Both profiles now pin `"pnpm": "11.1.2"` next to `node`. Keep it in lockstep with
+`packageManager` in the root `package.json`.
+
+**CI structurally cannot catch this class of bug**, because CI pins pnpm through
+`packageManager` and therefore always exercises the good linker. The only guard is the pin
+itself.
+
+### 7.3 What the pipeline is, and what it is not
+
+Three GitHub Actions workflows, adapted from the Ease Home project at
+`F:\1. Webcros Project 2\Ease Home` (GitHub Actions, not EAS Workflows):
+
+| file | trigger | what it does |
+|---|---|---|
+| `mobile-ci.yml` | PR + push to main, path-filtered | resolution guard, `expo export` smoke, route-type generation, typecheck, lint, test, expo-doctor |
+| `mobile-eas-build.yml` | manual | queues an EAS build; platform + profile + message inputs |
+| `mobile-eas-submit.yml` | manual | `eas submit` to the Play internal track; `--latest` or an explicit build id |
+
+Departures from the reference, all forced: pnpm rather than npm, `apps/mobile` rather than
+`mobile`, Node pinned to the exact `22.17.0` that `eas.json` names rather than a bare `22`, and
+the resolution guard, which has no counterpart there because npm has no isolated linker.
+
+**A green `mobile-eas-build` means QUEUED, not built.** `--no-wait` returns before EAS compiles
+anything, so a build that later fails leaves the workflow green. The job summary says so.
+
+### 7.4 Decisions inside the pipeline that are yours to overrule
+
+- **expo-doctor is non-blocking.** It is red today for two reasons: the duplicate
+  `expo-file-system` (see below) and 14 packages behind the SDK 57 map. Blocking would paint CI
+  red on day one and train everyone to ignore it. The comment states what must be true to flip
+  it, and that it should become a pinned devDependency at the same time — today `npx` fetches
+  whatever version was published this morning, which is tolerable only while it cannot fail the
+  job.
+- **`environment: store-submission` gates nothing yet.** GitHub auto-creates a referenced
+  environment on first run *with no protection rules*, so until a required reviewer is added
+  under Settings → Environments the submit job runs unreviewed. Required reviewers need a public
+  repo, or Pro/Team on a private one. If neither applies, delete the line rather than leave a
+  gate that cannot exist.
+- **`eas-version` is pinned to `^23.2.0`** and `cli.version` tightened to `>= 23.0.0 < 24.0.0`,
+  so the CLI the workflow installs and the CLI the project declares cannot diverge. Both need
+  bumping together.
+- **Only `internal` track.** Widen `submit.production.android.track` deliberately.
+- **No iOS submit config.** `appleId` / `appleTeamId` / `ascAppId` are absent rather than
+  placeholder, because a wrong `ascAppId` submits to the wrong app.
+
+### 7.5 The duplicate expo-file-system, resolved as a question
+
+Not a version conflict and not a build risk: `expo@57.0.15` declares `expo-file-system: ~57.0.5`
+and 57.0.6 satisfies that range, so one shared copy would serve both. It stayed split because the
+app added a direct `~57.0.6` edge after the transitive one was already locked, and pnpm did not
+re-resolve. `expo-modules-autolinking` warns about duplicates and never throws. Deduping needs
+re-resolution, which means it rides along with the version-drift cleanup rather than being fixed
+on its own.
+
+### 7.6 Not verified
+
+- **None of the three workflows has ever run.** The repo has never been pushed — 51 commits ahead
+  of `origin/main` at the time of writing — so GitHub has never parsed or executed any of this.
+  They parse locally with a real YAML parser and `eas config` validates `eas.json`, but the first
+  push is the first real test.
+- **`EXPO_TOKEN` does not exist yet** as a repository secret. Every EAS step fails without it.
+- **Nothing has been submitted to any store**, and no Play Console or Apple account exists. The
+  prerequisites in `mobile-eas-submit.yml`'s header were checked against Expo's docs — including
+  correcting an earlier draft that wrongly claimed Play requires a manual first upload, and that
+  named the wrong service-account permission — but they have not been walked end to end.
+- **`--latest` does not filter on build status.** It takes the newest store-distribution build in
+  New / InQueue / InProgress / Finished, so after a `--no-wait` queue it can pick one that is
+  still building. Prefer an explicit `--id`.
