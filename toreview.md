@@ -13,6 +13,10 @@ top of them. No placeholder destination remains: `src/features/placeholders.ts`,
 typed. Everything undesigned is built from the spec; what is left is this file and a second device
 pass over the Phase 10 changes.
 
+On top of those, the **onboarding and sign-up flow** (Figma 290:955) and the **app icon** have
+landed — the first designed auth screens in the app, and the first time a fresh install does not
+open on the tabs. Section 6 holds the calls that came with them; none of it has been on a device.
+
 ---
 
 ## 1. Decisions I made that are yours to overrule
@@ -406,3 +410,363 @@ What only a device can settle:
 - **Maestro flows** cover screens up to Phase 6. 9A added `signIn.yaml` and its `runFlow` step,
   and nothing has touched `.maestro/` since. The plan asks for one step per new screen; 9B–9F
   added twenty and none is covered.
+
+---
+
+## 5. The test APK
+
+### 5.1 An internal-distribution APK against the "Expo Go only" rule
+
+Hard rule 1 says Expo Go only. `apps/mobile/eas.json` now adds a `preview` profile that produces
+a standalone Android APK, and that is a deliberate reading of the rule rather than a break of it:
+the rule constrains *dependencies* ("every dependency must run inside Expo Go SDK 57 … no
+`expo-dev-client`, no `react-native-mmkv`"), and nothing about the APK changes that set. No
+dependency was added, no config plugin, no dev client — the same JS bundle and the same
+Expo-Go-compatible native modules, packaged for people who cannot or will not install Expo Go and
+scan a QR. If the rule was meant to forbid standalone builds outright, this is the thing to
+overrule.
+
+### 5.2 The APK is a release build, so three dev affordances are gone
+
+`preview` builds with `__DEV__` false. That silently removes three things the Expo Go workflow has:
+
+- **The dev gallery** (`app/dev`) — guarded by `<Stack.Protected guard={__DEV__}>`.
+- **The Figma overlay** — the 25 artboard PNGs resolve to `figmaRefs.stub.ts` in a non-dev bundle.
+- **The mock-mode switch** — `readPersistedMode()` returns `'normal'` unconditionally when
+  `__DEV__` is false, so an APK tester cannot exercise the slow / empty / error states. Every
+  screen's other three states are therefore **unreachable on the APK**; they stay verifiable only
+  in Expo Go. If device-testing the empty and error states matters, that switch needs a
+  non-`__DEV__` trigger (a hidden gesture, or an `extra` flag read from the build profile) —
+  which is a change to make deliberately, not a side effect of shipping an APK.
+
+### 5.3 The EAS link, and the account it points at
+
+`app.config.ts` now carries `owner: 'nextkin-edu'` and
+`extra.eas.projectId: '3573538a-72e7-4602-8167-8ffee307795e'`, pasted by hand because the dynamic
+config stops eas-cli writing them. `eas project:info` resolves to `@nextkin-edu/nextkin`.
+
+**The account is a judgement call, not a given.** The signed-in user `nextkin` owns two accounts —
+a personal `nextkin` (no apps) and an organisation `nextkin-edu`. The project issued by the
+dashboard lives in `nextkin-edu`, so `owner` follows it there. That choice decides who is billed
+for EAS builds, who can be granted access, and whose name appears as `@nextkin-edu/nextkin` in
+build URLs and internal-distribution links. If the app was meant to sit under the personal
+account, the fix is a new project on that account and a new id here — not an edit to `owner`
+alone.
+
+### 5.4 Not decided yet
+
+- **Versioning.** `cli.appVersionSource` is `remote`, so EAS owns `versionCode` and the repo owns
+  the user-facing `version` (`0.1.0`). Nothing increments `version` yet.
+- **No `expo-updates`.** Every change needs a fresh APK; there is no OTA channel and the profiles
+  deliberately declare none.
+- **Signing.** The first build will offer to generate an Android keystore on EAS. Accepting means
+  Expo holds the signing key. Fine for internal testing, a decision to revisit before any store
+  submission.
+
+---
+
+## 6. Onboarding, sign-up and the app icon (Figma 290:955)
+
+### 6.1 A third artboard width, and why the whole flow is normalised onto one
+
+Every length in the app reaches the screen through `theme.s(px)`, which reads its input as a
+measurement off the 520 "Mobile App" board. The six onboarding and auth sections are drawn at
+**422.66** — and the first two (welcome, slide 1) at **414.67**. These are phone-sized frames,
+not presentation frames, so their numbers are ~1.23x smaller than the same element at 520;
+passing them to `s()` raw would render the flow a quarter too small.
+
+`src/features/auth/board.ts` converts a drawn length into 520-space, and `authRole` in
+`src/theme/typography.ts` does the same for font size, so every number in the new screens stays
+traceable to its Figma node. **The 414.67 sections are normalised onto 422.66 rather than kept
+apart**: their layout numbers (left 43, top 109, the bottom bar) are identical to slides 2 and 3,
+so the 1.9% is frame drift rather than intent, and two slides of a carousel scaling differently
+from the third would be a worse bug than the 1.9%. The Figma overlay in the dev gallery keeps
+each artboard's true width, so it will show that 1.9% on those two screens — that is the
+normalisation, not a layout error.
+
+### 6.2 The type ramp gained a third category
+
+`typeRamp.test.ts` judged every role against the Mobile 2 compression curve, with an exemption
+list. These roles were drawn on one board and have both anchors projected from it, so they sit on
+the flat geometry line instead — the same claim the Home `drawnAt390` roles make. Rather than
+adding 17 entries to the exemption list, they carry a `singleBoard` marker and are checked on
+their own terms. The Home re-measure guard still counts only Home.
+
+### 6.3 DM Sans and Montserrat map onto Plus Jakarta Sans (weights kept)
+
+Decided with the user: the board sets almost everything in DM Sans and the welcome screen's
+letter-spaced caps in Montserrat, and neither is loaded. Adding two `@expo-google-fonts` packages
+would put two more families in the startup gate that holds the splash, so both map onto Plus
+Jakarta Sans instead. **The new screens will not match the artboards on letterform** — most
+visibly the two Montserrat tagline lines, where tracking does a lot of the work. Inter *is*
+loaded (700 only), so `authHero` and `authTitle`, which the board itself sets in Inter Bold, keep
+it.
+
+**The weights are the board's, not the family's.** The first pass read `font-['DM_Sans:Regular']`
+out of the extracted CSS as "regular" and set every heading, the step counter and the feature
+titles to it; the board renders all of them **bold**, and on a device the whole flow came out
+looking thin and wrong. Weight is now taken from what the artboards draw: bold for the two
+wordmarks, the slide headings, the "n" of the step counter and the feature titles; semibold for
+"Get Started", the job-card titles and the "Sign in" half of the sign-up footer; regular for the
+lead copy, the "/ 3" and the field placeholders.
+
+### 6.4 The welcome screen advances itself
+
+290:957 draws no control at all. It is treated as a held brand moment: a ~1.6s hold, then
+`router.replace` to the slides, with a tap anywhere taking it early. Reduced motion removes the
+fade but **not** the advance — stranding a reader on a screen with nothing to press would be
+worse than the motion. If it is meant to be a splash rather than a screen, it should move into
+`expo-splash-screen` config and stop being a route.
+
+### 6.5 Sign-up validates presence and nothing else
+
+Per the user: any name, any address, any password signs you in. `authForms.ts` therefore checks
+only that each field is non-blank — no email-shape rule, deliberately, so throwaway values work.
+`looksLikeEmail` already exists in `accountForms.ts` and is waiting for §7.1 to gain a server.
+
+**The entered name and email are discarded.** `sessionStore.signIn()` takes no arguments and the
+store holds a status and no user, so nothing carries the new account's identity into the app —
+Profile still shows the pre-seeded mock person. Giving the session a user model is a real change
+and was not made here.
+
+### 6.6 There is no Sign in screen; both affordances point at the old stub
+
+The node has six artboards and none of them is a sign-in form, yet the landing has a "Sign in"
+button and sign-up has an "Already have an account? Sign in" link. The user is providing that
+design, so nothing was invented: both route to the existing design-gated `SignInScreen`, which
+still says it is design-gated and still signs you into the mock account. It looks nothing like
+the flow it is reached from. Replace it wholesale when the artboard lands.
+
+Also absent from the board: **Apple sign-in and forgot-password**, both of which V2 §7.1
+requires (Apple is mandatory on iOS once any other social login ships). The screen was built from
+the artboard, so neither is there.
+
+### 6.7 `AuthField` duplicates part of `TextField`
+
+The board's fields are outlined, 16-radius, with a leading glyph and the label carried by the
+placeholder — a different control from the filled `src/ui/TextField`, which is the app's text
+primitive. Bending the primitive into a second shape for one screen looked worse than building
+the field against its artboard, so `AuthField` is a feature-level component.
+
+**That call has already cost something, and the argument for reversing it is now stronger than
+the one for making it.** A parallel control does not inherit the app's cross-cutting text-entry
+behaviour — it has to opt into each piece by hand, and anything forgotten fails silently. The
+reveal-on-focus scroll was forgotten, and the second device pass found the email and password
+boxes sitting under the keyboard (6.14). What it still does not have is TextField's one-shot
+accessibility announcement on a new error and its haptic warning; the error-swap row is
+re-implemented rather than shared.
+
+Fold the two together as a TextField variant when auth gains its second designed form — or
+sooner, since the sign-in artboard is already coming.
+
+### 6.8 Icons come from the board, not from FontAwesome
+
+Originally the three slide-3 glyphs and the four sign-up field icons were FontAwesome
+metaphors — paper plane, bar chart, bell; user, envelope, lock, eye — on the reasoning that
+70-odd files already take their icons from that set. **That was wrong and the device pass showed
+it.** The board's glyphs are two-tone (dark ink over a pale mint or lavender shape) and its field
+icons are thin strokes in a muted grey; a single-colour FontAwesome solid cannot be tinted into
+either. All seven are now the board's own vectors, in `assets/icons/onboarding/`.
+
+Two notes on how they were obtained, because a Figma export will not give them directly: the
+export of any node carries its ancestors' backgrounds (see 6.11), so each icon was lifted out of
+its export by extracting the named `<g>` subtree, whose coordinates are already local to the
+node's own viewBox. The paper plane has no group of its own, so its two vectors are composed at
+their measured offsets the way the brand mark is.
+
+`field-reveal-on.svg` is derived rather than exported: the board draws only the struck-through
+eye (the masked state), so the revealed state is the same icon with the strike path removed. The
+struck-through eye is the *masked* state, which is the board's own default — the opposite of the
+convention some apps use.
+
+The three big illustrations and the Notion and Spotify marks are committed SVGs too, because
+nothing stands in for those.
+
+Every one of these assets carries its own hardcoded fill, as the repo's other 23 SVGs do, so
+they do not respond to `color` and stay the same in dark mode.
+
+### 6.9 The board is drawn light-only
+
+Every new colour role is defined in both schemes because the token type demands it, but only the
+light values are drawn. The brand gradient is kept identical in dark (it is a brand surface); the
+neutral surfaces, text and borders map onto existing dark roles. **Nothing in dark mode here has
+been looked at against a design**, because there is not one.
+
+### 6.10 The first-run flip, and what it did not break
+
+`sessionStore` now defaults to `signed_out` instead of `signed_in`, which is what puts the
+welcome screen in front of a fresh install. The blast radius was three assertions in
+`sessionStore.test.ts` and README rule 10; the other 158 suites render screens directly rather
+than through the gate and did not move. `.maestro/signIn.yaml` was rewritten to walk the new path
+(welcome, Skip, landing, account form), each step conditional so it still works on a device that
+has been through onboarding already — **but no Maestro flow has been run**, on this change or any
+other, so all six are unverified.
+
+### 6.11 The icons are generated from the repo's own SVGs, not from Figma
+
+The user chose "render the mark from Figma" over adding `sharp`. Both Figma paths failed on their
+own terms:
+
+- `get_screenshot` will not render *above* a node's natural size, so the 101x105 logo mark came
+  back at 101x105.
+- `download_assets` at 4x gave 404x420 — and **opaque**, with the welcome screen's purple
+  gradient baked in, because a Figma export carries its ancestors' backgrounds. (The same trap
+  caught the illustration exports, which arrived with a `#1E1E1E` canvas rect behind them; those
+  are taken from `svgAssets` instead, which is isolated.)
+
+So `scripts/generate-icons.cjs` composes `assets/brand/mark-{1,2,3}.svg` — already in the repo,
+and the same three layers `src/ui/BrandMark` draws — into one SVG and rasterises it. **This is
+still not `sharp` as a dependency**: it is a one-off `npx sharp-cli` whose output is committed as
+`assets/brand/mark-1024.png`, and the script falls back to that committed PNG when npx is
+unavailable, so only a change to the mark itself needs the network. `jimp-compact` *was* added,
+as a root devDependency — pure JavaScript, no native binary, build-time only, never in the app
+bundle. That is a reading of hard rule 1 as constraining what runs inside Expo Go, the same
+reading 5.1 used for the APK. If the rule was meant to cover every dependency, overrule it.
+
+`icon.png` and the adaptive background are written as RGB with no alpha (iOS rejects an icon
+carrying one); the adaptive foreground sits at 55% of the canvas, inside Android's 66% safe
+circle. The adaptive layers went from the scaffold's 512 to 1024, and monochrome from 432.
+
+### 6.12 The first device pass, and the three defects it found
+
+Onboarding slides 1 and 3 were run in Expo Go. Every one of the three was invisible to the test
+suite, which is the same lesson section 3 records.
+
+- **Every heading was the wrong weight** — see 6.3. Regular where the board draws bold, across
+  the whole flow. A test that asserts a role exists cannot see that it is too light.
+- **Slide 3's feature rows rendered as empty boxes.** `FeatureRows` had no width of its own and
+  the slide centres its illustration slot, so the cards shrank to their content, the copy
+  column's `flex: 1` resolved to zero, and all six lines of text vanished. The suite passed
+  throughout: `getByLabelText` found the rows by the accessibility label built from the same
+  strings, which exists whether or not the `<Text>` has room to draw. Now pinned by
+  `alignSelf: stretch` and a comment saying why.
+- **Type ran ~7% oversized and wrapped.** The auth roles were not `cellBound`, so below 390dp
+  they held flat while their column kept shrinking — the exact trap `cellRole` was written for.
+  On a 369dp phone "step with confidence." took a third line the board fits in two.
+  `typeRamp.test.ts` now asserts the equality (not just a floor) at six widths from 320 to 430.
+
+Also corrected from the same screenshots: the feature glyphs were tinted brand-purple where the
+board draws them two-tone dark (6.8).
+
+### 6.13 The second device pass — three more, two of them cross-cutting
+
+Slides 1 and 3 came back clean. The sign-up screen and the auth landing did not.
+
+- **Text was clipped on every tight-leading role** — the tops cut off "you ahead.", "Sign in"
+  and "Continue with Google". The board sets leading as low as 1.0x the font size (both
+  wordmarks, the step counter) and 1.02 on the hero, which is fine for the DM Sans and Inter it
+  was drawn in. Plus Jakarta Sans, which those map onto (6.3), needs **1.26 em** by its own
+  ascent, descent and line gap — and React Native clips a glyph that will not fit the line box
+  rather than growing it. `authRole` now floors leading at 1.3 em.
+
+  On single-line roles that costs nothing. **On the two-line headings the leading is looser than
+  drawn**, which is a visible deviation from the board and a direct consequence of the family
+  swap, not a choice. If the tight leading matters more than the substitution,
+  `@expo-google-fonts/dm-sans` is the way back.
+
+  `__tests__/theme/authLeading.test.ts` checks every role against the shipped TTF rather than
+  against the 1.3 constant, so changing family fails loudly instead of clipping quietly.
+
+- **The keyboard covered the email and password boxes.** `AuthField` never called
+  `useRevealOnFocus`, so the page was never asked to scroll a focused field clear. The reason it
+  went unnoticed is the reason 6.7 is now marked for reversal: the hook is a context opt-in, so a
+  control that forgets it is silently inert while every test stays green. Wired now, and
+  `SignUpScreen.test.tsx` asserts each field carries an `onFocus`.
+
+- **The Google button ended its scroll half-cut against the footer.** Treated at the time as a
+  padding shortfall and "fixed" by raising the bottom padding from 24 to 40 board px. That was a
+  workaround for the wrong cause, and 6.15 replaces it.
+
+### 6.15 The third device pass — the double inset, and why the footer was ever pinned
+
+The real cause of the crowding at the bottom of sign-up, which the second pass mis-read as a
+padding shortfall.
+
+**The artboards budget the whole screen.** Summed down 296:3032, the drawn offsets account for
+all 895 of the frame — 97 of head room, three fields, the two buttons, and a 44.47 floor, landing
+on 894.9. The status bar and the gesture area are inside that, and the padding at each end is the
+allowance for them. Every screen was rendering with `<Screen edges={['top', 'bottom']}>`, which
+adds the device insets *on top of* an allowance that already existed: roughly 80dp of space in
+neither the design nor the device. On a 412dp phone the board is 872dp tall against about 892dp
+of screen — it fits, with room to spare, and only stopped fitting because of the insets.
+
+Two consequences, both now undone:
+
+- **The footer never needed pinning.** It was pinned because the page had been made too tall for
+  its own content; it now flows with the page, 34.14 below the Google button, where the board
+  puts it.
+- **The gap above "Create an account" was 19.23 instead of 92.41.** The heading was jammed under
+  the wordmark, and the back chevron — which the board places *beside* the lock-up at y=78, not
+  above it — was stacked in the flow, pushing the whole page down by its 48pt tap target. It is
+  now taken out of the flow and positioned, with the target still a full 48 centred on the 23.5
+  glyph the board draws.
+
+All four screens now take `edges={[]}`. Where the board's own allowance is thinner than the inset
+it was drawn against — the slides give "Skip" only 41, which a deep notch would swallow — the
+larger of the two wins. `AUTH_FRAME_HEIGHT` in `src/features/auth/board.ts` carries the rule.
+
+**This one is worth generalising.** It is not an onboarding quirk: any artboard that draws a full
+device screen has the same trap, and the 25 older boards are 1440 and 1720 tall against a 520
+width, so they are *not* full screens and genuinely do need their edges. The two conventions now
+coexist in the codebase with nothing marking which is which beyond this note.
+
+### 6.16 The board was revised mid-build, and I was measuring a stale copy
+
+The single biggest source of error in this whole flow, and it went unnoticed for three rounds.
+
+Every measurement here was read out of Figma once, at the start. **296:3032 was then revised**,
+and the build kept quoting the old numbers:
+
+| | read at the start | current |
+|---|---|---|
+| Section top | 269.35 | **197** |
+| Back chevron | y=78.11 | **y=52.11** |
+| Footer | y=832.53 | **y=747** |
+| Floor below footer | 44.47 | **130** |
+| Primary CTA | `#B9EF30` lime | **`#9890F8` violet** |
+
+The gap above "Create an account" is the clearest casualty. It should be 20.06 — the section now
+starts at 197, just under the lock-up's 196.17. Reading it off the old 269.35 gives **92.41**, and
+in the third pass I "corrected" 19.23 (near enough right by luck) *to* 92.41, making the screen
+markedly worse and then pinning the footer to cope with the height it added. Two rounds of fixes
+were spent on a problem the board had already solved.
+
+Re-checked against the current file, the other five sections are unchanged except slide 3's
+bottom bar, which moved 3.6 (790.6 to 787), and the auth landing's gradient button, which is as
+drawn. Those are corrected too.
+
+**What now stops it happening again.** `src/features/auth/signUpLayout.ts` holds every drawn
+measurement for that screen in one object, the screen and `AuthField` both read from it, and
+`__tests__/features/auth/signUpLayout.test.ts` asserts the vertical pieces still account for the
+frame's 895. A gap measured against a stale revision pushes the sum off and fails there — the
+92.41 error puts it 72 out, and the test says so by name. The other five sections have no such
+sum; they are worth giving one.
+
+The habit that would have caught it earlier is simpler: **re-read the node before measuring
+against it**, not once per session.
+
+### 6.14 Still not verified
+
+- **The welcome screen and slide 2 have not been seen at all.** Slides 1 and 3, the landing and
+  sign-up have. The welcome screen is the one with the self-advancing timer and the gradient, and
+  slide 2 the one with three rotated cards — both the kind of thing the two passes so far have
+  found defects in.
+- **None of the second- or third-pass fixes have been re-checked on a device.** The leading
+  floor, the keyboard reveal, the dropped insets, the unpinned footer and the restored 92.41 gap
+  are all argued from the metrics and the board's own arithmetic, and all are green in the suite
+  — but the suite was green through all three passes, which is the whole point.
+- **Only sign-up has a budget test.** `signUpLayout.test.ts` guards that screen's arithmetic;
+  the welcome screen, the three slides and the landing still carry their measurements inline with
+  nothing summing them. Nothing asserts that these screens ask for no safe-area edges, either.
+- **The CTA colour token was renamed** `ctaLime` to `ctaPrimary` when the board changed it to
+  violet. If the lime returns, the token name is right but `palette.violet400` is not.
+- **The launcher icon cannot be seen in Expo Go at all** — it shows Expo's own. It needs
+  `eas build --profile preview`.
+- **The gradient angle** on the welcome wash is the CSS 125.43deg resolved against the artboard's
+  own 414.67x895 box and expressed as fractions. On a device with a different aspect it will bend
+  slightly, exactly as the CSS would.
+- **`react-native-svg` renders the three illustrations and the seven extracted icons**; the
+  icons were seen on slide 3, the illustrations only on slide 1.
+- **The extracted icons were lifted out of their exports by string surgery** on the `<g>` tree,
+  not by an exporter. They render, but nothing checks that a re-export would produce the same
+  subtree names, so re-running that extraction after a Figma change needs an eye on it.
