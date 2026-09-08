@@ -54,7 +54,9 @@ apps/mobile/
   app/                   expo-router routes - THIN: each file just renders a feature screen
     _layout.tsx          providers (Query, gesture root, SafeArea, theme), font gate, splash hide,
                          and the session gate: every signed-in route is declared inside it
-    (auth)/              sign-in stub; the real §7.1 screens are design-gated
+    (auth)/              first run and sign-up: the welcome wash, three onboarding slides, the
+                         get-started landing and the account form. Sign-in is still a stub —
+                         its artboard has not landed
     (tabs)/              tab routes (Home, Jobs, Resumes, Profile) + the floating tab bar host
     create/              the intakes that start a run: tailor, JD review, cover letter,
                          ATS check, Zero Resume, upload + its review, LinkedIn (unavailable)
@@ -145,10 +147,14 @@ These are enforced by code review and, where possible, by ESLint:
    `maxFontSizeMultiplier` on dense chrome (`maxFontScale`).
 10. **Session gating.** `app/_layout.tsx` declares every signed-in route inside a
     `<Stack.Protected>`; a route left outside one stays reachable, so a deep link could open over
-    the sign-in screen. New route files register in that block. The mock session defaults to
-    `signed_in` and is read synchronously, so the first frame is already correct; signing out
-    clears the query cache and the mock store *before* flipping it, because the flip unmounts the
-    tab subtree the confirm sheet lives in.
+    the sign-in screen. New route files register in that block — except inside `(auth)`, which
+    is one `<Stack.Screen>` covering the whole group. The mock session defaults to
+    `signed_out` and is read synchronously, so the first frame is already correct and a fresh
+    install opens on the welcome screen rather than the tabs. Whether onboarding has been walked
+    is a separate key (`prefs.onboardingSeen`), so signing out returns you to the landing
+    instead of replaying three slides. Signing out clears the query cache and the mock store
+    *before* flipping the session, because the flip unmounts the tab subtree the confirm sheet
+    lives in.
 11. **Keyboard.** A form is a pushed screen:
     `<Screen keyboard scroll header={<ScreenHeader/>} footer={<StickyActionBar/>}>`, where the
     footer owns the bottom safe area. A sheet holds at most one text field and sets

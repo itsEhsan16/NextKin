@@ -5,7 +5,7 @@ import { create } from 'zustand';
 // import time — a store initialiser must not drag half of Expo in with it.
 import { storage } from '@/lib/storage';
 
-/** Whether the mock account is signed in. The real auth screens (V2 §7.1) are design-gated. */
+/** Whether the mock account is signed in. */
 export type SessionStatus = 'signed_in' | 'signed_out';
 
 const STORAGE_KEY = 'prefs.session';
@@ -22,15 +22,15 @@ type SessionState = {
  * so when V2 §7.1's screens arrive the only thing that changes is what sets the flag.
  */
 export const useSessionStore = create<SessionState>((set) => ({
-  // Signed in when nothing is stored, because the mock account is pre-seeded like every other
-  // fixture: every existing test and every Maestro flow expects the tabs on launch, and there is
-  // no real credential to be missing. A signed-out default would put a wall in front of screens
-  // that have nothing behind it.
+  // A device with nothing stored has never been signed in, so it starts signed out and the
+  // (auth) group becomes the initial route — which is what puts the welcome screen and the three
+  // onboarding slides in front of a first run. Before those screens existed this defaulted to
+  // 'signed_in', because a signed-out launch could only reach a design-gated stub.
   //
   // The read is synchronous (expo-sqlite/kv-store), so the store is already correct before the
-  // first render — which is why the route gate below has no loading state of its own and no
-  // hydration flash is possible.
-  status: storage.get<SessionStatus>(STORAGE_KEY) ?? 'signed_in',
+  // first render — which is why the route gate has no loading state of its own and no hydration
+  // flash is possible.
+  status: storage.get<SessionStatus>(STORAGE_KEY) ?? 'signed_out',
   signIn: () => {
     storage.set(STORAGE_KEY, 'signed_in');
     set({ status: 'signed_in' });
@@ -39,9 +39,8 @@ export const useSessionStore = create<SessionState>((set) => ({
     storage.set(STORAGE_KEY, 'signed_out');
     set({ status: 'signed_out' });
   },
-  // Removes the key instead of writing 'signed_out': deleting an account is meant to leave
-  // nothing behind, so the next cold start reads no preference and comes up as a fresh mock
-  // account rather than as the deleted one, signed out.
+  // Removes the key rather than writing 'signed_out': a deleted account should leave the device
+  // in the state it shipped in, which is now genuinely signed out.
   deleteAccount: () => {
     storage.remove(STORAGE_KEY);
     set({ status: 'signed_out' });

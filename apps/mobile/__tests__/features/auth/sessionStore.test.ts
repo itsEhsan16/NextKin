@@ -21,13 +21,15 @@ describe('Session store', () => {
     useSessionStore.setState(INITIAL, true);
   });
 
-  it('starts signed in when nothing is stored', () => {
+  it('starts signed out when nothing is stored', () => {
+    // A device that has never been signed in gets the (auth) group as its initial route, which
+    // is what puts the welcome screen and the onboarding slides in front of a first run.
     expect(storage.get('prefs.session')).toBeNull();
-    expect(useSessionStore.getState().status).toBe('signed_in');
+    expect(useSessionStore.getState().status).toBe('signed_out');
   });
 
   // The assertions above all run against the store this file imported, which was constructed once
-  // with an empty Map — a hardcoded `status: 'signed_in'` would satisfy every one of them. The two
+  // with an empty Map — a hardcoded `status: 'signed_out'` would satisfy every one of them. The two
   // below evaluate the module again, after the key has been written, so they fail unless the
   // initialiser actually reads storage. That read is what the route gate's "the first frame is
   // already on the right side" rests on; break it and a cold start flashes the wrong screen.
@@ -45,7 +47,7 @@ describe('Session store', () => {
     });
   });
 
-  it('evaluates to a signed-in fresh account after a delete', () => {
+  it('evaluates to a signed-out device after a delete', () => {
     useSessionStore.getState().signOut();
     useSessionStore.getState().deleteAccount();
 
@@ -54,9 +56,12 @@ describe('Session store', () => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports -- a fresh evaluation.
         (require('@/features/auth/sessionStore') as typeof import('@/features/auth/sessionStore'))
           .useSessionStore;
-      // Had deleteAccount written 'signed_out' instead of removing the key, the next start would
-      // come up as the deleted account, signed out, with no way to tell it from a sign-out.
-      expect(coldStart.getState().status).toBe('signed_in');
+      // deleteAccount removes the key rather than writing 'signed_out', so a deleted account
+      // leaves the device exactly as it shipped: no stored preference, and signed out. The two
+      // now agree, but the distinction still matters — a written 'signed_out' would survive the
+      // reinstall this is meant to be indistinguishable from.
+      expect(storage.get('prefs.session')).toBeNull();
+      expect(coldStart.getState().status).toBe('signed_out');
     });
   });
 
@@ -70,13 +75,13 @@ describe('Session store', () => {
     expect(storage.get('prefs.session')).toBe('signed_in');
   });
 
-  it('forgets the key on delete, so the next cold start is a fresh mock account', () => {
+  it('forgets the key on delete, so the next cold start is an untouched device', () => {
     useSessionStore.getState().signOut();
     useSessionStore.getState().deleteAccount();
 
     expect(useSessionStore.getState().status).toBe('signed_out');
-    // Not 'signed_out' on disk: with no stored preference the store's initialiser falls back to
-    // signed_in, which is the pre-seeded account coming back rather than the deleted one.
+    // Nothing on disk, rather than 'signed_out' written there: the difference is invisible to
+    // the session but not to onboarding, which reads its own key and is left equally untouched.
     expect(storage.get('prefs.session')).toBeNull();
   });
 });

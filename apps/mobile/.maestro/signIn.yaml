@@ -1,7 +1,47 @@
-# Signs into the mock account only if the app is sitting on the design-gated sign-in screen
-# (V2 §7.1). Every other flow runs this first — see README.
+# Gets the app to the tabs, from wherever a fresh or returning install lands. Every other flow
+# runs this first — see README.
+#
+# A fresh install now opens signed out on the welcome wash (Figma 290:957), so this walks the
+# first-run path: welcome advances itself, "Skip" leaves the three slides, and the landing leads
+# to the account form. Each step is conditional, so the same flow works on a device that has
+# already been through onboarding — and on one that is still signed in, where nothing matches
+# and it falls straight through.
 appId: host.exp.exponent
 ---
+# The welcome screen advances on its own after ~1.6s; tapping only takes it there sooner.
+- runFlow:
+    when:
+      visible: "JOBS   RESUMES   GROWTH"
+    commands:
+      - tapOn: "Continue"
+
+- runFlow:
+    when:
+      visible: "Skip"
+    commands:
+      - tapOn: "Skip"
+
+- runFlow:
+    when:
+      visible: "Create an account"
+    commands:
+      - tapOn: "Create an account"
+
+# Any values at all are accepted: there is no identity provider behind this yet.
+- runFlow:
+    when:
+      visible: "Full name"
+    commands:
+      - tapOn: "Full name"
+      - inputText: "Maestro"
+      - tapOn: "Email address"
+      - inputText: "maestro@example.com"
+      - tapOn: "Password"
+      - inputText: "hunter2"
+      - hideKeyboard
+      - tapOn: "Create account"
+
+# The design-gated stub, still reachable from both "Sign in" affordances (V2 §7.1).
 - runFlow:
     when:
       visible: "Continue with Google"
