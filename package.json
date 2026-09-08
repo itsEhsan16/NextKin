@@ -10,5 +10,8 @@
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "jimp-compact": "0.16.1-2"
   }
 }
