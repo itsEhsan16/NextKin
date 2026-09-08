@@ -1,18 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
-import Mark1 from '../../../../assets/brand/mark-1.svg';
-import Mark2 from '../../../../assets/brand/mark-2.svg';
-import Mark3 from '../../../../assets/brand/mark-3.svg';
 import { useTheme } from '@/theme';
+import { BrandMark, BRAND_MARK_BOX } from '@/ui/BrandMark';
 import { Text } from '@/ui/Text';
 
-/** Figma 1:23 — the mark is three layered vectors inside a 51×53 box; wordmark at x=65. */
-const MARK_BOX = { width: 51, height: 53 } as const;
-const MARK_LAYERS = [
-  { Icon: Mark1, x: 0, y: 0, width: 37, height: 35 },
-  { Icon: Mark2, x: 22, y: 21, width: 29, height: 32 },
-  { Icon: Mark3, x: 23, y: 21, width: 28, height: 19 },
-] as const;
+/** Figma 1:23 — the mark sits in a 51×53 box and the wordmark starts at x=65. */
 const WORDMARK_X = 65;
 
 /**
@@ -28,24 +20,9 @@ export function BrandBlock() {
 
   return (
     <View accessible accessibilityRole="header" accessibilityLabel="NextKin">
-      <View style={[styles.row, { height: s(MARK_BOX.height) }]}>
-        <View style={{ width: s(MARK_BOX.width), height: s(MARK_BOX.height) }}>
-          {MARK_LAYERS.map(({ Icon, x, y, width, height }, index) => (
-            <View
-              key={index}
-              style={{
-                position: 'absolute',
-                left: s(x),
-                top: s(y),
-                width: s(width),
-                height: s(height),
-              }}
-            >
-              <Icon width={s(width)} height={s(height)} />
-            </View>
-          ))}
-        </View>
-        <Text variant="wordmark" style={{ marginLeft: s(WORDMARK_X - MARK_BOX.width) }}>
+      <View style={[styles.row, { height: s(BRAND_MARK_BOX.height) }]}>
+        <BrandMark />
+        <Text variant="wordmark" style={{ marginLeft: s(WORDMARK_X - BRAND_MARK_BOX.width) }}>
           NextKin
         </Text>
       </View>

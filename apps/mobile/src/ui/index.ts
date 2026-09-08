@@ -1,6 +1,7 @@
 export * from './AiBadge';
 export * from './Avatar';
 export * from './Badge';
+export * from './BrandMark';
 export * from './Button';
 export * from './Card';
 export * from './Chip';
