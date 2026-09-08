@@ -46,6 +46,23 @@ export const palette = {
   amber500: '#F59E0B',
   amber50: '#FFFBEB',
 
+  // Onboarding & auth (Figma 290:955). The welcome screen's brand gradient, top-left to
+  // bottom-right, and the mark's own blue — which the auth landing also uses as an accent word.
+  brandGradient1: '#F1EFF9',
+  brandGradient2: '#8B83FC',
+  brandGradient3: '#4A3FEB',
+  brand600: '#3C29F6',
+  /** Sign-up's primary CTA (296:3190). Was a lime until the board was revised. */
+  violet400: '#9890F8',
+  /** Onboarding's near-black; truer than ink900, which is a blue-grey. */
+  ink950: '#08090A',
+  /** Supporting copy under each onboarding heading. Large text only — 3.4:1 on white. */
+  slate450: '#89909A',
+  /** The muted "/ 3" in the step counter, and the inactive slide dots. */
+  gray220: '#D5D9DD',
+  gray250: '#D8DBE2',
+  gray350: '#C9CED2',
+
   // Dark scheme foundations (provisional — Figma only ships light; refine when dark screens exist)
   dark900: '#0B0D12',
   dark800: '#12151C',

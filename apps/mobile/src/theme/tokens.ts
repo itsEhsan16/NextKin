@@ -82,6 +82,21 @@ export const colorsByScheme = {
     scrim: 'rgba(10, 10, 10, 0.5)',
     skeletonBase: palette.gray150,
     skeletonHighlight: palette.gray50,
+
+    // Onboarding & auth (Figma 290:955)
+    onboardingGradientFrom: palette.brandGradient1,
+    onboardingGradientMid: palette.brandGradient2,
+    onboardingGradientTo: palette.brandGradient3,
+    onboardingInk: palette.ink950,
+    onboardingBody: palette.slate450,
+    onboardingStepMuted: palette.gray220,
+    dotActive: palette.ink950,
+    dotInactive: palette.gray350,
+    authAccent: palette.brand600,
+    authFieldBorder: palette.gray250,
+    ctaPrimary: palette.violet400,
+    ctaPrimaryLabel: palette.ink950,
+    jobCardBar: palette.gray300,
   },
   dark: {
     textPrimary: '#F5F6F8',
@@ -144,6 +159,23 @@ export const colorsByScheme = {
     scrim: 'rgba(0, 0, 0, 0.6)',
     skeletonBase: palette.dark700,
     skeletonHighlight: palette.dark600,
+
+    // Onboarding & auth (Figma 290:955). The gradient is a brand surface, so it is identical in
+    // both schemes; everything painted on top of neutral ground follows the dark palette. The
+    // artboards are drawn light-only — see toreview.md.
+    onboardingGradientFrom: palette.brandGradient1,
+    onboardingGradientMid: palette.brandGradient2,
+    onboardingGradientTo: palette.brandGradient3,
+    onboardingInk: '#F5F6F8',
+    onboardingBody: '#9AA1AE',
+    onboardingStepMuted: palette.dark500,
+    dotActive: '#F5F6F8',
+    dotInactive: palette.dark500,
+    authAccent: '#9B8CFF',
+    authFieldBorder: palette.dark600,
+    ctaPrimary: palette.violet400,
+    ctaPrimaryLabel: palette.ink950,
+    jobCardBar: palette.dark500,
   },
 } as const satisfies Record<ColorScheme, Record<string, string>>;
 

@@ -45,7 +45,11 @@ const OFF_CURVE: readonly TypographyRole[] = [
 
 const roles = Object.entries(typography) as [TypographyRole, (typeof typography)[TypographyRole]][];
 const drawn390 = roles.filter(([, role]) => role.drawnAt390);
-const projected = roles.filter(([, role]) => !role.drawnAt390);
+// Drawn once at 422.66 (Figma 290:955) and projected onto both anchors. Like `drawn390` these
+// sit on the geometry line rather than the Mobile 2 curve, but they are counted separately so
+// the Home re-measure guard below still counts only Home.
+const singleBoard = roles.filter(([, role]) => role.singleBoard);
+const projected = roles.filter(([, role]) => !role.drawnAt390 && !role.singleBoard);
 const onCurve = projected.filter(([name]) => !OFF_CURVE.includes(name));
 const offCurve = projected.filter(([name]) => OFF_CURVE.includes(name));
 
@@ -68,6 +72,19 @@ describe('the Mobile 2 type ramp', () => {
     // to the old board piecemeal, which is how it came to look wrong in the first place.
     expect(drawn390.length).toBeGreaterThanOrEqual(18);
     expect(drawn390.every(([name]) => !OFF_CURVE.includes(name))).toBe(true);
+  });
+
+  it.each(singleBoard)('role "%s" holds the onboarding board it was drawn on', (_name, role) => {
+    // One board, so both anchors are projected and the only claim is that the pair never drifted
+    // off the geometry line — the same check `drawn390` gets, for the same reason.
+    expect(role.at520.fontSize).toBeCloseTo(role.at390.fontSize / BOARD_RATIO, 9);
+    expect(role.at520.lineHeight).toBeCloseTo(role.at390.lineHeight / BOARD_RATIO, 9);
+  });
+
+  it('measured the whole onboarding flow, not one screen of it', () => {
+    // Six artboards' worth of type. A shrunken list means a screen went back to ad-hoc sizes.
+    expect(singleBoard.length).toBeGreaterThanOrEqual(15);
+    expect(singleBoard.every(([name]) => !OFF_CURVE.includes(name))).toBe(true);
   });
 
   it.each(onCurve)('role "%s" sits on the curve the 390 board draws', (_name, role) => {
@@ -159,7 +176,13 @@ describe('Home tile rows fit their cells', () => {
     // A role that stopped shrinking at 390 while its box carried on would overflow it. Four do:
     // the five-across tile label, the ring caption, the count badge and the nav label. Everything
     // else holds flat and is checked at 320, where a clamped role is closest to the box round it.
-    const flagged = roles.filter(([, r]) => r.cellBound).map(([name]) => name).sort();
+    //
+    // The onboarding roles are cell-bound as a whole category rather than one at a time, so they
+    // are counted by the test below instead of buried in this list.
+    const flagged = roles
+      .filter(([, r]) => r.cellBound && !r.singleBoard)
+      .map(([name]) => name)
+      .sort();
     expect(flagged).toEqual([
       'badgeCount',
       'homeCardRole',
@@ -170,6 +193,29 @@ describe('Home tile rows fit their cells', () => {
       'shortcutLabel',
       'tabLabel',
     ]);
+  });
+
+  it.each([320, 360, 369, 390, 412, 430])(
+    'renders the onboarding board at its own proportion on a %ipx screen',
+    (width) => {
+      // The claim the whole `authRole` conversion rests on: a length drawn at 422.66 lands at
+      // `drawn x width / 422.66` on the device, exactly, the same as every other length on these
+      // screens. artboardFidelity only asserts a floor; this asserts the equality, because being
+      // *above* the line is the failure that shipped — 7% oversized, and a heading wrapped.
+      const { typography: at } = themeFor('light', width);
+      for (const [name, role] of singleBoard) {
+        expect(at[name].fontSize ?? 0).toBeCloseTo((role.at520.fontSize * width) / 520, 6);
+      }
+    },
+  );
+
+  it('binds every onboarding role to its box', () => {
+    // `authRole` sets both flags together, and the pairing is the point: these roles are sized
+    // to a column they have to fit two lines in. Held flat below 390 the way the shared ramp
+    // holds, "step with confidence." wrapped onto a third line on a 369dp phone — which is what
+    // the first device pass showed.
+    expect(singleBoard.length).toBeGreaterThan(0);
+    expect(singleBoard.every(([, role]) => role.cellBound)).toBe(true);
   });
 });
 

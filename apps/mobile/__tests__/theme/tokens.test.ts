@@ -73,7 +73,7 @@ describe('typography', () => {
     const jakarta = families.filter((family) => family !== fontFamily.brand);
     expect(jakarta).toHaveLength(4);
     for (const family of jakarta) expect(family).toMatch(/^PlusJakartaSans_\d{3}\w+$/);
-    // Figma uses Inter Bold for the "NextKin" logotype only.
+    // Figma uses Inter Bold for the "NextKin" logotype and the two auth display roles.
     expect(fontFamily.brand).toBe('Inter_700Bold');
   });
 
@@ -81,10 +81,16 @@ describe('typography', () => {
     expect(roles.length).toBeGreaterThan(0);
   });
 
+  /**
+   * The wordmark, plus the two roles the onboarding board sets in Inter Bold itself (296:3036,
+   * 296:3144). Everything else is Plus Jakarta Sans — including the roles standing in for the
+   * board's DM Sans and Montserrat, which are deliberately not loaded (see toreview.md).
+   */
+  const interRoles = ['wordmark', 'authHero', 'authTitle'];
+
   it.each(roles)('role "%s" uses a registered font family', (name, role) => {
     expect(typeof role.fontFamily).toBe('string');
-    // Every role is Plus Jakarta Sans except the brand wordmark, which is Inter Bold.
-    expect(role.fontFamily).toMatch(name === 'wordmark' ? /^Inter_/ : /^PlusJakartaSans_/);
+    expect(role.fontFamily).toMatch(interRoles.includes(name) ? /^Inter_/ : /^PlusJakartaSans_/);
     expect(families).toContain(role.fontFamily);
   });
 

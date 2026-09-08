@@ -38,6 +38,11 @@ export type TypeAnchors = {
   cellBound?: true;
   /** Set when `at390` is the drawn measurement and `at520` is derived. See `boardRole`. */
   drawnAt390?: true;
+  /**
+   * Set when neither anchor was drawn: the role comes from a board at some third width and both
+   * anchors are projected from it, so the pair sits on the flat geometry line. See `authRole`.
+   */
+  singleBoard?: true;
 };
 
 /** As drawn on one artboard: [fontSize, lineHeight, letterSpacing?]. */
@@ -115,6 +120,63 @@ const boardCellRole = (family: FontWeightKey, at390: Drawn): TypeAnchors => ({
   ...boardRole(family, at390),
   cellBound: true,
 });
+
+/**
+ * The width the onboarding and auth board (Figma 290:955) is drawn at.
+ *
+ * It is neither of this file's two boards. Those sections are already phone-sized — 422.66 is an
+ * iPhone-class width, not a 520 presentation frame — so every number on them is ~1.23x smaller
+ * than the same element drawn on "Mobile App". Reading them as 520 numbers would render the
+ * whole flow a quarter too small.
+ */
+const AUTH_BOARD = 422.66;
+
+/**
+ * The least leading a line can have before the renderer clips it, as a multiple of font size.
+ *
+ * The board is set in DM Sans and Montserrat; both map onto Plus Jakarta Sans, which is a taller
+ * face — its ascent, descent and line gap come to 1.26 em against the board's leading of as
+ * little as 1.0 (the two wordmarks, the step counter). React Native does not grow a line to fit
+ * its glyphs, it clips them, which is what cut the tops off "you ahead.", "Sign in" and
+ * "Continue with Google" on the first device pass.
+ *
+ * So leading is the drawn value or this floor, whichever is larger. On the single-line roles —
+ * buttons, labels, wordmarks — that costs nothing, since leading is invisible on one line. On
+ * the two-line headings it is looser than drawn, which is the price of the family swap rather
+ * than a choice; see toreview.md. `__tests__/theme/authLeading.test.ts` checks every role against
+ * the shipped TTF rather than against this number, so a future family change fails loudly.
+ */
+const MIN_LEADING = 1.3;
+
+/**
+ * A role measured on that board, converted into 520-space so it can join the ramp above.
+ *
+ * Unlike every other role here there is no second measurement to honour: the design team drew
+ * this flow once. So the 390 anchor is set proportionally rather than bent the way the two-board
+ * roles are, which reproduces the artboard exactly at every width — the same thing `s()` does
+ * for lengths. `singleBoard` records that, and keeps `typeRamp.test.ts` from judging these
+ * against a compression curve that describes a board they were never drawn on.
+ *
+ * They are `cellBound` for the same reason. The bend the rest of the ramp applies below 390 —
+ * hold the size so text stays readable on a narrow phone — is wrong here, because these roles
+ * are sized to their box: the heading has one column to fit two lines in, and the board picked
+ * its size to just fill it. Held flat while the column kept shrinking, "step with confidence."
+ * wrapped onto a third line on a 369dp phone. Cell-bound, the type tracks the artboard exactly
+ * at every width, which is what the flow's own layout does.
+ */
+const authRole = (family: FontWeightKey, drawn: Drawn): TypeAnchors => {
+  const up = (value: number): number => (value * 520) / AUTH_BOARD;
+  const [fontSize, lineHeight, letterSpacing = 0] = drawn;
+  return {
+    ...role(
+      family,
+      [up(fontSize), Math.max(up(lineHeight), up(fontSize) * MIN_LEADING), up(letterSpacing)],
+      up(fontSize) * BOARD_RATIO,
+    ),
+    singleBoard: true,
+    cellBound: true,
+  };
+};
 
 /**
  * Text roles mapped from Figma text styles (Plus Jakarta Sans).
@@ -255,6 +317,44 @@ export const typography = {
   homeCheckLabel: boardCellRole('medium', [12, 16]), // 210:445
   /** The score inside the ATS ring. Shared `statRegular` is 16.5 and overruns the stroke. */
   homeRingValue: boardRole('bold', [20, 24]), // 210:434
+
+  // ---------------------------------------------------------------------------------------
+  // Onboarding & auth — Figma 290:955, drawn once at 422.66. Values below are as drawn; the
+  // conversion into 520-space is `authRole`'s job, so each number stays traceable to its node.
+  //
+  // Two families in the artboards are not loaded: DM Sans carries almost everything and
+  // Montserrat the welcome screen's letter-spaced caps. Both map onto Plus Jakarta Sans rather
+  // than adding font packages to the startup gate — see toreview.md. Inter *is* loaded, at 700
+  // only, so the two roles the design sets in Inter Bold keep it.
+  // ---------------------------------------------------------------------------------------
+
+  /** Welcome logotype — the board draws it bold and very large. */
+  welcomeWordmark: authRole('bold', [70, 70, -3]), // 290:964
+  welcomeEyebrow: authRole('medium', [13, 23.4, 5]), // 290:966 "JOBS RESUMES GROWTH"
+  welcomeTagline: authRole('medium', [13, 23.4, 4]), // 290:968
+  /** "1 " — bold. The "/ 3" beside it is drawn a weight lighter as well as greyed. */
+  onboardingStep: authRole('bold', [32, 32, -1]), // 290:974
+  onboardingStepTotal: authRole('regular', [32, 32, -1]), // 290:974
+  /**
+   * All three slides, at the size slide 3 draws. Slides 1 and 2 are typed 8% larger, but their
+   * headings are two short lines where slide 3's "step with confidence." fills the column — so
+   * the larger size is the one that cannot take the longest string, and a carousel whose heading
+   * changes size between slides reads as a bug rather than as emphasis.
+   */
+  onboardingTitle: authRole('bold', [36.141, 40.839, -1.5945]), // 295:2874
+  onboardingLead: authRole('regular', [19, 27.55, -0.25]), // 290:978, and "Skip"
+  onboardingCta: authRole('semiBold', [18.071, 24]), // 296:2978 "Get Started"
+  featureTitle: authRole('bold', [17.008, 19.559, -0.3189]), // 295:2944
+  featureCaption: authRole('medium', [14.882, 17.114]), // 295:2946
+  jobCardTitle: authRole('semiBold', [15, 19.5]), // 290:1051
+  authHero: authRole('brand', [46.712, 47.646, -2.8133]), // 296:3036 "A brighter you ahead."
+  authTitle: authRole('brand', [34.187, 37.606, -1.8162]), // 296:3144 "Create an account"
+  authWordmark: authRole('bold', [36.536, 36.536, -1.5658]), // 296:3073
+  authButton: authRole('semiBold', [17.517, 21, -0.637]), // 296:3039
+  authCta: authRole('semiBold', [19.23, 23, -0.8547]), // 296:3191 "Create account"
+  authField: authRole('regular', [16.025, 19, -0.4273]), // 296:3153 field labels
+  authMeta: authRole('regular', [14.957, 18, -0.4808]), // 296:3195 footer, "or"
+  authMetaStrong: authRole('semiBold', [14.957, 18, -0.4808]), // 296:3196 the "Sign in" half
 
   // ---------------------------------------------------------------------------------------
   // Home tile rows — the two roles that answer to neither board.
