@@ -87,6 +87,18 @@ const FRAMES = {
   '95:2967': { name: 'NOTIF 05 — All caught up', width: 390, height: 1080, render: [390, 1080] },
   '95:2989': { name: 'NOTIF 06 — First use', width: 390, height: 1080, render: [390, 1080] },
   '95:3023': { name: 'NOTIF 07 — Push primer', width: 390, height: 1290, render: [390, 1290] },
+
+  // ── Onboarding & auth (422.66) ────────────────────────────────────────────────────────
+  // A third board: these sections are drawn phone-sized rather than as 520 presentation
+  // frames, and the first two are 414.67 where the rest are 422.66. The overlay lines up
+  // whatever `width` says, so each carries the width it was actually drawn at; the app
+  // normalises them onto one board instead (see src/features/auth/board.ts).
+  '290:957': { name: 'AUTH 01 — Welcome', width: 414.67, height: 895, render: [487, 967] },
+  '290:969': { name: 'AUTH 02 — Onboarding 1 of 3', width: 414.67, height: 895, render: [487, 967] },
+  '290:1031': { name: 'AUTH 03 — Onboarding 2 of 3', width: 422.66, height: 895, render: [495, 967] },
+  '295:2867': { name: 'AUTH 04 — Onboarding 3 of 3', width: 422.66, height: 895, render: [495, 967] },
+  '296:2982': { name: 'AUTH 05 — Get started', width: 422.66, height: 895, render: [495, 967] },
+  '296:3032': { name: 'AUTH 06 — Create an account', width: 422.66, height: 895, render: [495, 967] },
 };
 
 /** PNG stores width/height as big-endian uint32 at bytes 16 and 20 of the IHDR chunk. */

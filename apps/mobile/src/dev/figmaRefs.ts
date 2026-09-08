@@ -2,15 +2,21 @@ import { sizes } from '@/theme/tokens';
 
 import { FIGMA_REFS } from './figmaRefs.generated';
 
-/** The two pages the Figma file draws every screen on. */
-export type Board = 520 | 390;
+/**
+ * The widths the Figma file draws on: the two pages every screen exists on, plus the onboarding
+ * and auth board, which is neither. Those sections are drawn phone-sized rather than as
+ * presentation frames, and the first two of the six a fraction narrower again — kept exact here
+ * rather than normalised, so `overlayGeometryFor` centres each render's own drop-shadow
+ * overscan instead of being 4 artboard px out on two screens.
+ */
+export type Board = 520 | 390 | 422.66 | 414.67;
 
 export type FigmaRef = {
   /** Figma node id, e.g. "1:2189". */
   id: string;
   /** Artboard name as it reads in the file. */
   name: string;
-  /** Which page this render came from — "Mobile App" (520) or "Mobile 2" (390). */
+  /** The board this render came from — "Mobile App" (520), "Mobile 2" (390), or auth. */
   frameWidth: Board;
   /** Frame height in artboard px. */
   frameHeight: number;

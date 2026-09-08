@@ -10,8 +10,11 @@ const STORAGE_KEY = 'dev.figmaOverlay';
 /** 100% is the most useful setting: flash between it and 0 and any drift jumps out. */
 export const OPACITY_STEPS = [0.25, 0.5, 0.75, 1] as const;
 
-/** Both pages carry the same screens, so the picker shows one board at a time. */
-export const BOARDS = [390, 520] as const satisfies readonly Board[];
+/**
+ * The picker shows one board at a time. 390 and 520 carry the same screens as each other; the
+ * two auth widths carry only the onboarding flow, which neither page draws.
+ */
+export const BOARDS = [390, 520, 414.67, 422.66] as const satisfies readonly Board[];
 
 type Persisted = { nodeId: string; opacity: number; offsetY: number; board: Board };
 
