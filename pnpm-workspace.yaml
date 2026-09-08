@@ -1,5 +1,13 @@
 packages:
   - apps/*
   - packages/*
+
+# React Native's toolchain resolves a lot of packages it never declares — @babel/runtime is
+# injected into app sources by transform-runtime, @react-native/assets-registry into every asset
+# module — so the tree has to be flat. pnpm 11 no longer reads non-auth settings from .npmrc, which
+# is why the `node-linker=hoisted` that used to live there had silently stopped applying: the
+# install was isolated, and an EAS release build failed on the first of those undeclared packages.
+nodeLinker: hoisted
+
 allowBuilds:
   unrs-resolver: false
