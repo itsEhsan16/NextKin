@@ -20,6 +20,8 @@ export type CreateSheetBodyProps = {
   onStepChange: (step: CreateStep) => void;
   /** Fired for every row that is not the internal "New Resume" push. */
   onAction: (action: Exclude<CreateAction, 'new-resume'>) => void;
+  /** The ✕ on both steps. */
+  onClose?: () => void;
 };
 
 /**
@@ -27,9 +29,9 @@ export type CreateSheetBodyProps = {
  *
  * Canvas note 1:1365: "Back returns to CREATE 01 — the trio is a push within the same sheet,
  * not a new sheet." So both panes live side by side in one row that slides horizontally, while
- * the host sheet morphs its height (600 → 520). Off-screen panes leave the accessibility tree.
+ * the host sheet morphs its height (600 → 555). Off-screen panes leave the accessibility tree.
  */
-export function CreateSheetBody({ step, onStepChange, onAction }: CreateSheetBodyProps) {
+export function CreateSheetBody({ step, onStepChange, onAction, onClose }: CreateSheetBodyProps) {
   const { motion } = useTheme();
   const { width } = useWindowDimensions();
   const reduced = useReducedMotion();
@@ -82,6 +84,7 @@ export function CreateSheetBody({ step, onStepChange, onAction }: CreateSheetBod
           title="Create"
           rows={CREATE_ROOT_ROWS}
           onSelect={handleRoot}
+          onClose={onClose}
           visible={step === 'root'}
         />
       </View>
@@ -96,6 +99,7 @@ export function CreateSheetBody({ step, onStepChange, onAction }: CreateSheetBod
           rows={CREATE_RESUME_ROWS}
           onSelect={handleResume}
           onBack={backToRoot}
+          onClose={onClose}
           footnote={CREATE_RESUME_FOOTNOTE}
           visible={step === 'resume'}
         />

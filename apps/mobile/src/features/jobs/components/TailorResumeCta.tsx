@@ -1,6 +1,6 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { View } from 'react-native';
 
+import AiSparkle from '../../../../assets/icons/jobs/ai-sparkle.svg';
 import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
@@ -8,17 +8,35 @@ import { Text } from '@/ui/Text';
 
 export type TailorResumeCtaProps = { onPress: () => void };
 
-const TILE = 44;
+/**
+ * Drawn values over 0.75: a 53-tall row, the sparkle 18 in and 13 from the copy, and a chevron
+ * drawn at 20.9 ending ~8.5 from the right edge.
+ */
+const CTA = {
+  height: 70.6667,
+  paddingLeft: 24,
+  paddingRight: 11.3333,
+  gap: 17.3333,
+  sparkle: 32,
+  sparkleHeight: 33.1051,
+  chevron: 27.8573,
+};
 
-/** The brand-tinted "Tailor resume to this job" row (Figma 1:869) — the screen's AI entry point. */
+/**
+ * The brand-tinted "Tailor your resume to this job" row (Figma 443:41) — the screen's AI entry
+ * point, redrawn as a single line led by the same sparkle the job cards' tailor button uses.
+ *
+ * The board drops a soft blue shadow under the sparkle; SVGR strips filters from `.svg` imports,
+ * so the shared asset renders without it. See toreview.md.
+ */
 export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
-  const { colors, radii, spacing, s } = useTheme();
+  const { colors, radii, s } = useTheme();
   const styles = useStyles();
 
   return (
     <Pressable
       {...a11yButton(
-        'Tailor resume to this job',
+        'Tailor your resume to this job',
         'Creates a linked variant; match updates live',
       )}
       feedback="scale"
@@ -27,8 +45,6 @@ export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
       style={[
         styles.row,
         {
-          gap: spacing[4],
-          padding: s(17),
           borderRadius: radii.card,
           backgroundColor: colors.brandSurface,
           borderWidth: s(1),
@@ -36,29 +52,23 @@ export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
         },
       ]}
     >
-      <View
-        style={[
-          styles.tile,
-          { width: s(TILE), height: s(TILE), borderRadius: radii.lg, backgroundColor: colors.surfaceCard },
-        ]}
-      >
-        <FontAwesome5 name="magic" size={s(17)} color={colors.brand} solid />
-      </View>
-      <View style={styles.copy}>
-        <Text variant="label" color="brand">
-          Tailor resume to this job
-        </Text>
-        <Text variant="microSemiBold" color="textSecondary">
-          Creates a linked variant · match updates live
-        </Text>
-      </View>
-      <FontAwesome5 name="chevron-right" size={s(14)} color={colors.brand} solid />
+      <AiSparkle width={s(CTA.sparkle)} height={s(CTA.sparkleHeight)} />
+      <Text variant="label" color="brand" numberOfLines={1} style={styles.copy}>
+        Tailor your resume to this job
+      </Text>
+      <FontAwesome5 name="chevron-right" size={s(CTA.chevron)} color={colors.iconMuted} solid />
     </Pressable>
   );
 }
 
 const useStyles = scaledSheet((s) => ({
-  row: { flexDirection: 'row', alignItems: 'center' },
-  tile: { alignItems: 'center', justifyContent: 'center' },
-  copy: { flex: 1, gap: s(2) },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: s(CTA.height),
+    paddingLeft: s(CTA.paddingLeft),
+    paddingRight: s(CTA.paddingRight),
+    gap: s(CTA.gap),
+  },
+  copy: { flex: 1 },
 }));

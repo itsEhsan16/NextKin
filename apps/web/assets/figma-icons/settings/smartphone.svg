@@ -1,0 +1,35 @@
+<svg width="16" height="24" viewBox="0 0 16 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="16" height="24" fill="#1E1E1E"/>
+<g id="Settingg -&#62; Account">
+<rect width="1536" height="1024" transform="translate(-687 -889)" fill="white"/>
+<rect width="1536" height="1024" transform="translate(-687 -889)" fill="#FAFBFF"/>
+<rect width="1536" height="1024" transform="translate(-687 -889)" fill="#FCFDFF"/>
+<rect width="1536" height="1024" transform="translate(-687 -889)" fill="url(#paint0_radial_185_2826)"/>
+<g id="Main">
+<g id="Container">
+<g id="Section">
+<g id="Overlay+Border">
+<rect x="-37.5" y="-117.5" width="857" height="209" rx="9.5" fill="white" fill-opacity="0.84"/>
+<rect x="-37.5" y="-117.5" width="857" height="209" rx="9.5" stroke="#E4E6F3"/>
+<g id="Border">
+<rect x="-17.5" y="-46.5" width="817" height="118" rx="7.5" stroke="#E4E6F2"/>
+<g id="HorizontalBorder">
+<g id="Group 79">
+<path id="Vector" d="M2.97202 0.0323749C3.60311 -0.0053612 4.28813 0.0184677 4.92816 0.0154886C6.80889 0.0085372 8.68735 0.00655254 10.5686 0.00456643C11.7964 0.00456643 13.0954 -0.0788467 14.2328 0.467333C15.0823 0.875479 15.5324 1.91521 15.5916 2.81293C15.6305 8.75239 15.634 14.6988 15.5944 20.6392C15.5813 22.6025 14.72 23.3632 12.9497 23.9382C10.1332 24.0554 7.20038 23.967 4.37575 23.9829C0.00106747 24.0077 0.0803377 22.0335 0.0750728 18.523L0.0667271 13.5558L0.0589801 6.83679C0.0575893 3.95196 -0.663097 0.605367 2.97202 0.0323749Z" fill="#0E105A"/>
+<path id="Vector_2" d="M3.02926 2.28809L12.6375 2.29901L13.3504 3.05969L13.3565 20.7639C13.1205 21.1253 13.0111 21.3478 12.6286 21.5553L6.21141 21.5663C5.23821 21.5682 4.24832 21.5911 3.28257 21.5404C2.77317 21.5136 2.39202 20.9893 2.37265 20.5146C2.29676 18.6566 2.33053 16.744 2.33192 14.886L2.35606 3.08551L3.02926 2.28809Z" fill="#FDFDFF"/>
+<path id="Vector_3" d="M7.36009 17.5772C8.68852 17.4411 8.93735 17.7986 9.43175 18.9645C9.1105 19.4868 8.88838 19.9496 8.39408 20.3051C6.49457 20.4818 5.68041 18.8254 7.36009 17.5772Z" fill="#0E105A"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<radialGradient id="paint0_radial_185_2826" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(906.24 81.92) scale(1307.21 1307.21)">
+<stop stop-color="#F2F4FF"/>
+<stop offset="0.37" stop-color="#F2F4FF" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>

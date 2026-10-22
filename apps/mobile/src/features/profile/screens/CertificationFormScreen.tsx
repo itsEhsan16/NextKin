@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useProfile, useRemoveCertification, useUpsertCertification } from '@/data/queries';
 import { MonthYearSheet } from '@/ui/MonthYearSheet';
 
+import { IdentityCard } from '../components/cards';
 import {
   CertificationFields,
   type CertificationDateField,
@@ -28,7 +29,10 @@ const EXPIRY_YEARS_AHEAD = 20;
 const DELETE_MESSAGE =
   'This credential comes off your profile. Documents you have already generated keep the text they were built with.';
 
-/** Add or edit one credential (V2 §7.3). The role form's page, with the certification fields. */
+/**
+ * Add or edit one credential (V2 §7.3, PROFILE 11 577:8527). The role form's page, with the
+ * certification fields; an existing credential is named in an identity card first.
+ */
 export function CertificationFormScreen({ id }: CertificationFormScreenProps) {
   const actions = useProfileActions();
   const profile = useProfile();
@@ -54,13 +58,25 @@ export function CertificationFormScreen({ id }: CertificationFormScreenProps) {
     const ready = form.submit();
     if (!ready) return;
     // A new entry goes out with an empty id — the repo mints the real one (see profileForms).
-    save.mutate(certificationEntry(form.isNew ? '' : id, ready), { onSuccess: actions.goBack });
+    save.mutate(certificationEntry(form.isNew ? '' : id, ready), {
+      onSuccess: () => actions.backWith('Certification saved'),
+    });
   };
 
   return (
     <ProfileFormShell
       title={form.isNew ? 'Add certification' : 'Edit certification'}
       status={form.status}
+      isNew={form.isNew}
+      identity={
+        entry ? (
+          <IdentityCard
+            tile={{ kind: 'letter', name: entry.issuer || entry.name }}
+            title={entry.name}
+            lines={entry.issuer ? [entry.issuer] : []}
+          />
+        ) : undefined
+      }
       listLabel="certifications"
       dirty={form.dirty}
       valid={form.valid}
@@ -76,7 +92,8 @@ export function CertificationFormScreen({ id }: CertificationFormScreenProps) {
               label: 'Delete certification',
               message: DELETE_MESSAGE,
               busy: remove.isPending,
-              onConfirm: () => remove.mutate(id, { onSuccess: actions.goBack }),
+              onConfirm: () =>
+                remove.mutate(id, { onSuccess: () => actions.backWith('Certification removed') }),
             }
       }
       sheets={

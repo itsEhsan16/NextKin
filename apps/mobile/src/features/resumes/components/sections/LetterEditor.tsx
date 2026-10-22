@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
@@ -7,6 +7,7 @@ import { Button } from '@/ui/Button';
 import { IconButton } from '@/ui/IconButton';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
+import { layoutTransition } from '@/ui/motion';
 
 import { removeAt, replaceAt, type LetterDraft } from '../../sectionEdits';
 import type { SectionFieldsProps } from './types';
@@ -23,7 +24,7 @@ export function LetterEditor({
 }: SectionFieldsProps<LetterDraft>) {
   const { motion, spacing } = useTheme();
   const reduced = useReducedMotion();
-  const layout = reduced ? undefined : LinearTransition.springify();
+  const layout = layoutTransition(reduced);
 
   const setParagraphs = (paragraphs: string[]) => onChange({ ...value, paragraphs });
 

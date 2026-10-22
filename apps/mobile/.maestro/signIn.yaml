@@ -1,7 +1,7 @@
 # Gets the app to the tabs, from wherever a fresh or returning install lands. Every other flow
 # runs this first — see README.
 #
-# A fresh install now opens signed out on the welcome wash (Figma 290:957), so this walks the
+# A fresh install now opens signed out on the welcome wash (Figma 307:4153), so this walks the
 # first-run path: welcome advances itself, "Skip" leaves the three slides, and the landing leads
 # to the account form. Each step is conditional, so the same flow works on a device that has
 # already been through onboarding — and on one that is still signed in, where nothing matches
@@ -41,7 +41,8 @@ appId: host.exp.exponent
       - hideKeyboard
       - tapOn: "Create account"
 
-# The design-gated stub, still reachable from both "Sign in" affordances (V2 §7.1).
+# Sign in (Figma 309:175), reachable from both "Sign in" affordances. It draws the same Google
+# button as the account form, so the same branch covers whichever of the two the run landed on.
 - runFlow:
     when:
       visible: "Continue with Google"

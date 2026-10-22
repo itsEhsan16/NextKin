@@ -1,5 +1,8 @@
+import { useLocalSearchParams } from 'expo-router';
+
 import { ZeroResumeScreen } from '@/features/create';
 
 export default function ZeroResumeRoute() {
-  return <ZeroResumeScreen />;
+  const { jobId, role } = useLocalSearchParams<{ jobId?: string; role?: string }>();
+  return <ZeroResumeScreen jobId={jobId} role={role} />;
 }

@@ -50,29 +50,28 @@ describe('Create sheet (CREATE 01 / CREATE 02)', () => {
     await cleanup();
   });
 
-  it('renders the CREATE 01 rows with the Figma copy', async () => {
+  it('renders the three CREATE 01 rows of the one-flow decision (toreview §114)', async () => {
     await renderSheet();
 
-    expect(await screen.findByLabelText(/^ATS Check/)).toBeOnTheScreen();
+    expect(await screen.findByLabelText(/^Check my resume/)).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Create' })).toBeOnTheScreen();
-    expect(screen.getByText('New Resume')).toBeOnTheScreen();
+    expect(screen.getByText('Tailor to a job')).toBeOnTheScreen();
+    expect(screen.getByText('Add a job and get your resume made for it')).toBeOnTheScreen();
+    expect(screen.getByText('Score your resume against a job')).toBeOnTheScreen();
+    expect(screen.getByText('New resume')).toBeOnTheScreen();
     expect(screen.getByText('Start fresh or import your existing resume')).toBeOnTheScreen();
-    expect(screen.getByText('Tailor to a Job')).toBeOnTheScreen();
-    expect(screen.getByText('Adapt your base resume to a job description')).toBeOnTheScreen();
-    expect(screen.getByText('Cover Letter')).toBeOnTheScreen();
-    expect(screen.getByText('Score any resume against ATS rules')).toBeOnTheScreen();
+    expect(screen.queryByText('Cover Letter')).toBeNull();
   });
 
-  it('marks only the two AI actions with the AI badge', async () => {
+  it('marks only the AI action with the AI badge', async () => {
     await renderSheet();
-    await screen.findByLabelText(/^ATS Check/);
+    await screen.findByLabelText(/^Check my resume/);
 
     // The badge is folded into the row's own label rather than being a separate focus stop,
-    // so a screen reader announces it once: "Tailor to a Job, AI powered, button".
-    expect(screen.getByLabelText(/^Tailor to a Job, AI powered/)).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Cover Letter, AI powered/)).toBeOnTheScreen();
-    expect(screen.queryByLabelText(/^New Resume, AI powered/)).toBeNull();
-    expect(screen.queryByLabelText(/^ATS Check, AI powered/)).toBeNull();
+    // so a screen reader announces it once: "Tailor to a job, AI powered, button".
+    expect(screen.getByLabelText(/^Tailor to a job, AI powered/)).toBeOnTheScreen();
+    expect(screen.queryByLabelText(/^New resume, AI powered/)).toBeNull();
+    expect(screen.queryByLabelText(/^Check my resume, AI powered/)).toBeNull();
     // ...and never as a nested element of its own.
     expect(screen.queryAllByLabelText('AI powered')).toHaveLength(0);
   });
@@ -80,7 +79,7 @@ describe('Create sheet (CREATE 01 / CREATE 02)', () => {
   it('pushes to CREATE 02 in the same sheet and comes back via Back', async () => {
     await renderSheet();
 
-    fireEvent.press(await screen.findByLabelText(/^New Resume/));
+    fireEvent.press(await screen.findByLabelText(/^New resume/));
 
     expect(await screen.findByRole('header', { name: 'New resume' })).toBeOnTheScreen();
     expect(await screen.findByLabelText(/^Start from scratch/)).toBeOnTheScreen();
@@ -102,10 +101,10 @@ describe('Create sheet (CREATE 01 / CREATE 02)', () => {
   it('reports row selections to the host', async () => {
     await renderSheet();
 
-    fireEvent.press(await screen.findByLabelText(/^ATS Check/));
+    fireEvent.press(await screen.findByLabelText(/^Check my resume/));
     expect(onAction).toHaveBeenCalledWith('ats-check');
 
-    fireEvent.press(screen.getByLabelText(/^New Resume/));
+    fireEvent.press(screen.getByLabelText(/^New resume/));
     fireEvent.press(await screen.findByLabelText(/^Upload PDF or DOCX/));
     expect(onAction).toHaveBeenCalledWith('upload-resume');
   });

@@ -26,7 +26,7 @@ const renderScreen = () =>
     </SafeAreaProvider>,
   );
 
-/** Where a signed-out reader chooses (Figma 296:2982). */
+/** Where a signed-out reader chooses (Figma 307:4338). */
 describe('GetStartedScreen', () => {
   beforeEach(() => {
     storage.remove('prefs.session');

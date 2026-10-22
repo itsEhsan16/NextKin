@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import {
@@ -6,9 +5,8 @@ import {
   COVER_LETTER_TONE_LABEL,
   type CoverLetterTone,
 } from '@/data/models';
-import { hitSlop8 } from '@/lib';
+import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -19,73 +17,109 @@ export type CoverLetterTonePickerProps = {
   onChange: (tone: CoverLetterTone) => void;
 };
 
-/** Grouped-row metrics, matching ListRow so these rows line up with every other carded row. */
-const ROW_PADDING = 20;
-const CHECK = 14;
+// COVER 01 at 390 (644:53 → 644:74), in artboard units.
+const HEADING_TO_ROWS = 10 / 0.75; // 644:55
+const ROW_GAP = 8 / 0.75; // 644:61
+const ROW_PAD_X = 14 / 0.75;
+const ROW_PAD_Y = 10 / 0.75;
+const ROW_GAP_X = 12 / 0.75;
+const ROW_RADIUS = 13 / 0.75;
+const LINE_GAP = 1 / 0.75;
+/** The radio (644:57 / 644:63): a 20 disc, a 6 brand ring round a white 8 dot when picked. */
+const RADIO = 20 / 0.75;
+const RADIO_DOT = 8 / 0.75;
+const RADIO_RING = 1.5 / 0.75;
+
+function Radio({ on }: { on: boolean }) {
+  const { colors, radii } = useTheme();
+  const styles = useStyles();
+  return (
+    <View
+      style={[
+        styles.radio,
+        { borderRadius: radii.full },
+        on
+          ? { backgroundColor: colors.brand }
+          : [styles.ring, { backgroundColor: colors.surfaceCard, borderColor: colors.iconChevron }],
+      ]}
+    >
+      {on ? (
+        <View
+          style={[styles.dot, { borderRadius: radii.full, backgroundColor: colors.textOnBrand }]}
+        />
+      ) : null}
+    </View>
+  );
+}
 
 /**
- * The four §7.10 tones, one row each, with the model's own one-line hint under every label.
- *
- * Rows rather than a chip strip: this is a single-choice group, so it takes the radiogroup / radio
- * semantics `OptionSheetBody` uses for the same question — `FilterChip` reads as a button with a
- * selected state, which tells a screen reader nothing about the four being mutually exclusive.
- * The hints decide it too: a chip is one line of text, and dropping them would leave the reader
- * choosing a tone by its adjective alone.
+ * COVER 01's tone list (644:53–644:78): "Tone", then the four §7.10 tones as cards, each with
+ * the line that says what it sounds like. The picked card washes lavender with a filled radio;
+ * the rest stay white on the page's card shadow. The cards are radios in a radiogroup, so a
+ * screen reader hears that the four are mutually exclusive and gets each hint read with it.
  */
 export function CoverLetterTonePicker({ value, onChange }: CoverLetterTonePickerProps) {
-  const { colors, sizes, spacing, s } = useTheme();
+  const { colors, shadows, sizes } = useTheme();
   const styles = useStyles();
 
   return (
-    <View style={{ gap: spacing[3] }}>
-      <Text variant="groupLabel">Tone</Text>
-      <Card radius="card" padding={0}>
-        <View accessibilityRole="radiogroup" style={{ paddingVertical: spacing[2] }}>
-          {COVER_LETTER_TONES.map((tone) => {
-            const selected = tone === value;
-            return (
-              <Pressable
-                key={tone}
-                accessible
-                accessibilityRole="radio"
-                accessibilityLabel={COVER_LETTER_TONE_LABEL[tone]}
-                accessibilityHint={COVER_LETTER_TONE_HINT[tone]}
-                accessibilityState={{ selected }}
-                feedback="subtle"
-                haptic="selection"
-                hitSlop={hitSlop8}
-                onPress={() => onChange(tone)}
-                style={[
-                  styles.row,
-                  {
-                    minHeight: sizes.listRow,
-                    paddingHorizontal: s(ROW_PADDING),
-                    paddingVertical: spacing[2],
-                    gap: spacing[3],
-                  },
-                ]}
-              >
-                <View style={styles.labels}>
-                  <Text variant="rowTitle" numberOfLines={1}>
-                    {COVER_LETTER_TONE_LABEL[tone]}
-                  </Text>
-                  <Text variant="rowDescription" color="textSecondary">
-                    {COVER_LETTER_TONE_HINT[tone]}
-                  </Text>
-                </View>
-                {selected ? (
-                  <FontAwesome5 name="check" size={s(CHECK)} color={colors.textPrimary} solid />
-                ) : null}
-              </Pressable>
-            );
-          })}
-        </View>
-      </Card>
+    <View>
+      <Text variant="title" {...a11yHeader('Tone')}>
+        Tone
+      </Text>
+      <View accessibilityRole="radiogroup" style={styles.rows}>
+        {COVER_LETTER_TONES.map((tone) => {
+          const selected = tone === value;
+          const label = COVER_LETTER_TONE_LABEL[tone];
+          return (
+            <Pressable
+              key={tone}
+              accessible
+              accessibilityRole="radio"
+              accessibilityLabel={label}
+              accessibilityHint={COVER_LETTER_TONE_HINT[tone]}
+              accessibilityState={{ selected }}
+              feedback="subtle"
+              haptic="selection"
+              onPress={() => onChange(tone)}
+              style={[
+                styles.row,
+                { borderWidth: sizes.border },
+                selected
+                  ? { backgroundColor: colors.brandSurface, borderColor: colors.brandBorder }
+                  : [
+                      shadows.card,
+                      { backgroundColor: colors.surfaceCard, borderColor: colors.borderHairline },
+                    ],
+              ]}
+            >
+              <Radio on={selected} />
+              <View style={styles.text}>
+                <Text variant={selected ? 'label' : 'menuRow'}>{label}</Text>
+                <Text variant="caption" color="textSecondary">
+                  {COVER_LETTER_TONE_HINT[tone]}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const useStyles = scaledSheet((s) => ({
-  row: { flexDirection: 'row', alignItems: 'center' },
-  labels: { flex: 1, gap: s(2) },
+  rows: { marginTop: s(HEADING_TO_ROWS), gap: s(ROW_GAP) },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(ROW_GAP_X),
+    paddingHorizontal: s(ROW_PAD_X),
+    paddingVertical: s(ROW_PAD_Y),
+    borderRadius: s(ROW_RADIUS),
+  },
+  text: { flex: 1, gap: s(LINE_GAP) },
+  radio: { width: s(RADIO), height: s(RADIO), alignItems: 'center', justifyContent: 'center' },
+  ring: { borderWidth: s(RADIO_RING) },
+  dot: { width: s(RADIO_DOT), height: s(RADIO_DOT) },
 }));

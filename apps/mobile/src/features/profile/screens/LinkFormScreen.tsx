@@ -4,9 +4,11 @@ import { LINK_KIND_LABEL, type LinkKind } from '@/data/models';
 import { useProfile, useRemoveLink, useUpsertLink } from '@/data/queries';
 import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
 
+import { EntryTile, IdentityCard, tileFor } from '../components/cards';
 import { LinkFields } from '../components/forms/LinkFields';
 import { formError, ProfileFormShell } from '../components/forms/ProfileFormShell';
 import { useEntryForm } from '../components/forms/useEntryForm';
+import { linkTile, tidyUrl } from '../entryRows';
 import { useProfileActions } from '../hooks/useProfileActions';
 import { blankLink, linkDraft, linkEntry, validateLink } from '../profileForms';
 
@@ -14,14 +16,22 @@ export type LinkFormScreenProps = { id: string };
 
 const DELETE_MESSAGE = 'This link comes off your profile.';
 
-/** Built from the shipped vocabulary rather than a list of our own (V2 §7.3). */
+/**
+ * Built from the shipped vocabulary rather than a list of our own (V2 §7.3), each kind led by the
+ * tile the link cards wear (PROFILE 14 577:9777).
+ */
 const KIND_OPTIONS: readonly SheetOption<LinkKind>[] = (
   Object.keys(LINK_KIND_LABEL) as LinkKind[]
-).map((kind) => ({ key: kind, label: LINK_KIND_LABEL[kind] }));
+).map((kind) => ({
+  key: kind,
+  label: LINK_KIND_LABEL[kind],
+  leading: <EntryTile tile={tileFor(linkTile(kind))} size="sm" />,
+}));
 
 /**
- * Add or edit one profile link (V2 §7.3). The role form's page, with a kind picker, a name and
- * an address that is normalised to https on the way out — see `normaliseUrl`.
+ * Add or edit one profile link (V2 §7.3, PROFILE 13 577:9404 / 14 577:9716). The role form's
+ * page, with a kind picker, a name and an address that is normalised to https on the way out —
+ * see `normaliseUrl`.
  */
 export function LinkFormScreen({ id }: LinkFormScreenProps) {
   const actions = useProfileActions();
@@ -47,13 +57,25 @@ export function LinkFormScreen({ id }: LinkFormScreenProps) {
     const ready = form.submit();
     if (!ready) return;
     // A new link goes out with an empty id — the repo mints the real one (see profileForms).
-    save.mutate(linkEntry(form.isNew ? '' : id, ready), { onSuccess: actions.goBack });
+    save.mutate(linkEntry(form.isNew ? '' : id, ready), {
+      onSuccess: () => actions.backWith('Link saved'),
+    });
   };
 
   return (
     <ProfileFormShell
       title={form.isNew ? 'Add link' : 'Edit link'}
       status={form.status}
+      isNew={form.isNew}
+      identity={
+        entry ? (
+          <IdentityCard
+            tile={tileFor(linkTile(entry.kind))}
+            title={entry.label}
+            lines={[tidyUrl(entry.url)]}
+          />
+        ) : undefined
+      }
       listLabel="links"
       dirty={form.dirty}
       valid={form.valid}
@@ -69,7 +91,8 @@ export function LinkFormScreen({ id }: LinkFormScreenProps) {
               label: 'Delete link',
               message: DELETE_MESSAGE,
               busy: remove.isPending,
-              onConfirm: () => remove.mutate(id, { onSuccess: actions.goBack }),
+              onConfirm: () =>
+                remove.mutate(id, { onSuccess: () => actions.backWith('Link removed') }),
             }
       }
       sheets={

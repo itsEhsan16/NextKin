@@ -45,7 +45,7 @@ const OFF_CURVE: readonly TypographyRole[] = [
 
 const roles = Object.entries(typography) as [TypographyRole, (typeof typography)[TypographyRole]][];
 const drawn390 = roles.filter(([, role]) => role.drawnAt390);
-// Drawn once at 422.66 (Figma 290:955) and projected onto both anchors. Like `drawn390` these
+// Drawn once at 422.66 (Figma 307:4152) and projected onto both anchors. Like `drawn390` these
 // sit on the geometry line rather than the Mobile 2 curve, but they are counted separately so
 // the Home re-measure guard below still counts only Home.
 const singleBoard = roles.filter(([, role]) => role.singleBoard);
@@ -55,10 +55,12 @@ const offCurve = projected.filter(([name]) => OFF_CURVE.includes(name));
 
 describe('the Mobile 2 type ramp', () => {
   it('measured enough roles to be worth checking', () => {
-    expect(onCurve.length).toBeGreaterThan(25);
+    // Since the reading roles moved onto the newer boards (toreview.md 54) the curve judges the
+    // display sizes and the small box-bound chrome — still well over a dozen measured roles.
+    expect(onCurve.length).toBeGreaterThanOrEqual(15);
   });
 
-  it.each(drawn390)('role "%s" carries the 390 that Home Screen 210:262 draws', (_name, role) => {
+  it.each(drawn390)('role "%s" carries the 390 its board draws', (_name, role) => {
     // These invert the rest of the file: the 390 number is the measurement and the 520 one is
     // derived, so the only thing to check is that the pair never drifted off the geometry line.
     // Nothing here is a judgement call, which is why they need no exemption list.
@@ -114,9 +116,9 @@ describe('the Mobile 2 type ramp', () => {
     for (const [, role] of readable) expect(role.at390.fontSize).toBeGreaterThanOrEqual(9);
   });
 
-  it('gives the nav label the room the bigger pill bought', () => {
-    // The whole reason the pill grew. 13.2 against “Resumes” and “Profile”, which collide at 16.1.
-    expect(typography.tabLabel.at390.fontSize).toBe(13.2);
+  it('draws the nav label at the bar’s own size', () => {
+    // 429:7586 draws it 7.256 on a 299 pill; the app's pill is NAV_BOOST (1.1) wider.
+    expect(typography.tabLabel.at390.fontSize).toBe(7.98);
   });
 });
 
@@ -154,14 +156,17 @@ const WORD_BUDGET: readonly {
 ];
 
 describe('Home tile rows fit their cells', () => {
-  it.each(WORD_BUDGET)('"$widest" fits its cell at every phone width', ({ role, cell, perPoint }) => {
-    // The narrowest is the binding case for a clamped role, since its cell keeps shrinking while
-    // the type holds. A cell-bound role keeps the same slack at all three.
-    for (const width of [320, 360, 390]) {
-      const drawn = (themeFor('light', width).typography[role].fontSize ?? 0) * perPoint;
-      expect(drawn).toBeLessThan((cell * Math.min(width, 390)) / 390);
-    }
-  });
+  it.each(WORD_BUDGET)(
+    '"$widest" fits its cell at every phone width',
+    ({ role, cell, perPoint }) => {
+      // The narrowest is the binding case for a clamped role, since its cell keeps shrinking while
+      // the type holds. A cell-bound role keeps the same slack at all three.
+      for (const width of [320, 360, 390]) {
+        const drawn = (themeFor('light', width).typography[role].fontSize ?? 0) * perPoint;
+        expect(drawn).toBeLessThan((cell * Math.min(width, 390)) / 390);
+      }
+    },
+  );
 
   it('keeps the tile labels worth reading', () => {
     // The point of wrapping them. Mobile 2 put these below 10pt, which is the size the whole
@@ -189,6 +194,9 @@ describe('Home tile rows fit their cells', () => {
       'homeCheckLabel',
       'homeResumeMeta',
       'homeResumeTitle',
+      // The letters in the notification digest's 26pt company tiles (Figma 619:23).
+      'notifStackInitial',
+      'notifStackMore',
       'ringCaption',
       'shortcutLabel',
       'tabLabel',
@@ -381,7 +389,9 @@ describe('text fits the column its pinned siblings leave behind', () => {
     for (const width of WIDTHS) {
       const theme = themeFor('light', width);
       const inner = theme.s(288) - 2 * theme.s(1) - 2 * theme.spacing[4];
-      expect(textWidth(theme.typography.homeCardRole, 'Senior Product Designer')).toBeLessThan(inner);
+      expect(textWidth(theme.typography.homeCardRole, 'Senior Product Designer')).toBeLessThan(
+        inner,
+      );
     }
   });
 });

@@ -17,6 +17,7 @@ import {
   type SavedJobsSort,
 } from '@/data/models';
 import { formatSalaryBand } from '@/lib';
+import type { ToastTone } from '@/ui/Toast';
 
 /** The three tabs of the Jobs screen (Figma JOBS 01–03). */
 export type JobsSegment = 'discover' | 'saved' | 'applied';
@@ -58,6 +59,7 @@ type JobsState = {
   locationOpen: boolean;
   /** Transient confirmation for share, which has no screen and no visible result of its own. */
   toast: string | null;
+  toastTone: ToastTone;
 
   setSegment: (segment: JobsSegment) => void;
   setQuery: (segment: JobsSegment, value: string) => void;
@@ -73,7 +75,8 @@ type JobsState = {
   openLocation: () => void;
   closeLocation: () => void;
   setLocation: (location: string) => void;
-  showToast: (message: string) => void;
+  /** `tone` defaults to success; a failure passes `error` so it never wears the check. */
+  showToast: (message: string, tone?: ToastTone) => void;
   hideToast: () => void;
 
   openFilters: () => void;
@@ -134,6 +137,7 @@ export const useJobsStore = create<JobsState>((set) => {
     sortOpen: false,
     locationOpen: false,
     toast: null,
+    toastTone: 'success',
 
     setSegment: (segment) => set({ segment }),
     setQuery: (segment, value) =>
@@ -147,7 +151,7 @@ export const useJobsStore = create<JobsState>((set) => {
     openLocation: () => set({ locationOpen: true }),
     closeLocation: () => set({ locationOpen: false }),
     setLocation: (location) => set({ location }),
-    showToast: (toast) => set({ toast }),
+    showToast: (toast, toastTone = 'success') => set({ toast, toastTone }),
     hideToast: () => set({ toast: null }),
     setAppliedStatus: (appliedStatus) => set({ appliedStatus }),
     // The chip and the removable "Remote" pill are the same filter, so they can never disagree.

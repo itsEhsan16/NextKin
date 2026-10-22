@@ -1,5 +1,5 @@
 /**
- * The onboarding and auth artboards (Figma 290:955) are drawn at 422.66 — a third width, neither
+ * The onboarding and auth artboards (Figma 307:4152) are drawn at 422.66 — a third width, neither
  * the 520 "Mobile App" board every other screen is measured on nor the 390 one projected from it.
  * Those sections are already phone-sized, so their numbers are ~1.23x smaller than the same
  * element drawn at 520; reading them as 520 numbers would render the whole flow a quarter small.

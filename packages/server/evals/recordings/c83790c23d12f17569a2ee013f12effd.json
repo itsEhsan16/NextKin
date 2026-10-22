@@ -1,0 +1,25 @@
+{
+  "key": "c83790c23d12f17569a2ee013f12effd",
+  "recordedAt": "2026-10-18T18:43:33.137Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Why is my ATS score 64?\n</"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": true,
+      "topic": "ats"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 262,
+      "outputTokens": 57,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 673
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

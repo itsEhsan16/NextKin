@@ -1,7 +1,7 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { FlashList } from '@shopify/flash-list';
 import { useCallback, useMemo } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import Animated, { FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -13,6 +13,7 @@ import {
   type Notification,
 } from '@/data/models';
 import {
+  queryPhase,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotificationPrefs,
@@ -20,17 +21,22 @@ import {
   useRemoveNotification,
   useSetNotificationPrefs,
 } from '@/data/queries';
-import { a11yButton, a11yHeader, hitSlop8, pluralize } from '@/lib';
+import { a11yButton, hitSlop8, pluralize, useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
+import { Screen } from '@/ui/Screen';
+import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Sheet } from '@/ui/Sheet';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EdgeFade } from '@/ui/EdgeFade';
+import { closeOpenSwipeRow } from '@/ui/SwipeableRow';
 import { Text } from '@/ui/Text';
+import { layoutTransition } from '@/ui/motion';
 
-import { NotificationRow } from '../components/NotificationRow';
+import { CARD_SPACING, NotificationRow } from '../components/NotificationRow';
 import { RowMenuSheetBody } from '../components/RowMenuSheetBody';
 import { NotificationsCaughtUp, NotificationsFirstUse } from '../components/NotificationsStates';
 import { useNotificationsActions } from '../hooks/useNotificationsActions';
@@ -40,15 +46,36 @@ type FeedItem = AgedFeedItem<Notification>;
 
 const feedKey = (item: FeedItem) => (item.type === 'header' ? `header-${item.group}` : item.row.id);
 
+// The redesigned feed's rhythm at 390 (Figma 619:2), in artboard units.
+/** Unread meta → filter pills (619:13). */
+const PILLS_TOP = 14 / 0.75;
+/** The pills are drawn 16 × 8 at 390 (619:15), roomier than the Jobs select chips. */
+const PILL_PAD_X = 16 / 0.75;
+const PILL_PAD_Y = 8 / 0.75;
+/** Group label → its first card (619:38). */
+const LABEL_BOTTOM = 10 / 0.75;
+/** Last card → the next label: the card's own spacing plus one more 10 (619:73 + 619:74). */
+const LABEL_TOP = 10 / 0.75;
+/** Skeleton card height — the board's two-line card (619:99 is 89.5 at 390). */
+const SKELETON_CARD = 90 / 0.75;
+
 /**
- * NOTIF 01–03 + 05/06 — the feed. Chrome (back/title/gear, unread meta, filter pills) is
- * fixed; the list scrolls under it with TODAY / THIS WEEK / EARLIER headers pinned via
- * stickyHeaderIndices. The pinned-only hairline the note sketches (1:2497) is drawn on every
- * header — FlashList exposes no "currently pinned" signal to key it off.
+ * NOTIF 01–03 + 05/06 — the feed, as NOTIF 01's redesign draws it (Figma 619:2): cards on the
+ * page rather than full-bleed rows. Chrome (back/title/gear, unread meta, filter pills) is fixed;
+ * the list scrolls under it with TODAY / THIS WEEK / EARLIER labels pinned via
+ * stickyHeaderIndices. Scrolling closes a swiped-open card.
+ *
+ * The back row is the shared `ScreenHeader`, with the gear in its trailing slot, so the feed's
+ * title sits exactly where every other pushed screen's does. `padded={false}` because the
+ * list's group bands and hairlines run edge to edge; the gutter is added back per row.
  */
 export function NotificationsScreen() {
-  const { colors, sizes, spacing, s } = useTheme();
+  const { colors, motion, sizes, spacing, s } = useTheme();
   const styles = useStyles();
+  const reduced = useReducedMotion();
+  // "Mark all read" retires the unread row: it fades, and the pills and the feed under it glide up
+  // into its place instead of jumping there.
+  const layout = layoutTransition(reduced);
   const insets = useSafeAreaInsets();
   const actions = useNotificationsActions();
 
@@ -60,7 +87,8 @@ export function NotificationsScreen() {
 
   const notifications = useNotifications();
   const prefs = useNotificationPrefs();
-  const markRead = useMarkNotificationRead();
+  // `mutate` is stable; depending on the mutation object rebuilt `renderItem` every render.
+  const { mutate: markRead } = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const remove = useRemoveNotification();
   const setPrefs = useSetNotificationPrefs();
@@ -78,9 +106,11 @@ export function NotificationsScreen() {
     [filter, list],
   );
 
+  const firstGroup = items[0]?.type === 'header' ? items[0].group : undefined;
+
   const handleMarkRead = useCallback(
     (notification: Notification) => {
-      if (!notification.read) markRead.mutate(notification.id);
+      if (!notification.read) markRead(notification.id);
     },
     [markRead],
   );
@@ -89,16 +119,27 @@ export function NotificationsScreen() {
     ({ item }: { item: FeedItem }) => {
       if (item.type === 'header') {
         return (
-          <View style={[styles.groupHeader, { backgroundColor: colors.surfacePage }]}>
-            <Text
-              variant="overline"
-              color="textSecondary"
-              accessibilityRole="header"
-              style={{ paddingHorizontal: spacing.gutter }}
+          <View>
+            <View
+              style={{
+                backgroundColor: colors.surfacePage,
+                paddingHorizontal: spacing.gutter,
+                // The list has no top padding of its own: FlashList draws a pinned header's copy at
+                // the list's top edge, so padding outside the item put a second "TODAY" 18pt above
+                // the real one (device pass, 2026-10-03). The first label carries that gap itself.
+                paddingTop: item.group === firstGroup ? spacing[6] : s(LABEL_TOP),
+              }}
             >
-              {NOTIFICATION_GROUP_LABEL[item.group]}
-            </Text>
-            <View style={[styles.pinnedHairline, { backgroundColor: colors.divider }]} />
+              <Text variant="overline" color="textSecondary" accessibilityRole="header">
+                {NOTIFICATION_GROUP_LABEL[item.group]}
+              </Text>
+            </View>
+            {/* The label → card gap is a fade rather than more solid band: at rest it lies over
+                bare page, and once the label is pinned the cards dissolve under it instead of
+                being sliced off at its bottom edge. */}
+            <View style={{ height: s(LABEL_BOTTOM) }}>
+              <EdgeFade edge="top" heightAt390={LABEL_BOTTOM * 0.75} />
+            </View>
           </View>
         );
       }
@@ -111,28 +152,36 @@ export function NotificationsScreen() {
         />
       );
     },
-    [actions.openMenu, actions.openNotification, colors, handleMarkRead, spacing.gutter, styles],
+    [actions.openMenu, actions.openNotification, colors, firstGroup, handleMarkRead, s, spacing],
   );
 
-  const status = notifications.isPending ? 'pending' : notifications.isError ? 'error' : 'success';
+  const status = queryPhase(notifications);
   const firstUse = status === 'success' && list.length === 0;
   const caughtUp = status === 'success' && list.length > 0 && items.length === 0;
+  const showMeta = !firstUse && !caughtUp && status === 'success' && unreadCount > 0;
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.surfacePage, paddingTop: insets.top }]}>
-      <View
-        style={[styles.headerRow, { paddingHorizontal: spacing.gutter, paddingTop: spacing[2] }]}
-      >
-        <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
-        <Text {...a11yHeader()} variant="headline" align="center" style={styles.headerTitle}>
-          Notifications
-        </Text>
-        <IconButton icon="cog" label="Notification preferences" onPress={actions.openPreferences} />
-      </View>
-
-      {!firstUse && !caughtUp && status === 'success' && unreadCount > 0 ? (
-        <View
-          style={[styles.metaRow, { paddingHorizontal: spacing.gutter, marginTop: spacing[3] }]}
+    <Screen
+      padded={false}
+      headerStyle={{ paddingHorizontal: spacing.gutter }}
+      header={
+        <ScreenHeader
+          title="Notifications"
+          onBack={actions.goBack}
+          trailing={
+            <IconButton
+              icon="cog"
+              label="Notification preferences"
+              onPress={actions.openPreferences}
+            />
+          }
+        />
+      }
+    >
+      {showMeta ? (
+        <Animated.View
+          exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
+          style={[styles.metaRow, { paddingHorizontal: spacing.gutter, marginTop: spacing[6] }]}
         >
           <Text variant="caption" color="textSecondary">
             {pluralize(unreadCount, 'unread', 'unread')}
@@ -144,16 +193,24 @@ export function NotificationsScreen() {
             hitSlop={hitSlop8}
             onPress={() => markAllRead.mutate(undefined)}
           >
-            <Text variant="captionSemiBold">Mark all read</Text>
+            <Text variant="captionSemiBold" color="brand" style={styles.link}>
+              Mark all read
+            </Text>
           </Pressable>
-        </View>
+        </Animated.View>
       ) : null}
 
       {!firstUse ? (
-        <View
+        <Animated.View
+          layout={layout}
           style={[
             styles.pills,
-            { paddingHorizontal: spacing.gutter, gap: spacing[2], marginTop: spacing[3] },
+            {
+              paddingHorizontal: spacing.gutter,
+              gap: spacing[2],
+              // Without the meta row the pills take its place under the header.
+              marginTop: showMeta ? s(PILLS_TOP) : spacing[6],
+            },
           ]}
         >
           {NOTIFICATION_FILTERS.map((entry) => (
@@ -163,67 +220,54 @@ export function NotificationsScreen() {
               variant="select"
               selected={filter === entry.key}
               onPress={() => setFilter(entry.key)}
+              style={{ paddingHorizontal: s(PILL_PAD_X), paddingVertical: s(PILL_PAD_Y) }}
             />
           ))}
-        </View>
+        </Animated.View>
       ) : null}
 
-      {status === 'pending' ? (
-        <View style={{ padding: spacing.gutter, gap: spacing[3] }}>
-          {[0, 1, 2, 3, 4].map((index) => (
-            <Skeleton key={index} height={s(78)} radius="card" />
-          ))}
-        </View>
-      ) : status === 'error' ? (
-        <StateView
-          tone="danger"
-          icon="exclamation-triangle"
-          title="Couldn't load notifications"
-          message="Check your connection and try again."
-          actionLabel="Try again"
-          onAction={() => void notifications.refetch()}
-          style={{ marginTop: spacing[10] }}
-        />
-      ) : firstUse ? (
-        <ScrollView
-          style={styles.root}
-          contentContainerStyle={{
-            paddingHorizontal: spacing.gutter,
-            paddingBottom: insets.bottom + spacing[6],
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          <NotificationsFirstUse onPreferences={actions.openPreferences} />
-        </ScrollView>
-      ) : caughtUp ? (
-        <NotificationsCaughtUp onExplore={actions.exploreMatches} />
-      ) : (
-        <FlashList
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={feedKey}
-          getItemType={(item) => item.type}
-          stickyHeaderIndices={stickyIndices}
-          contentContainerStyle={{
-            paddingTop: spacing[2],
-            paddingBottom: insets.bottom + spacing[8],
-          }}
-          showsVerticalScrollIndicator={false}
-          ListFooterComponent={
-            <Pressable
-              {...a11yButton('Manage notification types')}
-              feedback="subtle"
-              haptic="selection"
-              hitSlop={hitSlop8}
-              onPress={actions.openPreferences}
-              style={[styles.manage, { padding: spacing.gutter, gap: spacing[1] + 2 }]}
-            >
-              <Text variant="segmentActive">Manage notification types</Text>
-              <FontAwesome5 name="chevron-right" size={s(10)} color={colors.textPrimary} solid />
-            </Pressable>
-          }
-        />
-      )}
+      <Animated.View layout={layout} style={styles.root}>
+        {status === 'pending' ? (
+          <View style={{ padding: spacing.gutter, gap: s(CARD_SPACING) }}>
+            {[0, 1, 2, 3, 4].map((index) => (
+              <Skeleton key={index} height={s(SKELETON_CARD)} radius="card" />
+            ))}
+          </View>
+        ) : status === 'error' ? (
+          <StateView
+            tone="danger"
+            icon="exclamation-triangle"
+            title="Couldn't load notifications"
+            message="Check your connection and try again."
+            actionLabel="Try again"
+            onAction={() => void notifications.refetch()}
+          />
+        ) : firstUse ? (
+          <ScrollView
+            style={styles.root}
+            contentContainerStyle={{
+              paddingHorizontal: spacing.gutter,
+              paddingBottom: insets.bottom + spacing[8],
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+            <NotificationsFirstUse onPreferences={actions.openPreferences} />
+          </ScrollView>
+        ) : caughtUp ? (
+          <NotificationsCaughtUp onExplore={actions.exploreMatches} />
+        ) : (
+          <FlashList
+            data={items}
+            renderItem={renderItem}
+            keyExtractor={feedKey}
+            getItemType={(item) => item.type}
+            stickyHeaderIndices={stickyIndices}
+            contentContainerStyle={{ paddingBottom: insets.bottom + spacing[8] }}
+            showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={closeOpenSwipeRow}
+          />
+        )}
+      </Animated.View>
 
       {menuNotification ? (
         <Sheet
@@ -255,23 +299,13 @@ export function NotificationsScreen() {
           />
         </Sheet>
       ) : null}
-    </View>
+    </Screen>
   );
 }
 
 const useStyles = scaledSheet((s) => ({
   root: { flex: 1 },
-  headerRow: { flexDirection: 'row', alignItems: 'center' },
-  headerTitle: { flex: 1 },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  pills: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: s(8) },
-  groupHeader: { height: s(40), justifyContent: 'center' },
-  pinnedHairline: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: StyleSheet.hairlineWidth,
-  },
-  manage: { flexDirection: 'row', alignItems: 'center' },
+  pills: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
+  link: { textDecorationLine: 'underline' },
 }));

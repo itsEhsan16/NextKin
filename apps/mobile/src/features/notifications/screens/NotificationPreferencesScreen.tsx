@@ -120,7 +120,6 @@ export function NotificationPreferencesScreen() {
           message="Check your connection and try again."
           actionLabel="Try again"
           onAction={() => void prefs.refetch()}
-          style={{ marginTop: spacing[8] }}
         />
       ) : (
         <>

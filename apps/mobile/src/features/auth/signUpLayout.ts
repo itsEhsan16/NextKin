@@ -1,7 +1,7 @@
 import { AUTH_FRAME_HEIGHT } from './board';
 
 /**
- * Every measurement on Figma 296:3032, as drawn on the 422.66 board — and, taken together, a
+ * Every measurement on Figma 307:4386, as drawn on the 422.66 board — and, taken together, a
  * check on itself.
  *
  * The artboard budgets a whole phone screen, so its vertical pieces have to account for all 895

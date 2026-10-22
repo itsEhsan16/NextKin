@@ -44,7 +44,7 @@ const QUOTA_Q = 'What do I get on the free plan?';
 const EXPORT_Q = 'Which formats can I download?';
 
 /** One mount per file — see the test-infra note in the plan's Phase 3 status. */
-describe('HelpScreen (V2 §7.14 — no artboard)', () => {
+describe('HelpScreen (SUPPORT 01 577:6129)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -76,8 +76,12 @@ describe('HelpScreen (V2 §7.14 — no artboard)', () => {
     await settle();
 
     expect(screen.getByRole('header', { name: 'Help & FAQ' })).toBeOnTheScreen();
-    expect(screen.getByText(`${faqFixture.length} answers`)).toBeOnTheScreen();
+    // The hero's lede says how much help there is (SUPPORT 01 577:6156).
+    expect(screen.getByText(`${faqFixture.length} answers across five topics.`)).toBeOnTheScreen();
     expect(screen.getByText(START_Q)).toBeOnTheScreen();
+    // The board opens on the first question; its answer is on screen before anything is pressed.
+    const startAnswer = faqFixture.find((item) => item.question === START_Q)?.answer ?? '';
+    expect(screen.getByText(startAnswer, { includeHiddenElements: true })).toBeOnTheScreen();
     expect(screen.getByText(SCORE_Q)).toBeOnTheScreen();
     expect(screen.getByText(QUOTA_Q)).toBeOnTheScreen();
 
@@ -93,8 +97,8 @@ describe('HelpScreen (V2 §7.14 — no artboard)', () => {
     await act(async () => fireEvent.press(screen.getByLabelText('Message support')));
     expect(mockPush).toHaveBeenCalledWith('/support/contact');
 
-    // — A topic narrows the list —
-    await act(async () => fireEvent.press(screen.getByLabelText('Billing')));
+    // — A topic narrows the list. By role: the Billing group's heading carries the same name —
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Billing' })));
     await settle();
     expect(screen.getByText(`2 of ${faqFixture.length} answers`)).toBeOnTheScreen();
     expect(screen.getByText(QUOTA_Q)).toBeOnTheScreen();
@@ -128,7 +132,7 @@ describe('HelpScreen (V2 §7.14 — no artboard)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText('Clear search')));
     await settle();
-    expect(screen.getByText(`${faqFixture.length} answers`)).toBeOnTheScreen();
+    expect(screen.getByText(`${faqFixture.length} answers across five topics.`)).toBeOnTheScreen();
     expect(screen.getByText(LINKEDIN_Q)).toBeOnTheScreen();
 
     // — §7.8: no copy may claim a result in a named third-party ATS. Swept over what is rendered

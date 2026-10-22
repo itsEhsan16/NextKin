@@ -66,7 +66,7 @@ export function NewResumeScreen() {
       edges={['top', 'bottom']}
       header={<ScreenHeader title="New resume" onBack={goBack} />}
       headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
       footer={
         <StickyActionBar
           note={createResume.isError ? CREATE_FAILED : undefined}

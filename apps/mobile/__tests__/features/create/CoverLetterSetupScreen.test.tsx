@@ -6,21 +6,29 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { resumesFixture, subscriptionFixture, useMockModeStore } from '@/data/mock';
 import type { Generation, Resume, Subscription } from '@/data/models';
 import { createQueryClient, qk } from '@/data/queries';
-import { resetMockRepos } from '@/data/repos';
+import { mockStore, resetMockRepos } from '@/data/repos';
 import { CoverLetterSetupScreen } from '@/features/create';
-import { coverLetterSources, pickCoverLetterSource } from '@/features/create/coverLetterSetup';
+import {
+  coverLetterQuotaNote,
+  coverLetterSources,
+  coverResumeMeta,
+  pickCoverLetterSource,
+} from '@/features/create/coverLetterSetup';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
+const mockNavigate = jest.fn();
+const mockSetParams = jest.fn();
 const clients: QueryClient[] = [];
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: mockPush,
-    navigate: jest.fn(),
+    navigate: mockNavigate,
     back: mockBack,
     replace: mockReplace,
+    setParams: mockSetParams,
   }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
@@ -36,34 +44,62 @@ const freshSubscription: Subscription = {
   usage: { ...subscriptionFixture.usage, coverLettersUsed: 0, coverLettersLimit: 1 },
 };
 
-async function renderSetup(seed?: (client: QueryClient) => void) {
+async function renderSetup(resumeId?: string, seed?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
   clients.push(queryClient);
   seed?.(queryClient);
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
       <QueryClientProvider client={queryClient}>
-        <CoverLetterSetupScreen />
+        <CoverLetterSetupScreen resumeId={resumeId} />
       </QueryClientProvider>
     </SafeAreaProvider>,
   );
   return queryClient;
 }
 
+const fresh = (client: QueryClient) =>
+  client.setQueryData(qk.user.subscription(), freshSubscription);
+
 /** Mock repos resolve on (fake) timers: lists ≤ 900ms, starting a run a little longer. */
 const settle = (ms: number) => act(() => jest.advanceTimersByTimeAsync(ms));
+/**
+ * The job is read once the resume names it, and that fetch starts in an effect React only flushes
+ * when the act() scope closes — so the page lands after two scopes, not one long one.
+ */
+const settleChained = async () => {
+  await settle(NORMAL_MS);
+  await settle(NORMAL_MS);
+};
 const NORMAL_MS = 1000;
 const START_MS = 2000;
+
+/** The sheet's rows live in a modal layer the default query hides. */
+const hidden = { includeHiddenElements: true } as const;
+const press = (label: string) =>
+  act(async () => void fireEvent.press(screen.getByLabelText(label, hidden)));
+
+describe('cover letter setup copy (COVER 01)', () => {
+  it('words the quota and the resume row the way the board does', () => {
+    expect(coverLetterQuotaNote(0, 1)).toBe('1 of 1 cover letter left this month');
+
+    // Scores come from the store, where the engines computed them (C-10).
+    const stripe = mockStore.state.resumes.find((resume) => resume.id === 'res_2');
+    const base = resumesFixture.find((resume) => resume.id === 'res_base');
+    expect(stripe && coverResumeMeta(stripe)).toBe(
+      `Tailored for this job · ATS score ${stripe?.atsScore}`,
+    );
+    // An unscored resume says nothing about a score rather than showing a zero.
+    expect(base && coverResumeMeta({ ...base, atsScore: undefined })).not.toMatch(/ATS score/);
+  });
+});
 
 describe('coverLetterSources (V2 §7.10)', () => {
   it('keeps only ready resumes that carry a linked job', () => {
     const sources = coverLetterSources(resumesFixture);
 
-    // A cover letter is not a source for another cover letter.
     expect(sources.some((resume) => resume.docType === 'cover_letter')).toBe(false);
-    // The base resume has no linked job, so a letter written from it would address nobody.
     expect(sources.some((resume) => resume.id === 'res_base')).toBe(false);
-    // A run still in flight has no finished version to write from.
     expect(sources.some((resume) => resume.status !== 'ready')).toBe(false);
     expect(sources.map((resume) => resume.id)).toContain('res_1');
   });
@@ -72,19 +108,16 @@ describe('coverLetterSources (V2 §7.10)', () => {
     const sources = coverLetterSources(resumesFixture);
 
     expect(pickCoverLetterSource(sources, 'res_2')?.id).toBe('res_2');
-    // An id that no longer qualifies is not honoured — the list's own order decides instead.
     expect(pickCoverLetterSource(sources, 'res_base')?.id).toBe(sources[0]?.id);
     expect(pickCoverLetterSource([], 'res_2')).toBeUndefined();
   });
 });
 
-describe('CoverLetterSetupScreen (V2 §7.10 — no artboard)', () => {
+describe('CoverLetterSetupScreen (COVER 01, 644:2)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
-    mockPush.mockClear();
-    mockReplace.mockClear();
-    mockBack.mockClear();
+    [mockPush, mockReplace, mockBack, mockNavigate, mockSetParams].forEach((fn) => fn.mockClear());
   });
 
   afterEach(async () => {
@@ -98,25 +131,21 @@ describe('CoverLetterSetupScreen (V2 §7.10 — no artboard)', () => {
   });
 
   it('shows the spent quota and the upgrade route the fixture account is on', async () => {
-    await renderSetup();
+    await renderSetup('res_2');
     expect(screen.getByLabelText('Loading cover letter setup')).toBeOnTheScreen();
-    // The bar is pinned while loading too — it owns the bottom safe-area inset, so the viewport
-    // must not change size when the queries land.
-    expect(screen.getByLabelText('Write cover letter')).toBeDisabled();
+    // The bar is pinned while loading too — it owns the bottom safe-area inset.
+    expect(screen.getByLabelText('Write my cover letter')).toBeDisabled();
 
-    await settle(NORMAL_MS);
+    await settleChained();
 
-    expect(screen.getByRole('header', { name: 'Write a cover letter' })).toBeOnTheScreen();
-
-    // §13.5: the cap is on screen before the work, not after it is refused — and it is said ONCE.
-    // The banner owns that line; repeating it on the bar would announce it twice.
-    expect(screen.getAllByText('0 of 1 cover letter left this month')).toHaveLength(1);
+    expect(screen.getByRole('header', { name: 'Cover letter for this job' })).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 1 of 3, Set up')).toBeOnTheScreen();
     expect(
       screen.getByText("You've used this month's 1 cover letter. Pro raises the monthly cap."),
     ).toBeOnTheScreen();
 
-    // The upsell REPLACES the action rather than interrupting the page with an alert.
-    expect(screen.queryByLabelText('Write cover letter')).toBeNull();
+    // §13.5: the upsell REPLACES the action rather than interrupting the page with an alert.
+    expect(screen.queryByLabelText('Write my cover letter')).toBeNull();
     await act(async () => fireEvent.press(screen.getByLabelText('See Pro plans')));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/upgrade',
@@ -124,33 +153,36 @@ describe('CoverLetterSetupScreen (V2 §7.10 — no artboard)', () => {
     });
   });
 
-  it('writes a letter from the chosen resume in the chosen tone', async () => {
-    const client = await renderSetup((queryClient) =>
-      queryClient.setQueryData(qk.user.subscription(), freshSubscription),
-    );
-    await settle(NORMAL_MS);
+  it('writes the letter for the job the resume was tailored to, in the chosen tone', async () => {
+    const client = await renderSetup('res_2', fresh);
+    await settleChained();
 
-    // res_1 is the most recently updated tailored resume with a linked job.
-    expect(screen.getByLabelText('Written from UX Designer Resume')).toBeOnTheScreen();
-    expect(screen.getByText('Tailored · Google · Lead UX Designer')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('Job: Senior Product Designer, Stripe · Bengaluru · Remote'),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText(
+        `Resume: Stripe — Senior PD, Tailored for this job · ATS score ${mockStore.state.atsScores.res_2?.total}`,
+      ),
+    ).toBeOnTheScreen();
+    expect(screen.getByText('1 of 1 cover letter left this month')).toBeOnTheScreen();
 
-    // Every tone carries the model's own §7.10 hint; Professional is the default.
+    // Professional is the default; every tone card says what it sounds like.
+    expect(screen.getByRole('radio', { name: 'Professional' })).toBeSelected();
     expect(screen.getByText('Measured and formal — the safe default')).toBeOnTheScreen();
     expect(screen.getByText('Leads with results and claims them')).toBeOnTheScreen();
-    expect(screen.getByText('Warmer, closer to how you talk')).toBeOnTheScreen();
-    expect(screen.getByText('Three short paragraphs, nothing spare')).toBeOnTheScreen();
-    expect(screen.getByRole('radio', { name: 'Professional' })).toBeSelected();
-
     await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'Confident' })));
     expect(screen.getByRole('radio', { name: 'Confident' })).toBeSelected();
+    expect(screen.getByRole('radio', { name: 'Professional' })).not.toBeSelected();
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Write cover letter')));
+    await act(async () => fireEvent.press(screen.getByLabelText('Write my cover letter')));
     await settle(START_MS);
 
     const started = client.getQueryData<Generation>(qk.generations.active());
     expect(started?.kind).toBe('cover_letter');
     expect(started?.tone).toBe('confident');
-    expect(started?.jobId).toBe('job_google');
+    expect(started?.jobId).toBe('job_stripe');
+    expect(started?.sourceResumeId).toBe('res_2');
 
     // The intake is replaced by the run it started, and only once the run exists.
     expect(mockReplace).toHaveBeenCalledWith({
@@ -159,19 +191,57 @@ describe('CoverLetterSetupScreen (V2 §7.10 — no artboard)', () => {
     });
   });
 
-  it('sends the reader to tailoring when no resume has a linked job', async () => {
+  it('writes from a resume tailored for no job, without a job row', async () => {
+    const client = await renderSetup('res_base', fresh);
+    await settle(NORMAL_MS);
+
+    expect(screen.getByRole('header', { name: 'Cover letter' })).toBeOnTheScreen();
+    expect(screen.queryByLabelText(/^Job: /)).toBeNull();
+    expect(screen.getByLabelText(/^Resume: Product Designer, Base resume/)).toBeOnTheScreen();
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Write my cover letter')));
+    await settle(START_MS);
+
+    const started = client.getQueryData<Generation>(qk.generations.active());
+    expect(started?.sourceResumeId).toBe('res_base');
+    expect(started?.jobId).toBeUndefined();
+  });
+
+  it('starts on the latest tailored resume, and the Job row swaps in another', async () => {
+    await renderSetup(undefined, fresh);
+    // The library, then the resume it picks, then that resume's job.
+    await settleChained();
+    await settle(NORMAL_MS);
+
+    // No sheet first (toreview §71): the most recently updated tailored resume is the pick.
+    expect(screen.getByRole('header', { name: 'Cover letter for this job' })).toBeOnTheScreen();
+    expect(screen.getByLabelText(/^Job: Lead UX Designer, Google/)).toBeOnTheScreen();
+    expect(screen.getByLabelText(/^Resume: UX Designer Resume/)).toBeOnTheScreen();
+
+    await act(async () => void fireEvent.press(screen.getByLabelText(/^Job: /)));
+    await settle(NORMAL_MS);
+    expect(
+      screen.getByLabelText('Lead UX Designer · Google, Resume: UX Designer Resume', hidden),
+    ).toBeSelected();
+    await press('Senior Product Designer · Stripe, Resume: Stripe — Senior PD');
+    await press('Continue');
+
+    expect(mockSetParams).toHaveBeenCalledWith({ resumeId: 'res_2' });
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+
+  it('says there is nothing to write from yet, and points to Jobs', async () => {
     const withoutJobs: Resume[] = resumesFixture.filter((resume) => resume.linkedJobId == null);
-    await renderSetup((queryClient) => {
-      queryClient.setQueryData(qk.resumes.list(), withoutJobs);
-      queryClient.setQueryData(qk.user.subscription(), freshSubscription);
+    await renderSetup(undefined, (client) => {
+      client.setQueryData(qk.resumes.list(), withoutJobs);
+      fresh(client);
     });
     await settle(NORMAL_MS);
 
-    expect(screen.getByText('Tailor a resume first')).toBeOnTheScreen();
-    // §7.10: nothing offers to write a letter from nothing.
-    expect(screen.queryByLabelText('Write cover letter')).toBeNull();
+    expect(screen.getByText('No tailored resumes yet')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Write my cover letter')).toBeDisabled();
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Tailor a resume')));
-    expect(mockPush).toHaveBeenCalledWith('/create/tailor');
+    await act(async () => void fireEvent.press(screen.getByLabelText('Find a job to tailor for')));
+    expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/jobs');
   });
 });

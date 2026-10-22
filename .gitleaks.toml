@@ -1,0 +1,24 @@
+# gitleaks configuration (P13-01). The default rules, plus what this repository knows is not a secret:
+# build output and dependencies (gitignored), the local .env (gitignored; local stand-in values only),
+# recorded AI fixtures (their "key" is a content hash), and the placeholder values tests use.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "gitignored build output, dependencies, the local .env, and test placeholders"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)\.next(-[a-z]+)?/''',
+  '''(^|/)dist/''',
+  '''(^|/)\.expo/''',
+  '''(^|/)\.env$''',
+  '''(^|/)\.gitleaks-report\.json$''',
+  '''packages/server/fixtures/ai/[0-9a-f]{32}\.json$''',
+]
+regexes = [
+  '''test-cursor-secret-not-for-real-use''',
+  '''local-[a-z-]*secret[a-z-]*''',
+  '''Zq3v9Kp2Wm8Xr4Ty7Ub1Nc6Hd5Fg0JsQe8Lw''', # config.test.ts: a made-up 40-character cursor secret
+  '''GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ''', # base32 of the RFC 6238 test seed
+  '''rt-0123456789abcdef''', # authClient.test.ts: a placeholder refresh token
+]

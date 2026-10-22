@@ -1,0 +1,25 @@
+{
+  "key": "29ac316a0d515c78ad715e9a47d5a933",
+  "recordedAt": "2026-10-18T18:44:32.410Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Fix this bug in my React c"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": false,
+      "topic": "other"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 273,
+      "outputTokens": 56,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

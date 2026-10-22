@@ -2,11 +2,14 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { INTERVIEW_GENERIC_LABEL, type Resume } from '@/data/models';
-// Deep import on purpose: the resumes barrel drags its screens in. docMeta is pure formatting.
+// Deep imports on purpose: the resumes barrel drags its screens in. These are pure pieces.
+import { AtsBadge } from '@/features/resumes/components/AtsBadge';
+import { ResumeThumbnail } from '@/features/resumes/components/ResumeThumbnail';
 import { docSubtitle } from '@/features/resumes/docMeta';
-import { a11yButton } from '@/lib';
+import { a11yButton, a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
+import { NoteBar } from '@/ui/NoteBar';
 import { Pressable } from '@/ui/Pressable';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { Text } from '@/ui/Text';
@@ -33,16 +36,28 @@ export type InterviewSourcePickerProps = {
   libraryEmpty: boolean;
 };
 
-/** Grouped-row metrics, matching ListRow so this row lines up with every other carded row. */
-const ROW_PADDING = 20;
-const ROW_GUTTER = 16;
-const CHEVRON = 11;
+// INTERVIEW 02 at 390 (577:1893 control, 577:1898 step card), in artboard units.
+const CONTROL_TO_CARD = 14;
+const CARD_PAD = 15;
+const CARD_GAP = 12;
+const STEP_GAP = 10;
+const STEP_DISC = 24;
+const ROW_RADIUS = 14;
+const ROW_PAD_LEFT = 10;
+const ROW_PAD_RIGHT = 12;
+const ROW_PAD_Y = 10;
+const ROW_GAP = 12;
+const THUMB = 46;
+const THUMB_RADIUS = 8;
+const LINE_GAP = 2;
+const CHEVRON = 9;
 
 /**
- * What a practice set is written from (V2 §7.15): a resume — and the job it was tailored to,
- * when it has one — or a role title alone. The generic label is said here, BEFORE the set exists,
- * as well as on the set afterwards: the spec's rule is that a standalone set is never mistaken
- * for a tailored one, and the moment of choosing is the first place that could happen.
+ * What a practice set is written from (V2 §7.15, INTERVIEW 02 577:1861): a resume — and the job it
+ * was tailored to, when it has one — or a role title alone, as step 1 of one card. The generic
+ * label is said here, BEFORE the set exists, as well as on the set afterwards: the spec's rule is
+ * that a standalone set is never mistaken for a tailored one, and the moment of choosing is the
+ * first place that could happen.
  */
 export function InterviewSourcePicker({
   mode,
@@ -54,79 +69,117 @@ export function InterviewSourcePicker({
   roleError,
   libraryEmpty,
 }: InterviewSourcePickerProps) {
-  const { colors, sizes, spacing, s } = useTheme();
+  const { colors, s } = useTheme();
   const styles = useStyles();
+  const fromResume = mode === 'resume' && resume != null;
+
+  const step = (title: string) => (
+    <View style={styles.step}>
+      <View style={[styles.disc, { backgroundColor: colors.surfaceInverse }]}>
+        <Text variant="microBadge" color="textOnDark">
+          1
+        </Text>
+      </View>
+      <Text variant="title" style={styles.grow} {...a11yHeader(title)}>
+        {title}
+      </Text>
+    </View>
+  );
 
   return (
-    <View style={{ gap: spacing[4] }}>
+    <View>
       {!libraryEmpty ? (
         <SegmentedControl segments={MODES} value={mode} onChange={onChangeMode} />
       ) : (
-        <Text variant="caption" color="textSecondary">
+        <Text variant="caption" color="textSecondary" align="center">
           No resume in your library yet.
         </Text>
       )}
 
-      {mode === 'resume' && resume ? (
-        <View style={{ gap: spacing[3] }}>
-          <Text variant="groupLabel">Resume</Text>
-          <Card radius="card" padding={0}>
+      <Card radius="cardLg" shadow="jobCard" padding={s(CARD_PAD / 0.75)} style={styles.card}>
+        {fromResume ? (
+          <>
+            {step('Choose a resume')}
             <Pressable
               {...a11yButton(`Resume, ${resume.title}`, 'Choose a different resume')}
               feedback="subtle"
               haptic="light"
               onPress={onChooseResume}
-              style={[
-                styles.row,
-                {
-                  minHeight: sizes.listRow,
-                  paddingHorizontal: s(ROW_PADDING),
-                  paddingVertical: spacing[3],
-                  gap: s(ROW_GUTTER),
-                },
-              ]}
+              style={[styles.row, { backgroundColor: colors.surfaceSubtle }]}
             >
-              <View style={styles.rowText}>
-                <Text variant="rowTitle" numberOfLines={1}>
+              <View style={[styles.thumb, { backgroundColor: colors.surfaceCard }]}>
+                <ResumeThumbnail style={styles.fill} />
+              </View>
+              <View style={styles.text}>
+                <Text variant="label" numberOfLines={1}>
                   {resume.title}
                 </Text>
-                <Text variant="rowDescription" color="textSecondary" numberOfLines={1}>
+                <Text variant="micro" color="textSecondary" numberOfLines={2}>
                   {docSubtitle(resume)}
                 </Text>
               </View>
+              {resume.atsScore != null ? <AtsBadge score={resume.atsScore} size="sm" /> : null}
               <FontAwesome5
                 name="chevron-right"
-                size={s(CHEVRON)}
+                size={s(CHEVRON / 0.75)}
                 color={colors.iconChevron}
                 solid
               />
             </Pressable>
-          </Card>
-          <Text variant="caption" color="textSecondary">
-            {resume.linkedJobId
-              ? 'Tailored to the linked job description.'
-              : 'No job description linked — technical questions come from the resume alone.'}
-          </Text>
-        </View>
-      ) : (
-        <View style={{ gap: spacing[3] }}>
-          <TextField
-            label="Role title"
-            value={roleTitle}
-            onChangeText={onChangeRoleTitle}
-            placeholder="Senior Data Engineer"
-            autoCapitalize="words"
-            returnKeyType="done"
-            error={roleError}
-            helper={roleError ? undefined : INTERVIEW_GENERIC_LABEL}
-          />
-        </View>
-      )}
+            <NoteBar
+              text={
+                resume.linkedJobId
+                  ? 'Tailored to the linked job description.'
+                  : 'No job description linked — technical questions come from the resume alone.'
+              }
+            />
+          </>
+        ) : (
+          <>
+            {step('Name the role')}
+            <TextField
+              value={roleTitle}
+              onChangeText={onChangeRoleTitle}
+              accessibilityLabel="Role title"
+              placeholder="Senior Data Engineer"
+              autoCapitalize="words"
+              returnKeyType="done"
+              error={roleError}
+            />
+            <NoteBar icon="info-circle" text={INTERVIEW_GENERIC_LABEL} />
+          </>
+        )}
+      </Card>
     </View>
   );
 }
 
 const useStyles = scaledSheet((s) => ({
-  row: { flexDirection: 'row', alignItems: 'center' },
-  rowText: { flex: 1, gap: s(2) },
+  card: { marginTop: s(CONTROL_TO_CARD / 0.75), gap: s(CARD_GAP / 0.75) },
+  step: { flexDirection: 'row', alignItems: 'center', gap: s(STEP_GAP / 0.75) },
+  disc: {
+    width: s(STEP_DISC / 0.75),
+    height: s(STEP_DISC / 0.75),
+    borderRadius: s(STEP_DISC / 0.75) / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  grow: { flex: 1 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(ROW_GAP / 0.75),
+    borderRadius: s(ROW_RADIUS / 0.75),
+    paddingLeft: s(ROW_PAD_LEFT / 0.75),
+    paddingRight: s(ROW_PAD_RIGHT / 0.75),
+    paddingVertical: s(ROW_PAD_Y / 0.75),
+  },
+  thumb: {
+    width: s(THUMB / 0.75),
+    height: s(THUMB / 0.75),
+    borderRadius: s(THUMB_RADIUS / 0.75),
+    overflow: 'hidden',
+  },
+  fill: { flex: 1 },
+  text: { flex: 1, gap: s(LINE_GAP / 0.75) },
 }));

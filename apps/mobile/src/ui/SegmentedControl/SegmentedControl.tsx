@@ -8,10 +8,18 @@ import {
 } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
+import {
+  a11yButton,
+  a11yHiddenWhen,
+  haptics,
+  hitSlopFor,
+  useReducedMotion,
+  withReducedMotion,
+} from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { useSelectionProgress } from '@/ui/motion';
 
 export type Segment<K extends string = string> = {
   key: K;
@@ -22,8 +30,19 @@ export type SegmentedControlProps<K extends string = string> = {
   segments: readonly Segment<K>[];
   value: K;
   onChange: (key: K) => void;
+  /**
+   * 'sm' is the compact track beside a section title (BILLING 01 577:9232): 36 tall at 390 with a
+   * 30 pill, r12/r9 and 13pt labels. Its segments keep a 44pt target through hit slop.
+   */
+  size?: 'md' | 'sm';
   style?: StyleProp<ViewStyle>;
 };
+
+// The compact track at 390 (577:9232), in artboard units.
+const SM_TRACK = 36 / 0.75;
+const SM_PILL = 30 / 0.75;
+const SM_TRACK_RADIUS = 12 / 0.75;
+const SM_PILL_RADIUS = 9 / 0.75;
 
 /**
  * Sliding-pill segmented control (Figma 1:283 — 48pt track, 4pt inset, 40pt pill at r12 with a
@@ -34,16 +53,23 @@ export function SegmentedControl<K extends string = string>({
   segments,
   value,
   onChange,
+  size = 'md',
   style,
 }: SegmentedControlProps<K>) {
-  const { colors, radii, sizes, shadows, motion } = useTheme();
+  const { colors, radii, sizes, shadows, motion, s } = useTheme();
+  const compact = size === 'sm';
+  const trackHeight = compact ? s(SM_TRACK) : sizes.segmentedControl;
+  const pillHeight = compact ? s(SM_PILL) : sizes.segmentedPill;
+  // Vertical only: sideways slop would reach into the neighbouring segment.
+  const { top, bottom } = hitSlopFor(trackHeight);
+  const verticalSlop = { top, bottom };
   const reduced = useReducedMotion();
 
   const [trackWidth, setTrackWidth] = useState(0);
   // Derived from the two heights rather than scaled from the drawn 4pt: the track is read between
   // the artboards (see CONTROL_AT390) and the pill with it, so a hard-coded inset would drift from
   // their difference at some widths and park the pill off-centre. This cannot.
-  const inset = (sizes.segmentedControl - sizes.segmentedPill) / 2;
+  const inset = (trackHeight - pillHeight) / 2;
   const slot = trackWidth > 0 ? (trackWidth - inset * 2) / segments.length : 0;
   const index = Math.max(
     0,
@@ -90,8 +116,8 @@ export function SegmentedControl<K extends string = string>({
       style={[
         styles.track,
         {
-          height: sizes.segmentedControl,
-          borderRadius: radii.xl,
+          height: trackHeight,
+          borderRadius: compact ? s(SM_TRACK_RADIUS) : radii.xl,
           backgroundColor: colors.surfaceSubtle,
           padding: inset,
         },
@@ -106,8 +132,8 @@ export function SegmentedControl<K extends string = string>({
             {
               top: inset,
               width: slot,
-              height: sizes.segmentedPill,
-              borderRadius: radii.md,
+              height: pillHeight,
+              borderRadius: compact ? s(SM_PILL_RADIUS) : radii.md,
               backgroundColor: colors.surfaceCard,
             },
             pillStyle,
@@ -125,20 +151,61 @@ export function SegmentedControl<K extends string = string>({
             accessibilityState={{ selected }}
             feedback="none"
             haptic="none"
+            hitSlop={compact ? verticalSlop : undefined}
             onPress={() => select(segment.key)}
             style={styles.segment}
           >
-            <Text
-              variant={selected ? 'segmentActive' : 'segment'}
-              color={selected ? 'textPrimary' : 'textSecondary'}
-              align="center"
-              numberOfLines={1}
-            >
-              {segment.label}
-            </Text>
+            <SegmentLabel label={segment.label} selected={selected} compact={compact} />
           </Pressable>
         );
       })}
+    </View>
+  );
+}
+
+/**
+ * A segment's label as two stacked copies — regular grey and semibold ink — that cross-fade with
+ * the pill, so weight and colour change together instead of snapping at the tap.
+ */
+function SegmentLabel({
+  label,
+  selected,
+  compact,
+}: {
+  label: string;
+  selected: boolean;
+  compact: boolean;
+}) {
+  const progress = useSelectionProgress(selected);
+  const onStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+  const offStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value }));
+
+  return (
+    <View style={styles.labelStack}>
+      <Animated.View style={offStyle} {...a11yHiddenWhen(selected)}>
+        <Text
+          variant={compact ? 'caption' : 'segment'}
+          color="textSecondary"
+          align="center"
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+      </Animated.View>
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, onStyle]}
+        {...a11yHiddenWhen(!selected)}
+      >
+        <Text
+          variant={compact ? 'captionSemiBold' : 'segmentActive'}
+          color="textPrimary"
+          align="center"
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+      </Animated.View>
     </View>
   );
 }
@@ -148,4 +215,6 @@ const styles = StyleSheet.create({
   // `top` is set inline from the derived inset — a raw artboard length here would not scale.
   pill: { position: 'absolute', left: 0 },
   segment: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
+  // Spans the whole segment, so the bolder copy laid over the regular one is never squeezed.
+  labelStack: { alignSelf: 'stretch' },
 });

@@ -1,5 +1,6 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import type { FC } from 'react';
 import { StyleSheet, View } from 'react-native';
+import type { SvgProps } from 'react-native-svg';
 
 import type { Resume } from '@/data/models';
 import { a11yButton } from '@/lib';
@@ -11,6 +12,13 @@ import { Text } from '@/ui/Text';
 
 import { docSubtitle } from '../docMeta';
 import type { ResumeMenuStep } from '../resumesStore';
+import DeleteIcon from '../../../../assets/icons/doc-menu/delete.svg';
+import DownloadIcon from '../../../../assets/icons/doc-menu/download.svg';
+import RenameIcon from '../../../../assets/icons/doc-menu/rename.svg';
+import SetBaseIcon from '../../../../assets/icons/doc-menu/set-base.svg';
+import ShareIcon from '../../../../assets/icons/doc-menu/share.svg';
+import DuplicateIcon from '../../../../assets/icons/create/new-resume.svg';
+import TailorIcon from '../../../../assets/icons/create/tailor.svg';
 import { RenameSheetPane } from './RenameSheetPane';
 import { ResumeThumbnail } from './ResumeThumbnail';
 
@@ -35,12 +43,31 @@ export type ResumeMenuSheetBodyProps = {
   onCancelDelete: () => void;
 };
 
-const ICON = 17;
-const ICON_SLOT = 24;
 const THUMB = { width: 48, height: 62 } as const;
+/**
+ * Each row leads with a 39-wide multi-tone icon, tile drawn in (Figma 497:17 … 497:132), on a
+ * 52 pitch at 390 — 52 and 69⅓ in artboard units. `h` is the icon's own drawn height over 0.75;
+ * Rename is a touch shorter than square and none is stretched to match.
+ */
+const ICON = 52;
+const ROW_PAD = (52 - 39) / 2 / 0.75;
+/** Dividers 95:2234 / 95:2257 sit ~9.5 off the neighbouring rows at 390. */
+const DIVIDER_GAP = 12;
+
+type MenuIcon = { Icon: FC<SvgProps>; h: number };
+
+const ICONS = {
+  rename: { Icon: RenameIcon, h: 38.16 / 0.75 },
+  duplicate: { Icon: DuplicateIcon, h: 38.907 / 0.75 },
+  tailor: { Icon: TailorIcon, h: 38.9951 / 0.75 },
+  setBase: { Icon: SetBaseIcon, h: ICON },
+  download: { Icon: DownloadIcon, h: ICON },
+  share: { Icon: ShareIcon, h: ICON },
+  delete: { Icon: DeleteIcon, h: ICON },
+} satisfies Record<string, MenuIcon>;
 
 type MenuRowProps = {
-  icon: string;
+  icon: MenuIcon;
   label: string;
   /** Muted right-hand caption ("PDF · DOCX", "Asks to confirm"). */
   detail?: string;
@@ -51,9 +78,8 @@ type MenuRowProps = {
 };
 
 function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: MenuRowProps) {
-  const { colors, sizes, spacing, s } = useTheme();
+  const { sizes, spacing, s } = useTheme();
   const styles = useStyles();
-  const color: ColorToken = tone === 'brand' ? 'brand' : tone === 'danger' ? 'danger' : 'textBody';
   const labelColor: ColorToken =
     tone === 'brand' ? 'brand' : tone === 'danger' ? 'danger' : 'textPrimary';
 
@@ -64,10 +90,13 @@ function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: M
       haptic="light"
       onPress={onPress}
       // The token, not the drawn 56: a local constant takes the flat factor and landed at 42dp.
-      style={[styles.row, { minHeight: sizes.listRow, gap: spacing[3] }]}
+      style={[
+        styles.row,
+        { minHeight: sizes.listRow, paddingVertical: s(ROW_PAD), gap: spacing[4] },
+      ]}
     >
       <View style={styles.iconSlot}>
-        <FontAwesome5 name={icon} size={s(ICON)} color={colors[color]} solid />
+        <icon.Icon width={s(ICON)} height={s(icon.h)} />
       </View>
       <Text variant="menuRow" color={labelColor} numberOfLines={1}>
         {label}
@@ -84,7 +113,7 @@ function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: M
 }
 
 /**
- * RESUMES 03 (Figma 1:2020) — the ⋯ / long-press action sheet for one document. Fully
+ * RESUMES 03 (Figma 95:2221) — the ⋯ / long-press action sheet for one document. Fully
  * controlled so tests drive it without the Sheet. Rename and delete each swap the whole body
  * for their own pane (the artboard's "Asks to confirm"); the host animates the sheet height
  * between them.
@@ -162,13 +191,15 @@ export function ResumeMenuSheetBody({
         </View>
       </View>
 
-      <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+      <View
+        style={[styles.divider, { backgroundColor: colors.divider, marginBottom: s(DIVIDER_GAP) }]}
+      />
 
-      <MenuRow icon="edit" label="Rename" onPress={onRename} />
-      <MenuRow icon="copy" label="Duplicate" onPress={onDuplicate} />
+      <MenuRow icon={ICONS.rename} label="Rename" onPress={onRename} />
+      <MenuRow icon={ICONS.duplicate} label="Duplicate" onPress={onDuplicate} />
       {isResume ? (
         <MenuRow
-          icon="magic"
+          icon={ICONS.tailor}
           label="Tailor to a job"
           tone="brand"
           ai
@@ -178,19 +209,27 @@ export function ResumeMenuSheetBody({
       ) : null}
       {isResume && !resume.isBase ? (
         <MenuRow
-          icon="star"
+          icon={ICONS.setBase}
           label="Set as base"
           hint="New tailored copies start from the base"
           onPress={onSetAsBase}
         />
       ) : null}
-      <MenuRow icon="download" label="Download" detail="PDF · DOCX" onPress={onDownload} />
-      <MenuRow icon="link" label="Share link" onPress={onShare} />
+      <MenuRow icon={ICONS.download} label="Download" detail="PDF · DOCX" onPress={onDownload} />
+      <MenuRow icon={ICONS.share} label="Share link" onPress={onShare} />
 
-      <View style={[styles.divider, { backgroundColor: colors.divider, marginTop: spacing[2] }]} />
+      <View
+        style={[
+          styles.divider,
+          {
+            backgroundColor: colors.divider,
+            marginVertical: s(DIVIDER_GAP),
+          },
+        ]}
+      />
 
       <MenuRow
-        icon="trash"
+        icon={ICONS.delete}
         label="Delete"
         detail="Asks to confirm"
         tone="danger"
@@ -205,6 +244,6 @@ const useStyles = scaledSheet((s) => ({
   headerText: { flex: 1, gap: s(2) },
   divider: { height: StyleSheet.hairlineWidth },
   row: { flexDirection: 'row', alignItems: 'center' },
-  iconSlot: { width: s(ICON_SLOT), alignItems: 'center' },
+  iconSlot: { width: s(ICON), alignItems: 'center', justifyContent: 'center' },
   spacer: { flex: 1 },
 }));

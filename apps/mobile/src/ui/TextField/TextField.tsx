@@ -1,5 +1,5 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useEffect, useRef, type Ref } from 'react';
+import { useEffect, useRef, type ReactNode, type Ref } from 'react';
 import {
   AccessibilityInfo,
   StyleSheet,
@@ -20,11 +20,21 @@ import { haptics, maxFontScale, useReducedMotion, withReducedMotion } from '@/li
 import { useTheme } from '@/theme';
 import { useRevealOnFocus } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { useSelectionProgress } from '@/ui/motion';
 
 export type TextFieldProps = {
   value: string;
   onChangeText: (value: string) => void;
   label?: string;
+  /** A quiet "Optional" after the label (Figma 577:5418 / 577:7481). */
+  optional?: boolean;
+  /** A unit set at the trailing edge of the box — "years" (Figma 577:5414). */
+  suffix?: string;
+  /**
+   * A control inside the box at its end — a resume bullet's remove button (RESUMES 07 577:8663).
+   * It is its own labelled target; the field does not describe it.
+   */
+  trailing?: ReactNode;
   placeholder?: string;
   helper?: string;
   /** Replaces the helper, paints the danger border and is announced once. */
@@ -75,6 +85,9 @@ export function TextField({
   value,
   onChangeText,
   label,
+  optional = false,
+  suffix,
+  trailing,
   placeholder,
   helper,
   error,
@@ -107,18 +120,24 @@ export function TextField({
   // worklet below captures these by value, and a token read from inside it would come off the UI
   // runtime's copy of the theme rather than this render's.
   //
-  // The error colour is folded into both endpoints rather than layered on as a static style after
-  // the animated one: React only owns borderColor until the first updater run: after that
+  // The error colour is blended in by the same updater rather than layered on as a static style
+  // after the animated one: React only owns borderColor until the first updater run: after that
   // Reanimated's props registry owns it and re-applies it over every commit, so a static override
   // later in the array would stop winning the moment the field was focused. One code path owns the
-  // border at all times; the babel plugin re-collects both consts as dependencies, so flipping
-  // `error` re-runs the updater.
-  const restBorder = error ? colors.danger : colors.surfaceSubtle;
-  const focusedBorder = error ? colors.danger : colors.surfaceSelected;
+  // border at all times. The error has its own progress, so the border fades to red (and back)
+  // rather than snapping when validation speaks.
+  const restBorder = colors.surfaceSubtle;
+  const focusedBorder = colors.surfaceSelected;
+  const errorBorder = colors.danger;
 
   const focus = useSharedValue(0);
+  const errorProgress = useSelectionProgress(Boolean(error));
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(focus.value, [0, 1], [restBorder, focusedBorder]),
+    borderColor: interpolateColor(
+      errorProgress.value,
+      [0, 1],
+      [interpolateColor(focus.value, [0, 1], [restBorder, focusedBorder]), errorBorder],
+    ),
   }));
 
   // Once per falsy→truthy transition. Announced explicitly because iOS has no live region, and
@@ -149,7 +168,16 @@ export function TextField({
     // box alone into view would leave its label under the keyboard, which is the half that says
     // what you are typing into.
     <View ref={fieldRef} style={[{ gap: spacing[2] }, style]}>
-      {label ? <Text variant="groupLabel">{label}</Text> : null}
+      {label ? (
+        <View style={[styles.labelRow, { gap: spacing[2] }]}>
+          <Text variant="groupLabel">{label}</Text>
+          {optional ? (
+            <Text variant="micro" color="textTertiary">
+              Optional
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
 
       <Animated.View
         style={[
@@ -220,6 +248,12 @@ export function TextField({
             { color: colors.textPrimary },
           ]}
         />
+        {suffix ? (
+          <Text variant="caption" color="textSecondary" importantForAccessibility="no">
+            {suffix}
+          </Text>
+        ) : null}
+        {trailing}
       </Animated.View>
 
       {/* Rendered whenever the field has anything to say below it, so an error appearing swaps
@@ -258,6 +292,7 @@ const styles = StyleSheet.create({
   fieldMultiline: { alignItems: 'flex-start' },
   input: { flex: 1, padding: 0, margin: 0, includeFontPadding: false },
   inputMultiline: { textAlignVertical: 'top' },
+  labelRow: { flexDirection: 'row', alignItems: 'center' },
   helperRow: { flexDirection: 'row', alignItems: 'flex-start' },
   helperMessage: { flex: 1 },
 });

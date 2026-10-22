@@ -38,12 +38,15 @@ export function matchPercentage(score: number): number {
 
 /**
  * The ring's arc colour per band, paired with `MatchPill`'s own success / warning / neutral
- * tones so the ring and the pill beside it never disagree about how good the match is.
+ * tones so the ring and the pill beside it never disagree about how good the match is. Strong is
+ * the deeper #16A34A JOBS 10 draws its arc in (580:2439).
  */
 export const MATCH_RING_COLOR: Record<MatchBand, ColorToken> = {
-  strong: 'successRing',
+  strong: 'glyphSuccess',
   good: 'warningAccent',
   fair: 'iconDefault',
+  // `weak` (C-10) has no board yet, so it shares fair's arc.
+  weak: 'iconDefault',
 };
 
 /**
@@ -56,14 +59,25 @@ export const CRITERION_ICON: Record<
   MatchCriterionState,
   { name: string; color: ColorToken; solid: boolean }
 > = {
-  met: { name: 'check-circle', color: 'success', solid: true },
-  missing: { name: 'times-circle', color: 'danger', solid: true },
-  optional: { name: 'circle', color: 'iconMuted', solid: false },
+  met: { name: 'check-circle', color: 'glyphSuccess', solid: true },
+  // D-14's half credit: drawn as met until a design gives it its own glyph (toreview §105.18).
+  partial: { name: 'check-circle', color: 'glyphSuccess', solid: true },
+  missing: { name: 'times-circle', color: 'glyphDanger', solid: true },
+  optional: { name: 'circle', color: 'iconChevron', solid: false },
+};
+
+/** Each group card's progress fill (JOBS 10 580:2462 / 580:2475 / 580:2496), in its glyph's colour. */
+export const CRITERIA_BAR_COLOR: Record<MatchCriterionState, ColorToken> = {
+  met: 'glyphSuccess',
+  partial: 'glyphSuccess',
+  missing: 'glyphDanger',
+  optional: 'iconChevron',
 };
 
 /** Read out instead of the glyph, which a screen reader would otherwise skip entirely. */
 export const CRITERION_A11Y: Record<MatchCriterionState, string> = {
   met: 'Met',
+  partial: 'Partly met',
   missing: 'Missing',
   optional: 'Optional',
 };
@@ -78,11 +92,12 @@ export function criterionA11yLabel(criterion: MatchCriterion): string {
   return criterion.detail ? `${head}. ${criterion.detail}` : head;
 }
 
-/** Overline above each carded group. */
+/** Each group card's title (JOBS 10 580:2458). */
 export const CRITERIA_GROUP_TITLE: Record<MatchCriterionState, string> = {
-  missing: 'MISSING',
-  met: 'MET',
-  optional: 'OPTIONAL',
+  missing: 'Missing',
+  met: 'Met',
+  partial: 'Met',
+  optional: 'Optional',
 };
 
 /**
@@ -101,12 +116,16 @@ export type CriteriaGroup = {
 /**
  * Groups the criteria for display, in `CRITERIA_GROUP_ORDER`, keeping the job's own order inside
  * each group. A group with no rows is dropped rather than rendered as an empty heading — an
- * "OPTIONAL" overline over nothing reads as content that failed to load.
+ * "Optional" card over nothing reads as content that failed to load.
  */
 export function groupMatchCriteria(criteria: readonly MatchCriterion[]): CriteriaGroup[] {
   return CRITERIA_GROUP_ORDER.map((state) => ({
     state,
     title: CRITERIA_GROUP_TITLE[state],
-    items: criteria.filter((criterion) => criterion.state === state),
+    // A partly met criterion sits in Met, its detail saying why (no design draws it apart yet).
+    items: criteria.filter(
+      (criterion) =>
+        criterion.state === state || (state === 'met' && criterion.state === 'partial'),
+    ),
   })).filter((group) => group.items.length > 0);
 }

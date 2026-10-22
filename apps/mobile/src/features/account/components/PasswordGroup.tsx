@@ -1,10 +1,10 @@
 import { useRef } from 'react';
-import { View, type TextInput } from 'react-native';
+import type { TextInput } from 'react-native';
 
-import { useTheme } from '@/theme';
+import { SectionCard } from '@/features/profile/components/cards';
+import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
 import { Button } from '@/ui/Button';
-import { RowGroup } from '@/ui/ListRow';
-import { Text } from '@/ui/Text';
+import { NoteBar } from '@/ui/NoteBar';
 import { TextField } from '@/ui/TextField';
 
 import { PASSWORD_NOTE, type PasswordDraft } from '../accountForms';
@@ -43,70 +43,67 @@ export function PasswordGroup({
   disabled,
   onSubmit,
 }: PasswordGroupProps) {
-  const { spacing } = useTheme();
-
   const nextRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
   return (
-    <RowGroup title="PASSWORD">
-      <View style={{ padding: spacing[4], gap: spacing[4] }}>
-        <TextField
-          label="Current password"
-          value={draft.current}
-          onChangeText={(value) => onChange('current', value)}
-          onBlur={() => onBlurField('current')}
-          error={errors.current}
-          secureTextEntry
-          autoCapitalize="none"
-          autoComplete="current-password"
-          returnKeyType="next"
-          onSubmit={() => nextRef.current?.focus()}
-        />
+    <SectionCard art={PROFILE_ROW_ART.privacy} title="Password">
+      <TextField
+        label="Current password"
+        value={draft.current}
+        onChangeText={(value) => onChange('current', value)}
+        onBlur={() => onBlurField('current')}
+        error={errors.current}
+        icon="lock"
+        secureTextEntry
+        autoCapitalize="none"
+        autoComplete="current-password"
+        returnKeyType="next"
+        onSubmit={() => nextRef.current?.focus()}
+      />
 
-        <TextField
-          ref={nextRef}
-          label="New password"
-          value={draft.next}
-          onChangeText={(value) => onChange('next', value)}
-          onBlur={() => onBlurField('next')}
-          error={errors.next}
-          secureTextEntry
-          autoCapitalize="none"
-          autoComplete="new-password"
-          returnKeyType="next"
-          onSubmit={() => confirmRef.current?.focus()}
-        />
+      <TextField
+        ref={nextRef}
+        label="New password"
+        value={draft.next}
+        onChangeText={(value) => onChange('next', value)}
+        onBlur={() => onBlurField('next')}
+        error={errors.next}
+        icon="lock"
+        secureTextEntry
+        autoCapitalize="none"
+        autoComplete="new-password"
+        returnKeyType="next"
+        onSubmit={() => confirmRef.current?.focus()}
+      />
 
-        <TextField
-          ref={confirmRef}
-          label="Confirm new password"
-          value={draft.confirm}
-          onChangeText={(value) => onChange('confirm', value)}
-          onBlur={() => onBlurField('confirm')}
-          error={errors.confirm}
-          secureTextEntry
-          autoCapitalize="none"
-          autoComplete="new-password"
-          returnKeyType="done"
-          onSubmit={onSubmit}
-        />
+      <TextField
+        ref={confirmRef}
+        label="Confirm new password"
+        value={draft.confirm}
+        onChangeText={(value) => onChange('confirm', value)}
+        onBlur={() => onBlurField('confirm')}
+        error={errors.confirm}
+        icon="lock"
+        secureTextEntry
+        autoCapitalize="none"
+        autoComplete="new-password"
+        returnKeyType="done"
+        onSubmit={onSubmit}
+      />
 
-        <Button
-          label={CHANGE_PASSWORD}
-          variant="secondary"
-          loading={busy}
-          disabled={disabled}
-          onPress={onSubmit}
-          block
-        />
+      <Button
+        label={CHANGE_PASSWORD}
+        variant="secondary"
+        loading={busy}
+        disabled={disabled}
+        onPress={onSubmit}
+        block
+      />
 
-        {status ? <AccountStatusLine message={status.message} tone={status.tone} /> : null}
+      {status ? <AccountStatusLine message={status.message} tone={status.tone} /> : null}
 
-        <Text variant="caption" color="textTertiary">
-          {PASSWORD_NOTE}
-        </Text>
-      </View>
-    </RowGroup>
+      <NoteBar icon="shield-alt" text={PASSWORD_NOTE} />
+    </SectionCard>
   );
 }

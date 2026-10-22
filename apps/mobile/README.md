@@ -54,9 +54,8 @@ apps/mobile/
   app/                   expo-router routes - THIN: each file just renders a feature screen
     _layout.tsx          providers (Query, gesture root, SafeArea, theme), font gate, splash hide,
                          and the session gate: every signed-in route is declared inside it
-    (auth)/              first run and sign-up: the welcome wash, three onboarding slides, the
-                         get-started landing and the account form. Sign-in is still a stub —
-                         its artboard has not landed
+    (auth)/              first run and the two forms: the welcome wash, three onboarding
+                         slides, the get-started landing, and the sign-up and sign-in forms
     (tabs)/              tab routes (Home, Jobs, Resumes, Profile) + the floating tab bar host
     create/              the intakes that start a run: tailor, JD review, cover letter,
                          ATS check, Zero Resume, upload + its review, LinkedIn (unavailable)

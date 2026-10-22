@@ -1,0 +1,75 @@
+# Gate for the Next.js app (apps/web) and the shared data layer it stands on.
+#
+# Mirrors the definition of done in CLAUDE.md — typecheck, lint, test must all be green — and
+# adds a production build, which is the only step that exercises Tailwind's compile, the typed
+# `Route` hrefs and `transpilePackages` over @nextkin/shared's TypeScript source. `next build`
+# also runs its own type pass against the generated route types, which `tsc --noEmit` alone
+# cannot see.
+#
+# `packages/**` is in the path filter for both this and mobile-ci on purpose: a change to the
+# shared data layer has to satisfy both clients before it lands.
+name: web-ci
+
+# Read-only by default. Nothing here comments on PRs, pushes tags or publishes anything, so the
+# token needs nothing else — and leaving it unset inherits a repo/org default that may be
+# read-write.
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web-ci.yml"
+
+concurrency:
+  group: web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Before setup-node, which needs pnpm on PATH for `cache: pnpm`. v6+ is required: v4
+      # bootstraps pnpm 8 and looks for bin/pnpm.cjs, which pnpm 11 renamed to bin/pnpm.mjs.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: typecheck
+        run: pnpm --filter @nextkin/web --filter @nextkin/shared typecheck
+
+      - name: lint
+        run: pnpm --filter @nextkin/web lint
+
+      - name: test
+        run: pnpm --filter @nextkin/web test
+
+      # Last, because it is the slowest and the cheap checks should fail first.
+      - name: build
+        run: pnpm --filter @nextkin/web build

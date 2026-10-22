@@ -5,16 +5,30 @@ import type { SvgProps } from 'react-native-svg';
 import RevealOnIcon from '../../../../assets/icons/onboarding/field-reveal-on.svg';
 import RevealIcon from '../../../../assets/icons/onboarding/field-reveal.svg';
 import { board } from '../board';
-import { SIGN_UP } from '../signUpLayout';
 import { hitSlopFor } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { useRevealOnFocus } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
+/**
+ * The drawn box, as the using screen's board draws it. `SIGN_UP` and `SIGN_IN` both satisfy this
+ * shape, and they disagree on every member of it — see the note at the top of `signInLayout.ts`.
+ */
+export type AuthFieldMetrics = {
+  fieldHeight: number;
+  fieldRadius: number;
+  fieldPadding: number;
+  fieldIcon: number;
+  fieldIconGap: number;
+  fieldErrorGap: number;
+  hairline: number;
+};
+
 export type AuthFieldProps = {
   /** Doubles as the placeholder: the board draws no label above the box. */
   label: string;
+  metrics: AuthFieldMetrics;
   /** The board's own glyph, invoked inline rather than passed as a component. */
   renderIcon: (props: SvgProps) => ReactElement;
   value: string;
@@ -31,7 +45,8 @@ export type AuthFieldProps = {
 };
 
 /**
- * A sign-up field (Figma 296:3145).
+ * An auth field — sign-up (Figma 307:4395) and sign-in (309:294), which draw it slightly
+ * differently, so the box comes in as `metrics` rather than being read off one of them.
  *
  * `src/ui/TextField` is the app's text-entry primitive and stays so; this is a different control
  * — outlined rather than filled, a leading glyph, and the label carried by the placeholder
@@ -44,6 +59,7 @@ export type AuthFieldProps = {
  */
 export function AuthField({
   label,
+  metrics,
   renderIcon,
   value,
   onChangeText,
@@ -65,7 +81,7 @@ export function AuthField({
   const revealOnFocus = useRevealOnFocus();
   const fieldRef = useRef<View>(null);
 
-  const glyph = s(board(SIGN_UP.fieldIcon));
+  const glyph = s(board(metrics.fieldIcon));
 
   return (
     // Measured whole, error row included, so the reveal lifts the message with the box.
@@ -74,15 +90,15 @@ export function AuthField({
         style={[
           styles.box,
           {
-            height: s(board(SIGN_UP.fieldHeight)),
-            paddingHorizontal: s(board(SIGN_UP.fieldPadding)),
-            borderRadius: s(board(SIGN_UP.fieldRadius)),
-            borderWidth: s(board(SIGN_UP.hairline)),
+            height: s(board(metrics.fieldHeight)),
+            paddingHorizontal: s(board(metrics.fieldPadding)),
+            borderRadius: s(board(metrics.fieldRadius)),
+            borderWidth: s(board(metrics.hairline)),
             borderColor: error ? colors.danger : colors.authFieldBorder,
           },
         ]}
       >
-        <View style={{ marginRight: s(board(SIGN_UP.fieldIconGap)) }}>
+        <View style={{ marginRight: s(board(metrics.fieldIconGap)) }}>
           {renderIcon({ width: glyph, height: glyph })}
         </View>
         <TextInput
@@ -125,7 +141,7 @@ export function AuthField({
           variant="authMeta"
           color="danger"
           accessibilityLiveRegion="polite"
-          style={{ marginTop: s(board(SIGN_UP.fieldErrorGap)) }}
+          style={{ marginTop: s(board(metrics.fieldErrorGap)) }}
         >
           {error}
         </Text>

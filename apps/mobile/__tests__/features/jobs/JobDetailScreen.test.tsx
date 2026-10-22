@@ -57,24 +57,45 @@ describe('JobDetailScreen (JOBS 05 — 1:830)', () => {
   it('renders the hero, match card and company profile with the artboard copy', async () => {
     await renderDetail();
 
-    expect(await screen.findByRole('header', { name: 'Senior Product Designer' })).toBeOnTheScreen();
-    expect(screen.getByText('Stripe · Bengaluru · Remote')).toBeOnTheScreen();
-    // The detail screen spells the unit out, unlike the "₹28–38L" on the cards.
-    expect(screen.getByText('₹28–38 LPA')).toBeOnTheScreen();
-    expect(screen.getByText('· est.')).toBeOnTheScreen();
-    expect(screen.getByText('8,000+ employees')).toBeOnTheScreen();
+    expect(
+      await screen.findByRole('header', { name: 'Senior Product Designer' }),
+    ).toBeOnTheScreen();
+    // Redrawn as 443:2: the company sits beside its logo with a verified badge, and the place
+    // gets its own line rather than a dot-joined meta string.
+    expect(screen.getByLabelText('Verified company')).toBeOnTheScreen();
+    expect(screen.getByText('Financial infrastructure · 8,000+ employees')).toBeOnTheScreen();
+    expect(screen.getByText('Bengaluru')).toBeOnTheScreen();
+    expect(screen.getByText('Remote')).toBeOnTheScreen();
+    // The detail screen spells the unit out, and the redraw spaces the range (443:14).
+    expect(screen.getByText('₹28 – 38 LPA')).toBeOnTheScreen();
+    expect(screen.getByText('· Estimated')).toBeOnTheScreen();
+    expect(screen.getAllByText('8,000+ employees').length).toBeGreaterThan(0);
 
     expect(screen.getByRole('header', { name: 'Why you match' })).toBeOnTheScreen();
     expect(screen.getByText('Compared against your base resume and profile')).toBeOnTheScreen();
 
     expect(screen.getByRole('header', { name: 'About the role' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'About Stripe' })).toBeOnTheScreen();
-    expect(screen.getByText('Financial infrastructure · 8,000+ employees')).toBeOnTheScreen();
+    // The company card now leads with the board's one-line description (443:65).
+    expect(screen.getByText('Financial infrastructure for the internet.')).toBeOnTheScreen();
     // Visually a link, but folded into the card's own label rather than being a second stop.
     expect(screen.getByText('stripe.com', { includeHiddenElements: true })).toBeOnTheScreen();
     expect(
-      screen.getByLabelText('Stripe. Financial infrastructure · 8,000+ employees · stripe.com'),
+      screen.getByLabelText(
+        'Stripe. Financial infrastructure for the internet. · 8,000+ employees · stripe.com',
+      ),
     ).toBeOnTheScreen();
+  });
+
+  it('gives an unverified company neither the badge nor a tagline', async () => {
+    // Linear is 51–200 people: not one of the big, verified companies. Its company card goes
+    // straight from the name to size and website.
+    await renderDetail('normal', 'job_linear');
+    await screen.findByRole('header', { name: 'About Linear' });
+
+    expect(screen.queryByLabelText('Verified company')).toBeNull();
+    expect(screen.queryByText('Developer tools')).toBeNull();
+    expect(screen.getByLabelText(/^Linear. 51–200 employees · /)).toBeOnTheScreen();
   });
 
   it('announces each match criterion with its state, not just a glyph', async () => {
@@ -124,6 +145,34 @@ describe('JobDetailScreen (JOBS 05 — 1:830)', () => {
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/jobs/[id]',
       params: { id: expect.not.stringMatching(/^job_stripe$/) },
+    });
+  });
+
+  it('asks which resume to tailor, then opens the compare step with it (TAILOR 01)', async () => {
+    await renderDetail();
+    await screen.findByRole('header', { name: 'Senior Product Designer' });
+
+    await press('Tailor your resume to this job');
+    // The sheet, not a navigation: the job-first flow picks the resume over the page.
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(
+      await screen.findByRole('header', {
+        name: 'Which resume should we tailor?',
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+
+    // The base resume is pre-picked once the library arrives.
+    await screen.findByText(/^Base resume · 3 pages/, { includeHiddenElements: true });
+    await act(
+      async () =>
+        void fireEvent.press(
+          screen.getByLabelText('Compare with this job', { includeHiddenElements: true }),
+        ),
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/tailor',
+      params: { jobId: 'job_stripe', resumeId: 'res_base' },
     });
   });
 

@@ -32,6 +32,12 @@ const NORMAL_MS = 1000;
 /** A long answer is ~120 tokens at two a tick; this is more than any canned reply needs. */
 const STREAM_MS = ASSISTANT_TICK_MS * 200;
 
+/** Free plan with nothing sent today: ASSISTANT 02's first run draws no meter. */
+const freshSubscription: Subscription = {
+  ...subscriptionFixture,
+  usage: { ...subscriptionFixture.usage, assistantMessagesUsed: 0, assistantMessagesLimit: 20 },
+};
+
 /** Free plan with today's messages spent (V2 §13.5's paywall state). */
 const spentSubscription: Subscription = {
   ...subscriptionFixture,
@@ -59,7 +65,7 @@ async function send(text: string) {
   await settle(NORMAL_MS);
 }
 
-describe('AssistantScreen (V2 §7.16 — no artboard)', () => {
+describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -87,7 +93,8 @@ describe('AssistantScreen (V2 §7.16 — no artboard)', () => {
 
     expect(screen.getByRole('header', { name: 'AI assistant' })).toBeOnTheScreen();
     // §13.5: the cap is on screen before it is hit — and it is a DAILY cap, said as one.
-    expect(screen.getByText('8 of 20 messages left today', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Messages', shown)).toBeOnTheScreen();
+    expect(screen.getByText('8 of 20 left today', shown)).toBeOnTheScreen();
     expect(screen.queryByText(/this month/, shown)).toBeNull();
     // §7.16: the label is on the composer, so it is visible whatever the transcript shows.
     expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
@@ -131,7 +138,7 @@ describe('AssistantScreen (V2 §7.16 — no artboard)', () => {
     expect(screen.getByText(reply?.text ?? '§', shown)).toBeOnTheScreen();
     expect(screen.queryByText(/Thinking…|Writing…/, shown)).toBeNull();
     // §13.3: a message costs a message, and the meter says so without a reload.
-    expect(screen.getByText('7 of 20 messages left today', shown)).toBeOnTheScreen();
+    expect(screen.getByText('7 of 20 left today', shown)).toBeOnTheScreen();
     expect(screen.getByLabelText('Send', shown)).toBeOnTheScreen();
   });
 
@@ -169,6 +176,46 @@ describe('AssistantScreen (V2 §7.16 — no artboard)', () => {
     expect(screen.queryByLabelText('Ask: How do I explain a career gap?', shown)).toBeNull();
   });
 
+  it('greets a blank thread with the first-run hero and centred prompts, and no meter', async () => {
+    mockStore.state.assistant.messages = [];
+    await renderAssistant(undefined, (client) =>
+      client.setQueryData(qk.user.subscription(), freshSubscription),
+    );
+    await settle(NORMAL_MS);
+
+    // ASSISTANT 02 (577:7805): what to ask about, then the prompts.
+    expect(
+      screen.getByRole('header', { name: 'Ask about your resume, your score or the search' }),
+    ).toBeOnTheScreen();
+    expect(screen.getByLabelText('Ask: How do I explain a career gap?', shown)).toBeOnTheScreen();
+    // A fresh allowance has nothing to warn about yet.
+    expect(screen.queryByText(/left today/, shown)).toBeNull();
+    // §7.16's label is on the composer in every state.
+    expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
+  });
+
+  it('attaches a resume from the paperclip, and detaches it from the chip', async () => {
+    await renderAssistant();
+    await settle(NORMAL_MS);
+    expect(screen.queryByText(/^About: /, shown)).toBeNull();
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Attach a resume', shown)));
+    expect(screen.getByLabelText('Close ask about a resume', shown)).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByLabelText('UX Designer Resume', shown)));
+    expect(screen.getByText('About: UX Designer Resume', shown)).toBeOnTheScreen();
+
+    await send('Why is my ATS score what it is?');
+    await settle(STREAM_MS);
+    // §7.16's context awareness: the answer was written against the attached document.
+    const ux = mockStore.state.resumes.find((item) => item.title === 'UX Designer Resume');
+    expect(lastMessage()?.contextResumeId).toBe(ux?.id);
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Asking about UX Designer Resume', shown)),
+    );
+    expect(screen.queryByText(/^About: /, shown)).toBeNull();
+  });
+
   it('opens about a document and answers with it as context', async () => {
     await renderAssistant('res_base');
     await settle(NORMAL_MS);
@@ -189,7 +236,7 @@ describe('AssistantScreen (V2 §7.16 — no artboard)', () => {
     );
     await settle(NORMAL_MS);
 
-    expect(screen.getByText('0 of 20 messages left today', shown)).toBeOnTheScreen();
+    expect(screen.getByText('0 of 20 left today', shown)).toBeOnTheScreen();
     // §13.5: the upsell REPLACES the action rather than sitting over it.
     expect(screen.queryByLabelText('Message', shown)).toBeNull();
     expect(screen.queryByLabelText('Send', shown)).toBeNull();

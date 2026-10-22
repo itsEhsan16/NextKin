@@ -4,14 +4,10 @@ import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { subscriptionFixture, useMockModeStore } from '@/data/mock';
-import type { Subscription } from '@/data/models';
+import type { Generation, Subscription } from '@/data/models';
 import { createQueryClient, qk } from '@/data/queries';
-import { mockStore, resetMockRepos } from '@/data/repos';
+import { resetMockRepos } from '@/data/repos';
 import { ZeroResumeScreen } from '@/features/create';
-import {
-  ZERO_RESUME_GUARDRAIL_BODY,
-  ZERO_RESUME_GUARDRAIL_TITLE,
-} from '@/features/create/zeroResume';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -38,56 +34,42 @@ const spentSubscription: Subscription = {
   ...subscriptionFixture,
   usage: { ...subscriptionFixture.usage, generationsUsed: 3, generationsLimit: 3 },
 };
+const freshSubscription: Subscription = {
+  ...subscriptionFixture,
+  usage: { ...subscriptionFixture.usage, generationsUsed: 2, generationsLimit: 3 },
+};
 
 /** Cards enter on `FadeInDown`; the Reanimated mock leaves an entering node at opacity 0. */
 const shown = { includeHiddenElements: true } as const;
-
-/** Mock repos resolve on (fake) timers: lists ≤ 900ms, JD extraction 1200–2200ms. */
 const settle = (ms: number) => act(() => jest.advanceTimersByTimeAsync(ms));
 const NORMAL_MS = 1000;
+const START_MS = 2000;
 
-/**
- * One press runs two mutations back to back, and the second is not scheduled until the first has
- * resolved — so the clock moves in one-second steps rather than one jump past both.
- */
-async function settleChain() {
-  for (let step = 0; step < 5; step += 1) await settle(1000);
-}
-
-const JD_TEXT =
-  'Senior Product Designer, Bengaluru. Own the design system and run A/B tests with growth.';
-
-async function renderZeroResume(seed?: (client: QueryClient) => void) {
+async function renderZero(jobId?: string, seed?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
   clients.push(queryClient);
   seed?.(queryClient);
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
       <QueryClientProvider client={queryClient}>
-        <ZeroResumeScreen />
+        <ZeroResumeScreen jobId={jobId} />
       </QueryClientProvider>
     </SafeAreaProvider>,
   );
+  return queryClient;
 }
 
-/** Chooses "Paste the description" and types one in. */
-async function pasteJd(text = JD_TEXT) {
-  await act(async () => fireEvent.press(screen.getByLabelText('Paste the description')));
-  await act(async () => fireEvent.changeText(screen.getByLabelText('Job description'), text));
-}
+const fresh = (client: QueryClient) =>
+  client.setQueryData(qk.user.subscription(), freshSubscription);
 
-describe('ZeroResumeScreen (V2 §7.9 — no artboard)', () => {
+describe('ZeroResumeScreen (ZERO 01, 613:206)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
-    mockPush.mockClear();
-    mockBack.mockClear();
-    mockReplace.mockClear();
+    [mockPush, mockBack, mockReplace].forEach((fn) => fn.mockClear());
   });
 
   afterEach(async () => {
-    // Flush in-flight mock requests BEFORE unmounting, so a late React Query update does not
-    // open an act() scope that overlaps the next test's.
     await act(() => jest.runOnlyPendingTimersAsync());
     await cleanup();
     clients.splice(0).forEach((client) => client.clear());
@@ -96,106 +78,75 @@ describe('ZeroResumeScreen (V2 §7.9 — no artboard)', () => {
     jest.useRealTimers();
   });
 
-  it('prefills the name, meters the quota and states the guardrail before anything is pressed', async () => {
-    await renderZeroResume();
-    expect(screen.getByLabelText('Loading first draft setup')).toBeOnTheScreen();
-    // The bar is pinned while loading too — it owns the bottom safe-area inset, so the viewport
-    // must not change size when the queries land.
-    expect(screen.getByLabelText('Draft my resume')).toBeDisabled();
-
+  it('asks three things under the About you step, with the quota on the bar', async () => {
+    await renderZero(undefined, fresh);
+    // The bar is pinned while loading too — it owns the bottom safe-area inset.
+    expect(screen.getByLabelText('Write my draft')).toBeDisabled();
     await settle(NORMAL_MS);
 
-    expect(screen.getByRole('header', { name: 'Start from nothing' })).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 1 of 3, About you')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Let’s write your first resume' })).toBeOnTheScreen();
     // The fixture user is George Smith; the field stays editable, it is just filled in.
     expect(screen.getByLabelText('Full name', shown).props.value).toBe('George Smith');
-
-    // §13.5: the cap is on screen before the work begins, not after it is refused.
-    expect(screen.getByText('1 of 3 generations left this month', shown)).toBeOnTheScreen();
-
-    // §7.9's integrity note, on the page before a single field is typed.
-    expect(screen.getByText(ZERO_RESUME_GUARDRAIL_TITLE, shown)).toBeOnTheScreen();
-    expect(screen.getByText(ZERO_RESUME_GUARDRAIL_BODY, shown)).toBeOnTheScreen();
-
-    // Both of §7.9's required inputs are marked, and marked the same way: the name that prints at
-    // the top of the draft, and the JD the draft is written against. The name's marker also
-    // reserves its helper row, so a validation error swaps the line instead of pushing the rest of
-    // the form down — which is the height `ZeroResumeSkeleton` draws.
-    expect(screen.getAllByText('Required.', shown)).toHaveLength(2);
+    expect(screen.getByRole('radio', { name: 'None yet' })).toBeOnTheScreen();
+    expect(screen.getByText('1 of 3 generations left this month')).toBeOnTheScreen();
   });
 
-  it('refuses the press with a visible reason until the required fields are filled', async () => {
-    await renderZeroResume();
+  it('says what is missing on a press, then starts the run with the seed', async () => {
+    const client = await renderZero(undefined, fresh);
     await settle(NORMAL_MS);
 
-    // Clear the prefilled name: name and years are §7.9's two required fields.
-    await act(async () => fireEvent.changeText(screen.getByLabelText('Full name', shown), ''));
-    await act(async () => fireEvent.press(screen.getByLabelText('Draft my resume')));
-
-    expect(screen.getByText('Fill in the highlighted fields to start.')).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByLabelText('Write my draft')));
     expect(
-      screen.getByText('Add the name you want printed on the resume.', shown),
+      screen.getByText('Pick how long you have worked. None is a fine answer.', shown),
     ).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        'Tell us how many years you have worked. Type 0 if you are starting out.',
-        shown,
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Add the role you want, like Product Designer.', shown)).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
 
-    // Zero is a real answer here — filling both fields clears the refusal, and what is left to say
-    // is that the job description is still missing.
+    await act(async () => fireEvent.press(screen.getByRole('radio', { name: '6–10 years' })));
+    expect(screen.getByRole('radio', { name: '6–10 years' })).toBeSelected();
     await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Full name', shown), 'Asha Rao'),
+      fireEvent.changeText(screen.getByLabelText('Role you want', shown), 'Product Designer'),
     );
-    await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Years of experience', shown), '0'),
-    );
-    await act(async () => fireEvent.press(screen.getByLabelText('Draft my resume')));
+    await act(async () => fireEvent.press(screen.getByLabelText('Write my draft')));
+    await settle(START_MS);
 
-    expect(
-      screen.getByText('Add the job description you want the draft written against.'),
-    ).toBeOnTheScreen();
-    expect(mockReplace).not.toHaveBeenCalled();
-  });
-
-  it('extracts the description, starts a zero_resume run and lands on the progress screen', async () => {
-    await renderZeroResume();
-    await settle(NORMAL_MS);
-
-    await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Years of experience', shown), '4'),
-    );
-    await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Target job title', shown), 'Product Designer'),
-    );
-    await pasteJd();
-
-    await act(async () => fireEvent.press(screen.getByLabelText('Draft my resume')));
-    // Two mutations behind one press: the extraction, then the run it is generated against.
-    await settleChain();
-
-    const generation = mockStore.state.generations.find((entry) => entry.kind === 'zero_resume');
-    expect(generation).toBeDefined();
-    expect(generation?.jdId).toEqual(expect.any(String));
+    const started = client.getQueryData<Generation>(qk.generations.active());
+    expect(started?.kind).toBe('zero_resume');
+    expect(started?.zero).toEqual({
+      fullName: 'George Smith',
+      yearsBand: '6-10',
+      yearsExperience: 8,
+      targetTitle: 'Product Designer',
+    });
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/generations/[id]',
-      params: { id: generation?.id },
+      params: { id: started?.id },
     });
   });
 
-  it('replaces the CTA with the upgrade route once the generation quota is spent', async () => {
-    await renderZeroResume((client) =>
+  it('starts from the job when opened from one (ZERO 00b)', async () => {
+    const client = await renderZero('job_stripe', fresh);
+    await settle(NORMAL_MS);
+    await settle(NORMAL_MS);
+
+    expect(screen.getByLabelText('Role you want', shown).props.value).toBe(
+      'Senior Product Designer',
+    );
+    await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'None yet' })));
+    await act(async () => fireEvent.press(screen.getByLabelText('Write my draft')));
+    await settle(START_MS);
+
+    expect(client.getQueryData<Generation>(qk.generations.active())?.jobId).toBe('job_stripe');
+  });
+
+  it('replaces the button with the plans once the month is spent', async () => {
+    await renderZero(undefined, (client) =>
       client.setQueryData(qk.user.subscription(), spentSubscription),
     );
     await settle(NORMAL_MS);
 
-    expect(
-      screen.getByText("This month's 3 generations are used. Pro raises the monthly cap."),
-    ).toBeOnTheScreen();
-    // §13.5: the upsell replaces the action rather than interrupting the page with an alert.
-    expect(screen.queryByLabelText('Draft my resume')).toBeNull();
-
+    expect(screen.queryByLabelText('Write my draft')).toBeNull();
     await act(async () => fireEvent.press(screen.getByLabelText('See Pro plans')));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/upgrade',

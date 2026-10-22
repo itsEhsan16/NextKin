@@ -67,10 +67,9 @@ export function ResumeMenuHost({ surface = 'tabs' }: ResumeMenuHostProps) {
       open={open}
       onClose={closeMenu}
       // The confirm and rename steps are much shorter; changing the floor morphs the sheet height
-      // on the UI thread, the same move as the create sheet's 600 → 520.
+      // on the UI thread, the same move as the create sheet's 600 → 555.
       height={step === 'actions' ? sizes.sheetResumeMenuHeight : sizes.sheetPickerHeight}
-      // Only the rename step holds a field. `useAnimatedKeyboard` takes Android off adjustResize
-      // while it is mounted, so this stays off until there is something to lift.
+      // Only the rename step holds a field, so the keyboard lift mounts only for that step.
       avoidKeyboard={step === 'rename'}
       accessibilityLabel={`Actions for ${resume.title}`}
     >

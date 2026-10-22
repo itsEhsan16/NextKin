@@ -54,7 +54,7 @@ async function renderPractice(id = SET_ID) {
   );
 }
 
-describe('InterviewPracticeScreen (V2 §7.15 — no artboard)', () => {
+describe('InterviewPracticeScreen (V2 §7.15, INTERVIEW 04 / 05)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -82,7 +82,10 @@ describe('InterviewPracticeScreen (V2 §7.15 — no artboard)', () => {
     if (!first) throw new Error('fixture: empty set');
     expect(screen.getByRole('header', { name: set.title })).toBeOnTheScreen();
     expect(screen.getByText(`Question 1 of ${set.questions.length}`, shown)).toBeOnTheScreen();
-    expect(screen.getByText(/^2 confident · 1 needs work · \d+ to go$/, shown)).toBeOnTheScreen();
+    // The counts are pills under the bar (INTERVIEW 04 577:3877).
+    expect(screen.getByText('2 confident', shown)).toBeOnTheScreen();
+    expect(screen.getByText('1 needs work', shown)).toBeOnTheScreen();
+    expect(screen.getByText(`3 of ${set.questions.length} marked`, shown)).toBeOnTheScreen();
     expect(screen.getByText(first.prompt, shown)).toBeOnTheScreen();
     // §7.15: the model answer is hidden until asked for.
     expect(screen.queryByText(first.answer, shown)).toBeNull();
@@ -113,18 +116,16 @@ describe('InterviewPracticeScreen (V2 §7.15 — no artboard)', () => {
     await act(async () =>
       fireEvent.press(screen.getByRole('button', { name: 'Confident', ...shown })),
     );
-    expect(
-      await screen.findByText(/^1 confident · 1 needs work · \d+ to go$/, shown),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText('1 confident', shown)).toBeOnTheScreen();
+    expect(screen.getByText('1 needs work', shown)).toBeOnTheScreen();
     await settle(NORMAL_MS);
     expect(seeded().questions[0]?.mark).toBe('unmarked');
 
     await act(async () =>
       fireEvent.press(screen.getByRole('button', { name: 'Needs work', ...shown })),
     );
-    expect(
-      await screen.findByText(/^1 confident · 2 need work · \d+ to go$/, shown),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText('2 need work', shown)).toBeOnTheScreen();
+    expect(screen.getByText('1 confident', shown)).toBeOnTheScreen();
     await settle(NORMAL_MS);
     // §7.15 acceptance: marks persist — the repo holds it, not the screen.
     expect(seeded().questions[0]?.mark).toBe('needs_work');
@@ -156,10 +157,8 @@ describe('InterviewPracticeScreen (V2 §7.15 — no artboard)', () => {
     await renderPractice();
     await settle(NORMAL_MS);
 
-    // The filter is a tab; the mark of the same name is a button.
-    await act(async () =>
-      fireEvent.press(screen.getByRole('tab', { name: 'Needs work', ...shown })),
-    );
+    // The filter chip is named apart from the mark of the same words.
+    await act(async () => fireEvent.press(screen.getByLabelText('Needs work questions', shown)));
     expect(screen.getByText('Question 1 of 1', shown)).toBeOnTheScreen();
     const needsWork = seeded().questions.find((question) => question.mark === 'needs_work');
     if (!needsWork) throw new Error('fixture: nothing marked needs_work');
@@ -174,10 +173,8 @@ describe('InterviewPracticeScreen (V2 §7.15 — no artboard)', () => {
     expect(seeded().questions.find((q) => q.id === needsWork.id)?.mark).toBe('confident');
 
     // Re-choosing the filter re-reads the marks, and now nothing is under it.
-    await act(async () => fireEvent.press(screen.getByRole('tab', { name: 'All', ...shown })));
-    await act(async () =>
-      fireEvent.press(screen.getByRole('tab', { name: 'Needs work', ...shown })),
-    );
+    await act(async () => fireEvent.press(screen.getByLabelText('All questions', shown)));
+    await act(async () => fireEvent.press(screen.getByLabelText('Needs work questions', shown)));
     expect(screen.getByText('Nothing needs work', shown)).toBeOnTheScreen();
     expect(screen.getByLabelText('Finish', shown)).toBeOnTheScreen();
 

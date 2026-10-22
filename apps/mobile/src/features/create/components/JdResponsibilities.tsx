@@ -59,7 +59,7 @@ export function JdResponsibilities({ lines, onChange }: JdResponsibilitiesProps)
   );
 
   return (
-    <View style={{ gap: spacing[3] }}>
+    <View style={{ gap: spacing[4] }}>
       <Text variant="section" accessibilityRole="header">
         Responsibilities
       </Text>

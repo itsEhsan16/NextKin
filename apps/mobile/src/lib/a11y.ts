@@ -28,6 +28,15 @@ export const a11yHeader = (label?: string): AccessibilityProps => ({
 });
 
 /**
+ * Hides a copy that is fully transparent — one of two stacked labels that cross-fade on a state
+ * change — so assistive tech and test queries see only the copy that is showing.
+ */
+export const a11yHiddenWhen = (hidden: boolean): AccessibilityProps | null =>
+  hidden
+    ? { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' }
+    : null;
+
+/**
  * Caps on the OS font-size setting, which multiplies every size on top of the artboard scale.
  * The screens are proportional replicas of a 520px frame, so letting text grow 60% past its
  * designed size is what reintroduces the wrapping and truncation the scaling exists to prevent.

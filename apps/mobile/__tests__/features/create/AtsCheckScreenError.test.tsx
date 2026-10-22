@@ -33,7 +33,7 @@ describe('AtsCheckScreen error state', () => {
     useMockModeStore.setState({ mode: 'normal' });
   });
 
-  it('shows the canonical retry state when the library cannot be read', async () => {
+  it('shows the canonical retry state when the page cannot load', async () => {
     useMockModeStore.setState({ mode: 'error' });
     const queryClient = createQueryClient();
     clients.push(queryClient);
@@ -46,10 +46,10 @@ describe('AtsCheckScreen error state', () => {
     );
 
     expect(
-      await screen.findByText("Couldn't load your resumes", {}, { timeout: 15000 }),
+      await screen.findByText("Couldn't load your plan", {}, { timeout: 15000 }),
     ).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
     // Nothing is offered that would spend a check against an allowance the page never read.
-    expect(screen.queryByLabelText('Run the check')).toBeNull();
+    expect(screen.queryByLabelText('Check my resume')).toBeNull();
   }, 30000);
 });

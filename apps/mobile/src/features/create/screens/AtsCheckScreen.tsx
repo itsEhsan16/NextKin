@@ -1,142 +1,125 @@
-import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useState, type ReactNode } from 'react';
+import { View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import { useImportResume, useResumes, useStartGeneration, useSubscription } from '@/data/queries';
-import { pickDocument, useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import type { JdInput, Resume } from '@/data/models';
+import {
+  isUnreadableFileError,
+  useExtractJd,
+  useImportResume,
+  useSavedJobs,
+  useStartGeneration,
+  useSubscription,
+} from '@/data/queries';
+import { pickDocument, type PickedDocument } from '@/lib';
+import { scaledSheet, useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
-import { Text } from '@/ui/Text';
+import { useRevealStagger } from '@/ui/motion';
 
 import {
-  ATS_CHECK_HONESTY_NOTE,
-  ATS_CHECK_TITLE,
-  CHECK_FAILED,
-  FILE_CTA,
-  IMPORT_FAILED,
-  OPEN_CTA,
-  PICK_FAILED,
-  RUN_CTA,
-  UPGRADE_CTA,
+  ATS_CTA,
+  ATS_LEDE,
+  ATS_TITLE,
+  atsBlocker,
   atsCheckAllowance,
-  atsCheckNote,
-  resumeForSource,
-  type AtsCheckSource,
+  atsChecksLeftNote,
+  atsChecksSpentNote,
+  CHECK_FAILED,
+  UPGRADE_CTA,
+  type AtsJobMode,
 } from '../atsCheckSetup';
 import { AtsCheckSkeleton } from '../components/AtsCheckSkeleton';
-import { AtsCheckLibrarySheet, AtsCheckSourcePicker } from '../components/AtsCheckSourcePicker';
-import { UsageBanner } from '../components/UsageBanner';
+import { AtsJobSheet } from '../components/AtsJobSheet';
+import { AtsJobPart } from '../components/AtsJobPart';
+import { AtsFileRow, type AtsFileState } from '../components/AtsCheckRows';
+import { FLOW_ART, FlowHero } from '../components/FlowHero';
+import { UploadPromptRow } from '../components/TailorResumeRows';
+import { uploadedMeta } from '../components/tailorResumeMeta';
 import { useCreateActions } from '../hooks/useCreateActions';
 
-export type AtsCheckScreenProps = { resumeId?: string };
+export type AtsCheckScreenProps = {
+  /** Opens against this saved job instead of the most recent one. */
+  jobId?: string;
+};
+
+// ATS 01 / 01b at 390 (645:3 / 645:49), in artboard units.
+const HEADER_TO_ART = 14 / 0.75; // 645:7
+const HERO_TO_FILE: Record<AtsJobMode, number> = { job: 22 / 0.75, paste: 16 / 0.75 };
+
+type Upload =
+  | { file: PickedDocument; status: Exclude<AtsFileState, 'ready'> }
+  | { file: PickedDocument; status: 'ready'; resume: Resume };
 
 /**
- * The standalone ATS check (V2 §7.8 / §4.1): score any document against our own published rubric,
- * with the job description optional. No artboard exists for it (plan §8), so it is assembled from
- * the built primitives alone. The quota sits at the top because §13.5 wants the limit known
- * BEFORE the work, and the honesty note sits under it because §7.8 makes that claim part of the
- * number rather than a footnote on it.
+ * ATS 01 / 01b (645:3, 645:49) — "Check your resume": a resume made outside NextKin, read on
+ * upload, checked against a saved job (the most recent one, with Change) or a pasted description
+ * (V2 §7.8, toreview §73). A job is always set, so every result can carry a score (D-15).
+ *
+ * The file is read the moment it is picked, so the row can say what was read and a scan is
+ * refused before anything is spent. The quota sits on the bar, over the button that spends it.
  */
-export function AtsCheckScreen({ resumeId }: AtsCheckScreenProps) {
-  const { motion, spacing } = useTheme();
-  const reduced = useReducedMotion();
+export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
+  const { spacing, s } = useTheme();
+  const styles = useStyles();
   const actions = useCreateActions();
-  // The score panel and the rubric belong to the resumes area, whose actions hook is frozen here.
-  const router = useRouter();
 
-  const resumes = useResumes();
+  const savedJobs = useSavedJobs();
   const subscription = useSubscription();
-  const start = useStartGeneration();
   const importResume = useImportResume();
+  const extract = useExtractJd();
+  const start = useStartGeneration();
 
-  const [source, setSource] = useState<AtsCheckSource | null>(
-    resumeId ? { kind: 'library', resumeId } : null,
-  );
+  const [upload, setUpload] = useState<Upload | null>(null);
+  const [mode, setMode] = useState<AtsJobMode>('job');
+  const [pickedJobId, setPickedJobId] = useState(jobId);
+  const [pasted, setPasted] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [picking, setPicking] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
+  const [refused, setRefused] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  // Cover letters are not scored against the resume rubric, so the library is narrowed to resumes.
-  const documents = useMemo(
-    () => (resumes.data ?? []).filter((resume) => resume.docType === 'resume'),
-    [resumes.data],
-  );
-  const file = source?.kind === 'file' ? source.file : undefined;
-  const resume = resumeForSource(documents, source);
-  // Safe to read straight through: a subscription that failed to load never reaches here.
-  const allowance = atsCheckAllowance(subscription.data?.usage);
-  // A document that already carries a number costs nothing to open — see the primary below.
-  const scored = !file && resume?.atsScore != null;
-  const busy = importResume.isPending || start.isPending;
+  const jobs = savedJobs.data ?? [];
+  const job = jobs.find((item) => item.id === pickedJobId) ?? jobs[0];
 
-  const startCheck = useCallback(
-    (id: string) =>
-      start.mutate(
-        { kind: 'ats_check', sourceResumeId: id },
-        {
-          onSuccess: (generation) => actions.openGeneration(generation.id),
-          onError: () => setFailure(CHECK_FAILED),
-        },
-      ),
-    [actions, start],
-  );
-
-  const chooseFile = useCallback(async () => {
-    setFailure(null);
-    setPicking(true);
+  const chooseFile = async () => {
+    const file = await pickDocument(['pdf', 'docx']);
+    if (!file) return;
+    setFailed(false);
+    setUpload({ file, status: 'reading' });
     try {
-      const picked = await pickDocument(['pdf', 'docx', 'txt']);
-      // A cancel and an unavailable picker are one outcome: no file, and the page is untouched.
-      if (picked) setSource({ kind: 'file', file: picked });
-      else setFailure(PICK_FAILED);
-    } finally {
-      setPicking(false);
+      const { resume } = await importResume.mutateAsync(file);
+      setUpload({ file, status: 'ready', resume });
+    } catch (error) {
+      setUpload({ file, status: isUnreadableFileError(error) ? 'unreadable' : 'failed' });
     }
-  }, []);
+  };
 
-  const submit = useCallback(() => {
-    setFailure(null);
-    if (file) {
-      // §7.4: the parse also returns a profile DRAFT — not applied here, and not mentioned.
-      importResume.mutate(file, {
-        onSuccess: ({ resume: imported }) => startCheck(imported.id),
-        onError: () => setFailure(IMPORT_FAILED),
-      });
-      return;
-    }
-    if (resume) startCheck(resume.id);
-  }, [file, importResume, resume, startCheck]);
-
-  const enter = (index: number) =>
-    reduced
-      ? undefined
-      : FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base);
+  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
+  // with its data already here slides in whole with the push.
+  const enter = useRevealStagger(!savedJobs.isPending && !subscription.isPending);
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
       <Screen
+        keyboard
         scroll
         edges={['top', 'bottom']}
-        header={<ScreenHeader title={ATS_CHECK_TITLE} onBack={actions.goBack} />}
-        headerStyle={{ paddingBottom: spacing[4] }}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
+        header={<ScreenHeader title="ATS check" showTitle={false} onBack={actions.goBack} />}
+        headerStyle={{ paddingBottom: s(HEADER_TO_ART) }}
+        contentContainerStyle={{ paddingBottom: spacing[8] }}
         footer={footer}
       >
         {children}
       </Screen>
-
-      {/* Always a sibling of the page, never a child of its scroller. */}
-      <AtsCheckLibrarySheet
+      {/* Sibling of the page, never a child of its scroller: its root is an absolute fill. */}
+      <AtsJobSheet
         open={sheetOpen}
-        documents={documents}
-        selectedId={resume?.id}
-        onSelect={(id) => {
-          setFailure(null);
-          setSource({ kind: 'library', resumeId: id });
+        jobs={jobs}
+        selectedId={job?.id}
+        onPick={(id) => {
+          setPickedJobId(id);
           setSheetOpen(false);
         }}
         onClose={() => setSheetOpen(false)}
@@ -144,16 +127,15 @@ export function AtsCheckScreen({ resumeId }: AtsCheckScreenProps) {
     </View>
   );
 
-  // The inert bar is part of the loading state: it owns the bottom inset, so a page without one
-  // would grow a footer out of nothing the moment the queries land.
-  if (resumes.isPending || subscription.isPending) {
+  // The inert bar is part of the loading state: it owns the bottom safe-area inset.
+  if (savedJobs.isPending || subscription.isPending) {
     return page(
       <AtsCheckSkeleton />,
-      <StickyActionBar primary={{ label: RUN_CTA, disabled: true }} />,
+      <StickyActionBar floating primary={{ label: ATS_CTA, disabled: true }} />,
     );
   }
 
-  const errorPage = (title: string, retry: () => void) =>
+  const retry = (title: string, onAction: () => void) =>
     page(
       <StateView
         tone="danger"
@@ -161,92 +143,103 @@ export function AtsCheckScreen({ resumeId }: AtsCheckScreenProps) {
         title={title}
         message="Check your connection and try again."
         actionLabel="Try again"
-        onAction={retry}
+        onAction={onAction}
       />,
     );
+  // An allowance that could not be read is unknown, not unlimited (§13.5).
+  if (subscription.isError)
+    return retry("Couldn't load your plan", () => void subscription.refetch());
+  if (savedJobs.isError)
+    return retry("Couldn't load your saved jobs", () => void savedJobs.refetch());
 
-  if (resumes.isError) {
-    return errorPage("Couldn't load your resumes", () => void resumes.refetch());
-  }
-  // An allowance that could not be read is unknown, not unlimited: nothing may be spent against
-  // a cap the page never showed (§13.5).
-  if (subscription.isError) {
-    return errorPage("Couldn't load your plan", () => void subscription.refetch());
-  }
+  const allowance = atsCheckAllowance(subscription.data.usage);
+  const resume = upload?.status === 'ready' ? upload.resume : undefined;
+  const blocker = atsBlocker({ hasFile: resume != null, mode, hasJob: job != null, pasted });
+  const busy = extract.isPending || start.isPending;
 
-  // An empty library is not a dead end: checking a document the app has never seen is the whole
-  // point of the standalone check.
-  if (!resume && !file) {
-    return page(
-      <StateView icon="file-alt" title="No resumes to check yet" />,
-      <StickyActionBar
-        note={failure ?? undefined}
-        primary={{
-          label: FILE_CTA,
-          icon: 'file-upload',
-          loading: picking,
-          onPress: () => void chooseFile(),
-        }}
-      />,
-    );
-  }
+  const check = () => {
+    setFailed(false);
+    if (blocker || !resume) {
+      setRefused(true);
+      return;
+    }
+    const input: JdInput =
+      mode === 'job' && job ? { source: 'job', jobId: job.id } : { source: 'paste', text: pasted };
+    extract.mutate(input, {
+      onSuccess: (draft) =>
+        start.mutate(
+          {
+            kind: 'ats_check',
+            sourceResumeId: resume.id,
+            jdId: draft.id,
+            ...(mode === 'job' && job ? { jobId: job.id } : {}),
+          },
+          {
+            onSuccess: (generation) => actions.openGeneration(generation.id),
+            onError: () => setFailed(true),
+          },
+        ),
+      onError: () => setFailed(true),
+    });
+  };
 
-  /**
-   * §13.5 gates the ACTION that costs a check, not the screen. An already-scored document opens
-   * its panel for free, so that branch is tested FIRST and stays reachable with the month's
-   * allowance spent; only the branch that would start a run is replaced by the upsell.
-   */
-  const primary =
-    scored && resume
-      ? {
-          label: OPEN_CTA,
-          icon: 'chart-line',
-          onPress: () =>
-            router.push({ pathname: '/resumes/[id]/score', params: { id: resume.id } }),
-        }
-      : allowance.spent
-        ? { label: UPGRADE_CTA, onPress: () => actions.openUpgrade('ats_checks') }
-        : { label: RUN_CTA, icon: 'magic', loading: busy, onPress: submit };
+  const note = failed
+    ? CHECK_FAILED
+    : allowance.spent
+      ? atsChecksSpentNote(allowance.limit)
+      : refused && blocker
+        ? blocker
+        : allowance.known
+          ? atsChecksLeftNote(allowance.used, allowance.limit)
+          : undefined;
 
   return page(
     <>
-      {allowance.limit > 0 ? (
-        <Animated.View entering={enter(0)}>
-          <UsageBanner used={allowance.used} limit={allowance.limit} noun="check" />
-        </Animated.View>
-      ) : null}
-
-      {/* §7.8: the honesty note is on the screen that buys the number, not buried behind it. */}
-      <Animated.View entering={enter(1)}>
-        <Text variant="captionRegular" color="textSecondary">
-          {ATS_CHECK_HONESTY_NOTE}
-        </Text>
+      <Animated.View entering={enter(0)}>
+        <FlowHero
+          title={ATS_TITLE}
+          lede={ATS_LEDE[mode]}
+          art={mode === 'job' ? FLOW_ART.atsUpload : FLOW_ART.atsPaste}
+        />
       </Animated.View>
-
+      <Animated.View entering={enter(1)} style={{ marginTop: s(HERO_TO_FILE[mode]) }}>
+        {upload ? (
+          <AtsFileRow
+            fileName={upload.file.name}
+            state={upload.status}
+            meta={upload.status === 'ready' ? uploadedMeta(upload.resume) : undefined}
+            onChange={() => void chooseFile()}
+          />
+        ) : (
+          <UploadPromptRow onPress={() => void chooseFile()} />
+        )}
+      </Animated.View>
       <Animated.View entering={enter(2)}>
-        <AtsCheckSourcePicker
-          resume={resume}
-          file={file}
-          picking={picking}
-          onChooseResume={() => setSheetOpen(true)}
-          onChooseFile={() => void chooseFile()}
-          onUseLibrary={() => {
-            setFailure(null);
-            setSource(null);
-          }}
-          // The rubric is addressed by document, so the link only exists once one is chosen.
-          onOpenRubric={
-            resume
-              ? () => router.push({ pathname: '/resumes/[id]/rubric', params: { id: resume.id } })
-              : undefined
-          }
+        <AtsJobPart
+          mode={mode}
+          job={job}
+          pasted={pasted}
+          onPaste={setPasted}
+          onChangeJob={() => setSheetOpen(true)}
+          onPasteMode={() => setMode('paste')}
+          onJobMode={() => setMode('job')}
+          pasteError={refused && mode === 'paste' ? blocker : undefined}
         />
       </Animated.View>
     </>,
-    <StickyActionBar note={atsCheckNote({ failure, scored, allowance })} primary={primary} />,
+    <StickyActionBar
+      floating
+      note={note}
+      noteTone={failed || (refused && blocker) ? 'danger' : 'neutral'}
+      primary={
+        allowance.spent
+          ? { label: UPGRADE_CTA, onPress: () => actions.openUpgrade('ats_checks') }
+          : { label: ATS_CTA, loading: busy, onPress: check }
+      }
+    />,
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet(() => ({
   root: { flex: 1 },
-});
+}));

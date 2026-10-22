@@ -1,0 +1,515 @@
+@import 'tailwindcss';
+
+/**
+ * NextKin web design tokens.
+ *
+ * Transcribed from the Figma variable collection bound to `286:180` (01 · Home). This file and
+ * `tokens.ts` are the ONLY places a raw value may appear — everything else reads a token, which
+ * is the web half of the rule that has held across 27 mobile screens.
+ *
+ * This is deliberately not mobile's palette. The web board is built on slate neutrals and an
+ * indigo brand (#4f46e5); `apps/mobile/src/theme` is built on a custom ink ramp and #4733F9.
+ * They share Plus Jakarta Sans and nothing else. Do not port values between them.
+ *
+ * Only the Home board binds variables — the sidebar (304:497 / 304:600) is drawn with raw
+ * values. Those get reconciled into this file as each screen is built, the same "lock in
+ * Phase 0, refine per screen" rule the mobile plan uses.
+ */
+@theme {
+  /* Text */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-inverse: #ffffff;
+  --color-text-brand: #4f46e5;
+
+  /* Brand */
+  --color-brand-600: #4f46e5;
+  --color-brand-on-dark: #e4e1fc;
+  /*
+   * The Jobs board (304:2332) binds `color/brand/700` for its actions — a genuinely darker
+   * indigo, confirmed via `get_variable_defs`. Since the compact pass (`toreview.md` §16) every
+   * page's primary action and accent is Home's `brand-600`, and this is its hover/pressed shade.
+   */
+  --color-brand-700: #4338ca;
+
+  /* Neutrals */
+  --color-neutral-0: #ffffff;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  /*
+   * Also Jobs-board-bound (`color/neutral/400` and `/800`), lighter and darker respectively than
+   * Home's equivalent text roles — the eyebrow/placeholder text and the H1/job-title text. See
+   * `toreview.md` for the header/H1 divergence from Home this represents.
+   */
+  --color-neutral-400: #94a3b8;
+  /* Drawn raw on the same board: the label and chevron ink of the six filter chips and the sort
+     control (304:2410-2449) — slate's own 700 step, between `text-secondary` and `neutral-800`. */
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+
+  /* Surfaces */
+  --color-surface-card: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  /* The ink primary button (`toreview.md` §32): near-black fill, one step lighter on hover.
+     Same values as `text-primary` and `neutral-800`, named for the role they play. */
+  --color-surface-inverse: #0f172a;
+  --color-surface-inverse-hover: #1e293b;
+  --color-surface-brand: #fbfaff;
+  /* The Jobs "Tailor your resume" AI callout (304:2761) — visibly more saturated than
+     `surface-brand`, not a rounding difference. */
+  --color-surface-brand-strong: #f2f2fd;
+
+  /* Borders */
+  --color-border-default: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-border-brand: #ede9fe;
+  /*
+   * The Jobs board drew three more greys within a few RGB units of the two above (`#e2e5ee`,
+   * `#eef0f5`, `#e8eaf1`, plus a fourth, `#eaecf2`, folded in at transcription time). The
+   * premium pass (`toreview.md` §32) collapses them: five near-identical hairlines read as
+   * noise, not hierarchy. The names survive as value aliases until the class sweep retires
+   * them — `divider` and `card` are `border-default`, `faint` is `border-subtle`.
+   */
+  --color-border-divider: #e2e8f0;
+  --color-border-faint: #f1f5f9;
+  --color-border-card: #e2e8f0;
+  /* The selected job card's 2px ring (304:2451) — kept distinct from `border-brand` and the
+     sidebar's `button-rim` despite being numerically close, matching this file's own precedent
+     of transcribing a board's actual value over merging near-duplicates when the value repeats
+     as one specific, deliberate UI state (here: selection) rather than incidental body text. */
+  --color-border-selected: #6366f1;
+
+  /* Status */
+  --color-danger-dot: #ff4148;
+  --color-success-text: #15803d;
+  --color-success-surface: #ecfdf5;
+
+  /*
+   * The Applications board's status pills (286:1234), bound to that board's own variables
+   * (`brand/100`, `success/50` and `/600`, `warning/50`, `danger/50` and `/600`), except Screening's
+   * ink, which it draws raw. `success-text`/`success-surface` above stay the match badge's pair:
+   * the pills use a lighter surface with a brighter ink, and the two don't share.
+   */
+  --color-brand-100: #e0e7ff;
+  --color-success-50: #dcfce7;
+  --color-success-600: #16a34a;
+  --color-warning-50: #fef3c7;
+  --color-warning-text: #b7791f;
+  --color-danger-50: #fee2e2;
+  --color-danger-600: #dc2626;
+
+  /*
+   * The Resumes board's document tiles (304:3127, 3151, 3175, 3199, 3223): five tints, each a pale
+   * ground under the same document glyph in a stronger ink, drawn raw. A document keeps its tint
+   * wherever it sorts (`Resume.accent`).
+   */
+  --color-tile-indigo: #eef0fe;
+  --color-tile-indigo-ink: #6366f1;
+  --color-tile-pink: #fdecf3;
+  --color-tile-pink-ink: #ec4899;
+  --color-tile-blue: #e9f1fe;
+  --color-tile-blue-ink: #3b82f6;
+  --color-tile-green: #e8f8ee;
+  --color-tile-green-ink: #22c55e;
+  --color-tile-amber: #fdf3e0;
+  --color-tile-amber-ink: #f59e0b;
+
+  /*
+   * The Documents board (286:2026), bound to its own variables: `neutral/50` (a file tile's
+   * ground), `brand/50` (the DOCX tile's ground and the certificate's edge), `info/50` and `/600`
+   * (the Cover Letter tag). The four format inks on the file tiles are drawn raw.
+   */
+  --color-neutral-50: #f8fafc;
+  --color-brand-50: #eef2ff;
+  --color-info-50: #e0f2fe;
+  --color-info-600: #0284c7;
+  --color-file-pdf: #ef4444;
+  --color-file-docx: #2563eb;
+  --color-file-xlsx: #10b981;
+  --color-file-jpg: #f59e0b;
+
+  /* The Account board (307:3443): the brand-tinted outline its active tab, Edit buttons and
+     "Upgrade Now" share. Drawn raw, #c7cbfa (the Edit buttons' #dcdffa is folded in). */
+  --color-border-brand-strong: #c7cbfa;
+
+  /* Settings → Privacy & data (a mockup, not a board): the danger action's soft edge, which is the
+     danger red at 40% on white, resolved; and a darker red for its ink on the danger tint and on a
+     menu's highlight, where `danger-600` falls under 4.5:1. */
+  --color-border-danger: #f1a8a8;
+  --color-danger-text: #b91c1c;
+
+  /* Jobs board one-offs: the company-name text on every job card/detail panel (distinct from
+     `text-tertiary`, used consistently for this one role), and the handwritten illustration
+     caption colour (imported raw, same treatment as `radius-panel`). */
+  --color-text-company: #78839a;
+  --color-text-caveat: #3b28f0;
+
+  /*
+   * The primary button is drawn as two stacked shapes, not a flat fill (286:722): a lighter rim
+   * with a deeper face inset ~1px inside it, which reads as a soft bevel. Neither value is
+   * brand/600 — #4f46e5 sits between them — so the pair is imported from the board the way
+   * `danger-dot` and `radius-panel` were.
+   */
+  --color-button-rim: #6461f0;
+  --color-button-face: #4039d6;
+
+  /* Type — Plus Jakarta Sans throughout, wired up in layout.tsx via next/font */
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  /* The Jobs board's one handwritten caption only (304:2335) — also wired in layout.tsx. */
+  --font-caveat: var(--font-caveat-raw), cursive;
+
+  /*
+   * The compact ramp (`toreview.md` §16). The boards are drawn in a 1536px frame, and building
+   * them pixel-for-pixel made every screen too big for one laptop window, so the ramp is set to
+   * a LinkedIn-like density instead: 14px primary text, 12-13px secondary, 15px titles, a 24px
+   * page title. The boards stay the reference for hierarchy and proportion, not for raw sizes.
+   * Where a role carries no weight, a `font-*` utility layers it on per use.
+   */
+  /* The one greeting larger than a page title: the AI Assistant's welcome (768:6, `toreview.md`
+     §102). Not for page titles, which stay display-l. */
+  --text-hero: 32px;
+  --text-hero--line-height: 40px;
+  --text-hero--letter-spacing: -0.02em;
+  --text-hero--font-weight: 800;
+
+  --text-display-l: 24px;
+  --text-display-l--line-height: 30px;
+  --text-display-l--letter-spacing: -0.015em;
+  --text-display-l--font-weight: 700;
+
+  --text-h1: 20px;
+  --text-h1--line-height: 26px;
+  --text-h1--letter-spacing: -0.01em;
+  --text-h1--font-weight: 600;
+
+  --text-h2: 18px;
+  --text-h2--line-height: 24px;
+  --text-h2--letter-spacing: -0.008em;
+  --text-h2--font-weight: 600;
+
+  --text-title-l: 15px;
+  --text-title-l--line-height: 20px;
+  --text-title-l--letter-spacing: -0.003em;
+  --text-title-l--font-weight: 600;
+
+  /* Primary UI text — inputs, buttons, tabs, list text, nav labels (`toreview.md` §29). */
+  --text-body-l: 14px;
+  --text-body-l--line-height: 20px;
+  --text-body-l--letter-spacing: 0px;
+
+  /* Running copy — the job description and its lists: the primary size on a looser line. */
+  --text-prose: 14px;
+  --text-prose--line-height: 22px;
+  --text-prose--letter-spacing: 0px;
+
+  /* Secondary text — subtitles, card body. */
+  --text-body-m: 13px;
+  --text-body-m--line-height: 20px;
+  --text-body-m--letter-spacing: 0px;
+
+  --text-body-s: 12px;
+  --text-body-s--line-height: 18px;
+  --text-body-s--letter-spacing: 0px;
+
+  /* Pills, badges, hints. Weight 500 is what tokens.ts always said; it used to render 400. */
+  --text-caption-m: 12px;
+  --text-caption-m--line-height: 16px;
+  --text-caption-m--letter-spacing: 0px;
+  --text-caption-m--font-weight: 500;
+
+  --text-micro: 11px;
+  --text-micro--line-height: 14px;
+  --text-micro--letter-spacing: 0.002em;
+  --text-micro--font-weight: 500;
+
+  /* Space — the board's scale, on top of Tailwind's own 4px base */
+  --spacing-token-2: 2px;
+  --spacing-token-4: 4px;
+  --spacing-token-6: 6px;
+  --spacing-token-8: 8px;
+  --spacing-token-12: 12px;
+  --spacing-token-16: 16px;
+  --spacing-token-20: 20px;
+  --spacing-token-24: 24px;
+
+  /*
+   * Control heights — the compact density's three (`toreview.md` §16). Every control on every
+   * screen takes one of them, so the header on Home and the header on Jobs cannot drift apart
+   * again. In the spacing namespace, so `h-control-md`, `size-control-md` and so on exist.
+   * Small: filter chips and sort. Medium: header search, header buttons, bell, avatar.
+   * Large: the page search, Apply, Save Job.
+   */
+  --spacing-control-sm: 30px;
+  --spacing-control-md: 36px;
+  --spacing-control-lg: 40px;
+
+  /*
+   * Radius — tightened for the premium pass (`toreview.md` §32). The board-era 8/12/16/20 scale
+   * read rounder and more consumer than the register the app aims for now; controls sit on `md`,
+   * cards on `lg`, and nothing but avatars and dots is fully round.
+   */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+  /* The sidebar panel (304:497). No Home equivalent — imported raw from that board. */
+  --radius-panel: 31px;
+
+  /*
+   * Elevation (`toreview.md` §32). Cards sit on their hairline border with only a whisper of
+   * depth; real shadow is reserved for surfaces that float over the page (menus, popovers). The
+   * board-era card/brand/selected trio is gone — selection is the indigo border alone.
+   */
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-popover: 0 4px 16px rgba(15, 23, 42, 0.08);
+  /* A control lifted off its track: the active segment, the picked file (toreview §131). */
+  --shadow-raised: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+/**
+ * Motion. Durations and easings are tokens here exactly as they are in `theme/motion.ts` on
+ * mobile — no component may inline a duration. The mobile spec's values carry over because they
+ * describe the product's feel, not its layout: press 120ms, base 220ms, snappy 250ms, and the
+ * standard curve cubic-bezier(0.2, 0, 0, 1).
+ *
+ * The durations live under `--transition-duration-*`, not a bare `--duration-*`. Tailwind v4
+ * only wires the `duration-*` utility class up to that specific namespace — `--ease-*` genuinely
+ * is the namespace `ease-*` reads from (which is why easing worked), but duration's is prefixed.
+ * A bare `--duration-press: 120ms` still declares a perfectly usable CSS custom property
+ * (`var(--duration-press)` resolves fine inside an arbitrary value, which is how this went
+ * unnoticed for a while), it just never registers `duration-press` as a utility — every
+ * `duration-*` class in the app was silently falling back to Tailwind's own default 150ms
+ * instead of the value written here. Caught while wiring `navRowTransition`
+ * (`src/navigation/navRowMotion.ts`), which needed two different durations on one element and so
+ * checked the actual computed value rather than assuming the class worked. See `toreview.md` §11.
+ */
+@theme {
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+  --transition-duration-press: 120ms;
+  --transition-duration-fast: 180ms;
+  --transition-duration-base: 220ms;
+  --transition-duration-snappy: 250ms;
+  --transition-duration-meter: 800ms;
+  /* A carousel's step: Home's Top Job Matches sliding one card along (`toreview.md` §101). */
+  --transition-duration-slide: 600ms;
+  /* One breath of an illustration floating while work runs (`toreview.md` §85). */
+  --transition-duration-float: 2800ms;
+
+  /*
+   * Pressed feedback (`toreview.md` §84): buttons and clickable cards settle to 98% while held,
+   * and menus and tooltips grow from it. Mobile presses to 0.97; the web's targets are larger
+   * and a pointer sits on them, so the step is a touch smaller.
+   */
+  --scale-pressed: 0.98;
+
+  /*
+   * Mount animations (`animate-*`). `reveal` fades content in where it replaces a skeleton or a
+   * tab's panel; `pop-in` / `pop-out` are the floating surfaces (menus, tooltips) appearing and
+   * leaving. In and out need different keyframe names: Radix keeps a closing surface mounted
+   * only when its `animation-name` changes, so one reversed keyframe would vanish at once.
+   */
+  --animate-reveal: reveal var(--transition-duration-fast) var(--ease-decelerate) both;
+  --animate-pop-in: pop-in var(--transition-duration-fast) var(--ease-decelerate);
+  --animate-pop-out: pop-out var(--transition-duration-press) var(--ease-standard) forwards;
+  /*
+   * A meter arriving with its data (`toreview.md` §85): a score ring sweeps up from empty and a
+   * progress bar grows from nothing, over `meter`, when they replace a skeleton. `backwards`, not
+   * `both`: once the arrival ends nothing holds the property, so a later value change still eases
+   * on the element's own transition.
+   */
+  --animate-ring-sweep: ring-sweep var(--transition-duration-meter) var(--ease-decelerate) backwards;
+  --animate-meter-grow: meter-grow var(--transition-duration-meter) var(--ease-decelerate) backwards;
+  /*
+   * Art that is "working" (the Upload a JD robot while a description is read): it rises a little
+   * and settles, on a loop, only while the work runs. Reduced motion stills it (the global rule).
+   */
+  --animate-float: float var(--transition-duration-float) var(--ease-standard) infinite;
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      scale: var(--scale-pressed);
+    }
+  }
+  @keyframes pop-out {
+    to {
+      opacity: 0;
+      scale: var(--scale-pressed);
+    }
+  }
+  @keyframes ring-sweep {
+    from {
+      stroke-dashoffset: var(--ring-empty);
+    }
+  }
+  @keyframes meter-grow {
+    from {
+      width: 0;
+    }
+  }
+  @keyframes float {
+    50% {
+      translate: 0 -4px;
+    }
+  }
+}
+
+/**
+ * Focus rings never flash (`toreview.md` §84). Tailwind's `transition-colors` includes
+ * `outline-color`, and an element's resting outline colour is `currentColor`, so a ring that
+ * switches on with `focus-visible:outline-2` used to tween from the text colour (slate on outline
+ * buttons, white on brand ones) to indigo over 120ms. Resting on the brand colour makes that tween
+ * brand-to-brand. Every ring in the app names its own colour, so this changes nothing at rest.
+ */
+@layer base {
+  * {
+    outline-color: var(--color-brand-600);
+  }
+}
+
+/**
+ * The page never shifts sideways between routes (`toreview.md` §84). Jobs, Applications,
+ * Documents and Resumes fill the window and never scroll, while Home, Settings and Account do, so
+ * on Windows the scrollbar came and went and everything moved by its width. The gutter is now
+ * always reserved.
+ *
+ * Radix menus lock page scroll while open and pad the body by the scrollbar's width to make up
+ * for it disappearing. With the gutter reserved the scrollbar's space never goes away, so that
+ * padding would shove the whole app left on every menu open; it is cancelled here.
+ */
+html {
+  scrollbar-gutter: stable;
+}
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+}
+
+/**
+ * Route changes cross-fade (`toreview.md` §84). Each page's content sits in `PageTransition`
+ * (React's `<ViewTransition>`), which tags the leaving page `page-exit` and the arriving one
+ * `page-enter`: the old fades out over `press` while the new fades in over `fast`.
+ *
+ * The rest of the document is not animated. The root's old snapshot is hidden and its new one is
+ * the live page, so nothing outside the content blinks; the sidebar and the top bar carry their own
+ * names (`app-sidebar`, `app-topbar`) and are pinned the same way, drawn above the content so a
+ * page scrolled under the top bar can't paint over it mid-fade. Clicks pass through the overlay
+ * while it runs.
+ */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-group(root),
+::view-transition-new(root),
+::view-transition-group(app-sidebar),
+::view-transition-new(app-sidebar),
+::view-transition-group(app-topbar),
+::view-transition-new(app-topbar) {
+  animation: none;
+}
+::view-transition-old(root),
+::view-transition-old(app-sidebar),
+::view-transition-old(app-topbar) {
+  display: none;
+}
+::view-transition-group(app-sidebar),
+::view-transition-group(app-topbar) {
+  z-index: 10;
+}
+::view-transition-old(.page-exit) {
+  animation: page-out var(--transition-duration-press) var(--ease-standard) both;
+}
+::view-transition-new(.page-enter) {
+  animation: page-in var(--transition-duration-fast) var(--ease-decelerate) both;
+}
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/**
+ * V2 8.7 requires `prefers-reduced-motion` to be honoured, and mobile collapses every spring to
+ * a single frame under `useReducedMotion()`. This is the web equivalent, applied globally so an
+ * individual component can never forget it.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* View-transition pseudo-elements aren't matched by `*::before/after`; a route change swaps. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/**
+ * Window-height steps for the sidebar (`toreview.md` §29). Its rows are 40px (`control-lg`), and
+ * whole it needs 735px of window height. Below `short` the Upgrade card drops its description
+ * (691px, which fits a 1536×730 window); below `shorter` the expanded rows step down to
+ * `control-md` (651px, which fits 1396×670). Under 651 the panel scrolls, as it did under 655
+ * before. Measured in Edge: retune both if the sidebar's content changes height.
+ */
+@custom-variant short (@media (max-height: 759px));
+@custom-variant shorter (@media (max-height: 709px));
+
+/**
+ * The sidebar's two states, decided in CSS so the first paint is already right
+ * (`toreview.md` §84). `rail:` styles the collapsed rail; unprefixed classes are the expanded
+ * panel.
+ *
+ * - From 1280px up, the rail is what the user chose: `<html data-sidebar="collapsed">`, set
+ *   before paint by `navigation/sidebarBoot.ts` and kept in step by its toggle.
+ * - Below 1280 the window has no room for the panel beside the page, so the sidebar is the rail
+ *   unless it has been opened over the page (`data-overlay` on the shell, `Sidebar.tsx`).
+ *
+ * Declared after `shorter`: both set `--nav-row`, and the rail's 40px squares must win.
+ */
+@custom-variant rail {
+  @media (width >= 80rem) {
+    &:where([data-sidebar='collapsed'] *) {
+      @slot;
+    }
+  }
+  @media (width < 80rem) {
+    &:where([data-sidebar-shell]:not([data-overlay]) *) {
+      @slot;
+    }
+  }
+}
+
+/**
+ * The page's left gutter: what the sidebar takes out of the window. 240px beside the expanded
+ * panel, 72 beside the rail — and 72 below 1280 even when the panel is open, since there it opens
+ * over the page instead of pushing it (`toreview.md` §84).
+ */
+:root {
+  --sidebar-gutter: 72px;
+}
+@media (width >= 80rem) {
+  :root:not([data-sidebar='collapsed']) {
+    --sidebar-gutter: 240px;
+  }
+}

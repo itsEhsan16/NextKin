@@ -6,13 +6,14 @@ import { useProfile, useUpdateSkills } from '@/data/queries';
 import { countOf, listsEqual } from '../chipEdits';
 import { ChipListEditor } from '../components/ChipListEditor';
 import { useProfileActions } from '../hooks/useProfileActions';
+import { PROFILE_ROW_ART } from '../profileRowArt';
 
 /** A claim about our own rubric — never about any employer's software. */
-const EMPTY = `Skills are what the ${SCORE_LABEL} counts when it reads a resume.`;
+const NOTE = `Skills are what the ${SCORE_LABEL} counts when it reads a resume.`;
 
 /**
- * The skill list on the career profile (V2 §7.3). Uncapped: the count line says how many there
- * are and leaves the judgement to the reader.
+ * The skill list on the career profile (V2 §7.3, PROFILE 09 577:7976). Uncapped: the summary says
+ * how many there are and leaves the judgement to the reader.
  */
 export function SkillsScreen() {
   const actions = useProfileActions();
@@ -30,13 +31,20 @@ export function SkillsScreen() {
   return (
     <ChipListEditor
       title="Skills"
+      summary={{
+        art: PROFILE_ROW_ART.skills,
+        artWidth: 52,
+        title: `${countOf(items.length, 'skill')} on your profile`,
+        lede: items.length > 0 ? 'Tap a skill to remove it.' : 'Add the skills you work with.',
+      }}
+      listTitle="Your skills"
       noun="skill"
       items={items}
       suggestions={SKILL_SUGGESTIONS}
+      suggestionsIn="card"
       placeholder="Type a skill"
       addLabel="Add a skill"
-      countLine={(count) => countOf(count, 'skill')}
-      emptyMessage={EMPTY}
+      note={NOTE}
       onChange={setDraft}
       loading={profile.isPending}
       error={profile.isError}
@@ -45,7 +53,7 @@ export function SkillsScreen() {
       saving={save.isPending}
       failed={save.isError}
       onSave={() => {
-        if (draft) save.mutate(draft, { onSuccess: actions.goBack });
+        if (draft) save.mutate(draft, { onSuccess: () => actions.backWith('Skills saved') });
       }}
       onClose={actions.goBack}
     />

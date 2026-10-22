@@ -1,8 +1,9 @@
 import { View } from 'react-native';
 
+import { SectionCard } from '@/features/profile/components/cards';
+import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
-import { RowGroup } from '@/ui/ListRow';
 import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
@@ -10,13 +11,15 @@ import { TextField } from '@/ui/TextField';
 import { EMAIL_HELPER } from '../accountForms';
 import { AccountStatusLine } from './AccountStatusLine';
 
-const GROUP_TITLE = 'EMAIL';
+const GROUP_TITLE = 'Email';
 export const SEND_VERIFICATION = 'Send verification';
 
-/** The read-only line, the field, the button and one status line, in a 16pt-padded card. */
-const CURRENT_ROW = 24;
-const FIELD_BLOCK = 96;
-const BUTTON = 52;
+// ACCOUNT 01 "Email" card at 390 (577:2487), in artboard units.
+const CURRENT_LINE_GAP = 3 / 0.75;
+/** Skeleton blocks: the current-address pair, the labelled field with its helper, the button. */
+const CURRENT_ROW = 38 / 0.75;
+const FIELD_BLOCK = 108 / 0.75;
+const BUTTON = 48 / 0.75;
 
 export type EmailGroupProps = {
   currentEmail: string;
@@ -47,50 +50,50 @@ export function EmailGroup({
   disabled,
   onSend,
 }: EmailGroupProps) {
-  const { spacing } = useTheme();
+  const { colors, s } = useTheme();
 
   return (
-    <RowGroup title={GROUP_TITLE}>
-      <View style={{ padding: spacing[4], gap: spacing[4] }}>
-        <View
-          accessible
-          accessibilityLabel={`Current address, ${currentEmail}`}
-          style={{ gap: spacing[1] }}
-        >
-          <Text variant="caption" color="textSecondary">
-            Current address
-          </Text>
-          <Text variant="rowTitle">{currentEmail}</Text>
-        </View>
-
-        <TextField
-          label="New email address"
-          placeholder="you@example.com"
-          icon="envelope"
-          value={value}
-          onChangeText={onChange}
-          onBlur={onBlur}
-          error={error}
-          helper={EMAIL_HELPER}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          returnKeyType="done"
-          onSubmit={onSend}
-        />
-
-        <Button
-          label={SEND_VERIFICATION}
-          variant="secondary"
-          loading={busy}
-          disabled={disabled}
-          onPress={onSend}
-          block
-        />
-
-        {status ? <AccountStatusLine message={status.message} tone={status.tone} /> : null}
+    <SectionCard art={PROFILE_ROW_ART.contact} title={GROUP_TITLE}>
+      <View
+        accessible
+        accessibilityLabel={`Current address, ${currentEmail}`}
+        style={{ gap: s(CURRENT_LINE_GAP) }}
+      >
+        <Text variant="micro" color="textSecondary">
+          Current address
+        </Text>
+        <Text variant="menuRow">{currentEmail}</Text>
       </View>
-    </RowGroup>
+
+      <View style={{ height: 1, backgroundColor: colors.divider }} />
+
+      <TextField
+        label="New email address"
+        placeholder="you@example.com"
+        icon="envelope"
+        value={value}
+        onChangeText={onChange}
+        onBlur={onBlur}
+        error={error}
+        helper={EMAIL_HELPER}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        returnKeyType="done"
+        onSubmit={onSend}
+      />
+
+      <Button
+        label={SEND_VERIFICATION}
+        variant="secondary"
+        loading={busy}
+        disabled={disabled}
+        onPress={onSend}
+        block
+      />
+
+      {status ? <AccountStatusLine message={status.message} tone={status.tone} /> : null}
+    </SectionCard>
   );
 }
 
@@ -103,16 +106,12 @@ export function EmailGroupSkeleton() {
   const { spacing, s } = useTheme();
 
   return (
-    <RowGroup title={GROUP_TITLE}>
-      <View
-        accessible
-        accessibilityLabel="Loading your account"
-        style={{ padding: spacing[4], gap: spacing[4] }}
-      >
+    <SectionCard art={PROFILE_ROW_ART.contact} title={GROUP_TITLE}>
+      <View accessible accessibilityLabel="Loading your account" style={{ gap: spacing[4] }}>
         <Skeleton width="60%" height={s(CURRENT_ROW)} />
         <Skeleton height={s(FIELD_BLOCK)} radius="card" />
         <Skeleton height={s(BUTTON)} radius="xl" />
       </View>
-    </RowGroup>
+    </SectionCard>
   );
 }

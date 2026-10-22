@@ -1,6 +1,6 @@
 import { OnboardingScreen } from '@/features/auth';
 
-/** The three first-run slides (Figma 290:969, 290:1031, 295:2867). */
+/** The three first-run slides (Figma 307:4165, 307:4217, 307:4288). */
 export default function OnboardingRoute() {
   return <OnboardingScreen />;
 }

@@ -42,7 +42,7 @@ async function renderList() {
   );
 }
 
-describe('InterviewListScreen (V2 §7.15 — no artboard)', () => {
+describe('InterviewListScreen (V2 §7.15, INTERVIEW 01)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -61,8 +61,9 @@ describe('InterviewListScreen (V2 §7.15 — no artboard)', () => {
 
   it('lists the seeded set with its marks, and the disclaimer under it', async () => {
     await renderList();
-    // The bar is pinned while loading too — it owns the bottom safe-area inset.
-    expect(screen.getByLabelText('New question set')).toBeDisabled();
+    // The hero is static, so it is up while the sets load beneath it.
+    expect(screen.getByRole('header', { name: 'Interview prep' })).toBeOnTheScreen();
+    expect(screen.getByLabelText('Loading your practice sets')).toBeOnTheScreen();
 
     await settle(NORMAL_MS);
 
@@ -70,8 +71,15 @@ describe('InterviewListScreen (V2 §7.15 — no artboard)', () => {
     if (!seeded) throw new Error('fixture: no seeded set');
     expect(screen.getByRole('header', { name: 'Interview prep' })).toBeOnTheScreen();
     expect(screen.getByText(seeded.title, shown)).toBeOnTheScreen();
-    // The fixture pre-marks three questions: two confident, one needing work.
-    expect(screen.getByText(/^2 confident · 1 needs work · \d+ to go$/, shown)).toBeOnTheScreen();
+    // The fixture pre-marks three questions: two confident, one needing work (577:974).
+    expect(screen.getByText('2 confident', shown)).toBeOnTheScreen();
+    expect(screen.getByText('1 needs work', shown)).toBeOnTheScreen();
+    expect(screen.getByText(`${seeded.questions.length - 3} to go`, shown)).toBeOnTheScreen();
+    expect(
+      screen.getByText(`${seeded.questions.length} questions · 3d ago`, shown),
+    ).toBeOnTheScreen();
+    // The company's own tile leads the card (577:963).
+    expect(screen.getByText('S', shown)).toBeOnTheScreen();
     // §7.15: the set is tailored, so it must NOT carry the generic label.
     expect(screen.queryByText(/Generic — not tailored/, shown)).toBeNull();
     // §7.15's binding disclaimer, on the library as well as in practice.
@@ -139,8 +147,7 @@ describe('InterviewListScreen (V2 §7.15 — no artboard)', () => {
     expect(mockStore.state.interviewSets.find((set) => set.id === seeded.id)).toBeUndefined();
     expect(screen.getByText('No practice sets yet', shown)).toBeOnTheScreen();
 
-    // One affordance, not two: the bar carries the primary in every branch, so the empty state
-    // repeating it put the same words on screen twice.
+    // One affordance, not two: the dashed tile ends the page in every loaded state.
     const ctas = screen.getAllByLabelText('New question set', shown);
     expect(ctas).toHaveLength(1);
     await act(async () => fireEvent.press(ctas[0] as NonNullable<(typeof ctas)[0]>));

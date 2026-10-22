@@ -74,6 +74,8 @@ export const ResumeGridCard = memo(function ResumeGridCard({
           {resume.atsScore != null ? (
             <AtsBadge
               score={resume.atsScore}
+              // Shared with the list row, so a grid/list switch (or a search) never re-sweeps it.
+              memoryKey={`ats:${resume.id}`}
               onPress={() => onOpenScore(resume)}
               style={styles.badge}
             />

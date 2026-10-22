@@ -56,7 +56,7 @@ export function UploadReviewScreen() {
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Check what we found" onBack={actions.goBack} />}
       headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
       footer={footer}
     >
       {children}
@@ -131,6 +131,7 @@ export function UploadReviewScreen() {
     <StickyActionBar
       // What the press will do, said before it is made — or why it cannot be made yet.
       note={apply.isError ? ADD_FAILED : (summary ?? NOTHING_ACCEPTED_NOTE)}
+      noteTone={apply.isError ? 'danger' : 'neutral'}
       secondary={{ label: 'Skip', onPress: skip }}
       primary={{
         label: 'Add to profile',

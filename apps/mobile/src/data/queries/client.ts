@@ -1,21 +1,3 @@
-import { QueryClient } from '@tanstack/react-query';
-
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-
-/** One client per app (or per test); defaults tuned for a mobile, mostly-offline-tolerant app. */
-export function createQueryClient(): QueryClient {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * SECOND,
-        gcTime: 5 * MINUTE,
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
-      mutations: {
-        retry: 0,
-      },
-    },
-  });
-}
+// Re-export shim. This module moved to @nextkin/shared when the web app landed; the app keeps
+// importing it from `@/data/*` so the data-layer boundary and its lint fence are unchanged.
+export * from '@nextkin/shared/queries/client';

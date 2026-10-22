@@ -12,7 +12,8 @@ import { useProfileStore } from './profileStore';
  */
 export function ProfileToastHost() {
   const toast = useProfileStore((state) => state.toast);
+  const tone = useProfileStore((state) => state.toastTone);
   const hideToast = useProfileStore((state) => state.hideToast);
 
-  return <Toast visible={toast != null} message={toast ?? ''} onHide={hideToast} />;
+  return <Toast visible={toast != null} message={toast ?? ''} tone={tone} onHide={hideToast} />;
 }

@@ -1,31 +1,23 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import type { CoverLetterTone } from '@/data/models';
-import { useResumes, useStartGeneration, useSubscription } from '@/data/queries';
-// Deep import on purpose: the resumes barrel drags its screens in, and this file is reachable
-// from the create barrel that @/navigation imports. docMeta is pure formatting.
-import { docSubtitle } from '@/features/resumes/docMeta';
-import { a11yButton, useReducedMotion } from '@/lib';
+import { useJob, useResume, useResumes, useStartGeneration, useSubscription } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
-import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
-import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
-import { Text } from '@/ui/Text';
+import { useRevealStagger } from '@/ui/motion';
 
+import { CoverJobSheet } from '../components/CoverJobSheet';
 import { CoverLetterSkeleton } from '../components/CoverLetterSkeleton';
-import { CoverLetterTonePicker } from '../components/CoverLetterTonePicker';
-import { UsageBanner } from '../components/UsageBanner';
+import { CoverSetupSections } from '../components/CoverSetupRows';
+import { COVER_STEPS, FlowStepper } from '../components/TailorStepper';
 import {
-  COVER_LETTER_COST_NOTE,
   COVER_LETTER_CTA,
   COVER_LETTER_START_FAILED,
+  coverLetterQuotaNote,
   coverLetterSources,
   coverLetterSpentNote,
   DEFAULT_COVER_LETTER_TONE,
@@ -35,44 +27,42 @@ import { useCreateActions } from '../hooks/useCreateActions';
 
 export type CoverLetterSetupScreenProps = { resumeId?: string };
 
-/** Grouped-row metrics, matching ListRow so this row lines up with every other carded row. */
-const ROW_PADDING = 20;
-const ROW_GUTTER = 16;
-const CHEVRON = 11;
+// COVER 01 at 390 (644:2), in artboard units.
+const HEADER_TO_STEPS = 12 / 0.75; // 644:6
+const STEPS_TO_ART = 37 / 0.75; // 644:7 → 656:60
+
+const isNotFound = (error: unknown): boolean =>
+  typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'NOT_FOUND';
 
 /**
- * CREATE — cover letter setup (V2 §7.10). A letter is written against a resume version and the
- * job that resume was tailored to, so this screen picks that pair and a tone, and nothing else.
- * No artboard covers this flow (plan §8, phase 9), so it is assembled from built primitives.
+ * COVER 01 (644:2) — "Cover letter for this job": the job, the resume tailored for it, and the
+ * tone (V2 §7.10). Either row reopens the job sheet, which lists each job with the resume
+ * tailored for it, so job and resume always change together. The quota line sits on the bar,
+ * over the button that spends it, so the cap is said before the work (§13.5); once it is spent
+ * the upgrade prompt REPLACES the CTA rather than interrupting the page, as the same section asks.
  *
- * The quota sits at the top rather than behind the button because §13.5 wants the limit known
- * BEFORE the work; and when it is spent the upgrade prompt REPLACES the CTA instead of
- * interrupting the page, because the same section forbids an upsell that cuts across work.
+ * Opened with no resume (Home's tile, the + sheet), the page starts on the most recently edited
+ * tailored resume; with none, it says so and points to Jobs, where tailoring starts. Opened from
+ * the resume menu on a resume tailored for no job, the page drops the Job section and the letter
+ * is written without a job, as before.
  */
 export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps) {
-  const { colors, motion, sizes, spacing, s } = useTheme();
+  const { spacing, s } = useTheme();
   const styles = useStyles();
-  const reduced = useReducedMotion();
   const actions = useCreateActions();
 
+  // Without a resume named, the library's own order picks one (COVER 00's sheet is gone, §71).
   const resumes = useResumes();
+  const sources = useMemo(() => coverLetterSources(resumes.data ?? []), [resumes.data]);
+  const sourceId = resumeId ?? pickCoverLetterSource(sources)?.id;
+  const resume = useResume(sourceId ?? '');
+  const jobId = resume.data?.linkedJobId;
+  const job = useJob(jobId ?? '');
   const subscription = useSubscription();
   const start = useStartGeneration();
 
-  const [chosenId, setChosenId] = useState<string | undefined>(resumeId);
   const [tone, setTone] = useState<CoverLetterTone>(DEFAULT_COVER_LETTER_TONE);
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  const sources = useMemo(() => coverLetterSources(resumes.data ?? []), [resumes.data]);
-  const source = pickCoverLetterSource(sources, chosenId);
-
-  // Safe to read straight through: a subscription that failed to load never reaches here (see the
-  // error branch), so this is the published cap rather than a zero standing in for one. And a
-  // plan that grants none is spent rather than unlimited — 0 of 0 leaves nothing to write.
-  const usage = subscription.data?.usage;
-  const limit = usage?.coverLettersLimit ?? 0;
-  const used = usage?.coverLettersUsed ?? 0;
-  const spent = used >= limit;
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
   // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
@@ -84,66 +74,45 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     if (failed && !was) AccessibilityInfo.announceForAccessibility(COVER_LETTER_START_FAILED);
   }, [failed]);
 
-  const write = () => {
-    if (!source) return;
-    start.mutate(
-      {
-        kind: 'cover_letter',
-        sourceResumeId: source.id,
-        tone,
-        ...(source.linkedJobId ? { jobId: source.linkedJobId } : {}),
-      },
-      // Navigate from the callback, not beside the call: the mock ticker only advances while the
-      // progress screen is subscribed, and pushing first races the destination's own fetch.
-      { onSuccess: (generation) => actions.openGeneration(generation.id) },
-    );
-  };
-
-  const enter = (index: number) =>
-    reduced
-      ? undefined
-      : FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base);
+  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
+  // with its data already here slides in whole with the push.
+  const enter = useRevealStagger(
+    !!resume.data && !!subscription.data && !(jobId != null && job.isPending),
+  );
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
       <Screen
         scroll
         edges={['top', 'bottom']}
-        header={<ScreenHeader title="Write a cover letter" onBack={actions.goBack} />}
-        headerStyle={{ paddingBottom: spacing[4] }}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
+        header={
+          <ScreenHeader title="Write a cover letter" showTitle={false} onBack={actions.goBack} />
+        }
+        headerStyle={{ paddingBottom: s(HEADER_TO_STEPS) }}
+        contentContainerStyle={{ paddingBottom: spacing[8] }}
         footer={footer}
       >
-        {children}
+        <FlowStepper steps={COVER_STEPS} current="setup" />
+        <View style={{ marginTop: s(STEPS_TO_ART) }}>{children}</View>
       </Screen>
 
       {/* Sibling of the page, never a child of its scroller: its root is an absolute fill. */}
-      <OptionSheet
-        open={sheetOpen}
-        title="Choose a resume"
-        options={sources.map<SheetOption>((resume) => ({
-          key: resume.id,
-          label: resume.title,
-          caption: docSubtitle(resume),
-        }))}
-        selectedKey={source?.id}
-        onSelect={(id) => {
-          setChosenId(id);
-          setSheetOpen(false);
+      <CoverJobSheet
+        open={pickerOpen}
+        selectedResumeId={sourceId}
+        onClose={() => setPickerOpen(false)}
+        onContinue={(id) => {
+          setPickerOpen(false);
+          // Swapped in place, so back still leaves the flow in one step.
+          if (id !== sourceId) actions.compareResume(id);
         }}
-        onClose={() => setSheetOpen(false)}
       />
     </View>
   );
 
   // The inert bar is part of the loading state: it owns the bottom safe-area inset, so a page
   // without one would grow a footer out of nothing the moment the queries land.
-  if (resumes.isPending || subscription.isPending) {
-    return page(
-      <CoverLetterSkeleton />,
-      <StickyActionBar primary={{ label: COVER_LETTER_CTA, disabled: true }} />,
-    );
-  }
+  const inert = <StickyActionBar floating primary={{ label: COVER_LETTER_CTA, disabled: true }} />;
 
   const retryState = (title: string, onAction: () => void) => (
     <StateView
@@ -156,8 +125,35 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     />
   );
 
-  if (resumes.isError) {
+  if (resumeId == null && resumes.isError) {
     return page(retryState("Couldn't load your resumes", () => void resumes.refetch()));
+  }
+
+  if (resumeId == null && resumes.data && sources.length === 0) {
+    return page(
+      <StateView
+        icon="magic"
+        title="No tailored resumes yet"
+        message="A letter is written from a resume you tailored for the job. Tailor one first."
+        actionLabel="Find a job to tailor for"
+        onAction={actions.openJobs}
+      />,
+      inert,
+    );
+  }
+
+  if (sourceId != null && resume.isError) {
+    return isNotFound(resume.error)
+      ? page(
+          <StateView
+            icon="file-alt"
+            title="This resume isn't available"
+            message="It may have been deleted. Pick the job the letter is for."
+            actionLabel="Choose a job"
+            onAction={() => setPickerOpen(true)}
+          />,
+        )
+      : page(retryState("Couldn't load your resume", () => void resume.refetch()));
   }
 
   // An allowance that could not be read is unknown, not unlimited: §13.5 wants the cap in front
@@ -166,90 +162,63 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     return page(retryState("Couldn't load your plan", () => void subscription.refetch()));
   }
 
-  // §7.10 writes the letter from a resume AND the job it was tailored to. With neither in hand
-  // there is nothing honest to write from, so the way out is the flow that makes the pair.
-  if (!source) {
-    return page(
-      <StateView
-        icon="magic"
-        title="Tailor a resume first"
-        // §7.10's constraint, and it must be stated rather than implied: this branch fires with a
-        // library full of resumes, none of them linked to a job. Without it the reader sees five
-        // documents and a screen that will not use any of them, which reads as a bug.
-        message="A letter is written from a resume and the job it was tailored to."
-        actionLabel="Tailor a resume"
-        onAction={actions.openTailor}
-      />,
-    );
+  if (jobId != null && job.isError && !isNotFound(job.error)) {
+    return page(retryState("Couldn't load this job", () => void job.refetch()));
   }
 
+  if (!resume.data || !subscription.data || (jobId != null && job.isPending)) {
+    return page(<CoverLetterSkeleton />, inert);
+  }
+
+  const source = resume.data;
+  // A job that has since closed leaves the letter to the resume alone, as for an untailored one.
+  const target = job.data;
+  const { coverLettersUsed: used, coverLettersLimit: limit } = subscription.data.usage;
+  // A plan that grants none is spent rather than unlimited — 0 of 0 leaves nothing to write.
+  const spent = used >= limit;
+
+  const write = () =>
+    start.mutate(
+      {
+        kind: 'cover_letter',
+        sourceResumeId: source.id,
+        ...(source.linkedJobId ? { jobId: source.linkedJobId } : {}),
+        tone,
+      },
+      // Navigate from the callback, not beside the call: the mock ticker only advances while the
+      // progress screen is subscribed, and pushing first races the destination's own fetch.
+      { onSuccess: (generation) => actions.openGeneration(generation.id) },
+    );
+
   return page(
-    <>
-      <Animated.View entering={enter(0)}>
-        <UsageBanner used={used} limit={limit} noun="cover letter" />
-      </Animated.View>
-
-      <Animated.View entering={enter(1)} style={{ gap: spacing[3] }}>
-        <Text variant="groupLabel">Written from</Text>
-        <Card radius="card" padding={0}>
-          <Pressable
-            {...a11yButton(`Written from ${source.title}`, 'Choose a different resume')}
-            feedback="subtle"
-            haptic="light"
-            onPress={() => setSheetOpen(true)}
-            style={[
-              styles.row,
-              {
-                minHeight: sizes.listRow,
-                paddingHorizontal: s(ROW_PADDING),
-                paddingVertical: spacing[3],
-                gap: s(ROW_GUTTER),
-              },
-            ]}
-          >
-            <View style={styles.rowText}>
-              <Text variant="rowTitle" numberOfLines={1}>
-                {source.title}
-              </Text>
-              <Text variant="rowDescription" color="textSecondary" numberOfLines={1}>
-                {docSubtitle(source)}
-              </Text>
-            </View>
-            <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
-          </Pressable>
-        </Card>
-      </Animated.View>
-
-      <Animated.View entering={enter(2)}>
-        <CoverLetterTonePicker value={tone} onChange={setTone} />
-      </Animated.View>
-    </>,
-    // One line, and never the quota: the banner already says how many are left, and repeating it
-    // announces it twice. A failure leaves the button live, so a second press is the retry.
+    <CoverSetupSections
+      job={target}
+      resume={source}
+      tone={tone}
+      onTone={setTone}
+      onPick={() => setPickerOpen(true)}
+      enter={enter}
+    />,
+    // A failure leaves the button live, so a second press is the retry.
     <StickyActionBar
+      floating
       note={
         failed
           ? COVER_LETTER_START_FAILED
           : spent
             ? coverLetterSpentNote(limit)
-            : COVER_LETTER_COST_NOTE
+            : coverLetterQuotaNote(used, limit)
       }
+      noteTone={failed ? 'danger' : 'neutral'}
       primary={
         spent
           ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('cover_letters') }
-          : {
-              label: COVER_LETTER_CTA,
-              icon: 'magic',
-              loading: start.isPending,
-              onPress: write,
-            }
+          : { label: COVER_LETTER_CTA, loading: start.isPending, onPress: write }
       }
     />,
   );
 }
 
-const useStyles = scaledSheet((s) => ({
+const useStyles = scaledSheet(() => ({
   root: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  rowText: { flex: 1, gap: s(2) },
 }));

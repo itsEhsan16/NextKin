@@ -1,0 +1,25 @@
+{
+  "key": "62f4b765b698573c09fd0cb410d8ed35",
+  "recordedAt": "2026-10-18T18:44:26.483Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Translate \"good morning\" i"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": false,
+      "topic": "other"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 265,
+      "outputTokens": 56,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

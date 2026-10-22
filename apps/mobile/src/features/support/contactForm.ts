@@ -42,15 +42,14 @@ export const CONTACT_TITLE = 'Message support';
 export const CONTACT_CTA = 'Send';
 export const CONTACT_DONE = 'Done';
 
-/** The one promise the form owes the reader; the rest of the page is the form itself. */
+/** The one promise the form owes the reader, set under the hero title (SUPPORT 02 577:7890). */
 export const CONTACT_LEDE = SUPPORT_REPLY_WINDOW;
 
-export const CONTACT_TOPIC_GROUP = 'ABOUT';
 export const CONTACT_TOPIC_LABEL = 'Topic';
 export const CONTACT_TOPIC_SHEET = 'What is this about?';
 export const CONTACT_TOPIC_HINT = 'Choose what your message is about';
 
-export const CONTACT_EMAIL_GROUP = 'REPLY GOES TO';
+export const CONTACT_EMAIL_GROUP = 'Reply goes to';
 export const CONTACT_EMAIL_CAPTION = 'Change it in Account settings.';
 
 export const CONTACT_MESSAGE_LABEL = 'Your message';

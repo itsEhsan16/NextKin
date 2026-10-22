@@ -1,4 +1,5 @@
-export { Screen, type ScreenProps } from './Screen';
+export { Screen } from './Screen';
+export type { ScreenProps } from './screenProps';
 export {
   revealTarget,
   useRevealOnFocus,

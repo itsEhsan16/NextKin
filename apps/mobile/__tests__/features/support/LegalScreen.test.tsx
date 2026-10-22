@@ -92,6 +92,14 @@ describe('LegalScreen (V2 §8.5 — the documents, readable in-product)', () => 
       ).toBeOnTheScreen();
     }
 
+    // — The contents card lists every section, numbered, and each row is a shortcut to it —
+    for (const [index, section] of terms.sections.entries()) {
+      expect(screen.getByLabelText(`${index + 1}. ${section.heading}`)).toBeOnTheScreen();
+    }
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(`4. ${terms.sections[3]?.heading}`)),
+    );
+
     // — §8.5's "Last updated" line, formatted, not the raw ISO stamp —
     const stamp = `Last updated ${formatShortDate(terms.updatedAt)}`;
     expect(stamp).not.toContain('T');

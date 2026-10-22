@@ -21,6 +21,8 @@ export function useBillingActions() {
        * a press that did nothing look like a broken button.
        */
       manageOnWeb: () => openExternalUrl(BILLING_URL),
+      /** The backend's hosted checkout (P12-06), in the browser: nothing is sold in the app (D-18). */
+      openCheckout: (url: string) => openExternalUrl(url),
     }),
     [router],
   );

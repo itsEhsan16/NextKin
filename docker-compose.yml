@@ -1,0 +1,233 @@
+# The NextKin local stack (ImBackendImplementationPlan §1.7, P1-04). Each service stands in for its
+# AWS counterpart over the same protocol (L1).
+#
+#   pnpm stack:up                      core profile: postgres, valkey, seaweedfs, elasticmq, mailpit
+#   pnpm stack:up -- --profile scan    adds ClamAV (heavy: ask before the first pull, L6)
+#   pnpm stack:up -- --profile latex   the sealed LaTeX compile service, on 127.0.0.1:8790
+#
+# Image versions come from docker/versions.env (L6). `pnpm stack:up` passes that file to compose,
+# so a bare `docker compose up` needs `--env-file docker/versions.env --env-file .env`.
+# Every port binds to 127.0.0.1, so no development service is reachable from the network.
+
+name: nextkin
+
+services:
+  # Aurora PostgreSQL 17 stand-in. Init scripts create the four roles (docker/postgres/init).
+  postgres:
+    image: ${POSTGRES_IMAGE:?set in docker/versions.env}
+    environment:
+      POSTGRES_DB: nextkin
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:-postgres}
+      NEXTKIN_OWNER_PASSWORD: ${NEXTKIN_OWNER_PASSWORD:-owner_local}
+      NEXTKIN_APP_PASSWORD: ${NEXTKIN_APP_PASSWORD:-app_local}
+      NEXTKIN_MAINTENANCE_PASSWORD: ${NEXTKIN_MAINTENANCE_PASSWORD:-maintenance_local}
+      NEXTKIN_READONLY_PASSWORD: ${NEXTKIN_READONLY_PASSWORD:-readonly_local}
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d nextkin']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    profiles: [core, app]
+
+  # ElastiCache Serverless for Valkey stand-in. Persistence is off on purpose: losing Valkey must
+  # never be fatal, and code that assumes otherwise should fail here, not in production.
+  valkey:
+    image: ${VALKEY_IMAGE:?set in docker/versions.env}
+    command: ['valkey-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - '127.0.0.1:${VALKEY_PORT:-6379}:6379'
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    profiles: [core, app]
+
+  # S3 stand-in (MinIO's community images are gone). P1-04's presigned-POST test confirms it.
+  seaweedfs:
+    image: ${SEAWEEDFS_IMAGE:?set in docker/versions.env}
+    command: ['server', '-dir=/data', '-s3', '-s3.port=8333', '-s3.config=/etc/seaweedfs/s3.json', '-master.volumeSizeLimitMB=256']
+    ports:
+      - '127.0.0.1:${S3_PORT:-8333}:8333'
+    volumes:
+      - s3data:/data
+      - ./docker/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      # The S3 gateway answers 403 to an anonymous request once it is up.
+      test: ['CMD-SHELL', 'wget -q -S -O /dev/null http://127.0.0.1:8333/ 2>&1 | grep -q "HTTP/"']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    profiles: [core, app]
+
+  # SQS stand-in: FIFO queues with DLQs, defined in docker/elasticmq/elasticmq.conf.
+  elasticmq:
+    image: ${ELASTICMQ_IMAGE:?set in docker/versions.env}
+    ports:
+      - '127.0.0.1:${SQS_PORT:-9324}:9324'
+      - '127.0.0.1:${SQS_UI_PORT:-9325}:9325'
+    volumes:
+      - ./docker/elasticmq/elasticmq.conf:/opt/elasticmq.conf:ro
+      - sqsdata:/data
+    profiles: [core, app]
+
+  # SES stand-in: catches every email; the inbox is at http://127.0.0.1:8025.
+  mailpit:
+    image: ${MAILPIT_IMAGE:?set in docker/versions.env}
+    ports:
+      - '127.0.0.1:${SMTP_PORT:-1025}:1025'
+      - '127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025'
+    profiles: [core, app]
+
+  # GuardDuty Malware Protection stand-in (Appendix C #10's fallback). ~1.5 GB RAM, and it
+  # downloads its signature database on first start.
+  clamav:
+    image: ${CLAMAV_IMAGE:?set in docker/versions.env}
+    ports:
+      - '127.0.0.1:${CLAMAV_PORT:-3310}:3310'
+    volumes:
+      - clamavdata:/var/lib/clamav
+    profiles: [scan]
+
+  # Plays Google and Apple for federated sign-in (P4-03). Issuers: /google and /apple.
+  mock-oauth2:
+    image: ${MOCK_OAUTH2_IMAGE:?set in docker/versions.env}
+    environment:
+      SERVER_PORT: '8090'
+      # A login form where you type the sub and claims (email, email_verified, name) to sign in as.
+      JSON_CONFIG: '{"interactiveLogin": true}'
+    ports:
+      - '127.0.0.1:${MOCK_OAUTH2_PORT:-8090}:8090'
+    profiles: [auth]
+
+  # Grafana, Tempo, Loki and Prometheus behind one OTLP collector. Grafana on 3001 (Next owns 3000).
+  otel-lgtm:
+    image: ${OTEL_LGTM_IMAGE:?set in docker/versions.env}
+    ports:
+      - '127.0.0.1:${OTLP_GRPC_PORT:-4317}:4317'
+      - '127.0.0.1:${OTLP_HTTP_PORT:-4318}:4318'
+      - '127.0.0.1:${GRAFANA_PORT:-3001}:3000'
+    profiles: [obs]
+
+  # Stripe API shape for billing tests (P12-06).
+  stripe-mock:
+    image: ${STRIPE_MOCK_IMAGE:?set in docker/versions.env}
+    ports:
+      - '127.0.0.1:${STRIPE_MOCK_PORT:-12111}:12111'
+    profiles: [pay]
+
+  # The production image, for prod-like runs and drills. Day to day, web and worker run on the host.
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: web
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:?set in docker/versions.env}
+    environment: &app-env
+      APP_ENV: local
+      DATABASE_URL: postgres://nextkin_app:app_local@postgres:5432/nextkin
+      VALKEY_URL: redis://valkey:6379
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: nextkin_local
+      AWS_SECRET_ACCESS_KEY: nextkin_local_secret
+      S3_ENDPOINT: http://seaweedfs:8333
+      S3_FORCE_PATH_STYLE: 'true'
+      SQS_ENDPOINT: http://elasticmq:9324
+      SMTP_URL: smtp://mailpit:1025
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3000}:3000'
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+    profiles: [app]
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: worker
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:?set in docker/versions.env}
+        PLAYWRIGHT_VERSION: ${LIB_PLAYWRIGHT:?set in docker/versions.env}
+        PDFJS_VERSION: ${LIB_PDFJS_DIST:?set in docker/versions.env}
+        TESSERACT_VERSION: ${LIB_TESSERACT_JS:?set in docker/versions.env}
+    environment: *app-env
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+    profiles: [app]
+
+  # The sealed LaTeX compile service (toreview §111): Tectonic + Poppler behind POST /compile. It
+  # sits only on `latex-sealed` (internal: no internet, no published port), with a read-only root,
+  # /tmp as its only writable path, no capabilities, and one secret: the bearer token file.
+  #   pnpm stack:up -- --profile latex    builds the image the first time (~2 min, needs network)
+  latex:
+    build: &latex-build
+      context: .
+      dockerfile: docker/Dockerfile
+      target: latex
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:?set in docker/versions.env}
+        TECTONIC_VERSION: ${TECTONIC_VERSION:?set in docker/versions.env}
+        TECTONIC_SHA256_X86_64: ${TECTONIC_SHA256_X86_64:?set in docker/versions.env}
+        TECTONIC_SHA256_AARCH64: ${TECTONIC_SHA256_AARCH64:?set in docker/versions.env}
+    image: nextkin-latex:local
+    environment:
+      LATEX_TOKEN_FILE: /run/secrets/latex_token
+    secrets: [latex_token]
+    networks: [latex-sealed]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=256m,mode=1777
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    mem_limit: 1g
+    cpus: 2
+    pids_limit: 64
+    profiles: [latex]
+
+  # The host's way in. On Docker Desktop a container on an internal network cannot publish a port,
+  # so `pnpm worker` on the host reaches `latex` through this TCP relay (same image, no secret),
+  # which joins both networks and publishes only 127.0.0.1:8790. In-compose callers use latex:8790.
+  latex-relay:
+    build: *latex-build
+    image: nextkin-latex:local
+    command: ['node', 'dist/latex-relay.mjs']
+    environment:
+      LATEX_RELAY_TARGET_HOST: latex
+    networks: [latex-sealed, latex-edge]
+    ports:
+      - '127.0.0.1:${LATEX_PORT:-8790}:8790'
+    read_only: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 32
+    depends_on:
+      latex: { condition: service_healthy }
+    profiles: [latex]
+
+networks:
+  # No route out: a compile can never reach the internet, the metadata endpoint or the host.
+  latex-sealed:
+    internal: true
+  latex-edge:
+
+secrets:
+  # Written with a random value by `pnpm stack:up` when missing (scripts/stack.mjs); gitignored.
+  latex_token:
+    file: ./docker/latex/dev.token
+
+volumes:
+  pgdata:
+  s3data:
+  sqsdata:
+  clamavdata:

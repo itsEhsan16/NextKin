@@ -15,6 +15,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { AnimatedNumber, ProgressBar, ScoreRing } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
+import { Reveal, SuccessMark, useBecameTrue } from '@/ui/motion';
 
 export type GenerationHeroProps = {
   generation: Generation;
@@ -38,7 +39,25 @@ const percentLabel = (n: number) => {
  * The bigger sibling of Home's `GenerationProgressCard` — same tile, same brand meter, same
  * percentage — so a user who taps the card through to here sees the thing they tapped, grown.
  */
-export function GenerationHero({ generation, score }: GenerationHeroProps) {
+export function GenerationHero(props: GenerationHeroProps) {
+  const ready = props.generation.status === 'ready';
+  const scored = ready && props.score != null;
+  // Celebrate only a run that finished while the user watched; a revisit shows the tick at
+  // rest. Read here, above the Reveal: the body remounts with each state, so it can't tell.
+  const justFinished = useBecameTrue(ready);
+  // The meter fades into the result rather than cutting to it (§85).
+  return (
+    <Reveal stateKey={scored ? 'scored' : ready ? 'ready' : 'running'}>
+      <HeroBody {...props} justFinished={justFinished} />
+    </Reveal>
+  );
+}
+
+function HeroBody({
+  generation,
+  score,
+  justFinished,
+}: GenerationHeroProps & { justFinished: boolean }) {
   const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
@@ -73,19 +92,7 @@ export function GenerationHero({ generation, score }: GenerationHeroProps) {
     // that says so, rather than leaving the meter sitting at 100%.
     return (
       <Card shadow="card" style={[styles.row, { gap: spacing[3] }]}>
-        <View
-          style={[
-            styles.tile,
-            {
-              width: s(TILE),
-              height: s(TILE),
-              borderRadius: radii.lg,
-              backgroundColor: colors.successSurface,
-            },
-          ]}
-        >
-          <FontAwesome5 name="check" size={s(17)} color={colors.success} solid />
-        </View>
+        <SuccessMark size={s(TILE)} variant="tile" radius={radii.lg} animate={justFinished} />
         <Text variant="title" style={styles.copy}>
           {hint}
         </Text>
@@ -118,6 +125,8 @@ export function GenerationHero({ generation, score }: GenerationHeroProps) {
         </Text>
         <AnimatedNumber
           value={generation.progress * 100}
+          timing="follow"
+          memoryKey={`gen:${generation.id}:pct`}
           variant="display"
           color="textPrimary"
           format={percentLabel}
@@ -126,7 +135,13 @@ export function GenerationHero({ generation, score }: GenerationHeroProps) {
 
       {/* The row above already gives the number, so the meter itself is decorative. */}
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <ProgressBar value={generation.progress} fillColor="brand" />
+        <ProgressBar
+          value={generation.progress}
+          fillColor="brand"
+          timing="follow"
+          memoryKey={`gen:${generation.id}:bar`}
+          live
+        />
       </View>
       {/* No hint line here: the step list below carries it on the row it belongs to, and printing
           it in both places says the same sentence twice — once on screen, once to a reader. */}

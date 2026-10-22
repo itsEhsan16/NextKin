@@ -9,12 +9,13 @@ import { mockStore, resetMockRepos } from '@/data/repos';
 import { JdReviewScreen } from '@/features/create/screens/JdReviewScreen';
 
 const mockReplace = jest.fn();
+const mockBack = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: jest.fn(),
     navigate: jest.fn(),
-    back: jest.fn(),
+    back: mockBack,
     replace: mockReplace,
   }),
   Link: ({ children }: PropsWithChildren) => children,
@@ -48,6 +49,7 @@ describe('JdReviewScreen (V2 §7.5)', () => {
   beforeEach(() => {
     resetMockRepos();
     mockReplace.mockClear();
+    mockBack.mockClear();
   });
 
   afterEach(async () => {
@@ -60,7 +62,7 @@ describe('JdReviewScreen (V2 §7.5)', () => {
   it('renders every extracted field as something the user can correct', async () => {
     await renderReview();
 
-    expect(screen.getByRole('header', { name: 'Check what we read' })).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Job details' })).toBeOnTheScreen();
 
     const titleField = await screen.findByLabelText('Job title', {}, { timeout: 15000 });
     expect(titleField).toHaveProp('value', 'Senior Product Designer');
@@ -155,44 +157,14 @@ describe('JdReviewScreen (V2 §7.5)', () => {
     expect(storedDraft()?.preferredSkills).toEqual(['Fintech']);
   }, 30000);
 
-  it('starts a resume generation for this draft and replaces the form with it', async () => {
+  it('is Job details: Done goes back, and nothing is generated from here (toreview §114)', async () => {
     await renderReview();
     await screen.findByLabelText('Job title', {}, { timeout: 15000 });
 
-    // The cap before the work (§13.5), and what the press costs.
-    expect(screen.getByText('1 of 3 generations left this month')).toBeOnTheScreen();
-    expect(screen.getByText("Counts as one of this month's generations")).toBeOnTheScreen();
-    fireEvent.press(screen.getByLabelText('Generate resume'));
-
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1), { timeout: 15000 });
-    const target = mockReplace.mock.calls[0]?.[0] as {
-      pathname: string;
-      params: { id: string };
-    };
-    expect(target.pathname).toBe('/generations/[id]');
-
-    const generation = mockStore.state.generations.find((run) => run.id === target.params.id);
-    expect(generation?.kind).toBe('resume');
-    expect(generation?.jdId).toBe(DRAFT_ID);
-  }, 30000);
-
-  it('says why a generation could not be started and leaves the button live (§7.6)', async () => {
-    await renderReview();
-    await screen.findByLabelText('Job title', {}, { timeout: 15000 });
-
-    useMockModeStore.setState({ mode: 'error' });
-    fireEvent.press(screen.getByLabelText('Generate resume'));
-
-    expect(
-      await screen.findByText(
-        "We couldn't start it. Check your connection and try again.",
-        {},
-        { timeout: 15000 },
-      ),
-    ).toBeOnTheScreen();
-    // Never a silent hang: nothing navigated, and a second press is the retry.
-    expect(mockReplace).not.toHaveBeenCalled();
-    expect(screen.getByLabelText('Generate resume')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Generate resume')).toBeNull();
+    fireEvent.press(screen.getByLabelText('Done'));
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockStore.state.generations.some((run) => run.jdId === DRAFT_ID)).toBe(false);
   }, 30000);
 
   it('offers a way out when the draft id resolves to nothing', async () => {

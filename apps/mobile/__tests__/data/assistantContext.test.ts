@@ -1,16 +1,14 @@
-import {
-  answerFor,
-  atsScoresFixture,
-  buildAssistantContext,
-  contentsFixture,
-  resumesFixture,
-  userFixture,
-} from '@/data/mock';
+import { answerFor, buildAssistantContext, userFixture } from '@/data/mock';
+import { atsQuickWins } from '@/data/models';
+import { createMockStore } from '@/data/repos/state';
 
+/** res_2 as the store seeds it: its score is the engines' (C-10), not a fixture's. */
 const stripe = () => {
-  const resume = resumesFixture.find((item) => item.id === 'res_2');
-  if (!resume) throw new Error('res_2 missing');
-  return { resume, content: contentsFixture.res_2, score: atsScoresFixture.res_2 };
+  const store = createMockStore();
+  const resume = store.state.resumes.find((item) => item.id === 'res_2');
+  const score = store.state.atsScores.res_2;
+  if (!resume || !score) throw new Error('res_2 missing');
+  return { resume, content: store.state.contents.res_2, score };
 };
 
 /** §7.16 and §8.5: what the assistant may know about a document, and what it may never be handed. */
@@ -20,10 +18,15 @@ describe('assistantContext', () => {
     const context = buildAssistantContext({ resume, content, score });
     expect(context.documentTitle).toBe('Stripe — Senior PD');
     expect(context.targetRole).toBe('Senior Product Designer');
-    expect(context.score).toBe(88);
-    expect(context.band).toBe('strong');
-    expect(context.quickWins.length).toBeGreaterThan(0);
-    expect(context.quickWins.length).toBeLessThanOrEqual(3);
+    expect(context.score).toBe(score.total);
+    expect(context.band).toBe(score.band);
+    expect(context.quickWins.map((win) => win.label)).toEqual(
+      atsQuickWins(score)
+        .slice(0, 3)
+        .map((item) => item.label),
+    );
+    // Fintech is on Stripe's listing and nothing on the profile backs it: a gap, by name.
+    expect(context.gaps).toContain('Fintech');
     expect(context.sections).toContain('experience');
   });
 
@@ -54,7 +57,7 @@ describe('assistantContext', () => {
     const context = buildAssistantContext({ resume, content, score });
     const answer = answerFor('ats', context);
     expect(answer).toContain('Stripe — Senior PD');
-    expect(answer).toContain('**88**');
+    expect(answer).toContain(`**${score.total}**`);
     expect(answer).toMatch(/rubric/i);
     expect(answer).not.toMatch(/workday|greenhouse|taleo|lever|icims/i);
   });

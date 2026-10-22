@@ -1,0 +1,15 @@
+{
+  "eye.svg": "Material Symbols' visibility outline (iconify material-symbols:visibility-outline, Apache-2.0); the W-FLOW boards draw it as an icon-font glyph (849:535)",
+  "warning.svg": "Material Symbols' warning rounded (iconify material-symbols:warning-rounded, Apache-2.0); W-FLOW 03's biggest loss (850:232)",
+  "arrow-up.svg": "Material Symbols' arrow upward rounded (iconify material-symbols:arrow-upward-rounded, Apache-2.0); W-FLOW 03's projection (850:225)",
+  "star.svg": "Material Symbols' star rounded (iconify material-symbols:star-rounded, Apache-2.0); W-FLOW 03's \"AI does it\" (850:310)",
+  "folder-open.svg": "Material Symbols' folder open rounded (iconify material-symbols:folder-open-rounded, Apache-2.0); W-FLOW 02's Browse files (849:611)",
+  "copy.svg": "Material Symbols' content copy outline (iconify material-symbols:content-copy-outline, Apache-2.0); RES 03's Duplicate (867:1003)",
+  "rename.svg": "Material Symbols' edit square outline (iconify material-symbols:edit-square-outline, Apache-2.0); RES 03's Rename (867:1003)",
+  "undo.svg": "Material Symbols' undo rounded (iconify material-symbols:undo-rounded, Apache-2.0); EDIT 01 undo (866:2)",
+  "redo.svg": "Material Symbols' redo rounded (iconify material-symbols:redo-rounded, Apache-2.0); EDIT 01 redo (866:4)",
+  "drag.svg": "Material Symbols' drag indicator (iconify material-symbols:drag-indicator, Apache-2.0); EDIT 01 bullet handle (866:318)",
+  "layers.svg": "Material Symbols' stacks outline (iconify material-symbols:stacks-outline, Apache-2.0); EDIT 01 template pill (866:217)",
+  "history.svg": "Material Symbols' history rounded (iconify material-symbols:history-rounded, Apache-2.0); EDIT 03 restore banner (867:321)",
+  "sync.svg": "Material Symbols' sync rounded (iconify material-symbols:sync-rounded, Apache-2.0); EDIT 03 conflict banner (867:321)"
+}

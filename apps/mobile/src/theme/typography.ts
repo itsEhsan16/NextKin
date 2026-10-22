@@ -122,7 +122,7 @@ const boardCellRole = (family: FontWeightKey, at390: Drawn): TypeAnchors => ({
 });
 
 /**
- * The width the onboarding and auth board (Figma 290:955) is drawn at.
+ * The width the onboarding and auth board (Figma 307:4152) is drawn at.
  *
  * It is neither of this file's two boards. Those sections are already phone-sized — 422.66 is an
  * iPhone-class width, not a 520 presentation frame — so every number on them is ~1.23x smaller
@@ -195,7 +195,17 @@ export const typography = {
   headline: role('bold', [20, 28, -0.2], 16.5), // sheet / section titles
   greetingLabel: boardRole('regular', [13, 16]), // header "Hi" line (210:277)
   greeting: boardRole('medium', [15, 20]), // header user name (210:279)
-  section: role('semiBold', [19, 28.5], 15.5), // card section titles on Jobs (1:40 / 115:40)
+  // -------------------------------------------------------------------------------------------
+  // The shared reading roles, re-anchored on the newer Mobile 2 boards (toreview.md 54).
+  //
+  // These were measured on the 520 boards and bent down to 13pt body / 11.5pt captions at 390.
+  // The boards drawn since — Home 210:262, the redrawn job cards 498:2 / 519:2, the score panel
+  // 95:2310 — set body at 14–15, meta at 13 and row titles at 16, so a screen still on the old
+  // anchors read a size smaller than the screen beside it. The owner chose to bring every screen
+  // up to the newer boards. Only type values moved: no box, gap or component changed with them.
+  // -------------------------------------------------------------------------------------------
+  section: boardRole('semiBold', [16, 22]), // in-page section titles — "Content" (95:2324)
+  confirmTitle: boardRole('bold', [18, 23]), // "Sign out?" on every confirm sheet (573:828)
   /**
    * Every section heading on Home. 210:262 draws "Quick Start", "Top Job Matches" and "Your
    * Resume Progress" identically; the three roles this replaces existed only because the older
@@ -204,36 +214,53 @@ export const typography = {
   homeSection: boardRole('bold', [20, 26]), // 210:298 / 210:349 / 210:413
   /** "Your Resume Progress" (1:157 / 115:157) — the board draws this one a step smaller. */
   cardTitle: boardRole('semiBold', [17, 22]), // company name on job cards (210:372)
-  label: role('semiBold', [16, 24], 13.5), // list-row titles (Home has its own — see homeResumeTitle)
-  title: role('semiBold', [17, 24], 14.5), // card titles, row labels
-  titleSm: role('semiBold', [15, 22], 13), // salary, secondary titles
-  body: role('regular', [15, 22], 13),
-  bodyMedium: role('medium', [15, 22], 13),
-  bodySemiBold: role('semiBold', [15, 22], 13),
-  caption: role('medium', [13, 20], 11.5), // meta, subtitles
-  captionRegular: role('regular', [13, 20], 11.5),
-  jobMeta: role('medium', [13, 19.5], 11.5), // job card meta line (Figma 1:334)
-  captionSemiBold: role('semiBold', [13, 20], 11.5), // selected segment, match pill
-  segment: role('medium', [14, 20], 12.5), // segmented-control label
-  segmentActive: role('semiBold', [14, 20], 12.5),
-  groupLabel: role('semiBold', [14, 20], 12.5), // filter-sheet group headings (Figma 1:766)
-  rowLabel: role('medium', [14, 21], 12.5), // match-criteria rows (Figma 1:857)
-  prose: role('regular', [15, 25], 13), // long-form body copy (Figma 1:876)
-  bulletBody: role('regular', [15, 23], 13), // responsibility bullets (Figma 1:878)
-  captionSm: role('medium', [12, 18], 11.5), // slider scale ends (Figma 1:803)
-  pill: role('regular', [12, 18], 11.5), // pick-card pills
-  pillStrong: role('semiBold', [12, 18], 11.5),
-  rowDescription: role('medium', [13, 19], 11.5), // sheet row descriptions (Figma 13/19)
-  micro: role('medium', [11, 16.5], 10.5),
-  microRegular: role('regular', [11, 16], 10.5),
-  microSemiBold: role('semiBold', [12, 18], 11.5),
-  microBadge: role('semiBold', [11, 16], 10.5), // doc-type pills on resume cards (Figma 1:1423)
-  rowTitle: role('medium', [17, 24], 14.5), // grouped settings rows (Figma 1:2240)
-  menuRow: role('medium', [16, 24], 13.5), // action-sheet rows (Figma 1:2036)
+  // The redrawn Jobs cards (498:2 / 519:2). They put the company name where the title used to be
+  // and the title on its own line below, so neither lands on a role the older boards drew.
+  jobListTitle: boardRole('semiBold', [16, 21]), // 498:13
+  jobListCompany: boardRole('semiBold', [13, 16.5]), // 498:7
+  /** The carousel card is a size down from the list card, and names its company a weight lighter. */
+  pickCardTitle: boardRole('semiBold', [15.5, 20]), // 519:16
+  pickCardCompany: boardRole('medium', [13, 17]), // 519:7
+  pickCardSalary: boardRole('semiBold', [14, 18]), // 519:17
+  /** The " · est." the carousel card sets a weight lighter beside the figure. */
+  pickCardSalaryEst: boardRole('regular', [14, 18]), // 519:17
+  /** Job Detail's salary, redrawn a step down from `display` and semibold (Figma 443:14). */
+  jobDetailSalary: boardRole('semiBold', [16.5, 21]), // 443:14
+  // Row and card titles at the redrawn job card's 16 (498:13); list rows and sheet rows a step under.
+  title: boardRole('semiBold', [16, 21]), // card titles, row labels
+  rowTitle: boardRole('medium', [16, 21]), // grouped settings rows (Figma 1:2240)
+  label: boardRole('semiBold', [15, 20]), // list-row titles (Home has its own — see homeResumeTitle)
+  menuRow: boardRole('medium', [15, 20]), // action-sheet rows (Figma 1:2036)
+  titleSm: boardRole('semiBold', [14, 19]), // salary, secondary titles
+  // Body at the score summary's 14 (95:2321); long-form copy at the checklist's 15 (95:2329).
+  body: boardRole('regular', [14, 20]),
+  bodyMedium: boardRole('medium', [14, 20]),
+  bodySemiBold: boardRole('semiBold', [14, 20]),
+  prose: boardRole('regular', [15, 22]), // long-form body copy (Figma 1:876)
+  bulletBody: boardRole('regular', [15, 21]), // responsibility bullets (Figma 1:878)
+  // Controls and form-group labels.
+  segment: boardRole('medium', [14, 19]), // segmented-control label
+  segmentActive: boardRole('semiBold', [14, 19]),
+  groupLabel: boardRole('semiBold', [14, 19]), // filter-sheet group headings (Figma 1:766)
+  rowLabel: boardRole('medium', [14, 19]), // match-criteria rows (Figma 1:857)
+  // Meta and captions at the job cards' and score panel's 13 (498:7 / 519:7 / 95:2322).
+  caption: boardRole('medium', [13, 18]), // meta, subtitles
+  captionRegular: boardRole('regular', [13, 18]),
+  jobMeta: boardRole('medium', [13, 18]), // job card meta line (Figma 1:334)
+  captionSemiBold: boardRole('semiBold', [13, 18]), // selected segment, match pill
+  captionSm: boardRole('medium', [13, 18]), // slider scale ends (Figma 1:803)
+  pill: boardRole('regular', [13, 18]), // pick-card pills
+  pillStrong: boardRole('semiBold', [13, 18]),
+  rowDescription: boardRole('medium', [13, 18]), // sheet row descriptions
+  microSemiBold: boardRole('semiBold', [13, 18]),
+  // The smallest free-standing text: 12, the floor the Mobile 2 audit set (toreview.md 38.3).
+  micro: boardRole('medium', [12, 16]),
+  microRegular: boardRole('regular', [12, 16]),
+  microBadge: boardRole('semiBold', [12, 16]), // doc-type pills on resume cards (Figma 1:1423)
   headlineLg: role('bold', [24, 32], 19), // first-run title (Figma 1:2082 / 95:2283)
   pageTitle: role('bold', [26, 34], 20.5), // "Notification preferences" (1:2714 / 95:2915)
   displaySemiBold: role('semiBold', [22, 30], 17.5), // profile name (Figma 1:2201)
-  overline: role('semiBold', [13, 20, 0.3], 11.5), // group labels "CAREER PROFILE" (1:2237)
+  overline: boardRole('semiBold', [12.5, 17, 0.3]), // group labels "CAREER PROFILE" (1:2237)
   microOverline: role('bold', [10, 14, 0.6], 9.5), // "ATS SCORE" ring caption (1:2117 / 95:2318)
   scoreHero: role('bold', [42, 48], 31.5), // score-panel ring value (1:2116 / 95:2317)
   scoreSm: role('bold', [13, 20], 11.5), // mini ATS badge value (Figma 1:1418)
@@ -257,20 +284,16 @@ export const typography = {
    */
   badgeCount: cellRole('bold', [11, 16], [10.5, 12]),
   /**
-   * Bottom-nav label. Box-bound: it lives in a tab slot inside the pill, and both are artboard
-   * lengths.
-   *
-   * Sized to the pill rather than off the board. Home Screen 215:490 places the whole nav at
-   * 0.805 of its 520 size on a 390 frame, so the label lands at 7.28 there — smaller than the 9
-   * the older boards give it, and far below what anyone reads on a phone. The bigger pill has
-   * the room, and NAV_BOOST widened it again: 13.2 leaves ≈18% between “Resumes” and “Profile”,
-   * which collide at 16.1.
+   * Bottom-nav label, as the bar draws it (Figma 429:7586): 7.256 / 10.883 on a 299 pill, times
+   * NAV_BOOST (1.1) like the rest of the bar — 7.98 / 11.97 at 390. Box-bound: it lives in a tab
+   * slot inside the pill, so it tracks the pill all the way down.
    */
-  tabLabel: cellRole('semiBold', [17.6, 22, 0.11], [13.2, 16.5, 0.0825]),
+  tabLabel: cellRole('semiBold', [7.98 / 0.75, 11.97 / 0.75], [7.98, 11.97]),
   statLg: role('bold', [22, 28, -0.3], 17.5),
   statRegular: role('regular', [20, 30], 16.5), // ATS ring value on Resumes (Home uses homeRingValue)
   stat: role('bold', [18, 24, -0.2], 15),
   logoInitial: role('bold', [18, 22], 15),
+  companyInitial: boardRole('bold', [29, 34]), // the company page's 68 mark (JOBS 09 580:1657)
 
   // ---------------------------------------------------------------------------------------
   // Home-only roles, measured on Home Screen 210:262.
@@ -285,13 +308,13 @@ export const typography = {
   // ---------------------------------------------------------------------------------------
 
   /** "Full-time" / "2d ago" chips on the Home job cards (1:118 / 115:118). */
-  homeCardChip: boardRole('medium', [11, 14]), // 210:376
-  /** "80+ applied" under the Home job cards (1:129 / 115:129) — a full 0.75. */
-  homeCardMeta: boardRole('medium', [11, 14]), // 210:387
+  homeCardChip: boardRole('medium', [13, 17]), // 210:376 draws 11; meta is 13 app-wide (toreview.md 54)
+  /** "80+ applied" under the Home job cards (1:129 / 115:129). */
+  homeCardMeta: boardRole('medium', [13, 17]), // 210:387 draws 11; as above
   /** "98%" in the Home match badge (1:111 / 115:111). */
   homeMatchValue: boardRole('bold', [13, 16]), // 210:369
   /** "Match" under it (1:113 / 115:113). */
-  homeMatchLabel: boardRole('medium', [11, 14]), // 210:371
+  homeMatchLabel: boardRole('medium', [13, 17]), // 210:371 draws 11; as above
   /** "View all" section links (1:99 / 115:99) — a full 0.75. */
   viewAllLink: boardRole('semiBold', [13, 18]), // 210:417
   /** "Led UX Designer" under the company on a Home job card. Shared `bodyMedium` is 13. */
@@ -318,9 +341,40 @@ export const typography = {
   /** The score inside the ATS ring. Shared `statRegular` is 16.5 and overruns the stroke. */
   homeRingValue: boardRole('bold', [20, 24]), // 210:434
 
+  // RESUMES 04 — score panel, enlarged on the 390 board (95:2310, toreview.md 38.19 / 47).
+  scoreTitle: boardRole('semiBold', [16.5, 22]), // 95:2313
+  scoreRingLabel: boardRole('bold', [10.5, 13, 0.45]), // "ATS SCORE" (95:2318)
+  scoreSummary: boardRole('medium', [14, 20]), // 95:2321
+  scoreContext: boardRole('medium', [13, 17]), // 95:2322
+  scoreSection: boardRole('semiBold', [16, 22]), // "Content" (95:2324)
+  scoreCount: boardRole('medium', [13.5, 18]), // "4 of 5" (95:2325)
+  scoreCheck: boardRole('medium', [15, 20]), // checklist rows (95:2329)
+  scoreFix: boardRole('semiBold', [13.5, 18]), // "Fix" pill (95:2339)
+  scoreRecalc: boardRole('medium', [13, 18]), // 95:2382
+  scoreCta: boardRole('semiBold', [13.5, 16.5]), // "Fix 4 quick wins" (95:2388)
+
+  // NOTIF 01 redesign (619:2). The description and time reuse captionRegular and micro, which the
+  // board draws at the same 13 / 12.
+  notifTitle: boardRole('bold', [14.5, 19.5]), // 619:46
+
+  // The profile editors' company/school letter tiles (PROFILE 04 573:43, PROFILE 05 573:154).
+  entryInitial: boardRole('bold', [17, 20]),
+  entryInitialLg: boardRole('bold', [20, 24]),
+  tileCode: boardRole('bold', [12.5, 16]), // "EN" on the language sheet's tiles (577:1850)
+  tailorRingValue: boardRole('bold', [27, 31]), // "72" in the compare hero's ring (607:32)
+  editorRingValue: boardRole('bold', [21, 24]), // "92" in the editor hero's ring (577:6966)
+  notifTitleRun: boardRole('medium', [14.5, 19.5]), // 619:81 — the medium half of a mixed headline
+  notifInitial: boardRole('bold', [19, 22.8]), // 619:54 — the letter in a company tile
+  notifStackInitial: boardCellRole('bold', [12, 14.4]), // 619:24 — 26pt digest tiles
+  notifStackMore: boardCellRole('semiBold', [11, 14]), // 619:32 — "+2"
+
   // ---------------------------------------------------------------------------------------
-  // Onboarding & auth — Figma 290:955, drawn once at 422.66. Values below are as drawn; the
+  // Onboarding & auth — Figma 307:4152, drawn once at 422.66. Values below are as drawn; the
   // conversion into 520-space is `authRole`'s job, so each number stays traceable to its node.
+  //
+  // The node ids in the comments below belong to the flow's first numbering and no longer
+  // resolve — the whole row was redrawn under new ids (toreview.md 6.17). Only the two roles
+  // slide 3's redraw actually moved carry current ones.
   //
   // Two families in the artboards are not loaded: DM Sans carries almost everything and
   // Montserrat the welcome screen's letter-spaced caps. Both map onto Plus Jakarta Sans rather
@@ -343,9 +397,13 @@ export const typography = {
    */
   onboardingTitle: authRole('bold', [36.141, 40.839, -1.5945]), // 295:2874
   onboardingLead: authRole('regular', [19, 27.55, -0.25]), // 290:978, and "Skip"
+  /** Slide 3's redraw sets the same size on a tighter leading; slides 1 and 2 keep 27.55. */
+  onboardingLeadTight: authRole('regular', [19, 25.448, -0.2657]), // 307:4296
   onboardingCta: authRole('semiBold', [18.071, 24]), // 296:2978 "Get Started"
-  featureTitle: authRole('bold', [17.008, 19.559, -0.3189]), // 295:2944
-  featureCaption: authRole('medium', [14.882, 17.114]), // 295:2946
+  // Slide 3's redraw shrank the whole feature block to 88% of its first size; these two are the
+  // only type roles that moved with it, and nothing outside `FeatureRows` reads them.
+  featureTitle: authRole('bold', [14.991, 17.24, -0.2811]), // 307:4302
+  featureCaption: authRole('medium', [13.117, 15.085]), // 307:4304
   jobCardTitle: authRole('semiBold', [15, 19.5]), // 290:1051
   authHero: authRole('brand', [46.712, 47.646, -2.8133]), // 296:3036 "A brighter you ahead."
   authTitle: authRole('brand', [34.187, 37.606, -1.8162]), // 296:3144 "Create an account"

@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   FAQ_TOPIC_LABEL,
@@ -9,41 +9,58 @@ import {
   type FaqTopic,
 } from '@/data/models';
 import { useFaq } from '@/data/queries';
+import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
 import { useDebouncedValue } from '@/lib';
-import { useTheme } from '@/theme';
-import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
+import { scaledSheet, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { SearchField } from '@/ui/SearchField';
+import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
 import { FaqList } from '../components/FaqList';
 import { HelpSkeleton } from '../components/HelpSkeleton';
-import { faqCountLine, filterFaq, supportTopicForFaqTopic } from '../faqSearch';
+import { StillStuckCard } from '../components/StillStuckCard';
+import { SupportHero } from '../components/SupportHero';
+import { faqHeroLine, filterFaq, supportTopicForFaqTopic } from '../faqSearch';
 import { useSupportActions } from '../hooks/useSupportActions';
 
+const TITLE = 'Help & FAQ';
 const CONTACT_CTA = 'Message support';
 /** Distinct from the footer card's button so a state view's two routes are never ambiguous. */
 const CONTACT_SECONDARY = 'Message support instead';
 /** Stable identity, so the filter memo is not recomputed by `?? []` minting a new array. */
 const NO_ITEMS: readonly FaqItem[] = [];
 
+// SUPPORT 01 at 390 (577:6129), in artboard units.
+const HEADER_TO_HERO = 8 / 0.75;
+const HERO_ART_W = 60 / 0.75;
+const ART_TO_TITLE = 12 / 0.75;
+const TITLE_TO_LEDE = 8 / 0.75;
+const LEDE_SKELETON_W = 190 / 0.75;
+const LEDE_SKELETON_H = 18 / 0.75;
+const HERO_TO_SEARCH = 18 / 0.75;
+const SEARCH_TO_CHIPS = 12 / 0.75;
+const CHIP_GAP_X = 7 / 0.75;
+const CHIP_GAP_Y = 8 / 0.75;
+const CHIPS_TO_LIST = 18 / 0.75;
+const LIST_TO_STUCK = 18 / 0.75;
+
 /**
- * HELP & FAQ, reached from the Support rows Figma PROFILE 02 draws. The spec has no help
- * section — §7.14 is Skills Explorer, a public web surface. No artboard covers this screen (plan §8, phase
- * 9G), so it is assembled from the built primitives only: the search field the Jobs and Resumes
- * headers wear, the filter chips the Filters sheet wears, and the carded accordion the published
- * score rubric wears.
+ * HELP & FAQ, drawn as SUPPORT 01 (577:6129) and reached from the Support rows on PROFILE 02. The
+ * spec has no help section — §7.14 is Skills Explorer, a public web surface. A hero names the page
+ * and how much help there is, then the search field, the topic chips, one carded group of
+ * questions per topic, and the "Still stuck?" card that hands over to a person.
  *
  * The FAQ is a dozen entries the repo hands over whole, so the search runs in memory against
  * `faqSearch.ts` rather than over the wire; only the value that reaches it is debounced, so the
  * field itself stays fully controlled.
  */
 export function HelpScreen() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
+  const styles = useStyles();
   const actions = useSupportActions();
   const faq = useFaq();
 
@@ -54,8 +71,11 @@ export function HelpScreen() {
    * accordion that kept everything open would push the answer being read off the bottom of the
    * page and lose the reader's place; an FAQ is read one answer at a time. The open id survives a
    * change of query on purpose — an answer you opened and then searched within stays open.
+   *
+   * `undefined` means the reader has not touched the list yet, and then the first question is
+   * open, as the board draws it (577:6183); `null` is a reader who closed everything.
    */
-  const [openId, setOpenId] = useState<string | undefined>(undefined);
+  const [openId, setOpenId] = useState<string | null | undefined>(undefined);
 
   const debouncedQuery = useDebouncedValue(query);
   const all = faq.data ?? NO_ITEMS;
@@ -63,6 +83,7 @@ export function HelpScreen() {
     () => filterFaq(all, { topic, query: debouncedQuery }),
     [all, topic, debouncedQuery],
   );
+  const shownOpen = openId === undefined ? all[0]?.id : (openId ?? undefined);
 
   const clearSearch = () => {
     setQuery('');
@@ -71,15 +92,37 @@ export function HelpScreen() {
 
   const contact = () => actions.openContact(supportTopicForFaqTopic(topic));
 
+  let lede: ReactNode = null;
+  if (faq.isPending) {
+    lede = <Skeleton width={s(LEDE_SKELETON_W)} height={s(LEDE_SKELETON_H)} style={styles.lede} />;
+  } else if (all.length > 0) {
+    lede = (
+      <Text variant="captionRegular" color="textSecondary" align="center" style={styles.lede}>
+        {faqHeroLine(all, items.length)}
+      </Text>
+    );
+  }
+
+  // The hero stands in every state: the header row leaves its title slot empty, so the hero is
+  // the only thing on the page that says where the reader is.
   const page = (children: ReactNode) => (
     <Screen
       scroll
+      keyboard
       edges={['top', 'bottom']}
-      header={<ScreenHeader title="Help & FAQ" onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+      header={<ScreenHeader title={TITLE} showTitle={false} onBack={actions.goBack} />}
+      headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
     >
-      {children}
+      <SupportHero
+        art={PROFILE_ROW_ART.help}
+        artWidth={HERO_ART_W}
+        artGap={ART_TO_TITLE}
+        title={TITLE}
+      >
+        {lede}
+      </SupportHero>
+      <View style={styles.body}>{children}</View>
     </Screen>
   );
 
@@ -117,74 +160,75 @@ export function HelpScreen() {
 
   return page(
     <>
-      <View style={{ gap: spacing[3] }}>
-        <SearchField
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search help"
-          accessibilityLabel="Search help"
+      <SearchField
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search help"
+        accessibilityLabel="Search help"
+      />
+      <View style={styles.chips}>
+        <FilterChip
+          variant="select"
+          label="All"
+          accessibilityLabel="All topics"
+          selected={topic === undefined}
+          onPress={() => setTopic(undefined)}
         />
-        <View style={[styles.chips, { gap: spacing[2] }]}>
+        {FAQ_TOPIC_ORDER.map((key) => (
           <FilterChip
-            variant="filter"
-            label="All"
-            accessibilityLabel="All topics"
-            selected={topic === undefined}
-            onPress={() => setTopic(undefined)}
+            key={key}
+            variant="select"
+            label={FAQ_TOPIC_LABEL[key]}
+            selected={topic === key}
+            onPress={() => setTopic(topic === key ? undefined : key)}
           />
-          {FAQ_TOPIC_ORDER.map((key) => (
-            <FilterChip
-              key={key}
-              variant="filter"
-              label={FAQ_TOPIC_LABEL[key]}
-              selected={topic === key}
-              onPress={() => setTopic(topic === key ? undefined : key)}
-            />
-          ))}
-        </View>
+        ))}
       </View>
-
-      <Text variant="caption" color="textTertiary">
-        {faqCountLine(items.length, all.length)}
-      </Text>
 
       {/*
         (b) The FAQ loaded but this search or topic matched none of it. Deliberately a different
         state from (a): the search field above stays on screen so the query can be edited, the
         title names what was typed, and "Clear search" puts the whole list back.
       */}
-      {items.length === 0 ? (
-        <StateView
-          icon="search"
-          title={
-            debouncedQuery.trim().length > 0
-              ? `No answers matched "${debouncedQuery.trim()}"`
-              : 'No answers in this topic'
-          }
-          actionLabel="Clear search"
-          onAction={clearSearch}
-        />
-      ) : (
-        <FaqList
-          items={items}
-          openId={openId}
-          onToggle={(id) => setOpenId((open) => (open === id ? undefined : id))}
-        />
-      )}
+      <View style={styles.list}>
+        {items.length === 0 ? (
+          <StateView
+            icon="search"
+            title={
+              debouncedQuery.trim().length > 0
+                ? `No answers matched "${debouncedQuery.trim()}"`
+                : 'No answers in this topic'
+            }
+            actionLabel="Clear search"
+            onAction={clearSearch}
+          />
+        ) : (
+          <FaqList
+            items={items}
+            openId={shownOpen}
+            onToggle={(id) => setOpenId(shownOpen === id ? null : id)}
+          />
+        )}
+      </View>
 
-      <Card style={{ gap: spacing[3] }}>
-        <Text variant="section" accessibilityRole="header">
-          Still stuck?
-        </Text>
-        <Text variant="prose" color="textSecondary">
-          {SUPPORT_REPLY_WINDOW}
-        </Text>
-        <Button label={CONTACT_CTA} icon="envelope" onPress={contact} />
-      </Card>
+      <View style={styles.stuck}>
+        <StillStuckCard label={CONTACT_CTA} onPress={contact} />
+      </View>
     </>,
   );
 }
 
-const styles = StyleSheet.create({
-  chips: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
-});
+const useStyles = scaledSheet((s) => ({
+  lede: { marginTop: s(TITLE_TO_LEDE) },
+  body: { marginTop: s(HERO_TO_SEARCH) },
+  chips: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    columnGap: s(CHIP_GAP_X),
+    rowGap: s(CHIP_GAP_Y),
+    marginTop: s(SEARCH_TO_CHIPS),
+  },
+  list: { marginTop: s(CHIPS_TO_LIST) },
+  stuck: { marginTop: s(LIST_TO_STUCK) },
+}));

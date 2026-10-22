@@ -28,6 +28,7 @@ const LENGTH_PROPS = [
   'gap',
   'rowGap',
   'columnGap',
+  'flexBasis',
   'borderRadius',
   'borderWidth',
   'top',
@@ -77,7 +78,7 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              group: ['@/data/mock/*', '**/data/mock/*'],
+              group: ['@/data/mock/*', '**/data/mock/*', '@nextkin/shared/mock', '@nextkin/shared/mock/*'],
               message: 'Import data through @/data/queries hooks, not mock fixtures.',
             },
           ],

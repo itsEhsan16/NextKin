@@ -1,13 +1,12 @@
-import { useEffect } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
-import { useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme, type ColorToken, type TypographyRole } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { AnimatedNumber } from './AnimatedNumber';
+import { useMeterValue, type MeterTiming } from './meterMemory';
 import { ringRadius } from './ringMath';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -17,6 +16,11 @@ export type ScoreRingProps = {
   score: number;
   /** Caption under the number ("ATS Score"). */
   label?: string;
+  /**
+   * Shown in place of the count-up, when the number is said another way than 0–100 ("5.9" out of
+   * 10, toreview §114). The arc still sweeps to `score`.
+   */
+  valueText?: string;
   size?: number;
   strokeWidth?: number;
   ringColor?: ColorToken;
@@ -27,6 +31,13 @@ export type ScoreRingProps = {
   numberColor?: ColorToken;
   labelVariant?: TypographyRole;
   accessibilityLabel?: string;
+  /**
+   * Start from what this key last showed (`ats:<resumeId>`), so a ring that remounts — a card
+   * re-rendered by a search or a layout switch — does not sweep up from 0 again.
+   */
+  memoryKey?: string;
+  /** `follow` for a score that updates live; `meter` (default) for one that settles. */
+  timing?: MeterTiming;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -44,6 +55,7 @@ const DEFAULT_STROKE = 4;
 export function ScoreRing({
   score,
   label,
+  valueText,
   size,
   strokeWidth,
   ringColor = 'successRing',
@@ -55,18 +67,15 @@ export function ScoreRing({
   numberColor = 'textBlack',
   labelVariant = 'tiny',
   accessibilityLabel,
+  memoryKey,
+  timing,
   style,
 }: ScoreRingProps) {
-  const { colors, motion, s } = useTheme();
+  const { colors, s } = useTheme();
   const box = size ?? s(DEFAULT_SIZE);
   const stroke = strokeWidth ?? s(DEFAULT_STROKE);
-  const reduced = useReducedMotion();
   const target = Math.max(0, Math.min(100, score));
-  const animatedScore = useSharedValue(0);
-
-  useEffect(() => {
-    animatedScore.set(withTiming(target, withReducedMotion(reduced, motion.timings.meter)));
-  }, [animatedScore, motion.timings.meter, reduced, target]);
+  const animatedScore = useMeterValue(target, { memoryKey, timing });
 
   // Inset by a physical pixel so the stroke is not tangent to the canvas edge; see ringMath.
   const radius = ringRadius(box, stroke);
@@ -107,7 +116,13 @@ export function ScoreRing({
           transform={`rotate(-90 ${box / 2} ${box / 2})`}
         />
       </Svg>
-      <AnimatedNumber value={animatedScore} variant={numberVariant} color={numberColor} />
+      {valueText != null ? (
+        <Text variant={numberVariant} color={numberColor} numberOfLines={1}>
+          {valueText}
+        </Text>
+      ) : (
+        <AnimatedNumber value={animatedScore} variant={numberVariant} color={numberColor} />
+      )}
       {/* One line, always: a second would break out of the ring on the narrowest phones. */}
       {label ? (
         <Text

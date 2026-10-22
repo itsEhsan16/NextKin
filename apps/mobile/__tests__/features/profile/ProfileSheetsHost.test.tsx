@@ -2,12 +2,16 @@ import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
+import { useMockModeStore } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
 import { mockStore, resetMockRepos } from '@/data/repos';
 import { useSessionStore } from '@/features/auth';
 import { ProfileSheetsHost, useProfileStore } from '@/features/profile';
+import { DELETE_ACCOUNT_FAILED, PREFERENCE_REVERTED } from '@/features/profile/ProfileSheetsHost';
 import { storage } from '@/lib';
 import { useAppearanceStore } from '@/theme';
+
+const stepIds = () => mockStore.state.profile.nextSteps.map((step) => step.id);
 
 const metrics: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -34,6 +38,7 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     await Promise.all(clients.map((client) => client.cancelQueries()));
     await cleanup();
     clients.splice(0).forEach((client) => client.clear());
+    useMockModeStore.setState({ mode: 'normal' });
   });
 
   it('walks appearance, availability, minimum salary and the two confirms', async () => {
@@ -73,6 +78,24 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     );
     expect(useProfileStore.getState().sheetOpen).toBe(false);
 
+    // — A refused picker write flips back AND says so; it used to flip back in silence (§85) —
+    await act(async () => useProfileStore.getState().openSheet('language'));
+    expect(await screen.findByRole('header', { name: 'Language' })).toBeOnTheScreen();
+    useMockModeStore.setState({ mode: 'error' });
+    fireEvent.press(screen.getByLabelText('German'));
+    await waitFor(
+      () =>
+        expect(useProfileStore.getState()).toMatchObject({
+          toast: PREFERENCE_REVERTED,
+          toastTone: 'error',
+        }),
+      { timeout: 10000 },
+    );
+    expect(mockStore.state.profile.preferences.language).toBe('en');
+    expect(useProfileStore.getState().sheetOpen).toBe(false);
+    useMockModeStore.setState({ mode: 'normal' });
+    await act(async () => useProfileStore.getState().hideToast());
+
     // — Minimum salary offers lakh floors and can clear the preference —
     await act(async () => useProfileStore.getState().openSheet('min-salary'));
     expect(await screen.findByRole('header', { name: 'Minimum salary' })).toBeOnTheScreen();
@@ -81,6 +104,23 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     await waitFor(() => expect(mockStore.state.profile.preferences.minSalary).toBeUndefined(), {
       timeout: 10000,
     });
+    // Clearing the floor does not answer "Set salary range": once every write has settled, the
+    // step is still there and the meter has not moved.
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0), { timeout: 10000 });
+    expect(stepIds()).toContain('step_salary');
+    expect(mockStore.state.profile.completeness).toBe(0.72);
+
+    // — A floor that lands answers the step: the chip's data is now there (§85) —
+    await act(async () => useProfileStore.getState().openSheet('min-salary'));
+    await waitFor(() => expect(screen.getByLabelText('No minimum')).toBeSelected(), {
+      timeout: 10000,
+    });
+    fireEvent.press(screen.getByLabelText('₹30L'));
+    await waitFor(() => expect(stepIds()).not.toContain('step_salary'), { timeout: 10000 });
+    expect(mockStore.state.profile.preferences.minSalary).toMatchObject({ min: 3_000_000 });
+    expect(mockStore.state.profile.completeness).toBe(0.86);
+    // The other chip is answered by its own editor, never by this one.
+    expect(stepIds()).toEqual(['step_skills']);
 
     // — Sign out ends the session synchronously and persists it —
     await act(async () => useProfileStore.getState().openSheet('sign-out'));
@@ -93,10 +133,26 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     // is mounted on its own here, so put the session back and carry on in the same mount.
     await act(async () => useSessionStore.setState({ status: 'signed_in' }));
 
-    // — Delete account waits for the mutation, then ends the session —
+    // — A refused delete keeps the sheet up for the retry and says why (§85: it was silent) —
     await act(async () => useProfileStore.getState().openSheet('delete-account'));
     expect(await screen.findByRole('header', { name: 'Delete your account?' })).toBeOnTheScreen();
     expect(screen.getByText(/permanently removed/)).toBeOnTheScreen();
+    useMockModeStore.setState({ mode: 'error' });
+    fireEvent.press(screen.getByLabelText('Delete account'));
+    await waitFor(
+      () =>
+        expect(useProfileStore.getState()).toMatchObject({
+          toast: DELETE_ACCOUNT_FAILED,
+          toastTone: 'error',
+        }),
+      { timeout: 10000 },
+    );
+    expect(useSessionStore.getState().status).toBe('signed_in');
+    expect(useProfileStore.getState().sheetOpen).toBe(true);
+    useMockModeStore.setState({ mode: 'normal' });
+
+    // — Delete account waits for the mutation, then ends the session —
+    await waitFor(() => expect(screen.getByLabelText('Delete account')).toBeEnabled());
     fireEvent.press(screen.getByLabelText('Delete account'));
     await waitFor(() => expect(useSessionStore.getState().status).toBe('signed_out'), {
       timeout: 10000,

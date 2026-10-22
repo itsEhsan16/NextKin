@@ -1,20 +1,32 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { View, type TextInput } from 'react-native';
+import { AccessibilityInfo, View, type TextInput } from 'react-native';
 
 import EmailIcon from '../../../../assets/icons/onboarding/field-email.svg';
 import NameIcon from '../../../../assets/icons/onboarding/field-name.svg';
 import PasswordIcon from '../../../../assets/icons/onboarding/field-password.svg';
-import GoogleLogo from '../../../../assets/logos/google.svg';
-import { blankSignUp, validateSignUp, FIX_FIRST, type SignUpDraft } from '../authForms';
+import { backendAuth, useStartSignUp } from '@/data/queries';
+
+import {
+  blankSignUp,
+  validateSignUp,
+  FIX_FIRST,
+  GOOGLE_NOT_CONNECTED,
+  signUpErrorMessage,
+  type SignUpDraft,
+} from '../authForms';
+import { usePendingSignUp } from '../pendingSignUp';
 import { board } from '../board';
 import { SIGN_UP, dividerMargin } from '../signUpLayout';
+import { AuthDivider } from '../components/AuthDivider';
 import { AuthField } from '../components/AuthField';
+import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
+import { GoogleButton } from '../components/GoogleButton';
 import { useOnboardingStore } from '../onboardingStore';
 import { useSessionStore } from '../sessionStore';
-import { a11yHeader, hitSlopFor } from '@/lib';
+import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
@@ -22,7 +34,7 @@ import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
 /**
- * Create an account (Figma 296:3032).
+ * Create an account (Figma 307:4386).
  *
  * **No safe-area edges, deliberately.** The artboard is a whole phone screen, so its own 97 of
  * head room and 130 of floor already cover the status bar and the gesture area. Asking for
@@ -32,8 +44,9 @@ import { Text } from '@/ui/Text';
  * button, exactly where the board puts it.
  *
  * Nothing is fetched, so the loading, empty and error states the house recipe asks of a screen
- * have no query to hang off. What this ships instead is the form's own four — untouched, invalid
- * (per field, and a note under the button), submitting, and submitted. There is no identity
+ * have no query to hang off. What this ships instead is the form's own three — untouched,
+ * invalid (per field, and a note under the button), and accepted. There is no submitting state:
+ * signing in is a synchronous store flip, so there is no moment to show one in. There is no identity
  * provider behind it either: any name, address and password sign you into the pre-seeded mock
  * account, and none of the three is kept, because the session store holds a status and no user.
  * See toreview.md.
@@ -48,6 +61,9 @@ export function SignUpScreen() {
   const [draft, setDraft] = useState<SignUpDraft>(blankSignUp);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [refused, setRefused] = useState(false);
+  const startSignUp = useStartSignUp();
+  const startPending = usePendingSignUp((state) => state.start);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
@@ -76,13 +92,46 @@ export function SignUpScreen() {
       setRefused(true);
       return;
     }
-    enter();
+    // On the mock any details sign you in, synchronously, as before. On the backend (P5-08) the
+    // account is created and a code emailed; the confirm screen finishes the sign-up.
+    if (!backendAuth) {
+      enter();
+      return;
+    }
+    if (startSignUp.isPending) return;
+    setServerError(null);
+    startSignUp.mutate(
+      { name: draft.fullName, email: draft.email, password: draft.password },
+      {
+        onSuccess: () => {
+          startPending(draft.email.trim(), draft.password);
+          router.push('/confirm-email');
+        },
+        onError: (error) => {
+          const message = signUpErrorMessage(error);
+          setServerError(message);
+          AccessibilityInfo.announceForAccessibility(message);
+        },
+      },
+    );
+  };
+
+  const google = () => {
+    if (!backendAuth) {
+      enter();
+      return;
+    }
+    setServerError(GOOGLE_NOT_CONNECTED);
+    AccessibilityInfo.announceForAccessibility(GOOGLE_NOT_CONNECTED);
   };
 
   // The board sets the chevron beside the lock-up rather than above it, so it comes out of the
   // flow: stacked, its 48pt tap target pushed the whole page down by that much. The offset
-  // centres that target on the 23.5 glyph the board draws, so the target stays a full 48.
-  const backInset = (sizes.iconButton - s(board(SIGN_UP.backGlyph))) / 2;
+  // centres that target on the 23.5 glyph the board draws, so the target stays a full 48 — and
+  // the glyph is asked for at that size, because IconButton's own default is a 16 read off the
+  // 520 board, which is barely half of what this one is drawn at.
+  const backGlyph = s(board(SIGN_UP.backGlyph));
+  const backInset = (sizes.iconButton - backGlyph) / 2;
 
   return (
     <Screen
@@ -100,7 +149,13 @@ export function SignUpScreen() {
           zIndex: 1,
         }}
       >
-        <IconButton icon="arrow-left" label="Go back" variant="ghost" onPress={() => router.back()} />
+        <IconButton
+          icon="arrow-left"
+          label="Go back"
+          variant="ghost"
+          iconSize={backGlyph}
+          onPress={() => router.back()}
+        />
       </View>
 
       <AuthLockup />
@@ -118,6 +173,7 @@ export function SignUpScreen() {
       <View style={{ marginTop: s(board(SIGN_UP.fieldsTop)), gap: s(board(SIGN_UP.fieldGap)) }}>
         <AuthField
           label="Full name"
+          metrics={SIGN_UP}
           renderIcon={(props) => <NameIcon {...props} />}
           value={draft.fullName}
           onChangeText={(fullName) => patch({ fullName })}
@@ -131,6 +187,7 @@ export function SignUpScreen() {
         <AuthField
           ref={emailRef}
           label="Email address"
+          metrics={SIGN_UP}
           renderIcon={(props) => <EmailIcon {...props} />}
           value={draft.email}
           onChangeText={(email) => patch({ email })}
@@ -144,6 +201,7 @@ export function SignUpScreen() {
         <AuthField
           ref={passwordRef}
           label="Password"
+          metrics={SIGN_UP}
           renderIcon={(props) => <PasswordIcon {...props} />}
           value={draft.password}
           onChangeText={(password) => patch({ password })}
@@ -160,6 +218,7 @@ export function SignUpScreen() {
         haptic="medium"
         accessibilityRole="button"
         accessibilityLabel="Create account"
+        accessibilityState={{ busy: startSignUp.isPending }}
         onPress={submit}
         style={[
           styles.pill,
@@ -182,7 +241,7 @@ export function SignUpScreen() {
         />
       </Pressable>
 
-      {refused && !validation.ok ? (
+      {(refused && !validation.ok) || serverError ? (
         <Text
           variant="authMeta"
           color="danger"
@@ -190,69 +249,32 @@ export function SignUpScreen() {
           accessibilityLiveRegion="polite"
           style={{ marginTop: s(board(8)) }}
         >
-          {FIX_FIRST}
+          {refused && !validation.ok ? FIX_FIRST : serverError}
         </Text>
       ) : null}
 
-      <View
-        style={[
-          styles.divider,
-          { marginVertical: s(board(dividerMargin)), gap: s(board(SIGN_UP.fieldGap)) },
-        ]}
-      >
-        <View style={[styles.rule, { height: s(board(SIGN_UP.hairline)), backgroundColor: colors.authFieldBorder }]} />
-        <Text variant="authField" color="textTertiary">
-          or
-        </Text>
-        <View style={[styles.rule, { height: s(board(SIGN_UP.hairline)), backgroundColor: colors.authFieldBorder }]} />
-      </View>
+      <AuthDivider margin={dividerMargin} gap={SIGN_UP.fieldGap} hairline={SIGN_UP.hairline} />
 
-      <Pressable
-        haptic="light"
-        accessibilityRole="button"
-        accessibilityLabel="Continue with Google"
-        onPress={enter}
-        style={[
-          styles.pill,
-          {
-            height: s(board(SIGN_UP.googleHeight)),
-            borderRadius: radii.full,
-            gap: s(board(SIGN_UP.googleGap)),
-            borderWidth: s(board(SIGN_UP.hairline)),
-            borderColor: colors.authFieldBorder,
-            backgroundColor: colors.surfaceCard,
-          },
-        ]}
-      >
-        <GoogleLogo width={s(board(SIGN_UP.googleLogo))} height={s(board(SIGN_UP.googleLogo))} />
-        <Text variant="authButton" color="onboardingInk">
-          Continue with Google
-        </Text>
-      </Pressable>
+      <GoogleButton
+        height={SIGN_UP.googleHeight}
+        logo={SIGN_UP.googleLogo}
+        gap={SIGN_UP.googleGap}
+        hairline={SIGN_UP.hairline}
+        onPress={google}
+      />
 
-      {/* In the flow, not pinned: the board puts it 34.14 under the last button. */}
-      <Pressable
-        feedback="none"
-        accessibilityRole="link"
-        accessibilityLabel="Already have an account? Sign in"
-        hitSlop={hitSlopFor(s(board(18)))}
-        onPress={() => router.push('/(auth)/sign-in')}
-        style={[
-          styles.footer,
-          {
-            marginTop: s(board(SIGN_UP.footerTop)),
-            marginBottom: s(board(SIGN_UP.floor)),
-            gap: s(board(4.3)),
-          },
-        ]}
-      >
-        <Text variant="authMeta" color="textTertiary">
-          Already have an account?
-        </Text>
-        <Text variant="authMetaStrong" color="onboardingInk">
-          Sign in
-        </Text>
-      </Pressable>
+      <AuthFooterLink
+        prompt="Already have an account?"
+        action="Sign in"
+        top={SIGN_UP.footerTop}
+        height={SIGN_UP.footerHeight}
+        gap={4.3}
+        floor={SIGN_UP.floor}
+        // Replace, as sign-in's own footer does: one form swaps for the other in place. This one
+        // pushed, so a round trip left two sign-up screens on the stack, and back from the second
+        // landed on the first rather than where the reader came from (§85).
+        onPress={() => router.replace('/(auth)/sign-in')}
+      />
     </Screen>
   );
 }
@@ -260,7 +282,4 @@ export function SignUpScreen() {
 const useStyles = scaledSheet(() => ({
   centred: { alignItems: 'center' },
   pill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  divider: { flexDirection: 'row', alignItems: 'center' },
-  rule: { flex: 1 },
-  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
 }));

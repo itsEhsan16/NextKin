@@ -6,7 +6,6 @@ import { Skeleton } from '@/ui/Skeleton';
 
 /** Artboard lengths for the placeholder blocks; every one is projected through `s()` below. */
 const LABEL = 16;
-const FIELD = 52;
 const TEXTAREA = 160;
 const CHIP = 32;
 const CARD = 240;
@@ -18,7 +17,7 @@ const CHIP_WIDTHS = [96, 132, 78, 110, 88];
  * shows a summary-shaped wait and then swaps in three cards.
  */
 export function SectionSkeleton({ section }: { section: EditableSectionKey }) {
-  const { radii, spacing, s } = useTheme();
+  const { radii, sizes, spacing, s } = useTheme();
 
   if (section === 'summary') {
     return (
@@ -38,7 +37,8 @@ export function SectionSkeleton({ section }: { section: EditableSectionKey }) {
             <Skeleton key={width} width={s(width)} height={s(CHIP)} radius="full" />
           ))}
         </View>
-        <Skeleton height={s(FIELD)} radius="xl" />
+        {/* The real field's height, so nothing jumps on load. */}
+        <Skeleton height={sizes.searchField} radius="xl" />
       </View>
     );
   }

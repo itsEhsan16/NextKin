@@ -1,17 +1,19 @@
 import { FlashList } from '@shopify/flash-list';
 import { useCallback, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import HistoryArt from '../../../../assets/icons/history/hero-history.svg';
 import {
   ACTIVITY_FILTERS,
   groupByAge,
   matchesActivityFilter,
-  NOTIFICATION_GROUP_LABEL,
   type ActivityEntry,
   type AgedFeedItem,
+  type NotificationGroup,
 } from '@/data/models';
-import { useActivity } from '@/data/queries';
+import { queryPhase, useActivity } from '@/data/queries';
+import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { Screen } from '@/ui/Screen';
@@ -28,18 +30,37 @@ type FeedItem = AgedFeedItem<ActivityEntry>;
 
 const feedKey = (item: FeedItem) => (item.type === 'header' ? `header-${item.group}` : item.row.id);
 
-/** Rows are about 78pt tall; the skeleton holds that height so the list does not jump on load. */
-const SKELETON_ROW = 78;
+/** Cards are about 90pt tall at 390; the skeleton holds that so the list does not jump on load. */
+const SKELETON_ROW = 90 / 0.75;
+
+// HISTORY 01 at 390 (580:2928), in artboard units.
+const HEADER_TO_HERO = 6 / 0.75;
+const HERO_ART_W = 64 / 0.75;
+const HERO_ART_H = 64.9215 / 0.75;
+const ART_TO_TITLE = 12 / 0.75;
+const TITLE_TO_LEDE = 8 / 0.75;
+const HERO_TO_CHIPS = 18 / 0.75;
+const CHIP_GAP = 7 / 0.75;
+/** Chips → first heading, and the last card of a group → the next heading (580:2959). */
+const SECTION_TOP = 24 / 0.75;
+const HEADING_TO_CARDS = 12 / 0.75;
+const CARD_GAP = 10 / 0.75;
+
+/** The board names its groups in sentence case (580:2961 / 580:3090). */
+const GROUP_TITLE: Record<NotificationGroup, string> = {
+  today: 'Today',
+  week: 'This week',
+  earlier: 'Earlier',
+};
 
 /**
- * HISTORY — the audit trail behind Home's "Activities" tile, as a feed. No artboard covers it
- * (plan §8, phase 9I); the shape is the notifications feed's, which is the designed feed in this
- * app: sticky TODAY / THIS WEEK / EARLIER headers over a FlashList, filter pills above.
+ * HISTORY — the audit trail behind Home's "Activities" tile, drawn as HISTORY 01 (580:2928): a
+ * hero, the filter chips, then one card per entry under Today / This week / Earlier.
  *
  * A pushed screen, so no tab-bar inset — the bottom padding is the safe area alone.
  */
 export function HistoryScreen() {
-  const { colors, spacing, s } = useTheme();
+  const { spacing, s } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const actions = useHistoryActions();
@@ -50,7 +71,7 @@ export function HistoryScreen() {
   const activity = useActivity();
   const list = useMemo(() => activity.data ?? [], [activity.data]);
 
-  const { items, stickyIndices } = useMemo(
+  const { items } = useMemo(
     () =>
       groupByAge(
         list.filter((entry) => matchesActivityFilter(entry, filter)),
@@ -60,43 +81,51 @@ export function HistoryScreen() {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: FeedItem }) => {
+    ({ item, index }: { item: FeedItem; index: number }) => {
       if (item.type === 'header') {
         return (
-          // An opaque background is load-bearing: a sticky header is transparent otherwise and
-          // the rows scroll up through it.
-          <View style={[styles.groupHeader, { backgroundColor: colors.surfacePage }]}>
-            <Text
-              variant="overline"
-              color="textSecondary"
-              accessibilityRole="header"
-              style={{ paddingHorizontal: spacing.gutter }}
-            >
-              {NOTIFICATION_GROUP_LABEL[item.group]}
-            </Text>
-            <View style={[styles.pinnedHairline, { backgroundColor: colors.divider }]} />
-          </View>
+          <Text
+            {...a11yHeader()}
+            variant="title"
+            style={[
+              styles.heading,
+              {
+                paddingHorizontal: spacing.gutter,
+                marginTop: index === 0 ? 0 : s(SECTION_TOP - CARD_GAP),
+              },
+            ]}
+          >
+            {GROUP_TITLE[item.group]}
+          </Text>
         );
       }
-      return <ActivityRow entry={item.row} onOpen={actions.openEntry} />;
+      return (
+        <View style={[styles.cardSlot, { paddingHorizontal: spacing.gutter }]}>
+          <ActivityRow entry={item.row} onOpen={actions.openEntry} />
+        </View>
+      );
     },
-    [actions.openEntry, colors, spacing.gutter, styles],
+    [actions.openEntry, s, spacing.gutter, styles],
   );
 
-  const status = activity.isPending ? 'pending' : activity.isError ? 'error' : 'success';
+  const status = queryPhase(activity);
   // Two different emptinesses: nothing has ever happened, or the filter emptied a list that has.
   const nothingYet = status === 'success' && list.length === 0;
   const filteredOut = status === 'success' && list.length > 0 && items.length === 0;
 
-  return (
-    <Screen
-      padded={false}
-      edges={['top']}
-      header={<ScreenHeader title="History" onBack={actions.goBack} />}
-      headerStyle={{ paddingHorizontal: spacing.gutter }}
-    >
+  const hero = (
+    <View style={[styles.top, { paddingHorizontal: spacing.gutter }]}>
+      <View style={styles.hero}>
+        <HistoryArt width={s(HERO_ART_W)} height={s(HERO_ART_H)} />
+        <Text {...a11yHeader()} variant="headlineLg" align="center" style={styles.title}>
+          History
+        </Text>
+        <Text variant="captionRegular" color="textSecondary" align="center" style={styles.lede}>
+          Everything you&apos;ve generated, saved and changed
+        </Text>
+      </View>
       {!nothingYet ? (
-        <View style={[styles.pills, { paddingHorizontal: spacing.gutter, gap: spacing[2] }]}>
+        <View style={styles.pills}>
           {ACTIVITY_FILTERS.map((pill) => (
             <FilterChip
               key={pill.key}
@@ -108,6 +137,17 @@ export function HistoryScreen() {
           ))}
         </View>
       ) : null}
+    </View>
+  );
+
+  return (
+    <Screen
+      padded={false}
+      edges={['top']}
+      header={<ScreenHeader title="History" showTitle={false} onBack={actions.goBack} />}
+      headerStyle={{ paddingHorizontal: spacing.gutter, paddingBottom: s(HEADER_TO_HERO) }}
+    >
+      {status !== 'success' || nothingYet || filteredOut ? hero : null}
 
       {status === 'pending' ? (
         <View style={{ padding: spacing.gutter, gap: spacing[3] }}>
@@ -123,7 +163,7 @@ export function HistoryScreen() {
           message="Check your connection and try again."
           actionLabel="Try again"
           onAction={() => void activity.refetch()}
-          style={{ marginTop: spacing[10], marginHorizontal: spacing.gutter }}
+          style={{ marginHorizontal: spacing.gutter }}
         />
       ) : nothingYet ? (
         <StateView
@@ -132,7 +172,7 @@ export function HistoryScreen() {
           message="Resumes, saved jobs and exports are recorded here."
           actionLabel="Find jobs"
           onAction={actions.findJobs}
-          style={{ marginTop: spacing[10], marginHorizontal: spacing.gutter }}
+          style={{ marginHorizontal: spacing.gutter }}
         />
       ) : filteredOut ? (
         <StateView
@@ -140,7 +180,7 @@ export function HistoryScreen() {
           title="Nothing under this filter"
           actionLabel="Show all"
           onAction={() => setFilter('all')}
-          style={{ marginTop: spacing[10], marginHorizontal: spacing.gutter }}
+          style={{ marginHorizontal: spacing.gutter }}
         />
       ) : (
         <FlashList
@@ -148,11 +188,8 @@ export function HistoryScreen() {
           renderItem={renderItem}
           keyExtractor={feedKey}
           getItemType={(item) => item.type}
-          stickyHeaderIndices={stickyIndices}
-          contentContainerStyle={{
-            paddingTop: spacing[2],
-            paddingBottom: insets.bottom + spacing[8],
-          }}
+          ListHeaderComponent={hero}
+          contentContainerStyle={{ paddingBottom: insets.bottom + spacing[8] }}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -161,13 +198,17 @@ export function HistoryScreen() {
 }
 
 const useStyles = scaledSheet((s) => ({
-  pills: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: s(8) },
-  groupHeader: { height: s(40), justifyContent: 'center' },
-  pinnedHairline: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: StyleSheet.hairlineWidth,
+  top: { paddingBottom: s(SECTION_TOP) },
+  hero: { alignItems: 'center' },
+  title: { marginTop: s(ART_TO_TITLE) },
+  lede: { marginTop: s(TITLE_TO_LEDE) },
+  pills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: s(CHIP_GAP),
+    marginTop: s(HERO_TO_CHIPS),
   },
+  heading: { marginBottom: s(HEADING_TO_CARDS) },
+  cardSlot: { paddingBottom: s(CARD_GAP) },
 }));

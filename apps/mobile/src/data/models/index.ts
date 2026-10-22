@@ -1,14 +1,3 @@
-export * from './activity';
-export * from './assistant';
-export * from './generation';
-export * from './interview';
-export * from './jd';
-export * from './job';
-export * from './notification';
-export * from './plan';
-export * from './profile';
-export * from './resume';
-export * from './resumeContent';
-export * from './suggestions';
-export * from './support';
-export * from './user';
+// Re-export shim. This module moved to @nextkin/shared when the web app landed; the app keeps
+// importing it from `@/data/*` so the data-layer boundary and its lint fence are unchanged.
+export * from '@nextkin/shared/models';

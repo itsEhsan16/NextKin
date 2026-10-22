@@ -15,12 +15,16 @@ export type ViewModeToggleProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** Figma 1:1374 — 104×52 track, 4pt inset, 48×44 white pill sliding between two icon cells. */
+/**
+ * Figma 1:1374 — 104×52 track, 4pt inset, 48×44 white pill sliding between two icon cells.
+ *
+ * The height is `sizes.filterButton`, not a flat `s(52)`: the board draws the toggle the height
+ * of the search field beside it, and the field (like Jobs' filter button) holds at the 44pt
+ * control floor on a phone. Flat-scaled, the toggle was 39 next to a 46 field (toreview.md 54).
+ */
 const TRACK_WIDTH = 104;
-const TRACK_HEIGHT = 52;
 const INSET = 4;
 const CELL = (TRACK_WIDTH - INSET * 2) / 2;
-const PILL_HEIGHT = TRACK_HEIGHT - INSET * 2;
 const ICON = 15;
 
 const MODES: readonly { key: ResumesViewMode; icon: string; label: string }[] = [
@@ -33,7 +37,7 @@ const MODES: readonly { key: ResumesViewMode; icon: string; label: string }[] = 
  * sliding-pill spring; two fixed cells keep the geometry static so no measuring pass is needed.
  */
 export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) {
-  const { colors, radii, shadows, motion, s } = useTheme();
+  const { colors, radii, shadows, motion, sizes, s } = useTheme();
   const reduced = useReducedMotion();
 
   const index = value === 'grid' ? 0 : 1;
@@ -65,7 +69,7 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
         styles.track,
         {
           width: s(TRACK_WIDTH),
-          height: s(TRACK_HEIGHT),
+          height: sizes.filterButton,
           borderRadius: radii.xl,
           backgroundColor: colors.surfaceSubtle,
         },
@@ -79,7 +83,7 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
           {
             top: s(INSET),
             width: s(CELL),
-            height: s(PILL_HEIGHT),
+            height: sizes.filterButton - 2 * inset,
             borderRadius: radii.md,
             backgroundColor: colors.surfaceCard,
           },

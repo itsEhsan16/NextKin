@@ -85,7 +85,6 @@ describe('themeFor — proportionality', () => {
     filterButton: 46,
     searchField: 46,
     iconButton: 44,
-    headerButton: 44,
     segmentedControl: 44,
     segmentedPill: 38,
   };
@@ -122,7 +121,6 @@ describe('themeFor — proportionality', () => {
       'filterButton',
       'searchField',
       'iconButton',
-      'headerButton',
       'segmentedControl',
     ] as const;
 
@@ -189,12 +187,12 @@ describe('themeFor — proportionality', () => {
     }
   });
 
-  it('lets type outrun the box by exactly as much as Mobile 2 does', () => {
-    // The 520 board puts body at 15 against a 24 gutter. Mobile 2 puts it at 13 against 18 —
-    // deliberately looser, and that gap *is* the readability. Pin the artboard ratio, not a
-    // hand-picked bias, so the day the boards change this fails rather than drifts.
-    expect((theme.typography.body.fontSize ?? 0) / theme.spacing.gutter).toBeCloseTo(13 / 18, 9);
-    expect(themeFor('light', DESIGN).typography.body.fontSize).toBeCloseTo(15, 9);
+  it('sets body at the size the newer Mobile 2 boards draw it', () => {
+    // The newer 390 boards (score panel 95:2321, the redrawn job cards) set body at 14 against an
+    // 18 gutter, and the app follows them (toreview.md 54). Pin that ratio, and the 520 anchor
+    // derived from it, so the day the boards change this fails rather than drifts.
+    expect((theme.typography.body.fontSize ?? 0) / theme.spacing.gutter).toBeCloseTo(14 / 18, 9);
+    expect(themeFor('light', DESIGN).typography.body.fontSize).toBeCloseTo(14 / 0.75, 9);
   });
 });
 
@@ -278,9 +276,11 @@ describe('buildShadows', () => {
         expect(scaled[key]).toEqual(raw[key]);
         continue;
       }
-      const { x, y, blur, alpha } = shadowSpecs[key];
+      const spec = shadowSpecs[key];
+      // Black unless the board tinted it — the FAB's glow is the brand violet.
+      const rgb = 'rgb' in spec ? spec.rgb : '0, 0, 0';
       expect(scaled[key].boxShadow).toBe(
-        `${x * K}px ${y * K}px ${blur * K}px rgba(0, 0, 0, ${alpha})`,
+        `${spec.x * K}px ${spec.y * K}px ${spec.blur * K}px rgba(${rgb}, ${spec.alpha})`,
       );
     }
   });

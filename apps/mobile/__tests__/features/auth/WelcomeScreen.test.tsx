@@ -31,7 +31,7 @@ const renderScreen = () =>
     </SafeAreaProvider>,
   );
 
-/** The first frame of a first run (Figma 290:957). */
+/** The first frame of a first run (Figma 307:4153). */
 describe('WelcomeScreen', () => {
   beforeEach(() => {
     jest.useFakeTimers();

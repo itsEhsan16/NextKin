@@ -1,0 +1,21 @@
+{
+  "key": "8c5a6c797c32ec078b15c36a90507de7",
+  "recordedAt": "2026-10-10T20:38:12.200Z",
+  "source": "fake",
+  "request": {
+    "model": "claude-haiku-4-5",
+    "firstUserChars": "<input>\n{\n \"document\": \"Resume\",\n \"role\": \"Platform Engineer\"\n}\n</input>"
+  },
+  "response": {
+    "text": "fake answer 9b31f8e7",
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 29,
+      "outputTokens": 20,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 0
+    },
+    "model": "claude-haiku-4-5",
+    "endpoint": "fake"
+  }
+}

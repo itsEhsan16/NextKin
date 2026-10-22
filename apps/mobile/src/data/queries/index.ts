@@ -1,103 +1,15 @@
-/**
- * Types and errors that cross the repo boundary into the screens. Re-exported here so a screen
- * still imports only from @/data/queries: the export sheet names a format and has to recognise a
- * plan-locked refusal, and neither is worth a second import path into the data layer.
- */
+// Re-export shim. This module moved to @nextkin/shared when the web app landed; the app keeps
+// importing it from `@/data/*` so the data-layer boundary and its lint fence are unchanged.
+export * from '@nextkin/shared/queries';
+
+// Mobile-only helpers over the shared hooks.
+export { useQueriesSettled } from './useQueriesSettled';
+export { usePrefetchActiveGeneration } from './usePrefetchActiveGeneration';
+export { useBackendServiceStatus } from './useBackendServiceStatus';
 export {
-  PlanLockedError,
-  type AssistantSendInput,
-  type CoverLetterPatch,
-  type ExportFormat,
-  type ResumeExport,
-} from '@/data/repos';
-export { createQueryClient } from './client';
-export { qk } from './keys';
-export {
-  useActivity,
-  useChangePassword,
-  useDataExport,
-  useDeleteAccount,
-  useRequestDataExport,
-  useSignOutEverywhere,
-  useUpdateAvatar,
-  useUpdateEmail,
-  useUpdateName,
-} from './useAccount';
-export { useActiveGeneration } from './useActiveGeneration';
-export {
-  useAssistantConversation,
-  useAssistantReply,
-  useClearAssistant,
-  useSendAssistantMessage,
-  type AssistantReplyState,
-} from './useAssistant';
-export { usePlans, useUpgradePlan } from './useBilling';
-export { useGeneration, useRetryGeneration, useStartGeneration } from './useGenerations';
-export {
-  useInterviewSet,
-  useInterviewSetForGeneration,
-  useInterviewSets,
-  useMarkInterviewQuestion,
-  useRemoveInterviewSet,
-  useResetInterviewMarks,
-} from './useInterview';
-export { useExtractJd, useJdDraft, useUpdateJdDraft } from './useJd';
-export {
-  useApplications,
-  useApplyToJob,
-  useJob,
-  useJobCount,
-  useJobPicks,
-  useJobs,
-  useJobsByCompany,
-  useSavedJobs,
-  useSimilarJobs,
-  useTodaysPicks,
-} from './useJobs';
-export {
-  useMarkAllNotificationsRead,
-  useMarkNotificationRead,
-  useNotificationPrefs,
-  useNotifications,
-  useRemoveNotification,
-  useSetNotificationPrefs,
-  useUnreadCount,
-} from './useNotifications';
-export { useCompleteNextStep, useProfile, useUpdatePreferences } from './useProfile';
-export {
-  useApplyProfileDraft,
-  useRemoveCertification,
-  useRemoveEducation,
-  useRemoveExperience,
-  useRemoveLink,
-  useUpdateProfile,
-  useUpdateSkills,
-  useUpsertCertification,
-  useUpsertEducation,
-  useUpsertExperience,
-  useUpsertLink,
-} from './useProfileEntries';
-export {
-  useApplyAtsFix,
-  useRegenerateSection,
-  useResumeContent,
-  useUpdateLetter,
-  useUpdateResumeSection,
-} from './useResumeContent';
-export { useExportResume, useImportResume, useShareLink } from './useResumeExports';
-export {
-  useCreateResume,
-  useDeleteResume,
-  useDuplicateResume,
-  useRenameResume,
-  useRestoreVersion,
-  useResume,
-  useResumeScore,
-  useResumeVersions,
-  useResumes,
-  useSetResumeAsBase,
-} from './useResumes';
-export { useResetSession } from './useSession';
-export { useFaq, useLegal, useSubmitTicket } from './useSupport';
-export { applySaveToggle, useToggleSaveJob } from './useToggleSaveJob';
-export { useCurrentUser, useDashboardStats, useSubscription } from './useUser';
+  backendAuth,
+  useConfirmSignUp,
+  usePasswordSignIn,
+  useResendSignUpCode,
+  useStartSignUp,
+} from './useAuth';

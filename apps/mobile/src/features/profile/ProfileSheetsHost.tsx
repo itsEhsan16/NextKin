@@ -3,8 +3,10 @@ import {
   LANGUAGE_LABEL,
   type Availability,
   type Language,
+  type ProfilePreferences,
 } from '@/data/models';
 import {
+  useCompleteNextStep,
   useDeleteAccount,
   useProfile,
   useResetSession,
@@ -13,21 +15,50 @@ import {
 import { useSessionStore } from '@/features/auth';
 import { formatLakh } from '@/lib';
 import { useAppearanceStore, type AppearancePreference } from '@/theme';
-import { ConfirmSheet } from '@/ui/ConfirmSheet';
+import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
 
+import { Art, EntryTile } from './components/cards';
+import { NEXT_STEP } from './nextSteps';
+import { PROFILE_DANGER_ART, PROFILE_ROW_ART as ART } from './profileRowArt';
 import { useProfileStore } from './profileStore';
 
+/**
+ * The pickers close on the tap and write optimistically, so a refused write flips the choice back
+ * after the sheet has gone. It used to do that without a word; now it says so (§85).
+ */
+export const PREFERENCE_REVERTED = "Couldn't save — changed back";
+
+/** V2 §7.6 forbids a silent failure. The sheet stays up, so pressing Delete again is the retry. */
+export const DELETE_ACCOUNT_FAILED =
+  "We couldn't delete your account. Check your connection and try again.";
+
+const glyph = (icon: string) => <EntryTile tile={{ kind: 'glyph', icon }} size="sm" />;
+
 const APPEARANCE_OPTIONS: readonly SheetOption<AppearancePreference>[] = [
-  { key: 'system', label: 'System', caption: 'Follows your device setting' },
-  { key: 'light', label: 'Light' },
-  { key: 'dark', label: 'Dark' },
+  {
+    key: 'system',
+    label: 'System',
+    caption: 'Follows your device setting',
+    leading: glyph('mobile-alt'),
+  },
+  { key: 'light', label: 'Light', leading: glyph('sun') },
+  { key: 'dark', label: 'Dark', leading: glyph('moon') },
 ];
 
 const LANGUAGE_OPTIONS: readonly SheetOption<Language>[] = (['en', 'de'] as const).map((key) => ({
   key,
   label: LANGUAGE_LABEL[key],
+  leading: <EntryTile tile={{ kind: 'code', code: key.toUpperCase() }} size="sm" />,
 }));
+
+/** Under the job-preference pickers, as under their group on Profile (577:503). */
+const MATCHING_ONLY = 'Only used for matching — never shown on your resume.';
+
+/** The sheet header's art: the row's own icon, drawn larger (40 at 390; 36 for Availability). */
+const headerArt = (art: (typeof ART)[keyof typeof ART], at390 = 40) => (
+  <Art art={art} width={at390 / 0.75} />
+);
 
 const AVAILABILITY_OPTIONS: readonly SheetOption<Availability>[] = (
   ['immediately', '2_weeks', '1_month', 'open_to_offers', 'not_looking'] as const
@@ -59,7 +90,17 @@ export function ProfileSheetsHost() {
 
   const profile = useProfile();
   const updatePreferences = useUpdatePreferences();
+  const completeStep = useCompleteNextStep();
   const prefs = profile.data?.preferences;
+  // The toast host sits above every sheet in the tabs layout, so it reads over this one.
+  const showToast = useProfileStore((state) => state.showToast);
+
+  /** Resolves the saved profile, or undefined once the refusal has been said. */
+  const savePreferences = (patch: Partial<ProfilePreferences>) =>
+    updatePreferences.mutateAsync(patch).catch(() => {
+      showToast(PREFERENCE_REVERTED, 'error');
+      return undefined;
+    });
 
   const deleteAccount = useDeleteAccount();
   const resetSession = useResetSession();
@@ -76,6 +117,8 @@ export function ProfileSheetsHost() {
         <OptionSheet
           open={open}
           title="Appearance"
+          variant="card"
+          art={headerArt(ART.appearance)}
           options={APPEARANCE_OPTIONS}
           selectedKey={preference}
           onSelect={(key) => {
@@ -90,10 +133,12 @@ export function ProfileSheetsHost() {
         <OptionSheet
           open={open}
           title="Language"
+          variant="card"
+          art={headerArt(ART.language)}
           options={LANGUAGE_OPTIONS}
           selectedKey={prefs?.language}
           onSelect={(key) => {
-            updatePreferences.mutate({ language: key });
+            void savePreferences({ language: key });
             closeSheet();
           }}
           onClose={closeSheet}
@@ -104,10 +149,13 @@ export function ProfileSheetsHost() {
         <OptionSheet
           open={open}
           title="Availability"
+          variant="card"
+          art={headerArt(ART.availability, 36)}
+          footnote={MATCHING_ONLY}
           options={AVAILABILITY_OPTIONS}
           selectedKey={prefs?.availability}
           onSelect={(key) => {
-            updatePreferences.mutate({ availability: key });
+            void savePreferences({ availability: key });
             closeSheet();
           }}
           onClose={closeSheet}
@@ -118,12 +166,22 @@ export function ProfileSheetsHost() {
         <OptionSheet
           open={open}
           title="Minimum salary"
+          variant="card"
+          art={headerArt(ART.minSalary)}
+          footnote={MATCHING_ONLY}
           options={SALARY_OPTIONS}
           selectedKey={prefs?.minSalary?.min != null ? String(prefs.minSalary.min) : 'none'}
           onSelect={(key) => {
-            updatePreferences.mutate({
-              minSalary:
-                key === 'none' ? undefined : { min: Number(key), currency: 'INR', period: 'year' },
+            const floor = key === 'none' ? undefined : Number(key);
+            void savePreferences({
+              minSalary: floor == null ? undefined : { min: floor, currency: 'INR', period: 'year' },
+            }).then((saved) => {
+              // "Set salary range" on the completeness card is answered by a floor that has
+              // landed — not by the chip's tap that opened this sheet, and not by "No minimum".
+              // `saved` is the server's copy, so a step already answered is never sent twice (§85).
+              if (floor != null && saved?.nextSteps.some((step) => step.id === NEXT_STEP.salary)) {
+                completeStep.mutate(NEXT_STEP.salary);
+              }
             });
             closeSheet();
           }}
@@ -136,6 +194,8 @@ export function ProfileSheetsHost() {
           open={open}
           title="Sign out?"
           message="You'll need to sign back in to keep tailoring resumes and tracking applications."
+          art={<ConfirmArt kind="signOut" />}
+          artGap={0}
           confirmLabel="Sign out"
           onConfirm={() => {
             // The order is load-bearing. Close the sheet and clear the caches while the tabs are
@@ -156,17 +216,20 @@ export function ProfileSheetsHost() {
           title="Delete your account?"
           message="Your profile, resumes and application history will be permanently removed. This cannot be undone."
           confirmLabel="Delete account"
+          art={<Art art={PROFILE_DANGER_ART.deleteAccount} width={72 / 0.75} />}
           busy={deleteAccount.isPending}
           onConfirm={() =>
             // Only the server's yes ends the session — same close/clear/flip order as sign-out,
             // and for the same reason. In the 'error' mock mode the delete rejects, `onSuccess`
-            // never runs, `isPending` clears and the sheet simply re-enables.
+            // never runs, `isPending` clears and the sheet re-enables for the retry, with the
+            // toast above it saying why nothing happened. That refusal used to be silent (§85).
             deleteAccount.mutate(undefined, {
               onSuccess: () => {
                 closeSheet();
                 resetSession();
                 endAccount();
               },
+              onError: () => showToast(DELETE_ACCOUNT_FAILED, 'error'),
             })
           }
           onCancel={closeSheet}

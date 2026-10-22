@@ -59,8 +59,7 @@ describe('tabBarLayoutFor', () => {
   it('reproduces the Figma pill at the design width', () => {
     const layout = tabBarLayoutFor(layoutScaleFor(sizes.designWidth), 0);
     // Home Screen 215:490 draws a 299.9475 x 61.633 pill with a 49.99 FAB overhanging 13.7 on a
-    // 390 board. These are the 520 equivalents, with NAV_BOOST on top — the bar was still small
-    // on a phone at the size that board gives it.
+    // 390 board. These are the 520 equivalents, with NAV_BOOST (1.1) on top.
     expect(layout.pillWidth).toBe(440);
     expect(layout.pillHeight).toBeCloseTo(90.396, 3);
     expect(layout.pillRadius).toBeCloseTo(45.198, 3);

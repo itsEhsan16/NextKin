@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router/js-tabs';
-import { memo, type PropsWithChildren } from 'react';
+import { memo, type ComponentProps, type PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { HomeMenuHost, useHomeStore } from '@/features/home';
+import { CopiedLinkHost, HomeMenuHost, useHomeStore } from '@/features/home';
 import {
   FiltersSheetHost,
   JobSortSheetHost,
@@ -22,15 +22,20 @@ import {
   Fab,
   FloatingTabBar,
   TabBarScrim,
+  TabSceneFade,
+  TabWarmup,
   useCreateSheet,
 } from '@/navigation';
+import { useTheme } from '@/theme';
 import { sheetBackgroundA11yProps } from '@/ui/Sheet';
 
 /**
- * Every sheet hosted OVER the chrome (scrim covering the pill and FAB). The create sheet is
- * absent on purpose: its artboards paint the pill above the sheet.
+ * Every sheet hosted OVER the chrome (scrim covering the pill and FAB). The create sheet is one
+ * of them since the centre button became the assistant (2026-10-04): nothing of the chrome has to
+ * stay above it to close it any more.
  */
 function useChromeSheetOpen(): boolean {
+  const { isOpen: createOpen } = useCreateSheet();
   const filtersOpen = useJobsStore((state) => state.filtersOpen);
   const sortOpen = useJobsStore((state) => state.sortOpen);
   const locationOpen = useJobsStore((state) => state.locationOpen);
@@ -39,7 +44,9 @@ function useChromeSheetOpen(): boolean {
   const exportOpen = useResumesStore((state) => state.exportOpen);
   const profileSheetOpen = useProfileStore((state) => state.sheetOpen);
   const menuOpen = useHomeStore((state) => state.menuOpen);
+  const copiedLinkOpen = useHomeStore((state) => state.copiedLinkPhase === 'open');
   return (
+    createOpen ||
     filtersOpen ||
     sortOpen ||
     locationOpen ||
@@ -47,7 +54,8 @@ function useChromeSheetOpen(): boolean {
     resumeSortOpen ||
     exportOpen ||
     profileSheetOpen ||
-    menuOpen
+    menuOpen ||
+    copiedLinkOpen
   );
 }
 
@@ -58,6 +66,21 @@ function useChromeSheetOpen(): boolean {
 const renderNoTabBar = () => null;
 
 /**
+ * Wraps every tab scene in the switch fade. Module-level for the same identity reason; the fade
+ * lives here rather than in `animation: 'fade'`, which would quietly turn `freezeOnBlur` off
+ * (see `TabSceneFade`).
+ */
+const renderTabScene: NonNullable<ComponentProps<typeof Tabs>['screenLayout']> = ({
+  navigation,
+  route,
+  children,
+}) => (
+  <TabSceneFade navigation={navigation} routeKey={route.key}>
+    {children}
+  </TabSceneFade>
+);
+
+/**
  * Memoised and prop-less so opening the create sheet (which re-renders the wrapper below) never
  * re-renders the navigator itself.
  */
@@ -65,6 +88,7 @@ const TabsNavigator = memo(function TabsNavigator() {
   return (
     <Tabs
       tabBar={renderNoTabBar}
+      screenLayout={renderTabScene}
       screenOptions={{
         headerShown: false,
         lazy: true,
@@ -83,12 +107,10 @@ const TabsNavigator = memo(function TabsNavigator() {
 });
 
 /**
- * Everything behind the create sheet. While the sheet is open this subtree leaves the
- * accessibility tree on both platforms — the sheet's `accessibilityViewIsModal` only hides its
- * sibling scrim on iOS and is a no-op on Android, so a screen-reader swipe would otherwise walk
- * straight into the tab screens underneath. The pill and the FAB are deliberately NOT inside
- * this wrapper: they paint above the sheet and hide themselves from the a11y tree individually
- * (the FAB stays reachable — its rotated "✕" is the intended dismiss affordance).
+ * Everything behind the hosted sheets. While one is open this subtree leaves the accessibility
+ * tree on both platforms — a sheet's `accessibilityViewIsModal` only hides its sibling scrim on
+ * iOS and is a no-op on Android, so a screen-reader swipe would otherwise walk straight into the
+ * tab screens underneath. The pill and the FAB are hidden the same way by `ChromeLayer`.
  */
 function TabsBackdrop() {
   const { isOpen } = useCreateSheet();
@@ -102,20 +124,22 @@ function TabsBackdrop() {
 }
 
 /**
- * Wraps the pill and the FAB so the filters sheet can neutralise them.
+ * Wraps the pill and the FAB so an open sheet can neutralise them.
  *
- * Both are painted *under* the filters scrim (JOBS 04 draws the bottom nav before the scrim), but
- * being covered is only a visual fact: the FAB carries no background-a11y props of its own — by
- * design, since its rotated "✕" is the create sheet's dismiss control — so without this it would
- * stay focusable behind the scrim and could open the create sheet underneath the filters sheet.
- * Doing it here leaves `Fab` and `FloatingTabBar` untouched and their create-sheet roles intact.
+ * Both are painted *under* every hosted sheet's scrim (JOBS 04 draws the bottom nav before the
+ * scrim), but being covered is only a visual fact: without this they would stay focusable and
+ * tappable behind the scrim, and the FAB could open the assistant underneath an open sheet.
  */
 function ChromeLayer({ children }: PropsWithChildren) {
   const chromeSheetOpen = useChromeSheetOpen();
+  const { zIndex } = useTheme();
 
   return (
     <View
-      style={StyleSheet.absoluteFill}
+      // `zIndex.sheet`, the same as every Sheet's root: at equal z-index paint order decides, so
+      // the hosts after this layer cover it, as JOBS 04 and RESUMES 03 draw, and it still paints
+      // over the tab screens and the bottom scrim before it.
+      style={[StyleSheet.absoluteFill, { zIndex: zIndex.sheet }]}
       pointerEvents={chromeSheetOpen ? 'none' : 'box-none'}
       {...sheetBackgroundA11yProps(chromeSheetOpen)}
     >
@@ -125,12 +149,13 @@ function ChromeLayer({ children }: PropsWithChildren) {
 }
 
 /**
- * Tab shell. Z-order (bottom → top): tab screens → bottom scrim → create sheet scrim + sheet → floating pill
- * → FAB → filters scrim + sheet. Figma CREATE 01/02 put the pill (nodes 77:226 / 77:290) last in
- * the frame, so it paints undimmed over the create sheet and drops its shadow onto it; the FAB
- * stays above both so its rotated "✕" is the visible dismiss affordance (Figma motion note
- * 1:1364). JOBS 04 inverts that for the filters sheet — node 1:748 "bottom nav" is drawn *before*
- * the scrim (1:759) — so the filters host goes last and dims the chrome instead.
+ * Tab shell. Z-order (bottom → top): tab screens → bottom scrim → floating pill → FAB → every
+ * hosted sheet (create, filters, menus) with its scrim, which dims the chrome as JOBS 04 draws it
+ * (node 1:748 "bottom nav" before the scrim 1:759).
+ *
+ * The create sheet used to sit under the pill, as CREATE 01/02 drew it, because the FAB turned
+ * into its "✕". The FAB is the assistant now (2026-10-04), so the create sheet carries its own ✕
+ * and joins the other hosts.
  *
  * `useCreateSheet` must run under the provider, hence the inner `TabsBackdrop`.
  */
@@ -138,14 +163,17 @@ export default function TabsLayout() {
   return (
     <CreateSheetProvider>
       <TabsBackdrop />
+      <TabWarmup />
       {/* Above the tab screens so it can veil them, below everything else so the create and
           filters scrims still cover it along with the rest of the chrome. */}
       <TabBarScrim />
-      <CreateSheetHost />
       <ChromeLayer>
         <FloatingTabBar />
         <Fab />
       </ChromeLayer>
+      {/* The create sheet joins them (2026-10-04): the centre button is the assistant now, not
+          this sheet's ✕, so nothing of the chrome needs to paint over it. */}
+      <CreateSheetHost />
       {/* Last, so their scrims cover the pill and the FAB — the z-order JOBS 04 and
           RESUMES 03 draw. Only one of these can be open at a time (each is raised from its
           own tab), so their order among themselves is moot. */}
@@ -156,6 +184,8 @@ export default function TabsLayout() {
       <ResumeMenuHost />
       <ResumeSortSheetHost />
       <HomeMenuHost />
+      {/* TAILOR 00c's dialog dims the chrome too, as its board draws the nav under the scrim. */}
+      <CopiedLinkHost />
       {/* Raised from the same menu, so it shares that z-order; it also owns the library's
           toast, which has to sit above the sheets rather than behind them. */}
       <ResumeExportHost />

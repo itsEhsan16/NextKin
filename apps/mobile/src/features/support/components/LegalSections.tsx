@@ -1,12 +1,23 @@
-import { View } from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import type { LegalSection } from '@/data/models';
+import { ProfileCard } from '@/features/profile/components/cards';
 import { a11yHeader, useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
-export type LegalSectionsProps = { sections: readonly LegalSection[] };
+export type LegalSectionsProps = {
+  sections: readonly LegalSection[];
+  /** Each card's top, relative to this list, so the contents card can scroll to it. */
+  onSectionLayout?: (index: number, y: number) => void;
+};
+
+// One section card at 390 (LEGAL 01 577:8963), in artboard units.
+const CARD_GAP = 14 / 0.75;
+const CARD_INNER_GAP = 10 / 0.75;
+const HEADING_GAP = 10 / 0.75;
+const BADGE = 24 / 0.75;
 
 /**
  * A document body stores its paragraph breaks as blank lines. Rendering the raw string would put
@@ -20,21 +31,40 @@ export function legalParagraphs(body: string): string[] {
     .filter((paragraph) => paragraph.length > 0);
 }
 
+/** The lavender number disc a section wears, in the contents and on its own card (577:8965). */
+export function SectionNumber({ value }: { value: number }) {
+  const { colors, radii } = useTheme();
+  const styles = useStyles();
+  return (
+    <View
+      importantForAccessibility="no-hide-descendants"
+      accessibilityElementsHidden
+      style={[styles.badge, { borderRadius: radii.full, backgroundColor: colors.brandSurface }]}
+    >
+      <Text variant="microBadge" color="brand" align="center">
+        {String(value)}
+      </Text>
+    </View>
+  );
+}
+
 /**
- * The sections of a legal document (V2 §8.5), always open.
+ * The sections of a legal document (V2 §8.5), one numbered card each as LEGAL 01/02 draw them
+ * (577:8963 … 580:115), always open.
  *
- * Deliberately NOT `Disclosure` rows, which is how the score rubric lists its five components.
- * The rubric is reference material a reader dips into for one answer; these are the terms a
- * person is agreeing to, and a document that hides its clauses behind a tap each is worse for
- * the reader than one that scrolls — nothing can be skim-read, and the reader cannot tell how
- * much there is. Scrolling costs a flick; a collapsed clause costs a decision per clause.
+ * Deliberately NOT accordion rows, which is how the score rubric lists its five components. The
+ * rubric is reference material a reader dips into for one answer; these are the terms a person is
+ * agreeing to, and a document that hides its clauses behind a tap each is worse for the reader
+ * than one that scrolls — nothing can be skim-read, and the reader cannot tell how much there is.
+ * The contents card above is the shortcut instead: it scrolls, it never hides.
  */
-export function LegalSections({ sections }: LegalSectionsProps) {
+export function LegalSections({ sections, onSectionLayout }: LegalSectionsProps) {
   const { motion, spacing } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
 
   return (
-    <View style={{ gap: spacing[6] }}>
+    <View style={styles.list}>
       {sections.map((section, index) => (
         <Animated.View
           key={section.id}
@@ -45,23 +75,38 @@ export function LegalSections({ sections }: LegalSectionsProps) {
                   Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
                 ).duration(motion.durations.base)
           }
-          style={{ gap: spacing[2] }}
+          onLayout={(event: LayoutChangeEvent) =>
+            onSectionLayout?.(index, event.nativeEvent.layout.y)
+          }
         >
-          <Text {...a11yHeader()} variant="title">
-            {section.heading}
-          </Text>
-          {legalParagraphs(section.body).map((paragraph, paragraphIndex) => (
-            <Text
-              key={`${section.id}_p${paragraphIndex}`}
-              variant="prose"
-              color="textBody"
-              selectable
-            >
-              {paragraph}
-            </Text>
-          ))}
+          <ProfileCard style={[styles.card, { padding: spacing[5] }]}>
+            <View style={styles.heading}>
+              <SectionNumber value={index + 1} />
+              <Text {...a11yHeader(section.heading)} variant="title" style={styles.fill}>
+                {section.heading}
+              </Text>
+            </View>
+            {legalParagraphs(section.body).map((paragraph, paragraphIndex) => (
+              <Text
+                key={`${section.id}_p${paragraphIndex}`}
+                variant="prose"
+                color="textBody"
+                selectable
+              >
+                {paragraph}
+              </Text>
+            ))}
+          </ProfileCard>
         </Animated.View>
       ))}
     </View>
   );
 }
+
+const useStyles = scaledSheet((s) => ({
+  list: { gap: s(CARD_GAP) },
+  card: { gap: s(CARD_INNER_GAP) },
+  heading: { flexDirection: 'row', alignItems: 'center', gap: s(HEADING_GAP) },
+  fill: { flex: 1 },
+  badge: { width: s(BADGE), height: s(BADGE), alignItems: 'center', justifyContent: 'center' },
+}));

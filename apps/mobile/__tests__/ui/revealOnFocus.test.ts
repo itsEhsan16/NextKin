@@ -60,4 +60,16 @@ describe('revealTarget', () => {
     // The provider passes the window height as the keyboard top when there are no metrics yet.
     expect(revealTarget({ ...base, keyboardTop: 844, fieldY: 600, fieldHeight: 76 })).toBeNull();
   });
+
+  it('scrolls a field back down from under the pinned header', () => {
+    // The viewport starts at 120 (safe area + header); a field whose top is at 60 is hidden under
+    // the header, so the page scrolls back until it sits MARGIN below the viewport's top edge.
+    expect(
+      revealTarget({ ...base, viewportTop: 120, fieldY: 60, fieldHeight: 76, scrollOffset: 300 }),
+    ).toBe(228);
+    // A field already inside the viewport is left where it is.
+    expect(
+      revealTarget({ ...base, viewportTop: 120, fieldY: 200, fieldHeight: 76, scrollOffset: 300 }),
+    ).toBeNull();
+  });
 });

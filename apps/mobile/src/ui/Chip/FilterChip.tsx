@@ -1,10 +1,17 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  interpolateColor,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 
-import { a11yButton, hitSlop8 } from '@/lib';
+import { a11yButton, hitSlop8, useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
+import { layoutTransition, useSelectionProgress } from '@/ui/motion';
 import { Pressable } from '@/ui/Pressable';
-import { Text } from '@/ui/Text';
+import { AnimatedText } from '@/ui/Text';
 
 export type FilterChipVariant =
   /** Outlined chip with a trailing ✕ — an applied filter you can remove (Figma 1:289). */
@@ -23,12 +30,18 @@ export type FilterChipVariant =
    * in the 14pt segment type, and — unlike `select` — it shows a leading ✓ when picked, because
    * the sheet's groups are multi-select and need to read as checkable rather than as a radio row.
    */
-  | 'filter';
+  | 'filter'
+  /**
+   * One option of a single-choice row on the Mobile 2 (390) boards — COVER 01's tone chips
+   * (613:1510 / 613:1513). Outlined on white when unpicked, ink-filled with a leading ✓ when
+   * picked, and announced as a radio so the group reads as mutually exclusive. Opt-in.
+   */
+  | 'radio';
 
 export type FilterChipProps = {
   label: string;
   variant?: FilterChipVariant;
-  /** `toggle`, `select` and `filter` only: fills the chip (and shows the ✓ on the first and last). */
+  /** `toggle`, `select`, `filter` and `radio` only: fills the chip (and shows the ✓ on the first and last). */
   selected?: boolean;
   /** FA5 Solid glyph shown before the label (e.g. `map-marker-alt` on a location picker). */
   icon?: string;
@@ -46,17 +59,24 @@ export type FilterChipProps = {
 const LEADING_ICON = 11;
 const TRAILING_ICON = 9;
 const TOGGLE_ICON = 10;
+/** Glyph → label. */
+const GLYPH_GAP = 6;
 
 /** The bordered-on-white chips; `picker` and `toggle` are the borderless `surfaceSubtle` ones. */
-const BOXED: readonly FilterChipVariant[] = ['removable', 'select', 'filter'];
+const BOXED: readonly FilterChipVariant[] = ['removable', 'select', 'filter', 'radio'];
 
-/** Each variant traces a different artboard, so the box metrics are listed rather than derived. */
+/**
+ * Each variant traces a different artboard, so the box metrics are listed rather than derived.
+ * Artboard units, scaled at the call site like every other length: raw, they put the chips ~15%
+ * over the boards at phone width (JOBS 01 draws the location pill 27 tall at 390, 118:15).
+ */
 const PADDING_X: Record<FilterChipVariant, number> = {
   removable: 13,
   picker: 14,
   toggle: 14,
   select: 14,
   filter: 16,
+  radio: 14 / 0.75, // 613:1510, drawn at 390
 };
 
 const PADDING_Y: Record<FilterChipVariant, number> = {
@@ -65,7 +85,12 @@ const PADDING_Y: Record<FilterChipVariant, number> = {
   toggle: 8,
   select: 6,
   filter: 10,
+  radio: 8 / 0.75,
 };
+
+/** The `radio` chip's ✓ and its gap to the label (613:1511), at 390. */
+const RADIO_CHECK = 8 / 0.75;
+const RADIO_GAP = 5 / 0.75;
 
 /**
  * The five chip shapes across the Jobs screens. All are fully rounded; the variant decides the
@@ -82,16 +107,27 @@ export function FilterChip({
   onPress,
   style,
 }: FilterChipProps) {
-  const { colors, radii, spacing, s } = useTheme();
+  const { colors, motion, radii, sizes, s } = useTheme();
+  const reduced = useReducedMotion();
 
-  const filled = variant !== 'removable' && variant !== 'picker' && selected;
+  const fillable = variant !== 'removable' && variant !== 'picker';
+  const filled = fillable && selected;
   const boxed = BOXED.includes(variant);
   // `select` is a radio row and reads as picked from its fill alone; `toggle` and `filter` are
   // checkable, so they earn the glyph.
-  const checked = (variant === 'toggle' || variant === 'filter') && selected;
+  const checked = (variant === 'toggle' || variant === 'filter' || variant === 'radio') && selected;
   // The picked `select` chip keeps its 1px border — drawn in its own fill — so toggling a chip
-  // never shifts the row by 2pt.
-  const borderColor = filled ? colors.surfaceSelected : colors.borderDefault;
+  // never shifts the row by 2pt. The fill (border included) fades in over the resting chip, and the
+  // label's colour moves with it, so the chip never shows white text on a still-white face.
+  const restBackground = boxed ? colors.surfaceCard : colors.surfaceSubtle;
+  const border = boxed ? sizes.border : 0;
+  const fill = useSelectionProgress(filled);
+  const fillStyle = useAnimatedStyle(() => ({ opacity: fill.value }));
+  const restLabel = colors.textBody;
+  const filledLabel = colors.textOnBrand;
+  const labelColor = useAnimatedStyle(() => ({
+    color: interpolateColor(fill.value, [0, 1], [restLabel, filledLabel]),
+  }));
 
   const name = accessibilityLabel ?? label;
   const a11y =
@@ -99,7 +135,15 @@ export function FilterChip({
       ? a11yButton(`Remove filter ${name}`, hint)
       : variant === 'picker'
         ? a11yButton(name, hint ?? 'Opens a picker')
-        : { ...a11yButton(name, hint), accessibilityState: { selected } };
+        : variant === 'radio'
+          ? {
+              accessible: true,
+              accessibilityRole: 'radio' as const,
+              accessibilityLabel: name,
+              ...(hint ? { accessibilityHint: hint } : {}),
+              accessibilityState: { selected },
+            }
+          : { ...a11yButton(name, hint), accessibilityState: { selected } };
 
   return (
     <Pressable
@@ -108,26 +152,46 @@ export function FilterChip({
       haptic="selection"
       hitSlop={hitSlop8}
       onPress={onPress}
+      // A ✓ arriving (or the label's weight changing) resizes the chip; it, and the chips after it
+      // in a wrapping row, glide to the new widths.
+      layout={layoutTransition(reduced)}
       style={[
         styles.chip,
         {
           borderRadius: radii.full,
-          gap: spacing[1] + 2,
-          paddingHorizontal: PADDING_X[variant],
-          paddingVertical: PADDING_Y[variant],
-          backgroundColor: filled
-            ? colors.surfaceSelected
-            : boxed
-              ? colors.surfaceCard
-              : colors.surfaceSubtle,
-          borderWidth: boxed ? 1 : 0,
-          borderColor: boxed ? borderColor : 'transparent',
+          gap: s(variant === 'radio' ? RADIO_GAP : GLYPH_GAP),
+          paddingHorizontal: s(PADDING_X[variant]),
+          paddingVertical: s(PADDING_Y[variant]),
+          backgroundColor: restBackground,
+          borderWidth: border,
+          borderColor: boxed ? colors.borderDefault : 'transparent',
         },
         style,
       ]}
     >
+      {fillable ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            // Out over the 1pt border too, so the picked chip's border is its own fill.
+            { position: 'absolute', top: -border, left: -border, right: -border, bottom: -border },
+            { borderRadius: radii.full, backgroundColor: colors.surfaceSelected },
+            fillStyle,
+          ]}
+        />
+      ) : null}
       {checked ? (
-        <FontAwesome5 name="check" size={s(TOGGLE_ICON)} color={colors.textOnBrand} solid />
+        <Animated.View
+          entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}
+          exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
+        >
+          <FontAwesome5
+            name="check"
+            size={s(variant === 'radio' ? RADIO_CHECK : TOGGLE_ICON)}
+            color={colors.textOnBrand}
+            solid
+          />
+        </Animated.View>
       ) : icon ? (
         <FontAwesome5
           name={icon}
@@ -137,7 +201,7 @@ export function FilterChip({
         />
       ) : null}
 
-      <Text
+      <AnimatedText
         // The sheet sets its options in the 14pt segment type; the header chips stay at 13.
         variant={
           variant === 'filter'
@@ -148,11 +212,11 @@ export function FilterChip({
               ? 'captionSemiBold'
               : 'caption'
         }
-        color={filled ? 'textOnBrand' : 'textBody'}
+        colorStyle={labelColor}
         numberOfLines={1}
       >
         {label}
-      </Text>
+      </AnimatedText>
 
       {variant === 'removable' ? (
         <FontAwesome5 name="times" size={s(TRAILING_ICON)} color={colors.iconMuted} solid />

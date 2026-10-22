@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { useImportResume } from '@/data/queries';
 import { pickDocument, useReducedMotion, type PickedDocument } from '@/lib';
@@ -43,6 +43,8 @@ export function UploadResumeScreen() {
   const importResume = useImportResume();
   const [file, setFile] = useState<PickedDocument | null>(null);
   const [picking, setPicking] = useState(false);
+  // The parse has landed and the card is showing it, for the beat before the review takes over.
+  const [landed, setLanded] = useState(false);
 
   const choose = useCallback(async () => {
     setPicking(true);
@@ -55,13 +57,23 @@ export function UploadResumeScreen() {
       importResume.mutate(picked, {
         onSuccess: ({ resume, draft }) => {
           setImport({ draft, resumeId: resume.id });
-          actions.openUploadReview();
+          // Under Reduce Motion there is no check to watch land, so there is nothing to hold for.
+          if (reduced) actions.openUploadReview();
+          else setLanded(true);
         },
       });
     } finally {
       setPicking(false);
     }
-  }, [actions, importResume, setImport]);
+  }, [actions, importResume, reduced, setImport]);
+
+  // A success is shown before it is acted on: the rows tick, the bar fills, the check draws in,
+  // and the review replaces this page `successHold` later. Leaving first cancels the hand-off.
+  useEffect(() => {
+    if (!landed) return undefined;
+    const timer = setTimeout(actions.openUploadReview, motion.durations.successHold);
+    return () => clearTimeout(timer);
+  }, [actions.openUploadReview, landed, motion.durations.successHold]);
 
   // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
   // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
@@ -75,26 +87,22 @@ export function UploadResumeScreen() {
 
   const parsing = importResume.isPending;
 
-  const enter = (index: number) =>
-    reduced
-      ? undefined
-      : FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base);
-
   const page = (children: ReactNode) => (
     <Screen
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Upload a resume" onBack={actions.goBack} />}
       headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
       footer={
         <StickyActionBar
           // The failure leaves the button live, so pressing it again is the retry.
           note={failed ? PARSE_FAILED : undefined}
+          noteTone="danger"
           primary={{
             label: file && !parsing ? 'Choose another file' : 'Choose a file',
             icon: 'upload',
-            loading: picking || parsing,
+            loading: picking || parsing || landed,
             onPress: () => void choose(),
           }}
         />
@@ -106,13 +114,14 @@ export function UploadResumeScreen() {
 
   // Parsing is the loading state, and it is the only one this page has: nothing is fetched here,
   // so there is no skeleton to draw before the reader has picked anything.
-  if (parsing && file) return page(<UploadProgress fileName={file.name} />);
+  if ((parsing || landed) && file)
+    return page(<UploadProgress fileName={file.name} done={landed} />);
 
   // The resting state is also the empty one — there is nothing to be empty of until a file is
   // picked, and the formats card is what belongs on the page either way.
   return page(
     <>
-      <Animated.View entering={enter(0)}>
+      <Animated.View>
         <Card radius="card">
           <View style={{ gap: spacing[3] }}>
             <Text variant="title">What we can read</Text>
@@ -130,7 +139,7 @@ export function UploadResumeScreen() {
       </Animated.View>
 
       {file && !parsing ? (
-        <Animated.View entering={enter(1)}>
+        <Animated.View>
           <Card radius="card">
             <Text variant="title" numberOfLines={2}>
               {file.name}

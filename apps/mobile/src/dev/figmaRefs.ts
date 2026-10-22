@@ -5,7 +5,7 @@ import { FIGMA_REFS } from './figmaRefs.generated';
 /**
  * The widths the Figma file draws on: the two pages every screen exists on, plus the onboarding
  * and auth board, which is neither. Those sections are drawn phone-sized rather than as
- * presentation frames, and the first two of the six a fraction narrower again — kept exact here
+ * presentation frames, and the first two of the seven a fraction narrower again — kept exact here
  * rather than normalised, so `overlayGeometryFor` centres each render's own drop-shadow
  * overscan instead of being 4 artboard px out on two screens.
  */

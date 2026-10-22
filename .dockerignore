@@ -1,0 +1,25 @@
+# Keep the build context small and free of secrets. The image needs the workspace manifests, the
+# lockfile, apps/web and packages/*; apps/mobile contributes only its package.json.
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/.expo
+.git
+.github
+.claude
+.kilo
+doc
+aws/*
+!aws/migrations
+.env
+.env.*
+!.env.example
+*.log
+*.docx
+apps/mobile/*
+!apps/mobile/package.json
+apps/web/__tests__
+apps/web/testSupport
+apps/web/tsconfig.tsbuildinfo
+docker/latex/*.token

@@ -1,23 +1,23 @@
 import { View } from 'react-native';
 
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 
-/**
- * Block geometry, each one the composed height of the thing it stands in for:
- *
- * - `RING`  the ScoreRing box, and `PILL` the band pill beside it (5 + 20 + 5)
- * - `NOTE`  Card's 16pt padding and 1pt hairline on both sides (34) + three 22pt body lines
- * - `ROW`   a criterion row: 16 + the 21pt label line + 16
- * - a group is its overline (`LABEL`) over a card of `ROW`s plus the card's own 2pt of hairline
- */
-const RING = 132;
-const PILL_WIDTH = 110;
-const PILL_HEIGHT = 30;
-const NOTE = 100;
-const LABEL = 20;
-const ROW = 53;
-const CARD_BORDER = 2;
+// JOBS 10 at 390 (580:2428), in artboard units — each block the height of what replaces it.
+const RING = 112 / 0.75;
+const RING_TO_PILL = 12 / 0.75;
+const PILL_W = 112 / 0.75;
+const PILL_H = 23 / 0.75;
+const PILL_TO_CAPTION = 10 / 0.75;
+const CAPTION_W = 190 / 0.75;
+const CAPTION_H = 16 / 0.75;
+const HERO_TO_NOTE = 20 / 0.75;
+const NOTE = 105.5 / 0.75;
+const NOTE_TO_CARDS = 14 / 0.75;
+const CARD_GAP = 14 / 0.75;
+/** A group card is its heading and bar (56.75) plus 34 per row and its 15.75 foot. */
+const CARD_BASE = 72.5 / 0.75;
+const CARD_ROW = 34 / 0.75;
 
 /** The two groups the skeleton draws — missing leads, so the short group is on top. */
 const GROUP_ROWS = [1, 3];
@@ -29,25 +29,32 @@ const GROUP_ROWS = [1, 3];
  * would resize the viewport the moment the query settles.
  */
 export function CriteriaSkeleton() {
-  const { spacing, s } = useTheme();
+  const { s } = useTheme();
+  const styles = useStyles();
 
   return (
-    <View accessible accessibilityLabel="Loading match breakdown" style={{ gap: spacing[6] }}>
-      <View style={{ alignItems: 'center', gap: spacing[3] }}>
+    <View accessible accessibilityLabel="Loading match breakdown">
+      <View style={styles.hero}>
         <Skeleton width={s(RING)} height={s(RING)} radius="full" />
-        <Skeleton width={s(PILL_WIDTH)} height={s(PILL_HEIGHT)} radius="full" />
+        <Skeleton width={s(PILL_W)} height={s(PILL_H)} radius="full" style={styles.pill} />
+        <Skeleton width={s(CAPTION_W)} height={s(CAPTION_H)} style={styles.caption} />
       </View>
 
-      <Skeleton height={s(NOTE)} radius="cardLg" />
+      <Skeleton height={s(NOTE)} radius="cardLg" style={styles.note} />
 
-      <View style={{ gap: spacing[5] }}>
+      <View style={styles.cards}>
         {GROUP_ROWS.map((rows, index) => (
-          <View key={index} style={{ gap: spacing[2] }}>
-            <Skeleton width="30%" height={s(LABEL)} />
-            <Skeleton height={s(rows * ROW + CARD_BORDER)} radius="card" />
-          </View>
+          <Skeleton key={index} height={s(CARD_BASE + rows * CARD_ROW)} radius="cardLg" />
         ))}
       </View>
     </View>
   );
 }
+
+const useStyles = scaledSheet((s) => ({
+  hero: { alignItems: 'center' },
+  pill: { marginTop: s(RING_TO_PILL) },
+  caption: { marginTop: s(PILL_TO_CAPTION) },
+  note: { marginTop: s(HERO_TO_NOTE) },
+  cards: { marginTop: s(NOTE_TO_CARDS), gap: s(CARD_GAP) },
+}));

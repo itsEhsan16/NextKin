@@ -9,7 +9,12 @@ import { storage } from '@/lib';
 const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), navigate: jest.fn(), back: jest.fn(), replace: mockReplace }),
+  useRouter: () => ({
+    push: jest.fn(),
+    navigate: jest.fn(),
+    back: jest.fn(),
+    replace: mockReplace,
+  }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
@@ -50,7 +55,7 @@ const swipeTo = async (index: number) => {
   );
 };
 
-/** The three first-run slides (Figma 290:969, 290:1031, 295:2867). */
+/** The three first-run slides (Figma 307:4165, 307:4217, 307:4288). */
 describe('OnboardingScreen', () => {
   beforeEach(() => {
     storage.remove('prefs.onboardingSeen');
@@ -71,6 +76,21 @@ describe('OnboardingScreen', () => {
     expect(screen.getByText('Discover jobs\nthat match you.', shown)).toBeOnTheScreen();
     expect(screen.getByText('Take the next\nstep with confidence.', shown)).toBeOnTheScreen();
     expect(screen.getByLabelText('Slide 1 of 3')).toBeOnTheScreen();
+  });
+
+  it('draws slide 3 as the redraw does: three feature rows under an illustration', async () => {
+    await renderScreen();
+
+    // The rows carry their own labels; the drawing is one decorative node beneath them, and it
+    // is the piece the redraw added — the slide had empty space there before.
+    expect(screen.getByLabelText('Apply to jobs. With a single click', shown)).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('Track your progress. Stay on top of your applications', shown),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('Get personalized insights. Find better opportunities', shown),
+    ).toBeOnTheScreen();
+    expect(screen.getByLabelText('A brighter you ahead', shown)).toBeOnTheScreen();
   });
 
   it('starts on the arrow and swaps it for Get Started on the last slide', async () => {

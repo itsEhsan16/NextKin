@@ -60,9 +60,9 @@ describe('History feed (the audit trail, phase 9I)', () => {
     // mounted: the assertions below are about what that window guarantees. EARLIER, the last
     // group, is asserted through the grouping's own unit test instead.
     expect(
-      await screen.findByRole('header', { name: 'TODAY' }, { timeout: 10000 }),
+      await screen.findByRole('header', { name: 'Today' }, { timeout: 10000 }),
     ).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'THIS WEEK' })).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'This week' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'History' })).toBeOnTheScreen();
 
     // — The newest row is a generation; opening it navigates (never pushes) to its document —

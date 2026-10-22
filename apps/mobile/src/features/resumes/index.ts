@@ -11,7 +11,10 @@ export {
   docSubtitle,
   scoreContextLine,
 } from './docMeta';
+export { AccuracyConfirmHost } from './components/AccuracyConfirmHost';
+export { useAccuracyStore } from './accuracyStore';
 export { useDocumentExport } from './hooks/useDocumentExport';
+export { ExportCancelledError, materialize, useConfirmedExport } from './hooks/useConfirmedExport';
 export { useResumesActions } from './hooks/useResumesActions';
 export { useShareDocument } from './hooks/useShareDocument';
 export {

@@ -1,10 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
-import { a11yHeader } from '@/lib';
 import { useTheme } from '@/theme';
-import { IconButton } from '@/ui/IconButton';
 import { SearchField } from '@/ui/SearchField';
-import { Text } from '@/ui/Text';
+import { TabTitleRow } from '@/ui/TabTitleRow';
 
 import type { ResumesViewMode } from '../resumesStore';
 import { ViewModeToggle } from './ViewModeToggle';
@@ -34,9 +32,6 @@ export type ResumesHeaderProps = ResumesHeaderBaseProps &
       }
   );
 
-/** Title 1:1367 ends at 64 and the search field 1:1371 starts at 96. */
-const SEARCH_TOP = 32;
-
 /**
  * The pinned half of the Resumes chrome — title + bell, then search + layout toggle
  * (Figma 1:1367–1:1375).
@@ -49,32 +44,24 @@ const SEARCH_TOP = 32;
  * which is the one place that knows whether it is being pinned.
  */
 export function ResumesHeader(props: ResumesHeaderProps) {
-  const { spacing, s } = useTheme();
+  const { spacing, sizes } = useTheme();
   const { hasUnread, onPressNotifications } = props;
 
   const titleRow = (
-    <View style={styles.titleRow}>
-      <Text {...a11yHeader()} variant="screenTitle">
-        Resumes
-      </Text>
-      <IconButton
-        icon="bell"
-        iconStyle="regular"
-        iconSize={s(18)}
-        label={hasUnread ? 'Notifications, unread' : 'Notifications'}
-        dot={hasUnread}
-        onPress={onPressNotifications}
-      />
-    </View>
+    <TabTitleRow
+      title="Resumes"
+      hasUnread={hasUnread}
+      onPressNotifications={onPressNotifications}
+    />
   );
 
   if (props.firstRun) return titleRow;
 
   return (
-    <View>
+    <View style={{ gap: sizes.titleRowGap }}>
       {titleRow}
 
-      <View style={[styles.searchRow, { gap: spacing[3], marginTop: s(SEARCH_TOP) }]}>
+      <View style={[styles.searchRow, { gap: spacing[3] }]}>
         <SearchField
           value={props.query}
           onChangeText={props.onChangeQuery}
@@ -89,7 +76,6 @@ export function ResumesHeader(props: ResumesHeaderProps) {
 }
 
 const styles = StyleSheet.create({
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   searchRow: { flexDirection: 'row', alignItems: 'center' },
   search: { flex: 1 },
 });

@@ -7,11 +7,37 @@
     "mobile:android": "pnpm --filter @nextkin/mobile android",
     "mobile:ios": "pnpm --filter @nextkin/mobile ios",
     "mobile:apk": "pnpm --filter @nextkin/mobile build:apk",
+    "web": "pnpm --filter @nextkin/web dev",
+    "web:lan": "pnpm --filter @nextkin/web dev:lan",
+    "web:build": "pnpm --filter @nextkin/web build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "check:pins": "node docker/check-pins.mjs",
+    "scan:secrets": "node scripts/scan.mjs secrets",
+    "scan:deps": "node scripts/scan.mjs deps",
+    "test:integration": "pnpm -r --if-present test:integration",
+    "stack:up": "node scripts/stack.mjs up",
+    "stack:down": "node scripts/stack.mjs down",
+    "stack:reset": "node scripts/stack.mjs reset",
+    "stack:logs": "node scripts/stack.mjs logs",
+    "stack:ps": "node scripts/stack.mjs ps",
+    "stack:init": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/stack-init.ts",
+    "worker": "pnpm --filter @nextkin/server worker",
+    "dev:all": "node scripts/dev-all.mjs",
+    "migrate": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/migrate.ts",
+    "migrate:rebaseline": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/migrate.ts --rebaseline",
+    "seed": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/seed.ts",
+    "dlq:replay": "pnpm --filter @nextkin/server dlq replay",
+    "perf:smoke": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/perf-smoke.ts",
+    "eval": "pnpm --filter @nextkin/server eval",
+    "dlq": "pnpm --filter @nextkin/server dlq",
+    "drills": "pnpm --filter @nextkin/server drills",
+    "load:users": "pnpm --filter @nextkin/server load:users",
+    "load": "node scripts/load.mjs"
   },
   "devDependencies": {
-    "jimp-compact": "0.16.1-2"
+    "jimp-compact": "0.16.1-2",
+    "tsx": "^4.23.15"
   }
 }

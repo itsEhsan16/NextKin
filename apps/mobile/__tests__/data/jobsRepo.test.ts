@@ -1,6 +1,6 @@
 import { jobsFixture, MockError, useMockModeStore } from '@/data/mock';
 import { EMPTY_JOB_FILTERS } from '@/data/models';
-import { JOBS_PAGE_SIZE, mockStore, repos, resetMockRepos } from '@/data/repos';
+import { JOBS_PAGE_SIZE, mockStore, PlanLockedError, repos, resetMockRepos } from '@/data/repos';
 
 /** Resolves a repo promise by flushing mock latency under fake timers. */
 async function flush<T>(promise: Promise<T>): Promise<T> {
@@ -65,13 +65,15 @@ describe('JobsRepo (mock)', () => {
     });
   });
 
-  describe('toggleSave()', () => {
-    it('flips isSaved and persists for the session', async () => {
+  describe('setSaved()', () => {
+    it('saves and persists for the session, with the time it was saved', async () => {
+      mockStore.state.subscription.plan = 'pro';
       const before = await flush(repos.jobs.get('job_1'));
       expect(before.isSaved).toBe(false);
 
-      const toggled = await flush(repos.jobs.toggleSave('job_1'));
+      const toggled = await flush(repos.jobs.setSaved('job_1', true));
       expect(toggled.isSaved).toBe(true);
+      expect(toggled.savedAt).toEqual(expect.any(String));
 
       const after = await flush(repos.jobs.get('job_1'));
       expect(after.isSaved).toBe(true);
@@ -80,14 +82,32 @@ describe('JobsRepo (mock)', () => {
       expect(saved.map((job) => job.id)).toContain('job_1');
     });
 
-    it('toggles back off and leaves the saved list', async () => {
-      await flush(repos.jobs.toggleSave('job_2'));
+    it('unsaves and leaves the saved list, clearing the saved time', async () => {
+      const unsaved = await flush(repos.jobs.setSaved('job_2', false));
+      expect(unsaved.savedAt).toBeUndefined();
       const saved = await flush(repos.jobs.listSaved());
       expect(saved.map((job) => job.id)).not.toContain('job_2');
     });
 
+    it('is idempotent: repeating a save or an unsave changes nothing', async () => {
+      const first = await flush(repos.jobs.setSaved('job_2', true));
+      const again = await flush(repos.jobs.setSaved('job_2', true));
+      expect(again).toEqual(first);
+      await flush(repos.jobs.setSaved('job_2', false));
+      expect((await flush(repos.jobs.setSaved('job_2', false))).isSaved).toBe(false);
+    });
+
+    it('Free saves up to 10 open listings: a new save past them is refused (V2 §13.3)', async () => {
+      mockStore.state.subscription.plan = 'free';
+      const open = (await flush(repos.jobs.listSaved())).filter((job) => !job.sourceUrl).length;
+      expect(open).toBeGreaterThanOrEqual(10);
+      await expect(flush(repos.jobs.setSaved('job_1', true))).rejects.toBeInstanceOf(PlanLockedError);
+      expect(mockStore.state.jobs.find((job) => job.id === 'job_1')?.isSaved).toBe(false);
+    });
+
     it('does not mutate the fixture or leak references into callers', async () => {
-      const job = await flush(repos.jobs.toggleSave('job_1'));
+      mockStore.state.subscription.plan = 'pro';
+      const job = await flush(repos.jobs.setSaved('job_1', true));
       job.title = 'mutated';
       const fresh = await flush(repos.jobs.get('job_1'));
       expect(fresh.title).not.toBe('mutated');
@@ -95,12 +115,12 @@ describe('JobsRepo (mock)', () => {
     });
 
     it('rejects for unknown ids', async () => {
-      await expect(flush(repos.jobs.toggleSave('nope'))).rejects.toThrow('Job "nope" not found');
+      await expect(flush(repos.jobs.setSaved('nope', true))).rejects.toThrow('Job "nope" not found');
     });
 
     it('rejects with MockError in error mode and leaves state untouched', async () => {
       useMockModeStore.setState({ mode: 'error' });
-      await expect(flush(repos.jobs.toggleSave('job_1'))).rejects.toBeInstanceOf(MockError);
+      await expect(flush(repos.jobs.setSaved('job_1', true))).rejects.toBeInstanceOf(MockError);
       expect(mockStore.state.jobs.find((job) => job.id === 'job_1')?.isSaved).toBe(false);
     });
   });
@@ -211,7 +231,8 @@ describe('JobsRepo (mock)', () => {
   });
 
   it('reset() restores fixture state', async () => {
-    await flush(repos.jobs.toggleSave('job_1'));
+    mockStore.state.subscription.plan = 'pro';
+    await flush(repos.jobs.setSaved('job_1', true));
     resetMockRepos();
     const job = await flush(repos.jobs.get('job_1'));
     expect(job.isSaved).toBe(false);

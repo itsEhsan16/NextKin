@@ -77,7 +77,7 @@ describe('upgradeCopy — prices', () => {
 describe('upgradeCopy — the annual saving', () => {
   it('computes the saving from the two fixture prices, rounding the claim down', () => {
     // 1,499 × 12 = 17,988 against 7,999 — a saving of 9,989, or 55.5%, published as 55.
-    expect(annualSaving(monthly, annual)).toEqual({ amount: 9989, percent: 55 });
+    expect(annualSaving(monthly, annual)).toEqual({ amount: 9989, percent: 55, currency: 'INR' });
   });
 
   it('reads as money the reader can check', () => {
@@ -158,5 +158,15 @@ describe('upgradeCopy — comparison cells (V2 §13.1)', () => {
 
   it('marks the Free side of a gated row as locked', () => {
     expect(planCell('Pro only', true)).toEqual({ kind: 'locked', text: 'Pro only' });
+  });
+});
+
+describe('upgradeCopy — the backend price book (P12-08)', () => {
+  it('formats USD, EUR and AUD with Western grouping and cents only when present', () => {
+    const { formatMoney } = jest.requireActual('@/features/billing/upgradeCopy') as typeof import('@/features/billing/upgradeCopy');
+    expect(formatMoney(19, 'USD')).toBe('$19');
+    expect(formatMoney(109, 'EUR')).toBe('€109');
+    expect(formatMoney(1234.5, 'AUD')).toBe('A$1,234.50');
+    expect(formatMoney(1499, 'INR')).toBe('₹1,499');
   });
 });

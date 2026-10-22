@@ -1,0 +1,25 @@
+{
+  "key": "a54285eade7374ad8902f4f0cf82e837",
+  "recordedAt": "2026-10-18T18:44:19.803Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: What is the capital of Aus"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": false,
+      "topic": "other"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 261,
+      "outputTokens": 56,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

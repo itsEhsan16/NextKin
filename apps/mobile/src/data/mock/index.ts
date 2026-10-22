@@ -1,12 +1,3 @@
-export * from './assistantAnswers';
-export * from './assistantContext';
-export * from './assistantDomain';
-export * from './atsScoreBuilder';
-export * from './delay';
-export * from './documentBuilder';
-export * from './documentCopy';
-export * from './fixtures';
-export * from './interviewBuilder';
-export * from './jdExtractor';
-export * from './mode';
-export * from './seed';
+// Re-export shim. This module moved to @nextkin/shared when the web app landed; the app keeps
+// importing it from `@/data/*` so the data-layer boundary and its lint fence are unchanged.
+export * from '@nextkin/shared/mock';

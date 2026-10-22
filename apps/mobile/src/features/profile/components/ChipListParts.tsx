@@ -1,50 +1,55 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
+import { useState, type ReactNode } from 'react';
+import { View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { a11yButton, hitSlopFor, useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
 import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
+import { itemExit, layoutTransition } from '@/ui/motion';
 
-import { addChip, atCap, capNote, filterSuggestions, removeChip } from '../chipEdits';
-
-/** FilterChip's `removable` metrics, so these chips read as that chip on the page. */
-const PADDING_X = 13;
-const PADDING_Y = 6;
-const GLYPH = 9;
-const CHIP_HEIGHT = 32;
-/** Loading placeholders: five chips of a plausible spread, a label and the add field. */
+// The editor chips and add row at 390 (PROFILE 05 573:254 / 573:272, 573:263), in artboard units.
+const CHIP_PAD_LEFT = 12 / 0.75;
+const CHIP_PAD_RIGHT = 11 / 0.75;
+const CHIP_PAD_Y = 7 / 0.75;
+const CHIP_GAP = 6 / 0.75;
+const TIMES = 9 / 0.75;
+const PLUS = 8.5 / 0.75;
+const CHIP_HEIGHT = 31 / 0.75;
+const ROW_GAP = 8 / 0.75;
+const COLUMN_GAP = 7 / 0.75;
+const ADD_GAP = 9 / 0.75;
+const ADD_WIDTH = 76 / 0.75;
+/** Loading placeholders: five chips of a plausible spread. */
 const SKELETON_CHIPS = [92, 128, 74, 110, 86];
-const SKELETON_LABEL = 18;
-const SKELETON_FIELD = 52;
 
 /**
- * One chip on the page. A tap either takes an entry out or puts a suggested one in, so the glyph
- * and the spoken name are the only things that differ between the two rows.
+ * One chip in a profile editor. A chosen entry is brand-tinted with a ✕ (573:254); a suggestion is
+ * white with a brand + (573:272). A tap takes the one out or puts the other in, so the look, the
+ * glyph and the spoken name are the only things that differ.
  *
- * Deliberately not `FilterChip variant="removable"`: that variant draws exactly this box, but it
- * names itself "Remove filter <label>" to a screen reader, and a skill is not a filter. The
- * metrics above are copied from it so the two read as the same chip.
+ * Deliberately not `FilterChip`: its removable variant names itself "Remove filter <label>" to a
+ * screen reader, and a skill is not a filter.
  */
-function EditorChip({
+export function EditorChip({
   label,
   name,
   hint,
-  glyph,
+  chosen,
   onPress,
 }: {
   label: string;
   name: string;
   hint: string;
-  glyph: string;
+  chosen: boolean;
   onPress: () => void;
 }) {
-  const { colors, radii, spacing, s } = useTheme();
+  const { colors, radii, sizes, s } = useTheme();
+  const styles = useStyles();
 
   return (
     <Pressable
@@ -57,135 +62,139 @@ function EditorChip({
         styles.chip,
         {
           borderRadius: radii.full,
-          gap: spacing[1] + 2,
-          paddingHorizontal: s(PADDING_X),
-          paddingVertical: s(PADDING_Y),
-          backgroundColor: colors.surfaceCard,
-          borderWidth: s(1),
-          borderColor: colors.borderDefault,
+          borderWidth: sizes.border,
+          backgroundColor: chosen ? colors.brandSurface : colors.surfaceCard,
+          borderColor: chosen ? colors.brandBorder : colors.borderDefault,
         },
       ]}
     >
-      <Text variant="caption" color="textBody" numberOfLines={1}>
+      {chosen ? null : <FontAwesome5 name="plus" size={s(PLUS)} color={colors.brand} solid />}
+      <Text variant="caption" color={chosen ? 'textPrimary' : 'textBody'} numberOfLines={1}>
         {label}
       </Text>
-      <FontAwesome5 name={glyph} size={s(GLYPH)} color={colors.iconMuted} solid />
+      {chosen ? (
+        <FontAwesome5 name="times" size={s(TIMES)} color={colors.textSecondary} solid />
+      ) : null}
     </Pressable>
   );
 }
 
-/** The chip list while the profile is still in flight. */
-export function ChipListSkeleton() {
-  const { spacing, s } = useTheme();
+/** A wrapping row of chips at the boards' 8 × 7 spacing. */
+export function ChipWrap({ children }: { children: ReactNode }) {
+  const styles = useStyles();
+  const reduced = useReducedMotion();
   return (
-    <View style={{ gap: spacing[3] }}>
-      <Skeleton width="55%" height={s(SKELETON_LABEL)} />
-      <View style={[styles.chips, { gap: spacing[2] }]}>
+    <Animated.View layout={layoutTransition(reduced)} style={styles.wrap}>
+      {children}
+    </Animated.View>
+  );
+}
+
+/** The chip editor while the profile is still in flight. */
+export function ChipListSkeleton() {
+  const { sizes, spacing, s } = useTheme();
+  const styles = useStyles();
+  return (
+    <View style={{ gap: spacing[4] }}>
+      <View style={styles.wrap}>
         {SKELETON_CHIPS.map((width) => (
           <Skeleton key={width} width={s(width)} height={s(CHIP_HEIGHT)} radius="full" />
         ))}
       </View>
-      <Skeleton height={s(SKELETON_FIELD)} radius="xl" />
+      {/* The add field's real height, so nothing jumps on load. */}
+      <Skeleton height={sizes.searchField} radius="xl" />
     </View>
   );
 }
 
-export type ChipListBodyProps = {
+export type ChipFieldProps = {
   /** Names one entry — "skill", "desired role", "location". */
   noun: string;
   items: readonly string[];
-  /** The shipped vocabulary offered under the field (`@/data/models`). */
-  suggestions: readonly string[];
   placeholder: string;
   /** The add field's accessible label — "Add a skill". */
   addLabel: string;
-  max?: number;
-  countLine: (count: number) => string;
-  /** Why the list is worth filling. Shown in place of the chips while there are none. */
-  emptyMessage: string;
-  onChange: (next: string[]) => void;
+  /** Adds one; returns why it was refused, or nothing when it went in. */
+  onAdd: (value: string) => string | undefined;
+  onRemove: (item: string) => void;
+  /** At the cap: the field goes inert with this as its helper (§13.5). */
+  fullNote?: string;
+  /** Said in place of the chips while there are none. */
+  emptyMessage?: string;
 };
 
 /**
- * The editable list itself (V2 §7.3): chips you can take out, one field to add with, the shipped
- * vocabulary offered underneath, and a count.
- *
- * An empty list is not an error state — the add field IS the empty state, with the line that
- * explains why the list matters above it. A StateView over an editable list would hide the one
- * control the reader came here for.
+ * The chosen chips and the field to add one more (PROFILE 09 577:8003 / 577:8040). An empty list
+ * is not an error state — the add row IS the empty state, under a line on why the list matters.
  */
-export function ChipListBody({
+export function ChipField({
   noun,
   items,
-  suggestions,
   placeholder,
   addLabel,
-  max,
-  countLine,
+  onAdd,
+  onRemove,
+  fullNote,
   emptyMessage,
-  onChange,
-}: ChipListBodyProps) {
-  const { motion, spacing } = useTheme();
+}: ChipFieldProps) {
+  const { motion, s } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
   const [entry, setEntry] = useState('');
   const [problem, setProblem] = useState<string | undefined>(undefined);
-
-  // Dropped rather than shortened under reduced motion: a chip sliding into place is the movement
-  // the setting asks us not to make.
-  const layout = reduced ? undefined : LinearTransition.springify();
-  const full = atCap(items, max);
-  const offered = filterSuggestions(suggestions, items, entry);
+  const full = fullNote != null;
 
   const add = (value: string) => {
-    const result = addChip(items, value, noun, max);
-    if ('refused' in result) {
-      setProblem(result.refused);
+    const refused = onAdd(value);
+    if (refused) {
+      setProblem(refused);
       return;
     }
     setProblem(undefined);
     setEntry('');
-    onChange(result.items);
   };
 
   return (
-    <View style={{ gap: spacing[3] }}>
+    <>
       {items.length === 0 ? (
-        <Text variant="body" color="textSecondary">
-          {emptyMessage}
-        </Text>
+        emptyMessage ? (
+          <Text variant="body" color="textSecondary">
+            {emptyMessage}
+          </Text>
+        ) : null
       ) : (
-        <Animated.View layout={layout} style={[styles.chips, { gap: spacing[2] }]}>
+        <ChipWrap>
           {items.map((item) => (
             <Animated.View
               key={item}
-              layout={layout}
               entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}
-              exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
+              exiting={itemExit(reduced)}
             >
               <EditorChip
                 label={item}
                 name={`${item}, ${noun}`}
                 hint={`Removes ${item}`}
-                glyph="times"
-                onPress={() => onChange(removeChip(items, item))}
+                chosen
+                onPress={() => onRemove(item)}
               />
             </Animated.View>
           ))}
-        </Animated.View>
+        </ChipWrap>
       )}
 
-      <Animated.View layout={layout} style={[styles.addRow, { gap: spacing[3] }]}>
+      <View style={styles.addRow}>
         <TextField
           value={entry}
           onChangeText={(text) => {
             setEntry(text);
             if (problem) setProblem(undefined);
           }}
+          icon="plus"
           placeholder={placeholder}
           accessibilityLabel={addLabel}
           error={problem}
           // §13.5: the cap stands on screen rather than appearing only once it refuses something.
-          helper={full && max != null ? capNote(max) : undefined}
+          helper={fullNote}
           editable={!full}
           autoCapitalize="words"
           returnKeyType="done"
@@ -197,34 +206,60 @@ export function ChipListBody({
           variant="secondary"
           onPress={() => add(entry)}
           disabled={full || entry.trim().length === 0}
+          style={{ width: s(ADD_WIDTH), paddingHorizontal: 0 }}
         />
-      </Animated.View>
-
-      {offered.length > 0 && !full ? (
-        <Animated.View layout={layout} style={[styles.chips, { gap: spacing[2] }]}>
-          {offered.map((item) => (
-            <EditorChip
-              key={item}
-              label={item}
-              name={`${item}, suggested ${noun}`}
-              hint={`Adds ${item}`}
-              glyph="plus"
-              onPress={() => add(item)}
-            />
-          ))}
-        </Animated.View>
-      ) : null}
-
-      <Text variant="caption" color="textSecondary">
-        {countLine(items.length)}
-      </Text>
-    </View>
+      </View>
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  chip: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },
-  chips: { flexDirection: 'row', flexWrap: 'wrap' },
-  addRow: { flexDirection: 'row', alignItems: 'flex-start' },
+/** Suggested entries, each one tap from the list (577:8051). */
+export function SuggestionChips({
+  noun,
+  items,
+  onAdd,
+}: {
+  noun: string;
+  items: readonly string[];
+  onAdd: (item: string) => void;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <ChipWrap>
+      {items.map((item) => (
+        <EditorChip
+          key={item}
+          label={item}
+          name={`${item}, suggested ${noun}`}
+          hint={`Adds ${item}`}
+          chosen={false}
+          onPress={() => onAdd(item)}
+        />
+      ))}
+    </ChipWrap>
+  );
+}
+
+/** "Suggested", when the suggestions share a card with the list (573:270). */
+export function SuggestedLabel() {
+  return (
+    <Text variant="microBadge" color="textSecondary">
+      Suggested
+    </Text>
+  );
+}
+
+const useStyles = scaledSheet((s) => ({
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: s(CHIP_GAP),
+    paddingLeft: s(CHIP_PAD_LEFT),
+    paddingRight: s(CHIP_PAD_RIGHT),
+    paddingVertical: s(CHIP_PAD_Y),
+  },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', rowGap: s(ROW_GAP), columnGap: s(COLUMN_GAP) },
+  addRow: { flexDirection: 'row', alignItems: 'flex-start', gap: s(ADD_GAP) },
   field: { flex: 1 },
-});
+}));

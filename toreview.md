@@ -13,7 +13,7 @@ top of them. No placeholder destination remains: `src/features/placeholders.ts`,
 typed. Everything undesigned is built from the spec; what is left is this file and a second device
 pass over the Phase 10 changes.
 
-On top of those, the **onboarding and sign-up flow** (Figma 290:955) and the **app icon** have
+On top of those, the **onboarding and sign-up flow** (Figma 307:4152) and the **app icon** have
 landed — the first designed auth screens in the app, and the first time a fresh install does not
 open on the tabs. Section 6 holds the calls that came with them; none of it has been on a device.
 
@@ -28,12 +28,12 @@ already at that limit. But only `generationStart` moves the counter — `create`
 scratch), `duplicate` and `importFromFile` all add a document without touching it. So a free user
 who cannot generate can still make unlimited documents by hand.
 
-I did **not** enforce it. Two reasons: RESUMES 03's Duplicate row is a *designed* control with no
+I did **not** enforce it. Two reasons: RESUMES 03's Duplicate row is a _designed_ control with no
 gate, so enforcing the cap only on the undesigned screens would contradict an artboard (CLAUDE.md
 rule 7); and gating it would put the demo account permanently behind an upsell it can never clear,
 which would read as broken in Expo Go.
 
-**Decide:** either the counter counts *stored* documents and every creator bumps it (Duplicate
+**Decide:** either the counter counts _stored_ documents and every creator bumps it (Duplicate
 included), or the label stops saying "resumes used" and becomes something it is actually
 measuring. This is a design decision, not a build one.
 
@@ -142,7 +142,7 @@ shape is not guessed later, or accept the mock as-is for the demo.
 phrase matcher with a small deny list, and its doc comment says what that cannot do: it
 **over-refuses** paraphrases with none of the listed words ("what should I put at the top of the
 page?") and **under-refuses** off-topic questions that happen to contain one ("how's the weather
-for an *interview* in Delhi?"). The canned answers are keyed by the same topics, so an accepted
+for an _interview_ in Delhi?"). The canned answers are keyed by the same topics, so an accepted
 question always gets a relevant paragraph, never a wrong one. This is the right stand-in for a
 mock and the wrong thing to ship against a real model.
 
@@ -171,12 +171,12 @@ deliberately held back, and `typographyFor` reads between the two boards. **The 
 given the same treatment**, so text grew relative to its container and the result read as cramped.
 It also put every interactive control under the 44pt floor `CLAUDE.md` rule 5 requires:
 
-| token | drawn | was @390 | was @360 | now |
-|---|---|---|---|---|
-| `listRow` | 58 | 43.5 | 40.2 | **52** |
-| `buttonLg` | 56 | 42.0 | 38.8 | **50** |
-| `buttonMd` / `searchField` / `filterButton` | 52 | 39.0 | 36.0 | **46** |
-| `iconButton` / `headerButton` / `segmentedControl` | 48 | 36.0 | 33.2 | **44** |
+| token                                              | drawn | was @390 | was @360 | now    |
+| -------------------------------------------------- | ----- | -------- | -------- | ------ |
+| `listRow`                                          | 58    | 43.5     | 40.2     | **52** |
+| `buttonLg`                                         | 56    | 42.0     | 38.8     | **50** |
+| `buttonMd` / `searchField` / `filterButton`        | 52    | 39.0     | 36.0     | **46** |
+| `iconButton` / `headerButton` / `segmentedControl` | 48    | 36.0     | 33.2     | **44** |
 
 `CONTROL_AT390` in `src/theme/scaleTheme.ts` holds the anchors. Composition is untouched — `scale`,
 spacing, radii, the gutter, the tab bar, rings and tiles still answer to the single factor, which
@@ -211,7 +211,7 @@ be cutting a §7.8 obligation on the judgement that the other covers it.
 
 **Decide:** whether the short one should simply be the long one, or whether two registers are right.
 
-### 1.15 Three things from the device pass that were *not* defects
+### 1.15 Three things from the device pass that were _not_ defects
 
 Recorded so they are not re-investigated:
 
@@ -219,7 +219,7 @@ Recorded so they are not re-investigated:
   dev-menu launcher**, drawn by the host outside the React tree. Not in this codebase, not
   repositionable from app code, absent from a real build.
 - **Content under the floating tab pill** is by design — an opaque pill plus `TabBarScrim`, with
-  `tabBarInset` reserving 101.6dp + safe area so the *last* row always clears. A screenshot showing
+  `tabBarInset` reserving 101.6dp + safe area so the _last_ row always clears. A screenshot showing
   a half-hidden row is mid-scroll.
 - **The Profile screen's stats / completeness / plan cards** are implemented and rendered
   (`ProfileScreen.tsx:152-158`). The identity header is pinned, so a screenshot can be scrolled past
@@ -231,7 +231,7 @@ You found three more on the device. All three are fixed; each one is recorded he
 carries a judgement.
 
 **1. A focused field sat under the keyboard.** `Screen keyboard` gives iOS a
-`KeyboardAvoidingView` and Android its window resize. Both make the field *reachable*; neither moves
+`KeyboardAvoidingView` and Android its window resize. Both make the field _reachable_; neither moves
 the scroll offset, and React Native's `ScrollView` does not scroll to a focused `TextInput` on
 Android at all. **14 screens** were affected — every form in the app. `src/ui/Screen/revealOnFocus.tsx`
 now provides a reveal through context, `TextField` asks for it on focus, and the arithmetic is a
@@ -254,8 +254,8 @@ serialisation, so the clear was never needed.
 
 **Why no test caught any of it, and what changed.** Jest renders without layout — no keyboard, no
 z-order, no measured heights — so the first two are structurally invisible to it. The third was
-invisible for a different and more interesting reason: *each half was correct on its own, and only
-the sequence lost data*. `__tests__/features/profile/profileDrafts.test.ts` now tests the property
+invisible for a different and more interesting reason: _each half was correct on its own, and only
+the sequence lost data_. `__tests__/features/profile/profileDrafts.test.ts` now tests the property
 instead of the path — every entry type goes through draft → entry and must come back identical,
 including across a toggle round trip — so a form added later inherits the check.
 
@@ -268,7 +268,7 @@ drew the generic chain glyph instead of a palette and an ID badge, and opening o
 Two more, both fixed.
 
 **A sheet opened on top of a live keyboard.** Tapping a date row straight from a focused "Job
-title" opened the picker *and* left the keyboard up, and the OS draws the keyboard above everything
+title" opened the picker _and_ left the keyboard up, and the OS draws the keyboard above everything
 in the React tree — so no z-index could have saved it. `Sheet` now dismisses the keyboard as it
 opens, unless it declares `avoidKeyboard` (the rename pane and the location sheet raise their own,
 and dismissing would fight their autofocus).
@@ -284,7 +284,7 @@ on `sizes.listRow`. Everything else the sweep turned up is a skeleton block or a
 or already pads itself with `hitSlopFor`.
 
 **Decide / worth doing next:** there is no automated guard for this. The scaled-theme test asserts
-the *tokens* clear 44pt, but nothing stops a component hard-coding a height. An ESLint rule in the
+the _tokens_ clear 44pt, but nothing stops a component hard-coding a height. An ESLint rule in the
 shape of the existing unscaled-literal one — flag `minHeight: s(<number>)` inside a `Pressable` —
 would close it. Until then the grep is `ROW_HEIGHT\s*=|minHeight: s\(`.
 
@@ -299,7 +299,7 @@ than trusting the report. It found **seven** problems, all fixed before the gate
   §1.12's claim that the Profile group gap is the only artboard deviation therefore still holds.
 - **A §7.10 limit deleted.** The cover-letter screen's "written from a resume and the job it was
   tailored to" was cut on the reasoning that the title carries it. The title is an instruction, not
-  the rule, and that branch fires with a library *full* of resumes — so the screen read as broken.
+  the rule, and that branch fires with a library _full_ of resumes — so the screen read as broken.
   Restored, shortened.
 - **A layout change disguised as a copy change.** Dropping the Full name helper stopped `TextField`
   reserving its helper row, so the first validation error would shove the rest of the form down a
@@ -314,7 +314,7 @@ than trusting the report. It found **seven** problems, all fixed before the gate
 **Changes of mine the verifier flagged as undeclared, kept deliberately:** removing the duplicate
 "Message support instead" from Help's no-results state (the "Still stuck?" card is on screen in that
 same branch), the duplicate Add CTAs on the four entry lists and Interview prep, and renaming
-`FILE_CTA` to "Check a file from your device" (its only branch has nothing to do it *instead* of).
+`FILE_CTA` to "Check a file from your device" (its only branch has nothing to do it _instead_ of).
 
 **Not acted on — overrule if you disagree:** §7.4's "nothing reaches your profile until you say so"
 now appears once, on the review screen rather than before the file is picked; `LinkFormScreen`'s
@@ -326,7 +326,7 @@ skeleton block is measured for a body that got shorter.
 
 `NotificationsScreen` reaches preferences twice: the header cog (`:128`) and a "Manage notification
 types" row at the end of the feed (`:221`). Left alone — different labels, different affordances,
-different moments (before reading vs after), and the header is artboard chrome. Every *identical*
+different moments (before reading vs after), and the header is artboard chrome. Every _identical_
 duplicate was removed.
 
 **Decide:** overrule if you want strictly one route per destination per screen.
@@ -338,14 +338,14 @@ duplicate was removed.
 These are things the approved plan does not schedule anywhere. Each needs a home before we can
 say Phase 9 is complete.
 
-| Gap | Detail | Suggested home |
-|---|---|---|
-| ~~`resume-sort`~~ | **Built in 9I** (`ResumeSortSheetHost`, sorted in `useResumes(sort)`'s `select` so every other reader of the list is untouched). Kept here so the row's history is not lost. | done |
-| Version history | `useRestoreVersion` and `useResumeVersions` exist and work; **nothing consumes them**. The editor shows "v3" with no way to see or restore the other two, and §7.11 requires append-only history to be visible. `useGenerations` was deleted in 9I (History reads activity entries, not runs), so the version hooks are now the only orphans in `@/data/queries`. | needs a phase |
-| Rewrite a letter in another tone | 9D built the tone picker for a *new* letter. The editor's `LetterBody` deliberately has none, because regenerating spends a cover-letter generation and §13.5 wants the cap on screen first. So an existing letter cannot be rewritten in another tone at all. | needs a phase |
-| Zero Resume cap | §13.3 publishes "Zero Resume drafts: 1/month on Free" as its own row. `SubscriptionUsage` has no counter for it, so `/create/zero-resume` meters against the generations quota instead. | data-layer change |
-| Saved-jobs cap | §13.3 says "Up to 10" on Free. Home's fixture ships 18 saved jobs and the job fixtures 12; both predate the cap and neither is enforced. | fixtures + 9H |
-| Saved-jobs sort is client-side | `listSaved(sort?)` on the repo can order the list, but `useSavedJobs()` takes no argument and query hooks were off limits during the 9H build, so the Saved tab sorts in the screen. Harmless at 12 rows; wrong the moment the list is paged. | a query-layer change |
+| Gap                              | Detail                                                                                                                                                                                                                                                                                                                                                            | Suggested home       |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| ~~`resume-sort`~~                | **Built in 9I** (`ResumeSortSheetHost`, sorted in `useResumes(sort)`'s `select` so every other reader of the list is untouched). Kept here so the row's history is not lost.                                                                                                                                                                                      | done                 |
+| Version history                  | `useRestoreVersion` and `useResumeVersions` exist and work; **nothing consumes them**. The editor shows "v3" with no way to see or restore the other two, and §7.11 requires append-only history to be visible. `useGenerations` was deleted in 9I (History reads activity entries, not runs), so the version hooks are now the only orphans in `@/data/queries`. | needs a phase        |
+| Rewrite a letter in another tone | 9D built the tone picker for a _new_ letter. The editor's `LetterBody` deliberately has none, because regenerating spends a cover-letter generation and §13.5 wants the cap on screen first. So an existing letter cannot be rewritten in another tone at all.                                                                                                    | needs a phase        |
+| Zero Resume cap                  | §13.3 publishes "Zero Resume drafts: 1/month on Free" as its own row. `SubscriptionUsage` has no counter for it, so `/create/zero-resume` meters against the generations quota instead.                                                                                                                                                                           | data-layer change    |
+| Saved-jobs cap                   | §13.3 says "Up to 10" on Free. Home's fixture ships 18 saved jobs and the job fixtures 12; both predate the cap and neither is enforced.                                                                                                                                                                                                                          | fixtures + 9H        |
+| Saved-jobs sort is client-side   | `listSaved(sort?)` on the repo can order the list, but `useSavedJobs()` takes no argument and query hooks were off limits during the 9H build, so the Saved tab sorts in the screen. Harmless at 12 rows; wrong the moment the list is paged.                                                                                                                     | a query-layer change |
 
 ---
 
@@ -358,7 +358,8 @@ made in one session: `typecheck + lint + test` was green through all of it.
 
 **Phase 10's own changes have not been on a device yet**, and they are geometry changes, so they
 need one:
-- every screen at 360dp and at 430dp — the control anchors are a *floor* below 390, so the smallest
+
+- every screen at 360dp and at 430dp — the control anchors are a _floor_ below 390, so the smallest
   phones changed the most;
 - the segmented control's pill, which now derives its inset from the two heights rather than a
   drawn 4pt — check it is centred in its track on Jobs, Practice and the new-set screen;
@@ -419,7 +420,7 @@ What only a device can settle:
 
 Hard rule 1 says Expo Go only. `apps/mobile/eas.json` now adds a `preview` profile that produces
 a standalone Android APK, and that is a deliberate reading of the rule rather than a break of it:
-the rule constrains *dependencies* ("every dependency must run inside Expo Go SDK 57 … no
+the rule constrains _dependencies_ ("every dependency must run inside Expo Go SDK 57 … no
 `expo-dev-client`, no `react-native-mmkv`"), and nothing about the APK changes that set. No
 dependency was added, no config plugin, no dev client — the same JS bundle and the same
 Expo-Go-compatible native modules, packaged for people who cannot or will not install Expo Go and
@@ -465,7 +466,7 @@ alone.
 
 ---
 
-## 6. Onboarding, sign-up and the app icon (Figma 290:955)
+## 6. Onboarding, sign-up and the app icon (Figma 307:4152)
 
 ### 6.1 A third artboard width, and why the whole flow is normalised onto one
 
@@ -498,7 +499,7 @@ Decided with the user: the board sets almost everything in DM Sans and the welco
 letter-spaced caps in Montserrat, and neither is loaded. Adding two `@expo-google-fonts` packages
 would put two more families in the startup gate that holds the splash, so both map onto Plus
 Jakarta Sans instead. **The new screens will not match the artboards on letterform** — most
-visibly the two Montserrat tagline lines, where tracking does a lot of the work. Inter *is*
+visibly the two Montserrat tagline lines, where tracking does a lot of the work. Inter _is_
 loaded (700 only), so `authHero` and `authTitle`, which the board itself sets in Inter Bold, keep
 it.
 
@@ -512,7 +513,7 @@ lead copy, the "/ 3" and the field placeholders.
 
 ### 6.4 The welcome screen advances itself
 
-290:957 draws no control at all. It is treated as a held brand moment: a ~1.6s hold, then
+307:4153 draws no control at all. It is treated as a held brand moment: a ~1.6s hold, then
 `router.replace` to the slides, with a tap anywhere taking it early. Reduced motion removes the
 fade but **not** the advance — stranding a reader on a screen with nothing to press would be
 worse than the motion. If it is meant to be a splash rather than a screen, it should move into
@@ -529,7 +530,7 @@ store holds a status and no user, so nothing carries the new account's identity 
 Profile still shows the pre-seeded mock person. Giving the session a user model is a real change
 and was not made here.
 
-### 6.6 There is no Sign in screen; both affordances point at the old stub
+### 6.6 There is no Sign in screen; both affordances point at the old stub — _settled by 6.17_
 
 The node has six artboards and none of them is a sign-in form, yet the landing has a "Sign in"
 button and sign-up has an "Already have an account? Sign in" link. The user is providing that
@@ -576,7 +577,7 @@ their measured offsets the way the brand mark is.
 
 `field-reveal-on.svg` is derived rather than exported: the board draws only the struck-through
 eye (the masked state), so the revealed state is the same icon with the strike path removed. The
-struck-through eye is the *masked* state, which is the board's own default — the opposite of the
+struck-through eye is the _masked_ state, which is the board's own default — the opposite of the
 convention some apps use.
 
 The three big illustrations and the Notion and Spotify marks are committed SVGs too, because
@@ -607,7 +608,7 @@ other, so all six are unverified.
 The user chose "render the mark from Figma" over adding `sharp`. Both Figma paths failed on their
 own terms:
 
-- `get_screenshot` will not render *above* a node's natural size, so the 101x105 logo mark came
+- `get_screenshot` will not render _above_ a node's natural size, so the 101x105 logo mark came
   back at 101x105.
 - `download_assets` at 4x gave 404x420 — and **opaque**, with the welcome screen's purple
   gradient baked in, because a Figma export carries its ancestors' backgrounds. (The same trap
@@ -618,7 +619,7 @@ So `scripts/generate-icons.cjs` composes `assets/brand/mark-{1,2,3}.svg` — alr
 and the same three layers `src/ui/BrandMark` draws — into one SVG and rasterises it. **This is
 still not `sharp` as a dependency**: it is a one-off `npx sharp-cli` whose output is committed as
 `assets/brand/mark-1024.png`, and the script falls back to that committed PNG when npx is
-unavailable, so only a change to the mark itself needs the network. `jimp-compact` *was* added,
+unavailable, so only a change to the mark itself needs the network. `jimp-compact` _was_ added,
 as a root devDependency — pure JavaScript, no native binary, build-time only, never in the app
 bundle. That is a reading of hard rule 1 as constraining what runs inside Expo Go, the same
 reading 5.1 used for the APK. If the rule was meant to cover every dependency, overrule it.
@@ -686,7 +687,7 @@ padding shortfall.
 all 895 of the frame — 97 of head room, three fields, the two buttons, and a 44.47 floor, landing
 on 894.9. The status bar and the gesture area are inside that, and the padding at each end is the
 allowance for them. Every screen was rendering with `<Screen edges={['top', 'bottom']}>`, which
-adds the device insets *on top of* an allowance that already existed: roughly 80dp of space in
+adds the device insets _on top of_ an allowance that already existed: roughly 80dp of space in
 neither the design nor the device. On a 412dp phone the board is 872dp tall against about 892dp
 of screen — it fits, with room to spare, and only stopped fitting because of the insets.
 
@@ -696,7 +697,7 @@ Two consequences, both now undone:
   its own content; it now flows with the page, 34.14 below the Google button, where the board
   puts it.
 - **The gap above "Create an account" was 19.23 instead of 92.41.** The heading was jammed under
-  the wordmark, and the back chevron — which the board places *beside* the lock-up at y=78, not
+  the wordmark, and the back chevron — which the board places _beside_ the lock-up at y=78, not
   above it — was stacked in the flow, pushing the whole page down by its 48pt tap target. It is
   now taken out of the flow and positioned, with the target still a full 48 centred on the 23.5
   glyph the board draws.
@@ -707,7 +708,7 @@ larger of the two wins. `AUTH_FRAME_HEIGHT` in `src/features/auth/board.ts` carr
 
 **This one is worth generalising.** It is not an onboarding quirk: any artboard that draws a full
 device screen has the same trap, and the 25 older boards are 1440 and 1720 tall against a 520
-width, so they are *not* full screens and genuinely do need their edges. The two conventions now
+width, so they are _not_ full screens and genuinely do need their edges. The two conventions now
 coexist in the codebase with nothing marking which is which beyond this note.
 
 ### 6.16 The board was revised mid-build, and I was measuring a stale copy
@@ -717,17 +718,17 @@ The single biggest source of error in this whole flow, and it went unnoticed for
 Every measurement here was read out of Figma once, at the start. **296:3032 was then revised**,
 and the build kept quoting the old numbers:
 
-| | read at the start | current |
-|---|---|---|
-| Section top | 269.35 | **197** |
-| Back chevron | y=78.11 | **y=52.11** |
-| Footer | y=832.53 | **y=747** |
-| Floor below footer | 44.47 | **130** |
-| Primary CTA | `#B9EF30` lime | **`#9890F8` violet** |
+|                    | read at the start | current              |
+| ------------------ | ----------------- | -------------------- |
+| Section top        | 269.35            | **197**              |
+| Back chevron       | y=78.11           | **y=52.11**          |
+| Footer             | y=832.53          | **y=747**            |
+| Floor below footer | 44.47             | **130**              |
+| Primary CTA        | `#B9EF30` lime    | **`#9890F8` violet** |
 
 The gap above "Create an account" is the clearest casualty. It should be 20.06 — the section now
 starts at 197, just under the lock-up's 196.17. Reading it off the old 269.35 gives **92.41**, and
-in the third pass I "corrected" 19.23 (near enough right by luck) *to* 92.41, making the screen
+in the third pass I "corrected" 19.23 (near enough right by luck) _to_ 92.41, making the screen
 markedly worse and then pinning the footer to cope with the height it added. Two rounds of fixes
 were spent on a problem the board had already solved.
 
@@ -745,8 +746,155 @@ sum; they are worth giving one.
 The habit that would have caught it earlier is simpler: **re-read the node before measuring
 against it**, not once per session.
 
+### 6.17 The sign-in screen landed, slide 3 was redrawn, and the whole flow was renumbered
+
+Two boards arrived — a sign-in artboard (309:175), which 6.6 was waiting for, and a redrawn
+slide 3 (307:4288). Re-reading the file before measuring, as 6.16 says to, turned up a third
+thing nobody asked about: **all six node ids this repo recorded for the flow are dead.**
+
+The row was rebuilt on page 95:2 "Mobile 2" under 307:4151 → 307:4152. Old id → new:
+
+| screen            | was      | is                     |
+| ----------------- | -------- | ---------------------- |
+| Welcome           | 290:957  | **307:4153**           |
+| Onboarding 1 of 3 | 290:969  | **307:4165**           |
+| Onboarding 2 of 3 | 290:1031 | **307:4217**           |
+| Onboarding 3 of 3 | 295:2867 | **307:4288** (redrawn) |
+| Get started       | 296:2982 | **307:4338**           |
+| Create an account | 296:3032 | **307:4386**           |
+| Sign in           | —        | **309:175** (new)      |
+
+Every measurement on the other five was re-read against its new board and **none of them moved**;
+`signUpLayout.ts` needed no change at all. Three decoys are on the same page and must not be
+measured from: 307:4014 (a stale duplicate of boards 1–3), 309:100 (an earlier sign-in draft with
+a lime CTA), and 307:4329 (the orphaned old slide-3 bottom bar, which is where the `LAST_BAR`
+numbers this change deletes came from).
+
+`scripts/figma-refs.cjs` and the PNGs under `assets/figma/` are renumbered to match; sign-up's
+render is re-exported (the committed one still showed the lime CTA the board dropped), slides 1
+and 2 are re-exported too (the renamed files were renders of the _deleted_ boards), and sign-in is
+added as AUTH 07. Every citation whose new id 6.17 publishes is renumbered with it — `board.ts`,
+`signUpLayout.ts`, the four route files, `GetStartedScreen`, `WelcomeScreen`, `SlideDots`,
+`NextFab`, `AuthGradient`, `JobCardStack`, `palette.ts`, `tokens.ts`, `typography.ts`'s header,
+the maestro flow and four test files. **What is still stale is the per-text-node numbering inside
+`typography.ts`'s auth block** — the block header says so — because remapping seventeen text nodes
+needs seventeen more Figma reads for no behavioural gain. Do it the next time that file is opened
+for real work.
+
+#### What changed on slide 3
+
+Below the copy: the feature block is redrawn at 88% (cards 71.21 tall in a fixed 312 column at
+x=55, not stretched to the gutter), a new illustration sits under it (309:96, 306 × 201.68 — a
+figure with a raised fist under hand-lettered "A Brighter You Ahead.", committed as
+`assets/onboarding/brighter-ahead.svg`), and the bottom bar is now the same 72-tall, 14-dot,
+17-gap bar as slides 1 and 2, with a 189 × 72 pill in place of the 176.45 × 59.53 one.
+`featureTitle` and `featureCaption` moved with the block; they have no other reader.
+
+The copy column moved by one number: slide 3's lead is redrawn on a 25.448 leading against slides
+1 and 2's 27.55, so it gets its own `onboardingLeadTight` role rather than bending the shared one,
+which also carries "Skip".
+
+Four things the redraw exposed, all of them older than it:
+
+- **The arrow on "Get Started" was rendering at 18.071 and should be 26.** The board sets a 41pt
+  "→" glyph in a 31 box — the _same_ node the round Next button draws, which `NextFab` has always
+  rendered at 26 — and the pill was drawing it with the label's own type role instead. The 22 that
+  `CTA.arrow` carried, declared and never used, was fitted to the deleted board's smaller glyph.
+- **The brand mark in the lock-up was 19% too small on all three account screens, and the welcome
+  screen's was too.** `BrandMark` takes an artboard height and scales it from the 520 board;
+  `AuthLockup` and `WelcomeScreen` were handing it 422.66-board numbers raw while converting
+  everything around them properly. Fixed in both; it moves sign-up and get-started as well as the
+  new screen.
+- **The back chevron was rendering at about half its drawn size**, on sign-up as well as sign-in:
+  `IconButton`'s default glyph is a 16 read off the 520 board, and neither screen asked for the
+  23.5 its own board draws. The centring inset was already computed from 23.5, so the target was
+  right and only the arrow inside it was small.
+- **The feature cards were carrying the app's own card shadow**, a quarter of what the board
+  draws (0 4.685 6.09 at 8% against 0 1 2 at 5%). They now have their own `onboardingFeatureCard`
+  spec rather than moving the shared `card` token, which every other card in the product reads.
+- **The slide fills all 895 of the frame with 0.3 to spare in Figma, and rather less than that in
+  React Native.** Two things eat the margin. A phone whose status bar is deeper than the 41 the
+  board budgets takes 9–23pt off the top. And the type ramp's `MIN_LEADING` floor (§1.13) renders
+  the heading looser than drawn — the price of the DM Sans → Plus Jakarta swap — so the copy
+  column comes out around 25 drawn units taller than the board draws it. The slide was always
+  going to overflow; the illustration is what made it visible.
+
+  So the illustration is the one thing on the slide allowed to shrink (`flexShrink` against a
+  fixed `aspectRatio`); the cards hold their size because they carry words. Measured:
+
+  | viewport       | insets  | of the drawing lost |
+  | -------------- | ------- | ------------------- |
+  | 412 × 915      | 24 / 24 | **none**            |
+  | 390 × 844      | 47 / 34 | 6%                  |
+  | 430 × 932      | 59 / 34 | 8%                  |
+  | 393 × 852      | 59 / 34 | 11%                 |
+  | 375 × 667 (SE) | 20 / 0  | **82%**             |
+  | 320 × 568      | 20 / 0  | **82%**             |
+
+  Every 19.5:9 phone is in single figures and fine. **Every 16:9 phone loses four fifths of the
+  drawing and gets a stamp**, because the board's own 2.12:1 does not fit a 1.78:1 screen at all.
+  That is not a good outcome and it is not mine to fix by invention — the honest options are a
+  shorter art slot on short screens, a scrolling slide, or dropping the illustration below a
+  threshold. **Decide which.**
+
+  For the record on what the other slides do there: they overflow an SE too, and they do not clip.
+  Their art slot is `flex: 1` with `justifyContent: 'flex-end'`, and Yoga's overflow fallback
+  rewrites only the `space-*` justifications — so `flex-end` survives, the drawing keeps its full
+  height and hangs _above_ the slot, over the lead paragraph. Slide 3 is the first one where the
+  overflow is handled rather than merely invisible.
+
+#### Calls on the sign-in screen
+
+- **The two auth forms are not drawn identically, so `AuthField` stopped hard-coding sign-up.**
+  Sign-in's fields are 0.31 taller, 2.07 less round, 1.19 wider in the glyph, 2.25 wider in the
+  icon gap and 0.99 closer together, and its divider gap is sign-up's _field_ gap while its own
+  field gap is not. Both boards are live, so under CLAUDE.md rule 7 both are right; the box now
+  comes in as a `metrics` prop and `signInLayout.ts` carries sign-in's numbers with a budget test
+  beside it, exactly as sign-up has. The visible difference is the 2.07 of corner radius.
+- **The gutter is normalised to 23.68.** Sign-in draws its fields at 22.07 from the left and its
+  buttons at 24.02 — a 1.95 disagreement between elements plainly meant to line up. Treated as
+  drift, the way `board.ts` already treats the 1.9% frame difference, and set to sign-up's value,
+  which is also where this board puts the back chevron. Costs ±1.6 drawn on the field edges.
+- **No new type roles, and five blue-greys collapsed onto two tokens.** Sign-in's placeholders are
+  drawn 1.16 larger than sign-up's and its footer 1.0 smaller — about a point either way on a
+  phone. Reusing `authField` / `authMeta` keeps one ramp across the two forms; the five drawn
+  greys (#8992AA, #858E9E, #778099, #6D7690, #8490A5) map onto `textTertiary`, with
+  `textSecondary` for the "Forgot password?" link. Nothing was added to the palette.
+- **"Create one" replaces rather than pushes.** Sign-up's footer pushes to sign-in, so pushing
+  both ways stacks the two forms alternately for as long as the reader keeps tapping, and the
+  back chevron then walks all the way down. Replacing on this side alone bounds the stack at
+  three and leaves the shipped sign-up screen untouched. The asymmetry is deliberate.
+- **"Forgot password?" opens a sheet that explains itself.** V2 §7.1 puts the whole reset flow
+  behind Cognito — a time-limited, single-use emailed link — so there is nothing a mock layer can
+  stand in for. A disabled link contradicts the artboard and a silent no-op is indistinguishable
+  from a broken tap target, so it says outright that there is no server and no account to
+  recover. Same shape as `LinkedInUnavailableScreen`.
+- **The sign-in board exports its own field icons and Google mark; the committed ones are reused.**
+  The email and lock glyphs are identical drawings at a slightly different size. The eye differs
+  more — the board draws the "eye-off" construction where the committed `field-reveal.svg` draws
+  a whole eye behind a slash — but the board only ever draws the _masked_ state, so taking its
+  eye would leave the revealed state coming from the other family inside one control. The reveal
+  is also drawn 25.77 × 23.62, and the committed asset is square; it renders square, 2.15 narrow.
+- **`AuthDivider`, `GoogleButton` and `AuthFooterLink` were lifted out of `SignUpScreen`** so
+  both forms draw them from one place. Every number is still passed in per board, so sign-up
+  renders exactly what it rendered before. Sign-in still comes to ~275 lines against the ~250
+  the README asks for; the next thing to lift is the CTA pill, which both forms draw identically
+  apart from their label and arrow inset.
+- **The refused-submit note announces itself explicitly.** `accessibilityLiveRegion` is
+  Android-only, and `refused` latches — so a second refused press changes nothing and even
+  Android would stay silent. `AccessibilityInfo.announceForAccessibility` covers both. Sign-up
+  has the same gap and has not been touched, because its screen is device-verified and this is a
+  behaviour change rather than a transcription fix. **Worth doing there too.**
+- The illustration is hard-coded light-ground art, like the other three, so 6.9 applies to it too.
+
 ### 6.14 Still not verified
 
+- **Nothing in 6.17 has been on a device.** The sign-in screen, the redrawn slide 3, the shrinking
+  illustration, the corrected "Get Started" arrow and the three components lifted out of sign-up
+  are all argued from the boards' own arithmetic and are green in the suite — and the suite was
+  green through all three of the earlier passes, which is the point. Slide 3 and sign-in both
+  need a side-by-side against `assets/figma/307-4288.png` and `309-175.png`, and slide 3 needs it
+  on a short phone specifically.
 - **The welcome screen and slide 2 have not been seen at all.** Slides 1 and 3, the landing and
   sign-up have. The welcome screen is the one with the self-advancing timer and the gradient, and
   slide 2 the one with three rotated cards — both the kind of thing the two passes so far have
@@ -794,7 +942,7 @@ the lockfile is unchanged, so it is cheap to revert.
 It was claimed that `expo export --platform android` reproduces the failure locally and should
 become the pre-build check. It does not. pnpm's bin shims inject
 `NODE_PATH=<root>/node_modules/.pnpm/node_modules`, where those packages were privately hoisted,
-so *every* pnpm entry point — jest, `expo start`, and `npx expo export` — resolves them and
+so _every_ pnpm entry point — jest, `expo start`, and `npx expo export` — resolves them and
 passes. Gradle spawns node directly from the JVM with no shim, which is why only it failed. The
 honest check is a plain node process:
 
@@ -825,11 +973,11 @@ itself.
 Three GitHub Actions workflows, adapted from the Ease Home project at
 `F:\1. Webcros Project 2\Ease Home` (GitHub Actions, not EAS Workflows):
 
-| file | trigger | what it does |
-|---|---|---|
-| `mobile-ci.yml` | PR + push to main, path-filtered | resolution guard, `expo export` smoke, route-type generation, typecheck, lint, test, expo-doctor |
-| `mobile-eas-build.yml` | manual | queues an EAS build; platform + profile + message inputs |
-| `mobile-eas-submit.yml` | manual | `eas submit` to the Play internal track; `--latest` or an explicit build id |
+| file                    | trigger                          | what it does                                                                                     |
+| ----------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `mobile-ci.yml`         | PR + push to main, path-filtered | resolution guard, `expo export` smoke, route-type generation, typecheck, lint, test, expo-doctor |
+| `mobile-eas-build.yml`  | manual                           | queues an EAS build; platform + profile + message inputs                                         |
+| `mobile-eas-submit.yml` | manual                           | `eas submit` to the Play internal track; `--latest` or an explicit build id                      |
 
 Departures from the reference, all forced: pnpm rather than npm, `apps/mobile` rather than
 `mobile`, Node pinned to the exact `22.17.0` that `eas.json` names rather than a bare `22`, and
@@ -847,7 +995,7 @@ anything, so a build that later fails leaves the workflow green. The job summary
   whatever version was published this morning, which is tolerable only while it cannot fail the
   job.
 - **`environment: store-submission` gates nothing yet.** GitHub auto-creates a referenced
-  environment on first run *with no protection rules*, so until a required reviewer is added
+  environment on first run _with no protection rules_, so until a required reviewer is added
   under Settings → Environments the submit job runs unreviewed. Required reviewers need a public
   repo, or Pro/Team on a private one. If neither applies, delete the line rather than leave a
   gate that cannot exist.
@@ -881,3 +1029,12858 @@ on its own.
 - **`--latest` does not filter on build status.** It takes the newest store-distribution build in
   New / InQueue / InProgress / Finished, so after a `--no-wait` queue it can pick one that is
   still building. Prefer an explicit `--id`.
+
+---
+
+## 8. Home's icons were redrawn, and the shortcut row lost a tile (Figma 239:185)
+
+Home has a fourth revision, **239:185 "Home Screen New"** (390 × 1111, page 95:2), after `1:2` →
+`115:2` → `210:262`. Re-read section by section against 210:262, **only the two sections you named
+changed**; every other section sits at an identical y, and the frame grew 21 solely because the
+nav moved down with it.
+
+- **Quick Start (239:219) is a pure icon swap.** Card, padding, heading, labels and tile count are
+  byte-identical. Three of the four glyphs are new drawings (Zero Resume, Cover Letter and ATS
+  Check — Cover Letter's metaphor changed from a document to an open envelope); Build Resume kept
+  its node and its exact 61.14 × 65 box and was only recoloured. The board has also dropped the
+  hint line under each label, which the app had already moved to screen readers only — so the
+  board has caught up with the app rather than the other way round.
+- **Shortcut grid (239:361) lost "AI Assistant".** Not an oversight: the remaining four were
+  re-spread from a 64.5 pitch to 85.5 to fill the row. Removed on your call. The assistant is not
+  orphaned — `HomeMenuHost` still carries it — but Home's grid no longer offers it, and
+  `useHomeActions.shortcut` lost its `ai-assistant` branch with the tile.
+
+### 8.1 Calls made while doing it
+
+- **The icons grew by about a third and the rows had to grow with them.** The shortcut glyphs went
+  from 45 to 58.67 wide in 520-space and the row that holds them from 56 to 60.27, or the old box
+  would have cropped three of the four. Quick Start's row stays at 65, because Build Resume — the
+  one icon that did not change — is still the tallest.
+- **Every drawn box is divided by 0.75 before it is written down.** These boards are drawn at 390
+  and `s()` projects from 520. That is the same conversion `HeroBlock`'s 130 "Find Jobs" tile
+  makes, so the numbers in `SPECS` are 520-space with the drawn value in a comment beside them.
+- **`preserveAspectRatio="none"` had to be stripped from all eight exports.** Figma now emits it
+  along with `overflow="visible"` and an inline `display: block` — none of which the repo's other
+  38 SVGs carry. The first of the three is not cosmetic: `react-native-svg` resolves it to a
+  non-uniform stretch, so the artwork would have been squashed to whatever `w`/`h` the component
+  passed instead of keeping its proportions.
+- **The three new gradients are left exactly as exported.** SVGO's `cleanupIds` renames all of
+  them to `id="a"` at build time, so hand-renaming would achieve nothing — and it is safe anyway,
+  because `react-native-svg` scopes its brush registry per `<Svg>` root rather than globally. The
+  repo already proves it: three committed logos share `clip0_0_4` and render side by side on
+  onboarding slide 2.
+- **The glyph fills stay hardcoded, no new tokens.** These are 5–13-path multi-colour
+  illustrations with gradients; there is nothing a single `color` prop could drive, and §6.8
+  already sets that rule for this asset class. Consequence, and it is a new one: the old set was
+  flat black on white, the new set is saturated indigo on near-white interiors, so **on a dark
+  card these will read as bright light-on-dark shapes**. §6.9 applies — there is no dark-mode
+  design to check them against.
+- **`assets/figma/239-185.png` is added to the dev overlay** as "DESIGN 2b — Home (redrawn)". The
+  committed `115-2.png` is a render of an older revision of that node — `115:2` is 1089.93 tall
+  today and has lost its nav — so it is the wrong thing to lay over Home now. Left in place rather
+  than re-exported, since nothing was built from it in this change.
+
+### 8.2 Still open
+
+- **The counter is still above the icon; the board has always drawn it below the label.** All four
+  boards — `1:184`, `115:184`, `210:442` and now `239:361` — put a grey caption under the label
+  ("12 Resumes", "24 Activities", "18 Saved", "AI Questions"). The app instead shows a bare "12"
+  above the icon and gives the words to screen readers. That was a deliberate call, and its stated
+  reason was that five tiles across a 390 frame left ~64pt a cell. **The redraw's four leave ~85,
+  so the reason has gone.** Moving it back means touching `IconTileGrid`, which Quick Start shares,
+  so it was left alone rather than folded into an icon change. Worth doing deliberately.
+- **The shortcut card's padding is 28/20/20 where the board says 29/21/21** — a pre-existing 1-unit
+  round-down, about 0.75pt on a phone. Left as it was.
+- **Not on a device.** `pnpm test` cannot see any of this: `jest.config.js` maps every `.svg` to a
+  mock, so the transformer never runs and the artwork is never sized in a test. The bundle exports
+  and the gate is green, but the icons themselves have only been checked as files. Lay
+  `239-185.png` over Home and look.
+
+## 9. The web app: `packages/shared`, `apps/web`, the sidebar and Home (Figma 286:180, 304:497, 304:600)
+
+The web app now exists. `pnpm typecheck && pnpm lint && pnpm test` is green across three
+workspaces — 170 suites, 1553 tests — and mobile's 167/1513 is unchanged from before the move.
+
+### 9.1 Calls that are yours to overrule
+
+- **The two boards you gave me are drawn in different design languages, and Home won.**
+  `286:180` is Plus Jakarta Sans on slate neutrals with an indigo `#4f46e5` brand, and it binds a
+  real Figma variable collection. `304:497` is **DM Sans** on navy `#070b4c` with an electric-blue
+  `#3219ff` brand, a glass panel (radius 31, `backdrop-blur(5px)`, a white 0.9 border, a
+  `0 8px 30px rgba(65,78,190,.15)` shadow), 10.5px nav labels and a 5.5px tagline — and binds no
+  variables at all. It is the same older language as the auth boards, which §6.3 already maps onto
+  Plus Jakarta Sans. Rule 7 says the artboard wins but does not cover two artboards of one screen
+  disagreeing, so this went to you: **the sidebar ships in Home's token system**, keeping the
+  board's geometry, structure, copy, icons and both active states. Everything below follows from
+  that one decision.
+- **The sidebar's type is read as a 0.75-scale drawing.** 10.5 → Body/M 14, 9 → Caption/M 12,
+  7.5 → Micro 11, 5.5 → Micro 11. The tagline at its drawn size is unreadable; at Micro it is
+  merely small.
+- **The panel keeps its drawn 266 width, inside Home's reserved 280 gutter.** Scaling the box by
+  the same 1/0.75 would make it 355 and push Home's 1188 content out of its 1256 `Main`. Home is
+  the fixed reference, so the box did not move.
+- **Substitutions the mapping forced.** The active pill's `#e7e5ff → #edebff` gradient became
+  `border/brand #ede9fe` with a `text/brand` label and icon. The Upgrade button's
+  `rgb(59,28,255) → rgb(83,38,255)` gradient became solid `brand/600`. The glass panel became a
+  white card with `border/default`. Each is a real visual difference from what is drawn.
+- **Two values entered the token file raw from the sidebar board**, because Home has no
+  equivalent: the unread dot `#ff4148` and the panel radius `31`.
+- **The page background is white.** Sampled from the board's own render rather than guessed — the
+  grey I first took it for is the AI card's `surface/brand #fbfaff`.
+- **`format.ts` did not move to `packages/shared`.** It carries `'worklet'` directives that only
+  survive if Metro's Babel transforms the file, and `babel-preset-expo` is the app's only Babel
+  config. Its INR lakh formatting is the behaviour §1.4 already disputes, and §8.8 asks the web
+  app for a locale-aware layer, so `apps/web/src/lib/format.ts` is a separate implementation over
+  the one shared `SalaryRange` type. Two formatters, one contract — deliberate, not drift.
+- **`Adobe` is drawn as "96% Match"; the fixture computes 94.** The number is data, so the data
+  won. Change the fixture if the board's number is the intended one.
+
+### 9.2 Things the boards imply that the spec does not
+
+- **Applications, Documents and Insights.** The sidebar draws eight destinations. V2 never
+  enumerates a navigation — §9.1 names "dashboard, resume library, profile, job board, skills
+  explorer" and §7.2 lists the dashboard's tiles. Application tracking is named for **Release 2**
+  in §17.1. All three are wired to `ComingSoon` placeholders naming the section they will
+  implement. They need fixtures and repo methods, or they should come off the nav.
+- **There is no Profile destination**, though §7.3 is a Release 1 module. It presumably lives
+  under the user chip or Settings; the board does not say.
+- **"ATS Score" again.** `286:622` says "ATS Score"; §7.8 says the UI must label it "NextKin
+  Score" and link the rubric. Rule 7 kept the board's word. This is §1.5's conflict on a second
+  platform, and the two platforms now agree with each other and disagree with the spec.
+- **`app.nextkin.com` versus the spec's single origin.** §9.1/§9.5/§9.9 put marketing, the public
+  SEO pages, the authenticated app, `/admin/*` and `/api/v1/*` in **one** Next.js deployable
+  behind one CloudFront distribution. A separate `app.` subdomain splits that. Nothing in this
+  milestone depends on the answer — it is all authenticated — and `apps/web` is arranged so public
+  routes can live in a `(marketing)` route group later. Worth deciding deliberately.
+- **Currency.** The shared fixtures are INR (§1.4). Web is the market-facing purchase surface and
+  §13.2 publishes USD/EUR/AUD. It does not bite on Home; it will on Jobs and Upgrade.
+
+### 9.3 How the extraction was done, and what it rests on
+
+- `apps/mobile/src/data/**` moved to `packages/shared/src/**` with `git mv` — 9,734 lines that
+  imported React Native in exactly zero places. Two edges were cut: `SalaryRange`/`SalaryCurrency`
+  moved into `models/salary.ts` (they are contract, not formatting), and `mock/mode.ts` took a
+  `configureMockMode(storage)` adapter instead of importing `expo-sqlite`.
+- **Mobile did not change.** 18 one-line re-export shims under `src/data/` keep every `@/data/*`
+  path working, so not one screen import moved. Only 18 distinct specifiers exist across 620
+  import sites and four cover 607, which is what made shims cheaper than a repo-wide rewrite.
+- The package ships **TypeScript source with no build step**, plus an `exports` map. The risk was
+  Metro resolving that map through the hoisted linker; `npx expo export` bundles clean, which is
+  the only thing that actually proves it. `pnpm test` would not have caught a failure here.
+- The fixture fence now also covers `@nextkin/shared/mock` on both platforms, or it would have
+  been bypassable by importing the package path directly.
+
+### 9.4 Not verified
+
+- **Nothing has been looked at in a browser.** The gates are green and the server renders every
+  string the boards draw, but no screenshot has been compared against `286:180` or `304:497`.
+  Playwright is in `apps/web`'s devDependencies; its browsers are not installed, so the
+  side-by-side pass in the plan has not run. **This is the equivalent of mobile's device pass, and
+  it is exactly where every defect in §6.12, §6.13 and §6.15 was found.** Assume spacing is wrong
+  until it is checked.
+- **No responsive pass.** The board is a single 1536×1024 frame. Breakpoints below that are my
+  invention, not drawn — the Quick Start grid reflows 5→3→2 and the AI illustration is hidden
+  under `lg`. §8.8 requires mobile-web support, so this needs its own design answer.
+- **No keyboard or screen-reader pass**, and no axe run, against the §8.7 WCAG 2.1 AA target.
+  Roles and `aria-current` are in place and the sidebar collapse is a real button, but nothing has
+  been driven from the keyboard.
+- **`packages/shared` has no test or lint script.** The 19 data suites still live in
+  `apps/mobile/__tests__/data/` and still pass through the shims, so coverage is unchanged — but
+  `pnpm -r test` does not gate the package that now owns the code, and `pnpm -r lint` skips it.
+- **No web CI.** `mobile-ci.yml` runs `pnpm typecheck/lint/test` at the root, so it now silently
+  gates the web app too, while its path filter means web-only changes trigger no CI at all. Either
+  scope its steps with `--filter @nextkin/mobile` or add `web-ci.yml`. Neither is done.
+- **The `(app)` route group has ten `ComingSoon` placeholders.** Mobile carried an equivalent
+  layer through Phases 2-8 and deleted it in Phase 9; this one should go the same way.
+
+## 10. The first browser pass on Home and the sidebar (Figma 286:180, 304:497)
+
+You compared the running app with the boards and flagged the sidebar icons, the NextKin logo, the
+sidebar scrolling with the page, button styling, and three sections: Top Job Matches, "Improve
+your chances with AI" and Recent Activity. §9.4 said none of it had been seen in a browser. It has
+now — Playwright driving the **installed Edge** (`channel: 'msedge'`), which needs no browser
+download, so the 150MB install you declined was never necessary. Every finding below came out of
+that comparison rather than out of reading the code.
+
+### 10.1 Four defects that were silently wrong everywhere
+
+- **Every nav icon rendered as a solid blob.** The board draws each glyph as navy ink _plus_
+  near-white knockout paths that punch the holes making it read as line art — the speech bubble's
+  two rules, the folder's face, the monitor's eyes. `build-icons.mjs` repainted every path
+  `currentColor`, filling them in. It now splits ink from knockout by luminance and emits an SVG
+  mask, so the holes are genuinely transparent and an icon reads correctly on a white row, a
+  lavender active pill and a muted hover alike.
+- **Letter-spacing was 5-25x too tight on every heading.** Figma reports it as a _percentage_ of
+  font size — the board's `-0.8` on H2 is `-0.16px` at 20px — and it was transcribed into
+  `theme.css` as `-0.8px`. Now stored as `em`, which is that percentage by definition, and pinned
+  by a test.
+- **`cn()` was dropping either a size or a colour from every merged pair.** tailwind-merge only
+  knows Tailwind's stock scales, so `text-body-m` and `text-text-inverse` both read as one
+  unrecognised `text-*` group and it kept whichever came last. That is why nav labels rendered at
+  the browser default instead of 14px and "Upgrade Now" was dark text on indigo. `cn` now declares
+  the ramp's roles as the `font-size` group, derived from `typography` so it cannot drift.
+- **The logo mark had lost its gradient swoosh.** Both build scripts stripped `<defs>`, leaving
+  `fill="url(#paint0_linear_0_4)"` pointing at nothing. It was also the wrong kind of asset — a
+  three-colour brand mark in the single-colour icon pipeline. It is now an illustration, `<defs>`
+  are kept when the artwork actually paints from them, and gradient ids are namespaced by slug
+  because SVG ids resolve document-wide.
+
+### 10.2 Calls that are yours to overrule
+
+- **The Applications badge no longer matches the board.** 304:531 draws `3`; the shared fixture
+  has 12 applications and no subset of the statuses yields 3. It now counts what is still open
+  (excludes `not_selected` and `withdrawn`) and shows **9**. Previously it showed 12 — the same
+  number as Documents, which read as a bug. The badge's real meaning is a product question.
+- **A `nano` 9px type role, below the board's ramp.** We agreed to project the sidebar's 5.5px
+  tagline onto Micro 11. At 11px those 38 characters need ~190px in a 138px column and wrapped to
+  three lines, swamping a header the board draws at 50px. 9px holds it to two lines. This was a
+  deviation from the projection you approved.
+  **Superseded 2026-09-10:** you asked for the tagline ("WITH AI THAT WON'T LIE ON YOUR RESUME.")
+  removed outright and "NextKin" set bold beside the logo. Done — the `nano` role and its
+  `theme.css`/`tokens.ts` entries are deleted along with it, since nothing else used them.
+- **Sidebar icons take `text/primary` and labels `text/secondary`.** The board draws the glyph a
+  clear shade darker than its label; this keeps that relationship inside Home's palette. It is the
+  reverse of what shipped before.
+- **The logo's white disc is not drawn.** In the board it separates the mark from the lavender
+  glass panel; on Home's white card it would be invisible. The mark stands alone in the same 42px
+  hit target.
+- **`job_adobe` moved from 0.94 to 0.96** to match 286:494. It is a web-only fixture (`isPick`),
+  so no mobile screen reads it.
+- **`Card` now defaults to `radius/lg` 16 + `border/subtle` + a shadow**, replacing `radius/xl` 20
+  - `border/default` + no elevation. Read off 286:729 and 286:640, which are the only two cards
+    that state their own values. **Quick Start, Find Jobs and Your Resume Progress were not
+    individually re-sampled** — they inherit the same treatment on the assumption the board is
+    internally consistent.
+- **`SectionHeader` is Title/L 16 SemiBold, not H2 20**, and its "View all" is Body/S 13 SemiBold.
+  Every section on Home changes size as a result.
+- **Chips are `py-1` (26px), not the 6px padding token (30px)**, because 286:343 is drawn 25 tall.
+  The board's own padding token and its frame height disagree; the frame won.
+- **Recent Activity flattens the fixtures' bold runs.** The shared copy marks an emphasis span
+  (`**Google**`) that mobile's board does bold; the web board sets every title at one weight. The
+  markers are stripped rather than rendered.
+- **The primary button's two-tone treatment is a 1px border, not two stacked shapes.** 286:722 is
+  a lighter `#6461F0` plate with a deeper `#4039D6` plate inset ~1px inside it; both are imported
+  raw, as `danger-dot` and `radius-panel` were. Neither is `brand/600`. The board's shapes are also
+  hand-drawn and slightly irregular, which is not reproduced.
+
+### 10.3 What still does not match the board
+
+- **Recent Activity runs ~54px taller than drawn.** The board's rows are one line each ("Your
+  resume was ATS scanned"); the shared fixtures carry mobile's longer copy, which wraps to two.
+  Rule 7 says a designed screen's fixture copy matches the artboard, but these fixtures are shared
+  and mobile's Home renders them too — so web-specific activity entries would be a product change
+  to mobile. Left alone deliberately. The AI card is stretched to the same height by the flex row.
+- The applicant avatars are one 62x50 PNG repeated three times, which is what the board does
+  (286:349/351/353 all reference one image).
+
+### 10.4 Now verified, and how
+
+`pnpm typecheck && pnpm lint && pnpm test` green — mobile unchanged at 167 suites / 1513 tests,
+web at 4 suites / 57. Beyond that: Home and the sidebar rendered at 1536x1024 in Edge and compared
+region-by-region against `286:324`, `286:640`, `286:729` and `304:517` at matched scale, and the
+sidebar confirmed pinned by screenshotting before and after a scroll. The keyboard, screen-reader,
+axe and responsive gaps in §9.4 are all still open.
+
+## 11. Smooth, swift sidebar collapse/expand
+
+You asked for smoother sidebar collapse/expand motion, with a "swift" feel. The box's own width
+transition already worked; everything _inside_ it was conditionally rendered or two structurally
+different elements per `collapsed`, so content popped in/out instantly while the box kept
+resizing for another 220ms. You chose the fuller fix (`CollapseFade`, all content stays mounted
+and glides) over a timing-only tweak. Three real, confirmed bugs surfaced while building and
+verifying it — worth reading even if you don't read the rest of this section.
+
+### 11.1 Three bugs a screenshot alone would not have caught
+
+- **`navRowTransition`'s Tailwind class generated no CSS at all.** It was assembled from several
+  `'...' + '...'` string fragments split across lines. Tailwind's class scanner reads the raw
+  _source text_ of files, not the JS value they evaluate to — it needs a complete, balanced
+  `[...]` token in one literal to recognise an arbitrary property. Split across fragments, the
+  bracket was never whole anywhere in the file, so no candidate was ever found and no rule was
+  ever generated; the element silently fell back to the browser default `transition-duration: 0s`
+  and every row snapped instead of easing. Confirmed via `getComputedStyle`, not by looking at
+  the file. Fixed by writing it as one unbroken string literal; guarded by a new test
+  (`__tests__/navigation/navRowMotion.test.ts`) that checks the string is well-formed, since
+  jsdom has no real CSS pipeline and can't catch "Tailwind didn't generate a rule" any other way.
+- **`w-full` on the row, inside a `<li>` sized by `items-center`, is a circular reference.** The
+  row's width was `width: 100%` of its `<li>`, while the `<li>` (under `items-center`) was
+  supposed to shrink-wrap _to the row_. CSS resolves that circularity by falling back to `auto`,
+  which made the row's width jump instantly instead of easing — confirmed by polling
+  `getBoundingClientRect()` through the transition, which showed the width jump ~130px in the
+  first frame rather than moving continuously. Fixed by giving the row an explicit pixel width in
+  both states (234px expanded, not `w-full`/100%) and centring the collapsed rail with a constant
+  `mx-auto` on a `w-fit` `<li>` instead of toggling `align-items` — the same circular-reference
+  trap that `nav`'s own `items-center`/`items-stretch` toggle was set up to hit one level up, so
+  that got removed too, in favour of everything below it being either explicit-width or
+  self-centring.
+- **`--duration-press`/`--duration-base`/etc were declared under the wrong theme namespace,
+  probably since before this session.** Tailwind v4's `duration-*` utility only reads from
+  `--transition-duration-*` — `theme.css` declared a bare `--duration-*`. That's not an error:
+  `var(--duration-base)` still resolves fine anywhere it's referenced directly (which is exactly
+  why `navRowTransition`, which uses `var()` throughout, worked once its own bug was fixed), but
+  the _utility class_ `duration-base` never registered, so every element using it — not just in
+  the sidebar, project-wide, `Card`, both buttons, hover states, the panel's own width transition
+  — silently ran at Tailwind's default 150ms instead of its intended value the whole time. Found
+  by checking the compiled CSS directly (`.duration-base` was simply absent) after the panel's
+  computed `transition-duration` read `0.15s` instead of the expected `0.22s`. Renamed to
+  `--transition-duration-*` in `theme.css`; values unchanged. `ease-standard`/`ease-decelerate`
+  were unaffected — `ease-*` genuinely is the namespace Tailwind reads bare, unlike duration.
+
+None of these three would show up in a screenshot comparison, however careful — a static image of
+either rest state looks identical whether or not the transition between them actually works. They
+only surfaced because verifying "is this actually smooth" meant measuring the live transition
+(`getBoundingClientRect`/`getComputedStyle` polling, and the compiled CSS itself) rather than
+just eyeballing before/after screenshots. Both rest states were re-confirmed pixel-identical to
+the Figma-verified renders (`304:497`/`304:600`) after every fix.
+
+### 11.2 Calls that are yours to overrule
+
+- **`UpgradeCard`'s two states now both live in the DOM permanently**, cross-fading via
+  `CollapseFade`, with `inert` (plus `tabIndex={-1}` for the guarantee jsdom can actually assert
+  on — it doesn't enforce `inert`'s focus-blocking) on whichever one isn't current. This is a
+  transient trade-off: because the collapsed icon-link (42px) and the expanded card (~136px) both
+  briefly have non-zero height while cross-fading, the footer below it (the divider, Settings,
+  Help & support) can dip slightly further than its final position for part of the ~220ms window
+  before settling, rather than moving in one continuous line. Bounded to that one element and that
+  one window; not eliminated, since the two states are genuinely different affordances (the
+  collapsed icon _is_ the link; the expanded state adds a separate "Upgrade Now" CTA), not just a
+  resize of one element, and reconciling that fully would mean changing what's clickable.
+- **The nav row's active state is now a colour-only difference on a constant 1px border**
+  (`border-color`/`background-color` transition between `transparent` and their active colour)
+  rather than the rail's outline ring and the panel's filled pill being two different `border`
+  declarations. Visually identical at rest in both states, verified against `304:497`/`304:600`;
+  the only change is that a hard edge no longer pops in/out.
+- **`NavRow`'s manual `aria-label`/count-suffix on the collapsed link is gone.** Real label text
+  is now always in the DOM (visually collapsed, not `display:none`), so it's already the link's
+  accessible name in both states — simpler, and arguably more correct, but a deliberate
+  simplification worth flagging.
+- **`useSidebarCollapsed`'s `cached` module state isn't reset between tests.** Not introduced this
+  session, but hit directly while writing `__tests__/navigation/Sidebar.test.tsx`'s new tab-order
+  test — an earlier test's `toggle()` click leaves the sidebar starting collapsed for whatever
+  test runs next in the same file, unless that test explicitly forces a known starting state (as
+  the new one now does). Left as-is; a real fix belongs to the hook itself, out of scope here.
+
+### 11.3 Not verified
+
+- No real keyboard-Tab pass confirming `inert` actually blocks focus in a browser (jsdom doesn't
+  enforce it, hence the `tabIndex={-1}` fallback and the belt-and-suspenders test). Playwright
+  against the installed Edge can drive this; not yet run.
+- The `UpgradeCard` cross-fade bulge described in §11.2 has not been measured, only reasoned
+  about — no `getBoundingClientRect()` polling was done on the footer/divider specifically.
+
+## 12. Rail icon alignment, and a "GS" initials chip on the collapsed rail
+
+Two follow-up requests against the sidebar work in §11.
+
+### 12.1 The logo and Upgrade icon weren't on the rail's centre column
+
+You flagged (with a screenshot) that most rail icons lined up but the logo and the Upgrade crown
+sat visibly left of them. Confirmed by measuring `getBoundingClientRect()` on every rail icon:
+every `NavRow` icon (Home through Help & support) sat within 1px of the rail's centreline; the
+logo and Upgrade were 4px left of it.
+
+The cause: `NavRow` centres its icon two ways — symmetric 11px padding around the icon inside its
+own 42px box, and an `mx-auto` on the `<li>` wrapping it (`toreview.md` §11.1). `SidebarHeader`'s
+logo button and `UpgradeCard`'s compact link never had an equivalent — nothing centred them
+within their (wider) row, so they sat flush-left by default. Fixed:
+
+- The logo button gets `mx-auto` only when `collapsed` — it stays visible in both states, and in
+  the expanded header it needs to stay flush-left where the board draws it (confirmed unchanged
+  by re-screenshotting `304:497`'s header after the fix).
+- `UpgradeCard`'s compact link gets `mx-auto` unconditionally — it's already only ever visible
+  while its own `CollapseFade` is open (`collapsed`), so there's no expanded-state case where the
+  centring would need to differ.
+
+Re-measured after the fix: Upgrade is now exactly on the centre column (0px delta). The logo is
+within 1.3px of it — inside the same sub-pixel rounding every other icon already shows (±1px,
+from centring an odd-width 29px mark in a 42px box), not a residual bug.
+
+### 12.2 A "GS" initials chip on the collapsed rail — not on either board
+
+You asked for the user's initials to show above Home when the rail is collapsed, "to depict the
+arrangement when it is open" (logo → user → nav). Checked `304:600` directly: it draws no user
+affordance at all — straight from the logo to the nav icons. This is an addition beyond both
+boards, done on your explicit request rather than found in either artboard.
+
+`UserChip` now renders two permanent variants and cross-fades between them (`CollapseFade
+axis="vertical"`), the same pattern `UpgradeCard` uses and for the same reason: a name+plan card
+and a bare initials chip aren't the same content at two sizes, they're different content, so
+resizing one element doesn't make sense — Sidebar.tsx no longer wraps `UserChip` in its own
+`CollapseFade`; the component owns its own collapse now, matching `UpgradeCard`'s shape.
+
+- The compact chip is `aria-hidden` — "GS" alone is ambiguous out of context to a screen reader,
+  where the expanded card's full name is real content. `title={name}` still gives mouse users a
+  tooltip. Nothing here is interactive, so — unlike `UpgradeCard` — neither variant needs `inert`.
+- Checked for the bulge `toreview.md` §11.2 flagged for `UpgradeCard`'s cross-fade: measured the
+  nav list's own top position through the transition and it moved smoothly and monotonically,
+  no dip-and-recover. The two `UserChip` variants are close enough in height (32px vs 50px) that
+  the overlap during the cross-fade isn't visible, unlike Upgrade's much larger 42-vs-136px gap.
+
+`pnpm typecheck && pnpm lint && pnpm test` green throughout; both rest states re-verified against
+`304:497`/`304:600` (adjusted for §12.2's deliberate addition).
+
+## 13. Icon colour didn't match between the rail and the panel
+
+You flagged that the expanded panel's icons look like different icons from the collapsed rail's.
+They aren't different icons — same `Icon` component, same SVG, same row (`NavRow` was already one
+persistent element by this point, not two). Measured `getComputedStyle(...).color` on every
+inactive icon to confirm before touching anything: `rgb(15, 23, 42)` (text/primary) collapsed,
+`rgb(71, 85, 105)` (text/secondary) expanded — a real colour difference on identical artwork,
+making the same row read as a bold icon in one state and a lighter grey one in the other.
+
+The split was my own interpretive call (`toreview.md` §9's original note: "the board draws the
+glyph a shade darker than its label"), applied by switching the icon to text/secondary once
+expanded — not something pixel-verified, and apparently not what you wanted either. Icons are now
+constantly `text-primary` regardless of `collapsed`; only the label keeps `text-secondary`.
+Confirmed via the same computed-style check: every icon reads `rgb(15, 23, 42)` in both states
+now. `pnpm typecheck && pnpm lint && pnpm test` green.
+
+## 14. Recent Activity now shows 286:729's own three rows
+
+You asked me to correct Recent Activity against `286:729`. It was showing the shared
+`activityFixture`'s most-recent three entries verbatim — "Generating Staff Product Designer —
+Canva…", "Ran an ATS check on an uploaded resume", "Your ATS score for Stripe — Senior PD came
+back 88" — none of which match the board's "Your resume was ATS scanned" / "You tailored resume
+for Google" / "Applied to Lead UX Designer at Google". This was already flagged, not missed:
+`toreview.md` §10.3 noted the mismatch and left it deliberately, on the reasoning that the
+fixture is shared with mobile and editing it would change copy mobile's own already-verified
+History screen renders from the same array. You've now asked for the correction directly, so
+that stands as your call, not mine.
+
+**Fix:** `RecentActivityCard.tsx` gained a small module-local `BOARD_ROWS` — the exact three
+rows `286:729` draws (title, kind, and a timestamp chosen so `formatRelativeTime` reads "2 hours
+ago" / "Yesterday" / "2 days ago") — used whenever the feed is loaded and non-empty. The shared
+`activityFixture` is untouched: same 25 entries, same ids, same `dashboardStatsFixture
+.activitiesCount` coupling, same deep-link test coverage, mobile unaffected. Loading, error and a
+genuinely _empty_ feed (mock mode `empty`) still come from the real `useActivity()` query exactly
+as before — only a successful, non-empty feed's displayed content is now board-fixed rather than
+whatever the shared fixture's most-recent three happen to be.
+
+This is a deliberate deviation, the same shape as the theme-token split already documented atop
+`theme.css` ("this is not mobile's palette... never port a value between them") — applied here to
+activity copy instead of colour. It also means Recent Activity is no longer a _live_ preview of
+whatever the mock activity feed most recently contains — acceptable for the current mock-data-only
+milestone (every other Home card is already fixed content matching its board, e.g. Top Job
+Matches' Google/Adobe picks), but worth knowing before a real backend replaces the mock layer:
+this card will need to go back to rendering genuinely live data at that point, which means
+`BOARD_ROWS` is scaffolding to be deleted, not a permanent pattern.
+
+One more thing caught in verification: `Intl.RelativeTimeFormat` renders "yesterday" lowercase,
+correct for `ResumeProgressCard`'s mid-sentence "Last updated yesterday" but not for this card's
+standalone time label, which the board capitalises. Added a `capitalize()` scoped to this file
+only, not to `formatRelativeTime` itself (which the mid-sentence caller still needs lowercase).
+
+Verified: screenshot compared directly against `286:729` (copy, row order, icon-per-kind, and
+"Yesterday"'s capitalisation all match); `pnpm typecheck && pnpm lint && pnpm test` green; two new
+assertions in `HomeScreen.test.tsx` lock in the exact board copy and the capitalisation fix.
+
+## 15. The Jobs page (Figma 304:2332)
+
+You gave the Jobs board and asked to implement it. A full explore → plan → approve cycle preceded
+the build (plan filed under `.claude/plans`); this section records what the plan flagged as a
+judgement call, what only turned up once the page was actually running, and the state of
+verification.
+
+### 15.1 Judgement calls made during planning (per the approved plan)
+
+- **Jobs' own header tokens, not Home's.** Confirmed via `get_variable_defs` on the bound
+  nodes, not guessed: this board's Upload button binds `brand/700` + `Title/M` (15px semibold) +
+  `radius/xl` (20, pill), and its eyebrow/H1 bind `neutral/400`/`neutral/800` — all distinct from
+  Home's `brand/600` / `body-m` 14px / `radius/md` 12 / `text-tertiary`/`text-primary`. Built from
+  this board's own values (Rule 7 — the artboard wins), same as every other cross-board divergence
+  already logged in this file (the sidebar's DM Sans language, §13's icon colour).
+- **Experience-range text ("3–5 years") is invented.** `ExperienceLevel` is a 4-value band
+  (`entry`/`mid`/`senior`/`lead`) with no year text anywhere on the model, spec, or any other
+  artboard. `experienceRange.ts`'s `EXPERIENCE_LEVEL_RANGE_LABEL` (0–2 / 2–5 / 5–8 / 8+) is a
+  judgement call, not transcribed from anywhere.
+- **"Show more" reveals `job.requirements`.** Inferred, not literal: the board's own empty space
+  between "Show more" and the AI callout (with the description already rendering at full height)
+  rules out "truncated description," and `requirements` is the one field on `Job` with nowhere
+  else to render.
+- **The kebab "more" menu and "Upload New JD" are present but inert.** No upload/backend infra
+  exists in this mock-data milestone, and the CTA row already has its own explicit "Save Job"
+  button, so a fake kebab menu would either duplicate that or invent something nowhere specified.
+  An honest no-op beats fabricating either flow.
+- **"Apply Now" is an in-app mutation (`useApplyToJob()`), not an external redirect.** `Job` has no
+  `applyUrl` field; the board's external-link-style icon reads as a stylistic glyph, matching how
+  mobile's own Apply flow actually behaves.
+- **Benefits/Reviews tabs render the existing empty `StateView`**, not fabricated content — neither
+  field exists anywhere on the model, same treatment mobile's own spec-derived screens already give
+  "no artboard, no data for this."
+- **Selection state is local `useState`, not a URL param.** A `useSearchParams()`-backed approach
+  would need a `<Suspense>` boundary and router mocking in tests — a genuinely new pattern nowhere
+  else in this codebase — for a benefit (shareable/back-button-friendly selection) the board's
+  design doesn't ask for at this milestone.
+- **Token consolidation, not one-for-one transcription.** This board's raw-hex density (~165
+  values, no variable bindings below the header) is far higher than earlier boards, so new tokens
+  were added only for genuinely distinct, repeated, semantically meaningful values
+  (`brand-700`, `neutral-400`/`neutral-800`, `border-selected`, `surface-brand-strong`,
+  `text-caveat`, `body-l`/`title-m` roles); near-duplicate greys and the green match badge were
+  mapped onto tokens that already matched exactly rather than minted fresh.
+- **Match band colour reuses `success`/`warning`/neutral tokens**, not a bespoke "match" colour —
+  the same call mobile's `MATCH_TONE` map already makes. Every example card on this board is
+  `strong`, so `good`/`fair` follow mobile's precedent rather than anything Figma draws.
+
+### 15.2 Bugs caught only by running the page, not by planning
+
+Three during initial build, verified with Playwright against the installed Edge:
+
+- **`JobCard` first cut nested a `<button>` (`SaveButton`) inside the whole card's own `<button>`**
+  — invalid HTML, and meaningless to a screen reader. Fixed with an invisible full-cover "select"
+  button painted first, real content (including `SaveButton`) painted after as a normal sibling.
+- **That fix alone didn't route clicks correctly**: the visible content `<div>`'s opaque background
+  covers the whole card, and hit-testing follows box bounds, not visible ink — it silently
+  swallowed every click aimed at the cover button underneath, confirmed by Playwright's own click
+  reporting the content div "intercepts pointer events." Fixed with `pointer-events-none` on the
+  content wrapper and `pointer-events-auto` set back on just `SaveButton`, so empty card space
+  still falls through to select the card but the bookmark stays clickable.
+- **A downloaded chevron asset was mislabeled `chevron-right.svg`** but was actually down-pointing
+  (traced via its raw SVG path coordinates, not by re-guessing from the filename). The AI callout's
+  own distinct trailing chevron (a separate asset, never downloaded) was about to be wrongly
+  conflated with it. Re-exported the real right-pointing asset under the correct name; the
+  "Show more" toggle uses the existing `ChevronDownIcon` instead, rotated 180° when expanded.
+
+Two more surfaced later, while writing `JobsScreen.test.tsx`:
+
+- **`JobCard`'s `aria-label` collided between distinct jobs.** It was `${job.title} at
+${job.company}` — but the fixture set has two different "Senior Product Designer" roles at
+  Stripe (`job_stripe`, Bengaluru; `job_1`, San Francisco), genuinely different listings with the
+  same title and employer. A screen reader (and `getByRole` in tests) couldn't tell them apart.
+  Fixed by appending `, ${job.location}` to the label.
+- **The "Load more" button can race its own page's eager prefetch.** `JobsScreen` fetches every
+  page up front for the Location/Company filter option lists (comment in `JobsScreen.tsx`); with
+  no filters applied, that query's key is identical to the visible list's own, so page two often
+  finishes loading — silently, via that background effect — before the user ever clicks "Load
+  more." Not a bug fixed in the component (the behaviour is intentional and harmless: pagination
+  still completes correctly either way), but real enough that the pagination test had to be written
+  to tolerate whichever path gets there first rather than asserting a strict manual-click-only
+  flow. Worth knowing if "Load more" is ever changed to do something less idempotent than fetching
+  the next page.
+
+### 15.3 Verification
+
+- `pnpm typecheck && pnpm lint && pnpm test` green across all three workspaces (mobile's 167
+  suites / 1513 tests unaffected by the additive `JobFilters.companies` change).
+- `apps/web/__tests__/features/jobs/JobsScreen.test.tsx` (10 tests): board copy including the
+  corrected "Better Opportunities Ahead" spelling, loading, success fill with the first job
+  (relevance order) selected by default, empty mode, the page-level error guard, a real filter
+  change narrowed through actual `matchesFilters` logic (not mocked), optimistic save toggle,
+  pagination, apply-to-job reaching "Applied," and tab switching (About real, Benefits empty).
+  Needed a `beforeEach(resetMockRepos)` that `HomeScreen.test.tsx` never needed — Home's suite
+  never mutates the mock store, Jobs' save/apply tests do, and the store is a module-level
+  singleton that otherwise leaks state across tests in the same file.
+- Playwright interaction checks against the installed Edge: "Show more" reveal + chevron rotation,
+  selecting a second card swaps the detail panel to that job's real fixture data (reset to
+  Overview, correct Applied/Saved state), the Location filter dropdown opens with a correctly
+  alphabetised, data-derived option list, the sort dropdown actually reorders the list (switching
+  to "Most recent" correctly surfaces the freshest posting — Spotify at 6h old, ahead of Canva at
+  12h), the Company filter narrows to an exact single match, the Salary range slider's own label
+  updates live while dragging and the resulting filter excludes exactly the one listing with no
+  quoted salary, "More filters" → "Last 24h" narrows to the two genuinely-sub-24h postings, and
+  the Skills tab renders a job's full, uncapped tag list.
+- Rest-state Playwright screenshot compared directly against the whole `304:2332` board: layout,
+  spacing, typography, filter chips, tab bar, and the AI callout all match. The visible
+  differences are all already-documented, data- or scope-driven, not defects: the persistent
+  sidebar (a separate nav artboard, correctly present the same way it is on Home), the
+  default-selected job showing "Applied"/"Saved" rather than the board's fresh "Apply Now"/"Save
+  Job" (job_stripe — this fixture set's actual first-relevance job — already carries an
+  application and a saved flag in the shared fixture; Figma's own example card happens to be
+  Google, which doesn't), and generic initial-letter company tiles for anything but Google/Adobe
+  (§ "New files" in the plan).
+
+### 15.4 Second pass — the board's layout, the board's jobs, and a page that doesn't scroll
+
+You put the running page beside the board and asked for it to be built as designed: the upper
+part wasn't what you drew and was too big, and everything except the job list should stay put.
+Several of §15.3's "not defects" turned out to be exactly what you were looking at.
+
+**Layout**
+
+- **The illustration no longer takes a row.** The board floats 304:2335 at 480,81 inside Main,
+  between the title and the columns, with the search bar and detail panel painted over its
+  skyline. It had been built as its own 123px block, which pushed the search bar, the list and the
+  panel ~150px down — the "too big" upper part. It is absolutely placed and painted first now, and
+  the search bar is back to the board's 534px (not the column's 660), which is the gap the
+  character stands in.
+- **Only the list scrolls.** The screen is exactly the viewport's height (`h-dvh`). The header,
+  search, filter chips, results bar and the whole detail column stay fixed. **Call:** in a window
+  shorter than the board's 1166px, the panel's header (logo → tabs) and its actions (callout,
+  Apply, Save) stay pinned and only the tab body scrolls inside it, so Apply is never scrolled out
+  of reach. The board draws no short-window state — this is inferred.
+- **The list's scroller is wider than its column** — 8px left, 20px into the gap right — so the
+  selected card's ring and shadow aren't clipped and a classic Windows scrollbar sits in the gap
+  rather than narrowing the 660px cards.
+- **Metrics re-read from the board**: cluster at 22 / title at 26, 16px apart; search field 48px
+  with a plain ⌘K (no pill); **Upload is `radius/md`** — the board binds md now, so §15.1's
+  "radius/xl pill" no longer holds; bell `radius/xl`, dot at 11/9; 12px column rhythm; cards
+  139px as drawn; the detail panel's 6px stack
+  plus each block's own padding; semibold (not bold) Search/Upload.
+- **Selected card**: a 1px border plus a 1px inset outline rather than a 2px border, so nothing
+  inside moves by a pixel when the selection does. Reads as the board's 2px.
+
+**Components reused, not duplicated**
+
+- `JobFilterChip` gained `size` (`sm` = the filter row, which the board draws at ~91% of `md` =
+  the sort control), a leading `icon`, and `chevron="outside"`. **Call:** "More filters" draws its
+  chevron outside the pill (304:2440); it is part of the same trigger, so it opens the same menu.
+- `JobTagPills` gained `size` (card 26px / panel 30px). `CompanyLogoTile` became `CompanyLogo`
+  with `tile`/`plain` variants — the panel draws its logo bare. `BulletList` serves both detail
+  lists. `brandButton` is the class string for the flat indigo actions (Upload, Search, Apply),
+  as `primaryButton` is for Home's bevelled one. `UserAvatar` renders the header photo.
+- **Not unified:** `HomeHeader` and `JobsHeader` draw the same top bar, but the two boards style it
+  differently (brand-600 vs 700, 14 vs 15px, bell radius, avatar shape). Merging them means
+  picking one board over the other — your call, not made here.
+
+**Data — shared fixtures, and a coupling to know about**
+
+- **The board's five jobs now lead the shared relevance order**: `job_google` and `job_adobe`
+  recopied from the board, plus new `job_atlassian_pd`, `job_microsoft`, `job_airbnb`.
+- **Coupling:** each of the five sits outside mobile's default Discover filters (full-time,
+  remote-friendly, ₹20L+): the three city roles are on-site and Adobe/Airbnb quote ₹15–19L /
+  ₹14–19L est. That is what keeps JOBS 01's rows (Razorpay first) at the top of mobile's list.
+  Change any of those values, or mobile's defaults, and the web five would open mobile's list.
+- `job_google` moved from Mountain View · hybrid · USD to Bengaluru · on-site · INR; `job_adobe`
+  from San Jose · hybrid · USD to Remote · INR. Neither is drawn on a mobile artboard with those
+  fields; no mobile test pins them.
+- **Invented, not transcribed:** the tags behind "+2"/"+1", every salary on the five (the web
+  board shows none), the new jobs' match criteria.
+- **`Job.experienceYears`** (new, optional, shared model) carries the listing's own "3–5 years";
+  a job without it still falls back to §15.1's band labels.
+- **"Most relevant"** is web-only copy (`WEB_JOB_SORT_LABEL`); mobile keeps "Relevance".
+- **Not reproduced: "124 results".** The catalogue is 37 listings; minting 87 more to hit a number
+  would be worse than the honest count.
+- **Warts:** the web Location filter now lists "Bengaluru" and "Bengaluru, India" separately
+  (mobile's fixtures keep the short form their artboards draw); and on mobile, if a user clears
+  every filter, Adobe/Airbnb read "Remote · Remote" (location and work mode).
+
+**Assets**
+
+- The Jobs board draws its own traced logos, different artwork from Home's `LogoGoogle`/
+  `LogoAdobe`. Five exported as `Company*Illustration`; Home is untouched. Web now resolves
+  `companyLogoUrl` `asset:` keys through `src/ui/assets.ts` instead of matching company names.
+  The three new keys are unknown to mobile, whose `LogoTile` falls back to the initial tile it
+  already drew for those companies.
+- **Avatar:** web maps `asset:avatar-george` to the Jobs board's photo (`public/avatars/
+george.png`). Mobile's `avatar-george` is a different person, so one user has two faces across
+  the apps. The export is 49px, so it is slightly soft on high-DPI screens.
+- **`neutral-700` (#334155)** added for the chip/sort ink. The board's ⌘K grey (#b0b8c7) maps to
+  `neutral-400` and its bell dot (#ef4444) to `danger-dot` rather than minting two more tokens.
+
+### 15.5 Verification of the second pass
+
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green — web 6 suites / 84 tests (the Jobs
+  suite rewritten for the board's data: board order, default selection, panel copy, save, apply,
+  tabs, sort labels), mobile 167 / 1513 against the new shared fixtures, shared typechecks.
+- **Measured, not eyeballed.** Playwright on the installed Edge against your running dev server,
+  element boxes compared with the board's own coordinates at 1536×1166: title 306,56; header
+  cluster at 897 / 1213 / 1464, y 22–23; illustration 760,81; search bar 534×55 at y 150; chips
+  at 221 (board 220.5); sort at 276 (275.5); the five cards 660×139 at 324 / 475 / 626 / 777 / 928
+  (board 323.5 … 927.5); detail panel 511 wide, title at 231, tabs at 378 (379), Apply at 921
+  (922). At 1536×800 the document does not scroll, the list is the one scroller, and the panel is
+  626px with its tab body scrolling and Apply still visible.
+- **Three misses only the measuring caught:** (1) tailwind-merge drops a `leading-*` that comes
+  before a `text-*` role in the merged string, so the tag pills were 28/34px instead of 26/30 —
+  fixed by ordering, commented in `JobTagPills`; (2) Atlassian's four tags run 452px and wrapped
+  under a blanket 120px right padding — now only the title and company clear the badge, and the
+  tag row only the posted age; (3) the description re-wraps at _both_ ramp sizes either side of the
+  board's 14.5px (six lines at `body-l`, four at `body-m`), hence the new **`prose` type role**
+  (14.5/25) for the panel's description and bullets. A token rather than an inline size, but it
+  breaks §15.1's "everything at 14.5–15px is `body-l`" — yours to overrule.
+- **Formatting trap:** `packages/shared` has no `.prettierrc` (only `apps/mobile` and `apps/web`
+  do), so `prettier --write` there silently uses Prettier's defaults — double quotes, 80 columns.
+  It reflowed three shared files mid-pass; they were restored by hand. A root or package config
+  would close it.
+- **Still not verified:** keyboard and screen-reader use of the two new trigger shapes (the
+  detached-chevron "More filters", the sort control); any width below 1536 (the columns are still
+  a fixed 660 + 511); and your own browser. Your screenshot of the old build drew the 660px list
+  column ~906px wide, about 137% — display scaling and/or browser zoom — which on its own makes
+  everything read larger than the board's 1536 frame, whatever the build does.
+
+## 16. Compact density — one size system, one header
+
+You put Home's header beside Jobs' and asked why they differ and why Jobs didn't reuse Home's
+component, why the job description card was compressed, and for the whole app to be sized for a
+single laptop window the way LinkedIn and Naukri are ("we are developing too big"). You chose
+LinkedIn-like density for the sidebar, Home and Jobs as one system, and a detail card that
+scrolls as a whole rather than squeezing. **This deliberately stops transcribing the boards' raw
+pixels (Rule 7):** the boards stay the reference for layout, composition and hierarchy, not for
+sizes. Plan: `.claude/plans/dont-you-think-sizing-iridescent-starfish.md`.
+
+### 16.1 What the system is
+
+- **Type ramp** (theme.css + tokens.ts): display-l 24/30 · h1 20/26 · h2 18/24 · title-l 15/20 ·
+  body-l 14/20 · prose 14/22 · body-m 13/20 · body-s 12/18 · caption-m 12/16 · micro 11/14.
+  caption-m and micro now declare the 500 weight tokens.ts always claimed (they rendered 400).
+- **Three control heights**: `control-sm` 30 (filter chips, sort, resume pills), `control-md` 36
+  (header search, header buttons, bell, avatar, Load more), `control-lg` 40 (the Jobs search,
+  Apply, Save Job). The token test now checks them against tokens.ts.
+- **One flat primary button** (`brandButton`): Home's brand-600 with brand-700 as its hover —
+  Upload, Search and Apply on every page. Jobs' accents (active tab, Show more, active chip, the
+  callout star) moved to brand-600 with it. The bevelled `primaryButton` stays where its boards
+  draw a bevel (AI card, sidebar Upgrade).
+- **One page frame** (`src/ui/pageFrame.ts`): full width beside the sidebar up to 1440, 24px
+  gutters, 20px from the top.
+- **One header** (`src/navigation/PageHeader.tsx`), lifted from Home's; `HomeHeader` and
+  `JobsHeader` are gone. Home's look at 36px: search with the ⌘K pill and (new) a focus ring,
+  brand-600 Upload, rounded-md bell, round avatar — **which now shows the profile photo on Home
+  too**, initials when there is none.
+
+### 16.2 What it overturns
+
+- §9.1's 0.75-scale reading of the sidebar and its 266-in-280 gutter: the sidebar is 240 (226
+  panel) expanded and 72 (58) collapsed, 32px rows on a 36px pitch, 13px labels. Row widths now
+  come from the real content box (200 / 40), which also fixes the 2px overflow and the 1px
+  off-centre rail the census found.
+- §10.4, §11.1 and §12.2's "pixel-identical to 304:497 / 304:600" and Home's matched-scale
+  verification — true of the old build, not this one.
+- §15.4–15.5's Jobs metrics (cards 139, panel 842, the 14.5px `prose` rationale, the board's
+  ~91%-scale chip size) and the pinned-header/actions detail panel: the card now scrolls as one
+  unit, and the filter chips and the sort control are one size.
+- §15.4's "headers not unified — your call": you made it; they are one component.
+- Home: every section title goes through `SectionHeader` (Quick Start was a 20px H2 while its
+  siblings were 16px), and the match cards are two-up only from `xl` (they were crushed below
+  1280).
+
+### 16.3 Calls inside it (yours to overrule)
+
+- The Jobs illustration is drawn at 75% and anchored to the search bar's end (the search bar is
+  80% of the list column), so the board's composition survives a fluid layout.
+- Jobs' columns are fluid at the board's 56:44 instead of a fixed 660/511.
+- The sidebar rail keeps its initials chip (§12.2, your request) rather than switching to the
+  photo the header now shows.
+- Home's AI robot is anchored to the card's bottom edge rather than its top, so it stays flush
+  whatever height the row settles at.
+
+### 16.4 Verification
+
+- **Gates:** typecheck and lint green across all three workspaces; web 7 suites / 90 tests (a new
+  `PageHeader` suite, and the token test now checks the control heights; the Home and Jobs suites
+  passed with no assertion changes). Mobile was not re-run after this pass — nothing it imports
+  changed; its last green run was 167 / 1513, after the final shared-fixture change.
+- **Measured in Edge** (Playwright on the installed browser, against your dev server) at
+  1536×730, 1536×864, 1396×670 and 1280×680:
+  - The header is pixel-identical on `/` and `/jobs` at every size (title at 264,44; search
+    300×36; Upload 150×36; bell and avatar 36).
+  - Jobs never scrolls the page, or sideways. Cards fully visible: 3 at 1536×730 and 1396×670, 4
+    at 1536×864, 2 at 1280×680. The Google detail card is 685px at its natural height: it fits
+    whole at 1536×864 and scrolls as one unit by 91px at 1536×730, 195px at 1396×670 (the
+    narrower column wraps more) and 255px at 1280×680.
+  - The six filter chips hold one line down to a 1396 window and wrap below it.
+  - Home is 792px tall at every width (from 1048), with no sideways overflow; the match cards are
+    413 / 343 / 285 wide at 1536 / 1396 / 1280.
+  - The sidebar fits without scrolling at every size (its content is ~650px).
+- **Caught only by measuring:** at 1396 the chips wrapped to a second row (tightened to 8px
+  padding, 6px apart); and a shrunken score ring clipped its "ATS Score" label (at 64) or grazed
+  it (at 72), so the ring stays at the board's 78.
+- **Not verified:** a keyboard and screen-reader pass over the new header and chips; widths below
+  1280; and your own browser — at 110% zoom it is the 1396×670 case above.
+
+### 16.5 The detail card, redrawn (304:2680)
+
+You redrew the job-description card on the board and asked for it so Apply Now and Save Job are
+easy to see. The redraw moves the action row (304:2772) up to straight under the location / type /
+experience line, before the tags, and makes "Tailor your resume for this job" (304:2761) the
+card's last element, with a new sparkle-cluster glyph (332:453) in place of the single star.
+
+- Built in that order at the compact density (§16). `JobDetailActions`, `JobTagPills`,
+  `JobDetailTabs` and `TailorResumeCallout` are reused as they were; only their order and the
+  callout's icon changed.
+- The card still scrolls as one unit when it doesn't fit (§16), but Apply and Save no longer
+  depend on that scroll: they sit in the card's first screenful. A Jobs test now pins them above
+  the tabs.
+- The glyph is exported whole from the board (`assets/figma-icons/jobs/ai-sparkles.svg`) and
+  generated through `build-icons.mjs` like every other icon: navy ink plus near-white knockouts,
+  so it comes out as a mask with genuinely transparent holes. **Call:** the board inks it
+  `#0F1B8B` (the sidebar board's navy, which is no web token); it renders in `brand-600`, the
+  colour of every other accent in the card since §16.
+- The single star it replaces (`AiStarIcon`) had no other user, so its export and component are
+  gone rather than left as dead code.
+- **Verified:** typecheck and lint green; web 7 suites / 90 tests (the Jobs suite now asserts
+  Apply Now and Save Job come before the tabs). In Edge, Apply and Save sit at y 267–307 at
+  1536×730, 1396×670 and 1280×680 — inside the window and above the tabs every time. The callout
+  is last, so in windows shorter than the card (~690px of content) it is reached by scrolling
+  the card; at 1536×864 the whole card fits.
+
+## 17. The Applications page (Figma 286:1234)
+
+You asked for the Applications page and chose **web-only mock data**: the mock layer serves web
+its own boards' jobs and applications, and mobile keeps its own. Both web boards draw the same
+five listings, unapplied on Jobs and applied on Applications; you chose **one consistent set**,
+so the Jobs page now shows "Applied" on those five. Built at the compact density (§16) in the
+Jobs page's frame: header, then pills, chips and count over a list that is the page's one
+scroller, and a detail card beside it that scrolls as a whole only when it doesn't fit.
+
+### 17.1 The data seam
+
+- `packages/shared/src/mock/platform.ts`: `configureMockPlatform('mobile' | 'web')`. Jobs and
+  applications are seeded from the chosen platform; every other fixture is shared. Web calls it
+  at module scope in `AppProviders` (`configureMockData()` in `src/lib/mockMode.ts`,
+  unconditionally, server render included), and `jest.setup.ts` does the same for the suites.
+  Mobile never calls it and gets exactly the data it had.
+- The store now seeds on first read rather than at import, so that call decides the seed.
+- Web's set (`mock/fixtures/jobs.web.ts`) is the shared catalogue plus the Applications board:
+  Spotify, Notion and Flipkart listings, placed after the Jobs board's five; requisition ids for
+  the board's eight (Google's `GOO-UX-10234` is drawn, the other seven are ours in its shape); and
+  Google hybrid at ₹35–52 LPA, which this board draws and the Jobs board doesn't. There are 24
+  applications: the board's eight rows with its statuses and ages, and sixteen older ones split
+  so the pills read as drawn.
+- New optional `Job.reference`; new repo method `updateApplicationStatus` with an optimistic
+  `useUpdateApplicationStatus` hook.
+- Search now leaves out a listing whose `closingAt` has passed; it stays reachable by id. No
+  mobile fixture has a past deadline, so mobile's lists are unchanged. The web Jobs count goes
+  from 37 to 39 (three added, Flipkart closed).
+- **What it doesn't undo:** §15.4's coupling. The Jobs board's five stay in the shared seeds,
+  because mobile uses them too: `job_google` and `job_adobe` are Home's picks, and the
+  cover-letter flow's tests name them. What changes is that web overrides what its boards draw in
+  `jobs.web.ts`, so a web-only value no longer has to stay clear of mobile's Discover filters.
+
+### 17.2 Calls inside it (yours to overrule)
+
+- **Status words.** The board's "Screening" is `viewed` (mobile says "Applied · Viewed") and
+  "Rejected" is `not_selected` (mobile says "Not selected"); mobile's labels are untouched.
+  "Closed" has no status in the model, so it is derived: an application still at Applied or
+  Screening when the listing's deadline passed. "Applied" is undrawn and takes the neutral pill.
+- **The pills count what the chips leave.** Filter to Google and they read All (1), In Review (1).
+  That way a pill and the count under it always agree.
+- **The two boards' dates conflict.** Jobs posts Adobe "1 day ago"; Applications says you applied
+  a week ago. Both are kept as drawn. The sixteen older applications' listings are dated a couple
+  of days before them.
+- **Update Status** offers the seven statuses; Closed is never set by hand. It records your own
+  tracking: in the mock, nothing from an employer moves it.
+- **View Job** and **View full job description** open the Jobs page on that listing
+  (`/jobs?job=<id>`). It stays open even when search leaves it out (Flipkart, closed) until you
+  pick another job or change a filter. The route reads `?job=`; the screen still keeps selection
+  in state (§15.1).
+- **Tabs.** Overview is as drawn. Application (undrawn) shows what the model holds: the date,
+  the resume sent and the interview date. Follow-ups and Notes are empty states, since there is
+  no field for either yet (V2 §6.2 puts tracking in Release 2).
+- **Menus the board never opens.** Time period is 7, 30 or 90 days. Job type, Company and
+  Location list what the applications contain, so none leads nowhere. More filters holds the
+  workplace type. The sort has Most recent (drawn), plus Oldest first and Company A–Z (ours).
+- **The kebabs** on the rows and the card are inert, like the Jobs card's; no menu is drawn.
+- **The board gives "Job type" the calendar glyph** again, and so does the build. It looks like a
+  placeholder on the board.
+- **Notion and Flipkart are drawn as coloured tiles**, so their logos fill the tile rather than
+  sit in the frame. The board frame their exports arrive in was stripped by hand; the paths are
+  Figma's own.
+- **The illustration** is a raster on the board, shipped at 570×277 from its 1798×875 export,
+  and drawn at 189×92, the Jobs character's height. It sits where the board puts it:
+  - under the search field's left end, rising out of the header band over the list column's
+    top-right corner;
+  - its right edge running 60px on under the detail card;
+  - the caption beside its upper half, just above that card.
+
+  The pills wrap short of it (129px from the column's right), which leaves "Withdrawn" on its
+  own line as drawn. Like the Jobs character it is anchored to the list column, so it holds its
+  place at every width, whether the sidebar is open or shut.
+
+- **Colours:** seven tokens added from this board's variables: `brand-100`, `success-50`/`-600`,
+  `warning-50`, `danger-50`/`-600`, plus Screening's raw ink as `warning-text`.
+- **Jobs' look over this board's where they differ:** company names in `text-company`, the count
+  bold as on Jobs, the tiles framed as on Jobs, and the interview callout is the Jobs callout
+  with the muted surface and brand chevron this board draws. Its sparkle cluster and chevron are
+  the same drawings as Jobs' (compared path by path), so they reuse those icons.
+- **Lifted out of Jobs into `src/ui`** so both pages render one copy: `FilterChip`,
+  `CompanyLogo`, `UnderlineTabs`, `AiCallout`, `ResultsBar`. `JobMetaRow` takes a `fields` list.
+  The sidebar badge now counts in this page's terms (not Rejected, Withdrawn or Closed): 18.
+
+### 17.3 Verification
+
+- **Gates:** typecheck green in all three workspaces; lint green. Web is 9 suites / 123 tests:
+  - a new Applications suite covering four states, the board's rows, statuses and counts, a chip
+    filter and Reset, Update Status, the tabs and the sort;
+  - format tests;
+  - the Jobs suite, updated for 39 results, Google opening on Applied, applying to Zalando
+    instead, and the deep link to closed Flipkart.
+
+  Mobile is 167 suites / 1513 tests, green after the shared changes.
+
+- **Measured in Edge** at 1536×730, 1536×864, 1396×670 and 1280×680. The page never scrolls,
+  vertically or sideways.
+  - The pills take two lines, with "Withdrawn" on the second, as drawn. They fit on one line only
+    at 1536 with the sidebar shut.
+  - The chips hold one line down to 1396 and wrap at 1280, with Reset staying level with the
+    first line.
+  - Rows fully visible: 4, 5, 3 and 3.
+  - The Google card is 725–747px at its natural height. It fits whole at 1536×864 and scrolls as
+    one unit by 131px at 1536×730, 213px at 1396×670 and 203px at 1280×680. View Job and Update
+    Status stay in its first screenful.
+  - The art is present at all four sizes with the sidebar open and shut, spanning y 64–156 like
+    the Jobs character. It clears the search field, which ends at 56, and every pill. The caption
+    ends 2px above the card.
+- **Caught by measuring, and by you:**
+  - The first placement put the art in the list column with nothing making room for it.
+    Absolutely positioned, it painted over the pills and clipped "Withdrawn".
+  - The second moved it into the header band between the title and the search, and hid it
+    wherever that band was too narrow. You caught what that meant. At your ~1393px window with
+    the sidebar open, the band is a fraction of a pixel short, so the drawing vanished; with the
+    sidebar shut, it showed.
+  - Now it is back in the list column, with the pills wrapping short of it as the board's do. It
+    was measured with the sidebar in both states.
+- **Not verified:** a keyboard and screen-reader pass (the pills, like the Jobs tabs, have no
+  arrow-key movement between them), the Update Status menu with a keyboard, and widths below 1280.
+
+## 18. The Resumes page (Figma 286:1675)
+
+You asked for the Resumes page. It is built in the other lists' frame at the compact density
+(§16): the header; pills, chips and count over a list that is the page's one scroller; and on
+the right, "Create New Resume" beside the character, then a panel holding the library's search and
+sort and the selected resume's card. The card scrolls as a whole when it doesn't fit.
+
+### 18.1 Data
+
+- **Web seeds its own resume library,** through the same seam as jobs and applications (§17.1).
+  `mock/fixtures/resumes.web.ts` holds the board's five documents with their versions, scores
+  and bodies. Mobile's library is untouched.
+- **Your two calls:**
+  - Home's "Your Resume Progress" follows this board. It shows Software Engineer Resume, the
+    newest, with Home's own 63% bar, 92 score and three passed checks. Only its title differs
+    from the Home board, which says "UX Designer Resume".
+  - The rows won over the board's own pill counts. The pills read ATS Optimized (3) and Archived
+    (1) where the board says (2) and (0).
+- **Applications' "Resume sent"** names these documents now: Software Engineer Resume ("Tailored
+  for Product Design roles") for the recent design roles, Product Designer Resume for the older
+  ones.
+- **New optional model fields,** which mobile ignores:
+  - on `Resume`: `variant` (Tailored, Default, Template), `description`, `accent` (the tile tint),
+    `draft` and `archived`;
+  - on `ResumeContent`: `headline` and `contact`;
+  - on `ContentRole`: `location`, and `companyLogoUrl`, which is display-only. No export prints a
+    logo (V2 §7.12).
+- `create()` now marks a new document `draft: true`.
+- **Exports print what the preview shows:** the headline, the contact line with the document's
+  links, and each role's place. Mobile's bodies carry none of the first and last, so their
+  exports only change once the portfolio-link fix has written a link, which now prints.
+
+### 18.2 Calls inside it (yours to overrule)
+
+- **One George.** The preview draws a software engineer, Google then Adobe. Every document keeps
+  that history and re-tells it for its own kind of role, which is how V2 §7.9 lets tailoring
+  work: framing, never inventing. The Data Analyst draft stops after the Google role. The
+  board's "Software Engineer Resume, Tailored for Product Design roles" is kept as drawn; the
+  design jobs on Jobs and Applications read as the roles it is tailored for.
+- **Kinds and states.** Each row's two tags read as a kind (Tailored, Default, Template) and a
+  state (ATS Optimized, Draft, Archived). A document shows one state: archived beats draft, and
+  draft beats optimized. "All Resumes" counts archived documents too, as drawn. Two rows say
+  "Default", so Default means general-purpose here, not mobile's single "Base".
+- **Two sort controls, one order.** "Sort by: Last updated" over the list and the panel's "Last
+  updated" button change the same sort. The "Last updated" chip is a different thing, a date
+  filter. The sort's other options (Recently created, Name, ATS score) are ours.
+- **The search sits in the panel,** where the board puts it, and narrows the list beside it.
+  Reset clears the chips, the pill and the search.
+- **Menus the board never opens.** Resume type, Target role and Status list what the library
+  holds. Last updated offers the same three windows as Applications' Time period, now one shared
+  helper.
+- **Actions:**
+  - Edit Resume opens `/resumes/<id>/edit`, a ComingSoon page until the editor has an artboard.
+  - Download renders through the export repo and opens the browser's print dialog, where "Save as
+    PDF" proposes `George_Smith_Software_Engineer`. It stands in for mobile's `exportFile` until
+    the API hands back a file.
+  - Use for Job opens the job the document was written for, or the Jobs page if it names none.
+  - Create New Resume makes a blank "Untitled resume" draft and opens it. With no web editor it
+    stays empty.
+- **The kebabs** are inert, like the other lists'.
+- **The undrawn tabs:**
+  - Details lists the model's fields in Applications' label-and-value rows.
+  - ATS Score shows Home's ring, the band, the checklist, and one line saying the number measures
+    NextKin's rubric and predicts nothing about any employer's software (V2 §7.8). A draft says
+    "Not scored yet".
+  - Version History is read-only; restoring is the editor's job.
+- **Layout:**
+  - The board's own 53:47 split, which gives the preview more room than Jobs' and Applications'
+    56:44.
+  - The pills fit on one line; the board's wrap "Archived" by 2px.
+  - The character is drawn at three quarters (220×82) over the panel's top-left, its feet 7px
+    under the panel's edge, with "Create New Resume" to its right. It is anchored to the right
+    column, per §17's lesson.
+- **The shared header** now gives way in its title block first. The subtitle wraps rather than
+  the actions dropping to a line of their own. Only Resumes needs it, at 1280 with the sidebar
+  open; the other pages' headers measure the same as before.
+- **Where this board and the others differ,** the others win:
+  - the pills keep Applications' look (this board draws the counts in a lighter ink);
+  - the tags use Applications' tone pairs (this board draws near-identical raw hex);
+  - row and meta text use the Jobs and Applications roles.
+- **Colours:** ten tile tokens (`tile-<tint>` and `tile-<tint>-ink`), from the board's raw values.
+- **Lifted out so both pages render one copy:**
+  - into `src/ui`: `PillTabs`, `Tag`, `DetailRow`, `outlineButton`, `ResetButton`;
+  - into `src/lib`: `timeWindow`, `arrays`;
+  - `formatAppliedAge` is now `formatCoarseAge`.
+
+  Applications, Save Job and Update Status render the shared pieces with no visual change.
+
+- **Icons:**
+  - Ten new glyphs from the board: sort, download, document, PDF, link, edit, send, mail, phone
+    and plus.
+  - Search, upload, bell, kebab and location reuse ours: the same drawings, exported at other
+    sizes.
+  - The preview's Google and Adobe marks reuse the Jobs board's logos. This board traced its
+    own, which look the same.
+
+### 18.3 Verification
+
+- **Gates:** typecheck and lint green in all three workspaces.
+  - Web is 10 suites / 146 tests, with a new Resumes suite: the four states, the board's rows,
+    tags, ages and counts, the card and the preview, the pills, a chip, the search, both sort
+    controls, the tabs, a draft's missing score, Create, and Download.
+  - Mobile is 167 suites / 1513 tests.
+- **Measured in Edge** at 1536×730, 1536×864, 1396×670 and 1280×680, sidebar open and shut:
+  - the page never scrolls, vertically or sideways;
+  - the chips hold one line; the pills do too, except at 1280 with the sidebar open, where they
+    take two, as the board's do;
+  - rows fully visible: 4, 5, 3 and 3 with the sidebar open; 4, 5, 3 and 4 shut;
+  - the character sits 35px below the header search (55px at 1280 open) with its feet 7px under
+    the panel;
+  - the panel scrolls as one unit, by 105 to 443px;
+  - Home, Jobs and Applications headers are unchanged, and no request fails.
+- **Caught by measuring:**
+  - At 1280 with the sidebar open, the header wrapped. Its actions dropped to a second line and
+    the character overlapped the search field. Fixed in the shared header.
+  - At the same size, the three action labels wrapped in their equal thirds. Each button now
+    keeps its label on one line.
+- **Not verified:** a keyboard and screen-reader pass, the print dialog itself (the tests stub it),
+  and widths below 1280.
+
+## 19. The Documents page (Figma 286:2026)
+
+You asked for the Documents page. It is built in the other lists' frame at the compact density
+(§16):
+
+- the header;
+- search, sort and a list/grid switch, then the type pills and the count, over a list that is
+  the page's one scroller;
+- on the right, the character, then the open document's card with its preview and, under it, the
+  way into applying with it. The card and that callout scroll as one unit when they don't fit.
+
+### 19.1 Data
+
+- **A new aggregate, from the board alone.** V2 names no document store, and the sidebar's
+  navigation already noted that Documents comes from the boards.
+  - `CareerDocument` (`packages/shared/src/models/document.ts`) holds a file's title, kind,
+    format, size and dates, plus what a certificate says and an image's picture, when the card can
+    draw one.
+  - `repos/documentsRepo.ts` has a read-only `list()`, read through `useDocuments()` and
+    `qk.documents`.
+  - The fixture (`mock/fixtures/documents.ts`) is shared. Mobile has no screen for it and nothing
+    there reads it.
+- **Twelve documents.** The board's seven rows come first, as drawn. Five older ones make up its
+  split: Certificates 4, Cover Letters 3, ID Proofs 2, Other 3. The two older letters go to CRED
+  and Zoho, companies George applied to on the Applications board, a few days before he applied.
+- **"Other" holds the résumé.** The board draws a "Resume" row but no Resume pill, and its counts
+  only add up to twelve if Other takes it. So Other is every kind without a pill of its own.
+- **The sidebar's Documents badge** now counts this list rather than `dashboardStats.resumesCount`.
+  Both are 12.
+- **The drawn "Resume - Product Designer"** is a file George keeps. It is separate from the
+  Resumes page's "Product Designer Resume": the two boards give them different ages (3 weeks and 1
+  week), which reads as an older export. Yours to overrule if they should be one record.
+
+### 19.2 Calls inside it (yours to overrule)
+
+- **Two sort controls, one order,** as on Resumes: the "Last updated" dropdown beside the search,
+  and "Sort by" over the list. The other options (Name, Largest first) are ours.
+- **The grid view** is undrawn: two cards to a row, with the same content stacked.
+- **Previews:**
+  - The board draws the certificate, so the Software Engineer Certificate carries what it says
+    and the card draws it: issuer and logo, credential, recipient, statement, date and signature.
+  - The Profile Photo shows itself. It is George's 49px avatar, shown at 64px rather than blown up.
+  - Everything else says "No preview for this file" rather than faking a page. The other three
+    certificates have no contents yet, so they fall back too.
+- **Actions:**
+  - Open goes to `/documents/<id>`, a ComingSoon viewer, like Edit Resume.
+  - Download, Share, "…" and the kebabs are inert. The mock holds no files, and downloading and
+    sharing wait for storage (V2 §9.4's presigned URLs).
+  - "Upload New Document" is inert, like "Upload New JD".
+- **The callout,** "Use this document in your applications", goes to the Jobs page, where applying
+  happens. The board leaves its icon slot empty. It carries the paper plane Resumes uses for "Use
+  for Job", rather than the AI sparkles.
+- **The header** says "Upload New Document" here, as drawn (`PageHeader` takes an `uploadLabel`).
+  Every other page keeps "Upload New JD".
+- **The caption** opens a quote the board never closes; the build closes it.
+- **Where this board and the others differ,** the others win:
+  - the pills keep the shared look;
+  - the Certificate and Resume tags use the existing brand and warning pairs (this board binds
+    `brand/50` and `warning/600`, a shade off);
+  - row and meta text use the other lists' roles.
+- **Layout:**
+  - The board's 55:45 split.
+  - The character is drawn at the Jobs and Applications height: 248×92, the board's 354×131 at
+    0.7.
+  - It sits over the card's top-left with its feet 8px under the card. The card starts 36px down
+    the column to make that room, and the character is anchored to the column (§17's lesson).
+  - The file tiles are 48px, where the other lists' are 44, because this board's are its lists'
+    largest (60px). Each sheet is 40px wide, which "DOCX" needs: it is 33px wide at the 11px floor
+    on type.
+- **Colours:** eight tokens.
+  - `neutral-50`, `brand-50`, `info-50` and `info-600` come from this board's variables.
+  - The four file inks are drawn raw.
+  - The shared `Tag` gains an `info` tone.
+- **Icons:**
+  - Three are new: list view, grid view and ellipsis. The signature is an illustration.
+  - Search, download, link, kebab, open-in-new and chevron-right reuse ours; the Google mark
+    reuses the Jobs board's logo.
+  - Our `MoreHorizontalIcon` is in fact the Jobs board's vertical kebab. The board's horizontal
+    "…" is the new `EllipsisIcon`.
+- **Moved into `src/lib/format.ts`:** `formatUpdated` (Resumes' "Updated …"), and a new
+  `formatFileSize`.
+
+### 19.3 Verification
+
+- **Gates:** typecheck and lint green in all three workspaces.
+  - Web is 11 suites / 164 tests, with a new Documents suite: the four states, the board's rows,
+    meta and tags, the pill counts, the certificate, a pill, the search, both sort controls, the
+    grid, and the photo.
+  - Mobile is 167 suites / 1513 tests.
+- **Measured in Edge** at 1536×730, 1536×864, 1396×670 and 1280×680, sidebar open and shut. The
+  dev server on :3000 had stopped, so this ran against one started on :3100 and stopped after.
+  - The page never scrolls, vertically or sideways.
+  - The toolbar holds one line. So do the pills, except at 1280 with the sidebar open, where
+    "Other" wraps.
+  - Rows fully visible: 4, 5, 3 and 3.
+  - The character clears the header search by 10px (30px at 1280 open), with its feet 8px under
+    the card. The caption ends 4px above the card.
+  - The card and callout scroll as one unit, by 0 to 110px.
+  - No action label wraps, and the sidebar badge reads 12.
+  - Resumes still says "Upload New JD" and "Updated 2 days ago". No request fails.
+- **Caught by looking, then measuring:** "DOCX" filled its 34px sheet edge to edge, and at 36px it
+  still had 1.3px either side. The sheets are now 40px wide on 48px tiles, which leaves it about
+  3.5px, and the rows keep their 98px height.
+- **Not verified:** a keyboard and screen-reader pass, and widths below 1280.
+
+## 20. The Account page (Figma 307:3443)
+
+You asked for the Account page, connected to the buttons that lead to it. It is built in the other
+pages' frame at the compact density (§16):
+
+- the header;
+- the six sections as tabs;
+- the selected section's cards on the left;
+- on the right, the cards that belong to the whole account: completion, the AI suggestion, the
+  plan and the danger zone.
+
+Unlike the lists, it scrolls as a document, as Home does: it is a column of cards, with no list
+beside a detail.
+
+**The ways in:**
+
+- **The header's avatar,** on every page, is now a link to `/account` named "Your account".
+- **The sidebar's user chip** is a link named "George Smith, your account", open and on the rail.
+- **Settings** goes to `/account`, and reads as the current page there.
+- **`/settings`,** the old placeholder, redirects to `/account`.
+- **`/account?tab=security`** (or any section's id) opens that section on arrival, the way Jobs
+  takes `?job=`. After that the section is local state and the address stays put, for §15.1's
+  reasons.
+
+### 20.1 Data
+
+- **Web gets its own George,** as it did its own jobs, applications and resumes.
+  - `mock/fixtures/account.web.ts` holds the board's email, headline, place, phone, bio, motto,
+    education, links and 80%. `state.ts` picks it under `configureMockPlatform('web')`, and mobile
+    keeps its own.
+  - The name, photo and plan are the shared ones, so the sidebar and every header are unchanged.
+  - Anna University and the years 2016–2020 are ours; the board names only the degree.
+- **The model gains five optional fields, all of them drawn:** `phone`, `bio`, `tagline` and
+  `linkedinConnected` on `Profile`, and `employmentTypes` on its preferences. Because they are
+  optional, mobile's fixtures and screens needed no change.
+- **Key information is read off the profile, never typed in:**
+  - "3–5 years" is `yearsExperience: 4`, in bands: under 1, 1–2, 3–5, 6–9, 10+.
+  - "Full-time, Hybrid" joins the job types and the remote preference.
+  - "Current company: Not specified" is true, because the web George has no work history. That is
+    also why "Add work experience" is left open, and there the board agrees with itself.
+- **The ring shows the stored 80%,** as drawn. The checklist is worked out from the profile, and
+  the two need not agree: the board ticks 4 of 7 and says 80%, and the build ticks 5 of 7. Read the
+  80% as a weighted figure the backend will own.
+- **"Upload a profile photo" is ticked,** though the board leaves it open beside George's photo.
+  The list reads the profile, and the profile has a photo. Unticking it would mean faking the data.
+- **"Link your LinkedIn" means the integration,** not the URL. The board lists George's LinkedIn URL
+  and still leaves the item open, which only makes sense if it means connecting the account. It
+  reads `linkedinConnected`, which the Integrations section's Connect button would set.
+
+### 20.2 Calls inside it (yours to overrule)
+
+- **Drawn buttons with nothing behind them yet are inert:**
+  - the four Edit buttons, the camera, "Add another link" and "Complete Profile", because the edit
+    forms aren't drawn;
+  - "Delete account", because the confirmation isn't drawn, and ending the session belongs to
+    sign-in, which waits for its design (auth stays design-gated);
+  - on the undrawn sections, "Change password" and LinkedIn's Connect.
+- **What works:**
+  - "Upgrade Now" goes to `/upgrade`, and the AI card to `/assistant`.
+  - The social chips open their links in a new tab.
+  - The notification switches save at once.
+  - "Sign out of other devices" and "Download your data" run through the shared layer. The export
+    (V2 §8.5) says "Preparing your archive…" until it is ready.
+- **Five sections are named but never opened.** Each is built per rule 7 from what the shared layer
+  holds, using the Profile section's cards and the other pages' rows (`DetailRow`, `ProgressBar`,
+  and a new shared `Switch`). Each is replaced wholesale when its board arrives.
+  - **Preferences:** availability, desired roles, locations, job type, minimum salary (₹24 LPA) and
+    language.
+  - **Subscription:** the plan and this month's meters, with "See Pro plans".
+  - **Security:** the sign-in details, signing out other devices, and the data export.
+  - **Notifications:** a switch per category, plus quiet hours and the weekly digest.
+  - **Integrations:** LinkedIn.
+- **"Unlimited downloads" says "Unlimited DOCX downloads."** V2 §7.12 guarantees a clean free PDF,
+  and §13's tier table gives Free "clean, unlimited" PDF export with DOCX for Pro only. A crossed-out
+  "Unlimited downloads" on the free plan would say the opposite.
+- **The header** is the shared `PageHeader`, with the title on the left and the actions on the
+  right. The board stacks the search over the title, which every page already overrules (§16).
+- **Layout:**
+  - The board's roughly 68:32 split, held as a fixed 340px right column beside a fluid left one.
+  - The contact lines run two to a row, as drawn, and one to a row when the card is narrower. The
+    motto stays on the right at every size measured.
+  - Key information runs three to a row, as drawn, and two at 1280 with the sidebar open.
+- **Tokens and shared pieces:**
+  - One new colour, `border-brand-strong` (#c7cbfa), is the tabs' and Edit buttons' outline.
+  - `AiCallout` gains a `card` tone, the board's white card.
+  - `ScoreRing` gains `suffix` and `showLabel`, for an "80%" with no caption.
+  - Fifteen icons come from the board: credit card, shield, globe, camera, person, info, work,
+    trending-up, school, apartment, check-circle, award, done, close and trash. The rest reuse
+    ours, and no existing icon changed.
+- **The tabs don't answer the arrow keys,** and neither does any tab row in the app (`PillTabs`,
+  `UnderlineTabs`). Every tab is in the Tab order and opens with Enter or Space. The ARIA tabs
+  pattern expects arrows; adding them is one change for all three rows, not something to do here
+  alone.
+
+### 20.3 Verification
+
+- **Gates:** typecheck and lint green in all three workspaces.
+  - Web is 12 suites / 174 tests. The new Account suite covers:
+    - the board's copy and the loading state;
+    - George's cards, the checklist and the right column;
+    - switching sections and flipping a notification switch;
+    - signing out and the export;
+    - the error state.
+  - The `PageHeader` and `Sidebar` suites now check that the avatar, the chip and Settings lead to
+    `/account`.
+  - Mobile is 167 suites / 1513 tests.
+- **Measured in Edge** at 1536×730, 1536×864, 1396×670 and 1280×680, sidebar open and shut:
+  - Nothing scrolls sideways.
+  - The page is 1248px tall, or 1268px at 1280 with the sidebar open, where the subtitle wraps.
+  - The header holds one row, and the tabs one line. Nothing truncates.
+  - The five undrawn sections were checked at 1536×730 and 1280×680.
+- **The ways in,** clicked in Edge:
+  - The avatar, the chip (open and on the rail) and Settings all land on `/account`, and Settings
+    is `aria-current="page"` there.
+  - `/settings` lands on `/account`.
+  - `?tab=security` opens Security, and an unknown `?tab` opens Profile.
+  - The avatar and the chip show their focus rings when reached by keyboard.
+- **Caught by looking:** Key information ran four and two at 1536, where the board draws three and
+  three. It is now capped at three to a row.
+- **The one failed request** is `/favicon.ico`. The web app has no icon yet, which predates this
+  page.
+- **Not verified:** a full keyboard and screen-reader pass, and widths below 1280.
+
+## 21. The Settings page (Figma 254:326)
+
+You asked for the Settings board as a web page, consistent with the other pages. It is built in
+their frame at the compact density (§16):
+
+- the shared header;
+- the board's eight sections down the left, as tabs;
+- the selected section's cards on the right, with the board's character sitting on the first one.
+
+It scrolls as a document, as Account does. `/settings?tab=security` (or any section's id) opens
+that section on arrival, the way `/account?tab=` does.
+
+**Your calls, asked before building:**
+
+- **Only the Account section is built.** The other seven rows (Preferences, Notifications, Privacy
+  & data, Connected accounts, Billing & plan, Security, Delete account) open a short "Coming soon"
+  panel until their boards arrive. The panel shows the row's glyph, name and line. It does not
+  borrow the Account page's versions of the same settings.
+- **The sidebar's Settings row opens `/settings`.** The header avatar and the sidebar's user chip
+  still open `/account`, which is unchanged. `/settings` no longer redirects (§20 had it do so).
+  One side effect: on `/account` no sidebar row reads as current any more. The page isn't one of
+  the sidebar's destinations now, and neither board draws an active look for the chip that leads
+  there.
+- **The page shows George, not the board's Priya Sharma.** Every other page, the sidebar chip and
+  the Account board show George Smith. The board's phone and place already match his, so only
+  the name and the address differ from the drawing.
+
+### 21.1 Data
+
+- **`User.emailVerified`** is new and optional. V2 §7.1 makes an email/password account verify its
+  address before its first resume download, and this board marks George's "Verified". Web George
+  has it; mobile's user doesn't need it and doesn't carry it.
+- **A new `AccountSecurity`** comes from `repos.user.getSecurity()` through `useAccountSecurity()`.
+  It holds when the password last changed, whether two-factor is on, and the signed-in devices.
+  - The fixture (`mock/fixtures/security.ts`) is shared, as `documents.ts` is, because mobile draws
+    no screen for it.
+  - It holds the board's three devices, "Jan 14, 2024" and two-factor off. The date is held at
+    midday UTC so no time zone moves it to another day. The devices' ages are relative, like every
+    other fixture timestamp.
+- **The mock keeps the new data honest with what already worked:**
+  - "Sign out of other devices" on the Account page's Security tab now ends the iPhone and Windows
+    sessions, so Settings stops listing them.
+  - A password change (mobile's form) stamps the date and ends them too, because V2 §7.1 invalidates
+    every other session on a password change.
+  - Both hooks refetch the security query when they succeed.
+- **The "empty" mock mode lists no devices,** since they are the page's one list.
+
+### 21.2 Calls inside it (yours to overrule)
+
+- **The board's older language is mapped onto the web tokens, as §9.1 did for the sidebar.**
+  254:326 is DM Sans on navy (`#08066e`) with an electric indigo (`#2c16ef`, `#3428F9`), and binds
+  no variables. It renders in Plus Jakarta Sans on the slate text roles, with `brand-600` for the
+  glyphs and the actions.
+  - The tiles' `#f1efff` and the selected row's `#f3f1ff` both become `surface-brand-strong`, the
+    Account tabs' selected wash.
+  - The action buttons' `#c9c3ff` edge becomes `border-brand-strong`. A new
+    `src/ui/brandOutlineButton` holds the look the Account cards' Edit already had, and both use it.
+  - The two-factor note's gradient (`#f4f2ff` to `#f0effd`) becomes flat `surface-brand-strong`.
+  - "Verified" is the app's success `Tag`, upright. The board sets it in italic.
+  - The board draws its two bordered tables in different styles: a 13px medium label over a
+    regular value, then 14px in one colour. Both use the first.
+- **Sizes follow the compact system (§16), not the board's pixels.** Card titles are 15px, the
+  text 12–13px, the glyph tiles 40px, the actions 30px, the rows 36px, and the section list 264px.
+  The cards are the Account page's `AccountCard`, which gains `tile` and `action` props. That gives
+  radius 16 and 20px padding where the board draws 10, and 19 by 13.
+- **The header is the shared `PageHeader`.** The board has no search, Upload, bell or avatar; every
+  page has them (§16, §20.2). The eyebrow, title and line are the board's.
+- **The character sits where the board puts her:** on the first card's top edge at its right end,
+  at 236×92, the other pages' character height. The shared header's buttons take the top right, so
+  the cards start 60px under the header instead of the board's ~36. That is what it takes for her
+  to clear the buttons. If you would rather have the cards higher, a 76px-tall character needs
+  44px.
+- **The section list stays in view** (`sticky`) while the Account section scrolls. Not drawn: the
+  board fits its 1024 frame and never scrolls.
+- **A row's hover is a lighter grey (`neutral-50`) than the selected wash.** The board draws no
+  hover. The Account tabs' hover grey (`surface-muted`) was nearly the selected colour here, so
+  pointing at a row read as selecting it. The detail shots caught that.
+- **Drawn controls with nothing behind them are inert,** as on the Account page (§20.2). They are
+  Edit, the chevrons on Phone number and Location, Change password, Enable, View all, and the two
+  devices' menus. No board draws their forms, their menus or a longer list.
+- **Two-factor has no spec behind it for candidates.** V2 §7.1 requires MFA of the admin pool alone.
+  §9.4 keeps admins in a separate pool because Cognito's MFA policy is pool-wide, and says nothing
+  of MFA for the `users` pool. The board offers every candidate "Enable".
+  - Options: add optional TOTP for the `users` pool to the spec (Cognito allows it when the pool's
+    MFA setting is "optional"), or drop the card.
+  - The data carries `twoFactorEnabled`, so the card reads a state rather than a constant. The off
+    state is drawn. The on state (no nudge, the action reads "Turn off") is mine.
+- **The device list needs the server to keep a device and a rough place per session.** V2 §7.1's
+  server-side sessions (one Valkey record each) make it possible, and its audit log already keeps
+  the IP. Neither says what a session stores: "Mac • Chrome" needs the user agent parsed, and
+  "Bengaluru, India" needs IP geolocation. Worth a line in §7.1 and §10 when the API is specified.
+- **The Account section lists every device,** so at three "View all" has nothing more to show.
+  Whether the card should cap the list, and where, is for the board that draws "View all" open.
+- **Thirteen icons come from this board.**
+  - User, lock, shield-check and monitor serve the cards and three of the section rows. The board
+    draws the same person, lock and shield on both, so each is one export.
+  - Adjustments, notifications, chain, billing and delete serve the other rows.
+  - Info-circle serves the two-factor note; desktop, smartphone and tablet the devices.
+  - No existing icon changed. The generator rewrote every other file byte for byte.
+- **The character is a vector on this board,** so it goes through `build-illustrations.mjs`
+  (`SettingsHeroIllustration`) like the Jobs character. The Applications and Documents characters
+  were rasters, cut to PNGs.
+
+### 21.3 The overlap with `/account`, logged as you asked
+
+`/account` still has its Preferences, Subscription, Security, Notifications and Integrations tabs,
+built from the data (§20). Settings names the same things — Preferences, Billing & plan, Security,
+Notifications, Connected accounts — and for now shows "Coming soon" for each. So the app has the
+settings in one place and placeholders for them in another. Options, for when the Settings boards
+arrive:
+
+- **Move them.** Each tab becomes the matching Settings section, and `/account` keeps Profile and
+  its right column. The `/account?tab=` links would then redirect.
+- **Keep both.** Settings holds the full version, and the Account tabs become summaries that link
+  into it.
+- **Fill Settings from the Account tabs now.** You chose not to.
+
+The two pages already share one piece of data: "Sign out of other devices" on the Account page's
+Security tab ends the sessions this page lists, and the list follows it.
+
+### 21.4 Verification
+
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces.
+  - Web is 13 suites / 182 tests, up from 12 / 174. The new Settings suite covers:
+    - the board's copy and its eight sections;
+    - the loading state;
+    - George's details, "Verified", "Jan 14, 2024" and the two-factor note;
+    - the three devices in order, with menus on the other two only;
+    - switching to a coming-soon panel and back, and `?tab` arrival;
+    - the empty mode and the error state.
+  - The Sidebar suite now checks that Settings leads to `/settings`.
+  - Mobile is 167 suites / 1515 tests, up from 1513. Two new data tests pin the session rules:
+    "sign out everywhere" and a password change each leave only this device, and the change
+    stamps the date.
+  - The hover fix (§21.2) landed after that run. Web typecheck, lint and the Settings suite were
+    re-run green after it.
+- **Measured in Edge** (Playwright on the installed browser) at 1536×1024, 1536×730, 1396×670 and
+  1280×680, sidebar open and shut:
+  - Nothing scrolls sideways, and nothing truncates.
+  - At 1536×1024 the whole page fits the board's frame. Elsewhere it is 944–964px tall, so in a
+    laptop window it scrolls 214–294px. The section list stays pinned 20px from the top meanwhile.
+  - The section list and the first card start on one line. The character clears the header's
+    buttons by 10px where the subtitle holds one line, and by 30px where it wraps (1396 and 1280
+    with the sidebar open).
+  - The sidebar's Settings row points at `/settings` and is current there. `/account` renders as
+    before, its Edit buttons still 30px with the pencil.
+  - In 2× element shots, every generated glyph's holes are genuinely transparent: the bell, the
+    sliders' knobs, the lock's keyhole, the info mark, the device screens.
+  - The generators rewrote the 61 existing icons and 21 illustrations byte for byte. That was
+    diffed against a copy taken first, because `apps/web` is untracked and git couldn't show it.
+  - The one failed request is `/favicon.ico` again (§20.3).
+- **Not verified:**
+  - a keyboard and screen-reader pass (the tabs follow the app's pattern: Tab and Enter, no arrows);
+  - widths below 1280. Below about 1190 with the sidebar open (1020 shut), the header's buttons
+    drop to a line of their own, and below about 1090 the character would sit on them. That needs
+    a rule when a narrow layout is designed;
+  - your own browser, at your zoom.
+
+## 22. Settings → Preferences (Figma 356:2, in the NEXKTKIN-PVT file)
+
+You asked for the Preferences section of Settings. This board lives in a different Figma file
+(`BlpFYxFg99RFzx6ZWDGkUJ`) from the Account board (`kB8acNPTg64mB2LmwA4OMb`). It draws:
+
+- a header titled after the section: "Settings › Preferences", with its own line;
+- the same eight-row section list, with Preferences selected;
+- three cards: Job preferences, App settings, and Content & AI preferences;
+- a column beside them: "Why set preferences?", a line from the team, and "Need help?".
+
+It replaces Preferences' coming-soon panel; the other six sections keep theirs.
+
+**Your calls, asked before building:**
+
+- **Every control saves as you change it,** through the shared mock layer, as the Account page's
+  notification switches do. Dropdowns open the app's existing menu.
+- **Light is the only theme for now.** Dark and System are shown but disabled until a dark palette
+  exists. Every board is drawn light, and the web tokens have no dark set.
+- **Edit unlocks Job preferences.** Its fields are read-only until Edit is pressed; the button then
+  reads Done, and each change saves the moment it's made. Done locks the card again.
+
+### 22.1 Data
+
+- **The job preferences are George's own,** the ones the Account page's Preferences tab reads.
+  - Web George now holds the board's values: "Bengaluru, India", "Remote" and "New York, USA";
+    Technology, Product and Design; and ₹12,00,000 a year.
+  - The Account page's Preferences tab therefore now reads "₹12 LPA" where it read mobile's
+    "₹24 LPA". Its test says so.
+  - Full-time and Hybrid were already there, from the Account board (§20.1).
+- **`ProfilePreferences.industries` is new and optional,** because the board draws it. Mobile needs
+  no change.
+- **A new `AppSettings`** (`models/settings.ts`) comes through `useAppSettings()` and an optimistic
+  `useUpdateAppSettings()`, from `repos.user.getAppSettings()` and `updateAppSettings(patch)`. It
+  holds the theme, the date format, the time zone and the three AI switches.
+  - The fixture (`mock/fixtures/appSettings.ts`) is shared, like `security.ts`. It holds the board's
+    light theme, "14 Jan 2024" dates, India Standard Time, and the switches on, off, on.
+  - Language stays where it was, on the profile's preferences. Mobile already keeps it there.
+- **V2 names none of theme, date format, time zone or the AI switches.** §8.8 asks for a
+  locale-aware formatting layer and nothing more. The board alone defines them.
+
+### 22.2 Calls inside it (yours to overrule)
+
+- **The header now follows the section.** Both boards title the page after their section: "Account
+  settings" and "Preferences", each with its own line under it.
+  - An undrawn section is titled with its row's name and line: "Notifications", "Manage what you
+    receive".
+  - Its coming-soon card no longer repeats them. It shows only the row's glyph and the note.
+- **Nothing above the section list moves between sections.**
+  - The header keeps room for a two-line subtitle (98px), and the cards start 40px below that.
+  - That gives the Account board the same 60px under a one-line header as before, and 20px less
+    where its line wraps (1396 and 1280 with the sidebar open).
+  - Preferences has no character, so the space above its cards is empty. The alternative was the
+    section list jumping 20–44px under the pointer on every switch.
+- **The character is the Account section's alone,** as the boards draw it.
+- **The board's older language is mapped as in §21.2.** DM Sans and navy become Plus Jakarta on the
+  slate roles; the lavender washes become `surface-brand` and `surface-brand-strong`.
+  - Job preferences' Edit is drawn with a saturated brand edge (`#4321ff`). It uses the Account
+    section's lavender-edged action instead, so the page has one kind of Edit.
+  - The fields take the header search's box (`border-default`, radius 12, 36px tall), without the
+    board's faint shadow.
+  - The chips are `surface-brand-strong` with an ×.
+  - The checkboxes are a new `src/ui/Checkbox`: a 16px square, filled brand with the board's own
+    tick when on.
+  - The theme picker's chosen option keeps the board's full brand edge.
+  - The switches are the Account page's `Switch`, whose off track is a lighter grey than the
+    board's `#8b94c4`.
+  - The quote is set upright, like the Account page's motto. The app loads no italic face, and a
+    browser-faked one reads worse.
+- **Sizes follow §16:**
+  - 36px fields and 40px theme options.
+  - A 160px label column, where the board has 176.
+  - A 256px column beside the cards, where the board has 280.
+  - The two narrower widths are what keeps the time zone whole at 1396 with the sidebar open; the
+    browser pass measured it cut off at the board's widths.
+- **The column drops under the cards below an 800px section** (1280 with the sidebar open). At 1396
+  with the sidebar open it stays beside them. There, the chip fields and the job types wrap to a
+  second line, as the board's own "Full-/time" does at its width.
+- **What the menus offer is ours.** No board or spec lists more than the one value each shows.
+  - Locations: the fixtures' Indian cities, Remote, and a city for each launch market.
+  - Industries: nine broad ones.
+  - Time zones: India's and one per launch market, labelled in standard time.
+  - Date formats: the five common orders.
+  - Currencies: INR and the spec's three (§1.4 already disputes INR).
+  - Whatever the account already holds is always offered.
+- **Stored, but nothing reads them yet:**
+  - the date format;
+  - the time zone;
+  - the language (German translates nothing: the UI ships in English, V2 §8.8);
+  - the three AI switches.
+
+  Wiring the date format into the app's dates is yours to settle. It would make the Account
+  section print "14 Jan 2024" where its board prints "Jan 14, 2024", so the two boards disagree
+  on George's format.
+
+- **The theme:** Dark and System are disabled, with a "Coming with dark mode" tooltip, as you chose.
+  The model already carries all three values, so turning them on is a palette and a class, not a
+  data change.
+- **The menus.** A single choice (work mode, currency, language, date format, time zone) uses the
+  sort control's menu with one ticked row, and closes when picked: a new `closeOnSelect` on
+  `FilterCheckboxItem`. The chip fields' menus stay open, like the filter chips'.
+- **Locked looks the same as drawn.** While Job preferences is locked, its fields keep the board's
+  look, with the ×s and chevrons shown but disabled. Nothing greys them out, because the board
+  draws this state as the page's default.
+- **Seven icons come from this board:** tick, launch (open in new), business-center (a briefcase
+  with a clasp), computer, moon, sun and lightbulb. The gear, the sparkles and the sliders reuse
+  `SettingsIcon`, `AiSparklesIcon` and `SlidersIcon`: the same drawings as the sidebar's and the
+  Jobs board's, at another size. No existing icon changed.
+- **"Visit Help Center" opens the app's `/help`,** still a placeholder, in the same tab. The board's
+  out-of-page arrow is kept as drawn.
+
+### 22.3 Verification
+
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces.
+  - Web was 14 suites / 190 tests in that run, up from 13 / 182. The new tests cover:
+    - the Preferences header, its three cards and the column beside them;
+    - George's job preferences, read-only until Edit;
+    - Edit, then changes saved one by one (a job type, a chip, the work mode, the salary), then Done;
+    - Light as the only theme, a time zone picked from its menu, and a switch flipped;
+    - the amount and time-zone helpers;
+    - the coming-soon header naming its section.
+  - The Account suite now reads "₹12 LPA".
+  - After that run the Settings suite was split in two, to stay under the repo's ~250-line
+    guideline: 15 suites, the same 190 tests. Web typecheck, lint and the three Settings suites
+    were re-run green after the split.
+  - Mobile is 167 suites / 1516 tests, up from 1515: the app-settings merge.
+- **Measured in Edge** against your dev server at 1536×1024, 1536×730, 1396×670 and 1280×680,
+  sidebar open and shut:
+  - Nothing scrolls sideways, and nothing truncates.
+  - The section list sits at 158px on Account, Preferences and Notifications alike, so switching
+    sections moves nothing above it.
+  - The column beside the cards is 256px wide wherever the section is at least 800px, and drops
+    under the cards at 1280 with the sidebar open.
+  - The Account section is unchanged at 1536: its character still clears Upload by 10px. At 1396 it
+    is 20px tighter: its first card now starts at 158 instead of 178.
+  - In 2× shots, the location menu opens with the chosen places ticked, Edit reads Done while
+    editing, and every new glyph renders.
+  - The one failed request is `/favicon.ico` again (§20.3).
+- **Caught by measuring:** at 1396 with the sidebar open, the time zone was cut off. The field was
+  302px for 332px of content. The label column went from 176 to 160 and the side column from 280 to
+  256, and the field is now 342px.
+- **Not verified:**
+  - a keyboard and screen-reader pass. The theme picker is a radio group whose one live option
+    needs no arrow keys yet, and the menus are Radix's;
+  - widths below 1280;
+  - your own browser, at your zoom;
+  - two very quick changes in a row. Read off the hooks rather than seen: the first save's refetch
+    can land before the second save does, so a control may flicker back for a moment. The existing
+    optimistic hooks (`useUpdatePreferences`) share this.
+
+## 23. Upload a Job Description (Figma 247:2, 244:467, 247:453)
+
+You asked for the three boards behind "Upload New JD". They are one page, `/upload-jd`, with the
+three ways in as tabs:
+
+- Paste text (247:2);
+- Paste from link (244:467);
+- Upload file (247:453).
+
+Each tab brings its own column beside the card. Upload New JD in every page's header now opens the
+page. Documents' "Upload New Document" stays inert.
+
+**Your calls, asked before building:**
+
+- **Analyze runs the shared extraction and says what it read.** It is the mock extraction mobile's
+  intake already uses (V2 §7.5). While it runs, the card shows a line saying so; if it fails, a
+  message. When it succeeds, a note reads: "Job description analyzed. We read “title” at company
+  and found N skills: R required, P preferred." V2 §7.5's review screen waits for its own board.
+- **The upload tab opens empty.** The board's Google PDF and its filled-in details are treated as
+  its example. The four fields show the board's values as grey hints; Employment type shows
+  "Full-time" as a hint until a type is picked.
+- **A link is a mocked fetch.** Any full http(s) link runs the extraction on the same stand-in
+  description a file upload reads. Nothing is fetched.
+
+### 23.1 Data
+
+- **`JdSource` gains `'link'`** ("From a link"), and `JdInput` gains `{ source: 'link'; url }`.
+  Mobile's review caption reads the new label; nothing on mobile produces a link.
+- **`JdInput` takes optional `details`:** the upload board's "Additional details". The ones filled
+  in beat the extraction (trimmed); blank ones keep what was read.
+- **`JdDraft` gains three optional fields:** `sourceUrl`, `employmentType` and `savedToJobs`.
+  - Employment type is not in §7.5's field list. The board alone asks for it.
+  - `savedToJobs` is the board's "Save this job to my jobs", ticked by default as drawn. **Nothing
+    reads it yet.** The Jobs page lists job-board listings, and no page lists saved JDs; V2 §7.11
+    lists a JD with the resumes generated from it. So the success note doesn't claim the job was
+    saved. Options: a "Saved JDs" view on Jobs, the §7.11 list when the resume history is built,
+    or dropping the checkbox.
+- **Mobile gains three extractor tests:** a link keeps its URL and reads the stand-in; filled
+  details win; blank details don't wipe what was read.
+
+### 23.2 Calls inside it (yours to overrule)
+
+- **One page, three tabs, at `/upload-jd`.** `?tab=file|link|paste` opens a tab on arrival, as
+  `/settings?tab=` does. No sidebar row reads as current there.
+- **Paste text opens first.** It is the board the other two are numbered after ("Upload",
+  "Upload 2", "Upload 3"), and the first link you sent.
+- **All three panels stay mounted and only the chosen one shows.** Pasted text or a picked file
+  survives a look at another tab.
+- **The older language is mapped as in §21.2.** DM Sans and navy become Plus Jakarta on the slate
+  roles, the lavender washes become `surface-brand` and `surface-brand-strong`, and the gradients
+  go flat.
+  - The boards draw the selected tab three ways: a brand edge with brand title and caption; a brand
+    edge on a tinted face; a brand edge on white with a dark title. The page uses one: the full
+    brand edge on `surface-brand`, with a brand title.
+  - The tab glyphs are the paste board's upload, link and document, on all three tabs. They are the
+    same drawings as the app's `UploadIcon`, `LinkIcon` and `DocumentIcon` (checked by path
+    proportions), so those are reused. The link and file boards draw text characters there
+    (↥ 🔗 ▤, ⇧ ↗ ▤), and the 🔗 emoji doesn't render on the board.
+  - The link column's four reasons and the file column's four rows are text characters on their
+    boards (ϟ ▤ ◎ ♙ and ▤ ▥ ● ♡).
+    - The file column's four are the paste column's four points, so they take its real icons:
+      document, bar chart, lightbulb and bookmark.
+    - The link column's are my stand-ins: clock for "Saves time", document for "More accurate",
+      insights for "Better insights", shield-check for "Secure & private".
+  - The details' glyphs (♧ ▧ ⌾ ▣) are the app's briefcase, apartment, location and work icons.
+  - The drop zone's saturated dashed edge (`#9f91ff`) is the lighter `border-brand-strong`. It
+    turns full brand while a file is dragged over it.
+  - "File ready" is `success-600`.
+- **Sizes follow §16:**
+  - a 300px column, where the boards have 404–444;
+  - 15px headings (21–23 on the boards);
+  - 40px discs (56–62);
+  - 40px actions (46–50);
+  - a 208px paste box (292);
+  - the drop zone's art at 297×116 (473×185).
+- **The column drops under the card below an 896px content width** (a container query). That is
+  about 1184px wide with the sidebar open and 1016 with it shut.
+- **Board defects not reproduced:**
+  - "Popular sources" clips each logo in a box smaller than its image, so on the board LinkedIn
+    reads "H." and Microsoft is a red and blue sliver. Here each logo shows whole.
+    - Google and Microsoft are the Jobs board's marks: this board's Microsoft export is itself the
+      sliver.
+  - The file column's robot covers the start of its first row ("Extract key detai…"). Here it sits
+    beside the heading instead.
+  - The link board's 🔗 and 🌐 are emoji that don't render on the board. The link field uses the
+    link icon, "Company careers page" the globe.
+- **Formats: the board and V2 disagree.** The board says "PDF, DOC, DOCX, TXT (Max 5MB)"; V2
+  §7.4/§7.5 list PDF, DOCX and TXT, with the size limit unnamed. The page accepts DOC too, so it
+  does what its own copy says, and uses the board's 5MB.
+  - Options: drop DOC from the copy and the check, or add DOC to the spec, which needs a `.doc`
+    text extractor on the server.
+- **"Paste from link" is not in V2 §7.5.** The board names LinkedIn, Indeed, Glassdoor and
+  Wellfound. Fetching their pages from our server is likely against their terms; LinkedIn's forbid
+  scraping outright. A real version needs their APIs or partner programmes, or a limit to company
+  careers pages. Worth settling before the API is specified. The mock fetches nothing.
+- **The result note is mine.** No board draws what comes after the button. The note describes the
+  text it read, so it disappears when that text, link or file changes.
+- **Cancel clears the upload form** (the file, the details, any error and the note). It is disabled
+  while there is nothing to clear. It does not navigate: Upload New JD opens the page from every
+  page, so there is no one place to go back to.
+- **"Use sample JD" switches to Paste text with a sample filled in.** The sample is the upload
+  board's own example (Senior Product Designer, Google, Bengaluru) written out as a description.
+  The wording is mine.
+- **The supported-link chips and popular sources are lists, not controls.** No board gives them an
+  action; "More" and "And more" included.
+- **Shared pieces changed:**
+  - `PageHeader` takes `uploadHref`, which defaults to `/upload-jd`. `null` keeps the inert button.
+  - `SelectField` takes a `null` value with a placeholder, and a leading glyph.
+- **Assets:**
+  - Three new icons: a bar chart, the button's sparkles (`AutoAwesomeIcon`) and the tip's
+    (`SparklesOutlineIcon`). Neither sparkle matches `AiSparkIcon` or `AiSparklesIcon`. The arrow
+    is `ArrowRightIcon`'s drawing, so that is reused along with the five above.
+  - Eight new illustrations:
+    - the paste column's two characters. Figma exports each group only as a PNG or a list capped at
+      20 paths, so each is rebuilt from its per-path exports, placed at their `get_metadata`
+      positions;
+    - the PDF tile;
+    - five source logos.
+  - **Three PNGs, at their source size.** The upload art, the robot and the sample page are rasters
+    on the board. Their source images are 371×145, 183×223 and 99×118, shown at 297×116, 104×127
+    and 66×79. That is under 2× on a retina screen, so they may look slightly soft. Larger sources
+    would need to come from design.
+  - No existing icon or illustration changed. The generated folders were diffed against a copy
+    taken first.
+
+### 23.3 Verification
+
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces.
+  - Web is 17 suites / 202 tests, up from 15 / 190. The new page suite (8 tests) covers:
+    - the board copy and the three tabs;
+    - a paste analysed end to end, and the note leaving once the text changes;
+    - pasted text surviving a switch to another tab;
+    - a bad link refused, then a good one read;
+    - a file picked, a typed company beating the extraction, and Cancel clearing it all;
+    - a wrong file type refused;
+    - the sample JD;
+    - the error state.
+  - A helper suite (4 tests) covers the file and link checks and the skill count.
+  - The PageHeader and Jobs suites now find Upload New JD as a link to `/upload-jd`. Documents
+    still finds its inert button.
+  - Mobile is 167 suites / 1519 tests, up from 1516: the three extractor tests. Mobile needed two
+    type fixes for the new source. Its intake treats a link as nothing chosen yet, and its review
+    form captions one "What we read from the link".
+  - One fix landed after that run: the file column's robot was pulled 8px into the card's edge, so
+    its speech bubble touched the border. Web lint and the upload suites were re-run green after it.
+- **Measured in Edge** against your dev server at 1536×730, 1396×670 and 1280×680, sidebar open
+  and shut, on each tab:
+  - Nothing scrolls sideways, and nothing truncates. The one clipped element is the file input,
+    which is screen-reader-only.
+  - The column is 300px beside the card everywhere measured; the card is 676–1076px.
+  - Page heights:
+    - Paste text 736–756px, so it scrolls up to about 86px in a laptop window;
+    - Paste from link 683–730px, so it nearly fits;
+    - Upload file 814–848px, so it scrolls up to about 170px.
+  - At 1280 with the sidebar open, two tab captions ("PDF, DOC, DOCX, TXT (Max 5MB)" and "LinkedIn,
+    company careers page") wrap to two lines, so the three titles don't share a line.
+  - A real run: Use sample JD, then Analyze, read “Senior Product Designer at Google” at Google,
+    with 15 skills: 11 required, 4 preferred.
+  - No page errors, and no failed requests.
+- **Not verified:**
+  - dropping a file in a real browser. The tests pick one through the input; no test drops one;
+  - a keyboard and screen-reader pass. The tabs follow the app's pattern (Tab and Enter, no
+    arrows);
+  - widths below 1280, where the column drops under the card;
+  - how soft the three PNGs look on a retina screen;
+  - your own browser, at your zoom.
+
+## 24. Settings → Notifications (Figma 247:1094)
+
+You asked for the Notifications section of Settings. The board sits in the For-Next-Kin file,
+beside the Account board. It draws:
+
+- the header titled after the section, with its own line;
+- a character with her phone, beside a handwritten note: "Stay in the loop on your career
+  journey!";
+- one card, "Notification preferences", holding:
+  - three channel switches (In-app, Email, Push);
+  - seven topics, each with a switch per channel;
+  - "Reset to default";
+  - a note that critical account and security notifications always arrive.
+
+It replaces Notifications' coming-soon panel; five sections keep theirs.
+
+**Your call, asked before building:**
+
+- **The Account page's Notifications tab shows the same card, over the same data.** A switch
+  changed on either page changes on both. The tab's old content is gone from web: mobile's five
+  categories, quiet hours and the weekly digest.
+
+### 24.1 Data
+
+- **A new `NotificationSettings`** (`models/notification.ts`) holds each channel on or off, and each
+  of the seven topics on each channel.
+  - It comes through `useNotificationSettings()`, the optimistic `useSetNotificationSettings()` and
+    `useResetNotificationSettings()`, from `repos.notifications.getSettings()`, `setSettings()` and
+    `resetSettings()`.
+  - Each switch sends the whole set, built on what the page already shows, so two quick flips can't
+    undo each other.
+  - The fixture (`notificationSettingsFixture`) holds the board's switches. Every channel is on,
+    and every topic is on everywhere except Resume insights' push, Product updates' email and
+    push, and Tips & recommendations' push. "Reset to default" returns to it.
+- **Mobile's `NotificationPrefs` is untouched, and the two now describe different things.**
+  - Mobile's NOTIF 04 draws five categories (matches, closing soon, applications, AI results,
+    billing), with quiet hours and a weekly digest.
+  - This board draws seven topics on three channels.
+  - Only job matches and application updates are on both.
+  - The API will need one model. This board's is the richer, and mobile's quiet hours and digest
+    have no place in it yet.
+
+### 24.2 Calls inside it (yours to overrule)
+
+- **Mapped onto the web tokens, as in §21.2 and §22.2.**
+  - DM Sans and navy become Plus Jakarta on the slate roles, at the compact sizes.
+  - The glyph tiles are `surface-brand-strong`, as on the other Settings cards.
+  - The switches are the app's `Switch`. The board draws them brighter on and greyer off.
+  - "Reset to default" is the neutral `outlineButton`, because the board edges it in grey rather
+    than lavender.
+  - The note's gradient becomes a flat `surface-brand-strong`.
+- **The eyebrow keeps "Settings ›".** This board drops the chevron the other two draw, and the page
+  keeps one header.
+- **The illustration is two groups joined into one drawing** (`notifications-hero.svg`): the note
+  and the character, placed at their board offsets. §23 rebuilt its drawings the same way.
+  - The note keeps its words as the export's outlines. The other pages set their captions as live
+    Caveat text, but at 0.69 scale this card is too small for 15px text.
+  - It sits on the card's top edge, a sixth of the card's width in from the right, as drawn. It
+    clears the header's buttons as the Account character does.
+- **A channel that's off greys its column.** The board doesn't say what a channel switch does to
+  the topics under it.
+  - Here, turning a channel off disables that column's switches without changing them. Turning it
+    back on restores them.
+  - The other reading, flipping the whole column, would lose the per-topic choices.
+- **"Reset to default" returns to the board's switches,** which are what a new account starts with
+  in the mock. The board doesn't say what "default" means.
+- **The row chevrons are inert** (named "More about …"): no board opens a topic.
+- **Account & security can be switched off, as drawn.** The note under the grid says critical
+  account and security notifications arrive regardless.
+- **Nothing reads these switches yet.** The mock sends nothing by channel, so no switch changes what
+  the feed shows.
+- **The channel cards sit three to a row,** and fewer when the card is narrower than about 624px:
+  the Account page's column at 1280 with the sidebar open.
+- **Ten icons come from this board.**
+  - The refresh arrow, and the in-app, email and push channels.
+  - Job matches, application updates, interview reminders, resume insights, product updates and
+    tips.
+  - Three reuse ours, being the same drawings again: Account & security is the Account board's
+    shield-check, the note's info mark is the two-factor note's info-circle, and the row chevron
+    is the app's chevron-down.
+  - No existing icon changed.
+
+### 24.3 Verification
+
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces.
+  - Web is 18 suites / 208 tests, up from 17 / 202. The new Notifications suite (6 tests) covers:
+    - the board's header, the channels, and every topic's three switches as drawn;
+    - a switch saving;
+    - a channel greying its column and keeping its switches;
+    - Reset to default straight after a change;
+    - a change made in Settings showing on the Account page's tab;
+    - the card's own loading and error states.
+  - The Settings suite's coming-soon test now opens Privacy & data. The Account suite finds its
+    switch as "Job matches, In-app".
+  - Mobile is 168 suites / 1520 tests, up from 1519: the repo keeps the set it's given and resets
+    to the defaults.
+- **Caught by testing, and fixed: saves could land out of order.** The first full runs failed now
+  and then, once with the suite running alone.
+  - The cause was a race, not slowness. The mock gives every call a random 300–900ms delay, so a
+    switch flipped just before "Reset to default" could land after the reset and undo part of it.
+    In the tests, one landed in the next test's freshly reset store.
+  - The fix: the settings' writes share one TanStack mutation scope, so they run one after
+    another. Each switch still updates at once. That covers `useSetNotificationSettings` and
+    `useResetNotificationSettings`, and `useUpdateAppSettings` got the same.
+  - The tests now wait for their own saves before they end, and one resets right after a change
+    on purpose.
+  - After the fix the suite passed 5 runs out of 5 on its own, then the full web and mobile
+    suites passed.
+  - **`useUpdatePreferences` queues too now** (shared with mobile; see the next point). Two quick
+    ticks in one list each send the whole list, so the later one could land first and be
+    overwritten. This follows from the code but never happened in the browser: the mock's delays
+    come from a seeded generator (`seeded(0x5eed)`), so a fresh page replays the same timings, and
+    there the first tick always landed first (none lost in 6 runs).
+- **Found after that, and fixed: a switch changed straight after another flipped back.**
+  - The queue itself caused it. TanStack starts a queued write only after the previous one's
+    `onSettled` resolves, and that `onSettled` refetched the server's copy, which didn't have the
+    queued change yet. So the second switch flipped back until its own save landed, for up to about
+    1.8s.
+  - Seen in the browser in 6 runs out of 6, both for two notification switches and for two Content &
+    AI switches. The new tests failed the same way before the fix.
+  - The fix is `packages/shared/src/queries/writeQueue.ts`. Writes to one piece of state share a key
+    as well as a scope, and each refetches only when no other write is waiting. The notification
+    settings, the app settings and job preferences all use it.
+  - "Reset to default" doesn't refetch: the defaults come back with the write. The card holds its
+    switches while it runs, since a flip made then would carry the old values and undo the reset.
+  - New tests:
+    - two quick flips on Notifications, and two on Content & AI;
+    - two quick ticks in Job preferences;
+    - the switches holding during Reset.
+
+    `testSupport/recordValues.ts` samples a control every 10ms, so a value that flips back even for
+    a moment fails the test.
+
+  - After the fix the browser showed each second switch changing once, in 3 runs out of 3 per case.
+  - Gates:
+    - typecheck and lint green in both apps;
+    - the web Settings and Account suites 5 / 33;
+    - mobile 168 / 1520.
+
+    The full web suite wasn't re-run, because another session was changing the upload page at the
+    time.
+- **A separate flake, logged, not fixed:** in the first full run, Applications' "lists the board's
+  eight rows first…" hit Jest's 5s limit while web and mobile ran side by side.
+  - It takes 2.8s on its own and passed on every later run.
+  - It has no per-test timeout, where mobile's long tests use 30–60s. Adding one is the fix if it
+    comes back.
+- **Measured in Edge** against your dev server at 1536×1024, 1536×730, 1396×670 and 1280×680,
+  sidebar open and shut:
+  - Nothing scrolls sideways, and no text is cut off.
+  - The section list sits at 158px, as on the other sections.
+  - The character clears the Upload button by 10px at every size.
+  - The three channel cards share one row everywhere measured.
+  - At 1536×1024 the page fits the board's frame. Elsewhere it is 852–868px tall.
+  - The Account page's Notifications tab shows the same card at 1536×730, its channels in one row.
+  - The one failed request is `/favicon.ico` again (§20.3).
+- **Not verified:**
+  - a keyboard and screen-reader pass (each switch is named for its topic and channel: "Job
+    matches, In-app");
+  - widths below 1280;
+  - your own browser, at your zoom.
+
+## 25. Settings header: the actions get their own line
+
+You compared the Account settings header with its board. The search, Upload New JD, bell and
+avatar sat on the title's line, so the page's top bar read as part of its heading. The board keeps
+them apart: the top bar first, then "Settings ›", the title and the line under it. The search stays
+at the right, as you said.
+
+### 25.1 Calls inside it (yours to overrule)
+
+- **`PageHeader` takes `layout="stacked"`.** The actions take the top line, right-aligned, and the
+  title block sits 16px under them. The actions come first in the document too, so Tab follows the
+  order you read. `inline` stays the default, so every other page looks as it did.
+- **Only Settings is stacked.** Its three built sections share one header, so Account settings,
+  Preferences and Notifications all change. Whether the other pages follow is yours to decide. Their
+  boards (Home's 286:184 onward) draw the title beside the actions.
+- **The cards moved up.** §21.2 started them 60px under the header so the character cleared the
+  buttons. The buttons are above the title now, so the cards start 24px under the title block and
+  the character stands beside the title. That overturns §21.2's 60px and the clearance figures in
+  §21.4 and §24.3.
+- **The title block keeps its text out of the character's corner** (`pr-72`, 288px). The Account
+  character is 236px wide at the panel's right end, so the subtitle wraps before it rather than
+  running under her. The 98px reservation already holds a two-line subtitle.
+
+### 25.2 Verification
+
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces. Web is 18
+  suites / 212 tests. The `PageHeader` suite gained one: stacked puts the actions before the title
+  in the document, inline after it. Mobile is 168 / 1520.
+- **Measured in Edge** against your dev server at 1536×730, 1396×670 and 1280×680, sidebar open,
+  on all three built sections:
+  - The actions are 20–56px from the top, the title starts at 96 and the header ends at 170. The
+    section list and the first card start at 194 on every section, so switching still moves nothing.
+  - The subtitles hold one line at every size. The Account one ends at 899px and its character
+    starts at 1010 at 1280, the closest case. The character's top is 46px under the buttons.
+  - Nothing scrolls sideways.
+- **Not verified:** the sidebar shut (it only widens the page); widths below 1280; a keyboard pass
+  over the new tab order; your own browser, at your zoom.
+
+### 25.3 Tighter under the text, and a bigger character
+
+You said the text still stood too far from the cards, and asked for bigger illustrations where
+there is room. This overturns the spacing and the 98px reservation in 25.1–25.2.
+
+- **The cards start 16px under the subtitle** (they were 44px under it). The 98px reservation for a
+  two-line subtitle is gone, so the title block is the ~78px it needs.
+- **The spare height moved above the text instead.** The breadcrumb stands 32px under the buttons
+  (was 16), as your reference separates its top bar from the title.
+- **Both characters are 116px tall** (were 92): Account's at 296×116, Notifications' at 272×116.
+  That is the height between the buttons and the first card, less 10px of clearance. They are now
+  taller than the other pages' 92px characters; only Settings has the room.
+- **The title block's text keeps 320px clear on the right** (was 288) for the wider Account
+  character.
+- **One cost:** with no reservation, a subtitle that wraps makes that section's header 20px taller,
+  so the cards move when you switch to or from it. None wraps at 1280 or wider. The Account line is
+  the first to wrap, at about 1240 with the sidebar open.
+- **Measured in Edge** at 1536×730, 1396×670 and 1280×680, sidebar open, on all three sections:
+  - The buttons end at 56, the title starts at 112, and the subtitle ends at 164. The cards and the
+    section list start at 182 on every section, 12px higher than in 25.2.
+  - Both characters span 66–182, 10px under the buttons. At 1280 the Account subtitle ends at 899
+    and her drawing starts at 950. Every subtitle holds one line, and nothing scrolls sideways.
+  - Same gaps as 25.2: sidebar shut, below 1280, keyboard, your browser.
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green after this pass: web 18 / 212, mobile
+  168 / 1520.
+
+## 26. Upload a JD: the header gets its own top line
+
+You showed the upload page with its title squeezed up beside the search and buttons. Beside it was a
+reference where a "Back to Jobs" link and the buttons share a top line, and the title and its line
+sit under them. The three upload tabs share one header, so all three change.
+
+### 26.1 Calls inside it (yours to overrule)
+
+- **The page uses Settings' stacked header (§25).** The actions take the top line and the title
+  block sits 32px under it, as on Settings. The card now starts 16px under the subtitle, where it
+  was 20. Since §28 every page is laid out this way, under one pinned top bar.
+- **A back link at the left of the top line,** here "← Back to Jobs". It began as `PageHeader`'s
+  `back` prop. Since §28 the top line is one `TopBar` in the layout, which shows the link on
+  `/upload-jd` only.
+  - The arrow is `ArrowRightIcon` turned round; the app has no left arrow.
+  - No other page has one.
+  - Its ink is `text-secondary`, darkening on hover.
+- **It always goes to `/jobs`,** as your reference says, even though Upload New JD opens the page
+  from every page. Options: go back to wherever you came from (the browser's history, falling back
+  to Jobs), or name that page ("Back to Resumes").
+- **No board draws it.** The three upload boards (247:2, 244:467, 247:453) still draw only the
+  title and its line; your reference is the source.
+- **The page is taller.** The header now takes 162px above the card, where the title beside the
+  actions took 98–118. Paste text is 800px tall, so it scrolls about 130px in a 670px window, and
+  Upload file about 200px.
+
+### 26.2 Verification
+
+- **Measured in Edge** against your dev server at 1536×730, 1396×670 and 1280×680, sidebar open,
+  on each tab:
+  - The back link and the buttons share the top line. The buttons span 20–56px and the link sits
+    centred on them at 28–48.
+  - The title starts at 92 and the subtitle ends at 146, on one line. The card starts at 162 on
+    all three tabs.
+  - Nothing scrolls sideways, and there were no page errors.
+- **Gates:** web typecheck and lint are clean. The header, upload and Settings suites pass (9 suites
+  / 50 tests), including a new test: the back link leads the top line and links to `/jobs`. Since
+  §28 that test lives in the `TopBar` suite. The full web run is 18 suites / 213 tests, all green. Mobile is untouched: the change is
+  web-only.
+- **Not verified:**
+  - the sidebar shut (it only widens the page);
+  - widths below 1280;
+  - a keyboard pass. The back link now comes first in the tab order, before the search;
+  - your own browser, at your zoom.
+
+## 27. Upload a JD: the boards' new icons and art (Figma 247:2, 244:467, 247:453)
+
+You updated the three boards:
+
+- the text-character glyphs are drawn icons now;
+- the upload tab's three rasters are vectors;
+- the link tab has new art under its form;
+- the source logos are gone, since the board had drawn them clipped.
+
+Two sessions picked this up at once. The other one (`nextkin-fa`) did most of it and handed it over
+to this one, which filled the gap it left (the paste column's icons). This section records the
+result.
+
+### 27.1 What changed
+
+- **Tabs:** the boards' own upload, link and paste glyphs (261:777, 261:773, 261:762), one drawing
+  each on the paste and link boards. The link field takes the tab's link glyph. They replace the
+  app's `UploadIcon`, `LinkIcon` and `DocumentIcon` from §23.2.
+- **Benefit rows:** each column now has its own board's four glyphs.
+  - Paste column (261:1199, 261:1187, 261:1206, 261:1213): a two-line document, the bar chart, a
+    bulb with a spark, and a bookmark with a dash.
+  - Link column (261:673–686, plus the bolt from 244:664): a bolt, a document with a magnifier, a
+    target and a padlock. They replace §23.2's stand-ins (clock, document, insights, shield).
+  - File column (261:1127–1143): a document with a magnifier and bullets, the bar chart, a filled
+    bulb and a plain bookmark.
+  - The paste and file boards draw the same bar chart, so both use one icon.
+- **Link tab:** the board's new art under the form (261:595). A character points at a browser, and
+  an arrow leads to "Just paste the link, we'll take care of the rest!", set as live handwritten
+  text, all on a lavender panel.
+- **Upload tab:** four drawings are the board's vectors now: the drop zone's character holding her
+  JD (261:781), the PDF tile (261:1268), the robot with its speech bubble (261:1016) and the sample
+  page (261:974).
+  - The three PNGs are deleted.
+  - The drop zone loses its dashed arrow and cloud, because the board's new vector doesn't draw
+    them.
+- **Logos:** you removed them from the board, whose chips and tiles still keep empty slots for
+  them. They are now the brands' own marks, from Iconify's CC0 sets:
+  - LinkedIn, Google and Microsoft in full colour;
+  - Indeed, Glassdoor, Wellfound and Amazon in one brand colour each.
+
+  `SOURCES.json` beside them records where each came from, and `build-illustrations.mjs` names
+  that source in the generated comment.
+
+### 27.2 Calls inside it (yours to overrule)
+
+- **The logos come from outside Figma.** They are the brands' real marks, not your designer's.
+  - CC0 settles copyright. Using a brand's logo to say "we support links from X" is a separate
+    trademark question. §23.2 already asks whether fetching those sites is allowed at all.
+  - Options: keep them, ask design to draw them, or show the names alone.
+- **One row of tabs stays for all three.** The file board no longer draws its row of tabs; the page
+  keeps a single row, as before.
+- **Four drawings are kept from before.** The new boards' versions match them at 97–100% overlap:
+  the tip and Analyze sparkles, the paste character, and the robot card.
+- **Two leftovers on the link board are ignored.** It draws "Upload file" twice on one spot
+  (261:739 over 244:578), and a second "Indeed" chip over the first.
+- **The link panel's lavender (`#F0F0FF`) is `surface-brand-strong`.** The exported panel shape
+  isn't used.
+- **The robot's "Let's find your best match!" is part of its drawing,** not live text, so a screen
+  reader skips it. It is treated as decoration.
+
+### 27.3 Verification
+
+- **Gates:** web typecheck and lint are clean, and the web suite is 18 suites / 213 tests, all
+  green. Mobile is untouched.
+- **Measured in Edge** against your dev server at 1396×670 on each tab:
+  - every new glyph and drawing renders;
+  - nothing scrolls sideways;
+  - no page errors and no failed requests;
+  - the pages are 800, 747 and 874px tall.
+- **The generated folders were diffed** before and after this pass. The only changes: the three
+  paste glyphs added, and the old `BarChartIcon`, which nothing uses now, removed.
+- **Not verified:** other widths for this pass, the logos' use beyond CC0, and your own browser.
+
+## 28. One top bar, pinned on every page
+
+You asked for the top bar (search, Upload New JD, bell, avatar) to stay fixed on every page. It
+was part of each page's header, so it scrolled away with the page, and on most pages it sat beside
+the title. It is now one bar in the app layout, pinned to the top of the window, with every page's
+title under it.
+
+### 28.1 Calls inside it (yours to overrule)
+
+- **"Fixed" is read as pinned while the page scrolls.** Home, Account, Settings and Upload a JD
+  scroll under it. The four list pages never scrolled and still don't.
+- **Every page is stacked now,** as Settings (§25) and Upload a JD (§26) already were: the bar on a
+  line of its own, the title 32px under its buttons. A pinned bar can't share a line with a title
+  that scrolls away. This overturns §16's header, with the title beside the actions, on Home,
+  Jobs, Applications, Resumes, Documents and Account.
+- **One `TopBar` in `app/(app)/layout.tsx`** instead of a copy in each page's header. It is the same
+  element on every page, so it doesn't remount on navigation, and text typed in the search survives
+  it. `PageHeader` is now only the eyebrow, the title and the line.
+- **The two per-page differences are a table in `TopBar`, keyed by path.** Documents shows its
+  inert "Upload New Document" (§19), and Upload a JD shows "Back to Jobs" (§26). They were
+  `PageHeader` props (`uploadLabel`, `uploadHref`, `back`), as were §25's `layout` and
+  `titleClassName`; all are gone.
+- **The bar's band is the page's white, with no edge.** Content scrolls under it and is cut off 8px
+  below the buttons. A hairline or a shadow once the page scrolls would mark the edge. No board
+  draws one, so none is added.
+- **The list pages lost 68px.** They fill the window under the bar, and their title now sits under
+  it instead of beside it, so their content starts at 182px instead of 114. Their one scrolling
+  list is 68px shorter at every size. Home and Account are 68px taller for the same reason.
+- **Settings' section list sticks 84px down** (20px under the bar) instead of 20px, or it would
+  slide under the bar.
+- **Error and coming-soon states fill the window under the bar** instead of the whole screen, which
+  would have made them scroll by the bar's height.
+- **The sizes live in `src/ui/pageFrame.ts`:** the 64px band, and `pageFill`, `pageFillMin` and
+  `stickyBelowTopBar`, all derived from it.
+- **The bar is the page's banner landmark,** outside `main`. Each page's title block is still a
+  `header` inside `main`.
+
+### 28.2 Verification
+
+- **Measured in Edge** against your dev server at 1536×730 and 1280×680, sidebar open, on all nine
+  kinds of page: Home, Jobs, Applications, Resumes, Documents, Account, Settings, Upload a JD and a
+  coming-soon page.
+  - The bar spans 0–64px and its buttons 20–56 on every page. Scrolled 300px, it stays at 0 on the
+    four pages that scroll, and Settings' section list holds at 84.
+  - The title starts at 112 on every page, and at 92 on Upload a JD, which has no eyebrow.
+  - The four list pages still don't scroll. Home scrolls 130–180px, Account 586–636, Settings
+    238–288 and Upload a JD 70–120.
+  - No illustration overlaps a title or its line, and none reaches under the bar. Settings'
+    characters start 2px under it.
+  - Nothing scrolls sideways. The coming-soon page is centred in the window under the bar.
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces. Web is 19
+  suites / 213 tests.
+  - A new `TopBar` suite covers the actions, the photo and the unread dot, and Documents' inert
+    "Upload New Document". It also holds §26's back-link test, moved from the `PageHeader` suite,
+    which now checks only the title block.
+  - Jobs and Documents no longer look for the bar's button in the page.
+  - Mobile is 168 / 1520, untouched.
+- **A flaky Jobs wait, widened afterwards (2026-09-14).** Another session saw the Jobs suite's "39
+  results" waits time out three times in five runs.
+  - Every mock call waits a seeded 300–900ms, drawn in call order. Dropping the page's
+    unread-count call shifted that order, and a 1s wait can leave ~100ms to render.
+  - The four waits are now 2s.
+  - The suite passed four runs before the change and five after it here, so the failure wasn't
+    reproduced. The margin is the fix.
+- **Not verified:**
+  - the sidebar shut;
+  - widths below 1280;
+  - a keyboard pass. The bar now comes before every page's content in the tab order, and Upload a
+    JD's back link comes before the search;
+  - your own browser, at your zoom.
+
+## 29. Sidebar: roomier rows, and a highlight that glides
+
+You said the sidebar felt clustered and small. You asked for more space between the rows, bigger
+icons and text, and smooth motion when clicking another row. §16 had sized it to fit a 670px-tall
+window: 32px rows on a 36px pitch, 13px labels and ~17px icons, 655px of height in all. This
+overturns §16's sidebar sizes; the 240/72 widths stay.
+
+### 29.1 What changed
+
+- **Rows are 40px on a 44px pitch.** Labels are 14px, and every icon is set to a 20px width, each
+  keeping its own height. The icon-to-label gap is 12px, up from 10. The user chip's name is 14px
+  too, so it isn't smaller than the labels under it. The rail keeps its 40px squares; only the
+  panel's rows grew.
+- **The current row's highlight glides.** The lavender pill (the ring on the rail) is now one
+  element per list, `NavHighlight`, and it slides to the row you click over 220ms on
+  `ease-standard`. The icon colour, label colour and label weight fade over the same 220ms.
+  Before, only the fill faded, at 120ms, and the rest snapped. Plus Jakarta Sans loads as a
+  variable font, which is what lets the weight fade.
+- **The highlight moves on the click, not when the page arrives.** The row lights up from
+  `Link`'s `onNavigate`, before the new route has loaded. In dev that wait includes compiling the
+  page on its first visit, which is why the highlight used to jump late.
+- **Two window-height steps keep the sidebar from scrolling.** With the Upgrade card whole it needs
+  735px of height. Below 760px tall the card hides its description sentence, and below 710px the
+  panel's rows step down to 36px. You chose this over a sidebar that scrolls and over 36px rows
+  everywhere.
+
+### 29.2 Calls inside it (yours to overrule)
+
+- **At 1536×730 you won't see the Upgrade card's description.** "Unlimited generations, DOCX export
+  and priority processing." shows from 760px of window height up. The title and Upgrade Now stay
+  at every height.
+- **The breakpoints are 759px and 709px of window height.** They leave 25px and 19px of slack over
+  the measured heights. They live in `theme.css` as the `short` and `shorter` variants, and need
+  retuning if the sidebar's content changes height.
+- **`aria-current` moves with the click.** Between a click and the page arriving, a screen reader
+  hears the clicked row as the current page. Keeping it on the old row would mean two meanings of
+  "current" in one list.
+- **Help and Jobs are the same 20px width as the rest.** The board draws Help 22 wide, Jobs 18 and
+  the others 17. At 20 they all match, so Help is a little smaller than before.
+- **The row lost its 1px border.** It existed so the rail's ring could fade in, and the ring now
+  belongs to the highlight. The rail row's padding went from 9px to 10px, which keeps the icon
+  centred.
+- **The current row has no hover fill.** Other rows keep their grey one.
+- **A list with no current row fades its highlight out where it was.** That happens on `/account`,
+  or when the current row is in the other list. Coming back, it fades in while sliding from that
+  row.
+
+### 29.3 Verification
+
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces. Web is 20
+  suites / 218 tests, and mobile 168 / 1520, untouched.
+  - A new `SidebarNavigation` suite stands in for the router with a mocked `next/link`. It shows a
+    click moving the highlight and `aria-current` while the pathname hasn't changed, and that going
+    Back doesn't bring a stale click back.
+  - The `Sidebar` suite gained the highlight's position and the two path helpers.
+- **Measured in Edge** against your dev server:
+  - At 1536×864, 1536×730, 1396×670 and 1280×680, the sidebar never scrolls, open or shut. Open, it
+    has 129, 39, 19 and 29px to spare.
+  - Rows are 40px at the first two sizes and 36px at the last two, and rail rows are 40×40 at all
+    four. Labels and the chip's name are 14px, and every nav icon is 20px wide.
+  - The Upgrade description shows only at 864.
+  - Clicking Applications from Home, the highlight moved about 20ms after the click and reached the
+    row at about 230ms. The URL changed at about 260ms, after it had landed.
+  - Collapsing at 1396×670 with Applications current, the highlight stayed within 0.03px of its row
+    on every frame, while the row eased from 200×36 to 40×40.
+  - With reduced motion the highlight jumps in one frame. On `/account` both highlights are hidden.
+- **Not verified:** your own browser, at your zoom; a keyboard pass; widths below 1280.
+
+## 30. Settings → Privacy & data and Connected accounts (from your mockups)
+
+You sent two mockups, not Figma boards, for Settings' Privacy & data and Connected accounts sections,
+and asked for them to match the other screens. You'll add the illustrations later, so neither section
+has one yet.
+
+**Your calls, asked before building:**
+
+- **The section list stays as it is.** The mockups draw a different one:
+  - Profile is added;
+  - Security is gone, with its two-factor and sessions rows moved into Privacy & data;
+  - Account's line reads "Email, password, plan".
+
+  Settings keeps the eight rows its Figma boards draw.
+
+- **Privacy's recruiter and search-engine settings are built as drawn, and logged here.**
+  - "Profile visibility", "Let recruiters find you" and "Show on search engines" save as they change.
+  - V2's Release 1 has no recruiter portal ("no Release 1 UI or APIs") and no public profile, so
+    nothing reads them yet.
+  - "Share anonymized data" is in V2: it is §8.5's product-analytics opt-out.
+- **Connected accounts follows V2: Google alone.**
+  - V2 §7.1 signs in with email, Google or Apple.
+  - It puts LinkedIn profile import out of scope ("no stable public API"), which your Help centre
+    also tells users.
+  - GitHub, Microsoft, X and Slack aren't in V2 at all.
+
+  The mockup's other five rows are left out, so this page differs from it.
+
+### 30.1 Data
+
+- **Shared gained `PrivacySettings` and `ConnectedAccount`** (`models/settings.ts`).
+  - `PrivacySettings` holds `profileVisibility` ('recruiters' | 'public' | 'private'),
+    `recruitersCanFind`, `searchEngines` and `shareAnonymizedData`.
+  - `ConnectedAccount` is `{ provider: 'google', connected, connectedAt? }`.
+  - The fixtures hold the mockup's values: visible to recruiters, found by them, kept off search
+    engines, sharing anonymized data, and Google not linked. They are shared, as `appSettings` is.
+- **`UserRepo` gained five methods.**
+  - `getPrivacySettings` and `updatePrivacySettings`, which merges one change in, as app settings do.
+  - `listConnectedAccounts`, `connectAccount` and `disconnectAccount`, each returning the whole list.
+- **The hooks:**
+  - `usePrivacySettings` / `useUpdatePrivacySettings` save through the write queue (§24.3), so quick
+    changes land in order and none flips back.
+  - `useConnectedAccounts` / `useConnectAccount` / `useDisconnectAccount` wait for the answer rather
+    than guessing it, since linking is the provider's own sign-in.
+- **Mobile gained one data test:** a privacy change merges in, and Google links and unlinks. No mobile
+  screen draws these.
+
+### 30.2 Calls inside it (yours to overrule)
+
+- **Built from the other sections' parts.**
+  - Each card is `AccountCard` with the lavender glyph tile, as on Account settings.
+  - The rows are one new `SettingRow`: glyph, title, line and control.
+  - The switches are the app's `Switch`, and the visibility menu is Preferences' `SelectField`.
+  - "Enable" is the Account section's `CardAction`. The mockup edges it in grey, but the same action
+    already wears the lavender edge there.
+  - "Download data" has the lavender outline, as drawn.
+  - "Delete my data" is a new `dangerOutlineButton`: red ink and a soft red edge. The edge is a new
+    token, `border-danger` (#f1a8a8, the danger red at 40% on white). On hover the ink turns a
+    darker red, the new `danger-text` (#b91c1c), since the danger red is under 4:1 on its tint.
+- **The header keeps "Settings ›"**, not the mockups' "‹ Settings". All five built sections share one
+  header.
+- **What each control does:**
+  - Every privacy control saves as it changes, as on Preferences.
+  - "Download data" runs the Account page's export (V2 §8.5).
+    - The row's line says where it has got to, and once the file is ready the button reads "Prepare a
+      new copy".
+    - That sentence now lives in `src/lib/dataExport.ts`, shared by both pages.
+  - "Manage data preferences" is inert: nothing is drawn behind it.
+  - "Delete my data" is inert.
+    - V2's deletion is account deletion (§8.5: everything purged within 30 days). It waits for
+      sign-in to end the session, as the Account page's danger zone does.
+    - V2 has no "delete my data, keep my account".
+    - **Its drawn line says more than V2 does (yours to settle).** "Permanently delete all your data
+      from our systems" never says the account goes. V2 also keeps billing records, and backups
+      until they age out. Before the button does anything, either the line needs new words or the
+      button should open the Delete account flow.
+  - "Enable" two-factor is inert, as on Account settings (§21).
+  - "Active sessions" opens the Account section, where the devices are listed, rather than drawing a
+    second list. Focus goes to that list.
+  - Connect and Disconnect change only the mock.
+    - The real client runs Google's sign-in and Cognito links the account (V2 §7.1).
+    - "Manage" is inert, and the kebab's menu holds "Disconnect Google".
+    - A failed link or unlink shows no message. The row stays as it was and keeps focus, as a failed
+      save does elsewhere in Settings.
+    - **The repo's connect shape is provisional.**
+      - V2 signs in with Google through a redirect (`GET /api/v1/auth/login/:provider`, back at
+        `/callback`) and links the account in Cognito's Pre sign-up trigger.
+      - V2 names no endpoint for listing or unlinking accounts.
+      - When the API lands, Connect probably starts that redirect and the list is read on the way
+        back, so the hook and its "Connecting…" state change too.
+      - The comments on `UserRepo` now say so.
+  - "Learn more about how we use your data." and "View privacy policy" both open `/help`, the Help
+    placeholder. There is no privacy policy page yet.
+    - So a screen reader's list of links offers "View privacy policy", which lands on "Help &
+      support, coming soon".
+    - The alternative is to leave that link out until a policy page exists.
+- **Nothing says which privacy setting wins when two disagree**, e.g. "Private" with "Show on search
+  engines" on. Both save as drawn, and whatever first reads them has to settle it. One option:
+  "Private" overrides both switches.
+- **Copy kept as drawn, though V2 says otherwise (yours to settle).**
+  - Connected accounts' line, "Connect your accounts to import data, automate your profile, and get a
+    better experience", promises imports.
+  - Google's "Use Google to sign in and sync your data." promises syncing. V2's Google is sign-in only.
+  - The section list still says "Google, LinkedIn, etc." under Connected accounts (254:1052).
+  - Options: keep them, or reword them, for example to "Use Google to sign in."
+- **Profile visibility's other two options are mine.** The mockup shows "Visible to recruiters" and names
+  the others only in the row's line ("recruiters, public, or private"), so they read "Public" and
+  "Private".
+- **One row, so no group headings.** The mockup's "Professional accounts" and "Other accounts" held six
+  providers; with one, the headings go.
+- **Two glyphs come from outside the Figma set:** people ("Let recruiters find you") and database
+  ("Your data").
+  - Both are Material Symbols (Apache-2.0), via Iconify, as the upload page's logos were.
+  - A `SOURCES.json` beside them names the source, and `build-icons.mjs` now puts it in the generated
+    comment, as `build-illustrations.mjs` does.
+  - Apache-2.0 asks for the licence to travel with the product, and the web app has no notices file
+    yet.
+  - Every other glyph is one the app already has.
+- **No illustrations**, as you said. The header's right-hand corner stays clear for them.
+
+### 30.3 Verification
+
+- **Gates:**
+  - Typecheck and lint green in both apps.
+  - The web Settings and Account suites 8 / 42, including the two new suites:
+    - Privacy (5 tests): the copy; a switch and the visibility menu saving; the export running to
+      "ready"; "Active sessions" opening Account; its own loading and error states.
+    - Connected (3 tests): the copy and the five absent providers; connecting, then disconnecting
+      through the menu; its own loading, empty and error states.
+  - Mobile 169 / 1522, up from 168 / 1520.
+  - The full root gate (`pnpm typecheck && pnpm lint && pnpm test`) was green: web 24 / 229, mobile
+    169 / 1522.
+  - After the focus fixes below, typecheck, lint and the Settings and Account suites (8 / 42) were
+    re-run, all green.
+  - After the review's fixes (below), the full root gate was green again: web 24 / 234, mobile
+    169 / 1522. Privacy now has 7 tests and Connected 4.
+  - **A flaky Jobs test, not mine, since fixed.** In the web run before that, one Jobs test failed.
+    - Its four waits for "39 results" allowed 1s, and the mock's delay alone reaches 900ms.
+    - Run alone four times, the suite failed twice, each time on a different test.
+    - nextkin-96 has since given those waits `SETTLE_MS.normal * 2` (see §28.2).
+- **Measured in Edge** against your dev server at 1536×1024, 1536×730, 1396×670 and 1280×680, sidebar
+  open:
+  - Nothing scrolls sideways, and no title or line wraps or is cut off.
+  - The section list and first card start at 182px, as on the other sections.
+  - Privacy & data is 1054px tall, so it scrolls 30px even at 1536×1024. Connected accounts fits every
+    window measured.
+  - In the browser: Connect → "Connected" → the menu → Disconnect → "Not connected".
+  - One 404 showed in the console on the very first load. A second check found no failed request on
+    either section.
+- **A keyboard pass in Edge, and what it fixed.**
+  - Every control in both sections takes focus in reading order and shows the brand focus ring.
+  - Space flips a switch. The visibility menu opens with Enter, moves with the arrows, and picks with
+    Enter or Space.
+  - **Fixed:** "Download data" and "Connect" disabled themselves while they worked, and a disabled
+    button drops keyboard focus to the top of the page.
+    - Both now stay focusable while they work: they are marked `aria-disabled` and ignore presses.
+    - The kebab is never disabled.
+    - Once Google links, focus moves to "Manage"; once it unlinks, back to "Connect". That happens only
+      after the person's own press.
+    - The Account page's export button got the same fix.
+    - The tests now check where focus goes.
+  - **Not fixed, elsewhere in the app:** five other buttons still disable themselves while they work,
+    and drop focus the same way. One pass across the app would fix them all:
+    - "Sign out of other devices" (Account → Security);
+    - Upload a JD's Analyze buttons;
+    - Resumes' Create;
+    - a resume's export;
+    - Jobs' Save.
+- **A review after the build, and what it changed.** Five reviewers each read the code through one
+  lens: consistency, spec and copy, accessibility, data, and tests. A second agent then tried to
+  refute each serious finding. One finding was confirmed. I fixed the rest below on my own reading
+  of the unconfirmed list.
+  - **Confirmed and fixed:** "Active sessions" dropped focus to the page, because the button pressed
+    left with its section. Focus now goes to Account's device list, or to Account's tab until the
+    list has loaded.
+    - Checked in Edge at 1536×730. From the keyboard, the list takes focus with the brand ring, in
+      view, and the next Tab reaches the first device's menu.
+    - From a click at the bottom of the page, the list takes focus in view, without the ring.
+  - **Loading:** "Your data" showed between two grey blocks, then jumped down as the card above it
+    arrived. The three cards now arrive together, as on Account and Preferences.
+  - **Errors:**
+    - If the privacy settings can't load, only their card says so; "Your data" and Security keep
+      working.
+    - A failed refetch keeps what was there instead of replacing the section. TanStack marks a
+      failed refetch as an error but keeps the data.
+    - Connected accounts got the same guard.
+  - **Contrast:**
+    - The green "Connected" pill was about 3:1. It now uses the match badges' darker green,
+      `success-text` (4.6:1).
+    - The danger red was under 4.5:1 on hover and on a highlighted menu item. It now darkens to
+      `danger-text` there (5.3:1 and 5.9:1).
+    - Measured in Edge: the danger button's ink #dc2626 at rest and #b91c1c on hover; the pill
+      #15803d; "Disconnect Google" #b91c1c when highlighted.
+  - **Descriptions:** every Privacy control is now described by its row's line, so a screen reader
+    hears "Show on search engines, switch, off" and then "Allow your profile to appear in Google and
+    other search engines". `Switch` and `SelectField` gained an optional `describedBy`. In Edge, all
+    eight controls carry it.
+  - **Failed saves:** a failed save used to restore the whole settings snapshot, which could undo or
+    revive a change queued behind it. It now puts back only the setting it changed (`rollBackPatch`
+    in `writeQueue.ts`). Preferences' app settings got the same fix.
+  - **One recipe each:**
+    - The kebabs and chevrons share `src/ui/iconButton`.
+    - Connect and Manage use the other Settings actions' padding.
+    - Two-factor's action is one component, `TwoFactorAction`.
+  - **The icon generator** now stops if a `SOURCES.json` names a file that isn't there, rather than
+    crediting a renamed Material glyph to the Figma board.
+  - **Tests added:**
+    - focus lands on the devices;
+    - two queued saves never flip back;
+    - a failed save puts its switch back;
+    - a failed export says so and offers the download again;
+    - a failed link leaves Google unlinked, with Connect focused;
+    - the provider's name is matched exactly;
+    - loading shows no error.
+  - **Not fixed, elsewhere in the app:**
+    - The shared `Tag`'s success tone (#16a34a on #dcfce7, bound on the Applications board) is about
+      3:1 wherever `Tag` uses it. It is the board's pair, so I left it.
+    - Other optimistic hooks restore their whole snapshot when a write fails. I changed only the two
+      settings hooks whose queued writes can overlap, and didn't check the rest.
+    - The Account page's export test leaves the 4s build timer running into the next test.
+- **Not verified:** a screen reader; the sidebar shut; widths below 1280; your own browser.
+
+## 31. Settings: the section list's highlight glides
+
+You asked for the sidebar's treatment on the Settings section list (254:1009) as well. Its rows were
+already roomy (58px, with 20px icons). What it shared with the old sidebar was the switch: the
+lavender wash faded out of one row and into the next over 120ms instead of moving.
+
+### 31.1 What changed
+
+- **The wash glides.** It is one element, the shared `src/ui/SlidingHighlight` the sidebar now uses
+  too, and it slides to the section you pick over 220ms on `ease-standard`. The switch was already
+  instant, because the section is local state rather than the URL, so nothing else waits.
+- **Titles are 14px (Body/L), matching the sidebar's labels.** Descriptions stay 12px, icons 20px
+  and rows 58px on a 60px pitch, so the list is the same size as before.
+- **Rows have a fixed height now.** It is Body/L's line (20) plus Body/S's (18) plus 10px above and
+  below, written as those tokens. The glide steps by that height, so neither line may wrap, and a
+  line too long for the column ends in an ellipsis instead. Nothing is cut today. The tightest line,
+  "Permanently delete your account", has about 2px to spare in the 264px column, and its full text
+  is still the tab's description.
+- **`SlidingHighlight` replaced the sidebar's own `NavHighlight`,** so both lists share one
+  implementation. It takes the row height and the gap as token or custom-property lengths.
+- **The type ramp's notes changed.** `theme.css` and `tokens.ts` now list nav labels under Body/L
+  rather than Body/M, since the sidebar's labels moved there in §29.
+
+### 31.2 Calls inside it (yours to overrule)
+
+- **Only the glide and the title size changed.** The rows in your screenshot weren't cramped, so
+  the spacing and icons stay as they were. Say if you want them roomier too: the list is 496px tall
+  and sticks 84px down, which leaves about 90px spare at 1396×670.
+- **A description that doesn't fit gets an ellipsis, not a second line.** A second line would
+  break the glide's arithmetic. None is cut at any width I measured, since the column is a fixed
+  264px.
+- **The selected row takes no hover fill,** as in the sidebar, because the wash is its fill.
+
+### 31.3 Verification
+
+- **Measured in Edge** against your dev server at 1536×730, 1396×670 and 1280×680:
+  - Rows are 58px on a 60px pitch. Titles are 14px/600 and lines 12px.
+  - The wash sits exactly on the selected tab, and no line is truncated.
+  - From Account to Security, the wash started moving about 10ms after the click and arrived at
+    about 230ms.
+  - Scrolled 238px, the list holds at 84 with the wash still on its tab.
+  - The sidebar's highlight still sits on its row after the switch to the shared component.
+- **Gates:** `pnpm typecheck && pnpm lint && pnpm test` green in all three workspaces. Web is 24
+  suites / 229 tests and mobile 169 / 1522. Both counts include other sessions' work that landed
+  meanwhile.
+  - In one partial run, `Sidebar` › "renders every destination the board draws" failed while 14
+    suites ran alongside other sessions' jobs. I didn't capture its message. Nothing in it had
+    changed since it last passed, and it passed alone (556ms) and in the full run. If it recurs,
+    look at its ten `findByRole` calls first: they are the slow part.
+- **New suites:** `SettingsNav` shows the wash following `active` and a click reporting its
+  section. `SlidingHighlight` covers the arithmetic inputs, and parking when nothing is selected.
+- **Not verified:** a keyboard pass; your own browser, at your zoom.
+
+## 32. Backend architecture document (doc/NextKin-Backend-Architecture.md)
+
+A stakeholder-facing description of the backend for web + mobile and the AWS platform under it,
+written to the 70% simple / 30% technical brief. It is a **document, not code** — nothing in the
+repo changed, and the mock data layer in `packages/shared` is untouched.
+
+### 32.1 Where it comes from
+
+- Everything factual in it is sourced from the V2 spec — §8 (non-functional), §9 (architecture and
+  AWS), §10 (data model), §11 (API surface), §12 (AI design), §14 (delivery and lead times), §17.3
+  (architecture readiness), Appendices B and C. It restates and organises the spec for a
+  non-engineer audience; it does not add architecture the spec does not already bind.
+- The traceability table at the end of the document maps each of its parts back to the spec
+  sections it draws on, so a reader can check any claim.
+
+### 32.2 Calls I made that are yours to overrule
+
+- **Structure.** The spec argues each decision in a comparison table under a technical heading. I
+  reorganised into five journeys (instant read, AI generation, upload, job search, payment) plus a
+  decision register (D1–D15) where every entry answers the same five questions you asked for —
+  what, why, alternatives, why not, and what breaks if we skip it. The spec's own ordering is by
+  service; this is by the question a stakeholder actually asks.
+- **Fifteen decisions, not twenty.** I folded some of the spec's separate recommendations together
+  where a stakeholder would hear them as one choice: the edge, the firewall and the internal load
+  balancer are one entry (D3); parsing and PDF rendering collapsed into D10 since the parsing
+  choice has no real alternative worth a stakeholder's attention. If you want Textract-vs-native-
+  PDF-input or `@react-pdf/renderer` argued separately, say so and I will split D10.
+- **Cost is regrouped, not re-derived.** The spec's §9.15 has 25 line items. I grouped them into
+  seven buckets (compute, data, edge, storage/misc, identity, security/monitoring, backup/support)
+  and kept the totals identical — ≈$760 production, ≈$330 non-production, ≈$1,090 AWS all-in. The
+  per-line detail stays in the spec; anyone who needs it goes there.
+- **I led with the uncomfortable numbers rather than burying them.** The fixed floor before the
+  first user, the single-NAT-gateway gap, the Cognito no-cross-region-replication limitation, the
+  24-hour cross-region RPO, and "AI tokens cost several times the infrastructure" are all stated in
+  the body, not in a footnote. The spec takes the same position; I have kept it rather than
+  softening it for a client-facing read. Tell me if you would rather these move to an appendix.
+- **Four open decisions are addressed to the client** at the end of Part 8 (model tier, 99.5% vs
+  99.9%, VAT/GST self-handling vs merchant of record, startup credits). These are the spec's own
+  open items; I named them as decisions with owners rather than leaving them implicit.
+- **"App and web" reading.** You said "for the app and web". I wrote it as _one_ backend with two
+  clients, because that is what the spec binds (§9.2, §17.3) and what `packages/shared` already
+  assumes. Part 1 §3 is explicit that Phase 2 mobile needs no new backend capability. If you meant
+  two separately-scoped backends, that is a different document and a different spec position.
+
+### 32.3 Not verified
+
+- **No pricing was re-checked.** Every figure is the spec's own us-east-1 list price as of its
+  writing. Appendix C of the spec lists 18 facts to re-verify at M0; I reproduced the eight that
+  would change this document, with their fallbacks. Nothing was looked up live.
+- **Nothing here has been reviewed by an AWS-experienced engineer.** The spec itself flags the AWS
+  skills gap as risk 11 and recommends an AWS-experienced engineer or short-term consultant on M0.
+  This document inherits that risk; it is a faithful restatement of the spec, not an independent
+  architecture review of it.
+- **No diagram.** The spec has the Mermaid architecture diagram (§9.1) and the ER diagram (§10). I
+  did not duplicate either. If this document is going in front of stakeholders on its own, it wants
+  one picture of the seven building blocks — say the word and I will add it.
+
+## 33. Backend stakeholder guide (doc/NextKin-Backend-Stakeholder-Guide.md)
+
+A second backend document, written for explaining the backend to stakeholders: simple technical
+English, a real file name beside every idea, a feature-by-feature walk-through (§5 of the guide),
+and the reliability steps (§7). It does not replace `doc/NextKin-Backend-Architecture.md` (§32
+here) — that one argues each AWS choice against its alternatives; this one points to it instead of
+repeating it. Nothing in the code changed.
+
+### 33.1 Calls I made that are yours to overrule
+
+- **Every file name is tagged `[exists]` or `[planned]`.** The backend does not exist, so most names
+  in the guide are planned. I did this so the guide cannot be used to claim something is built
+  when it is not.
+- **The planned folder layout is mine, not the spec's.** The spec fixes the shape — API inside the
+  Next.js app (§11), one image with `web` and `worker` entrypoints (§9.5), CDK in the monorepo
+  (§9.10) — but names no folders. I proposed:
+  - `packages/server` (`@nextkin/server`) for all server-only code, so the phone app can be
+    lint-fenced away from database and AWS code the same way it is fenced from fixtures. The
+    alternative is `apps/web/src/server/`; that is simpler but lets server code sit one import away
+    from client components.
+  - `apps/web/app/api/v1/**/route.ts` for endpoints and `apps/web/worker/main.ts` for the worker.
+  - `packages/shared/src/repos/http/` for the real repositories beside the mock ones, switched in
+    `packages/shared/src/repos/index.ts`.
+  - `infra/` at the repo root for the CDK app (would need adding to `pnpm-workspace.yaml`).
+  - `packages/shared/src/schemas/`, `doc/runbooks/`, `tests/load/`, `packages/server/evals/`.
+    Change any of these before M0 and the guide needs the same edit.
+- **Which pipeline stages each generation `kind` runs** (guide §5.6 table) is my proposal. The spec
+  describes the full resume run only; the five kinds come from `models/generation.ts`.
+- **The 3-minute auto-fail is enforced by a scheduled sweep** in my wording (guide §7.2 step 3).
+  The spec requires the behaviour (§8.1) but not the mechanism.
+- **Mobile progress: stream or poll.** I said the phone app can use the SSE stream or poll
+  `GET /generations/:id`, because §11 allows both. I did not check whether Expo Go SDK 57's fetch
+  can read an SSE stream; decide at M2.
+
+### 33.2 Things the guide surfaced that need a decision
+
+- **The apps are ahead of spec §11.** Guide §6 lists every repository method with no endpoint in the
+  spec — dashboard stats, account settings, resume section editing, several jobs rails, documents,
+  support, and smaller ones. Each needs an endpoint designed before its backend is built.
+- **Application tracking and notifications are Release 2 in the spec** (§6.2, §17.1), but the web
+  Applications board (`apps/web/src/features/applications/`) and both apps' notification screens
+  call `jobsRepo.apply / listApplications / updateApplicationStatus` and `notificationsRepo`.
+  Decide: pull a minimal version into Release 1, or leave those screens on mock data until Release 2.
+  The guide states the conflict; it does not pick.
+- **`resumesRepo.export()` will change shape.** Today it returns HTML/text for the device to write;
+  with the backend it returns a presigned URL. It is the one repository whose return type is
+  already known to break the "hooks never change" promise — the comment in `repos/types.ts` says so.
+
+### 33.3 Not verified
+
+- All targets and limits are the spec's own (§8.1, §8.2, §8.10). Nothing was measured.
+- Screen file paths were checked against the repo on 2026-09-18. "Coming soon" marks the web pages
+  that render `ComingSoon` today (assistant, interview, upgrade, help, insights, document detail,
+  resume editor). The Skills Explorer is not built on either app.
+
+## 34. Backend implementation plan (doc/NextKin-Backend-Implementation-Plan.md)
+
+The execution layer under §32 and §33: seven phases (M0–M6) matching V2 §14.2, two continuous tracks
+(performance/reliability/stability, and the mock→HTTP client cutover), and per-task detail with a
+falsifiable done-when on every task. It is a **document, not code** — nothing in the repo changed and
+the mock data layer is untouched.
+
+### 34.1 Where it comes from
+
+- The V2 spec is the binding source throughout: §7 features, §8 non-functional, §9 architecture, §10
+  data model, §11 API surface, §12 AI design, §13 quotas, §14.2 milestones, §14.5 lead times, §16 QA,
+  §17.3 architecture readiness, Appendix C. The milestone names M0–M6 are the spec's own, so they mean
+  the same thing in all three backend documents.
+- §32 and §33 were read-only inputs. Their milestone summaries (Architecture Part 7, Guide §9) are
+  left as summaries and neither document was edited — the Guide is also published as an artifact built
+  from its `.md` by another session's script, so editing it here would have drifted the page from its
+  source.
+- The repository was read directly for every claim about what exists today. Facts like "no `route.ts`
+  anywhere", "`packages/shared` has no lint or test script", and "`SCORE_RUBRIC` already carries §7.8's
+  exact weights" are from the files, not from the other two documents.
+
+### 34.2 Calls I made that are yours to overrule
+
+- **Scope answers.** Three questions were settled before writing: full Release 1 (M0–M6) with the §6.3
+  de-scope levers marked inline rather than an MVP-only plan; the client-side cutover included as its
+  own track; and application tracking plus notifications flagged as an open decision rather than
+  scheduled either way. All three are recorded in the document.
+- **Mobile is Phase 2.** The plan builds the mobile-ready seam (bearer-token verification, shared
+  schemas, shared client) because §17.3 requires it, but does not cut mobile over. §14.4 puts React
+  Native in Phase 2 and §9.2 makes the web app the Release 1 product. If you want mobile in Release 1
+  that is decision D-06, and it adds a second client's full integration to a timeline that has no line
+  for it.
+- **A named scope boundary.** The plan states plainly that it does _not_ build the seven `ComingSoon`
+  web pages or the missing `(auth)` route group, and that §16.7's "all seventeen §7 UAT checklists
+  pass" gate depends on them. That work needs its own plan and its own artboards. Made visible rather
+  than silently assumed.
+- **Legal moved to M3.** §14.5 says the legal track "runs in parallel from M3", so counsel
+  engagement, the EN/DE policy drafts and the five DPA requests are an M3 task, not an M6 one.
+- **AWS Business Support before the first beta invite**, labelled in the document as a deliberate
+  deviation from §14.5's "activated launch week" — beta runs on production with real PII.
+- **Staffing is stated.** Roughly 100 L/XL tasks against §14.3's 17–22 weeks implies ~10–14 engineers
+  plus a designer, KB curator, content author, QA owner, counsel and accountant. Three of those gates
+  are not engineers: template design blocks M3, KB curation blocks M2, eval-set authoring blocks M2.
+  The numbers are my estimate, not the spec's.
+- **Task ids and sizes** (M0-01…, S/M/L/XL) are mine. So is the grouping inside each phase.
+
+### 34.3 What an adversarial pass changed
+
+The breakdown was produced by nine parallel agents (one per milestone plus the two tracks) and then
+reviewed by four critics — completeness against the spec, dependency ordering, non-functional
+coverage, and omissions. All four returned the same verdict on the raw output: good per task, but nine
+plans stacked rather than one. What that changed, so the reasoning is on record:
+
+- **An ownership map (plan §1.6).** In the raw breakdown, `rls.test.ts` was delivered by six different
+  tasks, the observability kernel by four, the Expo SSE spike by five, and the schema was created four
+  times over; the mock→HTTP cutover had two mutually contradictory designs. The document now names one
+  owning task per artefact and everything else states a delta.
+- **§7.2 Dashboard had no owning task at all** in any track — one of the seventeen Release 1 modules
+  would have shipped visibly mocked to real users. It is now M1-09, including the two endpoints §11
+  never named.
+- **A developer-ergonomics group in M0** (M0-25…M0-28). Two tasks already depended on "a seeded
+  backend" that nothing built; there was no local AI story at all (the primary path authenticates by
+  ECS task role, so a laptop cannot call it); no one-command local stack; no onboarding doc; no test
+  accounts; and an on-call channel six tasks depended on that was not created until M6.
+- **Liveness and readiness split (R-08).** The deep health check was wired to the ALB target group.
+  Valkey and Aurora are shared by every `web` task, so one failover would mark every task unhealthy at
+  once — turning a twenty-second degradation into a full outage with nothing healthy to shift to. The
+  ALB now checks the shallow endpoint; the deep one feeds alarms and the degraded-mode banner.
+- **R-12 exists because of the critics**: thundering herd after an outage, cache stampede, poison-pill
+  messages blocking a FIFO group, Aurora pool exhaustion during worker scale-out, SSE connection
+  leaks, partial writes between Postgres and S3, a silently invalidated prompt-cache prefix, and quota
+  accounting racing two concurrent generations. None of these had an owning task.
+- **Smaller fixes folded in:** the lead-time task split into file-then-chase with a standing weekly
+  unblock review; a performance budget transcribed by hand rather than CI parsing the spec's markdown
+  (which would couple the build to a 2,000-line document's prose formatting); verification gates given
+  partial-pass paths instead of ten-way dependency fans; and the §14.2 design-system exit criterion
+  recorded rather than assumed.
+
+### 34.4 Conflicts between the spec, the docs and the code — none of these is settled
+
+These are in the document as §4.6 and they need decisions, not implementations.
+
+- **34.4.1 Score label.** §7.8 mandates the UI say "NextKin Score". Both apps ship "ATS score", the
+  Figma boards draw "ATS Score", and `CLAUDE.md` rule 7 says copy keeps the built vocabulary. The code
+  already documents the disagreement in three places (`packages/shared/src/models/resume.ts:91`,
+  `apps/web/src/ui/ScoreRing.tsx:19`, `apps/web/src/features/home/components/ResumeProgressCard.tsx:69`).
+  Worth knowing before you decide: the dispute is only the string. `SCORE_RUBRIC` already carries
+  §7.8's five components at their exact weights (keywords 40, timeline 20, sections 15, formatting 15,
+  achievements 10), and `SCORE_HONESTY_NOTE` already says the honest thing in substance. Flipping the
+  label is one constant. This is the one conflict where the spec and `CLAUDE.md` genuinely disagree
+  with each other, so I have not applied "the spec wins" unilaterally.
+- **34.4.2 Currency.** Fixtures price plans and salaries in INR (`Plan.price.currency: 'INR'`,
+  `JobFilters.salaryMin/Max` documented as annual INR, and an INR normalisation table in `jobsRepo`
+  marked mock-only). §13.2 publishes USD/EUR/AUD and §6.2 defers India. The price book, `SalaryRange`
+  and every filter bound change with the answer.
+- **34.4.3 Pagination.** §11 requires cursor pagination on _all_ list endpoints. Only `JobsRepo.list`
+  is paginated today and `useResumes` sorts in memory. Either around twenty interfaces change shape or
+  §11's convention narrows. It has to be settled before the HTTP client is written, not after.
+- **34.4.4 Notification model.** Mobile models five categories plus quiet hours plus a weekly digest;
+  web models seven topics across three channels. The API needs one model — and this sits inside the
+  already-undecided Release 1 / Release 2 question for notifications.
+- **34.4.5 `ContentRole.period` is a rendered string**, but timeline validation needs dated roles. The
+  canonical resume JSON has to carry structured dates and derive the display string.
+- **34.4.6 Board-derived models with no spec home.** `AccountSecurity`, `AppSettings`,
+  `PrivacySettings` and `CareerDocument` were drawn from the boards; §11 names no document store at
+  all, and most of these have no reader in Release 1 (no recruiter portal, no public profile). Each
+  needs an endpoint designed or an explicit "stays on mock". Related and still open from §30: nothing
+  says which privacy setting wins when two disagree.
+- **34.4.7 `Job` has no `applyUrl`** although §7.13 requires apply links and Adzuna requires tracked
+  redirect URLs. Trivial to add now, expensive to discover during M4.
+- **34.4.8 Single origin vs an `app.` subdomain** (already open as §9.2). Session-cookie scope and the
+  CloudFront behaviour set both depend on it, so it is needed before the edge stack is written.
+- **34.4.9 `packages/shared` has no `lint` and no `test` script.** The root gates are `pnpm -r lint`
+  and `pnpm -r test`, so the shared package is linted by nothing and tested by nothing, and it has zero
+  test files. This is exactly where the HTTP repositories and the phone-safety fence are about to land.
+  M0-04 fixes it; noting it here because it is a live gap today, not only a future one.
+- **34.4.10 Two Release 1 launch hooks have no milestone row.** §4.1's zero-signup teaser upload and
+  the shareable PII-redacted ATS report are in scope, and the `anonymous-uploads` bucket with its
+  hourly 24-hour purge already assumes the first. §14.2 lists neither. Given owners M1-15 and M4-13.
+
+### 34.5 What is unverified, and what is proposal rather than decision
+
+- **Nothing in the plan was built or run.** It is a document. No AWS resource exists, no schema, no
+  endpoint.
+- **Every AWS price, model id, service feature and provider term in it is the spec's own and was not
+  re-verified.** That is deliberate: spec Appendix C lists eighteen such facts and requires each
+  re-verified at build time, which is why M0-01 is the first task in the plan and why nothing else in
+  M0 is safe to start before it. Four of those eighteen change a stack's _design_ and not just its
+  cost (Claude Platform availability, CloudFront VPC origins, ECS native blue/green in CDK, and the
+  GuardDuty malware tag semantics the bucket policy denies on).
+- **The folder layout is §33's proposal, carried forward and labelled `(proposed)` throughout**:
+  `packages/server`, `apps/web/app/api/v1/**`, `apps/web/worker/main.ts`,
+  `packages/shared/src/repos/http/`, `packages/shared/src/schemas/`, `infra/`, `doc/runbooks/`,
+  `tests/load/`, `doc/decisions/`. The spec fixes the shape — API inside Next.js (§11), one image with
+  two entrypoints (§9.5), CDK in the monorepo (§9.10) — and names no folders.
+- **Also proposal, not spec:** which pipeline stages each generation `kind` runs; the scheduled sweep
+  as the mechanism for the 3-minute auto-fail (§8.1 requires the behaviour only); and the per-phase
+  task grouping and ordering inside each milestone.
+- **Unverified and scheduled as a spike (M2-20):** whether Expo Go SDK 57's `fetch` can consume an SSE
+  stream at all. §11 already permits polling as the fallback, so this is a measurement, not a risk —
+  but it must not be assumed either way.
+- **Open client decisions are in the document as a register (§4.4)** with a by-when date and a default
+  applied on silence for each: the Opus-vs-Sonnet generation tier (eval-driven at M2, and the single
+  largest cost decision in the product), 99.5% vs 99.9% availability, VAT/GST self-filed vs merchant of
+  record, AWS startup credits, application tracking and notifications, mobile in Release 1, the score
+  label, and single origin vs subdomain.
+
+### 34.6 Decisions taken 2026-09-19, and what they changed in the plan
+
+Four questions were put to you about M0-01 and M0-02. The answers, and the consequences that followed
+from the two facts you gave alongside them.
+
+- **34.6.1 Who files the external approvals — you do; I produce the packets and the tracker.** Every
+  row on the §14.5 list needs a login, a payment method or a legal identity that cannot be delegated.
+  M0-02 is now written that way: one filing packet per row (what to submit, where, the exact values,
+  what the response looks like) plus a tracker, handed over; you file and report the date back. M0-03
+  keeps the weekly chase, because a filed application nobody follows up is the same as an unfiled one.
+- **34.6.2 The refreshed §9.15 cost table lives in its own dated document**, not in the spec.
+  `doc/decisions/appendix-c/cost-refresh.md`, mirroring §9.15's tables with a source and a date per
+  line. **The binding spec is never edited.** Overwriting §9.15's numbers would destroy the record of
+  what the project was planned against, and the planned-versus-verified diff is the whole value of the
+  Appendix C sweep.
+- **34.6.3 The eighteen Appendix C verdicts go in one consolidated file** —
+  `doc/decisions/appendix-c/README.md` with a status/date/evidence/applied-fallback/tasks-changed row
+  per item, plus expanded notes on the four that flip a stack's design. Eighteen separate files is
+  more filing than reading, and the point of the sweep is seeing all eighteen verdicts at once before
+  anything is built on them.
+- **34.6.4 The product domain is not chosen. Recorded as D-09, and it is the one deferral that costs
+  something.** Route 53 delegation, the Cognito custom domain and the SES sending identity all hang
+  off it — and so does **Google OAuth consent-screen verification, which is a 1–4 week clock and also
+  needs a published privacy-policy URL**. Without verification, every new user sees a browser warning
+  screen on Google sign-in (§7.1). Registering a domain costs almost nothing today; deferring it means
+  verification cannot even begin until the AWS work starts, which lands branded Google sign-in at the
+  very end of the project. Everything else on the filing list genuinely can wait. This one should not.
+
+#### 34.6.5 The sequencing change, and its real cost (D-10)
+
+You said AWS and the external work start **after the backend is completed**. Taken literally that
+cannot mean the plan's M0, because M0 _is_ the AWS platform — so "backend" here means the application
+code: `packages/server`, the API, the worker, the pipeline. That is a legitimate way to build it and
+the plan already had most of the pieces (docker-compose with Postgres/Valkey/MinIO/ElasticMQ,
+`pnpm dev:all`, the recorded AI provider). M0 is now split in the document:
+
+- **M0-local** — the monorepo work, the schema and RLS baseline (both pure PostgreSQL, no cloud
+  needed), the API contract, the observability kernel, and the developer group. The application
+  backend is built and tested here.
+- **M0-cloud** — the AWS stacks, the deployment pipeline and the filings. Starts when the application
+  backend is complete.
+
+**The cost, stated plainly rather than discovered in month two.** Every AWS-only dependency now needs
+a local fake behind the same interface, or the application cannot be built at all. That is new task
+**M0-31**: one port with two adapters for `IdentityProvider` (the significant one — Cognito has no
+local equivalent and M1's entire auth surface sits on it), `ScanProvider` (the malware gate),
+`OcrProvider` (Textract) and `StorageProvider` (MinIO already covers presigned POST, so nearly free).
+The existing `LLMProvider`, `PaymentProvider` and `JobProvider` already follow this shape, so this
+extends a discipline rather than inventing one — but it is real extra work, and **every fake is a
+place where local-green and cloud-red can diverge.** M0-cloud therefore carries its own integration
+budget and each port has one contract suite run against both adapters; it is not a merge.
+
+The M0 exit gate is split to match: M0-local exits on a local generation from a clean machine plus the
+RLS suite; M0-cloud exits on the hello-world round-trip **against real AWS**, which is also the moment
+every fake is measured against the thing it stood in for.
+
+**What this does to the critical path.** The AWS block moves late. The chain above it is all
+local-buildable, so the path is coherent — but the integration risk moves to the end, which is the
+trade being made. Two things cannot move with it: the domain (D-09, because of the downstream 1–4 week
+clock) and legal (M3-11, which Google OAuth verification also depends on for its privacy-policy URL).
+
+## 35. M0.a executed — the Appendix C sweep, cost refresh and lead-time tracker (2026-09-19)
+
+M0-01 through M0-03 were run the same day the D-10 resequencing landed. Everything below is documents
+only; no application code, no AWS resources. Deliverables live under `doc/` (git-ignored by policy —
+only this file is a tracked change).
+
+### 35.1 What was produced
+
+- **`doc/decisions/appendix-c/README.md`** — all 18 rows with a status, date, evidence link and the
+  task each applied fallback changes: **10 verified · 3 changed-fallback-applied · 4 blocked-with-owner
+  · 1 composite**. Expanded notes cover the four design-flipping items (spec items 1, 5, 6, 10 — the
+  plan previously mis-numbered three of them; corrected in the document).
+- **`doc/decisions/appendix-c/pinned-versions.md`** — the single PostgreSQL-major pin (**17**;
+  scale-to-zero needs ≥ 16.3, and 17.4+ is orderable on Serverless v2 in us-east-1) plus the model IDs
+  and region set that M0-08/M0-11/M0-12 and M2-13 read.
+- **`doc/decisions/appendix-c/cost-refresh.md`** — the §9.15 model recomputed against verified unit
+  prices, one source per line, spec untouched.
+- **`doc/lead-time-tracker.md` + `doc/lead-time-packets.md`** — the 13 §4.1 rows, resequenced per
+  D-10 (filings at M0-cloud; domain now), one packet each, three rows marked blocked-on-D-09, the
+  M0-03 weekly review rule and its log. The domain packet is the first handover, escalated for
+  2026-09-26.
+- **`doc/NextKin-Backend-Implementation-Plan.md`** — a dated "M0.a outcomes" block under the M0.a
+  table and the item-numbering correction.
+
+### 35.2 What the sweep actually found — four things that change decisions
+
+1. **Sonnet 5 is $2/$10 per MTok, not $3/$15** — the announced increase was cancelled (Opus 5 $5/$25
+   and Haiku 4.5 $1/$5 are as planned; batch is a flat −50%). The fallback applied: the cost model is
+   recomputed, and 60K generations/month drop from ≈ $10K to ≈ $6.8K on Sonnet. The Opus-vs-Sonnet gap
+   therefore widened from ~1.6× to ~2.5× per generation — **D-01 moves more money than before, and has
+   to be decided on eval evidence.** One caveat recorded: models from 4.7 on use a tokenizer that
+   emits ~30% more tokens for the same text, so §12.6's token estimates want a refresh when M2-22 can
+   measure real counts.
+2. **ECS native blue/green in CDK could not be confirmed** (the AWS docs confirm the feature is real
+   and recommended; CDK support is what is unverified). This is the **one row that can still flip a
+   stack's design, and it blocks M0-18** until someone checks the CDK ECS module/release notes. The
+   fallback (CodeDeploy blue/green) is documented and ready.
+3. **Claude Platform on AWS exists and covers all commercial regions, but three setup facts differ
+   from the spec's wording:** zero retention is an Anthropic request, not a workspace setting;
+   inference geography is per-request (`inference_geo`, +10% for `"us"`, unsupported on Haiku 4.5);
+   and each AWS account must enable outbound web identity federation once or every call fails. All
+   three are folded into the M0-24 pointer.
+4. **Two cost structures moved:** SES is now plan-priced (Essentials $0.16 per 1,000 emails at
+   0–10M/month) and AWS Support is now Business Support+ at 9%/7% with a new minimum-spend row — the
+   "$100 minimum" in the spec is stale, though the derived cost at our spend is ≈ the same.
+
+### 35.3 What is blocked, and who closes it
+
+| Row                                       | Closer                                  | When                                               |
+| ----------------------------------------- | --------------------------------------- | -------------------------------------------------- |
+| Item 6 — ECS blue/green in CDK            | CDK docs/release notes, before M0-18    | Before M0-18 starts                                |
+| Item 13 — Stripe US/DE/AU fee schedules   | At Stripe activation (entity-dependent) | M3                                                 |
+| Item 14 — Adzuna quotas + JSearch pricing | At provider key registration            | Before M4                                          |
+| Item 17 — EU-US DPF participation         | `dataprivacyframework.gov/list` check   | Before M6-08 / from M3-11                          |
+| Item 9 — RDS Proxy minimum billing        | Pricing page read                       | M0 exit review (no material action — proxy unused) |
+
+### 35.4 Calls made without you, and the caveats
+
+- **Interpretation of the evidence standard:** verdicts come only from live sources fetched on
+  2026-09-19 (vendor docs, AWS price-list APIs — including the `b0.p.awsstatic.com` token API that
+  AWS pricing pages themselves use). Where a page could not be machine-read, the row is blocked, not
+  guessed. The GuardDuty tag values were cross-read from AWS documentation search output rather than a
+  fetched page — re-open the current policy example when M0-16 writes the bucket policy.
+- **Two statuses have composite labels** (row 13, row 14) because half the claim verified and half is
+  account-gated; the label names both halves rather than hiding one.
+- **Prices are list prices from APIs, not invoices** — planning estimates, as §9.15 always was.
+  Backup and Sentry lines were not re-verified and are marked _carried_; they get a look at the M0
+  exit review.
+- **`doc/` deliverables are local-only** (the repo ignores `doc/` by policy). If the tracker should
+  live somewhere that survives a fresh clone — a project board — say so and it moves; that is a
+  `.gitignore`/policy change, not a rewrite.
+
+### 34.7 The `aws/` folder (created 2026-09-19)
+
+Eleven files, ~1,570 lines: `README.md`, `architecture.md`, `guide.md`, `setup/` (six ordered steps)
+and `migrations/README.md`. **Nothing is provisioned** — every page describes what will be built, and
+each says so at the top.
+
+- **It is committed; `doc/` is not.** `.gitignore` contains `doc/` but not `aws/`, and I leaned into
+  that rather than fighting it: `doc/` holds the planning (spec, architecture argument, stakeholder
+  guide, implementation plan) and stays on one machine; `aws/` holds the operational material a
+  developer opens while building or running the platform, and ships with the code. If that split is
+  wrong, the fix is a `.gitignore` line, not a reorganisation.
+- **Migrations live at `aws/migrations/` because you asked for them there.** Noted in two places, in
+  the folder and in the plan, that they are **not AWS-specific**: they are ordinary PostgreSQL and run
+  against the local `docker compose` database as well as Aurora. If a migration ever needs an
+  AWS-specific feature that is a bug, not a convention. The plan's old path
+  (`packages/server/src/db/migrations/`) has been repointed.
+- **The CDK home is left open, deliberately.** The plan proposes `infra/` at the repository root;
+  `aws/infra/` is now more consistent. I did not pick, because it needs deciding **before** the CDK
+  app is created — moving one after it has deployed means renaming every stack or carrying the old
+  path forever. Flagged in `aws/README.md` and in the plan's §1.1.
+- **`setup/` is numbered by dependency, not by convenience.** Step 0 is the Appendix C verification
+  sweep, step 1 is buying the domain, step 2 is the filings — because the two long clocks (Google
+  OAuth at 1–4 weeks, VAT/GST registration at weeks) cannot be compressed by adding people, and the
+  domain blocks four other things including the Google review.
+- **`architecture.md` does not repeat `doc/NextKin-Backend-Architecture.md`.** That document argues
+  *why* each service was chosen; this one is the operational reference — the resource inventory, the
+  route-class table for CloudFront behaviours, the three request paths, and the failure modes. Some
+  numbers necessarily appear in both; the spec remains the source for all of them.
+- **Everything marked `[verify]` is still the spec's own figure** and was not re-checked. Appendix C's
+  eighteen rows are `setup/06-verification.md`, which is step 0 for exactly that reason.
+- **Two documents describe commands that do not exist yet** — `pnpm migrate`, `pnpm seed`,
+  `pnpm dev:all`, `docker compose up`, and the CDK stacks. Each is labelled with the task that creates
+  it (M0-05, M0-08, M0-12, M0-25, M0-26). They are written as the intended workflow so the setup path
+  is reviewable now, not as instructions that currently work.
+
+## 36. Reply to the AWS Architecture Discovery Questionnaire (NextKin_AWS_Architecture_Discovery_Response.md)
+
+The AWS team sent a discovery questionnaire (`NextKin_AWS_Architecture_Discovery_Questionnaire.md`,
+repo root): ten priority questions and 172 detailed ones across twenty areas. The reply sits beside it
+at `NextKin_AWS_Architecture_Discovery_Response.md`. Every question has an answer row — checked by
+script, section by section, not by eye.
+
+### 36.1 The questionnaire was written against V1, not V2
+
+It describes Vercel, Supabase, Inngest and Razorpay, an India-first market, and "five launch
+countries". All of that is V1. V2 — the binding spec — already made the AWS decision from requirements,
+names **three** markets, and defers India. So the reply opens by correcting its starting point rather
+than answering 182 questions as though the architecture were unwritten: it asks AWS to **review a target
+architecture**, not design one, and gives that architecture on one page.
+
+Also confirmed for the reply, by grepping every `package.json` and source file: **nothing depends on
+Vercel, Supabase, Inngest or Razorpay.** The questionnaire's "migration plan from Vercel/Supabase/
+Inngest" output is therefore marked not applicable.
+
+### 36.2 Your answers, as the reply uses them
+
+- **Three launch countries: US, Germany, Australia.** Stated as a correction of the questionnaire's
+  "five".
+- **AWS first — the client accepted it.** This **reverses D-10** (recorded earlier the same day as "AWS
+  after the backend"). See 36.4.
+- **Budget: the verified cost model.** You pointed at `doc/decisions/appendix-c/cost-refresh.md`, and
+  it is used — but presented as an *estimate*, with the approved budget ceiling still marked TBD. The
+  questionnaire asks for an approved operating budget; an estimate is not an approval, and saying it is
+  would commit the client to a number they have not signed off. The **launch date** has no source at all
+  and is TBD, with the 17–22 week build estimate given instead.
+- **Ownership: all TBD.** Business owner, payer account, team, support model, approvers — every one is
+  "TBD (owner: client)" and collected in the reply's open-items table.
+
+### 36.3 What the reply says that no earlier document did
+
+The Appendix C sweep (§35) produced verified facts that change answers the spec would have given. The
+reply uses them rather than the spec's original claims:
+
+- **AI inference location is not pinned by the workspace region.** V2 §8.11 assumes a US-region Claude
+  Platform workspace means US inference. Verified: geography is set **per request** (`global` by
+  default; `us` costs 1.1× and **is not supported on Haiku 4.5**), and **zero data retention is a
+  per-organisation request to Anthropic, not a workspace setting.** The reply surfaces this as the one
+  residency decision needing an owner (client + counsel), and asks AWS for the cleanest configuration.
+- **Sonnet 5 costs $2/$10, not $3/$15** — so the per-generation AI cost bands in the reply are the
+  refreshed ones, with the ~30% tokenizer caveat stated.
+- **Eight questions go back to AWS** — the sweep's blocked rows that AWS can close faster than we can:
+  ECS native blue/green in CDK, the CloudFront origin-timeout pattern for SSE, inference geography,
+  AI throughput quotas, ElastiCache Serverless minimums, Business Support+ pricing, Activate credits, and
+  their view on Admin Portal isolation and SBOMs.
+
+### 36.4 D-10 is reversed, and only partly propagated
+
+You said the client accepted AWS-first. I updated the D-10 row in the implementation plan's decision
+register and put a **"superseded" banner** on the M0 preamble. I did **not** rewrite the rest, because
+it is a real resequencing and part of it is another session's work:
+
+- **Still describing the superseded sequencing:** the M0-local / M0-cloud split, the split M0 exit gate,
+  the critical path (plan §4.3), and **`doc/lead-time-tracker.md`**, which was built by the §35 session
+  around D-10 ("filings start at M0-cloud").
+- **What changes when it is propagated:** the filings move back to week one (except those genuinely
+  gated on the domain); M0's exit gate is one gate again; and M0-31's local fakes stop being on the
+  critical path — though they stay useful for local development and CI, so they should not be deleted.
+- **Needs your go-ahead**, since the tracker is another session's artefact.
+
+### 36.5 Claims I corrected before finishing
+
+Three statements in the first draft were stronger than the sources support, and were fixed:
+
+- "V2 §9 compares the original Vercel/Supabase/Inngest design" — **only Inngest** is compared in the
+  spec. Vercel and Supabase are compared in the architecture decision record. Reworded to say which.
+- "Auth in the database was V1's implication" — it was the **original vendor quote's**; V1 used Supabase
+  Auth.
+- "PostgreSQL 17 is required for scale-to-zero" — scale-to-zero needs **16.3+**; 17 is the pin. And "KMS
+  automatic annual rotation" was stated as fact; the spec sets no rotation period, so it is now a
+  proposal.
+
+### 36.6 Still open, and listed in the reply for the client
+
+Thirteen items, collected in the reply's last table: the domain (the only one blocking a 1–4 week
+clock), approved budget, launch date, governance owners, team and ownership, support model, the
+workforce IdP behind Identity Center, 99.5% vs 99.9%, US-pinned AI inference, **German-language resume
+generation** (the spec never scopes it — a genuine gap, not just a missing number), VAT/GST vs merchant
+of record, security specifics (upload size limit, pen-test timing, rotation, break-glass), and the
+launch / 6-month / 12-month scale figures.
+
+### 36.7 Revisions to the AWS reply (2026-09-19, same day)
+
+Changed at your request before it went out:
+
+- **No mention of V1 anywhere.** The "your starting point has moved on" framing is gone; the reply now
+  opens with a plain summary. "V2 specification" became "our specification" throughout, and the three
+  question labels that echoed AWS's own "V1" wording now say "at launch". The only remaining "v2" is
+  the AWS product name *Aurora Serverless v2*.
+- **Launch markets:** "three, not five" became "we have planned for three — if you had more in mind,
+  let us know", repeated as a question back to AWS.
+- **Status:** front end at **stage 8 of 10**, backend at **stage 2 of 10**, held up by the AWS account
+  and the domain.
+- **Region:** one region for now, with AWS's recommendation explicitly requested. **Compute in each
+  launch country is "depends on demand"**, not "no".
+- **Job providers:** selection is **budget-dependent and needs a stakeholder meeting**. Adzuna and
+  JSearch are now described as candidates, and it is item 14 in the client open-items table.
+- **No build duration.** The 17–22 week estimate is removed; the reply says backend work continues and
+  moves on to testing as soon as AWS is ready.
+
+#### 36.7.1 Decision recorded: web and mobile launch together (D-06)
+
+You said both apps launch together, and that mobile being built second is development sequencing, not a
+demand check. **This departs from spec §14.4**, which puts React Native in Phase 2 *after* web launch
+metrics validate demand. It is recorded as the client's decision in the plan's register (D-06), with a
+"superseded" note on the plan's scope-boundary item 2.
+
+**Not yet propagated — needs doing before backend work is scheduled:** Track C was scoped "web in
+Release 1, mobile in Phase 2", so the mobile cutover of `apps/mobile`, the Expo Go SSE spike (M2-20)
+and mobile bearer-token auth (M1-05) all move onto the Release 1 critical path. **One practical
+consequence worth flagging now:** `CLAUDE.md` rule 1 keeps the mobile app **Expo Go only** during
+development, but shipping to the App Store and Play Store needs EAS production builds (the repo already
+has the manual `mobile-eas-build.yml` / `mobile-eas-submit.yml` workflows), and store review adds its own
+lead time to the joint launch.
+
+---
+
+## 37. Backend plan revision — the quality core (2026-09-28)
+
+### 37.1 What changed and why
+
+You asked for the backend plan to be "perfect to the core": a platform that **perfects** resumes, stays
+aligned with how job platforms read them, never shows flattering numbers, and gives true results. The
+plan (`doc/NextKin-Backend-Implementation-Plan.md`) was strong on the platform and thin on the
+mechanisms behind those promises:
+
+- **Nothing checked a generated resume against the profile at runtime.** V2 §7.6's criterion (no
+  employer, date, title, degree or certification absent from the profile) had no owning mechanism, and
+  the rubric pays 10% for quantified achievements with nothing stopping an invented number.
+- **The profile has nothing to ground claims in.** `Experience` holds company, title, dates and skills
+  only (`packages/shared/src/models/profile.ts:5-15`); projects exist only on the generated document.
+- **Scores are structurally generous.** A generated resume gets about 50 of 100 points from structure
+  alone, and a no-JD total floors near 58 — before §2.2's "mean ≥ 85" KPI adds pressure.
+- **The mock already does what the real engine must not** (37.5).
+
+This pass adds the quality core — plan §8, ground rules G13–G18, a quality-numbers table in §5, Track Q
+(Q-01…Q-10), the score and grounding contract (C-10) and a numbers-and-claims audit (C-11), plus
+one-line deltas across M0–M6 — and propagates D-06 and D-10 through the plan, the lead-time tracker and
+the packets. A design-review agent stress-tested it first; its consolidations are in.
+
+### 37.2 Decided with you today
+
+- **D-14 — skill credit is weighted by evidence.** Full credit when a dated role shows the skill in use,
+  partial when it is only listed, none when nothing backs it. It refines V2 §7.8's "coverage" wording,
+  so the client sees it on the rubric page; fallback if they object: plain coverage, evidence shown but
+  not scored.
+- **D-15 — no overall number without a job description.** The four part scores and the issues found;
+  a 0–100 total only once a JD is added. **This departs from §4.1's teaser "headline score" and needs
+  the client's sign-off before M1-15 ships.** Fallback: a labelled "Document score", keyword part "not
+  measured", never the "strong" band.
+- **D-06 and D-10 propagated**, including `doc/lead-time-tracker.md` and `doc/lead-time-packets.md` —
+  the go-ahead §36.4 asked for.
+
+### 37.3 Calls I made that are yours to overrule
+
+- **The M0 preamble now describes AWS-first as one sequence** (domain → accounts → one `dev` early →
+  filings in week one, app work alongside on `docker compose`), with the superseded split kept as a
+  three-line history note rather than deleted.
+- **A minimal privacy-policy page is pulled forward** from M3-11 to M0-02, because Google OAuth
+  verification needs a published policy URL and would otherwise wait for M3. Counsel's full EN/DE
+  policy replaces it later.
+- **M0-24's wording now follows the sweep:** zero data retention is a per-organisation request to
+  Anthropic, evidenced by Anthropic's written confirmation, not a workspace setting.
+- **Mobile sign-in uses a server-mediated PKCE handoff (C-12).** Expo Go's `exp://<LAN-IP>` redirect
+  cannot exactly match a Cognito callback, so the server does the code exchange and hands the app a
+  one-time code on an allowlisted URL. It works the same in Expo Go and EAS builds.
+- **The AI-provider consent that App Store guideline 5.1.2(i) asks for is recorded for web users too
+  (C-14),** so one rule covers both clients and the pipeline has one check.
+- **The claims register is proposed at `doc/claims-register.md` (C-11)** — gitignored with the other
+  planning docs.
+- **The tracker's new log line records the resequencing and says plainly that no weekly review has
+  been logged yet** and that row 1's escalation date has passed. It does not invent a review.
+- **Track Q is ten tasks, not twenty.** A design review folded the engines package into M0-04, the
+  typed JD requirements into M2-01, the honest score outputs into M2-12 (carried to the apps by C-10),
+  the labelled JD corpus into M2-21/M2-22 and honest job matching into M4-07, so every artefact keeps
+  one owner (plan §6).
+- **`packages/engines` is created now (M0-04), and the mock imports it.** Otherwise C-10 would mean
+  re-implementing the rubric inside the mock. The seeded Figma fixture totals stay as design data, so
+  in mock mode a computed change after an edit may not reconcile with a seeded total. Tests and the
+  gallery's four states are unaffected.
+- **Three ground rules carry exceptions so they don't contradict the spec.**
+  - **G13** records text the user types as a `user` claim — warned, never blocked (V2 §7.11) — and Zero
+    Resume content as `assumed`.
+  - **G14** exempts the assistant's domain classifier, which V2 §12.5 requires to be a model.
+  - **G16** measures an upload against its own dated roles, since there is no profile to check it against.
+- **Invented hard facts are stripped, not just flagged**, after bounded regeneration. V2 §7.6 says the
+  output "contains no" invented employer, date, title, degree or certification, and a flag would not
+  satisfy that. Softer issues — verb strength, unverified technologies — are flagged.
+- **The schema changes are additive.**
+  - `ats_reports` is keyed by `resume_version_id`, with an optional `generation_id`.
+  - Rubric, taxonomy and market-profile version tables sit beside `prompt_template_versions`.
+  - The claim ledger is JSON on `resume_versions`, like `timeline_validation_result`.
+  - Disputes and flags go in one table with row-level security.
+- **"Re-scoring an unchanged resume returns an identical score" is read as "under the same method
+  version".** A rubric change produces a new, labelled run; stored runs are never rewritten.
+- **The runtime model check for overstated claims was cut.** A deterministic verb list plus a graded
+  eval metric come first; a model call per generation only if the measurement says it is worth it.
+- **One text extractor at runtime, two in certification.** pdf.js or mammoth runs on every export;
+  poppler `pdftotext` joins only in CI certification, so the worker image does not grow for it.
+- **Licence choices for the taxonomy seed.**
+  - O*NET (CC BY 4.0, with its modification notice) and Wikidata (CC0).
+  - ESCO only for German JD aliases.
+  - No share-alike source, because Skills Explorer republishes the KB.
+  - The Australian Skills Classification is being replaced by a new national taxonomy, so it is not a
+    seed.
+- **Hidden text in an upload reaches nothing downstream** — not the model, not the parsed draft, not the
+  score — and is reported to the user. OCR text layers over full-page scans are exempt.
+- **Badge definitions are now precise** (C-10, M2-12).
+  - `timelineValid`: no unresolved Invalid or Suspect verdict.
+  - "ATS optimized": passed parse-back and the formatting rules, never a claim about any named system.
+  - `jdMatched` needs a written threshold; the proposal is "every required requirement met or
+    acknowledged".
+- **The accuracy confirmation (V2 §15 risk 2) happens once per resume version**, before its first
+  export — not on every download.
+- **Defaults on silence for D-11 to D-13 and D-16 to D-18**, as set in the plan's register:
+  - English output, with German JDs accepted;
+  - Adzuna + JSearch per the spec;
+  - inference geography escalated, US where supported in the meantime;
+  - the minimal calibration study;
+  - no `.doc` upload and no server-side URL fetch;
+  - nothing sold in the mobile app.
+- **R-12 gains enqueue-after-commit with a re-drive sweeper**, so a failed SQS send cannot strand a
+  generation until the 3-minute sweep fails it.
+- **The plan's "~100 L/XL tasks" was wrong.** A recount found 48 before this revision and 52 after, out
+  of 139 sized tasks. The 10–14 engineer figure for the original scope is kept, and this revision's
+  additions are stated on top of it.
+- **M0-31's local fakes stay**, off the critical path.
+
+### 37.4 Escalations for the client
+
+1. **D-15 against V2 §4.1** — the teaser's "headline score". The team's call stands until the client
+   rules.
+2. **D-14 against V2 §7.8's "coverage" wording.** You decided it; the client sees it on the rubric page.
+3. **D-19, V2 §2.2's KPI ("mean score ≥ 85%").** The plan monitors it and never targets it. Structure
+   alone gives a generated resume about 50 points, so meeting the target proves little.
+4. **D-20, board copy that promises what nobody measures,** against `CLAUDE.md` rule 7's board
+   fidelity. Design decides; C-11's register lists every case.
+5. **D-21, projects have no home in the profile**, although V2 §5.3 promises them and §7.4 and §7.6
+   produce them.
+6. **D-18, the mobile purchase path.** If store review rejects "nothing sold in the app", in-app
+   purchase needs EAS builds, which collide with `CLAUDE.md` rule 1 (Expo Go only).
+7. **Legal, through M3-11:**
+   - EU AI Act Art. 50(2) marking of generated text, which applies from 2026-08-02 — does an exported
+     resume need machine-readable marking?
+   - Art. 50(1) disclosure for the assistant — simply built.
+   - Colorado's SB 26-189 (effective 2027-01-01) for a candidate-side tool.
+   - Apple guideline 5.1.2(i)'s consent for sharing data with third-party AI.
+8. **Access to real resumes** by the calibration raters (Q-10) and for the §2.2 manual audit (Q-09).
+   Only consented samples; never ad hoc admin access (V2 §7.17).
+9. **D-11 (German-language generation), D-12 (job providers) and D-13 (US-pinned inference)** — already
+   on the discovery reply's open list (§36.6).
+
+### 37.5 Mock and app behaviours that contradict the honesty rules
+
+None of these is a bug in the mock's own terms — it was built to make screens move. Each becomes a bug
+the moment a real number replaces a fixture, which is why C-10 and C-11 run before every cutover:
+
+- **A fixed 83 with no JD** (`packages/shared/src/repos/generationOutput.ts`). Every run without a JD
+  scores `COMPLETED_SCORE = 83`, and that includes every uploaded file, because mobile's ATS check starts
+  without one (`apps/mobile/src/features/create/screens/AtsCheckScreen.tsx`).
+- **The score formula** (`packages/shared/src/mock/atsScoreBuilder.ts`) is `clamp(96 − penalties, 40, 96)`:
+  - a JD the 44-term dictionary does not recognise scores 96 "strong";
+  - matched keywords earn nothing;
+  - most checklist lines are hard-coded passes, and "appears 3 times" is fixed wording;
+  - `SCORE_RUBRIC`'s weights appear nowhere in the maths.
+- **Validation flags** (`packages/shared/src/repos/generationCompletion.ts`). `timelineValid` means
+  "every *content* check passed" — there is no timeline check. `atsOptimized` is always true, and
+  `jdMatched` is true on an empty list.
+- **`rescore`** uses a substring `includes` over the text, so stuffing is rewarded, and adds +4 per
+  flipped check whatever its weight. `restoreVersion` does not re-score.
+- **Fixes that insert** (`packages/shared/src/repos/resumeContentEdits.ts`):
+  - The keyword fix appends a skill the profile does not back. This contradicts `AtsFixScreen`'s
+    "Nothing is added that your profile doesn't back" — and `AtsFixScreen.test.tsx` expects the total to
+    rise after inserting the unbacked "enterprise".
+  - The content-gap fix appends a fixed, invented bullet: "Tracked the outcome of 3 shipped projects,
+    reporting before-and-after metrics".
+- **Match bands** (`packages/shared/src/models/job.ts`). `matchBandFor` has no weak band, so a very low
+  match reads "Fair match". The web `MatchBadge` defaults to the strong tone when there is no band. The
+  web profile has `experiences: []`, yet shows a 98% match.
+- **Fixture numbers that do not reconcile:**
+  - resume scores that disagree with their own checklists (`res_base` shows 92; the formula gives 83);
+  - `avgAtsScore: 87` is never recomputed;
+  - completeness is a running tally (+0.14 per tapped step), while the checklist beside the web ring
+    says 5 of 7;
+  - the home counters say 12 resumes and 18 saved jobs; the fixtures hold 10 and 12.
+- **The score summary.** "Parsers will read this cleanly" is chosen from the total score, not from the
+  formatting component.
+- **Upload progress** stages (20/50/75/90%) run on a timer.
+- **`jdExtractor`'s `\b` regexes** can never match "C++", "C#" or ".NET".
+- **Copy that promises what nothing measures:**
+  - "Build a resume that gets you hired";
+  - "Improve your chances with AI … land more offers";
+  - "Build better. Land faster.";
+  - "match updates live";
+  - a recruiter-discovery toggle with no Release 1 recruiter portal (D-20).
+
+### 37.6 Companion documents now out of date
+
+Not edited in this pass; each needs a sync against the revised plan:
+
+- **`doc/NextKin-Backend-Architecture.md`:**
+  - "`/api/v1/health` performs a deep check" (L229) contradicts R-08;
+  - "Phase 2 mobile" (L100) is superseded by D-06;
+  - "we configure zero-retention" (L904) contradicts the sweep's note 1;
+  - the AI costs predate the refresh.
+- **`doc/NextKin-Backend-Stakeholder-Guide.md`:**
+  - §5.8 lists four score components, leaving out achievements;
+  - §5.13 promises no match score;
+  - migrations are placed at `packages/server/src/db/migrations/` rather than `aws/migrations/`;
+  - nothing on the quality core.
+- **`aws/`:**
+  - `setup/06-verification.md` numbers the design-changing items 1, 4, 5, 6 (Appendix C uses 1, 5, 6, 10)
+    and calls zero retention a workspace setting;
+  - `guide.md`'s cost rows sum to about $1,090 but say "≈ $1,130".
+  - `aws/` is still untracked in git.
+
+### 37.7 Facts marked `[verify]` in the revision
+
+- **Licences:** ESCO's commercial reuse with attribution; O*NET 31.0's CC BY 4.0 with its modification
+  and trademark rules; Wikidata CC0.
+- **Regulation:**
+  - the EU AI Act Art. 50 dates, and whether the Digital Omnibus changes them;
+  - Colorado SB 26-189's effective date and scope.
+- **Apple:** guidelines 5.1.1(v) and 5.1.2(i).
+- **Link-out rules by storefront:** the US Supreme Court case (No. 25-1311); Apple's EU terms from
+  2026-10-01; remedies in Australia's Epic case; Google Play's US order to 2027-11-01.
+- **Google Play accounts:** the closed-test rule (≥ 12 testers for 14 days) for new personal accounts,
+  and D-U-N-S for organisations.
+- **PDF tooling:** `pdfjs-dist` ≥ 4.2.67 for CVE-2024-4367; `pdf-parse` 1.x bundling an old pdf.js;
+  poppler-utils on arm64.
+- **Expo:** `expo-secure-store`'s ~2 KB value guidance against real Cognito token sizes; OAuth redirects
+  in Expo Go SDK 57.
+- **Pricing:** JSearch's entry tier; Claude's `us` inference geography at 1.1×, which Haiku 4.5 does not
+  support.
+
+### 37.8 The estimate and the staffing ask
+
+- **The quality core** — Track Q, its deltas, C-10 and C-11 — is about **22–34 engineer-weeks**. About
+  60% of it (13–20) is spec work that had no owner, so the original estimate was under-counted by that
+  much.
+- **The joint launch (D-06)** adds C-12 to C-14 — about 4–7 engineer-weeks — one mobile engineer, and
+  store lead time.
+- **The schedule:** with two more engineers on the quality core from M1 and one mobile engineer, about
+  **18–24 weeks**; without them, about 20–26 weeks, or pull the de-scope levers.
+- **Non-engineering time:**
+  - KB curator: +40–80 hours;
+  - content author: +60–100 hours;
+  - calibration raters: about 40–60 hours each, at least one per market;
+  - designer time for the new score states;
+  - counsel.
+
+## 38. Custom row icons placed on the Profile boards (2026-09-29)
+
+Figma edit only (NEXKTKIN-PVT, `BlpFYxFg99RFzx6ZWDGkUJ`), no code yet. Each of the 20 icons in the
+`iCONS` frame (`390:5`) was cloned into its row on PROFILE 01 (`1:2189`) and PROFILE 02 (`1:2313`).
+Each clone is named `icon/<name>`. The old glyph layers are hidden, not deleted.
+
+- **Size:** each icon is scaled to fit a 36×30 box, halo and sparkle included, and centred on the
+  old glyph. The sheet draws the icons at different sizes. Should rows use one scale instead?
+- **"Desired Goals" → Desired roles:** only the name is different, and no other row fits it.
+- **Not covered:** the header bell, the Sign out row and the bottom nav still use the old glyphs.
+  The sheet has no icon for them.
+- **Other file:** the PROFILE copies in For-Next-Kin (`42:2`, `42:126`, `57:2189`, `57:2313`) are
+  unchanged, because nodes can't be cloned between files.
+- **App:** `apps/mobile` doesn't use these icons yet. Say when to export them as SVGs for the
+  Profile screens.
+- **Mobile 2 (`95:2`) too:** the same icons went into the 27 rows of its 390-wide PROFILE 01/02
+  (`95:2390`, `95:2514`), taken from that page's own `iCONS` copy (`395:2`). They fit a 27×22.5
+  box, which is the 520 box scaled by 0.75.
+
+### 38.1 Mobile 2 spacing pass (2026-09-29)
+
+**Backup first:** page `399:2` "Mobile 2 — backup 2026-09-29 (before icons & spacing)" is an
+untouched copy of the page as it was before today's edits.
+
+The 390-wide boards are the 520 boards scaled by 0.75, so every gap shrank to 75% as well. On each
+390-wide board on Mobile 2 (27 of them), the vertical gap between main blocks was multiplied by 1.5, with a minimum of 8px and a maximum of 28px. Blocks
+that overlap vertically count as one row, so side-by-side items move together. The bottom nav,
+sticky bars, scrims, and anything drawn above a scrim (sheets) stayed where they were. The three Home
+boards grew taller and their bottom nav moved down with them. The other boards keep their 1080 or
+1290 height, so content just runs further below the fold.
+
+Open calls:
+- **Only the spacing between blocks changed.** Padding inside cards (job cards, notification
+  rows, resume cards) is unchanged. The job card title and its meta line are 2px apart.
+- **Horizontal gutters stay at 18px.** Moving to 20–24px would mean resizing every block.
+- Empty states (JOBS 06–08, NOTIF 05/06, RESUMES 05) now sit a few px below centre.
+- The Mobile App page's 520 boards were not respaced. The mobile app code follows those boards,
+  so Mobile 2 now differs from the running app.
+
+### 38.2 Profile rows: bigger icons, values removed (2026-09-29)
+
+**Backup first:** page `405:2` "Mobile App — backup 2026-09-29 (before row redesign)" (the Mobile 2
+backup is `399:2`, §38.1).
+
+On PROFILE 01/02, on both pages:
+- Row icons now fit a 48×40 box (36×30 on the 390 boards), centred at x=36.
+- Titles and dividers start at x=72 instead of 56.
+- The 19 right-side value labels ("4 roles", "Add", "3 of 5", "₹24L", "System", "English"…) are
+  hidden, not deleted. The request was "only the icons and title".
+
+Kept on purpose, overrule if wrong:
+- **The chevrons stay.** Without them nothing shows that a row opens a screen.
+
+Readability risks:
+- **Hiding "Add" on Certifications removes the only sign that the section is empty.** The
+  completeness card ("Profile 72% complete") no longer says which row is missing.
+- **The 390 rows are 43.5pt tall** (58 × 0.75), under the 44pt minimum (CLAUDE.md rule 5).
+- **The halos and sparkles don't work in dark mode.** They are fixed lavender with no dark
+  variant.
+- **The icon style is mixed.** The header bell, the Sign out row and the bottom nav still use flat
+  glyphs next to the new illustrated icons.
+
+### 38.3 Row height 44pt, and a readability audit of every screen (2026-09-29)
+
+**Row height:** Profile list rows are now 44pt apart on Mobile 2 (they were 43.5) and 59px on the
+Mobile App page (44pt at 390). The Sign out button changed the same way, and content below moved
+down to match.
+
+**Audit:** all 28 Mobile 2 boards, 1,214 text layers, measured in Figma. This page matters for the
+app: `typographyFor()` uses the 390 anchors at phone width, so this is the type a 390 phone shows.
+Findings, worst first:
+
+1. **Text is too small.** 643 of 1,214 layers (53%) are under 12pt. The worst boards are
+   Resumes List (37 of 48), Resumes Grid (33/43), Jobs Discover (31/56) and Notifications Feed
+   (23/38).
+   - Home tab-bar labels and the "ATS Score" ring label are about 7pt.
+   - Home Quick Start subtitles and shortcut counts are 10pt.
+   - Job-card meta lines, pills, timestamps and filter chips are 11–11.5pt.
+   - Proposed floor: 12pt for any text, 13pt for secondary meta, 15–16pt for body, 11pt for tab
+     labels.
+2. **Contrast fails WCAG AA** (4.5:1 for small text) in five colour pairs:
+   - `#9CA3AF` on white is 2.54:1, on 60 layers (tertiary text: Quick Start subtitles, counts).
+     The app already swaps it for `#767E8B` (`palette.ts`), so the Figma file lags the code.
+   - `#6B7280` on the `#F1F2F4` pill fill is 4.32:1, on 58 layers (Full-time, "2d ago",
+     placeholders, inactive tabs).
+   - Green `#16A34A` on `#F0FDF4` is 3.15:1, on 18 layers ("Strong match", "98% Match").
+     `#15803D` would pass.
+   - `#9CA3AF` on the lavender unread rows is 2.37:1 (notification timestamps).
+   - Red "Not selected" is 4.41:1.
+3. **Tap targets are under 44pt:**
+   - bell 36, filter button 39, segmented control 36, Edit 31;
+   - filter, status and location chips 24–27, next-step chips 26;
+   - Sort, Upgrade and Share links 15–18;
+   - toggles 39×24.
+   The visuals can stay if the build adds hit areas (`hitSlop`), but the gaps between chip rows
+   must leave room for them.
+4. **Label pills and tappable chips look the same.** Job cards show "Strong match / Full-time /
+   2d ago" as grey pills that match the filter chips people can tap. Fix: keep the match badge as
+   a pill and set the rest as plain meta text ("Full-time · 2d ago").
+5. **Leading is too tight on two-line labels.** The Home Quick Start labels ("Build / Resume")
+   are at 1.0× leading. The code's `MIN_LEADING` is 1.3.
+6. **Section headers are hard to read.** "CAREER PROFILE" and the others are ~11pt grey caps.
+   Use 12pt semibold `#6B7280` or darker.
+7. **Long titles will truncate.** Nothing is clipped in Figma, but "Today's picks" cards are
+   ~225 wide with one-line titles, so real data will cut them off. Allow two lines.
+8. **The icon style is mixed.** Profile rows now use illustrated icons, the Home tiles use
+   another illustration set, and the bells, nav and chevrons are flat glyphs.
+
+Minor: the older "Home Screen" boards (`115:2`, `210:262`) have overlapping shortcut labels
+(five columns). They look superseded by "Home Screen New"; delete them or mark them old.
+
+### 38.4 Readability fixes 1–6 applied to Mobile 2 (2026-09-30)
+
+**Backup first:** page `409:2` "Mobile 2 — backup 2026-09-29 (before readability fixes)".
+
+Applied to 26 of the 390-wide boards on Mobile 2 (`95:2`). The before/after audit counts only
+visible text that isn't under a scrim.
+- **Fix 1, type floor:**
+  - 12pt minimum. Secondary meta goes to 13pt (12pt in narrow fixed cells), paragraphs to 15pt.
+  - Bottom-nav labels are 11pt and pill text 12pt.
+  - Three exceptions:
+    - Labels of 3 characters or fewer in ≤26px badges (avatar letters, the filter count) keep
+      their size.
+    - The "ATS Score" caption inside the Home ring is 10pt, because 12pt overflows the 60px ring.
+    - A label inside a 40–70px square frame (a score ring) gets 10pt, not 12.
+- **Fix 2, contrast:** every failing text colour was darkened in HSL, keeping its hue, only as far
+  as its real background needs (4.5:1 small text, 3:1 large). Section headers use `#4B5563`.
+- **Fix 3, targets:**
+  - Bell, back, close, filter and Home header buttons are 44×44.
+  - Search fields and the segmented control are 44 tall. The active pill is 38 tall.
+  - The Profile Edit button is 44 tall.
+  - Chips in chip rows and filter sheets are 32 tall and still need `hitSlop` to reach 44.
+  - Text links (Sort, Clear all, View all, Upgrade, Mark all read) and the Score panel's Fix pills
+    are unchanged and need `hitSlop` in the build.
+- **Fix 4, label pills:** grey or outlined neutral pills inside cards became one `Meta` text line
+  ("Full-time · 2d ago", "Tailored · Stripe", "Applied · Viewed · 5d ago"). The pills are hidden,
+  not deleted. Match and status badges stay as coloured pills. The Job Detail header tags became
+  "Full-time · Posted 2d ago · 51–200 employees".
+- **Fix 5, leading:** at least 1.3× on multi-line text, 1.2× single-line, 1.15× at 24pt and up.
+- **Fix 6, section headers:** 12pt SemiBold `#4B5563`.
+- **Layout:** each board was re-flowed after the changes. Rows below anything that grew move down,
+  and fixed-height cards grow with them. The bottom nav, sticky bars and scrims stay put, and
+  sheets stay anchored to the bottom.
+  - The dimmed copies under a scrim were re-typed but their buttons were not resized.
+- **Home Screen New:**
+  - The shortcut cells went from 64.5 to 80 wide and their labels share one baseline.
+  - The header buttons are 44.
+  - The New Resume sheet (CREATE 02) is 20px taller so its footer clears the nav and FAB.
+
+Not touched:
+- The two older "Home Screen" boards (`115:2`, `210:262`). Their five 64px cells can't hold
+  readable labels. They look superseded by Home Screen New; delete them or mark them old.
+- **`414:1105` "Home Screen New"** at x −1385. It appeared during this pass, after the backup, and
+  someone else is editing it. It still has the old sizes and colours. Say whether it replaces
+  `239:185`.
+- The Mobile App page (520 boards). The app code (`typography.ts`) still carries the old 390
+  anchors, so the running app differs from Mobile 2 until the type ramp and palette are updated.
+
+Before → after on the fixed boards:
+- Text under 12pt: 643 of 1,214 layers (53%) → only the stated exceptions.
+- Contrast failures: 291 → 0.
+- Buttons under 44pt: 0, once a height the re-flow had cut back was restored.
+- The remaining text overlaps are content scrolling under the nav or sticky bars, and the stacked
+  avatars.
+- **Home Screen New's shortcut grid (`239:185`) was replaced during the pass.** It now holds
+  `414:…` nodes at 11pt labels and 10pt counts. My widened 12pt version is gone. Left alone, since
+  someone is working on it.
+
+### 38.5 Readability pass reverted (2026-09-30)
+
+The user rejected §38.4: "In need for enhancing the readability, you changed the design". All 26
+boards were restored in place from backup `409:2`, keeping their node ids, because
+`figma-refs.cjs`, `figmaRefs.generated.ts` and `ResumeListRow.tsx` cite them.
+- A layer-by-layer check against the backup shows all 26 identical: position, size, visibility,
+  font size, leading and colour.
+- Home Screen New's shortcut grid was left alone. Someone else replaced it mid-pass (§38.4).
+- The rejected version is kept on page `420:2` "Mobile 2 — readability pass (rejected, 2026-09-30)".
+- The §38.3 audit findings still stand. Any future readability work must keep the design: same
+  components, pills, layout and proportions. It should only adjust type and colour values, within
+  the boxes the design already draws, after the user agrees to the approach.
+
+### 38.6 New navigation: tabs placed (2026-09-30)
+
+The user's "New Navigation" (`422:125`, Mobile 2) had the notched bar and the purple + button but no
+tabs. Its empty original is backed up as `423:2`. The four tab buttons were copied unchanged from
+the old "bottom nav" variants into four versions, one per active tab:
+
+| Version | Node | Tabs copied from |
+|---|---|---|
+| Home | `422:125` | `220:553` |
+| Jobs | `423:36` | `220:584` |
+| Resumes | `423:97` | `220:522` |
+| Profile | `423:158` | `220:615` |
+
+- **Tab positions:** each tab keeps its old x. Its y moved down 12px, because the new bar starts
+  12px lower to make room for the notch.
+- **Not decided:** the + button is now purple, but the active tab is still drawn black, as in
+  the old set.
+- **Not done yet:**
+  - The screens still use the old nav.
+  - The app's tab bar (`useTabBarLayout`) doesn't use the new nav yet.
+- **Update (same day): the new navigation is on the screens.** Mobile 2 was backed up first as
+  page `425:2`.
+  - Every Mobile 2 board with a bottom nav now uses the matching version:
+    - Home: `210:262`, `239:185`, `414:1105`
+    - Jobs: JOBS 04, 06, 07 and 08, and CREATE 01 and 02
+    - Resumes: RESUMES 01, 02, 02b, 03 and 05
+    - Profile: PROFILE 01 and 02
+  - Each nav is centred, with the bar's bottom edge where the old bar's was, at the old nav's
+    z-order (so it stays under or over the scrim as before).
+  - Where the old + was drawn turned into an × (CREATE 01/02, RESUMES 01/02/02b), the new + is
+    turned the same way.
+  - The old navs are hidden and renamed "bottom nav (old)", not deleted.
+  - Not done: the Mobile App page (520 boards) and the app code.
+- **Update 2026-10-01: restyled navigation placed.** Mobile 2 was backed up first as page `429:2`.
+  - The user drew a second set with a purple `#4733F9` active tab, grey `#6B7280` inactive tabs
+    and a bar shadow: Home `427:72`, Jobs `427:106`, Resumes `427:140`, Profile `427:174`.
+  - Most of the earlier black copies had already been removed from the boards; the four that were
+    left were deleted.
+  - The restyled versions went onto the same 16 boards, with the same mapping, position, z-order
+    and × state as before.
+  - The first set (`422:125`, `423:36`, `423:97`, `423:158`) still has a black active tab. Is it
+    now obsolete?
+
+### 38.7 Create sheet icons from ICONS 2 (2026-10-01)
+
+Mobile 2 was backed up first as page `431:2`. The seven icons in `ICONS 2` (`414:1104`) replaced
+the row icons on CREATE 01 (`95:1165`) and CREATE 02 (`95:1349`), matched by the user's layer
+names.
+- Each icon is scaled to fit its old 39×39 slot and centred. The tile backgrounds differ slightly
+  in shape, so some are 38–39 on one side.
+- The old icon tiles are hidden, not deleted.
+- The dimmed Jobs screen behind each sheet and the Mobile App page's Create boards are unchanged.
+- The app code is unchanged: the Create sheet still uses the old icons.
+
+### 38.8 Job card: new layout, one sample (2026-10-01)
+
+The user shared a reference card and asked for "something similar … for one card only for now".
+The sample `435:2` "Job · Razorpay — new layout (sample)" sits below JOBS 01 on Mobile 2
+(640,1215). It is a new auto-layout frame; no board or existing card was changed.
+
+Built from the existing card's tokens: fill, `#F3F4F6` border, radius 18, shadow, the logo tile,
+the pill styles and the Tailor-CTA lavender `#F4F3FF`. The reference added:
+- a company line with location and work-mode icons;
+- the posted time at top right;
+- a bordered 30×30 save button;
+- salary, a divider and a type chip with an icon;
+- a "Strong match" badge with a sparkle, on the right;
+- a "Match reason" bar.
+
+Open calls:
+- **No "Hybrid" chip in the salary row.** The reference repeats it there, but at 354 wide the row
+  only fits salary, one chip and the badge. The work mode is on the company line.
+- **The reason text wraps to two lines.** It is 279px at 11.5pt and the bar has about 263px. The
+  card is 153 tall; the old card is 127.
+- **The logo tile is still the neutral grey.** The reference uses a brand-coloured tile.
+- **The reason copy is the reference's example.** The match engine does not produce such a line
+  today (V2 §7.8 and the honesty rules apply).
+- **The save button is 30×30** and needs `hitSlop` in the build.
+- **Next, if approved:** apply to the other job cards on JOBS 01–04 and the saved/applied variants.
+- **Update (same day): the user reworked the sample, and a second variant exists.**
+  - **The user's version is `433:72`.** They moved the pills to a row under the salary, added
+    their own sparkle art and a "4d ago" pill. It was left untouched.
+  - **They then sent a second reference** (a Lumion-style card: company header, % ring, large
+    title, tag chips, divider, a footer with actions), with a link to `433:72` and no
+    instruction. I assumed "show this style too".
+  - **Layout B is `438:2`**, "Job · Razorpay — layout B (sample)", at 1423,1215: a standalone
+    frame, 354×177.
+  - **How layout B departs from the reference, on purpose:**
+    - "Strong match" badge (the user's own, cloned) where the reference has a % ring. A number
+      would be invented for this card; see D-14/D-15 and [[nextkin-honest-scoring-quality-core]].
+    - No industry/stage subline and no applicant count. The mock job has neither field.
+    - Pill-shaped chips, the existing style, where the reference has rounded rectangles.
+    - A bookmark where the reference has a heart. Bookmark is the built "save".
+  - **Footer actions are 30×30:** Tailor with AI (the user's sparkle), Save, Not interested.
+    "Not interested" is a new action no board or spec section defines yet.
+- **Layout B update (`438:2`):**
+  - The "Not interested" action was removed at the user's request.
+  - Their "Match reason" bar was cloned from `433:100`, without the chevron, and placed between
+    the tags and the divider. The reason text is on two lines and the card is now 233 tall.
+  - The footer sparkle (≈24px), the bookmark (≈22pt) and the wider gap are edits made after the
+    card was built. They were left as they are.
+
+### 38.9 Job Detail redesign sample (2026-10-01)
+
+The user shared a reference and asked to "design the job description like this". The sample is
+`443:2` "JOBS 05 — Job Detail (redesign sample)", a clone of `95:891` placed below it at 3200,2000
+on Mobile 2. The original board is untouched and keeps its id.
+
+Changed on the sample:
+- **Header:**
+  - The company name, a verified tick and "Financial infrastructure · 8,000+ employees" sit
+    beside the logo.
+  - The title is 22pt.
+  - A location row with icons (pin, wifi) replaces the dotted meta line.
+- **Salary and chips:** the salary reads "₹28 – 38 LPA · Estimated ⓘ", and the three chips carry
+  icons.
+- **Why you match:** the badge has a signal icon, and a drawn illustration sits on the right.
+- **Tailor CTA:** the copy is now "Tailor your resume to this job" / "Create a tailored version and
+  get match updates live." The sub line wraps, so the CTA is 75.5 tall and everything below moved
+  down 12.5px. The chevron became an arrow.
+- **Company card:** the logo tile is `#635BFF`, with "Financial infrastructure for the internet."
+  and "8,000+ employees · stripe.com".
+
+Open calls:
+- **The sticky Save + Apply bar stays.** The reference draws the bottom nav there, which would
+  leave no Apply button.
+- **The verified tick is a claim.** Nothing in the mock or V2 defines employer verification.
+- **Copy changes.** The Tailor CTA, "Estimated" and the company description are new strings, and
+  rule 7 says fixture copy matches the board. The mobile fixtures need them if this is adopted.
+- **The company size contradicts itself.** "8,000+ employees" and the "51–200 employees" chip are
+  both on the old board and in the reference.
+- **The ⓘ next to Estimated** needs a destination (what "estimated" means).
+- **The illustration** is built from plain shapes, not the user's art set.
+- **`#635BFF` is a brand hex literal.** The app would need a per-company logo colour or a real
+  logo.
+
+### 38.10 Custom icons on the Desktop/Web page (2026-10-01)
+
+NEXKTKIN-PVT, page `73:2`. One backup at the start: page `456:2`.
+
+**Named:** the 24 groups in `Icons` (`454:3`) were renamed from "Group N" by matching each drawing
+to the user's labelled sheet: Home, Applications, Documents, Interview Prep, Insights, AI
+Assistant, Upgrade to Pro, Settings, Account, Preferences, Privacy & data, Billing & plan, Active
+sessions, Phone, Tablet, Light theme, Lightbulb, Product updates, Company, Free plan, Bookmark,
+Document with magnifier, Match score, Paper plane.
+
+**Placed:** 92 slots, 55 with the new icons and 37 with icons reused from the mobile sets. The
+reused ones were copied into a holding frame, "Icons — reused from mobile" (`458:266`).
+- Every slot is a no-fill wrapper frame `icon/<Name>` at the old icon's exact size, so nothing
+  else on a board moved. The old icon is hidden next to it, not deleted.
+- The icon fits the old lavender tile where there was one. Where the old icon was bare, it is
+  1.5× the old icon and overflows the wrapper.
+- Boards touched: the sidebar `304:497`, Home, Jobs, Applications, Account, Preferences,
+  Settings → Account, Notifications, and Upload 1–3.
+
+Not done, on purpose:
+- **Icons of 16px and under:** the Account tabs, job and application meta rows, button icons
+  and the top-bar bell. The blob style is unreadable at that size.
+- **Other boards:** the duplicate Jobs board `322:2`, the second sidebar `304:2783` and the
+  collapsed `Aside` `304:600`. The collapsed sidebar has no labels to match by.
+- **Resumes and Documents:** they only have file tiles and small action icons.
+
+Open calls:
+- **Password** uses the key ("Email & Password"); the board drew a lock. **Security** uses the
+  lock ("Privacy Policy").
+- **Both bar-chart icons** are in use: "Insights" for the sidebar, Resume insights and the
+  Experience tile, and "Match score" for the Upload pages.
+- **The sparkle (AI Assistant)** replaced the sparkle on the Tailor and Interview banners, not
+  the wand.
+- **The active sidebar item (Jobs)** has no filled or active version of its icon.
+- **Upload 2's benefit icons** keep their old lavender circles behind the new blobs.
+- **Brand logos** for "Popular sources" are still empty tiles.
+- **apps/web is not updated.** `src/ui/icons` still has the old line icons.
+
+Mistake fixed in the pass: the reused icons were first cloned into a frame that was resized
+afterwards, which stretched them. Clean copies replaced all 37.
+
+### 38.11 Insights screen designed (2026-10-01)
+
+New board `461:14` "06 · Insights" on Desktop/Web (`73:2`) at 13790,1292, 1536×1024, built from a
+reference image the user supplied. Nothing existing was changed, so there is no backup.
+
+Built on Home's tokens: Plus Jakarta Sans, the slate text ramp, indigo `#4F46E5`/`#6366F1`, the
+white card with the `#F1F5F9` border, radius 16 and Home's two shadows. Main starts at x=280, as
+on the other boards.
+- **Header:** the breadcrumb, title, subtitle, a clone of Home's top bar and a "Last 30 days"
+  filter.
+- **Four stat cards**, a Career Progress area chart, an Application Funnel and AI Insights.
+- **Top Skills in Demand**, Target Roles and a Next Recommendation card.
+- **Art and icons:** the illustrations are clones of existing art (Settings → Account woman
+  `356:319`, Applications man `304:3093`). The icons are the user's custom set. "Rate nextkin"
+  was copied into the holding frame for the star.
+
+Departures from the reference:
+- **No sidebar on the board.** The other web boards leave x<280 blank too, and the sidebar lives
+  in `304:497`. Its Insights item is not drawn as active anywhere.
+- **The top bar** is Home's (search, Upload New JD, bell, avatar), not the reference's user-name
+  dropdown.
+- **The stat-card icons** are the custom blob icons, not tinted tiles.
+
+Must be settled before this is built (V2 §7.8, D-14/D-15, [[nextkin-honest-scoring-quality-core]]):
+- **"Resume Score 78 / 100 · Based on 10+ job matches"** is a total score with no single JD.
+  D-15 says no total score without one.
+- **The AI insight lines are unverified claims.** "40% more likely to get an interview", "highest
+  response rate for you" and "above average" need real data and a stated basis, or softer wording.
+- **Percentages:** "Target Roles: roles you're most likely to land" (42%…) and "Top Skills in
+  Demand" (92%…) need a defined source and denominator.
+- **The mock has no such data.** The funnel, the trend chart and the ↑ deltas need an analytics
+  aggregate the shared layer doesn't have (no Insights repo or query). V2 defines no Insights
+  screen, so this is a new surface.
+
+### 38.12 Settings → Privacy & data designed (2026-10-01)
+
+New board `466:56` "Settings -> Privacy & data" on Desktop/Web, to the right of Settings → Account
+(`356:317`). It is a clone of that board with the right column rebuilt, so the header, breadcrumb
+and the eight-row menu are the existing ones. The menu highlight moved to Privacy & data. No
+existing board was changed.
+
+Three section cards, in the Settings language (DM Sans, navy, `#E4E6F3` borders, outlined
+buttons):
+- **Privacy settings:** Profile visibility (select), Let recruiters find you, Show on search
+  engines and Share anonymized data (toggles).
+- **Your data:** Download your data, Manage data preferences, Delete my data (red outlined
+  button).
+- **Security:** Two-factor authentication (Enable), Active sessions.
+
+The toggles are clones of the Notifications board's. Icons come from the custom sets ("Language"
+and "Export My Data" were copied into the holding frame).
+
+Departures from the reference:
+- **The menu is the existing eight rows** (Account … Security, Delete account). The reference has
+  Profile and Account and no Security row. With Security still in the menu, the Security card
+  here duplicates that page.
+- **No app sidebar or top bar on the board.** None of the Settings boards draw them.
+- **The header illustration is the Account one** (woman with laptop). The reference has a woman
+  with a shield and two handwritten notes.
+- **"Your data" uses the folder icon.** There is no database icon in the set.
+
+For the user to decide:
+- **New product surface.** Recruiter visibility, "verified recruiters", search-engine indexing
+  and anonymized data sharing are not in V2. §8 has privacy requirements and the mobile app has
+  Export my data and Delete account, but there is no recruiter side.
+- **"Delete my data" vs "Delete account"** (menu row): are these the same action?
+- **The app's `/settings`** has Privacy & data built from an earlier mockup. This board differs
+  from it.
+
+### 38.13 Settings → Delete account designed (2026-10-01)
+
+New board `467:2` "Settings -> Delete account" on Desktop/Web, to the right of the Privacy & data
+board (`466:56`), which it was cloned from. The header and the eight-row menu are the existing
+ones, with the highlight on Delete account. No existing board was changed.
+
+One card on the right:
+- a red "This action cannot be undone" banner;
+- "What will be deleted?" with a 2×3 grid: profile information, resumes, applications, insights
+  and activity, settings and preferences, connected accounts;
+- "Want to take a break instead?" with a Deactivate account button, on the 2FA info-bar gradient;
+- "Confirm deletion" with a "Type DELETE" input, then Cancel and a filled red "Delete my account".
+
+Departures from the reference:
+- **The menu is the existing eight rows.** The reference has Profile and Account and no Security.
+- **No app sidebar or top bar,** as on the other Settings boards.
+- **The header illustration is the Account one.** The reference has a man beside a bin and two
+  handwritten notes.
+- **The alert triangle is drawn from shapes.** The set has no warning icon.
+- **The red button has no bin glyph.** The custom bin is multi-colour and would clash on a red
+  fill.
+
+For the user to decide:
+- **"Deactivate account" is a new feature.** V2 and the mobile app only have Delete account and
+  Export my data. It needs a defined behaviour: what is hidden, for how long, how to return.
+- **Does the confirm button stay disabled until "DELETE" is typed?** The board shows one state
+  only. Empty, typed, submitting and error states are not drawn.
+- **No mention of exporting data before deleting,** and no retention period or grace window.
+  §8 privacy applies.
+- **This board adds to the Privacy & data board's "Delete my data" row** (§38.12). Are they one
+  flow?
+
+### 38.14 Settings → Billing & plan designed (2026-10-01)
+
+New board `470:2` "Settings -> Billing & plan" on Desktop/Web, to the right of the Delete account
+board (`467:2`), which it was cloned from. The header and the eight-row menu are the existing
+ones, with the highlight on Billing & plan. No existing board was changed. A first attempt
+failed mid-script and left a half-built board. That board was deleted before this one was built.
+
+Right column:
+- **Plans:**
+  - "Current plan · Free plan": three included and three excluded features, Upgrade to Pro, and
+    "View all plans →".
+  - "NextKin Pro": Most popular, $9.99 / month, billed monthly, six features, Upgrade to Pro.
+- **Billing information:** Visa •••• 4242, expires 04/2027, Default, ⋮, and a dashed "Add payment
+  method".
+- **Subscription settings:** an Auto-renewal toggle and a Billing cycle select ("Monthly").
+- **Billing history:** "View all invoices →" and a table (Date, Description, Amount, Status,
+  Invoice) with two Paid rows.
+
+Departures from the reference:
+- **The menu is the existing eight rows.**
+- **No app sidebar or top bar.**
+- **The header illustration is the Account one.** The reference has a man holding a crown card.
+- **"paryment" in the reference is corrected to "payment".**
+- **The crown and section icons are the custom set.**
+
+For the user to decide:
+- **The board contradicts itself, as the reference does.** The current plan is Free, but the
+  history shows two paid "NextKin Pro (Monthly)" invoices, a saved card and auto-renewal on.
+- **The price is in USD.** The rest of the product is India-first (₹ salaries, LPA). No price or
+  currency is defined in V2.
+- **The plan limits don't match mobile.** Mobile's Profile shows "NextKin Free · 2 of 2 resumes ·
+  5 AI credits left". This board says "Up to 5 resumes", with no credits.
+- **Saved cards need a payment provider.** The brand, last four digits and expiry would come from
+  it. The app would never hold card numbers.
+- **The feature lists are claims.** "Advanced job matching", "Priority support" and "Early access"
+  are promises the plan would have to keep (V2 §7.8 on marketing copy).
+- **The web Account page** already shows a "Free plan" card with a different feature list
+  (`307:3443`).
+
+### 38.15 Profile screen designed (2026-10-01)
+
+New board `476:2` "profile" on Desktop/Web, to the right of the Account board (`307:3443`), which
+it was cloned from. The Account board is unchanged. A first attempt failed mid-script (a missing
+logo node). Its half-built board was deleted before this one was built.
+
+Kept from Account: the top bar, the profile information card and the Profile completion card.
+Rebuilt in the same card style:
+- **Header and tabs:** the breadcrumb, title and subtitle, and the tabs (Overview, Experience,
+  Education, Skills, Career preferences, Social links) with custom icons.
+- **A two-column area** under the profile card:
+  - Left: About me, and Experience (two roles plus "Manage experience →").
+  - Right: Key information as a label/value list, Skills chips, Career preferences, Social links.
+- **Right rail:** "AI profile suggestions" (four rows plus "View all suggestions →") and "Ready
+  for more opportunities?". The Account plan and Danger zone cards were removed from this board.
+
+Departures from the reference:
+- **The person is George Smith** (UX Designer), as on the Account and Home boards. The reference
+  uses Priya Sharma (Product Designer). Its Experience and Career-preference copy says "Product
+  Designer", which now disagrees with "UX Designer" in the profile card and Key information.
+- **No header illustration.** The Account board has none.
+- **The profile card** keeps its "Profile information" heading and quote layout.
+- **Company logos are letter tiles** (G, F), not real logos.
+- **The completion checklist is Account's.** The reference lists Work experience, Education,
+  Skills, Career preferences.
+- **The board is 1572×1479,** the same size as Account.
+
+For the user to decide:
+- **"A complete profile gets 3x more views from recruiters"** is an unverified claim. There is no
+  recruiter side (V2 §7.8).
+- **Account vs Profile.** The two now overlap heavily (profile card, About me, Key information,
+  Social links, completion). Which one survives, or how do they split?
+- **Experience, Skills and Career preferences** exist in the mobile profile model (the Profile
+  rows). The web Account has no such sections yet.
+- **Update (same day): text enlarged on the profile board (`476:2`).** The user said the texts
+  were "too much small".
+  - All 99 text layers were scaled ×1.18 (14→16.5, 13→15.5, 18→21, title 34→40), and pixel
+    line heights with them.
+  - The 27 small custom icons (24px and under) were scaled ×1.18 too.
+  - The right rail was re-stacked, overflowing texts were narrowed, and the board grew to 1552
+    tall.
+  - Hard line breaks were removed from three paragraphs (quote, About me, completion hint) so
+    they wrap naturally.
+  - **This board's type is now 18% larger than Account's (`307:3443`) and the other web boards'.**
+    Decide whether the others follow, or whether 16.5px body is the new web scale. The compact-
+    density decision in §16 went the other way for the built app.
+- **Update (same day): cropped icons fixed across Desktop/Web.** The user reported icons cut off
+  on the profile board "and others".
+  - **Cause:** icons were placed in wrappers smaller than the artwork (scale 1.3–1.5 overflow),
+    and the auto-layout frames built for the new boards clip content by default.
+  - **Fix on all 168 `icon/…` wrappers on the page:** each wrapper was grown to its icon's full
+    size, and 30 ancestor frames that still cropped an icon had `clipsContent` turned off.
+  - **Second mistake in the same pass:** growing the wrappers stretched the artwork (the children
+    carry scale constraints). 139 icons were replaced with clean, uniformly scaled clones, and
+    their constraints were set to MIN so a later resize can't stretch them.
+  - **Side effects:** rows and headings with icons are a few px wider and taller. On the older
+    boards (sidebar, Settings, Upload), where wrappers are absolutely placed, icons grew around
+    their centre. The profile board's Career preferences items now hug their content and wrap.
+  - **Rule for next time:** place an icon in a wrapper its own size, and never resize a frame
+    that already holds icon artwork.
+
+### 38.16 RESUMES 03 card-menu icons (2026-10-01)
+
+On the action sheet of RESUMES 03 — Card menu (`95:1999`, Mobile 2), the seven Font Awesome row
+glyphs were replaced with the custom icons:
+
+| Row | Icon | From |
+|---|---|---|
+| Rename | Start from scratch | ICONS 2 |
+| Duplicate | New Resumes | ICONS 2 |
+| Tailor to a job | Tailor to a job | ICONS 2 |
+| Set as base | Rate nextkin | iCONS |
+| Download | Export My Data | iCONS |
+| Share link | Links | iCONS |
+| Delete | Delete Account | iCONS |
+
+- Each icon fits 26×22, centred on the old glyph, with labels unmoved. Each wrapper was created at
+  the icon's own size, so nothing is cropped or stretched. The old glyphs are hidden.
+- No new backup page: Mobile 2 already has backups from this work.
+
+Open calls:
+- **Duplicate uses the plain document icon.** The sets have no copy icon.
+- **The two sets differ in style.** The ICONS 2 icons (Rename, Duplicate, Tailor) sit on square
+  tiles; the iCONS ones on soft blobs.
+- **Update (same day): card menu made consistent with the Create and New Resume sheets.** The user
+  said the icons were too small.
+  - **Icons:** all seven are 39×39 tiles at x=18, the Create sheets' size. Rename, Duplicate and
+    Tailor are the ICONS 2 tile icons. Set as base, Download, Share link and Delete sit on a
+    `#E4E4FD` tile (r10), the ICONS 2 tile colour, at about 30×26. The star and download blobs
+    are hidden; the link and bin keep theirs, which nearly matches the tile.
+  - **Labels:** x=69 at 14.5pt, as on the Create sheets.
+  - **Rows:** 52 apart from y=110, the second divider at 425 and Delete at 441. The rows have no
+    subtitle, so they are tighter than the Create sheets' 66.
+  - **Sheet:** grew from 450 to 508 tall, bottom-anchored (y 630 → 572). Child geometry was
+    snapshotted and restored around the resize so nothing stretched.
+  - **Mistake fixed in the pass:** a "hide the pale blob" heuristic hid the wrong layer on Links
+    and Delete Account (their pale pieces are part of the drawing). Both were restored to full
+    artwork.
+- **Update 2026-10-01: layout B adopted as the job card, on JOBS 01 first.** The user said "lets
+  use this as card", linking `438:2`.
+  - JOBS 01 — Discover (`118:2`): the four "All jobs" cards (Razorpay, Zoho, Freshworks, CRED)
+    are now layout B clones (`498:2`, `498:41`, `498:80`, `498:119`) with each job's own data:
+    logo letter, company, title, city, work mode, Full-time, salary and posted age.
+  - "Good match" uses the board's amber pill fill and text colour, and its sparkle is recoloured
+    to match.
+  - The old cards are hidden and renamed "… (old)". The new cards stack 12px apart from the old
+    first card's y and run past the 1080 fold (scrolling content). CRED's tags wrap to two rows,
+    so that card is 261 tall.
+  - **Placeholder copy:** the per-job reason lines ("Matches your product design skills; this role
+    is on-site" …) were written from each job's data. The match engine produces no such line yet.
+  - **Not yet:** JOBS 02 Saved, JOBS 03 Applied (they need status and saved variants), and the
+    dimmed JOBS 01 copies behind JOBS 04, CREATE 01 and CREATE 02. Today's picks is unchanged.
+
+### 38.17 Custom icons on NOTIF 03 and NOTIF 06 (2026-10-01)
+
+Mobile 2, styled like the Create sheets and the card menu (§38.16): 39×39 tiles. ICONS 2 icons
+keep their own tile; iCONS icons sit on a `#E4E4FD` tile with their full artwork.
+- **NOTIF 03 row-menu sheet (`95:2897`):** Mark as read → ATS Check, Turn off application updates
+  → Notifications (bell), Delete → Delete Account. Tiles are at x=18 from y=119, 56 apart.
+  Labels are at x=69 in 14.5pt, and the subtitle sits under its label, centred on the tile.
+- **NOTIF 06 first use (`95:2989`):**
+  - The 72px grey bell tile became the custom bell at 80px, with no tile.
+  - The four 27px tiles became 39px tiles:
+    - New matches → AI Assistant sparkle (cloned from the Desktop/Web `Icons` frame)
+    - Saved jobs closing → Availabilty
+    - Application updates → Work Experience
+    - AI results → Tailor to a job
+  - Text and dividers moved from x=51 to 66.
+- **Old glyphs and tiles:** hidden, not deleted.
+
+Open calls:
+- **Mark as read uses the checklist.** The sets have no plain check icon.
+- **The colour-coded tiles are gone.** On NOTIF 06 the amber "Saved jobs closing" and the grey
+  "Application updates" tiles are now uniformly lavender.
+- **The header back and settings buttons** still use Font Awesome glyphs.
+
+## 39. Home redrawn again — the notched nav (Figma 414:1105, 2026-10-01)
+
+A fourth Home revision, "Home Screen New" at `414:1105`, replacing `239:185`. Diffed render against
+render: **only three things changed**, and two of them are the bottom bar.
+
+1. The nav bar is notched, tinted and newly shadowed (`429:7518`; the previous bar is kept in the
+   same frame, hidden, as `414:1344` — which is what made the diff exact).
+2. The Interview Prep glyph is 6.8% larger (44 → 47 wide). Same drawing, scaled; the asset did not
+   need re-exporting, only its box.
+3. The shortcut captions were darkened to `#6C7586`.
+
+Everything above the bar — header, logo, hero, Quick Start, job matches, resume progress — is at an
+identical y, pixel for pixel.
+
+### 39.1 The shortcut counters are gone — settled, after being wrong twice
+
+Every Home board has drawn a grey count line *under* each shortcut label ("12 Resumes"), including
+this one, which restyled it (point 3 above). The app had been showing a bare "12" *above* the icon
+instead, and §8.2 recorded that as a deviation worth undoing deliberately.
+
+This pass first undid it — put the caption under the label, as drawn. **That was wrong, and so was
+the bare number it replaced.** The call from the owner on seeing it: *"we should not show anything
+below that, no count."* A shortcut tile is its icon and its name, and nothing else.
+
+So §8.2 is now closed, by deletion rather than by matching the board. `IconTileGrid` renders an
+icon and a label; the caption, its typography role (`shortcutCaption`), its colour token and the
+`#6C7586` the redraw introduced are all gone with it.
+
+**The number survives in one place: `a11yValue`,** read after the label ("My Resumes, 12 Resumes").
+Sighted users get no count and screen-reader users do, which is a deliberate asymmetry rather than
+an oversight — it costs no space and the information is real. Say so if you would rather tiles
+announced their names alone.
+
+**Open:** the screenshot that settled this also showed a dark "2" badge on the My Resumes glyph.
+That badge is on no board I have — not `414:1288`, not `239:361` — and is not built. If it is
+wanted, it needs a node.
+
+### 39.2 The bar's shape is a component, not an asset
+
+`src/navigation/TabBarShape.tsx` holds the path from `429:7519` inline, which no other vector in
+this app does. Two reasons, and the second is the binding one:
+
+- The scoop is **concave**. No border radius describes it, and neither `boxShadow` nor `elevation`
+  would follow it — both trace the rectangle the view occupies, laying a straight edge across the
+  dip.
+- **SVGR drops `<filter>`.** Committing it as an `.svg` was tried first; the transformer prints
+  "has dropped some elements not supported by react-native-svg: filter" and emits the path alone.
+  The shadow would have gone missing silently, and it is the only thing separating a white bar from
+  a near-white page. `react-native-svg` renders the filter at runtime — only the build-time
+  conversion cannot express it.
+
+So `shadowSpecs.tabBar` is gone: the bar's shadow lives in the shape now. The spec's new companion
+is `rgb`, an optional colour triple, for the FAB's glow — the board casts it in the brand violet
+(`#3C29F6` at 75%) rather than a grey.
+
+### 39.3 Calls made without you
+
+- **The label colour snaps; the icon fades.** Each tab cross-fades an outline and a filled cut, and
+  those now carry the two colours, so the icon's tint fades with its cut. The label has no second
+  copy to fade against, and animating its colour means either stacking a duplicate `Text` (which
+  puts the same string in the tree twice) or bypassing the `Text` primitive for `Animated.Text`.
+  Neither was worth it for a 7pt label; it changes with the press.
+- **The FAB and bar geometry were left alone.** The new board draws the FAB at 49.03 and the
+  overhang at 12, against the 49.99 / 13.70 the app carries from `215:490` (plus `NAV_BOOST`). Both
+  are ~2% and the bar's *own* width and height match the board exactly at ×1.1, so the shape scales
+  cleanly. Not worth a 2% shift across the chrome for a redraw that did not mean to move them.
+- **Dark mode is still invented.** `tabActive` takes the lighter `#9B8CFF` the auth flow already
+  uses, because `brand500` is too deep to read on `dark800`; the FAB takes `brand500`. No board
+  says so.
+- **The FAB's violet glow is iOS-only.** `shadows.*` hands Android `{ elevation }`, which has no
+  colour of its own. Android gets a neutral shadow of the same depth.
+
+### 39.4 Not on a device
+
+`pnpm typecheck && pnpm lint && pnpm test` are green (169 suites, 1528 tests) and `expo export`
+bundles clean, but none of that can see this:
+
+- **The filter is the risk.** Jest never renders it and `expo export` only proves it compiles.
+  If `Filter` / `FeDropShadow` misbehave on a device the bar loses its shadow and goes nearly
+  invisible against the page. **Look at the bar first.**
+- **The scoop is new.** Check the FAB sits in it centred, with the ring of clearance the board
+  draws, and that nothing scrolling underneath shows through the cut.
+- **The shortcut card got shorter** when the caption went. Check the row still sits comfortably
+  against the resume-progress card above it and the bar below.
+- `assets/figma/414-1105.png` is in the dev overlay as "DESIGN 2b — Home (redrawn)"; `239-185.png`
+  was removed with the node it rendered.
+
+### 38.18 Today's picks card refined (2026-10-01)
+
+On the user's JOBS 01 copy (`414:1547`, Mobile 2), "Pick · Stripe" (`414:1585`, which the user had
+started) and "Pick · Linear" (`414:1597`) were brought to the user's reference:
+- **Header:** the logo on a lavender `#F4F3FF` tile, then the company name, and on the right the
+  match badge and the save bookmark (15pt, `#6B7280`).
+- **Title** at 15.5/20 SemiBold.
+- **Salary:** "₹28–38L" SemiBold, with "· est." in grey Regular.
+- **Tags:** a briefcase "Full-time" pill, a pin location pill and "+3".
+- **The old meta line** ("Stripe · Bengaluru · Remote") is hidden, since its parts moved into
+  the header and tags.
+- **Both cards are now vertical auto-layout** (padding 14, gap 10), 280 wide and 151 tall.
+  Linear sits at x=310, so it still peeks in from the right.
+
+Open calls:
+- **The cards are wider:** 225 → 280. The reference's header (logo, name, badge, bookmark) doesn't
+  fit at 225.
+- **"+3" is a stand-in.** The mock has no extra tags behind it. Linear's location chip reads
+  "Remote" (from "Remote (India)").
+- **The original JOBS 01 (`118:2`) still has the old picks cards.** Only the user's copy was
+  changed.
+- **Update (same day): the refined picks cards are also on the original JOBS 01 (`118:2`).**
+  Clones `519:2` (Stripe, 18,336) and `519:26` (Linear, 310,336) replace the old picks, which are
+  hidden and renamed "… (old)". The dimmed JOBS 01 copies behind JOBS 04, CREATE 01 and CREATE 02
+  still show the old picks and the old list cards.
+- **Update (same day): layout B on JOBS 02 Saved and JOBS 03 Applied, with state logic.** The old
+  cards are hidden and renamed "… (old)". The new ones stack 12 apart from the old first card's y.
+  - **Saved (`118:155`), six cards:**
+    - The match badge (Strong green, Good amber with an amber sparkle) and the reason bar stay.
+      Saving is pre-application, so "why it matches" still helps the decision.
+    - The bookmark is solid `#4733F9`, the saved state. Tailor with AI stays.
+    - The footer shows "Saved 2d ago". Stripe, which had "Closing in 3d" and no saved date, shows
+      "Closing in 3d" in amber `#B45309`.
+  - **Applied (`95:553`), six cards:**
+    - The status pill takes the badge's slot, with a 6px dot and the board's colours: Interview
+      green, In review amber, Not selected red, Applied and Applied · Viewed grey.
+    - The reason bar and the Tailor and Save actions are removed: matching and saving don't apply
+      once you've applied. The footer shows "Applied 12d ago" and a chevron opens the
+      application.
+  - **Location chips:** "Remote (India)" (Linear) is the location chip with no work-mode chip.
+    The cards with four tags wrap to two rows (190–261 tall).
+  - **Placeholder copy:** the new Saved reason lines (Stripe, Linear, Atlassian, Postman) were
+    written from each job's data, like the Discover ones.
+  - **Open:** should a "Not selected" card dim or show a "similar roles" action? Should Applied
+    keep a match badge at all? Left out by choice.
+
+## 40. The Jobs cards, redrawn across all three tabs (118:2 / 118:155 / 95:553, 2026-10-02)
+
+The job card is rebuilt. Each board keeps its old card hidden beside the new one — renamed
+"… (old)" — which made the diff exact: **only the cards changed.** Header, search, segmented
+control, status chips, counts and sort sit where they always did on all three boards.
+
+What the card became (498:2 Discover, 521:2 Saved, 521:236 Applied): company name beside the logo
+on a header row, with the match band — or, on Applied, the application status — as a badge opposite
+it. The title gets its own line. Every fact about the job (place, workplace, employment type,
+salary) is now a grey tag, so the "Razorpay · Bengaluru · Hybrid" meta line and the standalone
+salary are both gone. Then a lavender panel saying why it matched, a rule, and a footer: when it
+was posted or saved on the left, "Tailor with AI" and the bookmark on the right. Applied drops the
+panel and both buttons, and takes a chevron.
+
+The carousel card (519:2) changed with it: 225 → 280 wide, company name added, match badge moved up
+beside the bookmark, meta line dropped, and its two tags given leading glyphs.
+
+### 40.1 The match reason is new data, and the engine does not write it
+
+`Job` gained `matchReason`, and the eight jobs the boards name carry the board's sentence verbatim
+("Matches your UX experience and hybrid preference"). **It is editorial, not computed.** The match
+engine scores criteria and writes no prose, so every other job has none and the card simply drops
+the panel and closes up.
+
+When the engine can explain itself, this field is where that goes. Until then a job added to the
+fixtures will quietly have no reason panel — which is the honest failure, but worth knowing before
+someone wonders why their card is shorter.
+
+### 40.2 Calls made without you
+
+- **"+3" on the carousel card.** The board writes it on both picks it draws, and in both cases it
+  equals that job's own `tags` count (Stripe and Linear each have three). It is *not* the number of
+  facts left over from the two pills shown — that would be two. Built as the tag count, which
+  reproduces both drawn instances; say so if it was meant to be the leftover facts.
+- **The bookmark follows the data, not the board.** Razorpay is saved in the fixtures, and the
+  Discover board still draws its bookmark as a black outline. The Saved board draws the same
+  bookmark filled violet, so filled-when-saved is plainly the intent and Discover's card was just
+  not restated. A saved job therefore shows a violet bookmark on Discover too.
+- **`fair` matches get no sparkle.** The badge carries a sparkle in its band's colour, and only
+  `strong` (green) and `good` (amber) have ever been drawn. A third colour would be invented, so
+  the fair band keeps the plain pill it already had.
+- **The workplace tag is dropped when the location already says it.** The board gives Linear
+  "Remote (India) · Full-time · ₹32–42L" and no second "Remote", while Postman, in Bengaluru and
+  remote, keeps both. Implemented as a substring test on the location.
+- **The old `MatchPill` stayed.** The sparkle went into a new `MatchBadge`; `JobMatchCard` and the
+  match-criteria screen are drawn on older boards that have no sparkle, and they keep the old one.
+- **The 30pt action buttons take a hit slop out to 44.** As drawn they are 30dp on a 390 phone.
+
+### 40.3 Two fixes that fell out of it
+
+- `JobPill`'s glyph size was being passed to the icon font raw while every other length was scaled,
+  so the status dot held its size as the card shrank. It is scaled now, and the default is the 6pt
+  the board draws rather than the 7 that was there.
+- The carousel test's job stub carried `workMode` where the model says `remote`, and a cast hid it.
+  Nothing read the field until the redrawn pick card did.
+
+### 40.4 Not on a device
+
+`pnpm typecheck && pnpm lint && pnpm test` are green (169 mobile suites / 1555 tests, 24 web
+suites / 235) and `expo export` bundles clean, but:
+
+- **Three new SVGs** — the two match sparkles and the AI sparkle the reason panel and the tailor
+  button share — are mocked in Jest. The export proves they resolve, not that they look right.
+- **The cards got much taller** (127 → 233 drawn, 261 where the tags wrap to two rows). Check the
+  list still feels right to scroll, and that a two-line title does not push the footer about.
+- **The reason panel holds two lines.** A longer sentence truncates rather than growing the card.
+- `assets/figma/118-2.png`, `118-155.png` and `95-553.png` were refreshed — the committed renders
+  were 376 × 1040 exports of the pre-redraw boards.
+
+## 41. Job Detail, redrawn (Figma 443:2 "redesign sample", 2026-10-02)
+
+Replaces `95:891` in the dev overlay. Compared against it, four blocks changed and the rest of the
+page — header buttons, About the role, Similar jobs, the sticky Save / Apply bar — did not.
+
+- **Hero.** The company now sits beside its logo with a verified badge and an "industry · size"
+  line; the title follows; the place gets its own line (pin · location | wifi · Remote) instead of
+  the old dot-joined meta string. Salary reads "₹28 – 38 LPA · Estimated" with an info glyph, and
+  each meta chip leads with a glyph (briefcase, outline clock, people), fully rounded.
+- **Why you match.** A small drawing of a résumé being checked sits right of the criteria, and the
+  match pill leads with signal bars.
+- **Tailor row.** One line — "Tailor your resume to this job" — led by the AI sparkle the job
+  cards use, with a grey chevron. The "Creates a linked variant" subtitle is gone from view (it is
+  kept as the accessibility hint).
+- **Company card.** A one-line description under the name, then "size · website ↗". No chevron.
+
+### 41.1 Two things the board shows that the data could not back — check these
+
+- **Verification — settled by the owner:** *"Verified and big company get those tags only, and a
+  small tagline for verified company only."* So `companyVerified` is set for the big companies
+  (1,000+ employees) the fixtures have a real profile for — Stripe, Razorpay, Zoho, Freshworks,
+  Atlassian, CRED — and never for the ~25 companies on `DEFAULT_PROFILE`, which we know nothing
+  about. Only those six carry a tagline, and an unverified company's card has no description line
+  at all (it used to fall back to the industry). Linear (51–200) and Postman (500–1,000) are the
+  profiled companies left out on size.
+  - **The five new taglines are written, not drawn** — only Stripe's is from the board. Each is
+    condensed from that company's own `about` copy already in the fixtures. Worth a read.
+  - **Still open:** V2 has no employer-verification process, so a real API must say what
+    "verified" means and who grants it before this badge shows real data.
+- **Stripe's logo tile is Stripe purple on the board** (`#635BFF`, company card only — the hero
+  tile is grey). Nothing carries a company's brand colour, and inventing a per-company palette is
+  out of scope, so the tile stays neutral. If wanted: a `companyBrandColor` field, or real logos.
+
+### 41.2 Calls made without you
+
+- **"Financial infrastructure for the internet."** is new copy with nowhere to live, so `Job` grew
+  `companyTagline` — gated on verification, per 41.1.
+- **Workplace glyphs.** The board draws only Remote (wifi). Hybrid and On-site use a building.
+- **The location line drops a repeated "Remote"** when the location already says it (Linear's
+  "Remote (India)"), the same rule the job cards use.
+- **The salary info glyph is decoration.** There is nothing behind it to open, and "Estimated"
+  already says what it would.
+- **The page's vertical rhythm is the old uniform section gap.** The board's gaps between blocks
+  wander (20 to 50) in a way that reads like a sample rather than a system; inside the hero, where
+  the spacing is deliberate, it is transcribed exactly.
+- **The match illustration is a component, not an `.svg`** — same reason as the tab bar: SVGR drops
+  `<filter>`, and the blob's blur and the page's brand shadow are what make it read as drawn.
+  It is placed against the criteria list and lets short rows run under its left edge, as drawn.
+  A criterion long enough to reach ~240dp would run under it.
+- **The tailor row's sparkle has no glow.** The board drops a soft blue shadow under it; the shared
+  `ai-sparkle.svg` goes through SVGR, which strips it.
+- Also fixed in passing: the tab bar shape (§39) carried a `#000000` literal outside `src/theme`.
+  It reads a new `shadowInk` token now.
+
+### 41.3 Not on a device
+
+Gate green (169 mobile suites / 1560 tests; web 24 / 235 — one web Jobs filter test flaked once
+under the parallel root run and passes alone and in its own full run), Android export clean. The
+illustration's two filters are the device risk, exactly as with the tab bar: if they misbehave the
+blob renders as a hard disc and the page loses its shadow.
+
+## 42. Jobs empty states get illustrations (95:993 / 95:1058 / 95:1111, 2026-10-02)
+
+The only change on all three boards: the 96pt grey icon tile (search / bookmark / paper plane) is
+now a full illustration — a searcher among filters, a bookmarked listing, an application flying
+off. Copy, buttons, "Clear all filters" and the chrome are unchanged.
+
+- The three drawings are committed as `.svg` under `assets/illustrations/jobs/` (exported whole
+  from Figma 395:1079 / 395:1212 / 395:1263). They carry no filters or rasters, and SVGR was run
+  over each to confirm it drops nothing.
+- `StateView` grew an `illustration` slot that replaces the tile, hidden from screen readers like
+  the tile was. It adds the 28pt the boards leave between drawing and title.
+- Each is drawn at its own height (216 / 188 / 230 at 390), so the title does not sit at the same
+  y on the three tabs — as on the boards.
+- **Not on a device.** These are large vectors (35–53 paths after SVGO); worth a glance that the
+  tab switch into an empty state does not hitch on a low-end Android.
+
+### 38.19 Score panel: text and check icons enlarged (2026-10-02)
+
+RESUMES 04 — Score panel (`95:2310`, Mobile 2). The user said the text and green icons were too
+small. Sizes were raised inside the existing layout:
+- **Checklist rows:** text 12.5 → 15/20, labels moved from x=36 to 44. Green check glyphs 11.25 →
+  16, open circles 10.5 → 15.
+- **Section headings** 13.5 → 16/22. **Counts** 11.5 → 13.5. **"Fix" pills** 11.5 → 13.5,
+  right-aligned at 372.
+- **Top block:** title 14.5 → 16.5, ring label 9.5 → 10.5, "Strong" pill 11.5 → 13, intro
+  12.5 → 14, sub-line 11.5 → 13.
+- **Rows** are re-spaced (18px between rows, 54px from heading to first row, 16px between
+  sections). The content now runs to y≈1282 under the 1140 viewport and the sticky "Fix 4 quick
+  wins" bar. It is scrolling content, as before.
+
+No layout, colour or component changed. The app's Score panel screen still uses the old sizes.
+
+## 43. Create sheet icons (95:1288 / 95:1472, inside CREATE 01 95:1165 and CREATE 02 95:1349, 2026-10-02)
+
+The only change on both sheets: each row's FontAwesome glyph in a grey or lavender tile is now a
+custom multi-tone icon with its tile drawn in (`assets/icons/create/`, seven files, no filters —
+SVGR keeps every element). Titles, labels, AI badges, descriptions, the back button and the
+footnote are unchanged.
+
+- `SheetRow` grew an `art` slot that replaces the glyph tile in the same 52-wide slot. The Home
+  menu, export sheet and JD intake still pass FA glyphs and are untouched.
+- `CreateRow.icon` and `tone` are gone — the tile colour is part of the artwork now.
+- The icons are drawn at their own sizes (LinkedIn is 38 × 41.6, the rest 39 wide and 38–40.7
+  tall), so rows differ by a point or two in icon height, as drawn.
+- Not on a device.
+
+## 44. Resumes grid re-spaced, lavender "New" tile, crown on Upgrade (95:1527, 2026-10-02)
+
+RESUMES 01 — Grid on Mobile 2 changed in three ways. The card internals did not change.
+- **Rhythm (390 → 520 units):** title → search 32 → 43, search → pills 25 → 33, pills → meter
+  28 → 37, meter label → bar 9 → 12, bar → first card 28 → 37, and card rows 18.5 → 25 (columns
+  stay 16).
+- **"+ New" tile** is now `#F5F4FD` (new `brand30` / `surfaceNewDoc` token).
+- **Upgrade** has a crown in front of it (`assets/icons/upgrade-crown.svg`, 529:63).
+
+### 44.1 Calls made without you
+- The 390 board now leads the 520 one (`1:1366`). Until now the two were the same board × 0.75,
+  node for node. The 520 board was not checked, and the constants now cite 95:* ids.
+- The gaps are rounded to whole artboard units (42.67 → 43, 33.33 → 33, 37.33 → 37,
+  24.67 → 25).
+- The crown keeps its own `#432AFE` inside the SVG, like the create-sheet icons. That is a
+  slightly different violet from `brand` `#4733F9`.
+- Only the grid tile turned lavender. The list layout's "New" row (RESUMES 02) stays grey
+  until its board is handed over, so the grid ⇄ list morph changes the fill as well as the
+  shape. Dark mode keeps the old `dark800` for the tile.
+- `ResumesFirstRun.tsx` already failed `prettier --check` before this change; it was left alone.
+
+### 44.2 Not on a device
+- No Expo Go side-by-side yet. The overlay render `assets/figma/95-1527.png` has been refreshed
+  to the new board, so the dev gallery overlay can do this check.
+
+## 45. Resumes list follows the re-spaced boards (95:1769, with 151:2, 2026-10-02)
+
+RESUMES 02 shares the chrome changes from §44 (rhythm and crown). On top of that:
+- **"+ New" row** is lavender too (`surfaceNewDoc`, 95:1797). The grid tile and the list row
+  match again, so the §44 note about the morph changing colour no longer applies.
+- **Row gaps:** cards are 14.5 apart at 390 (19 in artboard units, was 14), and the New row sits
+  18 above the first card (24). The extra 5 is a margin on the New row.
+- **Footer offset:** the pill + "Edited" strip now starts 24 artboard units under the subtitle,
+  where both boards put it (on the thumbnail's bottom edge). The code had 10. The old renders drew
+  it in the same place, so this was an existing mismatch and not part of the redesign.
+
+### 45.1 Calls made without you
+- **Subtitles stay clamped to one line.** 95:1769 still wraps them (rows of 109.25 and 94.5 at
+  390). 151:2 ("02b, single-line subtitles"), the frame `ResumeListRow` builds, was re-spaced
+  in the same pass, so it was kept as the source for row height. The 151:2 overlay render is
+  refreshed too.
+- 151:2 has no crown on Upgrade, and 95:1769 does. The crown follows 95:1769.
+- Row internals (padding 15, thumb 64 × 94, ATS badge, overflow) are unchanged. 95:1769 draws a
+  11.25 inset and 151:2 a 12 one; the existing 15 (= 11.25 / 0.75) stays.
+
+### 45.2 Not on a device
+- No Expo Go side-by-side yet. The overlays `95-1769.png` and `151-2.png` are current.
+
+## 46. Card menu: multi-tone icons on the action sheet (95:1999, 2026-10-02)
+
+RESUMES 03 changed only in its action sheet (95:2221). Each row's FontAwesome glyph is now a 39-wide
+multi-tone icon with its tile drawn in (497:17 … 497:132). Rows move to a 52 pitch at 390 (69⅓ in
+artboard units) and labels start 12 after the icon (16). The header, labels, captions, colours and
+the rename/delete panes are unchanged. The board's background still shows the pre-§44 grid (no
+crown, grey tile); that was not treated as a change.
+
+### 46.1 Calls made without you
+- **Duplicate and Tailor reuse `assets/icons/create/new-resume.svg` and `tailor.svg`.** Their
+  path data is byte-identical to 497:43 / 497:64. Rename is the same art as `create/scratch.svg`,
+  but drawn 38.16 tall here against 40.7 there, so it has its own file.
+- **Four icons were composed.** For Set as base, Download, Share link and Delete the board keeps
+  the `#E4E4FD` 39 × 39 r10 tile as a separate layer, and the whole-node export drags in the sheet
+  and scrim. Each file in `assets/icons/doc-menu/` is therefore that tile plus the node's own
+  vector, centred at the board's insets (6.5 / 10.23 / 9.66 / 9.75 from the top). The paths are
+  untouched.
+- The row keeps `sizes.listRow` as its minimum height for the hit target. The 52 / 69⅓ pitch comes
+  from the icon plus 8⅔ padding above and below.
+- The Delete icon draws its own red bin; the label stays `danger`. The Tailor label stays `brand`.
+
+### 46.2 Not on a device
+- No Expo Go side-by-side yet. The overlay `95-1999.png` has been refreshed.
+
+## 47. Score panel built to the enlarged board (95:2310, 2026-10-02)
+
+The app now follows the Figma-only enlargement recorded in §38.19, so that note's last line
+("the app still uses the old sizes") no longer holds.
+- **Type:** ten new `score*` roles in `typography.ts`, drawn at 390 (`boardRole`). Title 16.5,
+  ring label 10.5, summary 14/20, context 13/17, section heading 16/22, count 13.5, checklist
+  15/20, Fix 13.5, recalc 13/18, CTA 13.5. The ring value (`scoreHero`, 31.5) and the band pill
+  (`captionSemiBold`, 11.5) already matched. Shared roles were not touched; `microOverline` is
+  still used by two other rings.
+- **Glyphs:** check 16, open circle 15, in one 16-wide slot so labels sit on x = 44.
+- **Rhythm (390 → artboard units):** ring 28 under the back button (37), pill +22 (29), summary
+  +18.5 (25), context +8 (11), divider +22 / +24 (29 / 32), meter 10 under each heading (13),
+  first row +16.25 (22), rows on a 38 pitch with a 25.5 box (34 tall, 17 apart), sections and the
+  recalc line 31.25 apart (42).
+- **Icons:** the band pill has a sparkle (533:4, `assets/icons/score/strong-sparkle.svg`), and the
+  CTA's sparkle is now 529:19 (`fix-sparkle.svg`, 24 × 24.8 at 390) in place of the shared
+  `ai-sparkle`.
+- The band pill moved into `components/ScoreBandPill.tsx` to keep the screen near the size rule.
+  The screen is 281 lines; it was 272 before.
+
+### 47.1 Calls made without you
+- **"Strong match" copy.** The board's pill reads "Strong match". The shared `ATS_BAND_LABEL` stays
+  "Strong" (web and the assistant use it), and this pill appends " match" for every band: "Good
+  match", "Fair match", "Weak match". Check that this wording is wanted for a score that has no JD
+  behind it (the D-15 honesty question).
+- **Only the strong band gets the sparkle.** Its two greens are drawn into the asset. The other
+  bands are undrawn, so they keep their own colours and drop the icon rather than wear a green one.
+- **The CTA sparkle's drop shadow is dropped.** The export wraps it in a drop-shadow filter, which
+  `react-native-svg` does not render reliably. The paths are kept and cropped to the glyph's box.
+- **The rubric and "Ask about this score" links stay.** The board has neither; V2 §7.8 and §7.16
+  require them. They sit between the context line and the divider, 16 apart, so the divider moves
+  down by their height compared with the board.
+- One test assertion moved from "Strong" to "Strong match".
+
+### 47.2 Not on a device
+- No Expo Go side-by-side yet. The overlay `95-2310.png` has been refreshed (390 × 1140).
+
+## 48. First run and Profile built to the respaced boards (95:2262 / 95:2390, 2026-10-02)
+
+Both boards carry the 2026-09-29 Figma work (§38.1 respacing, §38.2 row icons and hidden values).
+This is the code catching up with them.
+
+**RESUMES 05 (95:2262).**
+- The ghost-page illustration is replaced by the new illustration, 395:1344 (391:807 on the 520
+  page): `assets/illustrations/resumes-first-run.svg`, 289.35 × 224.25 at 390.
+- "Start with AI" leads with its own sparkle (529:25, `assets/icons/resumes/start-ai-sparkle.svg`).
+- Rhythm in artboard units: illustration → title 32, → lede 19, → CTAs 38, CTAs 19 apart, →
+  footnote 37.
+
+**PROFILE 01 (95:2390).**
+- The 12 rows in CAREER PROFILE, JOB PREFERENCES and SETTINGS use the illustrated icons
+  (399:5885 …, `assets/icons/profile/`). Each sits in a 48 column at x = 12, with label and
+  divider at 72. This is a new `art` slot on `ListRow` and `inset="art"` on `RowGroup`, so the
+  other 16 `ListRow` users are unchanged.
+- The row values are gone, from the screen and from the accessibility labels ("Work experience",
+  not "Work experience, 4 roles"). The test moved with them.
+- The plan card's lavender sparkle tile is replaced by the plan mark (430:48, 52 × 54); the card
+  keeps its 72 height.
+- Rhythm: title → ring and ring → stats +12 each; 31 between the top cards; 37 before each group;
+  12 from a group overline to its card; 15 to the preferences caption.
+
+### 48.1 Calls made without you
+- **The first-run block is centred vertically.** The code used to pin it near the top: by the
+  board's numbers its title sat about 240 units higher than drawn. The block now centres in the
+  space under the title row, and §38.1 says the board puts it "a few px below centre". It scrolls
+  on short phones.
+- **The Start with AI sparkle's drop shadow is dropped** (the same filter issue as §47).
+- **SUPPORT and ACCOUNT keep their flat glyphs, at x = 56.** PROFILE 02 has not been handed over.
+  They take the new group spacing, so on one scroll two groups use art icons at 72 and two use
+  glyphs at 56. §38.2 had already flagged the mixed icon style.
+- **Hidden values are gone for screen readers too.** Keeping them only in the labels would have
+  given sighted and VoiceOver users different information. The §38.2 readability risks still
+  apply: Certifications no longer shows "Add" when empty, and Appearance no longer shows its
+  current choice.
+- `ResumesFirstRun.tsx` was reformatted by Prettier, which clears the §44 note.
+
+### 48.2 Not on a device
+- No Expo Go side-by-side yet. The overlays `95-2262.png` and `95-2390.png` are current.
+- The new art has no dark-mode variant (§38.2).
+
+## 49. Profile 02 icons and the notification row menu (95:2514 / 95:2802, 2026-10-02)
+
+**PROFILE 02 (95:2514).** SUPPORT and ACCOUNT take the illustrated icons too (399:6241 …
+399:6338, eight new files in `assets/icons/profile/`). With the Profile 01 rows from §48, the whole
+Profile scroll is now on the art column: label and divider at 72. Delete account's art draws its own
+red bin, and the label stays `danger`. Sign out keeps its glyph, as the board does. Rhythm: Sign out
+card 35 under ACCOUNT, version line 38 under that. This clears the §48.1 mixed-icon note.
+
+**NOTIF 03 (95:2802).** The board changed only in the row-menu sheet:
+- The three glyphs become 39-wide illustrated icons on a 56 pitch (52 wide, 11⅓ padding in
+  artboard units).
+- The header's type tile aligns to the first line of the body instead of centring on the block.
+- The meta line, the divider and the first row each sit a little lower (§38.1 respacing).
+
+### 49.1 Calls made without you
+- **Mark as read reuses `assets/icons/create/ats-check.svg`.** Its path data matches 505:11 byte for
+  byte. The Notifications row reuses `profile/notifications.svg`; the export differs from 399:6172
+  only in the fifth decimal place of the height.
+- **The bell and Delete tiles are composed** (`assets/icons/notif-menu/`), as in §46: the
+  `#E4E4FD` r10 tile plus each node's vector, centred at the board's insets. NOTIF 03's Delete
+  vector is a separate export from the card menu's (30.03 against 30.00 wide), so it was not reused.
+- **The feed behind the sheet was not touched.** NOTIF 03 also shows it respaced, but that belongs to
+  NOTIF 01, which has not been handed over.
+- `ProfileScreen.tsx` is 295 lines, against 308 at HEAD.
+
+### 49.2 Not on a device
+- No Expo Go side-by-side yet. The overlays `95-2514.png` and `95-2802.png` are current.
+
+## 50. Notification empty states get illustrations (95:2967 / 95:2989, 2026-10-02)
+
+**NOTIF 05 — All caught up (95:2967).**
+- The green check tile is replaced by an illustration (395:1409,
+  `assets/illustrations/notifications-caught-up.svg`, 289.5 × 221.25 at 390).
+- The title, lede and CTA are unchanged. The CTA now sits 28.5 below the lede at 390.
+
+**NOTIF 06 — First use (95:2989).**
+- The grey bell tile is replaced by the illustrated bell (505:70, `icons/notifications/empty-bell.svg`).
+- The four "what arrives" rows take illustrated tiles: matches → sparkle (505:93), closing →
+  calendar (505:102), applications → briefcase (505:114), AI results → wand (505:137).
+- Rows are on a 54 pitch at 390, with the text and divider at 65.25.
+- Each seam follows the respaced board: bell → title 24, → lede 8.5, → card 32.75, → CTA 28, →
+  footnote 23.
+
+### 50.1 Calls made without you
+- **NOTIF 05 now centres in the space under the filters.** Before, it sat 48 below them. The board
+  draws it mid-screen, a little above centre.
+- **AI results reuses `assets/icons/create/tailor.svg`**, which is byte-identical to 505:138. The other
+  three tiles are composed as in §46: the `#E4E4FD` r10 tile plus each node's vector, centred at the
+  board's insets.
+- The tones per row (brand, amber and grey tiles) are gone; the art carries its own colours. The
+  "closing" row has lost its amber, which the old board used to flag urgency.
+
+### 50.2 Not on a device
+- No Expo Go side-by-side yet. The overlays `95-2967.png` and `95-2989.png` are current.
+
+## 51. Tab bar, FAB and the create sheets against 429:7586 / 95:1165 / 95:1349 (2026-10-02)
+
+The user reported these as "not correctly developed" (tab bar / FAB, sheet hidden under the bar,
+behaviour). A code-against-board pass found two differences, now fixed:
+- **CREATE 02 sheet height 520 → 555** (`sizes.sheetStep2Height`). The 390 board draws it 416 tall
+  (95:1472), which leaves room under the footnote. At 520 the footnote sat on the floating bar.
+- **FAB "+" is the board's own glyph** (429:7617, `assets/icons/nav/fab-plus.svg`, 49% of the disc,
+  tinted `fabGlyph`). The FontAwesome "plus" it replaces was square-ended and about twice as heavy.
+
+Checked and matching: the four tab centres (to within 0.1%), the bar outline and its shadow, the FAB
+fill (`#3C29F6`) and violet glow, the paint order (screens → create scrim and sheet → bar → FAB),
+the safe-area handling of both bar and sheet, and every CREATE 01/02 row position.
+
+### 51.1 Open
+- **Not reproduced without a device.** There is no `adb` and no web target, so what the user sees on
+  the phone has not been seen here. The "behaviour" report in particular is undiagnosed: open, close,
+  the + turning to ×, the back step, and the slide between steps all follow the code's motion spec.
+- In CREATE 02 the board draws its three icons 3–12 px below their text rows, a little more each row.
+  That looks like drift in the file; the code centres each icon on its row.
+
+### 51.2 The owner's screenshots: three real faults, fixed (2026-10-02)
+
+The owner sent device screenshots next to the boards. They showed what §51.1 could not:
+1. **The bar and the FAB vanished under the Create sheet.** The Sheet root carries
+   `zIndex.sheet` (50), and an explicit z-index beats paint order, so the chrome layer, a later
+   sibling at an implicit 0, painted *under* the create sheet. `ChromeLayer` now carries
+   `zIndex.sheet` too. At equal z-index paint order decides, so the bar and FAB sit above the
+   create sheet (CREATE 01/02) and the filters, menu and sort hosts after them still cover it
+   (JOBS 04, RESUMES 03).
+2. **The bar rendered squashed**: about 7:1 against the board's 4.9:1, with the scoop flattened.
+   The most likely cause is the `<Filter>/<FeDropShadow>` §39.4 flagged as the device risk. The
+   shadow is now the outline stroked in six faint bands out to 3σ, with the board's numbers
+   (offset 1/1, σ 6.825, 40% black), and no SVG filter anywhere in the bar. **Still unconfirmed
+   on a device: re-check the bar's height and scoop first.**
+3. **Tab labels were 1.65× the board.** `tabLabel` was sized up to 13.2 for readability. It is
+   back to the bar's own 7.256, times NAV_BOOST: 7.98 at 390. Two tests pinned 13.2; both now
+   assert the board. §38.3's readability audit flagged the 7pt label as too small. This follows
+   the design because the owner asked for it.
+
+### 51.3 Second screenshot: the shadow bands, and the bar back to the board's size (2026-10-02)
+
+After §51.2 the bar's proportions were right (the filter was the squash), but two things were
+wrong:
+- **The replacement shadow was ugly:** six even bands, 40% at the edge, cut off hard at the SVG's
+  border. It is now 24 bands whose alphas trace a Gaussian edge, 0.4 × ½erfc(d / σ√2): 20% at the
+  edge, ~0.5% where the SVG ends, so it has no steps and no visible box.
+- **The bar was 10% larger than the board.** `NAV_BOOST` was a deliberate 1.1 (2026-09-04, "the bar
+  still read small"). The owner wants the design as drawn, so it is now 1: pill, FAB and icons at
+  429:7586's own size. `tabLabel` is the board's 7.256 / 10.883. Four tests pinned the boosted
+  numbers; all now assert the board.
+
+### 51.4 Bar size restored (2026-10-02)
+
+At `NAV_BOOST` 1 the owner found the bar "reduced too much", so it is back to 1.1: the pill, FAB and
+icons are 10% over 429:7586, as they were before §51.3. `tabLabel` scales with it (7.98 at 390).
+The Gaussian shadow from §51.3 stays. **Settled by the owner on the device: keep NAV_BOOST at
+1.1; do not "correct" it back to the board.**
+- **Icons +30% and unselected tabs black (owner, 2026-10-02).** The tab icons carry an
+  `ICON_BOOST` of 1.3 on top of `NAV_BOOST` (about 24 at 390), and `tabInactive` is
+  `palette.black` instead of the board's grey `ink500`, for icon and label alike. The selected
+  tab stays brand violet. Dark mode's `tabInactive` is unchanged (`#9AA1AE`): black would vanish on
+  `dark800`.
+- **The FAB's violet glow now draws on Android too (owner, 2026-10-02).** `shadows.fab` is
+  coloured on iOS only; Android's `elevation` is grey, so the glow never showed on the owner's phone.
+  The tab FAB now draws the board's glow (429:7617: offset 0/4, σ 5.45, `#3C29F6` at 75%) as a
+  radial gradient on a circle behind it. The stops trace 0.75 × ½erfc(d / σ√2) out to 3σ. It uses
+  no SVG filter and no View shadow. Not on a device yet. The onboarding `NextFab` and the dev
+  gallery still use `shadows.fab`.
+
+## 52. Jobs and Resumes headers made consistent (2026-10-02)
+
+The owner sent the two tab headers side by side. The title row matched, but the search field sat
+at different heights: on the phone it was about 37 px below the bell on Resumes and 13 px on Jobs.
+
+Both boards draw the same thing. The bell (36 at 390) sets the title row's height, and the search
+field starts just under it: 57 → 80 on RESUMES 01 and 57 → 78 on JOBS 01.
+
+Both screens were wrong, in opposite directions:
+- Resumes measured its gap from the bottom of the title text (48), not the bell, so it was about
+  12 units too loose (`SEARCH_TOP` 43).
+- Jobs used a generic `spacing[4]`, about 12 units too tight.
+
+Both now read one token, `sizes.headerSearchGap`.
+
+### 52.1 Calls made without you
+- **The shared gap is Resumes' 23 at 390 (30.67 units), not Jobs' 21.** The boards differ by 2pt.
+  Jobs moves down by about 12 units and Resumes moves up by about the same.
+- **Only the title-to-search gap changed.** Jobs' search-to-chips seam (`paddingTop:
+  spacing[5]`, 15 at 390) is still tighter than JOBS 01 draws it (22.75). That needs its own call.
+
+### 52.2 Not on a device
+Checked by the gate only. The owner's screenshot is the check.
+
+## 53. Figma boards for every built screen that had none (Mobile 2 + Desktop/Web, 2026-10-02)
+
+The owner asked for every screen that is built but not designed to be drawn in Figma, in the
+existing design. All 78 boards are done:
+- 68 mobile boards on "Mobile 2" (§53.2).
+- 10 web boards on "Desktop/Web" (§53.5):
+  - eight for the six pages that were only "Coming soon" stubs: Upgrade, Help & support,
+    Interview Prep (three boards), AI Assistant, Document viewer, Resume editor;
+  - two for the Settings sections that had no board: Connected accounts and Security.
+
+Only new boards were added. No existing board was edited; existing boards were only cloned as
+sheet backgrounds or as the source of icons.
+
+### 53.1 Calls made without you
+- **Mobile boards go on "Mobile 2" (`95:2`) only, not on the 520 "Mobile App" page.** Every recent
+  redesign (new nav, job cards, Job Detail `443:2`, Score panel) lives on Mobile 2.
+- **New rows sit to the right of the existing row, from x = 16640.** Each row has a heading:
+  - Create flow (y 97)
+  - Resumes, history and home menu (y 1797)
+  - Profile editors (y 3497)
+  - Profile sheets and confirms (y 5397)
+  - Account, support, legal, billing and job extras (y 7297)
+  - Interview prep and assistant (y 9197)
+- **Copy and data come from the code and its mock fixtures,** as Board fidelity asks. Each board
+  draws the default state. Flows whose phases look different get one board per phase: upload
+  reading, generation, data export, interview answer, assistant first run.
+- **Sizes follow the code where the boards say nothing.** Text fields and buttons are 46 high,
+  which keeps 44pt targets. Grouped rows stay 44 like the existing boards; the code's `ListRow`
+  is 52. Confirm sheets use the code's `ConfirmSheet`: a soft red confirm over an outlined Cancel.
+- **Temporary scaffolding was used and then deleted.** It was two hidden text nodes holding the
+  drawing helpers (`550:2` on Mobile 2, `554:3285` on Desktop/Web) and two KIT reference boards
+  (`546:2`, `547:2`). A final check found 68 boards with 68 labels on Mobile 2, plus 7 row
+  headings, with no duplicates and no stray nodes.
+- **Kit sizes win over code sizes where they differ, so the new boards match the old ones.**
+  Kit and code values:
+
+  | Element | Kit | Code |
+  |---|---|---|
+  | Option and menu rows | 44 | 52 |
+  | Segmented controls | 36 | 44 |
+  | Sheet close buttons | 36 | 44 |
+
+  Sheets hug their content instead of using the code's 240/390 floor heights. Footnotes use the
+  boards' #9CA3AF, not the code's #767E8B. The code's grey "secondary" button is drawn as the soft
+  fill and its "ghost" button as the outline, which is what those names look like on the old boards.
+- **The create screens use a large-title head with the feature's icon.** That covers Upload,
+  Tailor, ATS check, Cover letter, Start from nothing and New resume, with the AI badge where
+  CREATE 01 shows one. The code uses a centred title there; the head is one "Page head" frame per
+  board, so it is easy to swap back.
+- **Illustrated icons were added in a few places where the code has none:**
+  - Upload PDF and LinkedIn tiles (CREATE 03, 04, 06).
+  - Export icon on the data-export card (ACCOUNT 02, 03).
+  - Home's lightbulb on Interview prep (INTERVIEW 01).
+  - The Profile sparkle on the Pro plan card (BILLING 01).
+- **Score rings and match visuals:**
+  - Generation · ready reuses the RESUMES 04 ring.
+  - Why you match (JOBS 10) uses the spec's #4ADE80 ring.
+  - JOBS 09 and 10 clone Job Detail's logo tile, role card and "Strong match" pill.
+- **Long screens stop at 1420–1480 tall.** Resume editor and Experience editor stop at 1440 and
+  their last sections run under the sticky bar, as on a phone. NextKin Pro is 1480, so all 14
+  comparison rows show.
+
+### 53.2 Mobile boards (page "Mobile 2" `95:2`, labels at board y − 97)
+- **Create flow (y 97):**
+
+  | Board | Screen | Id |
+  |---|---|---|
+  | CREATE 03 | Upload a resume | `554:3500` |
+  | CREATE 04 | · reading | `554:4815` |
+  | CREATE 05 | Check what we found | `554:4998` |
+  | CREATE 06 | Import from LinkedIn | `554:5471` |
+  | CREATE 07 | Check what we read | `554:6423` |
+  | CREATE 08 | · skill menu | `554:8205` |
+  | CREATE 09 | Tailor a resume | `554:6132` |
+  | CREATE 10 | · saved jobs sheet | `554:6243` |
+  | CREATE 11 | ATS check | `554:6559` |
+  | CREATE 12 | Write a cover letter (spent quota) | `554:6767` |
+  | CREATE 13 | · ready | `554:6838` |
+  | CREATE 14 | Start from nothing | `554:6974` |
+  | CREATE 15 | Generation · in progress | `554:7661` |
+  | CREATE 16 | · ready | `554:7729` |
+  | CREATE 17 | · failed | `554:7781` |
+  | CREATE 18 | New resume | `554:8353` |
+
+- **Resumes, history and home menu (y 1797):**
+
+  | Board | Screen | Id |
+  |---|---|---|
+  | RESUMES 06 | Resume editor | `554:7999` |
+  | RESUMES 07 | Section editor · Experience | `554:8402` |
+  | RESUMES 08 | · Summary | `554:8625` |
+  | RESUMES 09 | Fix with AI | `554:8646` |
+  | RESUMES 10 | How the ATS score works | `554:8696` |
+  | RESUMES 11 | Download sheet | `554:8742` |
+  | RESUMES 12 | Rename sheet | `554:9074` |
+  | HISTORY 01 | History | `555:3` |
+  | HOME 02 | Menu sheet | `556:3` |
+
+- **Profile editors (y 3497):**
+
+  | Board | Screen | Id |
+  |---|---|---|
+  | PROFILE 03 | Edit profile | `553:15` |
+  | PROFILE 04 | Work experience | `553:80` |
+  | PROFILE 05 | Edit role | `553:162` |
+  | PROFILE 06 | Month & year picker | `553:249` |
+  | PROFILE 07 | Education | `554:420` |
+  | PROFILE 08 | Edit education | `554:2061` |
+  | PROFILE 09 | Skills | `554:2125` |
+  | PROFILE 10 | Certifications (empty, the default) | `554:3159` |
+  | PROFILE 11 | Add certification | `554:3179` |
+  | PROFILE 12 | Links | `554:3287` |
+  | PROFILE 13 | Edit link | `554:3389` |
+  | PROFILE 14 | Link kind sheet | `554:3433` |
+  | PROFILE 15 | Desired roles | `554:4709` |
+  | PROFILE 16 | Locations & remote | `554:4759` |
+
+- **Profile sheets and confirms (y 5397):**
+
+  | Board | Screen | Id |
+  |---|---|---|
+  | PROFILE 17 | Minimum salary | `554:2` |
+  | PROFILE 18 | Availability | `554:458` |
+  | PROFILE 19 | Appearance | `554:865` |
+  | PROFILE 20 | Language | `554:1267` |
+  | PROFILE 21 | Sign out | `554:1665` |
+  | PROFILE 22 | Delete account | `554:2201` |
+  | PROFILE 23 | Discard changes | `554:2596` |
+  | PROFILE 24 | Delete role | `554:2673` |
+  | PROFILE 25 | Rate NextKin toast | `554:2772` |
+
+- **Account, support and legal (y 7297):**
+
+  | Board | Screen | Id |
+  |---|---|---|
+  | ACCOUNT 01 | Email & password | `554:3230` |
+  | ACCOUNT 02 | Download your data | `554:3322` |
+  | ACCOUNT 03 | · ready | `554:4638` |
+  | SUPPORT 01 | Help & FAQ | `554:4877` |
+  | SUPPORT 02 | Message support | `554:5505` |
+  | LEGAL 01 | Terms of service | `554:5767` |
+  | LEGAL 02 | Privacy policy | `554:6025` |
+
+- **Billing, job extras and system (same row):**
+
+  | Board | Screen | Id |
+  |---|---|---|
+  | BILLING 01 | NextKin Pro | `554:5549` |
+  | BILLING 02 | Checkout confirm | `554:5838` |
+  | JOBS 09 | Company profile | `554:6206` |
+  | JOBS 10 | Why you match | `554:6910` |
+  | JOBS 11 | Location sheet | `554:7141` |
+  | SYSTEM 01 | Page not found | `554:7654` |
+
+- **Interview prep and assistant (y 9197):**
+
+  | Board | Screen | Id |
+  |---|---|---|
+  | INTERVIEW 01 | Practice sets | `554:5726` |
+  | INTERVIEW 02 | New question set | `554:5810` |
+  | INTERVIEW 03 | Choose a resume sheet | `554:6063` |
+  | INTERVIEW 04 | Practice · question | `554:6375` |
+  | INTERVIEW 05 | · answer revealed | `554:7076` |
+  | ASSISTANT 01 | AI assistant | `554:7804` |
+  | ASSISTANT 02 | · first run | `554:8592` |
+
+- The 520 "Mobile App" page was not touched. None of these boards is in `figma-refs.cjs` yet.
+
+### 53.3 Things the boards exposed in the built app (copy or layout to fix, or confirm)
+- **The Rate NextKin toast doesn't fit.** "Thanks — the rating prompt is up to your app store" is
+  310 px wide but the one-line toast holds 304, so a 390 phone cuts it off. Use shorter copy or a
+  two-line toast.
+- **Upload review contradicts itself.** Its lede says "press Add", but the button reads
+  "Add to profile".
+- **JD review cuts off responsibilities.** Its responsibility fields are single-line, so two of
+  the three seeded lines are clipped.
+- **"Open resume" is too tight.** At its coded 105 width the label has about 8 px either side.
+- **Three notes end on one orphan word at 354:** the ATS check bar note, the spent cover-letter
+  note and the Generation footnote.
+- **The base resume's fix card is wrong.** It says "Add metrics to your Zoho role", but that
+  resume has no Zoho role.
+- **History disagrees with the interview set.** It says 12 interview questions; the seeded set
+  has 10.
+- **Assistant replies written against a document** show literal `**` and start lowercase.
+- **The assistant composer is coded at about 105 tall even for one line.** The board draws a
+  one-line 46 field.
+- **The Help/FAQ and assistant copy is UK English** ("Behavioural", "optimised"), while the web
+  copy is US English.
+
+### 53.4 Not on a device
+These are Figma boards only. No app code changed, and nothing was compared on a phone.
+
+### 53.5 Web boards (page "Desktop/Web" `73:2`)
+
+| Board | Id | Position |
+|---|---|---|
+| Settings -> Connected accounts | `554:3546` | (18069, 11267), Settings row |
+| Settings -> Security | `554:4026` | (19685, 11267), Settings row |
+| 07 · Upgrade to Pro | `561:2` | new row, y 14950 |
+| 08 · Help & support | `563:2` | new row, y 14950 |
+| 05b · Document viewer | `563:1375` | new row, y 14950 |
+| 09 · Interview Prep | `561:506` | new row, y 14950 |
+| 09b · Interview Prep — New question set | `563:597` | new row, y 14950 |
+| 09c · Interview Prep — Practice | `562:397` | new row, y 14950 |
+| 10 · AI Assistant | `563:923` | new row, y 14950 |
+| 04b · Resume editor | `560:2` | new row, y 14950 |
+
+- **The two Settings sections are clones of the Billing & plan board `470:2`.** They have the same
+  nav, header and illustration, in DM Sans and navy. Security reuses the Password, Two-factor and
+  Active sessions cards from Settings → Account `356:317`.
+- **The other eight pages are built on the Insights board `461:14`** (Plus Jakarta, slate, indigo).
+  Their title sits under the pinned top bar, as on the Resumes and Documents boards and in the
+  built app. Insights itself still has its title beside the top bar.
+
+### 53.6 Web calls for you
+- **Prices.** Upgrade uses the shared fixture's ₹1,499/mo and ₹7,999/yr. The Billing & plan board
+  shows $9.99/month. Pick one and the other board follows.
+- **Fair-use numbers on Pro.** Cover letters 100 a month, interview sets 100 per resume and the
+  assistant 100 a day all come from the mock's Pro limits; V2 publishes none of them. The
+  "Most popular" chip has no data behind it either.
+- **Who owns the security controls.** The Security section shows Password, Two-factor and Active
+  sessions, as the spec proposes. Settings → Account still shows all three, and Privacy & data
+  `466:56` has its own Security card.
+  - Decide which keeps them.
+  - The Security subtitle is a proposal.
+  - "Sign out of other devices" is the built action. Per-device sign-out is not in V2.
+- **Connected accounts is Google only** (V2 §7.1). The nav row still says "Google, LinkedIn,
+  etc.", and the subtitle promises "import data" although the Google link is sign-in only
+  (§30.2).
+- **Interview Prep shows two sets that are not in the seed.** "Software Engineer" and "Senior Data
+  Engineer" are there to show a finished set and the Generic chip. The seeded Stripe designer set
+  doesn't match web George, who is an engineer.
+- **Document viewer.** It shows "Cover Letter - Google" with a letter built only from seed facts.
+  The mock has no file store and no DOCX content to render.
+- **Resume editor.**
+  - The per-bullet "Suggested rewrite" card is an addition; it rephrases and adds no facts.
+  - The preview prints Certifications before Education (V2 §7.12); the built `ResumeSheet` does it
+    the other way round.
+  - "What this score measures" points at a web rubric page that doesn't exist yet.
+- **Spelling.** The web boards use US spelling ("Behavioral", "judgment"); the mobile fixtures are
+  UK English.
+
+### 53.7 Redesign round: the first pass was rejected (2026-10-02)
+The owner rejected every board above: "All the new page is completely bad, have you not analyzed
+how we have redesign multiple screens, how we have used illustrations". The first pass copied the
+older flat boards (NOTIF 04, PROFILE 02) instead of the redesigned ones.
+
+- The redesign was studied first. The notes on what to copy are in the session scratchpad
+  `design-language.md`, built from Home `414:1105`, Jobs `118:2` and its card `438:2`,
+  RESUMES 01/05, JOBS 06, NOTIF 06/07, the Score panel and Job Detail `443:2`.
+- Six samples were rebuilt and the owner approved them ("Yes good, do for all"):
+  - Work experience `573:2`
+  - Edit role `573:144`
+  - Certifications empty `573:119`
+  - Tailor `573:292`
+  - Sign out `573:437`
+  - web Upgrade `561:2`
+- **All 68 mobile boards were rebuilt in place,** with the same names, positions and labels. The
+  §53.2 ids are stale; the current ids are below. The 10 web boards were restructured in place
+  and keep the §53.5 ids.
+  - CREATE 03–18:
+
+    | Board | Id |
+    |---|---|
+    | 03 | `577:4761` |
+    | 04 | `577:5288` |
+    | 05 | `577:6291` |
+    | 06 | `577:7780` |
+    | 07 | `580:930` |
+    | 08 | `580:3210` |
+    | 09 | `573:292` |
+    | 10 | `577:4535` |
+    | 11 | `577:4996` |
+    | 12 | `577:5702` |
+    | 13 | `577:5809` |
+    | 14 | `577:6669` |
+    | 15 | `577:9091` |
+    | 16 | `580:122` |
+    | 17 | `580:289` |
+    | 18 | `580:728` |
+
+  - RESUMES 06–12, HISTORY 01, HOME 02:
+
+    | Board | Id |
+    |---|---|
+    | RESUMES 06 | `577:6931` |
+    | RESUMES 07 | `577:8623` |
+    | RESUMES 08 | `577:8828` |
+    | RESUMES 09 | `577:9464` |
+    | RESUMES 10 | `580:580` |
+    | RESUMES 11 | `580:1258` |
+    | RESUMES 12 | `580:2116` |
+    | HISTORY 01 | `580:2928` |
+    | HOME 02 | `582:2` |
+
+  - PROFILE 03–25:
+
+    | Board | Id |
+    |---|---|
+    | 03 | `577:5341` |
+    | 04 | `573:2` |
+    | 05 | `573:144` |
+    | 06 | `577:5925` |
+    | 07 | `577:6868` |
+    | 08 | `577:7432` |
+    | 09 | `577:7976` |
+    | 10 | `573:119` |
+    | 11 | `577:8527` |
+    | 12 | `577:9018` |
+    | 13 | `577:9404` |
+    | 14 | `577:9716` |
+    | 15 | `580:1175` |
+    | 16 | `580:1733` |
+    | 17 | `577:53` |
+    | 18 | `577:504` |
+    | 19 | `577:998` |
+    | 20 | `577:1419` |
+    | 21 | `573:437` |
+    | 22 | `577:1945` |
+    | 23 | `577:2576` |
+    | 24 | `577:3232` |
+    | 25 | `577:3416` |
+
+  - Account, support, legal, billing, jobs extras and system:
+
+    | Board | Id |
+    |---|---|
+    | ACCOUNT 01 | `577:2462` |
+    | ACCOUNT 02 | `577:3071` |
+    | ACCOUNT 03 | `577:3801` |
+    | SUPPORT 01 | `577:6129` |
+    | SUPPORT 02 | `577:7867` |
+    | LEGAL 01 | `577:8876` |
+    | LEGAL 02 | `580:2` |
+    | BILLING 01 | `577:9155` |
+    | BILLING 02 | `580:314` |
+    | JOBS 09 | `580:1648` |
+    | JOBS 10 | `580:2428` |
+    | JOBS 11 | `580:2510` |
+    | SYSTEM 01 | `580:2883` |
+
+  - Interview and assistant:
+
+    | Board | Id |
+    |---|---|
+    | INTERVIEW 01 | `577:927` |
+    | INTERVIEW 02 | `577:1861` |
+    | INTERVIEW 03 | `577:2809` |
+    | INTERVIEW 04 | `577:3855` |
+    | INTERVIEW 05 | `577:4905` |
+    | ASSISTANT 01 | `577:6485` |
+    | ASSISTANT 02 | `577:7805` |
+
+- **22 illustration placeholders** (13 mobile, 9 web) are listed with sizes and briefs in
+  `illustrations-needed.md`.
+- **Copy added for the redesign** (hero ledes, summary titles, card titles) reuses product
+  phrases where it can. The builders' lists are in the session reports. Main examples:
+  - "4 roles on your profile"
+  - "Creates a linked copy of your resume for one job…"
+  - "We reword what is already on your resume. We never invent experience you do not have."
+  - The web "How connecting works", "Security checkup" and "How practice works" cards.
+
+  All of it is proposed copy, not code copy.
+- **The Rate NextKin toast is drawn on two lines** with the full sentence. The code still cuts it to
+  one line (§53.3).
+- **Still open:**
+  - The Language sheet hugs its content at 226; the code's floor is 240.
+  - Two reason bars (Skills, Desired roles) end on one orphan word.
+  - The Google card's "Connected" variant and the web Settings nav line ("Google, LinkedIn,
+    etc.") are unchanged.
+- **The temporary helper layers have been deleted:** kit v2 `572:2` and web kit v2 `575:2`.
+- **The bottom buttons float with no bar behind them** (owner, 2026-10-03: "I dont want any
+  background behind the below buttons").
+  - All 40 "Sticky action bar" frames on the new boards lost their white fill, top hairline and
+    upward shadow.
+  - On RESUMES 06, RESUMES 07 and CREATE 07 the page ran behind the buttons. Their content now sits
+    in a clipped "Scroll area" that ends 14 px above the buttons.
+  - Not changed:
+    - the AI-assistant composer (an input, not a button bar);
+    - the owner's own boards that have a bottom bar (Job Detail `443:2`, Filters, the Score panel).
+  - The app's `StickyActionBar` still draws the white bar with its hairline and shadow; changing
+    it is a code decision.
+- Where a new illustration is needed, the board shows a dashed lavender placeholder named
+  `ILLUSTRATION IL-xx — …`. Every id is listed in `illustrations-needed.md` at the repo root,
+  for the owner to draw.
+
+## 54. App-wide consistency: spacing, text size, readability (2026-10-02)
+
+The owner asked for consistency across every screen. Three audits (tab screens, pushed screens,
+shared components) found drift. The owner set four limits:
+- Cards keep each board's identity.
+- Chips go to board size.
+- Back-button screens use the board title (16.5 bold).
+- Text matches the newer Mobile 2 boards.
+
+Plan: `C:\Users\ACER\.claude\plans\binary-singing-mitten.md`.
+
+### 54.1 What changed
+- **Bugs:**
+  - Profile's loading and error title slid under the status bar.
+  - The assistant composer ignored the bottom safe area.
+  - Job Detail had no back button while loading or on error.
+  - The "Fix N quick wins" CTA was 42pt and the ATS score title sat off-centre.
+  - Home's header buttons overflowed their row.
+  - The Home menu sheet rows touched the sheet edge.
+  - The JD intake sheet title jumped when the jobs loaded.
+  - The NOTIF 06 CTA was 42pt.
+- **Tab chrome:**
+  - One `ui/TabTitleRow` (title + bell) on Jobs, Resumes and Profile.
+  - `spacing.headerTop` (16) on every tab and `spacing.headerTopPushed` (8) on pushed screens.
+  - `sizes.titleRowGap` (was `headerSearchGap`) now also on Profile's title → identity seam.
+  - New `sizes.headerContentGap` (33): Jobs' search → chips matches Resumes' search → pills.
+  - The Resumes view toggle is the search field's height (46pt at 390, was 39).
+  - The notifications feed moved onto `Screen` and `ScreenHeader`.
+  - `sizes.headerButton` removed (unused).
+- **Pushed screens:**
+  - Header → content is 16 everywhere.
+  - Sections sit 24 apart on every screen built from sections.
+  - Bottom padding is 32 everywhere.
+  - A `section` heading sits 16 over its content.
+  - `RowGroup`'s overline → card defaults to 12.
+  - Help gained keyboard handling, and its topic chips are single-choice `select`.
+- **Components:**
+  - `FilterChip` padding, gap and border are scaled (they were raw).
+  - `SortControl` moved to `ui/` and replaces Resumes' copy.
+  - Job Detail's Save and Filters' Reset widths are scaled, and Job Detail's bar has the
+    sticky-bar shadow.
+  - `flexBasis` joined the lint length list.
+  - The editor's "Update available" is the amber pill.
+  - Skeleton fields take the real field height.
+- **Type:**
+  - The shared reading roles are re-anchored on the newer boards. At 390: body 14, prose 15,
+    titles 16, list and sheet rows 15, meta and captions 13, micro 12, overline 12.5.
+  - `ScreenHeader`'s title is `headline`.
+- **Contrast:** text tokens darkened (hue kept) to AA on the surfaces they sit on:
+  - secondary `#686F7D`
+  - tertiary `#6B727E` (dark mode `#79818F`)
+  - success `#12853D`
+  - danger `#DA2323`
+  - the amber StatBadge uses `warningStrong`
+  - A guard test lives in `tokens.test.ts`.
+
+### 54.2 Calls made without you
+- **Section gap 24, not 20.** It is the boarded Job Detail's value and the closest to the
+  respaced boards. Card lists keep their tighter item gaps: Interview list, ATS fix, the
+  assistant transcript and profile entry lists.
+- **Error offsets go the other way from the plan.** `StateView` already pads 40 above itself,
+  and ~25 screens relied on that, so I removed the extra 24–40 the other 11 added instead of
+  adding it to the 25. The same applies to the unboarded empty states (History, ATS fix,
+  Resumes "No documents match"). The boarded Jobs empty states keep their offset.
+- **Jobs' "Today's picks" and "All jobs" use Home's 20pt bold heading.** JOBS 01 draws them at
+  15.5. Say if Jobs should keep the smaller one.
+- **Home card meta goes 11 → 13** ("Full-time", "2d ago", "80+ applied", "Match"). 210:262
+  draws 11, but meta is 13 everywhere else now.
+- **Sheet title in the Home menu:** `headline` and an outline ✕, like the option sheets. Rows
+  are 24 apart (not the export sheet's 28) so six fit the fixed sheet.
+- **The three editor chips stay their own component.** As `FilterChip variant="removable"` they
+  would read "Remove filter …" to a screen reader. They already drew at the board size, so
+  scaling `FilterChip` made the two sets match. The two "+ add" suggestion chips were not
+  merged.
+- **Kept at their old size, because they live in fixed boxes:** `tiny` (the score ring
+  caption), `scoreSm` (the ring value), `badge`, `badgeCount`, `ringCaption`, `tabLabel` and the
+  Home tile roles.
+
+### 54.3 Board clashes left as drawn (cards keep their identity)
+- Card radii: Jobs cards are r24 and Resumes cards r20. Help, the score rubric and Job Detail
+  mix the two on one screen.
+- Home's job card uses square-cornered chips; the Jobs card uses round pills.
+- ScoreBandPill vs the jobs MatchBadge: different padding and sparkle asset, and "fair" is red
+  on one and grey on the other.
+- Sheet ✕ styles: Filters (1:760) puts a filled ✕ on the left, and the create sheet has none.
+- Home and Jobs carousel styling (heading link, badge).
+
+### 54.4 Deferred and watch-points
+- Job Detail and the ATS score panel still skip `Screen`, so they have no 520 width cap on a
+  tablet.
+- At 12pt, the notification swipe action "Mark read" fits its 63pt button at 390 but wraps to
+  two lines on a 360 phone.
+- Bigger text makes chips, rows and cards a little taller everywhere. That is expected, but
+  watch for truncation on the resume grid card title and in the pick-card tags.
+- The web `ApplicationsScreen` test failed once and passed on rerun, the same intermittent
+  pattern as the web `JobsScreen` test (§51).
+
+### 54.5 Not on a device
+Checked by the gate only (mobile 1629/1629, web 235/235). The owner's screenshots are the
+check: Home, Jobs, Resumes, Profile, Notifications, Edit profile, Upgrade and a sheet.
+
+## 55. Proposed "Build a resume for a job" flow (Mobile 2, 2026-10-03)
+
+The owner asked for a simpler way to get a resume for a specific job: tap Build Resume, choose
+the job (one on NextKin or one from anywhere), let the AI build the resume, then download it. It
+was drawn as a separate flow so it can be compared with the built Tailor flow before deciding.
+Nothing existing was changed.
+
+### 55.1 Boards
+Page "Mobile 2", row at y = 10897, heading and flow map above it.
+
+| Board | Screen | Id |
+|---|---|---|
+| BUILD 00 | Home, with Build Resume marked as step 1 | `592:4` |
+| BUILD 01 | Which job is it for? | `592:319` |
+| BUILD 02 | Choose a NextKin job | `592:419` |
+| BUILD 03 | Add a job from anywhere (link, text or file) | `592:522` |
+| BUILD 04 | We read the job | `592:595` |
+| BUILD 05 | Building your resume | `592:674` |
+| BUILD 06 | Resume ready | `593:3` |
+| BUILD 07 | Download sheet | `593:83` |
+
+New illustration: IL-BR1 (`illustrations-needed.md`).
+
+### 55.2 How it differs from the built Tailor flow
+- **Tailor today:** pick a base resume, add the job description, review every extracted field,
+  generate, open the editor, then download. That is two dense decision screens before anything
+  is built.
+- **The proposal:** pick the job, glance at one summary card for an outside job, build, then
+  download from a ready screen that shows the preview, the ATS score and what was tailored.
+  - Jobs already on NextKin skip reading entirely.
+  - The full review survives as "Edit details".
+- **Base resume step removed.** The resume is built from the profile, shown on BUILD 01 as
+  "Built from: your profile".
+- **Links on mobile are new.** Links are web-only today (`toreview.md` §23); the mock fakes the
+  fetch.
+- **The usage cost is shown before building:** "Uses 1 of your 3 resume builds this month".
+
+### 55.3 Decide
+- **Make this the one path for "a resume for this job"?**
+  - Home Build Resume, the Jobs card sparkle and Job Detail's Tailor row would all land here.
+    The two job entries would skip to building.
+  - Tailor's base-resume picker becomes a "Change" on the "Built from" line, and its full JD
+    review becomes "Edit details".
+- **What to build from:** the profile, or the base resume when one exists. A thin profile
+  needs a fallback to Upload or Start from nothing.
+- **Reading job links on mobile** needs a server-side fetch. Some sites, LinkedIn included,
+  block it, so the paste and file options must stay.
+- **Ready screen copy.** The "what we tailored" list and the missing-skill warning must come
+  from the generator's real diff. Never claim a change that wasn't made (V2 honesty rules).
+
+### 55.4 Refined and simplified (2026-10-03)
+The owner asked for it "more simple and clear", with unnecessary flow removed. BUILD 01–07 were
+kept and refined in place:
+- **01:** shows the top three saved jobs, so the usual case is one tap. "Paste a link or the
+  description" is a single tile. "Built from your profile" is one line.
+- **02:** a compact list without salary chips. Tabs are Saved and Top matches; Applied was
+  dropped.
+- **03:** one paste box with a Paste button, and "Upload the job file instead".
+- **04:** one job card. The skill chips show have (green ✓) versus missing (amber dashed), with
+  "4 of 5 on your profile". The full review screen is gone; editing is the pencil on the card.
+- **05:** progress, then "Leave and notify me".
+- **06:** the preview, "What changed for this job" (three changes plus the skill it refused to
+  add), and two next steps: a cover letter and interview practice for this job.
+- **07:** PDF free, DOCX with Pro, TXT.
+
+New boards:
+- **BUILD 00b** `599:264`: the simplified + sheet. It has four choices: Resume for a job, Cover
+  letter, ATS check, Import my old resume.
+- **BUILD 05b** `598:171`: "We couldn't read that job page". It offers paste-instead and retry.
+  "This build was not counted" is proposed copy and a product rule to confirm.
+
+Moved to the **Archived** row (y 13707), each with its label:
+- CREATE 09/10 (Tailor and its saved-jobs sheet)
+- CREATE 07/08 (Check what we read and its skill menu)
+- CREATE 15/16/17 (Generation)
+- RESUMES 11 (the second Download sheet)
+- CREATE 06 (LinkedIn, a dead end)
+- CREATE 18 (blank New resume)
+
+The Create and Resumes rows were re-packed to close the gaps. The owner's own CREATE 01/02
+sheets are unchanged; BUILD 00b is the proposed replacement. Their illustrations IL-C2 and
+IL-C20–C22 are on hold.
+
+Still open:
+- whether Home's "Zero Resume" (CREATE 14) stays a separate entry or becomes the Build flow's
+  path for an empty profile;
+- the web version of the flow.
+
+**Superseded on 2026-10-03 by §56.** The whole BUILD row was moved to a second Archived block
+(page "Mobile 2", now at y 20207, heading at y 20000) and is kept for reference.
+
+## 56. Tailor your resume to a job: simplified, job-first flow (Mobile 2, 2026-10-03)
+
+The owner simplified the flow again. It now starts from a job already on NextKin: tap Tailor on
+Job Detail, pick a resume (one on NextKin or a file from the phone), see what is missing and what
+to improve, tap Fix, answer add-or-skip for each missing item, then download and apply. Applying
+always happens on the employer's own site (V2 §3, Release 1 links out rather than submitting).
+The references were Job Detail (`443:2`) and a three-step competitor flow (compare, align,
+review), adapted to the mobile redesign language.
+
+### 56.1 Boards
+Page "Mobile 2". The row is at y 10897, where BUILD was; the heading `592:2` and flow map
+`593:203` were rewritten for it.
+
+| Board | Screen | Id |
+|---|---|---|
+| TAILOR 00 | Job Detail, with "Tailor your resume to this job" marked as step 1 (copy of `443:2`) | `605:5` |
+| TAILOR 01 | Choose a resume (sheet): three NextKin resumes, or upload a PDF or DOCX | `606:2` |
+| TAILOR 01b | The same sheet after an upload; the file is picked | `606:229` |
+| TAILOR 01c | The same sheet when the file can't be read; the error is shown inline and the CTA is disabled | `608:510` |
+| TAILOR 02 | Your resume vs this job: ATS score 72, keywords 5 of 8, four "what to improve" rows, Fix my resume | `607:2` |
+| TAILOR 03 | "Add these to your resume?" (sheet): Add or Skip for each missing keyword, Create my resume | `608:2` |
+| TAILOR 04 | Tailoring in progress (from BUILD 05) | `608:196` |
+| TAILOR 05 | Ready: preview, 88 "Up from 72", what changed, Edit and Download PDF | `608:267` |
+| TAILOR 06 | Saved (sheet): the file, then "Apply on stripe.com" | `608:396` |
+
+A three-step stepper (Compare · Fix · Download) runs across 02 to 05. New illustration: IL-T1
+(`illustrations-needed.md`). IL-BR1 moved to TAILOR 04, and IL-BR3 is on hold with the archive.
+
+### 56.2 Judgement calls
+- **Example data.**
+  - The job is Stripe Senior Product Designer, which is JOBS 05's own listing.
+  - The resume is the base "Product Designer" (`res_base`, 3 pages).
+  - 72 sits in the "good" band (amber) and 88 in "strong" (green), using `atsBandFor`.
+  - Fintech / payments is the item the user skips. That matches the ✗ on Job Detail.
+- **The headline row on TAILOR 02** retargets the resume's headline to the job title. Job titles
+  under Experience are never changed. Confirm this is acceptable under the honesty rules (V2
+  §1.1/§7.7).
+- **Length row ("3 pages, trimmed to 2")** comes from `res_base.pageCount`. The real generator must
+  report its own diff. Never claim a change it didn't make.
+- **Add or Skip** is asked only for missing keywords. Section rewrites (headline, summary,
+  length) happen without asking, which is what "click Fix" means. If nothing is missing, Fix goes
+  straight to TAILOR 04.
+- **Upload failure** stays inside the sheet (01c) rather than going to a full-screen error, so the
+  NextKin resumes remain one tap away. No illustration is needed.
+- **The quota line** on TAILOR 03 reuses the built copy "1 of 3 generations left this month" (V2
+  §13.5: say the limit before the work). When the quota is spent, the CTA becomes "See Pro plans",
+  as in the built Tailor screen.
+- **Ready screen.**
+  - The cover-letter and interview tiles from BUILD 06 were dropped to keep the screen on
+    "download, then apply". A one-line hint says what comes next.
+  - Download is one tap and PDF only. DOCX and TXT stay in the editor's export.
+- **Floating CTAs** have no bar behind them, as the owner asked.
+
+### 56.3 Decide
+- **Home's "Build Resume" button** has no destination in this flow. Options:
+  - open the Jobs list to pick a job, then join at TAILOR 01;
+  - restore the archived BUILD 01 job picker in front of TAILOR 01;
+  - keep the owner's CREATE 01/02 sheets.
+- **The job-card sparkle on Jobs** could open TAILOR 01 directly over the list.
+- **No resume on NextKin yet.** The sheet would show only Upload. Should it also offer "Start from
+  my profile" (Zero Resume, CREATE 14)?
+- **Jobs from outside NextKin** (pasting a link or a JD) are no longer part of this flow. The web
+  "Upload a JD" page still covers them.
+- **"Did you apply?"** Tracking an application after the user returns from the employer's site is
+  a Release 2 job (V2 §6.2/§17). Nothing was drawn for it.
+- **The web version** of this flow has not been designed.
+- **App code is unchanged.** The built TailorScreen (base resume + JD intake → JD review) needs
+  rework to match once the flow is approved.
+
+## 57. Start from nothing, Cover letter and ATS check flows (Mobile 2, 2026-10-03)
+
+The owner asked for these three flows in the same simple style as Tailor (§56). ATS check is for
+resumes from outside NextKin only, because resumes made or uploaded here are already scored. Each
+flow has a three-step stepper.
+
+To make room, both Archived blocks moved down 4600 px: the first now starts at y 18100 and the
+Build one at y 20000. The old single boards CREATE 11 (ATS check), CREATE 12/13 (cover letter)
+and CREATE 14 (Start from nothing) were moved to the end of the first Archived row.
+
+### 57.1 Boards
+| Row (y) | Board | Id |
+|---|---|---|
+| ZERO (13707) | 00 No resume yet: Tailor sheet when the library is empty, with Upload or Start from nothing | `613:8` |
+| | 01 About you: name, years (chips), the job | `613:206` |
+| | 02 Writing your draft | `613:293` |
+| | 03 Draft ready: guesses marked in amber, "0 of 9 checked", Download locked | `613:362` |
+| | 04 Check a guess (sheet): edit the fields, Save and next, or Delete | `613:467` |
+| | 05 All checked: Download unlocked, "Saved to your profile too" | `613:622` |
+| COVER (15207) | 00 Which job is the letter for? (sheet over Home) | `613:1079` |
+| | 01 Set up: job, resume (Change), tone chips | `613:1431` |
+| | 02 Writing your letter | `613:1531` |
+| | 03 Letter ready: preview, "every fact comes from your resume", other tones | `613:1600` |
+| | 04 Saved (sheet): resume and letter files, Apply on stripe.com | `613:1665` |
+| ATS (16707) | 01 Upload an outside resume, plus the job to check against | `613:1767` |
+| | 01b Which job? (sheet): saved jobs, paste a JD, or basics only | `613:1848` |
+| | 02 Checking | `613:1984` |
+| | 03 Results for a job: score 64, breakdown, keywords, top fixes, "Fix it for this job" | `613:2052` |
+| | 03b Basics only: no overall score, four part scores, keywords locked | `613:2187` |
+
+New illustrations: IL-Z1, IL-CL1, IL-A20. IL-T1 is reused on COVER 04.
+
+### 57.2 Judgement calls
+- **Start from nothing** follows V2 §7.9:
+  - The inputs are name, years and the job.
+  - Companies and schools stay as [blanks].
+  - Every guess is flagged, and download is blocked until each one is resolved (edit, confirm or
+    delete).
+  - Finishing fills the profile.
+  - The 81 on ZERO 05 is a with-job score, which D-15 allows.
+- **The no-resume case of Tailor** (§56.3) is answered by ZERO 00. Home's "Zero Resume" tile
+  should open ZERO 01 directly, with a job picker if no job is in context. That picker is not
+  drawn.
+- **Cover letter** follows V2 §7.10:
+  - A letter needs a resume tailored for the job, so the picker lists only those jobs. "Job not
+    here?" sends the user to Tailor first.
+  - There are four tones, and switching tone keeps the earlier draft.
+  - The quota copy is "1 of 1 cover letter left this month", matching the built fixture.
+- **ATS check** follows V2 §7.8 and D-15:
+  - The score appears only when a job is picked. The basics-only result shows part scores and no
+    total.
+  - "Fix it for this job" saves the file to Resumes and joins Tailor at the compare step.
+  - The copy "Some systems read columns out of order" names no third-party ATS.
+- **The breakdown on ATS 03** shows five parts with example numbers. The real values must come
+  from the rubric.
+
+### 57.3 Decide
+- **Should Home's Quick Start tiles** (Zero Resume, Cover Letter, ATS Check) open ZERO 01, COVER 00
+  and ATS 01? No Home entry boards were drawn for these.
+- **Pasting a JD on ATS 01b** reopens the outside-job path. Should it stay?
+- **Web versions** of all three flows are not designed. App code is unchanged.
+
+### 57.4 Refined (2026-10-03, owner feedback)
+- **Zero Resume starts from Home's Quick Start tile** and builds a first resume, like a first-time
+  build:
+  - New ZERO 00 `615:2` marks the tile as step 1.
+  - ZERO 01 asks for name, years and **the role you want**. It no longer asks for a job.
+  - ZERO 05 has no score and suggests tailoring to a job next.
+  - The old no-resume Tailor sheet is now ZERO 00b, the second entry.
+  - **This departs from V2 §7.9, which requires a target JD.** The owner should confirm. The
+    draft is planned from the role. Per D-15, no total score is shown without a job.
+- **ATS check simplified to 4 boards:**
+  - 00: Home tile `615:319`.
+  - 01: upload plus the job, with no stepper and one line of copy.
+  - 02: one progress bar.
+  - 03: score, missing keywords and three one-line fixes, then **Fix it for this job**.
+  - The job picker (01b) and the basics-only result (03b) were deleted. A job is always set, and
+    it defaults to the top saved job with Change. That keeps D-15 without a no-score screen.
+  - The breakdown was dropped from the result. The "How the ATS score works" link stays because
+    V2 §7.8 requires it on every score display.
+- **Open:** the "Change job" picker reuses the standard job sheet and is not drawn. Should a
+  pasted JD be allowed there?
+- **Resolved:** the owner wants a pasted job description allowed in ATS check.
+  - ATS 01 (`613:1767`) has "Or paste a job description" under the saved job.
+  - New ATS 01b (`617:10`) shows the pasted text replacing the job card, with "Read as Senior
+    Product Designer · 8 keywords" and "Use a saved job instead".
+  - ATS 02/03 moved one slot right. The example company "Acme Pay" is invented placeholder copy.
+
+## 58. Notifications feed redesign (Mobile 2, 2026-10-03)
+
+The owner sent a reference mock. It was drawn as a new board, **NOTIF 01 — Feed (redesign)**
+`619:2`, at (11520, 1840) directly below the owner's NOTIF 01 (`95:2603`). The original was left
+untouched.
+
+**What changed from NOTIF 01**
+- Each notification is its own r16 card. Unread cards are lavender; read cards are white with a
+  hairline.
+- Each card leads with a 46 px coloured tile:
+  - an AI sparkle for matches;
+  - company logo tiles (Stripe, CRED, Zoho);
+  - green chart (ATS score), orange clock (closing soon), purple document (status), blue
+    envelope (cover letter) and a grey card (plan).
+- The title is bold, with mixed weight for the company and status words. Below it are a muted
+  body line and the time, with an unread dot on the right.
+- The matches card has a logo row (+2) and a "Show all" link.
+- "Mark all read" is underlined in brand colour.
+
+**Copy and judgement calls**
+- The copy follows the reference. That includes "You have used 2 of 2 resumes" on the plan
+  card. The fixture quota is generations (1 of 3 left), so check it.
+- The logo colours for Slack, Stripe, Linear and Notion are letter placeholders, not real marks.
+
+**Decide**
+- Do NOTIF 02–05 (swipe actions, row menu, empty states) adopt the card style too? They are
+  unchanged.
+- The app code is unchanged.
+
+## 59. Notifications feed built from the redesign, and the swipe made right (619:2, 2026-10-03)
+
+The app now follows **NOTIF 01 — Feed (redesign)** `619:2` (§58 drew it). The owner also asked
+that the swipe work properly: "a short swipe reveals Mark read + More, a full swipe commits Mark
+read. Every swipe action is also reachable from More — swipe is never the only path (a11y)."
+
+### 59.1 What changed
+- **Data (shared):**
+  - `Notification` gains `description` (the grey line), so `body` is now the headline only.
+  - A plain headline renders bold throughout. A headline with `**runs**` renders medium, with
+    those runs bold.
+  - `stack` becomes `companies` (Slack, Stripe, Linear, Notion, +2).
+  - Glyph tones gain `success` and `info`, plus a `regular` FA face for the clock and the card.
+  - The fixture copy and tiles are the board's, verbatim. The Upgrade welcome notification
+    gained a description line.
+- **Feed:**
+  - r16 cards with a 10 gap, lavender wash and border while unread.
+  - 46 tiles, using the board's own sparkle export (`assets/icons/ai-sparkle-trio.svg`).
+  - The digest gets its 26pt logo row.
+  - The unread dot sits in a fixed 8-wide slot, so text width never shifts when a card is read.
+  - "Mark all read" is brand-coloured and underlined; the pills use the board's 16 × 8 padding.
+  - Group labels have the board's 10 / 20 rhythm, and the pinned hairline is gone.
+- **Swipe (`ui/SwipeableRow`):**
+  - The tray is clipped to the card radius, tucks under its corners, and is zero-wide at rest,
+    so nothing peeks out.
+  - Past the commit line, Mark read stretches across the card and More folds away, with a
+    haptic. Dragging back un-arms it.
+  - Only one row is open at a time (`swipeRegistry`). Starting another swipe, scrolling the list
+    or tapping the open card closes it. A tap on an open card no longer opens the notification.
+  - A FlashList cell recycled to another notification resets closed (`resetKey`). Before this, a
+    swiped-open cell could reappear open under a different notification.
+  - The panels are hidden from screen readers. Each card exposes **Mark read** and **More
+    actions** as `accessibilityActions`, next to long-press → row menu, which also carries "Mark
+    as read".
+  - The commit fired two haptics; it now fires one.
+
+### 59.2 Calls made without you
+- **Read cards reveal only More.** A full swipe on a read card rests open, because there is
+  nothing to mark. There is no "Mark unread" mutation; say if you want one.
+- **The "Manage notification types" footer is gone.** The board doesn't draw it, and the gear
+  goes to the same screen.
+- **"Show all" is styled as a link but isn't a separate target.** The whole digest card opens
+  the matches. A second target inside a swipeable card would be easy to hit by accident.
+- **Kept the shared app type and controls where the board differs slightly:**
+  - Group labels stay at 12.5 (board 11.5): the consistency pass's floor (§54).
+  - The header keeps the shared `ScreenHeader`: 44pt outline buttons and a 16.5 bold title
+    (board: 36pt buttons, 16.5 semibold).
+  - The unread wash stays #F7F6FF (board #F6F5FF), because the board's value drops the grey
+    time to 4.4:1.
+- **Headlines are 14.5 bold, as drawn**, although the shared card titles are 16. This board is
+  the newest, and its 13 / 12 description and time already match the app.
+
+### 59.3 Not verified on a device
+- The swipe feel: the thresholds, the stretch, the haptic, and RNGH versus the list's vertical
+  scroll.
+- Android shadows on the cards.
+- VoiceOver's actions rotor and TalkBack's actions menu.
+
+## 60. Profile editors built from PROFILE 03–16 (Mobile 2, 2026-10-03)
+
+The owner asked for PROFILE 03–16 to be built "as closely as possible" without breaking consistency
+with the screens already redesigned. These are the boards §53 drew from the code, redrawn in the
+redesign language. All 14 screens now follow them.
+
+### 60.1 What changed
+- **Shared card language** (`features/profile/components/cards/`):
+  - the r18 hairline `ProfileCard` with the job-card shadow;
+  - `SectionCard`: an illustrated icon, a title and an optional subtitle or count;
+  - `SummaryCard`: a big icon, a count and a lede, or Desired roles' meter;
+  - `IdentityCard`: the entry an editor is open on;
+  - `EntryCard`: tile, title, who and when, a Current or Expired pill, chips, and an optional
+    Open button;
+  - the dashed lavender `AddCard`.
+
+  Every icon is an existing profile row icon drawn at the board's size. The aspect ratios
+  match the exports exactly.
+- **Lists (04 / 07 / 10 / 12):**
+  - a summary card, a "Your roles / Newest first" heading, entry cards, and the Add card at
+    the end of the list;
+  - the pinned Add bar is gone;
+  - roles and education now actually sort newest first, with current entries leading;
+  - an empty list shows PROFILE 10's empty state: the art, title, message, one Add button and
+    a footnote.
+- **Forms (05 / 08 / 11 / 13):**
+  - an identity card on top when editing;
+  - fields grouped into Role / Education / Name and issuer, Dates, Skills and Link cards;
+  - Start and End side by side as picker fields, with the "still here" switch in a filled row;
+  - Delete is the outlined red button;
+  - Save reads "Save" on a new entry and "Save changes" on an existing one.
+- **Chip screens (09 / 15 / 16):**
+  - a summary card, the list in a card, and suggestions in their own card (Skills, Desired
+    roles) or under a "Suggested" label (Locations);
+  - Locations' remote preference is a card of four equal chips;
+  - a lavender sparkle note at the end;
+  - the brand-tint chosen chips and the white "+" suggestions come from the boards.
+- **Edit profile (03):**
+  - the photo inside a completeness ring (the Profile tab's ring, extracted to
+    `CompletenessRing`; the Profile tab renders identically);
+  - the "Change photo" pill;
+  - About you (names side by side, headline with its count, years with "Optional" and a
+    "years" unit), Location, and Account cards.
+- **06 and 14:** `MonthYearSheet` already matched PROFILE 06. The link-kind sheet gained the
+  board's tiles, the lavender picked row and the brand check disc (`OptionSheet` options can now
+  carry a `leading` tile).
+- **New shared UI:**
+  - `ui/SelectField` (a field-styled picker button) and `ui/NoteBar`;
+  - `Button` variant `dangerOutline`;
+  - `StickyActionBar` `floating` (no fill, hairline or shadow, as the owner asked);
+  - `TextField` `optional` and `suffix`;
+  - tokens `dangerBorder` and `tileBrandStrong`, and text roles `entryInitial` and
+    `entryInitialLg`.
+- `AvatarPickerRow` is deleted, now that the identity card replaces it. `ui/EntryRow` is no
+  longer used by any screen; it is kept for now.
+
+### 60.2 Calls made without you
+- **Consistency over exact pixels where the two disagree:**
+  - The text field keeps the app's 46pt box, 14pt label and glyph size (board: 48, 13).
+  - The back-button header stays the shared one.
+  - Sheet close buttons stay outlined (board: soft-filled 34).
+- **The board's small type was raised to the app's floor (§54):**
+  - 11.5 dates, helpers and chips → 12;
+  - 12.5 companies and notes → 13;
+  - 12 ledes stay 12.
+- **Header → first card is 18 at 390, as these boards draw it** (and as Notifications does).
+  Other pushed screens use 12.
+- **The end date reads "Present" and goes inert** while "I currently work here" is on, rather
+  than disappearing. Start and End now sit side by side, and a lone Start looked broken. The
+  saved date is still kept, not cleared.
+- **IL-P1, the certifications empty-state illustration, has not been drawn yet.** The empty
+  state uses the Certifications icon at 150 wide until it exists.
+- **Copy no board shows:**
+  - the certifications Add card's caption, "Name, issuer, dates and a credential link";
+  - the Skills lede when there are none, "Add the skills you work with.";
+  - "Your certifications" over a filled list.
+
+  A filled certifications list is the role card with "Issued 2021" and an Expired pill.
+- **Suggestions no longer narrow as you type** on the chip screens. They are the board's fixed
+  set, minus what is already added.
+
+### 60.3 Not verified on a device
+- Every screen, against its board.
+- The dashed Add card border on Android.
+- Floating Save over a long form: the button sits under the scroller, not over it.
+
+## 61. Device pass fixes: keyboard, notifications glitch, swipe buttons, soft edges (2026-10-03)
+
+The owner's Android screenshots found four problems.
+
+### 61.1 What changed
+- **The keyboard covered form fields.** `Screen` left Android to `windowSoftInputMode: resize`, but
+  an edge-to-edge window (mandatory since SDK 54) is never resized.
+  - `KeyboardAvoidingView` now pads on both platforms. It pads only by how far the keyboard
+    overlaps its own frame, so it cannot double up on a device that still resizes.
+  - `Sheet`'s keyboard lift now runs on Android too.
+  - The focus reveal also scrolls a field back out from under the pinned header.
+  - The Save bar drops its bottom inset while the keyboard is up.
+  - Jobs (search in the header) gained `keyboard`.
+  - An audit found every other scrolling screen with a field already passes `keyboard`.
+- **Notifications showed "TODAY" twice.** FlashList draws a pinned header's copy at the list's
+  top edge, and the list's top padding sat outside the item, so the copy appeared 18pt above the
+  real label. The padding now lives in the first label.
+- **The swipe actions looked unfinished.**
+  - They are now separate rounded buttons, standing 8pt off the card with the card's corner.
+    Before, they were square panels tucked under the card, with a see-through strip at its
+    corner.
+  - Mark read is brand-filled and More is ink.
+  - Buttons are 69 wide at 390 (board 63), so "Mark read" no longer touches its edges.
+  - The card's shadow moved onto the card, so it travels when swiped.
+- **Hard edges where content scrolls under something pinned.** New `ui/EdgeFade`, a soft
+  gradient from the page colour to clear:
+  - under every scrolling `Screen` header, appearing as soon as content slides under;
+  - over every footer bar;
+  - under Jobs' header;
+  - in the gap under each notifications group label, so cards dissolve under a pinned label.
+
+### 61.2 Calls made without you
+- **A gradient fade, not a live blur.** A real blur needs `expo-blur` plus a mask to feather its
+  edge, both native views redrawn on every scroll frame, and Android's blur is still marked
+  experimental. The fade gives the same dissolve. Say if you want a true blur tried.
+- **Mark read is brand-coloured** (it was grey), so the primary action reads as primary.
+
+### 61.3 Not verified on a device
+- The keyboard on Android and iOS: forms, sheets with a field, and Jobs search.
+- The fade's depth (16 at 390) and how it looks in dark mode.
+- The new swipe buttons.
+
+### 61.4 Second device pass (same day)
+- **The fade still sat on the header.** It hung outside the header box (`top: 100%`), which
+  Android clips, so it washed the header's last row ("Open to offers") and the content edge stayed
+  hard. The fades now live inside the box the content scrolls in, at its top and bottom edges.
+- **A focused field still ended up under the Save bar.** The reveal ran on `keyboardDidShow`,
+  before the keyboard padding had shrunk the page, so the taller viewport clamped its scroll.
+  - It now runs again when the scroll box resizes.
+  - It also clears the fade standing on the bar, not just the bar.
+
+## 62. Profile sheets, confirms and toast built from PROFILE 17–25 (Mobile 2, 2026-10-03)
+
+### 62.1 What changed
+- **Option sheets (PROFILE 17–20).** `OptionSheet` has a `card` variant:
+  - the row's own illustrated icon before the title, and a filled ✕;
+  - each option a rounded row, with the picked one washed lavender and a brand check disc;
+  - an optional centred footnote.
+
+  Minimum salary, Availability, Appearance and Language use it. Appearance's options carry
+  glyph tiles and Language's carry "EN"/"DE" code tiles (new `EntryTile` kind `code`, role
+  `tileCode`). Salary and Availability carry the "Only used for matching" footnote.
+- **Confirms (PROFILE 21–24).** `ConfirmSheet` is now centred:
+  - optional art, then an 18pt bold title (new role `confirmTitle`) and a 13pt message;
+  - a soft-red confirm over an outlined Cancel.
+
+  Delete account leads with the red-tinted bin and Delete role with the red-tinted briefcase,
+  both downloaded from the boards (`assets/icons/profile/*-danger.svg`). The copy already
+  matched the boards.
+- **Toast (PROFILE 25).** It wraps to two lines at 13pt semibold, with the board's padding and
+  corner. It used to be one line at a fixed height, which cut off "Thanks — the rating prompt
+  is up to your app store".
+
+### 62.2 Calls made without you
+- **`ConfirmSheet` and `Toast` changed everywhere, not only on Profile.** They are shared, so
+  every confirm (delete resume, discard on other editors, checkout and so on) and every toast now
+  follows the new look. Splitting them would have left two confirm styles in the app.
+- **`OptionSheet`'s card look is opt-in.** The sort, tone, topic and source pickers keep the
+  plain list until their boards are redrawn. The link-kind picker was already tiled, so it
+  picks up the card padding and the filled ✕.
+- **No art on Sign out or Discard changes yet.** Those boards show the IL-P2 and IL-P30
+  placeholders (`illustrations-needed.md`). Until the drawings arrive, the title leads. The
+  `art` prop is ready for them.
+- **Delete qualification, credential and link have no art.** Only the role and the account
+  have red-tinted drawings on the boards.
+
+### 62.3 Not verified on a device
+- All four option sheets, the four confirms and the toast, in light and dark.
+- Short sheets (Language, Appearance) still use the 320 picker height as a floor, so a little
+  white space may show under their options.
+
+## 63. Resume editor, section editors, Fix with AI, rubric, sheets and History built from RESUMES 06–12 and HISTORY 01 (Mobile 2, 2026-10-03)
+
+### 63.1 What changed
+- **Editor (RESUMES 06 `577:6931`).**
+  - The header row is bare: back and more, with no centred title. `ScreenHeader` has a new
+    `showTitle` prop for this.
+  - The hero card (`EditorHero`) replaces the meta strip. It shows:
+    - the page thumbnail;
+    - the name, the version line and the type pill;
+    - a 64pt score ring that opens the score panel;
+    - the AI note ("Four quick wins left before it is airtight.");
+    - the brand "What this score measures ›" link to the rubric.
+  - Each section is a redesigned card: the section's illustrated icon, an "✦ AI" rewrite pill (`AiPill`) and an outlined pen.
+  - Inside the cards:
+    - roles and schools lead with letter tiles;
+    - the meta line reads "Company · dates";
+    - bullets are dotted 14pt lines, with dividers between roles and projects.
+  - An empty section shows the dashed lavender "Add …" tile.
+- **Section editors (RESUMES 07 `577:8623`, 08 `577:8828`).**
+  - Experience, projects and education entries are role cards: letter tile, "Role 1" with
+    "Senior UX Designer · Flipkart" under it, and an outlined delete.
+  - Fields carry the board's icons.
+  - Each bullet is a grey textarea with its ✕ inside. `TextField` has a new `trailing` slot for this.
+  - "Add bullet" is a dashed lavender row, and "Add role", "Add project" and "Add education" are the 72pt dashed tile.
+  - Summary is one card: the icon, "Summary" with its line, the field and count, then the AI note.
+- **Fix with AI (RESUMES 09 `577:9464`).**
+  - The header shows an AI pill instead of a title.
+  - The hero shows the ATS-check drawing, "Fix with AI" and the honesty line.
+  - "Quick wins" sits above the cards, with the document's name at the other end.
+  - Each card has a status ring, the label and suggestion, then a section pill and a small grey Apply pill.
+  - "Apply all N" carries the sparkle. `Button` has a new `leading` slot for it.
+- **Rubric (RESUMES 10 `580:580`).**
+  - The hero matches Fix with AI's.
+  - The honesty note is a lavender card, and its first sentence is bold.
+  - Under "What it measures", each component is its own card: drawing, name, weight pill and a chevron that opens it in place.
+  - Keyword match is open on arrival, as drawn.
+- **Download sheet (RESUMES 11 `580:1258`).**
+  - Thumbnail header.
+  - Tinted format tiles: red for PDF, blue for DOCX, grey for TXT.
+  - DOCX carries a crown "Pro" pill and a lock while on Free.
+  - `sizes.sheetExportHeight` is now 339.5 at 390 (was 440 artboard).
+- **Rename sheet (RESUMES 12 `580:2116`).** The rename drawing, an 18pt bold title, the Name field with a document icon, then a large Save over Cancel.
+- **History (HISTORY 01 `580:2928`).**
+  - The hero shows the clock drawing, "History" and "Everything you've generated, saved and changed".
+  - The filter chips are centred.
+  - The groups are headed "Today" and "This week" in sentence case, and they no longer pin.
+  - Each entry is a card with the kind's drawing, the rich line, and the detail with the time at the end.
+- **New assets.**
+  - `assets/icons/resumes/projects.svg`.
+  - `assets/icons/score/{keyword-match,formatting,quantified}.svg`.
+  - `assets/icons/history/*` (two whole tiles, five tile drawings and the hero clock).
+- **Reused assets.** The Profile row drawings serve as the section, rubric and score icons, and `create/ats-check.svg` and `doc-menu/rename.svg` are the same exports at the same aspect.
+
+### 63.2 Calls made without you
+- **RESUMES 11 is in the Archived row (§55).** It was built anyway, because it is the only drawing of the download sheet, and the editor's Download still opens it.
+- **The AI note's copy is derived, not fixed.**
+  - A strong score reads "N quick wins left before it is airtight.", with the count spelled out up to nine.
+  - Below the strong band it reads "N quick wins can lift this score.", because "airtight" would overclaim.
+  - With no quick wins left it reads "No quick wins left on this one."
+- **An unscored draft still says "Not scored yet"** where the ring would be. The board has no unscored state.
+- **Small board sizes map to the existing roles, as on the Profile boards.**
+  - Text drawn at 11.5–12.5 (pills, entry metas, history meta) uses `micro` and `microBadge` at 12.
+  - Bullets and descriptions drawn at 13.5 use `body` at 14.
+  - The hero titles drawn at 19 use `headlineLg`.
+  - One new role, `editorRingValue` (21 bold), is the number in the ring.
+- **History's group headings no longer pin.** The board draws them inline, and the pinned headers are what glitched on Notifications (§61).
+- **Two activity kinds have no drawing on HISTORY 01.** Cover letter uses the create sheet's letter drawing and Interview prep uses Home's interview drawing, both on the lavender tile.
+- **The rubric opens on its first component.** The board shows Keyword match open. The rest open on tap.
+- **Fix with AI's status ring is a status, not a checkbox.** It fills green when a fix lands, and a gap shows an info glyph instead.
+- **The sticky bars still draw their white bar and shadow.** The boards float the buttons (§53), but `StickyActionBar` is shared, so it is unchanged here.
+
+### 63.3 Not verified on a device
+- All eight screens, in light and dark.
+- The bullet ✕ inside a multiline field, and how it sits when the field grows.
+- The ring's count-up in the editor hero.
+- The rubric card's open and close animation.
+- The export sheet's new height on a short phone.
+
+## 64. Account, Support, Legal, Billing, Jobs extras and System built from their Mobile 2 boards (2026-10-03)
+
+Boards:
+- ACCOUNT 01–03 (`577:2462`, `577:3071`, `577:3801`)
+- SUPPORT 01–02 (`577:6129`, `577:7867`)
+- LEGAL 01–02 (`577:8876`, `580:2`)
+- BILLING 01–02 (`577:9155`, `580:314`)
+- JOBS 09–11 (`580:1648`, `580:2428`, `580:2510`)
+- SYSTEM 01 (`580:2883`)
+
+### 64.1 What changed
+- **Account.**
+  - Email & password: a hero, then the Email, Password and Sessions cards. The password note is a lavender `NoteBar`. Sign out everywhere is a red outlined button.
+  - Download your data:
+    - Idle shows a hero, a five-row "What the file holds" card and a privacy row.
+    - Ready shows the file card and a small privacy link. The contents list is dropped on Ready, as drawn.
+- **Support.**
+  - Help & FAQ: a hero ("14 answers across five topics."), search, select chips, one card per topic with its count, and a "Still stuck?" card. The first answer is open on arrival.
+  - Message support: Topic, Reply goes to and Your message cards.
+- **Legal.** Terms and Privacy each have:
+  - a hero with a "Last updated" pill;
+  - a Contents card whose rows jump to the section;
+  - numbered section cards.
+
+  The copy is the existing fixture, word for word.
+- **Billing.**
+  - NextKin Pro is redrawn in board order: hero, reason banner, two-column usage card, plan row with a compact toggle, plan cards, comparison table, and a floating CTA.
+  - The checkout sheet already matched through `ConfirmSheet tone="neutral"`.
+- **Jobs.**
+  - Company profile: a letter-tile hero, a website row, an About card, and open roles as `JobCard variant="company"`.
+  - Why you match: a ring hero, the honesty note, and Missing, Met and Optional as cards, each with an "N of 5" count and a bar.
+  - Location sheet: card rows, with the picked row washed lavender.
+- **System.** Page not found is a new `NotFoundScreen`, and "Go to Home" now replaces the dead route.
+- **Shared, opt-in only:**
+  - `SegmentedControl size="sm"`
+  - `SelectField showLabel`
+  - `JobCard variant="company"`
+  - a `warningBorder` token
+  - a `companyInitial` type role (29 bold)
+- **New assets:**
+  - `assets/icons/billing/{usage,free-plan,pro-plan}.svg`
+  - `assets/icons/jobs/company.svg`
+
+  Every other drawing reuses an existing export.
+
+### 64.2 Calls made without you
+- **Illustration placeholders are not rendered:** IL-A1 (data ready), IL-B1 (Pro hero), IL-B2 (checkout) and IL-B3 (page not found). The title leads until the drawings arrive. Page not found centres its content vertically meanwhile.
+- **"Most popular" is left off the Pro card.** Nothing in the plan data backs it, so it would be an invented claim. The pill shows the plan's real badge ("Save 55%" on annual).
+- **The Pro plan card's border is the solid brand colour**, as drawn, not the softer selection border.
+- **The meters fill amber**, as drawn. The highlighted meter used to fill brand.
+- **The Pro-state hero caption is new copy:** "See what your plan includes and what you have used." The board's caption sells the upgrade to someone who already has it.
+- **Why you match:**
+  - The group titles are now sentence case ("Missing / Met / Optional").
+  - The ring colour is the board's green (`glyphSuccess`).
+  - Job Detail's `JobMatchCard` keeps its own icon map, which no longer matches this one.
+- **The verified badge on the company page** shows only when the listing is `companyVerified`, the same rule as Job Detail.
+- **Open roles still leaves out the job the reader came from.**
+- **Location sheet:**
+  - Rows have their own card look, because `OptionSheet` has no search.
+  - Glyphs: a globe for "Anywhere in India", wifi for "Remote only", a pin for each city.
+- **Help's count line reads "2 of 14 answers"** while a search or chip narrows the list.
+- **The selected "All" chip has no checkmark.** The board draws one, but the shared `select` chip has none.
+- **Data export's Preparing and Failed states have no board.** They reuse the idle page's hero and cards.
+- **Sign out everywhere is now a Button** and has lost the "Asks to confirm" accessibility hint. `Button` has no hint prop.
+- **The sticky bars on Billing and Why you match float**, with no background, as drawn.
+
+### 64.3 Not matched exactly
+- Fields and buttons keep the app's shared heights and radii, not the boards' 48 / r13.5.
+- The search placeholder keeps the shared grey, which is darker than the board's.
+- Card padding is the shared 15. Billing's board draws about 13.75.
+- Some type is one step off the board:
+  - Help counts at 13.
+  - The ring "MATCH" label at 10.5 against the board's 11.2.
+  - Criteria rows at 15/22 against 15/20.
+  - Billing's 24pt price at the 22pt `displayLg`.
+- `EmailPasswordScreen` and `UpgradeScreen` run slightly past 250 lines.
+- Page not found has no test, and had none before.
+
+### 64.4 Not verified on a device
+All 13 screens, in light and dark, including the legal contents jump and the location sheet's search.
+
+## 65. Job-first Tailor flow built from TAILOR 00–06 (Mobile 2, 2026-10-03)
+
+Boards (§56.1):
+- 00 `605:5`
+- 01 `606:2`, 01b `606:229`, 01c `608:510`
+- 02 `607:2`
+- 03 `608:2`
+- 04 `608:196`
+- 05 `608:267`
+- 06 `608:396`
+
+### 65.1 What changed
+- **The flow.**
+  1. Job Detail's "Tailor your resume to this job" opens the **resume picker sheet**: NextKin resumes, or a PDF/DOCX from the phone. An unreadable file shows its error inline, as in 01c.
+  2. "Compare with this job" opens `/create/tailor?jobId&resumeId`, the new **compare screen**. It shows:
+     - the stepper, a score ring and a band-based headline;
+     - the job vs your resume card, with a Change button;
+     - the keyword chips;
+     - the "What to improve" card.
+  3. "Fix my resume" opens the **add-or-skip sheet** when keywords are missing, then starts the run. When none are missing it starts the run directly.
+  4. The run's `/generations/[id]` shows the new **progress screen**, then the **ready screen**: page preview, "Up from 72" and what changed.
+  5. Download PDF opens the **saved sheet** with "Apply on stripe.com".
+- **Old entry point kept.** `/create/tailor` without a `jobId` (Home's Build Resume, the + sheet, the resume menu) still opens the old paste-a-JD Tailor screen.
+- **Data layer** (`packages/shared`):
+  - New model `models/tailor.ts`: comparison, keyword and change types, plus the copy helpers.
+  - `jd.compare(resumeId, jobId)` and its hook `useTailorComparison`. It reuses one extraction per job, so the run tailors to the JD it measured.
+  - `GenerationInput.tailor`, which is stored on the `Generation`.
+  - The tailored body adds only the keywords the user said yes to.
+  - The import now refuses scans and photos with `UNREADABLE_FILE`; `isUnreadableFileError` detects it.
+- **Seeded mock data.** `res_base` × `job_stripe` reproduces the boards: 72, 5 of 8 keywords, 3 fixes, then 88 after the run.
+- **Shared, opt-in UI additions:**
+  - `OptionSheetHeader` `subtitle`
+  - the `tailorRingValue` type role (27 bold)
+  - `TailorStepper`, in `features/create`
+
+### 65.2 Calls made without you
+- **The score is a mock rule.**
+  - Before the run: 52, plus up to 40 for keyword coverage, minus 4 per fix.
+  - After the run: the baseline plus 8 for the headline and summary, plus 4 per added keyword, capped at 96.
+
+  The real scorer must re-read the document.
+- **Add/Skip pre-picks:** Skip for keywords the listing requires, Add for ones from the role description. This matches the board. Answers are kept per resume.
+- **The picker pre-picks the base resume.** It lists every ready resume (the list scrolls), and a just-uploaded file isn't listed twice.
+- **The upload rows:**
+  - An upload error other than unreadable reads "We couldn't upload this file".
+  - The uploaded file shows no page count, because the mock parse returns none.
+- **With nothing on NextKin, the sheet shows only the upload row.** §56.3 / ZERO 00b may add "Start from nothing" here.
+- **Opening the compare screen from a Jobs-list card** (no resume chosen) opens the picker over a skeleton. Closing it goes back.
+- **✕ and "Leave and notify me" both return to the job.** There is no separate notify API; the run carries on.
+- **The progress checklist follows the run's status.** The board shows "Rewriting" current at 62%, which the mock calls validating.
+- **The saved sheet says "Saved as PDF", not "Saved to Downloads".** The file goes through the share sheet, so the app can't honestly say where it landed.
+- **"Apply on {site}" opens the company website.** `Job` has no apply URL. When there's no site, the button is hidden.
+- **When the new score isn't higher, the pill reads "Was {baseline}"** instead of "Up from".
+- **Illustrations IL-BR1 and IL-T1 aren't drawn.** The title leads.
+
+### 65.3 Not matched exactly
+- The page preview on 05 is laid out 1.6× larger with app roles, then scaled down. The board's 6–9pt type is below the ramp.
+- Text the board draws at 11.5–12.5 uses the 12/13 roles.
+- Buttons use the shared heights.
+
+### 65.4 Still open (from §56.3)
+- **Home's Build Resume** still opens the old paste-a-JD screen.
+- **"Did you apply?"** tracking is not built.
+- **The web version** of the flow is not built.
+- **The old Tailor → JD review path** still exists for entries without a job. Decide whether to retire it.
+
+### 65.5 Not verified on a device
+The whole flow:
+- the picker's upload with a real file;
+- the Add/Skip spring;
+- the progress animation;
+- the PDF download and share;
+- the Apply link.
+
+## 66. Cover letter flow built from COVER 00–04 (Mobile 2, 2026-10-03)
+
+Boards (§57.1): 00 `613:1079`, 01 `613:1431`, 02 `613:1531`, 03 `613:1600`, 04 `613:1665`.
+
+### 66.1 What changed
+- **COVER 00, Home's Cover Letter tile.** The tile opens "Which job is the letter for?" over Home.
+  - It lists only resumes that were tailored for a job. Each row reads "Senior Product Designer · Stripe" over "Resume: Stripe — Senior PD".
+  - "Tailor a resume for it first ›" goes to the Jobs tab.
+  - With no tailored resumes, the sheet shows an empty state with the same link, and Continue is off.
+- **COVER 01, Set up** (`/create/cover-letter?resumeId`).
+  - The page shows the Set up · Write · Download stepper, the cover-letter drawing, the Job / Resume card with Change, and four tone chips with the picked tone's hint.
+  - The bottom bar floats and carries the quota line and "✦ Write my cover letter".
+  - Other entries (for example the resume menu on a base resume) still work: the page drops the Job row and is titled "Cover letter".
+- **COVER 02–04, on `/generations/[id]`.** A `cover_letter` run now gets the new chrome.
+  - **Writing:** a checklist that follows the run, with the tone named in the current row.
+  - **Ready:** the letter card, "Every fact comes from your “…” resume", "Try another tone" (starts a new run and keeps the earlier draft), and the next-step note. Edit and Download PDF sit at the bottom.
+  - **Saved sheet:** the resume and the letter as file rows, then "Apply on {site}".
+  - The Tailor run components were generalised for this and Tailor's output is unchanged: chrome, progress, saved sheet and the next-step note.
+- **Data:** `Generation.sourceResumeId` now records the resume a letter was written from.
+- **Shared UI, opt-in only:**
+  - `FlowStepper` with `COVER_STEPS`.
+  - `FilterChip variant="radio"`: ink-filled with a ✓ when picked.
+  - `TailorVsCard` can drop the job row and relabel its parts.
+
+### 66.2 Calls made without you
+- **The job sheet lists the most recently edited resume first.** With nothing pre-selected, that picks Google; the board shows Stripe first.
+- **The quota line moved into the bottom bar**, as drawn. The old banner and the "Counts as one of this month's cover letters" line are gone.
+- **The seeded plan has already used its one cover letter.** On the stock mock, every "Try another tone" chip opens the upgrade screen.
+- **The resume row in the saved sheet** is marked saved only if the resume was exported during this session (kept in memory). Otherwise it shows "not saved yet" with its own Save link.
+  - The two downloads never open the share sheet at the same time.
+  - The board writes "Saved to Downloads"; the app says "Saved as PDF" instead, for the same reason as §65.
+- **✕ and "Leave and notify me" both return to the job.** A letter started from Home therefore lands on that job's page; returning to Home may be better.
+- **Without a job:** no apply note and no Apply button, and the sheet is titled "Cover letter saved".
+- **The sign-off keeps "Regards,"** above the bold name. The board shows only the name.
+- **A failed cover run drops "Edit the job description"**, because a letter's inputs are a resume and a tone.
+- **IL-CL1 and IL-T1 aren't drawn.** The title leads.
+
+### 66.3 Not matched exactly
+- The letter is set at 12pt; the board draws 10.5pt. The card is taller as a result.
+- The quota line, meta lines and chip text use the 12–13pt roles.
+
+### 66.4 Not verified on a device
+The whole flow: the sheet over Home, tone switching, both downloads, and the Apply link.
+
+## 59. Copied job link detected (Mobile 2, 2026-10-03)
+
+**TAILOR 00c** `634:322` sits at (18200, 12077) in the Tailor row's second line. It is a centred
+dialog over Home with:
+- illustration IL-T2;
+- "Found a job link you copied";
+- a link card showing the job title, the URL and the company tile;
+- **Tailor my resume to it** (goes to TAILOR 01), **Just save the job**, and **Not now**.
+
+**Judgement calls**
+- The copy says it only checks when you open NextKin and can be turned off in Settings. That
+  toggle doesn't exist yet.
+- iOS shows its own "pasted from" banner whenever the clipboard is read, and Android 13+ shows a
+  clipboard toast. Expo Go's `expo-clipboard` can read the clipboard (or only check whether it
+  holds a URL without reading it).
+- Reading the title from a link needs a server-side fetch. Some sites (LinkedIn) block it, so a
+  fallback that shows only the domain is needed (see §55.3).
+- The example uses Swiggy careers, an invented URL.
+- **This reopens outside jobs.** §56 limited Tailor to jobs on NextKin. A copied link from
+  anywhere implies the "add a job from a link" path again. The owner should confirm.
+
+**Decide**
+- Should "Just save the job" add an outside job to Saved jobs?
+- Should the dialog be a bottom sheet rather than a centred dialog?
+
+## 67. Build Resume flow built from BUILD 01–06 (archived row, 2026-10-03)
+
+The owner asked for BUILD 00–07 and noted that some boards are only there to explain the flow. The boards were re-created under new ids, all in the second Archived block (y 20207):
+- 00 `592:4`
+- 00b `599:264`
+- 01 `597:2`
+- 02 `597:107`
+- 03 `598:2`
+- 04 `598:55`
+- 05 `598:116`
+- 05b `598:171`
+- 06 `599:27`
+- 07 `599:113`
+
+### 67.1 What was built, and what was left as reference
+- **What this flow is now.** Home's **Build Resume** builds a resume **from the profile** for one job. Tailor (§65) still adapts a resume you already have. This answers §56.3's open question about where Build Resume goes.
+- **01 Which job is this resume for?** (`/create/build`)
+  - Shows the top three saved jobs. One tap builds.
+  - "Paste a link or the description" leads to 03.
+  - "Built from your profile — N roles, N skills" has an Edit link.
+  - A quota line sits at the foot of the page.
+- **02 Choose a job** (`/create/build/jobs`): search, Saved / Top matches tabs, radio rows, and "✦ Build resume for {Company}".
+- **03 Add the job** (`/create/build/add`): a paste box with a Paste pill (reads the clipboard), or upload a PDF, DOCX or TXT file. "Build my resume" first reads the job.
+- **04 Review** (`/create/build/review`):
+  - the source row with Change;
+  - the job card with a pencil that opens the existing JD review;
+  - "N of M on your profile", with a bar and chips;
+  - "X isn't on your profile, so we won't add it";
+  - the AI note.
+- **05b We couldn't read that job page** (`/create/build/unreadable`): Paste the description, or Try the link again.
+- **05 and 06 on `/generations/[id]`.** A run marked `origin: 'build'` shows the progress screen, then the ready screen:
+  - the page preview and ring;
+  - a band pill ("Strong match");
+  - "What changed for this job";
+  - Cover letter and Practice the interview tiles;
+  - Edit and Download PDF.
+- **Download uses Tailor's saved sheet.** Apply on {site} appears only when the job has a site.
+- **Left as reference, not built:**
+  - **00:** only marks the entry point.
+  - **00b:** the simplified + sheet. Your own CREATE 01/02 + sheets stay.
+  - **07:** the PDF / DOCX / TXT chooser. §56.2 settled on one-tap PDF, with the other formats in the editor's export.
+- **Data and plumbing:**
+  - `GenerationInput.origin = 'build'`.
+  - Pure helpers `profileKeywordFit` and `buildChanges`.
+  - `isUnreadableLinkError`. The mock refuses any link whose host contains "blocked".
+  - The `useStartBuild` hook (extract the job's JD, start the run, open it).
+  - Five routes registered in `app/_layout.tsx`.
+
+### 67.2 Calls made without you
+- **The build reads from the profile, not the base resume** (§55.3 left this open).
+- **No real site is treated as blocking.** The board's own copy says LinkedIn and Naukri postings "all work", and the web upload reads LinkedIn links. The mock therefore refuses only a host containing "blocked".
+- **05b drops "This build was not counted."** Reading a job is not a build, so nothing was counted to begin with.
+- **"What changed" lists only what a build does:**
+  - the summary aimed at the role;
+  - the skills in the job's order;
+  - each keyword it left out.
+
+  The board's "Design-systems work moved to the top" is not claimed.
+- **The 06 tiles are kept**, unlike Tailor (§56.2). A build from Home has no job page in context, so the next steps help here.
+  - Cover letter needs a job, so its tile is hidden for a pasted or uploaded job.
+  - Interview opens `/interview/new?resumeId`.
+- **The band pill uses the ATS bands:** Strong, Good, Fair, Weak. Only Strong and Good carry a sparkle, because only those were drawn.
+- **One tap on 01 builds.** The quota line sits at the foot of 01. When the quota is spent, the rows, the anywhere tile and the CTAs open Upgrade instead.
+- **02 "Top matches"** uses Home's match-ranked picks.
+- **The 03 paste box keeps the shared field look:** grey at rest, ink border when focused. It autofocuses only when you come back from 05b.
+- **04 shows company · location only.** The draft has no workplace field, so it can't show "On-site".
+- **The pencil on 04 opens the existing JD review**, whose own button starts a plain generation outside the Build flow. Decide whether that screen needs a Build mode.
+- **✕ on a build without a job returns to Home.** With a job, it returns to the job.
+- **IL-BR1 and IL-BR3 aren't drawn.** The title leads.
+
+### 67.3 Not matched exactly
+- The dashed tile border and the picked-row tint (#C9C3FF, #FBFAFF) have no tokens, so they use `borderDashed` and white.
+- The match pill uses the shared `MatchBadge` at 13pt; the board draws 11.5.
+- Text the board draws at 11.5–12.5 uses the 12pt roles.
+- Location text comes from the fixtures (e.g. "Remote (India)").
+
+### 67.4 Not verified on a device
+The whole flow:
+- one-tap build;
+- paste, upload and clipboard;
+- the blocked-link path;
+- the ready tiles and the download.
+
+## 68. Cover letter redrawn as three screens from the owner's mock (Mobile 2, 2026-10-03)
+
+The owner sent a three-screen mock. The new boards are in the COVER row (y 15207):
+
+| Board | Id | Contents |
+|---|---|---|
+| COVER 01 — Set up | `644:2` | Illustration, "Cover letter for this job", Job row and Resume row (each with a chevron to change), four tone radio cards, **Write my cover letter**, "1 of 1 cover letter left this month" |
+| COVER 02 — Writing | `644:84` | Illustration, 70% bar, five steps, and the note "Nothing goes in the letter that isn't on your resume" |
+| COVER 03 — Ready | `644:148` | Illustration, "Your cover letter is ready!", letter card with an excerpt and **Edit letter**, Try another tone (three buttons), **Download PDF** |
+
+**What moved to the archive.** The previous five boards (COVER 00–04, ids `613:1079`, `613:1431`, `613:1531`, `613:1600`, `613:1665`) moved to the end of the second Archived row (y 20207, x 21840+).
+
+**What it means for the built flow (§66).** The built flow follows the old boards. A rework would:
+- drop the separate job sheet (00); the Job row's chevron opens the same picker;
+- drop the apply sheet (04); Download stays one tap;
+- use radio cards instead of tone chips.
+
+The session that built §66 should make that change.
+
+**Judgement calls**
+- The steps in the mock say "Optimizing for the role and company" and "Finalizing". They were shortened to "Fitting it to the role and company" and "Checking every fact", so they say what really happens.
+- The mock's "Our AI is crafting a personalized…" became "We're writing it from your resume and the job details."
+- Three illustration placeholders were added: IL-CL1, IL-CL2 and IL-CL3.
+
+### 68.1 Redrawn to match the existing design (owner feedback)
+The owner said the mock's proportions are inspiration only. The three boards were rebuilt
+(new ids above) in the Mobile 2 language: Bold 19 headlines, a 36 px top button, the Tailor
+stepper, r18 cards and the option-row style for tone.
+
+- **Set up:** the hero uses the illustrated Cover letter icon, so IL-CL2 was dropped.
+- **Writing:**
+  - a 320 × 230 state illustration;
+  - four steps, with the honesty note as an AI reason bar;
+  - a floating **Leave and notify me**, as on TAILOR 04.
+- **Ready:**
+  - a 150 × 112 spot illustration and the letter card with an excerpt;
+  - the source note;
+  - tone pills;
+  - floating **Edit** + **Download PDF**, as on TAILOR 05. The mock had the Edit button inside the
+    card.
+
+### 68.2 Redrawn again: the mock's design at the app's scale (owner correction)
+The owner meant: follow the mock's design and fix only its proportions. §68.1 swapped in the old
+board language instead, which was wrong.
+
+- **From the mock:**
+  - illustrations on all three screens;
+  - Job and Resume rows with arrows;
+  - tone as four separate cards with radio buttons;
+  - buttons sitting under the content, not pinned to the bottom;
+  - five progress steps with the lightbulb note inside the card;
+  - Edit letter inside the letter card;
+  - three equal-width tone buttons;
+  - completed stepper dots in lighter lavender.
+- **The app's scale:** Bold 19 headlines, 13 px body, 14 px labels, 36 px top button, 20 px
+  stepper dots, 48 px buttons, r14–16 cards.
+- **Copy changed from the mock:**
+  - "Our AI is crafting…" became "Our AI is writing…".
+  - "Optimizing for the role and company" became "Fitting it to the role and company".
+
+### 68.3 Scaled up to fill the screen (owner feedback)
+The §68.2 boards were shrunk too far: small text, small illustrations and a lot of empty space
+under the button on a 1080 board. They were rebuilt at sizes between the app's standard and the
+mock:
+- 22 px headline, 14 px body, 15 px labels and row titles;
+- 40 px top button, 22 px stepper dots;
+- 52 px buttons;
+- larger illustrations: 180 × 130, 250 × 210 and 180 × 150.
+
+Each board's height now fits its content, at least 844 (one phone screen): 1030, 844 and 885.
+These sizes are larger than the other Mobile 2 boards. If they become the standard, other flows
+may need to follow.
+
+### 68.4 Final: the mock's design at the standard Mobile 2 sizes (owner clarified)
+The mock is a design reference only. Its pixel sizes don't apply. The boards were rebuilt with
+the mock's layout and components at the standard board sizes:
+- Bold 19 / 13 hero;
+- SemiBold 16 section labels and 14.5 / 11.5 rows;
+- 36 px top button, 20 px stepper;
+- r18 cards and r13 tone cards with radios;
+- standard illustration sizes (150 × 112 spots, 320 × 230 state);
+- 1080 boards with the main button floating at the bottom.
+
+The Writing screen has no button, as in the mock. §68.3's larger sizes are withdrawn.
+
+## 69. ATS check redrawn from the owner's mocks (Mobile 2, 2026-10-03)
+
+The boards follow the mocks' layout and components at the standard Mobile 2 sizes. ATS 00 (Home)
+is unchanged.
+
+| Board | Id | Contents |
+|---|---|---|
+| ATS 01 — Upload your resume | `645:3` | Folder art; file row and job row, each with a lavender "Change"; dashed "Or paste a job description" tile |
+| ATS 01b — Pasted job description | `645:49` | Magnifier art; file row; "Job description" field with Clear and a 284 / 2000 counter; Tip card; "Use a saved job instead" |
+| ATS 02 — Checking | `646:2` | Large art; progress card with five steps (brand check circles); floating Cancel |
+| ATS 03 — Results | `646:51` | Title, line and "How the ATS score works" pill beside the 64 ring and a "Fair" pill; Missing keywords card; Fix these card with numbered rows; floating "Fix it for this job" |
+
+**Where the boards depart from the mock, on purpose**
+- **The 64 ring and pill are red, not orange.** The app's bands (`atsBandColor`) colour 55–69
+  "fair" red and keep amber for 70–84. The pill reads "Fair", not "Fair match", because "match"
+  is the job-match vocabulary.
+- **"Comparing with industry standards" became "Checking layout, sections and dates".** There is
+  no industry benchmark; the rubric checks layout, sections and dates (V2 §7.8).
+- **"Add these keywords to better match" became "The job asks for these. Add only the ones you
+  really have."** V2 §7.8 and D-14 allow a missing keyword only as a gap, never as text to insert.
+- **"Make these changes to improve your ATS score" became "Changes that make it read better for
+  this job".** No score gain is promised.
+- **"…for better parsing by ATS" became "Some systems read two columns out of order".** No claim
+  about a named or generic ATS.
+- **The third fix keeps the real count** ("Only 2 of 9 bullets…"). The mock's example "increased
+  conversion by 20%" was dropped: a percentage on the screen could read as a suggestion to
+  invent one.
+- **The main buttons float at the foot** of 1080 boards, as on every other board. The note
+  "Saves a copy to your Resumes first" stays on Fix.
+- **Illustrations:** IL-A21 and IL-A22 are new, and IL-A20 is resized.
+- **2026-10-04 (owner rule):** parts with no existing counterpart in the app follow the mock
+  exactly. The ATS 01 paste tile now uses the illustrated document icon (`431:7772`), a
+  SemiBold 15.5 title, a roomier tile and a softer dashed border. The ATS 03 fix titles are
+  SemiBold, as in the mock.
+
+## 70. Build Resume flow redrawn from the owner's mocks (Mobile 2, 2026-10-04)
+
+There is a new active **BUILD row** (heading y 18100, boards y 18307, x 16640–20280). The archives
+moved down 1600 to make room. The earlier BUILD boards that the app was built from (§67) are now
+named "BUILD xx (old)" in the archive block (heading `605:3` updated).
+
+| Board | Id |
+|---|---|
+| 01 Which job is it for? | `652:2` |
+| 02 Choose a job | `652:76` |
+| 03 Add the job | `653:2` |
+| 04 We read the job | `653:56` |
+| 05 Building | `653:124` |
+| 05b Couldn't read the job page | `653:186` |
+| 06 Resume ready | `653:223` |
+| 07 Download sheet | `653:337` |
+
+**What the boards take from the mocks.** These parts are new to the app, so they follow the mocks:
+- illustrations on every screen;
+- the OR divider;
+- the solid lavender "Add a job from anywhere" tile;
+- radio circles on unpicked jobs;
+- the paste box with a brand "Paste" button inside;
+- the lightbulb tip cards (Supported links, Ready to build, Why this happens);
+- the dashed upload tile;
+- the grey disabled CTA;
+- the link row with Change;
+- the 05 timeline with connector lines;
+- the "Almost there!" robot card;
+- the grey "Saved to Resumes" pill.
+
+**What stays the app's version.** These parts already exist in the app:
+- the 36 px top button, Bold 19 / 13 hero and r18 cards;
+- the segmented tabs and the search field;
+- match pills with the sparkle;
+- the profile footer;
+- floating 48 px CTAs, including the two stacked buttons on 05b;
+- the resume preview, next-step tiles and download sheet, reused from the old 06/07.
+
+**Copy changed on purpose**
+- 01: "we'll tailor your resume" became "we'll build your resume". Build writes from the profile;
+  Tailor adapts an existing resume.
+- 03: "up to 5MB" was dropped. No upload size limit exists in the spec or code.
+- 06: "Design-systems work moved to the top" was removed. The build doesn't do it (§67.2). The
+  rows are now: summary aimed at the role, skills ordered, Fintech left out.
+- 05b: the lede and the tip no longer repeat each other.
+- Example data uses fixture locations (Freshworks is in Bengaluru, not Chennai).
+
+**Open questions**
+- **07 shows the PDF / DOCX / TXT chooser** from the mock. §56.2 and §67 settled on one-tap PDF,
+  so confirm before the app adds it back.
+- **Build vs code.** The app (§67) follows the old boards. The rework belongs to the session that
+  built §67.
+- **Pre-existing overlap.** Two archived boards overlap: BUILD 04 (old) and BUILD 05 (old). They
+  were re-spaced at 439 px by someone else and left as they were.
+- **2026-10-04, owner: illustrations needed more room.** The BUILD hero art grew:
+  - 01–04 went from about 150 × 100 to 250 × 160–170;
+  - 05 to 300 × 220 and 05b to 290 × 215;
+  - each now has 18 px above and 20 px below.
+
+  All content still clears the floating buttons; the tightest is 02, whose list ends at 864
+  against a button bar at 965.
+
+### 70.1 Build now reads, compares, then asks (owner, 2026-10-04)
+The owner wants Build to work like Tailor: after reading the job, compare it with what the user
+has, then ask Add or Skip for anything missing, then build. BUILD 05–07 moved right by two slots.
+
+**BUILD 04 — We read the job** (`653:56`) only reads now.
+- It lists what the job asks for as neutral chips ("5 things").
+- The profile comparison ("4 of 5", the green bar, the Fintech note) moved to 04b.
+- The tip reads "Next, we compare these with your profile."
+- The button reads "Compare with my profile".
+
+**BUILD 04b — Your profile vs this job** (`663:2`) is a copy of TAILOR 02.
+- An 80 **JOB MATCH** ring. That is requirement coverage, not an ATS score: there is no
+  resume to score yet (D-15).
+- "This job" (CRED), and "Built from: Your profile · 4 roles · 12 skills" with Edit.
+- Job keywords: 4 of 5 on the profile, with Fintech missing.
+- What to improve:
+  - headline;
+  - summary: "We'll write one aimed at this job";
+  - skill order;
+  - layout is fine.
+- The button reads **Fix and build my resume**.
+
+**BUILD 04c — Add this to your resume?** (`663:142`) is the TAILOR 03 sheet.
+- One item, Fintech, set to Skip.
+- "Anything you add is saved to your profile too."
+- **Build my resume**, with "Uses 1 of your 3 resume builds this month".
+
+**Wording and flow decisions**
+- **06** now says "Fintech left out, as you chose".
+- **A saved job from 02 skips 03 and 04** and goes straight to 04b. A job added from anywhere
+  goes 03 → 04 → 04b.
+- **If nothing is missing**, Fix goes straight to 05.
+
+**For the code (§67).** This adds a compare screen and the Add/Skip sheet to the built Build
+flow. Adding a skill there must also write it to the profile.
+
+**Also noticed.** Real illustration art now sits in BUILD 04's IL-BD4 slot, presumably the
+owner's. It was left untouched.
+
+## 71. Cover letter rebuilt from the three new COVER boards (Mobile 2, 2026-10-04)
+
+Built from the §68.4 boards: COVER 01 `644:2`, 02 `644:84`, 03 `644:148`. This replaces §66's build
+of the old COVER 00–04.
+
+### 71.1 What changed
+- **Home's Cover Letter tile opens the setup directly.** The "Which job is the letter for?" sheet
+  no longer comes first, as §68 asked.
+  - The setup starts on the most recently edited tailored resume.
+  - With no tailored resume, the page shows "No tailored resumes yet" and **Find a job to tailor
+    for** (opens Jobs). The bar stays disabled.
+  - The + sheet's Cover Letter entry works the same way.
+- **COVER 01, Set up:**
+  - the board's illustration and "Cover letter for this job";
+  - **Job** and **Resume** as labelled card rows with chevrons;
+  - four tone cards with radios and each tone's description;
+  - "Write my cover letter" with no sparkle, as drawn.
+- **COVER 02, Writing:**
+  - the robot illustration and "Writing your cover letter";
+  - a card with the meter and five steps that follow the run, with the honesty note (lightbulb)
+    inside the card;
+  - no bottom bar, as drawn.
+- **COVER 03, Ready:**
+  - "Your cover letter is ready!";
+  - the letter card: the company tile, "Cover letter for Stripe", the opening of the letter, and
+    **Edit letter**;
+  - three equal **Try another tone** buttons;
+  - a full-width **Download PDF**.
+- **Removed:** the source note, "This draft is kept", the next-step note, and the saved/apply
+  sheet (COVER 04).
+- **Assets:** the two illustrations are the boards' own renders at 3×:
+  `assets/illustrations/cover/cover-setup.png` (from `656:60`) and `cover-writing.png` (from
+  `656:51`).
+- **Theme:** `palette.brand300` (#A59BFF) and the `glyphNote` token, for the lightbulb.
+
+### 71.2 Calls made without you
+- **Both rows open the same job sheet**, which lists each job with the resume tailored for it, so
+  job and resume change together. A letter is written from a resume tailored for the job (§7.10),
+  so a separate resume picker would usually list exactly one resume.
+- **COVER 03's empty band is closed up.** The board leaves about 250 px empty above the title,
+  where an illustration placeholder used to be. The title now sits 18 px under the stepper. If a
+  "ready" illustration is drawn, the hero takes it as `art`.
+- **Download PDF shows the toast "Cover letter saved as PDF".** COVER 04 is gone, so there is no
+  apply sheet. ✕ still returns to the job page, where Apply is.
+- **Writing has no "Leave and notify me".** ✕ leaves and the run carries on, as before.
+- **Steps without a job** (a letter from the resume menu on an untailored resume) read "Read
+  your resume" and "Fitting it to the role". The ready lede reads "Written only from your
+  “…” resume."
+- **The five steps split the run** this way: reading and picking share `generating` (picking from
+  25%); fitting and finishing share `scoring` (finishing from 90%). The board's 70% is "Writing
+  in a … tone".
+
+### 71.3 Not matched exactly
+- Text uses the app ramp (§54): the board's 14.5 row titles are 15, its 11.5 meta lines are 13,
+  and the tone buttons' 13 is kept.
+- The current step uses Tailor's semibold, not the board's medium, and keeps the turning ring
+  instead of the dotted spinner (`TailorCheckRow` is shared with Tailor and Build).
+- The excerpt shows the greeting and five lines of the opening paragraph, as drawn. The sign-off
+  appears only in the editor and the PDF.
+
+### 71.4 Left in place
+- `exportedFileName` in `sessionExports.ts` (read only by COVER 04's sheet) has no users now and
+  can be deleted. (`FilterChip variant="radio"` was unused here too, but ZERO 01's years chips use
+  it again, §72.)
+- `TailorVsCard` lost the cover-only props it had grown for §66.
+
+### 71.5 Also fixed
+`.expo/types/router.d.ts` had been regenerated (00:28 today) with `/create/build/index` in place
+of `/create/build`, which broke typecheck in `BuildUnreadableScreen` and Home. Re-ran
+`npm run routes:types`; `tsconfig.json` is unchanged.
+
+### 71.6 Not verified on a device
+Every screen: the illustration size and offset on COVER 01, the radio cards, the Writing card,
+the letter card, the tone buttons on a narrow phone ("Conversational" may shrink up to 15%), and
+the toast after download.
+
+## 72. Zero Resume built from ZERO 00–05 and 00b (Mobile 2, 2026-10-04)
+
+Boards (row y 13707):
+- ZERO 00 `615:2` — Home, with the Zero Resume tile marked as step 1. Nothing new was needed.
+- ZERO 01 `613:206` — About you.
+- ZERO 02 `613:293` — Writing your draft.
+- ZERO 03 `613:362` — Draft ready, check it.
+- ZERO 04 `613:467` — Check a guess.
+- ZERO 05 `613:622` — All checked, ready.
+- ZERO 00b `613:8` — No resume yet, from Tailor.
+
+This replaces the old spec-derived "Start from nothing" screen, which asked for a job description.
+
+### 72.1 What changed
+- **ZERO 01, About you** (`/create/zero-resume`, optional `?jobId`):
+  - the stepper (About you · Draft · Check) and the board's illustration;
+  - "Let's write your first resume";
+  - a card with Full name (prefilled from the account), five years chips (None · 1–2 · 3–5 · 6–10 · 10+) and Role you want;
+  - "1 of 3 generations left this month" over **✦ Write my draft**.
+  - All three fields are required. Pressing the button with gaps says what is missing. A spent month swaps the button for See Pro plans.
+- **ZERO 02, Writing** (on `/generations/[id]`):
+  - the robot illustration and the progress card;
+  - four steps in the run's own words ("Looked at Product Designer roles", "Planned sections for 6–10 years", …);
+  - the [blank] footnote, and **Leave and notify me**.
+- **ZERO 03, Check:**
+  - the draft page, with every guess and blank still to check marked amber and dashed;
+  - "Your draft is ready. Check 9 things";
+  - the Checked meter and the four rows (Roles and dates · Company names · Skills · Education). Each row turns to a green tick when done.
+  - The bar shows a locked **Download** and **Start checking** (then **Continue checking**).
+- **ZERO 04, Check a guess:** a sheet that walks every guess in order.
+  - **Roles:** "Is this role right?" with the guessed title, the blank company (in error until filled, as drawn) and the guessed From/To. The month picker opens inside the sheet.
+  - **Skills, then education:** the same pattern.
+  - Each guess has **Save and next** and **Delete**. Saving one role clears both its role check and its company check, so the count moves by 2.
+- **ZERO 05, Ready:**
+  - every step ticked and the finished page;
+  - "Your first resume is ready", **All 9 checked** and "Saved to your profile too";
+  - What you checked, and "Next: tailor it to a job you want to apply for";
+  - **Edit** and **Download PDF** (a toast confirms the save).
+- **ZERO 00b, from Tailor:** when the library is empty, Job Detail's Tailor sheet shows "You don't have a resume yet".
+  - **Upload a resume** continues in the Tailor sheet around the file.
+  - **Start from nothing** opens ZERO 01 with the job: the role is prefilled and the run remembers the job.
+- **Data** (`packages/shared`):
+  - `models/zeroResume.ts`: the bands, the `ZeroReview` checklist on the resume body, the pending/rows/next/summary rules, and period parsing.
+  - `mock/zeroDraft.ts`: builds the draft from the seed.
+  - `resumes.resolveZeroCheck`: answers one guess. The last answer clears `Resume.needsReview` and writes the roles, school and skills into the profile.
+  - The run keeps its `zero` seed. Zero runs get no ATS score (D-15; ZERO 05 shows none).
+- **Download gate (`contentNeedsReview`):** it also stays shut while a bracketed placeholder is printed or a skill claim is unanswered, per §7.9's "or any placeholder remains". Saving the skills list in the editor answers the open skill claims.
+- **Shared UI:**
+  - `CoverLetterHero` was renamed to `FlowHero` (with `FLOW_ART`, covering the cover and zero art).
+  - `FlowStepper` gains `allDone`.
+  - `TailorProgress` gains `art`.
+  - `NextStepNote` gains `icon`.
+- **Assets:** `assets/illustrations/zero/zero-about.png` (`661:25`) and `zero-writing.png` (`661:14`), as 3× renders. 00b's icons reuse `icons/create/upload.svg` and `scratch.svg`.
+
+### 72.2 Calls made without you
+- **The draft is planned from the role you want, not a job description.** This is the owner's §57.4 change from V2 §7.9. When opened from a job, the run remembers the job but still drafts from the role.
+- **What the draft guesses**, by band:
+  - None → no roles; 1–2 → one; 3–5 → two; 6–10 and 10+ → three.
+  - Titles step down from the role: Senior / Lead at the top, Junior at the bottom.
+  - Dates are counted back from today. 6–10 gives 2021 — Present, 2017 — 2021 and 2016 — 2017.
+  - One school is drafted, finishing where the first job starts.
+- **Copy kept honest:**
+  - The board's summary invented work ("designing onboarding flows… for B2B products"). The draft says only what was typed: "Product designer with 6–10 years of experience."
+  - Each role gets one generic line for its kind of work, flagged with the role, never a named product or a number.
+  - The two skill guesses come from the kind of role (a designer gets Figma and Prototyping).
+- **Undrawn sheets:** "Do you have this skill?" and "Where did you study?" copy the drawn role sheet. Their fields are Skill, and Degree + School + From/To.
+- **The sheet's "1 of 9"** counts what is already checked plus one. Saving a role moves the count by 2, so the second role reads "3 of 9".
+- **Deleting resolves a guess** (§7.9's three resolutions). The total stays at 9, and ZERO 05 says what was removed ("1 role removed").
+- **The draft's dates use the app's "2021 — Present"** (em dash), as every document does. The board's flags show an en dash.
+- **The draft page shows two roles and no skills**, as drawn. The checklist covers the rest.
+- **No apply sheet after Download PDF**, the same as Cover letter (§71). The toast says "Resume saved as PDF".
+- **The name typed on ZERO 01 prints on the draft preview only.** The account name is not changed.
+
+### 72.3 Not matched exactly
+- **Text follows the app ramp** (§54): 11.5 meta → 13, 14.5 titles → 14/15.
+- **The years chips** use the shared radio chip at the board's 11 px padding.
+- **The current progress step** keeps Tailor's semibold and turning ring.
+- **Scaling:** the draft page is laid out at 1.6× and scaled down, as TAILOR 05's preview is, so its 6.5–13 px type stays on the ramp.
+
+### 72.4 Open
+- **The resume editor doesn't link back** to the check screen. A draft left half-checked shows its review pills there and is finished in the editor (skills are answered by saving the list). A "Finish checking" link could take people back to ZERO 03.
+- **Web has no Zero Resume flow.** Its Quick Start tile and illustration are unchanged.
+
+### 72.5 Not verified on a device
+- the illustrations' size and placement;
+- the dashed amber flags (Android draws dashed borders differently);
+- the month picker inside the check sheet;
+- the keyboard lift with the company field focused;
+- the whole walk from ZERO 01 to 05.
+
+## 73. ATS check built from ATS 00–03 (Mobile 2, 2026-10-04)
+
+Boards (row y 16707):
+- ATS 00 `615:319` — Home, with the tile marked. Nothing new was needed.
+- ATS 01 `645:3` — upload your resume.
+- ATS 01b `645:49` — a pasted job description.
+- ATS 02 `646:2` — checking.
+- ATS 03 `646:51` — results.
+
+This replaces the old spec-derived check, which picked a library resume or a file with no job. Per §57, the check is now for resumes made outside NextKin; resumes made here already carry their score.
+
+### 73.1 What changed
+- **ATS 01, Upload your resume** (`/create/ats-check`, optional `?jobId`):
+  - the illustration and "Check your resume";
+  - the file row, which reads the file on pick ("Uploaded just now", red PDF tile, **Change**) and refuses a scan in the row (**Try another**);
+  - **Against this job**, defaulting to the most recently saved job (Stripe), with **Change** opening a saved-job picker;
+  - the dashed lavender **Or paste a job description** tile;
+  - "2 of 3 checks left this month" over **Check my resume**.
+  - Pressing the button with something missing says what is missing. A spent month shows See Pro plans instead.
+- **ATS 01b, Pasted job description:**
+  - the magnifier illustration and its own lede;
+  - **Job description** with **Clear**, a field counting to 2000, the Tip card, and **Use a saved job instead**.
+  - At least 80 characters are needed.
+- **ATS 02, Checking** (on `/generations/[id]`):
+  - the illustration and "Checking your resume";
+  - the card ("Checking against Stripe’s job", or the job description) with five steps;
+  - **Cancel**, which stops the run and hands the check back.
+- **ATS 03, Results:**
+  - "Fair for Stripe’s job", with a line per band and the **How the ATS score works** pill, which opens the rubric (§7.8);
+  - the 96 ring with the band pill;
+  - Missing keywords, as amber dashed chips with "Add only the ones you really have";
+  - Fix these, three numbered rows;
+  - "Saves a copy to your Resumes first" over **Fix it for this job**.
+  - For a saved job, Fix opens Tailor's compare (`/create/tailor?jobId&resumeId`). For a pasted description, it opens the description's review with the file as the base.
+- **Data** (`packages/shared`):
+  - `models/atsCheck.ts` holds the result shape.
+  - `mock/atsCheck.ts` builds it. It reads keyword coverage against the uploaded resume's own words (shared with Tailor's comparison), fixes from its structure (summary, bullets with figures, length), and seeds the board's Stripe example: 64, four missing, three fixes.
+  - The result is kept on the run (`Generation.atsCheck`), and the document's score panel gets the same total.
+  - New `generations.cancel`: it refunds the meter, and removes the run's own placeholder document for kinds that create one.
+  - The run watcher now receives the stored run after completion.
+- **Shared UI:**
+  - `FlowHero` gains the three ATS illustrations (3× renders of `656:14`, `656:18` and `656:22`).
+  - `TailorProgress` gains `sparkle` and a nullable `footnote`.
+  - New icon `icons/create/paste-jd.svg` (`649:2`), and the `borderBrandDashed` token (#C7C2FF).
+
+### 73.2 Calls made without you
+- **The file is read and filed in Resumes when it is picked**, so it can be scored. "Saves a copy to your Resumes first" is kept as drawn. By the time Fix is pressed, the copy is already there. If the owner wants checks that leave no copy behind, the import has to become a draft that Fix confirms.
+- **Cancel refunds the check.** Nothing was produced. The run is kept as failed ("Cancelled"), so History shows it with Try again.
+- **No saved jobs:** the job row is left out and only the paste tile shows.
+- **The fix rows have no chevrons.** The board draws them, but nothing opens per fix yet; Fix it for this job does the work. Rows that look tappable but do nothing would mislead.
+- **Undrawn picker:** the saved-job picker reuses BUILD 02's radio rows ("Check against which job?").
+- **An older check with no job** (seeded history) keeps the shared run screen and its score panel.
+
+### 73.3 Not matched exactly
+- The checking steps use the app's green ticks, not the board's brand discs (§69's owner rule: parts that already exist stay the app's version).
+- The pasted-description field is the app's filled TextField (as on BUILD 03), not the board's white outlined box.
+- Text follows the ramp (§54): 11.5 → 13, 14.5 → 15. The ring number uses `scoreHero` (31.5) where the board draws 30.
+
+### 73.4 Not verified on a device
+- the three illustrations;
+- the dashed tile and chips on Android;
+- the file picker and a real PDF;
+- Cancel mid-run;
+- the hand-off to Tailor's compare.
+
+## 74. Build Resume rebuilt from BUILD 01–07, 04b and 04c (Mobile 2, 2026-10-04)
+
+The code now follows the redrawn BUILD row (§70) and the read → compare → ask flow (§70.1):
+- **01 → 04b** for a saved job, and **02's CTA → 04b** too. Neither 01 nor 02 spends anything any more. 01 shows no cost line; 02 keeps "Uses 1 of your 3 resume builds this month" because the board draws it.
+- **03 → 04 → 04b** for a job from anywhere.
+- **04b "Fix and build my resume"** opens the 04c sheet. When nothing is missing, it starts the build straight away.
+- **05 → 06 → 07**, as before.
+
+### 74.1 What was built
+- **01** (`652:2`):
+  - the illustration;
+  - "Your saved jobs" with "See all (12)";
+  - the job rows, with the meta line above the match pill;
+  - the OR, then the solid "Add a job from anywhere" tile;
+  - the profile row pinned at the foot.
+- **02** (`652:76`):
+  - the illustration and the hero;
+  - search, then "Saved jobs (12)" / "Top matches";
+  - radio rows: the picked one is lavender with a brand outline, and no hairline touches it;
+  - "Build resume for {Company}" opens 04b.
+- **03** (`653:2`):
+  - the illustration;
+  - three tabs: Paste link, Description and Upload file;
+  - a white paste box with a brand Paste button;
+  - the "Supported links" tip;
+  - the OR, then the dashed "Upload a job file instead" tile.
+- **04** (`653:56`):
+  - the illustration;
+  - the link row;
+  - the job card, with the dark letter tile and "What the job asks for · 5 things" as plain grey chips;
+  - the "Next, we compare…" tip;
+  - **Compare with my profile**.
+- **04b** (`663:2`), new `BuildCompareScreen` at `/create/build/compare?jobId|jdId`. It is TAILOR 02's layout:
+  - the JOB MATCH ring (`TailorHero variant="build"`);
+  - the vs card with the profile row and an Edit pill (`BuildVsCard`, sharing `VsRow`, `VsRule` and `VsPill` with TAILOR 02);
+  - Job keywords "on your profile";
+  - What to improve, with headline, summary, skill order and layout.
+- **04c** (`663:142`): `AddKeywordsSheet variant="build"`. It shows the singular title, the board's subtitle and note, **Build my resume**, and the resume-build cost.
+- **05** (`653:124`):
+  - the illustration;
+  - "Our AI is building your resume…";
+  - the four steps, now starting "Read the job description";
+  - no footnote;
+  - the "Almost there!" card.
+- **05b** (`653:186`):
+  - the illustration;
+  - the "Why this happens" tip;
+  - the two buttons stacked at the foot.
+- **06** (`653:223`): the changes follow 04c's answers: "Added …" and "… left out, as you chose".
+- **07** (`653:337`): **Download PDF** opens the app's download sheet (`ExportSheetBody`), on a new `run` mount of `ResumeExportHost`.
+- **Data** (`packages/shared`):
+  - `jd.forJob(jobId)` / `useJobJd`: a saved job is read once, and Tailor's compare uses the same reading.
+  - `compareProfileToJob` and `buildHeadline`.
+  - `Generation.build` keeps the 04c answers.
+  - A skill added on 04c is written to the profile when the build starts (`addBuildSkills`).
+  - A build's skills are the profile's, with what the job asks for first.
+
+### 74.2 Calls made without you
+- **The 04c skill goes on the profile when the build starts**, not when it finishes. The board says "Anything you add is saved to your profile too". Starting is the moment the user confirms it.
+- **06's change list** is read against the profile as it was before 04c added anything. Otherwise a skill just added would also count towards "Skills ordered to match the job".
+- **07 is the app's existing download sheet, not the board's select-then-button sheet.** On the existing sheet, tapping a row downloads in that format, with the Pro gate and the share sheet, as in the editor and the library.
+  - §70 asked to confirm the format chooser before adding it back. The owner handed over 07 with this request, so the chooser is back, for Build only.
+  - Tailor's run keeps its one-tap PDF and its "Saved" sheet. The Build run no longer raises the "Saved" sheet or its Apply link.
+- **03's undrawn tabs.**
+  - Description is the same box, taller, with no tip.
+  - Upload file shows the tile alone, with a "What we can read" tip: "A PDF, DOCX or TXT of the job posting, up to 5 MB".
+  - §70 says no size limit exists in the code, but `BuildAddJobScreen` refuses files over 5 MB ("That file is over 5 MB…"), so the tip says so up front.
+  - 05b's "Paste the description" now lands on the Description tab.
+- **04 shows "CRED · Bengaluru"**, not "· On-site". A JD draft read from a link or a paste keeps no workplace. 04b shows the workplace for a saved job, where the Job has it.
+- **The 05 robot (IL-BD5) is still a placeholder on the board.** A robot glyph on a lavender tile stands in until it is drawn (already listed in illustrations-needed.md).
+- **02's CTA does not change when the pick is a Top match.** It still reads "Build resume for {Company}" and opens 04b with that job id.
+- **`ResumeExportHost` and `useDocumentExport` now push `/upgrade` themselves** instead of going through `useResumesActions`. That hook needs the tabs' `CreateSheetProvider`, which a pushed screen does not sit under.
+
+### 74.3 Worth a device check
+- **The resume editor may crash on open.** The editor (`/resumes/[id]`, a root-stack screen) mounts `ResumeMenuHost`, which calls `useResumesActions` → `useCreateSheet`. That throws outside the provider, and the provider lives only in `app/(tabs)/_layout.tsx`. The editor's tests wrap the provider, so they would not catch it.
+  - It has been like this since 2026-09-06 and the editor has presumably been opened since, so I may be missing something. Left alone; confirm on the phone.
+
+### 74.4 Not matched exactly
+- **05's steps** use the app's green ticks, not the board's timeline rails (§69's rule: parts that exist stay the app's version).
+- **Quota notes** sit above the CTA, on `StickyActionBar`'s note line, as on every other create screen. 02 draws its note below.
+- **Text follows the ramp** (§54): 11.5 → 13, 13.5 → 14, 14.5 → 15. The 04 card's letter uses `logoInitial` (18).
+- **04b's hero.** The layer names on 04b/04c still say "Your resume covers most of what Stripe…". The text itself is the profile/CRED copy the app uses.
+
+### 74.5 Not verified on a device
+- the six illustrations' placement;
+- the 02 radio card;
+- the 03 tabs with the keyboard up;
+- the 04c sheet's height with one keyword;
+- the 07 sheet on the run screen;
+- 05b's stacked buttons over the home indicator.
+
+## 75. AI chat composer redesigned from the owner's mock (Mobile 2, 2026-10-04)
+
+The composer on ASSISTANT 01 (`577:6569`) and ASSISTANT 02 (`577:7855`) was rebuilt in place:
+- **One white pill**, 56 px tall, with a light border and a soft lavender shadow. Inside it:
+  - a paperclip (attach) icon;
+  - the placeholder "Ask a question…";
+  - a 44 px brand-coloured round send button.
+- **The disclaimer** "AI-generated guidance, not professional or legal advice." sits under the
+  pill with an info icon, as in the mock.
+- **No bar behind it**, following the floating-button rule.
+
+**Judgement calls**
+- The mock shows the composer with and without the disclaimer. It was placed on the first-run
+  board (02); the conversation board (01) has none. Check whether V2 wants the disclaimer
+  visible on every chat screen.
+- The paperclip is new: attaching a file to the assistant isn't specified (V2 §7.16). Treat it
+  as a design proposal until the owner confirms what it attaches.
+- The old placeholder "Ask about your resume, score or job search" became "Ask a question…",
+  as in the mock.
+- App code is unchanged.
+
+## 76. Web pricing page as its own board (Desktop/Web, 2026-10-04)
+
+The owner sent a pricing mock and asked for it as a separate page. The new board is
+**"Pricing — choose a plan (web)"** `678:2`, 1536 × 1200, at (11587, 17020) below 07 · Upgrade.
+It uses the web board colours (slate and indigo `#4f46e5`).
+
+**What follows the mock**
+- the logo and tagline, with "Maybe later" and ×;
+- the Pricing pill;
+- the two-line headline with "Your Career" in indigo, and the subtitle;
+- the Monthly/Annually toggle;
+- three plan cards: the raised gradient Pro card with a "Most popular" crown badge, and white
+  buttons;
+- check-mark feature lists;
+- a three-item trust strip.
+
+**Changed on purpose, per V2 §13**
+- **"Start Free Trial" became "Upgrade to Pro".** §13.1 rules out micro-trials. The free card's
+  CTA is "Your current plan" (disabled), because this page opens inside the app.
+- **Feature lists follow the §13.3 gating table, not the mock.**
+  - The mock offered "Apply to 5 / unlimited jobs", "job alerts" and "career resources". Release
+    1 has no apply, and job alerts are Release 2.
+  - Free: 3 generations, clean PDF and TXT, 3 ATS checks, 1 cover letter, interview questions,
+    10 saved jobs, and the assistant with a daily cap.
+  - Pro: up to 100 generations, DOCX, 30 ATS checks, unlimited cover letters and question
+    sets, the full template library with 20 versions, unlimited saved jobs, and more assistant
+    messages with priority.
+- **Team is shown as "Coming soon".** The price is "Custom", the CTA is "Join the waitlist" and
+  the list is headed "Planned for Team". Team workspaces are Release 2 (§1.3/§17), and the mock's
+  $49 isn't in the spec. "Job posting & talent sharing" was dropped (recruiter portal, Release 2).
+- **The annual badge reads "Save over 45%", not 15%.** §13.2 bands are ~$19/mo against
+  ~$99–119/yr.
+- **Trust strip.**
+  - "30-day money-back guarantee" became "Clear refund window". The spec gives no length.
+  - "Trusted by 50,000+ job seekers ★4.8" was invented social proof, so it was replaced with
+    "Free PDF, no watermark", the §13.1 differentiator.
+  - "Secure payment" now names Stripe.
+
+**Still open**
+- **The price conflicts with 07 · Upgrade.** The mock uses $19 in USD; 07 · Upgrade (`561:2`) shows ₹1,499. Pick one market and currency (§13.2 is USD/EUR/AUD; INR is deferred).
+- **Whether this page replaces 07 · Upgrade** or is a separate entry, such as a marketing route.
+- The Web page has no text labels, so none was added; the board's frame name serves as its label.
+
+## 78. Tailor brought up to the updated TAILOR boards, and 00c built (Mobile 2, 2026-10-04)
+
+Same board ids as §65. A sweep of every text layer on 00–06, 01b, 01c and 00c against the code found two changes only:
+- **TAILOR 04** has its robot art (`661:40`, IL-BR1).
+- **TAILOR 00c** (`634:322`, drawn in §59 and never built) has its illustration (`661:46`, IL-T2).
+
+Everything else already matched what §65 shipped. TAILOR 06's IL-T1 is still a placeholder on the board, so 06 keeps the title leading.
+
+### 78.1 What was built
+- **TAILOR 04:** the robot above "Tailoring your resume for Stripe" (`FLOW_ART.tailorWriting`, 3× render), 43 below the stepper as drawn. This is the same pattern as the Zero, Cover and Build runs.
+- **TAILOR 00c, the copied job link.**
+  - When Home comes into view, or the app returns to the front on Home, the clipboard is checked. A lone link that reads as a job (careers site, jobs path, or a job board's posting) and was not asked about before is read.
+  - The centred dialog opens only once the link names a job:
+    - IL-T2;
+    - "Found a job link you copied" / "Want a resume made for this job?";
+    - the link card (title, link, link glyph);
+    - **Tailor my resume to it**, **Just save the job**, and **Not now**.
+  - It is hosted over the tab bar, so its scrim dims the chrome as the board draws it.
+- **Your answers to §59** (owner, 2026-10-04):
+  - **A copied link becomes a saved job** (`jobs.importFromLink`).
+    - **Tailor my resume to it** then opens `/create/tailor?jobId`, the compare screen with the resume picker up (TAILOR 01), exactly as for any NextKin job.
+    - **Just save the job** only saves it, with a "Saved to your jobs" toast.
+    - A link that names a role already on NextKin saves that job instead of adding a copy.
+  - **No off switch.** The footnote drops "Turn it off in Settings." and reads only "We only check when you open NextKin." **Not now** dismisses that link.
+- **Data** (`packages/shared`):
+  - `Job.sourceUrl`;
+  - `jobs.readLink` (no side effects) and `jobs.importFromLink`;
+  - `jobLinkIn` to recognise a job link;
+  - `mock/jobLink.ts`, which reads the employer from the host and the role from the path;
+  - `useJobLinkPreview` and `useImportJobLink`.
+  - Jobs added from a link never appear in search, counts, Similar jobs or a company's listings.
+- **New primitive:** `ui/Dialog`, Sheet's contract but centred, plus a `dialog` shadow token from the board's 0 12 40 at 20%.
+
+### 78.2 Calls made without you
+- **Each link is asked about once**, whatever the answer. The last 30 are remembered on the phone. Copying the same link again does not re-ask.
+- **When the check runs.** Only while Home is in view. If the user leaves Home before the link is read, it is dropped rather than popping up over another tab.
+- **A link that cannot be read is never asked about.** The dialog would have nothing to name, and nothing to tailor to.
+- **iOS asks "Allow Paste?" when an app reads the clipboard.** The check first asks iOS whether a URL is there, which shows no prompt, and reads only when one is. Android 13+ shows its own "pasted" toast on the read. Neither can be hidden.
+- **The mock cannot fetch a page.** It names the job from the address: `careers.swiggy.com/jobs/senior-product-designer-4821` is a Senior Product Designer at Swiggy. The JD body is the extractor's stand-in link text, as on BUILD 03. A real server reads the page.
+- **The link card's company tile is the app's grey letter tile** (as in the Build and ATS job rows), not the board's Swiggy-orange one.
+- **A job added from a link** has no company size or industry. Job Detail now leaves those out instead of showing empty pills.
+
+### 78.3 Not verified on a device
+- the clipboard read on iOS (the paste prompt) and Android (the toast);
+- the dialog's spring and scrim over the tab bar;
+- the TAILOR 04 robot's placement;
+- an imported job's Job Detail and Tailor run.
+
+## 77. Interview prep and AI assistant built from INTERVIEW 01–05 and ASSISTANT 01–02 (Mobile 2, 2026-10-04)
+
+The owner's updated boards were built, replacing the Phase 9 screens:
+- INTERVIEW 01 `577:927`
+- INTERVIEW 02 `577:1861`
+- INTERVIEW 03 `577:2809`
+- INTERVIEW 04 `577:3855`
+- INTERVIEW 05 `577:4905`
+- ASSISTANT 01 `577:6485`
+- ASSISTANT 02 `577:7805`
+
+The art is the boards' own 3× renders: `674:17`, `674:18` and `674:85`, now `FLOW_ART.interviewSets`, `interviewNew` and `assistantFirstRun`.
+
+### 77.1 What was built
+- **INTERVIEW 01, the practice sets.** The header has the AI pill and no title. Below it:
+  - the hero art, "Interview prep" and its lede;
+  - "Your practice sets · Newest first";
+  - one card per set: the company tile (Stripe's violet), the title on two lines, "10 questions · 3d ago", the green bar, and count pills;
+  - profile's dashed `AddCard` as **New question set**, 90 tall;
+  - the disclaimer as the lavender `NoteBar`.
+
+  The bottom bar is gone, because the tile is the way to a new set. Long press still deletes.
+- **INTERVIEW 02 / 03, a new set.**
+  - The hero art, title and lede, then the segmented control.
+  - A step card: the black "1" disc and "Choose a resume", then the grey resume row (46 page tile, the small ATS ring, chevron), then the AI note.
+  - The floating bar has the cost note and **Write questions**, led by the white sparkle.
+  - The row opens INTERVIEW 03: `OptionSheet`'s card rows, each led by a bordered page tile, with the library's own subtitle line.
+- **INTERVIEW 04 / 05, practice.**
+  - The filters are chips: **All**, **Needs work**, **Not marked**.
+  - The progress card has "Question 1 of 10 · 3 of 10 marked", the bar and the count pills.
+  - The question card has:
+    - tag pills;
+    - the prompt at 19 bold;
+    - the lavender **Reveal model answer** button, which opens in place into the answer, a rule, and the talking points on ticked discs;
+    - the two pill-shaped marks.
+  - The disclaimer note sits under the card. The floating bar has **Previous** (110) and **Next** / **Finish**.
+- **ASSISTANT 01, the thread.**
+  - The "Messages · 8 of 20 left today" card with its amber bar.
+  - Dark user bubbles with the bottom-right corner tucked.
+  - Replies led by the lavender avatar tile, in a white bubble.
+  - Refusals in a grey bubble with a white **⊘ Out of scope** pill.
+  - "Try asking" and the sparkle prompts, then the composer from §75: one white pill with a paperclip, "Ask a question…" and a round brand send button, and no bar behind it.
+- **ASSISTANT 02, the first run.** For a blank thread:
+  - the robot;
+  - "Ask about your resume, your score or the search", with the board's line breaks (title at 250, lede at 318);
+  - "Try asking" and the prompts, centred.
+- **New shared pieces:**
+  - `ui/Pill`, the 12-pt rounded status pill (with an optional dot or glyph);
+  - `AtsBadge size="sm"`;
+  - `AddCard`'s `style`;
+  - `FlowHero`'s `titleWidth` / `ledeWidth`;
+  - two shadow tokens, `composer` and `composerSend`, from 675:2 / 675:5;
+  - `InterviewSet.company`, written by the builder from the resume or its JD.
+
+### 77.2 Calls made without you
+- **The paperclip attaches a resume, not a file** (§75 left this open). It opens "Ask about a resume", the same card rows as INTERVIEW 03. The pick shows as a removable "About: <resume>" chip over the pill. Answers are then written against that resume.
+  - This is §7.16's context awareness, and the screen already supported it through `/assistant?resumeId`.
+  - Uploading arbitrary files to the assistant is not in V2.
+- **The disclaimer stays under the composer on ASSISTANT 01 too.** The board draws it on 02 only. §7.16 requires "clear labeling that responses are AI-generated guidance" on the chat, so it is on both.
+- **ASSISTANT 02 has no meter, as drawn, but only while nothing has been spent today.**
+  - §7.16 wants remaining usage on screen "before the limit is hit". A full allowance has nothing to warn about.
+  - A blank thread with messages already used today shows the meter above the robot.
+- **A standalone set's "Generic — not tailored to a job description"** is a grey pill on its card, and among the tags on every question. No board draws a generic set, and §7.15 requires the label to be visible.
+- **"By role title" mode** keeps the same step card: "1 · Name the role", the field, and an ⓘ note carrying the generic label. No board draws it.
+- **The empty library** (no sets) keeps the hero, swaps the section title for "No practice sets yet", and ends on the tile and the note.
+- **Filter chips are named "All questions" / "Needs work questions" / "Not marked questions" for screen readers.** The visible text is the board's. Without this the filter would share a name with the **Needs work** mark button.
+- **Held to the app's shared parts, not the board's numbers:**
+  - the header titles: 16.5 bold through `ScreenHeader`, where the board has 16 SemiBold;
+  - the segmented control: 44 / 38 at 390 against the board's 40 / 34;
+  - the 13-pt meta and captions, where the board has 11.5–12.5 (§54's type floor);
+  - the CTA heights.
+- **The white sparkle** (577:2572) ships without its drop-shadow filter. SVG `<Filter>` is kept off chrome after the tab-bar squash (§51).
+- **The INTERVIEW 03 board still shows the old lightbulb hero** behind the sheet. The sheet sits over INTERVIEW 02, so the app shows 02's new art there.
+- **Copy from the boards that is new in the app:**
+  - "Practice questions written from your resume.";
+  - the ASSISTANT 02 title and lede;
+  - "Messages · N of 20 left today", which replaces "N of 20 messages left today";
+  - "Ask a question…".
+
+### 77.3 Not verified on a device
+- Nothing here has been seen on a phone. To check:
+  - the art sizes;
+  - the model-answer panel opening in place (`LinearTransition`);
+  - the composer growing past one line;
+  - the attach sheet;
+  - the composer and send shadows on Android, which come from elevation.
+
+## 79. Account, support, legal, billing, jobs 09–11 and system: the new illustrations (Mobile 2, 2026-10-04)
+
+The row under "Account, support & legal — designed from the built screens" (`554:3228`) keeps its board ids:
+- ACCOUNT 01–03 `577:2462` / `577:3071` / `577:3801`
+- SUPPORT 01–02 `577:6129` / `577:7867`
+- LEGAL 01–02 `577:8876` / `580:2`
+- BILLING 01–02 `577:9155` / `580:314`
+- JOBS 09–11 `580:1648` / `580:2428` / `580:2510`
+- SYSTEM 01 `580:2883`
+
+A sweep of every text layer against the code found the copy unchanged. One exception: BILLING 01's **"Most popular"** pill. It stays off, as §64 decided, because no plan data backs it and it would be an invented claim (the honest-numbers rule).
+
+### 79.1 What was built: three illustrations, each the board's own 3× render
+- **ACCOUNT 03** (IL-A1, `680:92`): the folder handing the file over, above "Your file is ready". It sits 40 under the bar and 16 above the title. `AccountHero` gains an optional raster `image`.
+- **BILLING 02** (`680:95`): the checkout page behind a padlock, at the top of the "Continue to checkout?" sheet, 2 above the title. `ConfirmSheet` gains an optional `artGap`, since the profile sheets draw 14.
+- **SYSTEM 01** (IL-B3, `681:156`): the lost page holding a map, above "Page not found", now through `FlowHero`.
+  - This drawing is a loose layer on the page canvas, not a child of the board, so a scan of the board alone misses it.
+  - New `__tests__/features/system/NotFoundScreen.test.tsx`.
+
+### 79.2 Calls made without you
+- **SYSTEM 01 stays vertically centred.** On a phone-height screen, the board's position near the top of its 1080 frame lands near the middle anyway.
+- **BILLING 02's background** still shows BILLING 01's old IL-B1 placeholder in the header. BILLING 01 itself has none, so nothing was added there.
+
+### 79.3 Bookkeeping
+- My Tailor section was also numbered 75 (two sessions appended at once), so it is now **§78**.
+
+### 79.4 Not verified on a device
+- the three illustrations' sizes and spacing;
+- the checkout sheet's height with its art.
+
+## 80. Profile sheets and confirms: the sign-out and discard illustrations (Mobile 2, 2026-10-04)
+
+Boards (unchanged ids):
+- PROFILE 17–20, the sheets: `577:53` / `577:504` / `577:998` / `577:1419`
+- PROFILE 21–24, the confirms: `573:437` / `577:1945` / `577:2576` / `577:3232`
+- PROFILE 25, the Rate toast: `577:3416`
+
+A sweep of the sheet, confirm and toast copy against the code found it all unchanged. The only new layers are two illustrations, each the board's own 3× render.
+
+### 80.1 What was built
+- **Sign out?** (PROFILE 21, `680:98`): the open door.
+- **Discard changes?** (PROFILE 23, `691:6`): the bin with a crossed-out page.
+- Both sit 5 below the top of the copy block and run straight into the title (0 gap), as drawn.
+- New `ui/ConfirmSheet/ConfirmArt` holds them, used with `artGap={0}`.
+
+### 80.2 Calls made without you
+- **The discard drawing goes on every "Discard changes?" sheet**, not only Edit role:
+  - the profile entry forms (`ProfileFormShell`);
+  - Edit profile;
+  - the chip-list editors;
+  - the resume section editor.
+
+  It is the same question everywhere, so it now looks the same everywhere.
+
+### 80.3 Seen, not mine
+- **The web test `JobsScreen › narrows the list through a real filter change` now fails every run,** even run alone. Earlier sessions recorded it as intermittent (it passed on rerun).
+  - After the Chennai filter, "1 result" and the Zoho card show, but the previously selected Google card is still listed.
+  - It looks like a race: the count query lands before the list query, and the test waits only on the count.
+  - This round and §79 touch no web code. §78 added one line to the shared `matchesFilters` (skip jobs with a `sourceUrl`); no fixture has one, and with that line switched off the test still fails, so it is not the cause. The web session should look at it.
+
+### 80.4 Not verified on a device
+- the two drawings' size;
+- the confirm sheets' height with them.
+
+## 81. Certifications empty state: its illustration (PROFILE 10 `573:119`, Mobile 2, 2026-10-04)
+
+The copy is unchanged. The board's only new layer is the drawing `680:107`: the certificate with its rosette.
+- It replaces the icon on "No certifications yet", as the board's 3× render.
+- It starts 25 into the hero and sits 22 above the title, the empty state's own gap.
+- `EntryListScreen`'s empty state moved into `EntryListEmpty.tsx`, which keeps the screen file under the size rule. The empty config gains an optional `image`.
+- **Not changed:** the other three lists (roles, education, links) keep their icons until their boards draw an illustration.
+- **Not verified on a device:** the drawing's size.
+
+## 82. The centre nav button is the AI assistant now (owner, 2026-10-04)
+
+The owner's request: "instead of create, it will be ai assistant chat button".
+- **The design.** New Navigation / Home `669:49`: the same notched pill and violet disc, with the AI sparkle (`670:197`, one large four-point star and two small ones) in place of the "+".
+- **The button.** It opens `/assistant` (the assistant chat). Its label is "AI assistant", with a light haptic, and it no longer rotates. The sparkle is `assets/icons/nav/fab-sparkle.svg`; the unused `fab-plus.svg` is deleted.
+- **Creating didn't go away.** Home's create tile and Resumes' "+ New" still raise the create sheet.
+
+### 82.1 Calls made without you
+- **The create sheet now has its own ✕**, at the end of its header on both steps, in the filled circle its Back button already uses. Before, the centre button turned into the sheet's ✕. Without it, the sheet could only be closed from the scrim, a swipe or Android back.
+- **The create sheet now paints over the tab bar and the centre button,** with its scrim dimming them, like every other hosted sheet (filters, menus).
+  - **This reverses 2026-10-02's fix** (the bar was hidden under the create sheet, and CREATE 01/02 draw the bar on top). That z-order existed so the centre button could be the sheet's ✕.
+  - Left on top now, the bar would show the assistant button over an open create sheet: tappable, or inert and confusing.
+  - **If you want the bar on top as CREATE 01/02 draw it**, it can go back above the sheet with both the bar and the centre button inert while the sheet is open, keeping the sheet's own ✕.
+- **The tab bar no longer manages the create sheet itself.** The tabs layout's `ChromeLayer` takes the bar and the button out of reach and out of the accessibility tree whenever any hosted sheet is open.
+
+### 82.2 Tests
+- New `__tests__/navigation/Fab.test.tsx`.
+- New `CreateSheetClose.test.tsx`. It renders each step directly: under Jest, pressing the ✕ and then switching steps stalls React's act queue for later tests. That can't happen in the app, because the ✕ closes the sheet.
+- `FloatingTabBar.test.tsx` was updated for the move of the sheet handling to `ChromeLayer`.
+
+### 82.3 Not verified on a device
+- the sparkle's size and centring on the disc;
+- the create sheet's ✕;
+- the scrim dimming the bar;
+- opening the assistant from every tab.
+
+## 83. Smoothness, motion and flicker pass (owner request, 2026-10-05)
+
+The owner's request: no lag, stutter, flicker or snapping anywhere, with subtle, purposeful
+motion — premium and native-feeling — without changing the visual design. Decided with the owner
+before starting: mobile only; tabs fade; Android pushes use the iOS-style parallax
+(`ios_from_right`); keyboard handling moves to `react-native-keyboard-controller` (included in
+Expo Go SDK 57); the React Compiler stays off (targeted re-render fixes instead); section
+staggers play only when loaded data replaces a skeleton. Each subsection below lands with its
+phase.
+
+### 83.1 Navigation and launch
+
+- **Tabs fade.** Switching tabs fades the new tab in over 180 ms, the same timing as the bar's
+  icon fade, so the bar and the page move together (`src/navigation/TabSceneFade.tsx`, wired
+  through the navigator's `screenLayout`). Under Reduce Motion the switch stays instant.
+- **Pushes use the iOS parallax on Android too** (`ios_from_right`), in the root and sign-in
+  stacks (`useStackAnimation`). Under Reduce Motion a push cross-fades instead.
+- **The tab highlight follows the finger, not the route.** The pressed tab lights up on the tap;
+  the navigation itself starts one frame later so that highlight paints first. Before, the
+  highlight waited for the new screen to mount.
+- **Tab labels fade with their icons.** This reverses §39.3: each label is now two stacked copies
+  (grey and violet) that cross-fade like the icon cuts, so nothing in the bar snaps. Only the
+  copy showing is exposed to screen readers.
+- **The other tabs are built ahead of the first visit.** Once Home has finished loading, Profile,
+  Jobs and Resumes are mounted in the background, one per idle moment (`TabWarmup`), so a first
+  visit has neither a mount hitch nor a skeleton.
+- **No icon pop-in.** The icon font now loads behind the splash with the text faces; before,
+  every icon rendered blank for a beat on first use.
+- **No first-frame jump.** The safe-area provider starts from the launch insets instead of
+  waiting for a native measurement.
+- **Illustrations fade in** (150 ms) instead of popping in once decoded, and stay decoded for
+  revisits: the flow heroes, confirm art, checkout, empty profile lists, account heroes and the
+  Home resume thumbnail.
+
+#### Calls made without you
+- **The tab fade is a fade-in, not a two-way cross-fade.** The navigator's own `animation: 'fade'`
+  turns `freezeOnBlur` off, so every hidden tab would re-render on each update. The outgoing tab
+  therefore disappears at once and the incoming one fades in from the page colour. The two read
+  almost the same, since most of a page is that colour.
+- **Warming the tabs costs some launch work.** It runs only after Home's own loading has
+  finished, one tab per idle slot. If launch feels heavier on a low-end phone, it can be limited
+  to Profile (the heaviest) or removed.
+- **The splash fades out only in real builds.** Expo Go owns its own splash. The dark-mode white
+  splash is unchanged: that is native config (`app.config.ts` splash `dark` colour), so it needs a
+  build to see. Left for when builds are routine.
+- **A pre-existing flaky test.** `ZeroRun.test.tsx` "checks every guess, then opens the download"
+  timed out at 5 s in the baseline full run, before any of this work; it passes alone. It is
+  load-dependent, not broken.
+
+#### Check on a device
+- Switch between all four tabs: a quick, even fade; no blank frame; the bar's highlight leads.
+- Push a screen from a tab and swipe or press back: the tab underneath stays visible throughout
+  (it must not fade).
+- First visit to Profile after launch: no hitch, no skeleton.
+- Android: the push slides with the parallax and dimming, and back reverses it.
+- Cold launch: no blank icons, no layout jump under the status bar.
+
+### 83.2 Fewer re-renders, and loading states that keep content
+
+- **A failed background refresh no longer replaces the page.** When a quiet refresh fails, the
+  query keeps its last data and flags an error beside it. Several screens checked the error first
+  and swapped what you were reading for a full-page "Something went wrong": Home, Profile, Jobs
+  (all three segments), Resumes, Notifications, History and Job Detail. They now keep the content.
+  The full-page error shows only when there is nothing to show (`queryPhase` in
+  `src/data/queries`).
+- **The Jobs refresh spinner shows only for a pull.** It was tied to "a refetch is running", so it
+  also appeared after every bookmark (saving refreshes the job lists) and every Discover filter or
+  sort change.
+- **Jobs cards stop re-rendering together.** The save handler was rebuilt on every render, so
+  every visible card re-rendered on each one: every keystroke in the search, every bookmark. The
+  list's header, with the Today's picks carousel, is no longer rebuilt on each keystroke either.
+  Notifications had the same problem through "mark read".
+- **Home stops re-rendering every 1.2 s during a run.** The live progress card now owns its own
+  subscription; Home only starts the fetch, so the card still appears as early as before.
+- **Typing to the assistant no longer re-renders the conversation.** The draft moved out of the
+  screen into a small store the composer reads.
+- **A streaming reply stays in view.** If you are at the bottom of the thread, the page follows the
+  reply as it grows. Scrolled up to read, it stays put (`Screen`'s new `followEnd`).
+- **Job Detail opens painted.** Opened from a list (picks, search, saved), the page shows the
+  list's copy of the job at once and refreshes quietly, instead of a skeleton. The option is on
+  `useJob` in `packages/shared` (`seedFromLists`, off by default, so web is unchanged).
+- **Notification switches no longer flick back.** Two quick flips each triggered a refresh, and
+  the first refresh landed before the second save, flipping the second switch back until its own
+  save arrived. They now queue like the profile preferences do. This also resolves §22.3's open
+  note for mobile.
+
+#### Calls made without you
+- **A failed background refresh is now silent.** The page keeps what it had; nothing says the
+  refresh failed. A small toast ("Couldn't refresh") could say so if you want one.
+- **Resume search still filters as you type.** I tried filtering when typing pauses, but this
+  screen's long test stalls on timer-driven renders. The bigger costs of typing (cards
+  re-animating, score rings re-sweeping) are fixed in later phases, so filtering per keystroke is
+  cheap.
+- **Job Detail only.** Resume pages also load their content separately, so seeding the resume
+  record alone wouldn't remove their skeleton.
+- **The React Compiler is installed but off.** A comment in `InterviewPracticeScreen` said it
+  memoised the handlers; it doesn't, and the comment now says so.
+
+#### Check on a device
+- Jobs: bookmark a card, and change a filter or the sort. There should be no spinner at the top
+  of the list.
+- Jobs: open a job from Today's picks or the list. The page should appear at once, with no skeleton.
+- Notification preferences: flip two switches quickly. Both should stay where you put them.
+- Assistant: ask something long. The reply should stay in view as it streams, unless you scroll up
+  during it.
+
+### 83.3 Sheets, toasts, buttons and presses
+
+- **No gap under an opening sheet.** The open spring overshoots slightly (damping 0.8 lifts a
+  600 pt sheet about 9 pt), and the sheet sat exactly on the bottom edge, so the overshoot showed a
+  strip of scrim under it. The sheet surface now runs 48 pt past the edge, out of sight.
+- **A sheet no longer grows while it slides up.** The first measurement of its content is applied
+  at once instead of being sprung to; later changes (the create sheet's two steps) still spring.
+- **A dragged sheet closes from where you let go.** The close used the full 200 ms however far
+  down it had already been dragged. It now takes the share of that time the remaining distance
+  needs, with a 120 ms floor.
+- **Toasts hide on time.** Hosts pass their hide handler inline, so every re-render restarted the
+  3 s timer, and on the run screens (re-rendering on every 1.2 s progress tick) a toast never
+  hid. A second message while one shows now replaces it: the old bar leaves and the new one
+  arrives with a full 3 s, instead of the text changing in place.
+- **Buttons keep their size and colour while loading.** The label stays laid out, fading under
+  a centred spinner, so a button that hugs its label no longer shrinks to the spinner's width. A
+  loading button is busy, not unavailable, so it no longer dims.
+- **Enabling and disabling fade.** Every tappable surface eases its opacity (180 ms) instead of
+  snapping to the disabled dim; a surface's own opacity (the composer's send button) fades the
+  same way.
+- **The assistant button presses deeper (0.92), and its glow shrinks with it.** The
+  `fabPressed` token was there but unused, and the glow, drawn beside the button, stayed put
+  while the button shrank.
+
+#### Calls made without you
+- **A fling closes in proportion to distance, not fling speed.** Matching the finger's speed needs
+  a hand-off between the gesture and the sheet's close. Closing in proportion to the remaining
+  distance gets most of the feel with none of that risk.
+
+#### Check on a device
+- Open any sheet (filters, a menu, the create sheet). No strip of dark scrim should show under it
+  as it settles.
+- Drag a sheet two-thirds down and let go. It should finish briskly, not crawl.
+- A run screen (Tailor, Zero) that shows a toast: the toast should leave after about 3 s.
+- Any Save button that spins (profile editors): its width and colour should hold while saving.
+
+### 83.4 The keyboard moves with the page (react-native-keyboard-controller)
+
+- **New dependency: `react-native-keyboard-controller` 1.21.9**, installed with
+  `npx expo install`, so it is the version SDK 57 pins. Expo's SDK 57 page lists it as included
+  in Expo Go; the old comment in `revealOnFocus.tsx` that ruled it out for Expo Go predates that.
+  `KeyboardProvider` wraps the app (`AppProviders`).
+- **Pages ride the keyboard frame by frame.** A `Screen keyboard` page pads itself by the
+  keyboard's height on the UI thread as the keyboard moves (`src/ui/Screen/KeyboardFrame.tsx`).
+  React Native's own avoider padded only once the keyboard had finished opening on Android, so the
+  page, the Save bar and the focused field snapped up a beat after the keys landed.
+- **No more jump in the action bar.** The bar dropped its bottom inset on `keyboardDidShow`, a
+  second, later jump. Its padding is now static, and the keyboard slides over that inset strip
+  (dead space once the home indicator is covered), so the buttons sit `spacing[4]` above the keys
+  at every frame.
+- **No dead band under the assistant composer.** The composer kept its bottom inset above the
+  keyboard; the same slide-over removes it.
+- **Sheets with a field lift on the same source** (`SheetKeyboardLift`), so the app has one
+  keyboard system. Reanimated's `useAnimatedKeyboard`, used before, switches Android's soft-input
+  mode while mounted and would have contended with the controller.
+- **Unchanged:** a sheet with no field still takes the keyboard down as it opens, and the focus
+  reveal (scrolling the focused field clear of the keyboard and the Save bar) still runs on React
+  Native's keyboard events and metrics, as verified on 2026-10-03. Its re-run when the page
+  resizes now waits for the keyboard to finish opening, rather than chasing the padding every
+  frame.
+
+#### Not verified on a device (please check both platforms)
+- `/profile/edit`: focus the last field ("Years of experience"). It should rise with the keyboard
+  and end clear of the Save bar (§61's fix).
+- Any form with a Save bar: the bar should travel up with the keyboard, not jump after it, and sit
+  just above the keys.
+- A sheet with a field (the resume menu's Rename, the location picker's search): it should lift
+  with the keyboard.
+- A sheet without a field, opened from a focused field (a date row on a profile form): the
+  keyboard should go down as the sheet comes up.
+- Jobs search: the list should shrink above the keyboard as it opens.
+- The assistant composer: it should sit just above the keys, with no gap.
+- Android with gesture navigation and with 3-button navigation: no gap or overlap at the bottom.
+- iOS: one documented catch. A React state update in the same moment as a keyboard event can
+  skip one animation. The fields here keep their focus handling free of state for that reason;
+  say if any field ever jumps rather than glides.
+
+### 83.5 Loading to content
+
+- **Skeletons fade out instead of being cut.** Each skeleton block fades over 180 ms as it
+  leaves. A leaving view stays on screen without taking up space, so the loaded content takes its
+  place at once while the grey fades over it: a cross-fade on every screen, from one change to
+  `Skeleton`.
+- **Skeletons pulse in step.** Every block on screen now shares one pulse (`skeletonClock`).
+  Before, each ran its own loop from whenever it mounted, so a page of them shimmered unevenly,
+  and a page ran dozens of animations to draw one effect.
+- **Section staggers play only when loaded data replaces a skeleton** (your call). Two pieces do
+  this:
+  - `Screen` skips the entrance of anything that mounts with the page itself, since that arrives
+    with the push or the tab fade.
+  - A screen's own stagger (`useRevealStagger`) plays only in the commit where its data lands, so
+    a filter or search that brings items back doesn't replay it.
+
+  About 20 screens that each carried a copy of the stagger helper now share this one.
+- **Screens whose content is there at mount lost their entrance:** Build › add a job, Build ›
+  unreadable, Upload resume. They slide in whole.
+- **Sheets keep their row stagger** (the create sheet, export, the cover and tailor pickers). Those
+  rows mount as the sheet opens, which the motion spec draws. The two pickers now cap the stagger
+  at 8 rows, like everything else.
+- **One layout motion.** The ~15 places that animate things moving (expanding cards, chips, the
+  resume section editors, FAQ rows, Disclosure) used React Native's default spring or a 220 ms
+  timing. They now share the `gentle` spring (350 ms, damping 0.9).
+- **Chips and cards leave by shrinking as they fade** (to 0.9), as the motion spec says, instead
+  of only fading. This covers profile skill chips, the completeness card's items, and resume
+  library cards.
+- **Resume library:** cards stagger in only on first load. A card that a filter brings back fades
+  in quickly, and one a filter or a delete removes shrinks away while the rest glide into place.
+
+#### Calls made without you
+- **The Home sections keep their stagger on first load,** as before. They are the launch screen,
+  and Home always opens from a skeleton.
+
+#### Check on a device
+- Open a job, a resume score, or the plan screen for the first time: the skeleton should melt into
+  the content, with no flash.
+- Open the same screen again (cached): it should slide in whole, with no section stagger.
+- Resume library: type in the search. Cards should leave by shrinking and come back with a quick
+  fade, and the rest should glide.
+
+### 83.6 Live progress and meters
+
+- **Live progress glides instead of stepping.** A run reports progress every 1.2 s, and the bar and
+  percentage each took 800 ms to catch up, then sat still for 400 ms: a visible move-and-pause
+  rhythm. Live meters now glide linearly for exactly one beat (`timing="follow"`), so consecutive
+  updates join into one continuous motion. This covers the Home run card, and the Tailor, Cover
+  and generic run screens. A test pins the glide to the tick length.
+- **Opening a run from Home continues the bar instead of restarting it.** Live meters remember
+  their last value per run, so the run screen picks up where the Home card was.
+- **Score rings stop re-sweeping.** A search keystroke or a grid/list switch remounted the
+  library's cards, and every ATS ring swept up from 0 again. Each ring now remembers what it
+  showed (`memoryKey`), and only a real change animates.
+- **Runs fade into their results.** The Tailor and Zero runs cut from the progress card to the
+  finished resume, and swapped their action bars, in one frame. Both now cross-fade
+  (`Reveal`). On the generic run screen, the "you can leave" note fades out as the result bar
+  fades in. In the step lists, each step's spinner fades into its tick rather than swapping.
+- **The export screen's working bar moves by transform.** Its sweeping band animated `left`,
+  which re-laid the bar out on every frame for as long as the export took. It looks the same.
+
+#### Calls made without you
+- **`ProgressBar` still animates its width.** A transform would draw a nearly empty bar
+  differently (clipped by the track rather than a tiny pill), and could depend on Android clipping
+  rounded corners. A single bar re-laid out for 800 ms is negligible, so it is unchanged.
+- **The run header's spacing still steps** between the writing and the ready layouts. The content
+  under it cross-fades, which hides most of it; animating the header box itself would mean
+  measuring it.
+- **A late tick holds the bar briefly.** With the linear glide, a tick that arrives later than
+  1.2 s leaves the bar still until it lands. The real API's cadence may differ, and the glide
+  should then follow it (`durations.follow`).
+
+#### Check on a device
+- Start a Tailor run and watch the percentage and bar. They should move continuously, without
+  the pause between ticks.
+- Open the run from Home's card: the bar should continue from where the card showed it.
+- Let the run finish on its screen: the progress card should melt into the resume preview, and
+  the bar should change to Edit / Download PDF without a cut.
+- Resume library: type in the search, and switch grid/list. The rings should keep their scores
+  without sweeping.
+
+### 83.7 Selections that fade instead of snapping
+
+- **Toggles:** the "on" colour now fades in on the knob's own spring, so colour and knob arrive
+  together. Before, the track switched colour at the tap, ahead of the knob.
+- **Segmented controls** (Jobs' Discover / Saved / Applied, Upgrade's period, every other pill
+  switch): each label is two stacked copies, regular grey and semibold ink, which cross-fade as
+  the pill slides. Weight and colour no longer snap at the tap.
+- **Filter chips:** the ink fill (border included) fades in and out. The label's colour moves
+  with it, so it never shows white text on a still-white chip. The ✓ fades in and out, and the
+  chip glides to its new width, with the chips after it in a wrapping row.
+- **Text fields:** the error border fades to red, and back once it's fixed, instead of
+  snapping. The focus ring already faded.
+- **Expandable sections** (`Disclosure`): collapsing now fades the body out as the section closes,
+  instead of the body vanishing at the tap.
+- **Bookmarks pop when you save a job:** the filled glyph springs up from 0.7 on the bouncy spring,
+  which the motion spec reserved for "bookmark fill" and which was unused. Unsaving just empties
+  it. This covers Jobs cards, Today's picks and Job Detail.
+
+#### Calls made without you
+- **A filter chip's label weight still changes at the tap.** Regular and semibold are different
+  widths, and the chip hugs its label, so the two can't be stacked; the width change glides.
+- **The option sheets' selection is unchanged.** Picking an option closes the sheet straight
+  away, so a fade there would never be seen.
+- **New shared pieces:** `AnimatedText` beside `Text` (same type ramp, with an animated colour)
+  and `a11yHiddenWhen` in `src/lib/a11y.ts` (the tab bar and the segmented control both use
+  stacked label copies).
+
+#### Check on a device
+- Flip a notification switch: the colour should travel with the knob.
+- Jobs: switch Discover / Saved / Applied. The label weight should fade with the pill.
+- Jobs: toggle "Remote only" and the filter-sheet chips. The fill should fade, with no flash of
+  white-on-white, and the row should glide.
+- Save a job from a card, from Today's picks and from Job Detail: the bookmark should pop.
+
+### 83.8 Things that leave lists
+
+- **"Mark all read" glides.** The unread row fades away and the filter pills and the feed glide up
+  into its place. Before, they jumped up the moment the row unmounted.
+- **A deleted interview set shrinks away,** and the sets below glide up, instead of vanishing.
+  Resume library cards already do this (§83.5).
+- **Removing a bullet removes that bullet.** Bullets were keyed by position, so removing the
+  middle one moved the text of every later bullet up a field and made the LAST field the one that
+  disappeared. Each bullet now has a stable key, so the removed one shrinks away and the rest
+  glide; the "Add bullet" row glides too. A new `BulletRows` test covers removing a middle bullet
+  and adding one.
+
+#### Calls made without you (log only, not changed)
+- **A full swipe on a notification still springs back.** Its only use is "mark read", which keeps
+  the row; springing back is right there (it's what iOS Mail does).
+- **Rows inside the long lists (Jobs, Notifications) get no exit animation.** Those lists recycle
+  their rows, and Reanimated's exit animations don't survive recycling.
+- **Job Detail's match illustration draws its glow with SVG blur filters** (`MatchIllustration`).
+  Filters are expensive on Android and are the first thing to rasterise if pushing to Job Detail
+  ever hitches on a device.
+- **The resume cards' ATS badge uses a CSS-style shadow on Android** (`AtsBadge`), where the other
+  cards use `elevation`. Swapping it would change how it looks, so it is listed, not changed.
+
+### 83.9 The whole pass: where to look first
+
+- **Gates** at the end (from the root, all workspaces):
+  - `pnpm typecheck` and `pnpm lint`: green.
+  - `pnpm test`, mobile: 204 suites and 1,845 tests, all green.
+  - `pnpm test`, web: one failure, `JobsScreen › narrows the list through a real filter change`.
+    This is the race §80.3 already records. It still fails with this pass's one change to a hook
+    that screen uses (`useJob`) switched back, and it passes when run alone.
+  - The Android bundle export succeeds (2,990 modules), keyboard-controller included.
+- **Not verified on a device.** Nothing in §83 has been seen on a phone. The checklists under each
+  subsection are the device pass, best run in Expo Go on the `start:prod` script
+  (`--no-dev --minify`), since a dev bundle stutters on its own. For real release frame rates,
+  use an EAS preview APK (`pnpm mobile:apk`).
+- **Riskiest first:** the keyboard (§83.4), the tab fade and warm-up (§83.1), then everything
+  else.
+- **Unrelated, noticed on the way:** `npx expo install --check` reports `react-native` 0.86.2
+  (SDK wants 0.86.3), `eslint-config-expo` and `jest-expo` slightly behind. These predate this
+  work and are not touched.
+
+## 84. Web smoothness, motion and responsiveness pass (owner request, 2026-10-05)
+
+The web counterpart of §83. Same brief: no lag, flicker, layout shift or snapping, and subtle
+motion that never delays content. The owner's calls, made before any code:
+- **Responsive:** laptop and tablet. Nothing scrolls sideways from 1024px up. Below 1280 the
+  sidebar is the rail on its own and expands as an overlay. Phone layouts are a later pass.
+- **Page change:** a quick cross-fade (React `<ViewTransition>`). The sidebar and top bar stay
+  still.
+- **Visual additions approved:** a hover tint on list cards, pressed feedback (98% scale), styled
+  tooltips on the collapsed rail, and dropdown chevrons that turn while open. Everything else
+  keeps its current look.
+
+`apps/web` is not in git. A copy of `src`, `app`, `__tests__` and `packages/shared/src` from
+before this pass sits in this session's scratchpad (`web-snapshot-pre84`). One subsection per
+phase follows.
+
+### 84.1 Motion foundation (theme)
+
+- **New tokens** (`theme.css`, mirrored in `tokens.ts` and pinned by `tokens.test.ts`):
+  - `--scale-pressed: 0.98` (`motion.pressedScale`).
+  - Three mount animations, `animate-reveal`, `animate-pop-in` and `animate-pop-out`, all timed
+    by the duration and easing tokens.
+- **The page no longer shifts sideways between routes.** `html { scrollbar-gutter: stable }`.
+  Jobs, Applications, Documents and Resumes never scroll while Home, Settings and Account do, so
+  on Windows everything used to move by the scrollbar's width.
+- **Focus rings no longer flash.** Every element now rests on the brand outline colour, so a ring
+  switching on tweens brand-to-brand instead of from the text colour (slate, or white on brand
+  buttons).
+- **The route cross-fade's CSS** is in place: root, sidebar and top bar pinned; page-out over
+  `press`, page-in over `fast`; reduced motion stills it.
+
+#### Calls made without you
+- **The reserved gutter makes the four full-window pages 15px narrower** on Windows, where a
+  scrollbar takes space. Radix menus pad the body by the scrollbar's width while they're open, so
+  that padding is cancelled, or every menu would shove the app left.
+- **The danger ring** (one field) briefly tweens from brand to red as it appears. A focus ring
+  still appears at once and disappears at once; only its colour can tween.
+- **Elements with no focus style of their own** (none in the app today) would now show a brand
+  ring rather than the browser's default colour.
+- **Caveat is no longer preloaded on every route**; only the Jobs caption uses it. That caption
+  may now swap its face a moment late on a cold load of `/jobs`.
+
+### 84.2 Data first, and the Jobs page's loading
+
+- **`queryPhase` moved from mobile into `packages/shared`.** Same function: data wins over an
+  error. Mobile's shim re-exports it; mobile's test is unchanged and green.
+- **A failed background refresh no longer replaces a loaded page with an error**, on every web
+  page and panel:
+  - Jobs, Home, Applications, Documents, Resumes, Account and Settings.
+  - The resume Preview, Score and Versions tabs, and Notification preferences.
+  - The worst case was Settings: it refetches after every saved switch, and one failed refresh
+    blanked the whole page.
+- **Jobs:**
+  - **A picked job opens at once,** from the copy the list already holds (`useJob`'s existing
+    `seedFromLists`), instead of collapsing the card to a skeleton.
+  - **A cold load goes skeleton → job**, without showing "Select a job" for a moment first.
+  - **The list stays at 20 rows until "Load more".** The Location and Company options read the
+    whole catalogue through a new shared `useJobCatalogue` (its own cache key, `['jobs',
+    'catalogue']`). Reading it used to share the visible list's cache entry, so page two appeared
+    in the list on its own and "Load more" vanished.
+  - **The salary sliders wait for a pause** (250ms) instead of fetching a list and a count at
+    every step of a drag.
+  - **A new filter or sort starts the list at its top.**
+- **Documents and Resumes search** filter through `useDeferredValue`: results stay instant (12
+  and 7 local rows) and typing never waits on the re-render. A debounce would only have made it
+  feel slower.
+- **§80.3's failing Jobs test is fixed.** It was a test race: the count lands before the list,
+  and the test checked the list too early. It now waits for the list. Web is at 242 tests, all
+  green.
+
+#### Calls made without you
+- **If a job's first detail load fails** while the card shows the list's copy, the card still
+  switches to "Couldn't load this job". Keeping the list's copy would mean seeding the shared
+  hook's cache (`initialData`) rather than showing a placeholder, which changes mobile's Job
+  Detail too, so it was left alone.
+- **Saving a job still cancels and then refreshes every jobs query** (`useToggleSaveJob`). That
+  is noted, not changed.
+
+### 84.3 Sidebar: no flash on load, the rail below 1280, tooltips
+
+- **No more flash for people who keep the sidebar collapsed.** A hard load used to paint the
+  240px panel, then animate it shut while the whole page slid 168px left. Now:
+  - An inline script at the top of `<body>` (`navigation/sidebarBoot.ts`) sets
+    `<html data-sidebar="collapsed">` before anything paints.
+  - The sidebar's look is CSS: unprefixed classes draw the panel and `rail:` classes draw the
+    rail (`theme.css`'s `rail` variant).
+  - React's state only drives labels, tab order and tooltips.
+  - Measured in Edge at 1536×730: the rail is 72px from the first frame, with zero layout shift.
+- **Below 1280px the sidebar is the rail on its own** (your call). The toggle opens the panel over
+  the page, with the popover shadow and no scrim, and the page doesn't move.
+  - It closes on Escape, a press outside it, or a route change.
+  - It isn't remembered.
+  - From 1280 up the toggle works as before and is remembered.
+- **Styled tooltips on the rail** (your call): the rows, the account chip and the upgrade crown
+  name themselves in a small popover-styled label that grows in, replacing the browser's `title`
+  tooltip (`src/ui/RailTooltip.tsx`, Radix Tooltip). They wait 400ms (`motion.delays.tooltip`);
+  moving along the rail then shows each one at once. They open on keyboard focus too.
+- **No ellipsis mid-collapse.** Row labels and "NextKin" are clipped rather than truncated, and
+  the account and upgrade cards keep the panel's width while the sidebar narrows. "Applica…" no
+  longer flashes, and the name doesn't re-truncate frame by frame.
+- **Late arrivals fade in:**
+  - the nav count badges grow in;
+  - the unread dot and the rail's count dot fade in;
+  - the initials fade in;
+  - the chip's two loading pulses are now the shared `Skeleton`.
+
+#### Calls made without you
+- **The overlay has no scrim.** The page behind stays bright and clickable; a press there just
+  closes the panel. A dim would be a new visual.
+- **Opening over the page is the narrow window's only expanded state.** Widening past 1280 while
+  it's open drops it and returns to the remembered preference.
+- **The collapse still animates the page's width every frame** (the glide you asked for in §11 and
+  §29). It's measured in §84.8. Containment on the heavy columns would follow only if frames drop.
+- **Unverified:** a keyboard pass of the overlay (focus isn't moved into it or trapped). Escape and
+  Tab work, but focus stays on the toggle.
+
+### 84.4 Route changes cross-fade, and four routes prefetch whole
+
+- **Changing page cross-fades** (your call). The page being left fades out over 120ms while the
+  new one fades in over 180ms.
+  - Each `page.tsx` wraps its screen in `src/ui/PageTransition.tsx` (React's `<ViewTransition>`,
+    which Next's bundled React canary includes).
+  - The sidebar and top bar are named transition layers held still and drawn above the page.
+  - Measured in Edge, frame by frame:
+    - the old and new pages fade over 120ms and 180ms;
+    - the sidebar and top bar rectangles don't change for the whole transition;
+    - under reduced motion every duration is 0.
+  - Jest's React (19.2 stable) has no `ViewTransition`, so there the wrapper renders the page as
+    it is. Browsers without view transitions just swap.
+- **Jobs, Account, Settings and Upload JD are static now.** Their `page.tsx` used to await
+  `searchParams`, which made each one render per request: every click into them waited on the
+  server, and they could only be prefetched up to a loading boundary they didn't have.
+  - The parameter (`?job=`, `?tab=`) is now read in the browser by a small adapter
+    (`JobsRoute`, `AccountRoute`, `SettingsRoute`, `UploadJdRoute`).
+  - Screen props are unchanged.
+  - `next build` lists all four as static (○).
+
+#### Calls made without you
+- **A hard-loaded deep link** (`/settings?tab=security` typed into the address bar) shows the
+  default tab for the moment before the browser has the parameter, then switches. Client-side
+  links aren't affected.
+- **The prefetching only exists in a production build.** `next dev` compiles on demand and never
+  prefetches, so the speed-up won't show there.
+- **The named sidebar and top bar ignore clicks** for the ~180ms a route change runs. The page
+  behind them stays clickable.
+- **The top bar's Upload button still changes width on Documents** ("Upload New Document" vs
+  "Upload New JD"), which moves the search box. Holding it still would mean sizing the button
+  to the longer label on every page, a visible change, so it was left. Say if you'd rather have
+  that.
+- **Noticed, not changed:** the app has no favicon, so every fresh tab logs a 404 for
+  `/favicon.ico`.
+
+### 84.5 Loading: content fades in, and skeletons match what they become
+
+- **Content that replaces a skeleton fades in** over `fast` (`src/lib/useReveal.ts` with
+  `animate-reveal`). Content already cached when you arrive shows at once; fading it would only
+  delay it.
+  - Lists: Jobs, Applications, Documents, Resumes.
+  - Detail cards: Job, Application, Document, Resume. The card frame stays put and its contents
+    fade, also when you pick another item.
+  - Home's three sections.
+- **Every skeleton pulses in step** (each pulse starts on the document's clock). They used to
+  drift apart as they mounted at different moments.
+- **Skeletons are the size of what replaces them.** Measured in Edge:
+
+  | Skeleton | Before | Now | Loaded |
+  |---|---|---|---|
+  | Job and Application detail | 250 | column height | column height |
+  | Document detail (with callout) | 370 | 534 + 64 | 524 + 64 |
+  | Resume detail | 306 | 670 | 693 |
+  | Account, profile tab | 3 blocks for 4 cards | 280 / 128 / 228 / 128 | 282 / 128 / 228 / 128 |
+  | Account, right column | 384 / 320 | 432 / 328 | 430 / 326 |
+  | Settings, account section | 240 / 128 / 128 / 192 | 240 / 136 / 136 / 208 | 242 / 134 / 136 / 206 |
+  | Sidebar name line | 14 | 20 | 20 |
+  | Home resume card | without the pills row | with it | — |
+
+  Cold-load layout shift is 0 on Home, Jobs, Account and Settings, and under 0.001 on Documents
+  and Resumes. Applications still read 0.075 here: its pills widen when their counts land and
+  wrap to a second line. §84.6 fixes that.
+
+#### Calls made without you
+- **A list doesn't re-fade when a filter, tab or search changes.** Rows are keyed by id, so the
+  ones that stay put don't blink; fading the whole list on every keystroke read as flicker.
+- **Only cold loads and detail switches fade.** Re-fetches that keep data on screen don't.
+
+### 84.6 Menus and controls
+
+- **Every dropdown grows in from its trigger and fades out** instead of appearing and vanishing in
+  one frame. There are about 20: the filter rows, the selects, Update Status, the sort menus and
+  the account menus.
+  - Implemented once in `FilterDropdown` through `src/ui/menuMotion.ts`.
+  - Measured in Edge: the menu fades out over about 50ms of frames, then unmounts.
+  - Ticks in a menu fade as they're ticked.
+- **Chevrons turn over while their menu is open** (your call): the filter chips (inside and
+  outside), the select and multi-select fields, Update Status and the documents sort.
+- **The detail tabs' underline glides** to the picked tab and takes its width
+  (`UnderlineTabs`), instead of each tab fading its own border.
+- **The checkbox tick grows in** with the fill instead of popping.
+- **Upload a JD's "Additional details" glides open** with its chevron. The panel used to appear
+  in one frame while the chevron turned.
+- **The pill counts hold their place while loading**, so the pills no longer widen and rewrap when
+  the numbers land. Applications' cold-load layout shift went from 0.075 to 0.0001.
+- **Opening a menu no longer moves the page** (the scrollbar-gutter fix in §84.1, verified: the
+  avatar's x is unchanged with a menu open).
+
+#### Calls made without you
+- **A chip doesn't change colour while its menu is open,** only its chevron turns. A pressed-in
+  look would be another visual addition.
+- **The pill placeholder shows "( ▭ )"** while counts load, using the skeleton's own grey.
+
+### 84.7 Buttons, cards, busy states, tab panels
+
+- **Pressed feedback** (your call). Buttons settle to 98% while held and spring back on release.
+  - Covers every button helper (`primary`, `brand`, `brandOutline`, `outline`, `dangerOutline`,
+    `icon`), Reset, the filter chips, and the top bar's bell and avatar. All share one class
+    string, `src/ui/pressable.ts`.
+  - The four list cards press too, but only when the card itself is held, not its bookmark.
+- **Hover tint on list cards** (your call): Jobs, Applications, Documents and Resumes rows take a
+  faint `neutral-50` under the pointer. A selected card keeps its look.
+- **Disabled buttons no longer react.** They used to darken on hover (Analyze, the `aria-disabled`
+  Connect, and others); now they neither tint nor press. Their dimming fades in instead of
+  snapping.
+- **Busy labels keep their width.** "Analyzing…" and "Connecting…" share a cell with the idle
+  label and cross-fade (`src/ui/StableLabel.tsx`). The link field beside "Fetch & Analyze" no
+  longer resizes, and Connect no longer changes width.
+- **Upload a JD's reading/result note grows in** instead of shoving the buttons down in one frame.
+  The "Reading the job description…" line got the result box's vertical padding, so a one-line
+  result replaces it without a jump.
+- **Tab content fades in after a switch:**
+  - the Job, Application and Resume detail tabs;
+  - Account's tabs and Settings' sections;
+  - Upload a JD's three tabs.
+  The first tab on arrival shows at once.
+- **Verified in Edge:**
+  - a card tints and presses to 0.98;
+  - the applied job's disabled Apply button doesn't change on hover or press;
+  - a tab switch runs the fade;
+  - a focus ring is brand-coloured from its first frame.
+
+#### Calls made without you
+- **Two buttons got wider:** a stacked label makes a button as wide as its longer word, so
+  "Connect" is now as wide as "Connecting…" (the Analyze buttons were already wider than
+  "Analyzing…").
+- **The reading line has 12px of padding above and below** that it didn't have.
+- **When a tab panel changes, its container's height still jumps;** only the content fades.
+  Animating height to fit content would need measuring every panel.
+- **The Upload a JD side panel** (Paste/Link/File asides) still swaps without a fade.
+- **No press feedback on the sidebar's rows or the tabs:** they move a highlight instead.
+
+### 84.8 Laptop and tablet widths (1024–1280), and the collapse glide measured
+
+- **Nothing scrolls sideways from 1024px up**, on any route: Home, Jobs, Applications, Documents,
+  Resumes, Account, Settings, Upload a JD and the coming-soon pages. Measured in Edge at 1024,
+  1152 and 1279: no page overflows sideways, and no element runs past the page column.
+  - Most of the fix is §84.3's rail: below 1280 the sidebar takes 72px, not 240.
+  - The top bar and every two-column page then fit.
+- **Two things needed help at 1024:**
+  - The resume card's three actions ran out of the card; the row now wraps, and "Use for Job"
+    drops to its own line.
+  - Tab labels ("ATS Score", "Version History") broke onto two lines. Labels never wrap now, and
+    below 1280 the tabs sit 16px apart instead of 24.
+- **Nothing changed at 1280 and up.** Screenshots of every route at 1280×720, 1396×670 and
+  1536×730, before and after this phase, are byte-identical except one avatar photo's
+  resampling on Account.
+- **The collapse glide holds 60fps on Jobs**, the heaviest page, so the columns got no
+  containment. Six collapse/expand runs per window size in Edge (dev build):
+
+  | Window | Median frame | p95 | Frames over 17ms |
+  |---|---|---|---|
+  | 1536×730 | 6.1ms | 6.3ms | 6 |
+  | 1396×670 | 6.1ms | 6.2ms | 4 |
+
+  There is at most one slow frame per toggle, which is the click's own render.
+
+#### Calls made without you
+- **Page art keeps its place at 1024.** On Jobs, Applications, Documents and Resumes it still
+  clears the controls at that width, so none of it is hidden. The plan allowed for stepping it
+  aside; it wasn't needed.
+- **Unverified:** widths below 1024, and the phone layouts, which are deferred by your call. The
+  Jobs page's comment said its split "holds from 1280 up"; it now says 1024.
+
+### 84.9 Images
+
+- **The avatar no longer leaves a gap.** The photo sits on the avatar's own tint and fades in once
+  it has loaded. Before, the circle swapped for a photo that hadn't arrived yet, which showed
+  nothing for a moment. This covers the top bar and the Account card.
+- **The page-header art on Applications, Resumes and Documents loads eagerly.** It's each page's
+  largest paint, and Next was warning that it loaded lazily.
+
+#### Calls made without you
+- **Home's card art (raw `<img>` SVGs) doesn't fade in.** It renders on the server, and an image
+  that loads before the page's script runs would stay hidden until the script did, which would
+  delay it. It loads with the page.
+- **The progress bar still animates its width** rather than a transform: a transform changes how
+  a nearly empty bar looks. It's the same call mobile made (§83).
+- **The score ring's number still changes in one step while its arc tweens.** A score changing in
+  place is rare.
+- **The two spinners keep Tailwind's own `animate-spin` timing.**
+
+### 84.10 The whole pass: gates and what to check yourself
+
+- **Gates**, from the root:
+  - `pnpm typecheck` and `pnpm lint`: green.
+  - `pnpm test`: web 261 of 261 (it was 242, with one failing), mobile 1,845 of 1,845.
+- **Production build:** `next build` passes.
+  - Under `next start`, clicking Jobs, Settings or Account sends no request to the server (they
+    open in 26–86ms, already prefetched).
+  - Documents fetches only its header image and its first document's link.
+  - `/settings?tab=notifications` loaded cold still opens Notifications.
+- **Measured in Edge** (Playwright, dev build, sampled frame by frame): every number in
+  §84.3–§84.8.
+- **Not verified by me:**
+  - your own Edge at your zoom;
+  - a keyboard and screen-reader pass of the new overlay, tooltips and menus;
+  - Safari and Firefox, where view transitions and `@starting-style` may behave differently or
+    simply not animate.
+- **Your check in Edge, at 1536×730 and 1396×670:**
+  1. Collapse the sidebar and hard-reload: the rail should be there from the first frame, with
+     no slide.
+  2. Click through the sidebar: pages cross-fade, and the sidebar and top bar stay still.
+  3. Narrow the window below 1280: the rail appears on its own. Expand it: the panel opens over
+     the page. Escape closes it.
+  4. Hover the rail icons: their labels pop in.
+  5. Open any filter: the menu grows in and the chevron turns; close it, and it fades.
+  6. Hover and press a job card: it tints, and presses to 98%.
+  7. Switch a detail tab: the underline glides and the content fades in.
+  8. Reload Jobs or Applications cold: skeletons, then the content fades in, with nothing
+     jumping.
+  9. Turn on reduced motion (Windows: Settings → Accessibility → Visual effects → Animation
+     effects off): everything still works, without animation.
+
+## 85. Connected flows and context-aware motion (owner request, 2026-10-05)
+
+The owner asked for every screen, flow and action to connect into one product, and for motion
+that fits what the user is doing (analysis, creation, AI generation, upload, save, success,
+error, empty, loading) instead of one generic spinner. Decided with the owner before any code:
+- **Both apps, mobile first.**
+- **Animate the existing art.** Board illustrations, layouts and colours stay; motion goes on top
+  (a scan over the analysis art, lines being written on the writing art, twinkling sparkles, a
+  drawn tick on success, a short shake on error). No new illustrations.
+- **Web: connect and label.** Wire what has a working equivalent, label the rest "Soon", polish
+  the placeholder pages. No new screens.
+- **Built straight through,** with one device pass at the end.
+
+Three read-only audits (mobile navigation, mobile motion, web) came first; their findings are the
+work list below. One subsection per phase follows.
+
+### 85.1 Mobile: a motion vocabulary for "working", "done" and "failed"
+
+- **New tokens** (`theme/motion.ts`, `theme/tokens.ts`):
+  - `loops`: the ambient cycles that say "this is working": `float` 2800, `scan` 1600,
+    `twinkle` 1400, `sheen` 1600, `dots` 900, `writeLine` 700. They run only while the work does
+    and never under Reduce Motion.
+  - `durations.draw` (420, a tick drawing itself) and `durations.successHold` (450).
+  - `shake` (6 pt, three swings), `scales.twinkle` (1.25), `scales.settleFrom` (0.94).
+  - `opacity.sheen`, `scan`, `glint` and `ink`.
+- **New shared pieces** in `src/ui/motion`:
+  - **`StepGlyph`**: one step indicator for every checklist. A hollow circle ahead, the brand ring
+    turning on the step being worked, a green tick that pops in when the step is done, an amber "!"
+    for a step left out. The old glyph fades as the new one arrives. It replaced four separate
+    implementations: the Tailor/Cover/ATS/Build/Zero checklists, the generic run's list (it had a
+    pulsing dot), the upload checklist (its icons swapped in one frame) and the score panel's
+    checks (static).
+  - **`Spinner`**: the turning ring on its own. It replaced the platform spinner in the ATS and
+    Tailor file rows, the Fix with AI pill, the export row, the Build upload tile and the
+    avatar's "Change photo". It also shows beside "Reading the job…" on BUILD 03.
+  - **`SuccessMark`**: a check whose tick draws itself in as its disc pops. It plays only for a
+    success that happened while the user watched (`useBecameTrue`); a revisit shows it at rest.
+  - **`useShake`**: one short sideways nudge for a failure.
+  - **`TypingDots`**: three dots rising in turn.
+  - **`useLoop`**: the shared clock behind every loop above. It eases back to rest when the work
+    stops instead of freezing mid-cycle.
+- **`ProgressBar live`**: a soft light travels along the filled part while a run works, so a
+  late tick never looks like a stall. It is on every live run bar: Home's card, the generic run,
+  Tailor, Build, Zero, ATS and Cover.
+- **Toasts have a tone.** `success` keeps the green check. `error` shows a red "!" and buzzes, so
+  a failure no longer wears the success check. `info` is for plain news.
+  - Error: every failed download, build, share and copy, and an unopenable link.
+  - Info: "Rate NextKin" outside a store build, and the DOCX-as-text notice.
+  - The profile, jobs and resumes stores carry the tone.
+- **Empty and error states arrive** (`StateView`): they rise in, and their art settles from just
+  under full size. A state that mounts with its page arrives with the page instead (`Screen`
+  already skips first-mount entrances). A danger state's tile nudges once. Nothing loops, so an
+  empty page reads as finished, not busy.
+- **Failure notes look like failures.** `StickyActionBar` has `noteTone`. A danger note reads in
+  the danger colour, fades in, and nudges once. It is set on every bar whose note can report a
+  failure:
+  - upload, upload review and the profile forms;
+  - the chip editors and Edit profile;
+  - Build add/compare, JD review, Tailor intake and compare, ATS check, Cover, Zero and the
+    interview set;
+  - data export.
+
+#### Calls made without you
+- **The generic run's steps changed look.** That screen has no board (`GenerationSteps`). Its
+  pulsing dot became the boarded checklist's ring and tick, so every run's checklist is the
+  same. The upload checklist moved from small grey icons to the same green ticks.
+- **The danger nudge plays whenever a danger state appears**, including a page opened onto an
+  error that was already there. It is one 120 ms swing set, so it never repeats.
+
+### 85.2 Mobile: each kind of run looks like what it is doing
+
+- **The run art moves, on top of the board's own drawing** (`LiveArt`, anchored to each PNG in
+  its own pixels, `FLOW_ART[...].live`). While the run works, the drawing floats gently and the
+  baked sparkles glint in turn. Then:
+  - **Analysis (ATS 02):** a soft brand band with a bright leading edge passes down the page
+    being checked, inside the page's edges and at its tilt.
+  - **Writing (Tailor 04, Build 05, Zero 02, Cover 02):** the page's lines take ink one after
+    another, left to right, then clear for the next pass.
+  - The art itself is untouched. Under Reduce Motion nothing moves.
+- **Runs fade into their results.**
+  - **ATS** (progress to verdict, and Cancel to "Fix it for this job"), **Build** (page and
+    bar) and **Cover** (the letter, and its Download bar fading in) now cross-fade like Tailor
+    and Zero already did.
+  - The generic run's hero cross-fades from the meter to the score ring or to the ready card.
+    That card's tick now draws itself in.
+  - A run that fails while watched fades into "Generation failed" and buzzes once.
+- **The ATS verdict arrives in sequence** when it lands while watched: the verdict, then the
+  missing keywords one by one, then the fixes.
+- **Build's checklist no longer skips a row.** "Matched your experience" is now seen working (the
+  first stretch of generating) before "Writing your resume". The Build test now checks both beats.
+- **Home's live run card:**
+  - It names the run: "Writing your cover letter", "Checking your resume", "Writing your
+    interview questions", "Writing your first draft", "Building your resume". It used to say
+    "Tailoring your resume" for everything. The detail line uses the run kind's own hint.
+  - Its percentage counts with the bar, from the same memory as the run screen.
+  - It shrinks away when the run finishes while Home's sections glide up into its place. Every
+    Home section now glides when something above it changes size.
+- **The assistant composes visibly.** Three dots rise in turn beside "Thinking…" and "Writing…";
+  the words stay. A sent turn slides in from the right, and a reply's first words rise. A settled
+  reply swapping in for its streaming copy does not fade a second time.
+- **A section rewrite looks like AI at work, not page loading.** The placeholder blocks pulse on
+  the brand tint (`Skeleton tone="ai"`). The ✦ AI pill stays bright (busy, not unavailable) and
+  its sparkle swells until the rewrite lands.
+- **Fix with AI:** an applied fix draws its tick in.
+- **Score panel:**
+  - The ring keeps the library card's memory (`ats:<id>`). Opened from a card, it carries on from
+    that score instead of sweeping up from 0 on every visit.
+  - The rows stagger only when the score replaces its skeleton.
+  - A check that turns green pops its tick in.
+
+#### Calls made without you
+- **The anchors are measured, not drawn.** Sparkle centres, the ATS page and each written line
+  were measured from the PNG pixels (`FLOW_ART`). If a board's art is re-exported at a different
+  size or crop, its `live` anchors must be measured again.
+- **The writing motif is the same on Tailor and Build.** They share one render of the robot.
+- **"Reading the job…" keeps its label.** The ring takes the sparkle's place rather than covering
+  the label with the Button's own spinner.
+
+## 85. Web sidebar and rail resized to the built app's sizes (Desktop/Web, 2026-10-08)
+
+The owner asked to resize their sidebar (`304:497`) and rail (`304:600`) "for our need". Both were
+drawn smaller than the built app:
+- 34 px rows with 10.5 px labels;
+- "Jobs" and "Applications" in a larger 15 px;
+- a 5.5 px tagline;
+- 42 px rail items.
+
+Both were rebuilt at the same positions and with the same names, using the owner's icons,
+gradient panel, active fill, badge and button styles. The sizes match `apps/web/src/navigation`:
+
+- **Section** `711:2`, 226 × 743. This is the panel inside the 240 px column, which has a 7 px
+  gutter.
+  - Header: the 36 px logo, "NextKin" at 18 SemiBold and the 32 px bell.
+  - User chip: 200 × 44, with a 28 px avatar and 14 / 12 text.
+  - Rows: 200 × 40 with a 4 px gap. Labels are 14 Regular slate; the active row is 14 SemiBold
+    indigo on the owner's lavender fill. Badges are 12.
+  - Upgrade card: 200 wide, padding 10, title 13, text 11, button 28.
+  - Then a divider, Settings and Help.
+- **Aside** `711:227`, 58 × 596. This is the panel inside the 72 px rail.
+  - The 36 px logo, then 40 × 40 items with a 4 px gap.
+  - The owner's active Jobs outline, the Applications dot, and the dividers around the Upgrade
+    crown.
+
+**Judgement calls**
+- The 5.5 px tagline "With AI that won't lie on your resume" was dropped. The app's header has
+  none, and it can't fit 200 px at a readable 11 px. It can come back under the logo if wanted.
+- Upgrade copy was kept; "Upgrade Now" became "Upgrade now" (sentence case, as in the app).
+- The originals are parked unchanged as "Section (before resize)" at (10300, 2400) and "Aside
+  (before resize)" at (10300, 3300). Delete them when happy.
+- **2026-10-08, owner: "use the correct logos" on the rail.**
+  - The rail (`711:227`) now uses the sidebar's illustrated icons, so each item looks the same in
+    both modes. That includes the Upgrade crown and the Settings/Help icons; the line icons are
+    gone.
+  - The active Jobs item uses the sidebar's lavender fill instead of the dark outline.
+  - The owner's link pointed at `304:600`, which is the parked original. The live rail was
+    changed; the original was left as it was.
+
+## 86. Web sidebar takes the board's duotone icons (owner request, 2026-10-08)
+
+The sidebar and rail now draw the illustrated icons from NEXKTKIN-PVT `711:2` (the board §85
+resized). They are exported unchanged into `apps/web/assets/figma-illustrations/sidebar-nav/` and
+generated by `build-illustrations.mjs` as `Nav*Illustration`, because they keep their own palette
+(navy ink, lavender fill, indigo sparkle) and the single-ink `build-icons.mjs` mask would flatten
+them.
+
+**Judgement calls**
+- Icons no longer turn brand-blue on the active row; the board draws them unchanged on the
+  active Jobs pill. Only the label recolours.
+- First shipped at the existing 20 px column; the owner found them too small, then 24 and 28 px were still too small, so the panel renders them 40 px wide (height capped at 28 so tall glyphs keep air in the 40 px row; 12 px inset and 12 px label gap, after the owner flagged the tighter 8/10 spacing). The rail keeps its 40 px squares, so its icons are 32 px (padding 4) and ease between sizes on collapse; widening the rail would let them stay 40.
+  The Upgrade crown in the expanded card is 36 px.
+- The old single-ink nav glyphs stay in `src/ui/icons/` (`SettingsIcon` is still used by
+  Settings' App settings card); the rest are now unused and can be deleted.
+- Not changed: the rail's active state is still the brand outline ring, while §85 notes the
+  rail board now uses the lavender fill. Say if the code should follow.
+
+**Unverified:** checked in Edge at 1536 × 864 (panel). The rail and dark mode weren't checked.
+- **2026-10-08, owner: check Jobs (`304:2334`) against the app.** The layout, copy, cards and
+  detail panel already matched. One change: the "Tailor your resume for this job" callout now
+  uses the duotone AI Assistant glyph the board draws there (`457:613`, the same artwork as
+  the sidebar's), at 40 px. The other `AiCallout`s (Applications, Documents, Account) keep the
+  line sparkle until their boards are checked. Two differences left alone because they come from
+  the mock data: the count reads "39 results" (the fixture's real total) where the board says 124,
+  and the selected Google job shows "Applied" because the seeded applications include it, where
+  the board shows "Apply Now". Say if either should follow the board.
+- **2026-10-08, owner: check Applications (`286:1237`) against the app.** Again, only the
+  callout differed: "Prepare for your interview" also draws the duotone glyph (`457:622`), and so
+  does Account's "Get AI-powered profile suggestions" (`457:467`), with the old sparkle group
+  hidden on all three boards. So the glyph is now `AiCallout`'s default, rather than a Jobs-only
+  override; Documents' callout still passes no icon. Left as before: the sidebar badge reads the
+  open-application count (18), not the board's 3 (§17), and dates are relative to today.
+- Same day, owner compared the Jobs callout: the chevron is brand on the tinted callouts (Jobs,
+  Applications) and grey only on Account's bordered card, so `AiCallout` now does that.
+
+## 86. Web job cards redesigned like the mobile card (02 · Jobs, Desktop/Web, 2026-10-08)
+
+The five list cards on 02 · Jobs were rebuilt in place as "Job card · <company>": Google `719:2`,
+Adobe `719:51`, Atlassian `719:96`, Microsoft `719:140`, Airbnb `719:187`. They follow the mobile
+layout B card `438:2` at web sizes:
+- **Header:** the company logo tile (40 px, the original logos) and the company name.
+- **Match pill:** a green "✦ Strong match" pill on the right.
+- **Title:** SemiBold 18.
+- **Grey meta pills:** location, work mode, type, years, salary.
+- **AI reason bar:** lavender with the sparkle.
+- **Footer:** below a divider, "Posted …", a lavender "✦ Tailor with AI" pill and the bookmark.
+
+The selected Google card keeps its indigo 2 px border.
+
+**Judgement calls**
+- **"98% Match" became "Strong match".** This follows the mobile card. All five scores are 0.88
+  or higher, so all are "Strong".
+- **The skill tag row (UX Design, Figma… +2) was dropped**, as on mobile. The reason bar replaces
+  it.
+- **The five reason lines are example copy.** The web fixtures carry no `matchReason` for these
+  jobs.
+- **The web Tailor action is a labelled pill**, where mobile uses an icon only. A desktop list has
+  the room, and a bare sparkle is unclear on web.
+- **Board clipping.** The cards are taller (~210 against 139), so the list runs past the bottom of
+  the board's clipped Main. The last cards are cut off, as in a scrolling list.
+- **The detail pane** on the right still shows "98% Match". Say if it should switch to the label
+  too.
+
+## 87. Jobs list cards redrawn (owner request, Jobs board `304:2333`, 2026-10-09)
+
+The list card follows the board's new card (`719:2` and siblings). From top to bottom:
+- the logo, the company name and a "Strong match" pill (the band, not a percentage);
+- the title, then the facts as pills: location, workplace, type, years and salary;
+- a lavender "why it matches" strip, then a divider;
+- a footer with "Posted …", "Tailor with AI" and the bookmark.
+
+The page header lost its "Jobs" eyebrow.
+
+**Judgement calls**
+- Board values mapped to the nearest tokens, not copied:
+  - title 18 px → `h2`;
+  - lavender fills (#F5F3FF) → `surface-brand-strong`;
+  - the strip's divider → `border-brand-strong`;
+  - the 10 px radii → `rounded-md`;
+  - card padding 18/20/16 → 16/16/14.
+- The skill pills are gone from the card (the board dropped them); the detail card keeps them.
+- The detail card's "98% Match" stays, as the board still draws it there.
+- The workplace pill is skipped when the location already says it (Adobe and Airbnb read
+  "Remote" once, as drawn).
+- "Tailor with AI" goes to `/assistant`, like the detail card's tailoring callout. Web has no
+  job-specific tailoring flow yet.
+- The match reasons are the board's copy, added to the web fixture for the five board jobs.
+  Other jobs have none and their cards simply skip the strip (203 px instead of 255 px).
+- Two new glyphs from the board:
+  - the green pill sparkle → `MatchSparkleIcon`, so it takes the band's colour;
+  - the three-tone purple sparkle → `JobAiSparkleIllustration`, used at 20 px and 15 px.
+
+**Resolved: Google's facts disagreed between boards.** The Jobs card draws Google as On-site, ₹48–62
+LPA. The Applications board draws the same job as Hybrid, ₹35–52 LPA, and `jobs.web.ts`
+overrides to that. One record feeds both pages, so the Jobs card shows "Hybrid · ₹35–52 LPA".
+The owner chose the Jobs board (2026-10-09): Google is On-site, ₹48–62 LPA on both pages, so the
+Applications detail no longer matches its own board on those two values.
+- **Same day, owner moved the Jobs page up.** The title now sits in the top bar's band, level with
+  the search box and buttons. The page starts under the bar (`pageFrameInBar`, `pageFillInBar`),
+  and on `/jobs` the bar draws no background and lets clicks through everywhere except its
+  controls. This is safe only because Jobs never scrolls as a whole (its list scrolls inside the
+  page). Every other page keeps the bar as its own band. Say if the other pages should follow.
+- **Then Home, on the owner's screenshot.** "Hi George," now sits level with the bar's controls.
+  Home scrolls as a whole, so on `/` the bar is clear only at the top. Once the window scrolls, it
+  takes back its white background and its clicks (`useScrolled` in `TopBar`, eased on
+  `duration-base`), so cards never show through behind the search box. At 1440 × 900 the whole
+  page now fits without scrolling.
+- **Then Applications and Resumes, on the owner's word.** Both are list pages like Jobs (only
+  their lists scroll), so they use the same `pageFrameInBar` + `pageFillInBar` and a bar that is
+  always clear. Their "Applications" / "Resumes" eyebrows stay, sitting level with the search box.
+  Interview Prep, Insights, Account and Settings still have the bar as its own band.
+- **Then Documents, on the owner's word.** Same treatment as Applications and Resumes (a list
+  page, bar always clear); its bar keeps "Upload New Document" as its action.
+
+## 87. Web job card "View details" and a full job page, inspired by Jobright (Desktop/Web, 2026-10-09)
+
+**Cards.** The bookmark on the five 02 · Jobs cards (§86) became a white **View details ›** pill,
+next to "✦ Tailor with AI".
+
+**New board: 02b · Job detail (full page)** `724:2`, 1536 × 1760, at (25475, 2747). It reuses
+the 02 · Jobs top bar and the resized sidebar (§85), and has these parts:
+- **Back to jobs.**
+- **Header card:**
+  - logo, company and "Posted 2 days ago · 80 applicants" (`applicantsCount`);
+  - title, and facts (location, on-site, full-time, 3–5 years, salary);
+  - **Apply on careers.google.com ↗**, Save job, and Share;
+  - a green **Strong match** box comparing the job with the profile: Experience, Skills (5 of 6),
+    Location and Work type.
+- **About the role**, then **Responsibilities**.
+- **Qualifications:** skills marked ✓ when they are on the profile, the missing one
+  ("Prototyping") dashed and clickable to add to the profile, and a "Required" list.
+- **Benefits.**
+- **About Google:** a blurb and facts, with "Company details come from the job listing".
+- **Right rail:**
+  - AI tools for this job: Tailor your resume (highlighted), Write a cover letter, Practise
+    interview questions;
+  - Similar jobs.
+
+**Analysis of the Jobright reference** (For-Next-Kin `319:248`)
+- **Taken:**
+  - the header layout;
+  - the match card, with a breakdown in plain counts rather than per-row percentages;
+  - responsibilities;
+  - qualification skill tags you can toggle (Jobright's "click the tags to fix your skills");
+  - benefits and the company card;
+  - the AI tools rail, mapped to our Tailor, Cover letter and Interview flows.
+- **Left out:**
+  - "Insider connections" and the "Find any email" box: LinkedIn scraping and contact harvesting,
+    a privacy and terms risk, and not in V2;
+  - "Apply with autofill": Release 1 links out; assisted apply is Release 2;
+  - H1B sponsorship charts, funding, leadership and news (Crunchbase): the job providers
+    (Adzuna, JSearch) don't supply them;
+  - "Early applicant / 25+ applicants" badges: only the applicant count we have is shown.
+- **Example copy:**
+  - "8 yrs · asks 3–5", the benefits list, the Google facts and the Required list;
+  - "Prototyping" as the missing skill.
+
+**Decide**
+- **Desktop:** does View details open this full page, or keep the in-list detail pane (02 · Jobs
+  right column)? Suggestion: the full page on mobile and small laptops, the pane on wide screens.
+- **Benefits and company facts:** source them, or hide those sections when the listing doesn't
+  carry them.
+- **App code is unchanged.**
+- **2026-10-09, owner: "correct the icon sets".** The generic Font Awesome glyphs on 02b were
+  replaced with the file's own icon sets:
+  - **Section headers:** Document with magnifier `454:209` (About the role), Desired Goals
+    `458:952` (Responsibilities), Skills `458:931` (Qualifications), Rate `461:2` (Benefits) and
+    Company `454:186` (About Google).
+  - **AI tools rail:** AI Assistant `454:125`, New Resumes `458:1116`, Contact Us `458:1060` and
+    Interview Prep `454:95`.
+  - **Company facts:** Availability, Desired Location, Account and Language.
+  - **Match box:** Match score `454:250`.
+  - **Header facts and buttons:** the line icons from the 02 · Jobs detail pane (location,
+    full-time, experience, external link, bookmark). Salary is now bold text without an icon.
+  - **Removed:** the Share button, which had no matching icon in the set.
+  - **Similar jobs:** the real Adobe, Atlassian and Microsoft logos from the job cards replace the
+    letter tiles.
+
+  Small UI marks (check circles, chevrons) remain glyphs, as elsewhere.
+
+### 87.1 02b rebuilt on Jobright's structure (owner: "the layout, the placement")
+The boxed-card version was replaced; the board is now 1536 × 1525.
+
+**Job panel** (`730:3`, 836 wide): one white sheet with sections divided by thin rules.
+- **Action strip:** Back, the Overview / Company tabs, "Posted 2 days ago" and "80 applicants"
+  pills, Save, and **Apply on company site ↗**.
+- **Dense header:** the logo, company and HQ, the title, and a two-column facts grid (location,
+  on-site, salary | full-time, 3–5 years, level).
+- **Score card:** **98% STRONG MATCH**, with a right-aligned breakdown (Experience level Meets,
+  Skills 5 of 6, Location, Work type) and "How we match ›".
+- **Summary:** a company blurb, industry chips and perk chips.
+- **Sections:** Responsibilities; Qualifications (have/missing skill chips you can click, plus
+  Required); Benefits; Company (an about card and a facts card).
+
+**Right rail** (`730:4`):
+- a soft grey "AI tools for this job" panel with **Tailor your resume** highlighted on a gradient
+  and two quieter tools;
+- Similar jobs with real logos and salaries.
+
+**Judgement calls**
+- **98% returns in the score card.** It is the job-match coverage number the owner's web board
+  showed, explained by the breakdown beneath it. Cards keep the "Strong match" label (§86); align
+  them if wanted.
+- **Example copy:** "Lead level", the perk chips and the industry chips.
+
+## 88. Mobile illustrations reused on the web boards (Desktop/Web, 2026-10-09)
+
+The owner asked to use the drawn mobile art on the web screens. Each web placeholder whose
+subject matches a drawn mobile illustration was replaced. The replacement is an image rectangle
+of the same size and position, using the same image file with scaleMode FIT, named
+"Illustration (from mobile …)".
+
+| Web placeholder | Board(s) | Mobile art used |
+|---|---|---|
+| IL-W20 header | 09, 09b, 09c Interview Prep | INTERVIEW 01 |
+| IL-W21 "How practice works" | 09, 09b, 09c | INTERVIEW 02 |
+| IL-W22 header, IL-W23 rail | 10 · AI Assistant | ASSISTANT 02 robot |
+| IL-W4 header | 05b · Document viewer | ATS 01b, a document under a magnifier. COVER 01's art was tried first but has a solid black background. |
+| IL-W24 header | 04b · Resume editor | ZERO 02, the robot writing |
+| IL-W2 panel | Settings → Connected accounts | BILLING 02, a browser with a padlock |
+
+**Still placeholders, because no drawn mobile art fits:**
+- **IL-W1** on 07 · Upgrade. The checkout padlock was tried and reverted: it reads as security,
+  not upgrading. It needs the crown and rising-chart art (mobile IL-B1 isn't drawn yet).
+- **IL-W3** on 08 · Help & support.
+
+Some mobile art is a different shape from the web header slot (340 × 128). FIT keeps the art's
+proportions, so it sits centred with space at the sides. The owner may want web-shaped crops.
+
+## 89. Web AI chat send bar redesigned like the mobile one (10 · AI Assistant, 2026-10-09)
+
+The web Composer `563:1315` now matches the mobile composer (§75):
+- **One white pill**, 60 tall and fully rounded, with a light border and a soft indigo shadow;
+- **inside it:** a paperclip, the placeholder "Ask a question…", and a 46 px indigo round send
+  button with the paper plane;
+- **below it:** the centred disclaimer with its info icon;
+- **no bar behind it**.
+
+**Judgement calls**
+- The "0/500" counter was dropped, as in the mock. If the limit stays, show it only near the cap.
+- The paperclip is still unspecified for the assistant (§75): decide what it attaches.
+- The disabled-send state isn't drawn. The old board had a faded send button while the field was
+  empty.
+
+## 90. Web Tailor flow from the job page, following Jobright's three steps (Desktop/Web, 2026-10-09)
+
+The owner wants "Tailor your resume" on the job page (02b) to follow Jobright's steps: see your
+difference, align your resume, review. Four boards sit right of 02b at y 2747, from x 27211. Each
+has the app shell (sidebar and top bar) and a three-step stepper.
+
+| Board | Id | Contents |
+|---|---|---|
+| W-TAILOR 01 · See your difference | `734:2` | Headline and amber note; 72 ATS ring with a "Good" band; a comparison table (Overview job vs resume with Change; Job title; ATS job keywords 5/8, found in green and missing in grey; Summary; Length; Layout ✓); Back to job and **Fix my resume** |
+| W-TAILOR 02 · Align your resume | `734:679` | 1. Choose what to improve: headline, summary, skills, work experience (quick or full edit), length, all on by default. 2. Add missing keywords (1/3): tick-only chips by group, "Add a keyword", and the honesty note. Then **Create my resume**, with the quota |
+| W-TAILOR 03 · Tailoring | `734:1356` | A centred card with the robot art (mobile BUILD 05 image), a 62% bar, four steps, "Usually 10–20 seconds", and Leave and notify me |
+| W-TAILOR 04 · Review your new resume | `734:2033` | A resume page preview; 88 ATS ring "Up from 72"; Saved to Resumes; What changed (including what was left out and why); **Download PDF**, Edit in editor; Next: Apply on careers.google.com ↗, Write a cover letter |
+
+**Where it departs from Jobright, on purpose**
+- **No "Select all" on missing keywords.** Bulk-adding skills invites claims the user can't back
+  (V2 §7.8, D-14). The copy is "Tick only the ones you really have", and the review lists what
+  was left out.
+- **The score uses the app's ATS ring and bands** (72 Good in amber, 88 Strong in green), not a
+  /10 gauge. This matches mobile TAILOR.
+- **More rows than Jobright's three:** Length and Layout were added, so the fixes in step 2 have a
+  cause shown in step 1.
+- **Example data:** Accessibility and Stakeholder management are missing; "Leading each role …"
+  is example copy. The real generator diff must drive "What changed".
+- **The 02b "Tailor your resume" tool is meant to open W-TAILOR 01**; this isn't wired as a
+  prototype link.
+- **App code is unchanged.**
+
+### 90.1 Refinement pass (owner: "refine the designs")
+- **All four boards** share a page header: a back button, the Google logo, and "Tailoring for /
+  Lead UX Designer · Google" on the left, with a tighter stepper on the right. The stepper no
+  longer crowds the search bar.
+- **W-TAILOR 01**
+  - "STEP 1 OF 3" eyebrow, a 22 px title, and a plain status line instead of the amber pill.
+  - Missing keywords are dashed amber chips with "!", with a legend underneath (On your resume /
+    Missing — you choose next).
+  - The resume's title shows in amber, with "we'll aim your headline at it".
+  - Actions sit in a white bottom bar.
+- **W-TAILOR 02**
+  - Part 1 / Part 2 eyebrows.
+  - Missing keywords are now a list of rows: checkbox, keyword, where the job asks for it, and a
+    Required or Preferred tag.
+  - A dashed "Add a skill you have that the job mentions" row, and the actions bar.
+- **W-TAILOR 03:** "STEP 3 OF 3" eyebrow.
+- **W-TAILOR 04**
+  - The resume page is larger (600 px), with a page and zoom bar.
+  - The title is now "Ready for Google", with an eyebrow and the file name "George_Smith_Google.pdf
+    · 2 pages".
+- **Example copy:** the Required / Preferred tags and the "In …" locations. The real values must
+  come from the JD extraction.
+
+## 91. Account became Profile, redrawn (Desktop/Web, 2026-10-09)
+
+Built from **476:4** ("Your profile"). The owner said to call the page Profile from now on.
+
+**Route.**
+- The page now lives at `/profile`, in `features/profile`.
+- `/account` redirects there (`next.config.ts`, not permanent).
+- The top bar's avatar and the sidebar's user chip link to `/profile`, now labelled "Your profile".
+- Like Home, Profile starts in the top bar's band (§87) and scrolls as a document.
+
+**What went with the old Account page.** The new board has six profile tabs: Overview,
+Experience, Education, Skills, Career preferences and Social links. The page no longer has the
+old Preferences, Subscription, Security, Notifications and Integrations tabs, nor the Plan and
+Danger zone cards.
+- Settings already has Preferences, Notifications and Connected accounts.
+- Settings' **Billing & plan**, **Security** and **Delete account** stay "coming soon". That
+  follows your earlier call that they wait for their boards instead of borrowing Account's
+  versions (§21).
+- So the plan, usage meters and Delete account are, for now, not reachable anywhere.
+  `PlanCard`, `SubscriptionTab` and `DangerZoneCard` are kept, unused, for when those boards
+  land.
+- Upgrade's coming-soon page loses its "See your current plan" link.
+- The deleted Account files are backed up in this session's scratchpad (`account-backup`).
+- **Decide:** should Billing & plan and Delete account borrow those cards until their boards
+  arrive?
+
+**Board conflicts, resolved toward the data.** The board's Experience card lists Senior Product
+Designer at Google (Jan 2022 – Present) and Product Designer at Figma, so the web George now has
+those two roles. Yet the same board still prints:
+- "Current company: Not specified". The page reads **Google** from the current role.
+- An unticked "Add work experience". The page **ticks** it.
+- "2+ years" for the Google role. The page computes **4+ years** from the dates. Figma's
+  "1.5 years" still matches.
+- **Decide:** keep the derived values, or make the data match the board's printout?
+
+**Content filled in.**
+- The board shows seven skills and "+3". The other three are ours: Wireframing, Interaction
+  Design and Accessibility.
+- The role summaries are a new optional `Experience.summary` field in the shared model.
+- "Desired role: Product Designer" is now the web George's first desired role.
+- "Preferred location: Bengaluru, Remote" is the city part of the first two places in
+  preferences.
+
+**Tabs the board names but doesn't draw.** Each opens its own card, built from the existing
+ones:
+- Experience shows every role.
+- Skills shows every chip.
+- Education is a new card laid out like Experience.
+- Career preferences and Social links show their cards.
+- "View all" and "Manage experience" open the matching tab.
+- Edit, the role kebabs and the camera button are inert until edit flows exist, as before (§20).
+
+**Other judgement calls.**
+- **Logos:** the board draws the employers' initials, not logos, on a pale tile then an ink
+  tile. The page alternates the tiles by position.
+- **Suggestions:** all four AI suggestions and "View all suggestions" open the AI Assistant.
+- **"3x more views" needs checking.** "A complete profile gets 3x more views from recruiters" is
+  the board's copy, but nothing measures it, and V2's copy rules may not allow an unbacked claim.
+
+## 92. Settings → Account redrawn with duotone icons (Desktop/Web, 2026-10-09)
+
+Built from **356:318**. The layout, copy and data were already as drawn. What changed is the
+icons, from single-colour glyphs to the duotone set:
+- the eight section rows on the left (`SECTION_ICON`);
+- the four Account cards, whose glyph now sits beside the title on no lavender tile (a new `Art`
+  prop on `AccountCard`);
+- the device rows in Active sessions.
+
+The coming-soon panel shows its section's duotone glyph the same way.
+
+Not changed:
+- **Other sections' cards** (Preferences, Privacy & data, Connected accounts) keep the tiled
+  single-colour glyphs until their boards are redrawn.
+- **Board-only details.** The board's Priya Sharma stays George (§21), and "Verified" stays
+  upright.
+- **Delete account's line** is cut short where the board wraps it to two lines. The rows stay one
+  height so the highlight can slide between them (§31).
+- **Top bar.** The page is not moved into the top bar's band. Its character drawing stands where
+  the bar's controls are.
+- **Then Preferences (356:4), the same treatment.**
+  - Job preferences, App settings and Content & AI take the duotone briefcase, gear and sparkles.
+  - The theme buttons take a duotone sun, moon and monitor.
+  - "Why set preferences?" takes the lightbulb.
+  - "Need help?" takes the sliders, no longer on a white tile.
+  - Dark and System stay disabled until dark mode exists (§22).
+- **Then Notifications (356:585), the same treatment.**
+  - The channel and topic glyphs are duotone and on no tile: monitor, envelope, phone, briefcase,
+    document, calendar, chart, megaphone, lightbulb and shield.
+  - **Decide:** this board draws no character at the top right. The page still shows the "Stay in
+    the loop" drawing from 247:1094. Remove it?
+- **Then Privacy & data (466:57).**
+  - Card glyphs and every row glyph are duotone: lock, folder and shield on the cards; person,
+    people, globe, chart, export tray, sliders, bin, phone and monitor on the rows.
+  - Each card's rows now sit in a bordered list, as the Account cards' fact tables do
+    (`SETTING_LIST`).
+  - The Account section's character now stands on this section's first card too, as the board
+    draws her.
+- **Then Delete account (467:3), newly built.** It replaces the section's coming-soon panel, per
+  your rule that a section waits for its board and then is replaced wholesale (§21). It has:
+  - the "cannot be undone" warning;
+  - the six "What will be deleted?" tiles with duotone glyphs;
+  - "Want to take a break instead?" with Deactivate account;
+  - a "Type DELETE" box, Cancel, and a red "Delete my account".
+
+  The red button stays disabled until the box reads DELETE exactly. Cancel clears the box and
+  returns to Account. The character stands here too.
+
+  **Decide:**
+  - Delete runs the shared layer's `useDeleteAccount` (a mock), then shows "Your account has been
+    deleted." and stays on the page. Signing out and leaving wait for sign-in's design. Should it
+    do something else meanwhile?
+  - "Deactivate account" is inert, since no endpoint for it exists in V2 or the data layer. Should
+    it be specced?
+  - The warning box uses the existing `danger-50` tint, a little redder than the board's.
+- **Then Billing & plan (470:3), newly built.** It replaces its coming-soon panel. It has:
+  - the current plan beside NextKin Pro;
+  - Billing information (cards on file, Add payment method) beside Subscription settings
+    (auto-renewal, billing cycle);
+  - Billing history.
+
+  The character stands here too.
+
+  **Owner's call: the spec wins on plan copy.** The board says Pro is $9.99, Free has "Up to 5
+  resumes", and Pro has "Unlimited resumes" and "Unlimited document storage". All of that
+  conflicts with V2 §13.
+  - Each list line now restates a §13.3 row (`billingLibrary`).
+  - The price is the plan's own: ₹1,499 a month, from `plansFixture`, which speaks INR as the rest
+    of the mock does.
+  - The invoices use the same price.
+
+  **New in the shared layer:**
+  - a `Billing` model: payment methods, renewal settings and invoices;
+  - `billingFixture`, `getBilling` and `updateBillingSettings` on the user repo;
+  - the `useBilling` and `useUpdateBillingSettings` hooks, optimistic and queued like privacy.
+
+  Auto-renewal and the billing cycle save as they change.
+
+  **Inert until they exist:**
+  - Add payment method, and each card's menu (Stripe checkout has no design or client yet);
+  - View all invoices, and the invoice downloads (nothing serves the PDF).
+
+  Upgrade to Pro and View all plans open the coming-soon plan page (`/upgrade`).
+
+  **Decide:**
+  - The board's account is on Free with a card on file, auto-renewal on, and two Pro invoices from
+    2024. The fixture keeps that story as "a Pro month since left". Should a Free account show
+    auto-renewal at all?
+  - "Most popular" is unbacked before launch, like "3x more views" on Profile (§91). Keep it?
+- **Then Connected accounts (554:3547), redrawn from the §30 mockup build.**
+  - The card takes the duotone chain.
+  - Google's row is a bordered card: a logo tile, the name and line, and Connect (Manage and the
+    menu once linked).
+  - Under it is a "Sign in with Google" status row, with the key glyph and a Connected / Not
+    connected pill. The pill moved down from beside the button.
+  - The old info strip became its own card, "How connecting works":
+    - the padlock drawing the board borrows from mobile BILLING 02 (`checkout.png`, copied to
+      `public/illustrations/connected-lock.png`);
+    - three points with duotone glyphs;
+    - View privacy policy.
+
+    Both links still open Help until a privacy policy page exists (§30).
+  - The character stands on this section too. Only Preferences and Notifications lack her now.
+- **Then Security (554:4027), newly built.** It replaces the last coming-soon panel. Every
+  Settings section now has a board, and the coming-soon branch stays only as an exhaustive
+  fallback. It has:
+  - **Security checkup:** password age, two-factor and devices, read off the account's security,
+    with the ones needing a look drawn amber and counted in the "2 to review" pill ("All good"
+    when none).
+  - **Password:** the Account section's card.
+  - **Two-factor authentication:** the Account section's card, with the phone glyph and an
+    On / Off pill (`inSecurity`).
+  - **Active sessions:** this device's line becomes a "Current session" pill, and "Sign out of
+    other devices" sits under the list. It ends the others through `useSignOutEverywhere`, and the
+    list follows.
+  - The character stands here too.
+
+  **Decide:** the board flags "Over 2 years old", but neither it nor V2 sets a threshold. The page
+  flags a password older than **a year**. Is that the right line?
+
+  The sign-out glyph is Material Symbols' logout (Apache-2.0, `figma-icons/settings/SOURCES.json`),
+  since the board draws it as an icon-font character.
+
+## 93. Upload a JD, paste tab redrawn with duotone glyphs (Desktop/Web, 2026-10-09)
+
+Built from **361:1200**. The layout and copy were already as drawn. Changes:
+- **The three ways in** (Upload file, Paste from link, Paste text) take the duotone upload-file,
+  chain and document glyphs. This is the one tab row, so the file and link tabs change too.
+- **"Paste the job description and NextKin will:"** takes the duotone document-with-magnifier,
+  chart, lightbulb and bookmark, on no lavender disc. The three single-colour glyphs they replace
+  are gone from `BenefitList`.
+- **Headings.** "Paste the job description" and "Turn job details into opportunities" are set
+  larger, as the redraw sets them.
+
+**Then the link tab (361:976), the same treatment.**
+- "Why use a job link?" reasons take duotone glyphs (bolt, document with magnifier, target,
+  padlock). Unlike the paste list, the board keeps a lavender disc behind each.
+- The link field leads with the duotone chain.
+- "Paste the job link" and "Why use a job link?" are set larger.
+- The board's source chips and Popular sources tiles show no logos (unrendered in the export).
+  The page keeps the source logos it already draws (§27).
+- **Closer pass, on the owner's side-by-side:**
+  - The field leads with the plain outline chain the board draws, not the duotone one.
+  - The field and button are taller.
+  - **Fetch & Analyze stays in full colour, as drawn, instead of fading while the field is
+    empty.** An empty press says "Paste a link to a job posting first."
+  - The art panel and its drawing are larger, with the handwritten line beside them.
+  - The reasons' discs are 56px, with more room between rows.
+  - The Popular sources tiles are 48px.
+  - **Decide:** the paste tab's "Analyze Job Description" and the file tab's "Upload & Analyze"
+    still fade until there's something to analyse. Should they match?
+- **Second pass, measured against 361:976 ("not at all, please be more aligned"):**
+  - **The column split follows the boards (~65:35)** on every tab, where it was a fixed 300px
+    side column.
+  - The tabs are sized to their words, 64px tall, with a 40px glyph and a 12px caption.
+  - The form panel: a 20px heading over a 14px line, a 48px field with a 24px chain, and a 48 ×
+    190px button.
+  - Chips are 36px with 20px marks. The art panel is 292px, the character 190px.
+  - The link column: 28px padding, a 20px heading, rows 24px apart with 62px gradient discs and
+    44px glyphs, a 15px title over a 14px line (`BenefitList roomy`), and 52 × 48 source tiles.
+  - This page now runs a step larger than the app's compact density (§16), as the owner asked for
+    board fidelity here.
+- **"Back to Jobs" removed, page moved up (owner, 2026-10-09).** The top bar no longer draws a
+  way back on `/upload-jd`; the `back` option is gone from `TopBar` (it was the only user, §26).
+  The page now starts in the bar's band (`pageFrameInBar`), like Home and the list pages. Its
+  title is level with the search, and the bar fills in once the page scrolls.
+
+**Then the upload-file tab (361:1425).** The board leaves out the three ways-in tabs. By the
+owner's word the page keeps the built ones (duotone since 361:1200).
+- "Turn a job description into opportunities" takes the paste column's four duotone glyphs on no
+  disc, and a larger heading.
+- Every side column is duotone now, so `BenefitList` lost its single-colour glyph map.
+- The board draws the picked-file state ("Senior Product Designer - Google.pdf · File ready"). The
+  page shows that row once a file is chosen, as before.
+
+## 94. Help & support built (Desktop/Web, 2026-10-09)
+
+Built from **563:4**. It replaces `/help`'s coming-soon page. It starts in the top bar's band like
+the other pages.
+
+**Left column:**
+- **Find an answer:** a search field and topic pills with counts.
+- **Five topic cards** in the board's two columns, then the "Search reads the answers too" tip.
+- **Answers:** one is open at a time. "What does the ATS score actually measure?" opens first, as
+  drawn.
+- **Search** matches every word against the question and the answer.
+- **Data:** everything reads the shared `faqFixture` (14 answers). Three answers use the board's
+  hidden web wordings (563:919-921), which point at Settings rather than mobile's Profile tab
+  (`helpLibrary.WEB_ANSWER`).
+
+**Right column:**
+- **Message support:**
+  - topic select and a read-only reply address (the account email);
+  - a 2,000-character message with a counter;
+  - Send sends through `useSubmitTicket` and toasts "Message sent. We reply within 2 business
+    days.";
+  - Send stays full colour, and an empty press says "Write a message first."
+- **Terms of service** and **Privacy policy:** title, "Last updated" and the intro, read off
+  `useLegal`.
+
+**Decide:**
+- **Header art.** The board's header art is a placeholder (**IL-W3**, already in
+  `illustrations-needed.md`). The Settings character at her laptop stands in under the bar until
+  it is drawn. Keep the stand-in or leave the space empty?
+- **Legal cards.** Web has no page for the full legal text yet, so each card opens the document's
+  canonical URL (`nextkin.app/legal/...`) in a new tab. That domain may not resolve yet. Build
+  in-app legal pages?
+- **Last updated.** The dates come from the fixture (48 days ago), so they read "Aug 22, 2026"
+  where the board prints "Aug 15, 2026".
+
+The coming-soon page's `help` entry is removed.
+
+## 95. Document viewer built (Desktop/Web, 2026-10-09)
+
+Built from **563:1377**. It replaces `/documents/[id]`'s coming-soon page, where the Documents
+card's **Open** goes. The page starts in the top bar's band (any `/documents/…` path).
+
+**Layout.** The title and meta sit under a "Documents ›" breadcrumb. The page is drawn on the left,
+on a grey stage. On the right:
+- the details card: the file with its tags, Download, Share and more, the four facts, and for a
+  letter "Addressed to" and "Role";
+- "Use this document in your applications" (to Jobs);
+- "Other cover letters": up to three of the same kind, each opening here, with View all.
+
+**New in the shared layer:** an optional `CoverLetterDetails` on `CareerDocument`, holding the
+headline, addressee, role and reference, salutation, paragraphs and sign-off. Only the Google
+letter carries one, verbatim from the board. The sender's contact lines are the account's own.
+
+**Decide:**
+- **Letter headline.** The board's letter is written as "Software Engineer", as the web résumés
+  tell George's story. The profile says UX Designer (§20). The letter keeps its own headline.
+  Right?
+- **Other documents.** A certificate is drawn as the Documents card draws it. Any other file
+  (passport, transcript, the two older letters) says it has no preview, since the mock holds no
+  file contents.
+- **Inert controls.** Download, Share and More need the stored file, so they stay inert, as on
+  the Documents page.
+
+The coming-soon page's `documentViewer` entry is removed.
+
+## 91. Web AI Assistant redrawn in a chat-first layout, Script-style (Desktop/Web, 2026-10-10)
+
+The owner sent the "Script" AI chat as a layout reference, keeping our chat style. Two new
+boards sit next to the old 10 · AI Assistant (`563:923`, unchanged), at (24755, 14950):
+
+- **10 · AI Assistant — welcome (redesign)** `767:2`
+  - The sidebar with AI Assistant active, and an "AI Assistant" page title in the top bar row.
+  - A large open chat canvas: the robot art (mobile ASSISTANT 02), "Hi George, how can I help?",
+    and a one-line scope note.
+  - Four starter tiles (My job search, Resumes & cover letters, ATS scores, Interview prep), each
+    with our illustrated icon on a tinted tile and a "+".
+  - Our pill composer at the foot, with a tools row (Attach a file, Browse prompts, 0 / 500) and
+    the disclaimer.
+- **10 · AI Assistant — conversation (redesign)** `767:275`
+  - The same canvas, with our existing bubbles (user indigo, assistant grey with sparkle,
+    out-of-scope tag) sitting above the composer.
+  - A "Today" divider.
+
+**Right column (both boards)**
+- In place of Script's "Projects", a "Try asking (5)" list of prompt cards, each with a
+  one-line hint.
+- A compact Daily messages meter: 12 / 20, "8 left today on Free", "See Pro plans".
+- A small "Read and advise only" note.
+
+**Judgement calls**
+- **No conversation list.** V2 §7.16 and the old board specify one saved conversation, not
+  projects or history. A history list would be new scope.
+- **The in-chat "Try asking" chips were dropped** from the conversation board, because the right
+  column already lists them.
+- **The paperclip and "Attach a file" remain an open question** (§75).
+- **Two of the five prompts are new example copy:** "Which saved job fits me best?" and the
+  "tell me about yourself" hint.
+- **2026-10-10, owner: "include this, redesign this as history".**
+  - **"Try asking" chips are back in the chat.** On the conversation board they sit under the
+    last message, as on the old board. On the welcome board they are centred under the starter
+    tiles.
+  - **The right "Try asking" list became History (6).** It has a dashed "+ New chat" button and
+    chat cards (title, one-line snippet, date), with the current chat highlighted in indigo on the
+    conversation board.
+  - **This adds chat history.** V2 §7.16 and the old board specify a single saved conversation.
+    Multiple threads mean new storage and retention rules (privacy export and delete must
+    include them), and the daily message cap should span all threads.
+  - **Example copy:** the six titles and snippets.
+- **2026-10-10, owner: remove Browse prompts; design the attachment click.**
+  - **Browse prompts** was removed from the composer tools row on both boards.
+  - **New board "10 · AI Assistant — attach menu (redesign)"** `772:2`
+    - The paperclip shows an indigo active circle.
+    - The popover "Add to your message" offers:
+      - Upload a file (PDF or DOCX from your computer);
+      - A resume on NextKin (highlighted, with a flyout listing the resumes, Product Designer
+        ticked);
+      - A cover letter (from Documents);
+      - A saved job (ask about a specific listing).
+    - Footer: "Read only — the assistant never edits your files."
+  - **New board "10 · AI Assistant — file attached (redesign)"** `772:165`
+    - The composer grows into a box. Attachment chips sit on top ("Product Designer · Resume on
+      NextKin · 3 pages" and "Google — Lead UX Designer · Saved job", each removable with ×),
+      with the typed question underneath, the send button active and "50 / 500".
+  - **To decide**
+    - **Scope.** Uploading outside files to the assistant is beyond V2 §7.16, which reads the
+      user's own NextKin data only. Upload needs parsing, retention, size limits and privacy
+      export and delete. A lighter option is to allow NextKin items only and drop "Upload a
+      file".
+    - **The sent-message bubble showing its attachments** isn't drawn yet.
+
+## 92. Resume icon swapped to the owner's new one on the web boards (2026-10-10)
+
+The owner asked to use `770:8` ("icon/Term of Service", a document icon) instead of the "New
+Resumes" icon (`458:1116`, seen at `768:39`) wherever it had been used. Every clone on
+Desktop/Web was replaced at the same size and position:
+- the sidebar's Resumes row on the live sidebar `711:2` and in its copies on 02b and
+  W-TAILOR 01–04;
+- the rail `711:227`;
+- the 02b "Tailor your resume" tool;
+- the AI Assistant welcome starter tile and the attach menu's "A resume on NextKin";
+- Settings → Delete account.
+
+**Kept the old icon on purpose:** the parked original "Section (before resize)" is the owner's
+untouched reference, and the source icon set `458:266`.
+
+**Not changed:** the mobile boards use a different mobile tile icon (`431:7772`). Say if those
+should switch too.
+
+## 96. AI Assistant built (Desktop/Web, 2026-10-10)
+
+Built from **767:2** (welcome), **767:275** (conversation), **772:2** (attach menu) and
+**772:165** (file attached). It replaces `/assistant`'s coming-soon page. The title sits in the
+top bar's band.
+
+**Layout.** The chat sits on a white canvas with the composer at its foot. On the right are History, Daily messages
+(12 / 20 from the plan's usage) and "Read and advise only".
+
+**New in the shared layer:**
+- **History, as the owner asked in §91.** `assistantHistory` holds the five earlier chats from
+  the board, with their previews. The current chat is still the one `getConversation` returns,
+  so mobile is unchanged.
+- **New repo verbs.** `listThreads`, `openThread` and `startNew`.
+  - **Reopening** a chat swaps it in, and the chat it replaces goes back into the history.
+  - **New chat** files the current chat and starts an empty one, which is named by its first
+    question.
+- **Attachments.** `AssistantAttachment` covers a resume, a cover letter, a saved job or a file.
+  Attachments are stored on the user's turn and shown as chips above that turn's bubble. An
+  attached resume is also sent as the reply's `resumeId` context.
+- **Today's turns.** The seeded conversation's two turns are now today's, under the board's
+  single "Today" divider. It is now titled "Explaining a two-year gap".
+
+**Decide:**
+- **Earlier chats count toward the cap.** The daily cap (§13.3) counts every chat, since the meter
+  counts messages, not chats. §91's question about retention and privacy export for several
+  chats is still open.
+- **The flyout lists your real resumes.** The board's resume flyout names mobile's resumes
+  (Product Designer, UX Designer Resume, Stripe — Senior PD). The web library has others, so the
+  flyout lists those, with the board's wording ("Base resume · ATS 88", "For Google · ATS 92").
+  The cover-letter and saved-job flyouts use the same pattern; the boards draw only the resume
+  one.
+- **Upload a file is mock-only.** It takes a PDF or DOCX and attaches it by name. Nothing reads
+  the file. §91 already asks whether outside files belong in §7.16 at all.
+- **Topics start a question rather than sending one.** A topic tile puts an opener in the
+  composer ("Help me prepare for an interview: ") for the user to finish. A "Try asking" chip
+  sends its question.
+- **Send stays full colour** while the composer is empty, as drawn. Pressing it then puts you
+  in the field.
+- **The ⋯ menu has one item.** On History it offers "Clear this chat". The board shows ⋯ with
+  no menu.
+- **Sent attachments** appear as chips above the user's bubble. No board draws this yet (§91).
+- **History dates:**
+  - Today, Yesterday, then "N days ago" up to six days;
+  - "Last week" from 7 to 9 days;
+  - after that, the day and month ("28 Sep").
+
+  The seeded dates are relative, so the labels move with the calendar.
+- **"ATS-optimized".** The prompt is spelled as the boards spell it. Mobile's shared list keeps
+  "optimised".
+
+**Not done:**
+- "Browse prompts" from §91's tools row isn't on the final boards, so it isn't built.
+- The robot is the board's raster, shipped as a PNG.
+- The paperclip is Material Symbols' attach_file, recorded in `assets/figma-icons/assistant/SOURCES.json`.
+
+## 97. Insights built (Desktop/Web, 2026-10-10)
+
+Built from **461:14**. It replaces `/insights`'s coming-soon page. The title sits in the top bar's
+band.
+
+**Layout, as drawn:**
+- the "Last 30 days" picker;
+- four stats with their change against the window before;
+- Career Progress (a line chart with its own window picker), Application Funnel and AI Insights;
+- Top Skills in Demand, Target Roles and Next Recommendation, whose button goes to Jobs.
+
+**New in the shared layer:** a read-only `insights` repo, `useInsights(range)` and a
+`CareerInsights` model. The real service would compute these from the account's activity. The
+mock returns a fixture per window: 30 days is the board's figures exactly, and 7 and 90 days are
+made-up figures in the same style.
+
+**Decide:**
+- **The figures aren't derived from the rest of the app.** The board says 12 applications in 30
+  days, while the web applications seed has 8 in that time (and 25 in all). The board's 24 jobs
+  analyzed, 78 resume score and funnel likewise come from the fixture, not from Resumes or
+  Applications. I kept the board's numbers. Should they be computed from the seeds instead,
+  which would make them differ from the board?
+- **The AI Insights copy makes claims nothing backs**, for example "You're 40% more likely to get
+  an interview when your resume matches 80%+ of JD skills" and "Your application rate is above
+  average". That conflicts with honest scoring (§37 and the quality core). It is the board's
+  copy, shown verbatim; it needs a real basis or softer wording before launch.
+- **The chart's line ends at 24 and the top gridline is 30.** On the board the line runs to the
+  top. The series is the window's running total of jobs analyzed, so it ends at the stat's 24,
+  matching the tooltip.
+- **Chart behaviour.** Pointing at the chart moves the tooltip to that day, reading "By Sep 26".
+  At rest it shows the board's "Jobs analyzed this month". Dates are the real last 30 days, not
+  the board's "Mar 1 … Mar 28".
+- **Two pickers.** The chart's picker is independent and starts on the page's window.
+
+The Recommendation character is the board's raster, shipped as a PNG
+(`public/illustrations/insights-recommendation.png`). The header drawing and the star are new
+duotone SVGs; every other glyph was already in the repo.
+
+## 98. Sidebar Resumes icon swapped (Desktop/Web, 2026-10-10)
+
+The Resumes row now uses the document drawing from **711:81** ("icon/Term of Service", the owner's
+swap in §92). `sidebar-nav/nav-resumes.svg` was replaced and the component rebuilt, so the panel
+and the collapsed rail both changed. The board's export draws it in a 22×22 frame with empty
+margin around it, so it looked smaller than its neighbours. The owner asked for it to match, so
+the viewBox is cropped to the drawing (22×15.5) and it is drawn 24px wide like the other nav
+icons, spark marks included.
+
+## 99. AI Assistant: "Attach a file" link removed (2026-10-10)
+
+The owner asked to remove the "Attach a file" link under the composer. The paperclip's menu is
+now the only way to attach (its "Upload a file" still opens the file picker). The "0 / 500" count
+stays on that row.
+
+**Kept:** the "AI-generated guidance, not professional or legal advice" line, which was inside the
+area marked for removal. V2 §7.16 requires that label. Removing it needs a spec decision.
+
+## 100. AI Assistant: the welcome fits without scrolling (2026-10-10)
+
+The owner saw the welcome scroll under the composer and asked for it to fit, with "Try asking"
+spread wider.
+- **Try asking.** Under the welcome, the four chips sit two by two across the canvas, in columns
+  sized to the chips. That gives two rows at every width, each chip on one line; it was three or
+  four rows before. Under a conversation they still wrap as before.
+- **Short windows (860px tall or less).** The robot shrinks to 96×72 and the gaps above the
+  topics, the chips and the canvas top tighten. The topic tiles go from 64 to 56px.
+- **Measured:** the welcome fits with nothing to scroll at 1366×768, 1536×864 and 1536×1040.
+  Taller windows keep the board's sizes.
+
+## 101. Home: Top Job Matches became a carousel with eleven characters (2026-10-10)
+
+The owner asked for more jobs in Top Job Matches, sliding in from the right, using the
+characters CH1–CH9 (Desktop/Web, 705:1268 … 705:2338) as well as the existing two.
+- **Motion.** Two cards show at a time (one below `xl`). Every 5 seconds the next card slides in
+  from the right over 600ms (new tokens `delays.carousel` and `--transition-duration-slide`).
+  - **Looping.** After the last card it carries on into copies of the first two, then jumps back
+    unseen, so cards always arrive from the right.
+  - **When it holds still.** It pauses under the pointer, while focus is inside it, and while the
+    tab is hidden. With reduced motion on, it never moves by itself.
+  - **Arrows.** New ‹ › buttons beside "View all" step it either way.
+- **Characters.** Each card keeps one character by position: the board's two first, then CH1–CH9.
+  The exports carried the board's #1E1E1E backing rectangle, which was stripped. The new ones
+  stand at the card's floor, 136px tall.
+- **More picks (web seed only).** Atlassian, Microsoft, Airbnb, Spotify and Notion are now picks
+  too, so the carousel has 11 cards, one per character. They sort by match, so Google and Adobe
+  still open it. Mobile's seed is unchanged.
+- **Logos.** Companies without a drawn logo use the shared `CompanyLogo` mark (initials where
+  there is no bundled logo), sized to the board's 28px slot.
+- **Decide:** older picks show their real age ("77d ago", Stripe), and only some carry an
+  applicant count, so those cards have no "80+ applied" row. Should Home pick only recent
+  postings?
+
+## 102. Web consistency, connectivity and smoothness pass (2026-10-10)
+
+The owner asked for the whole web app to be re-checked so the pages built one board at a time
+follow the same rules.
+
+**Method.** Three read-only audits ran first: consistency, connectivity and smoothness. The owner
+then decided three things:
+- the shared tokens win, but each board keeps its identity;
+- Insights' numbers are placeholders, so they are left as they are;
+- inert controls are wired where that is cheap, and the rest say "Coming soon".
+
+### Connectivity
+- **New deep links.** `?resume=` on Resumes and `?application=` on Applications (`resumeHref`,
+  `applicationHref`), the same pattern as `?job=`. `/assistant?job=` and `?resume=` open the
+  Assistant with that item already attached (`assistantHref`).
+- **Links now open the specific item:**
+  - Home's Top Job Matches cards → their job.
+  - Resume Progress "View" → that resume.
+  - Applications "Resume sent" → that resume.
+  - Jobs "Applied" became **"View application"** → that application.
+  - A cover letter's "Use this document…" and its Role row → the letter's own job, found by
+    requisition id.
+  - Jobs' and the job detail's "Tailor with AI" → the Assistant with the job attached.
+- **New entry points:**
+  - "Ask the assistant about this score" on a resume's ATS Score tab.
+  - Insights: Funnel "View all" → Applications; Top Skills "Your skills" → Profile → Skills.
+  - Upload JD's success message offers next steps: tailor a resume, matching jobs, ask the
+    assistant.
+  - Error and not-found pages link to Help & support.
+- **Plans and billing.** "See Pro plans" and the Upgrade placeholder go to Settings → Billing &
+  plan. The sidebar's plan label is read from the subscription.
+- **URLs remember the tab.** Profile and Settings write `?tab=` as you switch, using
+  `replaceState`, so refresh and Back keep your place.
+- **"Complete Profile"** opens the tab of the first unticked checklist item.
+- **About 30 inert controls** now carry the `Soon` tooltip and `aria-disabled`, so they say
+  "Coming soon" instead of looking broken:
+  - kebabs; document Download, Share and More; Edit and Change password;
+  - 2FA and Sessions "View all" (through `CardAction`);
+  - Billing's add card, invoices and kebab;
+  - Connected "Manage", "Deactivate", "Delete my data";
+  - photo change and notification chevrons;
+  - the bell and "Upload New Document".
+
+  Primary-looking ones (Download, Share, the bell, Upload New Document) aren't dimmed; the rest
+  are. The search field is untouched.
+- **Removed** the dead `account/components` files (SubscriptionTab, PlanCard, DangerZoneCard) and
+  corrected stale comments.
+
+### Consistency
+- **`PageHeader`.** It now has an `aside` slot, an optional `subtitle`, and a ReactNode
+  title/subtitle for skeletons. Assistant and Insights use it: Insights' 32px title is now
+  `display-l` like every page, with its art and range picker in `aside`. The gap under page
+  headers is 16px everywhere.
+- **One card surface.** `cardSurface` in `ui/Card.tsx` (`radius/lg`, the card border). It is
+  used by the detail panels, Profile (was 16px), Insights (custom shadow → `shadow-card`) and the
+  Assistant's asides (were 18px). The chat canvas and composer pill keep the board's shapes.
+- **Type sizes.** Card titles are `title-l`. Insights' 28/24/16px and the composer's 15px map to
+  tokens. The welcome greeting gets one named token, `--text-hero` (32/40/800).
+- **Controls snapped to tokens:** the Recommendation button, the attach trigger (`iconButton`),
+  the carousel arrows, the Insights selects, the coming-soon buttons, Profile's buttons
+  (`rounded-md`) and the prompt chips (`h-control-md`).
+  - **Kept:** Upload's 48px link-panel Analyze button, which the owner asked to match the board.
+- **Menus.** History's ⋯ menu is now `FilterDropdown`. The attach menu and the chart tooltip lost
+  their one-off radii.
+- **Shared helpers.** Dates live in `lib/format.ts`: `formatMonthDay`, `formatHistoryDate`,
+  `formatDayLabel`, `calendarDaysBefore`. Every date in the app now reads month-first ("Sep 28").
+  The History's "28 Sep" is now "Sep 28" (decide). Insights' bars are the shared `ProgressBar`,
+  which gained `fillClassName`.
+- **Missing states:** Insights chart error; History error and empty; attach-menu loading and
+  error; the viewer's letter when the account fails.
+- **Not changed:** Home's match pill and chips, and Insights' change pills keep their boards'
+  colours rather than `Tag`'s.
+
+### Smoothness
+- **Press scale was being dropped.** A later `transition-*` class makes tailwind-merge drop
+  `pressable`'s transition, so the press snapped. Fixed on History rows, New chat, Send and the
+  chips. New `pressableLift` for tiles that also lift their shadow. A whole-app scan found no
+  other cases.
+- **Fade on first load.**
+  - New `ui/Reveal` wrapper for screens that swap skeletons for content.
+  - Profile and the Settings sections (Account, Preferences, Security, Billing, Connected) fade
+    in on first load, not only on tab switches.
+  - Insights, Help (also on topic change), the viewer (keyed on id) and the Assistant (keyed on
+    conversation, so switching chats fades) fade in too.
+- **Help accordion** glides open and closed (`CollapseFade`), and the row tint, question colour
+  and chevron ease.
+- **Assistant:**
+  - New turns pop in, and "Thinking…" pulses.
+  - The chat follows a streaming reply (ResizeObserver; smooth unless reduced motion), but only
+    while you are at the bottom.
+  - "Try asking" folds away as you type.
+  - The composer pill eases its shape when an attachment arrives.
+  - Daily messages has a skeleton.
+- **Meters sweep in** as their data arrives: Daily messages, Profile completion, Home's resume
+  progress, the ATS ring, and the Insights bars.
+- **Busy labels.** `StableLabel` on Send, Delete my account, Sign out of other devices, Apply and
+  Load more, so buttons no longer change width.
+- **Press feedback** added to tabs (PillTabs, Profile, Upload), the view toggle, Top Job Matches
+  cards, policy cards, FAQ rows, other-document rows and "Add payment method".
+- **Smaller swaps:**
+  - Upload's file and error messages grow in.
+  - The Connected-accounts button swap pops.
+  - Settings' side art fades.
+  - The Upload tab label eases its colour.
+- **Carousel.** It follows the reduced-motion setting live, and a timer resets it if the slide's
+  end event is missed.
+- **Skeletons** now match their content's shape: the Assistant welcome, Insights' three rows,
+  Help's two columns, the viewer's title and right column, and Connected's two cards.
+- The error page sits in `PageTransition`.
+
+### Decide
+- **Date order.** History's "28 Sep" is now "Sep 28", to match every other date in the app.
+- **"Applied" → "View application".** The job's button now says "View application" once you've
+  applied.
+
+### Verified
+- `pnpm typecheck` and `pnpm lint` are clean. All 296 web tests pass, 4 of them new: the
+  resume/application deep links, assistant `?job=`, Home card links, and the viewer's letter job
+  plus "Coming soon".
+- Mobile has only the two failures it had before.
+- Playwright screenshots of every page at 1536×1024 show nothing broken. The computed transition
+  on the Assistant controls includes `scale`.
+
+## 103. The job page and the tailor flow, built (Desktop/Web, 2026-10-10)
+
+Built from **724:2**, the job's own page at `/jobs/[id]`, and the four W-TAILOR boards (**734:2**,
+**734:679**, **734:1356**, **734:2033**) at `/jobs/[id]/tailor`. The tailor flow is the one
+designed in §90.
+
+**Job page**
+- **Layout.** One card holds:
+  - the job's own bar: back, Overview / Company tabs, posted, applicants, Save, and "Apply on
+    company site", which opens a new tab;
+  - the employer, title and facts, with a match card beside them;
+  - what the team does, with industries and perks as tags;
+  - Responsibilities, Qualifications, Benefits and Company.
+
+  Beside the card: AI tools for this job and Similar jobs.
+- **Ways in.** Home's job cards and the Jobs list's detail title open it. "Tailor your resume" on
+  the page, on the Jobs card and in the Jobs detail opens the tailor flow.
+- **The match card is worked out for this user.** Experience, skills ("4 of 6"), location and
+  work type are read off the profile against the listing, so it is not the board's "5 of 6".
+- **Qualifications compare against your profile skills, so they differ from the board.**
+  - The web profile says "UI/UX Design", so "UX Design" and "Product Design" show as missing.
+    Prototyping, which is on the profile, shows as present.
+  - Clicking a missing skill adds it to the profile (`useUpdateSkills`).
+- **The Google listing is the board's text, on web only** (`JOB_PAGE` in `jobs.web.ts`).
+  - This covers the description, responsibilities, requirements, benefits, perks, industries,
+    founded year, headquarters, size and apply URL.
+  - New optional `Job` fields: `benefits`, `perks`, `industries`, `companyFounded`,
+    `companyHeadquarters`, `applyUrl`.
+  - `sourceUrl` would have hidden the job from search, since it marks a link import.
+- **AI tools.**
+  - "Write a cover letter" says Coming soon; there is no web letter flow yet.
+  - "Practise the interview" opens Interview Prep.
+  - "How we match" opens Help.
+
+**Tailor flow**
+- It runs on the shared pipeline: `useTailorComparison` and `useStartGeneration` with a `tailor`
+  run, the same as mobile. The new resume therefore lands in Resumes, and the score, the cap and
+  the progress are shared.
+- **Steps 1–2** are local state, kept in `?step=`. A started run is in `?run=`, so step 3
+  survives a refresh and "Leave and notify me" can come back to it.
+- **Step 1.**
+  - Comparison table; "Change" swaps the resume; the 72 ring is amber (`ScoreRing` gained
+    `tone`).
+  - The web seed `res_pd:job_google` is the board's verbatim: 72, five of eight keywords, three
+    sections to fix, three pages.
+- **Step 2.**
+  - "Choose what to improve" is new state: `TailorRun.fixes` and `TailorRun.experience` (quick or
+    full).
+  - Keywords are ticked one by one, with no "select all", and a skill of your own can be added.
+  - Each row says where the listing asks for the skill, read from the listing's own lines.
+- **Step 3 (progress).** Lists only the work that was asked for, ticking off as the bar fills.
+- **Step 3 (review).**
+  - The new resume as a page, with page and zoom controls, beside the score and "Up from".
+  - What changed, including what was left out and why.
+  - Download PDF (the export repo), Edit in editor (still the coming-soon editor), and Apply on
+    careers.google.com.
+- **Shared generator fixes.**
+  - A tailored resume now writes the role as its headline when the headline is being aimed.
+  - A source resume with no skill list of its own starts from the profile's skills. Web bodies
+    carry none, so the copy used to list only the added keyword.
+
+**Decide**
+- **The score after tailoring is 84, not the board's 88.** The shared mock adds +8, plus +4 per
+  ticked keyword, to the baseline. Should the web flow seed 88, or is the rule fine?
+- **The tailored resume's body is the shared generator's** (Flipkart, Swiggy, PhonePe). It
+  matches the board's preview but not the web library's Google and Adobe history (§20).
+- **"Write a cover letter" says Coming soon** in two places until a web letter flow exists.
+- **Job page link on the Jobs list.** Only the detail's title opens the full page. Should list
+  rows open the page instead of the side panel?
+
+## 104. Jobs detail card: "View job details" replaces "Save Job" (2026-10-10)
+
+The owner asked for a way from the Jobs list's detail card to the full job page (724:2), in place of
+"Save Job". The second action button now reads "View job details" and opens `/jobs/[id]`.
+- **Saving is still on the list cards' bookmarks and on the full job page.**
+- **The card no longer takes save props.** `JobDetailActions` and `JobDetailPanel` dropped them.
+
+## 105. Backend plan, local-first: Docker now, AWS later (2026-10-10)
+
+The owner asked to start backend development now: everything runs on Docker locally, and AWS and
+the other services connect as each becomes available. They asked for a new phased plan that makes
+the backend strong.
+
+That plan is `doc/ImBackendImplementationPlan.md` (local-only, like the other planning docs):
+- It re-sequences `doc/NextKin-Backend-Implementation-Plan.md` local-first: 14 phases in four
+  stages, plus a Connect track (X-01…X-15) and a content lane.
+- It keeps that plan's ground rules G1–G18, decisions D-01…D-21 and quality core (Track Q).
+- All 171 of that plan's tasks are mapped to a new home (its §6.8).
+
+Nothing is built yet.
+
+### 105.1 Decided with you today
+
+- **D-22 — build local-first.**
+  - D-10's AWS-first order is paused, not reversed. The client still files the packets; the build no
+    longer waits for them.
+  - Why: every lead-time row is still "not started" or "blocked-on-decision", and there is no AWS
+    account and no domain.
+  - M0-31's local fakes are back on the critical path.
+- **D-23 — a direct Claude API key for live local AI calls.**
+  - Use is limited to synthetic data, with a per-developer daily spend cap.
+  - Recorded responses stay the CI default.
+  - V2 §12.8 keeps the direct API as a configuration option.
+- **D-24 — Kysely over hand-written SQL migrations** in `aws/migrations/`, with types generated from
+  the migrated schema and a CI drift check.
+
+### 105.2 Technology calls made without you (any can be overruled)
+
+- **SeaweedFS replaces MinIO as the local S3 stand-in.**
+  - MinIO stopped publishing community images in Oct 2025, went maintenance-only in Dec 2025, and
+    archived its repository in Apr 2026.
+  - Choice is confirmed by a presigned-POST size test (P1-04). Fallbacks: RustFS, then a pinned
+    Chainguard MinIO image.
+- **LocalStack is not used.** Since 2026.03 it needs an auth token, and its free tier is
+  non-commercial. ElasticMQ stands in for SQS and Mailpit for SES.
+- **Scanning and OCR are real locally:**
+  - **ClamAV** for scanning. It is the spec's own fallback for GuardDuty (Appendix C #10).
+  - **Tesseract** for OCR. Appendix C #12's fallback (the model's native PDF input) is not used,
+    because a scanned resume's image includes contact details, and G5 forbids sending those to a
+    model.
+- **Hono runs inside one Next.js catch-all route**, so it is still "the Next.js server itself"
+  (§9.3) while the core is testable without Next. **The worker entrypoint lives in
+  `packages/server`**, not `apps/web/worker/` as the backend plan proposed.
+- **Tests:**
+  - Vitest + Testcontainers + fast-check for `packages/server` and `packages/engines`. The apps keep
+    Jest.
+  - `pnpm test` stays unit-only so it runs without Docker; Docker-backed tests move to
+    `pnpm test:integration`. `CLAUDE.md`'s definition of done needs a backend addition, which P1-12
+    proposes for your approval at that point.
+- **Node 24 LTS in the server image** (Node 22 reaches end of life on 2027-04-30). Server code stays
+  Node 22-compatible until the repo pin moves.
+- **A transactional outbox** replaces R-12's enqueue-after-commit plus re-drive sweeper.
+- **API safeguards:**
+  - An `Idempotency-Key` on **every** create a client may retry. R-06 said quota-consuming creates
+    only.
+  - ETag / `If-Match` on the profile, resume content and settings.
+  - An `X-Client-Version` floor that answers 426, because store builds lag.
+- **Cutover mechanics:**
+  - Inside an HTTP repository, methods not yet served fall back to the mock through an explicit
+    list.
+  - CI fails if a production config still has one.
+- **A development-only web sign-in** stands in until the web auth artboards exist. It is refused
+  outside `local`.
+- **Onboarding and runbooks move under `aws/`**, which is committed. The backend plan proposed
+  `doc/onboarding.md` and `doc/runbooks/`, but `doc/` is gitignored.
+
+### 105.3 Contract deltas: where the clients and §11 differ
+
+- **Generation progress:** SSE carries the full `Generation` snapshot under §11's event names,
+  because `subscribe` expects snapshots.
+- **Async work behind single-promise methods:** `jd.extract`, `importFromFile`,
+  `regenerateSection`, `compare` and `forJob` stay single promises. The HTTP repository awaits the
+  async job internally.
+- **Uploads:** presign → direct POST → confirm. Web passes a `blob:` URL as `JdFile.uri`; today it
+  sends `''`.
+- **Write methods:**
+  - `toggleSave` becomes an idempotent `setSaved(id, saved)`.
+  - `upgrade` starts a hosted checkout.
+  - `connectAccount` starts the federated link flow.
+- **Pagination:** the server paginates every list, and HTTP repositories page internally until each
+  interface migrates.
+- **Quota** is charged on completion (G2), so meters move later than they do on the mock.
+- **Money** is stored as minor units plus a currency; INR stays mock-only.
+- **Completeness** is derived from the data, so `completeNextStep` no longer moves it.
+- **Auth:** a phone-safe auth client is added to `packages/shared`, because today's contract has no
+  auth methods.
+- **Stays on mock unless you decide otherwise:**
+  - the notifications feed;
+  - applications;
+  - link import (D-17);
+  - `insights`;
+  - `documents`, which P10 decides;
+  - candidate 2FA.
+
+### 105.4 Defaults on silence
+
+Each is applied by the task named in the plan's §6.6.
+- **Infrastructure and platform:**
+  - CDK in `aws/infra/`.
+  - Single origin (D-08).
+  - Node 24 in the server image.
+- **Limits and timeouts:**
+  - Upload limit: 5 MB (the web board's figure; the spec gives none).
+  - JD paste: a server cap of 20,000 characters (web caps at 10,000).
+  - Session idle timeout: the same as the 30-day absolute lifetime.
+  - Access tokens: 60 minutes (§7.1 and §9.4.1 differ).
+- **Roles and states:**
+  - `app.role` follows §9.4.2, with super admin as an application permission.
+  - Prompt states: `draft → staged → active` (§12.3).
+- **API:**
+  - `PLAN_LOCKED` answers 402.
+- **Product values:**
+  - The assistant cap is 20 a day on Free until you set one.
+  - The scanned-PDF threshold is set from fixtures and written down.
+
+### 105.5 Docs now out of date (a sync pass; none edited here)
+
+- **`doc/NextKin-Backend-Implementation-Plan.md`:**
+  - It says "11 repositories, 98 methods"; today it is 12 and 110.
+  - M0-08 names MinIO.
+  - Its M0 preamble (AWS-first) is paused by D-22. A header pointer to the new plan would stop a
+    reader following the old order.
+- **`aws/setup/04-local-development.md` and `aws/README.md`:** MinIO, stub scan and OCR, and
+  recorded-only AI. P1-12 updates them.
+- **`doc/NextKin-Backend-Stakeholder-Guide.md` §9:** "M0: the AWS platform first" no longer
+  describes the order.
+- **Spec §9.3 and §9.10:** they name MinIO and LocalStack. The spec is never edited, so this entry
+  records the substitution.
+
+### 105.6 Still unverified
+
+Each item carries `[verify]` in the plan:
+- whether SeaweedFS enforces `content-length-range` on presigned POST;
+- the Aurora PostgreSQL 17 extension allowlist;
+- whether Expo Go allows cleartext HTTP to a LAN IP on iOS and Android;
+- Expo SDK 57's file-system upload API;
+- Node 24 under Expo SDK 57 and EAS;
+- pnpm 11's minimum-release-age setting;
+- every pinned library under TypeScript 6.0.3;
+- ElasticMQ message persistence;
+- the direct API's model ids against `pinned-versions.md`;
+- Hono's Next adapter on Next 16's Node runtime.
+
+**Decide**
+- Nothing blocks P0–P4. The two that matter soonest:
+  - **The domain (D-09).** Google's 1–4 week verification clock still has not started.
+  - **When the client files the AWS, Apple and Claude Platform packets.** Those filings gate the
+    Connect items X-03…X-10.
+
+### 105.7 P0 done (2026-10-10)
+
+- **P0-01:**
+  - D-22, D-23 and D-24 are added to the backend plan's register (§4.4).
+  - That plan now opens with a pointer to the new build order. This closes the first item of
+    105.5.
+- **P0-02:**
+  - `docker/versions.env` pins every image and library major. Each was looked up the same day on
+    Docker Hub, GitHub and npm.
+  - `pnpm check:pins` (`docker/check-pins.mjs`) fails on any unpinned or `latest` image. It was
+    proven both ways: it passes on the real file and fails when a `latest` tag is injected.
+- **P0-03:** the defaults table stands as written in the plan's §6.6.
+- **P0-04:**
+  - `doc/lead-time-tracker.md` gained a 2026-10-10 review entry, mapping every row to the Connect item
+    it now gates, and **the written escalation for row 1 (the domain)**.
+  - The weekly review restarts on Mondays.
+- **P0-05:** `aws/security/threat-model.md` (version 0) covers seven trust boundaries plus
+  cross-cutting threats. Every threat maps to a plan task.
+- **P0-06:**
+  - Docker Desktop 4.84.0 is installed per-user, **not** under Program Files. It was started; the
+    engine is 29.6.2 with 24 CPUs and 7.6 GiB.
+  - The memory budget, the `.wslconfig` override and the firewall note are in
+    `aws/setup/04-local-development.md` §1a.
+
+**Calls made while pinning (any can be overruled):**
+- **`docx` is pinned at 9.9, while spec §9.7 names 9.7.x.** The spec's version is a time-sensitive
+  fact, so I took the current minor. The change is minor-version only.
+- **Valkey stays on 8.1.10, although Valkey 9 is out.** The pin matches the plan's "8" until
+  ElastiCache Serverless's supported engine is checked `[verify]`.
+- **RustFS 1.0.1 is pinned as the first fallback S3 stand-in**, beside SeaweedFS 4.48.
+
+**Decide**
+- **Owners for the content and lead-time lane** (plan §6.3): content author, KB curator, designer,
+  counsel, analyst. P0-04's done-when needs a name on every row; until then, each row says "project
+  owner".
+- **Who sends the domain escalation** to the client's naming decision-maker. It is written in the
+  tracker but not yet sent.
+
+### 105.8 P1 platform (2026-10-10)
+
+**Built:**
+- **New packages.** `packages/engines` (purity fence, integer basis-point maths, property tests) and
+  `packages/server` (typed config with the L3 refusal, a Hono API with shallow and deep health, the
+  worker shell, esbuild bundles).
+- **`packages/shared` checks.** It gained lint, test and a `.prettierrc`, plus the phone-safety
+  fence.
+- **Web wiring.** apps/web has the `/api/v1` catch-all and a fence so only `app/api/**` may import
+  the server.
+- **Local stack and image.** `docker-compose.yml` with six profiles, ElasticMQ queues, SeaweedFS
+  credentials, the Postgres role bootstrap, and one Dockerfile with web, worker and migrate targets.
+- **Scripts and CI.** The root `stack:*`, `dev:all` and `worker` scripts, and
+  `.github/workflows/backend-ci.yml`.
+- **Docs.** `aws/setup/04-local-development.md` was rewritten.
+
+**Proved:**
+- **The fences:** each fails lint on a planted violation (engines `Date.now`/`Math.random`/`Intl`;
+  shared importing `@nextkin/server` and `pg`; a web client file importing the server).
+- **The core stack:** healthy on the first start, idling at about 160 MB.
+- **SeaweedFS** enforces presigned-POST size, content type and key prefix, so it stays and no
+  fallback is needed.
+- **The database roles:** the app role is not a superuser, has no BYPASSRLS, owns nothing, cannot
+  create tables, and has a 5 s statement timeout.
+- **Health through a production Next build:** both routes return 200. With Valkey stopped, deep
+  returns 503 naming it while shallow stays 200, and both recover on restart.
+- **The worker** heartbeats with every dependency OK, from source and from the bundle.
+- **The root gates:** typecheck and lint pass. `pnpm test` fails only in two mobile suites
+  (`SignUpScreen`, `theme/tokens`) that also failed before P1 and belong to other sessions' work.
+  The web suites, which failed earlier today, all pass now (37/37).
+
+**Not proved yet:**
+- **The web and worker images have not been built.** The worker target downloads Chromium and its
+  libraries, several hundred MB, so I asked first. Chromium rendering inside the image (P1-07's
+  done-when) waits on that build.
+- **Backend CI has not run on GitHub**, because nothing is committed or pushed.
+- **Your running `next dev` predates the `next.config.ts` change**, so it answers `/api/v1/*` with a
+  config error until it is restarted. A second dev server cannot run beside it, so the routes were
+  proved on a production build instead.
+
+**Calls made without you (any can be overruled):**
+- **Integration tests run against the compose stack, not Testcontainers** (the plan named
+  Testcontainers). Laptop and CI then use one stack definition. Testcontainers can come in P2 if the
+  RLS suite needs a fresh database per run.
+- **The Valkey client is `iovalkey`**, Valkey's own fork of ioredis.
+- **`server-only` lives in a separate `@nextkin/server/next` entry**, because it throws outside
+  Next's server layer and would break the worker and the tests.
+- **In development, the API answers a start-up failure with JSON naming the bad variables.**
+  Production returns the generic envelope.
+- **`next.config.ts` changes:**
+  - It loads the root `.env` in development (one file for web, worker and migrations).
+  - `@nextkin/server` is added to `transpilePackages`.
+  - `pg` and `pino` are external.
+- **The worker is bundled with esbuild.** `playwright-core` stays external and is pinned exactly to
+  1.63.0, matching what the web app already resolves. That is a downgrade from the 1.64 noted in P0.
+- **pnpm build allowlist.** `esbuild` was added to `allowBuilds` in `pnpm-workspace.yaml`, so its
+  install script can verify the platform binary.
+- **Shared lint config.** It honours the codebase's `_` prefix for deliberately unused bindings. I
+  removed one genuinely unused type import (`Page` in `packages/shared/src/queries/useToggleSaveJob.ts`).
+- **Postgres layout.** Application objects go in an `app` schema owned by `nextkin_owner`. The app
+  role gets `statement_timeout` 5 s, `lock_timeout` 2 s and `idle_in_transaction_session_timeout` 10 s.
+- **The OSV dependency scan is report-only** until the existing baseline is triaged, because the
+  apps' dependencies would otherwise fail every PR on day one.
+- **Supply chain.** Third-party actions are pinned by commit SHA, and Trivy fails on fixable
+  critical or high findings.
+- **The `migrate` entrypoint is an honest placeholder.** It prints that the runner arrives in P2-01
+  and applies nothing.
+- **pnpm installs reported large package removals** ("−104", "−141") as it re-laid the hoisted tree.
+  The app test results are unchanged by it.
+
+**Update, the same evening:** you approved both items.
+- **The images are built and checked:**
+  - web 419 MB, worker 1.8 GB, migrate 345 MB;
+  - the worker image renders a PDF with Chromium 153;
+  - the containers run as UID 1000;
+  - the web image serves deep health on the compose network, and the worker image heartbeats.
+- **`CLAUDE.md` gained a Backend section** and the extra done-when for backend work.
+- **The worker image is large,** mostly Chromium and its system libraries. It is worth trimming
+  before X-06 pushes to ECR. Logged here, not done.
+
+### 105.9 P2 data (2026-10-10)
+
+**Built:**
+- **The baseline schema.** Migrations `0001`–`0006` create 48 tables in an `app` schema owned by
+  `nextkin_owner`:
+  - every §10 table;
+  - §7.7's KB fields that §10 omits;
+  - the grounding fields with provenance (M1-07), and projects (D-21);
+  - the Q-01 method-version tables;
+  - `ats_reports` keyed by version;
+  - the outbox, idempotency keys, sessions, security events, consents and usage counters;
+  - billing accounts (§17.3);
+  - an append-only audit log.
+- **Runtime helpers:** UUIDv7 defaults, the dormant `is_org_member()` org hook, and
+  `apply_owner_rls()` / `apply_reference_rls()`, so a table cannot get RLS half right.
+- **The migration runner:** checksum ledger, advisory lock, the no-transaction marker, and the local
+  re-baseline. It also runs as the `migrate` image target.
+- **The database layer:** Kysely with generated types, a drift check, and the four database entry
+  points.
+- **The seed:** reference data, five role accounts, and both demo personas, written through the RLS
+  path. A volume generator supports the EXPLAIN gate.
+- **Tooling:** squawk config and CI step, and CI migrate/seed steps.
+
+**Proved:**
+- **The RLS suite (17 tests)** discovers tables from the catalog. It found every table protected and
+  the cross-user matrix clean.
+  - I proved it can fail: replacing one table's policy with `using (true)` failed four tests, naming
+    that table.
+- **The EXPLAIN gate (10 tests).** On 5,000 synthetic users, no hot query scans a large table.
+  - Dropping the activity table's index made it fail on that table.
+- **The migration runner (6 integration and 9 unit tests):** edited, missing and out-of-order files
+  are refused; failures roll back; two runners at once apply once.
+- **The real migrations on an empty database.** This caught that the extensions were created only by
+  the local bootstrap, so `0001` now declares them.
+- **The seed** runs twice cleanly. George (mobile) has 4 roles, 12 skills (the board's "Skills — 12"),
+  10 resumes and 17 versions.
+- **The migrate image** says "up to date" against the database, so its bundled files and checksums
+  agree.
+- **Gates.** Typecheck and lint pass. Integration passes 43/43. `pnpm test` fails only in the two
+  mobile suites that already failed. Web passes 37/37 when run on its own, because `pnpm -r` stops
+  after mobile fails.
+
+**Calls made without you (any can be overruled):**
+- **Staff reads use the read-only role (`withStaff`, reason required), not an admin branch in the app
+  role's policy.** The old plan put admin access in the same policy. An `OR` on a session setting
+  there would stop Postgres using the `user_id` index on every user query.
+- **Maintenance may delete across users but cannot insert user rows.** Seeding replaces personas
+  that way: delete through `withSystem`, recreate through `withUser`.
+- **The volume seed uses the local superuser** (`DATABASE_ADMIN_URL`), because hundreds of thousands
+  of rows through per-user transactions would take minutes. The config refuses that URL in staging
+  and production.
+- **Re-cutting the baseline.** Migration `0001` was edited once and re-baselined locally, under L8,
+  to add the extensions. From the first shared deploy, never again.
+- **Plans use spec §13.2 prices in minor units:** USD 19 / EUR 19 / AUD 29 monthly, and 99 / 99 /
+  149 annually, each the low end of the spec's range. The mock's INR prices stay in the mock;
+  currency is still conflict 2.
+- **Squawk excludes four rules globally and the six baseline files.** The live-table rules apply to
+  every later migration, and CI lints only new or changed files. I proved a probe migration with a
+  non-concurrent index and no timeouts is flagged.
+- **Column choices:**
+  - `users.identity_sub` holds the Cognito or local-IdP subject.
+  - Per-user AppSettings and PrivacySettings live in `user_settings`, kept apart from the admin
+    `app_settings`.
+  - Notification preferences sit in `profiles.preferences` (§17.3).
+- **Integrity choices:**
+  - Child tables carry `user_id` with composite foreign keys, so RLS needs no join and a child
+    cannot point at another user's parent.
+  - `generations` has a unique `(user_id, idempotency_key)`, so a retried POST starts one job.
+- **ElasticMQ message persistence is still unverified.** The outbox (P6) covers a restart.
+
+**Decide**
+- Nothing blocks P3. The currency answer (conflict 2) is the next schema-shaping decision. It
+  decides whether plans and payments carry INR alongside USD, EUR and AUD.
+
+### 105.10 P3 API kernel (2026-10-10)
+
+**Built:**
+- **The middleware chain**, in order:
+  1. request id and trace span, timing, the access log, and the in-flight count;
+  2. security headers;
+  3. a 256 KB body limit;
+  4. the client-version floor (426);
+  5. authentication (a pluggable resolver; P4 supplies it);
+  6. CSRF on cookie sessions;
+  7. Valkey rate limits;
+  8. per route: idempotency and kill switches.
+
+  zod validation runs through `@hono/zod-openapi`. Responses are checked against their schemas
+  outside production. Every failure becomes the shared envelope.
+- **Shared schemas** in `packages/shared/src/schemas`:
+  - the error vocabulary and a single code-to-status table;
+  - `Page<T>`;
+  - settings and profile links, each checked against its model type.
+- **Two real resources:**
+  - `/me/settings`: GET, and PATCH with ETag / If-Match.
+  - `/me/links`: keyset-paginated list, idempotent create, delete.
+- **Signed cursors, allowlist logging and tracing.** Tracing uses OpenTelemetry; manual spans in the
+  middleware and the database layer, and pg auto-instrumentation when an OTLP endpoint is set.
+- **Kill switches and the client floor** are read from `app_settings`, with a 10 s cache.
+- **Graceful drain** on SIGTERM.
+- **OpenAPI:** `packages/server/openapi.json` is generated and checked in, served at
+  `/api/v1/openapi.json` outside production, with CI drift and oasdiff breaking-change gates.
+- **Performance:** `perf-budgets.json` (§8.1) and `pnpm perf:smoke`.
+
+**Proved:**
+- **43 unit and 56 integration tests**, covering:
+  - request ids, the envelope, the 413 body limit, 426 below the floor;
+  - 429 with Retry-After, keyed by subject; health never limited; fail-open when Valkey is down;
+  - idempotency: replay, mismatch (422), required (400), and release after a 5xx;
+  - kill switches (503), cursor tampering (400), If-Match (428 and 412);
+  - concurrent writers: exactly one wins;
+  - pagination: every row exactly once while rows are inserted between pages;
+  - delete: RLS gives an intruder 404;
+  - CSRF: no Origin, a foreign Origin, or a non-JSON body is refused, and bearer requests are exempt;
+  - Valkey-backed 429 after 300 requests;
+  - log lines never contain a fixture email or phone;
+  - the request id is the trace id, and the database span joins that trace;
+  - an incoming traceparent is continued;
+  - drain waits for in-flight requests.
+- **oasdiff** reports a removed endpoint and a removed required field as breaking, and the CI step
+  fails on them.
+- **A production Next build** serves the API: an anonymous `/me/settings` gets the 401 envelope with
+  its request id, deep health answers 200, and the OpenAPI document is served.
+- **perf:smoke, in-process with the real DB and Valkey:** about 3 ms p95 per route against the
+  300 ms CRUD budget.
+- **Gates:** typecheck, lint and every backend suite pass.
+
+**Calls made without you (any can be overruled):**
+- **Hono with `@hono/zod-openapi`**, so every route declares its responses once. A handler returning
+  an undeclared status is a type error, and the OpenAPI document cannot drift from the code.
+- **Error-to-status mapping:**
+  - `PLAN_LOCKED` answers 402.
+  - A missing If-Match answers **428 PRECONDITION_REQUIRED**, a code added to the vocabulary.
+  - An oversized body answers 413 `PAYLOAD_TOO_LARGE`, also new.
+- **Rate limits are a sliding window per class**, not yet per plan tier:
+
+  | Class | Anonymous (per IP, per minute) | Signed in (per user, per minute) |
+  |---|---|---|
+  | default | 60 | 300 |
+  | auth | 10 | 20 |
+  | ai | 5 | 20–30 |
+  | upload | 5 | 30 |
+
+  Tiered limits arrive with entitlements (P12). **The limiter fails open** when Valkey is down;
+  quotas still guard the expensive paths.
+- **Idempotency lives in Valkey**, with a 60 s in-flight claim and 24 h retention. Its DB backstop is
+  each table's own unique key (`generations` already has one). The `idempotency_keys` table remains
+  available as a fallback.
+- **The client floor is enforced only when the client identifies itself** (`X-Client` +
+  `X-Client-Version`). Older or unidentified callers pass. Mobile will always send both headers.
+- **CSRF requires a JSON body** on cookie-session writes. Multipart uploads go straight to S3
+  (presigned POST), so this costs nothing.
+- **Settings defaults are private by default:** profile visibility private, recruiter discovery off,
+  search engines off, anonymized sharing off (GDPR by default). App defaults are light theme,
+  d_mmm_y and UTC. The mock's seeded values for the personas are not copied; P5 can seed them if
+  board fidelity needs it.
+- **Server imports use exact shared schema files.** Plain Node loads `@nextkin/shared` as CommonJS
+  and cannot see names re-exported through `export *`; a lint rule now bans the barrel import in the
+  server. Vitest and Next were unaffected.
+- **Local `TRUSTED_IP_HEADER=x-forwarded-for`**, which Next sets from the socket. The config refuses
+  it in staging and production, as it does a placeholder `CURSOR_SECRET`.
+- **No OTLP endpoint by default.** Seeing traces in Grafana needs the `obs` profile, about 1 GB to
+  pull, so I have not pulled it. The traces are proved with an in-memory exporter instead.
+- **The perf smoke bypasses the rate limiter** and injects the persona's identity. It is refused
+  outside local and test.
+
+**Not proved yet:**
+- **That Next's own server waits for the drain on SIGTERM.** Verified at X-06, on ECS.
+- **Traces in Grafana**, pending the `obs` profile.
+- **The CI oasdiff and squawk steps on GitHub**, because nothing is pushed yet.
+
+**Decide**
+- Whether to pull the `obs` profile (about 1 GB) to see traces in Grafana now, or leave it for X-11.
+
+### 105.11 P4 identity on the local IdP (2026-10-10)
+
+**Built:**
+- **The `IdentityProvider` port** and a local adapter (`packages/server/src/auth/adapters/local`):
+  - passwords: argon2id, emailed six-digit codes, lockout after 5 failures for 15 min;
+  - tokens: ES256 with a JWKS endpoint; 60 min access and 30-day refresh tokens; rotation with
+    reuse detection;
+  - staff: an admins pool with TOTP;
+  - providers: Google and Apple over OIDC with PKCE, `state` and `nonce`.
+  - It has its own `local_idp` schema, which `pnpm migrate` applies only when
+    `IDENTITY_ADAPTER=local`.
+- **Server sessions:**
+  - a Valkey record plus a durable `app.sessions` row (only a SHA-256 of the id is stored);
+  - web gets a `__Host-nk_session` cookie;
+  - mobile gets bearer tokens whose `sid` names the same record, so logout is immediate for both.
+- **Fourteen `/api/v1/auth/*` routes:**
+  - sign-up, confirm and resend;
+  - login (cookie for web, tokens for mobile) and staff login;
+  - session, logout and logout-all;
+  - forgot, reset and change password;
+  - provider start and callback (Apple `form_post`);
+  - the mobile token exchange and refresh.
+- **Users are created just in time** from the identity `sub`. Roles come from the admins pool's
+  groups at each sign-in. Auth events go to `security_events`.
+- **`pnpm seed` creates local sign-ins** for the five role accounts and both personas.
+  - Password: `NextKin-local-2026`.
+  - Staff TOTP secret: `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP`.
+  - Both are published on purpose, and the seed refuses anything but local and test.
+- **P4-10, the phone-safe auth client** (`@nextkin/shared/auth`):
+  - fetch and zod only;
+  - mobile refreshes on a 401 through one shared in-flight refresh, because two parallel refreshes
+    would trip reuse detection and end the session;
+  - an `ApiError` carries the envelope code.
+- **P4-07, the mobile federated hand-off design**, written up in
+  `packages/server/src/auth/README.md`, and built and tested on the server side.
+- **Config and compose:**
+  - `.env.example` and `.env` gained the identity block;
+  - the compose `mock-oauth2` service gets an interactive login form;
+  - `openapi.json` is regenerated: 21 operations, up from 7.
+
+**Proved:**
+- **The identity contract suite (15 cases, every adapter)** covers:
+  - confirm-before-sign-in;
+  - no existence leak;
+  - lockout;
+  - weak passwords;
+  - forged tokens;
+  - rotation and reuse;
+  - revoke and global sign-out;
+  - password change and reset;
+  - TOTP for admins;
+  - linking in both orderings;
+  - unverified email never links;
+  - Apple's name on the first authorization only;
+  - wrong PKCE verifier.
+- **The HTTP suites** (27 cases): `authSessions` and `authFederated`. Logout makes the very next
+  call with the old cookie, or with the old and still-valid access token, 401. The rest:
+  - logout-all across web and mobile;
+  - password change keeps only this session;
+  - reset ends all sessions;
+  - login CSRF;
+  - a foreign Origin on a cookie write;
+  - a mobile session id used as a cookie is refused;
+  - Google redirect out and back;
+  - open redirects fall back to `/`;
+  - a `state` is single use;
+  - the Apple form post;
+  - the mobile hand-off works exactly once;
+  - redirects outside the allowlist are refused;
+  - a replayed refresh token kills the live access token;
+  - forged issuer, audience, key or payload are anonymous;
+  - the JWKS endpoint has no private parts.
+- **The authorization matrix (33 cases).** Every OpenAPI operation must be listed with its access,
+  and each protected cell is probed as anonymous, free, pro and admin.
+- **Unit tests:** the RFC 6238 TOTP vectors, password policy, argon2id, cookie parsing, PKCE, and
+  role mapping.
+- **Sabotage check.** I made the bearer path skip the server-session check. Four tests failed, and
+  the file was restored.
+- **Gates:**
+  - `pnpm test:integration`: 131/131 across 12 files;
+  - typecheck and lint are green;
+  - server unit tests 56/56, shared 13/13;
+  - web 37/37 with `--maxWorkers=2`.
+
+**Calls made without you (any can be overruled):**
+- **A wrong *current* password on password change is now a 400 field error (`current:
+  incorrect`), not a 401.** A 401 tells every client "session gone, sign out", which would sign the
+  user out for a typo.
+- **CSRF relaxed for bodyless cookie POSTs.** The P3 guard demanded a JSON content type even on
+  logout, which has no body. It now applies only when a body is sent; the Origin check still covers
+  every cookie write. Threat-model row 1.2 notes the change.
+- **The federation tests use an in-process issuer** (`test/integration/fixtures/fakeIssuer.ts`),
+  not the mock-oauth2 container, so CI needs no extra image. The container is for clicking through
+  by hand.
+- **The auth integration suites switch rate limits off.** They sign in far more often than the auth
+  class allows (10 per minute per IP). The limiter keeps its own tests.
+- **The authorization matrix signs in as the seeded `free@`, `pro@` and `admin@` accounts**, so it
+  needs `pnpm seed` first. CI already seeds before the tests.
+
+**Gaps found, not fixed:**
+- **A role removed mid-session is not revoked.** The session record keeps the role it was created
+  with until it expires (30 days) or the user signs out.
+  - Fix in P12-01: any role or group change, and any suspension, calls `destroyAllForUser`.
+  - Threat-model row 1.1 notes it.
+- **Root `pnpm test` still fails only in the two mobile suites from other sessions' work**
+  (`SignUpScreen`, `theme/tokens`). I did not touch them.
+- **Web Jest times out at 5 s under CPU contention.** With seven node processes running, a different
+  web suite timed out on each full run. With `--maxWorkers=2` it is 37/37. Nothing in P4 touches
+  web code.
+
+**Not proved yet:**
+- **Federation through the real mock-oauth2 container.** The image is 168 MB and not pulled yet (L6).
+- **The app side of the hand-off in Expo Go**: `openAuthSessionAsync` returning the final URL on
+  both platforms (P5).
+- **Cognito parity.** The contract suite is ready for the X-07 adapter.
+
+**Decide**
+- Whether to pull `mock-oauth2-server` (168 MB) now, to click through Google and Apple sign-in
+  locally, or leave it until the mobile sign-in screens (P5).
+- Still open from earlier: the `obs` profile (about 1 GB), naming the content-lane owners, and
+  sending the domain escalation.
+
+### 105.12 P5 the first slice, on both apps (2026-10-11)
+
+**Decided with you today**
+- **Mobile sign-up gets a spec-derived code screen** (`ConfirmEmailScreen`, route
+  `/(auth)/confirm-email`). It is built only from existing primitives and replaced wholesale when an
+  artboard arrives. It appears only when the app runs on the backend.
+- **The profile stats card shows "—" for a value with no basis** (C-11: absent, not zero).
+  Applications and Interviews are always "—" until the Release 2 tracker exists.
+
+**Built**
+- **P5-01, the HTTP client core** (`packages/shared/src/repos/http/client.ts`):
+  - headers: X-Request-Id, X-Client, X-Client-Version;
+  - a 15 s timeout per attempt;
+  - one jittered retry, only for reads and for writes that carry an Idempotency-Key;
+  - single-flight bearer refresh;
+  - a real `NotFoundError` and `PlanLockedError`, with server messages kept verbatim;
+  - `collectPages` for bounded internal paging.
+  - The P4 auth client now rides on it.
+- **P5-02, the seam.** `createRepos(config)` lays HTTP repositories over the mock per repository.
+  - Hosts call `configureRepos()` once at module scope; `resetRepos()` replaces `resetMockRepos()`
+    in `useResetSession`.
+  - Unserved methods are typed lists (`USER_FALLBACKS`, `NOTIFICATIONS_FALLBACKS`).
+  - `environment: 'production'` refuses to build with any fallback.
+  - Web reads `NEXT_PUBLIC_DATA_SOURCE` and `NEXT_PUBLIC_API_BASE_URL`; mobile reads
+    `EXPO_PUBLIC_*`. Unset, both apps behave exactly as before.
+- **P5-03, the repository contract suite** (`packages/shared/test/contracts/repoContracts.ts`):
+  - 16 behaviours across user, profile and notification preferences;
+  - run against the mock in shared's unit tests;
+  - run against HTTP twice in integration, as the web client (cookie) and the mobile client
+    (bearer).
+- **P5-04, profile** (`/api/v1/profile`, 18 operations):
+  - every write answers with the whole profile and its ETag;
+  - identity and preference writes need If-Match;
+  - creates honour Idempotency-Key;
+  - upserts keep the mock's contract: an issued id replaces, while an empty, client-minted or
+    unknown id appends.
+  - **Completeness is derived** in `packages/engines/src/completeness.ts`. It has property tests,
+    is recomputed in the write's own transaction, and is stored as `completeness_bps`.
+  - Next steps are the missing items, most points first; completing one changes nothing by itself.
+  - Facts carry provenance: `user`, or `parsed_confirmed` from an applied draft.
+  - Database constraint errors now answer 400/409, naming only the constraint.
+- **P5-05, the dashboard and the activity feed:**
+  - counters with C-11 definitions;
+  - the activity feed is keyset-paginated, with microsecond cursor keys;
+  - both are RLS-scoped, with a cross-user test.
+- **P5-06, account** (`/api/v1/me`):
+  - name;
+  - email change behind a code sent to the new address (identity port `requestEmailChange` /
+    `confirmEmailChange`);
+  - security, with the session list, the current session first and readable platform names;
+  - `POST /auth/logout-others`;
+  - `passwordChangedAt`, recorded on change and reset;
+  - connected accounts: list, link through `GET /auth/link/{provider}` (back at
+    `/settings?linked=` or `?link_error=`), and unlink (409 if it is the only sign-in method);
+  - notification preferences and settings, stored beside the job preferences in
+    `profiles.preferences`, with defaults in the shared models.
+- **P5-07, web.** The cookie data source, a development-only `/dev/sign-in` (404 in production
+  builds and on the mock), and a session gate on `(app)` behind the flag. `NEXT_DIST_DIR` allows a
+  second dev server.
+- **P5-08, mobile:**
+  - `expo-secure-store`, installed with `npx expo install` and added to `app.config.ts` plugins;
+  - the bearer data source;
+  - sign-in and sign-up call the local identity provider behind the flag;
+  - the code screen;
+  - every device sign-out ends the server session (one subscription in `AppProviders`);
+  - the HTTP client's unrecoverable 401 signs the device out;
+  - a device with no tokens starts signed out.
+  - `pnpm web:lan` runs Next on 0.0.0.0. The setup doc has the firewall rule and the `.env.local`
+    keys.
+- **P5-09, the C-11 audit:** `doc/claims-register.md` has 11 number rows and 5 claim rows for the
+  slice.
+- **OpenAPI:** 55 operations, up from 21. The authorization matrix lists every one.
+
+**Proved**
+- **Integration:** 325/325 across 15 files.
+  - HTTP contract: 32 cases (web and mobile).
+  - Profile API: 11 cases, including "no call moves completeness without a data change", dates
+    round-tripping exactly under `TZ=Asia/Kolkata`, and provenance.
+  - Account API: 11 cases.
+  - Identity contract: 19 cases, with email change and linking added.
+  - Authorization matrix: 169 cells.
+- **Sabotage check:** making "replace an entry" append a row instead failed the HTTP contract in
+  both the web and mobile runs. The file was restored.
+- **Unit tests:**
+  - shared 54;
+  - engines 19, including the completeness property tests;
+  - server 56;
+  - mobile +15: error copy, the code screen, sign-in on the backend.
+- **The web slice in a real browser**, on a flagged dev server:
+  - the gate sends you to `/dev/sign-in`;
+  - signing in as George sets `__Host-nk_session` (HttpOnly, Secure, SameSite=Lax);
+  - Home, Profile and Settings load from `/api/v1` (me, profile, settings, security, activity);
+  - Settings lists the real session.
+- **Gates:**
+  - typecheck and lint green across all five packages;
+  - web 37/37 (`--maxWorkers=2`);
+  - the mobile Android bundle exports;
+  - root `pnpm test` fails only in the two pre-existing mobile suites (`SignUpScreen` push vs
+    replace, `theme/tokens`).
+
+**Calls made without you (any can be overruled)**
+- **`PATCH /profile`, not §11's `PUT /`.** The body is partial, and PUT would mean
+  replace-everything. The patch schema is wider than mobile's `ProfilePatch` (phone, bio and
+  tagline too), because the web Account board edits them.
+- **Entry writes are POST (create) / PUT `{id}` (replace) / DELETE `{id}`.** The HTTP repository
+  maps the mock's upsert onto them. PUT to an unknown id falls back to POST.
+- **`signOutEverywhere` is now "every other session".** It goes to the new `POST
+  /auth/logout-others`, as the repository interface says ("Revokes every other session"), not
+  `logout-all`. Mobile's Email & password screen still signs this device out afterwards, and that
+  sign-out now ends this session on the server too.
+- **Mobile auth hooks are plain async actions, not React Query mutations.** The signed-out screens
+  render above any query client, and their existing tests render without one.
+- **The authorization matrix probes with throwaway accounts.** Its first run wrote to the seeded
+  `free@`, `pro@` and `admin@` accounts: it renamed them to "Matrix Probe", added a role and
+  notification preferences. I re-ran `pnpm seed` to restore them (it deletes and recreates role
+  accounts) and checked them afterwards.
+- **The engines package gained per-file exports** (`@nextkin/engines/completeness`). Its `export *`
+  barrel fails under plain Node (tsx), exactly as shared's does; the server lint now bans both
+  barrels.
+- **The phone-safety fence matches exact module names now.** Its `http` pattern also matched the
+  relative path `src/repos/http/...`. Planted `http`, `node:fs`, `pg`, `pg-pool` and
+  `@nextkin/server` imports are still all refused.
+- **The shared client always sends the bearer token.** It used to drop it on the auth endpoints,
+  so a mobile logout could not name its session. Only what a 401 means depends on `authenticated`.
+- **Defaults moved into the models.** `DEFAULT_NOTIFICATION_PREFS` and `_SETTINGS` now live in
+  `models/notification.ts`, and the fixtures point at them, so the server never imports mock
+  fixtures.
+- **New-account job preferences:** `open_to_offers`, `any` remote, `en`, no roles or locations.
+
+**Gaps found, not fixed**
+- **Web Profile's completion checklist is the page's own** (`completionItems`), not
+  `Profile.nextSteps`. On the local run it showed 95% with two items unticked. Front-end work
+  (claims register N11).
+- **Web copy "A complete profile gets 3x more views from recruiters."** has no evidence and no
+  recruiter portal behind it. For D-20 (claims register C1).
+- **"Last changed: Not set"** for an account that set its password at sign-up (N9). Either set
+  `password_changed_at` when the account is created, or label it "Never changed".
+- **A mobile password change ends this device's session too, at its next refresh.** The provider
+  revokes every refresh-token family on a change; only the web cookie session survives as "this
+  session". A provider-side "all but this family" would fix it.
+- **Mobile Google sign-in with the backend says "isn't connected in this build yet".** It needs
+  the mock-oauth2 image (168 MB, not pulled) and a device run of `expo-web-browser`.
+- **The mock still tallies completeness** (+0.14 per step, +0.02 per entry), so the same edit moves
+  the mock and server meters differently. The contract checks 0–1 only; C-10 realigns the mock on
+  the engines.
+- **Session location is blank.** No geolocation locally; CloudFront viewer headers arrive at X-09.
+
+**Not proved yet**
+- **P5-08's done-when on a device:** sign up in Expo Go, confirm with the Mailpit code, and see
+  profile edits survive an app restart. It needs your phone, `pnpm web:lan`, the firewall rule
+  and `apps/mobile/.env.local`. Expo Go reaching plain `http://` on a LAN address is unverified on
+  both platforms.
+- **The code screen against the board language.** It is spec-derived, with no side-by-side check.
+
+**Decide**
+- Whether to run the device check now, or with the mobile Google sign-in (which also needs the
+  168 MB mock-oauth2 image).
+- Claims C1 and C4: remove the "3x more views" line, and keep or hide two-factor "Enable" for
+  candidates.
+- Still open: the `obs` profile, content-lane owners, the domain escalation.
+
+### 105.13 P6 the async backbone and the AI layer (2026-10-11)
+
+**Built** (design and guarantees: `packages/server/src/worker/README.md`)
+- **P6-01, the queue port** (`queue/`):
+  - an envelope validated at both ends;
+  - an SQS adapter that works unchanged against ElasticMQ;
+  - an in-memory adapter for unit tests;
+  - FIFO group `user_id#slot` (two per user); Pro runs go to the priority queue.
+- **P6-02, the outbox** (`outbox/`):
+  - enqueue inside the business transaction;
+  - a relay led under an advisory lock, `FOR UPDATE SKIP LOCKED`;
+  - dedup id = outbox id;
+  - capped, jittered backoff (`next_attempt_at`);
+  - a daily cleanup.
+- **P6-03, the worker** (`worker/`):
+  - bounded concurrency, priority first;
+  - a visibility heartbeat;
+  - backoff on failure;
+  - poison dead-letters in seconds;
+  - same-group messages run one after another;
+  - SIGTERM drains, then releases;
+  - the heartbeat log carries every queue's depth, DLQs included.
+- **P6-04, the pipeline runner** (`pipeline/runner.ts`):
+  - one checkpoint transaction per stage boundary (checkpoint, status, stage log, events);
+  - the quota is charged only in the terminal success transaction, guarded by `quota_charged_at`;
+  - cancel is checked at every boundary;
+  - test hooks inject crashes before and after each commit.
+- **P6-05, the lifecycle** (`services/generations.ts`):
+  - start is idempotent (the unique key plus the P3 middleware);
+  - get, list and active;
+  - retry resumes from the checkpoint;
+  - cancel: at once if queued, at the next boundary if running;
+  - the 3-minute sweep;
+  - on the last allowed receive the run is failed in plain words, then the message dead-letters;
+  - `pnpm dlq:replay` (dry run by default; `-- --apply`).
+- **P6-06, the scheduler.** One claim per `(job, window)` in `scheduler_runs`, in the same transaction
+  as its outbox message. Eight jobs: the minute sweep, trash purge, `jobs_cache` expiry and outbox
+  cleanup do real work; anonymous uploads, trending, nightly eval and KB candidates log "nothing to
+  do until P7/P9/P11".
+- **P6-07, routing and prices** in `app_settings` (`ai.routing`, `ai.prices`), cached 30 s. Model
+  ids exist only there. The `claude` family is resolved by `LLM_ROUTE`; `bedrock` is listed as
+  failover and skipped until X-10.
+- **P6-08, three providers:**
+  - `fake` (scriptable, for failure tests);
+  - `recorded` (replays by request hash, records in record mode);
+  - `claudeDirect` (`@anthropic-ai/sdk` 0.133, pinned; SDK retries off, so the gateway traces every
+    attempt).
+- **P6-09 to P6-12, the gateway** (`ai/gateway.ts`):
+  - strict JSON schemas from zod, the answer validated, with one corrective retry;
+  - a refusal or empty answer is retryable, then fails over;
+  - the PII guard: `StageInput<T>` at compile time, `assertNoContact` at run time, and contact
+    redaction for untrusted text;
+  - token budgets with deterministic truncation;
+  - a cache breakpoint after the stable prefix;
+  - one `ai_calls` trace row per attempt (tokens, cache reads and writes, cost in micro-dollars,
+    outcome, tag);
+  - the per-developer daily cap.
+- **P6-11, prompts as data** (`services/prompts.ts`):
+  - draft → staged → active, plus one-step rollback, done as a named admin or curator (RLS allows
+    staff writes only);
+  - the active version is pinned on the run at its first attempt.
+- **P6-13, SSE** at `GET /api/v1/generations/:id/events`:
+  - §11's event names, each carrying the full snapshot;
+  - replay from `generation_events` after `Last-Event-ID`;
+  - one Valkey subscriber per process (`pipeline/hub.ts`), polling the table when it is down;
+  - a 15 s heartbeat, closing after 5 min;
+  - a fresh connection to a retried run starts after its last ending.
+- **P6-14, the spike.** SDK 57's docs say `expo/fetch` is the global fetch on iOS and Android,
+  streams bodies, and ships in Expo Go. `readServerSentEvents` (shared, phone-safe) is the reader
+  mobile will use, proved against the real route. The device run is pending; the steps are in the
+  README.
+- **P6-15, hello-world.** `POST /api/v1/generations` → outbox → ElasticMQ → worker → one recorded
+  model call → persisted → SSE `completed`, with no AWS credential and no network.
+- **Migration `0007`** (squawk clean): `scheduler_runs`, `ai_calls`, `outbox.next_attempt_at`, and
+  `GRANT INSERT ON outbox` to the system role.
+- **Config:**
+  - `WORKER_CONCURRENCY`, `GENERATION_TIMEOUT_SECONDS`;
+  - `ANTHROPIC_API_KEY`, `AI_DAILY_CAP_USD`, `AI_DEVELOPER`, `AI_RECORD`;
+  - the key and record mode are refused in staging and production.
+- **OpenAPI:** 61 operations.
+
+**Proved** (the exit gate)
+- **The checkpoint matrix is green.** It covers 5 boundaries × before/after commit: every stage
+  committed once, one `completed` event, the quota charged once.
+  - Sabotage: moving the charge out of the terminal transaction failed "complete, crash before the
+    commit". The file was restored.
+- **A duplicate `POST /generations` starts one job:** one row, one outbox message, and the first
+  answer replayed with `Idempotent-Replayed: true`.
+- **The DLQ metrics move:** a poison message reached `generation-standard-dlq` in seconds.
+- **SSE reconnects at the right event:** after a forced drop, the rest arrived with no gap and no
+  repeat. An idle stream heartbeats until its deadline.
+- **The hello-world generation completes locally**, traced as `recorded / claude-haiku-4-5 / ok /
+  product`.
+- **Also proved:**
+  - five runs from one user ran at most two at a time;
+  - a Pro run started before ten earlier Free ones;
+  - a 20-run burst all finished;
+  - SIGTERM mid-run released the message, a second worker resumed it (attempt 2), and it was
+    charged once;
+  - two schedulers claimed each job once;
+  - a relay killed after publishing delivered once;
+  - two relays never published a row twice.
+- **Gates:**
+  - integration 385/385 across 18 files;
+  - server unit 77, shared 57, engines 19;
+  - typecheck and lint green across all five packages;
+  - web 37/37 (`--maxWorkers=2`);
+  - the OpenAPI and DB-type drift checks are clean;
+  - root `pnpm test` fails only in the two pre-existing mobile suites.
+- **The worker process** (`pnpm worker`, about 20 s) started, logged its heartbeat with queue depths,
+  and scheduled and ran all eight maintenance jobs.
+
+**Calls made without you (any can be overruled)**
+- **Model ids are seeded from `pinned-versions.md`:** `claude-haiku-4-5` for hello, `claude-sonnet-5`
+  as the default, with the Bedrock ids as failover. Your account context also lists a newer 5.5
+  family (`claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5-5`). Moving to it is a settings
+  change plus a `pinned-versions.md` update. Cache prices are taken as 0.1× input (read) and 1.25×
+  input (write) `[verify]`.
+- **Structured output is a forced tool call,** not the SDK's newer `output_config.format`. The tool
+  call works on every model and on Bedrock's Messages API, so failover at X-10 needs no change.
+- **Every kind runs the hello-world pipeline for now** (draft → check → score, with no score
+  invented). P9 replaces it per kind on the same runner. The generations repository stays on the
+  mock in both apps until then.
+- **Same-group messages run serially in the worker.** SQS FIFO may return several messages of one
+  group in a batch; running them side by side broke the two-per-user cap (peak 3 was measured).
+  Releasing the extras instead would have counted as receives toward the DLQ.
+- **The system role finds stuck runs, but each is failed as its owner** (`withUser`). The system role
+  may update user rows but has no INSERT on their events, and I kept it that way.
+- **The system role gained INSERT on the outbox,** for the scheduler. The app role still has INSERT
+  only.
+- **`ai_calls.subject_user_id`, not `user_id`.** The RLS suite treats any `user_id` column as
+  user-owned; a system trace is not, so it follows `audit_logs.actor_user_id`.
+- **0007 was edited twice before anything shared had it,** re-cutting the local database each time
+  (rule L8) and re-seeding.
+- **The phone pattern is shape-based:** international, North American, or national with a trunk
+  zero, 9–15 digits. The first, digit-count rule would have redacted "2019-2021" and salary
+  ranges.
+- **The hello-world fixture was recorded from the fake provider** (`source: "fake"`), because no key
+  is set. Re-record live with `LLM_ROUTE=claudeDirect AI_RECORD=true` once a key exists.
+- **The quota is charged but not yet enforced.** Refusing a run over the plan's limit is P12-06's
+  atomic quota; P6 only guarantees the charge happens exactly once, on success.
+
+**Gaps found, not fixed**
+- **SIGTERM from Git Bash on Windows never reached the node process** in the smoke run (`timeout -s
+  TERM`). The drain is proved in tests (`consumer.stop`, the SIGTERM hand-over test), and ECS on
+  Linux delivers the signal. Worth one check under `docker stop` with the `app` profile.
+- **ElasticMQ keeps messages in memory** (persistence off), so a container restart loses queued
+  messages, unlike SQS. The outbox does not resend a row once marked published. The sweep fails
+  such runs after 3 minutes, and the user can retry. P13's restart drill should decide whether to
+  add a re-drive of published-but-unfinished runs.
+- **The cache-read drop alarm is a log field only** (`cacheRead` on every `ai.call` line). The alarm
+  belongs to CloudWatch at X-11.
+- **`recorded` reads fixtures from `packages/server/fixtures/ai`,** which the bundled worker image
+  does not carry. That is fine for production (`claudeAws`), but the compose `app` profile would
+  need `LLM_ROUTE=fake` or a mounted fixture directory.
+
+**Not proved yet**
+- **P6-14 on a device:** streaming in Expo Go (iOS and Android) and on an EAS build. The steps are in
+  `packages/server/src/worker/README.md`.
+- **Any live Claude call:** no key is set. The adapter's request and response mapping is
+  unit-typed, but has never met the real API.
+
+**Decide**
+- Whether to add a Claude key now (D-23) to re-record the fixture and exercise `claudeDirect` once,
+  under the $2 daily cap.
+- Whether to move routing to the 5.5 family, and update `pinned-versions.md`.
+- Still open: the device checks (P5, P6), the `obs` profile, the claims C1 and C4, content-lane
+  owners, the domain escalation.
+
+### 105.14 P7 uploads, scanning and parsing (2026-10-11)
+
+**Built** (design and guarantees: `packages/server/src/parsing/README.md`)
+- **P7-01, the storage port** (`storage/`):
+  - presigned POST binding the exact key, the exact content type and a size range;
+  - presigned GET for at most 900 s, refused for anything under `quarantine/`;
+  - keys are server-made: `users/<uid>/uploads/<uuid>`, `anonymous/<uuid>`.
+- **P7-02, the client path.** Shared `uploadFile` (presign → direct POST → confirm → wait for the
+  scan) and `parseResume`:
+  - web uses `browserUploader` (a `blob:` URL read back into `FormData`);
+  - mobile uses `expoUploader` (expo-file-system `File.upload`, multipart, with the status checked
+    because it resolves on any response);
+  - `resumes.importFromFile` and `user.updateAvatar` are served over HTTP; the other resumes methods
+    stay listed in `RESUMES_FALLBACKS`.
+- **P7-03, the scan gate.** ClamAV over clamd's INSTREAM protocol:
+  - `OK` is clean, `FOUND` is infected (copied to `quarantine/`, then deleted), anything else is
+    failed;
+  - an unreachable scanner fails the file. Nothing is ever clean by default.
+- **P7-04, the analyzer** (`parsing/`):
+  - magic-byte sniffing; the declared type must match;
+  - PDF via its operator list, with hidden text classed as invisible, background-coloured, tiny or
+    off-page;
+  - DOCX via its XML, with zip-bomb limits, any DOCTYPE refused, and hidden runs reported;
+  - TXT with zero-width characters stripped.
+- **P7-05, isolation.** Each parse runs in a fresh `worker_threads` thread with a heap ceiling and a
+  wall-clock limit (`PARSE_HEAP_MB`, `PARSE_TIMEOUT_MS`).
+- **P7-06, OCR.** Tesseract.js 7 with vendored `tessdata_fast` eng + deu, SHA-checked, never fetched.
+- **P7-07, extraction:**
+  - the model (stage `resume_extract`, fast tier) reads the visible text only, through the gateway's
+    contact redaction;
+  - a deterministic cross-check rejects employers, dates and skills the text does not state, and
+    flags titles worded differently;
+  - the draft is applied only on confirm, per section (keep, merge or replace).
+- **P7-08, the teaser:**
+  - an anonymous upload to its own bucket, reachable by the system role only;
+  - a per-IP hourly limit on a salted hash;
+  - findings with no score (D-15);
+  - a claim into the account after sign-up;
+  - an hourly purge at 24 hours.
+- **P7-09, contract suites** for storage, scan and OCR (`contracts/files.int.test.ts`).
+- **Migration `0008`** (squawk clean): `uploads`, `resume_parses`, `anonymous_uploads`.
+- **Jobs:** an hourly orphan sweep (pending uploads over an hour old). The anonymous purge is now a
+  real job.
+- **Config:** `CLAMAV_HOST/PORT`, `S3_BUCKET_ANONYMOUS`, `UPLOAD_MAX_BYTES` (5 MB),
+  `AVATAR_MAX_BYTES` (2 MB), `PARSE_TIMEOUT_MS`, `PARSE_HEAP_MB`, `TEASER_PER_IP_PER_HOUR`.
+- **OpenAPI:** 72 operations. All 11 new routes are in the authorization matrix.
+
+**Proved** (the exit gate)
+- **§7.4 on synthetic fixtures.** PDF, DOCX, TXT and a scanned PDF each became a draft through the
+  whole stack: upload, scan, isolated parse, OCR where needed, extraction, cross-check.
+- **Hidden-text detection:** recall ≥ 95% and false positives ≤ 1% over 120 synthetic PDFs. White
+  text on a dark header band counts as visible.
+- **EICAR is blocked:** quarantined, never parsed, never sent to a model.
+- **Hidden text never reaches a model.** Checked on the model payload and the draft, for PDF and
+  DOCX. Sabotage: removing the filter failed two tests; restored.
+- **Both apps' import path, through the shared client against the local stack:** `importFromFile`
+  and `updateAvatar` ran end to end (`uploadsApi.int.test.ts`). Web's real uploader is that same
+  code; mobile's is not proved (see below).
+- **Also proved:**
+  - storage itself refuses an oversized file, another type and another key;
+  - a PNG declared as a PDF fails;
+  - zip bombs and DOCTYPEs are refused before parsing;
+  - a timed-out or out-of-memory parse fails the file, and the next file parses;
+  - abandoning a draft leaves the profile byte for byte unchanged;
+  - the teaser purge removes the row and the object.
+- **Gates:**
+  - integration 436/436 across 20 files;
+  - server unit 93, shared 57, engines 19;
+  - typecheck and lint green across all five packages;
+  - web 299/299 (`--maxWorkers=2`);
+  - mobile: only the two pre-existing suites fail;
+  - the OpenAPI, DB-type and image-pin checks are clean.
+- **The worker bundle builds:** `worker.mjs` plus `parse-worker.mjs`.
+
+**Decided with you**
+- ClamAV pulled for the local scan gate (392 MB image, about 1 GB RAM).
+- OCR on `tessdata_fast` (about 5.6 MB, vendored).
+
+**Calls made without you (any can be overruled)**
+- **An imported resume still lands in the mock library.** The draft and the profile merge are real;
+  the library document is created by the mock until P10 serves documents.
+- **No `mammoth`.** DOCX is read from its XML, because mammoth cannot report hidden runs.
+  `LIB_MAMMOTH=1.13` stays pinned in `docker/versions.env` but unused; drop it, or keep it for P10.
+- **No `isEvalSupported`.** pdfjs-dist 6.4.299 has no eval path (grepped), so the option the threat
+  model named no longer exists. Re-grep on each upgrade.
+- **The white-text heuristic compares the fill colour with what is painted behind it** (filled
+  rectangles; images count as visible, so text over a photo is never flagged). A gradient or a
+  pattern behind text is treated as the page colour.
+- **OCR runs only on embedded page images.** A PDF that draws its letters as vector paths has
+  neither text nor images, so it fails as unreadable rather than being rasterized (that would need a
+  canvas or another native dependency).
+- **The OCR threshold is 80 visible characters per page.** The spec gives none. Text pages carry
+  hundreds; scans carry none.
+- **The teaser has no score until P8,** only findings (kind, pages, readable, OCR, characters,
+  sections, hidden text). Its IP hash is salted with a value derived from `CURSOR_SECRET` rather
+  than a new secret.
+- **`resume_extract` routing reaches an existing database only on a fresh seed.** The seed inserts
+  `ai.routing` with do-nothing, so a database seeded before P7 sends that stage to `default` until
+  it is re-seeded.
+- **The `stub` scan adapter was removed from config.** `SCAN_ADAPTER` is `clamav` or `guardduty`;
+  tests use an explicit test scanner.
+- **JD files are not uploaded yet.** Web now passes a `blob:` URL for the picked JD file, ready for
+  P9, but the JD repository is still on the mock, which reads only the name and size. Web's Jest
+  setup gained `URL.createObjectURL` and `revokeObjectURL` stubs, since jsdom has neither.
+- **Year-only dates become `YYYY-01-01` in the draft.** The precision is not carried until P9's
+  timeline engine needs it.
+
+**Gaps found, not fixed**
+- **The worker image was not rebuilt.** The Dockerfile now installs pdfjs-dist and tesseract.js and
+  copies the tessdata, but `pnpm stack:up -- --profile app` has not been run since.
+- **No crafted pathological PDF.** 5.2 is proved through the time and heap limits (an 8 MB heap, a
+  slow file), not through a malicious PDF from a corpus.
+- **The per-IP teaser limit counts rows in Postgres,** not Valkey. That is fine at local scale; move
+  it to the P3 rate limiter if the teaser gets traffic.
+- **SIGTERM under Git Bash** (105.13) still applies to the worker, now with a parser thread in
+  flight.
+
+**Not proved yet**
+- **A mobile device import:** expo-file-system `File.upload` against SeaweedFS from Expo Go, on iOS
+  and Android.
+- **A live extraction:** no Claude key is set, so extraction ran on scripted provider answers.
+
+**Decide**
+- Keep or drop `LIB_MAMMOTH`.
+- Whether the OCR threshold (80) and the white-text heuristic hold on real resumes, once the real
+  corpus (M1-16) exists in a cloud account.
+
+### 105.15 P8 the deterministic quality core (2026-10-11)
+
+**Decided with you**
+- **No total without a JD (D-15) shows as "not scored".** The engine returns part scores and findings
+  but no total, so `Resume.atsScore` stays empty and both apps fall back to their existing state. A
+  view of the part scores for a document with no JD is design-gated.
+- **Engine numbers everywhere.** Every score in both apps comes from `packages/engines`; the seeded
+  totals from the boards (92, 88, 69, 72...) are replaced by what the engine computes from each
+  document and JD.
+- **The starter knowledge base is machine-generated** (flag-only, never a hard fail) until a named
+  curator approves it. Hard fails are proved with an approved test KB.
+
+## 106. Landing page (sections 1–4) drawn in Figma from the generated mockup (2026-10-11)
+
+New page **🌐 Landing page** in For-Next-Kin (`kB8acNPTg64mB2LmwA4OMb`), board `332:391`
+(1440 wide, auto layout): 01 Hero `332:392`, 02 Build smarter `333:390`, 03 Feature grid
+`333:446`, 04 Templates band `333:527`. Built from the owner's image of the top half; graphics
+are left for the owner.
+
+- **Graphics are placeholders, named `Graphic — … · replace`**: hero sky/hills background, tilted
+  resume stack, resume thumbnail, the four template previews. The portrait is the fill of
+  `Photo card — replace fill with portrait image`; delete its centre label after.
+- **Type and colour:** Plus Jakarta Sans (the brand face), violet gradient `#6E5FFF → #4733F9`
+  from the mobile palette, as in the earlier landing-page prompts. Not the web app's `#4F46E5`.
+  Desktop sizes chosen (H1 84, H2 60, body 18–20), not scaled from the image's pixels.
+- **Icons are Lucide-style strokes** drawn as SVG; swap if the owner prefers others.
+- **Copy kept from the image**, including "Picked by 2,500 users" etc. — those counts and
+  "Watch Demo" are placeholders: there are no public users or demo video yet.
+- **Sections 5–8 added the same day** from the owner's second image: 05 Career stage + cover
+  letters `334:390` (two phone mockups drawn as real UI: Career Profile, Create Cover Letter),
+  06 Testimonials `335:390`, 07 App download + 08 Footer `335:458` (footer is a card inside the
+  lavender band). New graphic slots: three review avatars, Apple/Google logos in the store badges,
+  the Alex Chen resume thumbnail.
+- **Placeholders that must not ship as-is:** the three testimonials, "4.8/5 average rating from
+  early-access job seekers" and the store badges. There are no public users and the app is not in
+  the stores.
+- **"export to PDF or DOCX"** (Professional Formatting card) is kept from the image, but DOCX is
+  Pro-only (V2 §13.3). Say so on the card, or drop DOCX?
+- **Small changes to the image:** review dates unified to "March 3, 2026" style (the image mixed
+  three formats); the 🚀 in the eyebrow chip is a rocket icon (emoji don't render reliably in
+  Figma text).
+- **Not drawn:** a mobile breakpoint.
+
+**Engines built (P8-01 to P8-09)**, all pure code in `packages/engines/src`: `provenance`, `normalizer`
+(+ `datasets/taxonomy`), `kb` (+ `datasets/kb`), `timeline`, `substitutions`, `requirements`,
+`document`, `quantified`, `rubric`, `fixes`, `markets`, `lint`, with `text`, `dates` and `canonical` under
+them. 125 tests, including the adversarial suite in `test/adversarial/`. Coverage is gated in the
+engines `test` script: `timeline.ts` 100% of lines and at least 95% of branches.
+
+**Calls made without you (engines)**
+- **The taxonomy (taxonomy-0.1.0, about 200 skills) and the KB (kb-0.1.0, 130 technologies) are
+  hand-authored starter sets,** not the licensed O*NET/Wikidata/ESCO import (P9-07). Release years
+  are the widely published ones; adoption and safe-usage years are my judgement. Both are
+  machine-generated by your decision, so they can only flag.
+- **REST is not in the KB.** It is a methodology, and the timeline checks technologies only:
+  languages, frameworks, libraries, databases, cloud, DevOps and tools. A property test found the
+  inconsistency.
+- **Ambiguous names (Go, R, C, Swift, Spring, Rust, React, Chef…) need skill context:**
+  - a whole list item;
+  - a list beside other skills;
+  - a cue word ("Go services", "Rust developer", "Go-Entwicklung");
+  - a two-word cue ("written in Go");
+  - or a usage word before a capitalised name ("tooling with Swift").
+
+  The last one is guarded: it does not apply when a proper noun or a content word follows ("with
+  Chef Ramsay", "to Express delivery"). The ambiguity list (36 cases) has zero false positives. Some
+  risk remains, for example "Trained with Chef for two years" would read as the tool. The list should
+  grow with the real corpus.
+- **Unknown skills get stable `x:` ids** and match only as whole word sequences. A JD skill the
+  taxonomy does not know can still be met, never by substring. The timeline flags them as
+  unverified for the review queue.
+- **Rubric-1 sets the method's numbers:**
+  - D-14 credit: demonstrated 100%, listed 50%, unbacked 0;
+  - a skill shown for fewer years than asked earns 50%;
+  - required requirements weigh 2, preferred 1;
+  - summary at least 15 words, skills at least 3;
+  - copied JD text means runs of 8 or more words.
+
+  All of these are versioned and pinned.
+- **Achievements is the literal share of bullets with a measurable outcome** (§7.8 says "share"),
+  not the share against a target. A resume with 60% quantified bullets gets 6 of 10.
+- **A resume with no technology claims gets the full timeline component.** There is nothing to fail.
+- **Years are counted from January** when only a year is stated ("2019–2021" is 24 months), never
+  stretched. A missing end date counts as no time and is never read as "present".
+- **The formatting facts are inputs.** For a generated document they will come from template
+  certification (P10). The mock passes "all parse-safe" for its templates, a labelled assumption.
+- **A nurse's resume against a backend JD scores 57 (fair) with a 0% JD match.** This is the honest
+  tension in the old plan's §8: structure alone carries about 60 points. The suite asserts the match
+  is 0 and the band is fair or weak; the report leads with the match (G17).
+- **The mutation suite covers P8's fabrication classes:** era-invalid technology, unbacked skills and
+  pasted JD text. It catches 313/313. The ≥ 99% bar across employers, dates and numbers belongs to
+  P9's claim ledger.
+- **Added `@vitest/coverage-v8@5.0.3`** (dev only) to engines for the coverage gate.
+
+**C-10 built (P8-10)**
+- **Shared models, additive:**
+  - `AtsScore.report`: components, JD match with "x of y required", the requirement ledger, typed
+    fixes, timeline flags, unbacked skills, what the score does not measure, provenance;
+  - `AtsCheckItem.keyword` and `fixId`;
+  - `ContentRole.roleId`, `start`, `end` and `skills`;
+  - `JdDraft.requirements` (typed, with spans);
+  - `MatchBand` gains `weak`.
+- **`packages/shared/src/scoring/`** (phone-safe): the adapters from the app's models to engine
+  inputs, and one mapping from engine results to the app's models. The server will import the same
+  mapping at P9.
+- **Every mock producer runs the engines:**
+  - generation completion, re-score on edit, fix application;
+  - the ATS check, the tailor comparison, the build flow's job match;
+  - the interview exclusions, the assistant's gaps, and the seed.
+- **Gone:**
+  - the fixed 83 (`legacyScore`) and the 96 and 95 ceilings;
+  - +4 per fix, unbacked keyword insertion and the invented bullet;
+  - substring matching, `timelineValid` read from content checks, and the summary picked from the
+    total;
+  - every seeded total (`atsScoresFixture`, `webAtsScoresFixture`, the boards' 64 and 72s) and the
+    profile's average of 87.
+
+  A test proves none of them is back (`shared/test/scoring.test.ts`).
+
+**Proved**
+- **No mock path inserts an unbacked keyword or an invented bullet.** A gap and a missing figure
+  are refused by `applyAtsFix`. Every applied fix adds only a skill the profile backs, and no fix
+  changes a bullet.
+- **A skill typed in by hand that the profile does not back earns nothing,** and the report lists it.
+- **Gates:**
+  - engines 128 tests, coverage gated;
+  - shared 64, server 93, integration 436/436;
+  - web 299/299;
+  - mobile: only the two pre-existing failures (SignUpScreen, theme tokens);
+  - typecheck and lint green in all five packages;
+  - OpenAPI unchanged.
+- **The Android release bundle exports** (Hermes bytecode, 8.1 MB) with the engines inside.
+- **Sabotage:** three engine rules broken in turn (ambiguity, KB approval, the profile yardstick)
+  failed 2, 3 and 5 tests; each restored.
+
+**Calls made without you (C-10)**
+- **The score panel's checklist is now the engine's checks:**
+  - Content: measured outcomes, summary, skills;
+  - Format: the six layout facts;
+  - Keywords: one line per requirement;
+  - Best practices: dates, education, contact;
+  - Timeline: only when a claim conflicts.
+
+  RESUMES 04's lines the number never rested on are gone: action verbs, file name, page count, the
+  portfolio link. Lint suggests and never scores.
+- **The line under the band leads with the job match:** "Meets 1 of 2 required skills. 1 skill your
+  profile backs could add N points." It is never chosen from the total.
+- **Only a skill the profile backs is a "Fix" (quick win).** A missing figure is listed with the bullet
+  it belongs to, but has no Fix pill, because the user must supply the real number. On the seeded
+  documents the quick-win count is therefore 0, and the "Fix N quick wins" bar does not show.
+- **A backed-skill fix lands as evidence:** on the role the profile shows it in (that role's skill
+  tags), or in the skills section, in the JD's wording.
+- **Seeded documents are scored against their linked job's listing,** read by the same mock
+  extractor `jd.forJob` uses. A JD of 80 words or more counts as "full", otherwise "snippet".
+- **A run with no JD id is scored against its resume's linked job** (`gen_active` → job_4). The old
+  path landed on a fixed 83.
+- **The yardstick:** a generated or edited document is measured against the profile (G16); an ATS
+  check reads the document on its own terms (an upload's own dated roles).
+- **The build flow (BUILD 04, 04b) reads required and preferred skills only.** The mock's `tools`
+  list can be stale sample text after the user edits the chips. Its job match now uses D-14: a skill
+  the profile only lists earns half. The CRED example's ring is still 80.
+- **The tailor comparison keeps the boards' row copy and page count** (TAILOR 02, W-TAILOR 01); its
+  score and keywords are the engine's. If a JD has no skill the engines can read, the score is 0, an
+  edge the screens never reach with the fixtures.
+- **`weak` jobs (below 40%) wear fair's tone** on both apps, so no new colour is introduced. The
+  jobs' seeded match percentages are untouched: computing them is P11 (M4-07), and C-11 applies at
+  that cutover.
+- **The quantified-outcome detector counts quantities written as words** ("adopted by three
+  squads"), but not "one".
+- **The tests that pinned board numbers now read the engine's.** They are:
+  - mobile: tailorFlow, buildFlow, generationsRepo, resumeContentRepo, jdExtractor, atsCheckFlow,
+    assistantContext, assistantRepo, ResumeScoreScreen, AtsFixScreen, ResumeEditorScreen,
+    SectionEditorScreen, ResumesScreen, ProfileScreen, CoverLetterSetupScreen, TailorCompareScreen,
+    AtsRun;
+  - web: ResumesScreen, TailorFlow.
+
+  `atsScoreBuilder.test.ts` was deleted with the builder; `shared/test/scoring.test.ts` replaces it.
+
+**Gaps found, not fixed**
+- **The web fixtures contradict each other.** The library's documents describe a software engineer
+  (Google SWE, Adobe), but the web profile is a UX designer (Google senior product designer,
+  Figma). Measured honestly, the one web document with a JD (`res_swe` vs Google's design JD) scores
+  49, weak. The engine offers six "skills your profile backs" (Figma, user research…). The other
+  four web documents have no linked job, so no score.
+- **The mock profile has no role descriptions,** so bullets that are George's real history
+  ("across fintech, health and education") are not backed under the profile yardstick, and Fintech
+  shows as a gap. The grounding fields (M1-07: description, responsibilities) would fix it.
+- **The boards no longer match the running apps' numbers:**
+  - RESUMES 04's 92 and four quick wins;
+  - TAILOR 02's 72 and "5 of 8";
+  - ATS 03's 64;
+  - W-TAILOR 01's 72;
+  - the base resume's ring, now in the "not scored" state (D-15).
+
+  This follows your decision; the boards may want redrawing.
+- **No part-score view exists for a document with no JD.** It is design-gated, and the engine's
+  report for such a document is computed but not stored.
+- **"Mock and server return the same fix types" is true by construction,** through one mapping in
+  `scoring/report.ts`, but not proved: the server scores nothing until P9.
+- **The mock JD extractor still finds chips with its own dictionary.** P9's extraction replaces it;
+  the typed requirements are derived from its lists.
+- **Adding the coverage package made pnpm report "-159" packages in `node_modules`.** Every gate
+  passed afterwards. The lockfile diff against HEAD also carries P5–P7's installs, so this install
+  could not be isolated.
+
+**Decide**
+- Make the web fixtures consistent (profile vs library), or keep them as they are.
+- Board redraws for the engine's numbers and for D-15's no-JD state.
+- D-07 (the score's label) is still escalated; the apps keep "ATS score".
+
+### 105.16 P9 generation and evals (2026-10-11)
+
+**Decided with you**
+- **A direct Claude key for live runs (D-23).** You add `ANTHROPIC_API_KEY` to the root `.env`, and
+  the per-developer cap rises from $2 to $10 a day. Synthetic data only (L4). Until the key is
+  there, everything runs on recorded and fake answers.
+- **Generation moves to the 5.5 family:** `claude-sonnet-5-5` for generation, `claude-haiku-5-5`
+  for the fast tier. Routing table and `pinned-versions.md` both change.
+- **P9-08 cuts over only what the server can own today:**
+  - JD intake (paste, file) with get and update;
+  - generation for runs that need no library document: Build Resume from the profile, and Zero
+    Resume;
+  - the finished document is copied into the app's library until P10 serves documents, as P7 did
+    for imports.
+
+  Tailor, ATS check, cover letter, `jd.forJob` and `jd.compare` stay listed mock fallbacks until
+  P10/P11. Interview sets stay P11.
+- **A synthetic starter golden set of 30 pairs** (golden-0.1.0), with trap families labelled. The
+  content lane extends it.
+
+**Built and proved** (P9-01…08; how it fits together is in
+`packages/server/src/pipeline/stages/README.md` and `packages/server/evals/README.md`)
+- **JD intake (P9-01).**
+  - Paste or file goes to a row that is extracting, then to the worker, then to typed fields.
+  - Every requirement must quote the JD. Items whose quote is not in the text are dropped and
+    counted.
+  - The same JD twice makes one model call (a 30-day cache, keyed by prompt version and the hash
+    of the normalised text).
+  - What you correct with PATCH is what generation reads.
+- **Canonical resume JSON (P9-02).** It is one zod schema in shared, and a generated claim cannot
+  validate without evidence.
+- **The stages per kind (P9-03).**
+  - resume: jd → plan → generate → validate → score → persist.
+  - zero_resume: jd → zero → persist.
+  - cover_letter: jd → source → letter → persist.
+  - ats_check: source → jd → score → persist.
+  - Every stage is checkpointed, and a crash resumes without a second model call or a second write.
+- **The claim ledger (P9-04).**
+  - The mutation suite catches 131/131 seeded fabrications, against a bar of ≥ 99%.
+  - Employers, titles, dates and education are copied from the facts and never generated.
+  - Violations get at most two targeted rewrites, then hard facts are stripped. End to end, the
+    result has zero untraceable hard facts.
+- **Inline skill validation (P9-05).** `Profile.skillWarnings` warns, and never blocks, on a
+  role's skill that its dates rule out (invalid), that was very new then (suspect), or that the KB
+  doesn't know (unverified). Unknown technologies in generated documents go to the system-only
+  `kb_review_queue`.
+- **Golden gate (P9-06).** The reference run over 30 pairs:
+  - zero anachronisms, untraceable hard facts, gap insertions and stripped claims;
+  - revision rate 0%;
+  - supported recall 100%;
+  - extraction precision 97.2% and recall 96.1%.
+
+  A degrading prompt fails the gate on revision rate (`test/evals.test.ts`).
+- **KB seed tooling (P9-07).** The `kb_candidates` scheduler job proposes `llm_seeded`,
+  `machine_generated` rows, each needing an https source URL. They are flag-only, as decided in P8.
+- **App cutover (P9-08).** `jd` and `generations` join the `http` flag. The shared client was proved
+  end to end: JD, then Build Resume, then the document in the library (`generateApi.int.test.ts`).
+  The Android bundle exports.
+- **Gates:**
+  - integration: 22 files, 464 tests (the authz matrix is at 241 routes);
+  - engines: 143 tests;
+  - web: 299 tests. On the final run, one `ApplicationsScreen` test passed alone and with
+    `--maxWorkers=50%`, but hit its 5 s timeout at full parallelism while the Docker stack was up.
+    That looks like load, not P9. If it recurs, raise that test's timeout.
+  - mobile: 1853 of 1855 (the same two SignUpScreen/tokens failures as before P9);
+  - db:types: current;
+  - squawk: clean.
+  - Sabotage checks, each caught: turning off the strip, the span check or the cache.
+
+**Calls I made alone**
+- **A scripted reference model stands in until the key exists.** `evals/referenceModel.ts`
+  provides grounded, fabricating and stubborn models. The suites prove the pipeline's guarantees,
+  not model quality.
+- **The 5.5 prices are carried over from 4.x and marked [verify]** in `ai/defaults.ts`, so the $10
+  cap is approximate until they are checked.
+- **The P6 hello-world stage stays on `claude-haiku-4-5`.** Moving it is your call (below).
+- **The KB has two homes.**
+  - The engines' versioned KB dataset is what the server judges by.
+  - The DB `technologies` table and `kb_review_queue` are the review side. Nothing reads them back
+    into the engines until P12's curation publishes a dataset version.
+- **The HTTP generations repo polls `GET /generations/:id`** rather than opening SSE. The SSE
+  route and the shared reader exist (P6-14). Polling is the fallback Expo Go is known to run, and
+  switching is one place in the repo.
+- **An adopt bridge** (`repos/adopt.ts`) copies a finished server document into the app's mock
+  library until P10 serves documents. It works like P7's import bridge.
+- **Cover letter and ATS check run only from server documents.** A mock library resume falls back
+  to the mock, as listed in `GENERATIONS_FALLBACKS`.
+- **Interview stays the hello-world stage** until P11.
+- **The headline is not checked as a title.** The model words it within the facts, and the ledger
+  checks the summary, skills and bullets.
+- **The ATS pipeline pins `jd.extract` as its primary template.** Its score stage uses no prompt.
+- **`eval_nightly` stays a stub** until X-11 provides a scheduler in the cloud, so the live eval is
+  on demand.
+- **No Message Batches API** for KB candidates. Each is one call under the cap.
+- **Migrations 0011–0016 are churn.** Deleting a user failed once documents existed, because a
+  reference reached along two cascade paths. 0011's set-null hit the immutable/append-only
+  triggers, so 0013 cascades instead. 0015 sets the JD and upload references to null on their own
+  column only. Each is added `NOT VALID` and validated in the next file. These could be folded into
+  the baseline with `migrate:rebaseline` (L8) before the first shared environment.
+- **I edited 0011 after it had run locally** (to add a squawk-ignore), then updated its checksum
+  in `nk_migrations` by hand. L8 allows this until `dev` exists. Another laptop that applied the
+  earlier 0011 would need the same update or a rebaseline.
+- **The JD cache is keyed by prompt version.** Publishing a new `jd.extract` version re-extracts
+  rather than reusing an older reading.
+- **Formatting facts use the PARSE_SAFE assumption** for every template until P10's certification
+  measures them.
+
+**Not proved**
+- No live Claude run of any kind; no key is set.
+- No recorded golden fixtures yet, so `--recorded` has nothing to replay and CI runs the reference
+  model.
+- D-01 (Opus vs Sonnet for generation) has no evidence yet.
+- No device run of JD → generate on either app (bundle export only).
+
+**For you**
+- **Once the key is in `.env`, run `pnpm eval -- --live`.** It records the fixtures that CI then
+  replays; commit them after reading them. Rerun with `resume_generate` routed to Opus for D-01.
+- **Should hello-world move to `claude-haiku-5-5`?** It is a one-line routing change and a re-seed.
+
+### 105.17 P10 documents and library (2026-10-12)
+
+**Decided with you**
+- **One baseline template, "NextKin Classic",** until the designer delivers the launch set
+  (P10-12). It is the single-column layout both apps already print, rendered on the server and
+  certified by parse-back. A deliberately two-column test template, never published, proves that
+  certification rejects multi-column layouts. There is no template picker until designed templates
+  exist.
+- **Delete stays permanent,** as the UI promises ("gone for good"). It removes the versions and the
+  exported files at once. The 30-day trash API and its purge are built and tested on the server
+  only, ready for a designed trash screen.
+- **Accuracy confirmation is a confirm dialog, once per version.** It is built from the spec with
+  the apps' existing confirm primitives (rule 7) and recorded on the version. The server refuses an
+  unconfirmed first export with a typed error.
+- **Chromium proof in the container.** The open fonts are bundled in the repo, and the worker image
+  is built once to prove byte-identical PDFs. Only Liberation Sans is bundled (Regular, Bold,
+  Italic; OFL 1.1, ~1.2 MB): NextKin Classic is its only user. Carlito joins when a Calibri-metric
+  template does.
+
+**Built and proved** (how it fits together: `packages/server/src/export/README.md`)
+- **Library (P10-01/02).**
+  - Every change is a new version carrying its ledger and timeline report, re-scored when the
+    document was scored before.
+  - Restore is n+1 with the history intact. Free sees 3 versions, the rest locked (restoring one
+    is PLAN_LOCKED); Pro sees 20.
+  - A stale If-Match writes nothing.
+  - Duplicate, create, rename and set-as-base work; there is one base at a time.
+  - Typed fixes: only a skill the profile backs applies.
+  - Section regeneration runs on the worker.
+  - A re-score after an edit finishes in under 10 s.
+- **Trash and purge (P10-03).** Built on the server only: recoverable on day 29, gone with its files
+  on day 31 (clock injected). A permanent delete removes the files at once.
+- **Rendering (P10-04/05).**
+  - PDF in Chromium, with JS off and every request refused except the fonts.
+  - Byte-identical across runs; warm renders take about 0.3–0.5 s.
+  - DOCX and TXT come from the same render model.
+- **Parse-back and certification (P10-06).** NextKin Classic reads back with zero loss in PDF, DOCX
+  and TXT. The two-column test template loses 5 sections and fails.
+- **Delivery (P10-07/08).**
+  - The gates hold in this order: review, DOCX on Free, email, accuracy.
+  - Links last at most 15 minutes and are attachment-named `First_Last_Title.ext`.
+  - A version's render is reused.
+  - Both apps download the real file: mobile with `File.downloadFileAsync`, web with a link.
+- **Cover letters (P10-09).** A letter cites only facts its source resume shows. An edit is a new
+  version, and a new tone is a new document (P9).
+- **Zero Resume (P10-10).**
+  - Drafts carry their checklist, and the gate holds while anything is open.
+  - Each answer is a version; blanks are refused verbatim.
+  - The last answer fills the profile through `applyDraft`.
+- **Cutover (P10-13).** `resumes` joins the `http` flag. It is proved through the shared client:
+  list, edit, regenerate, confirm, download a real PDF, a server cover letter and ATS check, a mock
+  tailor from a copy, and delete.
+- **Gates.**
+  - New suites pass: library 10, exports 7, client end to end 1, server unit 8, shared
+    canonical-edit 8.
+  - Authz matrix and RLS: 350 tests, including the new routes and the `export_events` table.
+  - openapi is current, squawk is clean, and the db types were regenerated.
+
+**Calls I made alone**
+- **The export contract is a union.** `delivery: 'file'` (backend: url, expiresAt) or `'render'`
+  (mock: html and text, printed on the device as before). The plan's contract break holds for the
+  backend; the mock cannot render a file.
+- **Gate order:** review, DOCX on Free, email, accuracy, on the server and the mock alike. The local
+  IdP refuses an unconfirmed sign-in, so the email gate seldom fires locally.
+- **New typed error `EXPORT_BLOCKED` (409)** with `details.reason`. The client has
+  `ExportBlockedError(reason)`.
+- **The accuracy prompt** is spec-derived with no artboard (rule 7).
+  - Mobile: one `ConfirmSheet` host at the root, so it rises above the tabs, the editor and a run.
+  - Web: there is no dialog primitive, so it is an inline panel under the Download button, built
+    from `brandButton`/`outlineButton`.
+  - Copy: "Is everything here true?" / "Yes, it's accurate" / "Not yet". Replace it when an
+    artboard arrives.
+- **Version caps lock; they do not prune.** §7.11's oldest-version pruning beyond 20 is not built:
+  everything is kept, and versions past the cap are locked.
+- **Section regeneration** is a new run kind, `section` (migration 0017).
+  - It is not charged against quota and writes no activity entry; §7.11's quota line is about
+    whole-resume regeneration.
+  - It is hidden from the apps' generation lists.
+  - A regenerated experience section replaces bullets only. Role headers stay as the user has them.
+  - It needs at least one profile role (`profile_empty` otherwise).
+- **Hand-typed lines are `user` claims.** The ledger reports them as "user, warned" and never
+  strips them. A skill added by a fix with no role is a `user` claim (the user applied it).
+- **A letter's facts are only those its source resume cites.** A line the user typed has no fact,
+  so a letter cannot cite it.
+- **The contact line is read from the account** when the document is read or exported. It is not
+  stored in a version.
+- **A cover letter may also export as TXT.** §7.10 names PDF and DOCX; nothing forbids TXT, and the
+  mock already allowed it.
+- **If-Match is optional** on body writes. The client sends it when it has one, and reloads and
+  re-sends once on 412/428 (the profile repo's pattern). A section write replaces only that section.
+- **Templates live in code (`export/templates.ts`).** The `resume_templates` table is not written
+  yet; publishing through it is P12's admin flow, and CI's certification test is the gate meanwhile.
+- **`docx` 9.7.2, not 9.9.** 9.9.0 was 5 days old, against the two-week rule. `versions.env` now
+  says 9.7.
+- **Byte identity.** Chromium's CreationDate and ModDate are replaced with the version's time,
+  keeping every byte offset. The user agent is pinned to "NextKin Export" because Chromium writes it
+  into /Creator, and the host OS showed there.
+- **Parse-back reads a PDF by position, line by line**: a naive ATS. Classic passes; columns fail.
+- **Mixed library.**
+  - Mock-made documents (an import's, a mock tailor's) stay in the mock library, and `list` shows
+    both.
+  - A mock run that starts from a server document (tailor, interview) first copies the document
+    into the mock store. Copies can go stale.
+  - `setAsBase` across the two can leave one base in each. This is an edge case.
+- **`importFromFile` still creates a mock document.** No path builds a version from an upload yet.
+- **`shareLink` is the only remaining `resumes` fallback.** Shared reports are P11.
+- **P10-11, the documents decision: `documents.list` stays on the mock.** Those are the user's own
+  files (certificates, ID proofs), which no spec section stores; exports are not "documents".
+- **`generationResult` now reads through the library,** so a run's result and the library agree.
+- **Finishing a Zero Resume review fills the profile in a second transaction,** after the version is
+  written. If the profile write failed, the version would still stand.
+- **Two older build bugs, found by building the image, both fixed.**
+  - Since P7 the web production build failed. Turbopack resolved
+    `new URL('./parse-worker.mjs', import.meta.url)` in `parsing/pool.ts`, a file that exists only
+    beside the worker bundle; the path is now built with `path.join`.
+  - Since P7 the worker image's second `npm install --no-save` (pdfjs, tesseract) pruned
+    `playwright-core`, so the Chromium check could not run. All three are installed together now.
+- **Prettier on the server.** The server has no prettier config, and running prettier with defaults
+  turned `pipeline/stages/resume.ts` to double quotes. I re-ran it with single quotes and a wide
+  print width; the file's wrapping differs from P9's hand layout.
+
+**Not proved**
+- No device run.
+  - `File.downloadFileAsync(url, File)` is inferred from the SDK 57 docs' example: the reference does
+    not list it, and the example passes a Directory.
+  - Neither the share sheet with a real PDF nor DOCX on a phone has been seen.
+- No browser run of the web download from a presigned link.
+- **Byte identity holds within one Chromium build, not across builds.** In the worker image,
+  `render-check` printed the same PDF hash within a run and across two container runs, with renders
+  of 50–360 ms. The hash differs from the Windows machine's (Chromium 1234, a different Skia), so
+  "identical across machines" holds only for machines running the same image.
+- No live model behind section regeneration.
+
+**For you**
+- **The accuracy prompt has no artboard**, on either app. Design it when convenient; the built one
+  follows the spec.
+- **Templates (P10-12) and a trash screen are design-gated.** The certification side and the trash
+  API are ready.
+
+### 105.18 P11 discovery and coaching (2026-10-12 to 2026-10-13, built)
+
+**Decided with you**
+- **Fixtures now, provider adapters later (D-12 still open).**
+  - A fixture adapter serves both apps' board catalogue. Its Indian, INR-priced listings are allowed
+    for provider `fixture` only, and that adapter is refused in staging and production.
+  - A recorded adapter replays hand-written, provider-shaped JSON.
+  - The Adzuna and JSearch adapters, a country selector and a currency-aware salary filter wait for
+    D-12 and X-12. There are no keys and no spend.
+- **Assistant and interview models.** `claude-sonnet-5-5` answers the assistant and writes interview
+  sets, and `claude-haiku-5-5` runs the on-topic classifier.
+  - Free gets 20 assistant messages a day and Pro 100, and every message counts.
+  - At the seeded [verify] prices, a capped Free user costs about $4–8 a month. Switching models
+    later is one routing setting.
+- **The basis label and the shared-report page are spec-derived now.**
+  - A one-line basis caption sits beside each match number on the six drawn match surfaces, and a
+    snippet listing shows only its band.
+  - A plain `/r/[token]` page shows JD-scored reports.
+  - Both use existing primitives and tokens, and both are replaced wholesale when artboards arrive.
+    You approved the exception to rule 7 for the drawn match surfaces.
+- **Skills Explorer: backend now, pages later.**
+  - Built now: the public read API (published entries only, 404 otherwise), the trending job with a
+    minimum-count threshold, the Valkey ISR cache handler, sitemap and robots, and an unpublished
+    import of the KB for P12's curators.
+  - Pages wait for artboards and curated entries, so P11-07's done-when moves to P12.
+
+**Jobs lane: built** (P11-01…P11-06, jobs part of P11-11)
+- **Providers.** The `JobProvider` port has fixture and recorded adapters and capability flags.
+  `job_provider_configs` holds enabled, priority, countries and a daily quota per provider, so
+  switching one off is a settings write (proved). The fixture catalogue has 40 listings, generated
+  from the web boards by `pnpm --filter @nextkin/server fixtures:jobs`, and a drift test catches
+  changes.
+- **Aggregation.**
+  - Fan-out in priority order behind a circuit breaker (`cb:<provider>`) and a daily quota.
+  - Dedupe on the canonical apply-URL hash, then a `pg_trgm` match on title + company and city,
+    keeping the richer listing.
+  - The cache stores normalized metadata only; the merged order lives in Valkey `jobs:<hash>`.
+  - Single-flight on a miss, in process and through a `lock:` key.
+  - The provider-down drill passes.
+- **Match `jobmatch-1`.** Q-04's ledger over listing skills read without a model, plus a 20%
+  experience weight when the listing states years. The basis is on every match; a snippet or title
+  listing shows its band and basis, never a number. An empty profile gets no match fields.
+- **Saved jobs.** `setSaved` is idempotent. The Free cap of 10 open listings is enforced under a
+  per-user advisory lock (proved with a race at 9). A listing its source closes is flagged on view
+  and kept.
+- **Endpoints.** search (signed cursor), count, picks, today's picks, saved (with notes), detail,
+  similar, by-company. JDs come from a listing without a model call (`POST /jd {source:'job'}`).
+  Server resume cards carry `linkedJobId`.
+- **Egress allowlist (P11-06).** `guardedFetch` is set per process from the adapters in use, and
+  injected into the Anthropic SDK and OIDC/jose. Lint bans the global `fetch` in `src`. A request to
+  an unlisted host fails (test).
+- **Client.**
+  - `toggleSave` is now `setSaved(id, saved)` across shared and both apps. A cap refusal opens
+    mobile's `saved_jobs` upgrade reason, and shows a toast on web.
+  - The basis caption is on the six match surfaces (your decision). JOBS 10 draws no ring without a
+    number.
+  - `partial` criteria are drawn as met, with their own spoken label.
+  - The HTTP jobs repo serves everything except applications and link import (`STAYS_ON_MOCK`,
+    which production now accepts). Applying to a server listing copies it into the mock store first.
+
+**Jobs lane: calls I made alone**
+- **One catalogue for both apps** (the web one). Mobile's boards gain web's three companies, and
+  board numbers move to engine values. Seeded match numbers in mock mode now carry a basis derived
+  from their own criteria (`method: 'fixture'`).
+- **The mock enforces the Free cap too, for parity.** The seeded Free personas hold 12 saves, so a
+  new save in mock mode is refused until one is removed (existing saves stay, §13.5).
+- **Ids come from the apply URL.** A listing's id is a v8 UUID from md5(apply-URL hash)
+  (`app.job_id_of` in SQL), computed rather than stored on `saved_jobs`. A migration UPDATE cannot
+  backfill behind FORCE row-level security. If dedupe picks a different winner later, a save keeps
+  its own hash and snapshot.
+- **Paging is offset-based.** The search cursor is a signed offset into the merged result; a
+  refresh between pages can skip or repeat a row.
+- **Picks are computed per user.** Picks are the top 10 open matches. Today's picks are the top 3
+  posted in 48 h, else the 3 freshest.
+- **The server never sets `companyVerified`.** V2 defines no verification.
+- **Link-imported saves are not seeded on the server.** They are mock records (D-17); the server's
+  cap does not count them.
+- **`jd.compare` (tailor) stays on the mock and is not on STAYS_ON_MOCK.** No server tailor stage
+  exists, so production refuses `jd: http` until one does. Server records are copied in first.
+- **The recorded adapter replays hand-written JSON.** It falls back to its `default.json`, and no
+  live provider response is committed.
+- **The Adzuna and JSearch adapters are not built (X-12).** `JOBS_ADAPTER=providers` builds no
+  provider, so search comes back empty.
+- **Job search returns no listings rather than an error when every provider is down.** It logs the
+  outage instead.
+
+**Interview lane: built** (P11-08)
+- **Pipeline.** source → jd → ground → write → check → persist, on the P6 runner.
+  - `ground` is deterministic. It runs the same engines as the ATS score over the resume's current
+    version.
+  - Eligible skills are those the resume claims and its JD asks for (required first). Without a JD,
+    every claim is eligible. At most 10 are eligible.
+  - Excluded skills are those the timeline engine flags (invalid or suspect) plus JD requirements
+    the resume does not back.
+  - `write` is one `interview_write` call (Sonnet 5.5, prompt `interview.write`).
+  - `check` is deterministic. It drops any technical question that is not about an eligible skill,
+    any question that names an excluded skill anywhere (prompt, answer or talking points, as a
+    whole term), and duplicates. It then pads from the behavioural bank to 10–20.
+  - Proved: a 2009–12 role claiming Kubernetes never yields a Kubernetes question, even from a model
+    that writes several. The redelivery drill writes one set and one activity entry.
+- **A run on a resume reads the JD that resume was made for** when the client sends none.
+- **Endpoints.** `/interview/question-sets` with list, one set, `by-generation/{id}` (null while in
+  flight), `PUT …/questions/{questionId}/mark`, `POST …/reset` and `DELETE`.
+  - A mark is one atomic jsonb update, so two marks at once both land (proved).
+  - `GET /generations/{id}/result` answers 409 for an interview run.
+- **Client.** The HTTP interview repo serves every method. `generations.start({kind:'interview'})`
+  runs on the server for a standalone set or a server document, and `start:interview` is gone from
+  the fallbacks. The client e2e (`generateApi.int.test.ts`) builds, practises, marks and deletes.
+- **Seed.** Mobile George's Stripe set is seeded on the server with its marks, and the activity deep
+  link is rewritten to the set's server id.
+
+**Interview lane: calls I made alone**
+- **The behavioural bank grew from 8 to 12 questions.** Before, a 10-question standalone set
+  repeated two questions, in the mock too. The four new ones are role-generic: feedback, a hard
+  colleague, proudest work, a missed deadline. Mobile's builder tests still pass.
+- **Exclusion is by skill name, across the whole set.** A skill flagged in one role is excluded
+  even where another role uses it validly. This is conservative, and it is what the mock does.
+- **The standalone mode also calls the model** (behavioural questions for the role title) and pads
+  from the bank. The mock's standalone set is the bank alone.
+- **The Free "1 interview set per resume" quota is not enforced yet.** The runner charges the
+  monthly `interview_set` counter like every kind, and the per-resume cap is P12's atomic quotas.
+- **The runner writes no generic activity entry for an interview run.** The persist stage writes
+  one that links to the set (`/interview/{id}`), like the mock's.
+- **A set keeps `regenerated_from_id` to the newest earlier set** for the same resume, or for the
+  same role title when standalone. Deleting a set keeps the sets regenerated from it.
+- **The web persona has no seeded sets.** Web's interview pages are "coming soon".
+
+**Assistant lane: built** (P11-09)
+- **Flow.** `POST /assistant/messages` does these steps in order:
+  1. Counts the message against the day's cap, atomically (`usage_counters`, metric
+     `assistant_message`, a UTC day).
+  2. Classifies it on the fast tier (`assistant_classify`, Haiku 5.5).
+  3. Writes both turns.
+  - An out-of-scope message gets the fixed refusal at once, after one cheap call (proved).
+  - An in-scope one comes back `streaming` with empty text. The reply (`assistant_reply`, Sonnet
+    5.5) is written into its row a few times a second, and the client reads it with
+    `GET /assistant/messages/{id}`.
+- **Context.** The open document's title, target, score and band, quick wins, gaps and section
+  names, plus the requirement ledger (up to 30 rows). No contact field and no bullet text (proved:
+  the user's email is not in the reply request).
+  - The message and the last 6 turns, each cut to 1,500 characters, go to the model as fenced,
+    contact-redacted text, never as instructions.
+- **Threads.** These are `chat_sessions`, with one current per user (0024/0025: `is_current` plus a
+  partial unique index). The endpoints are list, current, new, open and clear. An empty chat is never
+  filed into the history.
+- **Cap.** Free 20 and Pro 100. Past the cap the answer is 429 `RATE_LIMITED` with
+  `{reason: 'assistant_daily', limit, resetsAt}` and `Retry-After`. A refusal counts. A message the
+  classifier could not judge (provider down) is refunded and answers 503 (proved).
+- **Brains.** A model brain goes through the gateway (routing, failover, the contact guard and the
+  trace). A deterministic stand-in, the mock's keyword classifier and answer templates, runs when
+  `LLM_ROUTE` is fake or recorded, so local, CI and the API e2e need no key.
+- **Eval.** `pnpm --filter @nextkin/server eval:assistant` scores the 55-message scope set (synthetic
+  messages, including German, follow-ups and injection). `--live` gates at 95%.
+  - The harness is proved with a scripted classifier (100%).
+  - The stand-in scores 78%. That is reported but not gated: the bar is a claim about the real
+    classifier.
+- **Client.** The HTTP assistant repo serves every method and polls the growing reply. The e2e
+  (`assistantApi.int.test.ts`) covers chat, stream, decline, new, reopen and clear.
+
+**Assistant lane: calls I made alone**
+- **The live 95% is unverified until the API key is in `.env`.** Run
+  `pnpm --filter @nextkin/server eval:assistant -- --live`. It will make about 55 Haiku calls, for
+  cents.
+- **The reply streams in-process in the API, and the client polls.** That matches spec §9.13 (the
+  web role's streaming path) but not §11's "POST …/messages (SSE)". An SSE read of the growing
+  message can sit on the generation hub later. A reply whose writer died (a restart) reads as
+  `failed` after 3 minutes. On SIGTERM the API waits for replies still being written, up to the
+  drain deadline.
+- **The routes are `/assistant/sessions…` plus `/assistant/messages`**, not §11's
+  `/sessions/:id/messages`. A message always goes to the current chat, which is the contract the
+  apps have.
+- **The meter stays on the mock.** `getSubscription` is P12, so the apps' "N of 20 today" does not
+  read the server count yet. The server enforces the cap regardless, and the apps show the 429 as
+  a send error until P12 wires the meter and a proper cap state.
+- **The cap resets at midnight UTC**, not at the user's local midnight. The message says so.
+- **The stand-in's follow-up rule.** A short message that opens like a follow-up ("why", "make
+  it", "can you") after an on-topic turn stays in scope. "Tell me a joke" after one does not.
+- **The domain pieces moved to `@nextkin/shared/assistant/*`** (classifier, refusal line, answers,
+  context builder) so the server may import them. The mock files re-export them.
+- **Attachments are stored on the user's turn, but the model does not read them yet.** The
+  context is the `resumeId` document only, and reading an attached job or file is follow-up work.
+
+**Shared reports lane: built** (P11-10)
+- **Table `shared_reports` (0026).** Owner row-level security, plus a row in the RLS user graph.
+  Only the token's SHA-256 is stored, so a link is shown once and a database read cannot rebuild it.
+  The snapshot is frozen at share time.
+- **Redaction by construction.** The snapshot is built field by field:
+  - the score (only with a JD, D-15) and its band;
+  - each rubric part with its basis caption;
+  - the JD's requirement names with their status;
+  - up to 3 suggestions, only of the kinds that cannot name the user's employers or quote their
+    text (add a backed skill, a gap, a missing section, formatting);
+  - the method's versions.
+  - The target employer appears only with `showEmployer`, which defaults to false. Proved: no email,
+    no employer of the user's and no bullet text in the public body.
+- **Endpoints.**
+  - `POST /resumes/{id}/share` returns `{id, url}`, and a new link on every call.
+  - `GET /shared-reports` lists them, revoked ones included.
+  - `DELETE /shared-reports/{id}` revokes at once (proved). Another user's revoke is a 404.
+  - Public `GET /public/shared-reports/{token}` runs as the system role, by hash. It sends
+    `no-store` and `noindex`, and a revoked token and a wrong one both answer 404.
+- **Client.** `shareLink` is served, so `RESUMES_FALLBACKS` is now empty. A `useSharedReport`
+  query hook does one unauthenticated read.
+- **The web `/r/[token]` page is spec-derived.** It uses only Card, ScoreRing, ProgressBar,
+  StateView, Skeleton and existing tokens, and has all four states. It is replaced wholesale when
+  an artboard arrives.
+
+**Shared reports: calls I made alone**
+- **Every share makes a new link.** The token is stored only as a hash, so an earlier link cannot
+  be handed out again. Each link is listed and revocable on its own.
+- **A document without a JD can be shared.** It shows no total and no checklist, only the parts
+  and their basis. Your decision said the page shows "JD-scored reports", so tell me if sharing
+  should be refused without a JD instead.
+- **The owner's list and revoke have no client contract yet.** `ResumesRepo` has only
+  `shareLink`, so the list and revoke exist on the API, and a "manage links" surface needs an
+  artboard.
+- **Not built: social-preview cards (§4.1, Open Graph image) and the "check yours" call to action.**
+  Both are design-gated.
+- **The page is served from the web app, and mobile's share sheet hands out the URL** (APP_ORIGIN +
+  `/r/<token>`). In local development that is `http://localhost:3000`.
+
+**Skills Explorer lane: built (backend only, as decided)** (P11-07)
+- **Public read API, no session.** `GET /public/skills` (category, name fragment, offset),
+  `/public/skills/{slug}` (with related entries, published only) and `/public/skills/trending`.
+  - It runs as the anonymous app role, whose row-level security shows only published rows. Anything
+    else is a 404 (proved: the imported Kubernetes entry is a 404 until a curator publishes it,
+    then shows at once).
+  - Responses carry `Cache-Control: public, max-age=300, stale-while-revalidate=3600`.
+- **Trending (0027 `skill_trends`, the daily `trending` job).** It counts distinct users who added a
+  published technology to their profile in the last 30 days. A row is kept only at 10 users or
+  more (proved at 9 and at 10).
+  - No user id is stored, and the API publishes the rank, not the count.
+  - 0028 lets the system role replace these rows and nothing else.
+- **Sitemap and robots.** The API builds `/public/sitemap.xml` from published entries, and the web
+  app rewrites `/sitemap.xml` to it. `app/robots.ts` disallows `/api/`, `/r/` and `/dev/`.
+- **The KB import, unpublished.** `pnpm seed` files the engines' starter KB (127 entries, 118
+  `related` links) as `llm_seeded` rows for P12's curators. An existing row is never touched, and
+  0028 lets the system role link only machine-seeded entries.
+- **The ISR cache handler on Valkey** (`src/cache/nextCacheHandler.ts`). It shares entries across
+  tasks, and a revalidated tag is stale on every task. Buffers and Maps survive the round trip
+  (proved with two clients).
+
+**Skills Explorer: calls I made alone**
+- **The cache handler is built and tested, but not mounted in `next.config` yet.** Next loads it
+  as a plain module at runtime (in the standalone server too), which needs a `next build` check,
+  and there is no ISR page to cache until the Skills pages exist (P12). When it is mounted, it will
+  be the second sanctioned place the web app reaches into `@nextkin/server` (config, not app code).
+  Say if you would rather it lived elsewhere.
+- **Trending counts profile skills only.** It does not count JDs or searches. 10 users and 30 days
+  are my defaults; the spec says only "anonymous aggregates".
+- **The P11-07 done-when** ("a KB edit published in admin appears within one regeneration
+  cycle") moves to P12, as decided. The API half is proved: a publish shows on the next read.
+
+**A bug found on the way, and fixed: account deletion left interview sets behind.**
+`interview_question_sets` (0004) had no foreign key to `users`, only SET NULL links, so deleting
+a user orphaned their sets. Re-seeding a persona failed on this.
+- 0029/0030 add the cascading key (NOT VALID, then validated).
+- I deleted 33 orphaned rows from the local database by hand, as the superuser. Every other machine
+  will need the same before 0030 validates. A fresh database has none.
+- A new RLS-suite test builds a full user graph, deletes the user, and asserts no row is left in
+  any discovered user-owned table. It would have caught this.
+
+**P11 verification (2026-10-13)**
+- **Root gates.**
+  - `pnpm typecheck`: green.
+  - `pnpm lint`: green.
+  - `pnpm test`: engines 143, shared 72, server 113 and web all pass. Mobile has 2 failures in files
+    P11 did not touch (below).
+- **Integration.** `pnpm test:integration`: 694 of 712 on the core profile. The 18 failures are the
+  three suites that need opt-in profiles.
+  - With `scan` up, uploads and the ClamAV contract pass (19/19).
+  - The federated identity contract (6) needs the `auth` profile, whose mock-oauth2 image is no
+    longer on this machine. It was not pulled. P11 changed OIDC's fetch to the egress-guarded one,
+    so that contract should run once before this is called done.
+- **Other checks.** `openapi:check`, `check:pins` and squawk on every migration are clean. The
+  Android bundle exports (`expo export --platform android`).
+
+**Still open after P11**
+- **Mobile failures from other work in the tree, not P11.** Both fail when run alone.
+  - `__tests__/theme/tokens.test.ts`: `motion.scales.twinkle` is 1.25, against the test's "press
+    and exit scales inside (0, 1)" rule. The test or the new scale's home needs a decision.
+  - `SignUpScreen.test.tsx`: "Already have an account? Sign in" no longer pushes
+    `/(auth)/sign-in`. This goes with the onboarding changes.
+- **Live runs waiting on the key.** `eval:assistant -- --live` (95% bar), interview sets against
+  the real model, and recordings for both.
+- **P12 work.**
+  - The Free "1 interview set per resume" cap.
+  - Wiring the assistant meter to the server count (`getSubscription`).
+  - Mounting the ISR handler with the Skills pages.
+  - Owner-facing share-link management.
+- **Not run: a `next build` of the web app** with the new `/r/[token]` page, `robots.ts` and the
+  `/sitemap.xml` rewrite. Typecheck, lint and jest pass.
+
+### 105.19 P12 admin, billing, quotas and privacy (2026-10-13, built)
+
+**Decided with you**
+- **Payments: a fake provider plus stripe-mock.** The fake `PaymentProvider` drives the journeys
+  and tests, and stripe-mock (pinned v0.206.0) checks request shapes against Stripe's API. Stripe
+  test mode slots in at X-13 by configuration. No product code imports the Stripe SDK.
+- **Price book: spec §13.2 in USD, EUR and AUD.**
+  - Pro monthly: $19 / €19 / A$29.
+  - Pro annual: $109 / €109 / A$165, the midpoints of the indicative bands.
+  - Stored in minor units and versioned. Currency follows the billing country. INR stays in the
+    mock only.
+- **Upgrade becomes checkout.** `startCheckout(planId)` returns `{url}`. The app opens it and the
+  plan changes when the verified webhook lands. Mobile sells nothing in-app (D-18): it opens the
+  web checkout. Locally, the fake provider's checkout page completes and fires the webhook.
+- **AI consent through a spec-derived dialog.** A one-time dialog in both apps, before the first AI
+  action, names the providers and records the provider-list version. It is built from existing
+  primitives and replaced wholesale when an artboard arrives (rule 7). The pipeline refuses AI
+  stages without a consent.
+
+**Defaults I took (say if any is wrong)**
+- **The admin portal is API only.** The plan says its UI needs its own plan (rule 7).
+- **The Free interview cap counts per resume:** one set per generated resume, as §13.3 says.
+- **Deletion signs the user out everywhere at once and purges every owned row within 30 days.**
+  The statement about backups is honest about their retention.
+
+**Quotas lane: built** (P12-09)
+- **Reserve at start, charge on completion, release on failure** (0031: `usage_counters.reserved`,
+  `generations.quota_reservation` and `quota_released_at`).
+  - A start is one conditional update per meter, `used + reserved < limit`, inside the start
+    transaction. Past the cap it answers PLAN_LOCKED with `{reason, limit, resetsAt}` before any work.
+  - A failed, cancelled or timed-out run releases its slot (inside `failGeneration`), and a retry
+    reserves again.
+  - Proved: two concurrent runs at the last slot give one start and one refusal, and a cancelled
+    run costs nothing.
+- **Meters per kind.**
+  - resume: generation.
+  - Zero Resume: generation plus zero_resume (§13.3, "counts toward generation quota").
+  - Cover letter, ATS check: their own meters.
+  - Interview set about a resume: Free's one per resume, checked under a per-resume advisory lock
+    (proved with two starts at once).
+  - Standalone interview set: Free gets one a month (`interview_set`).
+- **`GET /me/subscription` is served from our tables.** Every meter carries `resetsAt` (the first
+  of next month, UTC); the assistant has `assistantResetsAt` (next UTC midnight).
+
+**Quotas: calls I made alone**
+- **Standalone interview sets on Free are 1 a month.** §13.3 caps only "1 question set per
+  generated resume" and is silent on sets without a resume.
+- **Monthly meters follow the calendar month (UTC) on Pro too**, not the billing period.
+- **Pro's uncapped meters show §13.3's published fair-use figure, 100**, as the mock already does.
+  The server still never refuses them.
+- **The board's "resumes" meter is the generation meter** ("2 of 2 free resumes" becomes
+  "N of 3").
+- **Tests that run several generations as Free users now use Pro users.** That covers the worker
+  burst tests and the standalone-regeneration test.
+
+**Billing lane: built** (P12-06, P12-07, P12-08, most of P12-10)
+- **`PaymentProvider` port** (`src/payments/`). No Stripe SDK: the adapter is plain REST through
+  the egress guard.
+  - **fake:** stateless signed checkout tokens and a local checkout page, which signs and delivers
+    its own webhooks.
+  - **stripe:** hosted Checkout Session with `price_data` from our price book, `automatic_tax`, and
+    Stripe's webhook signature scheme with a 5-minute tolerance.
+  - The contract runs against stripe-mock (3/3). It caught a real request-shape bug in plan
+    changes.
+- **Price book.** USD/EUR/AUD in minor units with `plans.price_version`. Currency follows the
+  billing country (euro area to EUR, AU to AUD, else USD). The annual badge is computed from the two
+  prices and rounded down ("Save 52%").
+- **Webhooks: persist, then process.**
+  - Verify, store (a replay is the unique violation, so nothing is stored or enqueued), then
+    enqueue `billing.webhook`. The worker applies it idempotently.
+  - An event that arrives before its dependency throws and is redelivered. Proved: a replay
+    changes nothing, a forged signature is a 400, and the wrong provider path is a 404.
+- **Entitlements read only our tables** (proved without the provider). `past_due` keeps Pro
+  through the retry window; `paused` drops to Free until resumed.
+- **Subscriber actions.** Checkout, auto-renew (period-end cancel), cycle change (prorated by the
+  gateway), one-step cancel with an emailed confirmation (the Kündigungsbutton), pause for 1–3
+  months, resume, and the 14-day withdrawal (end now, refund the first payment). All are proved on
+  the fake gateway.
+- **Invoices.** A sequential number (`NK-YYYY-000001`, 0032/0034) and the tax amount, emailed for
+  every charge.
+
+**Billing: calls I made alone**
+- **Invoice text names "NextKin" as the seller.** The legal name, address and tax ids join at X-13
+  with counsel. Your notes keep entity details out of committed files.
+- **The fake books 19% VAT and 10% GST inside EUR and AUD prices.** Real tax comes from Stripe Tax.
+- **The webhook intake uses the anonymous app role, which may insert events but never read
+  them.** So the event id is minted by us and a replay is detected by the unique violation.
+- **The "Annual" saving badge reads "Save 52%" in USD and EUR** (19×12 against 109), not the mock's
+  INR "Save 55%".
+- **Not built: German reverse-charge for business VAT ids.** Stripe Tax handles it at X-13.
+  Proration math is the gateway's (§13.4).
+- **Fixed on the way:** fake customer ids were built from a UUIDv7 prefix and collided.
+
+**Consent lane: built** (P12-12)
+- **The provider list is shared** (`@nextkin/shared/models/consent`, `providers-v1`: Anthropic, with
+  what it does). A consent records the list's version, so a new provider asks again.
+- **Every AI entry point refuses without it** (`CONSENT_REQUIRED`, 403): a JD read from text or a
+  file, a resume parse, every generation and section run, and an assistant message (before the
+  message counts).
+  - The runner checks again at every claim, so consent withdrawn while queued fails the run
+    (`consent_required`) and releases its quota.
+  - A JD made from a listing needs no consent (no model).
+- **Endpoints.** `GET/POST/DELETE /me/consents/ai`. A stale version is refused (409), so the user
+  always agrees to the list they were shown.
+
+**Consent: calls I made alone**
+- **The anonymous teaser needs no consent.** It sends nothing to a model (P7).
+- **Test users carry consent by default**, through `createUser` and the harness logins. The
+  consent suite opts out.
+- **The seeded role accounts (free@, pro@) have no consent**, so the dialog can be tried locally.
+  The personas have it.
+
+**Privacy lane: built** (P12-11)
+- **Export.** `POST /me/data-export` makes the archive, built by the worker (`account.export`).
+  - The archive holds data.json (every table holding the user's data, discovered from the catalog
+    and read as the user under RLS; session ids redacted), README.txt, and the user's uploads and
+    rendered exports.
+  - It is kept for 7 days in the exports bucket, and `GET` presigns a fresh 15-minute link (`url`,
+    additive). Proved: the archive's tables equal the catalog's list.
+- **Deletion.** `DELETE /me` acts at once:
+  - every session ends;
+  - the identity is deleted at the provider (new port method `deleteAccount`, Cognito
+    AdminDeleteUser);
+  - a paid subscription ends at the gateway;
+  - the email is released (re-signup proved);
+  - sign-in is refused.
+  - The daily `account_purge` then removes files by reference and the user row, and expired
+    archives leave the bucket. Proved: no row survives in any `user_id` table.
+
+**Privacy: calls I made alone**
+- **The purge runs within a day** (the next daily run). §8.5 allows up to 30 days, and nothing waits
+  for a grace period. Say if you want an undo window first.
+- **Deleting an account ends a paid subscription with no refund.** The withdrawal flow is where a
+  refund lives.
+- **The archive leaves out `idempotency_keys`** (transient request replay data, not the user's).
+- **No download button exists in either app yet.** Both only show the state; the `url` is there for
+  when a screen draws one.
+- **The backups statement** in code says backups age out on their retention (35 days once X-05 sets
+  it) and are never restored for a deleted account. Counsel's privacy policy should say the same.
+- **Fixed on the way:** catalog discovery ran `has_table_privilege` on other schemas' tables
+  before filtering; it now uses each row's own schema.
+- **Added the `jszip` dependency (3.10.2, already in the tree through docx) to `@nextkin/server`.**
+
+**Support lane: built** (P12-13)
+- **The FAQ and the legal documents are versioned content** (0036 `content_documents`; users read
+  the newest published version) and are seeded from the mock's copy as version 1.
+- **Tickets are stored** (`support_tickets`) **and emailed to `SUPPORT_INBOX` with the request id.**
+  Proved through Mailpit.
+- **The legal text is the product's placeholder copy until counsel's drafts replace it as version 2**
+  (M3-11).
+
+**Admin lane: built** (P12-01…P12-05, the API only)
+- **Roles and permissions** (`services/admin/permissions.ts`). Super Admin, Admin, Content Curator
+  and Support (§7.17) map onto ten permissions, checked on the server for every route.
+  - Super Admin comes from the admin pool's `super_admin` group at sign-in and rides on the
+    session.
+  - A staff-only gate runs before validation (anonymous is 401, a user session 403).
+  - The authorization matrix probes every admin route as all seven roles: 746/746.
+- **Audit (P12-02).**
+  - Every admin change writes its audit row in the same transaction (0037 lets the system role
+    insert audit rows only with a named staff actor).
+  - Search and CSV export are available. A nightly `audit_export` job writes one JSONL object a day
+    to the audit archive bucket.
+  - Proved: the log can be neither altered nor deleted by the system role or an admin session.
+- **Users (P12-05).**
+  - Search and inspect (status, tier, usage, security events), through the staff read-only role.
+  - Suspend or reactivate with a reason code; every session ends and sign-in is refused (proved).
+  - Password reset through the identity provider (admins never see a password).
+  - Process a deletion, and comped Pro for 1–12 months.
+  - A resume's content only with a reason of 10 characters or more, the read itself audited
+    (proved).
+  - Role assignment by Super Admin only, staff accounts only (new port method `setGroups`).
+- **Prompts (P12-03).** A version moves draft → staged → evaluate → active, and **a staged version
+  cannot be activated without a passing evaluation of that exact version** (proved).
+  - Evaluations run on the worker (`prompt.evaluate`), tagged `eval`: the golden set gate for
+    jd.extract / resume.generate / resume.revise, and the scope set for assistant.classify.
+  - Any other template is `unsupported` and cannot be published (proved).
+  - Rollback re-activates an earlier version.
+- **The Technology KB (P12-04).**
+  - CRUD, with edits audited as before/after.
+  - Approve, publish or reject; a reviewed date needs a cited source.
+  - CSV or JSON import that imports the valid rows and lists the rest per row (proved with two
+    good and two bad rows).
+  - A review queue of machine candidates plus users' reports (shown without who sent them).
+  - Dataset versions.
+- **The rest.**
+  - Templates publish only when certified (Q-06, proved).
+  - A plan price change is a new `price_version` (proved), and quotas are editable.
+  - Job providers: toggle, order and cap them, and set a **write-only key** through the new
+    `SecretsPort`. Proved: the key is never in a response or an audit row and is readable only by
+    reference.
+  - Aggregate analytics (users, runs, the score distribution, AI spend by tag, subscriptions, quota
+    use), and the rubric with its evidence.
+
+**Admin: calls I made alone**
+- **Which role holds what.**
+  - Support can search and inspect users and read the audit log, but cannot suspend, reset or
+    comp anyone ("read-mostly").
+  - Curators cannot see users at all.
+  - Analytics is open to every staff role (aggregates only).
+- **Prompt evaluations with no live model** (fake or recorded route) use the scripted reference
+  model and record `mode: reference`. Such a pass shows the candidate is well-formed and the
+  pipeline holds, not that the model is good. In staging and production the route is live, so
+  the evaluation is real.
+- **Templates with no evaluation cannot be published:** cover.write, zero.generate, interview.write,
+  assistant.reply, kb.candidate and hello.summary. Each needs an eval before its prompt can
+  change.
+- **The secrets stand-in is Valkey** (`SECRETS_ADAPTER=local`, refused outside local and test).
+  Secrets Manager comes at X-05.
+- **The KB that validation reads is still the engines' code dataset.** Curated DB entries feed the
+  Skills Explorer, and publishing a dataset version records a version but does not yet replace the
+  engines' set (the curated import is P9-07's follow-up).
+- **Rubric administration is read-only.** A new rubric version ships with calibration evidence
+  through code (G15), never from the portal.
+- **Not built: the admin UI.** It needs its own plan (rule 7).
+
+**Client lane: built** (P12-14, the contract side)
+- **`UserRepo` is fully served** (`USER_FALLBACKS` is empty): subscription, plans, billing and its
+  settings, deletion, the data export, consent, and the subscriber actions.
+  - New methods: `cancelSubscription`, `pauseSubscription`, `resumeSubscription`,
+    `withdrawSubscription`, `getAiConsent`, `grantAiConsent`.
+  - The mock implements them all and never refuses for consent (its accounts agreed).
+- **`upgrade(planId)` returns `{kind: 'done', subscription} | {kind: 'checkout', url}`.**
+  - The mock still upgrades at once.
+  - On mobile, a checkout opens in the browser (D-18), then the screen reads the subscription
+    every 3 s for up to 2 min and shows the same confirmation when the webhook has made it Pro.
+  - The web returns to `/settings`.
+- **`SupportRepo` is served** (FAQ, legal, tickets).
+- **Money types widen to `INR | USD | EUR | AUD`.** Mobile and web format each currency, with INR
+  kept for the mock.
+- **The AI consent dialog in both apps** (spec-derived; mobile's ConfirmSheet, web's Radix dialog
+  in existing tokens). It opens on any AI action refused with `CONSENT_REQUIRED`, through one
+  listener on the shared query client. After agreeing, the person repeats the action.
+
+**Client: calls I made alone**
+- **Agreeing does not re-run the refused action.** The toast asks the person to try again.
+  Replaying a mutation from a global hook would skip each screen's own success handling.
+- **The dialog shows on refusal, not before every first AI action proactively.** The refused
+  action runs no AI, so nothing reaches a model before consent.
+- **The web's scrim is the primary text token at 40%.** There is no scrim token.
+- **No screen yet for cancel, pause, withdraw or "manage subscription".** The repo methods are
+  there; the Kündigungsbutton screen needs an artboard (rule 7). The web Settings auto-renew switch
+  already cancels at period end through `updateBillingSettings`.
+
+**An accident I caused and repaired: the threat model's header (2026-10-13)**
+- A multi-line pattern in a Node one-liner, meant to update six status cells, matched from the top
+  of `aws/security/threat-model.md`. It replaced the first 22 lines (the title, the introduction,
+  the status legend, the STRIDE key and the Assets heading) with one status string.
+- The file is untracked, so git had no copy. I restored those 22 lines verbatim from this
+  session's transcript of the P0-05 write that created them, then re-applied the six row updates
+  line by line.
+- The file is 150 lines again, with every threat row and the full review log.
+- **Check that the header reads as you expect.** If it was edited between P0 and now, that edit is
+  not in what I restored (I found no later edit to it).
+
+**P12: still to note**
+- **`docs`/`documents` stays on the mock.** Uploads of career documents wait for their own design,
+  so P12-14's "(if served)" is not taken.
+- **Config:** `PAYMENT_ADAPTER=stripe` now needs both Stripe keys or the config refuses to load, and
+  `SECRETS_ADAPTER=local` is refused outside local and test.
+
+**P12 verification (2026-10-13)**
+- **Root gates.**
+  - `pnpm typecheck`: green.
+  - `pnpm lint`: green.
+  - `pnpm test`: engines 143, shared 72, server 113 and web 299 all pass. Mobile has the same two
+    failures as before P12, in files P11 and P12 did not touch (`motion.scales.twinkle`, and
+    SignUp's sign-in link).
+- **Integration (scan and pay profiles up).** 1,039 of 1,045 pass. The 6 failures are the
+  federated identity contract, which needs the mock-oauth2 image (not on this machine, not pulled).
+  - The first full run had 5 more failures (exports, library, pipeline), which passed alone and
+    in a second full run. They came most likely from an earlier integration run I had started in
+    the background, still running alongside.
+- **Other checks.** `openapi:check`, `check:pins` and squawk on every migration are clean. The
+  Android bundle exports.
+
+**Still open after P12**
+- **The admin UI** (its own plan, rule 7).
+- **The Kündigungsbutton, pause and withdrawal screens**, which need artboards. Their API and repo
+  methods exist.
+- **Stripe test mode in all three currencies with tax: X-13.**
+- **Live prompt evaluations and the assistant's 95% bar: waiting on the API key.**
+- **The federated identity contract run:** pull mock-oauth2 when you say so. P11 also routed OIDC's
+  fetch through the egress guard.
+- **Secrets Manager (X-05), Object Lock on the audit archive (X-05), and the curated KB replacing
+  the engines' code dataset.**
+
+### 105.20 P13 local hardening (2026-10-16, built)
+
+**Decided with you**
+- **Downloads: the small tools only.** k6, gitleaks, OSV-Scanner and mock-oauth2 may be pulled. Not
+  Trivy (and its vulnerability database), not the OWASP ZAP image, and the `app` profile's
+  production images are not built.
+  - So the ZAP baseline and Trivy's image scan are written exceptions in the checklist, to run when
+    you allow them or in CI.
+  - k6 runs against the local Next server (`next start` on a production build where possible),
+    not the `app` image, and its numbers are relative baselines only.
+- **Degraded modes: backend plus a spec-derived banner.** A `/health/features` endpoint reports
+  which capabilities are degraded. Both apps show one small banner built from existing primitives
+  (rule 7, replaced when drawn). The drills check that it appears.
+- **Runbook owners are roles, not people.** A roles table maps each role to a person once the team
+  exists.
+**Built and verified**
+- **Degraded signal and banners.** `GET /api/v1/health/features` reports `ai`, `jobs`, `payments`
+  and `email`. A capability is marked when its port fails and cleared on its first success, with a
+  5-minute TTL in Valkey. The AI gateway marks only when every provider in a route fails on an
+  outage class; aggregate job search marks when any provider degrades.
+  - Billing provider failures answer 503 with a plain message, and the plan is unchanged.
+  - A support ticket is still created when its email fails.
+  - Both apps poll the endpoint every 60 s and show one dismissible notice built from existing
+    primitives. Mobile uses a NoteBar under the safe area; web a fixed bottom notice.
+  - Proved by `degradedP13.int.test.ts`.
+  - **Unverified:** the banners have not been seen on a device or in a browser against a degraded
+    backend. The shared status logic has a unit test (`packages/shared/test/serviceStatus.test.ts`); the banner components have none. Check both apps before shipping.
+- **Resilience drills** (`pnpm drills`, 4/4). Records in `aws/drills/2026-10-16.md`.
+  - **Found and fixed:** a lost idle Postgres client crashed the process (no pool `'error'`
+    handler). Database outages answered 500, now 503 with `Retry-After`.
+- **Restore drill:** 2.7 s for the restore path at 5,000 synthetic users, row counts identical.
+  - **Found:** a restore with `--no-owner` fails under FORCE RLS. It restores as the superuser.
+- **DLQ tooling merged.** P6-05 already had `dlq:replay` (generation-aware). P13 had started a second
+  tool beside it; the two are now one module (`src/ops/dlq.ts`) and one CLI.
+  - `pnpm dlq list` inspects without consuming.
+  - `pnpm dlq:replay` keeps its old flags, dry run unless `--apply`, and adds `--type`.
+  - `src/entrypoints/dlq-replay.ts` was deleted; the root script now calls the merged CLI.
+- **k6 baselines** (`tests/load/`, record `aws/drills/load-2026-10-16.md`).
+  - CRUD p95: read 191 ms, write 284 ms, cached search 332 ms, all within budget, 0 failures.
+  - 500 generations in 5 minutes all ready, nothing stuck, charged once each.
+  - 200 SSE streams held to the server's 5-minute close, with reads at p95 35 ms.
+  - `pnpm load:users` signs synthetic Pro users in through the identity adapter in-process, to
+    stay under the per-IP auth limit.
+  - **Found and fixed:** malformed generation ids answered 500 (now 404, plus a 22P02 → 400
+    backstop); pool exhaustion answered 500 (now 503); `next build` was broken by
+    `import.meta.dirname` in two server modules.
+- **Scans.** gitleaks clean over history and tree, with `.gitleaks.toml` allowlisting build output,
+  `.env`, fixtures and four test placeholders. OSV: 27 advisories, triaged in
+  `aws/security/checklist-local.md`.
+- **Federation against the real mock-oauth2 container:** a new contract case (`mockOauth2.int.test.ts`)
+  drives its login form. It passes with the `auth` profile up and is skipped without it.
+- **Runbooks** (`aws/runbooks/`, seven, owner roles plus a roles table) and the local checklist
+  (`aws/security/checklist-local.md`). Threat model: 3.6, 5.6 and X.6 proved; 4.5 and X.3 built;
+  new row X.11.
+
+**Judgement calls made without you**
+- **`next` 16.3.4 → 16.3.8 and `sharp` 0.35.4 → 0.35.5.** This is a dependency change in the
+  product, made because the scan found an RCE (`next/og`), an SSRF (image optimizer) and cache
+  poisoning in the server's host, all fixed in a patch release.
+  - 16.4.x was refused because it is under two weeks old. `next` is now `~16.3.8`, so it stays on
+    16.3.x.
+  - `sharp` is held by an `overrides` entry in `pnpm-workspace.yaml`; remove it once `next` requires
+    0.35.5.
+  - A first `pnpm update -r sharp` also moved metro, postcss, rolldown and yaml. That was reverted;
+    the lockfile differs from before only in next, eslint-config-next and sharp.
+  - `pnpm web:build` passes on 16.3.8. Mobile is untouched.
+- **`poweredByHeader: false`** in `apps/web/next.config.ts`. Pages sent `X-Powered-By: Next.js`.
+- **Runbooks live in `aws/runbooks/`**, not `doc/runbooks/` as `aws/guide.md` said. `doc/` is
+  gitignored, and runbooks must be shared. The guide was corrected.
+- **SSE "held 30 minutes" became "held to the server's 5-minute close, kept up 6 minutes".** The
+  server closes streams at about 5 minutes by design. A 30-minute run is `-e DURATION=30m`.
+- **The SSE test runs with the worker stopped**, so runs stay live. Afterwards the sweep failed
+  160 of the 200 as `timed_out` with quota released. That is correct behaviour, not a defect.
+- **The load and restore volume users were removed afterwards** (`pnpm load:users -- --remove`,
+  `pnpm seed -- --remove-volume`).
+
+**Open**
+- **No CSP or frame protection on web pages.** The API sends `nosniff`, `no-referrer` and CORP;
+  pages send none of these. A CSP needs testing against Next's inline scripts and the fonts, so it
+  was not shipped blind. It is what a ZAP baseline would flag first.
+- **Rate-limit classes are configured but only the default class is tested to 429.** Auth, `ai`,
+  assistant and upload each need a test at their limit.
+- **5 of 1,801 reads failed during the SSE run (0.28%).** They were probably 429s: all the reads
+  were on one account at exactly its 300-a-minute class. Not verified. The script now spreads them.
+- **Whether the apps' stream clients back off on an early close** is not checked. The first SSE
+  attempt showed what a client without back-off does to the server.
+- **Exceptions until you allow them or X-06:** the ZAP baseline, Trivy, the Inspector image gate,
+  and building the `app` images.
+- **Roles table:** every role's person is TBD in `aws/runbooks/README.md`.
+- **`.gitleaks-report.json`** from the first scan was deleted. Report files now go to the
+  scratchpad or are allowlisted.
+- **Web jest times out under the full parallel run.** `DocumentsScreen` and `ApplicationsScreen`
+  each hit the 5 s test timeout when `pnpm test` runs every worker while Docker is busy. They pass
+  alone and in a full run with `--maxWorkers=50%` (299/299). This is not caused by P13 (those
+  screens do not render the banner), but `pnpm test` is red on this machine until the timeout or
+  worker count changes.
+
+**Corrected from P12**
+- **The identity contract's federated cases were failing because of the egress guard, not a
+  missing mock-oauth2.** Since P11-06 the token exchange goes through `guardedFetch`, and the
+  contract never allowed 127.0.0.1 for its in-process fake issuers. It does now: 19/19.
+- **ClamAV and stripe-mock had stopped two days earlier.** The scan and payment suites failed until
+  they were started (`--profile scan --profile pay`; no download). With them up, `pnpm
+  test:integration` is 43 files and 1,049 tests, all green.
+
+**Gates at P13 exit (2026-10-16)**
+- `pnpm typecheck` green; `pnpm lint` green; `openapi:check` up to date; `check:pins` green;
+  `pnpm web:build` green; Android export green.
+- `pnpm test`: engines, shared and server green. Mobile has the 2 known failures (motion scale
+  1.25, SignUp link). Web has the 2 contention timeouts above.
+- `pnpm test:integration`: 1,049/1,049, with the `scan`, `pay` and `auth` profiles up.
+
+### 105.21 P13 follow-ups: page headers, rate-limit classes, green tests, banners (2026-10-16)
+
+**Built and verified**
+- **Page security headers** (`apps/web/proxy.ts`, `src/lib/securityHeaders.ts`).
+  - CSP: `default-src 'self'`; scripts `'self' 'unsafe-inline'` (`'unsafe-eval'` in dev only).
+  - Images and connections allow our origin plus storage. Locally that is the S3 endpoint; in the
+    cloud, `https://*.s3.<region>.amazonaws.com`.
+  - `frame-ancestors 'none'`, `frame-src 'none'`, `object-src 'none'`, `base-uri 'self'`,
+    `form-action 'self'`; `upgrade-insecure-requests` unless an allowed origin is plain http.
+  - Also `X-Frame-Options: DENY`, `nosniff`, `strict-origin-when-cross-origin`, a permissions
+    policy that denies the camera, microphone, geolocation, payment and USB, and COOP `same-origin`.
+  - Proved:
+    - unit tests;
+    - Chromium over 13 production pages: 0 violations, framing from another origin blocked;
+    - a dev run on the backend: sign-in, the banner and a real JD upload POSTed to storage, 0
+      violations.
+  - Every route is still static.
+- **Found by the browser run:**
+  - The uploader reads the picked file from its `blob:` URL, so `connect-src` needs `blob:`.
+    Without it, every browser upload would have broken.
+  - zod 4 probes `Function("")` on first parse, a CSP violation on every page. The web app now
+    imports `@nextkin/shared/schemas/jit` first, which turns zod's JIT off.
+- **Rate-limit classes** (`rateLimitsP13.int.test.ts`, 9 cases). Auth, generations, assistant and
+  presign, signed in and signed out, each reach 429 with `Retry-After` exactly at their limit.
+  - **Found and fixed:** the assistant shared the generations bucket (both were named `ai`), so
+    chatting spent the generation allowance. §9.11 keys counters per route, so the assistant now
+    has its own `assistant` bucket.
+- **`pnpm test` is green.**
+  - Web: `maxWorkers: '50%'` in `apps/web/jest.config.js`. The heaviest screen tests take 2–3 s
+    alone and timed out at 5 s with 23 workers beside Docker. The 5 s timeout is kept.
+  - Mobile's two long-standing failures were stale tests, not bugs:
+    - `twinkle: 1.25` is a deliberate growth scale, so the test now checks that the shrink
+      scales stay in (0, 1) and the twinkle stays above 1.
+    - SignUp's "Sign in" link uses `router.replace` on purpose (the screen says so); the test
+      expected `push`.
+- **Banners.**
+  - Web: seen in Chromium against a backend with `ai` and `payments` marked degraded. One notice
+    at the bottom of the window reads both messages and has Dismiss.
+  - Both banner components now have tests (mobile with React Native Testing Library, web with
+    Testing Library).
+
+**Judgement calls made without you**
+- **No nonce-based CSP.** A nonce would make every page dynamic, undoing the static, prefetchable
+  routes of §84. Next's own guide prescribes `'unsafe-inline'` for that case. The policy still
+  blocks foreign scripts, plugins, `<base>` hijacking, foreign form posts and framing.
+  - Revisit if Next's hash-based SRI leaves experimental and covers the inline RSC scripts.
+- **A proxy, not `next.config` headers**, because the storage origin is runtime config and the
+  same build runs locally and in the cloud.
+- **The test fixes changed tests, not product code**, because the code and its comments state the
+  intended behaviour.
+
+**Gates (2026-10-16)**
+- `pnpm typecheck`, `pnpm lint` and `pnpm test` green:
+  - engines 143;
+  - shared 75;
+  - server 113;
+  - mobile 1,863/1,863;
+  - web 306/306.
+- `pnpm test:integration`: 1,058/1,058 (44 files). `pnpm web:build` green.
+
+**Open**
+- **The mobile banner has not been seen on a device.** There is no emulator or SDK on this machine.
+  Mark a capability degraded with
+  `docker compose --env-file docker/versions.env exec valkey valkey-cli SET degraded:ai '{"since":"2026-10-16T00:00:00Z"}' EX 600`.
+  Then open the app in Expo Go on the backend (`EXPO_PUBLIC_DATA_SOURCE=http`): a note bar should
+  appear under the status bar within a minute, and a tap hides it.
+- **No favicon.** Every page logs a 404 for `/favicon.ico`. It predates this work.
+
+## 106. Web onboarding, one question at a time (Desktop/Web, 2026-10-17)
+
+The owner asked for web onboarding after sign-in, in an input style: name, goal, experience,
+whether they have a resume, and quick questions if not. The sign-in page was deliberately left
+out. There are nine 1536 × 960 boards: row 1 at y −1400 and row 2 at y −240, from x 25475.
+
+**Layout.** Logo top-left; "Step x of 4" with a progress bar and "Skip for now" top-right. A
+single question column holds the eyebrow, a Bold 40 question, help text, the answer, Continue with
+an "or press Enter ↵" hint, and Back. On the right is a white panel with mobile art and a "Your
+profile so far" card that fills in as the user answers.
+
+| Board | Id | Answer style |
+|---|---|---|
+| ONB 01 · What's your name? | `807:3` | Big underlined input |
+| ONB 02 · Your goal | `807:53` | A/B/C/D option cards and "The role you want" |
+| ONB 03 · Your experience | `807:136` | A–E year chips and current or last job title |
+| ONB 04 · Do you have a resume? | `807:215` | Two choice cards: Yes, I'll upload it / No, help me make one |
+| ONB 04b · Upload your resume | `808:2` | Drop zone, reading progress ("Found 4 roles and 12 skills"), Continue disabled while reading |
+| ONB 05 · Your recent work (No branch, 1 of 3) | `808:88` | Title, company and dates; "I haven't worked yet"; Add another role |
+| ONB 06 · Your skills (2 of 3) | `808:175` | Suggested skill chips from the job title, plus add your own |
+| ONB 07 · Your education (3 of 3) | `808:266` | Degree, school and year; skippable |
+| ONB 08 · Your starting point | `808:348` | Profile card with a "Draft · check it" summary built from the answers, skills, next-steps checklist, and **Go to my dashboard** |
+
+**Judgement calls**
+- **The starting-point summary is marked as a draft.** It's built only from the answers (honesty
+  rules, Zero Resume §7.9). It is a profile summary, not a generated resume, so it uses no
+  generation quota.
+- **Next steps** mirror the §7.2 guided checklist (profile → add a job → generate). The dashboard's
+  own first-run state is still undrawn.
+- **The Yes branch** returns to the profile review after reading. That step reuses the existing
+  upload review and isn't drawn here.
+- **Example copy:** the goal options, the experience bands (matching ZERO 01's), the skill
+  suggestions and the NID education.
+- **App code is unchanged.**
+
+### 106.1 Onboarding redrawn from the owner's mocks (2026-10-17)
+The nine ONB boards were rebuilt in place (same ids) to follow the owner's mock layouts, using the
+web board's tokens and existing icon sets.
+
+**Shared layout**
+- White page; the illustration sits on the right with no panel box, and the "Your profile so far"
+  card sits beneath it.
+- Questions are a Bold 42 headline. ONB 02 adds a grey second line, "What are you aiming for?".
+
+**Per screen**
+- **01:** a boxed name input with a person icon (focused, lavender), a full-width Continue, and an
+  Enter hint underneath.
+- **02:** option rows with an illustrated icon tile and a radio on the right: graduation cap,
+  briefcase, link (switch field), location (exploring). "The role you want" has a clear ×.
+- **03:** experience cards, 3 + 2, with icon tiles (grad cap, lightning, briefcase, chart, crown)
+  and radios. The job title has a clear ×.
+- **04:** two choice cards with a large circular illustrated icon (Upload PDF; the owner's
+  document icon `770:8`) and a check or radio.
+- **04b:** the drop zone has the upload icon, "Drag and drop your resume here", **Browse files**,
+  and "PDF or DOCX". The file row reads "Read · 4 roles and 12 skills found" with a green check.
+- **05:** inputs with icons; From and To are dropdowns; "Add another role" has a filled plus.
+- **06:** a 3 × 3 grid of skill cards, each with an icon tile and a check (selected) or + (not).
+- **07:** degree, school, and a narrow year dropdown, plus "Skip this question".
+- **08:** the starting-point card, numbered next steps (1 ✓, 2, 3), and **Go to my dashboard**.
+
+**Departures from the mocks, on purpose**
+- **"Max 5MB" was dropped**: no upload limit is specified. So was the mock's "2.4 MB" file size.
+- **The new character illustrations in the mocks** (George at a laptop, holding a resume,
+  climbing steps, "You're all set") don't exist in the file. The boards reuse the existing mobile
+  art. Placeholders for the mock art can be added if the owner will draw it.
+- **Skill icons are UI glyphs in tinted tiles.** The illustrated set has no per-skill icons.
+
+### 106.2 Onboarding brought closer to the mocks (2026-10-17)
+The owner asked for the boards to be "a little more like the reference designs". The changes:
+
+**Size and type**
+- Boards are now 1536 × 1024 (were 960) so the larger type fits.
+- Headline is Bold 56/64; the second line is SemiBold 40/48.
+- The question column is 740 wide.
+- Art is 600 × 440; the profile card is scaled 1.18 and sits under the art.
+- The logo and progress bar were scaled up.
+
+**Floating callout cards around the art, as in the mocks**
+- **01:** "This will be on your resume".
+- **02:** Better opportunities, Career growth and Achieve your goals, each with an illustrated icon.
+- **04:** PDF and DOCX badges.
+- **04b:** "We'll read it automatically and fill your profile".
+- **05:** "Build your journey".
+- **06:** Turn ideas into products, Design better experiences and Solve real user problems.
+- **08:** a checklist (Profile complete, Experience added, Skills selected, Ready to go) plus "You're all set!".
+- **03 and 07:** no callouts (the mocks have none worth copying).
+
+**Other fixes**
+- **06:** skill chips set to text 16 with 14 px padding, so no label breaks mid-word.
+
+**To check**
+- The 06 callouts repeat the mock's design-specific copy, which suits George's sample profile. In
+  the product they would have to come from the user's own skills, or be cut. Nothing in them claims
+  a result.
+- The callouts are tilted ±4–12°. That is a new decorative pattern for web, taken from the mocks
+  per the "no counterpart → match the mock" rule.
+
+## 107. Web onboarding ONB 01–04 built (Desktop/Web, 2026-10-18)
+
+The owner asked for ONB 01–04 (`807:3`, `807:53`, `807:136`, `807:215` in NEXKTKIN-PVT). They live
+at `/onboarding`, `/onboarding/goal`, `/onboarding/experience` and `/onboarding/resume`, outside
+the `(app)` shell. The code is `apps/web/src/features/onboarding`. The boards had been redrawn
+since §106.2: each now carries a raster illustration (`817:30`, `817:33`, `817:36`, `817:39`), and
+those are what was built.
+
+**Assets**
+- The four illustrations are 2x node exports in `public/illustrations/onboarding-*.png` (590–770 KB
+  each, in line with `assistant-robot.png`). Each is placed at its board offset inside the art area
+  (`STEP_ART`), so the gap above the card differs per step, as drawn.
+- Every option icon was already in the app, matched by path count and fills: education,
+  experience, links, location, skills and insights are the Profile set; "Upgrade to Pro" is
+  `nav-upgrade`; "Upload Pdf" is `jd-art-upload-file`; "Term of Service" is `assistant-terms`.
+- The logo is new. The board draws a four-point sparkle cluster ("Group 99"), not the sidebar's
+  `logo-mark`. It is `assets/figma-illustrations/onboarding/onboarding-logo.svg`, run through
+  `build-illustrations.mjs`. **To check:** whether this sparkle is the new brand mark everywhere,
+  or only onboarding's.
+
+**Sized to the compact ramp, not the board (§16)**
+- Headline `text-hero` (32), second line `display-l`, body `body-l`, option labels `title-l`.
+  The board's 56 / 40 / 19 / 19.
+- The columns are 540 + 380 in a 1064 frame, against the board's 740 + 519. All four steps fit
+  1396×670 and 1536×730 without scrolling. This was checked in Edge.
+- The name box is `h-12` (48), the only control here off the three heights. The board draws it
+  visibly larger than the role and title boxes (73 vs 59), and that emphasis was kept.
+- Selection is the indigo border on `surface-brand-strong`, with no shadow, per §32. The board
+  adds a faint glow.
+
+**Judgement calls on behaviour**
+- **Answers start empty unless the account already holds them.**
+  - The name, job title and experience band are prefilled from the user and profile.
+  - The goal, the role wanted and the resume choice start unselected. The boards show George's
+    choices made.
+  - The role field's placeholder is "e.g. Lead UX Designer". The web profile's first desired role
+    is "Senior UX Designer", which would not match the board.
+- **The web fixtures are not the board's George.** The web profile says "UX Designer" and 3–5
+  years, so ONB 03 opens on those, not the board's "Senior UX Designer" / 6–10. **Owner, 2026-10-18:**
+  the board's data is only there to show how real data will look, so the fixtures stay as they are.
+- **What is saved, and when.** Each Continue writes what the profile has a field for, using the
+  existing mutations:
+  - the name, through `useUpdateName` (split at the first space);
+  - the goal, as `preferences.careerGoal`;
+  - the role wanted, which goes first in `preferences.desiredRoles`;
+  - the experience band, as `preferences.experienceBand`;
+  - the job title, which becomes `headline`.
+
+  Failures show an error toast and the flow carries on.
+- **Goal and band are now profile preferences (owner, 2026-10-18).** `CareerGoal` and
+  `ExperienceBand` are in `packages/shared/src/models/profile.ts` and `profilePreferencesSchema`.
+  - Preferences are a jsonb column merged with `||`, so the server needed no migration.
+  - The band is still never written to `yearsExperience`: a band is not a count, and the profile
+    would claim a precision nobody gave (G13).
+  - Returning to ONB 02 or 03 starts from the saved answer. A band saved before beats the band
+    the years fall in.
+  - The resume choice only picks the way on, so it is not saved.
+  - **Unverified:** the backend integration tests did not run, because Docker Desktop was not
+    running. The change is two optional enum fields on a strict schema. `pnpm stack:up &&
+    pnpm test:integration` is still owed.
+- **"Your profile so far" fills as you type**, as ONB 02 draws it. The Resume row stays a grey bar
+  on ONB 04 even with a choice made, as the board draws it. It fills once there is a resume.
+- **Continue needs an answer** (a name, a goal, a band, a choice). The role and job title are
+  optional. The boards draw Continue enabled only because an answer is shown.
+
+**Deferred**
+- **ONB 04b–08 are not built.** The last Continue (either choice) and "Skip for now" go to Home
+  (`ONBOARDING_EXIT`).
+- **Nothing routes a new user here yet.** There is no sign-up on web, and `SessionGate` knows
+  nothing of onboarding. Open `/onboarding` directly.
+
+**Unverified**
+- No side-by-side pass at the board's own 1536×1024. Only the two laptop windows were checked.
+- No keyboard-only walk-through beyond Enter-to-continue, which the tests cover.
+- No screen-reader pass.
+
+### 106.3 ONB 06 skills became capsules (2026-10-18)
+The owner said icon cards would not hold up over a long skill list. The 3 × 3 grid of icon cards is
+now one wrapping row of pill chips, with no icons:
+- **Selected:** indigo outline, #EEF2FF fill, SemiBold text and a check.
+- **Not selected:** white with a slate hairline, Medium text and a +.
+
+Four extra suggestions were added so the board shows how long names wrap: Visual design,
+Interaction prototyping in code, Workshop facilitation and Design QA. They are sample content
+only.
+
+### 107.1 ONB 02 updated from `826:2` (2026-10-18)
+The owner sent a revised ONB 02 (`826:2`). The only change from `807:53` is the four goal icons.
+- **What changed:** each goal now has its own illustration (`827:136` first job, `827:151` better
+  role, `827:165` new field, `827:134` exploring). Each is drawn bare, with no tinted tile behind
+  it, and is about 55 wide on the board.
+- **How it was built:** the four icons are exported to `assets/figma-illustrations/onboarding/goal-*.svg`
+  and run through `build-illustrations.mjs`.
+  - `OptionCard`'s `tone` is now optional. Without it, the art stands bare at 44 wide.
+  - ONB 03 keeps its tiles, as `807:136` still draws them.
+- **Unchanged:** the right-hand art (`826:154`). Its 2x export is byte-for-byte the same size as
+  `onboarding-goal.png` (716,069 bytes).
+- **Checked:** in Edge at 1396×670. The step still fits without scrolling.
+
+### 107.2 ONB 04b · Upload your resume built (`808:2`, 2026-10-18)
+The page is `/onboarding/upload`, the "Yes, I'll upload it" from ONB 04. It stays on "Step 4 of 4":
+the bar counts the four questions (`ONBOARDING_PAGES` / `ONBOARDING_STEP_COUNT`).
+
+**How it works**
+- **Reading:** a file is read the moment it is picked or dropped. This uses the shared
+  `useImportResume`, the same parse mobile's upload uses.
+  - While it reads, the row's bar breathes, the copy says "Reading your resume…", and Continue
+    is disabled, as the board describes.
+  - When done, the bar fills and the row reads "Read · N roles and M skills found". N and M are
+    counted from the parse's draft, never from the board's "4 roles and 12 skills".
+  - "Your profile so far" then shows the file name on its Resume row (808:86).
+- **Formats:** only PDF and DOCX, per the board's "PDF or DOCX". There is no size limit, as in
+  §106.1.
+  - Another type gets an inline alert.
+  - A scan or a photo gets the §7.4 unreadable message, and the zone takes another file.
+- **Art:** the right-hand art is `817:42`, exported at 2x to `onboarding-upload.png`.
+  - The drop zone's icon is the board's own bare variant (`814:354`), saved as `upload-resume-file.svg`.
+    ONB 04's choice card uses the shared one with a lavender square (`814:275`).
+  - "Browse files" uses the folder glyph from the Documents set, because the icon sets have no
+    open-folder glyph.
+
+**Judgement calls**
+- **The draft is not applied.** The board's help text says "You can check everything before it's
+  saved", and V2 §7.4 commits nothing until the user accepts the rows. The review screen for that
+  is not drawn on web, so the profile is left untouched. Continue goes to Home for now.
+  - The resume itself does land in the library. The import creates it, as on mobile.
+  - **Needs:** a web upload-review board (or a decision to reuse mobile's), then Continue goes there.
+- **Replacing a file** creates a second library document, because each import makes one. The
+  mock and the API work the same way. Say if a replaced upload should delete the first.
+- **Coming back** to 04b shows the last file read, with its summary, and Continue enabled.
+
+### 107.3 ONB 05 and 06, the quick questions, built (`808:88`, `808:175`, 2026-10-18)
+"No, help me make one" on ONB 04 now goes on to `/onboarding/work` (ONB 05) and then
+`/onboarding/skills` (ONB 06). These count on their own, "A few quick questions · n of 3", as the
+boards print it. The profile card swaps its Resume row for **Recent job** and **Skills**
+(808:168, 808:172).
+
+**ONB 05 · Your recent work**
+- **Fields:** job title, company, and From / To. Each new role starts from the profile's most
+  recent one (a current role first, else the latest start).
+- **Month picker:** the board never draws From or To open. They are a year with arrows over a 3 × 4
+  month grid, on the app's Radix menu, rather than a list of every month for decades.
+  - "Present" sits at the top of To.
+  - Future months and months before From can't be picked. Changing From to after To clears To.
+- **Add another role:** adds a block with a "Role 2" heading and Remove. Continue needs every field
+  of every role.
+- **"I haven't worked yet — skip this":** dims the fields, saves nothing, and goes on to skills.
+  The card reads "Not yet".
+- **Saving:** Continue saves each new or changed role through `useUpsertExperience`, as the profile
+  editor does. A role edited from the profile keeps its id and its skill tags. New roles get a
+  non-UUID id, so the API creates them. End dates are the month's last day, as the profile stores
+  them.
+
+**ONB 06 · Your skills**
+- **Suggestions from the job title:** nothing in the product mapped titles to skills, so
+  `skillSuggestionsForTitle` was added to `packages/shared/src/models/suggestions.ts`.
+  - There are four families, matched by words in the title: design, product management,
+    engineering and data. Anything else gets a general set.
+  - The design set is the board's 13 capsules, in its order.
+  - The title is ONB 05's role, else ONB 03's job title, else the profile headline.
+- **Nothing is picked for the user that they had not already said.**
+  - The profile's own skills start picked. The board's "5 picked" only shows the format.
+  - Any profile skill outside the suggestions joins the end of the list, so nothing already held
+    goes missing.
+- **"Add your own":** Enter in a non-empty field adds and picks the skill without continuing. Enter
+  on an empty field continues, as everywhere else.
+- **Saving:** Continue needs at least one skill and saves the picked set through
+  `useUpdateSkills`.
+
+**Assets and layout**
+- **Art:** `821:382` and `821:383`, exported at 2x to `onboarding-work.png` and
+  `onboarding-skills.png`.
+- **Art area:** `STEP_ART` now uses board coordinates. The quick questions' area starts at y 160,
+  not 103, so the five-row card still fits 1396×670 (checked in Edge). Both drawings start below
+  y 160 on their boards.
+- **Small departures:**
+  - The company field uses the Apartment glyph from the icon sets for the board's building icon.
+  - The selected capsule's ink is `brand-700` for the board's raw `#3730a3`.
+
+**Code and deferred**
+- **Refactors:** `onboardingSteps.ts` was split (the answer options moved to
+  `onboardingOptions.ts`), and the tests are now three suites sharing `testSupport/onboarding.tsx`.
+  Both keep files under 250 lines.
+- **Deferred:** ONB 07 (education) and 08 (starting point). ONB 06's Continue goes to Home until
+  they exist.
+
+### 107.4 ONB 07 and 08 built; the whole onboarding works end to end (`808:266`, `808:348`, 2026-10-18)
+The owner asked for ONB 07–08 and for every ONB page to work. Both ways through now end on ONB 08:
+- questions → upload → `/onboarding/done`
+- questions → work → skills → education → `/onboarding/done`
+
+I walked both in Edge at 1396×670. Every page fits without scrolling, and the console shows no
+errors apart from the known favicon 404.
+
+**ONB 07 · Your education** (`/onboarding/education`, "A few quick questions · 3 of 3")
+- **Fields:** Degree (one field; "B.Des, Interaction Design" splits at its first comma into degree
+  and field), School or university, and a narrow Year finished. They start from the profile's
+  latest qualification.
+- **Year picker:** a year menu, twelve years at a time with arrows. It allows up to six years
+  ahead, for a course still running.
+- **Optional, as the board says:**
+  - Blank, or "Skip this question ›", goes on and saves nothing.
+  - Once begun, degree and school are needed.
+  - The button reads "Create my starting point".
+- **The card adds an Education row** ("B.Des · NID Ahmedabad, 2017") and tightens its rows to fit
+  six. Its art area starts 20 board px below the drawing's top, so it fits the window; the drawing
+  rides up into empty space rather than being cut.
+
+**Year finished is stored honestly. This needed a small shared change:**
+- **Shared model:** `Education` gained `endPrecision?: 'year'`. A year finished is stored as that
+  year's last day, marked year-precise.
+- **Schema:** the education schema now accepts `startDate: ''`, which the server already returned
+  for rows with no start.
+- **Server:** `educationRow` writes the precision to the existing `end_precision` column (its
+  CHECK already allows `'year'`), and `profileRead` returns it. The facts pipeline already reads
+  precision as a partial date, so generated resumes say "2017", not "Dec 2017".
+- **Web profile:** the Education card prints such an entry as "2017", or "Jul 2013 – 2017" when it
+  has a start (`studyDates`).
+- **Old dates:** a changed degree or school is a different qualification, so the entry's old
+  dates don't carry over. Unchanged, they are kept as they were.
+- **Unverified:** Docker Desktop is not running, so `pnpm test:integration` has not been run
+  against the server change. The server unit tests (113) pass.
+- **Mobile:** mobile's education screens still assume a full start date. On the mock they never
+  see onboarding's entries; on the API a row with no start reads back as its end date. Worth a look
+  when mobile moves to the API.
+
+**ONB 08 · Your starting point** (`/onboarding/done`)
+- **Header:** "All done" with a full bar. No Skip, and no profile card: the drawing (`821:384`)
+  fills the column.
+- **Starting point card:**
+  - initials, the name, and "{title} → aiming for {role}";
+  - a "Draft · check it" badge, which links to `/profile` so the check is one click away;
+  - the summary, and up to six skills (then "+N more").
+- **The summary is built only from the answers** (`startingSummary`, G13). A missing answer drops
+  its clause rather than being guessed. Example: "Senior UX Designer with 6–10 years of
+  experience, most recently at Flipkart. Works across User research, Design systems and Figma, and
+  is looking for a Lead UX Designer role."
+  - Skills keep their own casing; the board lowercases them.
+  - The board's "a lead role" became the role as typed.
+  - It is a profile summary, not a generation, so it uses no quota (§106).
+- **After a reload** the page falls back to the saved profile (name, headline or latest role,
+  band, goal, desired role, skills), so it still says something true.
+- **Next steps** (the §7.2 checklist):
+  - "Your profile" ✓;
+  - "Add a job you want…", which opens `/upload-jd`;
+  - "Generate your first tailored resume", plain text because it needs a job first.
+- **"Go to my dashboard"** goes to Home.
+
+**Also changed for "all functional"**
+- ONB 04b's Continue now goes to ONB 08, not Home. The parsed draft is still not applied (§107.2).
+- ONB 06's Continue goes to ONB 07.
+
+**Still open**
+- Nothing routes a new account into `/onboarding`: there is no web sign-up yet.
+- Answers live in memory, and each step saves to the profile as it continues. A reload
+  mid-flow re-seeds from the profile, not from the unsaved answers.
+- The upload review screen (§107.2) is still undrawn.
+
+## 107. Web sign up, drawn from the owner's reference (Desktop/Web, 2026-10-18)
+Board **AUTH · Sign up** (`841:2`, 1536 × 1024) sits left of ONB 01, at the start of the
+onboarding row.
+
+**Layout (from the mock)**
+- A white card on a slate page.
+- Left: an inset indigo "silk" gradient panel holding the logo, a small lead-in and a big two-line
+  headline.
+- Right: the form.
+  - Name, email (focused), password with a show toggle.
+  - A terms checkbox and a full-width CTA.
+  - "Have an account? Log in", an "Or" divider, and Google + Apple side by side.
+
+**Departures from the mock, on purpose**
+- **"Our partners" logo strip** (Discord, Instagram, Spotify, YouTube, TikTok) **removed**. They
+  are not our partners, so it is fake social proof. In its place, "What you get" shows three
+  honest chips: Tailored resumes · ATS score with its basis · Nothing made up.
+- **Copy fixes.** The mock's sign-up said "log in to your account" and its CTA read "Log in". Now:
+  "Create your free account to build your first resume" and **Create account**. "Forgot
+  Password?" is dropped, since it belongs on sign-in.
+- **The methods follow V2 §7.1:** email + password, Google and Apple. There is no OTP, which is
+  deferred in Release 1.
+- **The gradient uses web indigo tones**, not the mock's royal blue.
+
+**Open for the owner**
+- **Password rules.** None are specified (Cognito's default is 8+ characters), so no hint is drawn.
+- **Email verification.** §7.1 requires it before the first download. That screen is not drawn.
+- **Sign in and forgot password.** Neither is drawn yet, though both can reuse this card.
+- **"Free".** The subtitle says "free account", which relies on the §13 Free plan.
+- **Auth in code stays design-gated** (CLAUDE.md rule 7). This board is the design, not a build.
+- **Logo (2026-10-18).** The owner pointed to the real NextKin logo, `304:2786` in Header
+  `304:2784`: the gradient mark on a white circle, a DM Sans Bold wordmark, and the tagline "With
+  AI that won't lie on your resume". That lockup now replaces the sparkle stand-in.
+  - On AUTH · Sign up it is scaled 1.25. The wordmark is white and the tagline #C7D2FE, so they
+    read on the blue panel.
+  - On all nine ONB boards it is scaled 1.3 and keeps its original colours.
+  - At that size the tagline is about 7 px, which is a property of the lockup itself.
+- **The "What you get" chip row is gone** from the sign-up panel. It disappeared between edits, so
+  it is assumed to be a deliberate owner removal and was not restored.
+- **Tagline dropped (owner, 2026-10-18).** The logo copies on AUTH · Sign up and ONB 01–08 show
+  only the mark and the wordmark, centred on each other. The owner asked not to add "With AI that
+  won't lie on your resume".
+
+
+## 108. Live resume generation through OpenRouter (Backend, 2026-10-18)
+
+The owner asked to test resume generation against job descriptions with OpenRouter for now, in place
+of a direct Claude API key (D-23).
+
+**What was built**
+- **A new `openrouter` route** (`packages/server/src/ai/providers/openrouter.ts`).
+  - It calls OpenRouter's Anthropic-compatible Messages endpoint (`https://openrouter.ai/api/v1/messages`) with the Anthropic SDK and a bearer key.
+  - Request and response code is shared with `claudeDirect`.
+- **New config:** `LLM_ROUTE=openrouter` and `OPENROUTER_API_KEY`.
+  - The key is a developer key like `ANTHROPIC_API_KEY`. It is refused in staging and production, and the route is local-only (L3).
+  - Calls through it are tagged `dev` and count toward `AI_DAILY_CAP_USD`.
+- **`openrouter.ai` joins the egress allowlist** only when the route or the key is set.
+- **`pnpm eval -- --openrouter`** runs the golden set live through OpenRouter and records the answers into `evals/recordings`.
+
+**Judgement calls (please review)**
+- **Model ids stay Claude ids** everywhere: routing, prices, trace and recording keys.
+  - The provider translates them on the wire (`claude-sonnet-5-5` → `anthropic/claude-sonnet-5.5`).
+  - So recordings made through OpenRouter replay for `claudeDirect` and in CI.
+  - If OpenRouter's upstream answers differ in any way, those recordings carry that difference.
+- **OpenRouter chooses the upstream host** (Anthropic, Bedrock or Vertex). No provider pin is set.
+- **The cap is costed with PRICES_DEFAULT, not OpenRouter's bill.**
+  - On 2026-10-18 OpenRouter listed claude-haiku-5.5 at $0.10/$0.50 per MTok, where the table has $1/$5. That makes the cap conservative for the fast tier.
+  - claude-sonnet-5.5 matched the table ($2/$10).
+- **Synthetic data only (L4).** OpenRouter is a third-party processor not in the threat model. No real user's resume may go through this route.
+
+**Unverified**
+- The wire test stubs fetch. Whether a live call works (cache_control passthrough, forced tool_choice) is confirmed only by the first live run.
+
+## 109. The AI assistant answers for real, and the OpenRouter cap is enforced (Backend + Web, 2026-10-18)
+
+The owner tested `/assistant` on the live backend (`LLM_ROUTE=openrouter`). "Hi" came back "Out of
+scope", a career-gap question got a canned paragraph, and an attached resume PDF was ignored. The plan
+is in three parts: unblockers (here), greetings and the whole resume (§109.2), and attached files
+(§109.3).
+
+### 109.1 Unblockers (Phase A)
+- **Why it was canned.** `http/singleton.ts` chose the model brain only for `claudeDirect` and
+  `claudeAws`. Under `openrouter` the API ran the keyword stand-in (`assistant/brain.ts`), which wrote
+  all three replies without a model call (about 50 ms each).
+- **Fix.** `ai/build.ts` now exports `LIVE_ROUTES` and `isLiveRoute(config)`. The API's brain and the
+  worker's `liveEvals` (P12-03 prompt evaluations, run only when an admin releases a prompt) both ask
+  it, so a new route is added in one place.
+- **Verified on the running app.** A seeded test account asked "How do I explain a career gap?" and
+  then "Hi". Each made one `assistant_classify` (Haiku 5.5) and one `assistant_reply` (Sonnet 5.5)
+  call through OpenRouter, and both answers were real.
+- **My OpenRouter change (§108) had broken the cap.** `app.ai_calls.provider` had a CHECK without
+  `'openrouter'` (0007), so every trace insert failed and the day's spend read as zero.
+  - **0038** widens the check (`NOT VALID`) and **0039** validates it, the 0032/0033 pattern.
+  - `ai/trace.ts` now holds a rejected developer row's cost in the process for the rest of the UTC
+    day, so a future rejected row can't switch the cap off again. It logs at error level, naming the
+    provider and stage.
+  - Tests: `test/aiRoutes.test.ts` (the route table and the fallback) and
+    `test/integration/aiTraceP14.int.test.ts` (an `openrouter` row inserts, and the cap stops the next
+    live call).
+- **The cap now trips for real.** `.env` has `AI_DAILY_CAP_USD=10`; the code default is $2. Raise
+  the value for long manual sessions.
+- **A dev-server restart is needed after server or `.env` changes.** The API instance is cached on
+  `globalThis`; `apps/web/README.md` now says so.
+
+### 109.2 Greetings, and the whole resume (Phase 1)
+- **A greeting is answered at once.** "Hi", "good morning", "thanks", "danke" and up to six words of
+  filler around them are matched by `greetingKind` (`shared/src/assistant/domain.ts`).
+  - `sendMessage` writes both turns complete with `greetingAnswer`.
+  - No classifier or model call, and **not counted** against the daily cap (my call: it costs
+    nothing). A refusal still counts.
+  - The mock repo does the same, so web on the mock layer and mobile also say hello.
+  - Anything more than a greeting ("hi, write my essay") goes to the classifier as before.
+- **The assistant reads the open resume's text** (owner: "all the things from resumes"; V2 §7.16
+  "answers reference that document's actual content").
+  - `shared/src/assistant/documentBody.ts` copies headline, summary, skills, roles (title, company,
+    period, location, skills, bullets), education, certifications and projects.
+  - It never reads `contact` or `links`.
+  - Every line goes through `redactPersonal` (`shared/src/privacy/contact.ts`): email and phone
+    shapes, URLs and the user's first and last name become `[email]`, `[phone]`, `[link]` and
+    `[name]`.
+  - Caps: 12 roles, 8 bullets of 400 characters, 24k characters in all, oldest roles trimmed first.
+  - **Decide:** I kept role locations (a city is not an address); say if they should go too. Names
+    are matched as whole words, so a surname that is also a common word is redacted wherever it
+    appears.
+  - The body is built on the server only (`services/assistantContext.ts`). The shared builder never
+    sets it, so mobile's no-bullet-text test still holds for the phone.
+- **Prompts v2** for `assistant.classify` and `assistant.reply`.
+  - **Classify:** greetings and small talk are in scope, and a message sent with a resume or file
+    (`hasAttachment`) is about it.
+  - **Reply:** quote the exact lines that need work, never treat the redaction markers as flaws,
+    and greet back briefly.
+  - The seed now carries a `version` per prompt. It activates a newer seeded version only while an
+    older seeded one is active, and never replaces a version an admin activated.
+  - **Shared environments:** prompt releases there go through P12-03's eval gate, not the seed.
+- **Eval.** The scope set gained greetings, thanks, attachment questions and two traps ("Hi, can
+  you write my essay…", "Write a poem about this" with a file). Results:
+  - Live through OpenRouter: **64/64 (100%)**, $0.04.
+  - The keyword stand-in is reported, not gated, as before.
+- **The seeded personas' resumes were unreadable on the backend** (found here, fixed here).
+  - `seed/personas.ts` stored the mock's editor shape in `resume_versions.content`, so the server's
+    canonical reader returned 404. That broke the editor, the assistant, the ATS check and
+    (upcoming) tailoring for george.smith@….
+  - New `shared/src/scoring/fromContent.ts` maps editor content back to canonical JSON. Every line
+    is the user's own (`origin: 'user'`, no evidence), and Zero Resume items stay `assumed`. The
+    seed validates every body against the schema, so a bad fixture fails the seed.
+  - A version the server still cannot read no longer fails the message: the context keeps the card
+    and the score.
+  - **Not carried over:** the editor content's `companyLogoUrl`, which the canonical schema has no
+    field for. On the backend, seeded resumes' previews draw no employer logos.
+- **Verified live.** As george.smith@gmail.com with the base resume attached:
+  - "Hi" got the hello naming *Product Designer Resume*;
+  - "What is wrong in my resume?" quoted its real bullets and named its empty sections.
+- **Web:** the attach menu's "Base resume" label reads `isBase`, not `variant === 'default'`. The
+  server marks every untailored resume 'default'. The web fixture `res_pd` now carries
+  `isBase: true`.
+- **Still open (Phase 6):** a PDF attached from the computer is still not uploaded. The message is
+  classified with `hasAttachment`, and the reply has no text to read, so the model says it cannot
+  see the file.
+
+## 110. Upload a JD → the JD's own page → tailoring, made real (Desktop/Web + Backend, 2026-10-18)
+
+The owner found the flow broken on the live backend:
+- Analyze ended on a green note with three plain links.
+- No page could show a pasted JD.
+- The tailor steps ran on the mock.
+
+The owner's flow:
+- paste text or a link;
+- see the job;
+- "Tailor your resume";
+- a dialog to pick an existing resume or upload one;
+- W-TAILOR 01–04 for real.
+
+The phases are §110.1 (the JD page), §110.2 (the comparison and the dialog), §110.3 (the server's tailor run) and §110.4 (uploading a resume).
+
+### 110.1 The JD's own page (Phase 2)
+- **`/jd/[id]`** (`features/jd/screens/JdPageScreen.tsx`) is the 02b job page (724:2) for a JD.
+  - It reuses `JobPageTop` (new `variant: 'jd'`), `JobSummary`, `Responsibilities`, `Qualifications` and `AiToolsCard`.
+  - `jobFromJd` (`shared/src/jobs/fromJd.ts`) builds the `Job` and says which facts the JD stated (`known`). The page leaves out the defaulted ones instead of printing a guess.
+  - Left out, because a JD has no such thing: posted, applicants, Save, the Overview/Company tabs, Benefits, the Company card and Similar jobs.
+  - Back goes to Upload a JD, and Jobs stays lit in the sidebar.
+  - **Decide:** Similar jobs could come back as a title search; it is hidden for now.
+- **"Required"** under Qualifications lists the JD's own lines under its qualifications heading.
+  - A nice-to-have heading, or any other section heading, ends the list.
+  - With no such heading, it falls back to the required skills that were read.
+- **A real match card.** `GET /jd/{id}/match` runs the listing match engine (`jobmatch-1`) over the JD, with its basis.
+  - Under 80 words it gives the band without a number (§105.18), as listings do.
+  - **My call:** tools the JD names count as preferred skills.
+  - **Copy gap:** the caption is the listing's, "From the full listing", even on a JD.
+  - On the mock layer there is no card, because the mock has no engine run for a JD.
+- **V2 §7.5's review, "Edit details"** (spec-derived; no board draws it).
+  - Every read field is editable: title, company, location, level, type, both skill lists, tools and responsibilities (one per line).
+  - A skill moves between required and nice-to-have with its arrow.
+  - "The full description" is open beside it and closed on the page.
+  - The fields are new (`features/jd/components/SkillListField.tsx`, built from `ChipsField`'s chip and the field box). `ChipsField` only picks from a list.
+- **A JD that could not be read** opens on the review ("We couldn't read this as a job description. Enter its details yourself").
+  - Saving a title plus one skill or responsibility makes it usable (`services/jd.ts` `enteredByHand`). §7.5: "allow manual entry of the structured fields".
+  - The upload screen's error links there: the HTTP repository now keeps the failed draft's id on the error (`unreadableJdId`).
+- **Upload a JD no longer dead-ends.**
+  - Each tab's button reads the JD and opens its page (`useAnalyzeAndOpen`), saying "Analyzing…" until the page arrives.
+  - The green note and its three links are gone.
+- **Reading quality** (found on the running app with a synthetic JD):
+  - "Bachelor's degree…" and "0–2 years of experience…" came back as required *skills*, so the match read "0 of 8". "JavaScript and TypeScript" came back as one skill.
+  - **The model proposes, code decides (G14).**
+    - `verify` drops a "skill" longer than six words, or one that names a degree or years of experience.
+    - It splits "A and B" when every part is a skill the taxonomy knows ("Research and development" stays whole).
+    - A responsibility is its verified quote, the JD's own line, so the model cannot shorten it.
+  - **Prompt `jd.extract` v3:** skills are one named skill each, and every responsibility is listed whole.
+  - **Result:** ten clean skills, 7 of them required, and all five responsibilities verbatim.
+  - The golden set's extraction is unchanged (precision 97%, recall 96%, reference model), and no gold label is touched by the filter.
+- **The local database had a test's stub prompt live.**
+  - `adminP12.int.test.ts` rolled back to the newest *archived* version, which after its first run is its own earlier stub ("Every item must quote the text."). So every run of the suite left that stub as the live `jd.extract`. It was why the running app's readings were poor.
+  - The test now restores exactly the version that was live before it.
+  - Seeding now:
+    - installs a seeded version under the next free number when an admin or a test has used its number;
+    - activates it over a live version whose author no longer exists, such as a test's deleted curator.
+
+    Seeding runs only on local and test databases.
+- **Tests:**
+  - web `__tests__/features/jd/JdPageScreen.test.tsx`;
+  - the Upload a JD suite (it now asserts navigation);
+  - shared `test/fromJd.test.ts`;
+  - server `test/jdSkills.test.ts` and `test/integration/jdPageP14.int.test.ts` (the match, an empty profile, manual entry);
+  - the authz matrix entry, and `openapi.json` regenerated.
+- **Verified on the running app** at 1536×730 and 1396×670 (Edge): the paste opens `/jd/<id>` in about 1–6 s, depending on the cache.
+
+### 110.2 A real comparison, and "Which resume should we tailor?" (Phase 3)
+- **W-TAILOR 01 is the server's now.**
+  - `GET /jd/{id}/comparison?resumeId=` (`services/tailorCompare.ts`) scores the resume's own text against the JD with the engines. No model call, no quota, no AI consent: it reads only the user's own documents.
+  - **The yardstick is the resume itself (G16)**, the measure the tailored version will be scored by, so "Up from N" compares like with like.
+  - A listing's comparison goes through its JD (`POST /jd {source:'job'}`, no model call).
+  - The pure parts are shared by the mock and the server (`shared/src/scoring/tailorComparison.ts`): keywords from the requirement ledger, the improvement rows, D-15's `scored`.
+  - The page count is an estimate (`scoring/pages.ts`, a line budget) and says so ("About 1 page").
+  - On the running app, the web persona's base resume against the synthetic Northwind JD scored 53 (Weak), 1 of 11 keywords (AWS, which a bullet names).
+- **The dialog** (`features/tailor/components/TailorResumeDialog.tsx`; spec-derived from mobile TAILOR 01, 606:2; no web board):
+  - centred over the job page, title "Which resume should we tailor?", the job under it;
+  - a radio list of the user's resumes, base first, each with "Base resume · Updated …" or "For Google · Updated …" and its ATS score;
+  - Cancel, and **Compare with this job**.
+- **Where it opens:**
+  - "Tailor your resume" on a job's page and on a JD's page opens it in place.
+  - The Jobs list's links go straight to the flow, which asks first, as mobile does.
+  - In step 1, "Change" opens it.
+- **The pick rules are shared** (`models/tailor.ts`): `tailorableResumes` and `defaultTailorPick`, moved from mobile, which re-exports them.
+  - **Decide:** they now also leave out archived resumes and blank drafts, on mobile too. Mobile's fixtures have neither, and its 1863 tests pass.
+- **Fixed on the way:**
+  - The default pick used `variant === 'default'`, which every untailored server resume has. It is `isBase` now.
+  - On the live backend the resume list also showed the web mock's six example resumes beside the server's. The dialog offered `res_pd`, a mock id. A served library now leaves out the mock's seeded resumes (`seededResumeIds`), so the Resumes page on the backend loses those duplicates too.
+  - **Not fixed (same cause):** the generations list (History) also merges the mock's seeded runs on the backend.
+  - Step 2's "In “…”" matched a keyword's stem anywhere, so "CI/CD" pointed at "Computer Science". It now matches whole words first. On a JD it quotes the JD's own lines, so nice-to-have skills point at the line that names them.
+- **Still on the mock: "Create my resume".** A tailored run with a base resume goes to the mock until §110.3 (`servedOnServer`).
+- **Production refusal:** it is unchanged. `jd.compare:from-mock-document`, a comparison that names a mock document, is a dev-only fallback like `generations.start:from-mock-document`.
+- **Tests:**
+  - web: the tailor suite (the dialog from the job page, the flow asking first, a JD target end to end), the JD page (the dialog), the Upload a JD suite;
+  - server: `test/integration/tailorCompareP14.int.test.ts` (the engine's own numbers, a stranger's resume 404, an unread JD 409) and the authz entry;
+  - shared: 87 tests;
+  - mobile: 1863 tests.
+
+### 110.3 Tailoring runs on the server (Phase 4)
+- **"Create my resume" is the server's now.**
+  - A tailored run of a server resume goes to `POST /generations` with `tailoring {fixes, experience, keywords}` beside `baseResumeId` (`servedOnServer`, `toTailoring` in the shared HTTP repo).
+  - Only the ticks travel. The server measures the baseline and works out what was skipped, so a client cannot claim a score.
+  - Mobile's runs leave the parts unset, which means all of them, every role.
+- **The run's facts are the picked resume's own lines** (`services/tailorStart.ts`, `scoring/documentFacts.ts`):
+  - contact-redacted, plus the ticked keywords as listed skills;
+  - the ticks also go on the profile, as BUILD 04c's do;
+  - the base version, the baseline and the skipped keywords are pinned on the run, so a retry tailors the same lines to the same rules (G12).
+- **One measure** (`scoreAgainst`, `pipeline/stages/persist.ts`). W-TAILOR 01's comparison, the run's baseline and its result go through the same function, with the base's own lines as the yardstick (G16). Edits of any version use it too.
+- **Code decides the merge** (`pipeline/stages/tailorMerge.ts`, G14), after the validation loop:
+  - a part switched off is the base's, word for word;
+  - a quick edit rewrites the two most recent dated roles; an undated role is never rewritten; employers, titles and dates are never touched;
+  - the headline, when aimed, is the JD's title without a "(m/w/d)" marker;
+  - **Decide:** the skills are the base's own, never the model's list. With the skills fix on, the ones the job names move first, in the job's order (W-TAILOR 02's "Skill order"). The ticked keywords are always listed. Nothing is taken off.
+  - with the length fix on, bullets are dropped from the oldest roles first (three stay on a recent role, one elsewhere), never reworded, until the estimate fits two pages;
+  - education, certifications, projects and a Zero Resume draft's open review stay the base's.
+- **A keyword the user didn't tick never gets in.**
+  - The claim checker has a new hard rule, `left_out_by_user` (`engines/src/leftOut.ts`): a generated claim that names one is revised, then stripped.
+  - It matches by canonical skill or as whole words, so practices the technology check ignores are caught too.
+  - It is not counted as an untraceable fact.
+  - The integration suite proves it with a model that pushes the skipped keywords into every line.
+- **"What changed for this job" is read off the two versions** (`changesOf`):
+  - the headline, the summary, the ticks, the skill order;
+  - which roles' bullets were rewritten (with the count when it changed) or trimmed, and the pages;
+  - then what was left out and why, and the lines the checks stripped from parts the run used.
+  - Nothing in it says a change the document does not show.
+- **W-TAILOR 04** shows the run's own score and changes:
+  - "↑ Up from N", "Same as before" or "↓ Down from N", whichever is true (G17);
+  - the page count says "About N pages", since it is an estimate;
+  - "Apply on …" shows only when the job has a page to apply on. A pasted JD has none.
+  - The preview moved to `ResumePreview.tsx` so the step stays under the size limit.
+- **Deviation from the plan:** no separate `resume:tailor` stage list or `resume.tailor` prompt. A tailored run is the `resume` pipeline with tailor-aware validate and persist stages, and the model gets the same input as a JD run.
+  - **Cost to review:** a quick edit, or a run with parts switched off, still has the model write the whole resume, and the merge discards what wasn't asked for. Telling the generator which parts to write would be cheaper.
+- **Not done:**
+  - A tailored version's stored ledger records its basis (`{kind:'document', versionId}`). But an edit of a tailored resume rebuilds its ledger against the profile (`writeResumeVersion`), so evidence ids may not line up. Nothing reads stored ledgers today.
+  - The tailored resume does not copy the base's template (`template_id`).
+  - Mobile on `http` now sends tailored runs to the server too. Its ready screen still lists changes from its request (`tailorChanges`). Unverified on a device.
+  - The tailor pairs for `evals/golden.ts` are not written yet.
+- **Tests:**
+  - engines: the guard in `claims.test.ts` (144 tests);
+  - server: `test/tailor.test.ts` (10: the merge rules, the changes list, the stripped count, the headline), `test/integration/tailorP14.int.test.ts` (3: the baseline is the comparison's, switched-off parts verbatim, the tick listed and on the profile, the pushing model, a stranger's resume 404, a missing JD 400);
+  - shared: `tailorRouting.test.ts` (4: which runs the server gets, and that the posted body is one the server accepts).
+  - Since then: `tailorP14` has 4 (a redelivered run merges into the same pinned version, once), the rate-limit suites pin the new buckets, and web has `ReviewStep.test.tsx` (3) and the dialog's failed-list case.
+- **Verified live (2026-10-19, OpenRouter, the synthetic web persona and the synthetic Northwind JD):**
+  - paste → JD page → dialog (base first) → step 1 at 53 → Summary off, quick edit, JavaScript and TypeScript ticked → ready in 24 s at **57, "↑ Up from 53"**;
+  - in the saved version: the summary is the base's word for word, the ticks are listed and on the profile, and none of the eight unticked keywords appears anywhere; the ATS report says 57;
+  - checked at 1536×730 and 1396×670.
+  - **Worth knowing when testing with this persona:** its resumes have no skills section at all (the web fixtures draw only a summary and roles, after the 304:3321 preview), so a tailored version lists only the ticked keywords. Nothing was dropped.
+- **Found live, fixed: no generation-tier run had ever worked on a live model.**
+  - claude-sonnet-5-5 refuses a forced tool call: 400 "tool_choice: type "tool" and "any" are not supported for this model", from Amazon Bedrock and Claude Platform on AWS alike, so it is the model, not OpenRouter. Haiku 5.5 takes it, which is why JD extraction and the assistant worked.
+  - So every structured stage on the Sonnet tier failed (resume_generate was 0 of 5 through OpenRouter): resumes, revisions, cover letters, Zero Resume, interview sets, on every route (`claudeDirect` and `claudeAws` share the code).
+  - Fix (`ai/providers/messages.ts`): the call is forced only for a model seen to take it (`forcesToolChoice`: Haiku); any other model gets `tool_choice: auto` and "Answer only by calling the … tool." at the end of the last user turn. A reply without the tool fails the schema and gets the gateway's one corrective retry.
+  - Proved live: generation and two revisions in the run above. **Not run live yet:** cover letters, Zero Resume, interview sets.
+  - **Decide:** JSON-schema output (`output_config.format`) also works through OpenRouter and constrains the decoding. The tool path was kept because it changes less; the eval set should say whether `auto` costs any reliability.
+- **Found live, fixed: a finished run waited up to a minute behind a 429.**
+  - Every `/api/v1/generations` request shared the 20-a-minute `ai` bucket, the progress screen's once-a-second status polls included, so a run longer than about 20 seconds was throttled, and its result fetch with it.
+  - **Decide:** starting, retrying and cancelling a run keep the `ai` bucket; reading one (status, result, list) takes the default bucket (`classify` by method, `http/middleware/guards.ts`). §9.11 keys limits "per account and route", and a status read is not a start. The P13 suite pinned `GET /generations` at 20; it now pins `POST /generations`, and proves 40 status reads leave a start allowed.
+- **Found on the way, fixed (Phase 3 work):**
+  - The resume dialog had no loading or error state. While the list loaded, or if it failed, it said "You don't have a resume on NextKin yet" with Compare disabled. It now shows two skeleton rows while loading and "We couldn't load your resumes" with **Try again** on failure (`TailorResumeDialog`'s `phase`).
+  - `libraryApi.int.test.ts` still expected the served library to list the mock's example resumes beside the server's. That changed on purpose in §110.2; the test now pins the new rule.
+  - `TailorScreen.tsx` was split as the plan said (295 → 195 lines): steps 1–2 with their bars are `TailorChoiceSteps`, step 3 is `TailorRunView`, the choices are `useTailorChoices`.
+- **Not done (adds to the list above):** a resume with no roles cannot be tailored; the run stops at generate with "Add at least one role to your profile", which also names the wrong thing for a tailored run.
+
+### 110.4 Upload a resume in the "Which resume?" dialog (Phase 5, owner's ask 2026-10-19)
+- **The owner's ask:** upload a resume from the computer in the dialog, compare it with the job for its current ATS score, then tailor it.
+- **The dialog** (`TailorUpload`, under the list): "Upload a resume from your computer · Drop it here or browse · PDF or DOCX". It reuses onboarding's drop zone in a new one-row `compact` form, its file row and its copy.
+  - Reading → read ("Read · 2 roles and 7 skills found. Added to Resumes and picked above.") → unreadable or failed, each beside the file.
+  - Once read, the resume is in the list and picked, so **Compare with this job** scores it next.
+  - The no-resume state now offers the upload, and says "Upload a resume".
+- **What an upload becomes, on the server:**
+  - The reader now also copies the summary, each role's bullets (12 at most) and projects, word for word (`parsing/extract.ts`; prompt lines added).
+  - The cross-check (moved to `parsing/crossCheck.ts`) builds the resume from exactly what it keeps: the kept roles and schools, and only the lines the file contains word for word (case, spacing and punctuation aside). A reworded line is left out and listed under `findings.rejected`. Every line is the user's own (`origin: 'user'`).
+  - Migrations 0040 (`resume_parses.document`, `resume_id` with `ON DELETE SET NULL (resume_id)`, NOT VALID) and 0041 (validate).
+  - `POST /resume-parse/{id}/resume` (`services/resumeImport.ts`) files it: `source 'uploaded'`, the base when the user has none, the title from the file name, a version by `'upload'`. Asked again, it returns the same resume.
+  - The HTTP `importFromFile` calls it, so onboarding's upload also lands a real server resume now, not a blank mock draft.
+  - Routing version 4: the reader may answer with 8000 tokens (was 4000), since bullets make it longer.
+- **Decide:**
+  - A summary longer than 600 characters is left out rather than cut (a stored line is at most 600).
+  - A bullet the PDF hyphenated across a line break will not match word for word, so it is left out and listed.
+  - The mock keeps underscores in an upload's title ("Priya_Raman_Resume"); the server turns them into spaces.
+- **Verified live (synthetic resume and JD, OpenRouter):** a DOCX was read in 5 s, with both roles, all five bullets, the summary and 7 skills, and nothing rejected. It compared at **75 (Good), 7 of 14 keywords**, and tailored to **81, "↑ Up from 75"** in 10 s.
+- **Not done:** an upload made before this has no document; making a resume from it says to upload the file again.
+- **Tests:** server `parsing.test.ts` (the document: word-for-word lines kept, a reworded one listed), `uploadsApi.int.test.ts` (the route: title, base, a retry returns the same resume, another user 404; the shared client now gets a server resume), the authz entry; web `TailorFlow` (upload in the dialog, picked, compare).
+
+### 110.5 The JD page: what the job asks for, and its title (owner's ask 2026-10-19)
+- **"Why are we seeing the add option in job description page!"** The JD page reused the listing page's Qualifications section: "+ skill" chips that add to the profile, then a "Required" list that repeated the same names.
+  - It now has its own read-only section, **"What this job asks for"** (`jd/components/JdSkills.tsx`): Required, Nice to have and Tools, each skill once (in its strongest list), ticked when it is already on the profile.
+  - Then only the qualification lines that add something: years, a degree, or a line naming none of the skills.
+  - Adding skills happens once, in tailoring, after the resume is compared with the job.
+  - `jobFromJd` no longer copies the skills into `requirements` when the text has no qualification lines.
+- **The reading:**
+  - The title is kept when the text contains it, letter case and dashes aside (it had to match exactly, so "Front End Developer" against "Front-End Developer" gave "Untitled job description"). Failing that, a line the text labels "Job title:", "Position:", "Role:" or "Designation:" is used. Never a guess: with neither, the page says "We couldn't find the job title in this text. **Add it**" (`UNTITLED_JD`).
+  - A category is not a skill: "backend technologies", a bare "APIs", "modern frameworks" are dropped unless the taxonomy knows them; "REST APIs" stays. They are dropped when the JD is read, so a JD read before this keeps its old lists until it is pasted again.
+- **Not done:** the link reader (Phase 7) still returns the mock JD, so "paste a link" is unchanged.
+
+### 110.6 W-TAILOR 01 says what it measured (owner's ask 2026-10-19: "Is this real analysis or fake?")
+- **The owner's question:** the comparison is the engines' own scoring, with no model call. But four parts said more than they measured. All four are fixed.
+- **Layout was a pass nobody checked.** The row was hard-coded "Easy for an ATS to read", and five of the six layout checks (15% of the score) were assumed true for every resume.
+  - An uploaded file is now measured (`parsing/layout.ts`):
+    - PDF: a second column, as a cluster of line segments starting together well right of the margin; dates set flush right and a centred header are told apart;
+    - PDF: pictures over 1% of the page, and text that is only an image (OCR);
+    - DOCX: tables, text boxes, pictures, page columns and non-standard fonts, from its XML;
+    - all files: the usual section headings, and an email or phone in the body (not only a header or footer).
+  - The parse keeps it (`findings.layout`). The comparison scores the file with what it showed, and the row says what it found, or "Checked in your file: …".
+  - A NextKin document says it downloads in NextKin's one-column template, which every download reads back.
+  - **Decide:** the file's measurements apply only while the resume is still the file as uploaded. Once edited, it downloads in NextKin's template and is scored as such.
+- **The ticks were generous.** A skill only in the skills list, or shown for fewer years than asked, is part credit in the score (D-14) but showed a full ✓.
+  - Chips now have three states: ✓ shown in your experience, ◐ only listed or fewer years (part credit), ! missing.
+  - The "ATS job keywords (n/m)" count counts only full matches.
+- **Two rows were text checks that read like judgements.** The summary row now says "Names neither this job's title nor the company". The job-title row already said "Different from the job's title".
+- **Length was an estimate even for an uploaded file.** It is now the file's own page count (the PDF's, or the DOCX's saved `<Pages>`), shown without "About".
+- **Found on the way, fixed (an older bug in the PDF reader):**
+  - pdfjs 6 passes `Tm`'s six numbers as one typed array. The reader took them as six numbers, so every text position on such PDFs was NaN.
+  - The page then read as one line (the owner's LaTeX resume came out as 4,086 characters on one line), and the hidden-text checks (off-page, white on white) could never fire on such files.
+  - `matrixOf` reads both forms. A regression test places text with `Tm` and fails without the fix.
+  - Runs are also cut at fill-sized gaps, so "Webcros … Nov 2025 – Present" is two pieces on one line. The text reads the same.
+- **Verified on the owner's real LaTeX PDF** (analysed locally): 52 lines, all seven headings found, six flush-right lines not mistaken for a column, every layout check passing, 1 page.
+- **Tests:** server `layout.test.ts` (8), shared `tailorComparison.test.ts` (5), integration `tailorCompareP14` (an upload's own pages and layout; edited, NextKin's template and its layout points back).
+
+## 111. Resumes compiled with real LaTeX, in the uploaded resume's own structure (Backend + Web, 2026-10-19)
+
+The owner's ask: "AI generates the perfect layout resumes … I gave one page resume and in response it provided me back with 2 page resume which have unnecessary texts … it should give back like mohammad ehsan not george smith. Actually Latex resume." Plan: a design workflow (four mappers, three designs, two judges); the honesty-and-safety design won, with grafts. Plan text: scratchpad `latex-plan.json`; the decisions are copied here.
+
+### 111.1 Owner decisions (2026-10-19)
+- **Real LaTeX, compiled on the server**, in its own sealed container (Tectonic 0.17.0 on the pinned Node base; no network and no secrets at run time). The local image build was **approved**: Tectonic (~10 MB, sha256-pinned) and only the template's TeX Live 2022 files, for an estimated ~110–130 MB compressed. The real size is measured and recorded in P4.
+- **Font: Latin Modern** (the classic LaTeX look). The DOCX download declares Liberation Serif, the nearest standard font.
+- **Every resume uses the LaTeX template**: uploaded, tailored and profile-built. Cover letters stay on the Chromium template.
+- **Page budget, "flexible":** "For fresher one page is perfect, while experienced resume can go above one."
+  - **Decide (the threshold is mine):** under 5 years of dated experience, the target is 1 page, and code may drop the least job-relevant bullets to reach it (oldest role first, never a role's last bullet, never the user's header, education or section headings).
+  - From 5 years, the target is the original's page count, at most 2, with no cuts unless the resume would pass that.
+  - The basis is always shown ("Fitted to 1 page: under 5 years of experience").
+- **Defaults, not asked:**
+  - Tailoring may rewrite bullets inside a role's client sub-projects; Projects stay word for word.
+  - An unedited upload previews as our LaTeX recompile, the file a download gives.
+  - LaTeX PDFs are untagged, which is worse for screen readers than today's tagged Chromium PDFs. Recorded here as a known regression to review.
+- **Spec deviation:** V2 §9.7 binds Chromium HTML-to-PDF so that the preview is the template. The owner overrode it. The preview still equals the file, because it is rendered from the same PDF bytes.
+
+### 111.2 The reader keeps the file's structure (P2)
+- **The header is read by code, never by the model (G5).** `parsing/header.ts` `splitHeader` takes the lines above the first section heading: the name, then each contact item in the file's order, with the link each one carries.
+  - Links are matched by kind: an email gets `mailto:`, a phone `tel:`, and "LinkedIn" the https link whose host is linkedin.com.
+  - The model reads only the text from the first heading on.
+  - Checked on the owner's own PDF: 6 items, carrying the right tel, mailto, LinkedIn and GitHub links.
+  - **Decide:** a file whose top is not a header (no short name line, or more than 6 lines before a heading) keeps no header, and prints the account's name as before.
+- **New structure fields, all optional on schema 1.** Each is kept only where the cross-check finds it in the file's text:
+  - a role's client projects (`entries`: a title, a stack line and its bullets);
+  - the skills section's labelled lines (`skillGroups`);
+  - sections beyond the standard six (`sections`);
+  - the headings in their order and wording (`layout`);
+  - GPA and location on education;
+  - a stack line and dates on projects.
+- **Rejected and listed:** a label, a title or a heading the file never prints.
+- **Each line is kept in one place only.** A client project the model also filed as a project is dropped from Projects, listed as "already kept in another section".
+- **`reconcileStructure` runs after every writer** (section edits, fixes, the tailor merge). It drops dangling bullet ids and empty entries, so an edit can never leave the structure pointing at nothing.
+- **Mapping a resume to the template** (`export/latex/fromCanonical.ts`) prints only what the document holds.
+  - **Fixed while testing:** a project or school with a start date and no end date no longer reads "– Present". Only a role's explicit "current" does.
+  - **Decide:** skills not named in any of the file's lines are printed under an "Also" line, rather than dropped.
+- **Paper is Letter by default.** The market profiles carry no paper size. Reading A4 from the uploaded file's own page size is open, under 111.3.
+
+### 111.3 Typeset pages: the render store, the preview, the export (P5, P7 in part)
+- **Writing a version queues a typeset.** Every resume version written, by `insertVersion` or the pipeline's `writeVersion`, queues a `render.compile` job in the same transaction, through the outbox, as FIFO group `<user>#render`. Cover letters do not.
+- **Storage.** The worker stores the PDF and one PNG per page in the exports bucket under `users/<u>/renders/<version>/`. Migration 0042 `resume_renders` has one row per version, template revision, density and paper, with owner RLS.
+- **Deleting a document deletes every render file by its recorded key,** account erasure included (it goes through `purgeDocuments`).
+- **`GET /resumes/{id}/preview` has no export gate.** Seeing your own resume is not exporting it.
+  - It returns the pages and the PDF as links valid for 15 minutes.
+  - While a new version is typeset, it shows the earlier pages flagged stale ("Updating…" on the web), and does not offer their PDF.
+  - An open Zero Resume review or a cover letter answers `structured`, and the web draws its own preview as before. The mock always answers `structured`.
+- **Failures.**
+  - A source the lint or Tectonic refuses fails at once. It is logged as the template's fault, never shown as the user's.
+  - A service outage is retried by the queue, then marked `unavailable`.
+  - The preview queues an `unavailable` render again after 2 minutes.
+  - **Decide:** a worker built without a compiler marks renders `unavailable` instead of dead-lettering them. This covers integration tests and a stack without the latex profile.
+- **A PDF export of a resume is the render's own file,** read back from storage, so the download is byte for byte the pages the preview showed. It is compiled on the spot only when no render is ready.
+  - The file is named for the person the resume names: its header, else the account (`Alex_Rivera_…pdf`).
+  - **Decide:** the worker uses LaTeX only when `LATEX_COMPILER_TOKEN` or `LATEX_COMPILER_TOKEN_FILE` is set. Without one, a resume PDF stays on Chromium Classic, so a stack without the latex profile still downloads.
+- **Deferred:**
+  - **No read-back of the LaTeX PDF yet.** `parseBack` compares against the Chromium model. A LaTeX export stores `ats_safe = null`, so the app shows no "ATS-safe" label, rather than a claim nobody checked. The plan's `expectedLines` for the LaTeX layout is still to do.
+  - **The data export** lists render rows but does not bundle the render PDFs. They are derived from the versions the export already holds.
+  - **The density ladder and page budget (P6) are not wired yet.** Every render is density 0 on Letter.
+  - **Mobile still draws its structured preview.** Its PNG page 1 (plan §9) is not built.
+- **Tests:**
+  - unit `latexCanonical` (7) and `uploadStructure` (6);
+  - integration `renders.int.test.ts` (5), with a stand-in compiler: queued, typeset, previewed with no gate, another user's preview 404, stale pages while updating, a failure at once vs retried and re-queued, the export is the render's bytes and named from the header, delete removes every key;
+  - `exportsP10` still green (12 tests across both suites);
+  - web resume and tailor suites green (25).
+- **Unverified:** a live compile through the sealed service. That waits on the image build (agent running).
+
+### 111.4 The sealed compile service: image, sandbox, measurements (P4, 2026-10-19)
+- **Built and measured.** `nextkin-latex:local`: **116 MB compressed** (image content), **478 MB on disk** unpacked. Tectonic's cache is 43 MB, the binary 26 MB, and the rest is the Node base plus poppler-utils. That is inside the approved estimate of ~110–130 MB.
+- **Timings** (the warm-up resume, letter, density 0, 1 page): the first compile after a container start took 1.03 s; warm compiles took 0.84–0.87 s (service-side `ms`), and the host round trip through the relay adds ~10 ms. The cached build-time pass compiles all 6 variants in 4.7 s. Peak memory is ~210 MiB (`docker stats`); the cgroup peak, page cache included, was 245 MB against a 1 GB limit.
+- **Exact flags:** `tectonic -X compile main.tex --untrusted --only-cached --hide /run/secrets/latex_token`, cwd a fresh `mkdtemp` under /tmp, env = PATH, LANG, HOME (the temp dir), TECTONIC_CACHE_DIR and FONTCONFIG_FILE only. Then `pdfinfo` gives the page count (more than 10 pages is a 422), and `pdftoppm -r 110 -png`. One 15 s wall-clock deadline covers all three processes.
+- **Proven in the running container:** `fetch('https://example.com')` fails (EAI_AGAIN), a raw TCP connection to 1.1.1.1 fails (ENETUNREACH), and the host is unreachable. Writes to /app, /etc and the cache fail with "Read-only file system"; only /tmp is writable. `\def\x{\x}\x` is killed and answered 504 at 15.0 s. `\write18` does nothing. `\input{/run/secrets/latex_token}` fails because `--hide` hides the file.
+- **Decide: Tectonic reads absolute paths.** `\input{/etc/passwd}` reads the file, and its text shows in the 422 log. Nothing secret is readable: the token is hidden, and the child's env holds no secret. texLint.ts refuses `\input` upstream, so this is defence in depth only. If wanted, add more `--hide` paths, or run Tectonic under a separate uid that cannot read the token at all.
+- **Found, for the template (not changed here): `\XeTeXinterwordspaceshaping=2` drops every link after the first.** With the template preamble, only the first `\href` in a document reaches the PDF; the bisect isolated that one line. With mode 1 or 0, all three contact links survive, and `pdftotext` output is identical. `\%20` in `\href` reaches the link target as a literal `%20` (verified: `https://example.com/jordan%20avery%5Fcv`).
+- **Decide: Docker Desktop cannot publish a port from an `internal: true` network** (probed with nginx on 2026-10-19). The host therefore reaches the service through `latex-relay`, a plain TCP pipe from the same image that sits on `latex-sealed` and `latex-edge` and publishes only 127.0.0.1:8790. The relay is on a normal network (it could reach out), but it runs no TeX and holds no secret.
+- **Interpretations of CLAUDE.md:**
+  - The service and relay processes get their own small zod loader, `src/config/latexService.ts`. It lives in src/config, so "only src/config reads process.env" still holds; the app's `loadConfig()` would demand DATABASE_URL and the rest.
+  - The token is a file. `pnpm stack:up` writes a random `docker/latex/dev.token` (gitignored and dockerignored) when it is missing, so nothing is committed.
+  - Body over 1 MB → **413**, not 400.
+- **Pins:** TECTONIC_VERSION, TECTONIC_SHA256_X86_64 and TECTONIC_SHA256_AARCH64 match GitHub's release digests and were recomputed after download. `pnpm check:pins` now also fails on any `*_SHA256*` value that is not 64 hex characters.
+- **Pre-existing, not mine:** `build.mjs` lists `src/entrypoints/dlq-replay.ts`, which does not exist (the file is `dlq.ts`), so a full `node build.mjs`, and the image's `build` stage, fail. Every other entry bundles. `eslint src` fails only on `src/pipeline/stages/tailorMerge.ts:211` (unused `_headline`, `_summary`).
+
+
+### 111.5 First live compile, and the fixes it found (2026-10-19)
+- **Verified live:** the synthetic Alex Rivera one-pager, read the way an upload is read, compiles through the sealed service to **1 page in about 0.9 s** (25 KB PDF).
+  - The page image shows Jake's layout: centred name, contact line, small-caps ruled headings, client projects nested under the role with their stack inline, labelled skill lines, and right-aligned dates.
+  - Not yet compared side by side with the owner's own resume, which is the owner's call under L4 (synthetic data only on laptops).
+- **Fixed: contact links.** The template's `\XeTeXinterwordspaceshaping=2` kept only the first `\href` in a document, so mailto, LinkedIn and GitHub were lost. The line is gone; the agent found `pdftotext` output identical without it.
+  - `latexCompile.int.test.ts` now checks the PDF's four link annotations, through pdfjs.
+- **`RENDER_TEMPLATE.rev` is now 2,** so every render made with the old preamble is typeset again on its next preview.
+- **Fixed, both items from 111.4's "pre-existing" line:**
+  - `build.mjs`'s `dlq-replay` entry points at `src/entrypoints/dlq.ts`, so a full `node build.mjs` and the image's build stage bundle again;
+  - the `tailorMerge.ts` lint error is gone.
+- `test/scratch-live-compile.ts` is deleted; its case lives in the integration suite.
+
+### 111.6 Tailoring fits compiled pages, and stops padding (P6, 2026-10-19)
+- **The page budget replaces "2 pages for everyone."** A tailored run's budget is `pageBudget`:
+  - one page under 5 years of dated experience;
+  - otherwise the uploaded file's own page count, at most 2.
+  - The file's count is used only when it was measured off the file (`sourceMeasured`), never an estimate.
+- **The fit (`pipeline/stages/pageFit.ts`) runs in the validate stage, after the merge,** on pages compiled by the sealed service:
+  - spacing first (densities 0 → 2);
+  - then whole bullets, never reworded. Those naming none of the job's skills (whole-word match) go first, from the oldest role, last line first.
+  - A recent role keeps 3 bullets and any other role 1. The search finds the fewest lines that fit, in about 8 compiles (under 1 s each).
+  - The version's render starts at the spacing the fit chose, so the preview shows the same pages.
+- **Decide:**
+  - **A fresher's resume is trimmed to one page even with the Length fix off.** That is the owner's "for fresher one page is perfect"; experienced resumes are trimmed only with the Length fix on.
+  - **If dropping every allowed line still doesn't fit, nothing is dropped.** Losing lines without reaching the goal helps no one; the resume stays at the tightest spacing.
+- **Without a compiler, or during an outage,** the fit falls back to the page estimate and trims only with the Length fix, as before. The basis then says "(estimated)".
+- **The run reports compiled pages and why** (`pageBasis`, G17), e.g. "Fitted to 1 page: under 5 years of experience". The ready screen does not show the basis yet (P7).
+  - The change line reads "2 pages → 1 page" when the original count was measured, and "About 2 pages → 1 page" otherwise.
+- **No more filler.**
+  - `resume.generate` v2 caps each role at its own facts (`maxBullets`: one per stated line, at most 6; 3 for a description-only role). Code enforces the cap in `assemble`.
+  - It bans generic duties, traits, restating the title and repeated facts, and keeps a fact's wording when it already fits.
+  - The summary is one or two sentences, or none when the facts give nothing concrete.
+  - A tailored run's facts are the base's own bullets, so it can no longer return more lines than the original had.
+  - **Unverified with a live model:** the eval run with `--openrouter` is still to do.
+- **The web's Length row** now says "Fit it to one page, or two with 5+ years" instead of "Bring it to 2 pages".
+- **Tests:**
+  - unit `pageFit.test.ts` (6);
+  - integration `tailorP14`: a fresher's 6 bullets become 3 on one compiled page, the skill lines kept, the fit measured with a stand-in name and contact (G5), and the render queued at the chosen spacing.
+- **Found while testing:** the background `pnpm dev:all` worker consumes the integration tests' queue messages. With it running, `pipeline.int` and `tailorP14` fail intermittently; stop it before `test:integration`.
+
+## 112. Tailoring against the whole JD (owner, 2026-10-19)
+
+### 112.1 What the owner saw, and why
+- A tailored resume for a fresher frontend/fintech JD scored 68 ("Up from 59"), but an outside checker found most of the JD's terms missing. These include user interfaces, WCAG, microservices, KYC, UI flows, data privacy, HTML5/CSS3, web applications and fintech.
+- **Causes, traced on the owner's run:**
+  - **The extraction was lossy:** 14 skills and 11 of about 25 responsibility lines. Standards, practices and domain terms were dropped, because the skill rules allow only named technologies.
+  - **The generator never saw the JD text.** It got the title and two skill lists, with no responsibilities. So the summary ignored the role, and the headline was the raw title "(Fresher, Full?Stack Growth Path)".
+  - **The score counted only that short list.** An unknown phrase was never found in bullet text.
+  - **Ticked keywords went to Skills only.**
+  - **The "?" was already in the stored paste.** The source's non-breaking hyphens arrived as "?".
+  - **The JD page's match measures the profile, not the chosen resume,** so the two numbers disagree.
+
+### 112.2 Owner decisions
+- **A ticked keyword the resume doesn't show asks "Where did you use this?"** The answer is a pick of roles or projects, plus an optional one-line note.
+  - The answer becomes a fact on that role, so the AI may write the keyword into that role's bullets and the summary (G13 still holds: every claim rests on a fact).
+  - Unanswered, a tick stays in Skills only.
+- **The tailor screens lead with "Job match":** N of M JD keywords, counted on the full JD the way outside checkers do, with the missing ones listed.
+  - The ATS score stays beside it, with its basis.
+  - The JD page shows the same job match for the chosen resume.
+
+### 112.3 What was built (2026-10-19)
+- **Reading the JD (`jd.extract` v4; locally it is active as v20, because version numbers keep counting).**
+  - The skill lists now take every term a candidate could show: standards, practices, concepts, kinds of work, domain terms and wanted fields of study, in the JD's own words.
+  - Soft skills go to their own list (`softSkills`). It is shown, never scored.
+  - Every responsibility line under every heading, up to 40.
+  - Every item is still quote-checked, as before.
+- **The "?" repair.** A "?" between two letters in a pasted or uploaded JD is stored as a hyphen (`repairText`).
+  - **Decide:** this assumes English never writes "?" inside a word. "Why? Because" and "2?3" are left alone.
+- **Scoring finds phrases in the resume's text** (`engines/phrases.ts`). A JD requirement the taxonomy doesn't know ("user interfaces", "code reviews", "KYC") is met when the resume says it:
+  - as whole words, in order;
+  - with punctuation between the words, or a plural "s", ignored;
+  - in bullets, the summary, the headline, projects, the skills list or role tags.
+  - Text copied from the JD still earns nothing. The tailor plan's backed and gap lists use the same rule.
+  - **The JD page's listing match is unchanged** (it measures the profile). The tailor screens use the resume's job match.
+- **Generation (`resume.generate` v3).**
+  - The model now gets the JD's responsibilities.
+  - It is told to use the job's exact terms wherever a fact says the same thing, name each backed requirement at least once in the job's wording, and aim the 2–3 sentence summary at this job.
+  - It is still never to use an unbacked term.
+  - The headline drops anything a posting adds in brackets, e.g. "(Fresher, Full-Stack Growth Path)".
+- **"Where did you use this?"** (owner decision 112.2).
+  - A ticked keyword in step 2 shows the JD line that asks for it, then a picker: "Skills list only", or one of the resume's roles or projects, plus an optional note of up to 200 characters.
+  - On the server, the confirmation must name a place of that resume (others are ignored). It becomes a fact line on the role, "Used KYC: built the onboarding checks", and a role tag. A quick edit also rewrites that role.
+  - **Decide:** a project's lines are never rewritten. A keyword confirmed at a project reaches the summary and skills, backed by the project, and the hint says so.
+- **Job match** (owner decision 112.2).
+  - Of the JD's keywords (soft skills aside), how many the resume shows anywhere. Part credit ("only listed") counts as shown, the way outside checkers count.
+  - Step 1 and the ready screen lead with it ("Job match", with "N of M keywords"), the ATS score beside it, the basis sentence and the missing keywords listed. The ready screen also gives the count before tailoring.
+- **Tests:**
+  - engines `phrases.test.ts` (3);
+  - server `jdSkills` (+2) and `tailorConfirmP14.int.test.ts` (confirmation → fact, tag, job match up; a confirmation naming no place is ignored);
+  - shared comparison (+2);
+  - web `KeywordPicker.test.tsx` (2);
+  - the whole server integration suite: 1100 pass. `rls.int` needed `resume_renders` added to its user graph, from §111.
+- **Not done yet:**
+  - The JD page's own match card still measures the profile. The owner asked for the same job match there, for the chosen resume.
+  - Soft skills are not shown on the JD page yet.
+  - The eval run with a live model (`--openrouter`) for prompts v3/v4 is still to do. It costs a few dollars.
+  - Mobile doesn't send confirmations; its runs stay Skills-only.
+- **Incident: I wiped the owner's local test account.** Running `pnpm seed` to install the new prompts deleted and recreated every seeded account, `pro@nextkin.test` among them. Its resumes, JD and runs are gone.
+  - The uploaded resume PDF and the tailored download survived in storage. I copied them to the session scratchpad.
+  - The pasted JD text was only in the database, so it is lost.
+  - **Decide:** make `pnpm seed` refuse to replace an account that has user-made rows, or seed prompts on their own.
+
+## 113. The tailor flow, Jobright-style (owner, 2026-10-19)
+
+### 113.1 What the owner showed, and decided
+- **The reference is Jobright's "Generate your custom resume".** In three steps:
+  1. **See your difference:** a 7.0/10 score; a table of job title, years and about 10 ATS keywords as chips (8/10); a summary verdict.
+  2. **Align:** Summary, Skills, Work experience (quick or full) and Projects; missing keywords grouped as Functional and Soft skills, with "Add keywords" and "Select all".
+  3. **Result:** the user's own resume, with only the helpful lines changed and highlighted. New keywords go into the matching skill line. A short "what changed" list, an AI chat for follow-up edits with suggestions, Editor, Style and "Fit to one page".
+- **Owner decisions:**
+  - **Build all of it, in order:** steps 1–2, then the result screen and the AI chat.
+  - **"Select all" is allowed** for missing keywords. This overrides V2 §7.8 and D-14 (each keyword ticked on purpose).
+    - "Where did you use it?" (§112.2) still decides whether a keyword may enter a role's bullets. A keyword ticked by "Select all" with no place stays in the skills list.
+  - **The score shows out of 10, and stays honest** (G16–G17). It rises only for what the resume shows. A keyword that is only listed earns part credit, so a tailored resume rarely reaches 10/10 the way Jobright's does.
+
+### 113.2 What was built (2026-10-19)
+- **Step 1 — See your difference**
+  - **One score, out of 10 with its band** ("5.9 Fair"; `ScoreRing outOf10`). It is the honest ATS score: only what the resume shows earns credit.
+  - **Keywords: the job's top 10 only** (`markTop`). They are ranked by code from what the JD says: required first, then those the title names, then how often the text names them, then the JD's own order. Soft skills are never in the top 10.
+    - The row reads "ATS job keywords (8/10)". It counts a keyword as on the resume wherever it appears, the way outside checkers count.
+    - **Decide:** the job match (§112) now counts these top keywords, not all of them. It is "N of the job's 10 most important keywords", which is less noisy than 35.
+  - **New "Years of experience" row** (`yearsAsked.ts`): what the JD asks ("0–2 years", "3+ years", or an entry-level job's 0–2) beside the dated experience the resume shows.
+  - **The summary verdict also counts top keywords.** A summary naming three of them counts as aimed at the job. Otherwise the row names the ones it is missing.
+- **Step 2 — Align**
+  - A new **Projects** row, rewritten like roles; it is on by default, as Jobright's is.
+  - Missing keywords are grouped as **Functional skills** (the top missing ones) and **Soft skills**, with the rest under "More keywords from this job (N)".
+  - **"Select all" / "Clear all"** (owner override, 113.1). The note says a keyword is written into a role only when you say you used it there.
+  - Soft skills ticked go to the skills list, like any other tick.
+- **Projects rewriting (server)**
+  - A tailored run's project lines are citable facts (`${factId}#p${i}`), and the model may rewrite each project's bullets (`projects` in the draft, at most its own line count).
+  - Code checks every bullet (`engines/projectClaims.ts`): it cites its own project; it states only numbers that project states; it names only technologies the project names (its lines, its stack, a keyword confirmed there); it never uses a left-out keyword.
+  - **Decide:** a project with any failing bullet keeps its original lines word for word, rather than a mix.
+- **Ticked keywords go on the right skill line** (`skillGroups.ts`): the line holding the most skills of the same taxonomy category; else the most shared words; else a catch-all line ("Practices & Tools", "Other"); else the last line. They no longer go under "Also".
+- **The ready screen**
+  - **"Highlight changes"** switches the preview to the changed sections, with each new line highlighted against the base resume (`resumeDiff.ts`). The download stays the plain typeset page.
+  - **The score reads "Up from 5.9".** "Job keywords: 9/10 (was 7/10)" and the keywords still missing are listed.
+  - **"Tweak it with AI"** has three suggestion chips, a text box of up to 300 characters, and a section the request is guessed to be about (the user can change it).
+    - It runs as a section run (P10-02) with the user's `instruction`. Its facts are the resume's own current lines, not the profile's, so it rewords and never adds. The fact checks are the same as the run's.
+    - **Decide:** the instruction is data, and the prompt says it never allows a fact the resume does not give.
+  - **"Fit to one page"** (shown when the resume runs past one page). A worker job (`resume.fit`) compiles the current version, tightens spacing, then drops the fewest bullets (those naming no job skill first). It writes a new version ("Fitted to one page: 3 bullets left out"), with its render at the fitted spacing.
+    - It refuses with a reason when the resume can't fit without losing whole roles, or when it changed meanwhile.
+    - The outcome is kept in the cache for an hour (Valkey, shared by API and worker). Endpoints: `POST /resumes/{id}/fit`, `GET /resumes/{id}/fit/{runId}`.
+    - **Known gap:** a later edit's version renders at default spacing again, so it may go back to two pages until fitted again.
+  - The page count no longer reads "About" when it was compiled.
+- **Prompts:** `resume.generate` v4 adds projects and the instruction rule. Installed locally with a prompt-only seed, which leaves accounts alone.
+- **Tests:**
+  - engines `projectClaims` (2);
+  - shared `skillGroups` (2), `resumeDiff` (2), comparison ranking and years (+2);
+  - web `KeywordPicker` (3, including grouping and Select all);
+  - server integration: `tailorConfirmP14` (projects: a valid rewrite taken, one with an invented number refused), `aiRewriteP14` (the instruction reaches the model, with the resume's own summary as the fact), `fitP14` (fits by dropping 3, refuses "cannot fit" and "changed meanwhile", another user can't read the status);
+  - the whole server integration suite (1114 tests) green; typecheck and lint green in every workspace; mobile create/data (328) green.
+- **Not done:**
+  - Jobright's Editor and Style tabs (the existing editor is linked as "Edit in editor").
+  - The JD page's match card for the chosen resume (§112.3).
+  - A live-model eval of prompts v4/v4. It costs a few dollars and is the owner's call.
+
+## 114. One simple job → resume flow (owner, 2026-10-19)
+
+### 114.1 Why, and the decisions
+- **The owner found creating a resume from a JD too complex, on web and on mobile.**
+  - Web took at least 8 clicks across five screens (Upload, JD page, resume dialog, Compare, Align), and step 2 alone had up to 7 + 3K controls.
+  - Mobile's "Tailor to a Job" ran an older flow with no comparison, while Build and Zero sat behind other launchers.
+- **Owner decisions:**
+  - Analyzing a JD goes straight into tailoring; the JD page is one link away.
+  - Everything before "Create my resume" is one screen.
+  - The resume is picked for the user. With none, the screen offers an upload or a build from the profile.
+  - Web and mobile both, this round.
+- **The new web path:** paste → **Tailor my resume** → the Customize screen → **Create my resume** → ready → **Download**. That is 4 clicks with a base resume.
+
+### 114.2 Web (built)
+- **`/upload-jd` is one box** (`JobInput`): the description or its link, a file dropped on it or picked through "upload a file", and "Try a sample job".
+  - **Decide:** this replaces the boards' three tabs (247:2, 244:467, 247:453), so board fidelity yields to the owner's call. The paste board's side column stays.
+  - The optional details form and "save to my jobs" are gone; a file is always saved to jobs. Edits live on the JD page.
+  - The old panels are moved to the session scratchpad (`archive-upload-tabs`), not deleted.
+- **Links:** with the backend on, links are still read by the mock (D-17, link reader not built). A lone link now gets "We can't open job links yet… paste the description, or save the page as a PDF and upload it", and Analyze stays off. In the mock demo, links still read.
+- **Analyze opens `/jd/[id]/tailor`** (`useAnalyzeAndOpen`). "Tailor your resume" on a job or JD page goes straight there too (`useTailorDialog` now navigates). The resume dialog opens only from "Change".
+- **One Customize screen** (`TailorChoiceSteps`): the comparison card, then `CustomizePanel` ("Tap the keywords you have" = `KeywordPicker`), then "Options" folded away with all parts on, then one bar with "Job details" / "Create my resume".
+  - Steps read "Customize · Tailoring · Your new resume".
+  - "Where did you use it?" is now optional behind "Used it in a role or project? Say where". Without it, the keyword goes to Skills only (§112 rules unchanged).
+- **Shared state:** `packages/shared/src/tailor/customize.ts` (`initialChoices`, `toggleKeyword`, `toggleAll`, `setPlace`, `setFix`, `keywordGroups`, `tailorRunInput`). Web's `useTailorChoices` and `useTailorRun` run on it, and mobile is told to.
+- **No resume:** `NoResumeCard` offers an upload (the dialog's reader, inline). When the profile has roles, it also offers "Build one from my profile", a build run for this JD (a listing's JD is made via `useJobJd`).
+  - **Decide:** with no profile it says "Fill in my profile first". Web has no Zero Resume review screen yet; mobile's Zero stays the path there.
+- **Gates:**
+  - **Consent carries on.** `onConsentRequired` listeners get `retry`, which runs the refused mutation again with its own callbacks. The web dialog calls it after "Agree and continue", and "Not now" drops it. The job box and the resume upload no longer show "check your connection" or "something went wrong" for a consent refusal (`isConsentRequired`).
+  - **Accuracy confirmation carries over.** A "Fit to one page" version and an AI-rewrite version (a section run with an instruction) keep the confirmation of the version they came from (`inheritAccuracy` in `insertVersion`). Both only drop or reword that resume's own lines.
+    - **Decide:** a plain section regenerate or any other edit still asks again.
+  - **Not built: the inline "verify your email" at download.** Sign-in already refuses an unconfirmed email (`not_confirmed`), and every seeded account is verified, so a signed-in user cannot reach that block. The message stays as the fallback.
+- **Dead ends:**
+  - A failed run's "Back to my choices" keeps the resume, and the screen no longer remounts on `?run`, so the taps survive.
+  - **"Leave and notify me" now notifies.** `RunWatcher` in the app shell watches runs left this way and toasts "Your tailored resume is ready" with "Open it", or the failure with "See why". It covers this tab only; a reload forgets it, and the run still lands in Resumes.
+- **The home Quick Start's** "Build Resume" and "Tailor to a Job" now open `/upload-jd`.
+- **Tests:**
+  - shared `customize.test.ts` (4);
+  - web `UploadJdScreen` (6, rewritten), `TailorFlow` (job page goes straight to tailoring; "Change" opens the dialog and takes an upload; a failed list is never "no resume"), `KeywordPicker` (the optional where link), `NoResumeCard` (a build starts a run), `JdPageScreen` (straight to tailoring);
+  - server `fitP14` (the fitted version keeps accuracy).
+
+### 114.3 Mobile (built by a sub-agent; unverified on a device)
+### §114 mobile — one job → resume flow (2026-10-19)
+
+**Unverified on a device (owner's Expo Go side-by-side)**
+- Customize (`TailorCompareScreen`), Add a job (`JobIntakeScreen`), the "Used in…" sheet, the no-resume card, the Options fold, the inline email-verify bar and the 3-row Create sheet were checked in jest/RNTL only. Nothing has been looked at in Expo Go.
+- The Create sheet keeps its `sheetStep1Height` floor (600, drawn for 4 rows). With 3 rows it probably leaves empty space at the bottom. The token was not changed; check it on a device.
+- The tap-to-add chip's hit slop takes it to 44pt, but the slop overlaps the next chip's row. Check that taps land on the right chip on a small phone.
+
+**Judgement calls**
+- Spec-derived screen (rule 7): Customize is TAILOR 02's hero, vs card, chips and improve card, plus a "Details" pill on the job row, a "Where you used them" card, an "Options" disclosure row and one sticky "Create my resume" bar. No board draws it. TAILOR 03 (AddKeywordsSheet) is off the tailor path. Build 04c still uses it, and its defaults are unchanged (description keywords still default to Add there, per the BUILD board). Should Build drop the pre-set Add too (D-14)?
+- Score is shown as "9.0" in the ring with the caption "OUT OF 10", and the band as an "ATS score · Strong" pill above the headline. The pill is green for strong and amber otherwise. `scored === false` shows "–" and a neutral headline instead of a number (D-15).
+- Options rows: "Summary" toggles headline and summary together. Then Skills, Experience (with a "Latest 2 roles / Every role" segmented control while it is on), Projects and Length. All start on.
+- "Select all / Clear all" covers the top missing keywords, the soft skills, and "More keywords" only while that section is open.
+- With no place to offer (`comparison.places` empty, which is always true on the mock today), the "Where you used them" card is hidden and every tapped keyword goes to Skills only.
+- No resume: the card offers "Upload your resume" (opens the TAILOR 01 sheet, upload row only), plus either "Build from my profile" (profile has ≥1 experience → BUILD 04b `/create/build/compare`, which owns the build run and its 04c keyword sheet) or "Start from nothing" (no roles → ZERO 01, with the role pre-filled from the JD title through a new `role` route param). I routed Build to 04b instead of starting the run blind, because there is no comparison to take keyword choices from.
+- Add a job → Customize uses `router.replace`, so Back from Customize leaves the flow. "Details" is the way to correct the JD. A saved job skips reading and goes straight to Customize with its `jobId`.
+- JdReviewScreen is now "Job details", edit-only: the CTA is "Done" → back, with no quota and no Generate. This removes the old generic "Generate resume" run everywhere (BUILD 04's pencil, failed runs' "Edit the job description", Customize "Details"). For a listing, "Details" opens the listing's JD draft (`comparison.jdId`). Whether the mock's listing comparison re-reads an edited draft has not been verified.
+- Create sheet rows are now "Tailor to a job" / "Check my resume" / "New resume". Cover Letter is off the sheet but still on Home's quick start and after a run. Labels and descriptions were rewritten (not board copy).
+- Home "Build Resume" tile → `/create/tailor` (Add a job). BUILD 01 is no longer reachable from Home. Build is reached from Customize's no-resume card.
+- Choices persist per job + resume in a zustand store (`customizeStore`), so a failed run's new "Change my choices" (replaces the failure with Customize for the same job/JD and source resume) finds them again. They live in memory only and are lost on an app restart.
+- Download: an `ExportBlockedError('email')` no longer toasts. The bar shows "Verify your email address before your first download." with "Resend email" (`useResendSignUpCode`, the sign-up code endpoint) and "Try again". Open question: a signed-in user has no screen to enter that code (ConfirmEmailScreen is in the signed-out `(auth)` group). Resend may send a code they can't use. Needs a verify-link or a signed-in confirm route.
+- Consent: AiConsentGate keeps the shared listener's `retry` and runs it after "Agree and continue". The toast is now only a fallback. Customize and Add a job hide their own error line when `isConsentRequired(error)`.
+
+**Deferred**
+- Links: "Add a job" has no link mode. The HTTP JD repo still answers `source: 'link'` from the mock (`JD_FALLBACKS`). A pasted bare URL gets "We can't read links yet. Open the posting and paste its text here." and Analyze stays off. To enable links later: add a link choice to `JobIntake` once `extract({source:'link'})` reaches the server.
+- BUILD 03 (BuildAddJobScreen) and ATS paste keep their own intakes this round. ATS 03 "Fix it for this job" now opens Customize for both a saved job and a pasted JD.
+- `TailorCompareScreen.tsx` is 269 lines (just over the ~250 guide). It is split into the components and hooks it uses; the rest is the four states.
+- Pre-existing lint error not from this work: `__tests__/data/useGeneration.test.tsx:31` react/display-name.
+
+- **Follow-ups (main session):** removed the "Resend email" button. Sign-in already needs a verified email, and the button sent a sign-up code a signed-in user has nowhere to enter. The mock comparisons now carry `places` (`placesOfContent`), so "Used in…" shows in the demo too. Fixed a pre-existing lint error in `__tests__/data/useGeneration.test.tsx`.
+
+## 115. "Your plan to fit this job" (owner, 2026-10-19)
+- **The owner asked to redesign the comparison card entirely,** into something unique that shows what the job really needs and how to improve the resume. They chose the **fix plan by impact** concept from three offered: the plan, a job ↔ resume evidence map, and a highlighted JD.
+- **What it shows** (web, `FixPlanCard` + `ScoreBar`, replacing the comparison table):
+  - **Header:** "Your plan to fit this job", the job vs the resume (with Change), the score out of 10, "N steps to improve", and "With the ones you can take now: about X/10".
+  - **Where your points go:** the 10 points as one bar, each part as wide as its weight and filled to what it earns, with what it loses and the biggest loss named.
+  - **Your fix plan:** steps ranked by worth. Each shows what the job asks (its own line), what the resume shows, who does it ("AI does it" / "Only if you have it" / "Nothing to change"), Required, and the points.
+  - **Ticking:** keyword steps have "I have this", the same tick as the keyword list below, which is now titled "Every keyword from this job". Top 6 steps, then "Show all".
+- **Where the numbers come from** (`shared/scoring/fixPlan.ts`, G17):
+  - **Parts:** each part's loss is its weight minus its points, from the report.
+  - **Typed fixes** (a number, the timeline, wording): what re-scoring with the change gave (`AtsFix.impact`).
+  - **A missing keyword:** the engine prices it at 0, because nothing backs it. The plan prices what it would add *if the user has it*: the keyword part's weight × that requirement's share of the weights (required 2, preferred 1) × the credit (half listed, full shown in a role, D-14). Its basis says "only if you have it".
+  - **A keyword only in the skills list** is worth the other half once a role shows it.
+  - **Headline and summary** say "Not scored"; years the job asks that the resume doesn't show say "Nothing to change".
+  - **Decide:** the projection adds up steps that were each priced alone, so it reads "about". A tick counts half until the user says where they used it. A keyword already listed gains nothing until it is placed.
+- **Also fixed:** the mock's listing comparisons now pass the JD's text and title, so keyword quotes and the plan show in the demo too (they were missing).
+- **The old `CompareStep` is moved to the scratchpad archive.**
+- **Tests:**
+  - shared `fixPlan.test.ts` (3: parts by loss, each step's worth from the engine's math, no plan without a total);
+  - web `TailorFlow` (plan, bar, worth, "I have this" ticks the keyword below);
+  - server `tailorConfirmP14` (a real comparison carries the plan, with Kubernetes priced above 0).
+  - Green: shared 114, web 344, mobile create/generations/data 364.
+- **Not done:** mobile still shows its compare card. The plan logic is shared, so mobile can render it next.
+
+## 116. The AI places ticked keywords (owner, 2026-10-19)
+- **Owner:** "When we click to add, AI itself should decide where to put them for perfect output." This overrides §112.2's "Where did you use it?". The question, its picker and the mobile "Used in…" sheet are gone. A tick is all it takes.
+- **How it stays honest (G13, "the model proposes, code decides"):**
+  - **Facts:** an unconfirmed ticked keyword joins each dated role's and each project's skills in the run's facts (`factsOfDocument({ placeable })`). Undated roles never get it.
+  - **Dates:** the plan's era check (`eraValidSkills`) offers it only to roles the technology existed during.
+  - **Placement:** the model (`resume.generate` v5, `target.keywordsToPlace`) works each one into the summary and into one bullet of the one or two roles or projects whose work is closest. If nowhere fits, it stays in the skills line (§113 placement).
+  - **Tagging:** the merge tags a role with the keyword only when one of its rewritten lines says it.
+  - **Transparency:** the ready screen names every placement: "Put Git into Developer Intern · Infotact — check it's where you used it". The user can then edit or ask the AI rewrite to remove it.
+- **Decide: the AI may say a keyword was used in a specific role the user never named.** The user ticked it as a skill they have; the role is the AI's best fit, era-checked and named for review. A wrong placement is the risk, and the named "check it" line is the mitigation. The confirmation path (`confirmed`, §112) still works server-side but has no UI now.
+- **Projection on the plan:** a ticked keyword counts as listed (half its worth), because a role placement is never promised.
+- **Removed or archived:** web `WherePicker`; mobile `UsedInSheet` and `CustomizePlaces` (moved to the scratchpad archive).
+- **Tests:**
+  - server `tailorConfirmP14` (a placed keyword is kept, tagged and named);
+  - web `KeywordPicker` (a tick asks nothing);
+  - mobile `TailorCompareScreen` (no "Used in", no confirmation sent).
+  - Green: server unit 195; typecheck and lint across the repo.
+- **Prompt `resume.generate` v5 is installed locally,** with a prompts-only seed. The worker picks it up after a restart; restarting `dev:all` reseeds the accounts, so that is the owner's call.
+
+## 117. The accuracy check pops up (owner, 2026-10-19)
+- **The owner asked** that "Is everything here true?" appear as a pop-up when Download is pressed, not inline under the button.
+- **Built:** `AccuracyPrompt` is now a centred dialog over the page, used on both the ready screen and the Resumes page. It uses the app's own dialog style and motion (overlay reveal, pop in and out), with focus on "Yes, it’s accurate". Escape, the backdrop and "Not yet" all decline; nothing downloads.
+- **Spec-derived** (rule 7): no board draws it.
+- **Tests:** web resumes and tailor (29).
+- **Not done:** mobile already shows it as a sheet.
+
+## 118. The ready screen puts the AI and the cover letter first (owner, 2026-10-19)
+- **The owner asked** for a redesign of the tailor ready screen, so the AI tools and the cover letter are clearly visible. The reference was Jobright's: an AI column beside the page, and the actions in a bar.
+- **Built** (`ReviewStep`, now 2 columns under a toolbar):
+  - **Toolbar:** "Ready for {company}", the file name · pages · "Saved to Resumes", then Fit to one page (past one page), Edit, **Download PDF**, and Apply (when the job has a page).
+  - **AI column** (400px, before the page):
+    1. **Score:** the score's move, said plainly whichever way it went ("Up from 6.2" / "Down from…" / "Same as before"), and job keywords 10/10 (was 5/10).
+    2. **"Tweak it with AI":** brand-tinted, with a line on what it does.
+    3. **Cover letter for {company}:** live.
+    4. **What changed:** the first 5, "Show all". The AI's keyword placements ("Put Git into … — check it") are amber, to check.
+  - **Page:** the preview with "Highlight changes", as before.
+- **Cover letter, now real** (`CoverLetterCard`; it was "Soon"):
+  - Pick a tone (Professional / Confident / Conversational / Concise), then **Write my cover letter**. This starts a `cover_letter` run on the shared pipeline from this resume and the same JD/listing. Every paragraph cites the resume's facts (P10-09).
+  - It writes in place and shows "Your cover letter is ready · Open it". The letter lands in Resumes.
+  - **Decide:** spec-derived from V2 §7.10 with existing primitives; no board draws it.
+- **Tests:** web `ReviewStep` (4: the score's move, the AI and cover letter regions, the changes, the letter run's payload); full web suite green.
+- **Not done:** mobile's ready screen (TAILOR 05) is unchanged; its cover letter is reached from its own flow.
+
+## 119. No "What changed" list on the ready screen (owner, 2026-10-19)
+- **The owner said** the list isn't needed, so it is removed from `ReviewStep`.
+- **"Highlight changes" on the page** still shows every reworded line against the original resume.
+- **The run still records its `changes`** (server, `tailorChanges.ts`), so nothing is lost if the list comes back.
+- **Decide:** this list was where §116's "check it's where you used it" placement lines showed. Now a keyword the AI placed in a role is visible only by switching on "Highlight changes", or in the editor. That weakens the §116 mitigation; a small notice on the page is a candidate if the owner wants one.
+
+## 120. No step header on the finished resume (owner, 2026-10-19)
+- **The owner said** the "Tailoring for …" header and its step tracker are not needed on the last stage. They are now hidden once the run is ready; Customize and Tailoring keep them.
+- **The way back** is a back arrow at the start of the ready screen's toolbar, to the job or JD page.
+- **Tests:** web tailor (15).
+
+## 121. "Resume review": the ready screen from the owner's mockup (2026-10-19)
+- **The owner sent a mockup** (score card, AI Resume Assistant, Create cover letter, Preview/Text view) and asked that the chat follow NextKin's own assistant design — "Try asking" sparkle chips, not icon rows — with Create cover letter included.
+- **Built** (`ReviewStep` composes these):
+  - **`ReviewHeader`:** back, "Resume review", the file and a "Saved" pill (a link to Resumes), then "⋯ More actions" (Fit to one page when past one page, Apply on {site}, Open in Resumes), **Edit resume** and **Download PDF**.
+  - **`ScoreSummaryCard`:** the ring and the band in words ("Good match"), "Your resume shows 10/10 of this job's key keywords. Your score is up from 6.2.", an info icon with the basis, and one tip. The tip is green when good: every keyword is on the resume, so show results. It is amber otherwise: "Still missing: … Add them only if they're true."
+  - **`ResumeAssistantPanel`** (the assistant's own bubbles, `MessageBubble`): an honest greeting; then "Try asking" with 3 edits and 2 questions, the highlighted **Create cover letter** button (it opens `CoverLetterCard` in place), and "Ask anything about your resume…".
+    - **Decide — routing:** a message that starts like an edit ("shorten / remove / rewrite / add / make…", `isEditRequest`) rewrites one section from the resume's own lines (`useRewriteSection`, §113). Anything else is a question for the assistant, sent with this resume attached (`useSendAssistantMessage({ resumeId })`), and its answer shows in the panel as in the chat.
+    - **Decide — answers go into the assistant's history:** questions asked here join the assistant's current conversation, so they also appear on /assistant.
+  - **`ResumePreview`:** Preview (the typeset page) / **Text view** (`TextView`: every section, "AI enhanced" on those the run changed, new lines highlighted; `resumeTextView` in shared). Zoom, page count and full screen sit above the page.
+- **Removed:** the old "Tweak it with AI" panel, `ChangesView` and the "Highlight changes" switch (Text view replaces it). These go to the scratchpad archive.
+- **§119 follow-up:** Text view's "AI enhanced" marks are where the AI's keyword placements now show.
+- **Tests:**
+  - web `ReviewStep` (4: the review layout and menu, the score going down without Apply, a question going to the assistant and an edit to the rewrite, the cover letter's payload);
+  - shared `resumeDiff` (+2 for the text view);
+  - full web suite green.
+- **Not done:** mobile's ready screen.
+
+## 122. The review fits the window (owner, 2026-10-19)
+- **The owner asked** that the AI window fit the height, so it can be seen properly.
+- **Built:** both columns of "Resume review" are sticky under the top bar (`stickyBelowTopBar`) at the window's height (`100dvh − 6.5rem`, from lg up).
+  - **The assistant panel** fills what the score card leaves. Its header and the "Ask anything" box stay put; the conversation, "Try asking", Create cover letter and the letter scroll between them, and a new answer scrolls into view.
+  - **The page preview** fills its column, and the page scrolls inside it.
+  - Below lg, both columns stack and grow as before.
+- **Unverified in a browser:** jsdom only (web tailor tests, 16). Check at 1536×730 and 1396×670 that the score card plus the panel header and box fit without clipping.
+- **Rework (owner: "it still does not, restructure").** Sticky columns started below the page header, so the box was off-screen.
+- **Now, from lg up, the review is a workspace exactly the window's height** (`100dvh − 7.5rem`: top bar, frame top, flow foot), and the page itself never scrolls.
+- **Left column:** a compact score card (ring 72, the band in words, one tip), then the assistant filling the rest.
+  - The assistant's header carries **Create cover letter** as a button.
+  - Only the conversation scrolls. The "Try asking" chips are one horizontal row above a one-line box that grows to 4 lines.
+  - Opening the letter puts its compact card at the top, with tones on one row, and hides the chips while it is open.
+- **Right column:** the preview fills its column; the page scrolls inside it.
+- **Verified in Edge** (Playwright, signed in as Priya Pro, the owner's own run) at **1536×730 and 1396×670**:
+  - no page scroll;
+  - the box ends 56px above the bottom;
+  - with the letter open, "Write my cover letter" ends 41px above the box;
+  - screenshots in the session scratchpad (`review-*.png`).
+
+## 123. No greeting; the suggestions come back (owner, 2026-10-19)
+- **The owner asked** to remove the assistant's greeting bubble and bring back the suggestions.
+- **Built:** the panel opens on "Try asking", the five suggestions as wrapped chips. Once a conversation starts, the suggestions sit under it.
+- **Removed:** the one-row chip strip above the box, so they show in one place only.
+- **Fit:** checked in Edge at 1536×730 and 1396×670: no page scroll, and the box in view. At 1396×670 three suggestions show and two are a short scroll away.
+- **Tests:** web tailor (16).
+
+## 124. A real resume builder: create, edit, templates, PDF (owner, 2026-10-19)
+The owner asked for "Create New Resume" to stop making empty "Untitled resume" rows and for a working editor in place of "Coming soon". This section records the judgement calls, in the order they were made.
+
+### 124.1 The editor's own document model
+- **The gap:** the editor model (`ResumeContent`) could not hold the header, skill groups, a role's client projects, custom sections, section order and headings, or a template, though the canonical JSON already stores most of them (§111).
+- **Built:** a new `ResumeDocument` (`shared/models/resumeDocument.ts`) with an id on every line. `scoring/resumeDocument.ts` converts it both ways.
+- **Line ids:** an unchanged line keeps its claim and evidence. A changed line keeps its id but becomes the user's own claim (Q-03). This keeps a client project's bullets in place on an uploaded resume.
+- **No silent confirms:** unlike a section save, a whole-document save never confirms a Zero Resume guess on its own. The download still waits for that review (V2 §7.9).
+- **Blank required fields:** a field the canonical schema requires and the user left blank (employer, school) is stored as the existing `[Company Name]`-style placeholder and read back as blank. Fully blank entries are dropped on save.
+- **Header default:** a resume without its own header opens with the account's name, email, phone and location. That is the user's own data, not invented; it is what the PDF printed before anyway.
+
+### 124.2 Concurrency: a content revision, not the ETag
+- **The rule:** a save names the revision it was edited from. A save from an older revision is refused (412) and never auto-retried.
+- **Why not the row ETag:** the row ETag also moves on a rename, which would turn the editor's next save into a false conflict.
+
+### 124.3 One version per editing sitting
+- **The problem:** autosave every ~1.2 s would mint a version on every pause. That pushes the versions a user means out of the plan's visible history.
+- **Built:** an editor save replaces the previous editor save when all of these hold:
+  - the note is "Edited in the editor";
+  - it is under 30 minutes old and is the newest version;
+  - nothing depends on it yet: no accuracy confirmation, export, letter or shared report.
+- **Same number:** the old row is deleted and the new one written in one transaction, at the same version number. Versions stay immutable (the 0004 trigger), and the current-version FK is deferred to commit.
+- **Judgement call:** a 30-minute sitting window. A longer session leaves a version every half hour.
+
+### 124.4 Three templates, all LaTeX, all ATS-safe
+- **The templates:** Classic (`jake`, byte-identical to before; hashes checked), Modern (TeX Gyre Heros, indigo headings, name on the left) and Elegant (TeX Gyre Pagella, italic headings).
+- **What changes:** only the fixed preamble, so the body lint and the escaping are unchanged. The lint now accepts every template's preambles and an `rheader` environment.
+- **Where it lives:** `template` sits on the canonical JSON. Renders, the preview and the PDF read it, and each template has its own `rev`.
+- **The compile image:** it was rebuilt with warm-up sources for every template × density × paper. The sealed `--only-cached` pass is green.
+  - **Bug found in the first build:** a nested `[0.4pt]` inside titlesec's optional argument. Fixed with braces.
+  - **Verified:** a real compile of each template through the relay, with PNGs checked by eye.
+- **Live preview (HTML):** it mirrors the templates in the nearest web fonts (Latin Modern isn't on Google Fonts, so it falls back to Times). The "PDF pages" tab shows the exact typeset pages of the last save.
+
+### 124.5 Labels
+- **"Default" is now "General":** the owner read it as "my default resume". It means "not written for a job". Each tag also has a tooltip.
+- **Board change:** this departs from board 304:3146's copy, at the owner's explicit request.
+- **"Draft" now means "not ready to download":** for a resume, it is a draft while the completeness check (`documentProblems`, name excluded) would refuse its export. It used to mean "manual with one version". A draft row says "Not ready to download yet: open it to finish."
+
+### 124.6 Export gate: `incomplete`
+- **The rule:** a resume with no sections, or an entry missing what it is (a role with no employer or title, a school with no degree, a project or custom entry with no title, a section with no heading), is refused with reason `incomplete`. The message names the first problem.
+- **Same check on both sides:** the editor runs it on the client and lists every problem with a jump to its place.
+
+### 124.7 Creation
+- **"Create New Resume" creates nothing until a way is picked.** The four ways:
+  - **Tailor:** goes to `/upload-jd`.
+  - **Build from my profile:** a `kind: resume, origin: build` run with no JD, then the editor. With no roles in the profile, it says so and offers the profile or scratch.
+  - **Upload:** the existing `TailorUpload`, then the editor.
+  - **Start from scratch:** a blank resume opens in the editor with the account's details.
+- **Not verified live:** Build from profile, because it spends real model credit. It is covered on the mock (jest) and by the server's existing no-JD generation path.
+
+### 124.8 A bug found on the way: browser deletes were refused (pre-existing)
+- **The bug:** the CSRF guard treated Next's empty body stream on a DELETE as a body without a JSON content type, and returned 400. So Delete has never worked from the web app on the live backend.
+- **Fixed:** a body now counts only when it is declared (a content type, a length above zero, or chunked transfer). A text/plain cross-site post is still refused. A regression test is in `api.int.test.ts`.
+
+### 124.9 Smaller things
+- **Cover letters:** Edit on a letter opens a small letter editor (greeting, paragraphs, sign-off; autosave through the existing PATCH route) instead of a dead end.
+- **Removed:** the "Coming soon" resume-editor page.
+- **Row menus:** the list's ⋮ (a "Soon" placeholder until now) has Edit, Duplicate, Download PDF and Delete (with confirmation). Delete reads its outcome from the promise, since the row unmounts optimistically.
+- **Phone width:** the app shell is laptop and tablet only (≥1024px, §84). The editor has Edit and Preview tabs below `lg`, and its actions wrap under the title. The shell itself still overflows at 390px; that is outside this change.
+- **Open:**
+  - the editor doesn't expose a role's profile skill tags (kept as they were);
+  - year-only dates show as January in the month picker until edited;
+  - a web Zero Resume review screen still doesn't exist, so a guessed resume's download waits for mobile's review.
+
+### 124.10 Bigger editor controls (owner, 2026-10-19)
+- **The owner said** the move, rename and remove controls were almost invisible.
+- **Built:** one shared style in `editor/components/controls.ts`: a 36px target, an 18px glyph in the secondary ink, and a hover background. Remove turns red on hover only.
+- **Also:** bullet rows no longer dim their controls until hovered. The contact row's text arrow is now the chevron icon.
+- **Checked:** in Edge on a real resume.
+
+### 124.11 Closed entries left a tall blank card (fixed)
+- **The bug:** EntryCard and SectionCard used `CollapseFade` without `axis="vertical"`, so a closed card faded its form out but kept its height.
+- **Fixed:** they now collapse in height, and closed content is `inert`, so its fields leave the tab order too.
+- **Checked:** in Edge on the owner's resume. The Projects section is 181px closed and 719px open.
+
+### 124.12 The editor header (owner, 2026-10-19: "improve this part")
+- **Built:** `EditorIdentity`:
+  - a labelled "← Resumes" back button;
+  - a document tile;
+  - the name as an h2, with a visible Rename pencil (the field opens selected; Enter saves, Escape cancels);
+  - one line of pills: save state ("All changes saved · 22:47", Saving, Unsaved, Offline, Not saved), readiness ("Ready to download", or "N things to finish", which opens the checklist) and the template.
+- **Undo and redo:** they use the shared control style.
+- **Checked:** in Edge at 1536 and 1100 wide.
+
+## 125. Home's Quick Start works on the web (owner, 2026-10-19)
+Owner, on the five Quick Start tiles: "make these functional, similar flow as it is in mobile, with clean and professional ui, no ai slop". Before this, only Build Resume and Tailor to a Job started anything (both opened `/upload-jd`). Zero Resume and ATS Check opened `/resumes`, and Cover Letter opened `/documents`.
+
+### 125.1 What each tile opens now
+- **Build Resume** → `/upload-jd?for=build`.
+  - The same one box (§114).
+  - Analyze opens `/jd/<id>/tailor?mode=build`, which starts on "Build a new resume for this job". That runs the build pipeline from the profile (the run BUILD 04b/04c uses).
+  - Without roles in the profile, it offers Zero Resume (the role is prefilled from the job's title) or the profile.
+  - "Tailor a resume I already have instead" drops the mode.
+  - **Owner decision (2026-10-19):** split Build from Tailor rather than keep them identical as on mobile.
+- **Zero Resume** → `/create/zero-resume`: mobile's ZERO 01–05.
+  - The setup asks for your name (prefilled), the years band and the role.
+  - The run shows its progress. Then the draft (`ResumeSheet`) sits beside a "Check N things" panel, which asks one guess at a time (role / skill / education) with Save or Remove, through `useResolveZeroCheck`.
+  - Download stays locked until every guess is checked, then Edit and Download PDF appear.
+  - This is the web Zero review that was missing (§124 known gaps).
+- **Tailor to a Job** → `/upload-jd` (unchanged).
+- **Cover Letter** → `/create/cover-letter`: mobile's COVER 01–03.
+  - The setup takes the latest tailored resume (with a picker), shows the job it was tailored for, and asks for the tone.
+  - The result is the letter, with Download PDF, Edit the letter, and "Try another tone" (a new letter from the same resume).
+  - With no tailored resume, it points to tailoring.
+- **ATS Check** → `/create/ats-check`: mobile's ATS 01–03.
+  - The setup takes a resume (upload, or "One of mine") and a job (a saved job, or a pasted description). It opens on paste when there are no saved jobs.
+  - The run shows its progress with Cancel.
+  - The result shows the score ring with its band, what is missing, up to three fixes, the §7.8 basis line, "Fix it for this job" (to tailoring with that resume) and "Check another".
+- **Mechanics:**
+  - Each flow keeps its run in `?run=`, so a reload, or the toast from "Leave and notify me", comes back to the same step.
+  - `RunWatcher` now takes any href and message, not only tailoring's.
+
+### 125.2 Judgement calls
+- **"One of mine" in ATS Check:** a web addition; mobile only uploads. A web user's resumes are already in NextKin.
+- **Which resumes can source a letter:** a tailored variant counts as well as one linked to a listing. Most web resumes are tailored to a pasted description, which links no listing, so mobile's rule (a `linkedJobId`) would have left most web users at the empty state.
+  - **Server change to match:** `startGeneration` now reads the JD from the source resume for `cover_letter` too, not only `interview` (`services/generations.ts`).
+  - **The API is cached on `globalThis`,** so the running web process uses the old code until it is restarted. I did not restart the owner's stack.
+- **Mobile's rules are copied, not shared:** the copy and rules (quota notes, Zero validation, cover sources, the ATS blocker, run lines) live in `apps/web/src/features/create/createLibrary.ts` and `runLines.ts`, worded as mobile's are. Moving them into `packages/shared` would touch mobile's imports and tests, which this session left alone.
+  - **Drift risk:** the two copies can drift. Lift them later if they change.
+- **Shared pieces pulled out of tailoring:**
+  - `FlowSteps` (TailorHeader uses it);
+  - `RunProgress` (TailoringStep uses it, and looks the same);
+  - `ChoiceChips` (CoverLetterCard's tone chips use it).
+- **Build mode's analyze button reads "Continue",** not "Tailor my resume".
+
+### 125.3 Verified, and not
+- **Gates:** `pnpm typecheck`, `pnpm lint` and `pnpm test` are green. Web is at 51 suites and 364 tests:
+  - new: ZeroResumeFlow (2), CoverLetterFlow (4), AtsCheckFlow (2);
+  - extended: NoResumeCard, HomeScreen, UploadJdScreen, routeAdapters.
+- **Live in Edge as Priya Pro** (local stack, synthetic data), at 1536 and 1100 wide: every tile's href, and the setup screen of each flow, including `/upload-jd?for=build`.
+- **Not run live:** no run was started (Zero draft, letter, ATS check, build). Each calls the live model and costs money. The run and result screens are covered on the mock only.
+- **Not run:** the server change has no integration test run. `pnpm test:integration` needs the dev worker stopped, and that is the owner's running stack.
+- **Seen once:** a hydration-mismatch console warning, on the first page after sign-in. It did not come back on a second pass, so it is not traced to these pages.
+
+## 126. Job-first flows, as on mobile (owner, 2026-10-20)
+- **What the owner asked.** The web flows should match mobile's order: choose the job (a saved one, or one from elsewhere), then the resume (one of yours, or an upload), then the comparison, then the enhancement. The owner also flagged problems with §125:
+  - the flows did not feel premium;
+  - one-off sizes were used instead of design tokens;
+  - narrow centred cards left large empty spaces;
+  - the Jobright and W-TAILOR boards (NEXKTKIN-PVT `734:2`, `734:679`) were not followed.
+- **Agreed approach:**
+  - one shared start for Build, Tailor, Cover Letter and ATS Check;
+  - the boards' layout: back, "for" and the steps in the header; full-width cards; a footer bar with the note on the left and Back plus the primary action on the right;
+  - only theme tokens;
+  - one step shown to the owner before the rest are built.
+
+### 126.1 Step 1 built (2026-10-20)
+- **Routes:**
+  - `/create/build` and `/create/tailor` (`features/create/jobFlow/`).
+  - Quick Start's Build Resume and Tailor to a Job tiles now open these.
+  - `/upload-jd` stays as the top bar's "Upload New JD".
+- **Layout:**
+  - **Header:** `FlowHeader`, with the steps Job · Resume · Compare · Enhance.
+  - **Card:** one full-width card with `StepHeading` ("Step 1 of 4"). Two columns sit under it:
+    - **Your saved jobs:** radio rows with the logo, the role, company · place and the match band. A search appears past four jobs. The newest saved job starts picked.
+    - **Use another job:** paste the text or a link, or upload or drop a file. Typing here moves the pick to this box.
+  - **Footer:** `FlowFooter`, with "Nothing is spent until you create the resume.", Back and Continue.
+- **Continue:**
+  - **Saved job:** goes to `/jobs/<id>/tailor`.
+  - **Pasted job:** read through `useExtractJd`, then goes to `/jd/<id>/tailor`.
+  - **Build:** both add `?mode=build`.
+- **Checked:**
+  - **Gates:** web typecheck, lint and tests green (52 suites, 366 tests). The new `JobStep.test.tsx` covers the default pick, changing it, Continue for Build, and a pasted job for Tailor.
+  - **Live:** Edge as Priya Pro, at 1536 and 1100 wide, both empty and with one saved job. I saved one job for the screenshot and unsaved it afterwards; 0 left saved.
+
+### 126.2 Still to do (after the owner reviews step 1)
+- **Step 2, the resume:** your resumes as rows (the best one marked), plus Upload. Build adds "Build from my profile".
+- **One stepper through to the end:** today, Continue hands over to the tailor screen. That screen has its own three-step header, so the step count jumps from four to three.
+- **The other tiles:** Cover Letter and ATS Check move onto step 1 and step 2.
+- **Token clean-up:** the §125 pages (`CreateFlowFrame`'s centred 720px card, `h-[120px]` art and the like) are replaced by these steps.
+- **Tidying the Compare and Enhance split:** the tailor screen merges them (the §114 owner decision). The owner now names them as separate steps, so they may need to split again. **Decide:** split them, or keep one screen labelled as both.
+
+## 127. Figma boards for the web screens built without one: sample set (Desktop/Web, 2026-10-20)
+The owner asked for every web screen built without a Figma board to be drawn: 28 screens in groups
+A–D. This first sample covers the job-first flow (rows 1–6 plus the dialog in row 4) and is shown
+before the rest.
+
+**Boards and layout**
+- The boards sit in two rows under the W-TAILOR row: y 6300, and y 7400 from x 27211.
+- Every board is a clone of the W-TAILOR 01 chrome: top bar, back + "Tailoring for", the steps on
+  the right, a full-width card under a "Step N of 4" heading, and the footer bar (note left; Back
+  and the primary action right).
+- The steps read **Job · Resume · Compare · Enhance**, as in §126.1.
+
+| Board | Node | List row |
+|---|---|---|
+| W-FLOW 01 · Which job? | `849:3` | 1 |
+| W-FLOW 02 · Which resume? | `849:318` | step 2 of §126.2 |
+| W-FLOW 02b · Build from my profile | `849:625` | 2 |
+| W-FLOW 02b·2 · Build, profile has no roles | `849:926` | 2, the empty-profile state |
+| W-FLOW 02c · No resume yet | `849:1115` | 3 |
+| W-FLOW 03 · Compare — your plan to fit this job | `850:2` | 5 + 6 |
+| W-FLOW 03a · Change resume (dialog) | `852:349` | 4 |
+| W-FLOW 04 · Enhance — choose what to add | `852:2` | 5 |
+
+**Decide**
+- **Compare and Enhance are drawn as two steps** (03 and 04), because the owner now names four
+  steps. This answers §126.2's "split or keep one screen" with *split*. The built Customize screen
+  (§114) merges them; if the owner keeps one screen, 03 and 04 stack.
+- **Keyword chips use the capsule pattern** the owner asked for on ONB 06 (§106.3): ticked, not
+  ticked, and "already on your resume" in green. The "Used in…" places sit in one grey panel under
+  the missing group, not inside each chip.
+- **Step 2 shows no "best resume" mark.** §126.2 asks for one, but there is no basis for "best"
+  yet (G17). The base resume is picked first and labelled "Base resume". If a mark is wanted, it
+  needs a stated basis (for example, the most matching keywords).
+- **Illustrations:** illustrated icons head every column. The option cards on 02b and 02c reuse the
+  mobile art: BUILD 01, ATS 01 folder, ZERO robot, INTERVIEW 02.
+- **Copy kept honest:**
+  - "Nothing is made up" and "We never add a skill you didn't tick".
+  - Each who-does-it chip ("AI does it", "Only if you have it", "Say where you used it") follows
+    §115.
+  - The headline and summary step reads "Not scored".
+
+**Numbers are format only.** 7.2/10, the parts (Keywords 2.6/4, Experience 2.1/2.5, Job title
+0.5/1, Format 1.5/1.5, Length 0.5/1), +0.5 and "about 8.7" show the layout. The engine computes the
+real values (board-fidelity exception).
+
+**Not drawn yet:** groups B (Quick Start pages), C (resume builder) and D (app-wide), and rows 7–9
+(Resume review, the Cover-letter card, JD "Edit details").
+
+**Note:** an older "04b · Resume editor" board (`560:2`) already exists. Row 16 (the §124 editor)
+will be drawn new, and 560:2 may be retired.
+
+### 127.1 The remaining screens drawn (2026-10-20, owner: "yes go ahead")
+26 more boards on Desktop/Web, in rows from y 8900 to y 18400, starting at x 27211. All use the
+W-FLOW chrome (or copies of owner boards for dialogs) and are overlap-checked.
+
+| Row | Board | Node |
+|---|---|---|
+| 7 | W-FLOW 05 · Resume review | `859:11` |
+| 8 | W-FLOW 05b · Resume review — cover letter open | `859:335` |
+| 9 | W-FLOW 06 · Job description — Edit details | `860:6` |
+| 10 | ZERO 01 · Tell us the basics | `861:2` |
+| 10 | ZERO 03 · Check the guesses | `861:244` |
+| 11 | COVER 01 · Set up your letter | `862:2` |
+| 11 | COVER 01b · Tailor a resume first | `862:254` |
+| 11 | COVER 03 · Your letter is ready | `862:485` |
+| 12 | ATS 01 · Upload the resume to check | `863:2` |
+| 12 | ATS 03 · Your ATS score | `863:277` |
+| 14 | RES 01 · Create New Resume (dialog) | `864:2` |
+| 15 | RES 02 · Build from my profile (panel) | `864:443` |
+| 16–17 | EDIT 01 · Resume editor (with the identity header) | `866:9` |
+| 18 | EDIT 02 · A few things before you download | `867:2` |
+| 19 | EDIT 03 · Editor banners (restore · changed elsewhere) | `867:321` |
+| 20 | EDIT 04 · Cover letter editor | `867:636` |
+| 21 | RES 03 · Row menu | `867:1003` |
+| 21 | RES 04 · Delete a resume (confirm) | `867:1366` |
+| 22 | SYS 01 · AI consent | `868:2` |
+| 23 | SYS 02 · Accuracy check | `868:245` |
+| 24 | SYS 03 · Verify your email | `868:469` |
+| 25 | SYS 04 · Service status banner (on Home) | `871:2` |
+| 26 | SYS 05 · Shared ATS report (`/r/[token]`) | `871:600` |
+| 27 | SYS 06 · Page not found | `871:718` |
+| 27 | SYS 07 · Page error | `871:922` |
+| 28 | SYS 08 · Coming soon (Interview Prep) | `871:1125` |
+
+**Copy taken from the code** (not invented): the consent dialog (`AiConsentGate`, provider list
+`providers-v1`), the accuracy dialog (`ACCURACY_TITLE`/`ACCURACY_MESSAGE`, "Not yet" / "Yes, it's
+accurate"), the degraded message (`DEGRADED_MESSAGE.ai`), the not-found and error screens
+(`SystemScreens`), the coming-soon copy (`ComingSoonScreen`), the templates Classic / Modern /
+Elegant and the "General" tag (§124.4–.5).
+
+**Decide**
+- **Row 13 (Upload JD with Build wording) has no board of its own.** W-FLOW 01 replaces it: Build
+  and Tailor share step 1 and differ only in the header label.
+- **The Quick Start flows now sit on the job-first steps.** Zero Resume: Basics · First draft ·
+  Check it · Done. Cover Letter: Job · Resume · Your letter. ATS Check: Resume · Job · Your score.
+  The "writing…" progress screens are not redrawn; they reuse W-TAILOR 03.
+- **Proposals beyond the built screens.** Each is marked here so it is not mistaken for built
+  behaviour:
+  - ZERO 03's one-guess-at-a-time card with a progress strip.
+  - The accuracy dialog's "Added in this version" list.
+  - COVER 01's tone cards with a sample sentence each.
+  - ATS 01's "What we check" column.
+  - The editor banners' **Copy my edits** action. §124.2 says only that a stale save is refused, so
+    what the banner offers is open.
+- **Verify email (SYS 03) keeps "Resend email".** §114 removed Resend on mobile because a
+  signed-in user has nowhere to enter a code. The web needs a verify *link*, or this button goes.
+- **Interview Prep coming soon (SYS 08) contradicts board 09 · Interview Prep (`561:506`).** The
+  board draws the real feature; SYS 08 draws what the app shows today. Retire SYS 08 when Interview
+  Prep is built.
+- **Settings' coming-soon panels** (Billing & plan, Security, Delete account) are not drawn. They
+  reuse SYS 08's pattern inside the Settings card.
+- **Copy softened or removed where unverifiable:**
+  - quota lines for Zero, cover letters and ATS checks;
+  - "Checking is free";
+  - "shared report links go too" on delete.
+- **The 404 art is a placeholder (IL-W30).** The web app's `JobSeekerBinocularsIllustration` isn't
+  in the Figma file.
+- **Numbers are format only** (as in §127). The shared report adds up to its ring (8.7).
+
+**Also:** the temporary helper kits (`849:2`, `858:2`) were deleted from the page.
+
+
+## 128. The §127 boards built in the web app (owner, 2026-10-20: "implement all the updated design")
+Every board from §127 is now in the code: W-FLOW 01–06, ZERO 01/03, COVER 01/01b/03, ATS 01/03,
+RES 01–04, EDIT 01–04 and SYS 01–08. This closes §126.2: one stepper runs from the job to Enhance,
+Cover Letter and ATS Check use the job step, and the §125 frames are gone. The replaced components
+are archived in the session scratchpad, not deleted.
+
+### 128.1 Judgement calls
+- **JD edit (W-FLOW 06).** The board's "Work type" isn't in the JD model, so the field shows
+  **Employment type**.
+- **Cover tones.** Four tones; "conversational" is labelled **Warm**. The sample sentences are
+  generic, not taken from the user's resume.
+- **ZERO 03.** The draft's "Guesses are highlighted" label is left out, because the preview can't
+  highlight a guess.
+- **Build mode's Compare and Enhance** reuse W-FLOW 03/04 with the profile in place of a resume.
+  No board draws them.
+- **Cover letter for a saved job** needs a resume linked to that job; otherwise 01b ("tailor
+  first") shows. A resume uploaded in that step isn't linked, so it doesn't count.
+- **ATS "One of mine"** (§125) is gone. ATS 01 draws only an upload.
+- **Build from profile (RES 02).** The template is applied after the build run lands, through a
+  second save, because the generation input has no template field.
+- **Editor top bar (EDIT 01).** Only undo, redo and Download PDF remain. The board has no ⋮ menu,
+  so **Duplicate and Delete were removed from the editor page**; both stay on the resume's menu in
+  Resumes. **Decide:** whether the editor needs them back.
+- **The template switch** moved from the top bar to the preview toolbar ("Template: Classic").
+- **Sections start closed** except Summary and Experience, as the board draws them. A blank resume
+  (no name, or no roles) opens every section. "Go to it" in the download checklist opens the closed
+  section and entry it points to.
+- **Section bins.** The board puts a bin on every section. Only sections the user added can be
+  removed: an empty standard section is simply not printed. A role's closed row still shows its
+  dates under the title, which the board doesn't draw.
+- **The conflict banner (EDIT 03)** is now **Copy my edits** (the page as plain text, to the
+  clipboard) and **Load the latest**. The old "Keep my version" overwrite is no longer offered, as
+  the board's copy says your edits "can't be saved over it". `keepMine` is still in
+  `useResumeEditor`, unused. **Decide:** whether to bring it back or delete it.
+- **Letter editor (EDIT 04).**
+  - **Sign-off and Name:** the letter stores these as one sign-off, the closing line first.
+  - **Undo and redo** are new for letters, from a small `useLetterDraft`.
+  - **"PDF pages"** shows typeset pages only when the server returns them; otherwise it shows the
+    same page, because a letter prints as drawn.
+- **Accuracy dialog (SYS 02).** "Added in this version" appears only when a caller passes the list.
+  No caller does yet.
+- **Verify email (SYS 03).**
+  - **What it does:** a download refused for an unverified email now opens this dialog instead of
+    a sentence.
+  - **Resend email** calls the auth client's `resendCode`, which sends a code, not a link.
+  - **Wording:** the copy says "a message" rather than "a link", to stay true. See §127 on the link
+    question.
+- **Shared report (SYS 05).** Each part's "x / y" is its share of 10, computed from the weight.
+  This assumes the weight is a percentage or a fraction; check against a real snapshot.
+- **Coming soon (SYS 08)** no longer prints the "Planned: V2 §…" line. The section stays in the
+  copy for the team.
+- **New raster art in `public/illustrations/flow/`:** `interview-soon.png` (about 1 MB, 1536×1024)
+  and `ai-consent.png`. Both are exported from the boards. Shrink them if page weight matters.
+- **New icons:** undo, redo, drag, layers, history and sync, from Material Symbols. They are listed
+  in `assets/figma-icons/flow/SOURCES.json`.
+
+### 128.2 Verified, and not
+- **Checked visually on the mock (port 3100, 1536 wide):** the W-FLOW, ZERO, COVER 01/01b, ATS,
+  EDIT 01/02, SYS 05/06/08 pages.
+  - **SYS 05** was checked with a stubbed snapshot.
+  - **EDIT 02's "Go to it"** was confirmed to open the closed Header.
+- **Not shown on the mock:**
+  - **COVER 03 and the letter editor (EDIT 04):** the mock's cover-letter allowance is spent, and
+    the web mock has no letter.
+  - **SYS 01, 03 and 04:** the mock grants consent, verifies email and is never degraded.
+  - **SYS 07:** needs a render error.
+  - **The EDIT 03 banners:** need a stale save or a local draft.
+- **Not run against the live stack or in Expo Go:** web only, mock only.
+
+## 129. Stronger resume generation: a path to 8.5, a real JD page, a plausibility engine (owner, 2026-10-21)
+
+The owner asked for three things:
+
+1. **8.5:** following the engine's recommendations must be able to reach an ATS score of at least
+   8.5. The user still decides which ones to accept.
+2. **JD page:** a pasted JD shows as a proper job description, with AI only when the reading fails.
+3. **Plausibility:** an internal engine catches impossible claims, such as "20 years of React" in a
+   JD or the same kind of claim in a resume.
+
+The plan is in `C:\Users\ACER\.claude\plans\hey-we-need-to-federated-wall.md`. It runs in three
+phases: A is plausibility, B is the path to the target, C is the JD page.
+
+**Owner decisions:**
+- **Analyze opens the JD page first, with a "Tailor my resume" button.** This reverses §114, which
+  went straight to tailoring.
+- **Web first.** The engines and server serve both apps. The mobile UI is a later pass.
+
+### 129.1 Phase A: the plausibility engine (`packages/engines/src/plausibility.ts`)
+
+**`checkJd`** flags two kinds of ask:
+- **`jd_years_exceed_tech_age`:** a years ask beyond the technology's age (`asOf.year` minus the
+  release year).
+- **`jd_years_implausible`:** more than 40 years of anything.
+
+**`checkResume`** flags five things:
+- **`claim_years_exceed_tech_age`:** "N years of X" past X's age.
+- **`role_before_release`:** the timeline engine's verdict, reported here, not re-derived.
+- **`end_before_start`:** `monthRange` still clamps this to zero for scoring; the engine now names
+  it.
+- **`start_in_future`.**
+- **`stated_total_exceeds_roles`:** a stated total more than 12 months past the dated roles.
+
+Judgement calls made without the owner:
+- **Severity follows §105.15.** Only an approved KB entry makes a technology finding "impossible".
+  The starter KB is all machine-generated, so "20 years of React" currently shows as **suspect**,
+  not impossible. Approving KB entries upgrades it. The wording should still be clear on screen.
+- **A technology with no KB entry is never flagged.** The KB has about 128 entries, so many
+  technologies are not checked yet. That is a coverage gap, not a pass.
+- **The 40-year career cap and the 12-month slack** on stated totals are my numbers.
+- **`rubric-2` is now the current rubric (G15).** A JD's years ask is measured against at most
+  the technology's age, so nobody is marked "short" of an impossible ask.
+  - Weights, bands and credit are unchanged.
+  - The cap applies whatever the KB entry's review state. It only ever makes the measure more
+    lenient, never stricter.
+  - Tests prove that rubric-1 reproduces byte for byte, and that a fair JD scores the same under
+    both versions.
+  - Stamps now read `rubric-2`. A re-score of an old run reports `method_change`, which is how
+    G15 says it should work.
+- **The claim ledger's `years_overstated` now also fires** when a summary's "N years of X" exceeds
+  X's age. It shares `yearsClaimsIn` with the new engine.
+
+### 129.2 Phase B: the path to 8.5
+
+**Engine:** `packages/engines/src/targetPlan.ts`, `planToTarget`.
+- It applies real steps **cumulatively** and re-scores after each one. The last total equals a
+  plain re-score of every step applied, and a test proves it.
+- The AI's own steps come first: the NextKin template's layout checks, plus the summary when that
+  part is on. The user's steps follow, ordered by what each adds:
+  - confirm a skill at a dated role
+  - write the real figure into a bullet
+  - complete a section
+  - resolve a timeline flag
+- A skill is only ever a step the user confirms. Nothing is assumed.
+- Years the dated roles don't show are **blockers**. They cap the ceiling, and the plan says so
+  instead of hiding it.
+- The golden gate gains `targetReachable`: every pair that years don't cap must reach 8.5 by the
+  plan. The reference model scores 1.
+
+**Shared:**
+- `scoreDocument({ path })` is opt-in, because it re-scores once per step. It is on only for
+  comparisons: the server's `compareResumeToJd` and the mock's `compareToJd`/`compare`.
+- `fixPlanOf` builds the steps from the path, and the plan gains `target` (goal, ai, ceiling,
+  reaches, steps). The old per-step pricing stays as the fallback for a result scored without a
+  path.
+- The comparison's wire schema gains `totalAfter`, `bullet` and `target`.
+
+**Figures are new** (`TailorFigure`, `tailoring.figures`):
+- The user rewrites a bullet with its real result. `withFigures` applies it to the base, and both
+  the run's facts and its merge read the base through it.
+- If a rewrite of that role drops the figure, `keepFigures` puts the user's own line back.
+
+**Projection:**
+- At the start, `prepareTailor` scores the base with the user's answers and the AI's steps, and
+  pins the result as `tailor.projected`.
+- The ready card says "The plan promised X". When the run fell more than a point short, it says so
+  plainly.
+- On screen, `projectedScore` adds the gains of the answered steps to the AI's total. The score is
+  linear in these answers, so this equals a re-score up to rounding. Timeline steps are the
+  exception: a hard fail zeroes the timeline part.
+
+**Prompt:** `resume.generate` is now v6. It keeps measured results, names a confirmed skill in its
+role, and makes the summary at least 15 words.
+
+**Rubric DB row:** `rubric_versions` gains `v2`, which is now the current row, and new reports
+reference it.
+
+Judgement calls and open items:
+- **The goal is 8.5 of 10, which is 85, the "strong" band floor.** It is a constant, `TARGET_SCORE`.
+- **The planned targeted model "revise pass" after scoring was not built.** I chose deterministic
+  guards instead: figures are kept by code, a confirmed skill is tagged on its role by code (as
+  before), and a shortfall is reported. These are more dependable than another model call. Say if
+  you still want the extra model pass.
+- **Not tested with a live model.** Eval recordings were made with prompt v5 and are now stale for
+  `resume.generate`. They need `pnpm eval -- --live` once the key is set.
+  - The owner's stack picks up prompt v6 and rubric v2 only when the reference seed runs.
+  - Don't reseed the owner's stack without asking (see memory).
+- **The mock's tailored resume is a fixture body.** It ignores figures and has no projection.
+- **No golden pairs with impossible asks were added.** The golden set stays at 30. The engine tests
+  cover those asks instead.
+- **UI built from the existing W-FLOW 03/04 parts, no new board.** The "Score after" column, the
+  "8.5 reached here" divider, the inline figure editor and the per-row place picker are new
+  arrangements of existing tokens and primitives. They need an owner look against the boards.
+- **Evidence steps** (a skill only in the skills list) can now be placed from the plan table.
+  Before, only missing keywords could be placed, so these steps could never be acted on.
+
+### 129.3 Phase C: the JD page comes first
+
+What changed:
+- **Analyze on Upload a JD opens `/jd/<id>`.** That's the JD shown as a posting, and its primary
+  button is "Tailor my resume".
+  - Home's Build Resume still goes straight to the build flow.
+  - The job step inside the W-FLOW tailor and build flows still goes to step 2. There the user has
+    already chosen to tailor.
+- **Sections are read by rule** (`packages/shared/src/jobs/jdSections.ts`): the JD's own headings
+  in English and German, plus markdown, bold and "Label:" headings. Pay and the work arrangement are
+  read by regex, verbatim.
+- **Model fallback.** When the rules find fewer than two classified sections, the server asks
+  `jd.sections`, a new prompt on the Haiku tier (`pipeline/stages/jdSections.ts`).
+  - The model only groups lines. A line or heading not found verbatim in the text is dropped.
+  - The result is stored as `extracted.reading`, so no migration is needed.
+  - It's best effort: a failure, or a still-weak grouping, leaves the page to the rules.
+- **New sections on the page:** Preferred qualifications, Benefits, Pay, Where you'll work, About
+  the company, How to apply, and More from the posting. There is also the "Requirements to
+  double-check" callout (Phase A's notes).
+- **Duplicates are dropped.** A responsibility that the reading files under another section, such
+  as a benefit or a requirement, is not shown twice. The mock extractor counts every bullet as a
+  duty.
+
+Owner calls and open items:
+- **Upload copy.** The upload button and heading still say "Tailor my resume" / "Tailor your resume
+  to a job" (board copy), but now open the job page. Rename to "Read the job"? Not changed without
+  you.
+- **New section titles** ("Pay", "Where you'll work", "About the company", "More from the posting",
+  "Preferred qualifications") are mine.
+  - The section art reuses existing illustrations: billing, location, company, paper plane and
+    document search.
+  - No board draws this page's new sections. They're built from the 02b job page's parts.
+- **Fragments count as verbatim.** The model fallback accepts a word-for-word fragment of a
+  sentence. Only invented or reworded lines are dropped.
+- **The `jd.sections` prompt** reaches the owner's stack only when the reference seed runs. Until
+  then the fallback logs `jd.sections_failed` and the rules' reading is shown.
+- **Mobile is deferred** (owner: web first). The engines, shared code and server serve it already;
+  mobile's JD screen and plan UI are a later pass.
+- **Not done:** `services/skillChecks.ts` still reads the clock itself (it was A3 in the plan). It's
+  harmless, and left for a later tidy-up.
+
+### 129.4 Verified, and not
+- **Green:** `pnpm typecheck`, `pnpm lint` and `pnpm test` from the root.
+  - engines 185 (coverage gates included), shared 141, server unit 202, mobile 1868, web 373.
+  - Golden eval gate with the reference model: all bars met, `targetReachable` 1.
+- **Not run: `pnpm stack:up && pnpm test:integration`.** Docker Desktop wasn't running. The
+  integration tests that pin `rubric-2` (generateApi, generationP9, sharedReportsP11) were updated
+  but not run.
+- **Not run:** a live model; the web app in a browser; and a side-by-side look against the
+  W-FLOW 03/04 and 02b boards.
+
+### 129.5 Fix: "We couldn't start tailoring" on a long JD (owner, 2026-10-22)
+
+**What happened:** the owner's test run got a 400 from `POST /generations`.
+- `tailoringSchema` allowed at most 30 ticked keywords and 30 placements.
+- The JD the owner used names 40 skills and 7 soft skills, and reaching 8.5 can mean ticking most
+  of them.
+
+**The fix:** both caps are raised to 80.
+
+**Open items:**
+- **Cause is inferred, not confirmed.** I deduced it from the JD's size; the request body was never
+  captured.
+- **The toast still doesn't say why.** It shows "We couldn't start tailoring" for any 400. Showing
+  the server's field message would help; not done yet.
+
+### 129.6 The AI places "I have this" and drafts "Add the result" (owner, 2026-10-22)
+
+The owner asked: "when the user clicks I have this, the AI decides where to put it — the default —
+plus an option to say where; for Add the result, the AI decides when the user selects it."
+
+Owner calls:
+- **Placement:** the AI's pick is shown before the run, and the user can change it.
+- **Result:** the AI drafts the line with a gap, and the user types only the real figure.
+
+**Placement** (`packages/engines/src/placement.ts`, `bestRoleFor`):
+- It's chosen by code, so the plan's projection stays a re-score.
+- Only a dated role whose dates fit the technology qualifies. The timeline engine decides this; a
+  role inside the early-adoption window doesn't qualify either.
+- Ranking is by closeness, then the current role, then the later start:
+
+  | What the role shows | Weight |
+  |---|---|
+  | Related use (KB `related`) | 4 |
+  | Words of an unknown skill in its text | 3 |
+  | Skills of the same kind | 2 |
+
+- `targetPlan` measures each skill step at that role. `PlanStep.where` carries the pick.
+- Ticking (on the plan or on Enhance) places the skill there, `by: 'ai'`. The picker offers every
+  role and project, plus "Skills only (counts half)".
+- The pick travels as an ordinary confirmation with `by`. The ready screen already says "Put X into
+  <role> — check it's where you used it".
+
+**Result drafts** (`POST /api/v1/tailor/figure-draft`, `services/figureDraft.ts`):
+- The draft comes from the new prompt `figure.draft` on the new Haiku stage `figure_draft`.
+- Code drops a draft that:
+  - adds a number the line didn't have
+  - adds a technology the line didn't name
+  - keeps less than 60% of the line's own words
+- **Fallback:** the line plus ", improving ___". It's used without a live model, without AI
+  consent, when a draft is rejected, and on the mock.
+- Drafts are cached by line. The rate bucket allows 40 a minute per user.
+- **UI:** a draft is requested the first time the editor opens. The sentence shows with an inline
+  field for the figure. "Use this line" is enabled once it states a result, and "Write it myself"
+  falls back to the textarea.
+
+My calls:
+- **Placement weights.** The weights above and the 60% word-keep threshold are my numbers.
+- **"Show it in a role".** Evidence steps (a skill only in the Skills list) got a "Show it in a
+  role" toggle that works like "I have this".
+- **Installed on the owner's stack.** The reference seed alone added the `figure.draft` prompt and
+  the routing. No accounts were touched.
+
+**Verified:**
+- Root typecheck, lint and test are green: engines 190, shared 141, server 205, mobile 1868,
+  web 376.
+- The new route is mounted (401 when signed out).
+
+**Not verified:** a real model draft in the browser; the owner is testing.
+
+## 130. ATS formatting rules in every built and tailored resume (owner, 2026-10-22)
+
+The owner shared a checker's formatting checklist covering fonts, layout and page setup, and asked
+that every resume we build or tailor follow it.
+
+**Owner decisions:**
+- Standard fonts for all templates. The "Jake" serif look goes.
+- Paper follows the user's country: Letter in the US and Canada, A4 elsewhere.
+
+### 130.1 What changed
+**Tables:** none. Every entry heading was a `tabularx`. Now the right part (dates, place) is pushed
+flush right with `\hspace{0pt plus 1filll}`, which outranks `\raggedright`'s fil glue. Text
+extracts in reading order, with the dates on the same line as the employer.
+
+**Bold:**
+- The name is bold in every template; elegant's wasn't.
+- The employer and the job title are both bold. The title was italic.
+- Section headings are bold. Jake's small caps and elegant's italics are gone.
+- Projects and schools keep bold names; the degree is regular.
+
+**Fonts:** two faces, regular and bold, of one standard font. No italic, small caps or bold italic
+anywhere.
+
+| Template | Font |
+|---|---|
+| classic (jake) | Lato |
+| modern | Roboto |
+| elegant | TeX Gyre Termes (Times New Roman metrics) |
+
+- All three come from Tectonic's TeX Live bundle, so nothing was vendored. The latex image was
+  rebuilt so its offline cache holds them. `pdffonts` confirms exactly two faces per template.
+- Every template's `fontName` passes our own upload checker's standard-font list. A test holds this.
+
+**Size:**
+- Body text is 10.5pt at density 0 and 10pt at densities 1 and 2. It was `\small`: about 10pt, and
+  9pt at density 2. The class size is always 11pt.
+- Headings are about 12pt and the name is 22pt.
+
+**Margins:** 0.6in all round at density 0, 0.5in at densities 1 and 2. They were 0.4–0.55in, with
+the sides differing from top and bottom.
+
+**Special characters:**
+- One plain separator, " | ", in every template and in DOCX, TXT and HTML. Modern's coloured •
+  and elegant's · are gone.
+- Certifications read "Name, Issuer" (it was an em dash), and education reads "Degree, Field, GPA".
+- Emoji and decorative symbols (pictographs, dingbats, arrows, box drawing, geometric shapes, skin
+  tones, flags, joiners) are dropped by `escape.ts`. The render logs how many were dropped
+  (`render.symbols_dropped`).
+
+**Paper:**
+- `paperForLocation` (engines/markets.ts) chooses it from the user's profile location. It is used in
+  `queueRender`, `typesetPdf`, the page-fit measure (validate and resumeFit) and the DOCX page size.
+- With no location it uses Letter, as before.
+
+**DOCX:**
+- The employer and job title are separate bold lines, in the PDF's order.
+- Education is titled by institution.
+- Margins are even.
+
+**Score honesty:**
+- A downloaded LaTeX PDF is now read back like an upload (`readBackTypeset`). The check covers
+  columns, images, headings, contact and the template's font, and it sets `export_events.ats_safe`.
+  Before, it was always null for LaTeX PDFs.
+- The comments on `PARSE_SAFE_TEMPLATE` and on persist now say what is actually true.
+
+### 130.2 Judgement calls and trade-offs
+- **Long resumes get trimmed sooner.** Density no longer shrinks text below 10pt or margins below
+  0.5in, so the page fit drops bullets sooner on long resumes. That is the intended trade-off.
+- **"Standard font" for elegant means Times New Roman metrics.** The PDF names it TeXGyreTermes;
+  `fontName` declares the standard it matches. Our upload checker lists Times New Roman. Some
+  outside checker may only see the embedded name.
+- **The en dash in date ranges is kept.** It's standard typography.
+- **Every older render is redone.** Template revisions were bumped (jake 3, modern 2, elegant 2),
+  so every existing resume re-typesets on its next preview or download.
+- **The HTML fallback** (cover letters, and when there is no compile service) still uses Liberation
+  Sans / Arial. It now follows the same separator and bold-subtitle model.
+
+### 130.3 Verified, and not
+- **Green:**
+  - root `pnpm typecheck`, `pnpm lint` and `pnpm test`: engines 193, shared 141, server 209, mobile
+    1868, web 376. One web editor test was flaky under load from the Docker build and passes alone.
+  - the latex image rebuild and its offline warm-up of every template × density × paper
+  - offline compiles: two font faces, A4/Letter, and text order (`pdftotext`)
+- **Not run:** `pnpm test:integration`, and a download from the owner's account viewed by the
+  owner.
+
+## 131. Refining the resume-flow UI on web (owner, 2026-10-22)
+
+The owner asked for a refinement pass on the web resume-generation flows. Scope was:
+- loading and feedback states
+- working controls
+- consistent spacing, icons and buttons
+- less copy
+
+The brief was "refine, don't reinvent".
+
+### 131.1 Decisions
+
+The owner made these choices in plan mode:
+- **Icons:** Untitled UI's line icons, from the free MIT package `@untitledui/icons@0.0.23`, pinned exactly.
+  - The Figma library the owner linked (`QERVV4a2Fpa1FmsZ5LGW3S`) returned "no edit access" to the Figma connector, even for screenshots.
+  - So the library itself was never opened. If the owner shares it, components and patterns can be checked against it later.
+- **Look:** keep indigo and borrow the reference shots' polish:
+  - a raised white active segment (`shadow-raised`)
+  - the file card
+  - real progress
+  - Black controls and a new palette were declined.
+- **Scope:** web only. Mobile is untouched.
+
+### 131.2 What changed
+
+**Things that used to trap the user:**
+- **JD page:** a JD still being read is fetched every 2s (`useJdDraft`, `JD_READING_POLL_MS`).
+  - The page used to stay on "Reading…" forever.
+  - After 60s it says "Taking longer than usual".
+  - After 5 minutes it offers "Check again" or "Enter the details".
+- **Shared stall clock:** `useStall(active, progress)` in `packages/shared/src/queries/useStall.ts`, with 60s for slow and 5 minutes for stalled. The clock restarts whenever progress moves.
+- **Run screens (tailor, cover letter, ATS check, zero resume):**
+  - These go through `RunProgress`.
+  - A stalled run offers "Check again", which refetches the run.
+  - All four now share one "Leave and notify me" button (`create/components/LeaveButton.tsx`). The cover letter had no way out before.
+- **Load failures:**
+  - Tailor and cover-letter screens used to hold a loading placeholder forever when the job or resume list failed to load. They now name what failed and retry it.
+  - The tailor screen's generic "Something went wrong" now names one of five causes.
+- **Endless placeholders:**
+  - The review's score card says "No ATS score yet" instead of loading forever.
+  - The resume preview shows an error state with retry.
+  - The assistant shows "Still thinking…" at 20s and "No reply came back" at 60s.
+- **Double submits:**
+  - JD details Save is disabled while it saves.
+  - "Fit to one page" is disabled while it runs and toasts that it started. Menu items gained a `disabled` option.
+  - A resume drop while another file is being read is ignored.
+  - The job box is read-only while it is being read, with the file card showing "Reading…".
+  - The editor rename shows the new name at once, with a spinner while it saves.
+- **Download failures:**
+  - One pattern everywhere: an error toast with "Try again".
+  - Toast actions can now be callbacks as well as links.
+  - The inline red lines in review, cover letter, zero resume, resumes and the editor banner are gone.
+  - "Blocked" reasons such as email or an incomplete resume still show inline.
+
+**One set of primitives in `src/ui`:**
+- `Button` and `buttonClass`: primary, secondary, ghost and danger, in sm, md and lg, with `loading` and `busyLabel`.
+- `Spinner`, `SegmentedControl`, `Callout`, `textLink` and `lineIcons`.
+- The flows' dark bevelled primary (JD page "Tailor my resume", "Use this line") is now the flat brand primary. The bevel stays only on the AI card and Upgrade.
+- `FlowChrome`'s `primaryButton` and `backButton` are now `buttonClass`.
+- Five hand-built segmented controls now use `SegmentedControl`: tailor preview, editor preview, letter preview, and the editor's phone Edit | Preview.
+- Eight tip boxes, with two tints and three glyphs between them, now use `Callout`.
+- Six text-link class copies now use `textLink`.
+- The picked-file card is the reference's file card: raised, "Reading…" with a spinner or "Ready", and remove hidden while it reads.
+- The resume file-type filter, hard-coded three times, is now `RESUME_INPUT_ACCEPT`.
+- Add-a-job wording is one set: "Upload a file", not "Browse files". The upload glyph is the same everywhere.
+- **Icons:**
+  - In upload, jd, create, tailor, resumes and editor, the generated filled icons became line icons at 16px (`iconSize.sm`).
+  - That means one check, one kebab (`DotsVertical`), one sparkle (`Stars02`), and real minus, plus and expand glyphs in place of the "−", "+" and "⤢" text characters.
+  - The `SparkleIllustration brightness-0 invert` hack is gone.
+
+**Smaller fixes:**
+- **Resume card kebab:** the resume detail card's kebab was a `<Soon>`. It now opens the rows' working menu.
+- **Copy:**
+  - The cover letter's job step said "until you create the resume". It now says "until you write the letter".
+  - "Saved to Documents" now reads "Saved to Resumes". Letters live in Resumes, and Documents still has no server repo.
+  - The tailor run's "Step 3 of 3" (the header shows four steps) is dropped.
+- **Deleted, all unused:** `TailorUpload.tsx`, `CheckRow.tsx`, and the `FitToPage` component. `fitMessage` stays.
+- **Arbitrary values:** a few became tokens (`h-50 w-70`, `min-h-120`, `max-w-170`, `lg:top-21`, `text-body-m`).
+
+**Copy cuts**, listed so any can be undone:
+- Enhance's projection line is now "Ticks without a place count half", and its place hint is shortened.
+- Build's keyword line, the plan table's legend, the editor's save hint, the paste tip, the link-blocked notes and the accuracy prompt are all shortened.
+- "We never add a skill you didn't tick…" lives once, as `NEVER_ADDS_SKILLS`.
+- The two score disclaimers are one `ATS_DISCLAIMER`. It keeps V2 §7.8: not any employer's result.
+
+### 131.3 Not done, or done partly (owner to decide)
+
+- **Drop zones:** the five zones share their file types, labels, glyphs and busy guard, but stay separate components. A single `DropZone` would have meant rewriting each step's layout.
+- **Card rhythm:** a single padding/gap rhythm (`p-5`/`gap-4`) across the flow cards was not applied.
+  - The cards follow their boards.
+  - Say if the steps should be normalised anyway.
+- **Documents:** its `<Soon>` controls (More, Download, Share on the detail panel, viewer and rows) are outside these flows. They are left as they were.
+- **Mixed icons:** icons outside the resume flows (sidebar, Home, Jobs, Settings) are still the generated filled set, so the app is mixed until the rest moves over.
+- **Timeouts:** the values (2s poll, 60s slow, 5-minute stall, the assistant's 20s and 60s) are judgement calls and easy to tune.
+- **Mobile:** not touched.
+
+### 131.4 Verification
+
+- Web Jest passes, including the new tests:
+  - `__tests__/ui/flowPrimitives.test.tsx`: Button guard, SegmentedControl keys, PickedFile, the `useStall` clock, a toast callback action.
+  - A JD page that moves on by itself when a reading lands.
+- **Not done:** a live walk through every flow on the running stack, and a side-by-side check with the owner's reference shots.
+
+### 131.5 Upload scan outage shown as "unreadable" (fixed 2026-10-22)
+
+- **What happened:**
+  - The local stack was started with only `core` and `latex`, without the `scan` profile.
+  - Every resume upload's ClamAV scan failed four times.
+  - The parse was then marked `unreadable`, and the web said "A scan or a photo has no text to read". The file was fine.
+- **Fixes:**
+  - The `scan` profile is now started.
+  - `scanUpload` now records a scanner outage on the waiting parse as `provider`. The client shows it as "Something went wrong… Try again".
+- **Still open:** a JD file upload that waits on the scan (`waitForScan`) still reports any failed scan as unreadable. It needs a status or error code on the upload itself to tell the two apart.
+- **Note for running the stack locally:** run `pnpm stack:up -- --profile core --profile latex --profile scan`, or uploads cannot work.
+
+### 131.6 Testing through a Cloudflare quick tunnel (2026-10-22)
+
+- **Dev server:** `next.config.ts` now allows `*.trycloudflare.com` in `allowedDevOrigins`. Before this, the dev server refused its own scripts to the tunnel's host, so pages never hydrated and sat on their placeholders. Production builds ignore the setting.
+- **Sign-in and other writes:** the API's CSRF check accepts a single `APP_ORIGIN`.
+  - To test through a tunnel, start the web app with `APP_ORIGIN=https://<tunnel>.trycloudflare.com`.
+  - While it runs that way, writes from `http://localhost:3000` are refused.
+  - If tunnels become routine, the owner may want a dev-only list of allowed origins.
+
+### 131.7 Uploads and downloads through a tunnel (2026-10-22)
+
+- **What failed:**
+  - Through the tunnel, a resume upload failed with "Something went wrong reading your resume".
+  - The presign succeeded, but the browser's POST to `http://127.0.0.1:8333` (local storage) never arrived.
+  - Chrome blocks a public page from calling a local address, and storage only allows localhost.
+- **Fix:**
+  - The web maps a loopback storage link to `/storage/...` on its own origin, and only when the page itself is not on localhost (`src/lib/storageUrl.ts`). This applies to the uploader and to export downloads.
+  - The dev server forwards `/storage/*` to `S3_ENDPOINT` (`next.config.ts`, development only).
+  - Uploads are presigned POST forms, and the policy does not sign the host.
+  - Downloads are presigned GETs that sign `127.0.0.1:8333`, the host the forwarded request arrives with, so both still verify.
+- **Not covered:** avatar images on a tunnel page still point at local storage.
+- **Production:** unaffected. Cloud storage links are never loopback, and the forwarding rule is not built.
+
+### 131.8 PDFs with one glyph per run read as spaced-out letters (fixed 2026-10-22)
+
+- **What happened:**
+  - "T Rajesh Resume.pdf" came back with every role and degree rejected ("The document does not name this employer").
+  - The PDF places each glyph as its own text run and draws spaces as blank runs, which is typical of Canva-style exports.
+  - `analyzePdf` joined every run on a line with a space, so the text read "F u l l S t a c k" and no claim could be matched.
+- **Fix:** a space goes in only where the gap between runs is a word's (`WORD_GAP_EM` = 0.15em), or where a run starts back to the left.
+- **Checks:**
+  - That resume now reads as words.
+  - The Softpro resume that already worked reads the same.
+  - Server unit tests pass, with two new regression tests in `parsing.test.ts`.
+- **Earlier failed uploads:** they stay failed. The user uploads again.
+- **Web upload error:** it no longer says "a scan or a photo has no text", which was wrong for a file that just isn't a resume (a marksheet). It now says no resume was found in the file.
+
+### 131.9 Preview and download through a tunnel (fixed 2026-10-22)
+
+- **The §131.7 rewrite was wrong for downloads.** Next's rewrite forwards the tunnel's Host. A presigned GET signs storage's own host, so storage answered 403: the download "wasn't available on site", and the preview page images never loaded.
+- **Replacement:** a dev-only route, `app/storage/[...path]/route.ts`. It fetches from `S3_ENDPOINT` itself and passes the signature and body through. Production returns 404.
+- **Now mapped through `browserStorageUrl`:** preview page images (`PageImages`) and avatars (`UserAvatar`), as well as uploads and downloads.
+- **Checked through the tunnel:**
+  - a presigned PDF download returns 200 and the PDF
+  - a presigned upload returns 204
+
+### 131.10 Localhost and any Cloudflare tunnel at once (owner approved, 2026-10-22)
+
+- **Setting:** `APP_EXTRA_ORIGINS` (local only; config refuses it on staging and production) lists more origins the CSRF and login-CSRF checks trust. A `*` stands for one DNS label (`src/http/origins.ts`).
+- **The local `.env`:** has `APP_EXTRA_ORIGINS=https://*.trycloudflare.com`.
+  - The server now runs with `APP_ORIGIN=http://localhost:3000` again.
+  - Localhost and any quick tunnel both work, with no restart when the tunnel address changes. This replaces the restart-per-tunnel in §131.6.
+- **Accepted risk:** the owner accepted that any site on `*.trycloudflare.com` is trusted locally. A page someone else hosts on a quick tunnel could act as a signed-in local user. To narrow it, list the exact tunnel instead.
+- **Checks:**
+  - Server unit tests pass (217), including the new `origins.test.ts` and config refusals.
+  - A login POST from the tunnel and from localhost passes CSRF (401, bad credentials).
+  - `https://evil.example` is refused (403).
+
+### 131.11 A role with more than 12 bullets failed the whole upload (fixed 2026-10-22)
+
+- **What happened:**
+  - "Laxmi Pranitha BA" (PDF and DOCX) failed with "Something went wrong reading your resume" (error code `provider`).
+  - The model's extraction was correct, but `extractionSchema` capped a role at 12 bullets and hers had 15.
+  - Both the first answer and the corrective retry were refused (`roles.2.bullets: Too big`), and the parse failed.
+- **Fix:**
+  - The extraction now accepts up to 30 bullets a role and 20 for projects, client projects and custom entries.
+  - The cross-check keeps the document's own limits (12 a role, 8 a project), as it already did.
+  - It now reports what it dropped: "Only the first 12 of its 15 bullets are kept."
+- **Checked on the real file:** both roles are kept. Server unit tests pass, with a new long-role test.
+- **Open:** the same file's summary was left out as "not in your file word for word". It wraps across PDF lines, so the matching around line breaks may need a look.

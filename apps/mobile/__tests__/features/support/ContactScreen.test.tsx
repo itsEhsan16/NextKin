@@ -58,7 +58,7 @@ const press = (label: string) =>
 const type = (text: string) =>
   act(async () => void fireEvent.changeText(screen.getByTestId('contact-message'), text));
 
-describe('ContactScreen (V2 §7.14 — no artboard)', () => {
+describe('ContactScreen (SUPPORT 02 577:7867)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();

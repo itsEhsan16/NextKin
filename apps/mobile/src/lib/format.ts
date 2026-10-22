@@ -1,3 +1,5 @@
+import type { SalaryCurrency, SalaryRange } from '@nextkin/shared/models';
+
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -49,16 +51,9 @@ export function formatShortDate(iso: string, now: Date = new Date()): string {
   });
 }
 
-export type SalaryCurrency = 'USD' | 'EUR' | 'AUD' | 'INR';
-
-export type SalaryRange = {
-  min?: number;
-  max?: number;
-  currency: SalaryCurrency;
-  period: 'year' | 'month' | 'hour';
-  /** Provider-inferred rather than employer-stated; rendered as a "· est." suffix. */
-  estimated?: boolean;
-};
+// The salary shape is part of the data contract, so it lives in @nextkin/shared with the
+// models. Re-exported here because `@/lib` has always been where the app reads it from.
+export type { SalaryCurrency, SalaryRange } from '@nextkin/shared/models';
 
 const currencySymbol: Record<SalaryCurrency, string> = {
   USD: '$',

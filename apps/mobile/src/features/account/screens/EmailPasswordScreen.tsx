@@ -9,6 +9,7 @@ import {
   useUpdateEmail,
 } from '@/data/queries';
 import { useSessionStore } from '@/features/auth';
+import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
 import { useTheme } from '@/theme';
 import { ConfirmSheet } from '@/ui/ConfirmSheet';
 import { Screen } from '@/ui/Screen';
@@ -18,38 +19,43 @@ import { StateView } from '@/ui/StateView';
 import {
   emailSentNote,
   emptyPasswordDraft,
+  EMAIL_PASSWORD_LEDE,
+  EMAIL_PASSWORD_TITLE,
   EMAIL_SEND_FAILED,
   PASSWORD_CHANGED,
   PASSWORD_CHANGE_FAILED,
+  SESSIONS_NOTE,
   SIGN_OUT_EVERYWHERE_FAILED,
   validateNewEmail,
   validatePasswordChange,
   type PasswordDraft,
 } from '../accountForms';
 import { EmailGroup, EmailGroupSkeleton } from '../components/EmailGroup';
+import { AccountHero } from '../components/AccountHero';
 import { PasswordGroup } from '../components/PasswordGroup';
 import { SessionsGroup } from '../components/SessionsGroup';
 import { useAccountActions } from '../hooks/useAccountActions';
 
-const SIGN_OUT_MESSAGE =
-  "Every device signed in to this account is signed out, this one included. You'll need to sign back in here.";
+const SIGN_OUT_MESSAGE = `${SESSIONS_NOTE} You'll need to sign back in here.`;
 
 type Status = { message: string; tone?: 'neutral' | 'danger' } | undefined;
 
+// ACCOUNT 01 at 390 (577:2462), in artboard units.
+const HEADER_TO_HERO = 14 / 0.75;
+const HERO_TO_CARDS = 24 / 0.75;
+const CARD_GAP = 15 / 0.75;
+
 /**
- * Email, password and sessions (V2 §7.1, §8.4). No artboard draws it (plan §8), so it is
- * assembled from the built primitives alone: three `RowGroup` cards down one keyboard-aware
- * scroll, each owning its own action and its own answer.
- *
- * §8.4 is what shapes the middle group: only the identity provider ever holds a password, so the
+ * Email, password and sessions (V2 §7.1, §8.4), drawn as ACCOUNT 01 (577:2462): a hero that names
+ * the page, then three cards down one keyboard-aware scroll, each owning its own action and its
+ * own answer.
+ * §8.4 shapes the middle group: only the identity provider ever holds a password, so the
  * app proxies the change and reports what comes back — it never verifies anything itself.
- *
- * Confirmation is printed under the group that earned it rather than raised as a toast. Nothing
- * above a pushed screen mounts a toast host — they live in the tab layout, which this screen sits
- * above in the stack — so a toast from here would never render at all. See `AccountStatusLine`.
+ * Confirmation is printed under the group that earned it, never as a toast, so it stays beside the
+ * control long enough to be read. See `AccountStatusLine`.
  */
 export function EmailPasswordScreen() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const actions = useAccountActions();
 
   const user = useCurrentUser();
@@ -82,8 +88,7 @@ export function EmailPasswordScreen() {
 
   const changeEmail = useCallback((value: string) => {
     setEmail(value);
-    // The previous answer was about the previous address; it stops being true the moment the
-    // reader starts typing another one.
+    // The previous answer was about the previous address; it lapses on the next keystroke.
     setSentTo(undefined);
   }, []);
 
@@ -134,19 +139,14 @@ export function EmailPasswordScreen() {
   const endEverySession = useCallback(() => {
     signOutEverywhere.mutate(undefined, {
       onSuccess: () => {
-        // The order is load-bearing, and it is `ProfileSheetsHost`'s: close the sheet and clear
-        // the caches while the tree is still mounted, then flip the session LAST — that flip
-        // fails the root layout's guard and unmounts everything this screen lives in, so
-        // anything queued after it would run against a torn-down tree.
-        //
-        // The flip happens at all because this device is one of the sessions the server just
-        // revoked (§7.1); staying signed in here would be a lie the next request finds out about.
+        // Order is load-bearing (as in `ProfileSheetsHost`): close the sheet and clear caches
+        // while mounted, then flip the session LAST — the flip unmounts this tree. It flips
+        // because this device is one of the sessions the server just revoked (§7.1).
         setConfirmOpen(false);
         resetSession();
         signOut();
       },
-      // Closed on failure too, so the reason can be read: the sheet has nowhere to print one and
-      // the SESSIONS group behind it does.
+      // Closed on failure too, so the Sessions card behind it can print the reason.
       onError: () => setConfirmOpen(false),
     });
   }, [resetSession, signOut, signOutEverywhere]);
@@ -173,11 +173,20 @@ export function EmailPasswordScreen() {
         keyboard
         scroll
         edges={['top', 'bottom']}
-        header={<ScreenHeader title="Email & password" onBack={actions.goBack} />}
-        headerStyle={{ paddingBottom: spacing[4] }}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+        header={
+          <ScreenHeader title={EMAIL_PASSWORD_TITLE} showTitle={false} onBack={actions.goBack} />
+        }
+        headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+        contentContainerStyle={{ paddingBottom: spacing[8] }}
       >
-        {children}
+        <AccountHero
+          art={PROFILE_ROW_ART.emailPassword}
+          artWidth={64}
+          artGap={14}
+          title={EMAIL_PASSWORD_TITLE}
+          lede={EMAIL_PASSWORD_LEDE}
+        />
+        <View style={{ marginTop: s(HERO_TO_CARDS), gap: s(CARD_GAP) }}>{children}</View>
       </Screen>
 
       {/* A sibling of the page, never a child of its scroller: its root is an absolute fill. */}

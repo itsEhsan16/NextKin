@@ -1,0 +1,25 @@
+{
+  "key": "83225ced64e0bc1ccf0efa7fa3d0d6b3",
+  "recordedAt": "2026-10-18T18:44:06.413Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Hallo, danke für die Hilfe"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": true,
+      "topic": "product"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 266,
+      "outputTokens": 56,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

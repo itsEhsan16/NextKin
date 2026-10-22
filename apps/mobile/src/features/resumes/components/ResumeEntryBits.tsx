@@ -5,28 +5,28 @@ import { Text } from '@/ui/Text';
 
 import { REVIEW_PILL } from '../editorSections';
 
-/** The bullet dot's artboard size, taken from `JobAboutSection` so both lists print alike. */
-const BULLET = 5;
+// The bullet at 390 (RESUMES 06 577:7109), in artboard units: a 5pt dot centred on the first
+// line, 10 before the text.
+const BULLET = 5 / 0.75;
+const BULLET_TOP = 7.5 / 0.75;
+const BULLET_GAP = 10 / 0.75;
 
-/**
- * One resume bullet. Deliberately the same row shape as the job description's responsibilities
- * (`JobAboutSection`) — the reader is comparing the two documents, so the lists must match.
- */
+/** One resume bullet: a grey dot and the line (RESUMES 06 577:7109). */
 export function EntryBullet({ label }: { label: string }) {
-  const { colors, radii, spacing, s } = useTheme();
+  const { colors, radii, s } = useTheme();
 
   return (
-    <View style={[styles.row, { gap: spacing[3] }]}>
+    <View style={[styles.row, { gap: s(BULLET_GAP) }]}>
       <View
         style={{
           width: s(BULLET),
           height: s(BULLET),
-          marginTop: spacing[2] + 1,
+          marginTop: s(BULLET_TOP),
           borderRadius: radii.full,
           backgroundColor: colors.iconMuted,
         }}
       />
-      <Text variant="bulletBody" color="textBody" style={styles.fill}>
+      <Text variant="body" color="textBody" style={styles.fill}>
         {label}
       </Text>
     </View>

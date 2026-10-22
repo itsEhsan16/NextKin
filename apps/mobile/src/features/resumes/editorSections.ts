@@ -83,3 +83,22 @@ export function versionLine(resume: Resume, now: Date = new Date()): string {
   const edited = formatRelativeTimeLong(resume.updatedAt, now);
   return edited ? `v${resume.versionCount} · edited ${edited}` : `v${resume.versionCount}`;
 }
+
+const COUNT_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+
+/** "Four", as the boards spell a small count at the start of a sentence; digits past nine. */
+export function countWord(count: number): string {
+  return COUNT_WORDS[count] ?? String(count);
+}
+
+/**
+ * The editor hero's one-line AI note (RESUMES 06 577:6974): how many of the score's quick wins
+ * are still open. "Airtight" is only promised to a document already in the strong band.
+ */
+export function quickWinsNote(quickWins: number, strong: boolean): string {
+  if (quickWins === 0) return 'No quick wins left on this one.';
+  const wins = quickWins === 1 ? 'quick win' : 'quick wins';
+  return strong
+    ? `${countWord(quickWins)} ${wins} left before it is airtight.`
+    : `${countWord(quickWins)} ${wins} can lift this score.`;
+}

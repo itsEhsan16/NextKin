@@ -55,7 +55,7 @@ async function mount(jobId: string) {
   await settle();
 }
 
-describe('CompanyScreen (V2 §7.13 — no artboard)', () => {
+describe('CompanyScreen (V2 §7.13 — JOBS 09)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -87,8 +87,8 @@ describe('CompanyScreen (V2 §7.13 — no artboard)', () => {
   it('leads with the company, its profile line and the hand-written About copy', async () => {
     await mount('job_stripe');
 
-    // The pinned header and the hero both name the employer — one header each.
-    expect(screen.getAllByRole('header', { name: 'Stripe' })).toHaveLength(2);
+    // JOBS 09 leaves the header's title slot empty: the hero alone names the employer.
+    expect(screen.getAllByRole('header', { name: 'Stripe' })).toHaveLength(1);
     expect(screen.getByText('Financial infrastructure · 8,000+ employees')).toBeOnTheScreen();
 
     expect(screen.getByRole('header', { name: 'About' })).toBeOnTheScreen();
@@ -105,9 +105,10 @@ describe('CompanyScreen (V2 §7.13 — no artboard)', () => {
   it('lists the other Stripe roles and never the one the reader came from', async () => {
     await mount('job_stripe');
 
-    // job_1 is the other Stripe listing; job_stripe itself is deliberately excluded.
-    expect(screen.getByText('Stripe · San Francisco, CA · Hybrid')).toBeOnTheScreen();
-    expect(screen.queryByText('Stripe · Bengaluru · Remote')).toBeNull();
+    // job_1 is the other Stripe listing; job_stripe (Bengaluru) itself is deliberately excluded.
+    expect(screen.getByText('San Francisco, CA')).toBeOnTheScreen();
+    expect(screen.queryByText('Bengaluru')).toBeNull();
+    expect(screen.getByText('1 role')).toBeOnTheScreen();
     expect(screen.queryByText('No other open roles right now')).toBeNull();
 
     await act(async () => fireEvent.press(screen.getByLabelText(/San Francisco, CA/)));

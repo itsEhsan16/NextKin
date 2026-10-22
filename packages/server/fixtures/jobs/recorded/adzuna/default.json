@@ -1,0 +1,58 @@
+{
+  "listings": [
+    {
+      "id": "adz-1001",
+      "title": "Senior Backend Engineer",
+      "company": "Northwind Payments",
+      "location": "Berlin, Germany",
+      "country": "DE",
+      "remote": "hybrid",
+      "experienceLevel": "senior",
+      "salary": { "min": 75000, "max": 92000, "currency": "EUR", "period": "year", "estimated": true },
+      "postedAgoHours": 20,
+      "snippet": "Build payment services in Go and PostgreSQL. Experience with Kubernetes and Kafka is a plus.",
+      "tags": ["Go", "PostgreSQL", "Kubernetes"],
+      "url": "https://www.adzuna.de/details/1001?utm_source=api",
+      "companyWebsite": "northwind.example"
+    },
+    {
+      "id": "adz-1002",
+      "title": "Data Engineer",
+      "company": "Contoso Logistics",
+      "location": "Sydney, Australia",
+      "country": "AU",
+      "salary": { "min": 130000, "max": 150000, "currency": "AUD", "period": "year", "estimated": true },
+      "postedAgoHours": 50,
+      "snippet": "Own our data pipelines on AWS with Python, Airflow and dbt.",
+      "tags": ["Python", "AWS", "Airflow"],
+      "url": "https://www.adzuna.com.au/details/1002",
+      "companyWebsite": "contoso.example"
+    },
+    {
+      "id": "adz-1003",
+      "title": "Platform Engineer",
+      "company": "Fabrikam Health",
+      "location": "Austin, TX",
+      "country": "US",
+      "remote": "remote",
+      "postedAgoHours": 6,
+      "snippet": "",
+      "tags": [],
+      "url": "https://www.adzuna.com/details/1003",
+      "companyWebsite": "fabrikam.example"
+    },
+    {
+      "id": "adz-1004",
+      "title": "Frontend Engineer (React)",
+      "company": "Tailspin Media",
+      "location": "Boston, MA",
+      "country": "US",
+      "salary": { "min": 120000, "max": 140000, "currency": "USD", "period": "year" },
+      "postedAgoHours": 30,
+      "snippet": "Ship a React and TypeScript design system used across our products.",
+      "tags": ["React", "TypeScript"],
+      "url": "https://careers.tailspin.example/jobs/frontend-react",
+      "companyWebsite": "tailspin.example"
+    }
+  ]
+}

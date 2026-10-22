@@ -1,17 +1,13 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, {
-  LinearTransition,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { a11yButton, hitSlop8, useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { layoutTransition } from '@/ui/motion';
 
 export type JobAboutSectionProps = {
   description: string;
@@ -74,13 +70,12 @@ export function JobAboutSection({
     );
   }, [expanded, motion.timings.accordion, reduced, rotation]);
 
-  const chevronStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.value}deg` }] }));
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   return (
-    <Animated.View
-      layout={reduced ? undefined : LinearTransition.springify()}
-      style={{ gap: spacing[4] }}
-    >
+    <Animated.View layout={layoutTransition(reduced)} style={{ gap: spacing[4] }}>
       <Text variant="section" accessibilityRole="header">
         About the role
       </Text>

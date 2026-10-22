@@ -27,7 +27,8 @@ export function StatBadge({ value, label, tone = 'success', style }: StatBadgePr
     success: { bg: colors.successSurface, fg: 'success' as const },
     brand: { bg: colors.brandSurface, fg: 'brand' as const },
     neutral: { bg: colors.surfaceSubtle, fg: 'textSecondary' as const },
-    warning: { bg: colors.warningSurface, fg: 'warning' as const },
+    // `warningStrong`, the amber text token: `warning` is 3.07:1 on its own surface.
+    warning: { bg: colors.warningSurface, fg: 'warningStrong' as const },
   }[tone];
 
   return (

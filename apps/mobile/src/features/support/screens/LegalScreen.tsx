@@ -1,18 +1,23 @@
-import { useState, type ReactNode } from 'react';
-import { AccessibilityInfo, View } from 'react-native';
+import { useRef, useState, type ReactNode } from 'react';
+import { AccessibilityInfo, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { LEGAL_DOC_TITLE, type LegalDocKey } from '@/data/models';
 import { useLegal } from '@/data/queries';
-import { formatShortDate, openExternalUrl } from '@/lib';
+import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
+import { openExternalUrl, useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
+import type { ListRowArt } from '@/ui/ListRow';
 import { IconButton } from '@/ui/IconButton';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
+import { LegalContents } from '../components/LegalContents';
 import { LegalSections } from '../components/LegalSections';
 import { LegalSkeleton } from '../components/LegalSkeleton';
+import { LegalStamp } from '../components/LegalStamp';
+import { SupportHero } from '../components/SupportHero';
 import { useSupportActions } from '../hooks/useSupportActions';
 
 export type LegalScreenProps = { doc?: LegalDocKey };
@@ -21,6 +26,20 @@ const OPEN_LABEL = 'Open on the web';
 
 /** Said on the page, not through a toast: nothing hosts one above a pushed screen. */
 const OPEN_FAILED = 'Nothing on this device could open the web copy.';
+
+// LEGAL 01 / LEGAL 02 at 390 (577:8876 / 580:2), in artboard units.
+const HEADER_TO_HERO = 10 / 0.75;
+const ART_TO_TITLE = 12 / 0.75;
+const HERO_TO_CONTENTS = 26 / 0.75;
+const CONTENTS_TO_SECTIONS = 14 / 0.75;
+/** A jumped-to card stops this far under the header, not flush against its fade. */
+const JUMP_MARGIN = 12 / 0.75;
+
+/** Each document's hero drawing: the Profile row icon, 64 and 60 wide (577:8885 / 580:11). */
+const LEGAL_ART: Record<LegalDocKey, { art: ListRowArt; width: number }> = {
+  terms: { art: PROFILE_ROW_ART.terms, width: 64 / 0.75 },
+  privacy: { art: PROFILE_ROW_ART.privacy, width: 60 / 0.75 },
+};
 
 /**
  * The canonical addresses. The document itself carries its `url`, and that is what is used
@@ -33,8 +52,9 @@ const LEGAL_URL: Record<LegalDocKey, string> = {
 };
 
 /**
- * A legal document, readable in-product (V2 §8.5) rather than only on the web. No artboard covers
- * it (plan §8, phase 9G), so it is assembled from the built primitives only.
+ * A legal document, readable in-product (V2 §8.5) rather than only on the web, drawn as LEGAL 01
+ * (577:8876) and LEGAL 02 (580:2): a hero with the stamp and the intro, a contents card whose
+ * rows scroll to their section, then one numbered card per section.
  *
  * The route validates the parameter and hands over `undefined` for anything that is not one of
  * the two documents, so the screen splits before the query: hooks cannot run conditionally, and
@@ -46,6 +66,7 @@ export function LegalScreen({ doc }: LegalScreenProps) {
 }
 
 function MissingDocument() {
+  const { spacing } = useTheme();
   const actions = useSupportActions();
 
   return (
@@ -53,6 +74,8 @@ function MissingDocument() {
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Legal" onBack={actions.goBack} />}
+      headerStyle={{ paddingBottom: spacing[4] }}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
     >
       <StateView
         icon="file-alt"
@@ -65,11 +88,24 @@ function MissingDocument() {
 }
 
 function LegalDocument({ doc }: { doc: LegalDocKey }) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const actions = useSupportActions();
   const legal = useLegal(doc);
+  const reduced = useReducedMotion();
 
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Where each section card sits in the scroll content: the body's top, the list's top inside it,
+  // and each card's top inside the list. onLayout only ever reports against the parent.
+  const scrollRef = useRef<ScrollView | null>(null);
+  const bodyY = useRef(0);
+  const listY = useRef(0);
+  const sectionY = useRef<number[]>([]);
+
+  const jumpTo = (index: number) => {
+    const y = bodyY.current + listY.current + (sectionY.current[index] ?? 0) - s(JUMP_MARGIN);
+    scrollRef.current?.scrollTo({ y: Math.max(0, y), animated: !reduced });
+  };
 
   const openOnWeb = () => {
     setNotice(null);
@@ -82,26 +118,53 @@ function LegalDocument({ doc }: { doc: LegalDocKey }) {
     });
   };
 
+  const failed = !legal.isPending && (legal.isError || !legal.data);
+
+  // The hero stands in every state: the header row leaves its title slot empty, so the hero's
+  // title is what still names the document when it failed to load.
   const page = (children: ReactNode) => (
     <Screen
       scroll
+      scrollRef={scrollRef}
       edges={['top', 'bottom']}
       header={
         <ScreenHeader
           title={LEGAL_DOC_TITLE[doc]}
+          showTitle={false}
           onBack={actions.goBack}
           trailing={<IconButton icon="external-link-alt" label={OPEN_LABEL} onPress={openOnWeb} />}
         />
       }
-      headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+      headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
     >
+      <SupportHero
+        art={LEGAL_ART[doc].art}
+        artWidth={LEGAL_ART[doc].width}
+        artGap={ART_TO_TITLE}
+        title={LEGAL_DOC_TITLE[doc]}
+      >
+        {failed ? null : <LegalStamp updatedAt={legal.data?.updatedAt} intro={legal.data?.intro} />}
+      </SupportHero>
       {notice ? (
-        <Text variant="caption" color="danger" accessibilityLiveRegion="polite">
+        <Text
+          variant="caption"
+          color="danger"
+          align="center"
+          accessibilityLiveRegion="polite"
+          style={{ marginTop: spacing[3] }}
+        >
           {notice}
         </Text>
       ) : null}
-      {children}
+      <View
+        style={{ marginTop: s(HERO_TO_CONTENTS) }}
+        onLayout={(event: LayoutChangeEvent) => {
+          bodyY.current = event.nativeEvent.layout.y;
+        }}
+      >
+        {children}
+      </View>
     </Screen>
   );
 
@@ -128,16 +191,20 @@ function LegalDocument({ doc }: { doc: LegalDocKey }) {
 
   return page(
     <>
-      <View style={{ gap: spacing[3] }}>
-        <Text variant="caption" color="textTertiary">
-          {`Last updated ${formatShortDate(document.updatedAt)}`}
-        </Text>
-        <Text variant="prose" color="textBody" selectable>
-          {document.intro}
-        </Text>
+      <LegalContents sections={document.sections} onJump={jumpTo} />
+      <View
+        style={{ marginTop: s(CONTENTS_TO_SECTIONS) }}
+        onLayout={(event: LayoutChangeEvent) => {
+          listY.current = event.nativeEvent.layout.y;
+        }}
+      >
+        <LegalSections
+          sections={document.sections}
+          onSectionLayout={(index, y) => {
+            sectionY.current[index] = y;
+          }}
+        />
       </View>
-
-      <LegalSections sections={document.sections} />
     </>,
   );
 }

@@ -74,29 +74,29 @@ describe('the profile chip screens (V2 §7.3 — no artboard)', () => {
 
     // The bar is pinned while loading: it owns the bottom safe-area inset, so the viewport must
     // not change size when the list lands.
-    expect(screen.getByLabelText('Save')).toBeDisabled();
+    expect(screen.getByLabelText('Save changes')).toBeDisabled();
 
     await settle();
 
     expect(screen.getByLabelText('Figma, skill', shown)).toBeOnTheScreen();
-    expect(screen.getByText('12 skills')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Save')).toBeDisabled();
+    expect(screen.getByText('12 skills on your profile')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Save changes')).toBeDisabled();
 
     await type('Add a skill', '  figma ');
     await press('Add');
 
     expect(screen.getByText('Figma is already on your list.')).toBeOnTheScreen();
-    expect(screen.getByText('12 skills')).toBeOnTheScreen();
+    expect(screen.getByText('12 skills on your profile')).toBeOnTheScreen();
     // A refusal is not an edit: there is still nothing to save.
-    expect(screen.getByLabelText('Save')).toBeDisabled();
+    expect(screen.getByLabelText('Save changes')).toBeDisabled();
 
     await type('Add a skill', 'Service design');
     await press('Add');
 
-    expect(screen.getByText('13 skills')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Save')).not.toBeDisabled();
+    expect(screen.getByText('13 skills on your profile')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Save changes')).not.toBeDisabled();
 
-    await press('Save');
+    await press('Save changes');
     await settle();
 
     expect(profileOf(queryClient)?.skills).toContain('Service design');
@@ -108,7 +108,7 @@ describe('the profile chip screens (V2 §7.3 — no artboard)', () => {
     await settle();
 
     await press('Figma, skill');
-    expect(screen.getByText('11 skills')).toBeOnTheScreen();
+    expect(screen.getByText('11 skills on your profile')).toBeOnTheScreen();
 
     await press('Back');
     expect(screen.getByText('Discard changes?')).toBeOnTheScreen();
@@ -123,15 +123,15 @@ describe('the profile chip screens (V2 §7.3 — no artboard)', () => {
     await settle();
 
     // The same wording the Profile tab's row uses against MAX_DESIRED_ROLES.
-    expect(screen.getByText('3 of 5')).toBeOnTheScreen();
+    expect(screen.getByText('3 of 5 roles added')).toBeOnTheScreen();
 
     await type('Add a desired role', 'Product Designer');
     await press('Add');
-    expect(screen.getByText('4 of 5')).toBeOnTheScreen();
+    expect(screen.getByText('4 of 5 roles added')).toBeOnTheScreen();
 
     await type('Add a desired role', 'UX Researcher');
     await press('Add');
-    expect(screen.getByText('5 of 5')).toBeOnTheScreen();
+    expect(screen.getByText('5 of 5 roles added')).toBeOnTheScreen();
 
     // §13.5: the cap is on screen before it refuses anything, and the field goes inert.
     expect(screen.getByLabelText('Add a desired role')).toBeDisabled();
@@ -144,18 +144,18 @@ describe('the profile chip screens (V2 §7.3 — no artboard)', () => {
     await settle();
 
     expect(screen.getByLabelText('Bengaluru, location', shown)).toBeOnTheScreen();
-    expect(screen.getByText('1 location')).toBeOnTheScreen();
+    expect(screen.getByText('1 location on your profile')).toBeOnTheScreen();
     expect(
       screen.getByText('Only used for matching — never shown on your resume.'),
     ).toBeOnTheScreen();
 
     await type('Add a location', 'Pune');
     await press('Add');
-    expect(screen.getByText('2 locations')).toBeOnTheScreen();
+    expect(screen.getByText('2 locations on your profile')).toBeOnTheScreen();
 
     await press('Hybrid, remote preference');
 
-    await press('Save');
+    await press('Save changes');
     await settle();
 
     expect(profileOf(queryClient)?.preferences.locations).toEqual(['Bengaluru', 'Pune']);

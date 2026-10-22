@@ -1,12 +1,13 @@
 # NextKin
 
-> **NextKin Apply** — AI resume builder, ATS optimization and job search, as a mobile app.
+> **NextKin Apply** — AI resume builder, ATS optimization and job search.
 > Tailor a resume to a specific role, score it against the job description, discover matching
 > jobs and track every application in one place.
 
-This repository is the pnpm monorepo for the product. The React Native app in
-[apps/mobile](apps/mobile/) is the first workspace; the Next.js web app and the shared
-types/schemas package follow later, per the V2 specification.
+This repository is the pnpm monorepo for the product: the Next.js web app in
+[apps/web](apps/web/) — the Release 1 product per the V2 specification — the React Native app in
+[apps/mobile](apps/mobile/), and [packages/shared](packages/shared/), the data layer they both
+build on.
 
 [![Expo SDK](https://img.shields.io/badge/Expo-SDK%2057-000020?logo=expo&logoColor=white)](https://docs.expo.dev/versions/v57.0.0/)
 [![React Native](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
@@ -58,6 +59,7 @@ a motion playground and a mock-data mode switch.
 
 | Command | What it does |
 | --- | --- |
+| `pnpm web` | Next.js dev server for the web app |
 | `pnpm mobile` | Expo dev server + QR code for Expo Go |
 | `pnpm mobile:android` / `pnpm mobile:ios` | Open on a connected device, emulator or simulator |
 | `pnpm typecheck` | `tsc --noEmit` across every workspace (strict + `noUncheckedIndexedAccess`) |
@@ -71,6 +73,9 @@ All three checks must be green before a change is done.
 ```
 NextKin/
 ├── apps/
+│   ├── web/               @nextkin/web — Next.js 16 App Router (see its README)
+│   │   ├── app/           routes — thin: each file renders a feature screen
+│   │   └── src/           theme / ui / navigation / features / lib / providers
 │   └── mobile/            @nextkin/mobile — Expo SDK 57 app (see its README)
 │       ├── app/           expo-router routes — thin: each file renders a feature screen
 │       └── src/
@@ -78,10 +83,15 @@ NextKin/
 │           ├── ui/        generic primitives (Text, Button, Card, Sheet, Chip, …)
 │           ├── navigation/floating tab bar, FAB, create-sheet host
 │           ├── features/  one folder per product area: screens, components, hooks, store
-│           ├── data/      models → mock fixtures → repositories → TanStack Query hooks
+│           ├── data/      re-export shims onto @nextkin/shared
 │           └── lib/       haptics, storage, formatting, a11y, reduced-motion helpers
-└── packages/              shared types + zod schemas (added with the web app)
+└── packages/
+    └── shared/            @nextkin/shared — models → mock fixtures → repos → query hooks
 ```
+
+The two apps share the data layer and **nothing else**. Their design systems are different by
+design: the web board binds its own Figma variables (slate neutrals, indigo `#4f46e5`) where
+mobile has a custom ink ramp and `#4733F9`. They share Plus Jakarta Sans and no other value.
 
 ## Tech stack
 

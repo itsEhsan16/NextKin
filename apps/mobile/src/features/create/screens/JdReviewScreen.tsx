@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { useState, type ReactNode } from 'react';
 
-import { useJdDraft, useStartGeneration, useSubscription, useUpdateJdDraft } from '@/data/queries';
+import { useJdDraft, useUpdateJdDraft } from '@/data/queries';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -12,68 +11,40 @@ import { JdReviewForm } from '../components/JdReviewForm';
 import { JdReviewSkeleton } from '../components/JdReviewSkeleton';
 import type { SkillGroupKey } from '../components/JdSkillGroup';
 import { JdSkillMenuSheet, type JdSkillCommand } from '../components/JdSkillMenuSheet';
-import { UsageBanner } from '../components/UsageBanner';
-import { GENERATION_COST_NOTE, spentNote } from '../generationQuota';
 import { addSkill as addSkillTo, moveSkill, removeSkill } from '../jdSkillEdits';
 import { useJdReviewActions } from '../hooks/useJdReviewActions';
 
-export type JdReviewScreenProps = {
-  draftId: string;
-  /** The document a tailored run starts from; threaded through from the tailor step (V2 §7.6). */
-  baseResumeId?: string;
-};
+export type JdReviewScreenProps = { draftId: string };
 
 type SkillMenu = { group: SkillGroupKey; skill: string };
 type MenuAction = 'move' | 'remove';
 
 /** The primary's label, shared with the inert copy the loading state pins. */
-const CTA = 'Generate resume';
+const CTA = 'Done';
 
 /**
- * §7.6 forbids a silent hang. The reason goes on the bar that started the work, and the button
- * stays live so a second press is the retry.
- */
-const START_FAILED = "We couldn't start it. Check your connection and try again.";
-
-/**
- * CREATE — JD review (V2 §7.5). What the user confirms here is what generation, scoring and
- * cover letters read, so every extracted field is editable, skills move between the required and
- * preferred groups, and the original text stays on the page beside the extraction.
+ * "Job details" (V2 §7.5, toreview §114): the job description as it was read, every field
+ * editable, skills moved between the required and preferred groups, the original text beside it.
+ * What the user confirms is what scoring and generation read. Never a step in front of a run:
+ * Customize's "Details" and BUILD 04's pencil open it, and Done goes back to where they were.
  *
  * Edits write straight through `useUpdateJdDraft`, which is optimistic: a chip has to land in
  * the other group under the finger rather than after the round trip, or the tap reads as dropped.
  *
- * This is also where a generation is actually spent, and §13.5 wants the cap in front of the
- * user before the work — the tailor intake's banner and gate are no help to the user who arrives
- * here straight from a failed run's "Edit the job description", so the quota is read here too.
- *
  * No artboard covers this flow (plan §8, phase 9), so it is built from the spec on the existing
  * primitives, tokens and motion.
  */
-export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
+export function JdReviewScreen({ draftId }: JdReviewScreenProps) {
   const { spacing } = useTheme();
   const actions = useJdReviewActions();
 
   const draft = useJdDraft(draftId);
-  const subscription = useSubscription();
   const { mutate: patchDraft } = useUpdateJdDraft(draftId);
-  const start = useStartGeneration();
 
   // The selection outlives the dismissal: `Sheet` keeps its subtree mounted through the exit
   // animation, so a menu nulled on close would blank its own title and drop both rows mid-slide.
-  // The same split `notificationsStore` uses for its row menu.
   const [menu, setMenu] = useState<SkillMenu | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
-  // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
-  const failed = start.isError;
-  const announced = useRef(false);
-  useEffect(() => {
-    const was = announced.current;
-    announced.current = failed;
-    if (failed && !was) AccessibilityInfo.announceForAccessibility(START_FAILED);
-  }, [failed]);
 
   const data = draft.data;
 
@@ -112,19 +83,12 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
           { key: 'remove', label: 'Remove', tone: 'danger' },
         ];
 
-  const generate = () => {
-    start.mutate(
-      { kind: 'resume', jdId: draftId, ...(baseResumeId ? { baseResumeId } : {}) },
-      { onSuccess: (generation) => actions.openGeneration(generation.id) },
-    );
-  };
-
   const body = (children: ReactNode, footer?: ReactNode) => (
     <Screen
       keyboard
       scroll
       edges={['top', 'bottom']}
-      header={<ScreenHeader title="Check what we read" onBack={actions.goBack} />}
+      header={<ScreenHeader title="Job details" onBack={actions.goBack} />}
       headerStyle={{ paddingBottom: spacing[4] }}
       footer={footer}
       contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
@@ -138,11 +102,8 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
   //
   // The id is checked with it: `useJdDraft` is disabled on an empty one, and a disabled query
   // stays pending forever — without this the screen is a permanent skeleton with no way out.
-  if ((draft.isPending && draftId.length > 0) || subscription.isPending) {
-    return body(
-      <JdReviewSkeleton />,
-      <StickyActionBar primary={{ label: CTA, disabled: true }} note={GENERATION_COST_NOTE} />,
-    );
+  if (draft.isPending && draftId.length > 0) {
+    return body(<JdReviewSkeleton />, <StickyActionBar primary={{ label: CTA, disabled: true }} />);
   }
 
   if (draft.isError) {
@@ -154,21 +115,6 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
         message="Check your connection and try again."
         actionLabel="Try again"
         onAction={() => void draft.refetch()}
-      />,
-    );
-  }
-
-  // An allowance that could not be read is unknown, not unlimited: nothing is spent against a cap
-  // the page never showed (V2 §13.5).
-  if (subscription.isError) {
-    return body(
-      <StateView
-        tone="danger"
-        icon="exclamation-triangle"
-        title="Couldn't load your plan"
-        message="Check your connection and try again."
-        actionLabel="Try again"
-        onAction={() => void subscription.refetch()}
       />,
     );
   }
@@ -187,17 +133,11 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
     );
   }
 
-  const usage = subscription.data?.usage;
-  const limit = usage?.generationsLimit ?? 0;
-  const used = usage?.generationsUsed ?? 0;
-  const spent = used >= limit;
-
   return (
     <>
       {body(
         <JdReviewForm
           draft={data}
-          banner={<UsageBanner used={used} limit={limit} noun="generation" />}
           onPatch={patchDraft}
           onAddSkill={addSkill}
           onPressSkill={(group, skill) => {
@@ -205,15 +145,7 @@ export function JdReviewScreen({ draftId, baseResumeId }: JdReviewScreenProps) {
             setMenuOpen(true);
           }}
         />,
-        <StickyActionBar
-          // The banner above says how many are left; this line says what the press costs.
-          note={failed ? START_FAILED : spent ? spentNote(limit) : GENERATION_COST_NOTE}
-          primary={
-            spent
-              ? { label: 'See Pro plans', onPress: actions.openUpgrade }
-              : { label: CTA, loading: start.isPending, onPress: generate }
-          }
-        />,
+        <StickyActionBar primary={{ label: CTA, onPress: actions.goBack }} />,
       )}
 
       {/*

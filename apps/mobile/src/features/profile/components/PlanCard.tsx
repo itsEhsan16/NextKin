@@ -1,7 +1,7 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
-import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
+import PlanMarkIcon from '../../../../assets/icons/profile/plan-mark.svg';
 import { SUBSCRIPTION_PLAN_LABEL, type Subscription } from '@/data/models';
 import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
@@ -11,16 +11,27 @@ import { Text } from '@/ui/Text';
 
 export type PlanCardProps = {
   subscription: Subscription;
+  /**
+   * Called with nothing. The card names no limit, so the plans page opens without a reason; the
+   * press event once rode through to `openUpgrade(reason?)` and arrived as the reason (§85).
+   */
   onUpgrade: () => void;
 };
 
-const TILE = 44;
-const SPARKLE = 20;
+/**
+ * The plan mark (Figma 430:48) replaced the lavender sparkle tile: 39 × 40.53 at 390, 9 in from
+ * the card's left edge and 6.75 short of the text — 52 × 54, 12 and 9 in artboard units. The
+ * card keeps its 72 height, so the mark leaves 9 above and below.
+ */
+const MARK = { w: 39 / 0.75, h: 40.5294 / 0.75 } as const;
+const PAD_LEFT = 12;
+const PAD_Y = 9;
+const MARK_GAP = 9;
 const CHEVRON = 10;
 
-/** Figma 1:2229 — "NextKin Free · 2 of 2 resumes · 5 AI credits left · Upgrade ›". */
+/** Figma 95:2430 — "NextKin Free · 2 of 2 resumes · 5 AI credits left · Upgrade ›". */
 export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
-  const { colors, radii, spacing, s } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
   const { usage } = subscription;
   const summary = `${usage.resumesUsed} of ${usage.resumesLimit} resumes · ${usage.aiCreditsLeft} AI credits left`;
@@ -32,21 +43,19 @@ export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
         {...a11yButton(`${plan}, ${summary}`, 'Opens the plans page')}
         feedback="subtle"
         haptic="light"
-        onPress={onUpgrade}
-        style={[styles.row, { padding: spacing[4] - 1, gap: spacing[3] + 2 }]}
+        // Wrapped, so the press event is never handed on as an argument.
+        onPress={() => onUpgrade()}
+        style={[
+          styles.row,
+          {
+            paddingLeft: s(PAD_LEFT),
+            paddingRight: spacing[4] - 1,
+            paddingVertical: s(PAD_Y),
+            gap: s(MARK_GAP),
+          },
+        ]}
       >
-        <View
-          style={{
-            width: s(TILE),
-            height: s(TILE),
-            borderRadius: radii.md,
-            backgroundColor: colors.brandSurface,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <SparkleIcon width={s(SPARKLE)} height={s(SPARKLE)} color={colors.brand} />
-        </View>
+        <PlanMarkIcon width={s(MARK.w)} height={s(MARK.h)} />
 
         <View style={styles.copy}>
           <Text variant="label" numberOfLines={1}>

@@ -1,4 +1,5 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
@@ -9,8 +10,13 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 export type SheetRowProps = {
-  /** FontAwesome 5 Free Solid glyph name. */
-  icon: string;
+  /** FontAwesome 5 Free Solid glyph name. Ignored when `art` is given. */
+  icon?: string;
+  /**
+   * Pre-sized artwork in place of the glyph tile — the create sheet draws its own multi-tone icons
+   * with the tile built in (Figma 431:7772 and siblings). It sits in the same 52-wide slot.
+   */
+  art?: ReactNode;
   label: string;
   description: string;
   /** Shows the "✦ AI" pill after the label. */
@@ -38,6 +44,7 @@ const GUTTER = 16;
  */
 export function SheetRow({
   icon,
+  art,
   label,
   description,
   ai = false,
@@ -66,18 +73,24 @@ export function SheetRow({
       onPress={onPress}
       style={[styles.row, { gap: s(GUTTER) }, style]}
     >
-      <View
-        style={{
-          width: s(TILE),
-          height: s(TILE),
-          borderRadius: radii.xl,
-          backgroundColor: tile.bg,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <FontAwesome5 name={icon} size={s(TILE_ICON)} color={colors[tile.fg]} solid />
-      </View>
+      {art ? (
+        <View style={[styles.art, { width: s(TILE) }]}>{art}</View>
+      ) : (
+        <View
+          style={{
+            width: s(TILE),
+            height: s(TILE),
+            borderRadius: radii.xl,
+            backgroundColor: tile.bg,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {icon ? (
+            <FontAwesome5 name={icon} size={s(TILE_ICON)} color={colors[tile.fg]} solid />
+          ) : null}
+        </View>
+      )}
 
       <View style={styles.text}>
         <View style={[styles.labelRow, { gap: spacing[2] }]}>
@@ -110,4 +123,5 @@ const useStyles = scaledSheet((s) => ({
   text: { flex: 1, gap: s(4) },
   labelRow: { flexDirection: 'row', alignItems: 'center' },
   label: { flexShrink: 1 },
+  art: { alignItems: 'center', justifyContent: 'center' },
 }));

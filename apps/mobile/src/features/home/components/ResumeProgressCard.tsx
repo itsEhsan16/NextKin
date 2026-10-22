@@ -54,7 +54,7 @@ export function ResumeProgressCard({
   onCreateResume,
   onRetry,
 }: ResumeProgressCardProps) {
-  const { colors, radii, spacing, s } = useTheme();
+  const { colors, motion, radii, spacing, s } = useTheme();
   const thumb = { width: s(THUMB.width), height: s(THUMB.height) };
   const ring = s(RING);
   // Resolve once: for a remote URL this allocates a new { uri } object per call, which would
@@ -122,6 +122,8 @@ export function ResumeProgressCard({
                   style={StyleSheet.absoluteFill}
                   contentFit="cover"
                   recyclingKey={resume.thumbnailUrl}
+                  transition={motion.durations.imageFade}
+                  cachePolicy="memory-disk"
                 />
               ) : null}
             </View>

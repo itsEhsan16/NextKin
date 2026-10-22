@@ -1,10 +1,12 @@
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
-import { matchBandFor } from '@/data/models';
+import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
+import { matchBandFor, matchBasisCaption } from '@/data/models';
 import { useJob } from '@/data/queries';
-import { useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
+import { formatJobMeta } from '@/lib';
+import { scaledSheet, useTheme } from '@/theme';
 import { ScoreRing } from '@/ui/Progress';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -14,7 +16,7 @@ import { Text } from '@/ui/Text';
 
 import { CriteriaGroups } from '../components/CriteriaGroups';
 import { CriteriaSkeleton } from '../components/CriteriaSkeleton';
-import { MatchPill } from '../components/JobPills';
+import { MatchBadge } from '../components/JobPills';
 import { useJobsActions } from '../hooks/useJobsActions';
 import {
   groupMatchCriteria,
@@ -27,21 +29,35 @@ import {
 
 export type MatchCriteriaScreenProps = { jobId: string };
 
-/** The score panel's ring, at the same size — this page is the match's equivalent of it. */
-const RING = 132;
-const RING_STROKE = 10;
+// JOBS 10 at 390 (580:2428), in artboard units.
+const HEADER_TO_HERO = 18 / 0.75;
+const RING = 112 / 0.75;
+const RING_STROKE = 8.4 / 0.75;
+const RING_TO_PILL = 12 / 0.75;
+const PILL_TO_CAPTION = 10 / 0.75;
+const HERO_TO_NOTE = 20 / 0.75;
+const NOTE_RADIUS = 15 / 0.75;
+const NOTE_PAD = 14 / 0.75;
+const NOTE_GAP = 10 / 0.75;
+const NOTE_SLOT_W = 18 / 0.75;
+const NOTE_SLOT_H = 19 / 0.75;
+const NOTE_GLYPH = 15 / 0.75;
+const NOTE_TO_CARDS = 14 / 0.75;
+/** The bar's sparkle (580:2502) — the same drawing as the AI sparkle trio. */
+const SPARKLE_W = 18 / 0.75;
+const SPARKLE_H = 17.6315 / 0.75;
 
 /**
- * JOBS — the full match breakdown (V2 §7.13), pushed from "See full criteria" on the job
- * detail's "Why you match" card. No artboard covers this flow (plan §8, phase 9), so it is
- * assembled from built primitives only.
+ * JOBS 10 — the full match breakdown (V2 §7.13, Figma 580:2428), pushed from "See full criteria"
+ * on the job detail's "Why you match" card.
  *
  * §7.13 requires the honesty note on this page, so it is a constant in `matchCriteria.ts` and
  * sits above the criteria rather than under them — the reader must meet the caveat before the
  * list that looks like a verdict, not after it.
  */
 export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
-  const { spacing, s } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
+  const styles = useStyles();
   const actions = useJobsActions();
 
   const job = useJob(jobId);
@@ -51,8 +67,8 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Why you match" onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
+      headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
       footer={footer}
     >
       {children}
@@ -65,7 +81,7 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
   if (jobId.length > 0 && job.isPending) {
     return page(
       <CriteriaSkeleton />,
-      <StickyActionBar primary={{ label: TAILOR_TO_JOB_CTA, disabled: true }} />,
+      <StickyActionBar floating primary={{ label: TAILOR_TO_JOB_CTA, disabled: true }} />,
     );
   }
 
@@ -84,7 +100,9 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
 
   const current = job.data;
   const groups = groupMatchCriteria(current.matchCriteria ?? []);
-  const percent = matchPercentage(current.matchScore ?? 0);
+  // A listing read from a snippet or a title has a band and a basis but no number (P11-03):
+  // the ring is drawn only when there is a number to draw, never at a stand-in 0%.
+  const percent = current.matchScore != null ? matchPercentage(current.matchScore) : null;
   const band = current.matchBand ?? matchBandFor(current.matchScore ?? 0);
 
   /**
@@ -108,37 +126,86 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
 
   return page(
     <>
-      <View style={{ alignItems: 'center', gap: spacing[3] }}>
-        <ScoreRing
-          score={percent}
-          label={MATCH_RING_LABEL}
-          size={s(RING)}
-          strokeWidth={s(RING_STROKE)}
-          ringColor={MATCH_RING_COLOR[band]}
-          trackColor="surfaceSubtle"
-          numberVariant="scoreHero"
-          numberColor="textPrimary"
-          labelVariant="microOverline"
-          labelColor="textSecondary"
-          accessibilityLabel={`Match ${percent}%`}
-        />
-        <MatchPill band={band} />
+      <View style={styles.hero}>
+        {percent !== null ? (
+          <ScoreRing
+            score={percent}
+            label={MATCH_RING_LABEL}
+            size={s(RING)}
+            strokeWidth={s(RING_STROKE)}
+            ringColor={MATCH_RING_COLOR[band]}
+            trackColor="progressTrack"
+            numberVariant="scoreHero"
+            numberColor="textPrimary"
+            labelVariant="scoreRingLabel"
+            labelColor="textSecondary"
+            accessibilityLabel={`Match ${percent}%`}
+          />
+        ) : null}
+        <View style={styles.pill}>
+          <MatchBadge band={band} />
+        </View>
+        <Text variant="micro" color="textSecondary" align="center" style={styles.caption}>
+          {formatJobMeta([current.title, current.company])}
+        </Text>
+        {current.matchBasis ? (
+          <Text variant="microRegular" color="textSecondary" align="center">
+            {matchBasisCaption(current.matchBasis)}
+          </Text>
+        ) : null}
       </View>
 
-      <Card>
-        <Text variant="body" color="textBody">
+      <View
+        style={[
+          styles.note,
+          {
+            borderWidth: sizes.border,
+            borderColor: colors.brandBorder,
+            backgroundColor: colors.brandSurface,
+          },
+        ]}
+      >
+        <View style={styles.noteSlot}>
+          <FontAwesome5 name="info-circle" size={s(NOTE_GLYPH)} color={colors.brand} solid />
+        </View>
+        <Text variant="captionRegular" color="textBody" style={styles.noteText}>
           {MATCH_HONESTY_NOTE}
         </Text>
-      </Card>
+      </View>
 
-      <CriteriaGroups groups={groups} />
+      <View style={styles.cards}>
+        <CriteriaGroups groups={groups} />
+      </View>
     </>,
     <StickyActionBar
+      floating
       primary={{
         label: TAILOR_TO_JOB_CTA,
-        icon: 'magic',
+        leading: <SparkleIcon width={s(SPARKLE_W)} height={s(SPARKLE_H)} />,
         onPress: () => actions.tailorResume(current),
       }}
     />,
   );
 }
+
+const useStyles = scaledSheet((s) => ({
+  hero: { alignItems: 'center' },
+  pill: { marginTop: s(RING_TO_PILL) },
+  caption: { marginTop: s(PILL_TO_CAPTION) },
+  note: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: s(HERO_TO_NOTE),
+    borderRadius: s(NOTE_RADIUS),
+    padding: s(NOTE_PAD),
+    gap: s(NOTE_GAP),
+  },
+  noteSlot: {
+    width: s(NOTE_SLOT_W),
+    height: s(NOTE_SLOT_H),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noteText: { flex: 1 },
+  cards: { marginTop: s(NOTE_TO_CARDS) },
+}));

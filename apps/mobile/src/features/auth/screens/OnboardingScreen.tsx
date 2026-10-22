@@ -1,10 +1,18 @@
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ScrollView, useWindowDimensions, View, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
+import {
+  ScrollView,
+  useWindowDimensions,
+  View,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ResumeDesk from '../../../../assets/onboarding/resume-desk.svg';
 import { board } from '../board';
+import { BrighterAhead } from '../components/BrighterAhead';
 import { FeatureRows } from '../components/FeatureRows';
 import { JobCardStack } from '../components/JobCardStack';
 import { NextFab } from '../components/NextFab';
@@ -16,20 +24,39 @@ import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
-/** Figma 290:1024 (slides 1-2) and 296:2972 (slide 3) — the two bottom bars. */
-const BAR = { left: 42, right: 35, bottom: 41, height: 72, dot: 14, dotGap: 17 };
-const LAST_BAR = { left: 34, right: 23, bottom: 48.47, height: 59.53, dot: 12.756, dotGap: 11.693 };
-const CTA = { width: 176.45, radius: 32.95, arrow: 22 };
+/**
+ * Figma 307:4175 / 307:4281 (slides 1-2) and 309:2 (slide 3) — one bar, drawn twice.
+ *
+ * The redraw brought slide 3 onto the same bar as the other two: 72 tall, 41 off the floor, 14pt
+ * dots 17 apart. Only the gutters still differ, by 3, and the last slide swaps the round arrow
+ * for a labelled pill that fills the bar's own height.
+ */
+const BAR = { bottom: 41, height: 72, dot: 14, dotGap: 17 };
+const GUTTER = { left: 42, right: 35 };
+const LAST_GUTTER = { left: 39, right: 38 };
+const CTA = { width: 189, gap: 12.794, arrow: 26 };
 const DESK = { width: 375.53, height: 344 };
 
+/** Where slide 3's cards start, measured from the bottom of the copy column (317.66 to 337.65). */
+const CARDS_TOP = 19.98862;
+
 const SLIDES = [
-  { title: 'Create a resume\nthat stands out.', lead: 'Use AI to create a professional,\ntailored resume in minutes.' },
-  { title: 'Discover jobs\nthat match you.', lead: 'Get personalized job recommendations\nfrom top companies.' },
-  { title: 'Take the next\nstep with confidence.', lead: 'Apply faster, track your progress,\nand get closer to your dream career.' },
+  {
+    title: 'Create a resume\nthat stands out.',
+    lead: 'Use AI to create a professional,\ntailored resume in minutes.',
+  },
+  {
+    title: 'Discover jobs\nthat match you.',
+    lead: 'Get personalized job recommendations\nfrom top companies.',
+  },
+  {
+    title: 'Take the next\nstep with confidence.',
+    lead: 'Apply faster, track your progress,\nand get closer to your dream career.',
+  },
 ] as const;
 
 /**
- * The three first-run slides (Figma 290:969, 290:1031, 295:2867).
+ * The three first-run slides (Figma 307:4165, 307:4217, 307:4288).
  *
  * Static content, so this screen has no loading, empty or error state to ship: nothing is
  * fetched, and the three slides are drawn copy rather than data. The bottom bar is lifted out of
@@ -59,7 +86,7 @@ export function OnboardingScreen() {
   };
 
   const last = index === SLIDES.length - 1;
-  const bar = last ? LAST_BAR : BAR;
+  const gutter = last ? LAST_GUTTER : GUTTER;
 
   return (
     <Screen edges={[]} padded={false}>
@@ -81,12 +108,17 @@ export function OnboardingScreen() {
             lead={lead}
             width={width}
             onSkip={slide === SLIDES.length - 1 ? undefined : finish}
-            illustrationAlign={slide === 2 ? 'flex-start' : 'flex-end'}
-            illustrationGap={slide === 2 ? 43 : 0}
+            illustrationAlign={slide === 2 ? 'space-between' : 'flex-end'}
+            illustrationGap={slide === 2 ? CARDS_TOP : 0}
+            leadVariant={slide === 2 ? 'onboardingLeadTight' : 'onboardingLead'}
           >
-            {slide === 0 ? <ResumeDesk width={s(board(DESK.width))} height={s(board(DESK.height))} /> : null}
+            {slide === 0 ? (
+              <ResumeDesk width={s(board(DESK.width))} height={s(board(DESK.height))} />
+            ) : null}
             {slide === 1 ? <JobCardStack /> : null}
+            {/* Two children, so the slot's `space-between` can hold the drawing on the floor. */}
             {slide === 2 ? <FeatureRows /> : null}
+            {slide === 2 ? <BrighterAhead /> : null}
           </OnboardingSlide>
         ))}
       </ScrollView>
@@ -95,14 +127,14 @@ export function OnboardingScreen() {
         style={[
           styles.bar,
           {
-            height: s(board(bar.height)),
-            paddingLeft: s(board(bar.left)),
-            paddingRight: s(board(bar.right)),
-            marginBottom: Math.max(s(board(bar.bottom)), insets.bottom),
+            height: s(board(BAR.height)),
+            paddingLeft: s(board(gutter.left)),
+            paddingRight: s(board(gutter.right)),
+            marginBottom: Math.max(s(board(BAR.bottom)), insets.bottom),
           },
         ]}
       >
-        <SlideDots count={SLIDES.length} index={index} size={bar.dot} gap={bar.dotGap} />
+        <SlideDots count={SLIDES.length} index={index} size={BAR.dot} gap={BAR.dotGap} />
 
         {last ? (
           <Pressable
@@ -115,19 +147,20 @@ export function OnboardingScreen() {
               shadows.fab,
               {
                 width: s(board(CTA.width)),
-                height: s(board(LAST_BAR.height)),
+                height: s(board(BAR.height)),
                 borderRadius: radii.full,
                 backgroundColor: colors.onboardingInk,
-                gap: s(board(10)),
+                gap: s(board(CTA.gap)),
               },
             ]}
           >
             <Text variant="onboardingCta" color="textOnDark">
               Get Started
             </Text>
-            <Text variant="onboardingCta" color="textOnDark">
-              →
-            </Text>
+            {/* 309:8 is the same drawn glyph as the round button's — DM Sans Light 41 in a 31
+                box — so it takes the same 26 `NextFab` renders it at. FontAwesome carries every
+                other arrow in the app; a text node sized like an icon is not worth introducing. */}
+            <FontAwesome5 name="arrow-right" size={s(board(CTA.arrow))} color={colors.textOnDark} />
           </Pressable>
         ) : (
           <NextFab onPress={advance} label={`Next, slide ${index + 2} of ${SLIDES.length}`} />

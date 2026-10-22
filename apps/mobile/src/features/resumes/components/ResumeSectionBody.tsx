@@ -2,23 +2,39 @@ import { StyleSheet, View } from 'react-native';
 
 import type { ResumeContent, ResumeSectionKey } from '@/data/models';
 import { useTheme } from '@/theme';
-import { Chip } from '@/ui/Chip';
 import { Text } from '@/ui/Text';
 
-import { EducationEntry, ExperienceBody, ProjectEntry } from './ResumeSectionEntries';
+import { EducationList, ExperienceBody, ProjectList } from './ResumeSectionEntries';
 
 export type ResumeSectionBodyProps = {
   content: ResumeContent;
   section: ResumeSectionKey;
 };
 
-/** Skills and certifications are lists of plain strings; both print as a wrap of meta chips. */
+// The skill pills at 390 (RESUMES 06 577:7040), in artboard units.
+const PILL_GAP = 6 / 0.75;
+const PILL_PAD_X = 10 / 0.75;
+const PILL_PAD_Y = 4 / 0.75;
+
+/** Skills and certifications are lists of plain strings; both print as a wrap of grey pills. */
 function ChipWrap({ items }: { items: readonly string[] }) {
-  const { spacing } = useTheme();
+  const { colors, radii, s } = useTheme();
   return (
-    <View style={[styles.wrap, { gap: spacing[2] }]}>
+    <View style={[styles.wrap, { gap: s(PILL_GAP) }]}>
       {items.map((item) => (
-        <Chip key={item} label={item} />
+        <View
+          key={item}
+          style={{
+            paddingHorizontal: s(PILL_PAD_X),
+            paddingVertical: s(PILL_PAD_Y),
+            borderRadius: radii.full,
+            backgroundColor: colors.surfaceSubtle,
+          }}
+        >
+          <Text variant="micro" color="textBody" numberOfLines={1}>
+            {item}
+          </Text>
+        </View>
       ))}
     </View>
   );
@@ -33,12 +49,10 @@ function ChipWrap({ items }: { items: readonly string[] }) {
  * "Add …" tile itself, so there is no empty branch below.
  */
 export function ResumeSectionBody({ content, section }: ResumeSectionBodyProps) {
-  const { spacing } = useTheme();
-
   switch (section) {
     case 'summary':
       return (
-        <Text variant="prose" color="textBody">
+        <Text variant="body" color="textBody">
           {content.summary}
         </Text>
       );
@@ -53,22 +67,10 @@ export function ResumeSectionBody({ content, section }: ResumeSectionBodyProps) 
       return <ExperienceBody roles={content.experience} />;
 
     case 'projects':
-      return (
-        <View style={{ gap: spacing[5] }}>
-          {content.projects.map((project) => (
-            <ProjectEntry key={project.id} project={project} />
-          ))}
-        </View>
-      );
+      return <ProjectList projects={content.projects} />;
 
     case 'education':
-      return (
-        <View style={{ gap: spacing[4] }}>
-          {content.education.map((entry) => (
-            <EducationEntry key={entry.id} entry={entry} />
-          ))}
-        </View>
-      );
+      return <EducationList entries={content.education} />;
   }
 }
 

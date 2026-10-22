@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   BackHandler,
-  Keyboard,
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -13,21 +11,20 @@ import {
 } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { haptics, useReducedMotion, withReducedMotion } from '@/lib';
+import { useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 
 import { SheetKeyboardLift } from './SheetKeyboardLift';
 import { resolveSheetHeight } from './sheetLayout';
 import { useSheetDismissPan } from './useSheetDismissPan';
+import { useSheetProgress } from './useSheetProgress';
 
 export type SheetProps = {
   open: boolean;
@@ -56,8 +53,8 @@ export type SheetProps = {
    */
   swipeToDismiss?: boolean;
   /**
-   * Lift the sheet above the iOS keyboard. One text field per sheet - anything larger belongs on
-   * a pushed <Screen keyboard> instead.
+   * Lift the sheet above the keyboard. One text field per sheet - anything larger belongs on a
+   * pushed <Screen keyboard> instead.
    */
   avoidKeyboard?: boolean;
   /**
@@ -103,6 +100,10 @@ export function Sheet({
   const internalProgress = useSharedValue(0);
   const progress = externalProgress ?? internalProgress;
   const [mounted, setMounted] = useState(open);
+  // The first content measurement of each opening lands while the sheet is still sliding up, and
+  // springing to it made the sheet grow mid-entrance. That one is applied directly instead; the
+  // flag re-arms when a close finishes, ready for the next opening.
+  const firstMeasure = useRef(true);
   // Derived state: mount synchronously in the render that opens, unmount after the exit animation.
   if (open && !mounted) setMounted(true);
 
@@ -124,41 +125,32 @@ export function Sheet({
     setContentHeight((current) => (current === measured ? current : measured));
   }, []);
 
-  const unmount = useCallback(() => setMounted(false), []);
+  const unmount = useCallback(() => {
+    firstMeasure.current = true;
+    setMounted(false);
+  }, []);
 
-  useEffect(() => {
-    if (open) {
-      if (hapticOnOpen) haptics.light();
-      // A sheet with no field of its own takes the keyboard down with it on the way up. Tapping
-      // a date row straight from a focused text field otherwise opened both at once, and the
-      // keyboard — which the OS draws above everything in the React tree — buried the sheet.
-      // Sheets that DO carry a field (`avoidKeyboard`) are left alone: they raise their own.
-      if (!avoidKeyboard) Keyboard.dismiss();
-      progress.set(withSpring(1, withReducedMotion(reduced, motion.springs.sheetIn)));
-      return;
-    }
-    progress.set(
-      withTiming(0, withReducedMotion(reduced, motion.timings.sheetOut), (finished) => {
-        if (finished) runOnJS(unmount)();
-      }),
-    );
-  }, [
-    avoidKeyboard,
-    hapticOnOpen,
-    motion.springs.sheetIn,
-    motion.timings.sheetOut,
+  useSheetProgress({
     open,
     progress,
     reduced,
-    unmount,
-  ]);
+    hapticOnOpen,
+    avoidKeyboard,
+    motion,
+    onClosed: unmount,
+  });
 
   useEffect(() => {
+    if (firstMeasure.current && contentHeight > 0) {
+      firstMeasure.current = false;
+      animatedHeight.set(targetHeight);
+      return;
+    }
     // No-op on mount (the shared value already holds the target); animates on later changes.
     animatedHeight.set(
       withSpring(targetHeight, withReducedMotion(reduced, motion.springs.sheetIn)),
     );
-  }, [animatedHeight, motion.springs.sheetIn, reduced, targetHeight]);
+  }, [animatedHeight, contentHeight, motion.springs.sheetIn, reduced, targetHeight]);
 
   // Android hardware back closes the sheet instead of popping the route underneath.
   useEffect(() => {
@@ -185,9 +177,12 @@ export function Sheet({
     motionSheet: motion.sheet,
   });
 
+  // The surface runs `bleed` past the bottom edge (and pads its content up by as much), so the
+  // open spring's overshoot lifts more sheet into view rather than a strip of scrim under it.
+  const bleed = motion.sheet.overshootBleed;
   const scrimStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
   const sheetStyle = useAnimatedStyle(() => ({
-    height: animatedHeight.value,
+    height: animatedHeight.value + bleed,
     transform: [{ translateY: (1 - progress.value) * animatedHeight.value }],
   }));
 
@@ -201,7 +196,8 @@ export function Sheet({
         style={[
           styles.sheet,
           {
-            paddingBottom: insets.bottom,
+            bottom: -bleed,
+            paddingBottom: insets.bottom + bleed,
             backgroundColor: colors.surfaceSheet,
             borderTopLeftRadius: radii.sheet,
             borderTopRightRadius: radii.sheet,
@@ -234,8 +230,10 @@ export function Sheet({
       </Animated.View>
     </GestureDetector>
   );
-  // Android keeps `adjustResize`: the lift is iOS-only, and only when the sheet asked for it.
-  const lifted = avoidKeyboard && Platform.OS === 'ios';
+  // Both platforms. Android used to be left to `adjustResize`, which an edge-to-edge window
+  // (mandatory since SDK 54) never does, so the keyboard sat over the sheet's field.
+  // The keyboard controller reports the keyboard on both, and the lift subtracts the bottom inset.
+  const lifted = avoidKeyboard;
 
   return (
     // The modal flag sits on the overlay root rather than the sheet surface: on the surface it

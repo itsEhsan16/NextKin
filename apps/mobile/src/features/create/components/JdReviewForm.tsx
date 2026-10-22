@@ -28,6 +28,7 @@ const SOURCE_TITLE: Record<JdDraft['source'], string> = {
   paste: 'What you pasted',
   file: 'What we read from your file',
   job: 'The listing we read',
+  link: 'What we read from the link',
 };
 
 const LEVELS: readonly ExperienceLevel[] = ['entry', 'mid', 'senior', 'lead'];
@@ -174,7 +175,7 @@ export function JdReviewForm({
       </Section>
 
       <Section index={8}>
-        <View style={{ gap: spacing[2] }}>
+        <View style={{ gap: spacing[4] }}>
           <Text variant="section" accessibilityRole="header">
             Original text
           </Text>

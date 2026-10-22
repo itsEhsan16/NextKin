@@ -12,7 +12,8 @@ import { useJobsStore } from './jobsStore';
  */
 export function JobsToastHost() {
   const toast = useJobsStore((state) => state.toast);
+  const tone = useJobsStore((state) => state.toastTone);
   const hideToast = useJobsStore((state) => state.hideToast);
 
-  return <Toast visible={toast != null} message={toast ?? ''} onHide={hideToast} />;
+  return <Toast visible={toast != null} message={toast ?? ''} tone={tone} onHide={hideToast} />;
 }

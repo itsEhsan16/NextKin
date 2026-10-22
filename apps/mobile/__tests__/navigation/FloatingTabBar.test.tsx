@@ -1,13 +1,10 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { StyleSheet } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import {
-  CreateSheetProvider,
-  FloatingTabBar,
-  useTabScrollToTop,
-  type TabName,
-} from '@/navigation';
+import { CreateSheetProvider, FloatingTabBar, useTabScrollToTop, type TabName } from '@/navigation';
+import { lightTheme } from '@/theme';
 
 // jest.mock factories are hoisted, so they may only close over `mock*`-prefixed bindings.
 const mockNavigate = jest.fn();
@@ -86,7 +83,38 @@ describe('FloatingTabBar', () => {
 
     fireEvent.press(screen.getByRole('tab', { name: 'Resumes' }));
 
-    expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/resumes');
+    // One frame later, so the highlight paints before the navigation's render.
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/resumes'));
+  });
+
+  it('selects the pressed tab before the route catches up', async () => {
+    await renderBar(['(tabs)']);
+
+    await fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
+
+    // The segments still say Home: the highlight no longer waits for the screen to mount.
+    expect(screen.getByRole('tab', { name: 'Profile' })).toBeSelected();
+    expect(screen.getByRole('tab', { name: 'Home' })).not.toBeSelected();
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/profile'));
+  });
+
+  it('drops the pressed highlight once the route moves', async () => {
+    await renderBar(['(tabs)']);
+    await fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
+
+    // The route lands somewhere else entirely (a link elsewhere won the race): the route wins.
+    mockRouter.segments = ['(tabs)', 'jobs'];
+    await screen.rerender(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <CreateSheetProvider>
+          <FloatingTabBar />
+        </CreateSheetProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByRole('tab', { name: 'Jobs' })).toBeSelected();
+    expect(screen.getByRole('tab', { name: 'Profile' })).not.toBeSelected();
   });
 
   it('scrolls the focused tab to the top instead of re-navigating to itself', async () => {
@@ -106,7 +134,7 @@ describe('FloatingTabBar', () => {
     fireEvent.press(screen.getByRole('tab', { name: 'Home' }));
 
     expect(scrollToTop).not.toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith('/(tabs)');
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/(tabs)'));
   });
 
   it('is inert on a re-tap when the focused tab has nothing scrollable', async () => {
@@ -117,13 +145,38 @@ describe('FloatingTabBar', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('stays interactive and readable while the create sheet is closed', async () => {
+  it('tints the selected tab brand and the rest grey', async () => {
+    await renderBar(['(tabs)', 'jobs']);
+
+    // The redrawn bar (429:7518) is the first to colour the selected tab differently from the
+    // others; every earlier board drew all four in the same ink, so nothing here caught a label
+    // that kept the old single colour.
+    const colorOf = (label: string) =>
+      StyleSheet.flatten(screen.getByText(label).props.style).color;
+
+    expect(colorOf('Jobs')).toBe(lightTheme.colors.tabActive);
+    expect(colorOf('Home')).toBe(lightTheme.colors.tabInactive);
+    expect(colorOf('Resumes')).toBe(lightTheme.colors.tabInactive);
+    expect(lightTheme.colors.tabActive).not.toBe(lightTheme.colors.tabInactive);
+  });
+
+  it('cross-fades each label between two stacked copies, one hidden from assistive tech', async () => {
+    await renderBar(['(tabs)', 'jobs']);
+
+    // Each label exists twice — grey and violet — so its colour can fade with the icon instead of
+    // snapping (§83.1). Only the copy that is showing is exposed.
+    const copies = screen.getAllByText('Jobs', { includeHiddenElements: true });
+    expect(copies).toHaveLength(2);
+    expect(screen.getAllByText('Jobs')).toHaveLength(1);
+  });
+
+  it('stays interactive and readable, leaving open sheets to the tabs layout', async () => {
     await renderBar(['(tabs)']);
 
-    // Figma paints the pill above the sheet, so it must be explicitly neutralised when the
-    // sheet opens — otherwise a tab press would navigate behind an open modal.
+    // Every hosted sheet, the create sheet included, now paints over the pill; the layout's
+    // ChromeLayer takes it out of reach and out of the a11y tree, so the bar sets neither itself.
     expect(host()?.props.pointerEvents).toBe('box-none');
-    expect(host()?.props.accessibilityElementsHidden).toBe(false);
-    expect(host()?.props.importantForAccessibility).toBe('auto');
+    expect(host()?.props.accessibilityElementsHidden).toBeUndefined();
+    expect(host()?.props.importantForAccessibility).toBeUndefined();
   });
 });

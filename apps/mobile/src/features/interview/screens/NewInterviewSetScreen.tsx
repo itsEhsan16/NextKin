@@ -1,17 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import SparkleWhite from '../../../../assets/icons/ai-sparkle-white.svg';
 import type { Resume } from '@/data/models';
 import { useInterviewSets, useResumes, useStartGeneration, useSubscription } from '@/data/queries';
-// Deep import on purpose: the resumes barrel drags its screens in. docMeta is pure formatting.
+// Deep imports on purpose: those barrels drag their screens in. These are plain pieces.
+import { FLOW_ART, FlowHero } from '@/features/create/components/FlowHero';
+import { AiPill } from '@/features/resumes/components/AiPill';
+import { ResumeThumbnail } from '@/features/resumes/components/ResumeThumbnail';
 import { docSubtitle } from '@/features/resumes/docMeta';
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
+import { useRevealStagger } from '@/ui/motion';
 
 import {
   InterviewSourcePicker,
@@ -27,20 +33,31 @@ import {
 
 export type NewInterviewSetScreenProps = { resumeId?: string };
 
+const TITLE = 'New question set';
+const LEDE = 'Written from a resume and the job it was tailored to, or from a role title alone.';
 const CTA = 'Write questions';
 const ROLE_MIN = 3;
 
+// INTERVIEW 02 / 03 at 390 (577:1861 / 577:2809), in artboard units.
+const HEADER_TO_ART = 36; // 577:1868 → 674:18
+const HERO_TO_CONTROL = 14; // 577:1891 → 577:1893
+const SPARKLE_W = 18;
+const SPARKLE_H = 18.622;
+const SHEET_THUMB = 36; // 577:2902
+const SHEET_THUMB_RADIUS = 8;
+
 /**
- * NEW PRACTICE SET (V2 §7.15). No artboard covers it (plan §8, phase 9I); the shape is the ATS
- * check's — a source picker, the cap in front of the reader before the work, and a primary the
- * upsell replaces when the cap is spent (§13.5).
+ * INTERVIEW 02 / 03 (577:1861, 577:2809) — a new practice set (V2 §7.15): the hero, a source
+ * picker as step 1 of one card, the cap in front of the reader before the work, and a primary the
+ * upsell replaces when the cap is spent (§13.5). The resume row opens INTERVIEW 03's sheet.
  *
  * The cap is per resume, so it is read off the sets that already exist for the chosen document
  * rather than off a flat counter — see `interviewQuota.ts`. Either mode starts the same async
  * run; the progress screen is shared with every other kind of AI work.
  */
 export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) {
-  const { spacing, s } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
+  const styles = useStyles();
   const actions = useInterviewActions();
 
   const resumes = useResumes();
@@ -112,16 +129,43 @@ export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) 
     );
   }, [actions, ready, resume, resumeMode, start, trimmedRole]);
 
+  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
+  // with its data already here slides in whole with the push.
+  const enter = useRevealStagger(!resumes.isPending && !subscription.isPending && !sets.isPending);
+
+  // INTERVIEW 03's rows lead with the page in a bordered 36 tile (577:2902).
+  const thumb = (
+    <View
+      style={[
+        styles.sheetThumb,
+        {
+          backgroundColor: colors.surfaceCard,
+          borderWidth: sizes.border,
+          borderColor: colors.borderDefault,
+        },
+      ]}
+    >
+      <ResumeThumbnail style={styles.fill} />
+    </View>
+  );
+
   const page = (children: ReactNode, footer?: ReactNode) => (
     <>
       <Screen
         keyboard
         scroll
         edges={['top', 'bottom']}
-        header={<ScreenHeader title="New question set" onBack={actions.goBack} />}
-        headerStyle={{ paddingBottom: spacing[4] }}
+        header={
+          <ScreenHeader
+            title={TITLE}
+            showTitle={false}
+            onBack={actions.goBack}
+            trailing={<AiPill />}
+          />
+        }
+        headerStyle={styles.header}
         footer={footer}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
+        contentContainerStyle={{ paddingBottom: spacing[8] }}
       >
         {children}
       </Screen>
@@ -129,10 +173,12 @@ export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) 
       <OptionSheet
         open={sheetOpen}
         title="Choose a resume"
+        variant="card"
         options={documents.map<SheetOption>((item) => ({
           key: item.id,
           label: item.title,
           caption: docSubtitle(item),
+          leading: thumb,
         }))}
         selectedKey={resume?.id}
         onSelect={(id) => {
@@ -144,15 +190,32 @@ export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) 
     </>
   );
 
+  const hero = (
+    <Animated.View entering={enter(0)}>
+      <FlowHero title={TITLE} lede={LEDE} art={FLOW_ART.interviewNew} />
+    </Animated.View>
+  );
+
   // The inert bar is part of the loading state: it owns the bottom inset.
   if (resumes.isPending || subscription.isPending || sets.isPending) {
     return page(
-      <View style={{ gap: spacing[4] }}>
-        <Skeleton height={s(44)} radius="full" />
-        <Skeleton height={s(72)} radius="card" />
-        <Skeleton height={s(40)} />
-      </View>,
-      <StickyActionBar primary={{ label: CTA, disabled: true }} note={INTERVIEW_COST_NOTE} />,
+      <>
+        {hero}
+        <View
+          style={[styles.body, { gap: s(HERO_TO_CONTROL / 0.75) }]}
+          accessible
+          accessibilityLabel="Loading your resumes"
+          accessibilityState={{ busy: true }}
+        >
+          <Skeleton height={sizes.segmentedControl} radius="lg" />
+          <Skeleton height={s(190 / 0.75)} radius="cardLg" />
+        </View>
+      </>,
+      <StickyActionBar
+        floating
+        primary={{ label: CTA, disabled: true }}
+        note={INTERVIEW_COST_NOTE}
+      />,
     );
   }
 
@@ -193,27 +256,51 @@ export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) 
       : INTERVIEW_COST_NOTE;
 
   return page(
-    <InterviewSourcePicker
-      mode={mode}
-      onChangeMode={setMode}
-      resume={resumeMode ? resume : undefined}
-      onChooseResume={() => setSheetOpen(true)}
-      roleTitle={roleTitle}
-      onChangeRoleTitle={(value) => {
-        setRoleTitle(value);
-        setRefused(false);
-      }}
-      roleError={roleError}
-      libraryEmpty={libraryEmpty}
-    />,
+    <>
+      {hero}
+      <Animated.View entering={enter(1)} style={styles.body}>
+        <InterviewSourcePicker
+          mode={mode}
+          onChangeMode={setMode}
+          resume={resumeMode ? resume : undefined}
+          onChooseResume={() => setSheetOpen(true)}
+          roleTitle={roleTitle}
+          onChangeRoleTitle={(value) => {
+            setRoleTitle(value);
+            setRefused(false);
+          }}
+          roleError={roleError}
+          libraryEmpty={libraryEmpty}
+        />
+      </Animated.View>
+    </>,
     // §13.5: the upsell REPLACES the action rather than interrupting the page.
     <StickyActionBar
+      floating
       note={note}
+      noteTone={failed ? 'danger' : 'neutral'}
       primary={
         allowance.spent
           ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('interview') }
-          : { label: CTA, icon: 'magic', loading: start.isPending, onPress: submit }
+          : {
+              label: CTA,
+              leading: <SparkleWhite width={s(SPARKLE_W / 0.75)} height={s(SPARKLE_H / 0.75)} />,
+              loading: start.isPending,
+              onPress: submit,
+            }
       }
     />,
   );
 }
+
+const useStyles = scaledSheet((s) => ({
+  header: { paddingBottom: s(HEADER_TO_ART / 0.75) },
+  body: { marginTop: s(HERO_TO_CONTROL / 0.75) },
+  sheetThumb: {
+    width: s(SHEET_THUMB / 0.75),
+    height: s(SHEET_THUMB / 0.75),
+    borderRadius: s(SHEET_THUMB_RADIUS / 0.75),
+    overflow: 'hidden',
+  },
+  fill: { flex: 1 },
+}));

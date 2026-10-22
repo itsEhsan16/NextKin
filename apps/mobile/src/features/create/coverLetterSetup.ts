@@ -25,14 +25,47 @@ export const COVER_LETTER_TONES: readonly CoverLetterTone[] = [
 /** §7.10's default: the tone a letter is written in unless the reader picks another. */
 export const DEFAULT_COVER_LETTER_TONE: CoverLetterTone = 'professional';
 
-/** The primary's label, shared with the inert copy the loading state pins. */
-export const COVER_LETTER_CTA = 'Write cover letter';
+/** The primary's label (COVER 01 644:82), shared with the inert copy the loading state pins. */
+export const COVER_LETTER_CTA = 'Write my cover letter';
 
 /**
- * The cost of the press, said on the bar that makes it. This is not the cap: `UsageBanner` says
- * how many are left, and this line says what pressing the button uses up.
+ * COVER 01's title and lede (644:30 / 644:31). A resume tailored for no job (opened from the
+ * resume menu) has no job details to promise, so the copy says only what the letter is made from.
  */
-export const COVER_LETTER_COST_NOTE = "Counts as one of this month's cover letters";
+export function coverSetupHero(hasJob: boolean): { title: string; lede: string } {
+  return hasJob
+    ? {
+        title: 'Cover letter for this job',
+        lede: 'We’ll use your resume and the job details to create a tailored cover letter.',
+      }
+    : { title: 'Cover letter', lede: 'We’ll use your resume to create a cover letter.' };
+}
+
+/**
+ * "1 of 1 cover letter left this month" (COVER 01 644:80) — the cap on the bar, over the button
+ * that spends it, in `UsageBanner`'s wording so it reads the same as every other create screen.
+ */
+export const coverLetterQuotaNote = (used: number, limit: number): string =>
+  `${Math.max(0, limit - used)} of ${pluralize(limit, 'cover letter')} left this month`;
+
+/**
+ * The resume row's meta on COVER 01 (644:50): "Tailored for this job · ATS score 88". A resume
+ * tailored for no job (opened from the resume menu) says what it is instead; the score is left
+ * out while the resume is unscored, never shown as a zero.
+ */
+export function coverResumeMeta(resume: Resume): string {
+  const kind = resume.linkedJobId
+    ? 'Tailored for this job'
+    : [
+        resume.isBase ? 'Base resume' : 'Tailored',
+        resume.pageCount != null ? pluralize(resume.pageCount, 'page') : undefined,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+  return [kind, resume.atsScore != null ? `ATS score ${resume.atsScore}` : undefined]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 /**
  * §7.10 forbids a silent hang. The reason goes on the bar that started the work, and the button

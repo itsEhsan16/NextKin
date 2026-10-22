@@ -3,40 +3,42 @@ import { View } from 'react-native';
 import { useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 
-/**
- * Block geometry, each one the composed height of what replaces it — Card is 16pt of padding and
- * a 1pt hairline on both sides, so every card block carries that 34pt:
- *
- * - `BANNER`  34 + caption 20 + gap 12 + 4pt bar
- * - `HONESTY` three caption lines of the §7.8 note
- * - `LABEL`   the groupLabel line
- * - `ROW`     2 (hairline; the row's own padding is Card's) + 12 + rowTitle 24 + 2 +
- *             description 19 + 12, past the 58pt listRow floor
- * - `BUTTON`  the ghost "check a file" control under the row
- */
-const BANNER = 70;
-const HONESTY = 60;
-const LABEL = 20;
-const ROW = 71;
-const BUTTON = 44;
+import { FLOW_ART } from './FlowHero';
+
+// ATS 01 at 390 (645:3), in artboard units: each block is the box it stands in for.
+const TITLE_H = 24 / 0.75; // 645:15
+const TITLE_TO_LEDE = 8 / 0.75;
+const LEDE_H = 18 / 0.75; // 645:16, one line
+const HERO_TO_ROWS = 22 / 0.75;
+const FILE_H = 67.5 / 0.75; // 645:22
+const JOB_H = 79.5 / 0.75; // 645:31
+const PASTE_H = 84.4 / 0.75; // 645:37
+const ROW_GAP = 10 / 0.75;
 
 /**
- * The ATS check intake's loading state. Blocks in the shape of the content that replaces them, so
- * nothing jumps when the library and the subscription land — never a spinner. The screen pins an
- * inert `StickyActionBar` under it for the same reason: the bar owns the bottom inset, so a
- * loading page without one would resize the viewport the moment the queries settle.
+ * ATS 01's loading state, in the page's own shape — the drawing, the hero, the file and job rows
+ * and the paste tile — so nothing jumps when the saved jobs and the plan land. Never a spinner;
+ * the screen pins an inert bar under it, which owns the bottom inset.
  */
 export function AtsCheckSkeleton() {
-  const { spacing, s } = useTheme();
-
+  const { s } = useTheme();
+  const art = FLOW_ART.atsUpload;
   return (
-    <View accessible accessibilityLabel="Loading ATS check setup" style={{ gap: spacing[6] }}>
-      <Skeleton height={s(BANNER)} radius="card" />
-      <Skeleton height={s(HONESTY)} />
-      <View style={{ gap: spacing[3] }}>
-        <Skeleton width="40%" height={s(LABEL)} />
-        <Skeleton height={s(ROW)} radius="card" />
-        <Skeleton width="60%" height={s(BUTTON)} radius="card" />
+    <View accessible accessibilityLabel="Loading the ATS check">
+      <View style={{ alignItems: 'center' }}>
+        <Skeleton
+          width={s(art.w / 0.75)}
+          height={s(art.h / 0.75)}
+          radius="cardLg"
+          style={{ marginBottom: s(art.toTitle / 0.75) }}
+        />
+        <Skeleton width="55%" height={s(TITLE_H)} />
+        <Skeleton width="80%" height={s(LEDE_H)} style={{ marginTop: s(TITLE_TO_LEDE) }} />
+      </View>
+      <View style={{ marginTop: s(HERO_TO_ROWS), gap: s(ROW_GAP) }}>
+        <Skeleton height={s(FILE_H)} radius="cardLg" />
+        <Skeleton height={s(JOB_H)} radius="cardLg" />
+        <Skeleton height={s(PASTE_H)} radius="cardLg" />
       </View>
     </View>
   );

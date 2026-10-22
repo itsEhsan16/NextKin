@@ -11,3 +11,13 @@ nodeLinker: hoisted
 
 allowBuilds:
   unrs-resolver: false
+  # esbuild powers tsx and Vitest; its install script verifies the platform binary.
+  esbuild: true
+  # Its only script prints a funding banner (opencollective-postinstall); nothing to build.
+  tesseract.js: false
+
+# Security floors from `pnpm scan:deps` (P13-01): a transitive dependency held below its fixed
+# release. Remove an entry once the package that pulls it in requires the fixed version itself.
+overrides:
+  # next's optional image dependency; GHSA-wq5f-xc86-pv6w (librsvg) is fixed in 0.35.5.
+  sharp@<0.35.5: 0.35.5

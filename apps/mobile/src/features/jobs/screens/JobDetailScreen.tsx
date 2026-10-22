@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Job } from '@/data/models';
-import { useJob, useSimilarJobs, useToggleSaveJob } from '@/data/queries';
+import { useJob, useSimilarJobs } from '@/data/queries';
+import { TailorResumeSheet } from '@/features/create/components/TailorResumeSheet';
 import { PushPrimerHost, useApplyFlow } from '@/features/notifications';
 import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
@@ -21,11 +23,13 @@ import { JobMatchCard } from '../components/JobMatchCard';
 import { SimilarJobCard } from '../components/SimilarJobCard';
 import { TailorResumeCta } from '../components/TailorResumeCta';
 import { useJobsActions } from '../hooks/useJobsActions';
+import { useSaveJob } from '../hooks/useSaveJob';
 
 export type JobDetailScreenProps = { id: string };
 
 /**
- * JOBS 05 — Job Detail (Figma 1:830).
+ * JOBS 05 — Job Detail (Figma 1:830, redrawn as 443:2: hero, match card, tailor row and company
+ * card; the rest of the page is as it was).
  *
  * The header actions scroll with the page, as drawn: only node 1:923 is marked sticky. Back stays
  * reachable through the platform gesture and the Android hardware button once it scrolls away.
@@ -35,11 +39,14 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const actions = useJobsActions();
 
-  const job = useJob(id);
+  // Opened from a list, the page paints at once from the list's copy while the detail loads.
+  const job = useJob(id, { seedFromLists: true });
   const similar = useSimilarJobs(id);
-  const toggleSave = useToggleSaveJob();
+  const save = useSaveJob();
   // NOTIF 07: Apply submits for real, confirms with a toast and may raise the push primer.
   const applyFlow = useApplyFlow(job.data);
+  // TAILOR 01 (606:2): the Tailor row asks which resume first, over the page, then moves on.
+  const [tailorOpen, setTailorOpen] = useState(false);
 
   const body = (children: React.ReactNode) => (
     <View style={[styles.root, { backgroundColor: colors.surfacePage, paddingTop: insets.top }]}>
@@ -47,29 +54,48 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
     </View>
   );
 
+  // Loading and error keep the way back: every other pushed screen holds its header in all
+  // states, and the gesture alone is not discoverable.
+  const backRow = (
+    <View
+      style={[
+        styles.headerRow,
+        { paddingHorizontal: spacing.gutter, paddingTop: spacing.headerTopPushed },
+      ]}
+    >
+      <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
+    </View>
+  );
+
   if (job.isPending) {
     return body(
-      <View style={{ padding: spacing.gutter, gap: spacing[4] }}>
-        <Skeleton width={s(64)} height={s(64)} radius="xxl" />
-        <Skeleton width="80%" height={s(34)} />
-        <Skeleton width="60%" height={s(22)} />
-        <Skeleton height={s(294)} radius="cardLg" style={{ marginTop: spacing[4] }} />
-        <Skeleton height={s(84)} radius="card" />
-      </View>,
+      <>
+        {backRow}
+        <View style={{ padding: spacing.gutter, gap: spacing[4] }}>
+          <Skeleton width={s(64)} height={s(64)} radius="xxl" />
+          <Skeleton width="80%" height={s(34)} />
+          <Skeleton width="60%" height={s(22)} />
+          <Skeleton height={s(294)} radius="cardLg" style={{ marginTop: spacing[4] }} />
+          <Skeleton height={s(84)} radius="card" />
+        </View>
+      </>,
     );
   }
 
-  if (job.isError || !job.data) {
+  // Data-first: a failed background refresh keeps the job on screen.
+  if (!job.data) {
     return body(
-      <StateView
-        tone="danger"
-        icon="exclamation-triangle"
-        title="Couldn't load this job"
-        message="Check your connection and try again."
-        actionLabel="Try again"
-        onAction={() => void job.refetch()}
-        style={{ marginTop: spacing[10] }}
-      />,
+      <>
+        {backRow}
+        <StateView
+          tone="danger"
+          icon="exclamation-triangle"
+          title="Couldn't load this job"
+          message="Check your connection and try again."
+          actionLabel="Try again"
+          onAction={() => void job.refetch()}
+        />
+      </>,
     );
   }
 
@@ -81,7 +107,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         style={styles.fill}
         contentContainerStyle={{
           paddingHorizontal: spacing.gutter,
-          paddingTop: spacing[2],
+          paddingTop: spacing.headerTopPushed,
           paddingBottom: spacing[8],
           gap: spacing[6],
         }}
@@ -100,7 +126,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
               iconStyle={current.isSaved ? 'solid' : 'regular'}
               iconSize={s(17)}
               label={current.isSaved ? 'Remove from saved' : 'Save job'}
-              onPress={() => toggleSave.mutate(current.id)}
+              onPress={() => save.toggle(current)}
             />
           </View>
         </View>
@@ -111,11 +137,12 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
           <JobMatchCard
             band={current.matchBand}
             criteria={current.matchCriteria}
+            {...(current.matchBasis ? { basis: current.matchBasis } : {})}
             onSeeFullCriteria={() => actions.openFullCriteria(current)}
           />
         ) : null}
 
-        <TailorResumeCta onPress={() => actions.tailorResume(current)} />
+        <TailorResumeCta onPress={() => setTailorOpen(true)} />
 
         <JobAboutSection
           description={current.description}
@@ -162,8 +189,22 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
 
       <JobDetailActions
         saved={current.isSaved}
-        onToggleSave={() => toggleSave.mutate(current.id)}
+        onToggleSave={() => save.toggle(current)}
         onApply={applyFlow.apply}
+      />
+
+      <TailorResumeSheet
+        open={tailorOpen}
+        job={current}
+        onClose={() => setTailorOpen(false)}
+        onCompare={(resumeId) => {
+          setTailorOpen(false);
+          actions.openTailorCompare(current.id, resumeId);
+        }}
+        onStartFromNothing={() => {
+          setTailorOpen(false);
+          actions.openZeroResume(current.id);
+        }}
       />
 
       <Toast

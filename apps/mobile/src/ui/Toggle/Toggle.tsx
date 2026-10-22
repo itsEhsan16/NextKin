@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { haptics, hitSlopFor, useReducedMotion, withReducedMotion } from '@/lib';
@@ -43,6 +43,11 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
   const knobStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: inset + position.value * travel }],
   }));
+  // The "on" colour fades in over the "off" track on the knob's own spring, so the colour and the
+  // knob arrive together (the track used to switch colour at the tap, ahead of the knob).
+  const onStyle = useAnimatedStyle(() => ({
+    opacity: Math.min(1, Math.max(0, position.value)),
+  }));
 
   return (
     <Pressable
@@ -63,12 +68,20 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
           width: s(TRACK.width),
           height: s(TRACK.height),
           borderRadius: radii.full,
-          backgroundColor: value ? colors.surfaceSelected : colors.progressTrack,
+          backgroundColor: colors.progressTrack,
           justifyContent: 'center',
         },
         style,
       ]}
     >
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          { borderRadius: radii.full, backgroundColor: colors.surfaceSelected },
+          onStyle,
+        ]}
+      />
       <Animated.View
         style={[
           shadows.knob,

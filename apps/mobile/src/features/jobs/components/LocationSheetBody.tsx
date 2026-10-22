@@ -1,16 +1,20 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
-import { a11yHeader, hitSlop8 } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
-import { IconButton } from '@/ui/IconButton';
+import { OptionSheetHeader } from '@/ui/OptionSheet';
 import { Pressable } from '@/ui/Pressable';
 import { SearchField } from '@/ui/SearchField';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
-import { BROAD_LOCATION_OPTIONS, filterCityOptions, type LocationOption } from '../locationOptions';
+import {
+  ANYWHERE_IN_INDIA,
+  BROAD_LOCATION_OPTIONS,
+  filterCityOptions,
+  type LocationOption,
+} from '../locationOptions';
 
 export type LocationSheetBodyProps = {
   /** The location currently recorded on the Discover header. */
@@ -19,13 +23,43 @@ export type LocationSheetBodyProps = {
   onClose: () => void;
 };
 
-const CHECK = 14;
+// JOBS 11 at 390 (580:2834), in artboard units.
+const TOP = 16 / 0.75; // handle → header: the board's 30 less the handle and its margin
+const BOTTOM = 30 / 0.75;
+const HEADER_TO_FIELD = 10 / 0.75;
+const FIELD = 48 / 0.75;
+const FIELD_RADIUS = 13.5 / 0.75;
+const FIELD_PAD = 14 / 0.75;
+const FIELD_TO_OPTIONS = 12 / 0.75;
+const ROW = 52 / 0.75;
+const ROW_RADIUS = 13 / 0.75;
+const ROW_PAD_LEFT = 12 / 0.75;
+const ROW_PAD_RIGHT = 14 / 0.75;
+const ROW_PAD_Y = 10 / 0.75;
+const ROW_GAP = 12 / 0.75;
+const TILE = 32 / 0.75;
+const TILE_RADIUS = 9 / 0.75;
+const TILE_GLYPH = 13 / 0.75;
+const CHECK_DISC = 22 / 0.75;
+const CHECK_GLYPH = 10 / 0.75;
+const DIVIDER_SPACE = 5 / 0.75;
+const DIVIDER_INSET = 12 / 0.75;
 /** How deep the option list gets before it scrolls, in rows — the sheet must not fill the screen. */
 const VISIBLE_ROWS = 6;
 
+/** Each answer's tile glyph (580:2848 / 580:2853 / 580:2862). */
+const glyphFor = (option: LocationOption): string =>
+  option.kind === 'city'
+    ? 'map-marker-alt'
+    : option.value === ANYWHERE_IN_INDIA
+      ? 'globe-asia'
+      : 'wifi';
+
 /**
- * The Discover location picker's contents. Fully controlled and store-free, exactly like
- * `FiltersSheetBody`, so a test can drive it without the sheet's gestures or animation.
+ * The Discover location picker's contents, drawn as JOBS 11 (580:2834): the card look the option
+ * sheets share — a tile per answer, the picked row washed lavender with a brand check disc.
+ * Fully controlled and store-free, exactly like `FiltersSheetBody`, so a test can drive it
+ * without the sheet's gestures or animation.
  *
  * There is no loading or error state here on purpose: the options are a static list built in
  * `locationOptions.ts`, so there is nothing to fetch and nothing that can fail. The empty state
@@ -33,30 +67,26 @@ const VISIBLE_ROWS = 6;
  * screen, because both are still a way out of it.
  */
 export function LocationSheetBody({ value, onSelect, onClose }: LocationSheetBodyProps) {
-  const { colors, sizes, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
   const [query, setQuery] = useState('');
 
   const cities = filterCityOptions(query);
 
   return (
-    <View style={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing[4], gap: spacing[3] }}>
-      <View style={[styles.header, { paddingVertical: spacing[3] }]}>
-        <Text {...a11yHeader('Location')} variant="headline">
-          Location
-        </Text>
-        <IconButton icon="times" label="Close location" onPress={onClose} />
-      </View>
+    <View style={[styles.root, { paddingHorizontal: spacing.gutter }]}>
+      <OptionSheetHeader title="Location" onClose={onClose} variant="card" />
 
       <SearchField
         value={query}
         onChangeText={setQuery}
         placeholder="Search a city"
         accessibilityLabel="Search locations"
+        style={styles.field}
       />
 
       <ScrollView
-        style={{ maxHeight: sizes.listRow * VISIBLE_ROWS }}
+        style={[styles.list, { maxHeight: s(ROW) * VISIBLE_ROWS }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -70,7 +100,9 @@ export function LocationSheetBody({ value, onSelect, onClose }: LocationSheetBod
             />
           ))}
 
-          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+          <View style={styles.dividerWrap}>
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+          </View>
 
           {cities.length > 0 ? (
             cities.map((option) => (
@@ -104,7 +136,7 @@ function LocationRow({
   selected: boolean;
   onSelect: (location: string) => void;
 }) {
-  const { colors, sizes, spacing, s } = useTheme();
+  const { colors, sizes, s } = useTheme();
   const styles = useStyles();
 
   return (
@@ -115,25 +147,66 @@ function LocationRow({
       accessibilityState={{ selected }}
       feedback="subtle"
       haptic="selection"
-      // The row is a hair under 44pt once the artboard height is scaled down, so it borrows the
-      // rest from its hit slop.
-      hitSlop={hitSlop8}
       onPress={() => onSelect(option.value)}
-      style={[styles.row, { minHeight: sizes.listRow, gap: spacing[3] }]}
+      style={[
+        styles.row,
+        // Every row carries the hairline, clear until picked, so picking one does not grow it.
+        {
+          borderWidth: sizes.border,
+          borderColor: selected ? colors.brandBorder : 'transparent',
+          backgroundColor: selected ? colors.brandSurface : 'transparent',
+        },
+      ]}
     >
-      <Text variant="rowTitle" numberOfLines={1} style={styles.label}>
+      <View style={[styles.tile, { backgroundColor: colors.tileBrandStrong }]}>
+        <FontAwesome5 name={glyphFor(option)} size={s(TILE_GLYPH)} color={colors.brand} solid />
+      </View>
+      <Text variant={selected ? 'label' : 'menuRow'} numberOfLines={1} style={styles.label}>
         {option.value}
       </Text>
       {selected ? (
-        <FontAwesome5 name="check" size={s(CHECK)} color={colors.textPrimary} solid />
+        <View style={[styles.checkDisc, { backgroundColor: colors.brand }]}>
+          <FontAwesome5 name="check" size={s(CHECK_GLYPH)} color={colors.textOnBrand} solid />
+        </View>
       ) : null}
     </Pressable>
   );
 }
 
-const useStyles = scaledSheet(() => ({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  row: { flexDirection: 'row', alignItems: 'center' },
+const useStyles = scaledSheet((s) => ({
+  root: { paddingTop: s(TOP), paddingBottom: s(BOTTOM) },
+  field: {
+    marginTop: s(HEADER_TO_FIELD),
+    height: s(FIELD),
+    borderRadius: s(FIELD_RADIUS),
+    paddingHorizontal: s(FIELD_PAD),
+  },
+  list: { marginTop: s(FIELD_TO_OPTIONS) },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: s(ROW),
+    borderRadius: s(ROW_RADIUS),
+    paddingLeft: s(ROW_PAD_LEFT),
+    paddingRight: s(ROW_PAD_RIGHT),
+    paddingVertical: s(ROW_PAD_Y),
+    gap: s(ROW_GAP),
+  },
+  tile: {
+    width: s(TILE),
+    height: s(TILE),
+    borderRadius: s(TILE_RADIUS),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   label: { flex: 1 },
-  divider: { height: StyleSheet.hairlineWidth },
+  checkDisc: {
+    width: s(CHECK_DISC),
+    height: s(CHECK_DISC),
+    borderRadius: s(CHECK_DISC) / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dividerWrap: { paddingVertical: s(DIVIDER_SPACE), paddingHorizontal: s(DIVIDER_INSET) },
+  divider: { height: s(1) },
 }));

@@ -1,46 +1,54 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 
-/** Matches the hero's 64pt mark and the 88pt `SimilarJobCard`, so nothing jumps when data lands. */
-const LOGO = 64;
-const ROLE_ROW = 88;
+// JOBS 09 at 390 (580:1648), in artboard units — each block the height of what replaces it.
+const LOGO = 68 / 0.75;
+const LOGO_RADIUS = 20 / 0.75;
+const LOGO_TO_NAME = 14 / 0.75;
+const NAME = 27 / 0.75;
+const NAME_W = 120 / 0.75;
+const META = 16 / 0.75;
+const META_W = 260 / 0.75;
+const HERO_TO_WEBSITE = 18 / 0.75;
+const WEBSITE = 57.5 / 0.75;
+const WEBSITE_TO_ABOUT = 14 / 0.75;
+const ABOUT = 188.5 / 0.75;
+const ABOUT_TO_ROLES = 26 / 0.75;
+const HEADING = 21 / 0.75;
+const HEADING_W = 180 / 0.75;
+const HEADING_TO_ROLES = 12 / 0.75;
+const ROLE_CARD = 191.5 / 0.75;
 
 /**
- * Loading shape of the company screen: the hero, the website row, three lines of the About
- * paragraph and two role rows.
+ * Loading shape of the company screen (JOBS 09): the centred hero, the website card, the About
+ * card and one open-role card, so nothing jumps when the data lands.
  */
 export function CompanySkeleton() {
   const { spacing, s } = useTheme();
+  const styles = useStyles();
 
   return (
-    <View style={{ gap: spacing[6] }}>
-      <View style={[styles.hero, { gap: spacing[3] }]}>
-        <Skeleton width={s(LOGO)} height={s(LOGO)} radius="xxl" />
-        <View style={[styles.lines, { gap: spacing[2] }]}>
-          <Skeleton width="70%" height={s(28)} />
-          <Skeleton width="55%" height={s(18)} />
-        </View>
+    <View accessible accessibilityLabel="Loading company">
+      <View style={styles.hero}>
+        <Skeleton width={s(LOGO)} height={s(LOGO)} style={{ borderRadius: s(LOGO_RADIUS) }} />
+        <Skeleton width={s(NAME_W)} height={s(NAME)} style={styles.name} />
+        <Skeleton width={s(META_W)} height={s(META)} style={{ marginTop: spacing[1] }} />
       </View>
-      <Skeleton height={s(58)} radius="card" />
-      <View style={{ gap: spacing[2] }}>
-        <Skeleton width={s(120)} height={s(22)} />
-        <Skeleton height={s(18)} />
-        <Skeleton height={s(18)} />
-        <Skeleton width="60%" height={s(18)} />
-      </View>
-      <View style={{ gap: spacing[3] }}>
-        <Skeleton width={s(180)} height={s(22)} />
-        {[0, 1].map((index) => (
-          <Skeleton key={index} height={s(ROLE_ROW)} radius="card" />
-        ))}
-      </View>
+      <Skeleton height={s(WEBSITE)} radius="cardLg" style={styles.website} />
+      <Skeleton height={s(ABOUT)} radius="cardLg" style={styles.about} />
+      <Skeleton width={s(HEADING_W)} height={s(HEADING)} style={styles.heading} />
+      <Skeleton height={s(ROLE_CARD)} radius="cardLg" style={styles.role} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  hero: { flexDirection: 'row', alignItems: 'center' },
-  lines: { flex: 1 },
-});
+const useStyles = scaledSheet((s) => ({
+  hero: { alignItems: 'center' },
+  name: { marginTop: s(LOGO_TO_NAME) },
+  website: { marginTop: s(HERO_TO_WEBSITE) },
+  about: { marginTop: s(WEBSITE_TO_ABOUT) },
+  heading: { marginTop: s(ABOUT_TO_ROLES) },
+  role: { marginTop: s(HEADING_TO_ROLES) },
+}));

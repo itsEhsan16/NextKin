@@ -11,15 +11,16 @@ import {
 } from '@/data/queries';
 import { pickImage } from '@/lib';
 import { useTheme } from '@/theme';
-import { ConfirmSheet } from '@/ui/ConfirmSheet';
-import { ListRow, RowGroup } from '@/ui/ListRow';
+import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
+import { showAppToast } from '@/ui/Toast';
 
-import { AvatarPickerRow } from '../components/AvatarPickerRow';
+import { CARD_GAP } from '../components/cards';
+import { AccountCard, EditIdentityCard } from '../components/EditProfileCards';
 import { IdentityFields } from '../components/IdentityFields';
 import { useProfileActions } from '../hooks/useProfileActions';
 import {
@@ -36,31 +37,33 @@ import { DISCARD_MESSAGE, FIX_FIRST, SAVE_FAILED } from '../profileForms';
 
 /** V2 §7.6 forbids a silent failure; this one goes under the photo button, not on the bar. */
 const AVATAR_FAILED = "That photo didn't save. Your old one is back — try again.";
+/** Said once the picked photo has landed: the page stays, so nothing else would say so (§85). */
+export const PHOTO_SAVED = 'Photo saved';
 
-/** The photo card, the five fields and the account group, in the heights they settle at. */
-const SKELETON_ROWS = [104, 76, 76, 112, 76, 82, 86];
+/** The identity, About you, Location and Account cards, at the heights they settle at (390). */
+const SKELETON_CARDS = [124, 330, 112, 122].map((height) => height / 0.75);
 
 function IdentitySkeleton() {
-  const { spacing, s } = useTheme();
+  const { s } = useTheme();
   return (
-    <View style={{ gap: spacing[5] }}>
-      {SKELETON_ROWS.map((height, index) => (
-        <Skeleton key={index} height={s(height)} radius="card" />
+    <View style={{ gap: s(CARD_GAP) }}>
+      {SKELETON_CARDS.map((height, index) => (
+        <Skeleton key={index} height={s(height)} radius="cardLg" />
       ))}
     </View>
   );
 }
 
 /**
- * Edit profile (V2 §7.3, personal info). No artboard draws it (plan §8), so it is assembled from
- * the built primitives alone.
+ * Edit profile (V2 §7.3, personal info; PROFILE 03 577:5341): the photo in its completeness ring,
+ * then About you, Location and Account cards over a floating Save.
  *
  * One page over two aggregates: the name and the photo belong to the user record, the headline,
  * location and years to the profile. Save fires only the write whose half actually changed, so
  * editing a headline never touches the account.
  */
 export function EditProfileScreen() {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const router = useRouter();
   const actions = useProfileActions();
 
@@ -116,12 +119,13 @@ export function EditProfileScreen() {
    * The photo is committed the moment it is picked rather than held for Save. A picked photo is
    * already a decision — the reader chose it out of their own library — and holding it hostage to
    * a Save they may never press is the worse failure: they leave believing it changed. The write
-   * is optimistic, so a refusal puts the old picture back where they can see it.
+   * is optimistic, so a refusal puts the old picture back where they can see it. A success was
+   * silent: the helper line promises the photo saves without Save, and the toast now says it has.
    */
   const changePhoto = useCallback(() => {
     void (async () => {
       const picked = await pickImage();
-      if (picked) saveAvatar.mutate(picked.uri);
+      if (picked) saveAvatar.mutate(picked.uri, { onSuccess: () => showAppToast(PHOTO_SAVED) });
     })();
   }, [saveAvatar]);
 
@@ -137,7 +141,10 @@ export function EditProfileScreen() {
     // A rejection is already the mutations' error state, which the bar reads; caught here only so
     // it does not escape as an unhandled one.
     void Promise.all(writes)
-      .then(() => router.back())
+      .then(() => {
+        router.back();
+        showAppToast('Profile saved');
+      })
       .catch(() => undefined);
   }, [base, draft, router, saveName, saveProfile]);
 
@@ -148,8 +155,8 @@ export function EditProfileScreen() {
         scroll
         edges={['top', 'bottom']}
         header={<ScreenHeader title="Edit profile" onBack={requestBack} />}
-        headerStyle={{ paddingBottom: spacing[4] }}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+        headerStyle={{ paddingBottom: spacing[6] }}
+        contentContainerStyle={{ paddingBottom: spacing[8], gap: s(CARD_GAP) }}
         footer={footer}
       >
         {children}
@@ -160,6 +167,8 @@ export function EditProfileScreen() {
         open={confirmOpen}
         title="Discard changes?"
         message={DISCARD_MESSAGE}
+        art={<ConfirmArt kind="discard" />}
+        artGap={0}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
         onConfirm={() => {
@@ -193,15 +202,16 @@ export function EditProfileScreen() {
   if (!account || !current || !draft) {
     return page(
       <IdentitySkeleton />,
-      <StickyActionBar primary={{ label: 'Save', disabled: true }} />,
+      <StickyActionBar floating primary={{ label: 'Save changes', disabled: true }} />,
     );
   }
 
   return page(
     <>
-      <AvatarPickerRow
+      <EditIdentityCard
         name={`${account.firstName} ${account.lastName}`.trim()}
-        source={account.avatarUrl}
+        photo={account.avatarUrl}
+        completeness={current.completeness}
         busy={saveAvatar.isPending}
         error={saveAvatar.isError ? AVATAR_FAILED : undefined}
         onPick={changePhoto}
@@ -209,20 +219,14 @@ export function EditProfileScreen() {
 
       <IdentityFields draft={draft} errors={errors} onChange={change} onBlurField={blurField} />
 
-      <RowGroup title="ACCOUNT">
-        <ListRow
-          icon="envelope"
-          label="Email"
-          value={account.email}
-          accessibilityHint="Opens email and password settings"
-          onPress={actions.openAccountEmail}
-        />
-      </RowGroup>
+      <AccountCard email={account.email} onPress={actions.openAccountEmail} />
     </>,
     <StickyActionBar
+      floating
       note={failed ? SAVE_FAILED : Object.keys(errors).length > 0 ? FIX_FIRST : undefined}
+      noteTone="danger"
       primary={{
-        label: 'Save',
+        label: 'Save changes',
         loading: saveName.isPending || saveProfile.isPending,
         // A failure leaves the button live, so pressing it again is the retry.
         disabled: !dirty || check?.ok !== true,
