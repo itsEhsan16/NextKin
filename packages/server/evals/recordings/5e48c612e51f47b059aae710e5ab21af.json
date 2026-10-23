@@ -1,0 +1,25 @@
+{
+  "key": "5e48c612e51f47b059aae710e5ab21af",
+  "recordedAt": "2026-10-18T18:44:15.058Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: What is the weather in Ber"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": false,
+      "topic": "other"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 267,
+      "outputTokens": 56,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

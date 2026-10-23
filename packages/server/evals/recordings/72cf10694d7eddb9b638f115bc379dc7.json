@@ -1,0 +1,25 @@
+{
+  "key": "72cf10694d7eddb9b638f115bc379dc7",
+  "recordedAt": "2026-10-18T18:44:02.099Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": true,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Can you look at the summary"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": true,
+      "topic": "resume"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 301,
+      "outputTokens": 57,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

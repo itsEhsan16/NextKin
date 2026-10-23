@@ -1,0 +1,25 @@
+{
+  "key": "5954a12c17f54761b029fcef0c16c75d",
+  "recordedAt": "2026-10-18T18:44:29.882Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Write a poem about my job."
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": false,
+      "topic": "other"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 260,
+      "outputTokens": 56,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

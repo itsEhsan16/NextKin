@@ -1,0 +1,22 @@
+{
+  "$comment": "Per-route-class latency budgets, transcribed by hand from spec §8.1 (ImBackendImplementationPlan P3-12, R-01). Deliberately not parsed from the spec: a budget changes only by an edit here, with its citation. Locally these are relative baselines; the binding p95s are measured at the ALB (X-15).",
+  "budgets": [
+    { "class": "crud_read", "p95Ms": 300, "measuredAt": "ALB", "spec": "§8.1 CRUD reads < 300 ms p95" },
+    { "class": "crud_write", "p95Ms": 500, "measuredAt": "ALB", "spec": "§8.1 CRUD writes < 500 ms p95" },
+    { "class": "job_search_cached", "p95Ms": 2000, "measuredAt": "ALB", "spec": "§8.1 job search < 2 s cached" },
+    { "class": "job_search_cold", "p95Ms": 5000, "measuredAt": "ALB", "spec": "§8.1 job search < 5 s cold fan-out" },
+    { "class": "jd_extraction", "p95Ms": 30000, "measuredAt": "end to end", "spec": "§8.1 JD extraction < 30 s" },
+    { "class": "generation", "p50Ms": 45000, "p95Ms": 90000, "measuredAt": "end to end", "spec": "§8.1 full generation p50 < 45 s, p95 < 90 s" },
+    { "class": "rescore", "p95Ms": 10000, "measuredAt": "end to end", "spec": "§8.1 ATS re-score after edit < 10 s" },
+    { "class": "export_render", "p95Ms": 10000, "measuredAt": "end to end", "spec": "§8.1 export render < 10 s" }
+  ],
+  "routes": {
+    "GET /api/v1/health": "crud_read",
+    "GET /api/v1/health/deep": "crud_read",
+    "GET /api/v1/me/settings": "crud_read",
+    "PATCH /api/v1/me/settings": "crud_write",
+    "GET /api/v1/me/links": "crud_read",
+    "POST /api/v1/me/links": "crud_write",
+    "DELETE /api/v1/me/links/{id}": "crud_write"
+  }
+}

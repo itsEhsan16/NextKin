@@ -1,0 +1,32 @@
+# Migration linter for aws/migrations (ImBackendImplementationPlan P2-01). CI runs it on every PR.
+#
+# The rules that matter are the ones protecting a live table during a blue/green deploy:
+# concurrent index creation, statement and lock timeouts, NOT VALID constraints, safe foreign keys,
+# no renames or drops in one step. Those stay on for every migration after the baseline.
+
+pg_version = "17"
+
+# The runner wraps each file in one transaction unless it opts out with `-- migrate:no-transaction`.
+assume_in_transaction = true
+
+excluded_rules = [
+  # A failed file rolls back entirely, so IF NOT EXISTS buys nothing and hides drift.
+  "prefer-robust-stmts",
+  # Counters, versions, sort orders and years fit comfortably in int and smallint.
+  "prefer-bigint-over-int",
+  "prefer-bigint-over-smallint",
+  # char(2) and char(3) hold fixed-width ISO country and currency codes.
+  "ban-char-field",
+]
+
+# The baseline (0001–0006) only creates new tables inside one transaction, where the live-table
+# rules (concurrent indexes, timeouts, NOT VALID) do not apply. Rule L8 allows re-cutting it until
+# the first shared environment exists; after that it is frozen and every new file is fully linted.
+excluded_paths = [
+  "*0001_foundation.sql",
+  "*0002_identity_profile.sql",
+  "*0003_knowledge_base_skills.sql",
+  "*0004_documents_pipeline.sql",
+  "*0005_jobs_assistant_activity.sql",
+  "*0006_billing_ops_admin.sql",
+]

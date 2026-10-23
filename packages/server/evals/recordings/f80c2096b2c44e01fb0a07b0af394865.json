@@ -1,0 +1,25 @@
+{
+  "key": "f80c2096b2c44e01fb0a07b0af394865",
+  "recordedAt": "2026-10-18T18:43:41.134Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Is it worth learning Kuber"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": true,
+      "topic": "skills"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 270,
+      "outputTokens": 57,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

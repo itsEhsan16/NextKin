@@ -1,0 +1,25 @@
+{
+  "key": "59be360277f7af75fa5db9b5d4ce6d53",
+  "recordedAt": "2026-10-18T18:44:13.977Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"previousTopicInScope\": false,\n \"hasAttachment\": false\n}\n</input>\n<document>\nUser: Soll ich ein Anschreiben s"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "inScope": true,
+      "topic": "resume"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 278,
+      "outputTokens": 57,
+      "cacheReadTokens": 673,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

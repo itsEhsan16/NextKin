@@ -1,0 +1,43 @@
+{
+  "listings": [
+    {
+      "id": "js-2001",
+      "title": "Senior Backend Engineer",
+      "company": "Northwind Payments",
+      "location": "Berlin, Germany",
+      "country": "DE",
+      "remote": "hybrid",
+      "experienceLevel": "senior",
+      "postedAgoHours": 22,
+      "snippet": "Northwind Payments is hiring a senior backend engineer to build settlement services in Go on PostgreSQL, running on Kubernetes. You will own services end to end.",
+      "tags": ["Go", "PostgreSQL", "Kubernetes", "Kafka"],
+      "url": "https://jobs.northwind.example/backend-senior",
+      "companyWebsite": "northwind.example"
+    },
+    {
+      "id": "js-2002",
+      "title": "Frontend Engineer (React)",
+      "company": "Tailspin Media",
+      "location": "Boston, MA",
+      "country": "US",
+      "postedAgoHours": 31,
+      "snippet": "React and TypeScript.",
+      "tags": ["React"],
+      "url": "https://careers.tailspin.example/jobs/frontend-react?utm_campaign=jsearch",
+      "companyWebsite": "tailspin.example"
+    },
+    {
+      "id": "js-2003",
+      "title": "Machine Learning Engineer",
+      "company": "Woodgrove Analytics",
+      "location": "Munich, Germany",
+      "country": "DE",
+      "experienceLevel": "senior",
+      "postedAgoHours": 70,
+      "snippet": "Train and serve models in Python with PyTorch on Kubernetes.",
+      "tags": ["Python", "PyTorch"],
+      "url": "https://woodgrove.example/careers/ml-engineer",
+      "companyWebsite": "woodgrove.example"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "nextkin-local",
+      "credentials": [
+        {
+          "accessKey": "nextkin_local",
+          "secretKey": "nextkin_local_secret"
+        }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
