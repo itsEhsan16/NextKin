@@ -1,0 +1,5 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Figma 286:1522, the Flipkart logo tile. The export arrives wrapped in its board; only that frame is removed here, and the paths are Figma's own. The tile is kept because the board draws it as part of the logo. -->
+<path id="Tile" d="M0 12C0 5.37258 5.37258 0 12 0H36C42.6274 0 48 5.37258 48 12V36C48 42.6274 42.6274 48 36 48H12C5.37258 48 0 42.6274 0 36V12Z" fill="#FFDB00"/>
+<path id="Vector" d="M26.167 14.25H22.917C21.7677 14.25 20.6655 14.7065 19.8529 15.5192C19.0402 16.3319 18.5837 17.4341 18.5837 18.5833V19.6667H16.417V22.9167H18.5837V33.75H22.3753V22.9167H26.167V19.6667H22.3753V18.5833C22.3753 18.296 22.4895 18.0205 22.6926 17.8173C22.8958 17.6141 23.1713 17.5 23.4587 17.5H26.167V14.25Z" fill="#2874F0"/>
+</svg>
