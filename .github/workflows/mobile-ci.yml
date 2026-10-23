@@ -118,14 +118,18 @@ jobs:
       - name: generate route types
         run: pnpm --filter @nextkin/mobile routes:types
 
+      # Scoped with --filter deliberately. These used to be bare `pnpm typecheck` etc, which
+      # `pnpm -r` fans out across every workspace — so the moment apps/web landed, this job
+      # started gating the web app while its path filter still would not trigger on web-only
+      # changes. web-ci.yml owns that side.
       - name: typecheck
-        run: pnpm typecheck
+        run: pnpm --filter @nextkin/mobile --filter @nextkin/shared typecheck
 
       - name: lint
-        run: pnpm lint
+        run: pnpm --filter @nextkin/mobile lint
 
       - name: test
-        run: pnpm test
+        run: pnpm --filter @nextkin/mobile test
 
       # NOT blocking, and that is a deliberate, temporary choice — expo-doctor is RED on this
       # repo today for two known reasons, both recorded in toreview.md: a duplicate

@@ -4,6 +4,9 @@ node_modules/
 .expo-shared/
 dist/
 web-build/
+.next/
+.next-*/
+next-env.d.ts
 coverage/
 *.log
 .DS_Store
@@ -21,3 +24,10 @@ apps/mobile/android/
 
 # Internal specs and planning docs (kept locally, not published)
 doc/
+
+# k6 load-test bearer tokens (pnpm load:users)
+tests/load/.tokens.json
+tests/load/results/
+
+# The LaTeX compile service's local bearer token (written by pnpm stack:up)
+docker/latex/*.token
