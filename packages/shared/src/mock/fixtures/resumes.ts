@@ -1,6 +1,5 @@
-import type { AtsScore, Resume, ResumeVersion } from '@/data/models';
+import type { Resume, ResumeVersion } from '../../models';
 
-import { buildAtsScore, buildSections } from '../atsScoreBuilder';
 import { daysAgo, minutesAgo } from './time';
 
 /** Resume currently being generated (paired with the active generation fixture). */
@@ -31,9 +30,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(2),
     versionCount: 3,
     currentVersionId: 'ver_1_3',
-    atsScore: 92,
-    completeness: 0.45,
-    validation: { timelineValid: true, atsOptimized: true, jdMatched: true },
     status: 'ready',
     linkedJobId: 'job_google',
     tags: ['Design systems', 'Search'],
@@ -48,7 +44,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(2.05),
     versionCount: 5,
     currentVersionId: 'ver_base_5',
-    atsScore: 92,
     status: 'ready',
     tags: ['Design systems', 'Product'],
   },
@@ -63,7 +58,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(5),
     versionCount: 2,
     currentVersionId: 'ver_2_2',
-    atsScore: 88,
     status: 'ready',
     linkedJobId: 'job_stripe',
     tags: ['Fintech', 'Design systems'],
@@ -93,7 +87,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(7),
     versionCount: 1,
     currentVersionId: 'ver_5_1',
-    atsScore: 84,
     status: 'ready',
     linkedJobId: 'job_razorpay',
     tags: ['Fintech', 'Payments'],
@@ -109,7 +102,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(14),
     versionCount: 2,
     currentVersionId: 'ver_3_2',
-    atsScore: 76,
     status: 'ready',
     linkedJobId: 'job_freshworks',
     tags: ['Design systems', 'Leadership'],
@@ -124,7 +116,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(21),
     versionCount: 1,
     currentVersionId: 'ver_4_1',
-    atsScore: 81,
     status: 'ready',
     linkedJobId: 'job_linear',
     tags: ['Tools', 'Prototyping'],
@@ -139,7 +130,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(32),
     versionCount: 1,
     currentVersionId: 'ver_zoho_1',
-    atsScore: 69,
     status: 'ready',
     linkedJobId: 'job_zoho',
     tags: ['SaaS', 'Enterprise'],
@@ -155,7 +145,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: daysAgo(36),
     versionCount: 1,
     currentVersionId: 'ver_atl_1',
-    atsScore: 87,
     status: 'ready',
     linkedJobId: 'job_atlassian_blr',
     tags: ['Enterprise', 'Design systems'],
@@ -170,7 +159,6 @@ export const resumesFixture: Resume[] = [
     updatedAt: minutesAgo(1),
     versionCount: 1,
     currentVersionId: 'ver_6_1',
-    atsScore: undefined,
     status: 'generating',
     linkedJobId: 'job_4',
     tags: ['Creative tools'],
@@ -205,62 +193,3 @@ export const resumeVersionsFixture: ResumeVersion[] = [
   ...versionsFor(GENERATING_RESUME_ID, 1, ['Generating…']),
 ];
 
-export const atsScoresFixture: Record<string, AtsScore> = {
-  // RESUMES 04 verbatim — four quick wins across Content / Keywords / Best practices.
-  res_base: buildAtsScore(
-    92,
-    buildSections({
-      contentMiss: 'Add metrics to your Zoho role',
-      present: ['design systems', 'user research'],
-      missing: ['stakeholder management', 'A/B testing'],
-      portfolioMiss: true,
-    }),
-    'Parsers will read this cleanly. Four quick wins left before it is airtight.',
-  ),
-  res_1: buildAtsScore(
-    92,
-    buildSections({ present: ['design systems', 'search'], missing: ['accessibility'] }),
-  ),
-  res_2: buildAtsScore(
-    88,
-    buildSections({
-      present: ['design systems', 'payments'],
-      missing: ['API design'],
-      portfolioMiss: true,
-    }),
-  ),
-  res_5: buildAtsScore(
-    84,
-    buildSections({
-      contentMiss: 'Add metrics to your research bullets',
-      present: ['user research', 'payments'],
-      missing: ['checkout'],
-    }),
-  ),
-  res_3: buildAtsScore(
-    76,
-    buildSections({
-      contentMiss: 'Quantify the systems adoption you drove',
-      present: ['design systems', 'tokens'],
-      missing: ['governance', 'Storybook'],
-      portfolioMiss: true,
-    }),
-  ),
-  res_4: buildAtsScore(
-    81,
-    buildSections({ present: ['prototyping', 'tools'], missing: ['developer experience'] }),
-  ),
-  res_zoho: buildAtsScore(
-    69,
-    buildSections({
-      contentMiss: 'Add metrics to your Zoho role',
-      present: ['product design', 'SaaS'],
-      missing: ['enterprise', 'dashboards', 'onboarding'],
-      portfolioMiss: true,
-    }),
-  ),
-  res_atlassian: buildAtsScore(
-    87,
-    buildSections({ present: ['design systems', 'collaboration'], missing: ['Jira'] }),
-  ),
-};

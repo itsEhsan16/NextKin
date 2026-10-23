@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { sortResumes, type Resume, type ResumeDocType, type ResumeSort } from '@/data/models';
-import { repos } from '@/data/repos';
+import { sortResumes, type Resume, type ResumeDocType, type ResumeSort } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 

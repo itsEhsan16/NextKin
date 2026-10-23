@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import type { LegalDocKey, TicketInput } from '@/data/models';
-import { repos } from '@/data/repos';
+import type { LegalDocKey, TicketInput } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 

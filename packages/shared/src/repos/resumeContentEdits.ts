@@ -1,4 +1,4 @@
-import type { AtsCheckItem, ProfileLink, ResumeContent, ResumeSectionKey } from '@/data/models';
+import type { AtsFix, ResumeContent, ResumeSectionKey } from '../models';
 
 import { NotFoundError } from './state';
 
@@ -31,18 +31,42 @@ export function confirmReviewed(content: ResumeContent, section: ResumeSectionKe
     case 'experience':
       return {
         ...content,
-        experience: content.experience.map((role) => ({ ...role, needsReview: false })),
+        experience: content.experience.map((role) => ({
+          ...role,
+          needsReview: false,
+        })),
       };
     case 'projects':
       return {
         ...content,
-        projects: content.projects.map((project) => ({ ...project, needsReview: false })),
+        projects: content.projects.map((project) => ({
+          ...project,
+          needsReview: false,
+        })),
       };
     case 'education':
       return {
         ...content,
-        education: content.education.map((entry) => ({ ...entry, needsReview: false })),
+        education: content.education.map((entry) => ({
+          ...entry,
+          needsReview: false,
+        })),
       };
+    case 'skills': {
+      // A Zero Resume draft's skill claims are answered by saving the list by hand: the ones
+      // still on it are kept, the ones taken off are removed — the check sheet's two answers.
+      const review = content.review;
+      if (!review || review.pendingSkills.length === 0) return content;
+      const dropped = review.pendingSkills.filter((skill) => !content.skills.includes(skill));
+      return {
+        ...content,
+        review: {
+          ...review,
+          pendingSkills: [],
+          removedSkills: [...review.removedSkills, ...dropped],
+        },
+      };
+    }
     default:
       return content;
   }
@@ -70,14 +94,20 @@ export function regenerated(
   switch (section) {
     case 'summary': {
       const rotated = rotate(sentences(content.summary)).join(' ');
-      return { ...content, summary: fresh.summary === content.summary ? rotated : fresh.summary };
+      return {
+        ...content,
+        summary: fresh.summary === content.summary ? rotated : fresh.summary,
+      };
     }
     case 'skills':
       return { ...content, skills: rotate(fresh.skills) };
     case 'experience':
       return {
         ...content,
-        experience: fresh.experience.map((role) => ({ ...role, bullets: rotate(role.bullets) })),
+        experience: fresh.experience.map((role) => ({
+          ...role,
+          bullets: rotate(role.bullets),
+        })),
       };
     case 'projects':
       return {
@@ -90,46 +120,32 @@ export function regenerated(
     case 'certifications':
       return { ...content, certifications: rotate(fresh.certifications) };
     case 'education':
-      return { ...content, education: fresh.education.map((entry) => ({ ...entry })) };
+      return {
+        ...content,
+        education: fresh.education.map((entry) => ({ ...entry })),
+      };
   }
 }
 
-/** The keyword out of `Missing: "A/B testing"` — the label is the only place it is recorded. */
-const quoted = (label: string): string | undefined => /"([^"]+)"/.exec(label)?.[1];
-
 /**
- * Countable and generic on purpose: the fix has to give the §7.8 `content_gap` check a bullet
- * with a number in it without inventing a result the profile cannot back (§7.9).
+ * Applies a typed fix (C-10). Only `surface_backed_skill` exists here: the profile backs the skill,
+ * so it goes onto the role the profile shows it in (as that role's evidence) or into the skills
+ * section, in the JD's wording. Nothing invents a bullet or inserts a skill the profile lacks.
  */
-const QUANTIFIED_BULLET =
-  'Tracked the outcome of 3 shipped projects, reporting before-and-after metrics';
-
-/** Patches the document for one quick win, where that item's `section` says the fix lands. */
-export function patchForFix(
-  content: ResumeContent,
-  item: AtsCheckItem,
-  links: ProfileLink[],
-): ResumeContent {
-  if (item.id.startsWith('kw_miss_')) {
-    const keyword = quoted(item.label);
-    if (!keyword) throw new NotFoundError('AtsFix', item.id);
-    if (content.skills.includes(keyword)) return content;
-    return { ...content, skills: [...content.skills, keyword] };
+export function patchForFix(content: ResumeContent, fix: AtsFix): ResumeContent {
+  const skill = fix.skill;
+  if (fix.type !== 'surface_backed_skill' || !fix.insertable || !skill) throw new NotFoundError('AtsFix', fix.id);
+  if (fix.roleId) {
+    const target = content.experience.find((role) => role.roleId === fix.roleId || role.id === fix.roleId);
+    if (target) {
+      return {
+        ...content,
+        experience: content.experience.map((role) =>
+          role === target && !(role.skills ?? []).includes(skill) ? { ...role, skills: [...(role.skills ?? []), skill] } : role,
+        ),
+      };
+    }
   }
-  if (item.id === 'content_gap') {
-    const [first, ...rest] = content.experience;
-    if (!first) throw new NotFoundError('AtsFix', item.id);
-    return {
-      ...content,
-      experience: [{ ...first, bullets: [...first.bullets, QUANTIFIED_BULLET] }, ...rest],
-    };
-  }
-  if (item.id === 'portfolio') {
-    const portfolio = links.find((link) => link.kind === 'portfolio' || link.label === 'Portfolio');
-    // The §7.8 rule that governs keywords governs links too: with no portfolio on the profile
-    // there is nothing the product may put in the document.
-    if (!portfolio) throw new NotFoundError('AtsFix', item.id);
-    return { ...content, links: [...(content.links ?? []), portfolio.url] };
-  }
-  throw new NotFoundError('AtsFix', item.id);
+  if (content.skills.includes(skill)) return content;
+  return { ...content, skills: [...content.skills, skill] };
 }

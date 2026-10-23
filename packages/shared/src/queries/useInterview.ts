@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { InterviewMark, InterviewSet } from '@/data/models';
-import { repos } from '@/data/repos';
+import type { InterviewMark, InterviewSet } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 

@@ -1,5 +1,5 @@
-import { newId, simulate } from '@/data/mock';
-import type { Profile } from '@/data/models';
+import { newId, simulate } from '../mock';
+import type { Profile } from '../models';
 
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ProfileRepo } from './types';
@@ -22,7 +22,7 @@ const SKILLS_STEP_ID = 'step_skills';
 /** The identity fields `ProfilePatch` writes, and the ones completeness counts. */
 const IDENTITY_FIELDS = ['headline', 'location', 'yearsExperience'] as const;
 
-const nudge = (completeness: number, entries: number): number =>
+export const nudge = (completeness: number, entries: number): number =>
   Math.min(1, Math.max(0, Math.round((completeness + entries * SAVE_WEIGHT) * 100) / 100));
 
 const filled = (value: string | number | undefined): boolean =>
@@ -47,7 +47,11 @@ function upsertEntry<T extends { id: string }>(
   prefix: string,
 ): { entries: T[]; added: boolean } {
   const exists = entry.id.length > 0 && entries.some((item) => item.id === entry.id);
-  if (!exists) return { entries: [...entries, ...withFreshIds([entry], prefix)], added: true };
+  if (!exists)
+    return {
+      entries: [...entries, ...withFreshIds([entry], prefix)],
+      added: true,
+    };
   return {
     entries: entries.map((item) => (item.id === entry.id ? clone(entry) : item)),
     added: false,
@@ -84,7 +88,10 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
     updatePreferences: (patch) =>
       simulate(() => {
         const { profile } = store.state;
-        return save({ ...profile, preferences: { ...profile.preferences, ...patch } });
+        return save({
+          ...profile,
+          preferences: { ...profile.preferences, ...patch },
+        });
       }),
 
     updateProfile: (patch) =>

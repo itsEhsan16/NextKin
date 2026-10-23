@@ -1,7 +1,7 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { DocumentContent, ResumeContent, ResumeSectionKey } from '@/data/models';
-import { type CoverLetterPatch, repos } from '@/data/repos';
+import type { DocumentContent, ResumeContent, ResumeSectionKey, ZeroResolution } from '../models';
+import { type CoverLetterPatch, repos } from '../repos';
 
 import { qk } from './keys';
 
@@ -126,6 +126,33 @@ export function useRegenerateSection(id: string) {
 }
 
 /**
+ * "Fit to one page" (toreview §113): the worker writes a new version when it had to change one,
+ * so the resume, its content and its pages are read again.
+ */
+export function useFitToOnePage(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => repos.resumes.fitToOnePage(id),
+    onSettled: () => invalidateEdit(queryClient, id),
+  });
+}
+
+/**
+ * "AI rewrite" on the tailor ready screen (toreview §113): one section, the way the user asked,
+ * from the resume's own lines. Not optimistic, for the same reason as `useRegenerateSection`.
+ */
+export function useRewriteSection(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ section, instruction }: { section: ResumeSectionKey; instruction: string }) => repos.resumes.rewriteSection(id, section, instruction),
+    onSuccess: (content) => {
+      queryClient.setQueryData(qk.resumes.content(id), content);
+    },
+    onSettled: () => invalidateEdit(queryClient, id),
+  });
+}
+
+/**
  * One quick win from the score panel (V2 §7.8). The repo patches the document and re-scores in a
  * single write and hands both back, so both caches are written from that pair: the fix screen
  * ticks the item and the ring moves together, instead of the ring lagging a refetch behind.
@@ -139,5 +166,27 @@ export function useApplyAtsFix(id: string) {
       queryClient.setQueryData(qk.resumes.score(id), score);
     },
     onSettled: () => invalidateEdit(queryClient, id),
+  });
+}
+
+/**
+ * One Zero Resume answer (V2 §7.9, ZERO 04). Not optimistic: the sheet waits for the save so a
+ * refused blank comes back as an error rather than a guess that flickers checked. The finished
+ * answer fills the profile too, so that cache is refreshed with the document's.
+ */
+export function useResolveZeroCheck(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (resolution: ZeroResolution) => repos.resumes.resolveZeroCheck(id, resolution),
+    onSuccess: ({ content, resume, finished }) => {
+      queryClient.setQueryData(qk.resumes.content(id), content);
+      queryClient.setQueryData(qk.resumes.detail(id), resume);
+      if (finished) void queryClient.invalidateQueries({ queryKey: qk.profile.all });
+    },
+    // Not awaited: the saved body is already in the cache, and the next question should open
+    // on it rather than wait for the library and the history to refetch behind it.
+    onSettled: () => {
+      void invalidateEdit(queryClient, id);
+    },
   });
 }

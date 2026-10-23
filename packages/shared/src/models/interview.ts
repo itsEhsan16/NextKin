@@ -49,6 +49,8 @@ export type InterviewSet = {
   resumeId?: string;
   jdId?: string;
   jobId?: string;
+  /** The employer the questions are for, when the resume or its JD names one — the card's tile. */
+  company?: string;
   /** Standalone only: the title the set was written for. */
   roleTitle?: string;
   /** The run that produced it — how a finished generation finds its own set. */

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { JdFile, Resume } from '@/data/models';
-import { type ExportFormat, repos } from '@/data/repos';
+import type { JdFile, Resume } from '../models';
+import { type ExportFormat, repos } from '../repos';
 
 import { qk } from './keys';
 
@@ -11,9 +11,12 @@ import { qk } from './keys';
  */
 
 /**
- * Renders a document to PDF / DOCX / TXT and hands back the RENDER INPUTS, not a file. Writing,
- * printing or sharing it is the screen's job through `@/lib/exportFile`: the data layer must not
- * touch a native module, and the real API will return a presigned URL through this same shape.
+ * An export of the current version (V2 §7.12, C-07). On the backend it is a real file behind a
+ * presigned URL (`delivery: 'file'`) that the screen downloads; on the mock it is render inputs
+ * (`delivery: 'render'`) the screen prints or writes. Either way the device hands the file to the
+ * share sheet through `@/lib/exportFile`, because the data layer must not touch a native module.
+ * Until the version is confirmed accurate, the repo throws `ExportBlockedError` (reason
+ * `accuracy`); the screen asks, calls `useConfirmAccuracy`, and tries again.
  *
  * §13.3 keeps PDF clean and unpaywalled on every plan; DOCX is the gated format and the repo
  * throws `PlanLockedError` if a locked control is reached, which the screen renders as the
@@ -33,6 +36,22 @@ export function useExportResume(id: string) {
         queryClient.invalidateQueries({ queryKey: qk.user.activity() }),
         queryClient.invalidateQueries({ queryKey: qk.user.dashboardStats() }),
       ]),
+  });
+}
+
+/**
+ * The user confirms the current version is accurate, once per version, before its first export
+ * (V2 §15 risk 2). The card comes back with `accuracyConfirmed`, written through to the detail and
+ * the list.
+ */
+export function useConfirmAccuracy(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => repos.resumes.confirmAccuracy(id),
+    onSuccess: (resume: Resume) => {
+      queryClient.setQueryData(qk.resumes.detail(id), resume);
+      queryClient.setQueryData<Resume[]>(qk.resumes.list(), (list) => list?.map((r) => (r.id === id ? resume : r)));
+    },
   });
 }
 
@@ -73,4 +92,12 @@ export function useImportResume() {
     // An import can also move the "Base" flag onto the first document an empty library gets.
     onSettled: () => queryClient.invalidateQueries({ queryKey: qk.resumes.list() }),
   });
+}
+
+/**
+ * The import refused the file because there is no text to read — a scan or a photo (§7.4). The
+ * tailor sheet shows this inline beside the file rather than as a generic failure (TAILOR 01c).
+ */
+export function isUnreadableFileError(error: unknown): boolean {
+  return error instanceof Error && (error as { code?: unknown }).code === 'UNREADABLE_FILE';
 }

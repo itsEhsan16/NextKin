@@ -11,16 +11,20 @@ import type { SubscriptionPlan } from './user';
  */
 export type PlanId = 'free' | 'pro_monthly' | 'pro_annual';
 
+/** INR in the mock only; USD, EUR and AUD from the backend (§13.2). */
+export type BillingCurrency = 'INR' | 'USD' | 'EUR' | 'AUD';
+
 export type Plan = {
   id: PlanId;
   /** The tier this SKU grants — what quota and gating checks read. */
   tier: SubscriptionPlan;
   name: string;
   /**
-   * INR, the market these fixtures speak in. V2 §13.2 publishes USD/EUR/AUD bands and defers
-   * India (§6.2), so the rupee figures are that band at purchasing-power parity, not list price.
+   * In major units. The mock's fixtures speak INR (that band at purchasing-power parity; India is
+   * deferred, §6.2); the backend's price book is §13.2's USD, EUR and AUD, by billing country
+   * (P12-08), with EUR and AUD tax-inclusive.
    */
-  price: { amount: number; currency: 'INR'; period: 'month' | 'year' };
+  price: { amount: number; currency: BillingCurrency; period: 'month' | 'year' };
   /** Short ribbon on the card, e.g. "Best value". */
   badge?: string;
   /** One line under the name — who the plan is for (V2 §13.2 "Intent"). */

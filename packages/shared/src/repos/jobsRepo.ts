@@ -1,110 +1,28 @@
-import { newId, simulate } from '@/data/mock';
-import type {
-  Application,
-  Job,
-  JobFilters,
-  JobSort,
-  PostedWithin,
-  SavedJobsSort,
-} from '@/data/models';
-import type { SalaryCurrency, SalaryRange } from '@/lib';
+import { newId, simulate } from '../mock';
+import type { Application, Job } from '../models';
+import {
+  JOB_COMPARATORS,
+  JOBS_PAGE_SIZE,
+  matchesFilters,
+  SAVED_JOB_COMPARATORS,
+  similarJobs,
+} from '../jobs/filters';
 
-import { clone, findOrThrow, type MockStore } from './state';
+import { importJobLink, readJobLink } from './jobLinkRepo';
+import { clone, findOrThrow, type MockStore, PlanLockedError } from './state';
 import type { JobsRepo, Page } from './types';
 
-export const JOBS_PAGE_SIZE = 20;
+// The search semantics live in ../jobs/filters, shared with the backend (P11-05).
+export { JOBS_PAGE_SIZE, matchesFilters };
 
-const HOUR = 60 * 60 * 1000;
-const POSTED_WITHIN_MS: Record<PostedWithin, number> = {
-  '24h': 24 * HOUR,
-  '7d': 7 * 24 * HOUR,
-  '30d': 30 * 24 * HOUR,
-};
+/** Reading a page is the JD extractor's job, so a link takes its latency band (jdRepo). */
+const LINK_LATENCY = { minMs: 1200, maxMs: 2200 };
 
-/**
- * Indicative rates so the ₹ salary slider can reach listings priced in another currency — the
- * comparison used to run on raw numbers in each listing's own units, which meant any ₹ band
- * silently excluded every USD/EUR/AUD role. Mock-layer only; the real API returns a normalised band.
- */
-const TO_INR: Record<SalaryCurrency, number> = { INR: 1, USD: 88, EUR: 95, AUD: 57 };
-const PERIODS_PER_YEAR: Record<SalaryRange['period'], number> = { year: 1, month: 12, hour: 2080 };
-
-/** Annualised and converted to INR, the unit `JobFilters.salaryMin`/`salaryMax` are expressed in. */
-const annualInr = (amount: number, salary: SalaryRange): number =>
-  amount * TO_INR[salary.currency] * PERIODS_PER_YEAR[salary.period];
-
-const salaryCeiling = (job: Job): number => {
-  const { salary } = job;
-  if (!salary) return 0;
-  const top = salary.max ?? salary.min;
-  return top == null ? 0 : annualInr(top, salary);
-};
+/** V2 §13.3: Free saves up to 10 jobs; Pro is unlimited. The server enforces the same cap. */
+export const FREE_SAVED_JOBS = 10;
 
 const byPostedDesc = (a: Job, b: Job): number => b.postedAt.localeCompare(a.postedAt);
-const byRelevance = (a: Job, b: Job): number => a.relevanceRank - b.relevanceRank;
-const bySavedDesc = (a: Job, b: Job): number =>
-  (b.savedAt ?? b.postedAt).localeCompare(a.savedAt ?? a.postedAt);
-// Compared in INR so a mixed-currency catalogue sorts by real value, not by raw digits.
-const bySalaryDesc = (a: Job, b: Job): number => salaryCeiling(b) - salaryCeiling(a);
-
-// Soonest deadline first. A listing with no deadline is not closing, so it sorts to the end
-// rather than to the front, which is where an empty string would put it.
-const byClosingAsc = (a: Job, b: Job): number =>
-  (a.closingAt ?? '9999').localeCompare(b.closingAt ?? '9999');
-
-const COMPARATORS: Record<JobSort, (a: Job, b: Job) => number> = {
-  relevance: byRelevance,
-  recent: byPostedDesc,
-  salary: bySalaryDesc,
-};
-
-/** Saved has its own three (SavedJobsSort): there is no search to be relevant to once saved. */
-const SAVED_COMPARATORS: Record<SavedJobsSort, (a: Job, b: Job) => number> = {
-  recent: bySavedDesc,
-  closing: byClosingAsc,
-  salary: bySalaryDesc,
-};
-
 const normalise = (value: string): string => value.trim().toLowerCase();
-
-export function matchesFilters(job: Job, filters: JobFilters, now = Date.now()): boolean {
-  const query = normalise(filters.query ?? '');
-  if (query) {
-    const haystack = [job.title, job.company, job.location, ...job.tags].map(normalise);
-    if (!haystack.some((field) => field.includes(query))) return false;
-  }
-  if (filters.locations.length > 0) {
-    const location = normalise(job.location);
-    if (!filters.locations.some((wanted) => location.includes(normalise(wanted)))) return false;
-  }
-  if (filters.remote.length > 0 && !filters.remote.includes(job.remote)) return false;
-  if (filters.employmentTypes.length > 0 && !filters.employmentTypes.includes(job.employmentType))
-    return false;
-  if (
-    filters.experienceLevels.length > 0 &&
-    !filters.experienceLevels.includes(job.experienceLevel)
-  )
-    return false;
-  if (filters.salaryMin != null || filters.salaryMax != null) {
-    const { salary } = job;
-    const top = salary?.max ?? salary?.min;
-    const bottom = salary?.min ?? salary?.max;
-    // A listing that quotes no salary can't be shown to satisfy a salary band.
-    if (!salary || top == null || bottom == null) return false;
-    // Overlap, not containment: keep a listing whose band intersects the requested one.
-    if (filters.salaryMin != null && annualInr(top, salary) < filters.salaryMin) return false;
-    if (filters.salaryMax != null && annualInr(bottom, salary) > filters.salaryMax) return false;
-  }
-  if (filters.postedWithin) {
-    const age = now - new Date(job.postedAt).getTime();
-    if (age > POSTED_WITHIN_MS[filters.postedWithin]) return false;
-  }
-  if (filters.tags.length > 0) {
-    const tags = job.tags.map(normalise);
-    if (!filters.tags.some((tag) => tags.includes(normalise(tag)))) return false;
-  }
-  return true;
-}
 
 /** Cursor is a stringified offset; opaque to callers. */
 const parseCursor = (cursor?: string): number => {
@@ -123,7 +41,7 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
           const offset = parseCursor(cursor);
           const matching = store.state.jobs
             .filter((job) => matchesFilters(job, filters))
-            .sort(COMPARATORS[sort]);
+            .sort(JOB_COMPARATORS[sort]);
           const items = matching.slice(offset, offset + JOBS_PAGE_SIZE);
           const end = offset + items.length;
           return clone({
@@ -144,27 +62,7 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
 
     // "Similar jobs" on JOBS 05 (1:898): same-tag roles at other companies, best match first.
     listSimilar: (id, limit = 3) =>
-      simulate(
-        () => {
-          const job = find(id);
-          const tags = new Set(job.tags);
-          const scored = store.state.jobs
-            .filter((other) => other.id !== job.id && other.company !== job.company)
-            .map((other) => ({
-              job: other,
-              shared: other.tags.filter((tag) => tags.has(tag)).length,
-            }))
-            .filter((entry) => entry.shared > 0)
-            .sort(
-              (a, b) =>
-                b.shared - a.shared ||
-                (b.job.matchScore ?? 0) - (a.job.matchScore ?? 0) ||
-                byRelevance(a.job, b.job),
-            );
-          return clone(scored.slice(0, limit).map((entry) => entry.job));
-        },
-        { empty: () => [] },
-      ),
+      simulate(() => clone(similarJobs(find(id), store.state.jobs, limit)), { empty: () => [] }),
 
     // Every open role at one employer — the company screen's listings section, newest first.
     listByCompany: (company) =>
@@ -172,7 +70,7 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
         () =>
           clone(
             store.state.jobs
-              .filter((job) => normalise(job.company) === normalise(company))
+              .filter((job) => normalise(job.company) === normalise(company) && !job.sourceUrl)
               .sort(byPostedDesc),
           ),
         { empty: () => [] },
@@ -180,7 +78,8 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
 
     listSaved: (sort = 'recent') =>
       simulate(
-        () => clone(store.state.jobs.filter((job) => job.isSaved).sort(SAVED_COMPARATORS[sort])),
+        () =>
+          clone(store.state.jobs.filter((job) => job.isSaved).sort(SAVED_JOB_COMPARATORS[sort])),
         { empty: () => [] },
       ),
 
@@ -199,10 +98,26 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
         { empty: () => [] },
       ),
 
-    toggleSave: (id) =>
+    // P11-04: idempotent. Saving a saved job, or unsaving one that is not, changes nothing. The
+    // Free cap counts open listings only (an expired save stays and does not count), and saves
+    // already above it stay (§13.5): only an 11th new save is refused.
+    setSaved: (id, saved) =>
       simulate(() => {
         const current = find(id);
-        const updated: Job = { ...current, isSaved: !current.isSaved };
+        if (current.isSaved === saved) return clone(current);
+        if (saved && store.state.subscription.plan === 'free') {
+          const now = Date.now();
+          const open = store.state.jobs.filter(
+            (job) =>
+              job.isSaved &&
+              !job.sourceUrl &&
+              !(job.closingAt && new Date(job.closingAt).getTime() < now),
+          ).length;
+          if (open >= FREE_SAVED_JOBS) throw new PlanLockedError('Saving more than 10 jobs');
+        }
+        const updated: Job = saved
+          ? { ...current, isSaved: true, savedAt: new Date().toISOString() }
+          : (({ savedAt: _cleared, ...rest }) => ({ ...rest, isSaved: false }))(current);
         store.state.jobs = store.state.jobs.map((job) => (job.id === id ? updated : job));
         return clone(updated);
       }),
@@ -224,11 +139,27 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
         return clone(application);
       }),
 
+    // The web Applications board's "Update Status" (332:467): the candidate records where an
+    // application has got to. Nothing the employer sends moves it in the mock.
+    updateApplicationStatus: (id, status) =>
+      simulate(() => {
+        const current = findOrThrow(store.state.applications, id, 'Application');
+        const updated: Application = { ...current, status };
+        store.state.applications = store.state.applications.map((item) =>
+          item.id === id ? updated : item,
+        );
+        return clone(updated);
+      }),
+
     // Jobs tab "Today's picks": editorial carousel, newest first.
     listTodaysPicks: () =>
       simulate(() => clone(store.state.jobs.filter((job) => job.isTodaysPick).sort(byPostedDesc)), {
         empty: () => [],
       }),
+
+    // TAILOR 00c: the link is read like a JD (its own latency), and only kept on import.
+    readLink: (url) => simulate(() => clone(readJobLink(store, url)), LINK_LATENCY),
+    importFromLink: (url) => simulate(() => clone(importJobLink(store, url)), LINK_LATENCY),
 
     // Home "Top Job Matches": best match first, newest breaks ties.
     listPicks: () =>

@@ -1,4 +1,4 @@
-import type { Plan } from '@/data/models';
+import type { Plan } from '../../models';
 
 /**
  * NextKin V2 spec §13.2 — the three purchasable SKUs behind the plan screen (plan phase 9F).

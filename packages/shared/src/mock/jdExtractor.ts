@@ -1,5 +1,6 @@
-import type { Job } from '@/data/models';
-import type { JdDraft, JdInput } from '@/data/models/jd';
+import type { Job } from '../models';
+import { UNTITLED_JD, type JdDraft, type JdDraftPatch, type JdInput } from '../models/jd';
+import { jdLists, typedRequirements } from '../scoring/adapters';
 
 /**
  * NextKin V2 spec §7.5 — the mock's JD extractor: pasted text, an uploaded file or a job listing
@@ -18,7 +19,7 @@ export type JdExtractContext = {
 
 /** A pasted first line can be a whole sentence; the title field is a title. */
 const MAX_TITLE = 80;
-const UNTITLED = 'Untitled job description';
+const UNTITLED = UNTITLED_JD;
 
 /** Dictionary entries that name a tool rather than a practice, so the draft can list both. */
 const TOOL_NAMES: readonly string[] = [
@@ -208,8 +209,9 @@ function fromJob(
 /**
  * There is no PDF or DOCX parser in Expo Go and nothing to send an upload to, so the mock does
  * not parse the file: it keeps the file name as the title and extracts this fixed body instead.
- * That is a stand-in, not a parse, and it stays visible as `rawText` so the review screen shows
- * the user exactly what was read.
+ * Nothing can fetch a link either, so a link reads the same body. That is a stand-in, not a
+ * parse, and it stays visible as `rawText` so the review screen shows the user exactly what was
+ * read.
  */
 const SAMPLE_FILE_TEXT = [
   'Product Designer at Freshworks, Bengaluru (Hybrid)',
@@ -234,8 +236,7 @@ const fileTitle = (name: string): string => {
   return stem.length <= MAX_TITLE ? stem : stem.slice(0, MAX_TITLE).trimEnd();
 };
 
-/** Extracts one draft. Throws on an unknown job id; the repo turns that into a user-facing error. */
-export function extractJdDraft(input: JdInput, ctx: JdExtractContext): JdDraft {
+function read(input: JdInput, ctx: JdExtractContext): JdDraft {
   const base = { id: ctx.id, source: input.source, createdAt: ctx.now };
 
   if (input.source === 'job') {
@@ -246,5 +247,37 @@ export function extractJdDraft(input: JdInput, ctx: JdExtractContext): JdDraft {
 
   const text = input.source === 'paste' ? input.text : SAMPLE_FILE_TEXT;
   const draft: JdDraft = { ...base, ...fromText(text, ctx.dictionary), rawText: text };
-  return input.source === 'file' ? { ...draft, title: fileTitle(input.file.name) } : draft;
+  if (input.source === 'file') return { ...draft, title: fileTitle(input.file.name) };
+  if (input.source === 'link') return { ...draft, sourceUrl: input.url };
+  return draft;
 }
+
+/**
+ * The user's own details beat what was read, but only the ones they filled in: a blank box keeps
+ * the extraction's value rather than wiping it. Kept keys only, for the same JSON round-trip
+ * reason `fromText` gives.
+ */
+function withDetails(draft: JdDraft, details: JdDraftPatch | undefined): JdDraft {
+  if (!details) return draft;
+  const kept: JdDraftPatch = {};
+  for (const [key, value] of Object.entries(details) as [keyof JdDraftPatch, unknown][]) {
+    if (value === undefined) continue;
+    if (typeof value === 'string') {
+      if (value.trim().length > 0) Object.assign(kept, { [key]: value.trim() });
+    } else {
+      Object.assign(kept, { [key]: value });
+    }
+  }
+  return { ...draft, ...kept };
+}
+
+/** Extracts one draft. Throws on an unknown job id; the repo turns that into a user-facing error. */
+export function extractJdDraft(input: JdInput, ctx: JdExtractContext): JdDraft {
+  return withRequirements(withDetails(read(input, ctx), input.details));
+}
+
+/**
+ * The draft's lists read as typed requirements, with spans into its text (C-10). Recomputed
+ * whenever the lists change, so it can never disagree with what the user confirmed.
+ */
+export const withRequirements = (draft: JdDraft): JdDraft => ({ ...draft, requirements: typedRequirements(jdLists(draft)) });

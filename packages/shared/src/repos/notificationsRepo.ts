@@ -1,5 +1,5 @@
-import { simulate } from '@/data/mock';
-import type { Notification } from '@/data/models';
+import { notificationSettingsFixture, simulate } from '../mock';
+import type { Notification } from '../models';
 
 import { clone, findOrThrow, type MockStore } from './state';
 import type { NotificationsRepo } from './types';
@@ -45,6 +45,20 @@ export function createMockNotificationsRepo(store: MockStore): NotificationsRepo
       simulate(() => {
         store.state.notificationPrefs = clone(prefs);
         return clone(prefs);
+      }),
+
+    getSettings: () => simulate(() => clone(store.state.notificationSettings)),
+
+    setSettings: (settings) =>
+      simulate(() => {
+        store.state.notificationSettings = clone(settings);
+        return clone(settings);
+      }),
+
+    resetSettings: () =>
+      simulate(() => {
+        store.state.notificationSettings = clone(notificationSettingsFixture);
+        return clone(notificationSettingsFixture);
       }),
   };
 }

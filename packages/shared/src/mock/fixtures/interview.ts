@@ -1,4 +1,4 @@
-import type { InterviewSet } from '@/data/models/interview';
+import type { InterviewSet } from '../../models/interview';
 
 import { contentsFixture } from './contents';
 import { jdDraftsFixture } from './jd';

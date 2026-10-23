@@ -1,9 +1,15 @@
-import { getMockMode, newId, simulate } from '@/data/mock';
-import type { Generation, GenerationStatus, JdDraft, Job, Resume } from '@/data/models';
-import { isGenerationTerminal } from '@/data/models';
+import { getMockMode, newId, simulate } from '../mock';
+import type { Generation, GenerationStatus, JdDraft, Job, Resume } from '../models';
+import { isGenerationTerminal } from '../models';
 
 import { completeGeneration, GENERATION_ACTIVITY_KIND } from './generationCompletion';
-import { appendStartActivity, bumpGenerationUsage, createGenerationShell } from './generationStart';
+import {
+  addBuildSkills,
+  appendStartActivity,
+  bumpGenerationUsage,
+  createGenerationShell,
+  refundGenerationUsage,
+} from './generationStart';
 import { clone, findOrThrow, type MockStore } from './state';
 import type { GenerationsRepo, Unsubscribe } from './types';
 
@@ -34,7 +40,10 @@ export function statusForProgress(progress: number): GenerationStatus {
 const byStartedDesc = (a: Generation, b: Generation): number =>
   b.startedAt.localeCompare(a.startedAt);
 
-type Ticker = { timer: ReturnType<typeof setInterval>; listeners: Set<(g: Generation) => void> };
+type Ticker = {
+  timer: ReturnType<typeof setInterval>;
+  listeners: Set<(g: Generation) => void>;
+};
 
 /**
  * History records a run at both ends. A failure is the end nothing used to write, so a run that
@@ -92,13 +101,23 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
     const now = new Date().toISOString();
     const next: Generation =
       getMockMode() === 'error'
-        ? { ...current, status: 'failed', updatedAt: now, error: 'Simulated failure' }
+        ? {
+            ...current,
+            status: 'failed',
+            updatedAt: now,
+            error: 'Simulated failure',
+          }
         : (() => {
             const progress = Math.min(
               1,
               Math.round((current.progress + GENERATION_PROGRESS_STEP) * 100) / 100,
             );
-            return { ...current, progress, status: statusForProgress(progress), updatedAt: now };
+            return {
+              ...current,
+              progress,
+              status: statusForProgress(progress),
+              updatedAt: now,
+            };
           })();
 
     store.state.generations = store.state.generations.map((generation) =>
@@ -107,7 +126,9 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
     if (next.status === 'ready') completeGeneration(store, next);
     if (next.status === 'failed') appendFailureActivity(store, next, now);
     if (isGenerationTerminal(next.status)) stopTicker(id);
-    ticker.listeners.forEach((listener) => listener(clone(next)));
+    // Completion may write onto the run (an ATS check's result), so watchers get the stored copy.
+    const stored = store.state.generations.find((generation) => generation.id === id) ?? next;
+    ticker.listeners.forEach((listener) => listener(clone(stored)));
   };
 
   const findDraft = (id: string | undefined): JdDraft | undefined =>
@@ -129,7 +150,9 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
     get: (id) => simulate(() => clone(findOrThrow(store.state.generations, id, 'Generation'))),
 
     list: () =>
-      simulate(() => clone([...store.state.generations].sort(byStartedDesc)), { empty: () => [] }),
+      simulate(() => clone([...store.state.generations].sort(byStartedDesc)), {
+        empty: () => [],
+      }),
 
     start: (input) =>
       simulate(() => {
@@ -162,7 +185,13 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
           ...(input.tone ? { tone: input.tone } : {}),
           // A standalone interview set has no resume and no JD; the role title travels here.
           ...(input.title?.trim() ? { title: input.title.trim() } : {}),
+          ...(input.tailor ? { tailor: clone(input.tailor) } : {}),
+          ...(input.sourceResumeId ? { sourceResumeId: input.sourceResumeId } : {}),
+          ...(input.origin ? { origin: input.origin } : {}),
+          ...(input.zero ? { zero: clone(input.zero) } : {}),
+          ...(input.build ? { build: clone(input.build) } : {}),
         };
+        if (input.build?.added.length) addBuildSkills(store, input.build.added);
 
         // Newest first: `getActive` and History both read this list in declaration order.
         store.state.generations = [generation, ...store.state.generations];
@@ -175,7 +204,12 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
       simulate(() => {
         const current = findOrThrow(store.state.generations, id, 'Generation');
         const now = new Date().toISOString();
-        const next: Generation = { ...current, status: 'queued', progress: 0, updatedAt: now };
+        const next: Generation = {
+          ...current,
+          status: 'queued',
+          progress: 0,
+          updatedAt: now,
+        };
         // Deleted rather than set to undefined: a JSON-safe store has no undefined values, and
         // the failure banner reads "is there an `error` key", not "is it truthy".
         delete next.error;
@@ -191,6 +225,33 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
         }
         // No ticker is started here: one exists only while something is subscribed, so the
         // progress screen's next `subscribe()` restarts the run.
+        return clone(next);
+      }),
+
+    cancel: (id) =>
+      simulate(() => {
+        const current = findOrThrow(store.state.generations, id, 'Generation');
+        // A finished run has nothing left to stop; it is returned as it stands.
+        if (isGenerationTerminal(current.status)) return clone(current);
+        stopTicker(id);
+        const next: Generation = {
+          ...current,
+          status: 'failed',
+          error: 'Cancelled',
+          updatedAt: new Date().toISOString(),
+        };
+        store.state.generations = store.state.generations.map((generation) =>
+          generation.id === id ? next : generation,
+        );
+        refundGenerationUsage(store, current.kind);
+        // A check or a question set reads a document that already exists; every other kind
+        // opened a shell for itself, which would sit in the library as "Generating…" forever.
+        const ownsShell = current.kind !== 'ats_check' && current.kind !== 'interview';
+        if (ownsShell && current.resumeId) {
+          store.state.resumes = store.state.resumes.filter(
+            (resume) => resume.id !== current.resumeId,
+          );
+        }
         return clone(next);
       }),
 

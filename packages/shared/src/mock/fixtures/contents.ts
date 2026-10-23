@@ -1,4 +1,4 @@
-import type { DocumentContent, ResumeContent } from '@/data/models/resumeContent';
+import type { DocumentContent, ResumeContent } from '../../models/resumeContent';
 
 import { buildCoverLetterContent, buildResumeContent } from '../documentBuilder';
 import { BASE_SKILLS } from '../documentCopy';
@@ -9,9 +9,9 @@ import { BASE_SKILLS } from '../documentCopy';
  * Keyed by resume id; each resume's `versionId` is its `currentVersionId`, so the editor and the
  * version list agree about which draft is on screen. (A cover letter is the exception — see
  * `res_cover_stripe`.) The seeded summaries name the role and company the document was tailored
- * for, and carry that document's matched ATS keywords (`atsScoresFixture`) so the score panel's
- * "appears twice" lines are true of the body; everything below the summary is George's real
- * history (§7.9), which is why the targeted documents differ only in their opening lines.
+ * for; everything below the summary is George's real history (§7.9), which is why the targeted
+ * documents differ only in their opening lines. Their scores are computed from these bodies by the
+ * engines when the store seeds (C-10).
  *
  * `res_6` is deliberately absent: it is mid-generation, and the generations repo writes its
  * content when the run completes (plan Phase 9B). Reading a document that is still generating

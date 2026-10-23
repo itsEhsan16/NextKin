@@ -1,4 +1,4 @@
-import type { LegalDoc, LegalDocKey } from '@/data/models/support';
+import type { LegalDoc, LegalDocKey } from '../../models/support';
 
 import { daysAgo } from './time';
 

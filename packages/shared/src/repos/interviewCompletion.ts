@@ -1,5 +1,5 @@
-import { buildInterviewSet, newId } from '@/data/mock';
-import type { ActivityEntry, Generation, InterviewSet } from '@/data/models';
+import { buildInterviewSet, newId } from '../mock';
+import type { ActivityEntry, Generation, InterviewSet } from '../models';
 
 import { jdDraftFor } from './generationOutput';
 import { type MockStore } from './state';
@@ -16,18 +16,16 @@ import { type MockStore } from './state';
  */
 
 /**
- * Skills the score could not back. §7.15: "questions are never generated about skills the
- * Timeline Validation Engine flagged or removed" — the mock has no timeline engine, so the
- * unsupported keyword gaps on the score panel stand in for what the document was not allowed
- * to claim.
+ * Skills the document may not claim. §7.15: "questions are never generated about skills the
+ * Timeline Validation Engine flagged or removed" — so the timeline engine's excluded claims go,
+ * and so do the JD skills the profile does not back (the score's gaps), from the same engine run.
  */
 function excludedSkillsFor(store: MockStore, resumeId: string | undefined): string[] {
-  const score = resumeId ? store.state.atsScores[resumeId] : undefined;
-  if (!score) return [];
-  return score.sections
-    .flatMap((section) => section.items)
-    .filter((item) => item.supported === false)
-    .map((item) => /"([^"]+)"/.exec(item.label)?.[1] ?? item.label);
+  const report = resumeId ? store.state.atsScores[resumeId]?.report : undefined;
+  if (!report) return [];
+  const gaps = report.requirements.filter((r) => r.status === 'gap').map((r) => r.text);
+  const flagged = report.timeline.flags.filter((f) => f.verdict !== 'unverified').map((f) => f.skill);
+  return [...new Set([...gaps, ...flagged])];
 }
 
 export function completeInterviewSet(store: MockStore, generation: Generation): InterviewSet {

@@ -1,4 +1,4 @@
-import type { FaqItem } from '@/data/models/support';
+import type { FaqItem } from '../../models/support';
 
 /**
  * The help content the FAQ screen searches and filters. Its entry point is the Support rows on

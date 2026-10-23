@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { repos } from '@/data/repos';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 

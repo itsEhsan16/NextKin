@@ -1,10 +1,21 @@
 import type { GenerationStatus } from './generation';
 import type { ResumeSectionKey } from './resumeContent';
+import type { PlausibilityNote } from '../scoring/plausibility';
 
 /** NextKin V2 spec §10 — Resume aggregate (candidate app). */
 
 /** The Resumes library holds both document kinds (Figma RESUMES 01 type filter). */
 export type ResumeDocType = 'resume' | 'cover_letter';
+
+/**
+ * What kind of document the web library says this is (Figma 286:1675's type tag): written for a
+ * role or a job, a general-purpose one, or started from a template. Mobile's documents leave it
+ * unset; they say "Base" and name their target instead.
+ */
+export type ResumeVariant = 'tailored' | 'default' | 'template';
+
+/** The tint a document's tile wears in the web library (Figma 304:3127, 3151, 3175, 3199, 3223). */
+export type ResumeAccent = 'indigo' | 'pink' | 'blue' | 'green' | 'amber';
 
 export type Resume = {
   id: string;
@@ -39,6 +50,18 @@ export type Resume = {
    * duplicate() copies it deliberately — a copy of an unreviewed draft is still unreviewed.
    */
   needsReview?: boolean;
+  /** The web library's type tag. */
+  variant?: ResumeVariant;
+  /** The line under the title in the web library: "Tailored for Product Design roles". */
+  description?: string;
+  /** The web library's tile tint; a document without one takes the brand tint. */
+  accent?: ResumeAccent;
+  /** Still being written by hand. V2 §7.11 lists "draft" beside the generation states. */
+  draft?: boolean;
+  /** Set aside but kept, history and all: the web library's Archived tag and pill. */
+  archived?: boolean;
+  /** The current version was confirmed accurate before export (V2 §15 risk 2). */
+  accuracyConfirmed?: boolean;
 };
 
 export type ResumeValidation = {
@@ -55,6 +78,10 @@ export type ResumeVersion = {
   /** ISO-8601 */
   createdAt: string;
   changeNote?: string;
+  /** Who made it (V2 §7.11 records the actor): a hand edit, a generation, a restore. */
+  actor?: 'user' | 'generation' | 'restore' | 'zero_review' | 'upload';
+  /** Older than the plan shows (Free sees the last 3): kept, not deleted, and restorable on Pro. */
+  locked?: boolean;
 };
 
 export type AtsBand = 'strong' | 'good' | 'fair' | 'weak';
@@ -153,6 +180,10 @@ export type AtsCheckItem = {
    * forbids presenting missing keywords as text to paste in.
    */
   supported?: boolean;
+  /** The JD skill this line is about, as the JD words it (C-10): no more reading it out of `label`. */
+  keyword?: string;
+  /** The typed fix in `AtsScore.report.fixes` this line applies, when it has one. */
+  fixId?: string;
 };
 
 /** "Content", "Format", "Keywords", "Best practices" (Figma RESUMES 04). */
@@ -166,9 +197,121 @@ export type AtsScore = {
   /** 0–100 */
   total: number;
   band: AtsBand;
-  /** One-line verdict under the band pill ("Parsers will read this cleanly. …"). */
+  /** One-line verdict under the band pill, led by the job match (G17), never picked from the total. */
   summary: string;
   sections: AtsSection[];
+  /**
+   * What the number rests on (C-10): written by `packages/engines` and mapped in
+   * `scoring/report.ts`, so the mock and the server say the same thing for the same input.
+   */
+  report?: AtsReport;
+};
+
+/** The rubric's five parts (V2 §7.8). */
+export type AtsComponentKey = 'keywords' | 'timeline' | 'sections' | 'formatting' | 'achievements';
+
+export type AtsComponent = {
+  key: AtsComponentKey;
+  label: string;
+  /** Its weight, in points of 100. */
+  weight: number;
+  /** The part's own score, 0–100; null when it is not measured (keywords without a JD, D-15). */
+  score: number | null;
+  /** The points it adds to the total, to one decimal. */
+  points: number | null;
+  /** What it rests on, in words: "5 of 6 bullets show a measured outcome". */
+  basis: string;
+};
+
+export type AtsRequirementStatus = 'met' | 'partial' | 'gap' | 'eligibility';
+
+/** One line of the requirement ledger (Q-04, D-14). */
+export type AtsRequirement = {
+  id: string;
+  /** As the JD words it. */
+  text: string;
+  importance: 'required' | 'preferred';
+  status: AtsRequirementStatus;
+  /** How the document backs it: in a dated role, only listed, or not at all. */
+  evidence: 'demonstrated' | 'listed' | 'unbacked' | null;
+  /** "5+ years" against what the dated roles show, in years to one decimal. */
+  years?: { asked: number; shown: number };
+  /** Set when the document words the skill differently from the JD. */
+  documentWording?: string;
+};
+
+export type AtsFixType =
+  | 'surface_backed_skill'
+  | 'gap'
+  | 'ask_for_number'
+  | 'complete_section'
+  | 'formatting'
+  | 'mirror_wording'
+  | 'resolve_timeline';
+
+/** A typed fix (C-10). A gap is never insertable and worth no points. */
+export type AtsFix = {
+  id: string;
+  type: AtsFixType;
+  label: string;
+  /** Points the change adds, simulated by re-scoring (one decimal); 0 for a gap. */
+  impact: number;
+  /** Whether the product may make the change itself. Only a skill the profile backs qualifies. */
+  insertable: boolean;
+  requirementId?: string;
+  roleId?: string;
+  skill?: string;
+  section?: AtsFixTarget;
+};
+
+/** A technology claim the timeline engine flagged (V2 §7.7). */
+export type AtsTimelineFlag = {
+  roleId: string;
+  skill: string;
+  verdict: 'invalid' | 'suspect' | 'unverified';
+  /** Why, in words. */
+  reason: string;
+  /** Era-appropriate alternatives to confirm, never auto-inserted. */
+  substitutions: string[];
+};
+
+export type AtsReport = {
+  /** 0–100, or null without a JD (D-15). */
+  total: number | null;
+  components: AtsComponent[];
+  /** JD match %, reported apart from the total, with "x of y required". */
+  jdMatch: {
+    percent: number;
+    requiredMet: number;
+    requiredPartial: number;
+    requiredTotal: number;
+    preferredMet: number;
+    preferredTotal: number;
+    completeness: 'full' | 'snippet';
+  } | null;
+  requirements: AtsRequirement[];
+  fixes: AtsFix[];
+  timeline: {
+    checked: number;
+    valid: number;
+    suspect: number;
+    invalid: number;
+    unverified: number;
+    flags: AtsTimelineFlag[];
+  };
+  /** Skills the document shows that the profile does not back. */
+  unbacked: string[];
+  /** Claims that cannot be true: years past a technology's age, dates that don't add up (§129). */
+  plausibility?: PlausibilityNote[];
+  notMeasured: string[];
+  provenance: {
+    engine: string;
+    rubric: string;
+    taxonomy: string;
+    kb: string;
+    asOf: string;
+    reason: 'content_change' | 'method_change';
+  };
 };
 
 /** Band thresholds shared by fixtures and UI meters. */

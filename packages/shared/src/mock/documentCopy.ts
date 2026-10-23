@@ -3,7 +3,7 @@ import type {
   ContentProject,
   ContentRole,
   CoverLetterTone,
-} from '@/data/models/resumeContent';
+} from '../models/resumeContent';
 
 /**
  * NextKin V2 spec §7.9 and §7.10 — the copy the mock's documents are written from.
@@ -23,11 +23,17 @@ export const INSTITUTION_PLACEHOLDER = '[Institution Name]';
 
 /**
  * `profileFixture.experiences` written out as resume copy: three bullets a role, each opening on
- * an action verb and most carrying a number — the §7.8 `content_gap` check counts digits.
+ * an action verb and most stating a measured outcome. Each role carries the profile role it came
+ * from, its structured dates and the profile's skill tags for it (C-10): what the engines check its
+ * claims against.
  */
 export const BASE_ROLES: readonly ContentRole[] = [
   {
     id: 'role_flipkart',
+    roleId: 'exp_1',
+    start: '2022-03',
+    end: null,
+    skills: ['Design systems', 'Figma', 'Mobile UX'],
     company: 'Flipkart',
     title: 'Senior UX Designer',
     period: 'Mar 2022 — Present',
@@ -39,6 +45,10 @@ export const BASE_ROLES: readonly ContentRole[] = [
   },
   {
     id: 'role_swiggy',
+    roleId: 'exp_2',
+    start: '2019-06',
+    end: '2022-02',
+    skills: ['User research', 'Prototyping', 'Growth'],
     company: 'Swiggy',
     title: 'Product Designer',
     period: 'Jun 2019 — Feb 2022',
@@ -50,6 +60,10 @@ export const BASE_ROLES: readonly ContentRole[] = [
   },
   {
     id: 'role_phonepe',
+    roleId: 'exp_3',
+    start: '2017-08',
+    end: '2019-05',
+    skills: ['Payments', 'Mobile UX', 'Usability testing'],
     company: 'PhonePe',
     title: 'UX Designer',
     period: 'Aug 2017 — May 2019',
@@ -61,6 +75,10 @@ export const BASE_ROLES: readonly ContentRole[] = [
   },
   {
     id: 'role_obvious',
+    roleId: 'exp_4',
+    start: '2016-01',
+    end: '2017-07',
+    skills: ['Visual design', 'Branding', 'Web'],
     company: 'Obvious',
     title: 'UI Designer',
     period: 'Jan 2016 — Jul 2017',

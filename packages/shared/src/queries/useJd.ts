@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { JdDraft, JdDraftPatch, JdInput } from '@/data/models';
-import { repos } from '@/data/repos';
+import type { JdDraft, JdDraftPatch, JdInput } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 
@@ -21,12 +21,21 @@ export function useExtractJd() {
   });
 }
 
-/** Re-opens a saved extraction: the review screen and a generation both read it (V2 §7.5). */
+/** How often a draft still being read is fetched again (toreview §131). */
+export const JD_READING_POLL_MS = 2000;
+
+/**
+ * Re-opens a saved extraction: the review screen and a generation both read it (V2 §7.5). While
+ * the reading is still running it is fetched again every couple of seconds, so a page opened mid
+ * read moves on by itself when it lands (toreview §131).
+ */
 export function useJdDraft(id: string) {
   return useQuery({
     queryKey: qk.jd.detail(id),
     queryFn: () => repos.jd.get(id),
     enabled: id.length > 0,
+    refetchInterval: (query) =>
+      query.state.data?.status === 'extracting' ? JD_READING_POLL_MS : false,
   });
 }
 
@@ -57,4 +66,31 @@ export function useUpdateJdDraft(id: string) {
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: qk.jd.all }),
   });
+}
+
+/**
+ * A resume measured against a job on NextKin (TAILOR 02, toreview §56): the ATS score for that
+ * job, its keywords and what to improve. Disabled until both ids are known, so the screen can
+ * mount before the resume is picked.
+ */
+export function useTailorComparison(resumeId: string, jobId: string) {
+  return useQuery({
+    queryKey: qk.jd.compare(resumeId, jobId),
+    queryFn: () => repos.jd.compare(resumeId, jobId),
+    enabled: resumeId.length > 0 && jobId.length > 0,
+  });
+}
+
+/** A job on NextKin as read for a build (BUILD 04b): the extraction the run will read too. */
+export function useJobJd(jobId: string) {
+  return useQuery({
+    queryKey: qk.jd.forJob(jobId),
+    queryFn: () => repos.jd.forJob(jobId),
+    enabled: jobId.length > 0,
+  });
+}
+
+/** The job page refused to be read — the site blocks fetching (BUILD 05b). Paste instead. */
+export function isUnreadableLinkError(error: unknown): boolean {
+  return error instanceof Error && (error as { code?: unknown }).code === 'UNREADABLE_LINK';
 }

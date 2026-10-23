@@ -1,4 +1,4 @@
-import type { Profile } from '@/data/models';
+import type { Profile } from '../../models';
 
 import { USER_ID } from './user';
 
@@ -103,7 +103,8 @@ export const profileFixture: Profile = {
     },
   ],
   // Stats card (Figma 1:2208): 12 applications · 2 interviews · 87 avg ATS.
-  stats: { applications: 12, interviews: 2, avgAtsScore: 87 },
+  // No average score here: the store computes it from the seeded documents' engine scores (C-11).
+  stats: { applications: 12, interviews: 2 },
   completeness: 0.72,
   nextSteps: [
     { id: 'step_skills', label: 'Add skills', icon: 'plus' },

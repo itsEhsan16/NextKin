@@ -1,5 +1,5 @@
-import { simulate } from '@/data/mock';
-import type { InterviewMark, InterviewSet } from '@/data/models';
+import { simulate } from '../mock';
+import type { InterviewMark, InterviewSet } from '../models';
 
 import { clone, findOrThrow, type MockStore } from './state';
 import type { InterviewRepo } from './types';
@@ -58,7 +58,10 @@ export function createMockInterviewRepo(store: MockStore): InterviewRepo {
         const set = findOrThrow(store.state.interviewSets, setId, 'InterviewSet');
         return write({
           ...set,
-          questions: set.questions.map((question) => ({ ...question, mark: 'unmarked' as const })),
+          questions: set.questions.map((question) => ({
+            ...question,
+            mark: 'unmarked' as const,
+          })),
         });
       }),
 

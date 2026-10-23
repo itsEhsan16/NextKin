@@ -1,11 +1,11 @@
 /**
  * NextKin V2 spec §7.16 — the AI career assistant.
  *
- * Release 1 is one conversation per user, not a thread list: §7.16 asks for "persistent
- * conversation history per user", and that is what it gets. The assistant is read-and-advise
+ * Mobile keeps one conversation per user: §7.16 asks for "persistent conversation history per
+ * user", and that is what it gets. The web boards (767:2, 767:275, 772:2, 772:165) add a History
+ * of earlier chats beside it; those are past conversations the user can reopen, and the one
+ * being written to is still the one `getConversation` returns. The assistant is read-and-advise
  * only — nothing in this model, or in `AssistantRepo`, can change user data.
- *
- * No artboard covers it (plan §8, phase 9I); the citations are spec sections.
  */
 
 export type AssistantRole = 'user' | 'assistant';
@@ -28,14 +28,49 @@ export type AssistantMessage = {
   refusal?: AssistantRefusalReason;
   /** The document this turn was answered against (§7.16's context awareness). */
   contextResumeId?: string;
+  /** What the user attached to this turn (web 772:165). Read, never changed. */
+  attachments?: AssistantAttachment[];
+};
+
+/**
+ * Something the user added to a message from the web composer's attach menu (772:2): one of their
+ * resumes, a cover letter from Documents, a saved job, or a file from their computer. The
+ * assistant reads it; nothing it is attached to can be changed through it.
+ */
+export type AssistantAttachmentKind = 'resume' | 'cover_letter' | 'job' | 'file';
+
+export type AssistantAttachment = {
+  kind: AssistantAttachmentKind;
+  /** The resume, document or job id; the file name for an uploaded file. */
+  id: string;
+  title: string;
+  /** The chip's second line: "Resume on NextKin · 1 page", "Saved job". */
+  detail: string;
 };
 
 export type AssistantConversation = {
   id: string;
+  /**
+   * What the history list calls it (web 767:2). Unset on a new chat until its first message,
+   * which then names it.
+   */
+  title?: string;
   /** ISO-8601 */
   createdAt: string;
   updatedAt: string;
   messages: AssistantMessage[];
+};
+
+/** One row of the web assistant's History (767:2): a chat, by its title and its first answer. */
+export type AssistantThreadSummary = {
+  id: string;
+  title: string;
+  /** The opening of the first answer, or empty while there is none. */
+  preview: string;
+  /** ISO-8601 */
+  updatedAt: string;
+  /** The chat the composer writes to. */
+  current: boolean;
 };
 
 /** §7.16's first-use prompts, in the product's voice. */

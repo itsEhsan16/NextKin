@@ -5,7 +5,7 @@ import type {
   CoverLetterContent,
   CoverLetterTone,
   ResumeContent,
-} from '@/data/models/resumeContent';
+} from '../models/resumeContent';
 
 import {
   BASE_EDUCATION,
@@ -75,7 +75,7 @@ const asAssumed = (content: ResumeContent): ResumeContent => ({
 // Every document shares these constants, so each build takes its own copy: a builder that handed
 // out the constant itself would let an edit to one document change the next one built.
 const cloneRoles = (): ContentRole[] =>
-  BASE_ROLES.map((role) => ({ ...role, bullets: [...role.bullets] }));
+  BASE_ROLES.map((role) => ({ ...role, bullets: [...role.bullets], ...(role.skills ? { skills: [...role.skills] } : {}) }));
 
 const cloneProjects = (): ContentProject[] =>
   BASE_PROJECTS.map((project) => ({ ...project, bullets: [...project.bullets] }));

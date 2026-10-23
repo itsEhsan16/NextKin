@@ -1,5 +1,5 @@
-import { newId, simulate } from '@/data/mock';
-import type { FaqItem, LegalDoc, LegalDocKey, SupportTicket, TicketInput } from '@/data/models';
+import { newId, simulate } from '../mock';
+import type { FaqItem, LegalDoc, LegalDocKey, SupportTicket, TicketInput } from '../models';
 
 import { clone, type MockStore, NotFoundError } from './state';
 import type { SupportRepo } from './types';

@@ -1,9 +1,9 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import type { Generation, GenerationInput } from '@/data/models';
-import { isGenerationTerminal } from '@/data/models';
-import { repos } from '@/data/repos';
+import type { Generation, GenerationInput } from '../models';
+import { isGenerationTerminal } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 
@@ -55,9 +55,13 @@ export function useGeneration(id: string) {
       if (isGenerationTerminal(generation.status)) {
         // The document is now filled and scored, the quota is spent, and History has a row.
         void queryClient.invalidateQueries({ queryKey: qk.resumes.all });
-        void queryClient.invalidateQueries({ queryKey: qk.user.subscription() });
+        void queryClient.invalidateQueries({
+          queryKey: qk.user.subscription(),
+        });
         void queryClient.invalidateQueries({ queryKey: qk.user.activity() });
-        void queryClient.invalidateQueries({ queryKey: qk.user.dashboardStats() });
+        void queryClient.invalidateQueries({
+          queryKey: qk.user.dashboardStats(),
+        });
         // The whole aggregate, not just `active`: the tick that landed rewrote the row in the
         // store, so anything holding the list still shows a run as generating.
         void queryClient.invalidateQueries({ queryKey: qk.generations.all });
@@ -100,5 +104,22 @@ export function useRetryGeneration() {
       sweepStartEffects(queryClient);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: qk.generations.all }),
+  });
+}
+
+/**
+ * Stops a run before it finishes (ATS 02's Cancel). The allowance comes back and any document the
+ * run opened goes, so the plan, the library and the run lists are refreshed with the run itself.
+ */
+export function useCancelGeneration() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => repos.generations.cancel(id),
+    onSuccess: (generation) => {
+      queryClient.setQueryData(qk.generations.detail(generation.id), generation);
+      void queryClient.invalidateQueries({ queryKey: qk.generations.all });
+      void queryClient.invalidateQueries({ queryKey: qk.user.subscription() });
+      void queryClient.invalidateQueries({ queryKey: qk.resumes.all });
+    },
   });
 }

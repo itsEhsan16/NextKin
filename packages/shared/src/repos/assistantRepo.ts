@@ -3,12 +3,14 @@ import {
   buildAssistantContext,
   classify,
   getMockMode,
+  greetingAnswer,
+  greetingKind,
   newId,
   REFUSAL_LINE,
   simulate,
   type AssistantContext,
-} from '@/data/mock';
-import type { AssistantConversation, AssistantMessage } from '@/data/models';
+} from '../mock';
+import type { AssistantConversation, AssistantMessage, AssistantThreadSummary } from '../models';
 
 import { clone, type MockStore } from './state';
 import type { AssistantRepo, Unsubscribe } from './types';
@@ -43,6 +45,23 @@ type Streamer = {
 
 /** Split so that re-joining is exact: the whitespace is kept as its own tokens. */
 const tokenise = (text: string): string[] => text.split(/(\s+)/).filter((part) => part.length > 0);
+
+/** A new chat is named by its first question, cut at a word near the History row's width. */
+const TITLE_MAX = 40;
+export const titleFor = (text: string): string => {
+  const line = text.trim().replace(/\s+/g, ' ');
+  if (line.length <= TITLE_MAX) return line;
+  const cut = line.slice(0, TITLE_MAX);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(' '), 20)).replace(/[\s,.;:]+$/, '')}…`;
+};
+
+const summaryOf = (chat: AssistantConversation, current: boolean): AssistantThreadSummary => ({
+  id: chat.id,
+  title: chat.title ?? titleFor(chat.messages.find((m) => m.role === 'user')?.text ?? 'New chat'),
+  preview: chat.messages.find((m) => m.role === 'assistant' && m.text.length > 0)?.text ?? '',
+  updatedAt: chat.updatedAt,
+  current,
+});
 
 export function createMockAssistantRepo(store: MockStore): AssistantRepo {
   /** Token buffers by message id. Filled by `send`, drained by the ticker, never persisted. */
@@ -86,7 +105,11 @@ export function createMockAssistantRepo(store: MockStore): AssistantRepo {
     const text = streamer.tokens.slice(0, nextCursor).join('');
     const done = nextCursor >= streamer.tokens.length;
     streamer.cursor = nextCursor;
-    const next: AssistantMessage = { ...current, text, status: done ? 'complete' : 'streaming' };
+    const next: AssistantMessage = {
+      ...current,
+      text,
+      status: done ? 'complete' : 'streaming',
+    };
     writeMessage(next);
     if (done) {
       pending.delete(id);
@@ -120,10 +143,14 @@ export function createMockAssistantRepo(store: MockStore): AssistantRepo {
           createdAt: now,
           status: 'complete',
           ...(input.resumeId ? { contextResumeId: input.resumeId } : {}),
+          ...(input.attachments?.length ? { attachments: clone(input.attachments) } : {}),
         };
 
+        // A greeting is answered with a short hello, and, as on the server, does not count.
+        const greeting = greetingKind(text);
         const verdict = classify(text);
-        const reply: AssistantMessage = verdict.allowed
+        const answered = greeting !== null || verdict.allowed;
+        const reply: AssistantMessage = answered
           ? {
               id: newId('msg'),
               role: 'assistant',
@@ -141,22 +168,28 @@ export function createMockAssistantRepo(store: MockStore): AssistantRepo {
               refusal: 'off_topic',
             };
 
-        if (verdict.allowed) {
+        if (greeting) {
+          pending.set(reply.id, tokenise(greetingAnswer(greeting, contextFor(input.resumeId))));
+        } else if (verdict.allowed) {
           pending.set(reply.id, tokenise(answerFor(verdict.topic, contextFor(input.resumeId))));
         }
 
         const current = conversation();
         store.state.assistant = {
           ...current,
+          // A new chat takes its name from its first question (the History row, 767:2).
+          title: current.title ?? titleFor(text),
           updatedAt: now,
           messages: [...current.messages, user, reply],
         };
 
         // §13.3's meter. A refusal counts: the turn happened, and a meter that disagreed with the
         // transcript would be worse. Nothing throws on a spent cap — §13.5 gates in the UI first.
-        const usage = { ...store.state.subscription.usage };
-        usage.assistantMessagesUsed = (usage.assistantMessagesUsed ?? 0) + 1;
-        store.state.subscription = { ...store.state.subscription, usage };
+        if (!greeting) {
+          const usage = { ...store.state.subscription.usage };
+          usage.assistantMessagesUsed = (usage.assistantMessagesUsed ?? 0) + 1;
+          store.state.subscription = { ...store.state.subscription, usage };
+        }
 
         return { user: clone(user), reply: clone(reply) };
       }),
@@ -191,8 +224,46 @@ export function createMockAssistantRepo(store: MockStore): AssistantRepo {
         streamers.forEach((_streamer, id) => stop(id));
         pending.clear();
         const now = new Date().toISOString();
-        store.state.assistant = { ...conversation(), updatedAt: now, messages: [] };
+        // A cleared chat is a new one, and will be named by its next first question.
+        const { title: _title, ...rest } = conversation();
+        store.state.assistant = { ...rest, updatedAt: now, messages: [] };
+        return clone(store.state.assistant);
+      }),
+
+    listThreads: () =>
+      simulate(() => {
+        const current = conversation();
+        const rows = current.messages.length > 0 ? [summaryOf(current, true)] : [];
+        return clone([...rows, ...store.state.assistantHistory.map((c) => summaryOf(c, false))]);
+      }),
+
+    openThread: (id) =>
+      simulate(() => {
+        const current = conversation();
+        if (current.id === id) return clone(current);
+        const chosen = store.state.assistantHistory.find((chat) => chat.id === id);
+        if (!chosen) throw new Error(`Chat ${id} not found`);
+        streamers.forEach((_streamer, live) => stop(live));
+        const rest = store.state.assistantHistory.filter((chat) => chat.id !== id);
+        store.state.assistantHistory = byNewest(
+          current.messages.length > 0 ? [current, ...rest] : rest,
+        );
+        store.state.assistant = chosen;
+        return clone(chosen);
+      }),
+
+    startNew: () =>
+      simulate(() => {
+        const current = conversation();
+        if (current.messages.length === 0) return clone(current);
+        streamers.forEach((_streamer, live) => stop(live));
+        store.state.assistantHistory = byNewest([current, ...store.state.assistantHistory]);
+        const now = new Date().toISOString();
+        store.state.assistant = { id: newId('conv'), createdAt: now, updatedAt: now, messages: [] };
         return clone(store.state.assistant);
       }),
   };
 }
+
+const byNewest = (chats: AssistantConversation[]): AssistantConversation[] =>
+  [...chats].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));

@@ -8,8 +8,8 @@ import type {
   ProfileDraft,
   ProfileLink,
   ProfilePatch,
-} from '@/data/models';
-import { repos } from '@/data/repos';
+} from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 
@@ -106,22 +106,34 @@ function applyDraft(previous: Profile, draft: ProfileDraft): Profile {
 /** Adds or replaces a role on the timeline the whole product generates against (V2 §7.3). */
 export const useUpsertExperience = profileMutation(
   (entry: Experience) => repos.profile.upsertExperience(entry),
-  (previous, entry) => ({ ...previous, experiences: upsertBy(previous.experiences, entry) }),
+  (previous, entry) => ({
+    ...previous,
+    experiences: upsertBy(previous.experiences, entry),
+  }),
 );
 
 export const useRemoveExperience = profileMutation(
   (id: string) => repos.profile.removeExperience(id),
-  (previous, id) => ({ ...previous, experiences: removeById(previous.experiences, id) }),
+  (previous, id) => ({
+    ...previous,
+    experiences: removeById(previous.experiences, id),
+  }),
 );
 
 export const useUpsertEducation = profileMutation(
   (entry: Education) => repos.profile.upsertEducation(entry),
-  (previous, entry) => ({ ...previous, education: upsertBy(previous.education, entry) }),
+  (previous, entry) => ({
+    ...previous,
+    education: upsertBy(previous.education, entry),
+  }),
 );
 
 export const useRemoveEducation = profileMutation(
   (id: string) => repos.profile.removeEducation(id),
-  (previous, id) => ({ ...previous, education: removeById(previous.education, id) }),
+  (previous, id) => ({
+    ...previous,
+    education: removeById(previous.education, id),
+  }),
 );
 
 /** The whole skill set at once — the editor adds and removes chips against one list. */
@@ -140,12 +152,18 @@ export const useUpsertCertification = profileMutation(
 
 export const useRemoveCertification = profileMutation(
   (id: string) => repos.profile.removeCertification(id),
-  (previous, id) => ({ ...previous, certifications: removeById(previous.certifications, id) }),
+  (previous, id) => ({
+    ...previous,
+    certifications: removeById(previous.certifications, id),
+  }),
 );
 
 export const useUpsertLink = profileMutation(
   (entry: ProfileLink) => repos.profile.upsertLink(entry),
-  (previous, entry) => ({ ...previous, links: upsertBy(previous.links, entry) }),
+  (previous, entry) => ({
+    ...previous,
+    links: upsertBy(previous.links, entry),
+  }),
 );
 
 export const useRemoveLink = profileMutation(

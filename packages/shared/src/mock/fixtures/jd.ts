@@ -1,4 +1,6 @@
-import type { JdDraft } from '@/data/models/jd';
+import type { JdDraft } from '../../models/jd';
+
+import { withRequirements } from '../jdExtractor';
 
 import { hoursAgo } from './time';
 
@@ -72,8 +74,10 @@ export const SKILL_DICTIONARY: readonly string[] = [
  * Dated inside the listing's lifetime: `job_stripe` was posted a day ago and saved 12 hours ago,
  * so the extraction has to be more recent than both.
  */
+// Typed requirements are derived from the lists and the text, exactly as the extractor derives
+// them, so the saved draft and a fresh extraction agree (C-10).
 export const jdDraftsFixture: JdDraft[] = [
-  {
+  withRequirements({
     id: 'jd_stripe',
     source: 'job',
     title: 'Senior Product Designer',
@@ -109,5 +113,5 @@ export const jdDraftsFixture: JdDraft[] = [
     ].join('\n'),
     jobId: 'job_stripe',
     createdAt: hoursAgo(6),
-  },
+  }),
 ];

@@ -1,4 +1,4 @@
-import type { ActivityEntry } from '@/data/models';
+import type { ActivityEntry } from '../../models';
 
 import { GENERATING_RESUME_ID } from './resumes';
 import { daysAgo, earlierToday } from './time';

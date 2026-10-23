@@ -1,8 +1,10 @@
-import { newId, simulate } from '@/data/mock';
-import type { AtsScore, Resume } from '@/data/models';
+import { newId, simulate } from '../mock';
+import type { AtsScore, Resume } from '../models';
 
 import { createResumeContentRepo } from './resumeContentRepo';
+import { createResumeDocumentRepo } from './resumeDocumentRepo';
 import { createResumeExportRepo } from './resumeExportRepo';
+import { createZeroReviewRepo } from './zeroReviewRepo';
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ResumesRepo } from './types';
 
@@ -16,10 +18,14 @@ export function createMockResumesRepo(store: MockStore): ResumesRepo {
   // the editing machinery. The `Pick` on each slice keeps all three honest against the contract.
   return {
     ...createResumeContentRepo(store),
+    ...createResumeDocumentRepo(store),
     ...createResumeExportRepo(store),
+    ...createZeroReviewRepo(store),
 
     list: () =>
-      simulate(() => clone([...store.state.resumes].sort(byUpdatedDesc)), { empty: () => [] }),
+      simulate(() => clone([...store.state.resumes].sort(byUpdatedDesc)), {
+        empty: () => [],
+      }),
 
     get: (id) => simulate(() => clone(find(id))),
 
@@ -61,10 +67,18 @@ export function createMockResumesRepo(store: MockStore): ResumesRepo {
         store.state.resumes = [copy, ...store.state.resumes];
         store.state.resumeVersions = [
           ...store.state.resumeVersions,
-          { id: versionId, resumeId: copyId, version: 1, createdAt: now, changeNote: 'Duplicated' },
+          {
+            id: versionId,
+            resumeId: copyId,
+            version: 1,
+            createdAt: now,
+            changeNote: 'Duplicated',
+          },
         ];
         const score = store.state.atsScores[id];
         if (score) store.state.atsScores[copyId] = clone(score);
+        const jd = store.state.scoringJds[id];
+        if (jd) store.state.scoringJds[copyId] = clone(jd);
         return clone(copy);
       }),
 
@@ -101,6 +115,7 @@ export function createMockResumesRepo(store: MockStore): ResumesRepo {
           (version) => version.resumeId !== id,
         );
         delete store.state.atsScores[id];
+        delete store.state.scoringJds[id];
       }),
   };
 }

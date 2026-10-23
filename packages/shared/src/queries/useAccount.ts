@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { DataExportStatus, User } from '@/data/models';
-import { repos } from '@/data/repos';
+import type { DataExportStatus, User } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 
@@ -62,20 +62,36 @@ export const useUpdateAvatar = accountMutation(
 );
 
 /**
- * V2 §7.1 / §8.4. Nothing cached changes — only Cognito ever holds a password — so this is a
- * plain mutation whose rejection is the form's error state.
+ * V2 §7.1 / §8.4. Only Cognito ever holds a password, so its rejection is the form's error state.
+ * Success moves the password's age and signs every other device out, so the security cards
+ * refetch.
  */
 export function useChangePassword() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ current, next }: { current: string; next: string }) =>
       repos.user.changePassword(current, next),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.user.security() }),
   });
 }
 
-/** Revokes every other session (V2 §7.1). This device stays signed in, so no cache is touched. */
+/** Revokes every other session (V2 §7.1). This device stays signed in; only the device list moves. */
 export function useSignOutEverywhere() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => repos.user.signOutEverywhere(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.user.security() }),
+  });
+}
+
+/**
+ * When the password last changed, whether two-factor is on, and the signed-in devices (V2 §7.1;
+ * the web Settings board, Figma 254:522-590).
+ */
+export function useAccountSecurity() {
+  return useQuery({
+    queryKey: qk.user.security(),
+    queryFn: () => repos.user.getSecurity(),
   });
 }
 

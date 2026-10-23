@@ -1,4 +1,4 @@
-import type { SalaryRange } from '@/lib';
+import type { SalaryRange } from '../models';
 
 /** NextKin V2 spec §10 — Job aggregate (candidate app). */
 
@@ -11,18 +11,67 @@ export const REMOTE_TYPE_LABEL: Record<RemoteType, string> = {
   onsite: 'On-site',
 };
 
-export type JobSource = 'adzuna' | 'jsearch' | 'manual';
+/** Where a listing came from. `fixture` is the local synthetic catalogue (refused in production). */
+export type JobSource = 'adzuna' | 'jsearch' | 'manual' | 'fixture';
 
-export type MatchBand = 'strong' | 'good' | 'fair';
+/** `weak` joined with C-10: a match under 40% says little, and the card says so. */
+export type MatchBand = 'strong' | 'good' | 'fair' | 'weak';
 
 /** Pill copy on the job cards (Figma 1:338 / 1:352). */
 export const MATCH_BAND_LABEL: Record<MatchBand, string> = {
   strong: 'Strong match',
   good: 'Good match',
   fair: 'Fair match',
+  weak: 'Weak match',
 };
 
-export type MatchCriterionState = 'met' | 'missing' | 'optional';
+/**
+ * `partial` is D-14's half credit: a skill the profile lists but no dated role shows. Until a design
+ * draws it, both apps group it with `met` and say so in the row's detail.
+ */
+export type MatchCriterionState = 'met' | 'partial' | 'missing' | 'optional';
+
+/**
+ * What a match number rests on (P11-03, G16: every number shows its basis). `kind` is how much of
+ * the listing there was to read: the full description, a provider's snippet, or the title alone.
+ */
+export type MatchBasis = {
+  kind: 'full' | 'snippet' | 'title';
+  requiredMet: number;
+  requiredPartial: number;
+  requiredTotal: number;
+  preferredMet: number;
+  preferredTotal: number;
+  /** The versioned method that produced it, e.g. `jobmatch-1`. */
+  method: string;
+};
+
+/**
+ * The one-line caption beside a match number or band (toreview §105.18: spec-derived until an
+ * artboard draws it). "From a short listing · 3 of 5 required".
+ */
+export function matchBasisCaption(basis: MatchBasis): string {
+  const source =
+    basis.kind === 'full'
+      ? 'From the full listing'
+      : basis.kind === 'snippet'
+        ? 'From a short listing'
+        : 'From the job title only';
+  if (basis.requiredTotal === 0) return `${source} · no required skills listed`;
+  const met = basis.requiredMet + basis.requiredPartial;
+  return `${source} · ${met} of ${basis.requiredTotal} required`;
+}
+
+/** Who a listing came from, as the provider's terms ask it to be credited (V2 §7.13). */
+export type JobAttribution = {
+  provider: JobSource;
+  /** "Jobs by Adzuna". */
+  label: string;
+  /** A bundled asset key for the provider's mark, when its terms require one. */
+  logoKey?: string;
+  /** The brand an estimated salary must carry, when the provider estimates it. */
+  salaryBrand?: string;
+};
 
 export type MatchCriterion = {
   id: string;
@@ -67,23 +116,79 @@ export type Job = {
   companyWebsite: string;
   /** Company blurb for the company screen (plan phase 9H). */
   companyAbout?: string;
+  /**
+   * Whether the company carries the verified badge on Job Detail (Figma 443:105). Only big,
+   * established companies are verified.
+   *
+   * NOTE: V2 defines no employer-verification process, so this is mock data until a real API
+   * says what "verified" means — it is a trust claim.
+   */
+  companyVerified?: boolean;
+  /**
+   * One-line description under the company name on Job Detail's company card (Figma 443:65).
+   * Verified companies only; an unverified company's card has no description line at all.
+   */
+  companyTagline?: string;
   location: string;
   remote: RemoteType;
   employmentType: EmploymentType;
   experienceLevel: ExperienceLevel;
+  /**
+   * The listing's own required-experience range, when the provider states one — "3–5 years" on
+   * the web Jobs board (Figma 304:2479). `experienceLevel` stays the filterable band; this is copy.
+   */
+  experienceYears?: { min: number; max: number };
+  /** The employer's own requisition id, when the listing gives one: "GOO-UX-10234" (Figma 286:1608). */
+  reference?: string;
   /** Provider-reported applicant count, when known ("80+ applied"). */
   applicantsCount?: number;
   salary?: SalaryRange;
   /** ISO-8601 */
   postedAt: string;
   source: JobSource;
-  /** 0–1; absent until the profile has been matched against the job. */
+  /**
+   * The posting a job added from a copied link was read from (TAILOR 00c). Such a job is the
+   * user's own: it lives in Saved jobs and never shows up in search or anyone's picks.
+   */
+  sourceUrl?: string;
+  /**
+   * 0–1; absent until the profile has been matched against the job, and withheld for a listing
+   * read from a snippet or a title alone (P11-03): those carry the band and the basis only.
+   */
   matchScore?: number;
+  /** What the match rests on; present whenever a band is (G16). */
+  matchBasis?: MatchBasis;
   matchBand?: MatchBand;
   matchCriteria?: MatchCriterion[];
+  /**
+   * One line on why this job matches, as the redrawn job cards show it (Figma 498:25).
+   * Editorial for now: the match engine scores criteria but writes no prose, so this is absent
+   * for every job an artboard does not name and the card simply drops the panel.
+   */
+  matchReason?: string;
   description: string;
   responsibilities: string[];
   requirements: string[];
+  /**
+   * The web job page's extras (724:2), where a listing states them: its benefits in full, the
+   * short perks the header tags with, the employer's industries, and when and where it began.
+   */
+  benefits?: string[];
+  perks?: string[];
+  industries?: string[];
+  companyFounded?: number;
+  companyHeadquarters?: string;
+  /**
+   * Where "Apply on company site" goes: the employer's own application page, or the provider's
+   * tracked redirect to it when its terms require one (Adzuna's).
+   */
+  applyUrl?: string;
+  /** How much of the listing there is: its full description, a snippet, or only a title. */
+  descriptionKind?: 'full' | 'snippet' | 'title';
+  /** The provider credit a listing must carry (V2 §7.13). */
+  attribution?: JobAttribution;
+  /** A saved listing its source has closed: kept, flagged, never deleted (P11-04). */
+  unavailable?: boolean;
   tags: string[];
   isSaved: boolean;
   /** ISO-8601; set when isSaved flips on. */
@@ -96,6 +201,15 @@ export type Job = {
   relevanceRank: number;
   /** ISO-8601 application deadline; drives the "Closing in 3d" urgency pill on Saved. */
   closingAt?: string;
+};
+
+/** A copied job link as read before it is added (TAILOR 00c): enough to name it. */
+export type JobLinkPreview = {
+  url: string;
+  /** "careers.swiggy.com": the site the link points at. */
+  host: string;
+  title: string;
+  company: string;
 };
 
 /** Sort options behind the "Relevance" control (Figma 1:326). */
@@ -132,6 +246,9 @@ export const POSTED_WITHIN_LABEL: Record<PostedWithin, string> = {
 export type JobFilters = {
   query?: string;
   locations: string[];
+  /** Web's "Company" filter chip (Figma 304:2430) — mobile has no equivalent, but this filters
+   * the same underlying `Job.company` field either platform reads. */
+  companies: string[];
   remote: RemoteType[];
   employmentTypes: EmploymentType[];
   experienceLevels: ExperienceLevel[];
@@ -147,6 +264,7 @@ export type JobFilters = {
 
 export const EMPTY_JOB_FILTERS: JobFilters = {
   locations: [],
+  companies: [],
   remote: [],
   employmentTypes: [],
   experienceLevels: [],
@@ -163,7 +281,8 @@ export const SALARY_FILTER_STEP = 100_000;
 export function matchBandFor(score: number): MatchBand {
   if (score >= 0.8) return 'strong';
   if (score >= 0.6) return 'good';
-  return 'fair';
+  if (score >= 0.4) return 'fair';
+  return 'weak';
 }
 
 /**

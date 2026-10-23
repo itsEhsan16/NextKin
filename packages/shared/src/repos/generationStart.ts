@@ -1,4 +1,4 @@
-import { newId } from '@/data/mock';
+import { newId } from '../mock';
 import type {
   ActivityEntry,
   GenerationInput,
@@ -6,10 +6,11 @@ import type {
   JdDraft,
   Job,
   Resume,
-} from '@/data/models';
-import { GENERATION_KIND_LABEL } from '@/data/models';
+} from '../models';
+import { GENERATION_KIND_LABEL, TAILOR_TARGET_PAGES } from '../models';
 
 import { GENERATION_ACTIVITY_KIND } from './generationCompletion';
+import { nudge } from './profileRepo';
 import type { MockStore } from './state';
 
 /**
@@ -74,12 +75,22 @@ export function createGenerationShell(
     ...(linkedJobId ? { linkedJobId } : {}),
     ...(targetCompany ? { targetCompany } : {}),
     ...(targetRole ? { targetRole } : {}),
+    // A tailoring run trims the source to two pages (toreview §56: "3 pages, trimmed to 2").
+    ...(input.tailor?.sourcePages != null
+      ? { pageCount: Math.min(input.tailor.sourcePages, TAILOR_TARGET_PAGES) }
+      : {}),
   };
 
   store.state.resumes = [resume, ...store.state.resumes];
   store.state.resumeVersions = [
     ...store.state.resumeVersions,
-    { id: versionId, resumeId: resume.id, version: 1, createdAt: now, changeNote: 'Generating…' },
+    {
+      id: versionId,
+      resumeId: resume.id,
+      version: 1,
+      createdAt: now,
+      changeNote: 'Generating…',
+    },
   ];
   return resume;
 }
@@ -102,6 +113,41 @@ export function bumpGenerationUsage(store: MockStore, kind: GenerationKind): voi
     usage.atsChecksUsed = (usage.atsChecksUsed ?? 0) + 1;
   } else {
     usage.interviewSetsUsed = (usage.interviewSetsUsed ?? 0) + 1;
+  }
+  store.state.subscription = { ...store.state.subscription, usage };
+}
+
+/**
+ * BUILD 04c: "Anything you add is saved to your profile too." The skills the user said yes to
+ * join the profile when the build starts, once each, so the resume and the profile agree.
+ */
+export function addBuildSkills(store: MockStore, added: readonly string[]): void {
+  const { profile } = store.state;
+  const skills = [...profile.skills];
+  for (const skill of added) {
+    if (!skills.some((known) => known.toLowerCase() === skill.toLowerCase())) skills.push(skill);
+  }
+  if (skills.length === profile.skills.length) return;
+  store.state.profile = {
+    ...profile,
+    skills,
+    completeness: nudge(profile.completeness, skills.length - profile.skills.length),
+  };
+}
+
+/** The reverse of `bumpGenerationUsage`, for a run stopped before it produced anything. */
+export function refundGenerationUsage(store: MockStore, kind: GenerationKind): void {
+  const usage = { ...store.state.subscription.usage };
+  const down = (value: number | undefined) => Math.max(0, (value ?? 0) - 1);
+  if (kind === 'resume' || kind === 'zero_resume') {
+    usage.generationsUsed = down(usage.generationsUsed);
+    usage.resumesUsed = down(usage.resumesUsed);
+  } else if (kind === 'cover_letter') {
+    usage.coverLettersUsed = down(usage.coverLettersUsed);
+  } else if (kind === 'ats_check') {
+    usage.atsChecksUsed = down(usage.atsChecksUsed);
+  } else {
+    usage.interviewSetsUsed = down(usage.interviewSetsUsed);
   }
   store.state.subscription = { ...store.state.subscription, usage };
 }

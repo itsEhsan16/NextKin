@@ -86,3 +86,95 @@ export const CITY_SUGGESTIONS: readonly string[] = [
   'Remote',
   'Anywhere in India',
 ];
+
+/**
+ * Skills offered for a job title: web onboarding's "Suggestions come from your job title"
+ * (ONB 06, Figma 808:175). Matched by the words in the title, so "Senior UX Designer" and
+ * "Product Designer" both reach the design set. They are only offered: nothing is picked for the
+ * user, who taps the ones they really use. A title nothing matches gets the general set.
+ */
+const TITLE_SKILLS: readonly { match: RegExp; skills: readonly string[] }[] = [
+  {
+    match: /\b(ux|ui|design|designer|interaction|visual|researcher)\b/i,
+    skills: [
+      'User research',
+      'Design systems',
+      'Figma',
+      'Prototyping',
+      'Interaction design',
+      'Usability testing',
+      'Wireframing',
+      'Accessibility',
+      'Information architecture',
+      'Visual design',
+      'Interaction prototyping in code',
+      'Workshop facilitation',
+      'Design QA',
+    ],
+  },
+  {
+    match: /\b(product manager|product owner|pm)\b/i,
+    skills: [
+      'Product strategy',
+      'Roadmapping',
+      'Stakeholder management',
+      'User research',
+      'Data analysis',
+      'A/B testing',
+      'Prioritisation',
+      'Writing specs',
+      'Jira',
+      'Go-to-market',
+    ],
+  },
+  {
+    match:
+      /\b(engineer|developer|programmer|frontend|front-end|backend|back-end|full[- ]?stack)\b/i,
+    skills: [
+      'JavaScript',
+      'TypeScript',
+      'React',
+      'Node.js',
+      'HTML',
+      'CSS',
+      'SQL',
+      'Testing',
+      'Git',
+      'APIs',
+      'System design',
+      'Code review',
+    ],
+  },
+  {
+    match: /\b(data|analyst|analytics|scientist)\b/i,
+    skills: [
+      'SQL',
+      'Data analysis',
+      'Python',
+      'Excel',
+      'Dashboards',
+      'Statistics',
+      'A/B testing',
+      'Data visualisation',
+      'Mixpanel',
+      'Amplitude',
+    ],
+  },
+];
+
+const GENERAL_SKILLS: readonly string[] = [
+  'Communication',
+  'Teamwork',
+  'Problem solving',
+  'Project management',
+  'Stakeholder management',
+  'Presentation',
+  'Excel',
+  'Time management',
+];
+
+export function skillSuggestionsForTitle(title: string | undefined): readonly string[] {
+  const words = title?.trim() ?? '';
+  if (!words) return GENERAL_SKILLS;
+  return TITLE_SKILLS.find((family) => family.match.test(words))?.skills ?? GENERAL_SKILLS;
+}

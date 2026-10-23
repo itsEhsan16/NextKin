@@ -1,4 +1,4 @@
-import type { DashboardStats, Subscription, User } from '@/data/models';
+import type { DashboardStats, Subscription, User } from '../../models';
 
 import { daysAgo, daysFromNow } from './time';
 

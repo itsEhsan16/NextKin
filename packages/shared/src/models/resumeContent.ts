@@ -1,3 +1,5 @@
+import type { ZeroReview } from './zeroResume';
+
 /**
  * NextKin V2 spec §7.11 — document content (the structured model, not a rendered file).
  *
@@ -65,6 +67,21 @@ export type ContentRole = {
   title: string;
   /** Rendered span, e.g. "Mar 2022 — Present" — the resume prints this, not two dates. */
   period: string;
+  /** The profile role this came from (C-10): what its claims cite. */
+  roleId?: string;
+  /** Structured dates behind `period`: YYYY or YYYY-MM; `end: null` is "present" (C-10). */
+  start?: string;
+  end?: string | null;
+  /** The profile's skill tags for this role: the evidence its technology claims rest on. */
+  skills?: string[];
+  /** Where the role was based, printed after the employer: "Google • Bengaluru, India". */
+  location?: string;
+  /**
+   * The employer's mark, an `asset:` key or URL as on `Job.companyLogoUrl`. Display only: the web
+   * preview draws it beside the role (Figma 304:3355), and no export prints it, because V2 §7.12
+   * keeps images out of the document itself.
+   */
+  companyLogoUrl?: string;
   bullets: string[];
   /**
    * Zero Resume Mode assumed this role; the download gate holds until the user confirms it
@@ -95,10 +112,20 @@ export type ContentEducation = {
   needsReview?: boolean;
 };
 
+/** The contact line a printed resume opens with (Figma 304:3326). */
+export type ContentContact = { email?: string; phone?: string; location?: string };
+
 export type ResumeContent = {
   kind: 'resume';
   resumeId: string;
   versionId: string;
+  /** The line under the name: the title this document presents the candidate as. */
+  headline?: string;
+  /**
+   * Contact details as the document prints them. Part of the body, like everything else here, so
+   * a version keeps the details it went out with (V2 §7.6 snapshots the profile at generation).
+   */
+  contact?: ContentContact;
   summary: string;
   skills: string[];
   experience: ContentRole[];
@@ -107,6 +134,8 @@ export type ResumeContent = {
   education: ContentEducation[];
   /** Portfolio and profile URLs. The "Add a portfolio link" ATS fix writes here. */
   links?: string[];
+  /** A Zero Resume draft's checklist (V2 §7.9): what it guessed, and the skills still to answer. */
+  review?: ZeroReview;
 };
 
 /** V2 §7.10: Professional is the default; regenerating in a new tone keeps the earlier drafts. */
@@ -143,17 +172,30 @@ export type CoverLetterContent = {
 /** Both document kinds, discriminated on `kind`. */
 export type DocumentContent = ResumeContent | CoverLetterContent;
 
+/** A bracketed placeholder Zero Resume left for the user: "[Company Name]", "[Degree]". */
+const PLACEHOLDER = /^\s*\[.*\]\s*$/;
+
 /**
  * Whether the V2 §7.9 review gate still holds this document back from download: the letter is
- * flagged, or any role, project or education entry is. Skills and certifications are plain
- * strings and cannot carry a flag, so a draft whose only assumption is a skill claim is gated by
- * `Resume.needsReview` alone.
+ * flagged, any role, project or education entry is, or a bracketed placeholder is still printed
+ * (§7.9 blocks export "while any flag is unresolved or any placeholder remains"). Skills and
+ * certifications are plain strings and cannot carry a flag, so a Zero Resume draft lists its open
+ * skill claims in `review.pendingSkills` instead.
  */
 export function contentNeedsReview(content: DocumentContent): boolean {
   if (content.kind === 'cover_letter') return content.needsReview === true;
   return (
-    content.experience.some((role) => role.needsReview === true) ||
+    content.experience.some(
+      (role) => role.needsReview === true || PLACEHOLDER.test(role.company),
+    ) ||
     content.projects.some((project) => project.needsReview === true) ||
-    content.education.some((entry) => entry.needsReview === true)
+    content.education.some(
+      (entry) =>
+        entry.needsReview === true ||
+        PLACEHOLDER.test(entry.institution) ||
+        PLACEHOLDER.test(entry.degree),
+    ) ||
+    // A Zero Resume draft lists its skill claims, since a plain string cannot carry a flag.
+    (content.review?.pendingSkills.length ?? 0) > 0
   );
 }

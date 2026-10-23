@@ -1,12 +1,9 @@
-import {
-  buildCoverLetterContent,
-  buildResumeContent,
-  rescore,
-  scoreFromKeywords,
-} from '@/data/mock';
-import type { AtsScore, DocumentContent, Generation, JdDraft, Resume } from '@/data/models';
+import { buildCoverLetterContent, buildResumeContent, buildZeroDraft } from '../mock';
+import type { DocumentContent, Generation, JdDraft, Resume } from '../models';
+import type { DocumentScore } from '../scoring/report';
 
-import { clone, type MockStore } from './state';
+import { jdForJob, jdFromDraft, scoreContent } from './scoring';
+import type { MockStore } from './state';
 
 /**
  * NextKin V2 spec §7.6 and §7.8 — what a finished generation produces.
@@ -16,99 +13,50 @@ import { clone, type MockStore } from './state';
  * returns a value, which is what makes the scoring rules readable on their own.
  */
 
-const COMPLETED_SCORE = 83;
-
-export const legacyScore = (): AtsScore => ({
-  total: COMPLETED_SCORE,
-  band: 'good',
-  summary: 'Solid foundation — a few fixes will push this into the green.',
-  sections: [
-    {
-      key: 'content',
-      label: 'Content',
-      items: [
-        { id: 'quantified', label: 'Quantified achievements in 3+ bullets', passed: true },
-        { id: 'verbs', label: 'Action verbs open every bullet', passed: true },
-        { id: 'summary', label: 'Summary under 60 words', passed: true },
-      ],
-    },
-    {
-      key: 'format',
-      label: 'Format',
-      items: [
-        { id: 'column', label: 'Single column — parser safe', passed: true },
-        { id: 'headings', label: 'Standard section headings', passed: true },
-      ],
-    },
-    {
-      key: 'keywords',
-      label: 'Keywords',
-      items: [
-        { id: 'kw_1', label: '"creative tools" appears 3 times', passed: true },
-        { id: 'kw_miss_0', label: 'Missing: "illustration"', passed: false, fixable: true },
-        { id: 'kw_miss_1', label: 'Missing: "brand"', passed: false, fixable: true },
-      ],
-    },
-  ],
-});
-
-/** Case-insensitive, so a profile's "Design systems" backs a JD's "design systems". */
+/** Case-insensitive, for ordering the profile's skills by what the job asks (BUILD 06). */
 const normalise = (value: string): string => value.trim().toLowerCase();
-
-/**
- * V2 §7.8's three buckets, read off the confirmed JD (§7.5) against the profile:
- * `present` — required skills the profile backs, so the document may claim them;
- * `missing` — required skills it does not back yet, but which are plausible additions;
- * `unsupported` — preferred skills nothing in the profile supports. Those are shown as a gap and
- * never inserted: §7.8 forbids handing the user keywords to paste in.
- */
-export function keywordSplit(
-  draft: JdDraft,
-  profileSkills: string[],
-): { present: string[]; missing: string[]; unsupported: string[] } {
-  const known = new Set(profileSkills.map(normalise));
-  return {
-    present: draft.requiredSkills.filter((skill) => known.has(normalise(skill))),
-    missing: draft.requiredSkills.filter((skill) => !known.has(normalise(skill))),
-    unsupported: draft.preferredSkills.filter((skill) => !known.has(normalise(skill))),
-  };
-}
 
 /** The JD the run was tailored to, when it was tailored to one. */
 export const jdDraftFor = (store: MockStore, generation: Generation): JdDraft | undefined =>
   generation.jdId ? store.state.jdDrafts.find((draft) => draft.id === generation.jdId) : undefined;
 
+/**
+ * The run's score, from the engines (V2 §7.8, C-10). A letter is prose and a Zero Resume draft is
+ * written for no job, so neither gets one. Everything else is scored as the document the run left:
+ * against the run's JD; failing that, the JD it was last scored against, or the listing of the job
+ * it was made for. With no JD at all there is no total (D-15), and the document keeps the "not
+ * scored" state.
+ */
 export function scoreFor(
   store: MockStore,
   generation: Generation,
   resume: Resume,
   draft: JdDraft | undefined,
-): AtsScore | undefined {
-  // A letter is prose, not a parsed document — §7.8 scores resumes, so a letter gets no score.
-  if (generation.kind === 'cover_letter') return undefined;
+  content: DocumentContent | undefined,
+): DocumentScore | undefined {
+  if (generation.kind === 'cover_letter' || generation.kind === 'zero_resume') return undefined;
+  const body = content ?? store.state.contents[resume.id];
+  if (!body || body.kind !== 'resume') return undefined;
+  const jobId = generation.jobId ?? resume.linkedJobId;
+  const jd = draft
+    ? jdFromDraft(draft)
+    : (store.state.scoringJds[resume.id] ?? (jobId ? jdForJob(store.state, jobId) : undefined));
+  return scoreContent(store.state, body, jd, {
+    previous: store.state.atsScores[resume.id],
+    // A check reads the document on its own terms; a generated one answers to the profile (G16).
+    yardstick: generation.kind === 'ats_check' ? 'document' : 'profile',
+  });
+}
 
-  if (draft) {
-    const { present, missing, unsupported } = keywordSplit(draft, store.state.profile.skills);
-    return scoreFromKeywords({
-      present,
-      missing,
-      unsupported,
-      // §7.9 drafts from assumptions: nothing is quantified and no portfolio is confirmed yet.
-      ...(generation.kind === 'zero_resume'
-        ? { contentMiss: 'Add numbers to the bullets you confirm', portfolioMiss: true }
-        : {}),
-    });
-  }
-
-  if (generation.kind === 'ats_check') {
-    // No JD to score against, so the check re-reads the body it was run on and the score moves
-    // only where the document itself changed (V2 §7.8).
-    const previous: AtsScore | undefined = store.state.atsScores[resume.id];
-    const content: DocumentContent | undefined = store.state.contents[resume.id];
-    if (previous) return content ? rescore(previous, content) : clone(previous);
-  }
-
-  return legacyScore();
+/** The profile's skills with the ones the job asks for first, in the job's order (BUILD 06). */
+function jobFirst(skills: readonly string[], draft: JdDraft | undefined): string[] {
+  if (!draft) return [...skills];
+  const asks = [...draft.requiredSkills, ...draft.preferredSkills].map(normalise);
+  const rank = (skill: string) => {
+    const at = asks.indexOf(normalise(skill));
+    return at < 0 ? asks.length : at;
+  };
+  return [...skills].sort((a, b) => rank(a) - rank(b));
 }
 
 export function contentFor(
@@ -137,12 +85,47 @@ export function contentFor(
     });
   }
 
-  return buildResumeContent({
+  // §7.9: drafted from the seed alone, every guess flagged and every unknown left a blank.
+  if (generation.kind === 'zero_resume') {
+    return buildZeroDraft({
+      resumeId: resume.id,
+      versionId,
+      seed: generation.zero ?? { fullName: '', yearsExperience: 0 },
+      year: new Date().getFullYear(),
+    });
+  }
+
+  // A tailoring run starts from the resume the user picked, plus the keywords they said yes to.
+  const source = generation.tailor
+    ? store.state.contents[generation.tailor.sourceResumeId]
+    : undefined;
+  // A source that lists no skills of its own (the web library's bodies carry none) starts from
+  // the profile's, so the tailored copy is never left with only the keywords just added.
+  const start =
+    source?.kind === 'resume'
+      ? source.skills.length
+        ? source.skills
+        : store.state.profile.skills
+      : undefined;
+  const skills =
+    start && generation.tailor
+      ? [...start, ...generation.tailor.added.filter((k) => !start.includes(k))]
+      : undefined;
+
+  // A build writes from the profile (toreview §67): its skills, with what the job asks first.
+  const built =
+    generation.origin === 'build' ? jobFirst(store.state.profile.skills, draft) : undefined;
+
+  const content = buildResumeContent({
     resumeId: resume.id,
     versionId,
+    ...(skills ? { skills } : built ? { skills: built } : {}),
     targetRole: role,
     targetCompany: company,
-    // §7.9: every role, project and education entry flagged and no employer named anywhere.
-    needsReview: generation.kind === 'zero_resume',
   });
+  // "Headline aimed at Lead UX Designer": a tailoring run that aims the headline writes it, unless
+  // the web flow was told to leave it (`toreview.md` §103).
+  const aimHeadline =
+    generation.tailor && role && (generation.tailor.fixes?.includes('headline') ?? true);
+  return aimHeadline && content.kind === 'resume' ? { ...content, headline: role } : content;
 }

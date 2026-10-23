@@ -1,4 +1,4 @@
-import { buildResumeContent, newId, rescore, simulate } from '@/data/mock';
+import { buildResumeContent, newId, simulate } from '../mock';
 import type {
   AtsScore,
   CoverLetterContent,
@@ -6,9 +6,10 @@ import type {
   Resume,
   ResumeContent,
   ResumeSectionKey,
-} from '@/data/models';
-import { RESUME_SECTION_LABEL } from '@/data/models';
+} from '../models';
+import { RESUME_SECTION_LABEL } from '../models';
 
+import { bumpVersion as bumpDocVersion, saveContent } from './documentWrites';
 import {
   confirmReviewed,
   nowIso,
@@ -16,6 +17,7 @@ import {
   regenerated,
   withSection,
 } from './resumeContentEdits';
+import { rescoreStored } from './scoring';
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ResumesRepo } from './types';
 
@@ -32,6 +34,8 @@ export type ResumeContentRepo = Pick<
   | 'updateSection'
   | 'updateLetter'
   | 'regenerateSection'
+  | 'rewriteSection'
+  | 'fitToOnePage'
   | 'applyAtsFix'
   | 'restoreVersion'
 >;
@@ -56,48 +60,17 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
     return content;
   };
 
-  /** §7.11 never rewrites history: every write mints a version rather than editing the head. */
-  const bumpVersion = (resume: Resume, note: string): { resume: Resume; versionId: string } => {
-    const createdAt = nowIso();
-    const versionId = newId('ver');
-    const version = resume.versionCount + 1;
-    const updated: Resume = {
-      ...resume,
-      updatedAt: createdAt,
-      versionCount: version,
-      currentVersionId: versionId,
-    };
-    store.state.resumes = store.state.resumes.map((item) =>
-      item.id === resume.id ? updated : item,
-    );
-    store.state.resumeVersions = [
-      ...store.state.resumeVersions,
-      { id: versionId, resumeId: resume.id, version, createdAt, changeNote: note },
-    ];
-    return { resume: updated, versionId };
-  };
+  const bumpVersion = (resume: Resume, note: string) => bumpDocVersion(store, resume, note);
 
-  /** Re-score on edit (§7.8). A document that has never been scored stays unscored. */
-  const rescoreDocument = (id: string, content: ResumeContent): AtsScore | undefined => {
-    const previous: AtsScore | undefined = store.state.atsScores[id];
-    if (!previous) return undefined;
-    const next = rescore(previous, content);
-    store.state.atsScores[id] = next;
-    store.state.resumes = store.state.resumes.map((item) =>
-      item.id === id ? { ...item, atsScore: next.total } : item,
-    );
-    return next;
-  };
+  /**
+   * Re-score on edit (§7.8), against the JD the document was scored for. A document with no JD
+   * has no total to move (D-15), so it stays unscored.
+   */
+  const rescoreDocument = (id: string, content: ResumeContent): AtsScore | undefined =>
+    store.state.scoringJds[id] ? rescoreStored(store.state, id, content) : undefined;
 
-  /** Stores the body against the version the edit just minted, so the two never disagree. */
-  const save = (id: string, content: ResumeContent, versionId: string): ResumeContent => {
-    const stored: ResumeContent = { ...content, versionId };
-    store.state.contents[id] = stored;
-    // The same body filed under its version, so §7.11's restore has something to go back to.
-    // Without this a restore can only re-stamp the current text and looks like it did nothing.
-    store.state.contentVersions[versionId] = stored;
-    return stored;
-  };
+  const save = (id: string, content: ResumeContent, versionId: string): ResumeContent =>
+    saveContent(store, id, content, versionId);
 
   return {
     create: ({ title, docType }) =>
@@ -115,6 +88,8 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
           currentVersionId: versionId,
           status: 'ready',
           tags: [],
+          // Written by hand from nothing, so it starts as a draft (V2 §7.11's "draft" status).
+          draft: true,
           // No `atsScore`: an empty document has nothing to score, and the editor must not query
           // a score until one is set — `getScore` misses until a scoring run writes one.
         };
@@ -133,7 +108,13 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
         store.state.resumes = [resume, ...store.state.resumes];
         store.state.resumeVersions = [
           ...store.state.resumeVersions,
-          { id: versionId, resumeId: id, version: 1, createdAt, changeNote: 'Created' },
+          {
+            id: versionId,
+            resumeId: id,
+            version: 1,
+            createdAt,
+            changeNote: 'Created',
+          },
         ];
         return clone(resume);
       }),
@@ -158,10 +139,22 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
         // A resume has sections, not a greeting — `updateSection` is the writer for that half.
         if (content.kind !== 'cover_letter') throw new NotFoundError('CoverLetter', id);
         const { versionId } = bumpVersion(resume, 'Edited letter');
-        const stored: CoverLetterContent = { ...content, ...clone(patch), versionId };
+        const stored: CoverLetterContent = {
+          ...content,
+          ...clone(patch),
+          versionId,
+        };
         store.state.contents[id] = stored;
         return clone(stored);
       }),
+
+    // The mock has no compiler to measure pages with.
+    fitToOnePage: () => simulate(() => ({ status: 'failed' as const, reason: 'unavailable' as const })),
+
+    // The mock has no model to ask: it regenerates the section as `regenerateSection` does.
+    rewriteSection(id, section) {
+      return this.regenerateSection(id, section);
+    },
 
     regenerateSection: (id, section) =>
       simulate(
@@ -193,12 +186,12 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
         const item = score.sections
           .flatMap((section) => section.items)
           .find((i) => i.id === itemId);
-        // §7.8 forbids handing back a keyword the profile does not support: a gap
-        // (`supported: false`) is shown and never inserted, so it must not become applicable by
-        // this route either, whatever flags the panel put on it.
-        if (!item || !item.fixable || item.supported === false)
-          throw new NotFoundError('AtsFix', itemId);
-        const patched = patchForFix(content, item, store.state.profile.links);
+        // Only a typed fix the product may make itself applies here: a skill the profile backs
+        // (C-10). A gap is never insertable, and a missing figure is the user's to supply, so
+        // neither can become applicable by this route, whatever flags the panel carries.
+        const fix = item?.fixable && item.fixId ? score.report?.fixes.find((f) => f.id === item.fixId) : undefined;
+        if (!fix || !fix.insertable || fix.type !== 'surface_backed_skill') throw new NotFoundError('AtsFix', itemId);
+        const patched = patchForFix(content, fix);
         const { versionId } = bumpVersion(resume, 'Applied fix');
         const stored = save(id, patched, versionId);
         // Both caches move together: the panel and the document come out of the same write.
@@ -219,7 +212,10 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
         // §7.11: history is never rewritten. A restore lands as a new version on top of the ones
         // that followed it, so the list only ever grows.
         const restored = bumpVersion(resume, `Restored v${version.version}`);
-        const stored: DocumentContent = { ...body, versionId: restored.versionId };
+        const stored: DocumentContent = {
+          ...body,
+          versionId: restored.versionId,
+        };
         store.state.contents[id] = stored;
         store.state.contentVersions[restored.versionId] = stored;
         return clone(restored.resume);

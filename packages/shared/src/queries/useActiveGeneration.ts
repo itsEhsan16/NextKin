@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { isGenerationTerminal } from '@/data/models';
-import { repos } from '@/data/repos';
+import { isGenerationTerminal } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
 
@@ -26,7 +26,9 @@ export function useActiveGeneration() {
       queryClient.setQueryData(qk.generations.active(), generation);
       if (isGenerationTerminal(generation.status)) {
         void queryClient.invalidateQueries({ queryKey: qk.resumes.all });
-        void queryClient.invalidateQueries({ queryKey: qk.user.subscription() });
+        void queryClient.invalidateQueries({
+          queryKey: qk.user.subscription(),
+        });
       }
     });
   }, [activeId, queryClient]);

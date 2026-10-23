@@ -1,4 +1,4 @@
-import type { Generation } from '@/data/models';
+import type { Generation } from '../../models';
 
 import { GENERATING_RESUME_ID } from './resumes';
 import { daysAgo, minutesAgo } from './time';

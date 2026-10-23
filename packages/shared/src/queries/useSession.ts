@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-import { resetMockRepos } from '@/data/repos';
+import { resetRepos } from '../repos';
 
 /**
  * Ends the session: drops every cached query and puts the mock repositories back to their
@@ -13,13 +13,13 @@ import { resetMockRepos } from '@/data/repos';
  * `@/data/repos` itself, which CLAUDE.md rule 3 forbids outside `src/data/**` — screens see a
  * hook from `@/data/queries` like every other data concern.
  *
- * Against a real API this becomes "drop the tokens and clear the caches": the `resetMockRepos()`
- * call is replaced by revoking/forgetting the credentials, and `queryClient.clear()` stays.
+ * Against the real API (P5-02) `resetRepos()` also forgets the HTTP repositories' cached versions;
+ * ending the server session and dropping the tokens is the auth client's job, done before this.
  */
 export function useResetSession(): () => void {
   const queryClient = useQueryClient();
   return useCallback(() => {
     queryClient.clear();
-    resetMockRepos();
+    resetRepos();
   }, [queryClient]);
 }

@@ -6,11 +6,11 @@ import type {
   MatchCriterion,
   MatchCriterionState,
   RemoteType,
-} from '@/data/models';
-import { matchBandFor } from '@/data/models';
-import type { SalaryRange } from '@/lib';
+} from "../../models";
+import { matchBandFor } from "../../models";
+import type { SalaryRange } from "../../models";
 
-import { daysAgo, daysFromNow } from './time';
+import { daysAgo, daysFromNow } from "./time";
 
 /** Compact seed row; `buildJob` expands it into a full Job with placeholder copy. */
 export type JobSeed = {
@@ -23,6 +23,10 @@ export type JobSeed = {
   employmentType?: EmploymentType;
   /** Defaults to whatever `levelFromTitle` reads off the job title. */
   experienceLevel?: ExperienceLevel;
+  /** Required-experience range as the listing states it; passed straight through to `Job`. */
+  experienceYears?: { min: number; max: number };
+  /** The employer's requisition id; passed straight through to `Job`. */
+  reference?: string;
   applicantsCount?: number;
   salary?: SalaryRange;
   /** Fractional days are fine ("0.5" → 12 hours ago). */
@@ -37,6 +41,8 @@ export type JobSeed = {
   closingInDays?: number;
   /** Only the first page of jobs is matched; `states` is one char per criterion (m/x/o). */
   match?: { score: number; states: string };
+  /** The card's one-line "why" (Figma 498:25). Only the jobs an artboard names carry one. */
+  matchReason?: string;
   /** Verbatim artboard copy for the jobs a detail screen actually renders (JOBS 05). */
   description?: string;
   responsibilities?: string[];
@@ -45,103 +51,133 @@ export type JobSeed = {
 };
 
 const STATE_BY_CHAR: Record<string, MatchCriterionState> = {
-  m: 'met',
-  x: 'missing',
-  o: 'optional',
+  m: "met",
+  x: "missing",
+  o: "optional",
 };
 
 const remoteCopy: Record<RemoteType, string> = {
-  remote: 'fully remote',
-  hybrid: 'hybrid (2–3 days in office)',
-  onsite: 'on-site',
+  remote: "fully remote",
+  hybrid: "hybrid (2–3 days in office)",
+  onsite: "on-site",
 };
 
 /** Company profiles for JOBS 05's card. Only the companies an artboard names are hand-written. */
-type CompanyProfile = { industry: string; size: string; about?: string };
+type CompanyProfile = {
+  industry: string;
+  size: string;
+  about?: string;
+  /**
+   * Verified badge on Job Detail (Figma 443:105); see `Job.companyVerified`. Set only for the big
+   * companies (1,000+ employees) this file has a real profile for — never for `DEFAULT_PROFILE`,
+   * whose companies we know nothing about.
+   */
+  verified?: boolean;
+  /** Job Detail company card line (Figma 443:65). Verified companies only; ignored otherwise. */
+  tagline?: string;
+};
 
 const COMPANY_PROFILES: Record<string, CompanyProfile> = {
   // Figma 1:893, verbatim.
   Stripe: {
-    industry: 'Financial infrastructure',
-    size: '8,000+ employees',
+    industry: "Financial infrastructure",
+    size: "8,000+ employees",
+    // Figma 443:65 / 443:105, verbatim.
+    tagline: "Financial infrastructure for the internet.",
+    verified: true,
     about:
-      'Stripe builds the payments and financial infrastructure a large share of the internet runs on — checkout, billing, payouts and the reporting around them. Design sits close to the API surface: much of the work is making genuinely complex money movement legible to the people operating it.',
+      "Stripe builds the payments and financial infrastructure a large share of the internet runs on — checkout, billing, payouts and the reporting around them. Design sits close to the API surface: much of the work is making genuinely complex money movement legible to the people operating it.",
   },
   Linear: {
-    industry: 'Developer tools',
-    size: '51–200 employees',
+    industry: "Developer tools",
+    size: "51–200 employees",
     about:
-      'Linear makes issue tracking and project planning for software teams. It is a small company with an unusually high bar for craft, and the product is the argument — speed, keyboard-first interaction and restraint are the design brief rather than a nice-to-have.',
+      "Linear makes issue tracking and project planning for software teams. It is a small company with an unusually high bar for craft, and the product is the argument — speed, keyboard-first interaction and restraint are the design brief rather than a nice-to-have.",
   },
   Razorpay: {
-    industry: 'Payments',
-    size: '3,000+ employees',
+    industry: "Payments",
+    size: "3,000+ employees",
+    tagline: "Payments and banking for Indian businesses.",
+    verified: true,
     about:
-      'Razorpay handles payments, payouts and banking for Indian businesses, from one-person shops to listed companies. Much of the design work is UPI flows and the dashboards merchants live in all day.',
+      "Razorpay handles payments, payouts and banking for Indian businesses, from one-person shops to listed companies. Much of the design work is UPI flows and the dashboards merchants live in all day.",
   },
   Zoho: {
-    industry: 'Business software',
-    size: '15,000+ employees',
+    industry: "Business software",
+    size: "15,000+ employees",
+    tagline: "Business software, from CRM to finance.",
+    verified: true,
     about:
-      'Zoho builds a very broad suite of business software — CRM, finance, HR, support — out of Chennai and a set of rural campuses. It is privately held and takes a deliberately long view, which shows in how it treats both products and people.',
+      "Zoho builds a very broad suite of business software — CRM, finance, HR, support — out of Chennai and a set of rural campuses. It is privately held and takes a deliberately long view, which shows in how it treats both products and people.",
   },
   Freshworks: {
-    industry: 'Customer software',
-    size: '5,000+ employees',
+    industry: "Customer software",
+    size: "5,000+ employees",
+    tagline: "Customer support, sales and IT service software.",
+    verified: true,
     about:
-      'Freshworks makes customer support, sales and IT service software sold largely to mid-market companies. The design organisation is built around a shared system across a wide product surface.',
+      "Freshworks makes customer support, sales and IT service software sold largely to mid-market companies. The design organisation is built around a shared system across a wide product surface.",
   },
   Atlassian: {
-    industry: 'Team collaboration',
-    size: '10,000+ employees',
+    industry: "Team collaboration",
+    size: "10,000+ employees",
+    tagline: "The tools software teams plan and ship with.",
+    verified: true,
     about:
-      'Atlassian builds the tools software teams plan and ship with — Jira, Confluence and the rest. Work at this scale is mostly systems work: the interesting problems are consistency and migration across products millions of people already have habits in.',
+      "Atlassian builds the tools software teams plan and ship with — Jira, Confluence and the rest. Work at this scale is mostly systems work: the interesting problems are consistency and migration across products millions of people already have habits in.",
   },
   Postman: {
-    industry: 'API platform',
-    size: '500–1,000 employees',
+    industry: "API platform",
+    size: "500–1,000 employees",
     about:
-      'Postman is where a very large number of developers design, test and document APIs. The users are technical and opinionated, so research tends to be direct and the feedback loop is short.',
+      "Postman is where a very large number of developers design, test and document APIs. The users are technical and opinionated, so research tends to be direct and the feedback loop is short.",
   },
   CRED: {
-    industry: 'Consumer fintech',
-    size: '1,000+ employees',
+    industry: "Consumer fintech",
+    size: "1,000+ employees",
+    tagline: "Credit card payments, with a members-only feel.",
+    verified: true,
     about:
-      'CRED is an Indian consumer fintech built around credit card payments and a members-only positioning. It is known for spending unusual attention on motion, typography and the feel of a screen — the visual bar is the point.',
+      "CRED is an Indian consumer fintech built around credit card payments and a members-only positioning. It is known for spending unusual attention on motion, typography and the feel of a screen — the visual bar is the point.",
   },
 };
 
-const DEFAULT_PROFILE: CompanyProfile = { industry: 'Technology', size: '1,000+ employees' };
+const DEFAULT_PROFILE: CompanyProfile = {
+  industry: "Technology",
+  size: "1,000+ employees",
+};
 
 /** "Delivery Hero" → "deliveryhero.com". Good enough for a mock; the API will return the real one. */
 const websiteFor = (company: string): string =>
-  `${company.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+  `${company.toLowerCase().replace(/[^a-z0-9]/g, "")}.com`;
 
 /**
  * Seniority read off the title, the way a provider would infer it — so the "Experience level"
- * filter works without hand-labelling all 34 seeds. Order matters: "Senior Design Systems Lead"
+ * filter works without hand-labelling every seed. Order matters: "Senior Design Systems Lead"
  * is a lead role, not a senior one. Seeds can override for anything the title doesn't say.
  */
 export function levelFromTitle(title: string): ExperienceLevel {
   const value = title.toLowerCase();
-  if (/\b(lead|head|principal|staff|manager|director)\b/.test(value)) return 'lead';
-  if (/\b(senior|sr\.?)\b/.test(value)) return 'senior';
-  if (/\b(junior|jr\.?|intern|graduate|associate|entry)\b/.test(value)) return 'entry';
-  return 'mid';
+  if (/\b(lead|head|principal|staff|manager|director)\b/.test(value))
+    return "lead";
+  if (/\b(senior|sr\.?)\b/.test(value)) return "senior";
+  if (/\b(junior|jr\.?|intern|graduate|associate|entry)\b/.test(value))
+    return "entry";
+  return "mid";
 }
 
 function buildCriteria(seed: JobSeed, states: string): MatchCriterion[] {
   const labels = (
     seed.criteria ?? [
-      '5+ years of product design experience',
+      "5+ years of product design experience",
       ...seed.tags.slice(0, 3).map((tag) => `Hands-on ${tag}`),
-      'Portfolio with shipped mobile work',
+      "Portfolio with shipped mobile work",
     ]
   ).slice(0, 5);
   return labels.map((label, index) => ({
     id: `${seed.id}_crit_${index + 1}`,
     label,
-    state: STATE_BY_CHAR[states.charAt(index)] ?? 'optional',
+    state: STATE_BY_CHAR[states.charAt(index)] ?? "optional",
   }));
 }
 
@@ -154,7 +190,7 @@ export function buildJob(seed: JobSeed, index = 0): Job {
     isPick = false,
     isTodaysPick = false,
     isSaved = false,
-    employmentType = 'full_time',
+    employmentType = "full_time",
     experienceLevel = levelFromTitle(seed.title),
     // Pulled out of `rest` so the generated fallbacks below don't overwrite artboard copy.
     description,
@@ -162,8 +198,10 @@ export function buildJob(seed: JobSeed, index = 0): Job {
     criteria: _criteria,
     ...rest
   } = seed;
-  const [primaryTag = 'product design', secondaryTag = 'cross-functional collaboration'] =
-    seed.tags;
+  const [
+    primaryTag = "product design",
+    secondaryTag = "cross-functional collaboration",
+  ] = seed.tags;
   const profile = COMPANY_PROFILES[seed.company] ?? DEFAULT_PROFILE;
   return {
     ...rest,
@@ -171,12 +209,19 @@ export function buildJob(seed: JobSeed, index = 0): Job {
     experienceLevel,
     companyIndustry: profile.industry,
     companySize: profile.size,
+    // The tagline belongs to the badge: only a verified company carries one.
+    ...(profile.verified
+      ? {
+          companyVerified: true,
+          ...(profile.tagline ? { companyTagline: profile.tagline } : {}),
+        }
+      : {}),
     // Only the companies an artboard names carry hand-written copy. The rest get a line built
     // from what we actually know, because the company screen saying nothing is worse than it
     // saying something plain — and inventing a history for Duolingo would be worse than both.
     companyAbout:
       profile.about ??
-      `${seed.company} works in ${profile.industry.toLowerCase()} and is a ${profile.size.replace(/ employees$/, '')}-person company. We do not have a fuller description of them yet — the listing below is what the job board gave us.`,
+      `${seed.company} works in ${profile.industry.toLowerCase()} and is a ${profile.size.replace(/ employees$/, "")}-person company. We do not have a fuller description of them yet — the listing below is what the job board gave us.`,
     companyWebsite: websiteFor(seed.company),
     postedAt: daysAgo(postedDaysAgo),
     description:
@@ -186,15 +231,15 @@ export function buildJob(seed: JobSeed, index = 0): Job {
         `closely with engineering and research to ship polished, accessible experiences.`,
     responsibilities: responsibilities ?? [
       `Lead ${primaryTag} work from discovery through launch`,
-      'Partner with product and engineering on roadmap and scope',
+      "Partner with product and engineering on roadmap and scope",
       `Contribute to and evolve our shared ${secondaryTag} practice`,
-      'Run usability sessions and turn findings into iterations',
+      "Run usability sessions and turn findings into iterations",
     ],
     requirements: [
-      '5+ years designing consumer or B2B software',
+      "5+ years designing consumer or B2B software",
       `Deep fluency in ${primaryTag}`,
-      'Strong portfolio demonstrating shipped, measurable outcomes',
-      'Comfortable writing clear product narratives and specs',
+      "Strong portfolio demonstrating shipped, measurable outcomes",
+      "Comfortable writing clear product narratives and specs",
     ],
     isPick,
     isTodaysPick,
@@ -208,6 +253,18 @@ export function buildJob(seed: JobSeed, index = 0): Job {
           matchScore: match.score,
           matchBand: matchBandFor(match.score),
           matchCriteria: buildCriteria(seed, match.states),
+          // The basis behind the seeded number, from its own criteria (G16; toreview §105.18):
+          // required = met + missing, preferred = optional.
+          matchBasis: {
+            kind: 'full' as const,
+            requiredMet: [...match.states].filter((c) => c === 'm').length,
+            requiredPartial: 0,
+            requiredTotal: [...match.states].filter((c) => c === 'm' || c === 'x').length,
+            preferredMet: 0,
+            preferredTotal: [...match.states].filter((c) => c === 'o').length,
+            method: 'fixture',
+          },
+          ...(seed.matchReason ? { matchReason: seed.matchReason } : {}),
         }
       : {}),
   };

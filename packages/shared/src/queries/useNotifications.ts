@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Notification, NotificationPrefs } from '@/data/models';
-import { repos } from '@/data/repos';
+import type { Notification, NotificationPrefs, NotificationSettings } from '../models';
+import { repos } from '../repos';
 
 import { qk } from './keys';
+import { refetchWhenQueueEmpty, writeQueue } from './writeQueue';
 
 const listNotifications = () => repos.notifications.list();
 
@@ -75,10 +76,16 @@ export function useNotificationPrefs() {
   });
 }
 
+/** Mobile's notification switches save as they flip, so their writes queue (see `writeQueue`). */
+const PREFS_QUEUE = 'notification-prefs';
+
 export function useSetNotificationPrefs() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (prefs: NotificationPrefs) => repos.notifications.setPrefs(prefs),
+    // Two quick flips used to bounce: the first write's refetch landed before the second write,
+    // flipping the second switch back until its own save came through.
+    ...writeQueue(PREFS_QUEUE),
     onMutate: async (prefs) => {
       await queryClient.cancelQueries({ queryKey: qk.notifications.prefs() });
       const previous = queryClient.getQueryData<NotificationPrefs>(qk.notifications.prefs());
@@ -88,6 +95,58 @@ export function useSetNotificationPrefs() {
     onError: (_error, _prefs, context) => {
       if (context?.previous) queryClient.setQueryData(qk.notifications.prefs(), context.previous);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: qk.notifications.prefs() }),
+    onSettled: () => refetchWhenQueueEmpty(queryClient, PREFS_QUEUE, qk.notifications.prefs()),
+  });
+}
+
+/** Every write to the web's notification settings goes through one queue (see `writeQueue`). */
+const SETTINGS_QUEUE = 'notification-settings';
+
+/** The web board's channels and topics (Figma 247:1290); mobile reads `useNotificationPrefs`. */
+export function useNotificationSettings() {
+  return useQuery({
+    queryKey: qk.notifications.settings(),
+    queryFn: () => repos.notifications.getSettings(),
+  });
+}
+
+/**
+ * One switch at a time, optimistic. The caller builds the whole set on what the cache already
+ * shows, so a second flip made before the first has saved still carries the first.
+ */
+export function useSetNotificationSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (settings: NotificationSettings) => repos.notifications.setSettings(settings),
+    ...writeQueue(SETTINGS_QUEUE),
+    onMutate: async (settings) => {
+      await queryClient.cancelQueries({
+        queryKey: qk.notifications.settings(),
+      });
+      const previous = queryClient.getQueryData<NotificationSettings>(qk.notifications.settings());
+      queryClient.setQueryData(qk.notifications.settings(), settings);
+      return { previous };
+    },
+    onError: (_error, _settings, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(qk.notifications.settings(), context.previous);
+      }
+    },
+    onSettled: () =>
+      refetchWhenQueueEmpty(queryClient, SETTINGS_QUEUE, qk.notifications.settings()),
+  });
+}
+
+/**
+ * "Reset to default" (247:1298). It queues behind any switch still saving, and the defaults come
+ * back with the write, so they replace the cache as they arrive with nothing to refetch. The card
+ * holds its switches meanwhile: a flip built on the old values would undo the reset.
+ */
+export function useResetNotificationSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => repos.notifications.resetSettings(),
+    ...writeQueue(SETTINGS_QUEUE),
+    onSuccess: (settings) => queryClient.setQueryData(qk.notifications.settings(), settings),
   });
 }

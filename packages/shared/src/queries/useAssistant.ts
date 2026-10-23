@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import type { AssistantConversation, AssistantMessage } from '@/data/models';
-import { repos, type AssistantSendInput } from '@/data/repos';
+import type { AssistantConversation, AssistantMessage, AssistantThreadSummary } from '../models';
+import { repos, type AssistantSendInput } from '../repos';
 
 import { qk } from './keys';
 
@@ -36,11 +36,16 @@ export function useSendAssistantMessage() {
     onSuccess: ({ user, reply }) => {
       queryClient.setQueryData<AssistantConversation>(qk.assistant.conversation(), (old) =>
         old
-          ? { ...old, updatedAt: reply.createdAt, messages: [...old.messages, user, reply] }
+          ? {
+              ...old,
+              updatedAt: reply.createdAt,
+              messages: [...old.messages, user, reply],
+            }
           : old,
       );
       queryClient.setQueryData(qk.assistant.message(reply.id), reply);
       void queryClient.invalidateQueries({ queryKey: qk.user.subscription() });
+      void queryClient.invalidateQueries({ queryKey: qk.assistant.threads() });
     },
   });
 }
@@ -82,6 +87,8 @@ export function useAssistantReply(messageId: string) {
               }
             : old,
         );
+        // The History previews a chat's first answer, which has only now arrived.
+        void queryClient.invalidateQueries({ queryKey: qk.assistant.threads() });
       }
     });
   }, [liveId, queryClient]);
@@ -97,9 +104,51 @@ export function useClearAssistant() {
     onSuccess: (conversation) => {
       queryClient.setQueryData(qk.assistant.conversation(), conversation);
       queryClient.removeQueries({ queryKey: qk.assistant.messages() });
+      void queryClient.invalidateQueries({ queryKey: qk.assistant.threads() });
     },
   });
 }
 
 /** The reply's row model, shared by the bubble that streams and the one that does not. */
 export type AssistantReplyState = Pick<AssistantMessage, 'status' | 'refusal'>;
+
+/** The web History (767:2): the current chat and the earlier ones, newest first. */
+export function useAssistantThreads() {
+  return useQuery({
+    queryKey: qk.assistant.threads(),
+    queryFn: () => repos.assistant.listThreads(),
+  });
+}
+
+/** Reopens an earlier chat from the History. */
+export function useOpenAssistantThread() {
+  const queryClient = useQueryClient();
+  const queryKey = qk.assistant.threads();
+  return useMutation({
+    mutationFn: (id: string) => repos.assistant.openThread(id),
+    // The row lights up on the click, not after the round trip.
+    onMutate: (id) => {
+      queryClient.setQueryData<AssistantThreadSummary[]>(queryKey, (old) =>
+        old?.map((row) => ({ ...row, current: row.id === id })),
+      );
+    },
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(qk.assistant.conversation(), conversation);
+      queryClient.removeQueries({ queryKey: qk.assistant.messages() });
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey }),
+  });
+}
+
+/** "New chat": files the current one in the History and opens an empty one. */
+export function useStartAssistantChat() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => repos.assistant.startNew(),
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(qk.assistant.conversation(), conversation);
+      queryClient.removeQueries({ queryKey: qk.assistant.messages() });
+      void queryClient.invalidateQueries({ queryKey: qk.assistant.threads() });
+    },
+  });
+}
