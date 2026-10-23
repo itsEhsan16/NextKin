@@ -80,7 +80,6 @@ const CONTROL_AT390: Partial<Record<keyof typeof sizes, number>> = {
   filterButton: 46,
   searchField: 46,
   iconButton: 44,
-  headerButton: 44,
   segmentedControl: 44,
   // Not a control: the sliding pill inside `segmentedControl`. It is re-anchored so the track's
   // inset stays even — SegmentedControl derives that inset from the difference, so the two cannot

@@ -15,10 +15,10 @@ export type KeyboardLiftInput = {
  * How far an open sheet rises for the keyboard: its height above the home indicator, capped so
  * the sheet's top never passes the top inset. A worklet - it is read on the UI thread.
  *
- * The `Number.isFinite` guard is load-bearing, not defensive noise: Reanimated's jest mock
- * returns `useAnimatedKeyboard()` as `{ height: 0 }` — a plain number rather than a shared
- * value — so `keyboard.height.value` is `undefined` under test. Without the guard that becomes
- * a NaN translateY and every sheet test carrying the lift fails on style validation.
+ * The `Number.isFinite` guard is load-bearing, not defensive noise: a keyboard hook's jest mock
+ * can hand back a plain number where a shared value belongs (Reanimated's `useAnimatedKeyboard`
+ * mock did), making `keyboard.height.value` `undefined` under test. Without the guard that
+ * becomes a NaN translateY and every sheet test carrying the lift fails on style validation.
  */
 export function keyboardLift(i: KeyboardLiftInput): number {
   'worklet';

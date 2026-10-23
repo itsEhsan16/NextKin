@@ -1,12 +1,13 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import type { FaqItem } from '@/data/models';
+import { FAQ_TOPIC_LABEL, FAQ_TOPIC_ORDER, type FaqItem } from '@/data/models';
+import { ProfileCard, SectionHeading } from '@/features/profile/components/cards';
 import { useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
-import { Disclosure } from '@/ui/Disclosure';
-import { Text } from '@/ui/Text';
+import { scaledSheet, useTheme } from '@/theme';
+
+import { faqAnswersLabel } from '../faqSearch';
+import { FaqRow } from './FaqRow';
 
 export type FaqListProps = {
   items: readonly FaqItem[];
@@ -15,23 +16,35 @@ export type FaqListProps = {
   onToggle: (id: string) => void;
 };
 
-/** Row inset inside the carded list — the settings-row inset every grouped row uses. */
-const ROW_INSET = 19;
+// SUPPORT 01 at 390 (577:6177 … 577:6261), in artboard units.
+const HEADING_TO_CARD = 8 / 0.75;
+/** A topic's card → the next topic's heading (577:6199). */
+const GROUP_GAP = 16 / 0.75;
+/** The card's own top and bottom inset around its rows (577:6182). */
+const CARD_PAD_Y = 2 / 0.75;
+/** Dividers stop this short of either edge (577:6189). */
+const DIVIDER_INSET = 15 / 0.75;
 
 /**
- * The FAQ itself: one `Disclosure` row per entry, the question as the row title and
- * the answer as prose underneath. Spec-derived — no artboard covers help — so it is the same
- * carded accordion the published score rubric draws.
+ * The FAQ itself, as SUPPORT 01 draws it: one titled group per topic, in the published topic
+ * order, each with its count and a card of rows. A topic the search emptied is left out rather
+ * than drawn as an empty card.
  */
 export function FaqList({ items, openId, onToggle }: FaqListProps) {
-  const { colors, motion, s } = useTheme();
+  const { colors, motion, sizes } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
 
+  const groups = FAQ_TOPIC_ORDER.map((topic) => ({
+    topic,
+    rows: items.filter((item) => item.topic === topic),
+  })).filter((group) => group.rows.length > 0);
+
   return (
-    <Card radius="card" padding={0}>
-      {items.map((item, index) => (
+    <View style={styles.groups}>
+      {groups.map((group, index) => (
         <Animated.View
-          key={item.id}
+          key={group.topic}
           entering={
             reduced
               ? undefined
@@ -39,32 +52,40 @@ export function FaqList({ items, openId, onToggle }: FaqListProps) {
                   Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
                 ).duration(motion.durations.base)
           }
+          style={styles.group}
         >
-          {index > 0 ? (
-            <View
-              style={[
-                styles.divider,
-                { marginHorizontal: s(ROW_INSET), backgroundColor: colors.divider },
-              ]}
-            />
-          ) : null}
-          <Disclosure
-            mode="row"
-            title={item.question}
-            expanded={openId === item.id}
-            onToggle={() => onToggle(item.id)}
-            style={{ paddingHorizontal: s(ROW_INSET) }}
-          >
-            <Text variant="prose" color="textSecondary">
-              {item.answer}
-            </Text>
-          </Disclosure>
+          <SectionHeading
+            title={FAQ_TOPIC_LABEL[group.topic]}
+            note={faqAnswersLabel(group.rows.length)}
+          />
+          <ProfileCard style={styles.card}>
+            {group.rows.map((item, row) => (
+              <View key={item.id}>
+                {row > 0 ? (
+                  <View
+                    style={[
+                      styles.divider,
+                      { height: sizes.border, backgroundColor: colors.divider },
+                    ]}
+                  />
+                ) : null}
+                <FaqRow
+                  item={item}
+                  expanded={openId === item.id}
+                  onToggle={() => onToggle(item.id)}
+                />
+              </View>
+            ))}
+          </ProfileCard>
         </Animated.View>
       ))}
-    </Card>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  divider: { height: StyleSheet.hairlineWidth },
-});
+const useStyles = scaledSheet((s) => ({
+  groups: { gap: s(GROUP_GAP) },
+  group: { gap: s(HEADING_TO_CARD) },
+  card: { paddingVertical: s(CARD_PAD_Y) },
+  divider: { marginHorizontal: s(DIVIDER_INSET) },
+}));

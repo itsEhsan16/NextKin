@@ -1,5 +1,5 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import type { Profile } from '@/data/models';
 import { a11yButton, formatPercent, useReducedMotion } from '@/lib';
@@ -8,21 +8,26 @@ import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
+import { itemExit, layoutTransition } from '@/ui/motion';
+
+import { nextStepHint } from '../nextSteps';
 
 export type CompletenessCardProps = {
   profile: Profile;
-  onCompleteStep: (id: string) => void;
+  /** Opens the editor that answers the step (`useProfileActions().openNextStep`). */
+  onOpenStep: (id: string) => void;
 };
 
 const PLUS = 9;
 
 /**
  * Figma 1:2217 — "Profile 72% complete" with the ink meter and the next-step chips.
- * Completing a chip exits it (fade + the row re-flowing) while the bar — and the identity
- * ring above, which reads the same completeness — animates up.
+ * A chip opens the editor that answers it (§85); once that data is saved the step leaves the
+ * profile, and its chip exits (fade + the row re-flowing) while the bar — and the identity ring
+ * above, which reads the same completeness — animates up.
  */
-export function CompletenessCard({ profile, onCompleteStep }: CompletenessCardProps) {
-  const { colors, motion, radii, spacing, s } = useTheme();
+export function CompletenessCard({ profile, onOpenStep }: CompletenessCardProps) {
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
 
@@ -45,20 +50,20 @@ export function CompletenessCard({ profile, onCompleteStep }: CompletenessCardPr
 
       {profile.nextSteps.length > 0 ? (
         <Animated.View
-          layout={reduced ? undefined : LinearTransition.springify()}
+          layout={layoutTransition(reduced)}
           style={[styles.chips, { gap: spacing[2], marginTop: spacing[1] }]}
         >
           {profile.nextSteps.map((step) => (
             <Animated.View
               key={step.id}
-              exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
-              layout={reduced ? undefined : LinearTransition.springify()}
+              exiting={itemExit(reduced)}
+              layout={layoutTransition(reduced)}
             >
               <Pressable
-                {...a11yButton(step.label, 'Marks this step as done')}
+                {...a11yButton(step.label, nextStepHint(step.id))}
                 feedback="scale"
                 haptic="light"
-                onPress={() => onCompleteStep(step.id)}
+                onPress={() => onOpenStep(step.id)}
                 style={[
                   styles.chip,
                   {

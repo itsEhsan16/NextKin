@@ -22,6 +22,11 @@ export type CreateSheetStepProps = {
   onSelect: (action: CreateAction) => void;
   /** Renders the circular back control before the title (CREATE 02). */
   onBack?: () => void;
+  /**
+   * The ✕ at the header's end. The centre button used to turn into this sheet's ✕; it is the
+   * assistant now, so the sheet carries its own, in the back control's filled circle.
+   */
+  onClose?: () => void;
   footnote?: string;
   /** True while this pane is the one on screen: drives the row stagger and the focus move. */
   visible: boolean;
@@ -48,6 +53,7 @@ export function CreateSheetStep({
   rows,
   onSelect,
   onBack,
+  onClose,
   footnote,
   visible,
   style,
@@ -95,20 +101,30 @@ export function CreateSheetStep({
             onPress={onBack}
           />
         ) : null}
-        <Text accessibilityRole="header" variant="headline">
+        <Text accessibilityRole="header" variant="headline" style={{ flex: 1 }}>
           {title}
         </Text>
+        {onClose ? (
+          <IconButton
+            icon="times"
+            iconSize={s(14)}
+            iconColor="textPrimary"
+            label="Close"
+            size={s(BACK_BUTTON)}
+            variant="filled"
+            onPress={onClose}
+          />
+        ) : null}
       </View>
 
       <View style={{ marginTop: s(HEADER_GAP), gap: s(ROW_GAP) }}>
         {rows.map((row, index) => {
           const content = (
             <SheetRow
-              icon={row.icon}
+              art={<row.art.Icon width={s(row.art.w)} height={s(row.art.h)} />}
               label={row.label}
               description={row.description}
               ai={row.ai}
-              tone={row.tone}
               onPress={() => onSelect(row.key)}
             />
           );

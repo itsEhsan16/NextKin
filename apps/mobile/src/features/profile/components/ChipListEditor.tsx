@@ -2,20 +2,54 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
-import { ConfirmSheet } from '@/ui/ConfirmSheet';
+import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
+import type { ListRowArt } from '@/ui/ListRow';
+import { NoteBar } from '@/ui/NoteBar';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
+import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
 
-import { DISCARD_TITLE } from '../chipEdits';
+import {
+  addChip,
+  atCap,
+  capNote,
+  DISCARD_TITLE,
+  filterSuggestions,
+  removeChip,
+} from '../chipEdits';
 import { DISCARD_MESSAGE, SAVE_FAILED } from '../profileForms';
-import { ChipListBody, ChipListSkeleton, type ChipListBodyProps } from './ChipListParts';
+import { CARD_GAP, SectionCard, SummaryCard } from './cards';
+import { ChipField, ChipListSkeleton, SuggestedLabel, SuggestionChips } from './ChipListParts';
 
-export type ChipListEditorProps = ChipListBodyProps & {
+export type ChipListEditorProps = {
   title: string;
-  /** Rendered under the editor — Locations puts its remote chooser here. */
+  /** The head card (PROFILE 09 577:7984): the list's icon, where it stands, and a lede or meter. */
+  summary: { art: ListRowArt; artWidth?: number; title: string; lede?: string; progress?: number };
+  /** The list card's title — "Your skills", "Cities". */
+  listTitle: string;
+  /** Names one entry — "skill", "desired role", "location". */
+  noun: string;
+  items: readonly string[];
+  /** The shipped vocabulary offered as suggestions (`@/data/models`). */
+  suggestions: readonly string[];
+  placeholder: string;
+  /** The add field's accessible label — "Add a skill". */
+  addLabel: string;
+  max?: number;
+  /** Said in place of the chips while there are none. */
+  emptyMessage?: string;
+  /**
+   * Skills and Desired roles give the suggestions a card of their own (577:8048); Locations keeps
+   * them under its field with a "Suggested" label (580:1783).
+   */
+  suggestionsIn: 'card' | 'list';
+  onChange: (next: string[]) => void;
+  /** Rendered under the list — Locations puts its remote chooser card here. */
   below?: ReactNode;
+  /** The lavender line at the foot of the page, on what the answer is used for (577:8071). */
+  note: string;
   loading: boolean;
   error: boolean;
   onRetry: () => void;
@@ -27,10 +61,12 @@ export type ChipListEditorProps = ChipListBodyProps & {
   onClose: () => void;
 };
 
+const SKELETON_HEAD = 100 / 0.75;
+
 /**
- * The page all three §7.3 chip screens are: a header, the editable list, an optional extra
- * section under it, and a Save bar that stays inert until something has actually changed. No
- * artboard draws any of them (plan §8), so it is assembled from the built primitives alone.
+ * The page all three §7.3 chip screens are (PROFILE 09 / 15 / 16): a summary card, the editable
+ * list in a card, its suggestions, an optional extra card, a lavender note, and a Save that stays
+ * inert until something has actually changed.
  *
  * The draft lives in the screen above rather than here, because a screen can hold more than the
  * list — Locations edits a remote preference in the same save — and `dirty` has to account for
@@ -38,7 +74,19 @@ export type ChipListEditorProps = ChipListBodyProps & {
  */
 export function ChipListEditor({
   title,
+  summary,
+  listTitle,
+  noun,
+  items,
+  suggestions,
+  placeholder,
+  addLabel,
+  max,
+  emptyMessage,
+  suggestionsIn,
+  onChange,
   below,
+  note,
   loading,
   error,
   onRetry,
@@ -47,9 +95,8 @@ export function ChipListEditor({
   failed,
   onSave,
   onClose,
-  ...body
 }: ChipListEditorProps) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
@@ -75,8 +122,8 @@ export function ChipListEditor({
         scroll
         edges={['top', 'bottom']}
         header={<ScreenHeader title={title} onBack={requestBack} />}
-        headerStyle={{ paddingBottom: spacing[4] }}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+        headerStyle={{ paddingBottom: spacing[6] }}
+        contentContainerStyle={{ paddingBottom: spacing[8], gap: s(CARD_GAP) }}
         footer={footer}
       >
         {children}
@@ -87,6 +134,8 @@ export function ChipListEditor({
         open={confirmOpen}
         title={DISCARD_TITLE}
         message={DISCARD_MESSAGE}
+        art={<ConfirmArt kind="discard" />}
+        artGap={0}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
         onConfirm={() => {
@@ -102,8 +151,11 @@ export function ChipListEditor({
   // without one would grow a footer out of nothing the moment the profile lands.
   if (loading) {
     return page(
-      <ChipListSkeleton />,
-      <StickyActionBar primary={{ label: 'Save', disabled: true }} />,
+      <>
+        <Skeleton height={s(SKELETON_HEAD)} radius="cardLg" />
+        <ChipListSkeleton />
+      </>,
+      <StickyActionBar floating primary={{ label: 'Save changes', disabled: true }} />,
     );
   }
 
@@ -120,15 +172,55 @@ export function ChipListEditor({
     );
   }
 
+  const full = atCap(items, max);
+  const offered = full ? [] : filterSuggestions(suggestions, items, '');
+  const add = (value: string): string | undefined => {
+    const result = addChip(items, value, noun, max);
+    if ('refused' in result) return result.refused;
+    onChange(result.items);
+    return undefined;
+  };
+  const suggestionChips = (
+    <SuggestionChips noun={noun} items={offered} onAdd={(item) => void add(item)} />
+  );
+
   return page(
     <>
-      <ChipListBody {...body} />
+      <SummaryCard {...summary} />
+
+      <SectionCard title={listTitle}>
+        <ChipField
+          noun={noun}
+          items={items}
+          placeholder={placeholder}
+          addLabel={addLabel}
+          onAdd={add}
+          onRemove={(item) => onChange(removeChip(items, item))}
+          fullNote={full && max != null ? capNote(max) : undefined}
+          emptyMessage={emptyMessage}
+        />
+        {suggestionsIn === 'list' && offered.length > 0 ? (
+          <>
+            <SuggestedLabel />
+            {suggestionChips}
+          </>
+        ) : null}
+      </SectionCard>
+
+      {suggestionsIn === 'card' && offered.length > 0 ? (
+        <SectionCard title="Suggested">{suggestionChips}</SectionCard>
+      ) : null}
+
       {below}
+
+      <NoteBar text={note} />
     </>,
     <StickyActionBar
+      floating
       note={failed ? SAVE_FAILED : undefined}
+      noteTone="danger"
       primary={{
-        label: 'Save',
+        label: 'Save changes',
         loading: saving,
         // A failure leaves the button live, so pressing it again is the retry.
         disabled: !dirty,

@@ -27,6 +27,8 @@ export type JdIntakeSectionProps = {
   onChange: (input: JdInput | null) => void;
   /** Set when the flow started from a listing: the picker collapses to that job. */
   jobId?: string;
+  /** Shown under the pasted text: what is wrong with it (a link pasted in, `JobIntake`). */
+  pasteError?: string;
 };
 
 /** Long enough for the longest posting anyone pastes; the counter shows the ceiling. */
@@ -72,7 +74,7 @@ export const jdInputForJob = (jobId?: string): JdInput | null =>
  * on" can fall out of step with it; `pendingMode` covers only the gap between choosing "Upload a
  * file" and having one.
  */
-export function JdIntakeSection({ value, onChange, jobId }: JdIntakeSectionProps) {
+export function JdIntakeSection({ value, onChange, jobId, pasteError }: JdIntakeSectionProps) {
   const { motion, spacing, s } = useTheme();
   const reduced = useReducedMotion();
   const openJobSheet = useCreateStore((state) => state.openJobSheet);
@@ -81,7 +83,9 @@ export function JdIntakeSection({ value, onChange, jobId }: JdIntakeSectionProps
   const [changing, setChanging] = useState(false);
   const [picking, setPicking] = useState(false);
 
-  const mode: JdMode | null = value?.source ?? pendingMode;
+  // A link is the web upload page's way in (toreview §23); this intake has no link editor, so a
+  // link value reads as nothing chosen yet.
+  const mode: JdMode | null = value?.source === 'link' ? null : (value?.source ?? pendingMode);
   // One query for both job branches: locked to a listing, the two ids are the same one.
   const job = useJob(value?.source === 'job' ? value.jobId : (jobId ?? ''));
 
@@ -207,6 +211,7 @@ export function JdIntakeSection({ value, onChange, jobId }: JdIntakeSectionProps
           minLines={MIN_LINES}
           maxLength={MAX_JD}
           showCount
+          error={pasteError}
         />
         {changeSource}
       </View>

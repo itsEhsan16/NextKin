@@ -1,3 +1,5 @@
+import { useRouter } from 'expo-router';
+
 import { useSubscription } from '@/data/queries';
 import { useTheme } from '@/theme';
 import { Sheet } from '@/ui/Sheet';
@@ -5,14 +7,14 @@ import { Toast } from '@/ui/Toast';
 
 import { ExportSheetBody } from './components/ExportSheetBody';
 import { useDocumentExport } from './hooks/useDocumentExport';
-import { useResumesActions } from './hooks/useResumesActions';
 import { useResumesStore, type ResumeSurface } from './resumesStore';
 
 export type ResumeExportHostProps = {
   /**
-   * Which mount this is. The tabs layout hosts one; the editor hosts its own, because a pushed
-   * screen sits above the tabs layout and would cover the sheet raised there. Only the mount
-   * matching the store's surface renders — one paint, one BackHandler, one scrim.
+   * Which mount this is. The tabs layout hosts one; the editor and a finished Build run host
+   * their own, because a pushed screen sits above the tabs layout and would cover the sheet raised
+   * there. Only the mount matching the store's surface renders — one paint, one BackHandler, one
+   * scrim.
    */
   surface?: ResumeSurface;
 };
@@ -37,9 +39,12 @@ export function ResumeExportHost({ surface = 'tabs' }: ResumeExportHostProps) {
   const closeExport = useResumesStore((state) => state.closeExport);
   const toast = useResumesStore((state) => state.toast);
   const toastSurface = useResumesStore((state) => state.toastSurface);
+  const toastTone = useResumesStore((state) => state.toastTone);
   const hideToast = useResumesStore((state) => state.hideToast);
 
-  const actions = useResumesActions();
+  // The router directly, not useResumesActions: that hook needs the tabs' create-sheet provider,
+  // and this host also mounts on pushed screens (the editor, a finished Build run) outside it.
+  const router = useRouter();
   const subscription = useSubscription();
   // While the plan is still loading — or failed to load — treat it as FREE. Unlocking a paid
   // format against a plan we have not read is the one mistake that cannot be taken back: the
@@ -72,13 +77,13 @@ export function ResumeExportHost({ surface = 'tabs' }: ResumeExportHostProps) {
               // §13.5: the upsell replaces the action. The sheet gets out of the way first, so
               // the comparison screen is not raised behind a scrim.
               closeExport();
-              actions.openUpgrade('docx');
+              router.push({ pathname: '/upgrade', params: { reason: 'docx' } });
             }}
           />
         </Sheet>
       ) : null}
 
-      <Toast visible={toastVisible} message={toast ?? ''} onHide={hideToast} />
+      <Toast visible={toastVisible} message={toast ?? ''} tone={toastTone} onHide={hideToast} />
     </>
   );
 }

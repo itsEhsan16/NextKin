@@ -54,7 +54,7 @@ describe('JdReviewScreen error state', () => {
       await screen.findByText("Couldn't load this job description", {}, { timeout: 20000 }),
     ).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
-    // The form's action bar is gone with it: there is nothing to generate from.
-    expect(screen.queryByLabelText('Generate resume')).toBeNull();
+    // The form's action bar is gone with it: there is nothing to confirm.
+    expect(screen.queryByLabelText('Done')).toBeNull();
   }, 40000);
 });

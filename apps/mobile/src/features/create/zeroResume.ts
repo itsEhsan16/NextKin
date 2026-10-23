@@ -1,146 +1,55 @@
-import type { GenerationInput, JdInput, User } from '@/data/models';
+import type { User, ZeroSeed, ZeroYears } from '@/data/models';
+import { ZERO_YEARS_VALUE } from '@/data/models';
 
 /**
- * NextKin V2 spec §7.9 (Zero Resume Mode) — the rules and the guardrail copy behind the intake,
- * with no React in them.
- *
- * The screen holds its four fields in `useState`; everything that *decides* something about them
- * — whether they are enough to start a run, what the pipeline is seeded with, what the page
- * promises about the draft — lives here, so it is unit tested without rendering a page. The same
- * split as `jdSkillEdits.ts` and `resumes/sectionEdits.ts`. No react-hook-form and no zod: four
- * fields and one number range are the product's rules, not a schema library's.
+ * ZERO 01's rules (V2 §7.9, toreview §72): what "About you" holds, when it is enough to write a
+ * draft, and the seed the run is started with. Pure, so the screen only renders and the rules are
+ * tested without mounting it.
  */
 
-export type Validation = { ok: true } | { ok: false; errors: Record<string, string> };
+/** What the form holds. `years` is unpicked until the reader taps a band. */
+export type ZeroAbout = { fullName: string; years: ZeroYears | null; role: string };
 
-/** What the form holds. Years is text because a text field is what the reader types into. */
-export type ZeroResumeDraft = {
-  fullName: string;
-  yearsExperience: string;
-  targetTitle: string;
-  location: string;
-};
+export const emptyZeroAbout: ZeroAbout = { fullName: '', years: null, role: '' };
 
-/** The pipeline's Zero Resume seed (V2 §7.9), named off the model so the two cannot drift. */
-export type ZeroSeed = NonNullable<GenerationInput['zero']>;
-
-export const emptyZeroResumeDraft: ZeroResumeDraft = {
-  fullName: '',
-  yearsExperience: '',
-  targetTitle: '',
-  location: '',
-};
-
-/** Field caps. The name is a resume header line; the title and city are one line each. */
+/** The name is a resume header line; the role is one line on it. */
 export const NAME_MAX = 80;
-export const TITLE_MAX = 80;
-export const LOCATION_MAX = 80;
+export const ROLE_MAX = 80;
 
-/**
- * The top of the accepted range. Not a judgement about anyone's career: past this the number is
- * far likelier to be a typo than a working life, and the pipeline builds a role scaffold out of
- * it (§7.9), so an unbounded figure would scaffold an unbounded resume.
- */
-export const YEARS_MAX = 60;
+/** The primary's label (613:291), shared with the inert copy the loading state pins. */
+export const ZERO_CTA = 'Write my draft';
 
-/* --------------------------------------------------------------- guardrail */
+export const ZERO_START_FAILED =
+  "We couldn't start your draft. Check your connection and try again.";
 
-/**
- * The §7.9 guardrail, verbatim. It is a constant rather than copy typed into the card because
- * this is the one promise the whole feature rests on — "the product's mechanics enforce this" —
- * and a test pins it so nobody softens it into marketing later.
- */
-export const ZERO_RESUME_GUARDRAIL_TITLE = 'This draft will be full of blanks on purpose';
+export type ZeroAboutErrors = Partial<Record<keyof ZeroAbout, string>>;
 
-export const ZERO_RESUME_GUARDRAIL_BODY =
-  'We only know what you type on this page. Everything else is left as a placeholder for you to ' +
-  'fill in: roles come out as [Company Name], schools as [Institution], and dates as ranges we ' +
-  'worked out from your years of experience. Nothing is invented as fact — no employer, no ' +
-  'credential, no skill you did not tell us about. Every assumed line is marked "needs review", ' +
-  'and the draft cannot be downloaded until you have replaced or confirmed each one.';
-
-/* -------------------------------------------------------------- validation */
-
-const verdict = (errors: Record<string, string>): Validation =>
-  Object.keys(errors).length === 0 ? { ok: true } : { ok: false, errors };
-
-/**
- * The typed years as a number, or null when the text is not a plain count of years. Whole digits
- * only: "3.5" and "about 4" are answers to a different question, and the scaffold divides the
- * figure into roles.
- */
-export function parseYears(value: string): number | null {
-  const trimmed = value.trim();
-  if (!/^\d+$/.test(trimmed)) return null;
-  const years = Number(trimmed);
-  return Number.isFinite(years) ? years : null;
-}
-
-/**
- * What the form has to say before a run can start (V2 §7.9: name + years of experience + a JD).
- * Zero is a valid, expected answer here — this feature exists for the person who has never had a
- * job — so an empty field and a typed 0 are told apart rather than both read as "missing".
- */
-export function validateZeroResume(draft: ZeroResumeDraft): Validation {
-  const errors: Record<string, string> = {};
-
-  const name = draft.fullName.trim();
+/** "Tell us three things": each of the three is needed, and the two text fields have a length. */
+export function validateZeroAbout(about: ZeroAbout): ZeroAboutErrors {
+  const errors: ZeroAboutErrors = {};
+  const name = about.fullName.trim();
   if (name.length === 0) errors.fullName = 'Add the name you want printed on the resume.';
-  else if (name.length > NAME_MAX) {
-    errors.fullName = `That name is ${name.length} characters. Keep it under ${NAME_MAX}.`;
-  }
+  else if (name.length > NAME_MAX) errors.fullName = `Keep the name under ${NAME_MAX} characters.`;
 
-  const years = draft.yearsExperience.trim();
-  if (years.length === 0) {
-    errors.yearsExperience =
-      'Tell us how many years you have worked. Type 0 if you are starting out.';
-  } else {
-    const parsed = parseYears(years);
-    if (parsed === null)
-      errors.yearsExperience = 'Write this as whole years in digits — 0, 2 or 15.';
-    else if (parsed > YEARS_MAX) {
-      errors.yearsExperience = `${YEARS_MAX} years is the most we can build a draft from.`;
-    }
-  }
+  if (about.years == null) errors.years = 'Pick how long you have worked. None is a fine answer.';
 
-  if (draft.targetTitle.trim().length > TITLE_MAX) {
-    errors.targetTitle = `Keep the job title under ${TITLE_MAX} characters.`;
-  }
-  if (draft.location.trim().length > LOCATION_MAX) {
-    errors.location = `Keep the location under ${LOCATION_MAX} characters.`;
-  }
-
-  return verdict(errors);
+  const role = about.role.trim();
+  if (role.length === 0) errors.role = 'Add the role you want, like Product Designer.';
+  else if (role.length > ROLE_MAX) errors.role = `Keep the role under ${ROLE_MAX} characters.`;
+  return errors;
 }
 
-/**
- * Whether the job description is usable yet. §7.9 lists a confirmed JD extraction among the three
- * inputs, so this flow cannot start without one: a pasted description that is only whitespace is
- * not a description, and a saved job the app could not read is not one either.
- */
-export const jdIsReady = (jd: JdInput | null, jobResolved: boolean): boolean =>
-  jd != null &&
-  (jd.source !== 'paste' || jd.text.trim().length > 0) &&
-  (jd.source !== 'job' || jobResolved);
+export const isZeroAboutReady = (about: ZeroAbout): boolean =>
+  Object.keys(validateZeroAbout(about)).length === 0;
 
-/* --------------------------------------------------------------- the seed */
-
-/**
- * The seed handed to the pipeline. Trimmed, and the two optional fields are omitted rather than
- * sent as empty strings: the repo names the shell document after `targetTitle` when it has one,
- * and an empty string there would title a document "".
- *
- * Call it on a draft that has passed `validateZeroResume` — the years fall back to 0, which is
- * the honest reading of a field this feature expects people to leave at zero.
- */
-export function zeroSeed(draft: ZeroResumeDraft): ZeroSeed {
-  const targetTitle = draft.targetTitle.trim();
-  const location = draft.location.trim();
+/** The run's seed; call it on a form that passed `validateZeroAbout`. */
+export function zeroSeedFrom(about: ZeroAbout): ZeroSeed {
+  const band = about.years ?? 'none';
   return {
-    fullName: draft.fullName.trim(),
-    yearsExperience: parseYears(draft.yearsExperience) ?? 0,
-    ...(targetTitle ? { targetTitle } : {}),
-    ...(location ? { location } : {}),
+    fullName: about.fullName.trim(),
+    yearsBand: band,
+    yearsExperience: ZERO_YEARS_VALUE[band],
+    targetTitle: about.role.trim(),
   };
 }
 

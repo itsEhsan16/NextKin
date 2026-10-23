@@ -105,10 +105,13 @@ describe('Profile entry forms (V2 §7.3 — no artboard)', () => {
     expect(screen.getByLabelText('Start, Jun 2019')).toBeOnTheScreen();
     expect(screen.getByLabelText('User research, skill', shown)).toBeOnTheScreen();
 
-    // A role someone still holds has no end date to show.
+    // A role someone still holds reads Present, inert — the saved end date is hidden, not lost.
     expect(screen.getByLabelText('End, Feb 2022')).toBeOnTheScreen();
     await act(async () => fireEvent.press(screen.getByLabelText('I currently work here')));
     expect(screen.queryByLabelText('End, Feb 2022')).not.toBeOnTheScreen();
+    expect(screen.getByLabelText('End, Present')).toBeDisabled();
+    // The editor names the role it is open on (PROFILE 05 573:152).
+    expect(screen.getByText('Swiggy · Jun 2019 – Feb 2022')).toBeOnTheScreen();
 
     // Deleting lives on the entry, and asks first.
     await act(async () => fireEvent.press(screen.getByLabelText('Delete role')));
@@ -144,7 +147,7 @@ describe('Profile entry forms (V2 §7.3 — no artboard)', () => {
 
     expect(screen.getByText('That entry no longer exists')).toBeOnTheScreen();
     // Nothing to save, so the page carries no action bar at all.
-    expect(screen.queryByLabelText('Save')).not.toBeOnTheScreen();
+    expect(screen.queryByLabelText(/^Save/)).not.toBeOnTheScreen();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Back to work experience')));
     expect(mockBack).toHaveBeenCalledTimes(1);
@@ -163,7 +166,8 @@ describe('Profile entry forms (V2 §7.3 — no artboard)', () => {
 
     await act(async () => fireEvent(field, 'blur'));
     expect(screen.getByText('Add the school or university.')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Save')).toBeDisabled();
+    // An existing entry saves with "Save changes" (577:7528); a new one with "Save".
+    expect(screen.getByLabelText('Save changes')).toBeDisabled();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Back')));
     expect(screen.getByText('Discard changes?', shown)).toBeOnTheScreen();

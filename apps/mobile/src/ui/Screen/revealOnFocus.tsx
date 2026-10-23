@@ -13,15 +13,15 @@ import { Keyboard, useWindowDimensions, type ScrollView, type View } from 'react
 /**
  * Scrolls a field that has just taken focus out from under the keyboard.
  *
- * `Screen`'s `keyboard` prop buys two things and neither of them is this one: `KeyboardAvoidingView`
- * pads the page on iOS, and Android's `windowSoftInputMode: resize` shrinks the window. Both make
- * the field *reachable*; neither moves the scroll offset. React Native's `ScrollView` does not
+ * `Screen`'s `keyboard` prop pads the page by the keyboard's height on both platforms, which makes
+ * the field *reachable* but does not move the scroll offset. React Native's `ScrollView` does not
  * scroll to a focused `TextInput` on Android at all, and not reliably on iOS — so a field below the
  * fold stayed under the keyboard and the user typed blind. A device pass found it on
  * `/profile/edit`, where the numeric "Years of experience" is the last node on the page.
  *
- * Pure JS on purpose: `react-native-keyboard-controller` and friends are native modules, and this
- * app must run in Expo Go (CLAUDE.md rule 1).
+ * The padding itself now comes from `react-native-keyboard-controller` (in Expo Go since SDK 57;
+ * see `KeyboardFrame`). The reveal stays on React Native's own keyboard events and metrics, which
+ * the 2026-10-03 device pass verified; it was never the part that snapped.
  *
  * The measurement is deliberately in window coordinates rather than relative to the scroll content.
  * `measureInWindow` needs no node handle and no `measureLayout` against a host ref, so a field can
@@ -30,6 +30,25 @@ import { Keyboard, useWindowDimensions, type ScrollView, type View } from 'react
  */
 
 export type RevealOnFocus = (node: View | null) => void;
+
+/**
+ * Whether the keyboard has finished opening. `KeyboardController.isVisible()` turns true as the
+ * keyboard *starts* to rise, so it cannot say this; React Native's `keyboardDidShow` can.
+ * Module-level, like React Native's own `Keyboard.isVisible()`, so `Screen` can ask it from a
+ * layout callback.
+ */
+let keyboardSettled = false;
+Keyboard.addListener('keyboardDidShow', () => {
+  keyboardSettled = true;
+});
+for (const moving of ['keyboardWillShow', 'keyboardWillHide', 'keyboardDidHide'] as const) {
+  Keyboard.addListener(moving, () => {
+    keyboardSettled = false;
+  });
+}
+
+/** True once the keyboard is fully up and not moving — see `keyboardSettled`. */
+export const isKeyboardSettled = (): boolean => keyboardSettled;
 
 const RevealContext = createContext<RevealOnFocus | null>(null);
 
@@ -46,6 +65,11 @@ export type RevealInput = {
   footerHeight: number;
   /** Where the scroller is now — the reveal is expressed as a new absolute offset. */
   scrollOffset: number;
+  /**
+   * Where the scroll viewport starts in the window. A field above it is under the pinned header,
+   * as hidden as one under the keyboard, so the page scrolls back to show it.
+   */
+  viewportTop?: number;
 };
 
 /**
@@ -61,11 +85,16 @@ export function revealTarget({
   keyboardTop,
   footerHeight,
   scrollOffset,
+  viewportTop,
 }: RevealInput): number | null {
+  // A field tucked under the pinned header scrolls back into view, top edge first.
+  if (viewportTop != null && fieldY < viewportTop + MARGIN) {
+    return Math.max(0, scrollOffset - (viewportTop + MARGIN - fieldY));
+  }
   const visibleBottom = keyboardTop - footerHeight - MARGIN;
   const fieldBottom = fieldY + fieldHeight;
-  // Only ever scrolls DOWN to uncover a field. Pulling a field that is merely high on the page
-  // back to the keyboard's edge would yank the page about while someone tabs through a form.
+  // Otherwise it only ever scrolls DOWN to uncover a field. Pulling a field that is merely high on
+  // the page back to the keyboard's edge would yank the page about while someone tabs through it.
   if (fieldBottom <= visibleBottom) return null;
   return Math.max(0, scrollOffset + (fieldBottom - visibleBottom));
 }
@@ -73,17 +102,23 @@ export function revealTarget({
 export type RevealProviderProps = {
   scrollRef: RefObject<ScrollView | null>;
   /** Live scroll offset — the provider needs it to convert a window delta into a target offset. */
-  offsetRef: RefObject<number>;
+  getOffset: () => number;
   /** Height of the pinned footer, which rides above the keyboard and hides the field behind it. */
   footerRef: RefObject<number>;
+  /** The scroll viewport's top edge in the window (under the safe area and the pinned header). */
+  viewportTopRef?: RefObject<number>;
+  /** Filled with the reveal, so the page can re-run it once the keyboard has resized it. */
+  revealAgainRef?: RefObject<(() => void) | null>;
   enabled: boolean;
   children: ReactNode;
 };
 
 export function RevealProvider({
   scrollRef,
-  offsetRef,
+  getOffset,
   footerRef,
+  viewportTopRef,
+  revealAgainRef,
   enabled,
   children,
 }: RevealProviderProps) {
@@ -106,11 +141,20 @@ export function RevealProvider({
         fieldHeight: height,
         keyboardTop,
         footerHeight: footerRef.current,
-        scrollOffset: offsetRef.current,
+        scrollOffset: getOffset(),
+        viewportTop: viewportTopRef?.current,
       });
       if (target != null) scrollRef.current?.scrollTo({ y: target, animated: true });
     });
-  }, [footerRef, offsetRef, scrollRef, windowHeight]);
+  }, [footerRef, getOffset, scrollRef, viewportTopRef, windowHeight]);
+
+  useEffect(() => {
+    if (!revealAgainRef) return undefined;
+    revealAgainRef.current = enabled ? run : null;
+    return () => {
+      revealAgainRef.current = null;
+    };
+  }, [enabled, revealAgainRef, run]);
 
   useEffect(() => {
     if (!enabled) return undefined;

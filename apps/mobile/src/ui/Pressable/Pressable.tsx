@@ -1,19 +1,25 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, type ComponentProps } from 'react';
 import {
   Pressable as RNPressable,
+  StyleSheet,
   type GestureResponderEvent,
   type PressableProps as RNPressableProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 
 import { haptics, useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 
 const AnimatedRNPressable = Animated.createAnimatedComponent(RNPressable);
 
-export type PressFeedback = 'scale' | 'subtle' | 'none';
+export type PressFeedback = 'scale' | 'subtle' | 'fab' | 'none';
 export type PressHaptic = 'light' | 'medium' | 'selection' | 'none';
 
 export type PressableProps = Omit<RNPressableProps, 'style'> & {
@@ -21,16 +27,34 @@ export type PressableProps = Omit<RNPressableProps, 'style'> & {
   feedback?: PressFeedback;
   /** Haptic fired on press (before `onPress`). Defaults to none. */
   haptic?: PressHaptic;
+  /**
+   * Dim to `opacity.disabled` while disabled (default). A control that is disabled only because
+   * it is busy — a Button showing its spinner — keeps full strength instead.
+   */
+  dimDisabled?: boolean;
+  /**
+   * Mirrors the press (0 → 1) into a shared value the caller owns, so something drawn outside
+   * this surface can move with it — the FAB's glow, which is a sibling.
+   */
+  pressProgress?: SharedValue<number>;
+  /** A layout transition, for a surface whose size changes with its state (a chip gaining a ✓). */
+  layout?: ComponentProps<typeof Animated.View>['layout'];
   style?: StyleProp<ViewStyle>;
 };
 
 /**
  * The app's only tappable surface. Runs the press scale on the UI thread and fires the
  * semantic haptic so every interactive element feels identical.
+ *
+ * Opacity is animated too: whatever opacity the surface should show — the caller's own, or the
+ * disabled dim, which wins — is eased to rather than set, so enabling or disabling a control
+ * fades instead of snapping.
  */
 export function Pressable({
   feedback = 'scale',
   haptic = 'none',
+  dimDisabled = true,
+  pressProgress,
   onPress,
   onPressIn,
   onPressOut,
@@ -39,18 +63,36 @@ export function Pressable({
   children,
   ...rest
 }: PressableProps) {
-  const { motion } = useTheme();
+  const { motion, opacity } = useTheme();
   const reduced = useReducedMotion();
-  const pressed = useSharedValue(0);
+  const ownPressed = useSharedValue(0);
+  const pressed = pressProgress ?? ownPressed;
 
   const target =
     feedback === 'none' || reduced
       ? 1
       : feedback === 'subtle'
         ? motion.scales.pressedSubtle
-        : motion.scales.pressed;
+        : feedback === 'fab'
+          ? motion.scales.fabPressed
+          : motion.scales.pressed;
+
+  // The opacity this surface should rest at: the caller's own (static) value, unless the disabled
+  // dim applies, which wins over it — as the plain style override used to.
+  const callerOpacity = StyleSheet.flatten(style)?.opacity;
+  const restOpacity =
+    disabled && dimDisabled
+      ? opacity.disabled
+      : typeof callerOpacity === 'number'
+        ? callerOpacity
+        : 1;
+  const shownOpacity = useSharedValue(restOpacity);
+  useEffect(() => {
+    shownOpacity.set(reduced ? restOpacity : withTiming(restOpacity, motion.timings.fast));
+  }, [motion.timings.fast, reduced, restOpacity, shownOpacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
+    opacity: shownOpacity.value,
     transform: [{ scale: 1 - pressed.value * (1 - target) }],
   }));
 
@@ -86,7 +128,7 @@ export function Pressable({
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[style, animatedStyle, disabled ? { opacity: 0.4 } : null]}
+      style={[style, animatedStyle]}
     >
       {children}
     </AnimatedRNPressable>

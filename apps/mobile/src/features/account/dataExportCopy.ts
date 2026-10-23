@@ -12,14 +12,39 @@ import { formatShortDate } from '@/lib';
 
 export const DATA_EXPORT_TITLE = 'Download your data';
 
-/** One line per section of the payload below, so the explainer cannot outgrow the file. */
-export const DATA_EXPORT_CONTENTS: readonly string[] = [
-  'Your account: name, email address and the day you joined.',
-  'Your profile: headline, experience, education, certifications, skills, links and preferences.',
-  'Your documents: each resume and cover letter with its dates, version count and latest score.',
-  'The jobs you have saved.',
-  'Your activity history — generations, exports and applications.',
+/** The sections of the payload below, so the explainer cannot outgrow the file. */
+export type DataExportSection = {
+  key: 'account' | 'profile' | 'documents' | 'savedJobs' | 'activity';
+  title: string;
+  body: string;
+};
+
+/** One row per section of the payload, in the words ACCOUNT 02 (577:3105) sets them. */
+export const DATA_EXPORT_CONTENTS: readonly DataExportSection[] = [
+  { key: 'account', title: 'Your account', body: 'Name, email address and the day you joined.' },
+  {
+    key: 'profile',
+    title: 'Your profile',
+    body: 'Headline, experience, education, certifications, skills, links and preferences.',
+  },
+  {
+    key: 'documents',
+    title: 'Your documents',
+    body: 'Each resume and cover letter with its dates, version count and latest score.',
+  },
+  { key: 'savedJobs', title: 'Saved jobs', body: 'The jobs you have saved.' },
+  {
+    key: 'activity',
+    title: 'Your activity history',
+    body: 'Generations, exports and applications.',
+  },
 ];
+
+export const DATA_EXPORT_CONTENTS_TITLE = 'What the file holds';
+
+/** Under the privacy-policy row (577:3226): what the policy answers, so the tap is informed. */
+export const DATA_EXPORT_PRIVACY_LINE =
+  'What we hold about you, why we hold it, and how to get it back or get rid of it.';
 
 export type DataExportBlock = { title: string; body: string; cta: string };
 

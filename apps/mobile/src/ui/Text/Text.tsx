@@ -12,6 +12,10 @@ import { useTheme, type ColorToken, type TypographyRole } from '@/theme';
 /** Dense chrome roles must not scale unboundedly with Dynamic Type. */
 const CHROME_ROLES: ReadonlySet<TypographyRole> = new Set(['tabLabel', 'badge', 'micro']);
 
+/** The Dynamic Type cap for a role, unless the caller set one. Shared with `AnimatedText`. */
+export const fontScaleFor = (variant: TypographyRole, override?: number | null): number =>
+  override ?? (CHROME_ROLES.has(variant) ? maxFontScale.chrome : maxFontScale.body);
+
 export type TextProps = Omit<RNTextProps, 'style'> & {
   /** Typography variant from the Figma type ramp. Defaults to `body`. RN's `role` stays the ARIA role. */
   variant?: TypographyRole;
@@ -45,15 +49,18 @@ export function Text({
     [theme, variant, color, align],
   );
 
-  const fontScale =
-    maxFontSizeMultiplier ?? (CHROME_ROLES.has(variant) ? maxFontScale.chrome : maxFontScale.body);
+  const fontScale = fontScaleFor(variant, maxFontSizeMultiplier);
 
   return (
-    <RNText {...rest} maxFontSizeMultiplier={fontScale} style={[styles.base, roleStyle, style]} />
+    <RNText
+      {...rest}
+      maxFontSizeMultiplier={fontScale}
+      style={[textStyles.base, roleStyle, style]}
+    />
   );
 }
 
-const styles = StyleSheet.create({
+export const textStyles = StyleSheet.create({
   base: {
     // Android adds font padding above/below glyphs; Figma line heights assume it is off.
     includeFontPadding: false,

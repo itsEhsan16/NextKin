@@ -5,7 +5,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
-import { resetMockRepos } from '@/data/repos';
+import { mockStore, resetMockRepos } from '@/data/repos';
 import { ResumesScreen, useResumesStore } from '@/features/resumes';
 import { storage } from '@/lib';
 
@@ -126,13 +126,16 @@ describe('ResumesScreen (RESUMES 01/02)', () => {
     expect(screen.getAllByText('Update available', hidden)).toHaveLength(2);
     expect(screen.getAllByText('Edited 2d ago').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('Edited 1mo ago')).toHaveLength(2);
-    expect(screen.getAllByLabelText(/^ATS score \d+$/)).toHaveLength(8);
+    // Every scored document wears its engine score (C-10); the base resume has no JD, so no
+    // total and no chip (D-15).
+    expect(screen.getAllByLabelText(/^ATS score \d+$/)).toHaveLength(7);
 
     // — Routing: the ATS chip opens the score panel; the card itself opens the editor —
-    fireEvent.press(screen.getByLabelText('ATS score 84'));
+    const res1 = mockStore.state.atsScores.res_1?.total;
+    fireEvent.press(screen.getByLabelText(`ATS score ${res1}`));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/resumes/[id]/score',
-      params: { id: 'res_5' },
+      params: { id: 'res_1' },
     });
     mockPush.mockClear();
     // Phase 9C: every document opens its editor, scored or not — the panel is a view OF the

@@ -70,17 +70,34 @@ describe('Notifications feed (NOTIF 01/02/03/05)', () => {
     expect(screen.getByRole('header', { name: 'THIS WEEK' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'EARLIER' })).toBeOnTheScreen();
 
-    // — Rich rows render their full line (bold runs and all) —
+    // — Cards render the board's headline over its grey line (619:2) —
     expect(screen.getByText('5 new matches for Senior Product Designer')).toBeOnTheScreen();
+    expect(screen.getByText('Your ATS score is ready')).toBeOnTheScreen();
     expect(
-      screen.getByText('Your ATS score for Stripe — Senior PD is ready. It scored 88 — two quick wins left.'),
+      screen.getByText(
+        'Your ATS score for Stripe — Senior PD is 88. Two quick wins left to improve.',
+      ),
     ).toBeOnTheScreen();
-    expect(screen.getByText('Manage notification types')).toBeOnTheScreen();
+    // A mixed headline keeps its bold runs inline.
+    expect(screen.getByText('Razorpay — Senior UX Designer closes in 3 days')).toBeOnTheScreen();
+
+    // — Screen readers reach the swipe actions without swiping (note 1:2600) —
+    const digest = screen.getByLabelText(/^5 new matches for Senior Product Designer/);
+    expect(digest.props.accessibilityActions).toEqual([
+      { name: 'markRead', label: 'Mark read' },
+      { name: 'more', label: 'More actions' },
+    ]);
+    // A read card has nothing to mark, so it offers More alone.
+    expect(
+      screen.getByLabelText(/^Freshworks moved your application/).props.accessibilityActions,
+    ).toEqual([{ name: 'more', label: 'More actions' }]);
+    fireEvent(digest, 'accessibilityAction', { nativeEvent: { actionName: 'markRead' } });
+    expect(await screen.findByText('3 unread', {}, { timeout: 10000 })).toBeOnTheScreen();
 
     // — Opening a row deep-links to its exact destination and clears its unread state —
     fireEvent.press(screen.getByLabelText(/^Stripe viewed your application/));
     expect(mockNavigate).toHaveBeenCalledWith('/jobs/job_stripe');
-    expect(await screen.findByText('3 unread', {}, { timeout: 10000 })).toBeOnTheScreen();
+    expect(await screen.findByText('2 unread', {}, { timeout: 10000 })).toBeOnTheScreen();
 
     // — Filter pills narrow by category group —
     fireEvent.press(screen.getByLabelText('Applications'));
@@ -125,7 +142,9 @@ describe('Notifications feed (NOTIF 01/02/03/05)', () => {
     fireEvent(screen.getByLabelText(/^Your free plan renews monthly/), 'longPress');
     fireEvent.press(await screen.findByLabelText('Delete'));
 
-    expect(await screen.findByText("You're all caught up", {}, { timeout: 10000 })).toBeOnTheScreen();
+    expect(
+      await screen.findByText("You're all caught up", {}, { timeout: 10000 }),
+    ).toBeOnTheScreen();
     expect(
       screen.getByText('New matches, application updates and AI results will land here.'),
     ).toBeOnTheScreen();

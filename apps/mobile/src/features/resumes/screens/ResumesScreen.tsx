@@ -1,15 +1,16 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { RefreshControl, StyleSheet, View, type ScrollView } from 'react-native';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import type { Resume } from '@/data/models';
-import { useResumes, useSubscription, useUnreadCount } from '@/data/queries';
+import { queryPhase, useResumes, useSubscription, useUnreadCount } from '@/data/queries';
 import { useReducedMotion } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
 import { columnWidth, useLayoutScale, useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { itemEnter, itemExit, layoutTransition, useRevealStagger } from '@/ui/motion';
 
 import { NewDocRow, NewDocTile } from '../components/NewDocCard';
 import { ResumeGridCard } from '../components/ResumeGridCard';
@@ -22,8 +23,16 @@ import { useResumesStore } from '../resumesStore';
 
 /** Column gap from the artboard: 228 + 16 + 228 fills the 472pt content width. */
 const GRID_GAP = 16;
-/** 1:1392 usage bar ends at 262; the first card 1:1394 starts at 294. */
-const HEADER_GAP = 32;
+/** Rows sit looser than columns: 480.5 → 499 on the 390 board (95:1555 → 95:1585), 18.5 / 0.75. */
+const ROW_GAP = 25;
+/**
+ * List rows sit 14.5 apart on the 390 board (95:1769, 151:2), and the "+ New" row 18 above the
+ * first one: 19 and 24 in artboard units. The extra 5 rides on the New row as a margin.
+ */
+const LIST_GAP = 19;
+const NEW_ROW_GAP = 24;
+/** The usage bar 95:1554 ends at 223 and the first card 95:1555 starts at 251: 28 / 0.75. */
+const HEADER_GAP = 37;
 /** The dashed tile keeps the artboard card proportions so both grid columns align. */
 const NEW_TILE_RATIO = 228 / 306;
 
@@ -46,7 +55,7 @@ function matchesQuery(resume: Resume, query: string): boolean {
  * caps it; even heavy Pro use is dozens, not hundreds), so virtualisation buys nothing here.
  */
 export function ResumesScreen() {
-  const { motion, spacing, s } = useTheme();
+  const { spacing, s } = useTheme();
   const { contentWidth } = useLayoutScale();
   const reduced = useReducedMotion();
   const actions = useResumesActions();
@@ -102,19 +111,20 @@ export function ResumesScreen() {
   // collapsed this grid to a single column on a 411dp phone.
   const gridGap = s(GRID_GAP);
   const cardWidth = columnWidth(contentWidth, gridGap);
-  const status = resumes.isPending ? 'pending' : resumes.isError ? 'error' : 'success';
+  const status = queryPhase(resumes);
+  const enter = useRevealStagger(status !== 'pending');
 
   // First run replaces the whole tab (RESUMES 05) — chrome included, bar the title row.
   if (status === 'success' && library.length === 0) {
     return (
-      // No `contentContainerStyle` here on purpose: the 12 that was its `paddingTop` is now the
-      // header's, and ResumesFirstRun brings its own `marginTop: spacing[10]` — keeping both
-      // would make the seam 42 where the artboard draws 30.
+      // The first-run block centres in the space under the title row, a little above the middle
+      // as RESUMES 05 draws it (toreview.md 38.1); the header keeps its own top padding.
       <Screen
         scroll
         tabBarInset
         scrollRef={scrollRef}
-        headerStyle={{ paddingTop: spacing[4] }}
+        contentContainerStyle={styles.firstRun}
+        headerStyle={{ paddingTop: spacing.headerTop }}
         header={
           <ResumesHeader
             firstRun
@@ -139,7 +149,7 @@ export function ResumesScreen() {
       scrollRef={scrollRef}
       contentContainerStyle={{ gap: s(HEADER_GAP) }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      headerStyle={{ paddingTop: spacing[4] }}
+      headerStyle={{ paddingTop: spacing.headerTop }}
       header={
         <ResumesHeader
           query={query}
@@ -166,7 +176,7 @@ export function ResumesScreen() {
       />
 
       {status === 'pending' ? (
-        <View style={[styles.grid, { gap: s(GRID_GAP) }]}>
+        <View style={[styles.grid, { rowGap: s(ROW_GAP), columnGap: gridGap }]}>
           {[0, 1, 2, 3].map((index) => (
             <Skeleton
               key={index}
@@ -184,7 +194,6 @@ export function ResumesScreen() {
           message="Check your connection and try again."
           actionLabel="Try again"
           onAction={() => void resumes.refetch()}
-          style={{ marginTop: spacing[6] }}
         />
       ) : docs.length === 0 ? (
         // The library has documents but the search / type pills matched none of them.
@@ -196,16 +205,22 @@ export function ResumesScreen() {
             setQuery('');
             setTypeFilter('all');
           }}
-          style={{ marginTop: spacing[6] }}
         />
       ) : (
-        <View style={[styles.grid, { gap: grid ? gridGap : spacing[4] - s(2) }]}>
+        <View
+          style={[
+            styles.grid,
+            grid ? { rowGap: s(ROW_GAP), columnGap: gridGap } : { gap: s(LIST_GAP) },
+          ]}
+        >
           <Animated.View
             key="new"
-            layout={
-              reduced ? undefined : LinearTransition.springify().duration(motion.durations.slow)
+            layout={layoutTransition(reduced)}
+            style={
+              grid
+                ? { width: cardWidth }
+                : [styles.fullWidth, { marginBottom: s(NEW_ROW_GAP - LIST_GAP) }]
             }
-            style={grid ? { width: cardWidth } : styles.fullWidth}
           >
             {grid ? (
               <NewDocTile onPress={actions.openCreate} style={{ aspectRatio: NEW_TILE_RATIO }} />
@@ -217,16 +232,11 @@ export function ResumesScreen() {
           {docs.map((resume, index) => (
             <Animated.View
               key={resume.id}
-              layout={
-                reduced ? undefined : LinearTransition.springify().duration(motion.durations.slow)
-              }
-              entering={
-                reduced
-                  ? undefined
-                  : FadeInDown.delay(
-                      Math.min(index, motion.stagger.maxItems) * motion.stagger.card,
-                    ).duration(motion.durations.base)
-              }
+              layout={layoutTransition(reduced)}
+              // Staggered in only when the library first loads; a card a filter brings back just
+              // fades in, and one a filter (or a delete) takes away shrinks out.
+              entering={enter(index) ?? itemEnter(reduced)}
+              exiting={itemExit(reduced)}
               style={grid ? { width: cardWidth } : styles.fullWidth}
             >
               {grid ? (
@@ -255,4 +265,5 @@ export function ResumesScreen() {
 const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   fullWidth: { width: '100%' },
+  firstRun: { flexGrow: 1, justifyContent: 'center' },
 });

@@ -3,7 +3,10 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { scoreFromKeywords, useMockModeStore } from '@/data/mock';
+import { rescoreStored } from '@nextkin/shared/repos/scoring';
+
+import { useMockModeStore } from '@/data/mock';
+import type { ResumeContent } from '@/data/models';
 import { createQueryClient } from '@/data/queries';
 import { mockStore, resetMockRepos } from '@/data/repos';
 import { AtsFixScreen } from '@/features/resumes';
@@ -24,16 +27,33 @@ const metrics: Metrics = {
 };
 
 /**
- * res_zoho's seeded panel has quick wins but no gap — no fixture score has one, because gaps are
- * minted by generation (`scoreFromKeywords`). The screen has to show one, so this is the same
- * builder the generation repo uses, seeded onto the same document: two missing keywords the body
- * genuinely lacks, and one the profile does not back.
+ * res_zoho scored by the engines (C-10) against a JD that asks for Figma and Prototyping, with
+ * both taken off the document: the profile backs each (on its Flipkart and Swiggy roles), so each
+ * is a quick win the product may make itself. Kubernetes, which nothing on the profile backs, is
+ * the gap: shown, explained, never inserted.
  */
-const seeded = scoreFromKeywords({
-  present: ['product design', 'SaaS'],
-  missing: ['enterprise', 'dashboards'],
-  unsupported: ['Kubernetes'],
-});
+function seedPanel() {
+  const content = mockStore.state.contents.res_zoho as ResumeContent;
+  const drop = (skills: string[] = []) => skills.filter((s) => s !== 'Figma' && s !== 'Prototyping');
+  const edited: ResumeContent = {
+    ...content,
+    skills: drop(content.skills),
+    experience: content.experience.map((role) => ({ ...role, skills: drop(role.skills) })),
+  };
+  mockStore.state.contents.res_zoho = edited;
+  mockStore.state.scoringJds.res_zoho = {
+    requiredSkills: ['Figma', 'Prototyping'],
+    preferredSkills: ['Kubernetes'],
+    tools: [],
+    rawText: '',
+    completeness: 'snippet',
+  };
+  const score = rescoreStored(mockStore.state, 'res_zoho', edited);
+  if (!score) throw new Error('res_zoho should be scored');
+  return score;
+}
+let seeded: ReturnType<typeof seedPanel>;
+let bulletsBefore: string[] = [];
 
 /** Mock repos resolve in 300–900ms; one apply also re-reads the detail and the score. */
 const settle = (ms = 1000) => act(() => jest.advanceTimersByTimeAsync(ms));
@@ -54,7 +74,8 @@ describe('AtsFixScreen (V2 §7.8 — no artboard)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
-    mockStore.state.atsScores.res_zoho = seeded;
+    seeded = seedPanel();
+    bulletsBefore = (mockStore.state.contents.res_zoho as ResumeContent).experience.flatMap((role) => role.bullets);
     mockPush.mockClear();
     mockBack.mockClear();
   });
@@ -99,11 +120,11 @@ describe('AtsFixScreen (V2 §7.8 — no artboard)', () => {
     ).toBeOnTheScreen();
 
     // — One card per quick win, each with its suggestion and the section the edit lands in —
-    expect(screen.getByText('Missing: "enterprise"')).toBeOnTheScreen();
-    expect(screen.getByText('Add "enterprise" to your skills')).toBeOnTheScreen();
-    expect(screen.getByText('Missing: "dashboards"')).toBeOnTheScreen();
-    expect(screen.getByText('Add "dashboards" to your skills')).toBeOnTheScreen();
-    expect(screen.getAllByText('Skills')).toHaveLength(2);
+    expect(screen.getByText('Missing: "Figma"')).toBeOnTheScreen();
+    expect(screen.getByText('Missing: "Prototyping"')).toBeOnTheScreen();
+    // Each lands on the role the profile shows it in, as that role's evidence.
+    expect(screen.getAllByText('Add "Figma" to the role your profile shows it in')).toHaveLength(1);
+    expect(screen.getAllByText('Add "Prototyping" to the role your profile shows it in')).toHaveLength(1);
 
     // — The gap is listed, explained, and has no Apply: §7.8 forbids inserting it —
     expect(screen.getByText('"Kubernetes" is not in your profile')).toBeOnTheScreen();
@@ -116,7 +137,8 @@ describe('AtsFixScreen (V2 §7.8 — no artboard)', () => {
     await settle();
     await settle();
 
-    expect(screen.getByText('Missing: "enterprise"')).toBeOnTheScreen();
+    // The card ticks where it stands, now reading as the met requirement it is.
+    expect(screen.getByText('"Figma" shown in your experience')).toBeOnTheScreen();
     // The tick enters on FadeIn, which the Reanimated mock leaves at opacity 0.
     expect(screen.getByText('Applied', { includeHiddenElements: true })).toBeOnTheScreen();
     expect(screen.getAllByLabelText('Apply')).toHaveLength(1);
@@ -124,10 +146,13 @@ describe('AtsFixScreen (V2 §7.8 — no artboard)', () => {
 
     // The document really moved: the check passes and the score is higher than it was seeded.
     const after = storedScore();
-    const enterprise = after?.sections
+    const figma = after?.sections
       .flatMap((section) => section.items)
-      .find((item) => item.id === 'kw_miss_0');
-    expect(enterprise?.passed).toBe(true);
+      .find((item) => item.id === 'kw:figma');
+    expect(figma?.passed).toBe(true);
+    // Nothing was invented: the bullets are the ones the document had (C-10).
+    const bullets = (content: unknown) => (content as ResumeContent).experience.flatMap((role) => role.bullets);
+    expect(bullets(mockStore.state.contents.res_zoho)).toEqual(bulletsBefore);
     expect(after?.total).toBeGreaterThan(seeded.total);
 
     // The gap survived the re-score untouched, still without an action.

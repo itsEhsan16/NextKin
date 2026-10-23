@@ -43,9 +43,8 @@ export function LocationSheetHost() {
       open={open}
       onClose={closeLocation}
       height={sizes.sheetPickerHeight}
-      // Gated on `open` the way ResumeMenuHost gates its rename step: the lift mounts
-      // `useAnimatedKeyboard`, which takes the app off Android's `adjustResize` for as long as it
-      // is mounted, so a closed sheet must never ask for it.
+      // Gated on `open` the way ResumeMenuHost gates its rename step: a closed sheet has nothing
+      // to lift, so it never mounts the keyboard lift.
       avoidKeyboard={open}
       // The option list scrolls inside the sheet, and the dismiss pan would fight it. The ✕, the
       // scrim and Android back all still dismiss.

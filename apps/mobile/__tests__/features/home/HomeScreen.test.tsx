@@ -22,6 +22,9 @@ jest.mock('expo-router', () => ({
     back: jest.fn(),
     replace: jest.fn(),
   }),
+  // Home is in view for the whole test; its clipboard check (TAILOR 00c) runs on mount.
+  useFocusEffect: (effect: () => void | (() => void)) =>
+    jest.requireActual<typeof import('react')>('react').useEffect(effect, [effect]),
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
@@ -92,11 +95,13 @@ describe('HomeScreen (DESIGN 2)', () => {
     expect(screen.getByText('Last updated 2 days ago')).toBeOnTheScreen();
     expect(screen.getByText('Timeline Valid')).toBeOnTheScreen();
 
-    // The shortcut counters read as a bare number above their icon, so the tile can give its
-    // label two readable lines. The noun survives for screen readers, on the tile itself.
-    expect(screen.getByText('12')).toBeOnTheScreen();
-    expect(screen.getByText('25')).toBeOnTheScreen();
-    expect(screen.getByText('18')).toBeOnTheScreen();
+    // A shortcut tile is its icon and its name. The board draws a count under each label and
+    // 414:1293 restyled it, but it is deliberately not shown — the number survives only as
+    // something a screen reader reads after the label.
+    expect(screen.queryByText('12 Resumes')).toBeNull();
+    expect(screen.queryByText('24 Activities')).toBeNull();
+    expect(screen.queryByText('AI Questions')).toBeNull();
+    expect(screen.queryByText('12')).toBeNull();
     expect(screen.getByLabelText('My Resumes, 12 Resumes')).toBeOnTheScreen();
     expect(screen.getByLabelText('History, 25 Activities')).toBeOnTheScreen();
     expect(screen.getByLabelText('Saved Jobs, 18 Saved')).toBeOnTheScreen();
@@ -113,19 +118,38 @@ describe('HomeScreen (DESIGN 2)', () => {
     await act(async () => fireEvent.press(screen.getByLabelText('Notifications, unread')));
     expect(mockPush).toHaveBeenCalledWith('/notifications');
 
-    // Phase 9I: the hamburger opens a sheet hosted over the tab bar, and the three shortcuts
-    // that stood on placeholders are real screens.
+    // Phase 9I: the hamburger opens a sheet hosted over the tab bar, and the shortcuts that
+    // stood on placeholders are real screens.
     await act(async () => fireEvent.press(screen.getByLabelText('Menu')));
     expect(useHomeStore.getState().menuOpen).toBe(true);
     await act(async () => fireEvent.press(screen.getByLabelText('History, 25 Activities')));
     expect(mockPush).toHaveBeenCalledWith('/history');
     await act(async () => fireEvent.press(screen.getByLabelText(/^Interview Prep/)));
     expect(mockPush).toHaveBeenCalledWith('/interview');
-    await act(async () => fireEvent.press(screen.getByLabelText(/^AI Assistant/)));
-    expect(mockPush).toHaveBeenCalledWith('/assistant');
+    // The redrawn board (239:361) dropped the fifth shortcut. The assistant is not orphaned by
+    // that — the menu this block just opened carries it — but Home's grid no longer offers it.
+    expect(screen.queryByLabelText(/^AI Assistant/)).not.toBeOnTheScreen();
+    expect(mockPush).not.toHaveBeenCalledWith('/assistant');
     expect(mockPush).not.toHaveBeenCalledWith(
       expect.objectContaining({ pathname: '/placeholder/[screen]' }),
     );
+  });
+
+  it('opens Add a job from the Build Resume tile, the one job flow (toreview §114)', async () => {
+    await renderHome();
+    await settle(NORMAL_MS);
+
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Build Resume/)));
+    expect(mockPush).toHaveBeenCalledWith('/create/tailor');
+  });
+
+  it('opens the cover letter setup from the Cover Letter tile (COVER 01, toreview §71)', async () => {
+    await renderHome();
+    await settle(NORMAL_MS);
+
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Cover Letter/)));
+    // No job sheet first: the setup starts on the latest tailored resume and its Job row changes it.
+    expect(mockPush).toHaveBeenCalledWith('/create/cover-letter');
   });
 
   it('renders section-level empty states in "empty" mock mode', async () => {

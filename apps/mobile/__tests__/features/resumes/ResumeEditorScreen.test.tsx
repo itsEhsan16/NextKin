@@ -95,10 +95,9 @@ describe('ResumeEditorScreen (V2 §7.11 — no artboard)', () => {
 
     // — Header and meta strip —
     expect(screen.getByRole('header', { name: 'Product Designer' })).toBeOnTheScreen();
-    expect(screen.getByLabelText('ATS score 92')).toBeOnTheScreen();
+    // The base resume is written for no job: no JD, so no total and no ring (D-15).
+    expect(screen.queryByLabelText(/^ATS score \d+$/)).toBeNull();
     expect(screen.getByText('v5 · edited 2 days ago')).toBeOnTheScreen();
-    // V2 §7.8 — every score display carries the rubric link.
-    expect(screen.getByLabelText('What this score measures')).toBeOnTheScreen();
 
     // — One card per §7.11 section, in RESUME_SECTION_ORDER, with the fixture's own copy —
     expect(
@@ -116,7 +115,7 @@ describe('ResumeEditorScreen (V2 §7.11 — no artboard)', () => {
     expect(screen.getByText('Design systems', shown)).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Experience', ...shown })).toBeOnTheScreen();
     expect(screen.getByText('Senior UX Designer', shown)).toBeOnTheScreen();
-    expect(screen.getByText('Mar 2022 — Present', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Flipkart · Mar 2022 — Present', shown)).toBeOnTheScreen();
     expect(
       screen.getByText(
         'Rebuilt the address and payment step for 40M+ monthly shoppers, cutting drop-off 18%',
@@ -138,7 +137,8 @@ describe('ResumeEditorScreen (V2 §7.11 — no artboard)', () => {
     // — Nothing is assumed in this document, so §7.9's gate is open —
     expect(screen.getByLabelText('Download')).toBeEnabled();
     expect(screen.getByText('PDF is always free')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Score 92')).toBeOnTheScreen();
+    // No JD, no total (D-15): the bar has no score to show.
+    expect(screen.queryByLabelText(/^Score \d+$/)).toBeNull();
 
     // — The pen opens that one section on its own page (§7.11) —
     await act(async () => fireEvent.press(screen.getByLabelText('Edit Experience', shown)));

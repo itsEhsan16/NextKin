@@ -5,11 +5,11 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 import type { Application, Job } from '@/data/models';
 import { JOB_SORT_LABEL, SAVED_JOBS_SORT_LABEL } from '@/data/models';
 import {
+  queryPhase,
   useApplications,
   useJobs,
   useSavedJobs,
   useTodaysPicks,
-  useToggleSaveJob,
   useUnreadCount,
 } from '@/data/queries';
 import { a11yButton, hitSlop8, pluralize, useDebouncedValue } from '@/lib';
@@ -20,22 +20,17 @@ import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { Skeleton } from '@/ui/Skeleton';
+import { SortControl } from '@/ui/SortControl';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
 import { JobCard } from '../components/JobCard';
+import { JobsEmptyArt } from '../components/JobsEmptyArt';
 import { JobsHeader } from '../components/JobsHeader';
-import { SortControl } from '../components/SortControl';
 import { TodaysPicks } from '../components/TodaysPicks';
-import {
-  appliedPills,
-  appliedPillsLabel,
-  discoverPills,
-  discoverPillsLabel,
-  savedPills,
-  savedPillsLabel,
-} from '../components/jobPillRows';
+import { appliedNote, discoverNote, savedNote } from '../components/jobCardMeta';
 import { useJobsActions } from '../hooks/useJobsActions';
+import { useSaveJob } from '../hooks/useSaveJob';
 import { appliedFilterChips, isRemoteOnly, useJobsStore, type JobsSegment } from '../jobsStore';
 import { sortSavedJobs } from '../sortOptions';
 
@@ -61,7 +56,7 @@ const STATUS_CHIPS = [
 
 /** JOBS 01–03 — Discover, Saved and Applied as three segments of one screen. */
 export function JobsScreen() {
-  const { spacing, s } = useTheme();
+  const { sizes, spacing, s } = useTheme();
   const tabBar = useTabBarLayout();
   const actions = useJobsActions();
   const listRef = useRef<FlashListRef<JobRow>>(null);
@@ -84,7 +79,9 @@ export function JobsScreen() {
   const query = queries[segment];
   const unread = useUnreadCount();
   const picks = useTodaysPicks();
-  const toggleSave = useToggleSaveJob();
+  // `mutate` is stable; the mutation object itself is new on every render, and a callback that
+  // depended on it rebuilt `renderItem` — re-rendering every visible card — on each one.
+  const { toggle: toggleSaveJob } = useSaveJob();
 
   // Discover searches server-side, so the term is debounced before it reaches the query key.
   const debouncedQuery = useDebouncedValue(query);
@@ -94,7 +91,7 @@ export function JobsScreen() {
 
   const chips = useMemo(() => appliedFilterChips(filters), [filters]);
 
-  const handleToggleSave = useCallback((job: Job) => toggleSave.mutate(job.id), [toggleSave]);
+  const handleToggleSave = useCallback((job: Job) => toggleSaveJob(job), [toggleSaveJob]);
 
   const selectSegment = useCallback(
     (next: JobsSegment) => {
@@ -166,10 +163,10 @@ export function JobsScreen() {
         return (
           <JobCard
             job={item.job}
-            affordance="open"
-            pills={appliedPills(item.application)}
+            variant="applied"
+            application={item.application}
+            footer={appliedNote(item.application)}
             onPress={actions.openJob}
-            a11ySuffix={appliedPillsLabel(item.application)}
           />
         );
       }
@@ -177,15 +174,15 @@ export function JobsScreen() {
       return (
         <JobCard
           job={item.job}
-          affordance={isSaved || item.job.isSaved ? 'saved' : 'save'}
-          pills={isSaved ? savedPills(item.job) : discoverPills(item.job)}
-          a11ySuffix={isSaved ? savedPillsLabel(item.job) : discoverPillsLabel(item.job)}
+          variant={isSaved ? 'saved' : 'discover'}
+          footer={isSaved ? savedNote(item.job) : discoverNote(item.job)}
           onPress={actions.openJob}
           onToggleSave={handleToggleSave}
+          onTailor={actions.tailorResume}
         />
       );
     },
-    [actions.openJob, handleToggleSave],
+    [actions.openJob, actions.tailorResume, handleToggleSave],
   );
 
   // Everything the list header renders from; changing any of it must repaint the header.
@@ -206,89 +203,129 @@ export function JobsScreen() {
     [appliedStatus, chips, location, remoteOnly, rows.length, savedSort, segment, sort],
   );
 
-  const listHeader = (
-    <View style={{ gap: spacing[5], paddingBottom: spacing[5] }}>
-      {segment === 'discover' ? (
-        <View style={[styles.chipRow, { gap: spacing[2] }]}>
-          <FilterChip
-            label={location}
-            variant="picker"
-            icon="map-marker-alt"
-            onPress={actions.openLocationPicker}
-          />
-          <FilterChip
-            label="Remote only"
-            variant="toggle"
-            selected={remoteOnly}
-            onPress={toggleRemoteOnly}
-          />
-        </View>
-      ) : null}
+  const picksPhase = queryPhase(picks);
+  const refetchPicks = picks.refetch;
+  const appliedCount = applications.data?.length ?? 0;
 
-      <SegmentedControl segments={SEGMENTS} value={segment} onChange={selectSegment} />
-
-      {segment === 'discover' ? (
-        <>
-          {chips.length > 0 ? (
-            <View style={styles.filterRow}>
-              <View style={[styles.chipRow, { gap: spacing[2], flex: 1 }]}>
-                {chips.map((chip) => (
-                  <FilterChip
-                    key={chip.key}
-                    label={chip.label}
-                    variant="removable"
-                    onPress={() => removeFilter(chip.key)}
-                  />
-                ))}
-              </View>
-              <Pressable
-                {...a11yButton('Clear all filters')}
-                feedback="subtle"
-                haptic="selection"
-                hitSlop={hitSlop8}
-                onPress={clearFilters}
-              >
-                <Text variant="captionSemiBold">Clear all</Text>
-              </Pressable>
-            </View>
-          ) : null}
-
-          <TodaysPicks
-            picks={picks.data}
-            status={picks.isPending ? 'pending' : picks.isError ? 'error' : 'success'}
-            onPressJob={actions.openJob}
-            onToggleSave={handleToggleSave}
-            onRetry={() => void picks.refetch()}
-          />
-
-          <View style={[styles.filterRow, { marginTop: s(PICKS_TO_LIST_EXTRA) }]}>
-            <Text accessibilityRole="header" variant="section">
-              All jobs
-            </Text>
-            <SortControl label={JOB_SORT_LABEL[sort]} onPress={actions.openSort} />
-          </View>
-        </>
-      ) : segment === 'saved' ? (
-        <View style={styles.filterRow}>
-          <Text variant="caption" color="textSecondary">
-            {pluralize(rows.length, 'saved job')}
-          </Text>
-          <SortControl label={SAVED_JOBS_SORT_LABEL[savedSort]} onPress={actions.openSort} />
-        </View>
-      ) : (
-        <View style={[styles.chipRow, { gap: spacing[2] }]}>
-          {STATUS_CHIPS.map((chip) => (
+  // Memoised on what it draws, so a keystroke in the pinned search (or any other render) does not
+  // rebuild the header — and with it the picks carousel — under the list.
+  const listHeader = useMemo(
+    () => (
+      <View style={{ gap: spacing[5], paddingBottom: spacing[5] }}>
+        {segment === 'discover' ? (
+          <View style={[styles.chipRow, { gap: spacing[2] }]}>
             <FilterChip
-              key={chip.key}
-              label={chip.key === 'all' ? `All · ${applications.data?.length ?? 0}` : chip.label}
-              variant="select"
-              selected={appliedStatus === chip.key}
-              onPress={() => setAppliedStatus(chip.key)}
+              label={location}
+              variant="picker"
+              icon="map-marker-alt"
+              onPress={actions.openLocationPicker}
             />
-          ))}
-        </View>
-      )}
-    </View>
+            <FilterChip
+              label="Remote only"
+              variant="toggle"
+              selected={remoteOnly}
+              onPress={toggleRemoteOnly}
+            />
+          </View>
+        ) : null}
+
+        <SegmentedControl segments={SEGMENTS} value={segment} onChange={selectSegment} />
+
+        {segment === 'discover' ? (
+          <>
+            {chips.length > 0 ? (
+              <View style={styles.filterRow}>
+                <View style={[styles.chipRow, { gap: spacing[2], flex: 1 }]}>
+                  {chips.map((chip) => (
+                    <FilterChip
+                      key={chip.key}
+                      label={chip.label}
+                      variant="removable"
+                      onPress={() => removeFilter(chip.key)}
+                    />
+                  ))}
+                </View>
+                <Pressable
+                  {...a11yButton('Clear all filters')}
+                  feedback="subtle"
+                  haptic="selection"
+                  hitSlop={hitSlop8}
+                  onPress={clearFilters}
+                >
+                  <Text variant="captionSemiBold">Clear all</Text>
+                </Pressable>
+              </View>
+            ) : null}
+
+            <TodaysPicks
+              picks={picks.data}
+              status={picksPhase}
+              onPressJob={actions.openJob}
+              onToggleSave={handleToggleSave}
+              onRetry={() => void refetchPicks()}
+            />
+
+            <View style={[styles.filterRow, { marginTop: s(PICKS_TO_LIST_EXTRA) }]}>
+              {/* A tab's section heading, set like Home's — toreview.md 54. */}
+              <Text accessibilityRole="header" variant="homeSection">
+                All jobs
+              </Text>
+              <SortControl
+                label={JOB_SORT_LABEL[sort]}
+                hint="Changes the job order"
+                onPress={actions.openSort}
+              />
+            </View>
+          </>
+        ) : segment === 'saved' ? (
+          <View style={styles.filterRow}>
+            <Text variant="caption" color="textSecondary">
+              {pluralize(rows.length, 'saved job')}
+            </Text>
+            <SortControl
+              label={SAVED_JOBS_SORT_LABEL[savedSort]}
+              hint="Changes the job order"
+              onPress={actions.openSort}
+            />
+          </View>
+        ) : (
+          <View style={[styles.chipRow, { gap: spacing[2] }]}>
+            {STATUS_CHIPS.map((chip) => (
+              <FilterChip
+                key={chip.key}
+                label={chip.key === 'all' ? `All · ${appliedCount}` : chip.label}
+                variant="select"
+                selected={appliedStatus === chip.key}
+                onPress={() => setAppliedStatus(chip.key)}
+              />
+            ))}
+          </View>
+        )}
+      </View>
+    ),
+    [
+      actions,
+      appliedCount,
+      appliedStatus,
+      chips,
+      clearFilters,
+      handleToggleSave,
+      location,
+      picks.data,
+      picksPhase,
+      refetchPicks,
+      remoteOnly,
+      removeFilter,
+      rows.length,
+      s,
+      savedSort,
+      segment,
+      selectSegment,
+      setAppliedStatus,
+      sort,
+      spacing,
+      toggleRemoteOnly,
+    ],
   );
 
   return (
@@ -297,7 +334,12 @@ export function JobsScreen() {
     // maxWidth still come from the root.
     <Screen
       padded={false}
-      headerStyle={{ paddingTop: spacing[4], paddingHorizontal: spacing.gutter }}
+      // The search field is in the header: the list shrinks above the keyboard rather than
+      // running under it, and cards dissolve under the pinned header (the list's top padding is
+      // deeper than the fade, so at rest it lies on bare page).
+      keyboard
+      headerFade
+      headerStyle={{ paddingTop: spacing.headerTop, paddingHorizontal: spacing.gutter }}
       header={
         <JobsHeader
           query={query}
@@ -315,7 +357,7 @@ export function JobsScreen() {
         data={status === 'success' ? rows : []}
         renderItem={renderItem}
         keyExtractor={rowKey}
-        getItemType={(row) => row.kind}
+        getItemType={rowType}
         ListHeaderComponent={listHeader}
         // The header is state-driven (segment, chips, sort, query). Virtualised lists only
         // re-render their header when something they track changes, so declare it here.
@@ -347,17 +389,14 @@ export function JobsScreen() {
         // the floating pill and the last card cut off above it.
         contentContainerStyle={{
           paddingHorizontal: spacing.gutter,
-          // spacing[5], not spacing[4]: the 12 was the pad above the title and left with it. What
-          // the chip row and the segments actually had above them was the list header's own
-          // `gap: spacing[5]`, and removing its first child destroyed that gap instance.
-          paddingTop: spacing[5],
+          // Search → first block, the same seam Resumes has under its search row (toreview.md 54).
+          paddingTop: sizes.headerContentGap,
           paddingBottom: tabBar.contentInset,
         }}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing || activeQuery.isRefetching}
-            onRefresh={onRefresh}
-          />
+          // Only a pull shows the spinner. Tied to `isRefetching` it also span after every
+          // bookmark (the save invalidates the job lists) and every Discover filter change.
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
     </Screen>
@@ -377,6 +416,7 @@ type JobRow =
 const PICKS_TO_LIST_EXTRA = 12;
 
 const rowKey = (row: JobRow) => (row.kind === 'applied' ? row.application.id : row.job.id);
+const rowType = (row: JobRow) => row.kind;
 
 function RowSeparator() {
   const { s } = useTheme();
@@ -391,11 +431,9 @@ const STATUS_OF: Record<
     applications: ReturnType<typeof useApplications>;
   }) => 'pending' | 'error' | 'success'
 > = {
-  discover: ({ discover }) =>
-    discover.isPending ? 'pending' : discover.isError ? 'error' : 'success',
-  saved: ({ saved }) => (saved.isPending ? 'pending' : saved.isError ? 'error' : 'success'),
-  applied: ({ applications }) =>
-    applications.isPending ? 'pending' : applications.isError ? 'error' : 'success',
+  discover: ({ discover }) => queryPhase(discover),
+  saved: ({ saved }) => queryPhase(saved),
+  applied: ({ applications }) => queryPhase(applications),
 };
 
 function ListPlaceholder({
@@ -434,7 +472,6 @@ function ListPlaceholder({
         message="Check your connection and try again."
         actionLabel="Try again"
         onAction={onRetry}
-        style={{ marginTop: spacing[6] }}
       />
     );
   }
@@ -443,8 +480,7 @@ function ListPlaceholder({
   const discover = segment === 'discover';
   return (
     <StateView
-      icon={empty.icon}
-      {...(empty.iconStyle ? { iconStyle: empty.iconStyle } : {})}
+      illustration={<JobsEmptyArt segment={segment} />}
       title={empty.title}
       message={empty.message}
       actionLabel={empty.actionLabel}
@@ -459,31 +495,28 @@ function ListPlaceholder({
 }
 
 type EmptyCopy = {
-  icon: string;
-  iconStyle?: 'solid' | 'regular';
   title: string;
   message: string;
   actionLabel: string;
 };
 
-/** JOBS 06 (1:958), 07 (1:992) and 08 (1:1025), transcribed verbatim. */
+/**
+ * JOBS 06 (1:958), 07 (1:992) and 08 (1:1025), transcribed verbatim. The redraw (95:993 / 95:1058
+ * / 95:1111) kept the copy and swapped each icon tile for an illustration; see `JobsEmptyArt`.
+ */
 const EMPTY_COPY: Record<JobsSegment, EmptyCopy> = {
   discover: {
-    icon: 'search',
     title: 'No jobs match these filters',
     message: 'Try removing a filter, widening your salary range, or including hybrid roles.',
     actionLabel: 'Widen my filters',
   },
   saved: {
-    icon: 'bookmark',
-    iconStyle: 'regular',
     title: 'Nothing saved yet',
     message:
       'Bookmark jobs to compare them here — salary, match criteria and requirements side by side.',
     actionLabel: "Browse today's picks",
   },
   applied: {
-    icon: 'paper-plane',
     title: 'No applications yet',
     message: 'Applications you submit appear here, with status updates as employers respond.',
     actionLabel: 'Find jobs to apply to',

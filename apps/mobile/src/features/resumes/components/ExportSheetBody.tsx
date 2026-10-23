@@ -1,14 +1,17 @@
-import { ActivityIndicator, View } from 'react-native';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import type { Resume } from '@/data/models';
 import type { ExportFormat } from '@/data/queries';
-import { useReducedMotion } from '@/lib';
-import { scaledSheet, useTheme } from '@/theme';
-import { SheetRow } from '@/ui/SheetRow';
+import { a11yButton, useReducedMotion } from '@/lib';
+import { scaledSheet, useTheme, type ColorToken } from '@/theme';
+import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Spinner } from '@/ui/motion';
 
 import { docSubtitle } from '../docMeta';
+import { ResumeThumbnail } from './ResumeThumbnail';
 
 export type ExportSheetBodyProps = {
   resume: Resume;
@@ -20,12 +23,27 @@ export type ExportSheetBodyProps = {
   onUpgrade: () => void;
 };
 
-/** Figma's create sheet geometry, which this sheet reuses rather than inventing its own. */
-const HEADER_TOP = 24;
-const HEADER_GAP = 30;
-const ROW_GAP = 28;
-
-const noop = () => undefined;
+// RESUMES 11's sheet at 390 (580:1606), in artboard units.
+const TOP = 16 / 0.75; // handle → header: the board's 30 less the handle and its margin
+const HEADER_GAP = 12 / 0.75;
+const THUMB_W = 36 / 0.75;
+const THUMB_H = 46.5 / 0.75;
+const THUMB_RADIUS = 7.5 / 0.75;
+const TITLE_GAP = 3 / 0.75;
+const HEADER_TO_ROWS = 18 / 0.75;
+const ROW_GAP = 14 / 0.75;
+const ROW_PAD_Y = 9 / 0.75;
+const TILE = 44 / 0.75;
+const TILE_RADIUS = 12 / 0.75;
+const TILE_GLYPH = 18 / 0.75;
+const LINE_GAP = 2 / 0.75;
+const PILL_GAP = 5 / 0.75;
+const PILL_PAD_LEFT = 9 / 0.75;
+const PILL_PAD_RIGHT = 10 / 0.75;
+const PILL_PAD_Y = 4 / 0.75;
+const PILL_GLYPH = 9.5 / 0.75;
+const LOCK = 13 / 0.75;
+const TRAILING_SLOT = 20 / 0.75;
 
 type ExportRow = {
   format: ExportFormat;
@@ -33,6 +51,13 @@ type ExportRow = {
   label: string;
   description: string;
   locked: boolean;
+};
+
+/** Each format's tile: red for PDF, blue for Word, grey for plain text (580:1622 … 580:1641). */
+const TILE_LOOK: Record<ExportFormat, { bg: ColorToken; fg: ColorToken }> = {
+  pdf: { bg: 'dangerSurface', fg: 'glyphDanger' },
+  docx: { bg: 'tileInfo', fg: 'glyphInfo' },
+  txt: { bg: 'surfaceSubtle', fg: 'textBody' },
 };
 
 /**
@@ -80,36 +105,73 @@ type RowProps = {
   onPress: () => void;
 };
 
-function ExportSheetRow({ row, busy, inert, onPress }: RowProps) {
-  const { colors, opacity, spacing } = useTheme();
+/** The crown-and-"Pro" pill beside a locked format's name (580:1635). */
+function ProPill() {
+  const { colors, radii, s } = useTheme();
   const styles = useStyles();
-  const dimmed = busy || inert;
-
   return (
-    <View style={[styles.row, { gap: spacing[3] }]}>
-      <SheetRow
-        icon={row.icon}
-        label={row.label}
-        // The hint carries the busy state, because SheetRow is one focus stop with no state slot.
-        description={busy ? 'Preparing your file…' : row.description}
-        locked={row.locked}
-        onPress={dimmed ? noop : onPress}
-        style={[styles.grow, dimmed ? { opacity: opacity.disabled } : null]}
-      />
-      {busy ? (
-        <ActivityIndicator
-          color={colors.brand}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        />
-      ) : null}
+    <View style={[styles.pill, { borderRadius: radii.full, backgroundColor: colors.brandSurface }]}>
+      <FontAwesome5 name="crown" size={s(PILL_GLYPH)} color={colors.brand} solid />
+      <Text variant="microBadge" color="brand">
+        Pro
+      </Text>
     </View>
   );
 }
 
+function ExportSheetRow({ row, busy, inert, onPress }: RowProps) {
+  const { colors, opacity, s } = useTheme();
+  const styles = useStyles();
+  const dimmed = busy || inert;
+  const look = TILE_LOOK[row.format];
+  const description = busy ? 'Preparing your file…' : row.description;
+
+  return (
+    <Pressable
+      {...a11yButton(
+        row.locked ? `${row.label}, Pro feature` : row.label,
+        // The hint carries the busy state, because the row is one focus stop.
+        row.locked ? `${description}. Opens the Pro plans` : description,
+      )}
+      accessibilityState={{ disabled: dimmed, busy }}
+      feedback="subtle"
+      haptic="light"
+      disabled={dimmed}
+      onPress={onPress}
+      style={[styles.row, dimmed ? { opacity: opacity.disabled } : null]}
+    >
+      <View style={[styles.tile, { backgroundColor: colors[look.bg] }]}>
+        <FontAwesome5 name={row.icon} size={s(TILE_GLYPH)} color={colors[look.fg]} solid />
+      </View>
+      <View style={styles.text}>
+        <View style={styles.titleRow}>
+          <Text variant="label" numberOfLines={1} style={styles.shrink}>
+            {row.label}
+          </Text>
+          {row.locked ? <ProPill /> : null}
+        </View>
+        <Text variant="micro" color="textSecondary">
+          {description}
+        </Text>
+      </View>
+      {busy ? (
+        <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <Spinner size={s(15 / 0.75)} />
+        </View>
+      ) : row.locked ? (
+        <View style={styles.trailing}>
+          <FontAwesome5 name="lock" size={s(LOCK)} color={colors.iconMuted} solid />
+        </View>
+      ) : null}
+    </Pressable>
+  );
+}
+
 /**
- * V2 §7.12's download sheet. Fully controlled — the host owns the plan, the busy format and both
- * callbacks — so the formats and the gate can be driven in a test without the Sheet around them.
+ * V2 §7.12's download sheet, drawn as RESUMES 11 (580:1606): the document's thumbnail, name and
+ * what is ready, then one tinted tile per format. Fully controlled — the host owns the plan, the
+ * busy format and both callbacks — so the formats and the gate can be driven in a test without
+ * the Sheet around them.
  *
  * §13.5 puts the upsell *in* the locked row rather than behind an alert: the DOCX row still
  * presses, and the press routes to upgrade instead of starting an export.
@@ -121,22 +183,29 @@ export function ExportSheetBody({
   onSelect,
   onUpgrade,
 }: ExportSheetBodyProps) {
-  const { motion, spacing, s } = useTheme();
+  const { colors, motion, sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
 
   return (
-    <View style={{ paddingHorizontal: spacing.gutter, paddingTop: s(HEADER_TOP) }}>
+    <View style={{ paddingHorizontal: spacing.gutter, paddingTop: s(TOP) }}>
       <View style={styles.header}>
-        <Text accessibilityRole="header" variant="headline" numberOfLines={1}>
-          {resume.title}
-        </Text>
-        <Text variant="rowDescription" color="textSecondary" numberOfLines={2}>
-          {docSubtitle(resume)}
-        </Text>
+        <View
+          style={[styles.thumb, { borderWidth: sizes.border, borderColor: colors.borderDefault }]}
+        >
+          <ResumeThumbnail style={styles.fill} />
+        </View>
+        <View style={styles.titles}>
+          <Text accessibilityRole="header" variant="headline" numberOfLines={1}>
+            {resume.title}
+          </Text>
+          <Text variant="micro" color="textSecondary" numberOfLines={2}>
+            {docSubtitle(resume)}
+          </Text>
+        </View>
       </View>
 
-      <View style={{ marginTop: s(HEADER_GAP), gap: s(ROW_GAP) }}>
+      <View style={styles.rows}>
         {exportRows(plan).map((row, index) => {
           const content = (
             <ExportSheetRow
@@ -166,7 +235,44 @@ export function ExportSheetBody({
 }
 
 const useStyles = scaledSheet((s) => ({
-  header: { gap: s(4) },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  grow: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: s(HEADER_GAP) },
+  thumb: {
+    width: s(THUMB_W),
+    height: s(THUMB_H),
+    borderRadius: s(THUMB_RADIUS),
+    overflow: 'hidden',
+  },
+  fill: { flex: 1 },
+  titles: { flex: 1, gap: s(TITLE_GAP) },
+  rows: { marginTop: s(HEADER_TO_ROWS) },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(ROW_GAP),
+    paddingVertical: s(ROW_PAD_Y),
+  },
+  tile: {
+    width: s(TILE),
+    height: s(TILE),
+    borderRadius: s(TILE_RADIUS),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: { flex: 1, gap: s(LINE_GAP) },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: s(8 / 0.75) },
+  shrink: { flexShrink: 1 },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(PILL_GAP),
+    paddingLeft: s(PILL_PAD_LEFT),
+    paddingRight: s(PILL_PAD_RIGHT),
+    paddingVertical: s(PILL_PAD_Y),
+  },
+  trailing: {
+    width: s(TRAILING_SLOT),
+    height: s(TRAILING_SLOT),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 }));

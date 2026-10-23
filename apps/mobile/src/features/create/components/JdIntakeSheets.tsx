@@ -3,11 +3,10 @@ import { View } from 'react-native';
 import type { JdInput } from '@/data/models';
 import { useSavedJobs } from '@/data/queries';
 import { useTheme } from '@/theme';
-import { OptionSheetBody, type SheetOption } from '@/ui/OptionSheet';
+import { OptionSheetBody, OptionSheetHeader, type SheetOption } from '@/ui/OptionSheet';
 import { Sheet } from '@/ui/Sheet';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
-import { Text } from '@/ui/Text';
 
 import { useCreateStore } from '../createStore';
 
@@ -44,10 +43,9 @@ export function JdIntakeSheets({ value, onChange }: JdIntakeSheetsProps) {
   return (
     <Sheet open={open} onClose={close} height={sizes.sheetPickerHeight} accessibilityLabel={TITLE}>
       {savedJobs.isPending ? (
-        <View style={[padded, { paddingTop: spacing[5], gap: spacing[4] }]}>
-          <Text variant="headline" accessibilityRole="header">
-            {TITLE}
-          </Text>
+        // The list's own header row, so the title sits where it will once the jobs arrive.
+        <View style={[padded, { gap: spacing[4] }]}>
+          <OptionSheetHeader title={TITLE} onClose={close} />
           {SKELETON_ROWS.map((row) => (
             <Skeleton key={row} height={s(SKELETON_ROW_HEIGHT)} radius="card" />
           ))}

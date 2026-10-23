@@ -6,7 +6,12 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import type { Resume } from '@/data/models';
 import { createQueryClient } from '@/data/queries';
 import { mockStore, resetMockRepos } from '@/data/repos';
-import { ResumeExportHost, useResumesStore } from '@/features/resumes';
+import {
+  AccuracyConfirmHost,
+  ResumeExportHost,
+  useAccuracyStore,
+  useResumesStore,
+} from '@/features/resumes';
 import { renderPdf, shareFile, writeTextFile } from '@/lib';
 import { CreateSheetProvider } from '@/navigation';
 
@@ -56,6 +61,8 @@ function mount() {
           {/* The tabs mount and the editor's own copy, exactly as the app hosts them. */}
           <ResumeExportHost />
           <ResumeExportHost surface="editor" />
+          {/* The root's accuracy confirmation (V2 §15 risk 2), as app/_layout mounts it. */}
+          <AccuracyConfirmHost />
         </CreateSheetProvider>
       </QueryClientProvider>
     </SafeAreaProvider>,
@@ -70,6 +77,7 @@ describe('ResumeExportHost (V2 §7.12 / §13.5 wiring)', () => {
     resetMockRepos();
     mockPush.mockClear();
     useResumesStore.setState(INITIAL, true);
+    useAccuracyStore.setState({ open: false, resolve: null });
     mockRenderPdf.mockReset().mockResolvedValue({ uri: 'file:///cache/doc.pdf', name: 'doc.pdf' });
     mockWriteTextFile
       .mockReset()
@@ -100,8 +108,18 @@ describe('ResumeExportHost (V2 §7.12 / §13.5 wiring)', () => {
     );
     expect(locked).toBeOnTheScreen();
 
-    // — PDF: rendered, then handed to the OS sheet; the sheet closes and confirms —
+    // — The first export of a version asks for the accuracy confirmation; "not yet" stops it —
     await press('Export as PDF');
+    await waitFor(() => expect(useAccuracyStore.getState().open).toBe(true), { timeout: 10000 });
+    await press('Not yet');
+    await waitFor(() => expect(useAccuracyStore.getState().open).toBe(false), { timeout: 10000 });
+    expect(mockRenderPdf).not.toHaveBeenCalled();
+    expect(useResumesStore.getState().exportOpen).toBe(true);
+
+    // — PDF: confirmed, rendered, then handed to the OS sheet; the sheet closes and confirms —
+    await press('Export as PDF');
+    await waitFor(() => expect(useAccuracyStore.getState().open).toBe(true), { timeout: 10000 });
+    await press('Yes, it’s accurate');
     await waitFor(() => expect(mockRenderPdf).toHaveBeenCalledTimes(1), { timeout: 10000 });
     expect(mockRenderPdf.mock.calls[0]?.[1]).toMatch(/\.pdf$/);
     await waitFor(() => expect(mockShareFile).toHaveBeenCalledTimes(1), { timeout: 10000 });
@@ -114,7 +132,7 @@ describe('ResumeExportHost (V2 §7.12 / §13.5 wiring)', () => {
     expect(screen.getAllByText('Saved as PDF', hidden)).toHaveLength(1);
     await act(async () => useResumesStore.getState().hideToast());
 
-    // — TXT: no printer involved, and the confirmation names what was actually saved —
+    // — TXT: the same version is already confirmed, so it does not ask again —
     await act(async () => useResumesStore.getState().openExport(baseDoc()));
     await press('Export as TXT');
     await waitFor(() => expect(mockWriteTextFile).toHaveBeenCalledTimes(1), { timeout: 10000 });
@@ -146,6 +164,8 @@ describe('ResumeExportHost (V2 §7.12 / §13.5 wiring)', () => {
       { timeout: 10000 },
     );
     await press('Export as DOCX');
+    await waitFor(() => expect(useAccuracyStore.getState().open).toBe(true), { timeout: 10000 });
+    await act(async () => useAccuracyStore.getState().answer(true));
 
     await waitFor(() => expect(mockWriteTextFile).toHaveBeenCalledTimes(1), { timeout: 10000 });
     expect(mockWriteTextFile.mock.calls[0]?.[0]).toMatch(/\.txt$/);

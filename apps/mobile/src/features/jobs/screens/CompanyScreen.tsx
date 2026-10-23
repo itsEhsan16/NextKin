@@ -1,20 +1,22 @@
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useCallback, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 
-import type { Job } from '@/data/models';
+import CompanyArt from '../../../../assets/icons/jobs/company.svg';
 import { useJob, useJobsByCompany } from '@/data/queries';
-import { openExternalUrl } from '@/lib';
-import { useTheme } from '@/theme';
-import { ListRow, RowGroup } from '@/ui/ListRow';
+import { Art, ProfileCard, SectionHeading } from '@/features/profile/components/cards';
+import { a11yButton, a11yHeader, openExternalUrl } from '@/lib';
+import { scaledSheet, useTheme } from '@/theme';
+import type { ListRowArt } from '@/ui/ListRow';
+import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
-import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
 import { CompanyHero } from '../components/CompanyHero';
+import { CompanyRoles } from '../components/CompanyRoles';
 import { CompanySkeleton } from '../components/CompanySkeleton';
-import { SimilarJobCard } from '../components/SimilarJobCard';
 import { useJobsActions } from '../hooks/useJobsActions';
 
 export type CompanyScreenProps = { jobId: string };
@@ -22,8 +24,26 @@ export type CompanyScreenProps = { jobId: string };
 /** Said on the page, not in a toast: a pushed screen sits above every toast host in the app. */
 const WEBSITE_UNAVAILABLE = 'Nothing on this device could open that address';
 
-/** Height of a `SimilarJobCard`, so the placeholder rows do not resize when the roles land. */
-const ROLE_ROW = 88;
+// JOBS 09 at 390 (580:1648), in artboard units.
+const HEADER_TO_HERO = 10 / 0.75;
+const HERO_TO_WEBSITE = 18 / 0.75;
+const WEBSITE_TO_ABOUT = 14 / 0.75;
+const ABOUT_TO_ROLES = 26 / 0.75;
+const HEADING_TO_ROLES = 12 / 0.75;
+const ROW_PAD_LEFT = 12 / 0.75;
+const ROW_PAD_RIGHT = 16 / 0.75;
+const ROW_PAD_Y = 10 / 0.75;
+const ROW_GAP = 12 / 0.75;
+const TILE = 36 / 0.75;
+const TILE_RADIUS = 10 / 0.75;
+const TILE_GLYPH = 15 / 0.75;
+const EXTERNAL_GLYPH = 12 / 0.75;
+const ABOUT_GAP = 10 / 0.75;
+const ART_SLOT_W = 44 / 0.75;
+const ART_SLOT_H = 30 / 0.75;
+
+/** The About card's drawing (580:1676). */
+const COMPANY_ART: ListRowArt = { Icon: CompanyArt, w: 42, h: 27.5143 };
 
 /** Fixtures store a bare host ("stripe.com"); a real provider will return a full URL. */
 const hostOf = (website: string): string =>
@@ -36,15 +56,13 @@ const urlOf = (website: string): string =>
   /^https?:\/\//i.test(website) ? website : `https://${website}`;
 
 /**
- * The employer behind a listing (V2 §7.13): who they are, where to read more, and their other
- * open roles. Spec-derived — no artboard exists — so it is assembled from built primitives only.
- *
- * No sticky action bar. Every action worth taking here belongs to a *specific* role and lives on
- * the rows below; a bar pinned to a reference page would have to invent a page-level verb the
- * company itself does not have.
+ * The employer behind a listing (V2 §7.13), drawn as JOBS 09 (580:1648): who they are, where to
+ * read more, and their other open roles. No sticky bar — every action worth taking belongs to a
+ * specific role and lives on its card.
  */
 export function CompanyScreen({ jobId }: CompanyScreenProps) {
-  const { spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
+  const styles = useStyles();
   const actions = useJobsActions();
 
   const job = useJob(jobId);
@@ -64,13 +82,21 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
     });
   }, []);
 
-  const page = (children: ReactNode) => (
+  // The board leaves the title slot empty: the hero names the company. While there is no company
+  // (loading, error) the row names the page instead, so it is never a header-less screen.
+  const page = (children: ReactNode, named = false) => (
     <Screen
       scroll
       edges={['top', 'bottom']}
-      header={<ScreenHeader title={job.data?.company ?? 'Company'} onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
+      header={
+        <ScreenHeader
+          title={job.data?.company ?? 'Company'}
+          showTitle={!named}
+          onBack={actions.goBack}
+        />
+      }
+      headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
     >
       {children}
     </Screen>
@@ -89,7 +115,6 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
         message="Check your connection and try again."
         actionLabel="Try again"
         onAction={() => void job.refetch()}
-        style={{ marginTop: spacing[6] }}
       />,
     );
   }
@@ -99,21 +124,35 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
   // The reader arrived from this job and is already looking at it, so it is never one of the
   // "other" roles. Filtered here rather than in the repo, which stays a plain listing.
   const otherRoles = (listings.data ?? []).filter((role) => role.id !== current.id);
+  const rolesReady = listings.isSuccess && otherRoles.length > 0;
 
   return page(
     <>
       <CompanyHero job={current} />
 
-      <View style={{ gap: spacing[2] }}>
-        <RowGroup>
-          <ListRow
-            icon="external-link-alt"
-            label={website}
-            accessibilityLabel={`Website, ${website}`}
-            accessibilityHint="Opens in your browser"
+      <View style={[styles.website, { gap: spacing[2] }]}>
+        <ProfileCard>
+          <Pressable
+            {...a11yButton(`Website, ${website}`, 'Opens in your browser')}
+            feedback="subtle"
+            haptic="light"
             onPress={() => openWebsite(current.companyWebsite)}
-          />
-        </RowGroup>
+            style={styles.row}
+          >
+            <View style={[styles.tile, { backgroundColor: colors.tileBrandStrong }]}>
+              <FontAwesome5 name="globe" size={s(TILE_GLYPH)} color={colors.brand} solid />
+            </View>
+            <Text variant="menuRow" numberOfLines={1} style={styles.flex}>
+              {website}
+            </Text>
+            <FontAwesome5
+              name="external-link-alt"
+              size={s(EXTERNAL_GLYPH)}
+              color={colors.textSecondary}
+              solid
+            />
+          </Pressable>
+        </ProfileCard>
         {message ? (
           <Text variant="caption" color="danger" accessibilityLiveRegion="polite">
             {message}
@@ -122,90 +161,72 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
       </View>
 
       {current.companyAbout ? (
-        <View style={{ gap: spacing[3] }}>
-          <Text variant="section" accessibilityRole="header">
-            About
-          </Text>
-          <Text variant="prose" color="textBody">
+        <ProfileCard style={[styles.about, { padding: spacing[5] }]}>
+          <View style={styles.aboutHeader}>
+            <View style={styles.artSlot}>
+              <Art art={COMPANY_ART} width={COMPANY_ART.w} />
+            </View>
+            <Text {...a11yHeader()} variant="title" style={styles.flex}>
+              About
+            </Text>
+          </View>
+          <Text variant="captionRegular" color="textBody">
             {current.companyAbout}
           </Text>
-        </View>
+        </ProfileCard>
       ) : null}
 
-      <View style={{ gap: spacing[3] }}>
-        <Text variant="section" accessibilityRole="header">
-          {`Open roles at ${current.company}`}
-        </Text>
-        <CompanyRoles
-          company={current.company}
-          roles={otherRoles}
-          loading={company.length > 0 && listings.isPending}
-          failed={listings.isError}
-          onRetry={() => void listings.refetch()}
-          onOpen={actions.openJob}
+      <View style={styles.roles}>
+        <SectionHeading
+          title={`Open roles at ${current.company}`}
+          note={
+            rolesReady
+              ? `${otherRoles.length} ${otherRoles.length === 1 ? 'role' : 'roles'}`
+              : undefined
+          }
         />
+        <View style={styles.rolesBody}>
+          <CompanyRoles
+            company={current.company}
+            roles={otherRoles}
+            loading={company.length > 0 && listings.isPending}
+            failed={listings.isError}
+            onRetry={() => void listings.refetch()}
+            onOpen={actions.openJob}
+          />
+        </View>
       </View>
     </>,
+    true,
   );
 }
 
-type CompanyRolesProps = {
-  company: string;
-  roles: readonly Job[];
-  loading: boolean;
-  failed: boolean;
-  onRetry: () => void;
-  onOpen: (job: Job) => void;
-};
-
-/**
- * The listings section's own four states. A failed listings query is *not* the page failing: the
- * hero and the About copy are still worth reading, so only this section degrades.
- */
-function CompanyRoles({ company, roles, loading, failed, onRetry, onOpen }: CompanyRolesProps) {
-  const { spacing, s } = useTheme();
-
-  if (loading) {
-    return (
-      <View style={{ gap: spacing[3] }}>
-        {[0, 1].map((index) => (
-          <Skeleton key={index} height={s(ROLE_ROW)} radius="card" />
-        ))}
-      </View>
-    );
-  }
-
-  if (failed) {
-    return (
-      <StateView
-        compact
-        tone="danger"
-        icon="exclamation-triangle"
-        title="Couldn't load these roles"
-        message="The rest of this page still loaded."
-        actionLabel="Try again"
-        onAction={onRetry}
-      />
-    );
-  }
-
-  // A real case, not a fallback: most employers in the listings we hold have exactly one opening.
-  if (roles.length === 0) {
-    return (
-      <StateView
-        compact
-        icon="briefcase"
-        title="No other open roles right now"
-        message={`This is the only ${company} listing we have today.`}
-      />
-    );
-  }
-
-  return (
-    <View style={{ gap: spacing[3] }}>
-      {roles.map((role) => (
-        <SimilarJobCard key={role.id} job={role} onPress={onOpen} />
-      ))}
-    </View>
-  );
-}
+const useStyles = scaledSheet((s) => ({
+  website: { marginTop: s(HERO_TO_WEBSITE) },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(ROW_GAP),
+    paddingLeft: s(ROW_PAD_LEFT),
+    paddingRight: s(ROW_PAD_RIGHT),
+    paddingVertical: s(ROW_PAD_Y),
+  },
+  tile: {
+    width: s(TILE),
+    height: s(TILE),
+    borderRadius: s(TILE_RADIUS),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flex: { flex: 1 },
+  about: { marginTop: s(WEBSITE_TO_ABOUT), gap: s(ABOUT_GAP) },
+  aboutHeader: { flexDirection: 'row', alignItems: 'center', gap: s(ABOUT_GAP) },
+  artSlot: {
+    width: s(ART_SLOT_W),
+    height: s(ART_SLOT_H),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  roles: { marginTop: s(ABOUT_TO_ROLES) },
+  rolesBody: { marginTop: s(HEADING_TO_ROLES) },
+}));

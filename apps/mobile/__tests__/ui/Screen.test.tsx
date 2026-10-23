@@ -209,14 +209,11 @@ describe('Screen — footer and keyboard', () => {
 
     const box = safeAreaBox(screen.getByLabelText('body'));
 
-    // RNTL 14 renders a host-only tree, so `KeyboardAvoidingView` is not itself walkable — the
-    // mark it leaves is. It measures its own frame, so the View it wraps the page in carries an
-    // `onLayout` that nothing else here would put there.
-    expect(typeof (box.parent as Instance).props.onLayout).toBe('function');
-    // And it wraps the safe-area box rather than *being* it, which is the whole point: on
-    // jest-expo's iOS it runs `behavior="padding"`, composing the keyboard's height over the
-    // style it was handed — 0 at rest, so the 34pt inset would vanish from a screen with no
-    // footer to own it. Out here that padding lands above the box and the inset survives.
+    // The avoider wraps the safe-area box rather than *being* it, which is the whole point:
+    // `behavior="padding"` composes the keyboard's height over the style it is handed — 0 at
+    // rest, so the 34pt inset would vanish from a screen with no footer to own it. Out here that
+    // padding lands above the box and the inset survives.
+    expect((box.parent as Instance).props.testID).toBe('screen-keyboard-avoider');
     expect(flat(box.props.style).paddingBottom).toBe(metrics.insets.bottom);
   });
 
@@ -230,8 +227,8 @@ describe('Screen — footer and keyboard', () => {
 
     const box = safeAreaBox(screen.getByLabelText('body'));
 
-    expect(box.props.onLayout).toBeUndefined();
-    expect((box.parent as Instance).props.onLayout).toBeUndefined();
+    expect(screen.queryByTestId('screen-keyboard-avoider')).toBeNull();
+    expect((box.parent as Instance | null)?.props.testID).not.toBe('screen-keyboard-avoider');
     expect(flat(box.props.style).paddingBottom).toBe(metrics.insets.bottom);
   });
 });

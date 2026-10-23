@@ -1,37 +1,42 @@
-import { useCallback, useState, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import type { PlanId } from '@/data/models';
 import { usePlans, useSubscription, useUpgradePlan } from '@/data/queries';
-import { useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { haptics } from '@/lib';
+import { scaledSheet, useTheme } from '@/theme';
+
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
-import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
 import { Text } from '@/ui/Text';
 import { Toast } from '@/ui/Toast';
+import { useRevealStagger } from '@/ui/motion';
 
 import { CheckoutConfirm } from '../components/CheckoutConfirm';
 import { PlanComparison } from '../components/PlanComparison';
+import { PlanPeriodRow, type Period } from '../components/PlanPeriodRow';
 import { PlanReasonBanner } from '../components/PlanReasonBanner';
 import { PlanTiles } from '../components/PlanTiles';
 import { PlanUsageCard } from '../components/PlanUsageCard';
 import { ProStatusCard } from '../components/ProStatusCard';
+import { UpgradeHero } from '../components/UpgradeHero';
 import { UpgradeSkeleton } from '../components/UpgradeSkeleton';
 import { useBillingActions } from '../hooks/useBillingActions';
 import {
   annualSaving,
   annualSavingLine,
   BILLING_NOTE,
+  HERO_CAPTION,
   LOADING_CTA,
   MANAGE_CTA,
   MANAGE_NOTE,
   MANAGE_UNAVAILABLE,
   PLANS_ERROR_MESSAGE,
   PLANS_ERROR_TITLE,
+  PRO_HERO_CAPTION,
   REASON_METER,
   renewalLine,
   TRUST_LINE,
@@ -39,24 +44,24 @@ import {
   UPGRADED_TOAST,
 } from '../upgradeCopy';
 import type { UpgradeReason } from '../upgradeReasons';
+/** How often, and how many times, the plan is read again while a hosted checkout completes. */
+const CHECKOUT_POLL_MS = 3000;
+const CHECKOUT_POLLS = 40;
 
 export type UpgradeScreenProps = { reason?: UpgradeReason };
 
 export const SCREEN_TITLE = 'NextKin Pro';
-export const BILLING_PERIOD_LABEL = 'Billing period';
-
-type Period = 'monthly' | 'annual';
-
-const PERIOD_SEGMENTS: readonly Segment<Period>[] = [
-  { key: 'monthly', label: 'Monthly' },
-  { key: 'annual', label: 'Annual' },
-];
-
 const PRO_SKU: Record<Period, PlanId> = { monthly: 'pro_monthly', annual: 'pro_annual' };
 
+// BILLING 01 at 390 (577:9155), in artboard units: the board's spacers between its blocks.
+const HEADER_TO_HERO = 8 / 0.75;
+const GAP_SM = 10 / 0.75;
+const GAP_MD = 12 / 0.75;
+const GAP_LG = 18 / 0.75;
+
 /**
- * The plan screen (V2 §13) — the single destination behind every paywall in the app.
- * No artboard draws it (plan §8), so it is assembled from the built primitives alone.
+ * The plan screen (V2 §13) — the single destination behind every paywall in the app — drawn as
+ * BILLING 01 (577:9155), with BILLING 02's checkout confirm (580:314) over it.
  *
  * Three rules from §13 shape it. The reader arrives with the limit they hit, and the banner names
  * that limit rather than opening on a pitch (§13.5). The live meter sits above the offer, so the
@@ -65,8 +70,8 @@ const PRO_SKU: Record<Period, PlanId> = { monthly: 'pro_monthly', annual: 'pro_a
  * confirm says again after it.
  */
 export function UpgradeScreen({ reason }: UpgradeScreenProps) {
-  const { motion, spacing } = useTheme();
-  const reduced = useReducedMotion();
+  const { spacing, s } = useTheme();
+  const styles = useStyles();
   const actions = useBillingActions();
 
   const plans = usePlans();
@@ -77,6 +82,31 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [purchased, setPurchased] = useState(false);
   const [manageNote, setManageNote] = useState<string | undefined>(undefined);
+  const [awaitingCheckout, setAwaitingCheckout] = useState(false);
+
+  // After a hosted checkout: read the subscription again every few seconds, for up to two minutes,
+  // until the webhook has made the plan Pro; then the same confirmation as an instant upgrade.
+  const refetchSubscription = subscription.refetch;
+  useEffect(() => {
+    if (!awaitingCheckout) return undefined;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      void refetchSubscription().then((r) => {
+        if (r.data?.plan === 'pro') {
+          clearInterval(timer);
+          setAwaitingCheckout(false);
+          setPurchased(true);
+          haptics.success();
+        }
+      });
+      if (tries >= CHECKOUT_POLLS) {
+        clearInterval(timer);
+        setAwaitingCheckout(false);
+      }
+    }, CHECKOUT_POLL_MS);
+    return () => clearInterval(timer);
+  }, [awaitingCheckout, refetchSubscription]);
 
   const list = plans.data ?? [];
   const free = list.find((plan) => plan.id === 'free');
@@ -89,12 +119,24 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
   const confirm = useCallback(() => {
     if (!pro) return;
     upgrade.mutate(pro.id, {
-      onSuccess: () => {
+      onSuccess: (result) => {
         setConfirmOpen(false);
+        if (result.kind === 'checkout') {
+          // The backend's hosted checkout opens in the browser (D-18: nothing is sold in the app);
+          // the plan changes when the gateway's webhook lands, so the meter is watched until then.
+          void actions.openCheckout(result.url).then((opened) => {
+            if (opened === 'unavailable') setManageNote(MANAGE_UNAVAILABLE);
+            else setAwaitingCheckout(true);
+          });
+          return;
+        }
         setPurchased(true);
+        // Felt as well as read, alongside the toast (§85). Once: a mutate call's own callbacks
+        // run for the call that landed, and the sheet is busy while it is in flight.
+        haptics.success();
       },
     });
-  }, [pro, upgrade]);
+  }, [actions, pro, upgrade]);
 
   /**
    * The toast leaves before the page does. Popping on the same tick would unmount the
@@ -112,19 +154,20 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
       .then((result) => setManageNote(result === 'unavailable' ? MANAGE_UNAVAILABLE : undefined));
   }, [actions]);
 
-  const enter = (index: number) =>
-    reduced
-      ? undefined
-      : FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base);
+  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
+  // with its data already here slides in whole with the push.
+  const enter = useRevealStagger(!plans.isPending && !subscription.isPending);
 
-  const page = (children: ReactNode, footer?: ReactNode) => (
+  // The board leaves the header's title slot blank: the hero names the page. A failed load has no
+  // hero, so its header keeps the name.
+  const page = (children: ReactNode, footer?: ReactNode, showTitle = false) => (
     <View style={styles.root}>
       <Screen
         scroll
         edges={['top', 'bottom']}
-        header={<ScreenHeader title={SCREEN_TITLE} onBack={actions.goBack} />}
-        headerStyle={{ paddingBottom: spacing[4] }}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+        header={<ScreenHeader title={SCREEN_TITLE} showTitle={showTitle} onBack={actions.goBack} />}
+        headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+        contentContainerStyle={{ paddingBottom: spacing[8] }}
         footer={footer}
       >
         {children}
@@ -148,7 +191,7 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
   if (plans.isPending || subscription.isPending) {
     return page(
       <UpgradeSkeleton />,
-      <StickyActionBar primary={{ label: LOADING_CTA, disabled: true }} />,
+      <StickyActionBar floating primary={{ label: LOADING_CTA, disabled: true }} />,
     );
   }
 
@@ -165,6 +208,8 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
           void subscription.refetch();
         }}
       />,
+      undefined,
+      true,
     );
 
   if (plans.isError || subscription.isError || !sub) return failed();
@@ -174,18 +219,22 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
   if (sub.plan === 'pro') {
     return page(
       <>
-        <Animated.View entering={enter(0)}>
+        <UpgradeHero title={SCREEN_TITLE} caption={PRO_HERO_CAPTION} />
+        <Animated.View entering={enter(0)} style={styles.gapMd}>
           <ProStatusCard renewal={renewalLine(sub.renewsAt)} />
         </Animated.View>
-        <Animated.View entering={enter(1)}>
+        <Animated.View entering={enter(1)} style={styles.gapMd}>
           <PlanUsageCard usage={sub.usage} plan={sub.plan} />
         </Animated.View>
-        <Animated.View entering={enter(2)}>
+        <Animated.View entering={enter(2)} style={styles.gapLg}>
           <PlanComparison />
         </Animated.View>
       </>,
       <StickyActionBar
+        floating
         note={manageNote ?? MANAGE_NOTE}
+        // The browser not opening is a failure, so it reads as one rather than as the hint (§85).
+        noteTone={manageNote ? 'danger' : 'neutral'}
         primary={{ label: MANAGE_CTA, icon: 'external-link-alt', onPress: manage }}
       />,
     );
@@ -198,13 +247,15 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
 
   return page(
     <>
+      <UpgradeHero title={SCREEN_TITLE} caption={HERO_CAPTION} />
+
       {reason ? (
-        <Animated.View entering={enter(0)}>
+        <Animated.View entering={enter(0)} style={styles.gapMd}>
           <PlanReasonBanner reason={reason} />
         </Animated.View>
       ) : null}
 
-      <Animated.View entering={enter(1)}>
+      <Animated.View entering={enter(1)} style={styles.gapMd}>
         <PlanUsageCard
           usage={sub.usage}
           plan={sub.plan}
@@ -212,12 +263,11 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
         />
       </Animated.View>
 
-      <Animated.View entering={enter(2)} style={{ gap: spacing[3] }}>
-        <Text variant="groupLabel">{BILLING_PERIOD_LABEL}</Text>
-        <SegmentedControl segments={PERIOD_SEGMENTS} value={period} onChange={setPeriod} />
+      <Animated.View entering={enter(2)} style={styles.gapLg}>
+        <PlanPeriodRow value={period} onChange={setPeriod} />
       </Animated.View>
 
-      <Animated.View entering={enter(3)}>
+      <Animated.View entering={enter(3)} style={styles.gapSm}>
         <PlanTiles
           free={free}
           pro={pro}
@@ -226,21 +276,25 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
         />
       </Animated.View>
 
-      <Animated.View entering={enter(4)}>
+      <Animated.View entering={enter(4)} style={styles.gapLg}>
         <PlanComparison />
       </Animated.View>
 
-      <Text variant="caption" color="textSecondary" align="center">
+      <Text variant="micro" color="textSecondary" align="center" style={styles.gapMd}>
         {TRUST_LINE}
       </Text>
     </>,
     <StickyActionBar
+      floating
       note={BILLING_NOTE}
       primary={{ label: upgradeCtaLabel(pro), onPress: () => setConfirmOpen(true) }}
     />,
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = scaledSheet((s) => ({
   root: { flex: 1 },
-});
+  gapSm: { marginTop: s(GAP_SM) },
+  gapMd: { marginTop: s(GAP_MD) },
+  gapLg: { marginTop: s(GAP_LG) },
+}));

@@ -1,13 +1,12 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
+import StartAiSparkleIcon from '../../../../assets/icons/resumes/start-ai-sparkle.svg';
+import FirstRunIllustration from '../../../../assets/illustrations/resumes-first-run.svg';
 import { a11yButton, a11yHeader } from '@/lib';
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
-
-import { ResumeThumbnail } from './ResumeThumbnail';
 
 export type ResumesFirstRunProps = {
   onUpload: () => void;
@@ -15,11 +14,22 @@ export type ResumesFirstRunProps = {
   onStartWithAi: () => void;
 };
 
-/** Illustration geometry from the 520pt artboard (Figma 1:2065–1:2067). */
-const GHOST = { width: 140, height: 186 } as const;
-const PAGE = { width: 160, height: 206 } as const;
+/** The illustration (Figma 395:1344 / 391:807), drawn 289.35 × 224.25 at 390. */
+const ART = { w: 289.349 / 0.75, h: 224.25 / 0.75 } as const;
 const CTA_HEIGHT = 64;
 const CTA_ICON = 16;
+/** "Start with AI" leads with its own sparkle (529:25), 21.28 × 22 and 6.5 short of the label. */
+const AI_SPARKLE = { w: 21.28 / 0.75, h: 22 / 0.75 } as const;
+const AI_GAP = 6.47 / 0.75;
+/**
+ * The respaced 390 board (toreview.md 38.1), in artboard units: illustration → title 32,
+ * title → lede 19, lede → first CTA 38, CTAs 19 apart, last CTA → footnote 37.
+ */
+const TITLE_TOP = 32;
+const LEDE_TOP = 19;
+const CTAS_TOP = 38;
+const CTA_GAP = 19;
+const FOOTNOTE_TOP = 37;
 
 type CtaTone = 'primary' | 'outline' | 'brand';
 
@@ -39,7 +49,11 @@ function Cta({
 
   const surface = {
     primary: { bg: colors.surfaceInverse, border: 'transparent', fg: 'textOnDark' as ColorToken },
-    outline: { bg: colors.surfaceCard, border: colors.borderDefault, fg: 'textPrimary' as ColorToken },
+    outline: {
+      bg: colors.surfaceCard,
+      border: colors.borderDefault,
+      fg: 'textPrimary' as ColorToken,
+    },
     brand: { bg: colors.brandSurface, border: colors.brandBorder, fg: 'brand' as ColorToken },
   }[tone];
 
@@ -53,7 +67,7 @@ function Cta({
         styles.cta,
         {
           height: s(CTA_HEIGHT),
-          gap: spacing[2] + 2,
+          gap: tone === 'brand' ? s(AI_GAP) : spacing[2] + 2,
           borderRadius: radii.xxl,
           backgroundColor: surface.bg,
           borderWidth: surface.border === 'transparent' ? 0 : 1,
@@ -62,7 +76,7 @@ function Cta({
       ]}
     >
       {tone === 'brand' ? (
-        <SparkleIcon width={s(15)} height={s(15)} color={colors.brand} />
+        <StartAiSparkleIcon width={s(AI_SPARKLE.w)} height={s(AI_SPARKLE.h)} />
       ) : icon ? (
         <FontAwesome5 name={icon} size={s(CTA_ICON)} color={colors[surface.fg]} solid />
       ) : null}
@@ -73,68 +87,57 @@ function Cta({
   );
 }
 
-/** RESUMES 05 (Figma 1:2061) — the whole tab before the first document exists. */
-export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: ResumesFirstRunProps) {
-  const { colors, shadows, spacing, s } = useTheme();
+/**
+ * RESUMES 05 (Figma 95:2262) — the whole tab before the first document exists. The parent
+ * centres this block in the space under the title row, as the board does.
+ */
+export function ResumesFirstRun({
+  onUpload,
+  onImportLinkedIn,
+  onStartWithAi,
+}: ResumesFirstRunProps) {
+  const { s } = useTheme();
   const styles = useStyles();
 
-  const ghost = { width: s(GHOST.width), height: s(GHOST.height) };
-  const page = { width: s(PAGE.width), height: s(PAGE.height) };
-
   return (
-    <View style={{ gap: spacing[3] }}>
+    <View>
       <View
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
-        style={[styles.illustration, { height: page.height + spacing[6], marginTop: spacing[10] }]}
+        style={styles.illustration}
       >
-        <View
-          style={[
-            styles.ghost,
-            ghost,
-            { borderRadius: s(14), backgroundColor: colors.surfaceGhost, left: '50%' },
-            { transform: [{ translateX: -ghost.width - s(6) }, { translateY: s(8) }] },
-          ]}
-        />
-        <View
-          style={[
-            styles.ghost,
-            ghost,
-            { borderRadius: s(14), backgroundColor: colors.surfaceSubtle, left: '50%' },
-            { transform: [{ translateX: 6 }, { translateY: 8 }] },
-          ]}
-        />
-        <View
-          style={[
-            page,
-            styles.page,
-            shadows.docFloat,
-            {
-              borderRadius: s(10),
-              borderWidth: s(1),
-              borderColor: colors.borderDefault,
-              backgroundColor: colors.surfaceCard,
-            },
-          ]}
-        >
-          <ResumeThumbnail style={StyleSheet.absoluteFill} />
-        </View>
+        <FirstRunIllustration width={s(ART.w)} height={s(ART.h)} />
       </View>
 
-      <Text {...a11yHeader()} variant="headlineLg" align="center" style={{ marginTop: spacing[6] }}>
+      <Text
+        {...a11yHeader()}
+        variant="headlineLg"
+        align="center"
+        style={{ marginTop: s(TITLE_TOP) }}
+      >
         {"Let's build your first resume"}
       </Text>
-      <Text variant="body" color="textSecondary" align="center" style={styles.lede}>
+      <Text
+        variant="body"
+        color="textSecondary"
+        align="center"
+        style={[styles.lede, { marginTop: s(LEDE_TOP) }]}
+      >
         Start from what you already have — most people are done in under ten minutes.
       </Text>
 
-      <View style={{ gap: spacing[3], marginTop: spacing[5] }}>
+      <View style={{ gap: s(CTA_GAP), marginTop: s(CTAS_TOP) }}>
         <Cta tone="primary" icon="upload" label="Upload PDF or DOCX" onPress={onUpload} />
         <Cta tone="outline" icon="link" label="Import from LinkedIn" onPress={onImportLinkedIn} />
         <Cta tone="brand" label="Start with AI" onPress={onStartWithAi} />
       </View>
 
-      <Text variant="caption" color="textSecondary" align="center" style={{ marginTop: spacing[3] }}>
+      <Text
+        variant="caption"
+        color="textSecondary"
+        align="center"
+        style={{ marginTop: s(FOOTNOTE_TOP) }}
+      >
         Free plan includes 2 resumes and watermark-free PDF export — always.
       </Text>
     </View>
@@ -143,8 +146,6 @@ export function ResumesFirstRun({ onUpload, onImportLinkedIn, onStartWithAi }: R
 
 const useStyles = scaledSheet((s) => ({
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  illustration: { alignItems: 'center', justifyContent: 'flex-start' },
-  ghost: { position: 'absolute', top: s(14) },
-  page: { overflow: 'hidden' },
+  illustration: { alignItems: 'center' },
   lede: { alignSelf: 'center', maxWidth: s(320) },
 }));

@@ -1,14 +1,10 @@
-import { useEffect } from 'react';
 import { StyleSheet, TextInput, type StyleProp, type TextStyle } from 'react-native';
-import Animated, {
-  useAnimatedProps,
-  useSharedValue,
-  withTiming,
-  type SharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedProps, type SharedValue } from 'react-native-reanimated';
 
-import { maxFontScale, useReducedMotion, withReducedMotion } from '@/lib';
+import { maxFontScale } from '@/lib';
 import { useTheme, type ColorToken, type TypographyRole } from '@/theme';
+
+import { useMeterValue, type MeterTiming } from './meterMemory';
 
 Animated.addWhitelistedNativeProps({ text: true });
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
@@ -32,6 +28,10 @@ export type AnimatedNumberProps = {
    * and a plain JS closure there throws "Tried to synchronously call a Remote Function".
    */
   format?: (n: number) => string;
+  /** Start from what this key last showed, so a remount does not count up from 0 again. */
+  memoryKey?: string;
+  /** `follow` for a live figure that updates every beat; `meter` (default) otherwise. */
+  timing?: MeterTiming;
   style?: StyleProp<TextStyle>;
 };
 
@@ -50,16 +50,14 @@ export function AnimatedNumber({
   variant = 'statRegular',
   color = 'textBlack',
   format = defaultFormat,
+  memoryKey,
+  timing,
   style,
 }: AnimatedNumberProps) {
-  const { colors, typography, motion } = useTheme();
-  const reduced = useReducedMotion();
-  const internal = useSharedValue(0);
-
-  useEffect(() => {
-    if (progress || typeof value !== 'number') return;
-    internal.set(withTiming(value, withReducedMotion(reduced, motion.timings.meter)));
-  }, [internal, motion.timings.meter, progress, reduced, value]);
+  const { colors, typography } = useTheme();
+  // Idle (and unread) when the caller drives the number with its own shared value or envelope.
+  const owned = !progress && typeof value === 'number';
+  const internal = useMeterValue(owned ? value : 0, { memoryKey, timing, animated: owned });
 
   const animatedProps = useAnimatedProps(() => {
     let current: number;

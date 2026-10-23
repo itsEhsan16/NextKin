@@ -14,7 +14,7 @@ type NewDocProps = {
 const GRID_PLUS = 56;
 const ROW_PLUS = 44;
 
-/** Dashed "+ New" tile leading the grid (Figma 1:1394). Opens the create sheet. */
+/** Dashed "+ New" tile leading the grid (Figma 95:1555). Opens the create sheet. */
 export function NewDocTile({ onPress, style }: NewDocProps) {
   const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
@@ -31,7 +31,7 @@ export function NewDocTile({ onPress, style }: NewDocProps) {
           gap: spacing[2],
           borderRadius: radii.card,
           borderColor: colors.borderDashed,
-          backgroundColor: colors.surfaceFaint,
+          backgroundColor: colors.surfaceNewDoc,
         },
         style,
       ]}
@@ -60,7 +60,7 @@ export function NewDocTile({ onPress, style }: NewDocProps) {
   );
 }
 
-/** The list layout's dashed "+ New resume or cover letter" row (Figma 1:1616). */
+/** The list layout's dashed "+ New resume or cover letter" row (Figma 95:1797). */
 export function NewDocRow({ onPress, style }: NewDocProps) {
   const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
@@ -78,7 +78,7 @@ export function NewDocRow({ onPress, style }: NewDocProps) {
           padding: spacing[4] - 1,
           borderRadius: radii.xxl,
           borderColor: colors.borderDashed,
-          backgroundColor: colors.surfaceFaint,
+          backgroundColor: colors.surfaceNewDoc,
         },
         style,
       ]}

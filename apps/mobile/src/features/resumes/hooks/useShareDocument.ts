@@ -28,9 +28,10 @@ export function useShareDocument(id: string, surface: ResumeSurface = 'tabs') {
         const result = await shareText(url, { title: 'Your NextKin document', url });
         if (result !== 'unavailable') return;
         const copied = await copyToClipboard(url);
-        showToast(copied === 'done' ? SHARE_COPIED : SHARE_UNAVAILABLE, surface);
+        if (copied === 'done') showToast(SHARE_COPIED, surface);
+        else showToast(SHARE_UNAVAILABLE, surface, 'error');
       },
-      onError: () => showToast(SHARE_FAILED, surface),
+      onError: () => showToast(SHARE_FAILED, surface, 'error'),
     });
   }, [id, link, showToast, surface]);
 

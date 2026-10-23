@@ -1,17 +1,19 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { memo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { INTERVIEW_GENERIC_LABEL, interviewMarkCounts, type InterviewSet } from '@/data/models';
-import { a11yButton, formatRelativeTime } from '@/lib';
-import { useTheme } from '@/theme';
+// Deep import on purpose: the notifications barrel drags its screens in. The map is pure.
+import { companyMark } from '@/features/notifications/components/companyMark';
+import { a11yButton, formatRelativeTime, initialOf } from '@/lib';
+import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
-import { Chip } from '@/ui/Chip';
+import { Pill } from '@/ui/Pill';
 import { Pressable } from '@/ui/Pressable';
-import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
 import { marksLine } from '../practiceRows';
+import { MarkSummary } from './MarkSummary';
 
 export type InterviewSetCardProps = {
   set: InterviewSet;
@@ -21,13 +23,20 @@ export type InterviewSetCardProps = {
   onLongPress: (set: InterviewSet) => void;
 };
 
-const CHEVRON = 11;
-const BAR_HEIGHT = 4;
+// INTERVIEW 01 at 390 (577:965), in artboard units.
+const PAD = 15 / 0.75;
+const GAP = 10 / 0.75;
+const HEADER_GAP = 12 / 0.75;
+const TILE = 40 / 0.75;
+const TILE_RADIUS = 11.667 / 0.75;
+const LINE_GAP = 2 / 0.75;
+const CHEVRON = 9 / 0.75;
 
 /**
- * One practice set on `/interview`. A standalone set carries the §7.15 "generic" label as a
- * chip, not a footnote — the acceptance criterion is that it is *visibly* labelled. Long press
- * opens the delete confirm; there is no swipe, because the card is the only row shape here.
+ * One practice set on `/interview` (INTERVIEW 01 577:965): the company's tile, the set's name,
+ * its size and age, then the marks. A standalone set carries the §7.15 "generic" label as a pill
+ * among them — the acceptance criterion is that it is *visibly* labelled. Long press opens the
+ * delete confirm; there is no swipe, because the card is the only row shape here.
  */
 export const InterviewSetCard = memo(function InterviewSetCard({
   set,
@@ -35,11 +44,13 @@ export const InterviewSetCard = memo(function InterviewSetCard({
   onOpen,
   onLongPress,
 }: InterviewSetCardProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, s } = useTheme();
+  const styles = useStyles();
   const counts = interviewMarkCounts(set);
   const summary = marksLine(counts);
   const when = formatRelativeTime(set.createdAt);
   const generic = set.source === 'standalone';
+  const mark = companyMark(set.company ?? '');
 
   return (
     <Pressable
@@ -52,45 +63,40 @@ export const InterviewSetCard = memo(function InterviewSetCard({
       onPress={() => onOpen(set)}
       onLongPress={() => onLongPress(set)}
     >
-      <Card radius="card" style={{ gap: spacing[3] }}>
-        <View style={[styles.titleRow, { gap: spacing[3] }]}>
-          <View style={styles.titleText}>
+      <Card radius="cardLg" shadow="jobCard" padding={s(PAD)} style={{ gap: s(GAP) }}>
+        <View style={styles.header}>
+          <View style={[styles.tile, { backgroundColor: colors[mark.bg] }]}>
+            <Text variant="entryInitial" color={mark.fg}>
+              {mark.glyph ?? initialOf(set.company ?? set.title)}
+            </Text>
+          </View>
+          <View style={styles.text}>
             <Text variant="title" numberOfLines={2}>
               {set.title}
             </Text>
-            <Text variant="caption" color="textSecondary" style={{ marginTop: spacing[1] }}>
+            <Text variant="caption" color="textBody" numberOfLines={1}>
               {`${counts.total} questions · ${when}${superseded ? ' · Earlier set' : ''}`}
             </Text>
           </View>
           <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
         </View>
-
-        {generic ? (
-          <View style={styles.chipRow}>
-            <Chip label={INTERVIEW_GENERIC_LABEL} tone="neutral" />
-          </View>
-        ) : null}
-
-        <View style={{ gap: spacing[2] }}>
-          <Text variant="captionSm" color="textSecondary">
-            {summary}
-          </Text>
-          <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-            <ProgressBar
-              value={counts.total > 0 ? counts.marked / counts.total : 0}
-              height={s(BAR_HEIGHT)}
-              trackColor="progressTrack"
-              fillColor="success"
-            />
-          </View>
-        </View>
+        <MarkSummary
+          counts={counts}
+          extra={generic ? <Pill label={INTERVIEW_GENERIC_LABEL} /> : undefined}
+        />
       </Card>
     </Pressable>
   );
 });
 
-const styles = StyleSheet.create({
-  titleRow: { flexDirection: 'row', alignItems: 'center' },
-  titleText: { flex: 1 },
-  chipRow: { flexDirection: 'row' },
-});
+const useStyles = scaledSheet((s) => ({
+  header: { flexDirection: 'row', alignItems: 'center', gap: s(HEADER_GAP) },
+  tile: {
+    width: s(TILE),
+    height: s(TILE),
+    borderRadius: s(TILE_RADIUS),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: { flex: 1, gap: s(LINE_GAP) },
+}));

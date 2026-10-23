@@ -22,3 +22,14 @@ export const spentNote = (limit: number): string =>
   limit > 0
     ? `This month's ${pluralize(limit, 'generation')} are used. Pro raises the monthly cap.`
     : 'Your plan has no generations this month. Pro raises the monthly cap.';
+
+/**
+ * "1 of 3 generations left this month" (ZERO 01 613:288): the cap on the bar, over the button
+ * that spends one, in `UsageBanner`'s wording.
+ */
+export const generationsLeftNote = (used: number, limit: number): string =>
+  `${Math.max(0, limit - used)} of ${pluralize(limit, 'generation')} left this month`;
+
+/** BUILD 02/04c: the cost of a resume build, said before the press (toreview §55.2). */
+export const buildCostNote = (limit: number): string =>
+  `Uses 1 of your ${pluralize(limit, 'resume build')} this month`;

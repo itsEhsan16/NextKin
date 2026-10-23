@@ -9,27 +9,26 @@ import { formatMonthYear } from '@/lib';
  */
 
 /**
- * A title on its own line, a muted meta line under it, and optionally a line of tags.
- *
- * It was `{ label, value }` until a device pass found the rows empty: `value` is `ListRow`'s
- * *trailing* value, and a 49-character subtitle handed to it starved the label to width 0, so
- * "M.Des." rendered no glyphs at all. The doc comments here always said "X over Y" — the copy was
- * written for a two-line row that had not been built. It has now (`@/ui/EntryRow`).
+ * What leads an entry card (PROFILE 04 573:42, PROFILE 12 577:9046): the company's or school's
+ * initial, a link kind's glyph, or — for LinkedIn alone — the illustrated mark the boards draw.
+ */
+export type EntryTileSpec =
+  { kind: 'letter'; name: string } | { kind: 'glyph'; icon: string } | { kind: 'linkedin' };
+
+/**
+ * One card on a profile list (PROFILE 04 / 07 / 12): a title over who and when, an optional status
+ * pill, and the tags a list of entries is actually scanned for.
  */
 export type EntryRow = {
   id: string;
-  /** FontAwesome 5 Free Solid glyph name. */
-  icon: string;
+  tile: EntryTileSpec;
   title: string;
+  /** The company, school or issuer — or a link's tidied address. */
+  subtitle?: string;
+  /** The dates, a step quieter. */
   meta?: string;
-  /** A third line — the facts a list of entries is actually scanned for. */
+  pill?: { label: string; tone: 'success' | 'danger' };
   tags?: string[];
-};
-
-/** " · " joins the parts of a row's meta line, skipping the ones that are missing. */
-const meta = (parts: readonly (string | undefined)[]): string | undefined => {
-  const kept = parts.filter((part): part is string => !!part && part.length > 0);
-  return kept.length > 0 ? kept.join(' · ') : undefined;
 };
 
 const PRESENT = 'Present';
@@ -49,8 +48,28 @@ export function formatEntryDates(
   return end ? `${start} – ${end}` : start;
 }
 
+/** Drops an empty string to `undefined`, so a card draws no blank line for a missing fact. */
+const present = (value: string | undefined): string | undefined =>
+  value && value.length > 0 ? value : undefined;
+
 /**
- * "Senior UX Designer" over "Flipkart · Mar 2022 – Present", over the skills claimed for that role.
+ * Newest first, as the list headings promise (573:40): what you are still doing leads, then the
+ * rest by start month. Ties keep the order they were saved in.
+ */
+export function newestFirst<T extends { startDate: string; current: boolean }>(
+  entries: readonly T[],
+): T[] {
+  return [...entries].sort((a, b) => {
+    if (a.current !== b.current) return a.current ? -1 : 1;
+    return b.startDate.localeCompare(a.startDate);
+  });
+}
+
+const CURRENT = 'Current';
+
+/**
+ * "Senior UX Designer" over "Flipkart" over "Mar 2022 – Present", a Current pill on the role you
+ * hold now, and the skills claimed for that role (573:47).
  *
  * The tags are not decoration. V2 §7.3 makes per-role skill tags load-bearing — they are what the
  * Timeline Validation Engine (§7.7) checks a generated resume against — and until now the profile
@@ -58,25 +77,27 @@ export function formatEntryDates(
  * the edit form.
  */
 export function experienceRow(entry: Experience): EntryRow {
+  const dates = formatEntryDates(entry.startDate, entry.endDate, entry.current);
   return {
     id: entry.id,
-    icon: 'briefcase',
+    tile: { kind: 'letter', name: entry.company },
     title: entry.title,
-    meta: meta([entry.company, formatEntryDates(entry.startDate, entry.endDate, entry.current)]),
+    ...(present(entry.company) ? { subtitle: entry.company } : {}),
+    ...(dates ? { meta: dates } : {}),
+    ...(entry.current ? { pill: { label: CURRENT, tone: 'success' as const } } : {}),
     ...(entry.skills.length > 0 ? { tags: [...entry.skills] } : {}),
   };
 }
 
-/** "M.Des." over "National Institute of Design · Jul 2014 – May 2016", over the field of study. */
+/** "M.Des." over "National Institute of Design" over its dates, with the field of study (577:6901). */
 export function educationRow(entry: Education): EntryRow {
+  const dates = formatEntryDates(entry.startDate, entry.endDate, entry.current);
   return {
     id: entry.id,
-    icon: 'graduation-cap',
+    tile: { kind: 'letter', name: entry.institution },
     title: entry.degree,
-    meta: meta([
-      entry.institution,
-      formatEntryDates(entry.startDate, entry.endDate, entry.current),
-    ]),
+    ...(present(entry.institution) ? { subtitle: entry.institution } : {}),
+    ...(dates ? { meta: dates } : {}),
     ...(entry.field ? { tags: [entry.field] } : {}),
   };
 }
@@ -100,31 +121,34 @@ export function certificationExpired(entry: Certification, now: Date = new Date(
 }
 
 /**
- * "AWS Solutions Architect" over "Amazon · 2021", with " · Expired" appended once the
+ * "AWS Solutions Architect" over "Amazon" over "Issued 2021", with an Expired pill once the
  * credential has lapsed. A lapsed credential is still shown — hiding it would lose the user's
- * record of it — but the row never lets it read as current.
+ * record of it — but the card never lets it read as current. No board draws a filled list (PROFILE
+ * 10 is the empty state); it is the role card's shape, given a credential's facts.
  */
 export function certificationRow(entry: Certification, now: Date = new Date()): EntryRow {
+  const year = issuedYear(entry.issuedOn);
   return {
     id: entry.id,
-    icon: 'certificate',
+    tile: { kind: 'letter', name: entry.issuer || entry.name },
     title: entry.name,
-    meta: meta([
-      entry.issuer,
-      issuedYear(entry.issuedOn),
-      certificationExpired(entry, now) ? EXPIRED : undefined,
-    ]),
+    ...(present(entry.issuer) ? { subtitle: entry.issuer } : {}),
+    ...(year ? { meta: `Issued ${year}` } : {}),
+    ...(certificationExpired(entry, now)
+      ? { pill: { label: EXPIRED, tone: 'danger' as const } }
+      : {}),
   };
 }
 
 /**
- * Glyphs for the link kinds. FontAwesome's LinkedIn and GitHub marks live in the Brands set,
- * which `ListRow` does not draw, so each kind gets a Solid glyph that reads as its category.
+ * Glyphs for the link kinds, as the link-kind sheet draws them (PROFILE 14 577:9800). LinkedIn has
+ * an illustrated mark of its own on the boards, so its glyph is only the fallback a plain row uses.
+ * FontAwesome's brand marks live in the Brands set, which the app does not load.
  */
 export const LINK_KIND_ICON: Record<LinkKind, string> = {
   portfolio: 'palette',
   linkedin: 'id-badge',
-  github: 'code',
+  github: 'code-branch',
   website: 'globe',
   other: 'link',
 };
@@ -146,12 +170,17 @@ export function tidyUrl(url: string): string {
     .replace(/\/+$/, '');
 }
 
-/** "Portfolio" over "georgesmith.design". */
+/** A link's tile: LinkedIn's own mark, or its kind's glyph on the brand tint. */
+export function linkTile(kind: LinkKind | undefined): EntryTileSpec {
+  return kind === 'linkedin' ? { kind: 'linkedin' } : { kind: 'glyph', icon: linkIcon(kind) };
+}
+
+/** "Portfolio" over "georgesmith.design" (577:9050). */
 export function linkRow(entry: ProfileLink): EntryRow {
   return {
     id: entry.id,
-    icon: linkIcon(entry.kind),
+    tile: linkTile(entry.kind),
     title: entry.label,
-    meta: tidyUrl(entry.url),
+    subtitle: tidyUrl(entry.url),
   };
 }

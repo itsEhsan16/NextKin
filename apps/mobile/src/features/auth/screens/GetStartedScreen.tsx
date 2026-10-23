@@ -12,14 +12,14 @@ import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
-/** Figma 296:2982. */
+/** Figma 307:4338. */
 const LAYOUT = { heroTop: 48.68, art: { width: 387.45, height: 200.5 }, gutter: 22, gap: 12.21, floor: 105 };
 const BUTTON = { height: 57.86, arrow: 21, arrowRight: 31.75 };
 /** The drawn fill: rgba(84,73,238,0.67) over white, to #A099FB. */
 const PILL = { from: '#8E88F4', to: '#A099FB' };
 
 /**
- * Where a signed-out reader chooses between creating an account and signing in (Figma 296:2982).
+ * Where a signed-out reader chooses between creating an account and signing in (Figma 307:4338).
  *
  * Static: nothing is fetched, so there is no loading, empty or error state to ship.
  *

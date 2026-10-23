@@ -87,9 +87,13 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
     // and the education degree as nothing at all. Title and meta are separate lines now, so each
     // clamps on its own and neither can take the other's width.
     expect(screen.getByText('Senior UX Designer', shown)).toBeOnTheScreen();
-    expect(screen.getByText('Flipkart · Mar 2022 – Present', shown)).toBeOnTheScreen();
+    expect(screen.getByText('4 roles on your profile', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Flipkart', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Mar 2022 – Present', shown)).toBeOnTheScreen();
+    // The role still held carries the board's Current pill (573:44).
+    expect(screen.getByText('Current', shown)).toBeOnTheScreen();
     expect(screen.getByText('Product Designer', shown)).toBeOnTheScreen();
-    expect(screen.getByText('Swiggy · Jun 2019 – Feb 2022', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Jun 2019 – Feb 2022', shown)).toBeOnTheScreen();
 
     // §7.3 makes per-role skill tags load-bearing (§7.7 validates against them); the list is now
     // where they can be checked without opening the form.
@@ -98,7 +102,7 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
 
     // One focus stop per entry, reading the whole row rather than each chip.
     await act(async () =>
-      fireEvent.press(screen.getByLabelText(/^UX Designer, PhonePe · Aug 2017 – May 2019/, shown)),
+      fireEvent.press(screen.getByLabelText(/^UX Designer, PhonePe, Aug 2017 – May 2019/, shown)),
     );
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/profile/experience/[id]',
@@ -118,14 +122,13 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
     // The worst case of the starvation bug: this degree is the shortest title in the app and its
     // meta line the longest, so it rendered zero glyphs on a 390dp phone.
     expect(screen.getByText('M.Des.', shown)).toBeOnTheScreen();
-    expect(
-      screen.getByText('National Institute of Design · Jul 2014 – May 2016', shown),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('National Institute of Design', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Jul 2014 – May 2016', shown)).toBeOnTheScreen();
     expect(screen.getByText('Interaction Design', shown)).toBeOnTheScreen();
 
     await act(async () =>
       fireEvent.press(
-        screen.getByLabelText(/^B\.E\., Anna University · Aug 2010 – May 2014/, shown),
+        screen.getByLabelText(/^B\.E\., Anna University, Aug 2010 – May 2014/, shown),
       ),
     );
     expect(mockPush).toHaveBeenCalledWith({
@@ -139,13 +142,15 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
     await mount(<CertificationsListScreen />);
 
     expect(screen.getByText('No certifications yet')).toBeOnTheScreen();
-    // The message is hidden from the reader — StateView folds it into the title's label.
     expect(
       screen.getByText('Credentials you have earned back up the skills you list.', shown),
     ).toBeOnTheScreen();
+    expect(
+      screen.getByText('AWS, Google, a course certificate — anything with an issuer counts.'),
+    ).toBeOnTheScreen();
 
-    // The bar carries Add in every branch, so the empty state repeating it put the same words on
-    // screen twice — the duplication the device pass caught. One affordance, not two.
+    // PROFILE 10 draws one Add, under the message; the list's dashed card is for a filled list.
+    // One affordance, not two.
     const actions = screen.getAllByLabelText('Add a certification', shown);
     expect(actions).toHaveLength(1);
 

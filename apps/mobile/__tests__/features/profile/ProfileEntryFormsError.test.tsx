@@ -55,7 +55,7 @@ describe('Profile entry forms — the profile fails to load (V2 §7.6)', () => {
 
     expect(screen.getByText("Couldn't load your profile")).toBeOnTheScreen();
     // A page with nothing to save carries no action bar.
-    expect(screen.queryByLabelText('Save')).not.toBeOnTheScreen();
+    expect(screen.queryByLabelText(/^Save/)).not.toBeOnTheScreen();
     // Back is a plain pop here: there is no draft to lose.
     expect(screen.getByLabelText('Back')).toBeOnTheScreen();
 

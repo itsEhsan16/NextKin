@@ -33,20 +33,20 @@ describe('CoverLetterSetupScreen error state', () => {
     useMockModeStore.setState({ mode: 'normal' });
   });
 
-  it('shows the canonical retry state when the library cannot be read', async () => {
+  it('shows the canonical retry state when the resume cannot be read', async () => {
     useMockModeStore.setState({ mode: 'error' });
     const queryClient = createQueryClient();
     clients.push(queryClient);
     await render(
       <SafeAreaProvider initialMetrics={metrics}>
         <QueryClientProvider client={queryClient}>
-          <CoverLetterSetupScreen />
+          <CoverLetterSetupScreen resumeId="res_2" />
         </QueryClientProvider>
       </SafeAreaProvider>,
     );
 
     expect(
-      await screen.findByText("Couldn't load your resumes", {}, { timeout: 15000 }),
+      await screen.findByText("Couldn't load your resume", {}, { timeout: 15000 }),
     ).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
   }, 30000);

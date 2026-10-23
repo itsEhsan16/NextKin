@@ -60,20 +60,27 @@ describe('ScoreRubricScreen (V2 §7.8 — the published rubric)', () => {
 
     // — The honesty note is the top of the page, not a footnote —
     expect(screen.getByRole('header', { name: `How the ${SCORE_LABEL} works` })).toBeOnTheScreen();
+    // The note's first sentence is set bold inside it, so the text is matched across both runs.
     expect(screen.getByText(SCORE_HONESTY_NOTE)).toBeOnTheScreen();
 
     // — Five components, each titled with the weight §7.8 gives it —
     expect(SCORE_RUBRIC).toHaveLength(5);
     expect(SCORE_RUBRIC.reduce((sum, component) => sum + component.weight, 0)).toBe(100);
     for (const component of SCORE_RUBRIC) {
-      expect(screen.getByText(`${component.label} — ${component.weight}%`)).toBeOnTheScreen();
+      expect(screen.getByText(component.label)).toBeOnTheScreen();
+      expect(
+        screen.getByLabelText(`${component.label}, ${component.weight}% of the score`),
+      ).toBeOnTheScreen();
     }
 
-    // — Each row opens onto its explanation. The press is awaited because a bare `fireEvent.press`
-    //   does not flush the toggle's state update here, and the body stays unmounted until it does.
-    for (const component of SCORE_RUBRIC) {
+    // — RESUMES 10 opens on the first component; each other row opens onto its explanation. The
+    //   press is awaited because a bare `fireEvent.press` does not flush the toggle's state update
+    //   here, and the body stays unmounted until it does.
+    for (const component of SCORE_RUBRIC.slice(1)) {
       await act(async () =>
-        fireEvent.press(screen.getByLabelText(`${component.label} — ${component.weight}%`)),
+        fireEvent.press(
+          screen.getByLabelText(`${component.label}, ${component.weight}% of the score`),
+        ),
       );
     }
     for (const component of SCORE_RUBRIC) {

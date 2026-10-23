@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
@@ -8,6 +8,7 @@ import { Button } from '@/ui/Button';
 import { FilterChip } from '@/ui/Chip';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
+import { layoutTransition } from '@/ui/motion';
 
 /** The three chip groups the review screen edits: §7.5's two skill lists, plus its tools. */
 export type SkillGroupKey = 'required' | 'preferred' | 'tools';
@@ -46,7 +47,7 @@ export function JdSkillGroup({ title, skills, noun, onAdd, onPressSkill }: JdSki
 
   // Reduced motion drops the transition rather than shortening it: a chip sliding between the
   // two groups is the movement the setting is asking us not to make.
-  const layout = reduced ? undefined : LinearTransition.springify();
+  const layout = layoutTransition(reduced);
 
   const add = () => {
     const skill = entry.trim();
@@ -57,7 +58,7 @@ export function JdSkillGroup({ title, skills, noun, onAdd, onPressSkill }: JdSki
   };
 
   return (
-    <View style={{ gap: spacing[3] }}>
+    <View style={{ gap: spacing[4] }}>
       <Text variant="section" accessibilityRole="header">
         {title}
       </Text>

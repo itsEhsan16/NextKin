@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { EMPLOYMENT_TYPE_LABEL, type Job } from '@/data/models';
+import { EMPLOYMENT_TYPE_LABEL, matchBasisCaption, type Job } from '@/data/models';
 import { a11yButton, formatPercent, formatRelativeTime } from '@/lib';
 import { useTheme } from '@/theme';
 import { AvatarStack } from '@/ui/Avatar';
@@ -28,6 +28,7 @@ const applicantsCopy = (count: number | undefined) =>
 function jobSummary(job: Job): string {
   const parts = [job.title, `at ${job.company}`];
   if (job.matchScore != null) parts.push(`${formatPercent(job.matchScore)} match`);
+  if (job.matchScore != null && job.matchBasis) parts.push(matchBasisCaption(job.matchBasis));
   parts.push(EMPLOYMENT_TYPE_LABEL[job.employmentType]);
   parts.push(`posted ${formatRelativeTime(job.postedAt)}`);
   const applicants = applicantsCopy(job.applicantsCount);
@@ -60,6 +61,12 @@ export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: 
         <Text variant="homeCardRole" color="textSecondary" numberOfLines={1}>
           {job.title}
         </Text>
+        {/* What the number rests on (G16), spec-derived until an artboard draws it (toreview §105.18). */}
+        {job.matchScore != null && job.matchBasis ? (
+          <Text variant="microRegular" color="textSecondary" numberOfLines={1}>
+            {matchBasisCaption(job.matchBasis)}
+          </Text>
+        ) : null}
         <View style={[styles.chips, { paddingTop: spacing[3], gap: spacing[2] }]}>
           <Chip label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} labelVariant="homeCardChip" />
           <Chip label={formatRelativeTime(job.postedAt)} labelVariant="homeCardChip" />

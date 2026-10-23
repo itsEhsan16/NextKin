@@ -54,7 +54,7 @@ const TOAST_MS = 3500;
 const subscriptionIn = (client: QueryClient): Subscription | undefined =>
   client.getQueryData<Subscription>(qk.user.subscription());
 
-describe('UpgradeScreen (V2 §13 — no artboard)', () => {
+describe('UpgradeScreen (BILLING 01 577:9155)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -81,6 +81,9 @@ describe('UpgradeScreen (V2 §13 — no artboard)', () => {
     await settle(NORMAL_MS);
 
     expect(screen.getByRole('header', { name: 'NextKin Pro' })).toBeOnTheScreen();
+    // BILLING 01 leaves the header's title slot blank: the hero names the page, once.
+    expect(screen.getAllByText('NextKin Pro', HIDDEN)).toHaveLength(1);
+    expect(screen.getByRole('header', { name: 'Choose your plan' })).toBeOnTheScreen();
 
     // §13.5's live meter: the caps are on screen before any argument for raising them, and every
     // row names its published cap rather than a bare percentage.

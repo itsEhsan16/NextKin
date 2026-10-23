@@ -9,8 +9,43 @@ jest.mock('react-native-reanimated', () => {
     ...mock,
     // Not covered by the official mock; the app treats reduced motion as a plain boolean.
     useReducedMotion: () => false,
+    // "ADD ME IF NEEDED" in the official mock: `Screen` wraps every page in it.
+    LayoutAnimationConfig: ({ children }: { children: unknown }) => children,
+    // The official mock returns undefined. A colour that fades between two states rests on one of
+    // them, so the nearest endpoint keeps colour assertions meaningful.
+    interpolateColor: (value: number, input: number[], output: unknown[]) => {
+      const first = input[0] ?? 0;
+      const last = input[input.length - 1] ?? 1;
+      return Math.abs(value - first) <= Math.abs(value - last)
+        ? output[0]
+        : output[output.length - 1];
+    },
+    // The official mock returns the initial value itself; the app holds module-level shared
+    // values (the skeleton clock), so it needs one shaped like `useSharedValue`'s.
+    makeMutable: (initial: unknown) => {
+      const box = { value: initial };
+      return {
+        get value() {
+          return box.value;
+        },
+        set value(next) {
+          box.value = next;
+        },
+        get: () => box.value,
+        set: (next: unknown) => {
+          box.value = typeof next === 'function' ? next(box.value) : next;
+        },
+      };
+    },
   };
 });
+
+// The keyboard controller's own mock: hooks report a closed keyboard, the avoider is a View.
+jest.mock('react-native-keyboard-controller', () =>
+  // jest.mock factories are hoisted above imports, so the mock needs require().
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('react-native-keyboard-controller/jest'),
+);
 
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(() => Promise.resolve()),
@@ -55,4 +90,3 @@ jest.mock('@shopify/flash-list', () => {
   const { FlatList } = require('react-native');
   return { ...actual, FlashList: FlatList, AnimatedFlashList: FlatList };
 });
-

@@ -2,16 +2,17 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { RESUME_SECTION_LABEL, type ResumeContent, type ResumeSectionKey } from '@/data/models';
+import { Art, ProfileCard } from '@/features/profile/components/cards';
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
-import { AiBadge } from '@/ui/AiBadge';
-import { Card } from '@/ui/Card';
 import { IconButton } from '@/ui/IconButton';
 import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 
+import { RESUME_SECTION_ART, SECTION_ART_WIDTH } from '../editorArt';
 import { resumeSectionIsEmpty } from '../editorSections';
 import { AddSectionTile } from './AddSectionTile';
+import { AiPill } from './AiPill';
 import { ResumeSectionBody } from './ResumeSectionBody';
 
 export type ResumeSectionCardProps = {
@@ -25,8 +26,14 @@ export type ResumeSectionCardProps = {
   onRegenerate: () => void;
 };
 
-const ACTION = 36;
-const ACTION_GLYPH = 13;
+// The section card at 390 (RESUMES 06 577:6991), in artboard units.
+const CARD_INNER_GAP = 14 / 0.75;
+const HEADER_GAP = 10 / 0.75;
+const ICON_SLOT_W = 34 / 0.75;
+const ICON_SLOT_H = 28 / 0.75;
+const ACTIONS_GAP = 8 / 0.75;
+const EDIT = 32 / 0.75;
+const EDIT_GLYPH = 11 / 0.75;
 
 /** Which shimmer geometry stands in for each section's body while the AI rewrites it. */
 const SHIMMER: Record<ResumeSectionKey, 'prose' | 'chips' | 'entries'> = {
@@ -42,6 +49,8 @@ const SHIMMER: Record<ResumeSectionKey, 'prose' | 'chips' | 'entries'> = {
  * The regenerate mutation is deliberately not optimistic (`useRegenerateSection`) — there is
  * nothing honest to guess at the model's output — so the section holds blocks shaped like the
  * body it is replacing, and the card keeps its height instead of collapsing and springing back.
+ * The blocks pulse on the brand tint (`Skeleton tone="ai"`): the AI is writing this part, which
+ * is a different wait from the page loading (§85).
  */
 function SectionShimmer({ section }: { section: ResumeSectionKey }) {
   const { radii, spacing, s } = useTheme();
@@ -51,7 +60,7 @@ function SectionShimmer({ section }: { section: ResumeSectionKey }) {
     return (
       <View style={[styles.wrap, { gap: spacing[2] }]}>
         {[0, 1, 2, 3, 4].map((key) => (
-          <Skeleton key={key} width={s(88)} height={s(28)} radius="sm" />
+          <Skeleton key={key} width={s(88)} height={s(28)} radius="sm" tone="ai" />
         ))}
       </View>
     );
@@ -60,9 +69,9 @@ function SectionShimmer({ section }: { section: ResumeSectionKey }) {
   if (shape === 'prose') {
     return (
       <View style={{ gap: spacing[2] }}>
-        <Skeleton height={s(18)} />
-        <Skeleton height={s(18)} />
-        <Skeleton width="70%" height={s(18)} />
+        <Skeleton height={s(18)} tone="ai" />
+        <Skeleton height={s(18)} tone="ai" />
+        <Skeleton width="70%" height={s(18)} tone="ai" />
       </View>
     );
   }
@@ -71,10 +80,14 @@ function SectionShimmer({ section }: { section: ResumeSectionKey }) {
     <View style={{ gap: spacing[4] }}>
       {[0, 1].map((key) => (
         <View key={key} style={{ gap: spacing[2] }}>
-          <Skeleton width={s(180)} height={s(20)} radius="xs" />
-          <Skeleton width={s(120)} height={s(16)} radius="xs" />
-          <Skeleton height={s(16)} style={{ marginTop: spacing[1], borderRadius: radii.xs }} />
-          <Skeleton width="85%" height={s(16)} />
+          <Skeleton width={s(180)} height={s(20)} radius="xs" tone="ai" />
+          <Skeleton width={s(120)} height={s(16)} radius="xs" tone="ai" />
+          <Skeleton
+            height={s(16)}
+            tone="ai"
+            style={{ marginTop: spacing[1], borderRadius: radii.xs }}
+          />
+          <Skeleton width="85%" height={s(16)} tone="ai" />
         </View>
       ))}
     </View>
@@ -82,9 +95,10 @@ function SectionShimmer({ section }: { section: ResumeSectionKey }) {
 }
 
 /**
- * One §7.11 section: its label, an edit pen, an AI rewrite, and the body itself. An empty section
- * keeps its card and offers the dashed tile, so the six sections stay in their printed order
- * whether or not the document has filled them.
+ * One §7.11 section, drawn as a RESUMES 06 card (577:6991): the section's illustrated icon and
+ * name, an AI rewrite pill and an edit pen, then the body. An empty section keeps its card and
+ * offers the dashed tile, so the six sections stay in their printed order whether or not the
+ * document has filled them.
  */
 export function ResumeSectionCard({
   content,
@@ -94,7 +108,7 @@ export function ResumeSectionCard({
   onEdit,
   onRegenerate,
 }: ResumeSectionCardProps) {
-  const { motion, spacing, s } = useTheme();
+  const { colors, motion, spacing, s } = useTheme();
   const reduced = useReducedMotion();
   const label = RESUME_SECTION_LABEL[section];
   const empty = resumeSectionIsEmpty(content, section);
@@ -107,31 +121,31 @@ export function ResumeSectionCard({
 
   return (
     <Animated.View entering={entering}>
-      <Card radius="card" padding={spacing[5]} style={{ gap: spacing[4] }}>
-        <View style={[styles.header, { gap: spacing[1] }]}>
-          <Text variant="label" accessibilityRole="header" style={styles.fill} numberOfLines={1}>
+      <ProfileCard style={{ padding: spacing[5], gap: s(CARD_INNER_GAP) }}>
+        <View style={[styles.header, { gap: s(HEADER_GAP) }]}>
+          <View style={{ width: s(ICON_SLOT_W), height: s(ICON_SLOT_H), ...styles.centre }}>
+            <Art art={RESUME_SECTION_ART[section]} width={SECTION_ART_WIDTH} />
+          </View>
+          <Text variant="title" accessibilityRole="header" style={styles.fill} numberOfLines={1}>
             {label}
           </Text>
-          <IconButton
-            icon="pen"
-            label={`Edit ${label}`}
-            variant="ghost"
-            size={s(ACTION)}
-            iconSize={s(ACTION_GLYPH)}
-            iconColor="iconDefault"
-            onPress={onEdit}
-          />
-          <AiBadge />
-          <IconButton
-            icon="magic"
-            label={`Rewrite ${label} with AI`}
-            variant="ghost"
-            size={s(ACTION)}
-            iconSize={s(ACTION_GLYPH)}
-            iconColor="brand"
-            disabled={regenerating}
-            onPress={onRegenerate}
-          />
+          <View style={[styles.header, { gap: s(ACTIONS_GAP) }]}>
+            <AiPill
+              actionLabel={`Rewrite ${label} with AI`}
+              disabled={regenerating}
+              working={regenerating}
+              onPress={onRegenerate}
+            />
+            <IconButton
+              icon="pen"
+              label={`Edit ${label}`}
+              size={s(EDIT)}
+              iconSize={s(EDIT_GLYPH)}
+              iconColor="textPrimary"
+              onPress={onEdit}
+              style={{ backgroundColor: colors.surfaceCard }}
+            />
+          </View>
         </View>
 
         {regenerating ? (
@@ -141,13 +155,14 @@ export function ResumeSectionCard({
         ) : (
           <ResumeSectionBody content={content} section={section} />
         )}
-      </Card>
+      </ProfileCard>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center' },
+  centre: { alignItems: 'center', justifyContent: 'center' },
   fill: { flex: 1 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
 });

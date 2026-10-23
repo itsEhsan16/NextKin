@@ -91,8 +91,8 @@ describe('SectionEditorScreen (V2 §7.11 / §7.10 — no artboard)', () => {
 
     const content = queryClient.getQueryData<ResumeContent>(qk.resumes.content('res_base'));
     expect(content?.summary).toBe(NEW_SUMMARY);
-    // res_base is scored, so the confirmation says the score moved with it (V2 §7.8).
-    expect(useResumesStore.getState().toast).toBe('Saved · score recalculated');
+    // res_base has no JD and so no score (D-15): the confirmation says only that it saved.
+    expect(useResumesStore.getState().toast).toBe('Saved');
     expect(useResumesStore.getState().toastSurface).toBe('editor');
     expect(mockBack).toHaveBeenCalledTimes(1);
   }, 60000);

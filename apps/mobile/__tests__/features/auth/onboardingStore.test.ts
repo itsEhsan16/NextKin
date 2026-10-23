@@ -4,7 +4,7 @@ import { storage } from '@/lib';
 const INITIAL = useOnboardingStore.getState();
 
 /**
- * The first-run flag (Figma 290:955). No React, like `sessionStore.test.ts` — the contract is
+ * The first-run flag (Figma 307:4152). No React, like `sessionStore.test.ts` — the contract is
  * that the value is already right before the first render.
  *
  * jest.setup's kv-store is one module-scoped Map shared by every suite in this file, so the key

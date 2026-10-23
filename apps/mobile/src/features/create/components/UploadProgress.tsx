@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { runOnJS, useAnimatedReaction, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -6,12 +5,18 @@ import { runOnJS, useAnimatedReaction, useSharedValue, withTiming } from 'react-
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
+import { StepGlyph, SuccessMark } from '@/ui/motion';
 import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
 export type UploadProgressProps = {
   /** The file being read, so the page names what it is working on. */
   fileName: string;
+  /**
+   * The parse has landed: every step ticks, the bar fills and the mark draws in, for the beat
+   * the screen holds before it moves on to the review.
+   */
+  done?: boolean;
 };
 
 /**
@@ -27,19 +32,23 @@ const TICKS = [
 ] as const;
 
 const LAST = TICKS.length - 1;
-const ICON = 12;
+const GLYPH = 15;
+const MARK = 24;
+const DONE_LABEL = 'Read it all';
 
 /**
  * What an upload looks like while it is being parsed (V2 §7.4). The mock takes 1200–2200ms and a
  * real parse will not be quicker, so the wait is given a shape: named ticks over a bar that
- * advances, rather than a spinner that says nothing.
+ * advances, rather than a spinner that says nothing. When the parse lands, the card says so — the
+ * rows all tick, the bar fills and a check draws in beside the file name — before the review
+ * takes over.
  *
  * The steps are paced by a Reanimated clock rather than a JS interval — one worklet timing over
  * `motion.durations.meter` per tick, so the pacing is a motion token like every other animation
  * in the app, and nothing is scheduled on the JS thread that a fast response has to tear down.
  */
-export function UploadProgress({ fileName }: UploadProgressProps) {
-  const { colors, motion, spacing, s } = useTheme();
+export function UploadProgress({ fileName, done = false }: UploadProgressProps) {
+  const { motion, spacing, s } = useTheme();
   const reduced = useReducedMotion();
   const [step, setStep] = useState(0);
 
@@ -66,20 +75,24 @@ export function UploadProgress({ fileName }: UploadProgressProps) {
   );
 
   const tick = TICKS[step] ?? TICKS[0];
+  const label = done ? DONE_LABEL : tick.label;
 
   return (
     <Card radius="card">
       <View style={{ gap: spacing[4] }}>
-        <View style={{ gap: spacing[1] }}>
-          <Text variant="title" numberOfLines={2}>
-            {fileName}
-          </Text>
-          <Text variant="caption" color="textSecondary" accessibilityLiveRegion="polite">
-            {tick.label}
-          </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}>
+          <View style={{ flex: 1, gap: spacing[1] }}>
+            <Text variant="title" numberOfLines={2}>
+              {fileName}
+            </Text>
+            <Text variant="caption" color="textSecondary" accessibilityLiveRegion="polite">
+              {label}
+            </Text>
+          </View>
+          {done ? <SuccessMark size={s(MARK)} /> : null}
         </View>
 
-        <ProgressBar value={tick.value} accessibilityLabel={`Parsing, ${tick.label}`} />
+        <ProgressBar value={done ? 1 : tick.value} accessibilityLabel={`Parsing, ${label}`} />
 
         {/* The live line above already says where the parse is; the list repeating it would be a
             second stop that adds nothing. */}
@@ -88,22 +101,23 @@ export function UploadProgress({ fileName }: UploadProgressProps) {
           importantForAccessibility="no-hide-descendants"
           style={{ gap: spacing[2] }}
         >
-          {TICKS.map((entry, index) => (
-            <View
-              key={entry.label}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}
-            >
-              <FontAwesome5
-                name={index < step ? 'check' : 'circle'}
-                size={s(ICON)}
-                color={index <= step ? colors.iconDefault : colors.iconChevron}
-                solid={index < step}
-              />
-              <Text variant="rowDescription" color={index <= step ? 'textPrimary' : 'textTertiary'}>
-                {entry.label}
-              </Text>
-            </View>
-          ))}
+          {TICKS.map((entry, index) => {
+            const state = done || index < step ? 'done' : index === step ? 'current' : 'todo';
+            return (
+              <View
+                key={entry.label}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}
+              >
+                <StepGlyph state={state} size={s(GLYPH)} />
+                <Text
+                  variant="rowDescription"
+                  color={state === 'todo' ? 'textTertiary' : 'textPrimary'}
+                >
+                  {entry.label}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       </View>
     </Card>

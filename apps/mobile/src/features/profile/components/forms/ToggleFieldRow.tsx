@@ -4,9 +4,11 @@ import { useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 import { Toggle } from '@/ui/Toggle';
 
-/** ListRow's metrics, so a switch row lines up with the date rows above and below it. */
-const PADDING_X = 20;
-const GUTTER = 16;
+// The filled switch row at 390 (PROFILE 05 573:232), in artboard units.
+const PAD_LEFT = 14 / 0.75;
+const PAD_RIGHT = 12 / 0.75;
+const PAD_Y = 11 / 0.75;
+const GAP = 12 / 0.75;
 
 export type ToggleFieldRowProps = {
   label: string;
@@ -14,18 +16,29 @@ export type ToggleFieldRowProps = {
   onChange: (value: boolean) => void;
 };
 
-/** A switch inside a `RowGroup` — "I currently work here", "I'm still studying here". */
+/**
+ * A switch in a field box — "I currently work here", "I'm still studying here" — filled like the
+ * fields above it, so it reads as one more answer on the card.
+ */
 export function ToggleFieldRow({ label, value, onChange }: ToggleFieldRowProps) {
-  const { sizes, s } = useTheme();
+  const { colors, radii, sizes, s } = useTheme();
 
   return (
     <View
       style={[
         styles.row,
-        { minHeight: sizes.listRow, paddingHorizontal: s(PADDING_X), gap: s(GUTTER) },
+        {
+          minHeight: sizes.searchField,
+          borderRadius: radii.xl,
+          backgroundColor: colors.surfaceSubtle,
+          paddingLeft: s(PAD_LEFT),
+          paddingRight: s(PAD_RIGHT),
+          paddingVertical: s(PAD_Y),
+          gap: s(GAP),
+        },
       ]}
     >
-      <Text variant="rowTitle" style={styles.label}>
+      <Text variant="menuRow" style={styles.label}>
         {label}
       </Text>
       <Toggle value={value} onChange={onChange} label={label} />

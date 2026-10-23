@@ -2,7 +2,9 @@ import { faqFixture } from '@/data/mock';
 import { FAQ_TOPIC_ORDER, SUPPORT_TOPIC_ORDER, type FaqItem } from '@/data/models';
 import {
   FAQ_TOPIC_TO_SUPPORT_TOPIC,
+  faqAnswersLabel,
   faqCountLine,
+  faqHeroLine,
   faqMatchCount,
   faqMatches,
   filterFaq,
@@ -91,5 +93,24 @@ describe('the FAQ topic → support topic map', () => {
     for (const mapped of Object.values(FAQ_TOPIC_TO_SUPPORT_TOPIC)) {
       expect(SUPPORT_TOPIC_ORDER).toContain(mapped);
     }
+  });
+});
+
+describe('the help hero and group counts (SUPPORT 01 577:6156 / 577:6180)', () => {
+  it('says how much help there is, counting the topics the content covers', () => {
+    expect(faqHeroLine(faqFixture, faqFixture.length)).toBe(
+      `${faqFixture.length} answers across five topics.`,
+    );
+    const billing = filterFaq(faqFixture, { topic: 'billing' });
+    expect(faqHeroLine(billing, billing.length)).toBe('2 answers across one topic.');
+  });
+
+  it('becomes the count line while something narrows the list', () => {
+    expect(faqHeroLine(faqFixture, 2)).toBe(`2 of ${faqFixture.length} answers`);
+  });
+
+  it('counts a group in the singular and the plural', () => {
+    expect(faqAnswersLabel(1)).toBe('1 answer');
+    expect(faqAnswersLabel(3)).toBe('3 answers');
   });
 });

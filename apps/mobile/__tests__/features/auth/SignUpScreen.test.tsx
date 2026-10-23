@@ -7,9 +7,10 @@ import { storage } from '@/lib';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: mockBack, replace: jest.fn() }),
+  useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: mockBack, replace: mockReplace }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
@@ -32,7 +33,7 @@ const renderScreen = () =>
 const type = async (field: string, value: string) =>
   act(async () => fireEvent.changeText(screen.getByLabelText(field), value));
 
-/** Create an account (Figma 296:3032). */
+/** Create an account (Figma 307:4386). */
 describe('SignUpScreen', () => {
   beforeEach(() => {
     storage.remove('prefs.session');
@@ -152,6 +153,7 @@ describe('SignUpScreen', () => {
     await act(async () =>
       fireEvent.press(screen.getByLabelText('Already have an account? Sign in')),
     );
-    expect(mockPush).toHaveBeenCalledWith('/(auth)/sign-in');
+    // A replace, as the screen means it: one form swaps for the other in place.
+    expect(mockReplace).toHaveBeenCalledWith('/(auth)/sign-in');
   }, 60000);
 });

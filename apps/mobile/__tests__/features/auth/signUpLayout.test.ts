@@ -8,7 +8,7 @@ import {
 } from '@/features/auth';
 
 /**
- * The arithmetic behind Figma 296:3032, with no React in it.
+ * The arithmetic behind Figma 307:4386, with no React in it.
  *
  * The board draws a whole phone screen, so its vertical pieces have to account for the whole
  * frame. That makes the sum a transcription guard: a gap measured against a stale revision of

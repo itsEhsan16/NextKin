@@ -1,11 +1,9 @@
-import { View } from 'react-native';
-
-import { useTheme } from '@/theme';
-import { RowGroup } from '@/ui/ListRow';
 import { TextField } from '@/ui/TextField';
 
 import type { CertificationDraft } from '../../profileForms';
-import { DateFieldRow, FieldError } from './DateFieldRow';
+import { PROFILE_ROW_ART } from '../../profileRowArt';
+import { SectionCard } from '../cards';
+import { DateField, FieldError } from './DateFieldRow';
 
 export type CertificationDateField = 'issuedOn' | 'expiresOn';
 
@@ -17,7 +15,10 @@ export type CertificationFieldsProps = {
   onPickDate: (field: CertificationDateField) => void;
 };
 
-/** One credential on the profile (V2 §7.3). */
+/**
+ * One credential on the profile (V2 §7.3, PROFILE 11 577:8527): Name and issuer, Dates, and the
+ * credential link.
+ */
 export function CertificationFields({
   draft,
   patch,
@@ -25,60 +26,63 @@ export function CertificationFields({
   blur,
   onPickDate,
 }: CertificationFieldsProps) {
-  const { spacing } = useTheme();
-
   return (
-    <View style={{ gap: spacing[5] }}>
-      <TextField
-        label="Certification"
-        value={draft.name}
-        onChangeText={(name) => patch({ name })}
-        onBlur={() => blur('name')}
-        placeholder="What it is called"
-        error={errors.name}
-        autoCapitalize="words"
-        returnKeyType="next"
-      />
+    <>
+      <SectionCard art={PROFILE_ROW_ART.certifications} title="Name and issuer">
+        <TextField
+          label="Certification"
+          icon="certificate"
+          value={draft.name}
+          onChangeText={(name) => patch({ name })}
+          onBlur={() => blur('name')}
+          placeholder="What it is called"
+          error={errors.name}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
+        <TextField
+          label="Issued by"
+          icon="building"
+          value={draft.issuer}
+          onChangeText={(issuer) => patch({ issuer })}
+          onBlur={() => blur('issuer')}
+          placeholder="Who awarded it"
+          error={errors.issuer}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
+      </SectionCard>
 
-      <TextField
-        label="Issued by"
-        value={draft.issuer}
-        onChangeText={(issuer) => patch({ issuer })}
-        onBlur={() => blur('issuer')}
-        placeholder="Who awarded it"
-        error={errors.issuer}
-        autoCapitalize="words"
-        returnKeyType="next"
-      />
-
-      <View style={{ gap: spacing[2] }}>
-        <RowGroup title="DATES">
-          <DateFieldRow
-            label="Issued"
-            value={draft.issuedOn}
-            onPress={() => onPickDate('issuedOn')}
-          />
-          <DateFieldRow
-            label="Expires"
-            value={draft.expiresOn}
-            emptyValue="Doesn't expire"
-            onPress={() => onPickDate('expiresOn')}
-          />
-        </RowGroup>
+      <SectionCard
+        art={PROFILE_ROW_ART.availability}
+        artWidth={26}
+        title="Dates"
+        subtitle="Month and year are enough"
+      >
+        <DateField label="Issued" value={draft.issuedOn} onPress={() => onPickDate('issuedOn')} />
+        <DateField
+          label="Expires"
+          value={draft.expiresOn}
+          emptyValue="Doesn't expire"
+          onPress={() => onPickDate('expiresOn')}
+        />
         <FieldError message={errors.expiresOn} />
-      </View>
+      </SectionCard>
 
-      <TextField
-        label="Credential link"
-        value={draft.credentialUrl}
-        onChangeText={(credentialUrl) => patch({ credentialUrl })}
-        onBlur={() => blur('credentialUrl')}
-        placeholder="Optional"
-        error={errors.credentialUrl}
-        keyboardType="url"
-        autoCapitalize="none"
-        returnKeyType="done"
-      />
-    </View>
+      <SectionCard art={PROFILE_ROW_ART.links} title="Credential link">
+        <TextField
+          accessibilityLabel="Credential link"
+          icon="link"
+          value={draft.credentialUrl}
+          onChangeText={(credentialUrl) => patch({ credentialUrl })}
+          onBlur={() => blur('credentialUrl')}
+          placeholder="Optional"
+          error={errors.credentialUrl}
+          keyboardType="url"
+          autoCapitalize="none"
+          returnKeyType="done"
+        />
+      </SectionCard>
+    </>
   );
 }

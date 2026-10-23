@@ -53,9 +53,12 @@ describe('artboard fidelity — type', () => {
     const wide = themeFor('light', DESIGN).typography;
     const narrow = themeFor('light', NARROW).typography;
 
-    // Measured on both artboards. The layout between them is a flat ×0.75; these are not.
-    expect(wide.body.fontSize).toBeCloseTo(15, 9);
-    expect(narrow.body.fontSize).toBeCloseTo(13, 9);
+    // Body and caption are anchored on the newer Mobile 2 boards (toreview.md 54): 14 and 13
+    // are the 390 measurements, and the wide anchor is derived from them, like `hero` below.
+    expect(narrow.body.fontSize).toBeCloseTo(14, 9);
+    expect(wide.body.fontSize).toBeCloseTo(14 / (NARROW / DESIGN), 9);
+
+    // Measured on both artboards. The layout between them is a flat ×0.75; this one is not.
 
     expect(wide.screenTitle.fontSize).toBeCloseTo(28, 9);
     expect(narrow.screenTitle.fontSize).toBeCloseTo(22, 9);
@@ -66,13 +69,12 @@ describe('artboard fidelity — type', () => {
     expect(narrow.hero.fontSize).toBeCloseTo(32, 9);
     expect(wide.hero.fontSize).toBeCloseTo(32 / (NARROW / DESIGN), 9);
 
-    expect(wide.caption.fontSize).toBeCloseTo(13, 9);
-    expect(narrow.caption.fontSize).toBeCloseTo(11.5, 9);
+    expect(narrow.caption.fontSize).toBeCloseTo(13, 9);
+    expect(wide.caption.fontSize).toBeCloseTo(13 / (NARROW / DESIGN), 9);
 
-    // The nav label answers to the pill, not the boards: 215:490 grew the bar, so the label was
-    // sized to it rather than scaled with it (which would have put it at 7.28).
-    expect(wide.tabLabel.fontSize).toBeCloseTo(17.6, 9);
-    expect(narrow.tabLabel.fontSize).toBeCloseTo(13.2, 9);
+    // The nav label is the bar's own (429:7586), times NAV_BOOST (1.1).
+    expect(wide.tabLabel.fontSize).toBeCloseTo(7.98 / 0.75, 9);
+    expect(narrow.tabLabel.fontSize).toBeCloseTo(7.98, 9);
   });
 
   it.each(DEVICES)('never lets type shrink faster than the layout on %ddp', (width) => {
@@ -104,12 +106,13 @@ describe('artboard fidelity — type', () => {
 
     // 390 is already a phone width, so it is the floor rather than a midpoint. Under it the
     // boxes keep scaling but the type holds, which is what keeps it legible on a 360dp screen.
-    expect(at(320)).toBeCloseTo(13, 9); // against 9.23 under the old policy
-    expect(at(360)).toBeCloseTo(13, 9); // against 10.38
-    expect(at(NARROW)).toBeCloseTo(13, 9);
+    expect(at(320)).toBeCloseTo(14, 9); // against 9.23 under the old policy
+    expect(at(360)).toBeCloseTo(14, 9); // against 10.38
+    expect(at(NARROW)).toBeCloseTo(14, 9);
 
-    // Above it, towards the 520 board. Continuous at 390 — the two branches agree there.
-    expect(at(430)).toBeCloseTo(13 + (2 * (430 - NARROW)) / (DESIGN - NARROW), 9);
-    expect(at(DESIGN)).toBeCloseTo(15, 9);
+    // Above it, towards the 520 anchor. Continuous at 390 — the two branches agree there.
+    const wide = 14 / (NARROW / DESIGN);
+    expect(at(430)).toBeCloseTo(14 + ((wide - 14) * (430 - NARROW)) / (DESIGN - NARROW), 9);
+    expect(at(DESIGN)).toBeCloseTo(wide, 9);
   });
 });

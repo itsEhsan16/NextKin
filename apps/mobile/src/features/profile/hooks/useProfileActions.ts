@@ -4,7 +4,9 @@ import { useCallback, useMemo } from 'react';
 import type { UpgradeReason } from '@/features/billing';
 import { requestStoreReview } from '@/lib';
 
+import { NEXT_STEP } from '../nextSteps';
 import { useProfileStore, type ProfileSheet } from '../profileStore';
+import { showAppToast } from '@/ui/Toast';
 
 /**
  * `requestStoreReview` is a no-op in Expo Go and silently rate-limited even in a store build —
@@ -23,9 +25,10 @@ export function useProfileActions() {
 
   const showToast = useProfileStore((state) => state.showToast);
   const rate = useCallback(() => {
-    void requestStoreReview().then((result) =>
-      showToast(result === 'requested' ? RATE_REQUESTED : RATE_UNAVAILABLE),
-    );
+    void requestStoreReview().then((result) => {
+      if (result === 'requested') showToast(RATE_REQUESTED);
+      else showToast(RATE_UNAVAILABLE, 'info');
+    });
   }, [showToast]);
 
   return useMemo(
@@ -60,7 +63,25 @@ export function useProfileActions() {
       signOut: sheet('sign-out'),
       deleteAccount: sheet('delete-account'),
       openNotificationPrefs: () => router.push('/notifications/preferences'),
+      /**
+       * A completeness chip opens the editor that answers it rather than ticking itself off (§85).
+       * The step leaves when its data is saved: the skills write drops "Add skills" (profileRepo),
+       * a salary floor drops "Set salary range" (ProfileSheetsHost). See `nextStepHint`.
+       */
+      openNextStep: (id: string) => {
+        if (id === NEXT_STEP.skills) router.push('/profile/skills');
+        else if (id === NEXT_STEP.salary) openSheet('min-salary');
+        else router.push('/profile/edit');
+      },
       goBack: () => router.back(),
+      /**
+       * Back to where the editor was opened from, then say what happened there. A save used to
+       * pop the form in silence, so a change looked the same as a cancel (§85).
+       */
+      backWith: (message: string) => {
+        router.back();
+        showAppToast(message);
+      },
       // Support, legal and account (PROFILE 02 Support rows; V2 §7.1, §8.5).
       openHelp: () => router.push('/support/help'),
       openContact: () => router.push('/support/contact'),
@@ -71,6 +92,6 @@ export function useProfileActions() {
       openAccountEmail: () => router.push('/account/email'),
       openExportData: () => router.push('/account/export'),
     }),
-    [rate, router, sheet],
+    [openSheet, rate, router, sheet],
   );
 }

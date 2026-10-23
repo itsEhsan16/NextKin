@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { SvgProps } from 'react-native-svg';
 
-import AiAssistantIcon from '../../../../assets/icons/shortcuts/ai-assistant.svg';
 import HistoryIcon from '../../../../assets/icons/shortcuts/history.svg';
 import InterviewPrepIcon from '../../../../assets/icons/shortcuts/interview-prep.svg';
 import MyResumesIcon from '../../../../assets/icons/shortcuts/my-resumes.svg';
@@ -12,7 +11,7 @@ import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { IconTileGrid, type IconTile } from '@/ui/IconTileGrid';
 
-export type Shortcut = 'my-resumes' | 'history' | 'saved-jobs' | 'interview-prep' | 'ai-assistant';
+export type Shortcut = 'my-resumes' | 'history' | 'saved-jobs' | 'interview-prep';
 
 export type ShortcutGridProps = {
   stats: DashboardStats | undefined;
@@ -27,50 +26,61 @@ type Spec = {
   h: number;
 };
 
-/** Figma 1:184 — five shortcuts; the first three carry live counters. */
+/**
+ * Figma 414:1288 — four shortcuts, each with a count line under its label.
+ *
+ * `w`/`h` are each glyph's intrinsic box. The board is drawn at 390 and `s()` projects from 520,
+ * so every drawn box is divided by the 0.75 between them before it is written here — the same
+ * conversion `HeroBlock`'s 130 tile makes.
+ */
 const SPECS: readonly Spec[] = [
-  { key: 'my-resumes', label: 'My Resumes', render: (p) => <MyResumesIcon {...p} />, w: 45, h: 44 },
-  { key: 'history', label: 'History', render: (p) => <HistoryIcon {...p} />, w: 45, h: 45 },
-  { key: 'saved-jobs', label: 'Saved Jobs', render: (p) => <SavedJobsIcon {...p} />, w: 34, h: 45 },
+  // 44 x 44.8684 drawn.
+  {
+    key: 'my-resumes',
+    label: 'My Resumes',
+    render: (p) => <MyResumesIcon {...p} />,
+    w: 58.6667,
+    h: 59.8245,
+  },
+  // 44 x 44.6335 drawn.
+  {
+    key: 'history',
+    label: 'History',
+    render: (p) => <HistoryIcon {...p} />,
+    w: 58.6667,
+    h: 59.5114,
+  },
+  // 28 x 39.695 drawn — the one upright glyph, so the only one that is not near-square.
+  {
+    key: 'saved-jobs',
+    label: 'Saved Jobs',
+    render: (p) => <SavedJobsIcon {...p} />,
+    w: 37.3333,
+    h: 52.9267,
+  },
+  // 47 x 47.1313 drawn. The redraw scaled this one glyph up by 6.8% and left the other three
+  // alone, so it is now the tallest in the row and overhangs the icon slot by 1.9 — as drawn,
+  // where the board hangs it 1.758 above the tile's top edge.
   {
     key: 'interview-prep',
     label: 'Interview Prep',
     render: (p) => <InterviewPrepIcon {...p} />,
-    w: 51,
-    h: 51,
-  },
-  {
-    key: 'ai-assistant',
-    label: 'AI Assistant',
-    render: (p) => <AiAssistantIcon {...p} />,
-    w: 45,
-    h: 45,
+    w: 62.6667,
+    h: 62.8417,
   },
 ];
 
-/** Figma places the label baseline 56px into the item box. */
-const ICON_ROW = 56;
+/** The board's icon slot (45.2 drawn) and the 4.8 between it and the label. */
+const ICON_ROW = 60.2667;
+const LABEL_GAP = 6.4;
 
 /**
- * The bare number shown above the icon, for the three shortcuts that carry one. A blank string
- * holds the row while stats load so the icons do not jump when the value lands; `undefined` means
- * this shortcut has no number at all.
+ * What each tile counts, spoken.
+ *
+ * The board draws this under the label and the app does not show it at all — a tile is its icon
+ * and its name. The number is still worth having where it costs no space, so it is read after the
+ * label rather than dropped; see toreview.md.
  */
-function count(key: Shortcut, stats: DashboardStats | undefined): string | undefined {
-  switch (key) {
-    case 'my-resumes':
-      return stats ? String(stats.resumesCount) : ' ';
-    case 'history':
-      return stats ? String(stats.activitiesCount) : ' ';
-    case 'saved-jobs':
-      return stats ? String(stats.savedJobsCount) : ' ';
-    case 'interview-prep':
-    case 'ai-assistant':
-      return undefined;
-  }
-}
-
-/** What the number means, spoken. The tiles without one fall back to their standing hint. */
 function spokenValue(key: Shortcut, stats: DashboardStats | undefined): string | undefined {
   if (!stats) return undefined;
   switch (key) {
@@ -81,15 +91,13 @@ function spokenValue(key: Shortcut, stats: DashboardStats | undefined): string |
     case 'saved-jobs':
       return `${stats.savedJobsCount} Saved`;
     case 'interview-prep':
-    case 'ai-assistant':
       return undefined;
   }
 }
 
+/** The one shortcut with nothing to count says what it is for instead. */
 function hint(key: Shortcut): string | undefined {
-  if (key === 'interview-prep') return 'AI Questions';
-  if (key === 'ai-assistant') return 'Ask Anything';
-  return undefined;
+  return key === 'interview-prep' ? 'AI Questions' : undefined;
 }
 
 export function ShortcutGrid({ stats, onShortcut }: ShortcutGridProps) {
@@ -100,8 +108,7 @@ export function ShortcutGrid({ stats, onShortcut }: ShortcutGridProps) {
       SPECS.map(({ key, label, render, w, h }) => ({
         key,
         label,
-        count: count(key, stats),
-        countLabel: spokenValue(key, stats),
+        a11yValue: spokenValue(key, stats),
         a11yHint: hint(key),
         icon: render({ width: s(w), height: s(h) }),
       })),
@@ -110,13 +117,12 @@ export function ShortcutGrid({ stats, onShortcut }: ShortcutGridProps) {
 
   return (
     <Card style={{ paddingTop: s(28), paddingBottom: s(20), paddingHorizontal: s(20) }}>
-      {/*
-        Five tiles across a 390 frame leaves ~64pt a cell. The label wraps to two lines so only
-        its longest word has to fit there, and the counter sits above the icon instead of under
-        the label, where it would have been fighting for the same room — see `shortcutLabel` in
-        src/theme/typography.ts.
-      */}
-      <IconTileGrid items={items} onPress={onShortcut} iconBoxHeight={s(ICON_ROW)} />
+      <IconTileGrid
+        items={items}
+        onPress={onShortcut}
+        iconBoxHeight={s(ICON_ROW)}
+        labelGap={s(LABEL_GAP)}
+      />
     </Card>
   );
 }

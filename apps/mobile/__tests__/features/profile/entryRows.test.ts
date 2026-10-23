@@ -6,6 +6,7 @@ import {
   experienceRow,
   linkIcon,
   linkRow,
+  newestFirst,
   tidyUrl,
 } from '@/features/profile/entryRows';
 
@@ -36,37 +37,50 @@ const certification: Certification = {
   issuedOn: '2021-04-12',
 };
 
-describe('entryRows (V2 §7.3 row copy)', () => {
-  it('reads a current role as Present and a finished one as its end month', () => {
+describe('entryRows (V2 §7.3 card copy, PROFILE 04 / 07 / 12)', () => {
+  it('reads a current role as Present, marks it Current, and dates a finished one', () => {
     expect(experienceRow(experience)).toEqual({
       id: 'exp_1',
-      icon: 'briefcase',
+      tile: { kind: 'letter', name: 'Flipkart' },
       title: 'Senior UX Designer',
-      meta: 'Flipkart · Mar 2022 – Present',
+      subtitle: 'Flipkart',
+      meta: 'Mar 2022 – Present',
+      pill: { label: 'Current', tone: 'success' },
     });
 
-    expect(
-      experienceRow({
-        ...experience,
-        company: 'Swiggy',
-        current: false,
-        startDate: '2019-06-01',
-        endDate: '2022-02-28',
-      }).meta,
-    ).toBe('Swiggy · Jun 2019 – Feb 2022');
+    const finished = experienceRow({
+      ...experience,
+      company: 'Swiggy',
+      current: false,
+      startDate: '2019-06-01',
+      endDate: '2022-02-28',
+    });
+    expect(finished.meta).toBe('Jun 2019 – Feb 2022');
+    expect(finished.pill).toBeUndefined();
   });
 
   it('drops a date the picker never wrote instead of printing an unparseable one', () => {
-    expect(experienceRow({ ...experience, current: false, startDate: '' }).meta).toBe('Flipkart');
+    expect(experienceRow({ ...experience, current: false, startDate: '' }).meta).toBeUndefined();
   });
 
-  it('labels education by its degree and dates it from the institution', () => {
+  it('labels education by its degree, under the institution and its dates', () => {
     expect(educationRow(education)).toEqual({
       id: 'edu_1',
-      icon: 'graduation-cap',
+      tile: { kind: 'letter', name: 'National Institute of Design' },
       title: 'M.Des.',
-      meta: 'National Institute of Design · Jul 2014 – May 2016',
+      subtitle: 'National Institute of Design',
+      meta: 'Jul 2014 – May 2016',
     });
+  });
+
+  it('lists what is current first, then the rest newest first', () => {
+    const older = { ...experience, id: 'exp_old', current: false, startDate: '2016-01-01' };
+    const newer = { ...experience, id: 'exp_new', current: false, startDate: '2019-06-01' };
+    expect(newestFirst([older, experience, newer]).map((entry) => entry.id)).toEqual([
+      'exp_1',
+      'exp_new',
+      'exp_old',
+    ]);
   });
 
   it('surfaces the per-role skill tags, which §7.3 makes load-bearing', () => {
@@ -93,12 +107,13 @@ describe('entryRows (V2 §7.3 row copy)', () => {
   it('adds the issued year when there is one and omits it when there is not', () => {
     expect(certificationRow(certification, NOW)).toEqual({
       id: 'cert_1',
-      icon: 'certificate',
+      tile: { kind: 'letter', name: 'HFI' },
       title: 'Certified Usability Analyst',
-      meta: 'HFI · 2021',
+      subtitle: 'HFI',
+      meta: 'Issued 2021',
     });
 
-    expect(certificationRow({ ...certification, issuedOn: undefined }, NOW).meta).toBe('HFI');
+    expect(certificationRow({ ...certification, issuedOn: undefined }, NOW).meta).toBeUndefined();
   });
 
   it('says so when a credential has lapsed, and stays quiet while it has not', () => {
@@ -109,8 +124,8 @@ describe('entryRows (V2 §7.3 row copy)', () => {
     expect(certificationExpired(live, NOW)).toBe(false);
     expect(certificationExpired(certification, NOW)).toBe(false);
 
-    expect(certificationRow(lapsed, NOW).meta).toBe('HFI · 2021 · Expired');
-    expect(certificationRow(live, NOW).meta).toBe('HFI · 2021');
+    expect(certificationRow(lapsed, NOW).pill).toEqual({ label: 'Expired', tone: 'danger' });
+    expect(certificationRow(live, NOW).pill).toBeUndefined();
   });
 
   it('tidies a link down to what says where it goes', () => {
@@ -123,7 +138,7 @@ describe('entryRows (V2 §7.3 row copy)', () => {
   });
 
   it('gives each link kind its own glyph and falls back to the chain', () => {
-    expect(linkIcon('github')).toBe('code');
+    expect(linkIcon('github')).toBe('code-branch');
     expect(linkIcon('linkedin')).toBe('id-badge');
     expect(linkIcon(undefined)).toBe('link');
   });
@@ -138,9 +153,11 @@ describe('entryRows (V2 §7.3 row copy)', () => {
 
     expect(linkRow(link)).toEqual({
       id: 'link_portfolio',
-      icon: 'palette',
+      tile: { kind: 'glyph', icon: 'palette' },
       title: 'Portfolio',
-      meta: 'georgesmith.design',
+      subtitle: 'georgesmith.design',
     });
+    // LinkedIn wears its own illustrated mark on the boards (577:9056).
+    expect(linkRow({ ...link, kind: 'linkedin' }).tile).toEqual({ kind: 'linkedin' });
   });
 });

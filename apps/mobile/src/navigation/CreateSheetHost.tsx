@@ -29,14 +29,17 @@ const CREATE_ROUTES: Record<Exclude<CreateAction, 'new-resume'>, CreateHref> = {
   'start-from-scratch': '/resumes/new',
 };
 
-/** Figma: CREATE 01 is a 600px sheet, CREATE 02 a 520px one. */
+/** Figma: CREATE 01 is a 600 sheet, CREATE 02 a 555 one (95:1288 / 95:1472, 450 and 416 at 390). */
 const STEP_HEIGHT: Record<CreateStep, 'sheetStep1Height' | 'sheetStep2Height'> = {
   root: 'sheetStep1Height',
   resume: 'sheetStep2Height',
 };
 
 /**
- * Mounts the global "+" sheet once, above the tab navigator and below the FAB.
+ * Mounts the create sheet once, over the tab bar and the centre button like every other hosted
+ * sheet, now that the centre button is the assistant rather than this sheet's toggle. Home's
+ * create tile and Resumes' "+ New" raise it; its own ✕, the scrim, a swipe and Android back
+ * close it.
  *
  * The two steps are panes of one sheet (canvas note 1:1365), so switching step slides the
  * track horizontally while the sheet morphs its own height — both on the UI thread.
@@ -76,7 +79,7 @@ export function CreateSheetHost() {
       accessibilityLabel={step === 'root' ? 'Create' : 'New resume'}
       contentStyle={{ paddingTop: s(13) }}
     >
-      <CreateSheetBody step={step} onStepChange={setStep} onAction={handleAction} />
+      <CreateSheetBody step={step} onStepChange={setStep} onAction={handleAction} onClose={close} />
     </Sheet>
   );
 }

@@ -45,7 +45,7 @@ const press = async (label: string) =>
   act(async () => fireEvent.press(screen.getByLabelText(label)));
 
 /** One mount per file — see the test-infra note in the plan's Phase 3 status. */
-describe('DataExportScreen (V2 §8.5 — no artboard)', () => {
+describe('DataExportScreen (V2 §8.5 — ACCOUNT 02/03)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -75,9 +75,11 @@ describe('DataExportScreen (V2 §8.5 — no artboard)', () => {
     );
     await settle();
 
-    // — Idle: the card names the file, and the bullets below name what is in it —
+    // — Idle: the hero names the file, and the rows below name what is in it —
     expect(screen.getByRole('header', { name: DATA_EXPORT_TITLE })).toBeOnTheScreen();
     expect(screen.getByText(/A JSON file of what NextKin holds about you/)).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'What the file holds' })).toBeOnTheScreen();
+    expect(screen.getByText('Your activity history')).toBeOnTheScreen();
     expect(lib.writeTextFile).not.toHaveBeenCalled();
 
     await press('Request export');
@@ -90,6 +92,8 @@ describe('DataExportScreen (V2 §8.5 — no artboard)', () => {
     await settle(DATA_EXPORT_MS);
     await settle(2000);
     expect(screen.getByText(/nextkin/)).toBeOnTheScreen();
+    // ACCOUNT 03 drops the contents list once there is a file to take.
+    expect(screen.queryByText('Your activity history')).toBeNull();
 
     await press('Download export');
     await settle();

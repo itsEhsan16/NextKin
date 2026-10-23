@@ -1,120 +1,27 @@
-import { useMemo, useRef, type ReactNode, type RefObject } from 'react';
+import { useCallback, useMemo, useRef, type RefObject } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   View,
   type LayoutChangeEvent,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  type ScrollViewProps,
+  type ScrollView,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import Animated, {
+  LayoutAnimationConfig,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 
 import { useTabBarLayout, useTheme } from '@/theme';
+import { EDGE_FADE_DEPTH, EdgeFade } from '@/ui/EdgeFade';
 
-import { RevealProvider } from './revealOnFocus';
-
-type ScreenBaseProps = {
-  /** Safe-area edges to pad. Defaults to `['top']`; add `'bottom'` for screens without a tab bar. */
-  edges?: readonly Edge[];
-  /** Apply the 24pt horizontal gutter. Defaults to true. */
-  padded?: boolean;
-  /**
-   * Lifts the page for the keyboard: iOS pads, Android relies on the OS resize.
-   *
-   * The iOS padding lands on a wrapper *outside* the safe-area box, so the page keeps whatever
-   * `edges` asked for; a `footer` inside that box rides up with the keyboard rather than being
-   * covered by it. Tapping outside a field still reaches the control under it — see
-   * `keyboardShouldPersistTaps` on the scroller.
-   */
-  keyboard?: boolean;
-  /**
-   * A region pinned to the top of the page: a sibling rendered *above* whatever scrolls, so it
-   * never moves.
-   *
-   * Deliberately not `stickyHeaderIndices`. A sticky child is still inside the scroller, so it
-   * travels until it docks and re-lays out on every frame of that travel; this one is simply not
-   * in the scroll box, so the scroll viewport *starts* at its bottom edge. Nothing measures and
-   * nothing overlaps — flexbox does the occlusion.
-   *
-   * In scroll mode the box gets the gutter, maxWidth and centring the scroll content gets, so
-   * the pinned rows line up with the rows below them. It never gets the tab-bar inset: that is a
-   * reservation at the far end of the scroll run, not a page-top offset.
-   */
-  header?: ReactNode;
-  /**
-   * Style for the box `header` renders in.
-   *
-   * The page's *top* padding belongs here rather than on `contentContainerStyle`, which now
-   * starts below the header. Screens differ enough in what else the box needs — a gap between
-   * two pinned rows, a gutter that `padded={false}` opted out of — that it is stated per screen
-   * instead of assumed here.
-   */
-  headerStyle?: StyleProp<ViewStyle>;
-  contentContainerStyle?: StyleProp<ViewStyle>;
-  children: ReactNode;
-};
-
-type ScrollScreenProps = ScreenBaseProps & {
-  /** Render inside a vertical ScrollView. */
-  scroll: true;
-  /** Reserve space under the content for the floating tab bar + FAB overhang. */
-  tabBarInset?: boolean;
-  /**
-   * The mirror of `header`: a bar pinned *below* the scroller, inside the keyboard-avoiding view,
-   * so it rides up with the keyboard instead of being covered by it.
-   *
-   * Scroll-only, for the same reason `tabBarInset` is. The static branch's root *is* the
-   * gutter-padded content box, so a full-bleed hairline bar rendered inside it would stop 24pt
-   * short of both edges and its shadow would float in the middle of the page. A static screen
-   * composes the bar itself, the way `ResumeScoreScreen` does.
-   *
-   * It also owns the bottom safe area — see `safeAreaStyle` — because the bar's background has
-   * to reach the bottom of the glass rather than sit above a strip of bare page.
-   */
-  footer?: ReactNode;
-  /** Style for the box `footer` renders in. The bar's own padding and hairline live inside it. */
-  footerStyle?: StyleProp<ViewStyle>;
-  /** Pull-to-refresh control. */
-  refreshControl?: ScrollViewProps['refreshControl'];
-  /** Handle on the underlying ScrollView — e.g. tab re-tap scroll-to-top. */
-  scrollRef?: RefObject<ScrollView | null>;
-};
-
-/**
- * A screen that is not itself a scroller.
- *
- * `tabBarInset` is deliberately unavailable here. The inset has to land on the *content* of
- * whatever scrolls, and this variant has no content container to put it on — applying it to the
- * page box instead just shortens the viewport, leaving the page background painted under the
- * floating pill and the last row cut off at the edge of a list that can no longer reach it. A
- * screen hosting its own list owns the inset: read `useTabBarLayout().contentInset` and pass it
- * to that list's `contentContainerStyle`.
- *
- * `footer` is unavailable for the neighbouring reason: this root carries the gutter itself, so a
- * bar placed inside it could not span the window.
- */
-type StaticScreenProps = ScreenBaseProps & {
-  scroll?: false;
-  tabBarInset?: never;
-  footer?: never;
-  footerStyle?: never;
-  refreshControl?: never;
-  scrollRef?: never;
-};
-
-/**
- * The two page shapes. Every Phase 9B–9I form screen is the same skeleton:
- *
- * ```tsx
- * <Screen keyboard scroll edges={['top','bottom']} header={<ScreenHeader/>} footer={<StickyActionBar/>}>
- * ```
- */
-export type ScreenProps = ScrollScreenProps | StaticScreenProps;
+import { keyboardBottomReserve } from './keyboardReserve';
+import { KeyboardFrame } from './KeyboardFrame';
+import { isKeyboardSettled, RevealProvider } from './revealOnFocus';
+import type { ScreenProps } from './screenProps';
+import { isAtEnd } from './scrollMath';
 
 const DEFAULT_EDGES: readonly Edge[] = ['top'];
 
@@ -130,14 +37,16 @@ export function Screen({
   tabBarInset = false,
   header,
   headerStyle,
+  headerFade = false,
   footer,
   footerStyle,
   contentContainerStyle,
   refreshControl,
   scrollRef,
+  followEnd = false,
   children,
 }: ScreenProps) {
-  const { colors, spacing, sizes } = useTheme();
+  const { colors, spacing, sizes, s } = useTheme();
   const insets = useSafeAreaInsets();
   const tabBar = useTabBarLayout();
 
@@ -146,8 +55,24 @@ export function Screen({
   // frame of every scroll, and nothing here paints from these values.
   const ownScrollRef = useRef<ScrollView>(null);
   const activeScrollRef = scrollRef ?? ownScrollRef;
-  const scrollOffset = useRef(0);
+  // On the UI thread, so the header fade follows the scroll without a render per frame; the reveal
+  // reads it synchronously when a field takes focus.
+  const scrollOffset = useSharedValue(0);
+  const atEnd = useSharedValue(true);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollOffset.set(event.contentOffset.y);
+    atEnd.set(isAtEnd(event));
+  });
+  // Unanimated on purpose: growth arrives in small steps, and overlapping animated scrolls judder.
+  const followContent = useCallback(() => {
+    if (atEnd.get()) activeScrollRef.current?.scrollToEnd({ animated: false });
+  }, [activeScrollRef, atEnd]);
+  const getOffset = useCallback(() => scrollOffset.get(), [scrollOffset]);
   const footerHeight = useRef(0);
+  /** Where the scroll viewport starts in the window — under the safe area and the header. */
+  const viewportTop = useRef(0);
+  /** The reveal, re-run when the viewport resizes — see the scroller's `onLayout`. */
+  const revealAgain = useRef<(() => void) | null>(null);
 
   // Only ever non-zero in scroll mode — the types see to that, but state it here too: this
   // lands on the ScrollView's content container, where it lets content pass under the pill.
@@ -198,7 +123,7 @@ export function Screen({
     ? [styles.root, safeAreaStyle]
     : [styles.root, safeAreaStyle, contentStyle, contentContainerStyle];
 
-  const page = scroll ? (
+  const content = scroll ? (
     <>
       {/*
         Never `styles.root` here: a `flex: 1` header would take half the viewport and starve
@@ -206,25 +131,38 @@ export function Screen({
         scroller cannot squeeze it either.
       */}
       {header != null ? <View style={[frameStyle, headerStyle]}>{header}</View> : null}
-      <ScrollView
-        ref={activeScrollRef}
+      {/* The box the content scrolls in, so the edge fades can sit inside it, over the content. */}
+      <View
         style={styles.root}
-        contentContainerStyle={[contentStyle, contentContainerStyle]}
-        contentInsetAdjustmentBehavior="never"
-        // Tracked so `RevealProvider` can turn a window-space delta into a scroll target. Written
-        // to a ref, so this costs no render.
-        onScroll={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
-          scrollOffset.current = event.nativeEvent.contentOffset.y;
+        onLayout={(event: LayoutChangeEvent) => {
+          viewportTop.current = event.nativeEvent.layout.y;
+          // The box shrinks with the keyboard, and a reveal that ran before it settled had its
+          // scroll clamped by the taller box: the field stayed under the bar. Re-run it once the
+          // keyboard is fully up — not on each frame of its travel, which would chase the padding.
+          if (isKeyboardSettled()) revealAgain.current?.();
         }}
-        scrollEventThrottle={16}
-        // Also what dismisses the keyboard on a tap outside a field: the tap reaches the control
-        // under it instead of being spent closing the keyboard.
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        refreshControl={refreshControl}
       >
-        {children}
-      </ScrollView>
+        <Animated.ScrollView
+          ref={activeScrollRef as RefObject<Animated.ScrollView | null>}
+          style={styles.root}
+          contentContainerStyle={[contentStyle, contentContainerStyle]}
+          contentInsetAdjustmentBehavior="never"
+          // Tracked so `RevealProvider` can turn a window-space delta into a scroll target, and so
+          // the header fade knows when something has slid under it.
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          // Also what dismisses the keyboard on a tap outside a field: the tap reaches the control
+          // under it instead of being spent closing the keyboard.
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
+          onContentSizeChange={followEnd ? followContent : undefined}
+        >
+          {children}
+        </Animated.ScrollView>
+        {header != null ? <EdgeFade edge="top" progress={scrollOffset} /> : null}
+        {footer != null ? <EdgeFade edge="bottom" /> : null}
+      </View>
       {/*
         No `frameStyle` here, unlike the header: the bar spans edge to edge — its hairline and
         upward shadow read as the bottom of the window — and pads its own gutter inside that.
@@ -233,9 +171,10 @@ export function Screen({
         <View
           style={footerStyle}
           // The bar rides above the keyboard, so it hides a field just as the keyboard does; the
-          // reveal has to clear both.
+          // reveal has to clear both — and the fade standing on the bar, which veils what is under
+          // it just as surely.
           onLayout={(event: LayoutChangeEvent) => {
-            footerHeight.current = event.nativeEvent.layout.height;
+            footerHeight.current = event.nativeEvent.layout.height + s(EDGE_FADE_DEPTH);
           }}
         >
           {footer}
@@ -245,36 +184,45 @@ export function Screen({
   ) : (
     <>
       {header != null ? <View style={headerStyle}>{header}</View> : null}
-      {children}
+      {headerFade ? (
+        <View style={styles.root}>
+          {children}
+          <EdgeFade edge="top" />
+        </View>
+      ) : (
+        children
+      )}
     </>
   );
+
+  // Whatever is on the page when it first mounts arrives with the push (or the tab fade), so its
+  // entrance animations are skipped; content that mounts later — loaded data replacing a skeleton,
+  // a sheet's rows, a toast — still animates in (owner, 2026-10-05).
+  const page = <LayoutAnimationConfig skipEntering>{content}</LayoutAnimationConfig>;
 
   if (!keyboard) return <View style={rootStyle}>{page}</View>;
 
   return (
     <RevealProvider
       scrollRef={activeScrollRef}
-      offsetRef={scrollOffset}
+      getOffset={getOffset}
       footerRef={footerHeight}
+      viewportTopRef={viewportTop}
+      revealAgainRef={revealAgain}
       // Only a scrolling page can reveal anything. On a static one the provider hands fields a
       // `null` and they leave the keyboard alone.
       enabled={scroll}
     >
-      <KeyboardAvoidingView
-        // Only the flex lives out here, never `rootStyle`. `behavior="padding"` *composes* the
-        // keyboard's height over the style it is handed, and that height is 0 while the keyboard
-        // is down — handing it the safe-area box would zero the bottom inset out from under every
-        // keyboard screen that has no footer to own it.
-        style={styles.root}
-        // iOS gets no help from the OS, so the wrapper is padded by the keyboard's height and the
-        // `flex: 1` box inside it shrinks to match, carrying the footer up. Android already resizes
-        // the window through `windowSoftInputMode`, and padding on top of that would shift the page
-        // twice — hence `undefined` there, and a zero offset on both.
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
+      <KeyboardFrame
+        reserve={keyboardBottomReserve({
+          hasFooter,
+          edges,
+          tabBarInset,
+          insetBottom: insets.bottom,
+        })}
       >
         <View style={rootStyle}>{page}</View>
-      </KeyboardAvoidingView>
+      </KeyboardFrame>
     </RevealProvider>
   );
 }

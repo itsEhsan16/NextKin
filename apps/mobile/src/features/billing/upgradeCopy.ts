@@ -113,7 +113,13 @@ export function publishedCaps(usage: SubscriptionUsage, plan: SubscriptionPlan):
   ];
 }
 
-const CURRENCY_SYMBOL: Record<Plan['price']['currency'], string> = { INR: '₹' };
+/** INR is the mock's market; the backend prices in USD, EUR and AUD (§13.2, P12-08). */
+const CURRENCY_SYMBOL: Record<Plan['price']['currency'], string> = {
+  INR: '₹',
+  USD: '$',
+  EUR: '€',
+  AUD: 'A$',
+};
 
 export const PERIOD_SUFFIX: Record<Plan['price']['period'], string> = {
   month: '/mo',
@@ -133,10 +139,23 @@ export function groupInr(amount: number): string {
   return `${head},${tail}`;
 }
 
-/** "₹1,499", "₹7,999", and "Free" for a plan that costs nothing. */
+/** Western grouping, with cents only when there are any ("19", "1,234.50"). Same ICU reasoning as above. */
+export function groupWestern(amount: number): string {
+  const cents = Math.round(Math.abs(amount) * 100);
+  const whole = String(Math.floor(cents / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const rest = cents % 100;
+  return rest ? `${whole}.${String(rest).padStart(2, '0')}` : whole;
+}
+
+/** An amount in its currency: "₹1,499", "$19", "€109". */
+export function formatMoney(amount: number, currency: Plan['price']['currency']): string {
+  return `${CURRENCY_SYMBOL[currency]}${currency === 'INR' ? groupInr(amount) : groupWestern(amount)}`;
+}
+
+/** "₹1,499", "$19", and "Free" for a plan that costs nothing. */
 export function formatPlanPrice(price: Plan['price']): string {
   if (price.amount <= 0) return 'Free';
-  return `${CURRENCY_SYMBOL[price.currency]}${groupInr(price.amount)}`;
+  return formatMoney(price.amount, price.currency);
 }
 
 /**
@@ -151,11 +170,20 @@ export function formatPlanPricePeriod(price: Plan['price']): string {
   return `${formatPlanPrice(price)}${PERIOD_SUFFIX[price.period]}`;
 }
 
+/**
+ * The price split the way BILLING 01 sets it (577:9271): the figure large, the period beside it
+ * small — "₹1,499" and "/mo". Same rule as above: the annual SKU stays one yearly charge.
+ */
+export function planPriceParts(price: Plan['price']): { figure: string; suffix: string } {
+  if (price.amount <= 0) return { figure: 'Free', suffix: '' };
+  return { figure: formatPlanPrice(price), suffix: PERIOD_SUFFIX[price.period] };
+}
+
 /** The sticky bar's primary. */
 export const upgradeCtaLabel = (plan: Plan): string =>
   `Upgrade to Pro — ${formatPlanPricePeriod(plan.price)}`;
 
-export type AnnualSaving = { amount: number; percent: number };
+export type AnnualSaving = { amount: number; percent: number; currency: Plan['price']['currency'] };
 
 /**
  * What paying once beats paying twelve times by, computed from the two SKUs rather than written
@@ -168,12 +196,16 @@ export function annualSaving(monthly?: Plan, annual?: Plan): AnnualSaving | unde
   const overAYear = monthly.price.amount * 12;
   const amount = overAYear - annual.price.amount;
   if (overAYear <= 0 || amount <= 0) return undefined;
-  return { amount, percent: Math.floor((amount / overAYear) * 100) };
+  return {
+    amount,
+    percent: Math.floor((amount / overAYear) * 100),
+    currency: monthly.price.currency,
+  };
 }
 
 /** "Save ₹9,989 a year — 55% less than paying monthly." */
 export const annualSavingLine = (saving: AnnualSaving): string =>
-  `Save ${CURRENCY_SYMBOL.INR}${groupInr(saving.amount)} a year — ${saving.percent}% less than paying monthly.`;
+  `Save ${formatMoney(saving.amount, saving.currency)} a year — ${saving.percent}% less than paying monthly.`;
 
 /**
  * How one cell of the comparison table reads. A published cap is never swapped for a tick
@@ -204,6 +236,18 @@ export const PRO_COLUMN = 'Pro';
 
 /** V2 §13.4 / §15 — the web is the purchase surface, and the bar says so before the press. */
 export const BILLING_NOTE = "Billing runs on the web — you'll get a receipt by email";
+
+/** BILLING 01 (577:9171). The Pro reader is not told to upgrade to the plan they are on. */
+export const HERO_CAPTION =
+  'See what each plan includes and what you have used, then upgrade when you need more.';
+export const PRO_HERO_CAPTION = 'See what your plan includes and what you have used.';
+export const USAGE_TITLE = 'Usage';
+export const PLAN_SECTION_TITLE = 'Choose your plan';
+export const COMPARISON_TITLE = 'What you get';
+
+/** The pill on the usage card's header (577:9196). */
+export const planPillLabel = (plan: SubscriptionPlan): string =>
+  plan === 'pro' ? 'Pro plan' : 'Free plan';
 
 export const TRUST_LINE = 'No trials that auto-renew. Cancel any time.';
 

@@ -60,11 +60,18 @@ const FRAMES = {
   // twin: 1038.434 against 1018.5. Its type grew and the frame grew with it, which is the whole
   // change in a single number.
   '115:2': { name: 'DESIGN 2 — Home', width: 390, height: 1038.434, render: [480, 1128] },
+  // Home has been redrawn three times since 115:2 — 210:262 "Home Screen", then 239:185 and now
+  // 414:1105, both "Home Screen New". 414:1105 is the live one: same layout as 239:185 except for
+  // the nav bar, which it notches and tints, and the Interview Prep glyph. The committed
+  // 115-2.png is a render of an older revision of that node (115:2 is 1089.93 tall today, and has
+  // lost its nav), so check Home against this one.
+  '414:1105': { name: 'DESIGN 2b — Home (redrawn)', width: 390, height: 1111, render: [480, 1201] },
   '118:2': { name: 'JOBS 01 — Discover', width: 390, height: 1080, render: [390, 1080] },
   '118:155': { name: 'JOBS 02 — Saved', width: 390, height: 1080, render: [390, 1080] },
   '95:553': { name: 'JOBS 03 — Applied', width: 390, height: 1080, render: [390, 1080] },
   '95:687': { name: 'JOBS 04 — Filters', width: 390, height: 1080, render: [390, 1080] },
-  '95:891': { name: 'JOBS 05 — Job Detail', width: 390, height: 1290, render: [390, 1290] },
+  // Redrawn as 443:2 ("redesign sample"): hero, match card, tailor row and company card changed.
+  '443:2': { name: 'JOBS 05 — Job Detail', width: 390, height: 1290, render: [390, 1290] },
   '95:993': { name: 'JOBS 06 — Discover empty', width: 390, height: 1080, render: [390, 1080] },
   '95:1058': { name: 'JOBS 07 — Saved empty', width: 390, height: 1080, render: [390, 1080] },
   '95:1111': { name: 'JOBS 08 — Applied empty', width: 390, height: 1080, render: [390, 1080] },
@@ -93,12 +100,39 @@ const FRAMES = {
   // frames, and the first two are 414.67 where the rest are 422.66. The overlay lines up
   // whatever `width` says, so each carries the width it was actually drawn at; the app
   // normalises them onto one board instead (see src/features/auth/board.ts).
-  '290:957': { name: 'AUTH 01 — Welcome', width: 414.67, height: 895, render: [487, 967] },
-  '290:969': { name: 'AUTH 02 — Onboarding 1 of 3', width: 414.67, height: 895, render: [487, 967] },
-  '290:1031': { name: 'AUTH 03 — Onboarding 2 of 3', width: 422.66, height: 895, render: [495, 967] },
-  '295:2867': { name: 'AUTH 04 — Onboarding 3 of 3', width: 422.66, height: 895, render: [495, 967] },
-  '296:2982': { name: 'AUTH 05 — Get started', width: 422.66, height: 895, render: [495, 967] },
-  '296:3032': { name: 'AUTH 06 — Create an account', width: 422.66, height: 895, render: [495, 967] },
+  //
+  // Every one of these was renumbered when the flow was redrawn: the row now lives on page
+  // 95:2 "Mobile 2" under 307:4151 → 307:4152, and all six of the ids this file used to carry
+  // (290:957, 290:969, 290:1031, 295:2867, 296:2982, 296:3032) 404. Only slide 3 and the new
+  // sign-in screen actually changed; the rest are the same drawings under new numbers. Names
+  // are ours, not Figma's — five of the seven frames share one layer name over there.
+  '307:4153': { name: 'AUTH 01 — Welcome', width: 414.67, height: 895, render: [487, 967] },
+  '307:4165': {
+    name: 'AUTH 02 — Onboarding 1 of 3',
+    width: 414.67,
+    height: 895,
+    render: [487, 967],
+  },
+  '307:4217': {
+    name: 'AUTH 03 — Onboarding 2 of 3',
+    width: 422.66,
+    height: 895,
+    render: [495, 967],
+  },
+  '307:4288': {
+    name: 'AUTH 04 — Onboarding 3 of 3',
+    width: 422.66,
+    height: 895,
+    render: [495, 967],
+  },
+  '307:4338': { name: 'AUTH 05 — Get started', width: 422.66, height: 895, render: [495, 967] },
+  '307:4386': {
+    name: 'AUTH 06 — Create an account',
+    width: 422.66,
+    height: 895,
+    render: [495, 967],
+  },
+  '309:175': { name: 'AUTH 07 — Sign in', width: 422.66, height: 895, render: [495, 967] },
 };
 
 /** PNG stores width/height as big-endian uint32 at bytes 16 and 20 of the IHDR chunk. */

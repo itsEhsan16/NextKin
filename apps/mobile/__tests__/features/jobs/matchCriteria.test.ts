@@ -50,7 +50,7 @@ describe('groupMatchCriteria (V2 §7.13)', () => {
     ]);
 
     expect(groups.map((group) => group.state)).toEqual(['missing', 'met', 'optional']);
-    expect(groups.map((group) => group.title)).toEqual(['MISSING', 'MET', 'OPTIONAL']);
+    expect(groups.map((group) => group.title)).toEqual(['Missing', 'Met', 'Optional']);
     // The job's own order survives inside a group.
     expect(groups[1]?.items.map((item) => item.id)).toEqual(['a', 'd']);
   });

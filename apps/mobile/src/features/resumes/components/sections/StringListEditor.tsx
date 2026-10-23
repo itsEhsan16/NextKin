@@ -1,7 +1,7 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { a11yButton, hitSlopFor, pluralize, useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
@@ -9,6 +9,7 @@ import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
+import { layoutTransition } from '@/ui/motion';
 
 import { addEntry, removeEntry } from '../../sectionEdits';
 import type { SectionFieldsProps } from './types';
@@ -89,7 +90,7 @@ export function StringListEditor({
 
   // Dropped rather than shortened under reduced motion: a chip sliding into place is the movement
   // the setting asks us not to make.
-  const layout = reduced ? undefined : LinearTransition.springify();
+  const layout = layoutTransition(reduced);
 
   const add = () => {
     const result = addEntry(value, entry, noun);

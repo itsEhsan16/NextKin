@@ -1,14 +1,5 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useEffect } from 'react';
 import { View } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
   GENERATION_HINTS,
@@ -20,6 +11,7 @@ import {
 import { useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { StepGlyph } from '@/ui/motion';
 
 export type GenerationStepsProps = { generation: Generation };
 
@@ -27,7 +19,7 @@ export type GenerationStepsProps = { generation: Generation };
 type StepState = 'done' | 'current' | 'todo';
 
 const CHECK = 16;
-const DOT = 10;
+const RING = 15;
 const SLOT = 20;
 
 /** A11y state per row. The percentage belongs to the hero; a row only says where it stands. */
@@ -40,20 +32,9 @@ const STATE_LABEL: Record<StepState, string> = {
 type StepRowProps = { step: GenerationStep; state: StepState; hint: string; index: number };
 
 function StepRow({ step, state, hint, index }: StepRowProps) {
-  const { colors, motion, radii, spacing, s } = useTheme();
+  const { motion, spacing, s } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
-  const pulse = useSharedValue(0);
-
-  useEffect(() => {
-    if (reduced || state !== 'current') return undefined;
-    // The same half-second-and-a-bit opacity breath a Skeleton takes, so "working on it" reads
-    // the same everywhere in the app.
-    pulse.set(withRepeat(withTiming(1, { duration: motion.durations.pulse }), -1, true));
-    return () => cancelAnimation(pulse);
-  }, [motion.durations.pulse, pulse, reduced, state]);
-
-  const pulseStyle = useAnimatedStyle(() => ({ opacity: 1 - pulse.value * 0.5 }));
 
   return (
     <Animated.View
@@ -73,21 +54,7 @@ function StepRow({ step, state, hint, index }: StepRowProps) {
       style={[styles.row, { gap: spacing[3], minHeight: s(28) }]}
     >
       <View style={[styles.slot, { width: s(SLOT) }]}>
-        {state === 'done' ? (
-          <FontAwesome5 name="check-circle" size={s(CHECK)} color={colors.success} solid />
-        ) : (
-          <Animated.View
-            style={[
-              {
-                width: s(DOT),
-                height: s(DOT),
-                borderRadius: radii.full,
-                backgroundColor: state === 'current' ? colors.brand : colors.borderDashed,
-              },
-              state === 'current' ? pulseStyle : null,
-            ]}
-          />
-        )}
+        <StepGlyph state={state} size={s(CHECK)} ringSize={s(RING)} />
       </View>
 
       <View style={styles.copy}>
@@ -109,7 +76,8 @@ function StepRow({ step, state, hint, index }: StepRowProps) {
 
 /**
  * The five pipeline steps of V2 §7.6 as a list, so a running job shows *which* stage it is at
- * and not merely that it is moving: a check behind it, a pulsing dot on it, muted ahead of it.
+ * and not merely that it is moving: a tick behind it, the turning ring on it, a hollow circle
+ * ahead of it — the same `StepGlyph` every checklist in the app uses.
  *
  * No artboard exists for the generation flow (plan §8), so this is built from existing
  * primitives, tokens and motion only. The hero above owns the percentage; this list deliberately
@@ -130,11 +98,7 @@ export function GenerationSteps({ generation }: GenerationStepsProps) {
           step={step}
           index={index}
           state={
-            finished || index < currentIndex
-              ? 'done'
-              : index === currentIndex
-                ? 'current'
-                : 'todo'
+            finished || index < currentIndex ? 'done' : index === currentIndex ? 'current' : 'todo'
           }
           // Per-kind override first: 9D runs cover letters and ATS checks through this screen,
           // and "Tailoring your resume to the role" is wrong for both.

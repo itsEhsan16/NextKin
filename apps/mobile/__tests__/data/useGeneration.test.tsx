@@ -28,9 +28,10 @@ function newClient(): QueryClient {
 }
 
 function wrap(queryClient: QueryClient) {
-  return ({ children }: PropsWithChildren) => (
+  const Wrapper = ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+  return Wrapper;
 }
 
 const storedGeneration = (id: string): Generation | undefined =>

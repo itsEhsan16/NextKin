@@ -19,11 +19,17 @@ export type TodaysPicksProps = {
   onRetry: () => void;
 };
 
-const CARD_WIDTH = 300;
+const CARD_WIDTH = 373.3333; // 280 drawn (519:2)
 const GAP = 16;
 
 /** Figma 1:299–1:324 — the "Today's picks" heading and its horizontal carousel. */
-export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }: TodaysPicksProps) {
+export function TodaysPicks({
+  picks,
+  status,
+  onPressJob,
+  onToggleSave,
+  onRetry,
+}: TodaysPicksProps) {
   const { spacing, s } = useTheme();
   const cardWidth = s(CARD_WIDTH);
 
@@ -37,7 +43,8 @@ export function TodaysPicks({ picks, status, onPressJob, onToggleSave, onRetry }
   return (
     <View style={{ gap: spacing[4] }}>
       <View style={styles.headingRow}>
-        <Text accessibilityRole="header" variant="section">
+        {/* A tab's section heading, set like Home's ("Top Job Matches") — toreview.md 54. */}
+        <Text accessibilityRole="header" variant="homeSection">
           Today&apos;s picks
         </Text>
         <Text variant="caption" color="textSecondary">

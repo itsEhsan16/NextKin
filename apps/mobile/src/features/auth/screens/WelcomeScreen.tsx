@@ -16,13 +16,14 @@ import { Text } from '@/ui/Text';
 /** How long the wash holds before the slides take over. */
 const HOLD_MS = 1600;
 
-/** Figma 290:957 — the lock-up sits 20.5 above the frame's centre, and the tagline 82 off the floor. */
+/** Figma 307:4153 — the lock-up sits 20.5 above the frame's centre, and the tagline 82 off the floor. */
 const CENTRE_OFFSET = 41;
 const FLOOR_GAP = 82;
-const MARK_HEIGHT = 105;
+/** Drawn on the 422.66 board, so it goes through `board()` like every other length here. */
+const MARK_HEIGHT = 104.95966;
 
 /**
- * The first frame of a first run (Figma 290:957).
+ * The first frame of a first run (Figma 307:4153).
  *
  * The artboard draws no control, so the screen advances itself: it is a held brand moment, not a
  * decision. A tap anywhere takes it early rather than making anyone wait out the hold, and the
@@ -35,7 +36,7 @@ const MARK_HEIGHT = 105;
 export function WelcomeScreen() {
   const router = useRouter();
   const reduced = useReducedMotion();
-  const { s } = useTheme();
+  const { motion, s } = useTheme();
   const styles = useStyles();
   const seen = useOnboardingStore((state) => state.seen);
 
@@ -43,10 +44,12 @@ export function WelcomeScreen() {
 
   useEffect(() => {
     if (seen) return undefined;
-    fade.set(withTiming(1, withReducedMotion(reduced, { duration: 400 })));
+    // The same 400 it always ran for, now read off the motion tokens with the house curve (§85).
+    const timing = { duration: motion.durations.slow, easing: motion.easings.standard };
+    fade.set(withTiming(1, withReducedMotion(reduced, timing)));
     const timer = setTimeout(() => router.replace('/(auth)/onboarding'), HOLD_MS);
     return () => clearTimeout(timer);
-  }, [fade, reduced, router, seen]);
+  }, [fade, motion.durations.slow, motion.easings.standard, reduced, router, seen]);
 
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.get() }));
 
@@ -68,13 +71,13 @@ export function WelcomeScreen() {
         <Animated.View style={[styles.fill, fadeStyle]}>
           <View style={[styles.lockUp, { paddingBottom: s(board(CENTRE_OFFSET)) }]}>
             <View accessible {...a11yHeader('NextKin')} style={styles.centred}>
-              <BrandMark height={MARK_HEIGHT} />
+              <BrandMark height={board(MARK_HEIGHT)} />
               <Text variant="welcomeWordmark" color="onboardingInk" align="center">
                 NextKin
               </Text>
             </View>
             <Text variant="welcomeEyebrow" color="onboardingInk" align="center">
-              JOBS   RESUMES   GROWTH
+              JOBS RESUMES GROWTH
             </Text>
           </View>
 
@@ -94,4 +97,3 @@ const useStyles = scaledSheet(() => ({
   centred: { alignItems: 'center' },
   lockUp: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 }));
-

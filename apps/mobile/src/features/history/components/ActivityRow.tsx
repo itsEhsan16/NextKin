@@ -1,31 +1,57 @@
 import { memo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { ACTIVITY_KIND_ICON, ACTIVITY_KIND_LABEL, type ActivityEntry } from '@/data/models';
-import { VisualTile } from '@/features/notifications';
+import { ACTIVITY_KIND_LABEL, type ActivityEntry } from '@/data/models';
+import { Art, ProfileCard } from '@/features/profile/components/cards';
 import { formatFeedTime, parseBold, stripBold } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+
+import { ACTIVITY_TILE_ART } from '../historyArt';
 
 export type ActivityRowProps = {
   entry: ActivityEntry;
   onOpen: (entry: ActivityEntry) => void;
 };
 
-/** The notifications row's own inset for its trailing divider, so the two feeds line up. */
-const DIVIDER_INSET = 76;
+// One activity card at 390 (HISTORY 01 580:3012), in artboard units.
+const PAD = 14 / 0.75;
+const GAP = 12 / 0.75;
+const TILE = 40 / 0.75;
+const TILE_RADIUS = 10.5 / 0.75;
+const TEXT_GAP = 4 / 0.75;
+const META_GAP = 10 / 0.75;
+
+/** The 40pt leading tile: a whole drawing, or a drawing on the lavender tile (580:3013). */
+function ActivityTile({ entry }: { entry: ActivityEntry }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
+  const look = ACTIVITY_TILE_ART[entry.kind];
+
+  if (look.kind === 'tile') {
+    return (
+      <View style={styles.tile}>
+        <Art art={look.art} width={TILE * 0.75} />
+      </View>
+    );
+  }
+  return (
+    <View style={[styles.tile, styles.framed, { backgroundColor: colors.tileBrandStrong }]}>
+      <Art art={look.art} width={look.width} />
+    </View>
+  );
+}
 
 /**
- * One line of the History feed. The same shape as a notification row — the 40pt tile, the bold
- * runs, the feed time — with two things deliberately missing: there is no unread state and no
- * swipe, because this is an append-only audit trail and nothing on it is yours to mark or delete.
+ * One card of the History feed (HISTORY 01): the kind's drawing, one rich line with its bold
+ * runs, then the quiet detail with the time at the far end. No unread state and no swipe, because
+ * this is an append-only audit trail and nothing on it is yours to mark or delete.
  *
- * A row with no destination (a run that produced nothing to open) is plain text. It is not a
+ * A card with no destination (a run that produced nothing to open) is plain. It is not a
  * Pressable that goes nowhere, and it does not look like one.
  */
 export const ActivityRow = memo(function ActivityRow({ entry, onOpen }: ActivityRowProps) {
-  const { colors, spacing, s } = useTheme();
   const styles = useStyles();
   const runs = parseBold(entry.title);
   const time = formatFeedTime(entry.createdAt);
@@ -34,16 +60,13 @@ export const ActivityRow = memo(function ActivityRow({ entry, onOpen }: Activity
     .join(', ');
 
   const body = (
-    <View style={[styles.row, { gap: spacing[3] }]}>
-      {/* The notifications tile, handed an activity glyph: genuine reuse, not a second tile. */}
-      <VisualTile
-        visual={{ kind: 'glyph', icon: ACTIVITY_KIND_ICON[entry.kind], tone: 'neutral' }}
-      />
-      <View style={styles.body}>
-        <Text variant="body" color="textBody">
+    <ProfileCard style={styles.card}>
+      <ActivityTile entry={entry} />
+      <View style={styles.text}>
+        <Text variant="menuRow" color="textBody">
           {runs.map((run, index) =>
             run.bold ? (
-              <Text key={index} variant="bodySemiBold" color="textPrimary">
+              <Text key={index} variant="label" color="textPrimary">
                 {run.text}
               </Text>
             ) : (
@@ -51,53 +74,42 @@ export const ActivityRow = memo(function ActivityRow({ entry, onOpen }: Activity
             ),
           )}
         </Text>
-        {entry.detail ? (
-          <Text variant="caption" color="textSecondary" style={{ marginTop: spacing[1] }}>
-            {entry.detail}
+        <View style={styles.meta}>
+          <Text variant="micro" color="textSecondary" style={styles.detail}>
+            {entry.detail ?? ''}
           </Text>
-        ) : null}
-        <Text variant="captionSm" color="textTertiary" style={{ marginTop: spacing[2] }}>
-          {time}
-        </Text>
+          <Text variant="micro" color="textTertiary">
+            {time}
+          </Text>
+        </View>
       </View>
-    </View>
+    </ProfileCard>
   );
 
-  const padding = {
-    paddingLeft: spacing.gutter,
-    paddingRight: spacing.gutter + s(12),
-    paddingVertical: spacing[4],
-  };
-
-  return (
-    <View>
-      {entry.deepLink ? (
-        <Pressable
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel={summary}
-          accessibilityHint="Opens what this was about"
-          feedback="subtle"
-          haptic="light"
-          onPress={() => onOpen(entry)}
-          style={padding}
-        >
-          {body}
-        </Pressable>
-      ) : (
-        <View accessible accessibilityLabel={summary} style={padding}>
-          {body}
-        </View>
-      )}
-      <View
-        style={[styles.divider, { marginLeft: s(DIVIDER_INSET), backgroundColor: colors.divider }]}
-      />
+  return entry.deepLink ? (
+    <Pressable
+      accessible
+      accessibilityRole="button"
+      accessibilityLabel={summary}
+      accessibilityHint="Opens what this was about"
+      feedback="scale"
+      haptic="light"
+      onPress={() => onOpen(entry)}
+    >
+      {body}
+    </Pressable>
+  ) : (
+    <View accessible accessibilityLabel={summary}>
+      {body}
     </View>
   );
 });
 
-const useStyles = scaledSheet(() => ({
-  row: { flexDirection: 'row', alignItems: 'flex-start' },
-  body: { flex: 1 },
-  divider: { height: StyleSheet.hairlineWidth },
+const useStyles = scaledSheet((s) => ({
+  card: { flexDirection: 'row', alignItems: 'flex-start', gap: s(GAP), padding: s(PAD) },
+  tile: { width: s(TILE), height: s(TILE), alignItems: 'center', justifyContent: 'center' },
+  framed: { borderRadius: s(TILE_RADIUS) },
+  text: { flex: 1, gap: s(TEXT_GAP) },
+  meta: { flexDirection: 'row', alignItems: 'flex-start', gap: s(META_GAP) },
+  detail: { flex: 1 },
 }));

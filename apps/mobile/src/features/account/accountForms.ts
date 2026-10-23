@@ -77,6 +77,15 @@ export function validatePasswordChange(draft: PasswordDraft): Validation {
 
 /* -------------------------------------------------------------------------- copy */
 
+export const EMAIL_PASSWORD_TITLE = 'Email & password';
+/** The hero's lede (ACCOUNT 01 577:2485). */
+export const EMAIL_PASSWORD_LEDE =
+  'Change the address and password you sign in with, or sign out everywhere.';
+
+/** What "Sign out everywhere" costs, said under the Sessions title (577:2566). */
+export const SESSIONS_NOTE =
+  'Every device signed in to this account is signed out, this one included.';
+
 /** Said before the send, so nobody presses it expecting the address to change on the spot. */
 // 'the link' needs the sentence that introduces it: before the first press nothing else on the
 // screen mentions one, and the button only says 'Send verification'.

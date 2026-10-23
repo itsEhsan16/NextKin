@@ -39,6 +39,20 @@ describe('StickyActionBar', () => {
     await cleanup();
   });
 
+  it('draws no bar at all when floating (owner, 2026-10-03; the profile editor boards)', async () => {
+    await renderBar({ floating: true, primary: { label: 'Save changes', disabled: true } });
+    const button = screen.getByLabelText('Save changes');
+    expect(button).toBeDisabled();
+    let transparent = false;
+    for (let n = button.parent; n; n = n.parent) {
+      const style = flat(n.props.style);
+      // No hairline, and the only background on the way up is the bar's transparent one.
+      expect(style.borderTopWidth).toBeUndefined();
+      if (style.backgroundColor === 'transparent') transparent = true;
+    }
+    expect(transparent).toBe(true);
+  });
+
   it('presses the primary action', async () => {
     const onPress = jest.fn();
     await renderBar({ primary: { label: 'Apply now', onPress } });

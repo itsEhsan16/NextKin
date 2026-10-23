@@ -13,6 +13,8 @@ export type FiltersActionBarProps = {
   onApply: () => void;
 };
 
+const RESET_WIDTH = 140;
+
 /**
  * The sticky Reset / Apply bar (Figma 1:823). Apply carries the live result count, so the label
  * previews what applying the draft would do — "Show 128 jobs" in the artboard.
@@ -21,7 +23,7 @@ export type FiltersActionBarProps = {
  * inset, which is the native equivalent of canvas note 1:1043's "sticky bar carries 44px".
  */
 export function FiltersActionBar({ count, loading, onReset, onApply }: FiltersActionBarProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, s } = useTheme();
 
   // Zero is the one state worth disabling: applying it would empty the list on purpose, and Reset
   // is right there. An errored count still applies — a failed preview must not block the action.
@@ -42,7 +44,14 @@ export function FiltersActionBar({ count, loading, onReset, onApply }: FiltersAc
         },
       ]}
     >
-      <Button variant="ghost" size="lg" label="Reset" onPress={onReset} style={styles.reset} />
+      <Button
+        variant="ghost"
+        size="lg"
+        label="Reset"
+        onPress={onReset}
+        // The secondary width `StickyActionBar` uses, scaled like every other length.
+        style={[styles.reset, { flexBasis: s(RESET_WIDTH) }]}
+      />
       <Button
         size="lg"
         label={label}
@@ -61,6 +70,6 @@ const countLabel = (count: number | undefined): string =>
 
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth },
-  reset: { flexBasis: 140, flexGrow: 0, flexShrink: 0, justifyContent: 'center' },
+  reset: { flexGrow: 0, flexShrink: 0, justifyContent: 'center' },
   apply: { flex: 1, justifyContent: 'center' },
 });

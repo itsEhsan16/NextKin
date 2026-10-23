@@ -56,6 +56,26 @@ export function faqCountLine(matched: number, total: number): string {
   return `${matched} of ${total} ${noun}`;
 }
 
+/** A topic group's count — "3 answers" beside its heading (SUPPORT 01 577:6180). */
+export const faqAnswersLabel = (count: number): string =>
+  `${count} ${count === 1 ? 'answer' : 'answers'}`;
+
+const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+
+/**
+ * The hero's lede (SUPPORT 01 577:6156). Whole, it says how much help there is — "14 answers
+ * across five topics." — counting the topics the content actually covers rather than the five the
+ * model publishes. While a search or a topic narrows the list it becomes the count line instead,
+ * so the one line under the title always says what is on the page.
+ */
+export function faqHeroLine(items: readonly FaqItem[], matched: number): string {
+  const total = items.length;
+  if (matched !== total) return faqCountLine(matched, total);
+  const topics = new Set(items.map((item) => item.topic)).size;
+  const word = COUNT_WORDS[topics] ?? String(topics);
+  return `${faqCountLine(total, total)} across ${word} ${topics === 1 ? 'topic' : 'topics'}.`;
+}
+
 /**
  * The FAQ's topics and the contact form's subjects are different unions on purpose (see
  * `models/support.ts`): browsing categories are not the same as reasons to write in. Only two line

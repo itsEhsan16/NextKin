@@ -75,7 +75,8 @@ describe('AssistantRepo (mock) — V2 §7.16', () => {
     );
     const seen = await stream(repos, reply.id);
     expect(seen[seen.length - 1]?.text).toContain('Stripe — Senior PD');
-    expect(seen[seen.length - 1]?.text).toContain('88');
+    // The document's engine-computed score, whatever it is (C-10).
+    expect(seen[seen.length - 1]?.text).toContain(String(store.state.atsScores.res_2?.total));
     expect(reply.contextResumeId).toBe('res_2');
   });
 

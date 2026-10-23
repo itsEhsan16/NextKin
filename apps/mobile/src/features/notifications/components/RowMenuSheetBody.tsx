@@ -1,5 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import type { FC } from 'react';
 import { StyleSheet, View } from 'react-native';
+import type { SvgProps } from 'react-native-svg';
+
+import MarkReadIcon from '../../../../assets/icons/create/ats-check.svg';
+import DeleteIcon from '../../../../assets/icons/notif-menu/delete.svg';
+import MuteIcon from '../../../../assets/icons/notif-menu/mute.svg';
 
 import {
   categoryMeta,
@@ -8,7 +13,7 @@ import {
   type NotificationPrefs,
 } from '@/data/models';
 import { a11yButton, formatFeedTime, parseBold, stripBold } from '@/lib';
-import { useTheme, type ColorToken } from '@/theme';
+import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -23,8 +28,25 @@ export type RowMenuSheetBodyProps = {
   onDelete: () => void;
 };
 
-const ICON = 17;
-const ICON_SLOT = 24;
+/**
+ * Each action leads with a 39-wide illustrated icon (Figma 505:10 / 505:26 / 505:49) on a 56
+ * pitch at 390: 52 wide, 8.5 above and below — 11⅓ in artboard units. "Mark as read" is the
+ * ATS-check art, drawn 38 tall; the other two are square tiles.
+ */
+const ICON = 52;
+const ROW_PAD = (56 - 39) / 2 / 0.75;
+/** The respaced board (toreview.md 38.1): meta line +8⅔, header → divider +4⅔, divider → rows 9⅓. */
+const META_TOP = 2 + 6.5 / 0.75;
+const HEADER_BOTTOM_EXTRA = 3.5 / 0.75;
+const ROWS_TOP = 7 / 0.75;
+
+type MenuIcon = { Icon: FC<SvgProps>; h: number };
+
+const ICONS = {
+  markRead: { Icon: MarkReadIcon, h: 38.0029 / 0.75 },
+  mute: { Icon: MuteIcon, h: ICON },
+  delete: { Icon: DeleteIcon, h: ICON },
+} satisfies Record<string, MenuIcon>;
 
 /** "You keep matches, closing alerts and AI results" (Figma 1:2707). */
 export function keepCaption(
@@ -40,7 +62,7 @@ export function keepCaption(
 }
 
 type MenuRowProps = {
-  icon: string;
+  icon: MenuIcon;
   label: string;
   caption?: string;
   tone?: 'default' | 'danger';
@@ -48,8 +70,7 @@ type MenuRowProps = {
 };
 
 function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowProps) {
-  const { colors, sizes, spacing, s } = useTheme();
-  const color: ColorToken = tone === 'danger' ? 'danger' : 'textBody';
+  const { sizes, spacing, s } = useTheme();
   return (
     <Pressable
       {...a11yButton(label, caption)}
@@ -61,11 +82,11 @@ function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowPro
       // token is read between the two artboards (see CONTROL_AT390) and clears the floor.
       style={[
         styles.menuRow,
-        { minHeight: sizes.listRow, paddingVertical: spacing[2], gap: spacing[3] },
+        { minHeight: sizes.listRow, paddingVertical: s(ROW_PAD), gap: spacing[4] },
       ]}
     >
-      <View style={[styles.iconSlot, { width: s(ICON_SLOT) }]}>
-        <FontAwesome5 name={icon} size={s(ICON)} color={colors[color]} solid />
+      <View style={[styles.iconSlot, { width: s(ICON) }]}>
+        <icon.Icon width={s(ICON)} height={s(icon.h)} />
       </View>
       <View style={[styles.menuText, { gap: s(2) }]}>
         <Text variant="menuRow" color={tone === 'danger' ? 'danger' : 'textPrimary'}>
@@ -82,7 +103,7 @@ function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowPro
 }
 
 /**
- * NOTIF 03 (Figma 1:2696) — the per-row sheet behind swipe-More and long-press. Controlled,
+ * NOTIF 03 (Figma 95:2897) — the per-row sheet behind swipe-More and long-press. Controlled,
  * so tests drive it without the Sheet.
  */
 export function RowMenuSheetBody({
@@ -101,11 +122,19 @@ export function RowMenuSheetBody({
       <View
         accessible
         accessibilityLabel={`${stripBold(notification.body)}, ${meta.singular}, ${formatFeedTime(notification.createdAt)}`}
-        style={[styles.header, { gap: spacing[3], paddingVertical: spacing[4] }]}
+        style={[
+          styles.header,
+          {
+            gap: spacing[3],
+            paddingTop: spacing[4],
+            paddingBottom: spacing[4] + s(HEADER_BOTTOM_EXTRA),
+          },
+        ]}
       >
-        <VisualTile visual={notification.visual} />
+        <VisualTile visual={notification.visual} compact />
         <View style={styles.headerText}>
-          <Text variant="body" numberOfLines={2}>
+          {/* A plain headline is bold throughout on the card, so it is semibold here (619:46). */}
+          <Text variant={runs.some((run) => run.bold) ? 'body' : 'bodySemiBold'} numberOfLines={2}>
             {runs.map((run, index) =>
               run.bold ? (
                 <Text key={index} variant="bodySemiBold">
@@ -116,34 +145,37 @@ export function RowMenuSheetBody({
               ),
             )}
           </Text>
-          <Text variant="captionSm" color="textTertiary" style={{ marginTop: s(2) }}>
+          <Text variant="captionSm" color="textTertiary" style={{ marginTop: s(META_TOP) }}>
             {`${meta.singular} · ${formatFeedTime(notification.createdAt)}`}
           </Text>
         </View>
       </View>
 
-      <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+      <View
+        style={[styles.divider, { backgroundColor: colors.divider, marginBottom: s(ROWS_TOP) }]}
+      />
 
-      <MenuRow icon="check" label="Mark as read" onPress={onMarkRead} />
+      <MenuRow icon={ICONS.markRead} label="Mark as read" onPress={onMarkRead} />
       <MenuRow
-        icon="bell-slash"
+        icon={ICONS.mute}
         label={`Turn off ${meta.keepName}`}
         caption={keepCaption(notification, prefs)}
         onPress={onMuteCategory}
       />
-      <MenuRow icon="trash" label="Delete" tone="danger" onPress={onDelete} />
+      <MenuRow icon={ICONS.delete} label="Delete" tone="danger" onPress={onDelete} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center' },
+  // The type tile now sits on the first line of the body, not centred on the block (95:2899).
+  header: { flexDirection: 'row', alignItems: 'flex-start' },
   headerText: { flex: 1 },
   divider: { height: StyleSheet.hairlineWidth },
   menuRow: { flexDirection: 'row', alignItems: 'center' },
   // `width` is applied at the call site from s(ICON_SLOT): this sheet is a plain
   // StyleSheet.create, so a raw artboard length here would ship unscaled.
-  iconSlot: { alignItems: 'center' },
+  iconSlot: { alignItems: 'center', justifyContent: 'center' },
   // The `gap` is applied at the call site: a caption jammed against its label was the other half
   // of what read as clustered on a device.
   menuText: { flex: 1 },

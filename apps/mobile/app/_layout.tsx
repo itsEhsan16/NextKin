@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router/stack';
 
 import { useSessionStore } from '@/features/auth';
+import { AccuracyConfirmHost } from '@/features/resumes';
+import { useStackAnimation } from '@/navigation';
 import { AppProviders, useAppReady } from '@/providers';
 import { useTheme } from '@/theme';
 
@@ -12,6 +14,7 @@ export const unstable_settings = {
 export default function RootLayout() {
   const { ready } = useAppReady();
   const { colors } = useTheme();
+  const animation = useStackAnimation();
   // Read above the early return — hooks cannot be conditional. There is no loading state to add
   // for it: the store's initial value comes from synchronous storage, so the first frame is
   // already on the right side of the gate.
@@ -25,7 +28,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'slide_from_right',
+          animation,
           contentStyle: { backgroundColor: colors.surfacePage },
         }}
       >
@@ -53,6 +56,12 @@ export default function RootLayout() {
           <Stack.Screen name="resumes/[id]/score" />
           <Stack.Screen name="resumes/[id]/rubric" />
           <Stack.Screen name="create/tailor" />
+          <Stack.Screen name="create/build/index" />
+          <Stack.Screen name="create/build/jobs" />
+          <Stack.Screen name="create/build/add" />
+          <Stack.Screen name="create/build/review" />
+          <Stack.Screen name="create/build/compare" />
+          <Stack.Screen name="create/build/unreadable" />
           <Stack.Screen name="create/jd-review" />
           <Stack.Screen name="create/cover-letter" />
           <Stack.Screen name="create/ats-check" />
@@ -104,6 +113,8 @@ export default function RootLayout() {
           <Stack.Screen name="dev" />
         </Stack.Protected>
       </Stack>
+      {/* Above every screen: an export from the tabs, the editor or a finished run asks here. */}
+      {signedIn ? <AccuracyConfirmHost /> : null}
     </AppProviders>
   );
 }

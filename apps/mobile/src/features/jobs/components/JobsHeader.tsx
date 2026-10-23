@@ -1,11 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 
-import { a11yHeader } from '@/lib';
 import { useTheme } from '@/theme';
 import { FilterButton } from '@/ui/FilterButton';
-import { IconButton } from '@/ui/IconButton';
 import { SearchField } from '@/ui/SearchField';
-import { Text } from '@/ui/Text';
+import { TabTitleRow } from '@/ui/TabTitleRow';
 
 export type JobsHeaderProps = {
   query: string;
@@ -19,7 +17,7 @@ export type JobsHeaderProps = {
   onPressFilters: () => void;
 };
 
-/** Figma 1:264–1:274 — title + bell, then the search row. Identical across all three tabs. */
+/** Figma 118:3–118:10 — title + bell, then the search row. Identical across all three tabs. */
 export function JobsHeader({
   query,
   onChangeQuery,
@@ -29,23 +27,11 @@ export function JobsHeader({
   onPressNotifications,
   onPressFilters,
 }: JobsHeaderProps) {
-  const { spacing, s } = useTheme();
+  const { spacing, sizes } = useTheme();
 
   return (
-    <View style={{ gap: spacing[4] }}>
-      <View style={styles.titleRow}>
-        <Text {...a11yHeader()} variant="screenTitle">
-          Jobs
-        </Text>
-        <IconButton
-          icon="bell"
-          iconStyle="regular"
-          iconSize={s(18)}
-          label={hasUnread ? 'Notifications, unread' : 'Notifications'}
-          dot={hasUnread}
-          onPress={onPressNotifications}
-        />
-      </View>
+    <View style={{ gap: sizes.titleRowGap }}>
+      <TabTitleRow title="Jobs" hasUnread={hasUnread} onPressNotifications={onPressNotifications} />
 
       <View style={[styles.searchRow, { gap: spacing[3] }]}>
         <SearchField
@@ -61,7 +47,6 @@ export function JobsHeader({
 }
 
 const styles = StyleSheet.create({
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   searchRow: { flexDirection: 'row', alignItems: 'center' },
   search: { flex: 1 },
 });

@@ -12,6 +12,7 @@ const notif = (overrides: Partial<Notification>): Notification => ({
   id: 'ntf_x',
   category: 'applications',
   body: 'plain',
+  description: 'detail',
   createdAt: '2026-08-23T10:00:00.000Z',
   read: false,
   visual: { kind: 'logo', company: 'Stripe' },
@@ -41,7 +42,9 @@ describe('notification filter pills (Figma 1:2410)', () => {
     expect(matchesNotificationFilter(notif({ category: 'closing' }), 'jobs')).toBe(true);
     expect(matchesNotificationFilter(notif({ category: 'ai' }), 'jobs')).toBe(true);
     expect(matchesNotificationFilter(notif({ category: 'applications' }), 'jobs')).toBe(false);
-    expect(matchesNotificationFilter(notif({ category: 'applications' }), 'applications')).toBe(true);
+    expect(matchesNotificationFilter(notif({ category: 'applications' }), 'applications')).toBe(
+      true,
+    );
     expect(matchesNotificationFilter(notif({ category: 'billing' }), 'account')).toBe(true);
     expect(matchesNotificationFilter(notif({ category: 'billing' }), 'jobs')).toBe(false);
     expect(matchesNotificationFilter(notif({ category: 'billing' }), 'all')).toBe(true);

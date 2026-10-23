@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import type { Resume, ResumeSort } from '@/data/models';
 import { storage } from '@/lib';
+import type { ToastTone } from '@/ui/Toast';
 
 /** Grid ⇄ list presentation of the library (Figma RESUMES 01 vs 02). */
 export type ResumesViewMode = 'grid' | 'list';
@@ -21,8 +22,9 @@ export type ResumeMenuStep = 'actions' | 'rename' | 'confirm-delete';
  * A pushed screen sits ABOVE the tabs layout in the stack, so the host mounted there would raise
  * its sheet *behind* the editor. The editor mounts its own copy, and the surface recorded when
  * the sheet is opened decides which of the two renders — one paint, one BackHandler, one scrim.
+ * A finished Build run (BUILD 07) mounts a third, for its Download PDF.
  */
-export type ResumeSurface = 'tabs' | 'editor';
+export type ResumeSurface = 'tabs' | 'editor' | 'run';
 
 const VIEW_MODE_KEY = 'prefs.resumesView';
 
@@ -53,6 +55,7 @@ type ResumesState = {
   /** Transient confirmation ("Link copied", "Saved as PDF"). Hosted beside the export sheet. */
   toast: string | null;
   toastSurface: ResumeSurface;
+  toastTone: ToastTone;
 
   setViewMode: (mode: ResumesViewMode) => void;
   setTypeFilter: (filter: ResumeTypeFilter) => void;
@@ -71,7 +74,8 @@ type ResumesState = {
   openExport: (resume: Resume, surface?: ResumeSurface) => void;
   closeExport: () => void;
 
-  showToast: (message: string, surface?: ResumeSurface) => void;
+  /** `tone` defaults to success; a failure passes `error` so it never wears the check. */
+  showToast: (message: string, surface?: ResumeSurface, tone?: ToastTone) => void;
   hideToast: () => void;
 };
 
@@ -93,6 +97,7 @@ export const useResumesStore = create<ResumesState>((set) => ({
 
   toast: null,
   toastSurface: 'tabs',
+  toastTone: 'success',
 
   setViewMode: (viewMode) => {
     storage.set(VIEW_MODE_KEY, viewMode);
@@ -118,6 +123,7 @@ export const useResumesStore = create<ResumesState>((set) => ({
     set({ exportResume, exportOpen: true, exportSurface }),
   closeExport: () => set({ exportOpen: false }),
 
-  showToast: (toast, toastSurface = 'tabs') => set({ toast, toastSurface }),
+  showToast: (toast, toastSurface = 'tabs', toastTone = 'success') =>
+    set({ toast, toastSurface, toastTone }),
   hideToast: () => set({ toast: null }),
 }));

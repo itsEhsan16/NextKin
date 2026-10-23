@@ -1,3 +1,13 @@
+import type { FC } from 'react';
+import type { SvgProps } from 'react-native-svg';
+
+import AtsCheckIcon from '../../../assets/icons/create/ats-check.svg';
+import LinkedInIcon from '../../../assets/icons/create/linkedin.svg';
+import NewResumeIcon from '../../../assets/icons/create/new-resume.svg';
+import ScratchIcon from '../../../assets/icons/create/scratch.svg';
+import TailorIcon from '../../../assets/icons/create/tailor.svg';
+import UploadIcon from '../../../assets/icons/create/upload.svg';
+
 /**
  * Rows of the create sheet, transcribed from Figma CREATE 01 (1:1044) and CREATE 02 (1:1208).
  *
@@ -26,43 +36,40 @@ export type CreateAction =
 
 export type CreateRow = {
   key: CreateAction;
-  /** FontAwesome 5 Free Solid glyph. */
-  icon: string;
+  /**
+   * The row's own multi-tone icon, tile included (Figma 431:7772 … 431:7883). `w`/`h` are its
+   * drawn box over 0.75 — the seven are not all square, and none is stretched to match.
+   */
+  art: { Icon: FC<SvgProps>; w: number; h: number };
   label: string;
   description: string;
   ai?: boolean;
-  tone?: 'neutral' | 'brand';
 };
 
-/** CREATE 01 — the "+" sheet. */
+/**
+ * CREATE 01 — the "+" sheet. Three rows since the owner's one-flow decision (toreview §114): a
+ * resume for a job, a check of the one you have, a new one. Cover letters stay on Home's quick
+ * start and after a run.
+ */
 export const CREATE_ROOT_ROWS: readonly CreateRow[] = [
   {
-    key: 'new-resume',
-    icon: 'file-alt',
-    label: 'New Resume',
-    description: 'Start fresh or import your existing resume',
-  },
-  {
     key: 'tailor-to-a-job',
-    icon: 'magic',
-    label: 'Tailor to a Job',
-    description: 'Adapt your base resume to a job description',
+    art: { Icon: TailorIcon, w: 52, h: 51.9935 },
+    label: 'Tailor to a job',
+    description: 'Add a job and get your resume made for it',
     ai: true,
-    tone: 'brand',
-  },
-  {
-    key: 'cover-letter',
-    icon: 'envelope',
-    label: 'Cover Letter',
-    description: 'Written from your resume and the job posting',
-    ai: true,
-    tone: 'brand',
   },
   {
     key: 'ats-check',
-    icon: 'tasks',
-    label: 'ATS Check',
-    description: 'Score any resume against ATS rules',
+    art: { Icon: AtsCheckIcon, w: 52, h: 50.6705 },
+    label: 'Check my resume',
+    description: 'Score your resume against a job',
+  },
+  {
+    key: 'new-resume',
+    art: { Icon: NewResumeIcon, w: 52, h: 51.876 },
+    label: 'New resume',
+    description: 'Start fresh or import your existing resume',
   },
 ];
 
@@ -70,19 +77,19 @@ export const CREATE_ROOT_ROWS: readonly CreateRow[] = [
 export const CREATE_RESUME_ROWS: readonly CreateRow[] = [
   {
     key: 'upload-resume',
-    icon: 'upload',
+    art: { Icon: UploadIcon, w: 52, h: 53.946 },
     label: 'Upload PDF or DOCX',
     description: "We'll parse your experience automatically",
   },
   {
     key: 'import-linkedin',
-    icon: 'link',
+    art: { Icon: LinkedInIcon, w: 50.654, h: 55.4667 },
     label: 'Import from LinkedIn',
     description: 'Pull your profile in one tap',
   },
   {
     key: 'start-from-scratch',
-    icon: 'edit',
+    art: { Icon: ScratchIcon, w: 52, h: 54.272 },
     label: 'Start from scratch',
     description: 'Build it section by section',
   },

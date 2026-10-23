@@ -3,9 +3,12 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react-nativ
 import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
+import { rescoreStored } from '@nextkin/shared/repos/scoring';
+
 import { useMockModeStore } from '@/data/mock';
+import { ATS_BAND_LABEL, atsQuickWins, atsSectionPassed, type ResumeContent } from '@/data/models';
 import { createQueryClient } from '@/data/queries';
-import { resetMockRepos } from '@/data/repos';
+import { mockStore, resetMockRepos } from '@/data/repos';
 import { ResumeScoreScreen } from '@/features/resumes';
 import { CreateSheetProvider } from '@/navigation';
 
@@ -23,8 +26,30 @@ const metrics: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
+const ID = 'res_2';
+
+/**
+ * res_2 as the engines score it against Stripe's listing (C-10), with Figma taken off its roles and
+ * skills: the profile backs Figma, so the panel offers one quick win the product may make itself,
+ * and Fintech stays a gap it never inserts. The board's 92 and its copy were the base resume's,
+ * which has no JD and so no total (D-15).
+ */
+function seedQuickWin() {
+  const content = mockStore.state.contents[ID] as ResumeContent;
+  const without = (skills: string[] = []) => skills.filter((skill) => skill !== 'Figma');
+  const edited: ResumeContent = {
+    ...content,
+    skills: without(content.skills),
+    experience: content.experience.map((role) => ({ ...role, skills: without(role.skills) })),
+  };
+  mockStore.state.contents[ID] = edited;
+  const score = rescoreStored(mockStore.state, ID, edited);
+  if (!score) throw new Error('res_2 should be scored');
+  return score;
+}
+
 /** One mount per file — see the test-infra note in the plan's Phase 3 status. */
-describe('ResumeScoreScreen (RESUMES 04 — 1:2109)', () => {
+describe('ResumeScoreScreen (RESUMES 04 — 95:2310)', () => {
   beforeEach(() => {
     resetMockRepos();
     mockPush.mockClear();
@@ -39,85 +64,64 @@ describe('ResumeScoreScreen (RESUMES 04 — 1:2109)', () => {
   });
 
   it('renders the hero, the rubric checklist, and routes the fixes', async () => {
+    const score = seedQuickWin();
     const queryClient = createQueryClient();
     clients.push(queryClient);
     await render(
       <SafeAreaProvider initialMetrics={metrics}>
         <QueryClientProvider client={queryClient}>
           <CreateSheetProvider>
-            <ResumeScoreScreen id="res_base" />
+            <ResumeScoreScreen id={ID} />
           </CreateSheetProvider>
         </QueryClientProvider>
       </SafeAreaProvider>,
     );
 
-    // — Hero (1:2113–1:2121) —
+    // — Hero (1:2113–1:2121): the engine's number and band, and a summary led by the job match —
     expect(
-      await screen.findByLabelText('ATS score 92, Strong', {}, { timeout: 10000 }),
+      await screen.findByLabelText(`ATS score ${score.total}, ${ATS_BAND_LABEL[score.band]}`, {}, { timeout: 10000 }),
     ).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'ATS score' })).toBeOnTheScreen();
-    expect(screen.getByText('Strong')).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        'Parsers will read this cleanly. Four quick wins left before it is airtight.',
-      ),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByText('Product Designer — Base · recalculates as you edit'),
-    ).toBeOnTheScreen();
+    expect(screen.getByText(score.summary)).toBeOnTheScreen();
+    expect(score.summary).toMatch(/^Meets 1 of 2 required skills\./);
+    expect(screen.getByText('Stripe — Senior PD — Tailored · recalculates as you edit')).toBeOnTheScreen();
 
-    // — Section headers with their pass counts (1:2123–1:2166) —
-    expect(screen.getByRole('header', { name: 'Content' })).toBeOnTheScreen();
-    expect(screen.getByText('4 of 5')).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'Format' })).toBeOnTheScreen();
-    expect(screen.getByText('3 of 3')).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'Keywords' })).toBeOnTheScreen();
-    expect(screen.getByText('2 of 4')).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'Best practices' })).toBeOnTheScreen();
-    expect(screen.getByText('3 of 4')).toBeOnTheScreen();
+    // — Section headers with their pass counts, each a check the number rests on —
+    for (const section of score.sections) {
+      expect(screen.getByRole('header', { name: section.label })).toBeOnTheScreen();
+    }
+    const keywords = score.sections.find((section) => section.key === 'keywords');
+    expect(keywords && `${atsSectionPassed(keywords)} of ${keywords.items.length}`).toBe('1 of 3');
 
-    // — A passed check, a pending one, and the artboard's keyword misses —
-    expect(
-      screen.getByLabelText('Quantified achievements in 3+ bullets: passed'),
-    ).toBeOnTheScreen();
-    expect(screen.getByLabelText('Add metrics to your Zoho role: pending')).toBeOnTheScreen();
-    expect(screen.getByText('Missing: "stakeholder management"')).toBeOnTheScreen();
-    expect(screen.getByText('Missing: "A/B testing"')).toBeOnTheScreen();
-    expect(
-      screen.getByText('Green checks appear the moment a fix lands — no re-scan needed.'),
-    ).toBeOnTheScreen();
+    // — The backed skill is a fix; the unbacked one is a gap, shown and never offered —
+    expect(screen.getByText('Missing: "Figma"')).toBeOnTheScreen();
+    expect(screen.getByText('"Fintech" is not in your profile')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Fix: "Fintech" is not in your profile')).toBeNull();
 
     // One Fix pill per unmet actionable item = the CTA's quick-win count.
-    expect(screen.getAllByLabelText(/^Fix: /)).toHaveLength(4);
+    const wins = atsQuickWins(score);
+    expect(wins).toHaveLength(1);
+    expect(screen.getAllByLabelText(/^Fix: /)).toHaveLength(1);
 
     // — The pinned CTA opens the fix list at the top; one check opens it on that check's card —
-    fireEvent.press(screen.getByLabelText('Fix 4 quick wins'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/resumes/[id]/fix',
-      params: { id: 'res_base' },
-    });
+    fireEvent.press(screen.getByLabelText('Fix 1 quick win'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/resumes/[id]/fix', params: { id: ID } });
     mockPush.mockClear();
-    fireEvent.press(screen.getByLabelText('Fix: Add a portfolio link'));
+    fireEvent.press(screen.getByLabelText('Fix: Missing: "Figma"'));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/resumes/[id]/fix',
-      params: { id: 'res_base', item: 'portfolio' },
+      params: { id: ID, item: 'kw:figma' },
     });
 
     // — V2 §7.8: the score display links to the published rubric —
     mockPush.mockClear();
     fireEvent.press(screen.getByLabelText('What this score measures'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/resumes/[id]/rubric',
-      params: { id: 'res_base' },
-    });
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/resumes/[id]/rubric', params: { id: ID } });
 
     // - V2 section 7.16: the score panel opens the assistant about this document -
     mockPush.mockClear();
     fireEvent.press(screen.getByLabelText('Ask about this score'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/assistant',
-      params: { resumeId: 'res_base' },
-    });
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/assistant', params: { resumeId: ID } });
 
     fireEvent.press(screen.getByLabelText('Back'));
     expect(mockBack).toHaveBeenCalledTimes(1);

@@ -3,227 +3,199 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { GENERATING_RESUME_ID, subscriptionFixture, useMockModeStore } from '@/data/mock';
-import type { Subscription } from '@/data/models';
+import { subscriptionFixture, useMockModeStore } from '@/data/mock';
+import type { Generation, Subscription } from '@/data/models';
 import { createQueryClient, qk } from '@/data/queries';
-import { mockStore, resetMockRepos } from '@/data/repos';
+import { resetMockRepos } from '@/data/repos';
 import { AtsCheckScreen } from '@/features/create';
+import { atsBlocker, JD_MIN } from '@/features/create/atsCheckSetup';
 import { pickDocument } from '@/lib';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
-const mockBack = jest.fn();
 const clients: QueryClient[] = [];
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: mockBack, replace: mockReplace }),
+  useRouter: () => ({
+    push: mockPush,
+    navigate: jest.fn(),
+    back: jest.fn(),
+    replace: mockReplace,
+  }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
-// Partial mock: everything else in the barrel (theme helpers, a11y, format) stays real, and only
-// the file browser is stubbed — it is the one call that would reach a native module.
 jest.mock('@/lib', () => ({
   ...jest.requireActual('@/lib'),
   pickDocument: jest.fn(),
 }));
 
-const mockPick = pickDocument as jest.MockedFunction<typeof pickDocument>;
+const pick = pickDocument as jest.MockedFunction<typeof pickDocument>;
 
 const metrics: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-/** Free plan with this month's three ATS checks already spent (V2 §13.5's paywall state). */
-const spentSubscription: Subscription = {
-  ...subscriptionFixture,
-  usage: { ...subscriptionFixture.usage, atsChecksUsed: 3, atsChecksLimit: 3 },
-};
-
 /** Cards enter on `FadeInDown`; the Reanimated mock leaves an entering node at opacity 0. */
 const shown = { includeHiddenElements: true } as const;
-
-/** Mock repos resolve on (fake) timers: lists ≤ 900ms, a parse 1200–2200ms. */
 const settle = (ms: number) => act(() => jest.advanceTimersByTimeAsync(ms));
 const NORMAL_MS = 1000;
-const IMPORT_MS = 4000;
+/** A parse takes up to 2.2s; extraction and the start follow one after the other. */
+const PARSE_MS = 2500;
 
-async function renderCheck(resumeId?: string, seed?: (client: QueryClient) => void) {
+const PASTED =
+  'Senior Product Designer — Acme Pay. You’ll own merchant onboarding across web and mobile, run usability tests with research, and extend our design system.';
+
+async function renderAts(seed?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
   clients.push(queryClient);
   seed?.(queryClient);
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
       <QueryClientProvider client={queryClient}>
-        <AtsCheckScreen resumeId={resumeId} />
+        <AtsCheckScreen />
       </QueryClientProvider>
     </SafeAreaProvider>,
   );
+  await settle(NORMAL_MS);
+  return queryClient;
 }
 
-describe('AtsCheckScreen (V2 §7.8 / §4.1 — no artboard)', () => {
+const press = (label: string) =>
+  act(async () => void fireEvent.press(screen.getByLabelText(label, shown)));
+
+async function uploadCv() {
+  pick.mockResolvedValueOnce({ name: 'George_Smith_CV.pdf', uri: 'file:///cv.pdf' });
+  await press('Upload a resume');
+  await settle(PARSE_MS);
+}
+
+describe('atsBlocker (ATS 01)', () => {
+  it('asks for the file first, then the job or enough of a description', () => {
+    const base = { hasFile: true, mode: 'job' as const, hasJob: true, pasted: '' };
+    expect(atsBlocker({ ...base, hasFile: false })).toBe('Upload your resume to check it.');
+    expect(atsBlocker(base)).toBeUndefined();
+    expect(atsBlocker({ ...base, hasJob: false })).toBe(
+      'Pick a saved job, or paste a job description.',
+    );
+    expect(atsBlocker({ ...base, mode: 'paste', pasted: 'short' })).toMatch(/a little more/);
+    expect(atsBlocker({ ...base, mode: 'paste', pasted: 'x'.repeat(JD_MIN) })).toBeUndefined();
+  });
+});
+
+describe('AtsCheckScreen (ATS 01 / 01b, 645:3 / 645:49)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
+    pick.mockReset();
     mockPush.mockClear();
     mockReplace.mockClear();
-    mockBack.mockClear();
-    mockPick.mockReset();
   });
 
   afterEach(async () => {
-    // Flush in-flight mock requests BEFORE unmounting, so a late React Query update does not
-    // open an act() scope that overlaps the next test's.
     await act(() => jest.runOnlyPendingTimersAsync());
     await cleanup();
-    // A started run leaves a progress interval behind; the mock repo's own note asks for this.
-    jest.clearAllTimers();
     clients.splice(0).forEach((client) => client.clear());
     useMockModeStore.setState({ mode: 'normal' });
     jest.useRealTimers();
   });
 
-  it('shows the allowance and the honesty note before any work starts', async () => {
-    await renderCheck();
-    expect(screen.getByLabelText('Loading ATS check setup')).toBeOnTheScreen();
-    // The bar is pinned while loading too — it owns the bottom safe-area inset.
-    expect(screen.getByLabelText('Run the check')).toBeDisabled();
+  it('starts on the most recent saved job, with the checks left on the bar', async () => {
+    await renderAts();
 
-    await settle(NORMAL_MS);
-
-    expect(screen.getByRole('header', { name: 'ATS check' })).toBeOnTheScreen();
-    // §13.5: the cap is on screen before the work, and it is said exactly once.
-    expect(screen.getAllByText('2 of 3 checks left this month', shown)).toHaveLength(1);
-    // §7.8: the honesty note is on this screen, not buried behind the number.
-    expect(screen.getByText(/measures your document against NextKin/, shown)).toBeOnTheScreen();
-    expect(screen.getByText(/does not predict how any employer/, shown)).toBeOnTheScreen();
-    // The rubric link needs a document to address, and one is chosen by default.
-    expect(screen.getByLabelText('How the ATS score works', shown)).toBeOnTheScreen();
-  });
-
-  it('opens the score panel of an already-scored document without spending a check', async () => {
-    await renderCheck();
-    await settle(NORMAL_MS);
-
-    // res_base is the only document flagged `isBase`, and it already carries a score.
-    expect(screen.getByText('Product Designer', shown)).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Check your resume' })).toBeOnTheScreen();
     expect(
-      screen.getByText("This document already has an ATS score — opening it doesn't use a check.", {
-        ...shown,
-      }),
+      screen.getByText('See how a resume made outside NextKin reads for a job.'),
     ).toBeOnTheScreen();
+    expect(screen.getByText('Against this job', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Stripe · Bengaluru', shown)).toBeOnTheScreen();
+    expect(screen.getByText('2 of 3 checks left this month')).toBeOnTheScreen();
 
-    const before = mockStore.state.generations.length;
-    await act(async () => fireEvent.press(screen.getByLabelText('See the ATS score', shown)));
-    await settle(NORMAL_MS);
-
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/resumes/[id]/score',
-      params: { id: 'res_base' },
-    });
-    // Nothing was started, so nothing was spent.
-    expect(mockStore.state.generations).toHaveLength(before);
+    // Nothing to check yet: the press says what is missing and spends nothing.
+    await press('Check my resume');
+    expect(screen.getByText('Upload your resume to check it.')).toBeOnTheScreen();
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  it('starts an ATS check for a document that has no score yet', async () => {
-    await renderCheck(GENERATING_RESUME_ID);
-    await settle(NORMAL_MS);
+  it('reads the file on upload, then checks it against the saved job', async () => {
+    const client = await renderAts();
+    await uploadCv();
 
-    expect(screen.getByText('Staff Product Designer — Canva', shown)).toBeOnTheScreen();
-    expect(screen.getByText("Counts as one of this month's ATS checks", shown)).toBeOnTheScreen();
+    expect(screen.getByText('George_Smith_CV.pdf', shown)).toBeOnTheScreen();
+    expect(screen.getByText(/^Uploaded /, shown)).toBeOnTheScreen();
 
-    const before = mockStore.state.generations.length;
-    await act(async () => fireEvent.press(screen.getByLabelText('Run the check', shown)));
-    await settle(NORMAL_MS);
+    await press('Check my resume');
+    await settle(PARSE_MS);
+    await settle(PARSE_MS);
 
-    expect(mockStore.state.generations).toHaveLength(before + 1);
-    expect(mockStore.state.generations[0]?.kind).toBe('ats_check');
+    const started = client.getQueryData<Generation>(qk.generations.active());
+    expect(started?.kind).toBe('ats_check');
+    expect(started?.jobId).toBe('job_stripe');
+    expect(started?.jdId).toBeDefined();
+    expect(started?.sourceResumeId).toBeDefined();
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/generations/[id]',
-      params: { id: expect.any(String) },
+      params: { id: started?.id },
     });
   });
 
-  it('replaces the run with the upgrade route once the checks are spent', async () => {
-    await renderCheck(GENERATING_RESUME_ID, (client) =>
-      client.setQueryData(qk.user.subscription(), spentSubscription),
-    );
-    await settle(NORMAL_MS);
+  it('refuses a scan in the row, before anything is spent', async () => {
+    await renderAts();
+    pick.mockResolvedValueOnce({ name: 'CV_scan.pdf', uri: 'file:///scan.pdf' });
+    await press('Upload a resume');
+    await settle(PARSE_MS);
 
-    expect(screen.getByText('0 of 3 checks left this month', shown)).toBeOnTheScreen();
     expect(
-      screen.getByText("This month's 3 ATS checks are used. Pro raises the monthly cap.", shown),
+      screen.getByText('We couldn’t read this file. It may be a scan or a photo.', shown),
     ).toBeOnTheScreen();
-    // §13.5: the upsell replaces the action rather than interrupting the page with an alert.
-    expect(screen.queryByLabelText('Run the check', shown)).toBeNull();
+    expect(screen.getByLabelText('Try another', shown)).toBeOnTheScreen();
+  });
 
-    await act(async () => fireEvent.press(screen.getByLabelText('See Pro plans', shown)));
+  it('checks against a pasted description, and comes back to the saved job', async () => {
+    const client = await renderAts();
+    await uploadCv();
+
+    await press('Or paste a job description');
+    expect(
+      screen.getByText('We’ll check your resume against this job description.'),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText('Against this job', shown)).toBeNull();
+
+    await act(async () =>
+      fireEvent.changeText(screen.getByLabelText('Paste the job description', shown), 'Too short'),
+    );
+    await press('Check my resume');
+    expect(
+      screen.getAllByText('Paste a little more of the description, a few lines at least.', shown)
+        .length,
+    ).toBeGreaterThan(0);
+
+    await act(async () =>
+      fireEvent.changeText(screen.getByLabelText('Paste the job description', shown), PASTED),
+    );
+    await press('Check my resume');
+    await settle(PARSE_MS);
+    await settle(PARSE_MS);
+
+    const started = client.getQueryData<Generation>(qk.generations.active());
+    expect(started?.kind).toBe('ats_check');
+    expect(started?.jobId).toBeUndefined();
+    expect(started?.jdId).toBeDefined();
+  });
+
+  it('replaces the button with the plans once the checks are spent', async () => {
+    const spent: Subscription = {
+      ...subscriptionFixture,
+      usage: { ...subscriptionFixture.usage, atsChecksUsed: 3, atsChecksLimit: 3 },
+    };
+    await renderAts((client) => client.setQueryData(qk.user.subscription(), spent));
+
+    expect(screen.queryByLabelText('Check my resume')).toBeNull();
+    await press('See Pro plans');
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/upgrade',
       params: { reason: 'ats_checks' },
     });
-  });
-
-  it('still opens an existing score for free with the checks spent', async () => {
-    await renderCheck(undefined, (client) =>
-      client.setQueryData(qk.user.subscription(), spentSubscription),
-    );
-    await settle(NORMAL_MS);
-
-    // The gate is on the action that costs a check, not on the screen: res_base is already
-    // scored, so its panel stays reachable.
-    expect(screen.queryByLabelText('See Pro plans', shown)).toBeNull();
-
-    const before = mockStore.state.generations.length;
-    await act(async () => fireEvent.press(screen.getByLabelText('See the ATS score', shown)));
-
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/resumes/[id]/score',
-      params: { id: 'res_base' },
-    });
-    expect(mockStore.state.generations).toHaveLength(before);
-  });
-
-  it('reads a file off the device and checks the document the parse created', async () => {
-    mockPick.mockResolvedValue({ name: 'priya-cv.pdf', uri: 'file:///priya-cv.pdf' });
-    await renderCheck();
-    await settle(NORMAL_MS);
-
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText('Check a file from your device', shown)),
-    );
-    await settle(NORMAL_MS);
-
-    expect(screen.getByText('priya-cv.pdf', shown)).toBeOnTheScreen();
-    // §7.4: the parse yields a profile draft that this screen neither applies nor mentions.
-    expect(screen.queryByText(/profile/i, shown)).toBeNull();
-
-    await act(async () => fireEvent.press(screen.getByLabelText('Run the check', shown)));
-    await settle(IMPORT_MS);
-
-    expect(mockStore.state.resumes[0]?.title).toBe('priya-cv');
-    expect(mockStore.state.generations[0]?.kind).toBe('ats_check');
-    expect(mockReplace).toHaveBeenCalledWith({
-      pathname: '/generations/[id]',
-      params: { id: expect.any(String) },
-    });
-  });
-
-  it('leaves the page intact when no file comes back and says so on the bar', async () => {
-    mockPick.mockResolvedValue(null);
-    await renderCheck();
-    await settle(NORMAL_MS);
-
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText('Check a file from your device', shown)),
-    );
-    await settle(NORMAL_MS);
-
-    expect(
-      screen.getByText("We didn't get a file. Pick a PDF, DOCX or TXT and we'll read it.", shown),
-    ).toBeOnTheScreen();
-    // The library choice is untouched behind the failed pick.
-    expect(screen.getByText('Product Designer', shown)).toBeOnTheScreen();
   });
 });

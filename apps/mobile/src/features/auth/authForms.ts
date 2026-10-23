@@ -23,7 +23,14 @@ export type SignUpDraft = {
   password: string;
 };
 
+export type SignInDraft = {
+  email: string;
+  password: string;
+};
+
 export const blankSignUp = (): SignUpDraft => ({ fullName: '', email: '', password: '' });
+
+export const blankSignIn = (): SignInDraft => ({ email: '', password: '' });
 
 const blank = (value: string): boolean => value.trim().length === 0;
 
@@ -42,3 +49,69 @@ export function validateSignUp(draft: SignUpDraft): Validation {
 }
 
 export const signUpComplete = (draft: SignUpDraft): boolean => validateSignUp(draft).ok;
+
+/**
+ * The same presence check over two fields. Deliberately a second function rather than one
+ * driven by a field list: the module's whole argument is that three rules are the product's
+ * rather than a schema library's, and five would be no different.
+ */
+export function validateSignIn(draft: SignInDraft): Validation {
+  const errors: Record<string, string> = {};
+  if (blank(draft.email)) errors.email = 'Add an email address.';
+  // Not sign-up's "Choose a password." — nothing is being chosen here.
+  if (blank(draft.password)) errors.password = 'Enter your password.';
+  return verdict(errors);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Against the backend (ImBackendImplementationPlan P5-08). The server's own messages are written
+// for any client; these say it in the sign-in screens' voice, and never reveal whether an account
+// exists (a wrong password and an unknown email read the same).
+
+export const SIGN_IN_FAILED = 'That email and password don’t match.';
+export const CONFIRM_FIRST = 'Confirm your email first: we sent you a code.';
+export const TOO_MANY_TRIES = 'Too many tries. Wait a minute, then try again.';
+export const CODE_WRONG = 'That code is wrong or has expired.';
+export const GOOGLE_NOT_CONNECTED = 'Google sign-in isn’t connected in this build yet.';
+
+type ServerError = { code?: unknown; message?: unknown; details?: unknown };
+
+const asServerError = (error: unknown): ServerError =>
+  typeof error === 'object' && error !== null ? (error as ServerError) : {};
+
+const detail = (error: ServerError, key: string): unknown =>
+  typeof error.details === 'object' && error.details !== null
+    ? (error.details as Record<string, unknown>)[key]
+    : undefined;
+
+const fallback = (error: ServerError, otherwise: string): string =>
+  error.code === 'NETWORK' && typeof error.message === 'string' ? error.message : otherwise;
+
+export function signInErrorMessage(error: unknown): string {
+  const e = asServerError(error);
+  if (e.code === 'UNAUTHENTICATED') return SIGN_IN_FAILED;
+  if (e.code === 'FORBIDDEN' && detail(e, 'notConfirmed')) return CONFIRM_FIRST;
+  if (e.code === 'RATE_LIMITED') return TOO_MANY_TRIES;
+  return fallback(e, 'We couldn’t sign you in. Try again.');
+}
+
+export function signUpErrorMessage(error: unknown): string {
+  const e = asServerError(error);
+  if (e.code === 'VALIDATION_FAILED' && detail(e, 'password'))
+    return 'Choose a longer or less common password.';
+  if (e.code === 'VALIDATION_FAILED' && detail(e, 'email')) return 'Check the email address.';
+  if (e.code === 'RATE_LIMITED') return TOO_MANY_TRIES;
+  return fallback(e, 'We couldn’t create your account. Try again.');
+}
+
+export function confirmErrorMessage(error: unknown): string {
+  const e = asServerError(error);
+  if (e.code === 'VALIDATION_FAILED') return CODE_WRONG;
+  if (e.code === 'RATE_LIMITED') return TOO_MANY_TRIES;
+  return fallback(e, 'We couldn’t check that code. Try again.');
+}
+
+/** The code field takes six digits and nothing else. */
+export const CODE_LENGTH = 6;
+const CODE_PATTERN = /^\d{6}$/; // CODE_LENGTH digits
+export const codeComplete = (code: string): boolean => CODE_PATTERN.test(code.trim());

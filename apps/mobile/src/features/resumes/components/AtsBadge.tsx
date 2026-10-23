@@ -10,33 +10,42 @@ import { atsScoreColor } from '../docMeta';
 export type AtsBadgeProps = {
   score: number;
   onPress?: () => void;
+  /**
+   * 'sm' is the 30 disc a picked resume row ends on at 390 (INTERVIEW 02 577:1924): a 24.5 ring
+   * and the same 11.5 digits. Read-only there — the row itself is the target.
+   */
+  size?: 'md' | 'sm';
+  /** Remembers the ring's sweep (`ats:<resumeId>`), so a card that remounts does not replay it. */
+  memoryKey?: string;
   style?: StyleProp<ViewStyle>;
 };
 
-const BADGE = 44;
-const RING = 36;
-const STROKE = 3.5;
+const METRICS = {
+  md: { badge: 44, ring: 36, stroke: 3.5 },
+  sm: { badge: 30 / 0.75, ring: 24.545 / 0.75, stroke: 2.4 / 0.75 },
+} as const;
 
 /**
  * The floating 44pt ATS chip on every document card (Figma 1:1415): a white circle with its
  * own shadow, a colour-banded mini ring and the score in 13pt bold. Tapping it opens the
  * score panel (RESUMES 04).
  */
-export function AtsBadge({ score, onPress, style }: AtsBadgeProps) {
+export function AtsBadge({ score, onPress, size = 'md', memoryKey, style }: AtsBadgeProps) {
   const { artboardShadows, colors, radii, s } = useTheme();
+  const metrics = METRICS[size];
 
   return (
     <Pressable
       {...a11yButton(`ATS score ${score}`, 'Opens the score breakdown')}
       feedback="scale"
       haptic="light"
-      hitSlop={hitSlopFor(s(BADGE))}
+      hitSlop={hitSlopFor(s(metrics.badge))}
       onPress={onPress}
       disabled={!onPress}
       style={[
         {
-          width: s(BADGE),
-          height: s(BADGE),
+          width: s(metrics.badge),
+          height: s(metrics.badge),
           borderRadius: radii.full,
           backgroundColor: colors.surfaceCard,
           // A hairline the artboard does not draw, and the one deliberate departure on this
@@ -64,12 +73,13 @@ export function AtsBadge({ score, onPress, style }: AtsBadgeProps) {
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <ScoreRing
           score={score}
-          size={s(RING)}
-          strokeWidth={s(STROKE)}
+          size={s(metrics.ring)}
+          strokeWidth={s(metrics.stroke)}
           ringColor={atsScoreColor(score)}
           trackColor="surfaceSubtle"
           numberVariant="scoreSm"
           numberColor="textPrimary"
+          memoryKey={memoryKey}
         />
       </View>
     </Pressable>

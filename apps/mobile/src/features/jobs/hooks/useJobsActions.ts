@@ -41,7 +41,8 @@ export function useJobsActions() {
         const result = await shareText(message, { title: `${job.title} at ${job.company}` });
         if (result !== 'unavailable') return;
         const copied = await copyToClipboard(message);
-        showToast(copied === 'done' ? JOB_LINK_COPIED : JOB_SHARE_UNAVAILABLE);
+        if (copied === 'done') showToast(JOB_LINK_COPIED);
+        else showToast(JOB_SHARE_UNAVAILABLE, 'error');
       })();
     },
     [showToast],
@@ -66,6 +67,12 @@ export function useJobsActions() {
       /** Carries the job through, so the intake screen opens with its description already chosen. */
       tailorResume: (job: Job) =>
         router.push({ pathname: '/create/tailor', params: { jobId: job.id } }),
+      /** TAILOR 01's CTA: the compare step (TAILOR 02) for this job and the resume picked for it. */
+      openTailorCompare: (jobId: string, resumeId: string) =>
+        router.push({ pathname: '/create/tailor', params: { jobId, resumeId } }),
+      /** ZERO 00b's "Start from nothing": Zero Resume, remembering the job it was asked from. */
+      openZeroResume: (jobId: string) =>
+        router.push({ pathname: '/create/zero-resume', params: { jobId } }),
       /** Where the criteria screen sends someone whose profile is too thin to match against. */
       openProfileSkills: () => router.push('/profile/skills'),
     }),

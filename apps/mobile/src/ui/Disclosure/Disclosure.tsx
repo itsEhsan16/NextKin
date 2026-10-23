@@ -3,7 +3,7 @@ import { useEffect, type ReactNode } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   FadeIn,
-  LinearTransition,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -13,6 +13,7 @@ import { a11yButton, hitSlop8, useReducedMotion, withReducedMotion } from '@/lib
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { layoutTransition } from '@/ui/motion';
 
 /** Caret beside 13pt caption text; the row caret sits beside a 17pt title, so it is larger. */
 const CHEVRON_INLINE = 9;
@@ -79,11 +80,13 @@ export function Disclosure(props: DisclosureProps) {
 
   // Reduced motion drops the layout transition entirely rather than shortening it: a shorter
   // slide is still a slide, and that is the movement the setting is asking us not to make.
-  const layout = reduced ? undefined : LinearTransition.springify();
+  const layout = layoutTransition(reduced);
 
   const body = expanded ? (
     <Animated.View
       entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}
+      // Collapsing fades the body out while the container closes over it, instead of it vanishing.
+      exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
       style={props.mode === 'row' ? { paddingBottom: spacing[3] } : undefined}
     >
       {children}

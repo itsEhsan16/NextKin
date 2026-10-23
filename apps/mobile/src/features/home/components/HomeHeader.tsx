@@ -28,7 +28,9 @@ export function HomeHeader({
   const avatarSize = sizes.avatarHeader;
 
   return (
-    <View style={[styles.row, { height: avatarSize }]}>
+    // A floor, not a height: at phone width the avatar scales flat (42 at 390) while the two
+    // buttons hold at the 44pt control floor, and a fixed row let them spill past it.
+    <View style={[styles.row, { minHeight: avatarSize }]}>
       <View style={[styles.row, { gap: spacing[3] }]}>
         {loading ? (
           <Skeleton width={avatarSize} height={avatarSize} radius="full" />

@@ -174,3 +174,44 @@ describe('extractJdDraft — an uploaded file', () => {
     );
   });
 });
+
+describe('extractJdDraft — a link', () => {
+  const url = 'https://www.linkedin.com/jobs/view/4012345678';
+
+  it('keeps the link and reads the same stand-in body a file does', () => {
+    const draft = extractJdDraft({ source: 'link', url }, ctx);
+    const fromFile = extractJdDraft({ source: 'file', file: { name: 'x.pdf', uri: '' } }, ctx);
+
+    expect(draft.source).toBe('link');
+    expect(draft.sourceUrl).toBe(url);
+    expect(draft.rawText).toBe(fromFile.rawText);
+    expect(draft.requiredSkills).toEqual(fromFile.requiredSkills);
+  });
+});
+
+describe('extractJdDraft — the user’s own details', () => {
+  it('lets the filled-in details beat the extraction, trimmed', () => {
+    const draft = extractJdDraft(
+      {
+        source: 'paste',
+        text: SIX_SKILLS,
+        details: { title: '  Staff Designer ', employmentType: 'contract', savedToJobs: true },
+      },
+      ctx,
+    );
+
+    expect(draft.title).toBe('Staff Designer');
+    expect(draft.employmentType).toBe('contract');
+    expect(draft.savedToJobs).toBe(true);
+  });
+
+  it('keeps what was read where a detail is left blank', () => {
+    const draft = extractJdDraft(
+      { source: 'paste', text: SIX_SKILLS, details: { company: '   ', location: undefined } },
+      ctx,
+    );
+
+    expect(draft.company).toBe('Swiggy');
+    expect(Object.prototype.hasOwnProperty.call(draft, 'location')).toBe(false);
+  });
+});

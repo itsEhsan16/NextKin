@@ -1,6 +1,6 @@
 import { useMockModeStore } from '@/data/mock';
 import type { ResumeContent } from '@/data/models';
-import { createMockRepos, PlanLockedError, type Repos } from '@/data/repos';
+import { createMockRepos, ExportBlockedError, PlanLockedError, type Repos } from '@/data/repos';
 
 /** Resolves a repo promise by flushing mock latency under fake timers. */
 async function flush<T>(promise: Promise<T>): Promise<T> {
@@ -49,25 +49,35 @@ describe('ResumesRepo — content, versions and exports (mock)', () => {
   });
 
   describe('updateSection()', () => {
-    it('mints a version and re-scores when a missing keyword lands', async () => {
-      const before = await flush(repos.resumes.get(BASE));
-      const score = await flush(repos.resumes.getScore(BASE));
-      const missing = score.sections
-        .flatMap((section) => section.items)
-        .find((item) => item.id.startsWith('kw_miss_'));
-      const keyword = /"([^"]+)"/.exec(missing?.label ?? '')?.[1];
-      expect(keyword).toBeDefined();
+    it('mints a version and re-scores against the same JD on every edit', async () => {
+      // res_2 is scored against Stripe's listing, which requires Figma.
+      const ID = 'res_2';
+      const before = await flush(repos.resumes.get(ID));
+      const score = await flush(repos.resumes.getScore(ID));
+      const content = asResume(await flush(repos.resumes.getContent(ID)));
+      const withoutFigma = (skills: string[] = []) => skills.filter((skill) => skill !== 'Figma');
 
-      const content = asResume(await flush(repos.resumes.getContent(BASE)));
-      await flush(repos.resumes.updateSection(BASE, 'skills', [...content.skills, keyword ?? '']));
+      // Take Figma off the roles and the skills section: the requirement becomes a gap.
+      await flush(
+        repos.resumes.updateSection(
+          ID,
+          'experience',
+          content.experience.map((role) => ({ ...role, skills: withoutFigma(role.skills) })),
+        ),
+      );
+      await flush(repos.resumes.updateSection(ID, 'skills', withoutFigma(content.skills)));
+      const lowered = await flush(repos.resumes.getScore(ID));
+      expect(lowered.total).toBeLessThan(score.total);
+      // The profile backs Figma, so the panel offers it back as a fix it may make itself.
+      const item = lowered.sections.flatMap((s) => s.items).find((i) => i.keyword === 'Figma');
+      expect(item).toMatchObject({ passed: false, fixable: true, supported: true });
 
-      const after = await flush(repos.resumes.get(BASE));
-      const rescored = await flush(repos.resumes.getScore(BASE));
-      expect(after.versionCount).toBe(before.versionCount + 1);
-      expect(rescored.total).toBeGreaterThan(score.total);
-      expect(
-        rescored.sections.flatMap((s) => s.items).find((i) => i.id === missing?.id)?.passed,
-      ).toBe(true);
+      await flush(repos.resumes.updateSection(ID, 'skills', [...content.skills]));
+      const after = await flush(repos.resumes.get(ID));
+      const rescored = await flush(repos.resumes.getScore(ID));
+      expect(after.versionCount).toBe(before.versionCount + 3);
+      expect(rescored.total).toBeGreaterThan(lowered.total);
+      expect(after.atsScore).toBe(rescored.total);
     });
   });
 
@@ -104,11 +114,26 @@ describe('ResumesRepo — content, versions and exports (mock)', () => {
   });
 
   describe('export()', () => {
+    it('asks for the accuracy confirmation once per version (V2 §15 risk 2)', async () => {
+      await expect(flush(repos.resumes.export(BASE, 'pdf'))).rejects.toMatchObject({
+        reason: 'accuracy',
+      });
+      expect((await flush(repos.resumes.confirmAccuracy(BASE))).accuracyConfirmed).toBe(true);
+      await flush(repos.resumes.export(BASE, 'pdf'));
+      // A new version asks again.
+      await flush(repos.resumes.updateSection(BASE, 'summary', 'A summary the user wrote.'));
+      await expect(flush(repos.resumes.export(BASE, 'pdf'))).rejects.toBeInstanceOf(
+        ExportBlockedError,
+      );
+    });
+
     it('renders a PDF on the free plan — a clean PDF is never paywalled', async () => {
+      await flush(repos.resumes.confirmAccuracy(BASE));
       const result = await flush(repos.resumes.export(BASE, 'pdf'));
 
       expect(result.fileName).toMatch(/^George_Smith_.*\.pdf$/);
       expect(result.mimeType).toBe('application/pdf');
+      if (result.delivery !== 'render') throw new Error('the mock renders on the device');
       expect(result.html).toContain('George Smith');
       expect(result.text).toContain('EXPERIENCE');
     });
@@ -119,6 +144,7 @@ describe('ResumesRepo — content, versions and exports (mock)', () => {
       );
 
       await flush(repos.user.upgrade('pro_monthly'));
+      await flush(repos.resumes.confirmAccuracy(BASE));
       const docx = await flush(repos.resumes.export(BASE, 'docx'));
       expect(docx.fileName.endsWith('.docx')).toBe(true);
     });

@@ -143,15 +143,18 @@ describe('GenerationsRepo (mock)', () => {
       expect(resume?.validation).toBeDefined();
     });
 
-    it('lands the seeded run with no JD on exactly 83, the score Home renders', async () => {
-      // `gen_active` carries no `jdId`, and HomeScreen.test.tsx drives it to completion.
+    it('scores the seeded run with no JD against its job’s listing, never a fixed number', async () => {
+      // `gen_active` carries no `jdId`; its resume was made for job_4, so the engines score it
+      // against that listing (C-10). The fixed 83 this path used to land on is gone.
       repos.generations.subscribe(ACTIVE_GENERATION_ID, () => {});
       await jest.advanceTimersByTimeAsync(GENERATION_TICK_MS * 5);
 
-      expect(store.state.atsScores[GENERATING_RESUME_ID]?.total).toBe(83);
+      const score = store.state.atsScores[GENERATING_RESUME_ID];
+      expect(score?.report?.provenance.rubric).toBe('rubric-2');
+      expect(store.state.scoringJds[GENERATING_RESUME_ID]).toBeDefined();
       const resume = store.state.resumes.find((item) => item.id === GENERATING_RESUME_ID);
       expect(resume?.status).toBe('ready');
-      expect(resume?.atsScore).toBe(83);
+      expect(resume?.atsScore).toBe(score?.total);
       expect(store.state.contents[GENERATING_RESUME_ID]).toBeDefined();
     });
 

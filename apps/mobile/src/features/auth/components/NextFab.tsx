@@ -4,7 +4,7 @@ import { board } from '../board';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 
-/** Figma 290:1029 — a 72pt ink circle carrying the advance arrow. */
+/** Figma 307:4286 — a 72pt ink circle carrying the advance arrow. */
 const BOX = 72;
 const GLYPH = 26;
 

@@ -11,6 +11,7 @@ export type ProfileStatsCardProps = {
 };
 
 const DIVIDER_HEIGHT = 40;
+const NO_VALUE = '—';
 
 /** Figma 1:2208 — 12 Applications · 2 Interviews · 87 Avg ATS score, values counting up. */
 export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
@@ -38,10 +39,21 @@ export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
           ) : null}
           <View
             accessible
-            accessibilityLabel={`${cell.value} ${cell.label.toLowerCase()}`}
+            accessibilityLabel={
+              cell.value === undefined
+                ? `${cell.label}: not available yet`
+                : `${cell.value} ${cell.label.toLowerCase()}`
+            }
             style={[styles.cell, { paddingVertical: spacing[4] }]}
           >
-            <AnimatedNumber value={cell.value} variant="statLg" color="textPrimary" />
+            {/* Absent, not zero, when there is nothing to count it from (C-11): a dash, not a 0. */}
+            {cell.value === undefined ? (
+              <Text variant="statLg" color="textTertiary">
+                {NO_VALUE}
+              </Text>
+            ) : (
+              <AnimatedNumber value={cell.value} variant="statLg" color="textPrimary" />
+            )}
             <Text variant="captionSm" color="textSecondary">
               {cell.label}
             </Text>

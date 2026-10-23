@@ -50,6 +50,6 @@ describe('EditProfileScreen error state', () => {
     ).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
     // The bar goes with the form it acted on: there is nothing to save on an error page.
-    expect(screen.queryByLabelText('Save')).toBeNull();
+    expect(screen.queryByLabelText('Save changes')).toBeNull();
   }, 30000);
 });

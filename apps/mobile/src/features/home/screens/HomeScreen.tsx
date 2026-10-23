@@ -5,10 +5,11 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
   qk,
-  useActiveGeneration,
+  queryPhase,
   useCurrentUser,
   useDashboardStats,
   useJobPicks,
+  usePrefetchActiveGeneration,
   useResumes,
   useUnreadCount,
 } from '@/data/queries';
@@ -17,9 +18,10 @@ import { useTabScrollToTop } from '@/navigation';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { StateView } from '@/ui/StateView';
+import { layoutTransition } from '@/ui/motion';
 
+import { ActiveGenerationCard } from '../components/ActiveGenerationCard';
 import { BrandBlock } from '../components/BrandBlock';
-import { GenerationProgressCard } from '../components/GenerationProgressCard';
 import { HeroBlock } from '../components/HeroBlock';
 import { HomeHeader } from '../components/HomeHeader';
 import { HomeSkeleton } from '../components/HomeSkeleton';
@@ -27,19 +29,29 @@ import { QuickStartCard } from '../components/QuickStartCard';
 import { ResumeProgressCard } from '../components/ResumeProgressCard';
 import { ShortcutGrid } from '../components/ShortcutGrid';
 import { TopJobMatches } from '../components/TopJobMatches';
+import { useCopiedJobLink } from '../hooks/useCopiedJobLink';
 import { useHomeActions } from '../hooks/useHomeActions';
 
 const SECTION_GAP = 16;
 
 type SectionProps = { index: number; animate: boolean; children: ReactNode };
 
-/** Sections fade-slide in on first paint, 40ms apart (motion.stagger.card). */
+/**
+ * Sections fade-slide in on first paint, 40ms apart (motion.stagger.card). Each also glides when
+ * something above it changes size — the live run card arriving or retiring, a section's skeleton
+ * giving way to its content — instead of jumping (§85).
+ */
 function Section({ index, animate, children }: SectionProps) {
   const { motion } = useTheme();
-  if (!animate) return <>{children}</>;
+  const reduced = useReducedMotion();
   return (
     <Animated.View
-      entering={FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base)}
+      entering={
+        animate
+          ? FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base)
+          : undefined
+      }
+      layout={layoutTransition(reduced)}
     >
       {children}
     </Animated.View>
@@ -48,8 +60,10 @@ function Section({ index, animate, children }: SectionProps) {
 
 /** DESIGN 2 — Spacing Fixed (Figma 1:2). */
 export function HomeScreen() {
-  const { s } = useTheme();
+  const { spacing, s } = useTheme();
   const actions = useHomeActions();
+  // TAILOR 00c: a job link on the clipboard is asked about while Home is in view.
+  useCopiedJobLink();
   const queryClient = useQueryClient();
   const reduced = useReducedMotion();
 
@@ -58,9 +72,9 @@ export function HomeScreen() {
   const resumes = useResumes();
   const stats = useDashboardStats();
   const unread = useUnreadCount();
-  // Subscribes to live progress ticks while a generation is in flight, and drops back to null
-  // once it finishes — so the card below is transient by construction.
-  const generation = useActiveGeneration();
+  // The progress card subscribes to the live run itself; this only starts its fetch alongside
+  // the rest, without re-rendering Home on every tick.
+  usePrefetchActiveGeneration();
 
   const scrollRef = useRef<ScrollView>(null);
   useTabScrollToTop(
@@ -92,15 +106,25 @@ export function HomeScreen() {
     [resumes.data],
   );
 
-  // Held in a const so the narrowing below survives into the card's callbacks.
-  const activeGeneration = generation.data;
-
   const animate = !reduced && !user.isPending;
   const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />;
 
-  if (user.isError) {
+  const header = (
+    <HomeHeader
+      firstName={user.data?.firstName}
+      avatarUrl={user.data?.avatarUrl}
+      loading={user.isPending}
+      hasUnread={(unread.data ?? 0) > 0}
+      onPressNotifications={actions.openNotifications}
+      onPressMenu={actions.openMenu}
+    />
+  );
+
+  // Data-first: a failed background refresh keeps the dashboard on screen.
+  if (queryPhase(user) === 'error') {
+    // The header stays, as on every other tab's error state: the bell and the menu still work.
     return (
-      <Screen>
+      <Screen header={header} headerStyle={{ paddingTop: spacing.headerTop }}>
         <StateView
           tone="danger"
           icon="exclamation-triangle"
@@ -122,32 +146,15 @@ export function HomeScreen() {
       // first `gap` instance, which left with it. Not both — that would double to 24.
       contentContainerStyle={{ paddingTop: s(SECTION_GAP), gap: s(SECTION_GAP) }}
       refreshControl={refreshControl}
-      headerStyle={{ paddingTop: s(16) }}
-      header={
-        <HomeHeader
-          firstName={user.data?.firstName}
-          avatarUrl={user.data?.avatarUrl}
-          loading={user.isPending}
-          hasUnread={(unread.data ?? 0) > 0}
-          onPressNotifications={actions.openNotifications}
-          onPressMenu={actions.openMenu}
-        />
-      }
+      headerStyle={{ paddingTop: spacing.headerTop }}
+      header={header}
     >
       {user.isPending ? (
         <HomeSkeleton />
       ) : (
         <>
-          {/* `ready` is the end of the pipeline and the resume list already reflects it, so the
-              card retires rather than lingering on 100%. `failed` is terminal too but still needs
-              surfacing, hence the status check rather than `isGenerationTerminal`. */}
-          {activeGeneration && activeGeneration.status !== 'ready' ? (
-            <GenerationProgressCard
-              generation={activeGeneration}
-              onView={() => actions.openGeneration(activeGeneration.id)}
-              onRetry={() => actions.retryGeneration(activeGeneration.id)}
-            />
-          ) : null}
+          {/* Subscribes to the live run itself, so its ticks re-render the card, not Home. */}
+          <ActiveGenerationCard onView={actions.openGeneration} onRetry={actions.retryGeneration} />
           <Section index={0} animate={animate}>
             <BrandBlock />
           </Section>
@@ -160,7 +167,7 @@ export function HomeScreen() {
           <Section index={3} animate={animate}>
             <TopJobMatches
               jobs={picks.data}
-              status={picks.isPending ? 'pending' : picks.isError ? 'error' : 'success'}
+              status={queryPhase(picks)}
               onViewAll={actions.viewAllJobs}
               onPressJob={actions.openJob}
               onRetry={() => void picks.refetch()}
@@ -169,7 +176,7 @@ export function HomeScreen() {
           <Section index={4} animate={animate}>
             <ResumeProgressCard
               resume={latestResume}
-              status={resumes.isPending ? 'pending' : resumes.isError ? 'error' : 'success'}
+              status={queryPhase(resumes)}
               onViewAll={actions.viewAllResumes}
               onPressResume={actions.openResume}
               onCreateResume={actions.createResume}

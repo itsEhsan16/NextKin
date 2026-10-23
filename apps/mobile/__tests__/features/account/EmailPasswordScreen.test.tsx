@@ -36,7 +36,7 @@ const type = async (label: string, value: string) =>
  * One mount per file. The session store is reset on both sides: this suite signs the account out
  * of every device, and every other suite in the repo assumes it starts signed in.
  */
-describe('EmailPasswordScreen (V2 §7.1, §8.4 — no artboard)', () => {
+describe('EmailPasswordScreen (V2 §7.1, §8.4 — ACCOUNT 01)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();

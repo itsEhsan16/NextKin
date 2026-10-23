@@ -3,42 +3,49 @@ import { View } from 'react-native';
 
 import {
   INTERVIEW_DISCLAIMER,
-  INTERVIEW_GENERIC_LABEL,
   INTERVIEW_PRACTICE_FILTERS,
   type InterviewMark,
-  type InterviewPracticeFilter,
 } from '@/data/models';
 import { useInterviewSet, useMarkInterviewQuestion } from '@/data/queries';
 import { haptics } from '@/lib';
-import { useTheme } from '@/theme';
-import { Chip } from '@/ui/Chip';
-import { ProgressBar } from '@/ui/Progress';
+import { scaledSheet, useTheme } from '@/theme';
+import { Card } from '@/ui/Card';
+import { FilterChip } from '@/ui/Chip';
+import { NoteBar } from '@/ui/NoteBar';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
-import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
 import { Text } from '@/ui/Text';
 
+import { MarkSummary } from '../components/MarkSummary';
 import { QuestionCard } from '../components/QuestionCard';
 import { useInterviewActions } from '../hooks/useInterviewActions';
 import { useInterviewStore } from '../interviewStore';
-import { marksLine, nextMark, positionLine, practiceView } from '../practiceRows';
+import { nextMark, positionLine, practiceView } from '../practiceRows';
 
 export type InterviewPracticeScreenProps = { id: string };
 
-const FILTERS: readonly Segment<InterviewPracticeFilter>[] = INTERVIEW_PRACTICE_FILTERS.map(
-  (filter) => ({ key: filter.key, label: filter.label }),
-);
-const BAR_HEIGHT = 4;
+// INTERVIEW 04 / 05 at 390 (577:3855 / 577:4905), in artboard units.
+const HEADER_TO_CHIPS = 16; // 577:3862
+const CHIP_GAP_X = 7;
+const CHIP_GAP_Y = 8;
+const CHIP_PAD_X = 14;
+const CHIP_PAD_Y = 8;
+const BLOCK_GAP = 14; // 577:3870 / 577:3886
+const CARD_TO_NOTE = 16; // 577:3911
+const PROGRESS_PAD = 15;
+const PROGRESS_GAP = 10;
+const PREVIOUS_W = 110; // 577:3921
 
 /** The repo's not-found, recognised by shape — screens may not import `@/data/repos`. */
 const isMissing = (error: unknown): boolean =>
   typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'NOT_FOUND';
 
 /**
- * PRACTICE (V2 §7.15): one question at a time, answer hidden until asked for, two marks that
+ * INTERVIEW 04 / 05 (577:3855, 577:4905) — PRACTICE (V2 §7.15): one question at a time, the
+ * filters as chips, the progress card, the answer hidden until asked for, two marks that
  * persist, and the disclaimer the spec makes binding on every interview surface.
  *
  * Reveal state is local and keyed by question id: a per-index reset would re-hide an answer the
@@ -47,6 +54,7 @@ const isMissing = (error: unknown): boolean =>
  */
 export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
   const { spacing, s } = useTheme();
+  const styles = useStyles();
   const actions = useInterviewActions();
 
   const set = useInterviewSet(id);
@@ -70,8 +78,10 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
   const view = practiceView(set.data, filter, snapshot, index);
   const current = view.current;
 
-  // Plain closures: the compiler memoises them, and a manual useCallback over `current` is what it
-  // refuses to preserve.
+  // Plain closures: the React Compiler's lint (`preserve-manual-memoization`) rejects a manual
+  // useCallback over `current`. Note the compiler itself is NOT enabled in this build
+  // (`experiments.reactCompiler` is unset), so these are rebuilt every render and the one
+  // `QuestionCard` re-renders with the screen — a single card, so the cost is small.
   const toggleReveal = () => {
     if (!current) return;
     setRevealed((old) => {
@@ -94,9 +104,9 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title={set.data?.title ?? 'Practice'} onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: spacing[4] }}
+      headerStyle={styles.header}
       footer={footer}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
     >
       {children}
     </Screen>
@@ -104,12 +114,17 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
 
   if (id.length > 0 && set.isPending) {
     return page(
-      <View style={{ gap: spacing[4] }}>
-        <Skeleton height={s(44)} radius="full" />
-        <Skeleton height={s(20)} width="40%" />
-        <Skeleton height={s(320)} radius="card" />
+      <View
+        style={styles.blocks}
+        accessible
+        accessibilityLabel="Loading the questions"
+        accessibilityState={{ busy: true }}
+      >
+        <Skeleton height={s(34 / 0.75)} width="60%" radius="full" />
+        <Skeleton height={s(96 / 0.75)} radius="cardLg" />
+        <Skeleton height={s(320 / 0.75)} radius="cardLg" />
       </View>,
-      <StickyActionBar primary={{ label: 'Next', disabled: true }} />,
+      <StickyActionBar floating primary={{ label: 'Next', disabled: true }} />,
     );
   }
 
@@ -142,75 +157,87 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
 
   return page(
     <>
-      {data.source === 'standalone' ? (
-        <View style={{ flexDirection: 'row' }}>
-          <Chip label={INTERVIEW_GENERIC_LABEL} tone="neutral" />
-        </View>
-      ) : null}
+      <View style={styles.chips} accessibilityRole="radiogroup">
+        {INTERVIEW_PRACTICE_FILTERS.map((option) => (
+          <FilterChip
+            key={option.key}
+            label={option.label}
+            variant="select"
+            selected={filter === option.key}
+            // Named apart from the mark of the same words: "Needs work" is also a button below.
+            accessibilityLabel={`${option.label} questions`}
+            hint="Filters the questions"
+            onPress={() => {
+              setFilter(option.key, data);
+              setIndex(0);
+            }}
+            style={styles.chip}
+          />
+        ))}
+      </View>
 
-      <SegmentedControl
-        segments={FILTERS}
-        value={filter}
-        onChange={(next) => {
-          setFilter(next, data);
-          setIndex(0);
-        }}
-      />
-
-      <View style={{ gap: spacing[2] }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text variant="caption" color="textSecondary" accessibilityLiveRegion="polite">
+      <Card
+        radius="cardLg"
+        shadow="jobCard"
+        padding={s(PROGRESS_PAD / 0.75)}
+        style={styles.progress}
+      >
+        <View style={styles.position}>
+          <Text variant="bodySemiBold" style={styles.grow} accessibilityLiveRegion="polite">
             {positionLine(view)}
           </Text>
           <Text variant="caption" color="textSecondary">
-            {marksLine(view.counts)}
+            {`${view.counts.marked} of ${view.counts.total} marked`}
           </Text>
         </View>
-        <ProgressBar
-          value={view.counts.total > 0 ? view.counts.marked / view.counts.total : 0}
-          height={s(BAR_HEIGHT)}
-          trackColor="progressTrack"
-          fillColor="success"
-          accessibilityLabel={`${view.counts.marked} of ${view.counts.total} questions marked`}
-        />
+        <MarkSummary counts={view.counts} />
+      </Card>
+
+      <View style={styles.block}>
+        {current ? (
+          <QuestionCard
+            question={current}
+            revealed={revealed.has(current.id)}
+            generic={data.source === 'standalone'}
+            onToggleReveal={toggleReveal}
+            onMark={applyMark}
+          />
+        ) : (
+          // A filter with nothing under it, not a broken set: the way out is the filter itself.
+          <StateView
+            compact
+            icon="check-circle"
+            title={filter === 'needs_work' ? 'Nothing needs work' : 'Everything is marked'}
+            actionLabel="Show all questions"
+            onAction={() => {
+              setFilter('all', data);
+              setIndex(0);
+            }}
+          />
+        )}
       </View>
 
-      {current ? (
-        <QuestionCard
-          question={current}
-          revealed={revealed.has(current.id)}
-          onToggleReveal={toggleReveal}
-          onMark={applyMark}
-        />
-      ) : (
-        // A filter with nothing under it, not a broken set: the way out is the filter itself.
-        <StateView
-          compact
-          icon="check-circle"
-          title={filter === 'needs_work' ? 'Nothing needs work' : 'Everything is marked'}
-          actionLabel="Show all questions"
-          onAction={() => {
-            setFilter('all', data);
-            setIndex(0);
-          }}
-        />
-      )}
-
       {mark.isError ? (
-        <Text variant="caption" color="danger" align="center" accessibilityLiveRegion="polite">
+        <Text
+          variant="caption"
+          color="danger"
+          align="center"
+          accessibilityLiveRegion="polite"
+          style={styles.block}
+        >
           {"That mark didn't save. Check your connection and try again."}
         </Text>
       ) : null}
 
-      <Text variant="captionSm" color="textTertiary" align="center">
-        {INTERVIEW_DISCLAIMER}
-      </Text>
+      <NoteBar text={INTERVIEW_DISCLAIMER} style={styles.note} />
     </>,
     <StickyActionBar
+      floating
       secondary={{
         label: 'Previous',
         disabled: view.index === 0,
         onPress: () => setIndex((i) => i - 1),
+        style: styles.previous,
       }}
       primary={
         last || view.total === 0
@@ -220,3 +247,21 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
     />,
   );
 }
+
+const useStyles = scaledSheet((s) => ({
+  header: { paddingBottom: s(HEADER_TO_CHIPS / 0.75) },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: s(CHIP_GAP_X / 0.75),
+    rowGap: s(CHIP_GAP_Y / 0.75),
+  },
+  chip: { paddingHorizontal: s(CHIP_PAD_X / 0.75), paddingVertical: s(CHIP_PAD_Y / 0.75) },
+  progress: { marginTop: s(BLOCK_GAP / 0.75), gap: s(PROGRESS_GAP / 0.75) },
+  position: { flexDirection: 'row', alignItems: 'center', gap: s(8 / 0.75) },
+  grow: { flex: 1 },
+  block: { marginTop: s(BLOCK_GAP / 0.75) },
+  blocks: { gap: s(BLOCK_GAP / 0.75) },
+  note: { marginTop: s(CARD_TO_NOTE / 0.75) },
+  previous: { flexBasis: s(PREVIOUS_W / 0.75) },
+}));

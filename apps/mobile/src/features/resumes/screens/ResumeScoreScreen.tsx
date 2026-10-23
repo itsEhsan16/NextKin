@@ -2,18 +2,20 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import SparkleIcon from '../../../../assets/icons/ai-sparkle.svg';
-import { ATS_BAND_LABEL, atsQuickWins, SCORE_LABEL, type AtsBand } from '@/data/models';
+import FixSparkleIcon from '../../../../assets/icons/score/fix-sparkle.svg';
+import { ATS_BAND_LABEL, atsQuickWins, SCORE_LABEL } from '@/data/models';
 import { useResume, useResumeScore } from '@/data/queries';
 import { a11yButton, a11yHeader, hitSlopFor, pluralize } from '@/lib';
-import { scaledSheet, useTheme, type ColorToken } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { ScoreRing } from '@/ui/Progress';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
+import { useRevealStagger } from '@/ui/motion';
 
+import { ScoreBandPill } from '../components/ScoreBandPill';
 import { ScoreSection } from '../components/ScoreSection';
 import { atsBandColor, scoreContextLine } from '../docMeta';
 import { useResumesActions } from '../hooks/useResumesActions';
@@ -22,52 +24,62 @@ export type ResumeScoreScreenProps = { id: string };
 
 const RING = 132;
 const RING_STROKE = 10;
-const CTA_HEIGHT = 56;
+/**
+ * Vertical rhythm on the 390 board (95:2310), in artboard units: back button → ring 28 (37),
+ * ring → band pill 22 (29), pill → summary 18.5 (25), summary → context 8 (11), context →
+ * divider 22 (29), divider → first heading 24 (32), sections 31.25 apart (42) and the same
+ * again down to the recalc line.
+ */
+const RING_TOP = 37;
+const PILL_TOP = 29;
+const SUMMARY_TOP = 25;
+const CONTEXT_TOP = 11;
+const DIVIDER_TOP = 29;
+const DIVIDER_BOTTOM = 32;
+const SECTION_GAP = 42;
+/** The summary wraps inside 330 at 390 (95:2321). */
+const SUMMARY_WIDTH = 440;
+/** The CTA's sparkle (529:19) is drawn 23.99 × 24.83, 4 short of its label, at 390. */
+const CTA_SPARKLE = { w: 23.99 / 0.75, h: 24.83 / 0.75 } as const;
+const CTA_GAP = 4 / 0.75;
+const RECALC_ICON = 10 / 0.75;
 /** The rubric link is one `captionSemiBold` line; `hitSlopFor` pads it out to the 44pt floor. */
 const LINK_HEIGHT = 20;
 /** Skeleton bars standing in for the context line (captionSm) and that link. */
 const CONTEXT_SKELETON = 200;
 const LINK_SKELETON = 160;
 
-const BAND_SURFACE: Record<AtsBand, ColorToken> = {
-  strong: 'successSurface',
-  good: 'warningSurface',
-  fair: 'dangerSurface',
-  weak: 'dangerSurface',
-};
-
-const BAND_TEXT: Record<AtsBand, ColorToken> = {
-  strong: 'success',
-  good: 'warningStrong',
-  fair: 'danger',
-  weak: 'danger',
-};
-
 /**
- * RESUMES 04 — ATS score panel (Figma 1:2109). Pushed from a card's ATS badge. Header scrolls
- * with the page; only the "Fix N quick wins" bar is pinned, and it disappears once nothing is
- * left to fix.
+ * RESUMES 04 — ATS score panel (Figma 95:2310). Pushed from a card's ATS badge. The back row is
+ * pinned above the scroller, and so is the "Fix N quick wins" bar below it, which disappears
+ * once nothing is left to fix. The bar's CTA is `sizes.buttonLg`, the height of every other
+ * sticky CTA in the app — a flat `s(56)` put it at 42 on a phone, under the 44pt floor.
  */
 export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
-  const { colors, radii, shadows, spacing, s } = useTheme();
+  const { colors, radii, shadows, sizes, spacing, zIndex, s } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const actions = useResumesActions();
 
   const resume = useResume(id);
   const score = useResumeScore(id);
+  // Rows rise in only when the score replaces its skeleton; a cached revisit shows them at rest.
+  const enter = useRevealStagger(!(resume.isPending || score.isPending), 'row');
 
   const body = (children: React.ReactNode) => (
     <View style={[styles.root, { backgroundColor: colors.surfacePage, paddingTop: insets.top }]}>
       <View
-        style={[styles.headerRow, { paddingHorizontal: spacing.gutter, paddingTop: spacing[2] }]}
+        style={[
+          styles.headerRow,
+          { paddingHorizontal: spacing.gutter, paddingTop: spacing.headerTopPushed },
+        ]}
       >
         <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
-        <Text {...a11yHeader()} variant="title" style={styles.headerTitle} align="center">
+        <Text {...a11yHeader()} variant="scoreTitle" style={styles.headerTitle} align="center">
           ATS score
         </Text>
         {/* Mirrors the back button so the centred title stays centred. */}
-        <View style={styles.headerSpacer} />
+        <View style={{ width: sizes.iconButton }} />
       </View>
       {children}
     </View>
@@ -109,7 +121,6 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
           void resume.refetch();
           void score.refetch();
         }}
-        style={{ marginTop: spacing[10] }}
       />,
     );
   }
@@ -123,12 +134,12 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
         style={styles.fill}
         contentContainerStyle={{
           paddingHorizontal: spacing.gutter,
-          paddingTop: spacing[4],
+          paddingTop: s(RING_TOP),
           paddingBottom: spacing[8],
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ alignItems: 'center', gap: spacing[4] }}>
+        <View style={styles.top}>
           <ScoreRing
             score={current.total}
             label="ATS SCORE"
@@ -138,28 +149,30 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
             trackColor="surfaceSubtle"
             numberVariant="scoreHero"
             numberColor="textPrimary"
-            labelVariant="microOverline"
+            labelVariant="scoreRingLabel"
             labelColor="textSecondary"
             accessibilityLabel={`ATS score ${current.total}, ${ATS_BAND_LABEL[current.band]}`}
+            // The library card's memory: opened from it, the ring carries on from the score the
+            // card showed instead of sweeping up from 0 on every visit; a fix sweeps old → new.
+            memoryKey={`ats:${id}`}
           />
 
-          <View
-            style={{
-              borderRadius: radii.full,
-              backgroundColor: colors[BAND_SURFACE[current.band]],
-              paddingHorizontal: s(14),
-              paddingVertical: s(6),
-            }}
-          >
-            <Text variant="captionSemiBold" color={BAND_TEXT[current.band]}>
-              {ATS_BAND_LABEL[current.band]}
-            </Text>
-          </View>
+          <ScoreBandPill band={current.band} style={{ marginTop: s(PILL_TOP) }} />
 
-          <Text variant="rowLabel" color="textSecondary" align="center" style={styles.summary}>
+          <Text
+            variant="scoreSummary"
+            color="textSecondary"
+            align="center"
+            style={[styles.summary, { marginTop: s(SUMMARY_TOP) }]}
+          >
             {current.summary}
           </Text>
-          <Text variant="captionSm" color="textTertiary" align="center">
+          <Text
+            variant="scoreContext"
+            color="textTertiary"
+            align="center"
+            style={{ marginTop: s(CONTEXT_TOP) }}
+          >
             {scoreContextLine(resume.data)}
           </Text>
 
@@ -173,6 +186,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
             haptic="selection"
             hitSlop={hitSlopFor(s(LINK_HEIGHT))}
             onPress={() => actions.openScoreRubric(id)}
+            style={{ marginTop: spacing[4] }}
           >
             <Text variant="captionSemiBold" color="link">
               What this score measures
@@ -185,6 +199,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
             haptic="selection"
             hitSlop={hitSlopFor(s(LINK_HEIGHT))}
             onPress={() => actions.askAboutScore(id)}
+            style={{ marginTop: spacing[4] }}
           >
             <Text variant="captionSemiBold" color="link">
               Ask about this score
@@ -196,24 +211,26 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
           style={{
             height: StyleSheet.hairlineWidth,
             backgroundColor: colors.divider,
-            marginVertical: spacing[5],
+            marginTop: s(DIVIDER_TOP),
+            marginBottom: s(DIVIDER_BOTTOM),
           }}
         />
 
-        <View style={{ gap: spacing[6] }}>
+        <View style={{ gap: s(SECTION_GAP) }}>
           {current.sections.map((section, index) => (
             <ScoreSection
               key={section.key}
               section={section}
               staggerBase={index * 2}
+              enter={enter}
               onFix={(item) => actions.fixWithAi(id, item)}
             />
           ))}
         </View>
 
-        <View style={[styles.recalcRow, { gap: spacing[2], marginTop: spacing[6] }]}>
-          <FontAwesome5 name="sync-alt" size={s(11)} color={colors.iconMuted} solid />
-          <Text variant="caption" color="textSecondary" style={styles.fill}>
+        <View style={[styles.recalcRow, { gap: spacing[2], marginTop: s(SECTION_GAP) }]}>
+          <FontAwesome5 name="sync-alt" size={s(RECALC_ICON)} color={colors.iconMuted} solid />
+          <Text variant="scoreRecalc" color="textSecondary" style={styles.fill}>
             Green checks appear the moment a fix lands — no re-scan needed.
           </Text>
         </View>
@@ -230,6 +247,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
               paddingHorizontal: spacing.gutter,
               paddingTop: spacing[4],
               paddingBottom: spacing[4] + insets.bottom,
+              zIndex: zIndex.stickyBar,
             },
           ]}
         >
@@ -241,15 +259,15 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
             style={[
               styles.cta,
               {
-                height: s(CTA_HEIGHT),
-                gap: spacing[2] + 2,
+                height: sizes.buttonLg,
+                gap: s(CTA_GAP),
                 borderRadius: radii.xl,
                 backgroundColor: colors.surfaceInverse,
               },
             ]}
           >
-            <SparkleIcon width={s(15)} height={s(15)} color={colors.textOnDark} />
-            <Text variant="label" color="textOnDark">
+            <FixSparkleIcon width={s(CTA_SPARKLE.w)} height={s(CTA_SPARKLE.h)} />
+            <Text variant="scoreCta" color="textOnDark">
               {`Fix ${pluralize(quickWins, 'quick win')}`}
             </Text>
           </Pressable>
@@ -264,8 +282,8 @@ const useStyles = scaledSheet((s) => ({
   fill: { flex: 1 },
   headerRow: { flexDirection: 'row', alignItems: 'center' },
   headerTitle: { flex: 1 },
-  headerSpacer: { width: s(48) },
-  summary: { maxWidth: s(320) },
+  top: { alignItems: 'center' },
+  summary: { maxWidth: s(SUMMARY_WIDTH) },
   recalcRow: { flexDirection: 'row', alignItems: 'center' },
   stickyBar: { borderTopWidth: StyleSheet.hairlineWidth },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },

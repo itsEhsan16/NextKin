@@ -19,7 +19,10 @@ type ManagedFile = {
 };
 
 type FileSystemModule = {
-  File: new (...parts: PathLike[]) => ManagedFile;
+  File: (new (...parts: PathLike[]) => ManagedFile) & {
+    /** SDK 57: downloads `url` to `destination` and resolves to the written file. */
+    downloadFileAsync(url: string, destination: ManagedFile): Promise<ManagedFile>;
+  };
   Paths: { cache: PathLike };
 };
 
@@ -77,6 +80,25 @@ export async function writeTextFile(name: string, text: string): Promise<Written
     file.create();
     file.write(text);
     return { uri: file.uri, name };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Downloads an export from its presigned URL (V2 §7.12, C-07) into the cache directory under
+ * `name`, the file the backend rendered. A previous copy under the same name is cleared first, as
+ * `writeTextFile` does. Null when the download or the filesystem fails; the caller says so.
+ */
+export async function downloadFile(url: string, name: string): Promise<WrittenFile | null> {
+  const mod = fileSystemModule();
+  if (!mod) return null;
+  try {
+    const { File, Paths } = mod;
+    const target = new File(Paths.cache, name);
+    if (target.exists) target.delete();
+    const written = await File.downloadFileAsync(url, target);
+    return { uri: written.uri, name };
   } catch {
     return null;
   }

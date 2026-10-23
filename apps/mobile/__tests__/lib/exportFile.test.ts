@@ -13,6 +13,7 @@ type SetupOptions = {
   printed?: string;
   moveFails?: boolean;
   printFails?: boolean;
+  downloadFails?: boolean;
   noFileSystem?: boolean;
   noPrint?: boolean;
 };
@@ -31,6 +32,12 @@ function setup(options: SetupOptions = {}): Harness {
   const existing = new Set(options.existing ?? []);
 
   class FakeFile {
+    static downloadFileAsync = jest.fn(async (url: string, destination: FakeFile) => {
+      if (options.downloadFails) throw new Error('network down');
+      ops.push(`download ${url} -> ${destination.uri}`);
+      return destination;
+    });
+
     readonly uri: string;
 
     constructor(...parts: (string | { uri: string })[]) {
@@ -148,5 +155,24 @@ describe('without the native modules', () => {
 
     await expect(mod.writeTextFile('resume.txt', 'Ada Lovelace')).resolves.toBeNull();
     await expect(mod.renderPdf('<html>ATS score</html>', 'resume.pdf')).resolves.toBeNull();
+  });
+});
+
+describe('downloadFile', () => {
+  const URL = 'https://exports.example/users/u/exports/v/e.pdf?X-Amz-Expires=900';
+
+  it('downloads the presigned export into the cache under its own name, clearing an earlier copy', async () => {
+    const target = `${CACHE}/Jane_Muller_Engineer.pdf`;
+    const { ops, mod } = setup({ existing: [target] });
+
+    const written = await mod.downloadFile(URL, 'Jane_Muller_Engineer.pdf');
+
+    expect(written).toEqual({ uri: target, name: 'Jane_Muller_Engineer.pdf' });
+    expect(ops).toEqual([`delete ${target}`, `download ${URL} -> ${target}`]);
+  });
+
+  it('returns null when the download fails or the module is missing', async () => {
+    await expect(setup({ downloadFails: true }).mod.downloadFile(URL, 'a.pdf')).resolves.toBeNull();
+    await expect(setup({ noFileSystem: true }).mod.downloadFile(URL, 'a.pdf')).resolves.toBeNull();
   });
 });

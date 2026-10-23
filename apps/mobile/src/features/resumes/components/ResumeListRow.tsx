@@ -25,6 +25,12 @@ export type ResumeListRowProps = {
 const PAD = 15;
 const THUMB = { width: 64, height: 94 } as const;
 const MENU_ICON = 14;
+/**
+ * Subtitle → footer. Both list boards (95:1769, 151:2) put the footer 18 under the subtitle
+ * at 390, 24 in artboard units, which also seats it on the thumbnail's bottom edge. The body's
+ * own s(2) gap is part of it.
+ */
+const FOOTER_TOP = 22;
 
 function summarize(resume: Resume): string {
   const parts = [resume.title, docSubtitle(resume)];
@@ -91,7 +97,7 @@ export const ResumeListRow = memo(function ResumeListRow({
           <Text variant="rowDescription" color="textSecondary" numberOfLines={1}>
             {docSubtitle(resume)}
           </Text>
-          <View style={[styles.footer, { gap: spacing[2] + s(2), marginTop: spacing[2] }]}>
+          <View style={[styles.footer, { gap: spacing[2] + s(2), marginTop: s(FOOTER_TOP) }]}>
             {footerPill}
             {/*
               `flexShrink` explicitly, because RN defaults it to 0 and this strip has no room to
@@ -119,7 +125,11 @@ export const ResumeListRow = memo(function ResumeListRow({
             <FontAwesome5 name="ellipsis-h" size={s(MENU_ICON)} color={colors.iconMuted} solid />
           </Pressable>
           {resume.atsScore != null ? (
-            <AtsBadge score={resume.atsScore} onPress={() => onOpenScore(resume)} />
+            <AtsBadge
+              score={resume.atsScore}
+              memoryKey={`ats:${resume.id}`}
+              onPress={() => onOpenScore(resume)}
+            />
           ) : null}
         </View>
       </Pressable>

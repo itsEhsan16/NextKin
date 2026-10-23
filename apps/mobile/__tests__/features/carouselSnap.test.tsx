@@ -20,8 +20,11 @@ const jobs = [1, 2].map(
       title: `Senior Product Designer ${n}`,
       company: 'Stripe',
       location: 'Bengaluru',
-      workMode: 'remote',
+      // `remote`, not `workMode`: the stub predates the model and the cast below hid it, until
+      // the redrawn pick card started reading the field to build its tag row.
+      remote: 'remote',
       employmentType: 'full_time',
+      tags: [],
       postedAt: '2026-01-01T00:00:00.000Z',
       matchScore: 90,
       isSaved: false,
@@ -31,7 +34,10 @@ const jobs = [1, 2].map(
 type Node = { props?: Record<string, unknown>; children?: unknown };
 
 /** The horizontal list's own style and contentContainerStyle, flattened. */
-function listStyles(tree: unknown): { style: Record<string, unknown>; content: Record<string, unknown> } {
+function listStyles(tree: unknown): {
+  style: Record<string, unknown>;
+  content: Record<string, unknown>;
+} {
   let found: { style: Record<string, unknown>; content: Record<string, unknown> } | undefined;
   const flat = (v: unknown) =>
     Object.assign({}, ...[v].flat(Infinity).filter(Boolean)) as Record<string, unknown>;
@@ -114,8 +120,9 @@ describe('horizontal carousels snap to a whole card', () => {
         onRetry={noop}
       />,
     );
-    // Figma 1:299 — 300pt card, 16pt gap, both artboard values.
-    expect(snapInterval(tree)).toBeCloseTo(s(300) + s(16), 6);
+    // Figma 519:2 — the redrawn card is 280 drawn on the 390 board, so 373.333 in 520 space;
+    // the 16 gap is unchanged.
+    expect(snapInterval(tree)).toBeCloseTo(s(373.3333) + s(16), 6);
   });
 
   it('Top job matches snaps by a scaled card plus a scaled gap', async () => {
@@ -133,12 +140,30 @@ describe('horizontal carousels snap to a whole card', () => {
   });
 
   it.each([
-    ['Today’s picks', () => (
-      <TodaysPicks picks={jobs} status="success" onPressJob={noop} onToggleSave={noop} onRetry={noop} />
-    )],
-    ['Top job matches', () => (
-      <TopJobMatches jobs={jobs} status="success" onViewAll={noop} onPressJob={noop} onRetry={noop} />
-    )],
+    [
+      'Today’s picks',
+      () => (
+        <TodaysPicks
+          picks={jobs}
+          status="success"
+          onPressJob={noop}
+          onToggleSave={noop}
+          onRetry={noop}
+        />
+      ),
+    ],
+    [
+      'Top job matches',
+      () => (
+        <TopJobMatches
+          jobs={jobs}
+          status="success"
+          onViewAll={noop}
+          onPressJob={noop}
+          onRetry={noop}
+        />
+      ),
+    ],
   ])('%s runs full-bleed but still starts at the gutter', async (_name, build) => {
     // Boxed inside the page gutter, a half-scrolled card is sliced at the gutter line with dead
     // margin beside it. Breaking out and paying the gutter back as content padding keeps the

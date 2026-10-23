@@ -10,17 +10,20 @@ import type { Shortcut } from '../components/ShortcutGrid';
 import { useHomeStore } from '../homeStore';
 
 /**
- * Where each card on the quick-start row goes (V2 §7.5, §7.9, §7.10, §7.8). Written out rather
- * than derived: the four actions are a designed set (Figma 1:38), and a route map that a rename
- * could silently repoint is not worth the four lines it saves.
+ * Where each card on the quick-start row goes (V2 §7.5, §7.9, §7.8). Written out rather than
+ * derived: the actions are a designed set (Figma 1:38), and a route map that a rename could
+ * silently repoint is not worth the lines it saves. Cover Letter opens its setup (COVER 01,
+ * 644:2) on the most recent tailored resume; the Job row there changes it.
  */
 const QUICK_START_ROUTES: Record<
   QuickStartAction,
-  '/create/tailor' | '/create/zero-resume' | '/create/cover-letter' | '/create/ats-check'
+  '/create/tailor' | '/create/cover-letter' | '/create/zero-resume' | '/create/ats-check'
 > = {
+  // "Build Resume — for a specific job" is the one job → resume flow now (toreview §114): Add a
+  // job, then Customize, which offers a build from the profile when there is no resume.
   'build-resume': '/create/tailor',
-  'zero-resume': '/create/zero-resume',
   'cover-letter': '/create/cover-letter',
+  'zero-resume': '/create/zero-resume',
   'ats-check': '/create/ats-check',
 };
 
@@ -62,9 +65,7 @@ export function useHomeActions() {
         });
       },
       /** All four quick starts are real intakes now (Phases 9B and 9D). */
-      quickStart: (action: QuickStartAction) => {
-        router.push(QUICK_START_ROUTES[action]);
-      },
+      quickStart: (action: QuickStartAction) => router.push(QUICK_START_ROUTES[action]),
       shortcut: (shortcut: Shortcut) => {
         switch (shortcut) {
           case 'my-resumes':
@@ -78,9 +79,6 @@ export function useHomeActions() {
             return;
           case 'interview-prep':
             router.push('/interview');
-            return;
-          case 'ai-assistant':
-            router.push('/assistant');
             return;
         }
       },

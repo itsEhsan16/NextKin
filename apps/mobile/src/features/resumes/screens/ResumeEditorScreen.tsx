@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { RESUME_SECTION_ORDER } from '@/data/models';
+import { atsBandFor, atsQuickWins, RESUME_SECTION_ORDER } from '@/data/models';
 import { useRegenerateSection, useResume, useResumeContent, useResumeScore } from '@/data/queries';
 import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
@@ -11,11 +11,17 @@ import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
 
-import { EditorMetaStrip } from '../components/EditorMetaStrip';
+import { EditorHero } from '../components/EditorHero';
 import { LetterBody } from '../components/LetterBody';
 import { ResumeEditorSkeleton } from '../components/ResumeEditorSkeleton';
 import { ResumeSectionCard } from '../components/ResumeSectionCard';
-import { documentIsEmpty, downloadBlocked, FREE_NOTE, gateReason } from '../editorSections';
+import {
+  documentIsEmpty,
+  downloadBlocked,
+  FREE_NOTE,
+  gateReason,
+  quickWinsNote,
+} from '../editorSections';
 import { useResumesActions } from '../hooks/useResumesActions';
 // Relative, not through the feature barrel: the barrel exports this screen, so importing the
 // hosts from it would close a cycle.
@@ -26,17 +32,22 @@ export type ResumeEditorScreenProps = { id: string };
 
 const DOWNLOAD = 'Download';
 
+// RESUMES 06 at 390 (577:6931), in artboard units.
+const HEADER_TO_HERO = 16 / 0.75;
+const CARD_GAP = 12 / 0.75;
+
 /**
  * The document editor (V2 §7.11) — where every tap on a document lands: the library grid and
  * list, Home's resume rail, a finished generation, and the notification and activity deep links.
- * No artboard exists for it (plan §8), so it is assembled from the built primitives alone.
+ * Drawn as RESUMES 06 (577:6931): a bare back/more row, the document hero, then one card per
+ * section.
  *
  * §7.11 keeps a document as a structured model rather than a rendered file, so this page is the
  * model: one card per section, each opening its own editor, and nothing here re-formats or parses
  * the text. The score is a view *of* the document and lives one tap away on the meta strip.
  */
 export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const router = useRouter();
   const actions = useResumesActions();
 
@@ -68,6 +79,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
         header={
           <ScreenHeader
             title={doc?.title ?? 'Document'}
+            showTitle={false}
             onBack={actions.goBack}
             trailing={
               doc ? (
@@ -80,9 +92,9 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
             }
           />
         }
-        headerStyle={{ paddingBottom: spacing[4] }}
+        headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
         footer={footer}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+        contentContainerStyle={{ paddingBottom: spacing[8], gap: s(CARD_GAP) }}
       >
         {children}
       </Screen>
@@ -168,12 +180,17 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   // document, so either half alone lets the library card and this page disagree.
   const blocked = downloadBlocked(doc, body);
   const total = score.data?.total;
+  const note =
+    score.data != null
+      ? quickWinsNote(atsQuickWins(score.data).length, atsBandFor(score.data.total) === 'strong')
+      : undefined;
 
   return page(
     <>
-      <EditorMetaStrip
+      <EditorHero
         resume={doc}
         content={body}
+        note={note}
         onOpenScore={() => actions.openScore(doc)}
         onOpenRubric={() => actions.openScoreRubric(id)}
       />

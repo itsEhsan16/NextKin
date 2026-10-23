@@ -10,7 +10,7 @@ import {
   useUpdateResumeSection,
 } from '@/data/queries';
 import { useTheme } from '@/theme';
-import { ConfirmSheet } from '@/ui/ConfirmSheet';
+import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
@@ -32,19 +32,23 @@ export type SectionEditorScreenProps = { id: string; section?: EditableSectionKe
 /** V2 §7.6 forbids a silent failure; the reason goes on the bar that started the work. */
 const SAVE_FAILED = "We couldn't save that. Check your connection and try again.";
 const FIX_FIRST = 'Fix the highlighted fields to save.';
+/** Header → first card on RESUMES 07 / 08 (577:8630), in artboard units. */
+const HEADER_TO_CONTENT = 14 / 0.75;
+
 const DISCARD =
   'Your edits to this section have not been saved. Going back now leaves the document as it was.';
 
 /**
  * One section of a document, edited on its own page (V2 §7.11; §7.10 for a cover letter's body).
- * No artboard draws it (plan §8), so it is assembled from the built primitives alone.
+ * Drawn as RESUMES 07 (Experience, 577:8623) and RESUMES 08 (Summary, 577:8828); the other
+ * sections wear the same cards.
  *
  * The draft lives here rather than in the body, because the pinned bar and the discard sheet are
  * the body's siblings and both read it: the bar needs `dirty` and `valid` to decide whether Save
  * is live, and the sheet needs `dirty` to decide whether back is a question or a pop.
  */
 export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
-  const { spacing } = useTheme();
+  const { spacing, s } = useTheme();
   const router = useRouter();
   const showToast = useResumesStore((state) => state.showToast);
 
@@ -139,8 +143,8 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
             onBack={requestBack}
           />
         }
-        headerStyle={{ paddingBottom: spacing[4] }}
-        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[5] }}
+        headerStyle={{ paddingBottom: s(HEADER_TO_CONTENT) }}
+        contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
         footer={footer}
       >
         {children}
@@ -151,6 +155,8 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
         open={confirmOpen}
         title="Discard changes?"
         message={DISCARD}
+        art={<ConfirmArt kind="discard" />}
+        artGap={0}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
         onConfirm={() => {

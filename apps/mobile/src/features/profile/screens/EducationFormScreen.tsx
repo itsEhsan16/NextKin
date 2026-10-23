@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { useProfile, useRemoveEducation, useUpsertEducation } from '@/data/queries';
 import { MonthYearSheet } from '@/ui/MonthYearSheet';
 
+import { IdentityCard } from '../components/cards';
 import { EducationFields, type EducationDateField } from '../components/forms/EducationFields';
 import { formError, ProfileFormShell } from '../components/forms/ProfileFormShell';
 import { useEntryForm } from '../components/forms/useEntryForm';
+import { formatEntryDates } from '../entryRows';
 import { useProfileActions } from '../hooks/useProfileActions';
 import { blankEducation, educationDraft, educationEntry, validateEducation } from '../profileForms';
 
@@ -40,13 +42,28 @@ export function EducationFormScreen({ id }: EducationFormScreenProps) {
     const ready = form.submit();
     if (!ready) return;
     // A new entry goes out with an empty id — the repo mints the real one (see profileForms).
-    save.mutate(educationEntry(form.isNew ? '' : id, ready), { onSuccess: actions.goBack });
+    save.mutate(educationEntry(form.isNew ? '' : id, ready), {
+      onSuccess: () => actions.backWith('Education saved'),
+    });
   };
 
   return (
     <ProfileFormShell
       title={form.isNew ? 'Add education' : 'Edit education'}
       status={form.status}
+      isNew={form.isNew}
+      identity={
+        entry ? (
+          <IdentityCard
+            tile={{ kind: 'letter', name: entry.institution }}
+            title={entry.degree}
+            lines={[
+              entry.institution,
+              formatEntryDates(entry.startDate, entry.endDate, entry.current) ?? '',
+            ].filter((line) => line.length > 0)}
+          />
+        ) : undefined
+      }
       listLabel="education"
       dirty={form.dirty}
       valid={form.valid}
@@ -62,7 +79,8 @@ export function EducationFormScreen({ id }: EducationFormScreenProps) {
               label: 'Delete education',
               message: DELETE_MESSAGE,
               busy: remove.isPending,
-              onConfirm: () => remove.mutate(id, { onSuccess: actions.goBack }),
+              onConfirm: () =>
+                remove.mutate(id, { onSuccess: () => actions.backWith('Education removed') }),
             }
       }
       sheets={

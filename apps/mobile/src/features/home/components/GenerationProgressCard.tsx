@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import {
   GENERATION_STEPS,
+  generationHint,
   generationStepIndex,
   type Generation,
   type GenerationStep,
@@ -11,7 +12,7 @@ import { a11yButton, formatPercent, hitSlop8 } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
-import { ProgressBar } from '@/ui/Progress';
+import { AnimatedNumber, ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
 export type GenerationProgressCardProps = {
@@ -24,6 +25,34 @@ const TILE = 44;
 
 const stepFor = (generation: Generation): GenerationStep | undefined =>
   GENERATION_STEPS[generationStepIndex(generation.status)];
+
+const percentLabel = (n: number) => {
+  'worklet';
+  return `${Math.round(n)}%`;
+};
+
+/**
+ * What the card calls the run, in its own words: a cover letter is not "Tailoring your resume",
+ * and neither is an ATS check (the card used to say that for every kind).
+ */
+export function runHeadline(generation: Generation, failed: boolean): string {
+  if (generation.kind === 'cover_letter') {
+    return failed ? "Couldn't finish your cover letter" : 'Writing your cover letter';
+  }
+  if (generation.kind === 'ats_check') {
+    return failed ? "Couldn't finish your ATS check" : 'Checking your resume';
+  }
+  if (generation.kind === 'interview') {
+    return failed ? "Couldn't write your questions" : 'Writing your interview questions';
+  }
+  if (generation.kind === 'zero_resume') {
+    return failed ? "Couldn't finish your draft" : 'Writing your first draft';
+  }
+  if (generation.origin === 'build') {
+    return failed ? "Couldn't finish your resume" : 'Building your resume';
+  }
+  return failed ? "Couldn't finish your resume" : 'Tailoring your resume';
+}
 
 /**
  * Live progress for an in-flight resume generation (V2 §7.6's queued → generating → validating →
@@ -44,10 +73,10 @@ export function GenerationProgressCard({
   const failed = generation.status === 'failed';
   const step = stepFor(generation);
 
-  const headline = failed ? "Couldn't finish your resume" : 'Tailoring your resume';
+  const headline = runHeadline(generation, failed);
   const detail = failed
     ? (generation.error ?? 'Something went wrong. Try again.')
-    : (step?.hint ?? '');
+    : generationHint(generation);
 
   return (
     <Card shadow="card" style={{ gap: spacing[3] }}>
@@ -89,16 +118,30 @@ export function GenerationProgressCard({
           </Text>
         </View>
         {failed ? null : (
-          <Text variant="captionSemiBold" color="textSecondary">
-            {formatPercent(generation.progress)}
-          </Text>
+          // Counts with the bar, from the same beat and the same memory as the run screen's, so
+          // opening the run continues the number instead of jumping it.
+          <AnimatedNumber
+            value={generation.progress * 100}
+            timing="follow"
+            memoryKey={`gen:${generation.id}:pct`}
+            variant="captionSemiBold"
+            color="textSecondary"
+            format={percentLabel}
+          />
         )}
       </View>
 
       {failed ? null : (
         // The row above already announces the percentage, so the meter is decorative here.
         <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          <ProgressBar value={generation.progress} fillColor="brand" />
+          <ProgressBar
+            value={generation.progress}
+            fillColor="brand"
+            // Live: glides between the run's ticks, and the run screen continues from here.
+            timing="follow"
+            memoryKey={`gen:${generation.id}:bar`}
+            live
+          />
         </View>
       )}
 

@@ -13,8 +13,9 @@ describe('UserRepo (mock) — upgrade', () => {
     const activities = store.state.activity.length;
     const counted = store.state.dashboardStats.activitiesCount;
 
-    const subscription = await repos.user.upgrade('pro_monthly');
-    expect(subscription.plan).toBe('pro');
+    // The mock upgrades at once; the backend answers with a checkout to open (P12-06).
+    const result = await repos.user.upgrade('pro_monthly');
+    expect(result.kind === 'done' && result.subscription.plan).toBe('pro');
 
     const entry = store.state.activity[0];
     expect(entry?.kind).toBe('plan');
@@ -27,5 +28,50 @@ describe('UserRepo (mock) — upgrade', () => {
     const welcome = store.state.notifications[0];
     expect(welcome?.category).toBe('billing');
     expect(welcome?.deepLink).toBe('/upgrade');
+  });
+});
+
+/**
+ * The signed-in devices the web Settings board lists (Figma 254:555). V2 §7.1 ends every other
+ * session on "sign out everywhere" and on a password change; the list has to follow both, or the
+ * web page keeps showing devices the account page just signed out.
+ */
+describe('UserRepo (mock) — sessions', () => {
+  it('keeps only this device on "sign out everywhere"', async () => {
+    const store = createMockStore();
+    const repos = createMockRepos(store);
+    expect(store.state.security.sessions).toHaveLength(3);
+
+    await repos.user.signOutEverywhere();
+
+    expect(store.state.security.sessions.map((session) => session.current)).toEqual([true]);
+  });
+
+  it('stamps a password change and ends the other sessions with it', async () => {
+    const store = createMockStore();
+    const repos = createMockRepos(store);
+    const before = store.state.security.passwordChangedAt;
+
+    await repos.user.changePassword('old-secret', 'new-secret');
+
+    expect(store.state.security.passwordChangedAt).not.toBe(before);
+    expect(store.state.security.sessions.map((session) => session.current)).toEqual([true]);
+  });
+});
+
+/**
+ * The web Settings → Preferences board's app settings (Figma 356:85). Each control saves one
+ * value, so a write has to merge into the rest rather than replace them.
+ */
+describe('UserRepo (mock) — app settings', () => {
+  it('merges one change into the rest', async () => {
+    const store = createMockStore();
+    const repos = createMockRepos(store);
+
+    const settings = await repos.user.updateAppSettings({ experimentalFeatures: true });
+
+    expect(settings.experimentalFeatures).toBe(true);
+    expect(settings.aiSuggestions).toBe(true);
+    expect(store.state.appSettings.theme).toBe('light');
   });
 });

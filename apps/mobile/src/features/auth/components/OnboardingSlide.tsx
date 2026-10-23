@@ -8,8 +8,16 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
-/** Figma 290:972 — the copy column, and the row "Skip" sits in above it. */
-const LAYOUT = { top: 41, skipHeight: 25, copyTop: 43, gap: 15.3, headingTop: 13.06, left: 43, right: 32 };
+/** Figma 307:4290 — the copy column, and the row "Skip" sits in above it. */
+const LAYOUT = {
+  top: 41,
+  skipHeight: 25,
+  copyTop: 43,
+  gap: 15.3,
+  headingTop: 13.06,
+  left: 43,
+  right: 32,
+};
 
 export type OnboardingSlideProps = {
   /** 1-based, rendered as "n / 3" with the total greyed back. */
@@ -19,14 +27,20 @@ export type OnboardingSlideProps = {
   lead: string;
   /** Omitted on the last slide, which offers "Get Started" instead. */
   onSkip?: () => void;
-  /** Slide 3 hangs its rows under the copy; slides 1 and 2 sit their art on the floor. */
-  illustrationAlign?: 'flex-start' | 'flex-end';
+  /**
+   * Slides 1 and 2 sit a single drawing on the floor. Slide 3 stacks two things — the feature
+   * cards and the illustration — and the board puts the cards under the copy and the drawing
+   * hard against the bottom bar, which is `space-between` and not either end.
+   */
+  illustrationAlign?: 'flex-start' | 'flex-end' | 'space-between';
   illustrationGap?: number;
+  /** Slide 3 is redrawn on a tighter leading than slides 1 and 2 (25.448 against 27.55). */
+  leadVariant?: 'onboardingLead' | 'onboardingLeadTight';
   width: number;
   children: ReactNode;
 };
 
-/** The chrome every onboarding slide shares (Figma 290:969 / 290:1031 / 295:2867). */
+/** The chrome every onboarding slide shares (Figma 307:4165 / 307:4217 / 307:4288). */
 export function OnboardingSlide({
   step,
   total,
@@ -35,6 +49,7 @@ export function OnboardingSlide({
   onSkip,
   illustrationAlign = 'flex-end',
   illustrationGap = 0,
+  leadVariant = 'onboardingLead',
   width,
   children,
 }: OnboardingSlideProps) {
@@ -77,12 +92,16 @@ export function OnboardingSlide({
             {`/ ${total}`}
           </Text>
         </Text>
-        <View accessible {...a11yHeader(title.replace('\n', ' '))} style={{ marginTop: s(board(LAYOUT.headingTop)) }}>
+        <View
+          accessible
+          {...a11yHeader(title.replace('\n', ' '))}
+          style={{ marginTop: s(board(LAYOUT.headingTop)) }}
+        >
           <Text variant="onboardingTitle" color="onboardingInk">
             {title}
           </Text>
         </View>
-        <Text variant="onboardingLead" color="onboardingBody">
+        <Text variant={leadVariant} color="onboardingBody">
           {lead}
         </Text>
       </View>

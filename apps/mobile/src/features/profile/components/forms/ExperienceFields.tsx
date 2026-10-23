@@ -1,15 +1,16 @@
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
-import { RowGroup } from '@/ui/ListRow';
 import { TextField } from '@/ui/TextField';
 
 import type { ExperienceDraft } from '../../profileForms';
-import { DateFieldRow, FieldError } from './DateFieldRow';
+import { PROFILE_ROW_ART } from '../../profileRowArt';
+import { SectionCard } from '../cards';
+import { DateField, FieldError } from './DateFieldRow';
 import { SkillChipsField } from './SkillChipsField';
 import { ToggleFieldRow } from './ToggleFieldRow';
 
-/** The switch that hides the end date; the sheet behind the end row shows the same words. */
+/** The switch that stands in for the end date; the sheet behind the end field shows the same words. */
 export const STILL_HERE = 'I currently work here';
 
 export type ExperienceDateField = 'startDate' | 'endDate';
@@ -22,7 +23,13 @@ export type ExperienceFieldsProps = {
   onPickDate: (field: ExperienceDateField) => void;
 };
 
-/** One role on the timeline the whole product generates against (V2 §7.3). */
+/** The Start / End pair's gap at 390 (573:217). */
+export const DATE_PAIR_GAP = 10 / 0.75;
+
+/**
+ * One role on the timeline the whole product generates against (V2 §7.3, PROFILE 05 573:144):
+ * the Role, Dates and Skills cards.
+ */
 export function ExperienceFields({
   draft,
   patch,
@@ -30,57 +37,79 @@ export function ExperienceFields({
   blur,
   onPickDate,
 }: ExperienceFieldsProps) {
-  const { spacing } = useTheme();
+  const { s } = useTheme();
 
   return (
-    <View style={{ gap: spacing[5] }}>
-      <TextField
-        label="Company"
-        value={draft.company}
-        onChangeText={(company) => patch({ company })}
-        onBlur={() => blur('company')}
-        placeholder="Where you worked"
-        error={errors.company}
-        autoCapitalize="words"
-        returnKeyType="next"
-      />
+    <>
+      <SectionCard
+        art={PROFILE_ROW_ART.experience}
+        title="Role"
+        subtitle="Where you worked and what you were called"
+      >
+        <TextField
+          label="Company"
+          icon="building"
+          value={draft.company}
+          onChangeText={(company) => patch({ company })}
+          onBlur={() => blur('company')}
+          placeholder="Where you worked"
+          error={errors.company}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
+        <TextField
+          label="Job title"
+          icon="briefcase"
+          value={draft.title}
+          onChangeText={(title) => patch({ title })}
+          onBlur={() => blur('title')}
+          placeholder="What you were called"
+          error={errors.title}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
+      </SectionCard>
 
-      <TextField
-        label="Job title"
-        value={draft.title}
-        onChangeText={(title) => patch({ title })}
-        onBlur={() => blur('title')}
-        placeholder="What you were called"
-        error={errors.title}
-        autoCapitalize="words"
-        returnKeyType="next"
-      />
-
-      <View style={{ gap: spacing[2] }}>
-        <RowGroup title="DATES">
-          <DateFieldRow
+      <SectionCard
+        art={PROFILE_ROW_ART.availability}
+        artWidth={26}
+        title="Dates"
+        subtitle="Month and year are enough"
+      >
+        <View style={[datePair.row, { gap: s(DATE_PAIR_GAP) }]}>
+          <DateField
             label="Start"
             value={draft.startDate}
             onPress={() => onPickDate('startDate')}
+            style={datePair.half}
           />
-          <ToggleFieldRow
-            label={STILL_HERE}
-            value={draft.current}
-            // The date is HIDDEN while the switch is on, never cleared. Clearing it destroyed a
-            // saved value on a flick of the switch that turning it back off could not undo: an
-            // existing role's "Feb 2022" became "Not set", and saving persisted the loss. The end
-            // date is already dropped where it belongs — at serialisation, in `experienceEntry`,
-            // which omits it whenever `current` is true.
-            onChange={(current) => patch({ current })}
+          <DateField
+            label="End"
+            value={draft.endDate}
+            // The date is HIDDEN behind "Present" while the switch is on, never cleared. Clearing
+            // it destroyed a saved value on a flick of the switch that turning it back off could
+            // not undo. The end date is dropped where it belongs — at serialisation, in
+            // `experienceEntry`, which omits it whenever `current` is true.
+            fixedValue={draft.current ? 'Present' : undefined}
+            onPress={() => onPickDate('endDate')}
+            style={datePair.half}
           />
-          {draft.current ? null : (
-            <DateFieldRow label="End" value={draft.endDate} onPress={() => onPickDate('endDate')} />
-          )}
-        </RowGroup>
+        </View>
+        <ToggleFieldRow
+          label={STILL_HERE}
+          value={draft.current}
+          onChange={(current) => patch({ current })}
+        />
         <FieldError message={errors.endDate} />
-      </View>
+      </SectionCard>
 
       <SkillChipsField value={draft.skills} onChange={(skills) => patch({ skills })} />
-    </View>
+    </>
   );
 }
+
+/** Start and End side by side, shared with the education form. */
+export const datePair = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'flex-start' },
+  half: { flex: 1 },
+});

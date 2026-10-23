@@ -1,5 +1,5 @@
-import { useCallback, useState, type ReactNode } from 'react';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import Animated from 'react-native-reanimated';
 
 import {
   useActivity,
@@ -10,15 +10,28 @@ import {
   useResumes,
   useSavedJobs,
 } from '@/data/queries';
-import { shareFile, useReducedMotion, writeTextFile } from '@/lib';
+import { haptics, shareFile, writeTextFile } from '@/lib';
+import type { FlowArt } from '@/features/create/components/FlowHero';
+import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
 import { useTheme } from '@/theme';
-import { ListRow, RowGroup } from '@/ui/ListRow';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
+import { Reveal, useRevealStagger } from '@/ui/motion';
 
-import { DataExportSkeleton, DataExportState } from '../components/DataExportState';
+import { AccountHero } from '../components/AccountHero';
+import {
+  DataExportContents,
+  PrivacyPolicyLink,
+  PrivacyPolicyRow,
+} from '../components/DataExportContents';
+import {
+  DataExportFailedCard,
+  DataExportFileCard,
+  DataExportPreparingCard,
+  DataExportSkeleton,
+} from '../components/DataExportState';
 import {
   buildDataExportPayload,
   dataExportBlock,
@@ -36,12 +49,32 @@ export type DataExportScreenProps = Record<string, never>;
 
 const EXPORT_MIME = 'application/json';
 
+// ACCOUNT 02 (577:3071) and ACCOUNT 03 (577:3801) at 390, in artboard units.
+const HEADER_TO_HERO = 26 / 0.75;
+const HERO_TO_CONTENTS = 28 / 0.75;
+const HERO_TO_CARD = 26 / 0.75;
+const CARD_GAP = 15 / 0.75;
+const FILE_TO_LINK = 20 / 0.75;
+/** ACCOUNT 03's drawing sits 40 under the bar (577:3802 → 680:92), 14 lower than the idle hero. */
+const READY_ART_DROP = (40 - 26) / 0.75;
+
+/** IL-A1 (680:92), the board's 3× render: the folder with the file coming out of it. */
+const EXPORT_READY_ART: FlowArt = {
+  source: require('../../../../assets/illustrations/account/export-ready.png'),
+  w: 322,
+  h: 232,
+  shiftX: 0,
+  toTitle: 16, // 680:92 → 577:3816
+};
+
 /**
  * ACCOUNT — download your data (V2 §8.5). A person may take a copy of everything the product
  * holds about them, so this page is a right made real: it names what the file contains, says the
  * link expires, and links to the policy for what is held and why.
  *
- * No artboard draws it (plan §8, phase 9G), so it is assembled from the built primitives alone.
+ * Drawn as ACCOUNT 02 (idle, 577:3071) and ACCOUNT 03 (ready, 577:3801); preparing and failed
+ * have no board and reuse the idle page's hero and cards. ACCOUNT 03 opens on its own drawing
+ * (IL-A1), the folder handing the file over.
  *
  * The export's own four states — idle, preparing, ready, failed — are the page's content. Around
  * them sit the usual three: a skeleton while the first status read is in flight (with the bar
@@ -51,8 +84,7 @@ const EXPORT_MIME = 'application/json';
  * `idle` is the page with no export yet, and it is a full explainer rather than a blank.
  */
 export function DataExportScreen(_props: DataExportScreenProps = {}) {
-  const { motion, spacing } = useTheme();
-  const reduced = useReducedMotion();
+  const { spacing, s } = useTheme();
   const actions = useAccountActions();
 
   const status = useDataExport();
@@ -101,18 +133,28 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
     }
   }, [activity.data, fileName, profile.data, resumes.data, savedJobs.data, user.data]);
 
-  const enter = (index: number) =>
-    reduced
-      ? undefined
-      : FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base);
+  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
+  // with its data already here slides in whole with the push.
+  const enter = useRevealStagger(!status.isPending);
+
+  // An archive that finishes building while the user waits on this page is felt as well as seen.
+  const exportStatus = status.data?.status;
+  const sawPreparing = useRef(false);
+  useEffect(() => {
+    if (exportStatus === 'preparing') sawPreparing.current = true;
+    if (exportStatus === 'ready' && sawPreparing.current) {
+      sawPreparing.current = false;
+      haptics.success();
+    }
+  }, [exportStatus]);
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <Screen
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title={DATA_EXPORT_TITLE} onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
+      headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
       footer={footer}
     >
       {children}
@@ -152,20 +194,55 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
         ? DATA_EXPORT_FAILED_NOTE
         : undefined);
 
+  const failed = current.status === 'failed';
+
   return page(
     <>
-      <Animated.View entering={enter(0)}>
-        <DataExportState status={current} />
+      <Animated.View entering={enter(0)} style={ready ? { marginTop: s(READY_ART_DROP) } : null}>
+        {/* Each state cross-fades into the next (requested → building → ready), so the ready
+            drawing and its file arrive instead of cutting in (§85). */}
+        <Reveal stateKey={current.status}>
+          {failed ? (
+            <DataExportFailedCard status={current} />
+          ) : (
+            <AccountHero
+              art={ready ? undefined : PROFILE_ROW_ART.exportData}
+              image={ready ? EXPORT_READY_ART : undefined}
+              artWidth={72}
+              artGap={16}
+              title={block.title}
+              lede={block.body}
+            />
+          )}
+        </Reveal>
       </Animated.View>
 
-      <Animated.View entering={enter(1)}>
-        <RowGroup>
-          <ListRow icon="shield-alt" label="Privacy policy" onPress={actions.openPrivacy} />
-        </RowGroup>
+      <Animated.View
+        entering={enter(1)}
+        style={{
+          marginTop: s(
+            failed ? CARD_GAP : current.status === 'idle' ? HERO_TO_CONTENTS : HERO_TO_CARD,
+          ),
+        }}
+      >
+        <Reveal stateKey={current.status}>
+          {current.status === 'idle' ? <DataExportContents /> : null}
+          {preparing ? <DataExportPreparingCard label={block.title} /> : null}
+          {ready ? <DataExportFileCard status={current} /> : null}
+        </Reveal>
+      </Animated.View>
+
+      <Animated.View entering={enter(2)} style={{ marginTop: s(ready ? FILE_TO_LINK : CARD_GAP) }}>
+        {ready ? (
+          <PrivacyPolicyLink onPress={actions.openPrivacy} />
+        ) : (
+          <PrivacyPolicyRow onPress={actions.openPrivacy} />
+        )}
       </Animated.View>
     </>,
     <StickyActionBar
       note={barNote}
+      noteTone={barNote && barNote !== DATA_EXPORT_SHARED ? 'danger' : 'neutral'}
       primary={
         ready
           ? {

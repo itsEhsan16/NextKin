@@ -45,7 +45,9 @@ const savedCardLabels = (): string[] =>
   screen
     .getAllByRole('button')
     .map((node) => String(node.props.accessibilityLabel ?? ''))
-    .filter((label) => /, (saved|closing in) /.test(label));
+    // Case-insensitive since the redraw: the footer note is read out as it is drawn, so the
+    // label now ends "Saved 2d ago" / "Closing in 3d" rather than in the old lower-case prose.
+    .filter((label) => /, (saved|closing in) /i.test(label));
 
 const INITIAL = useJobsStore.getState();
 
@@ -178,6 +180,40 @@ describe('JobsScreen (JOBS 01–03)', () => {
     // Applied rows open the application; they carry no bookmark.
     expect(screen.queryByLabelText(/from saved$/)).toBeNull();
     expect(screen.queryByLabelText(/^Save /)).toBeNull();
+  });
+
+  it('builds the redrawn Discover card: tags, a match reason and a tailor button', async () => {
+    await renderJobs();
+    await screen.findByRole('header', { name: "Today's picks" });
+
+    // Every fact about the job is a tag now; the meta line the old card ran under its title is
+    // gone, and the salary moved into the row with the rest (Figma 498:14).
+    expect(await screen.findByText('Senior UX Designer')).toBeOnTheScreen();
+    expect(screen.queryByText('Razorpay · Bengaluru · Hybrid')).toBeNull();
+    expect(screen.getAllByText('Hybrid').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹24–32L · est.').length).toBeGreaterThan(0);
+
+    // The panel between the tags and the footer (498:23). Verbatim board copy.
+    expect(screen.getByText('Matches your UX experience and hybrid preference')).toBeOnTheScreen();
+    expect(screen.getAllByText('Posted 2d ago').length).toBeGreaterThan(0);
+
+    fireEvent.press(screen.getByLabelText('Tailor a resume for Senior UX Designer'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/tailor',
+      params: { jobId: 'job_razorpay' },
+    });
+  });
+
+  it('leaves the match reason off the Applied tab, as the board draws it', async () => {
+    await renderJobs();
+    await screen.findByRole('header', { name: "Today's picks" });
+
+    fireEvent.press(screen.getByRole('tab', { name: 'Applied' }));
+    await screen.findByLabelText('All · 12');
+
+    // 521:236 keeps the tags and the footer but drops the reason panel and both actions.
+    expect(screen.queryByText('Matches your UX experience and hybrid preference')).toBeNull();
+    expect(screen.queryByLabelText(/^Tailor a resume for /)).toBeNull();
   });
 
   it('narrows the Applied list with a status chip', async () => {

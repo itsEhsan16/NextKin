@@ -47,6 +47,8 @@ describe('useToggleSaveJob', () => {
     jest.useFakeTimers();
     useMockModeStore.setState({ mode: 'normal' });
     resetMockRepos();
+    // The seeded Free persona is past the cap of 10; these tests are about the caches, not the cap.
+    mockStore.state.subscription.plan = 'pro';
     queryClient = createQueryClient();
     // Seed caches so the hooks render with data immediately (no initial fetch needed).
     queryClient.setQueryData(qk.jobs.detail(JOB_ID), fixtureJob(JOB_ID));
@@ -68,7 +70,7 @@ describe('useToggleSaveJob', () => {
     const { result } = await setup(queryClient);
     expect(result.current?.job.data?.isSaved).toBe(false);
 
-    await mutateOptimistically(() => result.current?.toggle.mutate(JOB_ID));
+    await mutateOptimistically(() => result.current?.toggle.mutate({ id: JOB_ID, saved: true }));
 
     expect(result.current?.toggle.isPending).toBe(true);
     expect(queryClient.getQueryData<Job>(qk.jobs.detail(JOB_ID))?.isSaved).toBe(true);
@@ -81,7 +83,7 @@ describe('useToggleSaveJob', () => {
   it('keeps the optimistic value once the request succeeds', async () => {
     const { result } = await setup(queryClient);
 
-    await mutateOptimistically(() => result.current?.toggle.mutate(JOB_ID));
+    await mutateOptimistically(() => result.current?.toggle.mutate({ id: JOB_ID, saved: true }));
     await waitFor(() => expect(result.current?.toggle.isSuccess).toBe(true), { timeout: 3000 });
 
     expect(result.current?.job.data?.isSaved).toBe(true);
@@ -93,7 +95,7 @@ describe('useToggleSaveJob', () => {
     const { result } = await setup(queryClient);
     const savedBefore = queryClient.getQueryData<Job[]>(qk.jobs.saved());
 
-    await mutateOptimistically(() => result.current?.toggle.mutate(JOB_ID));
+    await mutateOptimistically(() => result.current?.toggle.mutate({ id: JOB_ID, saved: true }));
     expect(result.current?.job.data?.isSaved).toBe(true);
 
     await waitFor(() => expect(result.current?.toggle.isError).toBe(true), { timeout: 3000 });
@@ -108,7 +110,7 @@ describe('useToggleSaveJob', () => {
     queryClient.setQueryData(qk.jobs.detail(savedId), fixtureJob(savedId));
     const { result } = await setup(queryClient);
 
-    await mutateOptimistically(() => result.current?.toggle.mutate(savedId));
+    await mutateOptimistically(() => result.current?.toggle.mutate({ id: savedId, saved: false }));
 
     expect(result.current?.saved.data?.map((job) => job.id)).not.toContain(savedId);
     expect(queryClient.getQueryData<Job>(qk.jobs.detail(savedId))?.isSaved).toBe(false);

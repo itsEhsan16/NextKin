@@ -43,7 +43,7 @@ async function renderSetup(resumeId?: string) {
   );
 }
 
-describe('NewInterviewSetScreen (V2 §7.15 / §13.5 — no artboard)', () => {
+describe('NewInterviewSetScreen (V2 §7.15 / §13.5, INTERVIEW 02 / 03)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -97,7 +97,9 @@ describe('NewInterviewSetScreen (V2 §7.15 / §13.5 — no artboard)', () => {
     await act(async () =>
       fireEvent.press(screen.getByLabelText('Resume, Product Designer', shown)),
     );
-    expect(screen.getByText('Choose a resume', shown)).toBeOnTheScreen();
+    // INTERVIEW 03: the sheet is up, its rows read as the library's.
+    expect(screen.getByLabelText('Close choose a resume', shown)).toBeOnTheScreen();
+    expect(screen.getByText('Tailored · Google · Lead UX Designer', shown)).toBeOnTheScreen();
     await act(async () => fireEvent.press(screen.getByText('UX Designer Resume', shown)));
     await settle(NORMAL_MS);
 
@@ -137,7 +139,7 @@ describe('NewInterviewSetScreen (V2 §7.15 / §13.5 — no artboard)', () => {
     await renderSetup();
     await settle(NORMAL_MS);
 
-    await act(async () => fireEvent.press(screen.getByText('By role title', shown)));
+    await act(async () => fireEvent.press(screen.getByLabelText('By role title', shown)));
     // §7.15: the standalone set is labelled generic before it exists, not only afterwards.
     expect(
       screen.getByText('Generic — not tailored to a job description', shown),

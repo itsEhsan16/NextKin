@@ -64,6 +64,47 @@ describe('colorsByScheme', () => {
   });
 });
 
+/** WCAG relative luminance of a `#RRGGBB` colour. */
+const luminance = (hex: string): number => {
+  const channel = (offset: number) => {
+    const value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+};
+
+const contrast = (a: string, b: string): number => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+/**
+ * Small text against the surfaces the app actually sets it on, held at WCAG AA (4.5:1). Each pair
+ * failed once — toreview.md 38.3 measured them on the boards, 54 fixed them here — so the list is
+ * the regression guard: a palette edit that slips one back under the line fails this.
+ */
+const TEXT_ON_SURFACE = [
+  ['textSecondary', 'surfacePage'],
+  ['textSecondary', 'surfaceSubtle'],
+  ['textSecondary', 'surfaceUnread'],
+  ['textTertiary', 'surfacePage'],
+  ['textTertiary', 'surfaceCard'],
+  ['textTertiary', 'surfaceUnread'],
+  ['success', 'successSurface'],
+  ['danger', 'dangerSurface'],
+  ['warningStrong', 'warningSurface'],
+] as const;
+
+describe('text contrast', () => {
+  it.each(schemes.flatMap((scheme) => TEXT_ON_SURFACE.map((pair) => [scheme, ...pair] as const)))(
+    '%s: %s on %s reads at 4.5:1 or better',
+    (scheme, text, surface) => {
+      const colors = colorsByScheme[scheme];
+      expect(contrast(colors[text], colors[surface])).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+});
+
 describe('typography', () => {
   const families = Object.values(fontFamily) as string[];
   const roles = Object.entries(typography);
@@ -152,11 +193,14 @@ describe('motion', () => {
     expect(stagger.maxItems).toBeGreaterThan(0);
   });
 
-  it('keeps press/exit scales strictly inside (0, 1)', () => {
-    for (const value of Object.values(scales)) {
+  it('keeps press/exit scales strictly inside (0, 1), and the twinkle a growth above 1', () => {
+    // `twinkle` is the one scale that grows on purpose: a sparkle's glint at its brightest.
+    const { twinkle, ...shrinks } = scales;
+    for (const value of Object.values(shrinks)) {
       expect(value).toBeGreaterThan(0);
       expect(value).toBeLessThan(1);
     }
+    expect(twinkle).toBeGreaterThan(1);
   });
 });
 
@@ -188,7 +232,7 @@ describe('sizes', () => {
   it('pins the Phase 9 field and sheet heights', () => {
     expect(sizes.textArea).toBe(140);
     expect(sizes.sheetMonthYearHeight).toBe(520);
-    expect(sizes.sheetExportHeight).toBe(440);
+    expect(sizes.sheetExportHeight).toBeCloseTo(339.5 / 0.75);
     expect(sizes.sheetMenuHeight).toBe(600);
   });
 

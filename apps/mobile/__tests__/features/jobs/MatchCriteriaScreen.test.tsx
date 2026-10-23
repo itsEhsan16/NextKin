@@ -48,7 +48,7 @@ const settle = () => act(() => jest.advanceTimersByTimeAsync(1000));
 /** Rows enter on FadeInDown, which the Reanimated mock leaves at opacity 0. */
 const hidden = { includeHiddenElements: true } as const;
 
-describe('MatchCriteriaScreen (V2 §7.13 — no artboard)', () => {
+describe('MatchCriteriaScreen (V2 §7.13 — JOBS 10)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -94,9 +94,12 @@ describe('MatchCriteriaScreen (V2 §7.13 — no artboard)', () => {
     const headings = screen
       .getAllByRole('header', hidden)
       .map((node) => node.props.children)
-      .filter((label) => label === 'MISSING' || label === 'MET' || label === 'OPTIONAL');
+      .filter((label) => label === 'Missing' || label === 'Met' || label === 'Optional');
     // Missing leads: it is the only group the reader can act on.
-    expect(headings).toEqual(['MISSING', 'MET', 'OPTIONAL']);
+    expect(headings).toEqual(['Missing', 'Met', 'Optional']);
+    // Each card says its share of every criterion (job_stripe: 1 missing, 3 met, 1 optional).
+    expect(screen.getAllByText('1 of 5')).toHaveLength(2);
+    expect(screen.getByText('3 of 5')).toBeOnTheScreen();
 
     expect(
       screen.getByLabelText('Missing. Fintech / payments experience', hidden),

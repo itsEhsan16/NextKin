@@ -4,7 +4,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useTheme } from '@/theme';
 
 /**
- * The welcome screen's brand wash (Figma 290:957), as an absolute fill behind its content.
+ * The welcome screen's brand wash (Figma 307:4153), as an absolute fill behind its content.
  *
  * Drawn as `linear-gradient(125.43deg, ...)`. The endpoints below are that angle resolved
  * against the artboard's own 414.67x895 box and expressed as fractions, which is what keeps the

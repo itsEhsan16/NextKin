@@ -1,15 +1,17 @@
 import { View } from 'react-native';
-import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import type { ContentRole } from '@/data/models';
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
-import { Button } from '@/ui/Button';
 import { TextField } from '@/ui/TextField';
+import { layoutTransition } from '@/ui/motion';
 
 import { newRole, removeAt, replaceAt } from '../../sectionEdits';
+import { AddSectionTile } from '../AddSectionTile';
 import { BulletRows } from './BulletRows';
 import { EntryCard } from './EntryCard';
+import { ADD_ENTRY_STYLE, CARD_STACK_GAP, FIELD_GAP } from './entryLayout';
 import type { SectionFieldsProps } from './types';
 
 /**
@@ -23,14 +25,14 @@ export function ExperienceEditor({
   errors,
   onBlurField,
 }: SectionFieldsProps<ContentRole[]>) {
-  const { motion, spacing } = useTheme();
+  const { motion, s } = useTheme();
   const reduced = useReducedMotion();
-  const layout = reduced ? undefined : LinearTransition.springify();
+  const layout = layoutTransition(reduced);
 
   const patch = (index: number, next: ContentRole) => onChange(replaceAt(value, index, next));
 
   return (
-    <View style={{ gap: spacing[4] }}>
+    <View style={{ gap: s(CARD_STACK_GAP) }}>
       {value.map((role, index) => {
         const name = `Role ${index + 1}`;
         return (
@@ -41,38 +43,45 @@ export function ExperienceEditor({
           >
             <EntryCard
               title={name}
+              subtitle={[role.title, role.company].filter((part) => part.trim()).join(' · ')}
+              tileName={role.company}
               needsReview={role.needsReview}
               deleteLabel={`Delete ${name}`}
               confirmMessage={`Delete ${role.title.trim() || name.toLowerCase()}? This cannot be undone from here.`}
               onDelete={() => onChange(removeAt(value, index))}
             >
-              <TextField
-                label="Job title"
-                accessibilityLabel={`${name}, job title`}
-                placeholder="Senior Product Designer"
-                value={role.title}
-                onChangeText={(text) => patch(index, { ...role, title: text })}
-                onBlur={() => onBlurField?.(`${role.id}.title`)}
-                error={errors[`${role.id}.title`]}
-              />
-              <TextField
-                label="Company"
-                accessibilityLabel={`${name}, company`}
-                placeholder="PhonePe"
-                value={role.company}
-                onChangeText={(text) => patch(index, { ...role, company: text })}
-                onBlur={() => onBlurField?.(`${role.id}.company`)}
-                error={errors[`${role.id}.company`]}
-              />
-              <TextField
-                label="Dates"
-                accessibilityLabel={`${name}, dates`}
-                placeholder="Mar 2022 — Present"
-                value={role.period}
-                onChangeText={(text) => patch(index, { ...role, period: text })}
-                onBlur={() => onBlurField?.(`${role.id}.period`)}
-                error={errors[`${role.id}.period`]}
-              />
+              <View style={{ gap: s(FIELD_GAP) }}>
+                <TextField
+                  label="Job title"
+                  icon="briefcase"
+                  accessibilityLabel={`${name}, job title`}
+                  placeholder="Senior Product Designer"
+                  value={role.title}
+                  onChangeText={(text) => patch(index, { ...role, title: text })}
+                  onBlur={() => onBlurField?.(`${role.id}.title`)}
+                  error={errors[`${role.id}.title`]}
+                />
+                <TextField
+                  label="Company"
+                  icon="building"
+                  accessibilityLabel={`${name}, company`}
+                  placeholder="PhonePe"
+                  value={role.company}
+                  onChangeText={(text) => patch(index, { ...role, company: text })}
+                  onBlur={() => onBlurField?.(`${role.id}.company`)}
+                  error={errors[`${role.id}.company`]}
+                />
+                <TextField
+                  label="Dates"
+                  icon="calendar-alt"
+                  accessibilityLabel={`${name}, dates`}
+                  placeholder="Mar 2022 — Present"
+                  value={role.period}
+                  onChangeText={(text) => patch(index, { ...role, period: text })}
+                  onBlur={() => onBlurField?.(`${role.id}.period`)}
+                  error={errors[`${role.id}.period`]}
+                />
+              </View>
               <BulletRows
                 entryId={role.id}
                 entryName={name}
@@ -86,12 +95,10 @@ export function ExperienceEditor({
         );
       })}
 
-      <Button
-        label="Add role"
-        variant="secondary"
-        icon="plus"
-        block
+      <AddSectionTile
+        label="Role"
         onPress={() => onChange([...value, newRole()])}
+        style={{ minHeight: s(ADD_ENTRY_STYLE.height), paddingHorizontal: s(ADD_ENTRY_STYLE.padX) }}
       />
     </View>
   );

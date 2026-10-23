@@ -3,8 +3,10 @@ import { ScrollView, View } from 'react-native';
 
 import { SCORE_LABEL, type AtsCheckItem } from '@/data/models';
 import { useApplyAtsFix, useResume, useResumeScore } from '@/data/queries';
-import { useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import AtsCheckArt from '../../../../assets/icons/create/ats-check.svg';
+import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
+import { a11yHeader, useReducedMotion } from '@/lib';
+import { scaledSheet, useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Skeleton } from '@/ui/Skeleton';
@@ -13,6 +15,7 @@ import { StickyActionBar } from '@/ui/StickyActionBar';
 import { Text } from '@/ui/Text';
 
 import { fixRowIds, fixRows, mergeOrder, todoItems } from '../atsFixRows';
+import { AiPill } from '../components/AiPill';
 import { AtsFixCard } from '../components/AtsFixCard';
 import { useResumesActions } from '../hooks/useResumesActions';
 
@@ -35,9 +38,53 @@ const CARD_BLOCK = 148;
 /** How much of the page is left above a deep-linked card when it is scrolled into view. */
 const REVEAL_LEAD = 24;
 
+// RESUMES 09 at 390 (577:9464), in artboard units.
+const HEADER_TO_HERO = 14 / 0.75;
+const HERO_ART_W = 64 / 0.75;
+const HERO_ART_H = 62.3637 / 0.75;
+const ART_TO_TITLE = 14 / 0.75;
+const TITLE_TO_LEDE = 8 / 0.75;
+const HERO_TO_SECTION = 26 / 0.75;
+const SECTION_TO_CARDS = 12 / 0.75;
+const CARD_GAP = 12 / 0.75;
+const SPARKLE_W = 18 / 0.75;
+const SPARKLE_H = 17.6315 / 0.75;
+
+/** The page's hero (577:9491): the ATS check drawing, the title and the one honest sentence. */
+function FixHero() {
+  const { s } = useTheme();
+  const styles = useStyles();
+  return (
+    <View style={styles.hero}>
+      <AtsCheckArt width={s(HERO_ART_W)} height={s(HERO_ART_H)} />
+      <Text {...a11yHeader()} variant="headlineLg" align="center" style={styles.heroTitle}>
+        Fix with AI
+      </Text>
+      <Text variant="captionRegular" color="textSecondary" align="center" style={styles.lede}>
+        {LEDE}
+      </Text>
+    </View>
+  );
+}
+
+/** "Quick wins" over the cards, with the document's name at the other end (577:9497). */
+function QuickWinsHeading({ document }: { document: string }) {
+  const styles = useStyles();
+  return (
+    <View style={styles.heading}>
+      <Text {...a11yHeader()} variant="title" style={styles.fill}>
+        Quick wins
+      </Text>
+      <Text variant="micro" color="textSecondary" numberOfLines={1} style={styles.document}>
+        {document}
+      </Text>
+    </View>
+  );
+}
+
 /**
- * Fix with AI — the quick-win list (V2 §7.8). No artboard draws it (plan §8), so it is assembled
- * from the built primitives alone.
+ * Fix with AI — the quick-win list (V2 §7.8), drawn as RESUMES 09 (577:9464): an AI mark in the
+ * header, the hero, then one card per check under "Quick wins".
  *
  * The screen's whole difficulty is that a fix REMOVES its own row: applying one makes the check
  * pass, so it leaves `atsQuickWins` on the next score. `atsFixRows` merges the live quick wins
@@ -135,9 +182,16 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
     <Screen
       scroll
       edges={['top', 'bottom']}
-      header={<ScreenHeader title="Fix with AI" onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: spacing[4] }}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[4] }}
+      header={
+        <ScreenHeader
+          title="Fix with AI"
+          showTitle={false}
+          onBack={actions.goBack}
+          trailing={<AiPill />}
+        />
+      }
+      headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
+      contentContainerStyle={{ paddingBottom: spacing[8], gap: s(CARD_GAP) }}
       footer={footer}
       scrollRef={scrollRef}
     >
@@ -166,7 +220,6 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
           void resume.refetch();
           void score.refetch();
         }}
-        style={{ marginTop: spacing[10] }}
       />,
     );
   }
@@ -179,7 +232,6 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
         message={`This document has no ${SCORE_LABEL} yet.`}
         actionLabel="Back to the document"
         onAction={actions.goBack}
-        style={{ marginTop: spacing[10] }}
       />,
     );
   }
@@ -191,7 +243,6 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
         title="Nothing left to fix"
         actionLabel="Back to the score"
         onAction={actions.goBack}
-        style={{ marginTop: spacing[10] }}
       />,
     );
   }
@@ -201,6 +252,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
       <StickyActionBar
         primary={{
           label: `Apply all ${todo.length}`,
+          leading: <SparkleIcon width={s(SPARKLE_W)} height={s(SPARKLE_H)} />,
           onPress: applyAll,
           loading: run != null,
           disabled: applyingId != null,
@@ -213,9 +265,15 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
 
   return page(
     <>
-      <Text variant="body" color="textSecondary">
-        {LEDE}
-      </Text>
+      <FixHero />
+      <View
+        style={{
+          marginTop: s(HERO_TO_SECTION - CARD_GAP),
+          marginBottom: s(SECTION_TO_CARDS - CARD_GAP),
+        }}
+      >
+        <QuickWinsHeading document={resume.data.title} />
+      </View>
       {rows.map((row) => (
         <AtsFixCard key={row.item.id} row={row} onApply={start} onLayout={reveal} />
       ))}
@@ -236,3 +294,12 @@ function FixSkeleton() {
     </View>
   );
 }
+
+const useStyles = scaledSheet((s) => ({
+  hero: { alignItems: 'center' },
+  heroTitle: { marginTop: s(ART_TO_TITLE) },
+  lede: { marginTop: s(TITLE_TO_LEDE) },
+  heading: { flexDirection: 'row', alignItems: 'center', gap: s(8 / 0.75) },
+  fill: { flex: 1 },
+  document: { flexShrink: 1 },
+}));

@@ -48,14 +48,25 @@ export function DocTypePill({ resume, style }: DocTypePillProps) {
 
 const REFRESH_ICON = 8;
 
-/** Amber "Update available" pill overlaid on stale documents (Figma 1:1440). */
-export function UpdateAvailablePill({ style }: { style?: StyleProp<ViewStyle> }) {
+/**
+ * Amber "Update available" pill overlaid on stale documents (Figma 1:1440).
+ *
+ * Silent to screen readers by default, because a library card already says it in its own label.
+ * `announce` is for a page that has no such label to carry it — the editor's meta strip.
+ */
+export function UpdateAvailablePill({
+  announce = false,
+  style,
+}: {
+  announce?: boolean;
+  style?: StyleProp<ViewStyle>;
+}) {
   const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
   return (
     <View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      accessibilityElementsHidden={!announce}
+      importantForAccessibility={announce ? 'auto' : 'no-hide-descendants'}
       style={[
         styles.pill,
         {

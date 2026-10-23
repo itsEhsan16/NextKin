@@ -1,42 +1,58 @@
 import { View } from 'react-native';
 
-import { useTheme } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 
 /**
- * Block geometry, each the composed height of the card it stands in for — Card is 16pt of padding
- * and a 1pt hairline on both sides, so every card block carries that 34pt:
- *
- * - `BANNER`  34 + a 36pt tile
- * - `USAGE`   34 + groupLabel 20 + three (caption 20 + 8 + 4pt bar) rows + three 16pt gaps
- * - `PERIOD`  the segmented control's own height
- * - `TILE`    34 + title 24 + 8 + price 30 + 8 + caption 20
+ * Block geometry, each the height BILLING 01 (577:9155) draws the block it stands in for, at 390
+ * in artboard units: the hero's text column, the reason banner, the usage card, the "Choose your
+ * plan" row, and the two plan cards — with the board's own gaps between them.
  */
-const BANNER = 70;
-const USAGE = 198;
-const PERIOD = 48;
-const TILE = 124;
+const HERO = 91 / 0.75;
+const BANNER = 57.5 / 0.75;
+const USAGE = 229 / 0.75;
+const SECTION = 36 / 0.75;
+const FREE_TILE = 87.5 / 0.75;
+const PRO_TILE = 121 / 0.75;
+const GAP_SM = 10 / 0.75;
+const GAP_MD = 12 / 0.75;
+const GAP_LG = 18 / 0.75;
 
 export const LOADING_LABEL = 'Loading plans';
 
 /**
- * The plan screen's loading state: blocks in the shape of the banner, the usage meter, the
- * billing-period control and the two plan tiles, so nothing jumps when the queries land. The
- * screen pins an inert `StickyActionBar` under it because that bar owns the bottom safe-area
- * inset — a loading page without one would resize the viewport the moment the plans arrive.
+ * The plan screen's loading state: blocks in the shape of the hero, banner, usage meter, period
+ * row and the two plan cards, so nothing jumps when the queries land. The screen pins an inert
+ * `StickyActionBar` under it because that bar owns the bottom safe-area inset — a loading page
+ * without one would resize the viewport the moment the plans arrive.
  */
 export function UpgradeSkeleton() {
-  const { spacing, s } = useTheme();
+  const { s } = useTheme();
+  const styles = useStyles();
 
   return (
-    <View accessible accessibilityLabel={LOADING_LABEL} style={{ gap: spacing[5] }}>
-      <Skeleton height={s(BANNER)} radius="card" />
-      <Skeleton height={s(USAGE)} radius="card" />
-      <Skeleton height={s(PERIOD)} radius="xl" />
-      <View style={{ gap: spacing[3] }}>
-        <Skeleton height={s(TILE)} radius="card" />
-        <Skeleton height={s(TILE)} radius="card" />
+    <View accessible accessibilityLabel={LOADING_LABEL}>
+      <Skeleton height={s(HERO)} radius="card" />
+      <View style={styles.banner}>
+        <Skeleton height={s(BANNER)} radius="card" />
+      </View>
+      <View style={styles.usage}>
+        <Skeleton height={s(USAGE)} radius="card" />
+      </View>
+      <View style={styles.section}>
+        <Skeleton height={s(SECTION)} radius="xl" />
+      </View>
+      <View style={styles.tiles}>
+        <Skeleton height={s(FREE_TILE)} radius="card" />
+        <Skeleton height={s(PRO_TILE)} radius="card" />
       </View>
     </View>
   );
 }
+
+const useStyles = scaledSheet((s) => ({
+  banner: { marginTop: s(GAP_MD) },
+  usage: { marginTop: s(GAP_MD) },
+  section: { marginTop: s(GAP_LG) },
+  tiles: { marginTop: s(GAP_SM), gap: s(GAP_SM) },
+}));

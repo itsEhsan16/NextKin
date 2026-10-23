@@ -1,20 +1,16 @@
 /**
- * Translates an open Sheet up over the iOS keyboard (Phase 9A).
+ * Translates an open Sheet up over the keyboard (Phase 9A), on both platforms.
  *
- * A separate component mounted conditionally rather than a hook inside `Sheet`, because
- * Reanimated's `useAnimatedKeyboard` takes the app off Android's `adjustResize` for as long as
- * it is mounted — it switches the window to `adjustNothing` and hands the offset to the UI
- * thread instead. Six hosts render a `<Sheet open={false}>` unconditionally, so a hook inside
- * Sheet would run app-wide and quietly break keyboard handling on every Android screen. Mounted
- * here, it runs only for an opted-in, actually-mounted, iOS sheet.
+ * Driven by `react-native-keyboard-controller`'s animated keyboard height — the same source the
+ * pages' `KeyboardFrame` uses — so the app has ONE keyboard system. (It used Reanimated's
+ * `useAnimatedKeyboard`, which switches Android's soft-input mode while mounted and would contend
+ * with the controller's provider.) Still a separate, conditionally mounted component: six hosts
+ * render a `<Sheet open={false}>` unconditionally, and only an opted-in, mounted sheet needs it.
  */
 import type { ReactNode } from 'react';
 import { StyleSheet, useWindowDimensions } from 'react-native';
-import Animated, {
-  useAnimatedKeyboard,
-  useAnimatedStyle,
-  type SharedValue,
-} from 'react-native-reanimated';
+import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { keyboardLift } from './sheetKeyboardMath';
@@ -26,7 +22,8 @@ export type SheetKeyboardLiftProps = {
 };
 
 export function SheetKeyboardLift({ sheetHeight, children }: SheetKeyboardLiftProps) {
-  const keyboard = useAnimatedKeyboard();
+  // `height` runs from 0 to MINUS the keyboard's height as it opens, frame by frame.
+  const keyboard = useReanimatedKeyboardAnimation();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   // Read here so the worklet captures plain numbers rather than the insets object.
@@ -37,7 +34,7 @@ export function SheetKeyboardLift({ sheetHeight, children }: SheetKeyboardLiftPr
     transform: [
       {
         translateY: -keyboardLift({
-          keyboardHeight: keyboard.height.value,
+          keyboardHeight: -keyboard.height.value,
           sheetHeight: sheetHeight.value,
           insetBottom,
           insetTop,
