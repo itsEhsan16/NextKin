@@ -22,6 +22,7 @@ import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
 import { GoogleButton } from '../components/GoogleButton';
 import { useOnboardingStore } from '../onboardingStore';
+import { useFirstRunStore } from '../firstRunStore';
 import { useSessionStore } from '../sessionStore';
 import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
@@ -53,6 +54,7 @@ export function SignUpScreen() {
   const { sizes, s } = useTheme();
   const styles = useStyles();
   const signIn = useSessionStore((state) => state.signIn);
+  const markFirstRun = useFirstRunStore((state) => state.mark);
   const markSeen = useOnboardingStore((state) => state.markSeen);
 
   const [draft, setDraft] = useState<SignUpDraft>(blankSignUp);
@@ -81,6 +83,7 @@ export function SignUpScreen() {
   // There is no navigation call to make: the gate is a pure state flip.
   const enter = () => {
     markSeen();
+    markFirstRun();
     signIn();
   };
 

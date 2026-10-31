@@ -106,6 +106,12 @@ describe('UploadReviewScreen (V2 §7.4 — no artboard)', () => {
 
     expect(screen.getByRole('header', { name: 'Check what we found' })).toBeOnTheScreen();
     expect(screen.getByText('Zerodha · Jan 2023 – Sep 2024', shown)).toBeOnTheScreen();
+    // Jobs and dates lead. The rest is one tap away, and counted.
+    expect(screen.queryByText('Service design', shown)).not.toBeOnTheScreen();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Also found: 2 skills and a headline/, shown)),
+    );
+    await settle();
     expect(screen.getByText('Service design', shown)).toBeOnTheScreen();
 
     // The guessed row says what is wrong with it and starts REJECTED — §7.4 forbids presenting
@@ -123,6 +129,15 @@ describe('UploadReviewScreen (V2 §7.4 — no artboard)', () => {
     expect(screen.getByText('Adds a headline, 1 role and 2 skills')).toBeOnTheScreen();
   });
 
+  it('leads on to the job for a first resume, whichever way the review ends', async () => {
+    useImportStore.getState().setImport({ draft: DRAFT, resumeId: RESUME_ID, thenPickJob: true });
+    await renderReview(false);
+
+    await press('Skip');
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/create/build', params: { resumeId: RESUME_ID } });
+    expect(useImportStore.getState().draft).toBeNull();
+  });
+
   it('offers the upload step again when it is opened with nothing to review', async () => {
     await renderReview(false);
 
@@ -133,6 +148,10 @@ describe('UploadReviewScreen (V2 §7.4 — no artboard)', () => {
 
   it('disables Add with a reason once every row is switched off, and still offers Skip', async () => {
     await renderReview();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Also found:/, shown)),
+    );
+    await settle();
 
     for (const label of [
       'Lead Product Designer',

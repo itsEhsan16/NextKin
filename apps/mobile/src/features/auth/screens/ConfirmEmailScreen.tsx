@@ -15,6 +15,7 @@ import { TextField } from '@/ui/TextField';
 import { CODE_LENGTH, codeComplete, confirmErrorMessage } from '../authForms';
 import { useOnboardingStore } from '../onboardingStore';
 import { usePendingSignUp } from '../pendingSignUp';
+import { useFirstRunStore } from '../firstRunStore';
 import { useSessionStore } from '../sessionStore';
 
 const RESENT = 'We sent a new code.';
@@ -34,6 +35,7 @@ export function ConfirmEmailScreen() {
   const { spacing, sizes } = useTheme();
   const { email, password, clear } = usePendingSignUp();
   const signIn = useSessionStore((state) => state.signIn);
+  const markFirstRun = useFirstRunStore((state) => state.mark);
   const markSeen = useOnboardingStore((state) => state.markSeen);
   const confirm = useConfirmSignUp();
   const resend = useResendSignUpCode();
@@ -56,6 +58,7 @@ export function ConfirmEmailScreen() {
         onSuccess: () => {
           clear();
           markSeen();
+          markFirstRun();
           // Flipping the session unmounts this group and lands on the tabs, as sign-in does.
           signIn();
         },

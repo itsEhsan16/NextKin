@@ -14645,3 +14645,21 @@ Branch `step-2/fix-the-flow`, built on Step 1. Nothing is merged or pushed.
 - **Removed:** "Add a job" (`JobIntakeScreen`). BUILD 03 does its job and also reads links, and `/create/tailor` with no job now redirects to BUILD 01.
 - **Visible effect you may notice:** for anyone with a resume, BUILD 04b and 04c no longer appear unless they switch to the profile. That follows your choice, and the boards stay reachable.
 - **Copy, spec-derived:** the + sheet row is now "Make a resume for a job". Home's tile keeps the board's "Build Resume", so the two words differ. Say if you want them the same.
+
+### 145.2 The first resume
+
+- **Why:** a new account landed on Home and had to work out the path itself. The spec's target is a first resume within 15 minutes.
+- **The path now:** sign up → "Let's make your first resume" → upload, or start from nothing → check jobs and dates → BUILD 01, already on that resume → Customize → the resume.
+- **New, spec-derived, no board (rule 7):**
+  - **`/create/start`:** the flows' hero, plus the run screen's step list.
+  - **Home's card:** the same three steps and a button for the next one, for anyone who skipped. It takes the empty progress card's place, leaves once a resume has been made for a job, and has a ✕.
+- **The upload review is shorter:** jobs and education lead, and the headline, skills and certifications sit behind "Also found: 12 skills and a headline". They are on, counted in the note, and one tap away. This applies to every upload, not only a first one. §7.4 is still met: nothing enters the profile unconfirmed, and every row keeps its own switch.
+- **Calls made without you:**
+  - **The stage is worked out, not stored,** from the resumes and the profile, so it can't drift. A resume with a target company or role ends it. An uploaded resume alone doesn't.
+  - **The ✕ lasts on this device,** and a new sign-up brings the card back. Someone who only keeps a base resume would otherwise see it forever.
+  - **"Skip" on the review still leads on to the job** in a first run. The upload is a real document either way.
+  - **Both ways forward replace the screen,** so Back doesn't ask again.
+- **Check the wording and look on your phone.** "Your first resume", "Three steps, and it's made for the job you want" and the step captions are mine.
+- **The spec's "not zeroed statistics":** Home's shortcuts still show their counts for a new account, because they double as navigation. Say if you'd rather hide them.
+- **Web has its own onboarding** (ONB 01–08), so this is mobile only.
+- **Not measured:** the 15-minute target needs real people.

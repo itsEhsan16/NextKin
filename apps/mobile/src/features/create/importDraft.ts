@@ -71,6 +71,26 @@ const withWarning = (row: Omit<ImportRow, 'warning'>, warning: string | undefine
 const group = (key: ImportGroupKey, title: string, rows: ImportRow[]): ImportGroup[] =>
   rows.length > 0 ? [{ key, title, rows }] : [];
 
+/** The groups a reader must see: the hard facts. With none of those, everything is shown. */
+export function splitFacts(groups: readonly ImportGroup[]): { facts: ImportGroup[]; others: ImportGroup[] } {
+  const isFact = (group: ImportGroup) => group.key === 'experiences' || group.key === 'education';
+  const facts = groups.filter(isFact);
+  return facts.length > 0 ? { facts, others: groups.filter((group) => !isFact(group)) } : { facts: [...groups], others: [] };
+}
+
+/** "Also found: 12 skills and a headline", counting what is switched on. */
+export function alsoFoundTitle(others: readonly ImportGroup[], accepted: ReadonlySet<string>): string {
+  const count = (key: ImportGroupKey) => others.find((group) => group.key === key)?.rows.filter((row) => accepted.has(row.key)).length ?? 0;
+  const parts = [
+    count('skills') > 0 ? pluralize(count('skills'), 'skill') : null,
+    count('certifications') > 0 ? pluralize(count('certifications'), 'certification') : null,
+    count('headline') > 0 ? 'a headline' : null,
+  ].filter((part): part is string => part !== null);
+  if (parts.length === 0) return 'Also found';
+  const last = parts.pop();
+  return `Also found: ${parts.length ? `${parts.join(', ')} and ${last}` : last}`;
+}
+
 /** Every row the draft offers, in the order the page draws them. Empty groups are dropped. */
 export function importGroups(draft: ProfileDraft | null): ImportGroup[] {
   if (!draft) return [];

@@ -5,7 +5,9 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore, type MockMode } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
-import { resetMockRepos } from '@/data/repos';
+import { mockStore, resetMockRepos } from '@/data/repos';
+import { useFirstRunStore } from '@/features/auth';
+import { firstResumeCard } from '@/features/create/firstResume';
 import { HomeScreen, useHomeStore } from '@/features/home';
 import { CreateSheetProvider } from '@/navigation';
 
@@ -59,6 +61,7 @@ describe('HomeScreen (DESIGN 2)', () => {
     jest.useFakeTimers();
     resetMockRepos();
     useHomeStore.setState({ menuOpen: false });
+    useFirstRunStore.setState({ justSignedUp: false });
     mockPush.mockClear();
     mockNavigate.mockClear();
   });
@@ -157,7 +160,41 @@ describe('HomeScreen (DESIGN 2)', () => {
     await settle(EMPTY_MS);
 
     expect(screen.getByText('No matches yet')).toBeOnTheScreen();
+    // The first-resume card takes the place of an empty progress card.
+    expect(screen.getByText('Your first resume')).toBeOnTheScreen();
+    expect(screen.queryByText('No resume yet')).toBeNull();
+  });
+
+  it('puts the first-resume card away for good when it is closed', async () => {
+    await renderHome('empty');
+    await settle(EMPTY_MS);
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Hide this card')));
+    expect(screen.queryByText('Your first resume')).toBeNull();
     expect(screen.getByText('No resume yet')).toBeOnTheScreen();
+    firstResumeCard.restore();
+  });
+
+  it('opens the first-resume screen once, right after sign-up', async () => {
+    useFirstRunStore.getState().mark();
+    mockStore.state.resumes = [];
+    mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
+    await renderHome();
+    await settle(NORMAL_MS);
+
+    expect(mockPush).toHaveBeenCalledWith('/create/start');
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(useFirstRunStore.getState().justSignedUp).toBe(false);
+    expect(screen.getByLabelText('Add my resume')).toBeOnTheScreen();
+  });
+
+  it('leaves an account that has its first resume alone', async () => {
+    useFirstRunStore.getState().mark();
+    await renderHome();
+    await settle(NORMAL_MS);
+
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(screen.queryByText('Your first resume')).toBeNull();
   });
 
   it('renders the page-level error state with retry in "error" mock mode', async () => {

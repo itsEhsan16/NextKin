@@ -28,6 +28,7 @@ export {
 } from './screens/CoverLetterSetupScreen';
 export { LinkedInUnavailableScreen } from './screens/LinkedInUnavailableScreen';
 export { JdReviewScreen, type JdReviewScreenProps } from './screens/JdReviewScreen';
+export { FirstResumeScreen } from './screens/FirstResumeScreen';
 export { TailorCompareScreen, type TailorCompareScreenProps } from './screens/TailorCompareScreen';
 export { UploadResumeScreen } from './screens/UploadResumeScreen';
 export { UploadReviewScreen } from './screens/UploadReviewScreen';

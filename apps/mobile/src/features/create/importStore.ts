@@ -11,7 +11,9 @@ type ImportState = {
   draft: ProfileDraft | null;
   /** The document the parse created — real and already in the library, unlike the draft. */
   resumeId: string | null;
-  setImport: (payload: { draft: ProfileDraft; resumeId: string }) => void;
+  /** A first resume: the review leads on to picking a job, not back to the document. */
+  thenPickJob: boolean;
+  setImport: (payload: { draft: ProfileDraft; resumeId: string; thenPickJob?: boolean }) => void;
   clearImport: () => void;
 };
 
@@ -22,6 +24,7 @@ type ImportState = {
 export const useImportStore = create<ImportState>((set) => ({
   draft: null,
   resumeId: null,
-  setImport: ({ draft, resumeId }) => set({ draft, resumeId }),
-  clearImport: () => set({ draft: null, resumeId: null }),
+  thenPickJob: false,
+  setImport: ({ draft, resumeId, thenPickJob = false }) => set({ draft, resumeId, thenPickJob }),
+  clearImport: () => set({ draft: null, resumeId: null, thenPickJob: false }),
 }));

@@ -67,6 +67,7 @@ export default function RootLayout() {
           <Stack.Screen name="create/cover-letter" />
           <Stack.Screen name="create/ats-check" />
           <Stack.Screen name="create/zero-resume" />
+          <Stack.Screen name="create/start" />
           <Stack.Screen name="create/upload" />
           <Stack.Screen name="create/upload-review" />
           <Stack.Screen name="create/import-linkedin" />

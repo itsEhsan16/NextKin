@@ -34,7 +34,12 @@ const FORMATS = ['PDF', 'DOCX', 'TXT'] as const;
  *
  * No artboard covers this flow (plan §8), so it is built from the spec on existing primitives.
  */
-export function UploadResumeScreen() {
+export type UploadResumeScreenProps = {
+  /** A first resume: the review leads on to picking a job (toreview §145.2). */
+  thenPickJob?: boolean;
+};
+
+export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenProps) {
   const { motion, spacing } = useTheme();
   const reduced = useReducedMotion();
   const actions = useCreateActions();
@@ -56,7 +61,7 @@ export function UploadResumeScreen() {
       setFile(picked);
       importResume.mutate(picked, {
         onSuccess: ({ resume, draft }) => {
-          setImport({ draft, resumeId: resume.id });
+          setImport({ draft, resumeId: resume.id, thenPickJob });
           // Under Reduce Motion there is no check to watch land, so there is nothing to hold for.
           if (reduced) actions.openUploadReview();
           else setLanded(true);
@@ -65,7 +70,7 @@ export function UploadResumeScreen() {
     } finally {
       setPicking(false);
     }
-  }, [actions, importResume, reduced, setImport]);
+  }, [actions, importResume, reduced, setImport, thenPickJob]);
 
   // A success is shown before it is acted on: the rows tick, the bar fills, the check draws in,
   // and the review replaces this page `successHold` later. Leaving first cancels the hand-off.

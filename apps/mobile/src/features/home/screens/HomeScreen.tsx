@@ -24,12 +24,14 @@ import { layoutTransition } from '@/ui/motion';
 import { BrandBlock } from '../components/BrandBlock';
 import { HeroBlock } from '../components/HeroBlock';
 import { HomeHeader } from '../components/HomeHeader';
+import { FirstResumeCard } from '../components/FirstResumeCard';
 import { HomeSkeleton } from '../components/HomeSkeleton';
 import { QuickStartCard } from '../components/QuickStartCard';
 import { ResumeProgressCard } from '../components/ResumeProgressCard';
 import { ShortcutGrid } from '../components/ShortcutGrid';
 import { TopJobMatches } from '../components/TopJobMatches';
 import { useCopiedJobLink } from '../hooks/useCopiedJobLink';
+import { useFirstResume } from '../hooks/useFirstResume';
 import { useHomeActions } from '../hooks/useHomeActions';
 
 const SECTION_GAP = 16;
@@ -62,6 +64,7 @@ function Section({ index, animate, children }: SectionProps) {
 export function HomeScreen() {
   const { spacing, s } = useTheme();
   const actions = useHomeActions();
+  const firstResume = useFirstResume();
   // TAILOR 00c: a job link on the clipboard is asked about while Home is in view.
   useCopiedJobLink();
   // A run finished last time, or yesterday's "not yet": asked once a visit.
@@ -161,6 +164,16 @@ export function HomeScreen() {
           <Section index={1} animate={animate}>
             <HeroBlock onFindJobs={actions.findJobs} />
           </Section>
+          {firstResume.cardStage ? (
+            <Section index={2} animate={animate}>
+              <FirstResumeCard
+                stage={firstResume.cardStage}
+                onAddResume={firstResume.addResume}
+                onPickJob={firstResume.pickJob}
+                onDismiss={firstResume.dismiss}
+              />
+            </Section>
+          ) : null}
           <Section index={2} animate={animate}>
             <QuickStartCard onAction={actions.quickStart} />
           </Section>
@@ -176,16 +189,19 @@ export function HomeScreen() {
           <Section index={4} animate={animate}>
             <ShortcutGrid stats={stats.data} onShortcut={actions.shortcut} />
           </Section>
-          <Section index={5} animate={animate}>
-            <ResumeProgressCard
-              resume={latestResume}
-              status={queryPhase(resumes)}
-              onViewAll={actions.viewAllResumes}
-              onPressResume={actions.openResume}
-              onCreateResume={actions.createResume}
-              onRetry={() => void resumes.refetch()}
-            />
-          </Section>
+          {/* With the first-resume card up, an empty progress card would only say it again. */}
+          {firstResume.cardStage && !latestResume ? null : (
+            <Section index={5} animate={animate}>
+              <ResumeProgressCard
+                resume={latestResume}
+                status={queryPhase(resumes)}
+                onViewAll={actions.viewAllResumes}
+                onPressResume={actions.openResume}
+                onCreateResume={actions.createResume}
+                onRetry={() => void resumes.refetch()}
+              />
+            </Section>
+          )}
         </>
       )}
     </Screen>
