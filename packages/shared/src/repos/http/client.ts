@@ -67,6 +67,10 @@ export interface HttpResult<T> {
 }
 
 /** An API failure in the shared envelope. `code` is what screens branch on. */
+const UNREACHABLE = 'Could not reach NextKin. Check your connection.';
+
+type RefreshOutcome = 'refreshed' | 'refused' | 'unreachable';
+
 export class ApiError extends Error {
   constructor(
     readonly code: ErrorCode | 'NETWORK',
@@ -123,7 +127,7 @@ export function createHttpClient(options: HttpClientOptions) {
   const timeoutMs = options.timeoutMs ?? 15_000;
   const retryDelay = options.retryDelayMs ?? (() => 200 + Math.floor(Math.random() * 400));
   if (mobile && !options.tokens) throw new Error('A mobile HTTP client needs a TokenStore.');
-  let refreshing: Promise<boolean> | null = null;
+  let refreshing: Promise<RefreshOutcome> | null = null;
 
   function url(path: string, query?: HttpRequest['query']): string {
     const params = new URLSearchParams();
@@ -154,7 +158,7 @@ export function createHttpClient(options: HttpClientOptions) {
       });
     } catch {
       const timedOut = controller.signal.aborted;
-      throw new ApiError('NETWORK', timedOut ? 'NextKin took too long to answer. Try again.' : 'Could not reach NextKin. Check your connection.', 0, null, requestId);
+      throw new ApiError('NETWORK', timedOut ? 'NextKin took too long to answer. Try again.' : UNREACHABLE, 0, null, requestId);
     } finally {
       clearTimeout(timer);
     }
@@ -189,17 +193,19 @@ export function createHttpClient(options: HttpClientOptions) {
     options.onSignedOut?.();
   }
 
-  function refresh(): Promise<boolean> {
+  /** Only the server turning the token down ends a session: a dropped connection or an outage says nothing about it. */
+  function refresh(): Promise<RefreshOutcome> {
     refreshing ??= (async () => {
       try {
         const current = await options.tokens!.get();
-        if (!current) return false;
+        if (!current) return 'refused';
         const res = await sendOnce('/auth/token/refresh', { body: { refreshToken: current.refreshToken } });
-        if (!res.ok) return false;
+        if (res.status >= 500 || res.status === 429) return 'unreachable';
+        if (!res.ok) return 'refused';
         await options.tokens!.set(tokenSetSchema.parse(await res.json()));
-        return true;
+        return 'refreshed';
       } catch {
-        return false;
+        return 'unreachable';
       } finally {
         refreshing = null;
       }
@@ -215,7 +221,9 @@ export function createHttpClient(options: HttpClientOptions) {
     const token = mobile ? (await options.tokens!.get())?.accessToken : undefined;
     let res = await sendOnce(path, init, token);
     if (res.status === 401 && authenticated) {
-      if (mobile && token && (await refresh())) res = await sendOnce(path, init, (await options.tokens!.get())?.accessToken);
+      const outcome = mobile && token ? await refresh() : 'refused';
+      if (outcome === 'unreachable') throw new ApiError('NETWORK', UNREACHABLE, 0);
+      if (outcome === 'refreshed') res = await sendOnce(path, init, (await options.tokens!.get())?.accessToken);
       if (res.status === 401) {
         const error = await failure(res);
         await signedOut();

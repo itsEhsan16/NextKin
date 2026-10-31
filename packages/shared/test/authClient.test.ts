@@ -114,6 +114,33 @@ describe('mobile', () => {
     expect(onSignedOut).toHaveBeenCalledOnce();
   });
 
+  it('a refresh that never got an answer keeps the session: a bad signal is not a sign-out', async () => {
+    const tokens = memoryTokens({ accessToken: 'old', refreshToken: 'rt-old-0123456789' });
+    const onSignedOut = vi.fn();
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(unauthenticated())
+      .mockRejectedValueOnce(new TypeError('Network request failed'));
+    const client = createAuthClient({ baseUrl: '', client: 'mobile', tokens, fetch, onSignedOut });
+    await expect(client.request('/me/settings')).rejects.toMatchObject({ code: 'NETWORK' });
+    expect(tokens.value?.refreshToken).toBe('rt-old-0123456789');
+    expect(onSignedOut).not.toHaveBeenCalled();
+  });
+
+  it('a refresh the server could not serve keeps the session too', async () => {
+    const tokens = memoryTokens({ accessToken: 'old', refreshToken: 'rt-old-0123456789' });
+    const onSignedOut = vi.fn();
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(unauthenticated())
+      .mockResolvedValueOnce(json(503, {}))
+      .mockResolvedValueOnce(json(503, {}));
+    const client = createAuthClient({ baseUrl: '', client: 'mobile', tokens, fetch, onSignedOut });
+    await expect(client.request('/me/settings')).rejects.toMatchObject({ code: 'NETWORK' });
+    expect(tokens.value?.refreshToken).toBe('rt-old-0123456789');
+    expect(onSignedOut).not.toHaveBeenCalled();
+  });
+
   it('a wrong password at login is an error, not a sign-out', async () => {
     const onSignedOut = vi.fn();
     const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValueOnce(unauthenticated());
