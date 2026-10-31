@@ -14502,3 +14502,11 @@ The owner asked for two things: the app must stay light even when the phone is i
   - Billing, legal and share URLs use `nextkin.app`, while the purchased domain is `nextkin.ai`.
   - `expo lint` covers only `src/` and `app/`, so 14 errors in `scripts/` and `__tests__/` went unseen. CI lint itself was green. Both are fixed, and the lint script now covers those folders.
 - **Stale:** the `STAYS_ON_MOCK` comment still cites D-17 for link import, though the owner overrode D-17 on 2026-10-18 and the reader was not built.
+- **Owner decisions (2026-10-31):**
+  - **D-06 stands:** web and mobile launch together.
+  - **Expo Go:** daily screen work stays on it; release work may use a development build.
+  - **Link reader:** build it now (Step 1 of `AppAssess.md`), not in Step 4 as recommended.
+  - **Applications (changes D-05):** after a build, a tailor or an apply through NextKin, ask whether the user applied, and save the answer on the server.
+- **Step 0 status:** 9 commits on branch `stabilize/step-0`, not merged or pushed. Root typecheck, lint and test were green before the commits. The commits were split by area, so only the final state was checked, not each commit alone.
+- **Decide:** `aws/infra` commits the AWS account id `962942593570`. It is an identifier, not a credential, but check it is acceptable for this repo.
+- **Waiting on the owner:** the §140.4 phone check, which unblocks Phase 3.

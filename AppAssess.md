@@ -158,7 +158,7 @@ The durations are rough estimates for one focused developer. External approvals 
 
 ### Step 1: Make it real (2–3 weeks)
 
-1. Fix blockers 1–5: real notifications, block or build link reading, and a decision on applications.
+1. Fix blockers 1–5: real notifications, a real link reader on the server (with the mock path removed), and server-saved applications with the "Did you apply?" prompt after each build, tailor or apply.
 2. Add a `staging` EAS profile that points at the AWS demo environment.
 3. Complete the P5-08 device test, then run the full loop on the backend on one Android phone and one iPhone.
 4. Add crash reporting and basic product analytics. Without them, nothing that follows can be measured.
@@ -192,8 +192,8 @@ This is where NextKin stops looking like another resume builder (`WhyNextKin.md`
 ### Step 4: Create the habit (3–4 weeks)
 
 1. Real push: job matches, finished runs and application follow-ups, all opt-in.
-2. Share a job into NextKin from any browser or app, once a real link reader exists.
-3. Lightweight "I applied" tracking on the server, which also makes a useful Home number (needs D-05).
+2. Share a job into NextKin from any browser or app, using the link reader from Step 1.
+3. Use the saved applications for a Home number and follow-ups.
 4. Fit labels next to skills: location, remote, salary and sponsorship, with clear reasons why a job is hidden.
 5. Interview prep tied to real applications.
 
@@ -214,10 +214,15 @@ This is where NextKin stops looking like another resume builder (`WhyNextKin.md`
 
 ## 8. Decisions needed from you
 
-1. **Launch order.** D-06 says web and mobile launch together, while spec §14.4 says mobile follows validated web demand. **My recommendation:** run a mobile beta alongside the web launch, but don't let the store release hold up the web launch.
-2. **Expo Go rule.** **My recommendation:** keep it for screen work and allow a development build for release work.
-3. **Link reading.** Build the reader, or remove every link path. **My recommendation:** block the mock path now and build the reader in Step 4, since it unlocks sharing into the app.
-4. **Application tracking (D-05).** **My recommendation:** build the small "I applied" version, since hiding it leaves the app with no return loop.
+**Decided by the owner on 2026-10-31:**
+
+1. **Launch order:** web and mobile launch together (D-06 stands). Mobile's store work now sets the shared date, so the store accounts should be filed straight away.
+2. **Expo Go rule:** Expo Go stays for daily screen work. A development build is allowed for release work.
+3. **Link reading:** build the real reader now, in Step 1.
+4. **Applications:** after a user builds or tailors a resume, or applies to a job through NextKin, ask whether they applied, and save the answer on the server. This changes D-05.
+
+**Still open:**
+
 5. **Job providers (D-12).** This is the largest open product dependency. The job board and match scores aren't real until it's decided.
 6. **One flow or two.** **My recommendation:** one, as in Step 2.
 7. **Payments on mobile.** Keep the browser checkout or add store billing, once the rule check is back.
