@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { INTERVIEW_GENERIC_LABEL, type Resume } from '@/data/models';
@@ -14,6 +13,7 @@ import { Pressable } from '@/ui/Pressable';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
+import { Icon } from '@/ui/Icon';
 
 export type InterviewSourceMode = 'resume' | 'role';
 
@@ -50,7 +50,6 @@ const ROW_GAP = 12;
 const THUMB = 46;
 const THUMB_RADIUS = 8;
 const LINE_GAP = 2;
-const CHEVRON = 9;
 
 /**
  * What a practice set is written from (V2 §7.15, INTERVIEW 02 577:1861): a resume — and the job it
@@ -119,12 +118,7 @@ export function InterviewSourcePicker({
                 </Text>
               </View>
               {resume.atsScore != null ? <AtsBadge score={resume.atsScore} size="sm" /> : null}
-              <FontAwesome5
-                name="chevron-right"
-                size={s(CHEVRON / 0.75)}
-                color={colors.iconChevron}
-                solid
-              />
+              <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
             </Pressable>
             <NoteBar
               text={
@@ -146,7 +140,7 @@ export function InterviewSourcePicker({
               returnKeyType="done"
               error={roleError}
             />
-            <NoteBar icon="info-circle" text={INTERVIEW_GENERIC_LABEL} />
+            <NoteBar icon="InfoCircle" text={INTERVIEW_GENERIC_LABEL} />
           </>
         )}
       </Card>

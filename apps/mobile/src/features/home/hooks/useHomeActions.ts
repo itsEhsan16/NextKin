@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
 import type { Job, Resume } from '@/data/models';
-import { useRetryGeneration } from '@/data/queries';
 import { useCreateSheet } from '@/navigation';
 
 import type { QuickStartAction } from '../components/QuickStartCard';
@@ -17,11 +16,11 @@ import { useHomeStore } from '../homeStore';
  */
 const QUICK_START_ROUTES: Record<
   QuickStartAction,
-  '/create/tailor' | '/create/cover-letter' | '/create/zero-resume' | '/create/ats-check'
+  '/create/build' | '/create/cover-letter' | '/create/zero-resume' | '/create/ats-check'
 > = {
-  // "Build Resume — for a specific job" is the one job → resume flow now (toreview §114): Add a
-  // job, then Customize, which offers a build from the profile when there is no resume.
-  'build-resume': '/create/tailor',
+  // Build Resume opens BUILD 01 again (owner, 2026-10-27, toreview §139): a resume built from the
+  // profile for one job, through 01 → 02/03 → 04 → 04b → 04c → 05–07. Tailoring keeps §114's path.
+  'build-resume': '/create/build',
   'cover-letter': '/create/cover-letter',
   'zero-resume': '/create/zero-resume',
   'ats-check': '/create/ats-check',
@@ -31,8 +30,6 @@ const QUICK_START_ROUTES: Record<
 export function useHomeActions() {
   const router = useRouter();
   const { open: openCreateSheet } = useCreateSheet();
-  // `mutate` is stable across renders, so the memo below survives the mutation's own state.
-  const { mutate: retryGeneration } = useRetryGeneration();
   const openMenuSheet = useHomeStore((state) => state.openMenu);
 
   return useMemo(
@@ -47,23 +44,6 @@ export function useHomeActions() {
       openResume: (resume: Resume) =>
         router.push({ pathname: '/resumes/[id]', params: { id: resume.id } }),
       createResume: openCreateSheet,
-      /** The live run's own screen (V2 §7.6) — the progress card is a summary of it. */
-      openGeneration: (generationId: string) =>
-        router.push({ pathname: '/generations/[id]', params: { id: generationId } }),
-      /**
-       * Re-queues a failed run and follows it: the mock ticker only advances while something is
-       * subscribed, and the progress screen is what subscribes — so retrying without going there
-       * would leave the run sitting at `queued` for ever.
-       */
-      retryGeneration: (generationId: string) => {
-        // Navigate from the callback, not beside the call: the mutation's onSuccess seeds the
-        // detail cache with the re-queued run, and pushing first races the destination's own
-        // fetch — which would paint the failure this tap was meant to clear.
-        retryGeneration(generationId, {
-          onSuccess: () =>
-            router.push({ pathname: '/generations/[id]', params: { id: generationId } }),
-        });
-      },
       /** All four quick starts are real intakes now (Phases 9B and 9D). */
       quickStart: (action: QuickStartAction) => router.push(QUICK_START_ROUTES[action]),
       shortcut: (shortcut: Shortcut) => {
@@ -83,6 +63,6 @@ export function useHomeActions() {
         }
       },
     }),
-    [openCreateSheet, openMenuSheet, retryGeneration, router],
+    [openCreateSheet, openMenuSheet, router],
   );
 }

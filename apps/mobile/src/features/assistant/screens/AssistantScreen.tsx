@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { View, type ScrollView } from 'react-native';
+import { View, type ScrollViewInstance } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { ASSISTANT_DISCLAIMER, type AssistantMessage } from '@/data/models';
@@ -90,7 +90,7 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
   useEffect(() => () => setDraft(''), [setDraft]);
   const [attachedId, setAttachedId] = useState(resumeId);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
 
   const documents = useMemo(
     () =>
@@ -212,7 +212,7 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load the conversation"
         message="Check your connection and try again."
         actionLabel="Try again"

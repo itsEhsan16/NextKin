@@ -170,7 +170,7 @@ export function NotificationsScreen() {
           onBack={actions.goBack}
           trailing={
             <IconButton
-              icon="cog"
+              icon="Settings01"
               label="Notification preferences"
               onPress={actions.openPreferences}
             />
@@ -236,7 +236,7 @@ export function NotificationsScreen() {
         ) : status === 'error' ? (
           <StateView
             tone="danger"
-            icon="exclamation-triangle"
+            icon="AlertTriangle"
             title="Couldn't load notifications"
             message="Check your connection and try again."
             actionLabel="Try again"

@@ -1,10 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { formatShortDate } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 // Under the legal hero's title at 390 (LEGAL 01 577:8905 … 577:8909), in artboard units.
 const TITLE_TO_PILL = 8 / 0.75;
@@ -12,7 +12,6 @@ const PILL_PAD_LEFT = 9 / 0.75;
 const PILL_PAD_RIGHT = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
 const PILL_GAP = 5 / 0.75;
-const PILL_ICON = 9.5 / 0.75;
 const PILL_TO_INTRO = 12 / 0.75;
 /** The intro is inset inside the hero (577:8909). */
 const INTRO_INSET = 18 / 0.75;
@@ -47,7 +46,7 @@ export function LegalStamp({ updatedAt, intro }: { updatedAt?: string; intro?: s
       <View
         style={[styles.pill, { borderRadius: radii.full, backgroundColor: colors.surfaceSubtle }]}
       >
-        <FontAwesome5 name="calendar" size={s(PILL_ICON)} color={colors.textBody} solid />
+        <Icon name="Calendar" size="xs" color={colors.textBody} />
         <Text variant="microBadge" color="textBody">
           {`Last updated ${formatShortDate(updatedAt)}`}
         </Text>

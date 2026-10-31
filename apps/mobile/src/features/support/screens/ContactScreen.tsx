@@ -162,7 +162,7 @@ export function ContactScreen({ topic }: ContactScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title={CONTACT_ERROR_TITLE}
         message={CONTACT_ERROR_MESSAGE}
         actionLabel="Try again"
@@ -177,11 +177,7 @@ export function ContactScreen({ topic }: ContactScreenProps) {
 
   if (submit.isSuccess) {
     return page(
-      <StateView
-        icon="paper-plane"
-        title={CONTACT_SENT_TITLE}
-        message={contactSentMessage(email)}
-      />,
+      <StateView icon="Send01" title={CONTACT_SENT_TITLE} message={contactSentMessage(email)} />,
       <StickyActionBar primary={{ label: CONTACT_DONE, onPress: goBack }} />,
       false,
     );
@@ -205,7 +201,7 @@ export function ContactScreen({ topic }: ContactScreenProps) {
       {...(failed ? { note: CONTACT_SEND_FAILED } : {})}
       primary={{
         label: CONTACT_CTA,
-        icon: 'paper-plane',
+        icon: 'Send01',
         loading: submit.isPending,
         onPress: send,
       }}

@@ -217,7 +217,7 @@ export function JobsScreen() {
             <FilterChip
               label={location}
               variant="picker"
-              icon="map-marker-alt"
+              icon="MarkerPin01"
               onPress={actions.openLocationPicker}
             />
             <FilterChip
@@ -467,7 +467,7 @@ function ListPlaceholder({
     return (
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load jobs"
         message="Check your connection and try again."
         actionLabel="Try again"

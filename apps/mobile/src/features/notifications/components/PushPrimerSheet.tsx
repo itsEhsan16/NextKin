@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { a11yButton, a11yHeader, hitSlop8, requestPushPermission } from '@/lib';
@@ -9,9 +8,9 @@ import { Sheet } from '@/ui/Sheet';
 import { Text } from '@/ui/Text';
 
 import { useNotificationsStore } from '../notificationsStore';
+import { Icon } from '@/ui/Icon';
 
 const BELL_TILE = 64;
-const BELL = 26;
 
 /**
  * NOTIF 07 (Figma 1:2928) — the contextual push ask, raised over Job Detail right after an
@@ -50,7 +49,7 @@ export function PushPrimerHost() {
               justifyContent: 'center',
             }}
           >
-            <FontAwesome5 name="bell" size={s(BELL)} color={colors.brand} solid />
+            <Icon name="Bell01" size="lg" color={colors.brand} />
           </View>
           <Text
             {...a11yHeader()}

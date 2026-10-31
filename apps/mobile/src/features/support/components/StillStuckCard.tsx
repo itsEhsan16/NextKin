@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { SUPPORT_REPLY_WINDOW } from '@/data/models';
@@ -8,6 +7,7 @@ import { a11yButton, a11yHeader, hitSlopFor } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type StillStuckCardProps = {
   /** The button's label — also its accessible name, so a test or a reader finds one control. */
@@ -25,7 +25,6 @@ const TEXT_GAP = 2 / 0.75;
 const BUTTON_H = 36 / 0.75;
 const BUTTON_PAD_X = 12 / 0.75;
 const BUTTON_GAP = 5 / 0.75;
-const BUTTON_ICON = 10 / 0.75;
 
 /**
  * The way through to a person under the FAQ (577:6271): the Contact us drawing, the reply window,
@@ -59,7 +58,7 @@ export function StillStuckCard({ label, onPress }: StillStuckCardProps) {
           { borderRadius: radii.full, backgroundColor: colors.surfaceInverse },
         ]}
       >
-        <FontAwesome5 name="envelope" size={s(BUTTON_ICON)} color={colors.textOnDark} solid />
+        <Icon name="Mail01" size="xs" color={colors.textOnDark} />
         <Text variant="microBadge" color="textOnDark">
           {label}
         </Text>

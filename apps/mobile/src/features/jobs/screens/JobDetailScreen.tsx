@@ -63,7 +63,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         { paddingHorizontal: spacing.gutter, paddingTop: spacing.headerTopPushed },
       ]}
     >
-      <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
+      <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
     </View>
   );
 
@@ -89,7 +89,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         {backRow}
         <StateView
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Couldn't load this job"
           message="Check your connection and try again."
           actionLabel="Try again"
@@ -114,17 +114,16 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerRow}>
-          <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
+          <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
           <View style={[styles.headerRight, { gap: spacing[3] }]}>
             <IconButton
-              icon="share-alt"
+              icon="Share07"
               label="Share this job"
               onPress={() => actions.shareJob(current)}
             />
             <IconButton
-              icon="bookmark"
-              iconStyle={current.isSaved ? 'solid' : 'regular'}
-              iconSize={s(17)}
+              icon="Bookmark"
+              iconFilled={current.isSaved}
               label={current.isSaved ? 'Remove from saved' : 'Save job'}
               onPress={() => save.toggle(current)}
             />
@@ -179,7 +178,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
           ) : (
             <StateView
               compact
-              icon="briefcase"
+              icon="Briefcase01"
               title="No similar jobs yet"
               message="We'll surface related roles as more come in."
             />

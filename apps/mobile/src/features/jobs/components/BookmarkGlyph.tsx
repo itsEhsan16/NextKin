@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, useRef } from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -10,6 +9,7 @@ import Animated, {
 
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
+import { Icon, lineBox } from '@/ui/Icon';
 
 export type BookmarkGlyphProps = {
   saved: boolean;
@@ -44,7 +44,7 @@ export function BookmarkGlyph({ saved, size, color }: BookmarkGlyphProps) {
 
   return (
     <Animated.View style={popStyle}>
-      <FontAwesome5 name="bookmark" size={size} color={color} solid={saved} />
+      <Icon name="Bookmark" size={lineBox(size)} color={color} filled={saved} />
     </Animated.View>
   );
 }

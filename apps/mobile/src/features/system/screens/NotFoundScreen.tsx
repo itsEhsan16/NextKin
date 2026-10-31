@@ -39,7 +39,7 @@ export function NotFoundScreen() {
         />
         <Button
           label="Go to Home"
-          icon="home"
+          icon="Home02"
           block
           onPress={() => router.replace('/')}
           style={styles.button}

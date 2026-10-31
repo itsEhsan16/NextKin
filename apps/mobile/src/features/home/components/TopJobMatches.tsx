@@ -64,7 +64,7 @@ export function TopJobMatches({
           <StateView
             compact
             tone="danger"
-            icon="exclamation-triangle"
+            icon="AlertTriangle"
             title="Couldn't load matches"
             actionLabel="Try again"
             onAction={onRetry}
@@ -74,7 +74,7 @@ export function TopJobMatches({
         <Card>
           <StateView
             compact
-            icon="briefcase"
+            icon="Briefcase01"
             title="No matches yet"
             message="Complete your profile and we'll surface jobs that fit."
             actionLabel="Find jobs"

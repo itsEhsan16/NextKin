@@ -199,7 +199,7 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
     page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title={PLANS_ERROR_TITLE}
         message={PLANS_ERROR_MESSAGE}
         actionLabel="Try again"
@@ -235,7 +235,7 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
         note={manageNote ?? MANAGE_NOTE}
         // The browser not opening is a failure, so it reads as one rather than as the hint (§85).
         noteTone={manageNote ? 'danger' : 'neutral'}
-        primary={{ label: MANAGE_CTA, icon: 'external-link-alt', onPress: manage }}
+        primary={{ label: MANAGE_CTA, icon: 'LinkExternal01', onPress: manage }}
       />,
     );
   }

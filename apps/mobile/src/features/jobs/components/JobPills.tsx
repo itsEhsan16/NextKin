@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
@@ -9,6 +8,7 @@ import { APPLICATION_TONE, type Application, type MatchBand } from '@/data/model
 import { MATCH_BAND_LABEL } from '@/data/models';
 import { formatDaysAgo, formatWeekdayDate } from '@/lib';
 import { useTheme, type ColorToken } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Text } from '@/ui/Text';
 
 type Tone = 'neutral' | 'status' | 'success' | 'warning' | 'danger' | 'outline';
@@ -32,15 +32,16 @@ type JobPillProps = {
   label: string;
   tone?: Tone;
   strong?: boolean;
-  /** FA5 Solid glyph rendered before the label in the pill's own colour. */
-  icon?: string;
-  /** Glyph size in 520 space — scaled here, like every other length. 8 is the drawn 6pt dot. */
-  iconSize?: number;
-  /** Artwork rendered before the label, in place of an FA glyph — it carries its own colours. */
+  /** Line icon rendered before the label in the pill's own colour. */
+  icon?: LineIconName;
+  /** The drawn 6pt status dot before the label, in the pill's own colour. */
+  dot?: boolean;
+  /** Artwork rendered before the label, in place of an icon — it carries its own colours. */
   leading?: ReactNode;
-  /** FA5 Regular cut instead of Solid — the outline clock on Job Detail (Figma 443:117). */
-  iconRegular?: boolean;
 };
+
+/** The status dot, 8 in 520 space. */
+const DOT = 8;
 
 /** Figma pill: fully rounded, 13/5 padding, 13/20 label. */
 function JobPill({
@@ -48,9 +49,8 @@ function JobPill({
   tone = 'neutral',
   strong = false,
   icon,
-  iconSize = 8,
+  dot = false,
   leading,
-  iconRegular = false,
 }: JobPillProps) {
   const { colors, radii, spacing, s } = useTheme();
   const look = TONES[tone];
@@ -71,9 +71,17 @@ function JobPill({
       ]}
     >
       {leading}
-      {icon ? (
-        <FontAwesome5 name={icon} size={s(iconSize)} color={colors[look.fg]} solid={!iconRegular} />
+      {dot ? (
+        <View
+          style={{
+            width: s(DOT),
+            height: s(DOT),
+            borderRadius: radii.full,
+            backgroundColor: colors[look.fg],
+          }}
+        />
       ) : null}
+      {icon ? <Icon name={icon} size="xs" color={colors[look.fg]} /> : null}
       <Text variant={strong ? 'captionSemiBold' : 'captionRegular'} color={look.fg}>
         {label}
       </Text>
@@ -90,20 +98,9 @@ const MATCH_TONE: Record<MatchBand, Tone> = {
 };
 
 /** `icon` is the signal-bars glyph Job Detail's redraw leads the pill with (Figma 443:119). */
-export function MatchPill({ band, icon }: { band: MatchBand; icon?: string }) {
-  return (
-    <JobPill
-      label={MATCH_BAND_LABEL[band]}
-      tone={MATCH_TONE[band]}
-      strong
-      icon={icon}
-      iconSize={MATCH_ICON}
-    />
-  );
+export function MatchPill({ band, icon }: { band: MatchBand; icon?: LineIconName }) {
+  return <JobPill label={MATCH_BAND_LABEL[band]} tone={MATCH_TONE[band]} strong icon={icon} />;
 }
-
-/** 9.5 drawn. */
-const MATCH_ICON = 12.6667;
 
 /** The sparkle is drawn once per band, in that band's own colour (Figma 498:10 / 498:49). */
 const BAND_SPARKLE: Partial<Record<MatchBand, (props: SvgProps) => React.ReactElement>> = {
@@ -135,25 +132,20 @@ export function MatchBadge({ band }: { band: MatchBand }) {
   );
 }
 
-export type MetaPillProps = { label: string; icon?: string; iconRegular?: boolean };
+export type MetaPillProps = { label: string; icon?: LineIconName };
 
 /** Grey meta chip. Job Detail's redraw leads each with a glyph, 10 drawn (Figma 443:116). */
-export function MetaPill({ label, icon, iconRegular }: MetaPillProps) {
-  return <JobPill label={label} icon={icon} iconRegular={iconRegular} iconSize={META_ICON} />;
+export function MetaPill({ label, icon }: MetaPillProps) {
+  return <JobPill label={label} icon={icon} />;
 }
-
-const META_ICON = 13.3333;
 
 /**
  * A fact about the job — location, workplace, employment type, salary — in the tag row the
  * redrawn cards put under the title (498:14). Darker label than `MetaPill`, as drawn.
  */
-export function TagPill({ label, icon }: { label: string; icon?: string }) {
-  return <JobPill label={label} tone="status" icon={icon} iconSize={TAG_ICON} />;
+export function TagPill({ label, icon }: { label: string; icon?: LineIconName }) {
+  return <JobPill label={label} tone="status" icon={icon} />;
 }
-
-/** 9.5 drawn, on the carousel card's two tags only (519:20). */
-const TAG_ICON = 12.6667;
 
 /** "Closing in 3d" — urgency on a saved job whose deadline is near (Figma 1:428). */
 export function ClosingPill({ label }: { label: string }) {
@@ -204,7 +196,7 @@ export function ApplicationStatusPill({ application }: { application: Applicatio
       label={applicationStatusLabel(application)}
       tone={STATUS_TONE[APPLICATION_TONE[application.status]]}
       strong
-      icon="circle"
+      dot
     />
   );
 }

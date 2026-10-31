@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Fragment } from 'react';
 import { View } from 'react-native';
 
@@ -15,6 +14,7 @@ import {
   PRO_COLUMN,
   type PlanCell,
 } from '../upgradeCopy';
+import { Icon } from '@/ui/Icon';
 
 // BILLING 01 "What you get" at 390 (577:9276), in artboard units.
 const PAD_LEFT = 14 / 0.75;
@@ -26,8 +26,6 @@ const HEADER_PAD_TOP = 12 / 0.75;
 const HEADER_PAD_BOTTOM = 8 / 0.75;
 const ROW_PAD_Y = 6 / 0.75;
 const FOOT = 4 / 0.75;
-const GLYPH = 13 / 0.75;
-const LOCK_GLYPH = 9.5 / 0.75;
 const LOCK_GAP = 4 / 0.75;
 /** The lavender band behind the Pro column (577:9395), inset from the card's inner edge. */
 const BAND_INSET = 4.25 / 0.75;
@@ -35,21 +33,21 @@ const BAND_W = 108 / 0.75;
 const BAND_RADIUS = 12 / 0.75;
 
 function Cell({ cell, pro }: { cell: PlanCell; pro: boolean }) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
 
   // Only a genuine yes or no becomes a glyph. Every other cell is a published cap (V2 §13.1), and
   // a tick in place of "3 / month" would hide the number the spec insists on printing.
   if (cell.kind === 'yes') {
-    return <FontAwesome5 name="check-circle" size={s(GLYPH)} color={colors.glyphSuccess} solid />;
+    return <Icon name="CheckCircle" size="sm" color={colors.glyphSuccess} />;
   }
   if (cell.kind === 'no') {
-    return <FontAwesome5 name="minus" size={s(GLYPH)} color={colors.iconMuted} solid />;
+    return <Icon name="Minus" size="lg" color={colors.iconMuted} />;
   }
   if (cell.kind === 'locked') {
     return (
       <View style={styles.locked}>
-        <FontAwesome5 name="lock" size={s(LOCK_GLYPH)} color={colors.iconMuted} solid />
+        <Icon name="Lock01" size="xs" color={colors.iconMuted} />
         <Text variant="microBadge" color="textSecondary" numberOfLines={1}>
           {cell.text}
         </Text>

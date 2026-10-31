@@ -16,6 +16,7 @@ import { Pill } from '@/ui/Pill';
 import { Text } from '@/ui/Text';
 
 import { ModelAnswer } from './ModelAnswer';
+import type { LineIconName } from '@/ui/Icon';
 
 export type QuestionCardProps = {
   question: InterviewQuestion;
@@ -33,9 +34,9 @@ const TAG_GAP = 6;
 const MARK_GAP = 9;
 const MARK_H = 44;
 
-const MARK_ICON: Record<Exclude<InterviewMark, 'unmarked'>, string> = {
-  confident: 'check',
-  needs_work: 'redo',
+const MARK_ICON: Record<Exclude<InterviewMark, 'unmarked'>, LineIconName> = {
+  confident: 'Check',
+  needs_work: 'RefreshCw01',
 };
 
 /**
@@ -78,9 +79,9 @@ export const QuestionCard = memo(function QuestionCard({
         <Pill label={INTERVIEW_QUESTION_KIND_LABEL[question.kind]} />
         {question.skill ? <Pill label={question.skill} tone="brand" /> : null}
         {question.mark === 'confident' ? (
-          <Pill label={INTERVIEW_MARK_LABEL.confident} tone="success" icon="check" />
+          <Pill label={INTERVIEW_MARK_LABEL.confident} tone="success" icon="Check" />
         ) : question.mark === 'needs_work' ? (
-          <Pill label={INTERVIEW_MARK_LABEL.needs_work} tone="warning" icon="redo" />
+          <Pill label={INTERVIEW_MARK_LABEL.needs_work} tone="warning" icon="RefreshCw01" />
         ) : null}
         {generic ? <Pill label={INTERVIEW_GENERIC_LABEL} /> : null}
       </View>

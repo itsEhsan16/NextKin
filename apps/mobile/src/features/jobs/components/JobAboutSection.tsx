@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -8,6 +7,7 @@ import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { layoutTransition } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 export type JobAboutSectionProps = {
   description: string;
@@ -51,7 +51,7 @@ export function JobAboutSection({
   responsibilities,
   requirements,
 }: JobAboutSectionProps) {
-  const { colors, spacing, motion, s } = useTheme();
+  const { colors, spacing, motion } = useTheme();
   const reduced = useReducedMotion();
   const [expanded, setExpanded] = useState(false);
 
@@ -112,7 +112,7 @@ export function JobAboutSection({
         >
           <Text variant="captionSemiBold">{expanded ? 'Show less' : 'Show more'}</Text>
           <Animated.View style={chevronStyle}>
-            <FontAwesome5 name="chevron-down" size={s(9)} color={colors.textPrimary} solid />
+            <Icon name="ChevronDown" size="xs" color={colors.textPrimary} />
           </Animated.View>
         </Pressable>
       ) : null}

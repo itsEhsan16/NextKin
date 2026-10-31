@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, {
@@ -14,6 +13,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { layoutTransition } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 export type FaqRowProps = {
   item: FaqItem;
@@ -34,7 +34,6 @@ const ROW_PAD_RIGHT = 14 / 0.75;
 const ROW_PAD_Y = 11 / 0.75;
 /** Question → chevron, and question → answer (577:6185 / 577:6184). */
 const GAP = 8 / 0.75;
-const CHEVRON = 10 / 0.75;
 /** A closed row is 42 tall on the board; the slop makes up the 44pt target. */
 const ROW_MIN = 42 / 0.75;
 
@@ -89,11 +88,10 @@ export function FaqRow({ item, expanded, onToggle }: FaqRowProps) {
             {item.question}
           </Text>
           <Animated.View style={chevronStyle}>
-            <FontAwesome5
-              name="chevron-down"
-              size={s(CHEVRON)}
+            <Icon
+              name="ChevronDown"
+              size="md"
               color={expanded ? colors.brand : colors.iconChevron}
-              solid
             />
           </Animated.View>
         </Pressable>

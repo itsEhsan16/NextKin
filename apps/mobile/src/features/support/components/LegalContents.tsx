@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import type { LegalSection } from '@/data/models';
@@ -9,6 +8,7 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { SectionNumber } from './LegalSections';
+import { Icon } from '@/ui/Icon';
 
 export type LegalContentsProps = {
   sections: readonly LegalSection[];
@@ -27,7 +27,6 @@ const ROW_GAP = 12 / 0.75;
 const ROW_MIN = 44 / 0.75;
 /** Dividers start under the titles, past the disc (577:8920). */
 const DIVIDER_START = 51 / 0.75;
-const CHEVRON = 9 / 0.75;
 
 const sectionsLabel = (count: number) => `${count} ${count === 1 ? 'section' : 'sections'}`;
 
@@ -69,7 +68,7 @@ export function LegalContents({ sections, onJump }: LegalContentsProps) {
             <Text variant="menuRow" style={styles.fill}>
               {section.heading}
             </Text>
-            <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+            <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
           </Pressable>
         </View>
       ))}

@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import { RefreshControl, type ScrollView } from 'react-native';
+import { RefreshControl, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
@@ -9,7 +9,6 @@ import {
   useCurrentUser,
   useDashboardStats,
   useJobPicks,
-  usePrefetchActiveGeneration,
   useResumes,
   useUnreadCount,
 } from '@/data/queries';
@@ -20,7 +19,6 @@ import { Screen } from '@/ui/Screen';
 import { StateView } from '@/ui/StateView';
 import { layoutTransition } from '@/ui/motion';
 
-import { ActiveGenerationCard } from '../components/ActiveGenerationCard';
 import { BrandBlock } from '../components/BrandBlock';
 import { HeroBlock } from '../components/HeroBlock';
 import { HomeHeader } from '../components/HomeHeader';
@@ -74,9 +72,8 @@ export function HomeScreen() {
   const unread = useUnreadCount();
   // The progress card subscribes to the live run itself; this only starts its fetch alongside
   // the rest, without re-rendering Home on every tick.
-  usePrefetchActiveGeneration();
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   useTabScrollToTop(
     'index',
     useCallback(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), []),
@@ -127,7 +124,7 @@ export function HomeScreen() {
       <Screen header={header} headerStyle={{ paddingTop: spacing.headerTop }}>
         <StateView
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Something went wrong"
           message="We couldn't load your dashboard. Check your connection and try again."
           actionLabel="Try again"
@@ -153,8 +150,6 @@ export function HomeScreen() {
         <HomeSkeleton />
       ) : (
         <>
-          {/* Subscribes to the live run itself, so its ticks re-render the card, not Home. */}
-          <ActiveGenerationCard onView={actions.openGeneration} onRetry={actions.retryGeneration} />
           <Section index={0} animate={animate}>
             <BrandBlock />
           </Section>
@@ -174,6 +169,9 @@ export function HomeScreen() {
             />
           </Section>
           <Section index={4} animate={animate}>
+            <ShortcutGrid stats={stats.data} onShortcut={actions.shortcut} />
+          </Section>
+          <Section index={5} animate={animate}>
             <ResumeProgressCard
               resume={latestResume}
               status={queryPhase(resumes)}
@@ -182,9 +180,6 @@ export function HomeScreen() {
               onCreateResume={actions.createResume}
               onRetry={() => void resumes.refetch()}
             />
-          </Section>
-          <Section index={5} animate={animate}>
-            <ShortcutGrid stats={stats.data} onShortcut={actions.shortcut} />
           </Section>
         </>
       )}

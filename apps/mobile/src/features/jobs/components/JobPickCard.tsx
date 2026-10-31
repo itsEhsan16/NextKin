@@ -125,8 +125,8 @@ export const JobPickCard = memo(function JobPickCard({
         ) : null}
 
         <View style={styles.row}>
-          <TagPill label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} icon="briefcase" />
-          <TagPill label={place} icon="map-marker-alt" />
+          <TagPill label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} icon="Briefcase01" />
+          <TagPill label={place} icon="MarkerPin01" />
           {/*
             The board writes "+3" on both picks it draws, which is each job's own tag count — the
             facts already on the card are not what it is counting. See toreview.md.

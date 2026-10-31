@@ -53,14 +53,12 @@ export function HomeHeader({
 
       <View style={[styles.row, { gap: spacing[3] }]}>
         <IconButton
-          icon="bell"
-          iconStyle="regular"
-          iconSize={s(18)}
+          icon="Bell01"
           label={hasUnread ? 'Notifications, unread' : 'Notifications'}
           dot={hasUnread}
           onPress={onPressNotifications}
         />
-        <IconButton icon="bars" iconSize={s(16)} label="Menu" onPress={onPressMenu} />
+        <IconButton icon="Menu01" label="Menu" onPress={onPressMenu} />
       </View>
     </View>
   );

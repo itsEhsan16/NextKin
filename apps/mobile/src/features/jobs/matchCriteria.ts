@@ -1,5 +1,6 @@
 import type { MatchBand, MatchCriterion, MatchCriterionState } from '@/data/models';
 import type { ColorToken } from '@/theme';
+import type { LineIconName } from '@/ui/Icon';
 
 /**
  * The rules and the copy behind the full match breakdown (V2 §7.13).
@@ -57,13 +58,13 @@ export const MATCH_RING_COLOR: Record<MatchBand, ColorToken> = {
  */
 export const CRITERION_ICON: Record<
   MatchCriterionState,
-  { name: string; color: ColorToken; solid: boolean }
+  { name: LineIconName; color: ColorToken }
 > = {
-  met: { name: 'check-circle', color: 'glyphSuccess', solid: true },
+  met: { name: 'CheckCircle', color: 'glyphSuccess' },
   // D-14's half credit: drawn as met until a design gives it its own glyph (toreview §105.18).
-  partial: { name: 'check-circle', color: 'glyphSuccess', solid: true },
-  missing: { name: 'times-circle', color: 'glyphDanger', solid: true },
-  optional: { name: 'circle', color: 'iconChevron', solid: false },
+  partial: { name: 'CheckCircle', color: 'glyphSuccess' },
+  missing: { name: 'XCircle', color: 'glyphDanger' },
+  optional: { name: 'Circle', color: 'iconChevron' },
 };
 
 /** Each group card's progress fill (JOBS 10 580:2462 / 580:2475 / 580:2496), in its glyph's colour. */

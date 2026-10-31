@@ -79,8 +79,7 @@ export function FiltersSheetBody({
         style={[styles.header, { paddingHorizontal: spacing.gutter, paddingVertical: spacing[4] }]}
       >
         <IconButton
-          icon="times"
-          iconSize={s(14)}
+          icon="XClose"
           iconColor="textPrimary"
           size={s(40)}
           variant="filled"

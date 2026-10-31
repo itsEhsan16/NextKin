@@ -5,7 +5,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore, type MockMode } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
-import { GENERATION_TICK_MS, resetMockRepos } from '@/data/repos';
+import { resetMockRepos } from '@/data/repos';
 import { HomeScreen, useHomeStore } from '@/features/home';
 import { CreateSheetProvider } from '@/navigation';
 
@@ -135,12 +135,12 @@ describe('HomeScreen (DESIGN 2)', () => {
     );
   });
 
-  it('opens Add a job from the Build Resume tile, the one job flow (toreview §114)', async () => {
+  it('opens BUILD 01 from the Build Resume tile (toreview §139)', async () => {
     await renderHome();
     await settle(NORMAL_MS);
 
     await act(async () => fireEvent.press(screen.getByLabelText(/^Build Resume/)));
-    expect(mockPush).toHaveBeenCalledWith('/create/tailor');
+    expect(mockPush).toHaveBeenCalledWith('/create/build');
   });
 
   it('opens the cover letter setup from the Cover Letter tile (COVER 01, toreview §71)', async () => {
@@ -168,21 +168,13 @@ describe('HomeScreen (DESIGN 2)', () => {
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
   });
 
-  describe('live generation progress', () => {
-    it('shows the in-flight generation, then clears itself when it completes', async () => {
-      await renderHome();
-      await settle(NORMAL_MS);
+  it('does not put a running generation on Home (owner, toreview 141)', async () => {
+    await renderHome();
+    await settle(NORMAL_MS);
 
-      // The fixture ships one generation mid-flight, so the card is present on first paint.
-      expect(screen.getByText('Tailoring your resume')).toBeOnTheScreen();
-      expect(
-        screen.getByLabelText(/^Tailoring your resume\. Generating, \d+% complete\.$/),
-      ).toBeOnTheScreen();
-
-      // Ticks at 1.2s a step from 0.45 — four of them carry it past 1.0 and the card retires.
-      await settle(GENERATION_TICK_MS * 5);
-      expect(screen.queryByText('Tailoring your resume')).toBeNull();
-    });
+    // The fixture ships one generation mid-flight.
+    expect(screen.queryByText('Tailoring your resume')).toBeNull();
+    expect(screen.queryByLabelText('View progress')).toBeNull();
   });
 
   it('pins the greeting row above the scroller', async () => {

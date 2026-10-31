@@ -1,17 +1,16 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 
 import { a11yButton } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type HeroBlockProps = {
   onFindJobs: () => void;
 };
 
 const TILE = 130;
-const TILE_ICON = 26;
 
 /** Figma 1:29 — "Build better. / Land faster." next to the black "Find Jobs" tile. */
 export function HeroBlock({ onFindJobs }: HeroBlockProps) {
@@ -39,7 +38,7 @@ export function HeroBlock({ onFindJobs }: HeroBlockProps) {
           },
         ]}
       >
-        <FontAwesome5 name="search" size={s(TILE_ICON)} color={colors.textOnBrand} solid />
+        <Icon name="SearchLg" size="lg" color={colors.textOnBrand} />
         <Text variant="body" color="textOnBrand">
           Find Jobs
         </Text>

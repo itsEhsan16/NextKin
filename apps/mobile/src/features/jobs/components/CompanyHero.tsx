@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { resolveLogoSvg } from '@/assets';
@@ -7,6 +6,7 @@ import { a11yHeader, formatJobMeta, initialOf } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { LogoTile } from '@/ui/LogoTile';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type CompanyHeroProps = { job: Job };
 
@@ -16,7 +16,6 @@ const LOGO_RADIUS = 20 / 0.75;
 const LOGO_TO_NAME = 14 / 0.75;
 const NAME_GAP = 6 / 0.75;
 const VERIFIED = 17 / 0.75;
-const VERIFIED_TICK = 7.192 / 0.75;
 const NAME_TO_META = 4 / 0.75;
 
 /**
@@ -57,14 +56,8 @@ export function CompanyHero({ job }: CompanyHeroProps) {
             accessibilityLabel="Verified company"
             style={styles.verified}
           >
-            <FontAwesome5 name="certificate" size={s(VERIFIED)} color={colors.brand} solid />
-            <FontAwesome5
-              name="check"
-              size={s(VERIFIED_TICK)}
-              color={colors.textOnBrand}
-              solid
-              style={styles.tick}
-            />
+            <Icon name="Award01" size="md" color={colors.brand} />
+            <Icon name="Check" size="xs" color={colors.textOnBrand} style={styles.tick} />
           </View>
         ) : null}
       </View>

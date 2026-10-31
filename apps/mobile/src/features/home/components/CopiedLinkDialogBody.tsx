@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import type { JobLinkPreview } from '@/data/models';
@@ -11,6 +10,7 @@ import { Button } from '@/ui/Button';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type CopiedLinkDialogBodyProps = {
   preview: JobLinkPreview;
@@ -44,7 +44,6 @@ const PAD_X = 20 / 0.75;
 const PAD_TOP = 16 / 0.75;
 const PAD_BOTTOM = 18 / 0.75;
 const CLOSE = 30 / 0.75; // 634:635
-const CLOSE_GLYPH = 10 / 0.75;
 const ART_UNDER_CLOSE = 4 / 0.75; // the art starts 4 above the ✕ row's foot (661:46 vs 634:634)
 const HERO_TO_LINK = 16 / 0.75; // 634:645
 const LINK_RADIUS = 15 / 0.75; // 634:646
@@ -52,13 +51,11 @@ const LINK_PAD_X = 12 / 0.75;
 const LINK_PAD_Y = 11 / 0.75;
 const LINK_GAP = 12 / 0.75;
 const LINK_TEXT_GAP = 2 / 0.75;
-const LINK_GLYPH = 12 / 0.75;
 const LINK_TO_CTA = 18 / 0.75; // 634:653
 const CTA_GAP = 10 / 0.75; // 634:660
 const CTA_TO_NOT_NOW = 12 / 0.75; // 634:664
 const NOT_NOW_H = 17 / 0.75;
 const NOT_NOW_TO_NOTE = 10 / 0.75; // 634:666
-const BOOKMARK = 12 / 0.75;
 const SPARKLE_W = 18 / 0.75; // 634:654
 const SPARKLE_H = 17.6315 / 0.75;
 
@@ -86,11 +83,10 @@ export function CopiedLinkDialogBody({
     <View style={styles.body}>
       <View style={styles.closeRow}>
         <IconButton
-          icon="times"
+          icon="XClose"
           label="Close"
           variant="filled"
           size={s(CLOSE)}
-          iconSize={s(CLOSE_GLYPH)}
           iconColor="textPrimary"
           onPress={onDismiss}
         />
@@ -121,7 +117,7 @@ export function CopiedLinkDialogBody({
             {link}
           </Text>
         </View>
-        <FontAwesome5 name="link" size={s(LINK_GLYPH)} color={colors.brand} solid />
+        <Icon name="Link01" size="sm" color={colors.brand} />
       </View>
 
       <View style={styles.ctas}>
@@ -139,7 +135,7 @@ export function CopiedLinkDialogBody({
           variant="ghost"
           size="lg"
           block
-          leading={<FontAwesome5 name="bookmark" size={s(BOOKMARK)} color={colors.textPrimary} />}
+          leading={<Icon name="Bookmark" size="sm" color={colors.textPrimary} />}
           loading={busy === 'save'}
           disabled={busy === 'tailor'}
           onPress={onSave}

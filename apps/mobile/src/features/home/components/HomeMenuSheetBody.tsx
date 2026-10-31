@@ -5,6 +5,7 @@ import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { SheetRow } from '@/ui/SheetRow';
 import { Text } from '@/ui/Text';
+import type { LineIconName } from '@/ui/Icon';
 
 export type HomeMenuDestination =
   'history' | 'interview' | 'assistant' | 'upgrade' | 'help' | 'contact';
@@ -16,7 +17,7 @@ export type HomeMenuSheetBodyProps = {
 
 type Row = {
   key: HomeMenuDestination;
-  icon: string;
+  icon: LineIconName;
   label: string;
   description: string;
   ai?: boolean;
@@ -30,39 +31,39 @@ type Row = {
 const ROWS: readonly Row[] = [
   {
     key: 'history',
-    icon: 'history',
+    icon: 'ClockRewind',
     label: 'History',
     description: "Everything you've generated, saved and changed",
   },
   {
     key: 'interview',
-    icon: 'comments',
+    icon: 'MessageChatSquare',
     label: 'Interview prep',
     description: 'Practice questions written from your resume',
     ai: true,
   },
   {
     key: 'assistant',
-    icon: 'robot',
+    icon: 'Stars02',
     label: 'AI assistant',
     description: 'Ask about your resume, your score or the search',
     ai: true,
   },
   {
     key: 'upgrade',
-    icon: 'crown',
+    icon: 'Star01',
     label: 'NextKin Pro',
     description: 'Plans, usage and what Pro unlocks',
   },
   {
     key: 'help',
-    icon: 'question-circle',
+    icon: 'HelpCircle',
     label: 'Help & FAQ',
     description: 'Answers to the questions we get most',
   },
   {
     key: 'contact',
-    icon: 'envelope',
+    icon: 'Mail01',
     label: 'Contact support',
     description: 'Write to us — we reply within a day',
   },
@@ -86,7 +87,7 @@ export function HomeMenuSheetBody({ onSelect, onClose }: HomeMenuSheetBodyProps)
         <Text {...a11yHeader()} variant="headline">
           Menu
         </Text>
-        <IconButton icon="times" label="Close menu" onPress={onClose} />
+        <IconButton icon="XClose" label="Close menu" onPress={onClose} />
       </View>
       {ROWS.map((row) => (
         <SheetRow

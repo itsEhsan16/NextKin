@@ -97,7 +97,7 @@ export function NotificationPreferencesScreen() {
   return (
     <Screen scroll edges={['top', 'bottom']} contentContainerStyle={{ paddingBottom: spacing[8] }}>
       <View style={[styles.headerRow, { paddingTop: spacing[2] }]}>
-        <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
+        <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
       </View>
 
       <Text {...a11yHeader()} variant="pageTitle" style={{ marginTop: spacing[5] }}>
@@ -115,7 +115,7 @@ export function NotificationPreferencesScreen() {
       ) : prefs.isError || !prefs.data ? (
         <StateView
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Couldn't load your preferences"
           message="Check your connection and try again."
           actionLabel="Try again"

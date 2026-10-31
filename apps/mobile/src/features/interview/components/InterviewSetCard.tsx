@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { memo } from 'react';
 import { View } from 'react-native';
 
@@ -14,6 +13,7 @@ import { Text } from '@/ui/Text';
 
 import { marksLine } from '../practiceRows';
 import { MarkSummary } from './MarkSummary';
+import { Icon } from '@/ui/Icon';
 
 export type InterviewSetCardProps = {
   set: InterviewSet;
@@ -30,7 +30,6 @@ const HEADER_GAP = 12 / 0.75;
 const TILE = 40 / 0.75;
 const TILE_RADIUS = 11.667 / 0.75;
 const LINE_GAP = 2 / 0.75;
-const CHEVRON = 9 / 0.75;
 
 /**
  * One practice set on `/interview` (INTERVIEW 01 577:965): the company's tile, the set's name,
@@ -78,7 +77,7 @@ export const InterviewSetCard = memo(function InterviewSetCard({
               {`${counts.total} questions · ${when}${superseded ? ' · Earlier set' : ''}`}
             </Text>
           </View>
-          <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+          <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
         </View>
         <MarkSummary
           counts={counts}

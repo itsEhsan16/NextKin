@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -7,6 +6,7 @@ import { a11yButton, hitSlopFor, maxFontScale } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type AssistantComposerProps = {
   value: string;
@@ -38,14 +38,11 @@ const PILL_PAD_Y = 6;
 const PILL_GAP = 12;
 const CLIP = 17;
 const SEND = 44;
-const SEND_GLYPH = 15;
 const STACK_GAP = 12; // 577:7855's gap, pill → label
-const INFO = 12;
 const INFO_GAP = 7;
 const CHIP_H = 27; // the removable chip at 390: 6 + 15 + 6
 const CHIP_PAD_X = 10;
 const CHIP_GAP = 6;
-const CHIP_GLYPH = 7;
 /** Four lines, then the field scrolls inside the pill. */
 const INPUT_MAX_H = 4 * 20;
 
@@ -105,7 +102,7 @@ export function AssistantComposer({
           <Text variant="caption" color="textBody" numberOfLines={1} style={styles.chipText}>
             {`About: ${attachedTitle}`}
           </Text>
-          <FontAwesome5 name="times" size={s(CHIP_GLYPH / 0.75)} color={colors.iconMuted} solid />
+          <Icon name="XClose" size="xs" color={colors.iconMuted} />
         </Pressable>
       ) : null}
 
@@ -129,7 +126,7 @@ export function AssistantComposer({
           onPress={onAttach}
           style={[styles.clip, disabled ? { opacity: opacity.disabled } : null]}
         >
-          <FontAwesome5 name="paperclip" size={s(CLIP / 0.75)} color={colors.textSecondary} solid />
+          <Icon name="Paperclip" size="md" color={colors.textSecondary} />
         </Pressable>
         <TextInput
           value={value}
@@ -164,12 +161,7 @@ export function AssistantComposer({
             { backgroundColor: colors.brand, opacity: ready ? 1 : opacity.disabled },
           ]}
         >
-          <FontAwesome5
-            name="paper-plane"
-            size={s(SEND_GLYPH / 0.75)}
-            color={colors.textOnBrand}
-            solid
-          />
+          <Icon name="Send01" size="sm" color={colors.textOnBrand} />
         </Pressable>
       </View>
 
@@ -179,13 +171,7 @@ export function AssistantComposer({
         </Text>
       ) : null}
       <View style={styles.label}>
-        <FontAwesome5
-          name="info-circle"
-          size={s(INFO / 0.75)}
-          color={colors.iconMuted}
-          solid
-          importantForAccessibility="no"
-        />
+        <Icon name="InfoCircle" size="sm" color={colors.iconMuted} />
         <Text variant="micro" color="textSecondary" style={styles.labelText}>
           {ASSISTANT_DISCLAIMER}
         </Text>

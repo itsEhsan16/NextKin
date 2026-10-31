@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -15,6 +14,7 @@ import {
   filterCityOptions,
   type LocationOption,
 } from '../locationOptions';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type LocationSheetBodyProps = {
   /** The location currently recorded on the Discover header. */
@@ -39,21 +39,15 @@ const ROW_PAD_Y = 10 / 0.75;
 const ROW_GAP = 12 / 0.75;
 const TILE = 32 / 0.75;
 const TILE_RADIUS = 9 / 0.75;
-const TILE_GLYPH = 13 / 0.75;
 const CHECK_DISC = 22 / 0.75;
-const CHECK_GLYPH = 10 / 0.75;
 const DIVIDER_SPACE = 5 / 0.75;
 const DIVIDER_INSET = 12 / 0.75;
 /** How deep the option list gets before it scrolls, in rows — the sheet must not fill the screen. */
 const VISIBLE_ROWS = 6;
 
 /** Each answer's tile glyph (580:2848 / 580:2853 / 580:2862). */
-const glyphFor = (option: LocationOption): string =>
-  option.kind === 'city'
-    ? 'map-marker-alt'
-    : option.value === ANYWHERE_IN_INDIA
-      ? 'globe-asia'
-      : 'wifi';
+const glyphFor = (option: LocationOption): LineIconName =>
+  option.kind === 'city' ? 'MarkerPin01' : option.value === ANYWHERE_IN_INDIA ? 'Globe04' : 'Wifi';
 
 /**
  * The Discover location picker's contents, drawn as JOBS 11 (580:2834): the card look the option
@@ -116,7 +110,7 @@ export function LocationSheetBody({ value, onSelect, onClose }: LocationSheetBod
           ) : (
             <StateView
               compact
-              icon="search"
+              icon="SearchLg"
               title="No places match"
               message="Try a shorter spelling, or pick one of the two options above."
             />
@@ -136,7 +130,7 @@ function LocationRow({
   selected: boolean;
   onSelect: (location: string) => void;
 }) {
-  const { colors, sizes, s } = useTheme();
+  const { colors, sizes } = useTheme();
   const styles = useStyles();
 
   return (
@@ -159,14 +153,14 @@ function LocationRow({
       ]}
     >
       <View style={[styles.tile, { backgroundColor: colors.tileBrandStrong }]}>
-        <FontAwesome5 name={glyphFor(option)} size={s(TILE_GLYPH)} color={colors.brand} solid />
+        <Icon name={glyphFor(option)} size="sm" color={colors.brand} />
       </View>
       <Text variant={selected ? 'label' : 'menuRow'} numberOfLines={1} style={styles.label}>
         {option.value}
       </Text>
       {selected ? (
         <View style={[styles.checkDisc, { backgroundColor: colors.brand }]}>
-          <FontAwesome5 name="check" size={s(CHECK_GLYPH)} color={colors.textOnBrand} solid />
+          <Icon name="Check" size="md" color={colors.textOnBrand} />
         </View>
       ) : null}
     </Pressable>

@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 
 import type { Job } from '@/data/models';
@@ -8,6 +7,7 @@ import { Card } from '@/ui/Card';
 import { LogoTile } from '@/ui/LogoTile';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type JobCompanyCardProps = { job: Job; onPress: (job: Job) => void };
 
@@ -68,12 +68,7 @@ export function JobCompanyCard({ job, onPress }: JobCompanyCardProps) {
                 </Text>
               ) : null}
               <Text variant="captionSemiBold">{job.companyWebsite}</Text>
-              <FontAwesome5
-                name="external-link-alt"
-                size={s(COMPANY.link)}
-                color={colors.textPrimary}
-                solid
-              />
+              <Icon name="LinkExternal01" size="xs" color={colors.textPrimary} />
             </View>
           </View>
         </View>

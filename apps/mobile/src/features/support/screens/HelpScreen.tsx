@@ -132,7 +132,7 @@ export function HelpScreen() {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load help"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -149,7 +149,7 @@ export function HelpScreen() {
   if (all.length === 0) {
     return page(
       <StateView
-        icon="life-ring"
+        icon="LifeBuoy01"
         title="Help is unavailable right now"
         message={SUPPORT_REPLY_WINDOW}
         actionLabel={CONTACT_CTA}
@@ -193,7 +193,7 @@ export function HelpScreen() {
       <View style={styles.list}>
         {items.length === 0 ? (
           <StateView
-            icon="search"
+            icon="SearchLg"
             title={
               debouncedQuery.trim().length > 0
                 ? `No answers matched "${debouncedQuery.trim()}"`

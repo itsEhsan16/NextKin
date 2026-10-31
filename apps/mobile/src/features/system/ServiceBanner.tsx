@@ -33,7 +33,7 @@ export function ServiceBanner() {
         accessibilityLabel={`${text} Tap to hide.`}
         onPress={() => setHidden(text)}
       >
-        <NoteBar icon="info-circle" text={text} />
+        <NoteBar icon="InfoCircle" text={text} />
       </Pressable>
     </View>
   );

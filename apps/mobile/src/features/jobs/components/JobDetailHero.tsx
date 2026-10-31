@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { EMPLOYMENT_TYPE_LABEL, REMOTE_TYPE_LABEL, type Job } from '@/data/models';
@@ -8,6 +7,7 @@ import { LogoTile } from '@/ui/LogoTile';
 import { Text } from '@/ui/Text';
 
 import { MetaPill } from './JobPills';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type JobDetailHeroProps = { job: Job };
 
@@ -34,10 +34,10 @@ const HERO = {
 };
 
 /** The board draws Remote with wifi. The other two are not drawn; a building reads as an office. */
-const WORKPLACE_ICON: Record<Job['remote'], string> = {
-  remote: 'wifi',
-  hybrid: 'building',
-  onsite: 'building',
+const WORKPLACE_ICON: Record<Job['remote'], LineIconName> = {
+  remote: 'Wifi',
+  hybrid: 'Building02',
+  onsite: 'Building02',
 };
 
 /**
@@ -74,19 +74,8 @@ export function JobDetailHero({ job }: JobDetailHeroProps) {
                 accessibilityLabel="Verified company"
                 style={[styles.verified, { width: s(HERO.verified), height: s(HERO.verified) }]}
               >
-                <FontAwesome5
-                  name="certificate"
-                  size={s(HERO.verified)}
-                  color={colors.brand}
-                  solid
-                />
-                <FontAwesome5
-                  name="check"
-                  size={s(HERO.verifiedTick)}
-                  color={colors.textOnBrand}
-                  solid
-                  style={styles.tick}
-                />
+                <Icon name="Award01" size="sm" color={colors.brand} />
+                <Icon name="Check" size="xs" color={colors.textOnBrand} style={styles.tick} />
               </View>
             ) : null}
           </View>
@@ -101,12 +90,7 @@ export function JobDetailHero({ job }: JobDetailHeroProps) {
       </Text>
 
       <View style={[styles.row, { marginTop: s(HERO.locationGap) }]}>
-        <FontAwesome5
-          name="map-marker-alt"
-          size={s(HERO.rowIcon)}
-          color={colors.textSecondary}
-          solid
-        />
+        <Icon name="MarkerPin01" size="xs" color={colors.textSecondary} />
         <Text variant="bodyMedium" color="textSecondary" numberOfLines={1} style={styles.shrink}>
           {job.location}
         </Text>
@@ -114,12 +98,7 @@ export function JobDetailHero({ job }: JobDetailHeroProps) {
         {job.location.toLowerCase().includes(workplace.toLowerCase()) ? null : (
           <>
             <View style={[styles.rule, { backgroundColor: colors.borderDashed }]} />
-            <FontAwesome5
-              name={WORKPLACE_ICON[job.remote]}
-              size={s(HERO.rowIcon)}
-              color={colors.textSecondary}
-              solid
-            />
+            <Icon name={WORKPLACE_ICON[job.remote]} size="xs" color={colors.textSecondary} />
             <Text variant="bodyMedium" color="textSecondary">
               {workplace}
             </Text>
@@ -136,25 +115,17 @@ export function JobDetailHero({ job }: JobDetailHeroProps) {
               <Text variant="caption" color="textSecondary">
                 · Estimated
               </Text>
-              <FontAwesome5
-                name="info-circle"
-                size={s(HERO.salaryInfo)}
-                color={colors.iconMuted}
-                solid
-                // Decoration: "Estimated" already says it, and there is nothing behind the icon.
-                accessibilityElementsHidden
-                importantForAccessibility="no"
-              />
+              <Icon name="InfoCircle" size="xs" color={colors.iconMuted} />
             </>
           ) : null}
         </View>
       ) : null}
 
       <View style={[styles.chips, { marginTop: s(HERO.chipsGap) }]}>
-        <MetaPill label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} icon="briefcase" />
-        <MetaPill label={`Posted ${formatRelativeTime(job.postedAt)}`} icon="clock" iconRegular />
+        <MetaPill label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} icon="Briefcase01" />
+        <MetaPill label={`Posted ${formatRelativeTime(job.postedAt)}`} icon="Clock" />
         {/* A job added from a copied link (TAILOR 00c) knows no head count. */}
-        {job.companySize ? <MetaPill label={job.companySize} icon="users" /> : null}
+        {job.companySize ? <MetaPill label={job.companySize} icon="Users01" /> : null}
       </View>
     </View>
   );

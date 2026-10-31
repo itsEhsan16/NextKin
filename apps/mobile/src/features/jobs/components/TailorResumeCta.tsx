@@ -1,10 +1,9 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-
 import AiSparkle from '../../../../assets/icons/jobs/ai-sparkle.svg';
 import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type TailorResumeCtaProps = { onPress: () => void };
 
@@ -56,7 +55,7 @@ export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
       <Text variant="label" color="brand" numberOfLines={1} style={styles.copy}>
         Tailor your resume to this job
       </Text>
-      <FontAwesome5 name="chevron-right" size={s(CTA.chevron)} color={colors.iconMuted} solid />
+      <Icon name="ChevronRight" size={s(50.65)} color={colors.iconMuted} />
     </Pressable>
   );
 }

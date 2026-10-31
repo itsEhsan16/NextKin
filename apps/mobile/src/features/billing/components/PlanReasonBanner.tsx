@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { scaledSheet, useTheme } from '@/theme';
@@ -6,6 +5,7 @@ import { Text } from '@/ui/Text';
 
 import { REASON_LINE } from '../upgradeCopy';
 import type { UpgradeReason } from '../upgradeReasons';
+import { Icon } from '@/ui/Icon';
 
 export type PlanReasonBannerProps = { reason: UpgradeReason };
 
@@ -18,7 +18,6 @@ const PAD_Y = 10 / 0.75;
 const GAP = 10 / 0.75;
 const TILE = 30 / 0.75;
 const TILE_RADIUS = 9 / 0.75;
-const GLYPH = 12 / 0.75;
 
 /**
  * V2 §13.5 — the screen opens on the limit that was actually reached rather than on a pitch,
@@ -27,7 +26,7 @@ const GLYPH = 12 / 0.75;
  * nobody made.
  */
 export function PlanReasonBanner({ reason }: PlanReasonBannerProps) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
 
   return (
@@ -42,7 +41,7 @@ export function PlanReasonBanner({ reason }: PlanReasonBannerProps) {
         importantForAccessibility="no-hide-descendants"
         style={[styles.tile, { backgroundColor: colors.surfaceCard }]}
       >
-        <FontAwesome5 name="lock" size={s(GLYPH)} color={colors.warningStrong} solid />
+        <Icon name="Lock01" size="sm" color={colors.warningStrong} />
       </View>
       <Text variant="bodyMedium" style={styles.line}>
         {REASON_LINE[reason]}

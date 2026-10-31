@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
@@ -8,6 +7,7 @@ import { useTheme, type ColorToken } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { companyMark } from './companyMark';
+import { Icon, dataGlyph, lineBox } from '@/ui/Icon';
 
 /** Feed card tile, drawn at 390: 46 square, r12, an 18pt glyph (Figma 619:43 / 619:65). */
 const TILE_AT390 = 46;
@@ -78,12 +78,7 @@ export function VisualTile({ visual, compact = false }: VisualTileProps) {
   const tone = GLYPH_TONE[visual.tone];
   return (
     <View style={frame(tone.bg)}>
-      <FontAwesome5
-        name={visual.icon}
-        size={glyph}
-        color={colors[tone.fg]}
-        solid={!visual.regular}
-      />
+      <Icon name={dataGlyph(visual.icon)} size={lineBox(glyph)} color={colors[tone.fg]} />
     </View>
   );
 }

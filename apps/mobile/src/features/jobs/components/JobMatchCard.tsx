@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -17,6 +16,7 @@ import { Text } from '@/ui/Text';
 
 import { MatchPill } from './JobPills';
 import { MatchIllustration } from './MatchIllustration';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type JobMatchCardProps = {
   band: MatchBand;
@@ -26,8 +26,6 @@ export type JobMatchCardProps = {
   onSeeFullCriteria: () => void;
 };
 
-const ICON = 15;
-
 /**
  * The drawing sits to the right of the criteria (Figma 443:120), level with the first row. Drawn
  * as a 93 × 102 export box whose right edge runs 19.85 past the card's content edge, into the
@@ -36,14 +34,11 @@ const ICON = 15;
 const ART = { width: 124, height: 136, right: -26.4667 };
 
 /** Each state gets its own glyph and colour, so the row is legible without relying on colour. */
-const CRITERION_ICON: Record<
-  MatchCriterionState,
-  { name: string; color: ColorToken; solid: boolean }
-> = {
-  met: { name: 'check-circle', color: 'success', solid: true },
-  partial: { name: 'check-circle', color: 'success', solid: true },
-  missing: { name: 'times-circle', color: 'danger', solid: true },
-  optional: { name: 'circle', color: 'iconMuted', solid: false },
+const CRITERION_ICON: Record<MatchCriterionState, { name: LineIconName; color: ColorToken }> = {
+  met: { name: 'CheckCircle', color: 'success' },
+  partial: { name: 'CheckCircle', color: 'success' },
+  missing: { name: 'XCircle', color: 'danger' },
+  optional: { name: 'Circle', color: 'iconMuted' },
 };
 
 /** Read out instead of the glyph, which a screen reader would otherwise skip entirely. */
@@ -68,7 +63,7 @@ export function JobMatchCard({ band, criteria, basis, onSeeFullCriteria }: JobMa
         <Text variant="title" accessibilityRole="header">
           Why you match
         </Text>
-        <MatchPill band={band} icon="signal" />
+        <MatchPill band={band} icon="BarChart07" />
       </View>
       <Text variant="jobMeta" color="textSecondary">
         Compared against your base resume and profile
@@ -91,12 +86,7 @@ export function JobMatchCard({ band, criteria, basis, onSeeFullCriteria }: JobMa
               accessibilityLabel={`${CRITERION_A11Y[criterion.state]}. ${criterion.label}`}
               style={[styles.criterion, { gap: spacing[3] }]}
             >
-              <FontAwesome5
-                name={icon.name}
-                size={s(ICON)}
-                color={colors[icon.color]}
-                solid={icon.solid}
-              />
+              <Icon name={icon.name} size="sm" color={colors[icon.color]} />
               <Text variant="rowLabel" color="textBody" style={styles.criterionLabel}>
                 {criterion.label}
               </Text>
@@ -127,7 +117,7 @@ export function JobMatchCard({ band, criteria, basis, onSeeFullCriteria }: JobMa
         style={[styles.link, { gap: spacing[2] - 2 }]}
       >
         <Text variant="captionSemiBold">See full criteria</Text>
-        <FontAwesome5 name="chevron-right" size={s(9)} color={colors.textPrimary} solid />
+        <Icon name="ChevronRight" size="xs" color={colors.textPrimary} />
       </Pressable>
     </Card>
   );

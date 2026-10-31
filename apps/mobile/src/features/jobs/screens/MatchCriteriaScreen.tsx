@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -26,6 +25,7 @@ import {
   MATCH_RING_LABEL,
   TAILOR_TO_JOB_CTA,
 } from '../matchCriteria';
+import { Icon } from '@/ui/Icon';
 
 export type MatchCriteriaScreenProps = { jobId: string };
 
@@ -41,7 +41,6 @@ const NOTE_PAD = 14 / 0.75;
 const NOTE_GAP = 10 / 0.75;
 const NOTE_SLOT_W = 18 / 0.75;
 const NOTE_SLOT_H = 19 / 0.75;
-const NOTE_GLYPH = 15 / 0.75;
 const NOTE_TO_CARDS = 14 / 0.75;
 /** The bar's sparkle (580:2502) — the same drawing as the AI sparkle trio. */
 const SPARKLE_W = 18 / 0.75;
@@ -89,7 +88,7 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this match"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -115,7 +114,7 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
   if (groups.length === 0) {
     return page(
       <StateView
-        icon="user-edit"
+        icon="UserEdit"
         title="We can't score this match yet"
         message="Matching reads the skills and experience on your profile."
         actionLabel="Complete your profile"
@@ -166,7 +165,7 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
         ]}
       >
         <View style={styles.noteSlot}>
-          <FontAwesome5 name="info-circle" size={s(NOTE_GLYPH)} color={colors.brand} solid />
+          <Icon name="InfoCircle" size="sm" color={colors.brand} />
         </View>
         <Text variant="captionRegular" color="textBody" style={styles.noteText}>
           {MATCH_HONESTY_NOTE}

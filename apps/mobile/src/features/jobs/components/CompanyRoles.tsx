@@ -49,7 +49,7 @@ export function CompanyRoles({
       <StateView
         compact
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load these roles"
         message="The rest of this page still loaded."
         actionLabel="Try again"
@@ -63,7 +63,7 @@ export function CompanyRoles({
     return (
       <StateView
         compact
-        icon="briefcase"
+        icon="Briefcase01"
         title="No other open roles right now"
         message={`This is the only ${company} listing we have today.`}
       />

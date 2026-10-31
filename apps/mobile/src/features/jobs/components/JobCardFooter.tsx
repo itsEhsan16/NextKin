@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import AiSparkle from '../../../../assets/icons/jobs/ai-sparkle.svg';
@@ -8,6 +7,7 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { BookmarkGlyph } from './BookmarkGlyph';
+import { Icon } from '@/ui/Icon';
 
 export type JobCardFooterProps = {
   /** "Posted 2d ago", "Saved 4d ago", "Closing in 3d", "Applied 12d ago". */
@@ -25,7 +25,6 @@ export type JobCardFooterProps = {
 
 /** Drawn values over 0.75 — a 30 box per action, 25 apart, under a 0.75 rule. */
 const FOOTER = { box: 40, gap: 33.3333, sparkle: 32.7191, sparkleHeight: 32, bookmark: 29.6973 };
-const CHEVRON = 16;
 
 /**
  * The row under the divider on every redrawn job card (Figma 498:31 / 521:31 / 521:265).
@@ -53,7 +52,7 @@ export function JobCardFooter({
       </Text>
 
       {variant === 'chevron' ? (
-        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconMuted} solid />
+        <Icon name="ChevronRight" size="md" color={colors.iconMuted} />
       ) : (
         <View style={styles.actions}>
           <Pressable

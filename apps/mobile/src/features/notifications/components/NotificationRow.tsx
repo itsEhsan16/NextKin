@@ -74,7 +74,7 @@ export const NotificationRow = memo(function NotificationRow({
         ? [
             {
               key: 'read',
-              icon: 'check',
+              icon: 'Check' as const,
               label: 'Mark read',
               tone: 'brand' as const,
               onPress: () => onMarkRead(notification),
@@ -83,7 +83,7 @@ export const NotificationRow = memo(function NotificationRow({
         : []),
       {
         key: 'more',
-        icon: 'ellipsis-h',
+        icon: 'DotsHorizontal' as const,
         label: 'More',
         tone: 'ink' as const,
         onPress: () => onMore(notification),

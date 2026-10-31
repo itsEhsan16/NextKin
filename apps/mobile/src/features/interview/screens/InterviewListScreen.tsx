@@ -179,7 +179,7 @@ export function InterviewListScreen() {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your practice sets"
         message="Check your connection and try again."
         actionLabel="Try again"

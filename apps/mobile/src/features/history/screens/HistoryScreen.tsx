@@ -158,7 +158,7 @@ export function HistoryScreen() {
       ) : status === 'error' ? (
         <StateView
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Couldn't load your history"
           message="Check your connection and try again."
           actionLabel="Try again"
@@ -167,7 +167,7 @@ export function HistoryScreen() {
         />
       ) : nothingYet ? (
         <StateView
-          icon="history"
+          icon="ClockRewind"
           title="Nothing here yet"
           message="Resumes, saved jobs and exports are recorded here."
           actionLabel="Find jobs"
@@ -176,7 +176,7 @@ export function HistoryScreen() {
         />
       ) : filteredOut ? (
         <StateView
-          icon="filter"
+          icon="FilterLines"
           title="Nothing under this filter"
           actionLabel="Show all"
           onAction={() => setFilter('all')}

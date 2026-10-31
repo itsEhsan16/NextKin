@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { memo } from 'react';
 import { View } from 'react-native';
 
@@ -9,16 +8,14 @@ import { Card } from '@/ui/Card';
 import { LogoTile } from '@/ui/LogoTile';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type SimilarJobCardProps = { job: Job; onPress: (job: Job) => void };
 
 const LOGO = 40;
 
 /** Compact row in the "Similar jobs" rail (Figma 1:902) — smaller than a JobCard, no bookmark. */
-export const SimilarJobCard = memo(function SimilarJobCard({
-  job,
-  onPress,
-}: SimilarJobCardProps) {
+export const SimilarJobCard = memo(function SimilarJobCard({ job, onPress }: SimilarJobCardProps) {
   const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
   const meta = formatJobMeta([job.company, job.location, REMOTE_TYPE_LABEL[job.remote]]);
@@ -48,7 +45,7 @@ export const SimilarJobCard = memo(function SimilarJobCard({
             </Text>
             {salary ? <Text variant="captionSemiBold">{salary}</Text> : null}
           </View>
-          <FontAwesome5 name="chevron-right" size={s(12)} color={colors.iconMuted} solid />
+          <Icon name="ChevronRight" size="sm" color={colors.iconMuted} />
         </View>
       </Card>
     </Pressable>

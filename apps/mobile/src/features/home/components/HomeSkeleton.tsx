@@ -32,8 +32,8 @@ export function HomeSkeleton() {
         <Skeleton width={s(288)} height={s(220)} radius="cardLg" />
         <Skeleton width={s(288)} height={s(220)} radius="cardLg" />
       </View>
-      <Skeleton height={s(200)} radius="cardLg" />
       <Skeleton height={s(147)} radius="cardLg" />
+      <Skeleton height={s(200)} radius="cardLg" />
     </View>
   );
 }

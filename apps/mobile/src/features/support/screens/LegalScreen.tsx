@@ -1,5 +1,10 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { AccessibilityInfo, ScrollView, View, type LayoutChangeEvent } from 'react-native';
+import {
+  AccessibilityInfo,
+  View,
+  type LayoutChangeEvent,
+  type ScrollViewInstance,
+} from 'react-native';
 
 import { LEGAL_DOC_TITLE, type LegalDocKey } from '@/data/models';
 import { useLegal } from '@/data/queries';
@@ -78,7 +83,7 @@ function MissingDocument() {
       contentContainerStyle={{ paddingBottom: spacing[8] }}
     >
       <StateView
-        icon="file-alt"
+        icon="File06"
         title="That document doesn't exist"
         actionLabel="Go back"
         onAction={actions.goBack}
@@ -97,7 +102,7 @@ function LegalDocument({ doc }: { doc: LegalDocKey }) {
 
   // Where each section card sits in the scroll content: the body's top, the list's top inside it,
   // and each card's top inside the list. onLayout only ever reports against the parent.
-  const scrollRef = useRef<ScrollView | null>(null);
+  const scrollRef = useRef<ScrollViewInstance | null>(null);
   const bodyY = useRef(0);
   const listY = useRef(0);
   const sectionY = useRef<number[]>([]);
@@ -132,7 +137,7 @@ function LegalDocument({ doc }: { doc: LegalDocKey }) {
           title={LEGAL_DOC_TITLE[doc]}
           showTitle={false}
           onBack={actions.goBack}
-          trailing={<IconButton icon="external-link-alt" label={OPEN_LABEL} onPress={openOnWeb} />}
+          trailing={<IconButton icon="LinkExternal01" label={OPEN_LABEL} onPress={openOnWeb} />}
         />
       }
       headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
@@ -176,7 +181,7 @@ function LegalDocument({ doc }: { doc: LegalDocKey }) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this document"
         message="Check your connection and try again, or read the published copy on the web."
         actionLabel="Try again"

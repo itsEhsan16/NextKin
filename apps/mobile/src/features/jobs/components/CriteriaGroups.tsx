@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -15,6 +14,7 @@ import {
   criterionA11yLabel,
   type CriteriaGroup,
 } from '../matchCriteria';
+import { Icon } from '@/ui/Icon';
 
 // JOBS 10 at 390 (580:2456), in artboard units.
 const CARD_GAP = 14 / 0.75;
@@ -23,7 +23,6 @@ const BAR = 4 / 0.75;
 const BAR_TO_ROWS = 7 / 0.75;
 const ROW_PAD_Y = 7 / 0.75;
 const ROW_GAP = 12 / 0.75;
-const ICON = 16 / 0.75;
 const ICON_SLOT_W = 18 / 0.75;
 /** `prose`'s 22 line — the icon box is that tall so the glyph centres on the FIRST line. */
 const ICON_SLOT_H = 22 / 0.75;
@@ -36,7 +35,7 @@ type CriterionRowProps = { criterion: MatchCriterion; order: number };
  * element that speaks its state rather than a button that leads nowhere.
  */
 function CriterionRow({ criterion, order }: CriterionRowProps) {
-  const { colors, motion, s } = useTheme();
+  const { colors, motion } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
   const icon = CRITERION_ICON[criterion.state];
@@ -44,12 +43,7 @@ function CriterionRow({ criterion, order }: CriterionRowProps) {
   const row = (
     <View accessible accessibilityLabel={criterionA11yLabel(criterion)} style={styles.row}>
       <View style={styles.iconSlot}>
-        <FontAwesome5
-          name={icon.name}
-          size={s(ICON)}
-          color={colors[icon.color]}
-          solid={icon.solid}
-        />
+        <Icon name={icon.name} size="md" color={colors[icon.color]} />
       </View>
       <View style={styles.text}>
         <Text variant="prose">{criterion.label}</Text>

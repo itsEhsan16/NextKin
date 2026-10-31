@@ -74,7 +74,7 @@ export function ContactForm({
         <SelectField
           label={CONTACT_TOPIC_LABEL}
           showLabel={false}
-          icon="tag"
+          icon="Tag01"
           value={SUPPORT_TOPIC_LABEL[topic]}
           hint={CONTACT_TOPIC_HINT}
           onPress={onPickTopic}

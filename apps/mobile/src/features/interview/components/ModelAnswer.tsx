@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
@@ -9,6 +8,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { layoutTransition } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 export type ModelAnswerProps = {
   question: Pick<InterviewQuestion, 'answer' | 'talkingPoints'>;
@@ -29,10 +29,8 @@ const GAP = 12;
 const HEAD_GAP = 10;
 const SPARKLE_W = 18;
 const SPARKLE_H = 17.632;
-const CARET = 10;
 const POINTS_GAP = 10;
 const TICK = 20;
-const TICK_GLYPH = 9;
 const TICK_GAP = 10;
 /** The open header is one 18 line; its target still reaches 44. */
 const HEAD_LINE = 18;
@@ -75,12 +73,7 @@ export function ModelAnswer({ question, revealed, onToggle }: ModelAnswerProps) 
         <Text variant="bodySemiBold" color="brand" style={styles.grow}>
           {label}
         </Text>
-        <FontAwesome5
-          name={revealed ? 'chevron-up' : 'chevron-down'}
-          size={s(CARET / 0.75)}
-          color={colors.brand}
-          solid
-        />
+        <Icon name={revealed ? 'ChevronUp' : 'ChevronDown'} size="md" color={colors.brand} />
       </Pressable>
 
       {revealed ? (
@@ -109,12 +102,7 @@ export function ModelAnswer({ question, revealed, onToggle }: ModelAnswerProps) 
                       },
                     ]}
                   >
-                    <FontAwesome5
-                      name="check"
-                      size={s(TICK_GLYPH / 0.75)}
-                      color={colors.brand}
-                      solid
-                    />
+                    <Icon name="Check" size="sm" color={colors.brand} />
                   </View>
                   <Text variant="body" color="textBody" style={styles.grow}>
                     {point}

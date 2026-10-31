@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useCallback, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -18,6 +17,7 @@ import { CompanyHero } from '../components/CompanyHero';
 import { CompanyRoles } from '../components/CompanyRoles';
 import { CompanySkeleton } from '../components/CompanySkeleton';
 import { useJobsActions } from '../hooks/useJobsActions';
+import { Icon } from '@/ui/Icon';
 
 export type CompanyScreenProps = { jobId: string };
 
@@ -36,8 +36,6 @@ const ROW_PAD_Y = 10 / 0.75;
 const ROW_GAP = 12 / 0.75;
 const TILE = 36 / 0.75;
 const TILE_RADIUS = 10 / 0.75;
-const TILE_GLYPH = 15 / 0.75;
-const EXTERNAL_GLYPH = 12 / 0.75;
 const ABOUT_GAP = 10 / 0.75;
 const ART_SLOT_W = 44 / 0.75;
 const ART_SLOT_H = 30 / 0.75;
@@ -110,7 +108,7 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this company"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -140,17 +138,12 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
             style={styles.row}
           >
             <View style={[styles.tile, { backgroundColor: colors.tileBrandStrong }]}>
-              <FontAwesome5 name="globe" size={s(TILE_GLYPH)} color={colors.brand} solid />
+              <Icon name="Globe02" size="sm" color={colors.brand} />
             </View>
             <Text variant="menuRow" numberOfLines={1} style={styles.flex}>
               {website}
             </Text>
-            <FontAwesome5
-              name="external-link-alt"
-              size={s(EXTERNAL_GLYPH)}
-              color={colors.textSecondary}
-              solid
-            />
+            <Icon name="LinkExternal01" size="sm" color={colors.textSecondary} />
           </Pressable>
         </ProfileCard>
         {message ? (

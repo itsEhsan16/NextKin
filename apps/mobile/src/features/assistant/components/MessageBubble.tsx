@@ -124,7 +124,7 @@ export const MessageBubble = memo(function MessageBubble({
           },
         ]}
       >
-        {refusal ? <Pill label="Out of scope" tone="plain" icon="ban" /> : null}
+        {refusal ? <Pill label="Out of scope" tone="plain" icon="SlashCircle01" /> : null}
         {message.text.length > 0 ? (
           <Text variant="body" color="textBody">
             {message.text}

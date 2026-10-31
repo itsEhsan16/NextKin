@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Image } from 'expo-image';
 import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -14,6 +13,7 @@ import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type ResumeProgressCardProps = {
   resume: Resume | undefined;
@@ -82,7 +82,7 @@ export function ResumeProgressCard({
         <StateView
           compact
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Couldn't load your resumes"
           actionLabel="Try again"
           onAction={onRetry}
@@ -90,7 +90,7 @@ export function ResumeProgressCard({
       ) : !resume ? (
         <StateView
           compact
-          icon="file-alt"
+          icon="File06"
           title="No resume yet"
           message="Generate your first JD-tailored resume in under a minute."
           actionLabel="Create resume"
@@ -166,11 +166,10 @@ export function ResumeProgressCard({
                     accessibilityLabel={`${label}: ${ok ? 'passed' : 'pending'}`}
                     style={[styles.row, { gap: s(4) }]}
                   >
-                    <FontAwesome5
-                      name={ok ? 'check-circle' : 'circle'}
-                      size={s(11)}
+                    <Icon
+                      name={ok ? 'CheckCircle' : 'Circle'}
+                      size="xs"
                       color={ok ? colors.successIcon : colors.iconMuted}
-                      solid={ok}
                     />
                     <Text variant="homeCheckLabel" color="textBody">
                       {label}

@@ -68,7 +68,7 @@ export function TodaysPicks({
           <StateView
             compact
             tone="danger"
-            icon="exclamation-triangle"
+            icon="AlertTriangle"
             title="Couldn't load picks"
             actionLabel="Try again"
             onAction={onRetry}
@@ -78,7 +78,7 @@ export function TodaysPicks({
         <Card>
           <StateView
             compact
-            icon="briefcase"
+            icon="Briefcase01"
             title="No picks today"
             message="Picks refresh daily — check back tomorrow."
           />
