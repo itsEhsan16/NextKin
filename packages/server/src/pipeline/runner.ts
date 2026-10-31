@@ -8,6 +8,7 @@ import type { Database, Tx } from '../db/database';
 import type { Logger } from '../observability/logger';
 import { askAfterRun } from '../services/applications';
 import { activePrompt, promptVersion, type PromptVersion } from '../services/prompts';
+import { notifyRunFailed, notifyRunReady } from '../services/notifications';
 import { commitRun, releaseRun } from '../services/quotas';
 import { hasAiConsent } from '../services/consent';
 import { appendEvent, type EventPublisher, type PublishedEvent } from './events';
@@ -95,6 +96,8 @@ export async function failGeneration(tx: Tx, row: GenerationRow, code: string, m
     .where('id', '=', row.id)
     .returningAll()
     .executeTakeFirstOrThrow();
+  // A run the candidate stopped, or one waiting on their consent, is not news to them.
+  if (code !== 'cancelled' && code !== 'consent_required') await notifyRunFailed(tx, updated);
   return appendEvent(tx, row.id, row.user_id, 'failed', row.current_stage, toSnapshot(updated, stageCount));
 }
 
@@ -277,6 +280,7 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
           .execute();
       }
       await askAfterRun(tx, updated);
+      await notifyRunReady(tx, updated);
       return [await appendEvent(tx, row.id, row.user_id, 'completed', null, toSnapshot(updated, def.stages.length))];
     });
     return 'completed';

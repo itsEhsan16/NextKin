@@ -40,6 +40,7 @@ import { sharedReportRoutes } from './routes/sharedReports';
 import { skillRoutes } from './routes/skills';
 import { applicationRoutes } from './routes/applications';
 import { jobRoutes } from './routes/jobs';
+import { notificationRoutes } from './routes/notifications';
 import type { AiGateway } from '../ai/gateway';
 import { createMemoryKv, type KvCache } from '../cache/kv';
 import { createBreaker, type Breaker } from '../jobs/breaker';
@@ -229,6 +230,7 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
     };
     app.route('/', interviewRoutes(deps.db));
     app.route('/', applicationRoutes(deps.db));
+    app.route('/', notificationRoutes(deps.db));
     {
       // Tests get the fake gateway, delivering its signed webhooks to this API's own intake.
       const db = deps.db;

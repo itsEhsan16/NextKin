@@ -14532,3 +14532,20 @@ Branch `step-1/make-it-real`, built on `stabilize/step-0`. Nothing is merged or 
 - **Spec-derived, no board:** the sheet (mobile) and dialog (web). Check the wording and whether the third answer reads well.
 - **Still wrong, for later:** NOTIF 04's "Application updates: Viewed, moved stage, decision" and the seeded fixture rows describe employer events we can never see. The feed never files them (144.2), but the preference row still reads that way.
 - **Not verified on a device.** Jest covers both apps' flows; integration tests cover the server.
+
+### 144.2 The notification feed
+
+- **Why:** on the backend the feed answered from fixtures, so a real user would have seen invented alerts such as "Stripe viewed your application".
+- **Change:** migration 0044, `/api/v1/notifications`, and two daily jobs: `closing_alerts` and `notification_purge` (90 days). The mobile and web hooks are unchanged; only the repository moved.
+- **What files a row:**
+  - a resume, cover letter, ATS check or interview set finishing or failing, linked to its run;
+  - a saved job closing within 48 hours, once per job;
+  - Pro starting, a payment received, a payment failing, Pro ending.
+- **This closes the §141 gap.** A failed run now has a home: its row links to the run's own screen, where it can be retried. §141's other question (a live indicator on Home) stays open.
+- **Calls made without you:**
+  - **Billing always files**, even though the category defaults to off. That switch was drawn for push; a failed payment is about their money.
+  - **A cancelled run, or one waiting on consent, files nothing.** The candidate already knows.
+  - **Matches digests and application updates file nothing.** Job providers are still fixtures (D-12), and no employer event reaches us.
+  - **A new user's feed is empty,** using the empty state the screen already has.
+- **Web has no feed page.** It has only the bell's unread dot. Decide whether web needs a page before the joint launch.
+- **Not verified on a device.**

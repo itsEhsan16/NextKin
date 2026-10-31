@@ -7,6 +7,7 @@ import type { EmailPort } from '../email/email';
 import type { Logger } from '../observability/logger';
 import { enqueue } from '../outbox/outbox';
 import { currencyFor, toMajor } from '../payments/priceBook';
+import { notifyBilling } from './notifications';
 import type { BillingEvent, PaymentProvider } from '../payments/types';
 
 /**
@@ -119,6 +120,7 @@ async function apply(deps: ProcessDeps, event: BillingEvent): Promise<void> {
           .values({ billing_account_id: account.id, user_id: account.owner_user_id, plan_id: event.planId, status: 'active', gateway_subscription_id: event.subscriptionRef, current_period_end: event.currentPeriodEnd })
           .onConflict((oc) => oc.column('gateway_subscription_id').doNothing())
           .execute();
+        await notifyBilling(tx, account.owner_user_id, 'upgraded', `checkout:${event.subscriptionRef}`);
         await tx.insertInto('activity').values({ user_id: account.owner_user_id, kind: 'plan', title: `Upgraded to **${event.planId === 'pro_annual' ? 'Pro annual' : 'Pro monthly'}**`, deep_link: '/upgrade' }).execute();
       });
       return;
@@ -142,7 +144,10 @@ async function apply(deps: ProcessDeps, event: BillingEvent): Promise<void> {
     }
     case 'subscription.deleted': {
       const sub = await subscriptionByRef(db, event.subscriptionRef);
-      await db.withUser({ userId: sub.user_id, role: 'user' }, (tx) => tx.updateTable('subscriptions').set({ status: 'canceled', cancel_at_period_end: false, paused_until: null }).where('id', '=', sub.id).execute());
+      await db.withUser({ userId: sub.user_id, role: 'user' }, async (tx) => {
+        await tx.updateTable('subscriptions').set({ status: 'canceled', cancel_at_period_end: false, paused_until: null }).where('id', '=', sub.id).execute();
+        await notifyBilling(tx, sub.user_id, 'ended', `ended:${event.subscriptionRef}`);
+      });
       return;
     }
     case 'invoice.paid': {
@@ -168,6 +173,7 @@ async function apply(deps: ProcessDeps, event: BillingEvent): Promise<void> {
         if (event.card) await tx.updateTable('billing_accounts').set({ card: JSON.stringify(event.card) }).where('id', '=', sub.billing_account_id).execute();
         // A paid invoice clears a past-due state.
         await tx.updateTable('subscriptions').set({ status: 'active' }).where('id', '=', sub.id).where('status', '=', 'past_due').execute();
+        if (payment) await notifyBilling(tx, sub.user_id, 'paid', `paid:${event.paymentRef}`);
         const user = await tx.selectFrom('users as u').innerJoin('billing_accounts as b', 'b.owner_user_id', 'u.id').select(['u.email', 'b.billing_country']).where('u.id', '=', sub.user_id).executeTakeFirstOrThrow();
         return payment ? { number: payment.invoice_number, ...user } : null;
       });
@@ -189,7 +195,10 @@ async function apply(deps: ProcessDeps, event: BillingEvent): Promise<void> {
     }
     case 'invoice.payment_failed': {
       const sub = await subscriptionByRef(db, event.subscriptionRef);
-      await db.withUser({ userId: sub.user_id, role: 'user' }, (tx) => tx.updateTable('subscriptions').set({ status: 'past_due' }).where('id', '=', sub.id).execute());
+      await db.withUser({ userId: sub.user_id, role: 'user' }, async (tx) => {
+        await tx.updateTable('subscriptions').set({ status: 'past_due' }).where('id', '=', sub.id).execute();
+        await notifyBilling(tx, sub.user_id, 'failed', `failed:${event.subscriptionRef}:${new Date().toISOString().slice(0, 10)}`);
+      });
       return;
     }
     case 'charge.refunded': {

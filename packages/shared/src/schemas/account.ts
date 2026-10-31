@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { ActivityEntry } from '../models/activity';
-import type { NotificationPrefs, NotificationSettings } from '../models/notification';
+import type { Notification, NotificationPrefs, NotificationSettings } from '../models/notification';
 import type { ConnectedAccount } from '../models/settings';
 import type { AccountSecurity, DashboardStats, User } from '../models/user';
 
@@ -75,6 +75,25 @@ export const notificationPrefsSchema = z
     weeklyDigest: onOff,
   })
   .strict() satisfies z.ZodType<NotificationPrefs>;
+
+const notificationVisual = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('sparkle') }),
+  z.object({ kind: z.literal('logo'), company: z.string() }),
+  z.object({ kind: z.literal('glyph'), icon: z.string(), tone: z.enum(['brand', 'success', 'warning', 'info', 'neutral']), regular: z.boolean().optional() }),
+]);
+
+export const notificationSchema = z.object({
+  id: z.string(),
+  category: z.enum(['matches', 'closing', 'applications', 'ai', 'billing']),
+  body: z.string(),
+  description: z.string(),
+  createdAt: z.string(),
+  read: z.boolean(),
+  deepLink: z.string().optional(),
+  visual: notificationVisual,
+  stack: z.object({ companies: z.array(z.string()), more: z.number().int().optional() }).optional(),
+}) satisfies z.ZodType<Notification>;
+export const notificationListSchema = z.object({ items: z.array(notificationSchema) });
 
 const channels = z.object({ inApp: onOff, email: onOff, push: onOff }).strict();
 

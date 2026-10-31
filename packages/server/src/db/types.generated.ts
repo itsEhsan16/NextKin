@@ -430,6 +430,19 @@ export interface MarketProfileVersions {
   version: number;
 }
 
+export interface Notifications {
+  body: string;
+  category: string;
+  created_at: Generated<Timestamp>;
+  dedupe_key: string;
+  deep_link: string | null;
+  description: string;
+  id: Generated<string>;
+  read_at: Timestamp | null;
+  user_id: string;
+  visual: Json;
+}
+
 export interface Outbox {
   attempts: Generated<number>;
   correlation_id: string | null;
@@ -888,6 +901,7 @@ export interface DB {
   kb_dataset_versions: KbDatasetVersions;
   kb_review_queue: KbReviewQueue;
   market_profile_versions: MarketProfileVersions;
+  notifications: Notifications;
   outbox: Outbox;
   payments: Payments;
   plans: Plans;

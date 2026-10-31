@@ -43,9 +43,9 @@ describe('createRepos', () => {
   it('lists every fallback, and production refuses to build with one', () => {
     const config = { sources: parseDataSources('http'), http, uploader: async () => {} };
     expect(mockFallbacks(config).some((m) => m.startsWith('user.'))).toBe(false);
-    expect(mockFallbacks(config)).toContain('notifications.list');
+    expect(mockFallbacks(config)).toContain('jd.compare:from-mock-document');
     expect(mockFallbacks(config).some((m) => m.startsWith('profile.'))).toBe(false);
-    expect(() => createRepos({ ...config, environment: 'production' }, mock())).toThrow(/notifications\.list/);
+    expect(() => createRepos({ ...config, environment: 'production' }, mock())).toThrow(/jd\.compare:from-mock-document/);
     expect(() => createRepos({ sources: { profile: 'http' }, http, environment: 'production' }, mock())).not.toThrow();
   });
 
@@ -61,7 +61,7 @@ describe('createRepos', () => {
     };
     const all = mockFallbacks(config);
     expect(() => createRepos({ ...config, allowedFallbacks: all }, mock())).not.toThrow();
-    const allButOne = all.filter((m) => m !== 'notifications.list');
-    expect(() => createRepos({ ...config, allowedFallbacks: allButOne }, mock())).toThrow(/notifications\.list/);
+    const allButOne = all.filter((m) => m !== 'jd.compare:from-mock-document');
+    expect(() => createRepos({ ...config, allowedFallbacks: allButOne }, mock())).toThrow(/jd\.compare:from-mock-document/);
   });
 });

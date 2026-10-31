@@ -17,6 +17,7 @@ const DATA_GLYPH: Record<string, LineIconName> = {
   briefcase: 'Briefcase01',
   check: 'Check',
   'check-circle': 'CheckCircle',
+  'exclamation-triangle': 'AlertTriangle',
   star: 'Star01',
 };
 
