@@ -67,6 +67,7 @@ export { STALL_FAIL_MS, STALL_SLOW_MS, useStall, type Stall } from './useStall';
 export {
   useCancelGeneration,
   useGeneration,
+  useGenerations,
   useRetryGeneration,
   useStartGeneration,
 } from './useGenerations';

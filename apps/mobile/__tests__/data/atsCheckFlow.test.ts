@@ -115,6 +115,7 @@ describe('running an ATS check', () => {
     const cancelled = await flush(repos.generations.cancel(generation.id));
     expect(cancelled.status).toBe('failed');
     expect(cancelled.error).toBe('Cancelled');
+    expect(cancelled.cancelled).toBe(true);
     expect(store.state.subscription.usage.atsChecksUsed).toBe(before);
     // A check reads a document that already exists; cancelling must not delete it.
     expect(store.state.resumes.some((item) => item.id === resume.id)).toBe(true);

@@ -31,6 +31,7 @@ export const generationSchema = z.object({
   updatedAt: z.string(),
   /** Plain language, safe to show. */
   error: z.string().optional(),
+  cancelled: z.boolean().optional(),
   resumeId: z.string().optional(),
   jdId: z.string().optional(),
   jobId: z.string().optional(),

@@ -7,6 +7,8 @@
  * Keep the two in step — a History row and its notification describe the same event.
  */
 
+import type { GenerationKind } from './generation';
+
 /** What happened. One kind per thing the app records; `ACTIVITY_FILTERS` groups these. */
 export type ActivityKind =
   | 'generation'
@@ -19,6 +21,15 @@ export type ActivityKind =
   | 'ats_check'
   | 'interview'
   | 'plan';
+
+/** The History kind each pipeline run is recorded under. */
+export const GENERATION_ACTIVITY_KIND: Record<GenerationKind, ActivityKind> = {
+  resume: 'generation',
+  zero_resume: 'generation',
+  cover_letter: 'cover_letter',
+  ats_check: 'ats_check',
+  interview: 'interview',
+};
 
 /** Row eyebrow / filter-chip copy. Short nouns, the vocabulary the rest of the app already uses. */
 export const ACTIVITY_KIND_LABEL: Record<ActivityKind, string> = {
@@ -90,7 +101,10 @@ export const ACTIVITY_FILTERS: readonly {
   { key: 'account', label: 'Account', kinds: ['profile', 'plan'] },
 ];
 
-export function matchesActivityFilter(entry: ActivityEntry, filter: ActivityFilter): boolean {
+export function matchesActivityFilter(
+  entry: Pick<ActivityEntry, 'kind'>,
+  filter: ActivityFilter,
+): boolean {
   if (filter === 'all') return true;
   const group = ACTIVITY_FILTERS.find((item) => item.key === filter);
   return group?.kinds?.includes(entry.kind) ?? false;

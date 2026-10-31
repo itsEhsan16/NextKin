@@ -6,13 +6,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HistoryArt from '../../../../assets/icons/history/hero-history.svg';
 import {
   ACTIVITY_FILTERS,
+  GENERATION_ACTIVITY_KIND,
   groupByAge,
   matchesActivityFilter,
+  unfinishedRuns,
   type ActivityEntry,
   type AgedFeedItem,
+  type Generation,
   type NotificationGroup,
 } from '@/data/models';
-import { queryPhase, useActivity } from '@/data/queries';
+import { queryPhase, useActivity, useGenerations } from '@/data/queries';
 import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
@@ -23,12 +26,18 @@ import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
 import { ActivityRow } from '../components/ActivityRow';
+import { RunRow } from '../components/RunRow';
 import { useHistoryStore } from '../historyStore';
 import { useHistoryActions } from '../hooks/useHistoryActions';
 
-type FeedItem = AgedFeedItem<ActivityEntry>;
+type FeedItem =
+  AgedFeedItem<ActivityEntry> | { type: 'unfinished' } | { type: 'run'; run: Generation };
 
-const feedKey = (item: FeedItem) => (item.type === 'header' ? `header-${item.group}` : item.row.id);
+const feedKey = (item: FeedItem) => {
+  if (item.type === 'header') return `header-${item.group}`;
+  if (item.type === 'unfinished') return item.type;
+  return item.type === 'run' ? `run-${item.run.id}` : item.row.id;
+};
 
 /** Cards are about 90pt tall at 390; the skeleton holds that so the list does not jump on load. */
 const SKELETON_ROW = 90 / 0.75;
@@ -53,9 +62,13 @@ const GROUP_TITLE: Record<NotificationGroup, string> = {
   earlier: 'Earlier',
 };
 
+/** Heads the runs still working or stopped by a failure (V2 §7.2, toreview §145.3). */
+const UNFINISHED_TITLE = 'Not finished';
+
 /**
  * HISTORY — the audit trail behind Home's "Activities" tile, drawn as HISTORY 01 (580:2928): a
- * hero, the filter chips, then one card per entry under Today / This week / Earlier.
+ * hero, the filter chips, then one card per entry under Today / This week / Earlier. Runs that
+ * haven't finished sit above those groups: this is their home, and the bell reports when they end.
  *
  * A pushed screen, so no tab-bar inset — the bottom padding is the safe area alone.
  */
@@ -71,6 +84,9 @@ export function HistoryScreen() {
   const activity = useActivity();
   const list = useMemo(() => activity.data ?? [], [activity.data]);
 
+  const runs = useGenerations();
+  const unfinished = useMemo(() => unfinishedRuns(runs.data ?? []), [runs.data]);
+
   const { items } = useMemo(
     () =>
       groupByAge(
@@ -80,9 +96,20 @@ export function HistoryScreen() {
     [filter, list],
   );
 
+  const feed = useMemo<FeedItem[]>(() => {
+    const shown = unfinished.filter((run) =>
+      matchesActivityFilter({ kind: GENERATION_ACTIVITY_KIND[run.kind] }, filter),
+    );
+    return [
+      ...(shown.length > 0 ? [{ type: 'unfinished' as const }] : []),
+      ...shown.map((run) => ({ type: 'run' as const, run })),
+      ...items,
+    ];
+  }, [filter, items, unfinished]);
+
   const renderItem = useCallback(
     ({ item, index }: { item: FeedItem; index: number }) => {
-      if (item.type === 'header') {
+      if (item.type === 'header' || item.type === 'unfinished') {
         return (
           <Text
             {...a11yHeader()}
@@ -95,23 +122,31 @@ export function HistoryScreen() {
               },
             ]}
           >
-            {GROUP_TITLE[item.group]}
+            {item.type === 'header' ? GROUP_TITLE[item.group] : UNFINISHED_TITLE}
           </Text>
         );
       }
       return (
         <View style={[styles.cardSlot, { paddingHorizontal: spacing.gutter }]}>
-          <ActivityRow entry={item.row} onOpen={actions.openEntry} />
+          {item.type === 'run' ? (
+            <RunRow run={item.run} onOpen={actions.openEntry} />
+          ) : (
+            <ActivityRow entry={item.row} onOpen={actions.openEntry} />
+          )}
         </View>
       );
     },
     [actions.openEntry, s, spacing.gutter, styles],
   );
 
-  const status = queryPhase(activity);
+  const phase = queryPhase(activity);
+  // The feed waits for the runs, so their group doesn't push it down a moment after it lands. A
+  // failed read of the runs ends that wait: the feed still has plenty to show.
+  const status = phase === 'success' && runs.isPending ? 'pending' : phase;
   // Two different emptinesses: nothing has ever happened, or the filter emptied a list that has.
-  const nothingYet = status === 'success' && list.length === 0;
-  const filteredOut = status === 'success' && list.length > 0 && items.length === 0;
+  // A first run hasn't reached the feed, which records what finished, so it counts as something.
+  const nothingYet = status === 'success' && list.length === 0 && unfinished.length === 0;
+  const filteredOut = status === 'success' && !nothingYet && feed.length === 0;
 
   const hero = (
     <View style={[styles.top, { paddingHorizontal: spacing.gutter }]}>
@@ -184,7 +219,7 @@ export function HistoryScreen() {
         />
       ) : (
         <FlashList
-          data={items}
+          data={feed}
           renderItem={renderItem}
           keyExtractor={feedKey}
           getItemType={(item) => item.type}

@@ -1,8 +1,8 @@
 import { getMockMode, newId, simulate } from '../mock';
 import type { Generation, GenerationStatus, JdDraft, Job, Resume } from '../models';
-import { isGenerationTerminal } from '../models';
+import { GENERATION_ACTIVITY_KIND, isGenerationTerminal } from '../models';
 
-import { completeGeneration, GENERATION_ACTIVITY_KIND } from './generationCompletion';
+import { completeGeneration } from './generationCompletion';
 import {
   addBuildSkills,
   appendStartActivity,
@@ -213,6 +213,7 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
         // Deleted rather than set to undefined: a JSON-safe store has no undefined values, and
         // the failure banner reads "is there an `error` key", not "is it truthy".
         delete next.error;
+        delete next.cancelled;
 
         store.state.generations = store.state.generations.map((generation) =>
           generation.id === id ? next : generation,
@@ -238,6 +239,7 @@ export function createMockGenerationsRepo(store: MockStore): GenerationsRepo {
           ...current,
           status: 'failed',
           error: 'Cancelled',
+          cancelled: true,
           updatedAt: new Date().toISOString(),
         };
         store.state.generations = store.state.generations.map((generation) =>

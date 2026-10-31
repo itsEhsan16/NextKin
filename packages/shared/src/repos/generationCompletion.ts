@@ -1,7 +1,7 @@
 import { atsCheckFrom, newId } from '../mock';
-import type { ActivityEntry, ActivityKind, AtsScore, Generation, GenerationKind, Resume } from '../models';
+import type { ActivityEntry, AtsScore, Generation, Resume } from '../models';
 import type { DocumentScore } from '../scoring/report';
-import { ATS_BAND_LABEL, SCORE_LABEL } from '../models';
+import { ATS_BAND_LABEL, GENERATION_ACTIVITY_KIND, SCORE_LABEL } from '../models';
 
 import { contentFor, jdDraftFor, scoreFor } from './generationOutput';
 import { jdForJob, jdFromDraft, withScoreFields } from './scoring';
@@ -33,14 +33,6 @@ function readyResume(resume: Resume, result: DocumentScore | undefined, now: str
   };
   return result ? withScoreFields(base, result) : base;
 }
-
-export const GENERATION_ACTIVITY_KIND: Record<GenerationKind, ActivityKind> = {
-  resume: 'generation',
-  zero_resume: 'generation',
-  cover_letter: 'cover_letter',
-  ats_check: 'ats_check',
-  interview: 'interview',
-};
 
 function appendReadyActivity(
   store: MockStore,

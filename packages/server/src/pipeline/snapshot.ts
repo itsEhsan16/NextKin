@@ -61,6 +61,7 @@ export function toSnapshot(row: GenerationRow, stageCount: number): Generation {
     startedAt: iso(row.started_at ?? row.created_at),
     updatedAt: iso(row.updated_at),
     ...(row.error_message ? { error: row.error_message } : {}),
+    ...(row.error_code === 'cancelled' ? { cancelled: true } : {}),
     ...(row.resume_id ? { resumeId: row.resume_id } : {}),
     ...(input.jdId ? { jdId: input.jdId } : {}),
     ...(input.jobId ? { jobId: input.jobId } : {}),

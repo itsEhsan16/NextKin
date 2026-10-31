@@ -5,7 +5,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
-import { resetMockRepos } from '@/data/repos';
+import { mockStore, resetMockRepos } from '@/data/repos';
 import { HistoryScreen, useHistoryStore } from '@/features/history';
 
 const mockNavigate = jest.fn();
@@ -46,6 +46,8 @@ describe('History feed (the audit trail, phase 9I)', () => {
   });
 
   it('groups by age, filters by pill, and opens a row at its real route with navigate', async () => {
+    // The feed on its own: the unfinished runs get their own test below.
+    mockStore.state.generations = [];
     const queryClient = createQueryClient();
     clients.push(queryClient);
     await render(
@@ -84,5 +86,60 @@ describe('History feed (the audit trail, phase 9I)', () => {
 
     fireEvent.press(screen.getByLabelText('Back'));
     expect(mockBack).toHaveBeenCalledTimes(1);
+  }, 60000);
+
+  it('keeps unfinished runs on top, working first, and opens each on its own screen', async () => {
+    const queryClient = createQueryClient();
+    clients.push(queryClient);
+    await render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <QueryClientProvider client={queryClient}>
+          <HistoryScreen />
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(
+      await screen.findByRole('header', { name: 'Not finished' }, { timeout: 10000 }),
+    ).toBeOnTheScreen();
+
+    // Named once the resumes land. The feed has its own "Generating" row, so this also matches
+    // the stage. The run is still working, and it comes first.
+    const working = await screen.findByLabelText(
+      /^Generation, Generating .*, Tailoring your resume to the role, /,
+      {},
+      { timeout: 10000 },
+    );
+    const [first, failed] = screen.getAllByLabelText(/^Generation, /);
+    expect(first?.props.accessibilityLabel).toBe(working.props.accessibilityLabel);
+    if (!failed) throw new Error('expected the failed run below it');
+    expect(failed.props.accessibilityLabel).toMatch(
+      /Resume didn’t finish, The job description could not be parsed/,
+    );
+
+    await act(async () => fireEvent.press(failed));
+    expect(mockNavigate).toHaveBeenCalledWith('/generations/gen_failed_1');
+
+    // — A run stays with its kind: Account has no runs in it —
+    await act(async () => fireEvent.press(screen.getByLabelText('Account')));
+    expect(screen.queryByRole('header', { name: 'Not finished' })).toBeNull();
+  }, 60000);
+
+  it('counts a first run as something, when the feed has nothing yet', async () => {
+    mockStore.state.activity = [];
+    const queryClient = createQueryClient();
+    clients.push(queryClient);
+    await render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <QueryClientProvider client={queryClient}>
+          <HistoryScreen />
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(
+      await screen.findByRole('header', { name: 'Not finished' }, { timeout: 10000 }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText('Nothing here yet')).toBeNull();
   }, 60000);
 });

@@ -30,6 +30,18 @@ function sweepStartEffects(queryClient: QueryClient): void {
 }
 
 /**
+ * Recent runs, newest first. History reads this for the ones that haven't finished, and fetches
+ * it fresh every time: a run can end while nothing on this device is watching it.
+ */
+export function useGenerations() {
+  return useQuery({
+    queryKey: qk.generations.list(),
+    queryFn: () => repos.generations.list(),
+    staleTime: 0,
+  });
+}
+
+/**
  * One run, watched on its own screen (V2 §7.6). While it is live this subscribes to progress
  * ticks and writes each one into both `detail` and `active`: Home's progress card reads the
  * active key, so a run being watched here has to keep that card in step rather than let it drift.

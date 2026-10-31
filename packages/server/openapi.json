@@ -41571,6 +41571,9 @@
                     "error": {
                       "type": "string"
                     },
+                    "cancelled": {
+                      "type": "boolean"
+                    },
                     "resumeId": {
                       "type": "string"
                     },
@@ -41951,6 +41954,9 @@
                     },
                     "error": {
                       "type": "string"
+                    },
+                    "cancelled": {
+                      "type": "boolean"
                     },
                     "resumeId": {
                       "type": "string"
@@ -42877,6 +42883,9 @@
                           "error": {
                             "type": "string"
                           },
+                          "cancelled": {
+                            "type": "boolean"
+                          },
                           "resumeId": {
                             "type": "string"
                           },
@@ -43574,6 +43583,9 @@
                         },
                         "error": {
                           "type": "string"
+                        },
+                        "cancelled": {
+                          "type": "boolean"
                         },
                         "resumeId": {
                           "type": "string"
@@ -44276,6 +44288,9 @@
                     },
                     "error": {
                       "type": "string"
+                    },
+                    "cancelled": {
+                      "type": "boolean"
                     },
                     "resumeId": {
                       "type": "string"
@@ -45514,6 +45529,9 @@
                     "error": {
                       "type": "string"
                     },
+                    "cancelled": {
+                      "type": "boolean"
+                    },
                     "resumeId": {
                       "type": "string"
                     },
@@ -46272,6 +46290,9 @@
                     },
                     "error": {
                       "type": "string"
+                    },
+                    "cancelled": {
+                      "type": "boolean"
                     },
                     "resumeId": {
                       "type": "string"

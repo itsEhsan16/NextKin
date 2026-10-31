@@ -49,6 +49,8 @@ export type Generation = {
   /** ISO-8601 */
   updatedAt: string;
   error?: string;
+  /** The person stopped this run themselves: `failed` to the pipeline, though nothing went wrong. */
+  cancelled?: boolean;
   /** A job-first tailoring run (toreview §56): what was compared and what the user chose. */
   tailor?: TailorRun;
   /**
@@ -154,4 +156,53 @@ export function generationHint(generation: Generation): string {
   const step: GenerationStep | undefined = GENERATION_STEPS[index];
   if (!step) return '';
   return GENERATION_HINTS[generation.kind]?.[step.status] ?? step.hint;
+}
+
+/**
+ * A run in words while it works. History records a start this way, and its "Not finished" group
+ * says the same thing.
+ */
+export function runStartedTitle(
+  kind: GenerationKind,
+  document: string | undefined,
+  title?: string,
+): string {
+  if (!document && kind === 'interview' && title)
+    return `Writing **interview questions** for **${title}**`;
+  if (!document) return `Started **${GENERATION_KIND_LABEL[kind]}**`;
+  if (kind === 'ats_check') return `Running an **ATS check** on **${document}**`;
+  if (kind === 'interview') return `Writing **interview questions** for **${document}**`;
+  return `Generating **${document}**`;
+}
+
+/** How long a failed run waits at the top of History. */
+const FAILED_RUN_KEPT_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** What a run went after, to tell a second try from a different piece of work. */
+const runTarget = (run: Generation): string | undefined =>
+  run.jobId ?? run.jdId ?? run.sourceResumeId ?? run.resumeId ?? run.title;
+
+/**
+ * The runs History keeps at its top (toreview §145.3): every one still working, then each failure
+ * still worth a look. A failure stops being worth a look when the person cancelled it, when a later
+ * run of the same kind went after the same thing, or after a week. Keeps the order it was given.
+ */
+export function unfinishedRuns(runs: readonly Generation[], now: Date = new Date()): Generation[] {
+  const cutoff = now.getTime() - FAILED_RUN_KEPT_MS;
+  const triedAgain = (run: Generation) =>
+    runs.some(
+      (later) =>
+        later.kind === run.kind &&
+        later.startedAt > run.startedAt &&
+        runTarget(later) !== undefined &&
+        runTarget(later) === runTarget(run),
+    );
+  const failed = runs.filter(
+    (run) =>
+      run.status === 'failed' &&
+      !run.cancelled &&
+      Date.parse(run.updatedAt) >= cutoff &&
+      !triedAgain(run),
+  );
+  return [...runs.filter((run) => !isGenerationTerminal(run.status)), ...failed];
 }

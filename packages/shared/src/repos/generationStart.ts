@@ -7,9 +7,13 @@ import type {
   Job,
   Resume,
 } from '../models';
-import { GENERATION_KIND_LABEL, TAILOR_TARGET_PAGES } from '../models';
+import {
+  GENERATION_ACTIVITY_KIND,
+  GENERATION_KIND_LABEL,
+  runStartedTitle,
+  TAILOR_TARGET_PAGES,
+} from '../models';
 
-import { GENERATION_ACTIVITY_KIND } from './generationCompletion';
 import { nudge } from './profileRepo';
 import type { MockStore } from './state';
 
@@ -153,15 +157,6 @@ export function refundGenerationUsage(store: MockStore, kind: GenerationKind): v
 }
 
 /** History records the run at both ends, so a failed run still leaves a trace of being asked for. */
-function startedTitle(kind: GenerationKind, resume: Resume | undefined, title?: string): string {
-  if (!resume && kind === 'interview' && title)
-    return `Writing **interview questions** for **${title}**`;
-  if (!resume) return `Started **${GENERATION_KIND_LABEL[kind]}**`;
-  if (kind === 'ats_check') return `Running an **ATS check** on **${resume.title}**`;
-  if (kind === 'interview') return `Writing **interview questions** for **${resume.title}**`;
-  return `Generating **${resume.title}**`;
-}
-
 export function appendStartActivity(
   store: MockStore,
   input: GenerationInput,
@@ -172,7 +167,7 @@ export function appendStartActivity(
   const entry: ActivityEntry = {
     id: newId('act'),
     kind: GENERATION_ACTIVITY_KIND[input.kind],
-    title: startedTitle(input.kind, resume, input.title),
+    title: runStartedTitle(input.kind, resume?.title, input.title),
     detail: GENERATION_KIND_LABEL[input.kind],
     createdAt: now,
     // A document run links to the document it is filling. An interview run links nowhere yet:

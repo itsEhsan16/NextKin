@@ -14482,6 +14482,7 @@ The owner asked for two things: the app must stay light even when the phone is i
 - **Decide:** this departs from the binding spec. V2 §7.2 says "If a generation job is in progress (7.6), the Dashboard shows its live status." Update the spec, or say if a smaller indicator should replace the card.
 - **Decide:** the card was also the only Home entry for a **failed** run ("Try again"). Someone who leaves a run's screen and comes back to Home now sees nothing about that run. Check whether History or a notification is enough.
 - **Stale reference:** `doc/NextKin-Mobile-UI-Implementation-Plan.md` still names the card (§8 intro and 9B). `useActiveGeneration` stays in `packages/shared` with no mobile caller.
+- **Closed (owner, 2026-11-01):** History and the bell, and the spec now says so. See §145.3.
 
 ### 140.5 Profile header fixes (owner screenshot, 2026-10-31)
 
@@ -14663,3 +14664,16 @@ Branch `step-2/fix-the-flow`, built on Step 1. Nothing is merged or pushed.
 - **The spec's "not zeroed statistics":** Home's shortcuts still show their counts for a new account, because they double as navigation. Say if you'd rather hide them.
 - **Web has its own onboarding** (ONB 01–08), so this is mobile only.
 - **Not measured:** the 15-minute target needs real people.
+
+### 145.3 Runs that haven't finished
+
+- **Why:** since Home's card went (§141), a run someone left had no home. On the real backend it was worse than that: the server writes a History row only when a run succeeds, so a failed run left no trace in History at all.
+- **Change:** History has a "Not finished" group above Today. It holds every run still working, then the failures, using the feed's own cards. A working row shows its current stage, and a failed row shows its reason and the bell's words, "didn't finish". Each opens the run's own screen, where Try again already lives. The bell already reported run ends (§144.2).
+- **Spec updated:** V2 §7.2's rule and its acceptance line now say History and the bell, and the plan's three mentions of the card are gone. Both files are gitignored, so those edits are on this laptop only. The §141 questions are closed.
+- **Calls made without you:**
+  - **A failed run leaves the group** after a week, or once a later run of the same kind went after the same job or resume. "Change my choices" starts a new run, so without that rule a fixed failure would sit there for the rest of the week.
+  - **A cancelled run stays out.** Nothing went wrong, and it isn't reported on the bell either. The run needed a new `cancelled` field to tell the two apart, so the API changed by one optional field.
+  - **The filter chips apply:** runs show under All and Documents, not under Jobs or Account.
+  - **A first run counts as history,** so someone whose first run is working doesn't see "Nothing here yet".
+- **Check on your phone:** the wording "Not finished". A run with no document to name reads "Started Resume" (the feed's existing words), and a row can show that for a moment until the resumes load.
+- **Web has no home for this.** It has no History page, and its Home doesn't show runs, so the bell is all it has, although §7.2 now binds both. That's outside this mobile step: decide when web is next touched.

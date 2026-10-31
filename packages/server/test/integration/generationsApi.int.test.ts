@@ -188,9 +188,11 @@ describe('the lifecycle over HTTP (P6-05)', () => {
     expect((await (await call(h, '/generations/active', { headers: auth })).json()) as { generation: { id: string } }).toMatchObject({ generation: { id: run.id } });
     expect((await call(h, `/generations/${run.id}/retry`, { method: 'POST', headers: auth })).status).toBe(409);
     const cancelled = await call(h, `/generations/${run.id}/cancel`, { method: 'POST', headers: auth });
-    expect(await cancelled.json()).toMatchObject({ status: 'failed', error: 'Cancelled.' });
+    expect(await cancelled.json()).toMatchObject({ status: 'failed', error: 'Cancelled.', cancelled: true });
     const retried = await call(h, `/generations/${run.id}/retry`, { method: 'POST', headers: auth });
-    expect(await retried.json()).toMatchObject({ status: 'queued' });
+    const again = await retried.json();
+    expect(again).toMatchObject({ status: 'queued' });
+    expect(again).not.toHaveProperty('cancelled');
     worker.start();
     const frames = (await readFrames(await call(h, `/generations/${run.id}/events`, { headers: auth }))).filter((f) => f.event);
     expect(frames.at(-1)!.data).toMatchObject({ status: 'ready' });
