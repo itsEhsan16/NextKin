@@ -7,6 +7,7 @@ web-build/
 .next/
 .next-*/
 next-env.d.ts
+*.tsbuildinfo
 coverage/
 *.log
 .DS_Store
