@@ -100,6 +100,7 @@ export const JobCard = memo(function JobCard({
 
   return (
     <Pressable
+      testID="job-card"
       {...a11yButton(label)}
       accessibilityActions={actions}
       onAccessibilityAction={handleAction}

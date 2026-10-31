@@ -140,7 +140,6 @@ export function createHttpClient(options: HttpClientOptions) {
     const headers: Record<string, string> = { accept: 'application/json', 'x-request-id': requestId, 'x-client': options.platform ?? options.client, ...init.headers };
     if (init.body !== undefined) headers['content-type'] = 'application/json';
     if (options.clientVersion) headers['x-client-version'] = options.clientVersion;
-    if (options.platform) headers['x-client-platform'] = options.platform;
     if (init.idempotencyKey) headers['idempotency-key'] = init.idempotencyKey;
     if (accessToken) headers.authorization = `Bearer ${accessToken}`;
     const controller = new AbortController();

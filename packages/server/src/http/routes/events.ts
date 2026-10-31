@@ -21,7 +21,7 @@ export function eventRoutes(db: Database): OpenAPIHono<ApiEnv> {
       responses: { 204: { description: 'Accepted.' }, ...authErrors, ...commonErrors },
     }),
     async (c) => {
-      await recordEvents(db, requireAuth(c).identity, c.req.valid('json').events, { platform: c.req.header('x-client-platform'), version: c.req.header('x-client-version') });
+      await recordEvents(db, requireAuth(c).identity, c.req.valid('json').events, { platform: c.req.header('x-client'), version: c.req.header('x-client-version') });
       return c.body(null, 204);
     },
   );

@@ -103,14 +103,14 @@ The pieces are all there and connected. What works well:
 
 | # | Blocker | Evidence | Why it matters |
 |---|---|---|---|
-| 1 | **A production build on the backend will crash at launch** | `createRepos` refuses mock fallbacks in production. Mobile's `configureRepos` call passes no allowed list, and `notifications.list` and others are still fallbacks. It runs at module level in `AppProviders.tsx`, outside the error boundary. An existing test confirms the throw; I traced the crash path by reading the code and did not run a release build | Expo Go never hits this because `__DEV__` is true, so it would first appear in a real build |
-| 2 | **A release build today would be all mock** | `eas.json` sets no `EXPO_PUBLIC_*` values, and there is no `.env` in `apps/mobile` | A tester could sign in with anything and see invented jobs and scores |
-| 3 | **A copied link can produce an invented job** | `CopiedLinkHost.tsx` calls `readLink`, which stays on the mock even on the backend. The link reader was never built (§110, §114). `JobIntake` has the right guard message, but this path does not | This is the one thing the brand promises never to do. It must be blocked or built |
-| 4 | **Notifications are fake on the backend** | `notifications.list`, `markRead`, `markAllRead` and `remove` are all mock | Users would see made-up alerts |
-| 5 | **Applications are lost** | `apply`, `listApplications` and `updateApplicationStatus` stay on an in-memory mock by decision D-05, but the UI shows them as real | "Applied" disappears, with no warning. Either back it with the server or hide it |
+| 1 | **A production build on the backend will crash at launch** | `createRepos` refuses mock fallbacks in production. Mobile's `configureRepos` call passes no allowed list, and `notifications.list` and others are still fallbacks. It runs at module level in `AppProviders.tsx`, outside the error boundary. An existing test confirms the throw; I traced the crash path by reading the code and did not run a release build | Expo Go never hits this because `__DEV__` is true, so it would first appear in a real build **Fixed in Step 1.** |
+| 2 | **A release build today would be all mock** | `eas.json` sets no `EXPO_PUBLIC_*` values, and there is no `.env` in `apps/mobile` | A tester could sign in with anything and see invented jobs and scores **Fixed in Step 1.** |
+| 3 | **A copied link can produce an invented job** | `CopiedLinkHost.tsx` calls `readLink`, which stays on the mock even on the backend. The link reader was never built (§110, §114). `JobIntake` has the right guard message, but this path does not | This is the one thing the brand promises never to do. It must be blocked or built **Fixed in Step 1.** |
+| 4 | **Notifications are fake on the backend** | `notifications.list`, `markRead`, `markAllRead` and `remove` are all mock | Users would see made-up alerts **Fixed in Step 1.** |
+| 5 | **Applications are lost** | `apply`, `listApplications` and `updateApplicationStatus` stay on an in-memory mock by decision D-05, but the UI shows them as real | "Applied" disappears, with no warning. Either back it with the server or hide it **Fixed in Step 1.** |
 | 6 | **Google sign-in isn't connected** | Mobile shows "isn't connected in this build yet" | The button is on the main sign-in screens |
 | 7 | **No Apple sign-in** | Only Google is drawn, while spec §7.1 requires both | An App Store app offering Google sign-in generally has to offer an equivalent such as Sign in with Apple |
-| 8 | **Domain mismatch** | Billing, Terms, Privacy and share links use `nextkin.app`; the domain bought is `nextkin.ai` (§133) | Billing and legal links may go nowhere. Check who owns `nextkin.app` |
+| 8 | **Domain mismatch** | Billing, Terms, Privacy and share links use `nextkin.app`; the domain bought is `nextkin.ai` (§133) | Billing and legal links may go nowhere. Check who owns `nextkin.app` **Fixed in Step 1.** |
 
 ### Must fix before the stores
 
@@ -158,11 +158,22 @@ The durations are rough estimates for one focused developer. External approvals 
 
 ### Step 1: Make it real (2–3 weeks)
 
-1. Fix blockers 1–5: real notifications, a real link reader on the server (with the mock path removed), and server-saved applications with the "Did you apply?" prompt after each build, tailor or apply.
-2. Add a `staging` EAS profile that points at the AWS demo environment.
-3. Complete the P5-08 device test, then run the full loop on the backend on one Android phone and one iPhone.
-4. Add crash reporting and basic product analytics. Without them, nothing that follows can be measured.
-5. Add automated smoke tests on a release build against the backend, and clear the "not verified" list for the core flow.
+**Status, 2026-11-01: the code is done, and the rest needs you.** It's on branch `step-1/make-it-real`.
+
+Done:
+
+1. Notifications are real, and a failed run always has a home in the feed.
+2. Applications are saved on the server, with the "Did you apply?" prompt after a download or a trip to the employer's page.
+3. The link reader is built: a sealed service that respects `robots.txt`, says who it is, and stops when a site refuses.
+4. The `staging` EAS profile points at the AWS demo, and a release can't build on sample data.
+5. Crash reports are wired in, waiting for a Sentry account. Usage events go to our own server.
+
+Waiting on you:
+
+1. A fresh OpenRouter key: the one in `.env` has expired, so the live model step is unproven.
+2. The LinkedIn and Indeed decision (`toreview.md` §144.3).
+3. A Sentry account, and approval for the heavy reader image and the AWS deploy.
+4. The phone run: the steps are in `aws/setup/04-local-development.md`, under "Trying the core loop on your phone".
 
 **Done when:** five real people finish upload → tailored resume → PDF on their own phones, with no mock data anywhere in the path.
 

@@ -14607,3 +14607,19 @@ Branch `step-1/make-it-real`, built on `stabilize/step-0`. Nothing is merged or 
   - **Mobile onboarding has no event:** it happens before sign-in, so there is no account to attach it to.
   - **`paywall_seen` is mobile only** for now.
 - **Check:** the privacy policy needs to name Sentry and these events.
+
+### 144.6 What was proved, and what wasn't
+
+- **Automated:** root typecheck, lint and tests, plus these integration suites: applications, notifications, links, events, authorization matrix, row security, jobs, repository contracts, generation, worker, billing.
+- **Live on this machine, 2026-11-01,** with real web, worker and reader processes and a throwaway account signed in the way a phone is:
+  - Sign-up with the Mailpit code, sign-in and consent.
+  - A real Lever job read by the reader and handed to the worker.
+  - The metadata address refused at once, and Indeed refused with its plain message.
+  - Asking, "not yet", recording, a status change, usage events, typed text refused, and no token refused.
+- **Not proved:**
+  - **The model step on a real link.** The `OPENROUTER_API_KEY` in `.env` has expired (OpenRouter answered "API key expired"), so extraction failed with the friendly message. The AWS demo may share this key. Rerun `live-loop` with a fresh key.
+  - **`coreLoop.int.test.ts` has not run.** It drives the phone's own client in the production configuration, end to end. It needs the real queue, and a worker started for the live check is still running: this environment refused to stop it. It compiles and lints. Run it once that worker is stopped.
+  - **The full integration suite** has not run on this branch. It needs the `scan` and `pay` profiles too.
+  - **The Maestro flow `backend/coreLoop.yaml`** needs a device, and a build.
+  - **Nothing here has been seen on a phone.**
+- **Left running by this session,** all started 00:37: the link reader, the worker and `next dev` on port 3000.

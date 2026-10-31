@@ -128,8 +128,8 @@ once (R-08).
 ## Running the apps on the backend (P5)
 
 Both apps run on the mock data layer until a flag sends a repository to the backend. Unset, nothing
-changes. The flag takes `http` (every repository the backend serves: user, profile, notification
-preferences, and resume import since P7) or a list such as `user,profile`. Unserved methods stay on the mock and are listed
+changes. The flag takes `http` (every repository) or a list such as `user,profile`. With `http`, the sample
+data is emptied and nothing answers from the mock. On a partial list, unserved methods stay on the mock and are listed
 in `packages/shared/src/repos/http/*` (`*_FALLBACKS`); a production build refuses to start with one.
 
 **Web**
@@ -155,6 +155,21 @@ in `packages/shared/src/repos/http/*` (`*_FALLBACKS`); a production build refuse
    (expo-secure-store).
 4. `[verify on a device]` Expo Go reaching plain `http://` on a LAN address, on iOS and on Android.
    If either refuses, use an HTTPS tunnel to port 3000 and point `EXPO_PUBLIC_API_BASE_URL` at it.
+
+**Job links (toreview §144.3)** need the link reader. `pnpm dev:all` starts it on your Chromium
+(`CHROMIUM_PATH`). On its own, run `pnpm --filter @nextkin/server link-reader` and give it and the
+worker `LINK_READER_TOKEN_FILE`, the absolute path of `docker/link-reader/dev.token`, which
+`pnpm stack:up` writes. Without it a link fails with a plain message.
+
+**Trying the core loop on your phone**
+1. Follow the Mobile steps above, and `pnpm dev:all` for the worker and link reader.
+2. Sign up with a new email, and read the code in Mailpit.
+3. Add a job: paste a Lever or company careers link. A LinkedIn or Indeed link should say the site
+   doesn't let us read its pages.
+4. Tailor a resume to it and download the PDF. "Did you apply?" should appear.
+5. Answer yes: the job joins Applied. Close the app and reopen it: it is still there.
+6. Open a job's page and tap Apply now: the employer's page opens, and coming back asks.
+7. Open the bell: the finished run is listed, and tapping it opens the run.
 
 **Importing a resume (P7)** needs the scan profile as well: `pnpm stack:up -- --profile core
 --profile scan`, plus a running worker (`pnpm worker`, or `pnpm dev:all`). ClamAV is a 392 MB image

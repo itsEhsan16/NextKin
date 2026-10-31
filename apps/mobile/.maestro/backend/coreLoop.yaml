@@ -1,0 +1,34 @@
+# The core loop on the real backend, for a build with EXPO_PUBLIC_DATA_SOURCE=http. Sign in with a
+# throwaway account, never one with real data, and set the job first so the Jobs tab has one:
+#   maestro test -e EMAIL=you@example.com -e PASSWORD=... .maestro/backend/coreLoop.yaml
+# Not yet run: it needs a device.
+appId: com.nextkin.app
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Skip"
+    commands:
+      - tapOn: "Skip"
+- runFlow:
+    when:
+      visible: "Sign in"
+    commands:
+      - tapOn: "Sign in"
+- tapOn: "Email address"
+- inputText: ${EMAIL}
+- tapOn: "Password"
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn: "Sign In"
+- assertVisible: "Jobs"
+- tapOn: "Jobs"
+- tapOn:
+    index: 0
+    id: "job-card"
+# NextKin submits nothing: the employer's page opens, and coming back raises the question.
+- tapOn: "Apply now"
+- back
+- assertVisible: "Did you apply?"
+- tapOn: "Yes, I applied"
+- assertVisible: "Added to your applications"
