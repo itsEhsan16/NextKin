@@ -9,7 +9,7 @@ import {
 import { LEGAL_DOC_TITLE, type LegalDocKey } from '@/data/models';
 import { useLegal } from '@/data/queries';
 import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
-import { openExternalUrl, useReducedMotion } from '@/lib';
+import { openExternalUrl, useReducedMotion, WEB_URL } from '@/lib';
 import { useTheme } from '@/theme';
 import type { ListRowArt } from '@/ui/ListRow';
 import { IconButton } from '@/ui/IconButton';
@@ -52,8 +52,8 @@ const LEGAL_ART: Record<LegalDocKey, { art: ListRowArt; width: number }> = {
  * obligation, so "the server is down" must not be the same thing as "you cannot read the terms".
  */
 const LEGAL_URL: Record<LegalDocKey, string> = {
-  terms: 'https://nextkin.app/legal/terms',
-  privacy: 'https://nextkin.app/legal/privacy',
+  terms: `${WEB_URL}/legal/terms`,
+  privacy: `${WEB_URL}/legal/privacy`,
 };
 
 /**

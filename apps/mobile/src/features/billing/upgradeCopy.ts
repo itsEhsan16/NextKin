@@ -272,9 +272,9 @@ export const MANAGE_CTA = 'Manage on the web';
 export const LOADING_CTA = 'Upgrade to Pro';
 export const MANAGE_NOTE = 'Change or cancel your plan on the web.';
 export const MANAGE_UNAVAILABLE =
-  "We couldn't open the browser. Go to nextkin.app/account on any device to manage your plan.";
+  "We couldn't open the browser. Go to nextkin.ai on any device to manage your plan.";
 /** The account page the manage action opens; the app never takes payment itself (§13.4). */
-export const BILLING_URL = 'https://nextkin.app/account/billing';
+export const BILLING_PATH = '/settings?tab=billing';
 
 /** "Renews on 12 Oct" — absent renewal dates say nothing rather than guessing at one. */
 export function renewalLine(renewsAt?: string, now: Date = new Date()): string | undefined {

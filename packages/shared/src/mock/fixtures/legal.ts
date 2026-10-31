@@ -18,7 +18,7 @@ const TERMS: LegalDoc = {
   key: 'terms',
   title: 'Terms of service',
   updatedAt: daysAgo(48),
-  url: 'https://nextkin.app/legal/terms',
+  url: 'https://nextkin.ai/legal/terms',
   intro:
     'These terms cover what you can expect from NextKin and what we expect from you. They are written to be read, not to be skipped.',
   sections: [
@@ -64,7 +64,7 @@ const PRIVACY: LegalDoc = {
   key: 'privacy',
   title: 'Privacy policy',
   updatedAt: daysAgo(48),
-  url: 'https://nextkin.app/legal/privacy',
+  url: 'https://nextkin.ai/legal/privacy',
   intro:
     'This explains what we hold about you, why we hold it, and how to get it back or get rid of it. The short version: your documents are yours, and the app is the only thing reading them.',
   sections: [

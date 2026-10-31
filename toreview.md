@@ -14580,3 +14580,16 @@ Branch `step-1/make-it-real`, built on `stabilize/step-0`. Nothing is merged or 
   - **The Docker image has not been built.** The Chromium base is heavy, so it waits for your OK. `pnpm link-reader` runs it on the host, without the isolation.
   - **The AWS service is defined but not deployed.** It adds one Spot task (1 vCPU, 2 GB) to the demo's bill, and needs your `aws login`.
   - The legal pages should say we read a link the user gives us.
+
+### 144.4 The release setup
+
+- **The launch crash is gone at its cause.** A production build on the backend threw at launch because methods were still on the mock. Notifications, applications and links are now real, and on the full backend the last four fall through to a plain error. A test now builds the exact production configuration, so this can't return unseen.
+- **New `staging` EAS profile,** pointed at the AWS demo (`https://d3hc44bxjik4qf.cloudfront.net`), and added to the build workflow's choices.
+- **`staging` and `production` refuse to build without a real https backend** (`NEXTKIN_REQUIRE_BACKEND`, checked in `app.config.ts`). So a production build fails today, on purpose: no production backend exists yet. `preview` stays the sample-data APK.
+- **Domain:** `nextkin.app` became `nextkin.ai` in the app's links and the fixtures. A build opens its own backend's web app for billing and legal pages (`src/lib/webUrl.ts`). The billing link pointed at `/account/billing`, which never existed; it now opens `/settings?tab=billing`.
+- **Found, not fixed:**
+  - **The web has no `/legal/terms` or `/legal/privacy` page.** The app reads both in-product from the server, but "open on the web" lands on a 404, and both stores need a public privacy policy URL. This blocks store submission.
+  - **`nextkin.ai` doesn't serve the app yet** (§133). Until it does, only a build pointed at the demo has working web links.
+  - Web's seeded legal rows keep the old address until the next `pnpm seed`.
+- **The AWS demo can't take sign-ups:** email goes to Mailpit (§133.1), so a tester on `staging` must use a seeded account. The demo is paused between uses and needs `task resume` first.
+- **Not verified:** no EAS build was run. It costs a build credit and needs your say-so.

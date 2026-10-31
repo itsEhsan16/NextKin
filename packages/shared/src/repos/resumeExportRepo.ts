@@ -113,7 +113,7 @@ export function createResumeExportRepo(store: MockStore): ResumeExportRepo {
     shareLink: (id) =>
       simulate(() => {
         find(id);
-        return `https://nextkin.app/r/${id}`;
+        return `https://nextkin.ai/r/${id}`;
       }),
 
     importFromFile: (file) =>

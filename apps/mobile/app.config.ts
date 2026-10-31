@@ -1,5 +1,16 @@
 import type { ExpoConfig } from 'expo/config';
 
+// A staging or production profile sets NEXTKIN_REQUIRE_BACKEND, so a build that would ship the
+// sample data and accept any password fails here instead of reaching someone's phone.
+if (process.env.NEXTKIN_REQUIRE_BACKEND === 'true') {
+  const url = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
+  if (process.env.EXPO_PUBLIC_DATA_SOURCE !== 'http' || !url.startsWith('https://')) {
+    throw new Error(
+      'This build profile needs the real backend: set EXPO_PUBLIC_DATA_SOURCE=http and an https EXPO_PUBLIC_API_BASE_URL.',
+    );
+  }
+}
+
 const config: ExpoConfig = {
   name: 'NextKin',
   slug: 'nextkin',

@@ -45,7 +45,7 @@ on:
         description: EAS build profile
         type: choice
         default: preview
-        options: [preview, production]
+        options: [preview, staging, production]
       message:
         description: Build message (shown in the EAS dashboard)
         type: string
