@@ -54,7 +54,7 @@ export function JdIntakeSheets({ value, onChange }: JdIntakeSheetsProps) {
         <View style={padded}>
           <StateView
             tone="danger"
-            icon="exclamation-triangle"
+            icon="AlertTriangle"
             title="Couldn't load your saved jobs"
             message="Check your connection and try again."
             actionLabel="Try again"
@@ -64,8 +64,7 @@ export function JdIntakeSheets({ value, onChange }: JdIntakeSheetsProps) {
       ) : options.length === 0 ? (
         <View style={padded}>
           <StateView
-            icon="bookmark"
-            iconStyle="regular"
+            icon="Bookmark"
             title="No saved jobs yet"
             message="Save one from the Jobs tab."
             actionLabel="Close"

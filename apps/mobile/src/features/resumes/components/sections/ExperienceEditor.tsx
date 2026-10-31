@@ -4,7 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import type { ContentRole } from '@/data/models';
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
-import { TextField } from '@/ui/TextField';
+import { TextField, useFieldChain } from '@/ui/TextField';
 import { layoutTransition } from '@/ui/motion';
 
 import { newRole, removeAt, replaceAt } from '../../sectionEdits';
@@ -26,6 +26,7 @@ export function ExperienceEditor({
   onBlurField,
 }: SectionFieldsProps<ContentRole[]>) {
   const { motion, s } = useTheme();
+  const link = useFieldChain(value.length * 3);
   const reduced = useReducedMotion();
   const layout = layoutTransition(reduced);
 
@@ -52,8 +53,9 @@ export function ExperienceEditor({
             >
               <View style={{ gap: s(FIELD_GAP) }}>
                 <TextField
+                  {...link(index * 3)}
                   label="Job title"
-                  icon="briefcase"
+                  icon="Briefcase01"
                   accessibilityLabel={`${name}, job title`}
                   placeholder="Senior Product Designer"
                   value={role.title}
@@ -62,8 +64,9 @@ export function ExperienceEditor({
                   error={errors[`${role.id}.title`]}
                 />
                 <TextField
+                  {...link(index * 3 + 1)}
                   label="Company"
-                  icon="building"
+                  icon="Building02"
                   accessibilityLabel={`${name}, company`}
                   placeholder="PhonePe"
                   value={role.company}
@@ -72,8 +75,9 @@ export function ExperienceEditor({
                   error={errors[`${role.id}.company`]}
                 />
                 <TextField
+                  {...link(index * 3 + 2)}
                   label="Dates"
-                  icon="calendar-alt"
+                  icon="Calendar"
                   accessibilityLabel={`${name}, dates`}
                   placeholder="Mar 2022 — Present"
                   value={role.period}

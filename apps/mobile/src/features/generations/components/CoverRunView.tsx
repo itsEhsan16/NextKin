@@ -74,7 +74,7 @@ export function CoverRunView({ generation }: CoverRunViewProps) {
                 floating
                 primary={{
                   label: 'Download PDF',
-                  icon: 'download',
+                  icon: 'Download01',
                   haptic: 'medium',
                   loading: download.busy,
                   onPress: download.download,

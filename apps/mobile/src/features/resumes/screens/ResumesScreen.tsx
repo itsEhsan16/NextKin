@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { RefreshControl, StyleSheet, View, type ScrollView } from 'react-native';
+import { RefreshControl, StyleSheet, View, type ScrollViewInstance } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import type { Resume } from '@/data/models';
@@ -73,7 +73,7 @@ export function ResumesScreen() {
   const subscription = useSubscription();
   const unread = useUnreadCount();
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   useTabScrollToTop(
     'resumes',
     useCallback(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), []),
@@ -189,7 +189,7 @@ export function ResumesScreen() {
       ) : status === 'error' ? (
         <StateView
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Couldn't load your documents"
           message="Check your connection and try again."
           actionLabel="Try again"
@@ -198,7 +198,7 @@ export function ResumesScreen() {
       ) : docs.length === 0 ? (
         // The library has documents but the search / type pills matched none of them.
         <StateView
-          icon="search"
+          icon="SearchLg"
           title="No documents match"
           actionLabel="Clear search"
           onAction={() => {

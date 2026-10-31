@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View, type ScrollViewInstance } from 'react-native';
 
 import { SCORE_LABEL, type AtsCheckItem } from '@/data/models';
 import { useApplyAtsFix, useResume, useResumeScore } from '@/data/queries';
@@ -167,7 +167,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
 
   // The deep-linked check is scrolled to rather than reordered: the list's order is the score's,
   // and quietly moving one card to the top would misreport where the check sits.
-  const scrollRef = useRef<ScrollView | null>(null);
+  const scrollRef = useRef<ScrollViewInstance | null>(null);
   const revealed = useRef(false);
   const reveal = useCallback(
     (rowId: string, y: number) => {
@@ -212,7 +212,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load these fixes"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -227,7 +227,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
   if (!scored) {
     return page(
       <StateView
-        icon="check-circle"
+        icon="CheckCircle"
         title="Nothing to fix yet"
         message={`This document has no ${SCORE_LABEL} yet.`}
         actionLabel="Back to the document"
@@ -239,7 +239,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
   if (rows.length === 0) {
     return page(
       <StateView
-        icon="check-circle"
+        icon="CheckCircle"
         title="Nothing left to fix"
         actionLabel="Back to the score"
         onAction={actions.goBack}

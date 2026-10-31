@@ -101,7 +101,7 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
     page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title={title}
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -112,7 +112,7 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
   if (data.targetMissing) {
     return page(
       <StateView
-        icon="briefcase"
+        icon="Briefcase01"
         title="This job isn't available"
         message="It may have closed or been removed."
         actionLabel="Back"

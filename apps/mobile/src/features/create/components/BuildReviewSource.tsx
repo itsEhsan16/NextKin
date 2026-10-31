@@ -1,10 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { a11yButton, hitSlopFor } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type BuildReviewSourceProps = {
   /** The link, "Pasted description" or the file's name. */
@@ -18,7 +18,6 @@ const PAD_X = 14 / 0.75;
 const PAD_Y = 11 / 0.75;
 const GAP = 10 / 0.75;
 const RADIUS = 14 / 0.75;
-const GLYPH = 13 / 0.75;
 const CHANGE_H = 16 / 0.75;
 
 /** BUILD 04's grey row (653:71): where the job came from, and a brand Change back to BUILD 03. */
@@ -37,7 +36,7 @@ export function BuildReviewSource({ label, onChange }: BuildReviewSourceProps) {
         },
       ]}
     >
-      <FontAwesome5 name="link" size={s(GLYPH)} color={colors.textBody} solid />
+      <Icon name="Link01" size="sm" color={colors.textBody} />
       <Text
         variant="bodyMedium"
         color="textBody"

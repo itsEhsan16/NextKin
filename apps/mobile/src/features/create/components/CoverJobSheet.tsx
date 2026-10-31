@@ -96,7 +96,7 @@ export function CoverJobSheetBody({
       <StateView
         compact
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your resumes"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -107,7 +107,7 @@ export function CoverJobSheetBody({
     rows = (
       <StateView
         compact
-        icon="magic"
+        icon="Stars02"
         title="No tailored resumes yet"
         message="A letter is written from a resume you tailored for the job. Tailor one first."
       />

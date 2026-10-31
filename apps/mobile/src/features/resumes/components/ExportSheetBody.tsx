@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -12,6 +11,7 @@ import { Spinner } from '@/ui/motion';
 
 import { docSubtitle } from '../docMeta';
 import { ResumeThumbnail } from './ResumeThumbnail';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type ExportSheetBodyProps = {
   resume: Resume;
@@ -35,19 +35,16 @@ const ROW_GAP = 14 / 0.75;
 const ROW_PAD_Y = 9 / 0.75;
 const TILE = 44 / 0.75;
 const TILE_RADIUS = 12 / 0.75;
-const TILE_GLYPH = 18 / 0.75;
 const LINE_GAP = 2 / 0.75;
 const PILL_GAP = 5 / 0.75;
 const PILL_PAD_LEFT = 9 / 0.75;
 const PILL_PAD_RIGHT = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
-const PILL_GLYPH = 9.5 / 0.75;
-const LOCK = 13 / 0.75;
 const TRAILING_SLOT = 20 / 0.75;
 
 type ExportRow = {
   format: ExportFormat;
-  icon: string;
+  icon: LineIconName;
   label: string;
   description: string;
   locked: boolean;
@@ -71,7 +68,7 @@ export function exportRows(plan: 'free' | 'pro'): readonly ExportRow[] {
   return [
     {
       format: 'pdf',
-      icon: 'file-pdf',
+      icon: 'File04',
       label: 'Export as PDF',
       // §13.3: a clean PDF is never paywalled and never watermarked, on any plan.
       description: 'Clean, watermark-free — always free',
@@ -79,7 +76,7 @@ export function exportRows(plan: 'free' | 'pro'): readonly ExportRow[] {
     },
     {
       format: 'docx',
-      icon: 'file-word',
+      icon: 'File04',
       label: 'Export as DOCX',
       description:
         plan === 'free'
@@ -89,7 +86,7 @@ export function exportRows(plan: 'free' | 'pro'): readonly ExportRow[] {
     },
     {
       format: 'txt',
-      icon: 'file-alt',
+      icon: 'File06',
       label: 'Export as TXT',
       description: "Plain text for a portal's paste box",
       locked: false,
@@ -107,11 +104,11 @@ type RowProps = {
 
 /** The crown-and-"Pro" pill beside a locked format's name (580:1635). */
 function ProPill() {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
   return (
     <View style={[styles.pill, { borderRadius: radii.full, backgroundColor: colors.brandSurface }]}>
-      <FontAwesome5 name="crown" size={s(PILL_GLYPH)} color={colors.brand} solid />
+      <Icon name="Star01" size="xs" color={colors.brand} />
       <Text variant="microBadge" color="brand">
         Pro
       </Text>
@@ -141,7 +138,7 @@ function ExportSheetRow({ row, busy, inert, onPress }: RowProps) {
       style={[styles.row, dimmed ? { opacity: opacity.disabled } : null]}
     >
       <View style={[styles.tile, { backgroundColor: colors[look.bg] }]}>
-        <FontAwesome5 name={row.icon} size={s(TILE_GLYPH)} color={colors[look.fg]} solid />
+        <Icon name={row.icon} size="lg" color={colors[look.fg]} />
       </View>
       <View style={styles.text}>
         <View style={styles.titleRow}>
@@ -160,7 +157,7 @@ function ExportSheetRow({ row, busy, inert, onPress }: RowProps) {
         </View>
       ) : row.locked ? (
         <View style={styles.trailing}>
-          <FontAwesome5 name="lock" size={s(LOCK)} color={colors.iconMuted} solid />
+          <Icon name="Lock01" size="sm" color={colors.iconMuted} />
         </View>
       ) : null}
     </Pressable>

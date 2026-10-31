@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { a11yButton } from '@/lib';
@@ -6,6 +5,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { Spinner } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 export type BuildAddUploadTileProps = {
   /** The picked file's name; the tile then says it is ready instead of offering the upload. */
@@ -23,9 +23,7 @@ const GAP = 13 / 0.75;
 const BORDER = 1.25 / 0.75;
 const TILE = 44 / 0.75; // 653:42
 const TILE_RADIUS = 12 / 0.75;
-const GLYPH = 17 / 0.75;
 const TEXT_GAP = 2 / 0.75;
-const CHECK = 13 / 0.75;
 
 /**
  * BUILD 03's "Upload a job file instead" (653:40): the dashed lavender tile under the OR, with the
@@ -62,7 +60,7 @@ export function BuildAddUploadTile({
       ]}
     >
       <View style={[styles.iconTile, { backgroundColor: colors.tileBrandStrong }]}>
-        <FontAwesome5 name="file-alt" size={s(GLYPH)} color={colors.brand} solid />
+        <Icon name="File06" size="md" color={colors.brand} />
       </View>
       <View style={styles.text}>
         <Text variant="label" numberOfLines={1}>
@@ -75,7 +73,7 @@ export function BuildAddUploadTile({
       {picking ? (
         <Spinner size={s(15 / 0.75)} />
       ) : fileName ? (
-        <FontAwesome5 name="check" size={s(CHECK)} color={colors.glyphSuccess} solid />
+        <Icon name="Check" size="lg" color={colors.glyphSuccess} />
       ) : null}
     </Pressable>
   );

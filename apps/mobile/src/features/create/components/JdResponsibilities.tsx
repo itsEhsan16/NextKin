@@ -142,7 +142,7 @@ function ResponsibilityRow({ index, line, onCommit, onRemove }: ResponsibilityRo
         style={styles.field}
       />
       <IconButton
-        icon="times"
+        icon="XClose"
         label={`Remove ${label.toLowerCase()}`}
         variant="ghost"
         iconColor="iconMuted"

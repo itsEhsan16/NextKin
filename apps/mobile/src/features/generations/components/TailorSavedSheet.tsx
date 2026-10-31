@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { a11yButton, a11yHeader, hitSlopFor } from '@/lib';
@@ -8,6 +7,7 @@ import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Sheet } from '@/ui/Sheet';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 /**
  * One file row on the saved sheet. `meta` is the grey line under the name. A row whose file has
@@ -50,8 +50,6 @@ const FILE_PAD_Y = 11 / 0.75;
 const FILE_GAP = 12 / 0.75;
 const TILE = 36 / 0.75;
 const TILE_RADIUS = 9 / 0.75;
-const TILE_GLYPH = 16 / 0.75;
-const CHECK = 16 / 0.75;
 /** COVER 04's divider starts under the text, past the tile (613:1751 x 60). */
 const DIVIDER_INSET = (12 + 36 + 12) / 0.75;
 const SAVE_H = 16 / 0.75;
@@ -75,7 +73,7 @@ function FileRow({ file }: { file: TailorSavedFile }) {
         style={[styles.fileRow, styles.fileMain]}
       >
         <View style={[styles.tile, { backgroundColor: colors.dangerSurface }]}>
-          <FontAwesome5 name="file-pdf" size={s(TILE_GLYPH)} color={colors.glyphDanger} solid />
+          <Icon name="File04" size="md" color={colors.glyphDanger} />
         </View>
         <View style={styles.fileText}>
           <Text variant="titleSm" numberOfLines={1}>
@@ -101,7 +99,7 @@ function FileRow({ file }: { file: TailorSavedFile }) {
           </Text>
         </Pressable>
       ) : (
-        <FontAwesome5 name="check-circle" size={s(CHECK)} color={colors.success} solid />
+        <Icon name="CheckCircle" size="md" color={colors.success} />
       )}
     </View>
   );
@@ -154,7 +152,7 @@ export function TailorSavedSheetBody({
         {domain ? (
           <Button
             label={`Apply on ${domain}`}
-            icon="external-link-alt"
+            icon="LinkExternal01"
             size="lg"
             haptic="medium"
             onPress={onApply}

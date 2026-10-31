@@ -99,7 +99,7 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
                 secondary={{ label: 'Edit', onPress: edit, style: { flexBasis: s(EDIT_W) } }}
                 primary={{
                   label: 'Download PDF',
-                  icon: 'download',
+                  icon: 'Download01',
                   haptic: 'medium',
                   disabled: !resume.data,
                   onPress: download,
@@ -111,7 +111,7 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
                 // The run keeps going without this screen; the notification says when it lands.
                 primary={{
                   label: 'Leave and notify me',
-                  icon: 'bell',
+                  icon: 'Bell01',
                   variant: 'ghost',
                   onPress: close,
                 }}

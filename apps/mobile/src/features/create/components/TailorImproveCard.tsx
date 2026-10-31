@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Fragment } from 'react';
 import { View } from 'react-native';
 
@@ -7,6 +6,7 @@ import { ProfileCard } from '@/features/profile/components/cards';
 import { a11yHeader, pluralize } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type TailorImproveCardProps = { improvements: readonly TailorImprovement[] };
 
@@ -17,7 +17,6 @@ const ROW_PAD_Y = 12 / 0.75;
 const ROW_GAP = 12 / 0.75;
 const SLOT_W = 18 / 0.75;
 const SLOT_H = 20 / 0.75;
-const GLYPH = 16 / 0.75;
 const TEXT_GAP = 2 / 0.75;
 const RULE = 1 / 0.75;
 
@@ -27,7 +26,7 @@ const RULE = 1 / 0.75;
  * asking (toreview §56.2); only new keywords wait for the user's yes.
  */
 export function TailorImproveCard({ improvements }: TailorImproveCardProps) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const fixes = improvements.filter((row) => !row.ok).length;
 
@@ -52,11 +51,10 @@ export function TailorImproveCard({ improvements }: TailorImproveCardProps) {
               style={styles.row}
             >
               <View style={styles.slot}>
-                <FontAwesome5
-                  name={row.ok ? 'check-circle' : 'exclamation-circle'}
-                  size={s(GLYPH)}
+                <Icon
+                  name={row.ok ? 'CheckCircle' : 'AlertCircle'}
+                  size="md"
                   color={row.ok ? colors.glyphSuccess : colors.warningAccent}
-                  solid
                 />
               </View>
               <View style={styles.text}>

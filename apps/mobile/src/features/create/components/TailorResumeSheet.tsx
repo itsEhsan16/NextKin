@@ -134,7 +134,7 @@ export function TailorResumeSheetBody({
       <StateView
         compact
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your resumes"
         message="You can still upload one from your phone."
         actionLabel="Try again"

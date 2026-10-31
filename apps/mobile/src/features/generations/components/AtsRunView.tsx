@@ -91,7 +91,7 @@ export function AtsRunView({ generation }: { generation: Generation }) {
     // A check from before results were kept on the run: its score is on the document's panel.
     page = (
       <StateView
-        icon="chart-line"
+        icon="LineChartUp01"
         title="Your check is done"
         message="The result is on your resume's score panel."
         actionLabel="See the score"

@@ -28,7 +28,7 @@ export function TailorChrome({ step, stepper, onClose }: TailorChromeProps) {
   return (
     <View style={[styles.wrap, { paddingTop: spacing.headerTopPushed }]}>
       <View style={styles.bar}>
-        <IconButton icon="times" label="Close" onPress={onClose} />
+        <IconButton icon="XClose" label="Close" onPress={onClose} />
       </View>
       {step ? <TailorStepper current={step} /> : stepper}
     </View>

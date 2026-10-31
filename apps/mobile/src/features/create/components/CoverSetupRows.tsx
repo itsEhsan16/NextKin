@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ComponentProps, ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -13,16 +12,15 @@ import { coverResumeMeta, coverSetupHero } from '../coverLetterSetup';
 import { FLOW_ART, FlowHero } from './FlowHero';
 import { CoverLetterTonePicker } from './CoverLetterTonePicker';
 import { jobMetaLine } from './TailorVsCard';
+import { Icon } from '@/ui/Icon';
 
 // COVER 01 at 390 (644:36 job row, 644:47 resume row, 644:41 doc tile), in artboard units.
 const ROW_PAD_X = 15 / 0.75;
 const ROW_PAD_Y = 13 / 0.75;
 const ROW_GAP = 12 / 0.75;
 const LINE_GAP = 2 / 0.75;
-const CHEVRON = 9 / 0.75;
 const TILE = 34 / 0.75;
 const TILE_RADIUS = 9 / 0.75;
-const TILE_GLYPH = 12 / 0.75;
 const SECTION_TO_ROW = 10 / 0.75; // 644:33 → 644:36
 const HERO_TO_SECTION = 22 / 0.75; // 644:29 → 644:33
 const ROW_TO_SECTION = 18 / 0.75; // 644:36 → 644:44, 644:47 → 644:53
@@ -47,7 +45,7 @@ export function CoverPickSection({
   hint: string;
   onPress: () => void;
 }) {
-  const { colors, radii, shadows, sizes, s } = useTheme();
+  const { colors, radii, shadows, sizes } = useTheme();
   const styles = useStyles();
 
   return (
@@ -83,7 +81,7 @@ export function CoverPickSection({
             {meta}
           </Text>
         </View>
-        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+        <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
       </Pressable>
     </View>
   );
@@ -91,11 +89,11 @@ export function CoverPickSection({
 
 /** The grey document tile that leads the resume row (644:41). */
 export function CoverDocTile() {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   return (
     <View style={[styles.tile, { backgroundColor: colors.surfaceSubtle }]}>
-      <FontAwesome5 name="bars" size={s(TILE_GLYPH)} color={colors.textBody} solid />
+      <Icon name="Menu01" size="sm" color={colors.textBody} />
     </View>
   );
 }

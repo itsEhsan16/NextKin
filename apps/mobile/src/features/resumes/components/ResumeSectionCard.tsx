@@ -33,7 +33,6 @@ const ICON_SLOT_W = 34 / 0.75;
 const ICON_SLOT_H = 28 / 0.75;
 const ACTIONS_GAP = 8 / 0.75;
 const EDIT = 32 / 0.75;
-const EDIT_GLYPH = 11 / 0.75;
 
 /** Which shimmer geometry stands in for each section's body while the AI rewrites it. */
 const SHIMMER: Record<ResumeSectionKey, 'prose' | 'chips' | 'entries'> = {
@@ -137,10 +136,10 @@ export function ResumeSectionCard({
               onPress={onRegenerate}
             />
             <IconButton
-              icon="pen"
+              icon="Edit03"
               label={`Edit ${label}`}
               size={s(EDIT)}
-              iconSize={s(EDIT_GLYPH)}
+              iconSize="sm"
               iconColor="textPrimary"
               onPress={onEdit}
               style={{ backgroundColor: colors.surfaceCard }}

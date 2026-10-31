@@ -84,7 +84,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
             trailing={
               doc ? (
                 <IconButton
-                  icon="ellipsis-h"
+                  icon="DotsHorizontal"
                   label="More actions"
                   onPress={() => actions.openMenu(doc, 'editor')}
                 />
@@ -110,14 +110,14 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
     <ResumeEditorSkeleton />,
     // The inert bar is part of the loading state: it owns the bottom safe-area inset, so a page
     // without one would grow a footer out of nothing the moment the queries land.
-    <StickyActionBar primary={{ label: DOWNLOAD, icon: 'download', disabled: true }} />,
+    <StickyActionBar primary={{ label: DOWNLOAD, icon: 'Download01', disabled: true }} />,
   );
 
   if (resume.isError) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this document"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -131,7 +131,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   if (!isReady) {
     return page(
       <StateView
-        icon="magic"
+        icon="Stars02"
         title="We're still writing this one"
         actionLabel="Back to your resumes"
         // `navigate`, not `goBack`. This screen is reachable from a notification deep link, and
@@ -149,7 +149,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this document"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -167,7 +167,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   if (documentIsEmpty(body)) {
     return page(
       <StateView
-        icon="file-alt"
+        icon="File06"
         title="Nothing here yet"
         actionLabel={isLetter ? 'Write the letter' : 'Add summary'}
         onAction={() => actions.openSection(id, isLetter ? 'letter' : 'summary')}
@@ -222,7 +222,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
       }
       primary={{
         label: DOWNLOAD,
-        icon: 'download',
+        icon: 'Download01',
         disabled: blocked,
         onPress: () => actions.downloadResume(doc, 'editor'),
       }}

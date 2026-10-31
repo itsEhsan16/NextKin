@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { zeroSummary, type ResumeContent } from '@/data/models';
@@ -10,6 +9,7 @@ import { Text } from '@/ui/Text';
 import { NextStepNote } from './NextStepNote';
 import { ResumePagePreview } from './ResumePagePreview';
 import { TailorCheckRow } from './TailorCheckRow';
+import { Icon } from '@/ui/Icon';
 
 export type ZeroReadyProps = {
   content: ResumeContent;
@@ -26,7 +26,6 @@ const PILL_PAD_L = 9 / 0.75; // 613:674
 const PILL_PAD_R = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
 const PILL_GAP = 5 / 0.75;
-const PILL_GLYPH = 9.5 / 0.75;
 const TEXT_TO_CARD = 18 / 0.75; // 613:678
 const CARD_PAD = 14 / 0.75;
 const HEADER_PAD_B = 4 / 0.75; // 613:680
@@ -38,7 +37,7 @@ const CARD_TO_NEXT = 14 / 0.75; // 613:701
  * score: a first resume written for no job carries none (D-15), as the board shows.
  */
 export function ZeroReady({ content, name, company }: ZeroReadyProps) {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
   const total = content.review?.total ?? 0;
 
@@ -57,7 +56,7 @@ export function ZeroReady({ content, name, company }: ZeroReadyProps) {
               { borderRadius: radii.full, backgroundColor: colors.successSurface },
             ]}
           >
-            <FontAwesome5 name="check" size={s(PILL_GLYPH)} color={colors.success} solid />
+            <Icon name="Check" size="sm" color={colors.success} />
             <Text variant="captionSemiBold" color="success">
               {total > 0 ? `All ${total} checked` : 'All checked'}
             </Text>
@@ -78,7 +77,7 @@ export function ZeroReady({ content, name, company }: ZeroReadyProps) {
       </Card>
 
       <NextStepNote
-        icon="magic"
+        icon="Stars02"
         text={
           company
             ? `Next: tailor it to the ${company} job`

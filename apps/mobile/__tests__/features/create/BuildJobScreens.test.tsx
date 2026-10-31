@@ -8,6 +8,14 @@ import type { Subscription } from '@/data/models';
 import { createQueryClient, qk } from '@/data/queries';
 import { repos, resetMockRepos } from '@/data/repos';
 import { BuildChooseJobScreen, BuildJobScreen } from '@/features/create';
+import { pickDocument } from '@/lib';
+
+jest.mock('@/lib', () => ({
+  ...jest.requireActual('@/lib'),
+  pickDocument: jest.fn(),
+}));
+
+const pick = pickDocument as jest.MockedFunction<typeof pickDocument>;
 
 const mockPush = jest.fn();
 const mockNavigate = jest.fn();
@@ -75,9 +83,10 @@ describe('Build Resume: BUILD 01 / 02', () => {
 
     expect(screen.getByText('Which job is this resume for?')).toBeOnTheScreen();
     expect(screen.getByText('Pick a job and we’ll build your resume for it.')).toBeOnTheScreen();
+    // One saved job (the owner's cut, toreview §139); the rest are behind See all.
     expect(screen.getByText('Senior Product Designer')).toBeOnTheScreen();
-    expect(screen.getByText('Product Designer')).toBeOnTheScreen();
-    expect(screen.getByText('Senior UX Designer')).toBeOnTheScreen();
+    expect(screen.queryByText('Product Designer')).not.toBeOnTheScreen();
+    expect(screen.queryByText('Senior UX Designer')).not.toBeOnTheScreen();
     expect(screen.queryByText('Design Systems Lead')).not.toBeOnTheScreen();
     expect(screen.getByText('See all (12)')).toBeOnTheScreen();
     expect(screen.getByText('Stripe · Bengaluru · Remote')).toBeOnTheScreen();
@@ -100,7 +109,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
     expect(startSpy).not.toHaveBeenCalled();
   });
 
-  it('BUILD 01 routes See all, the anywhere tile and Edit', async () => {
+  it('BUILD 01 routes See all and the anywhere tile', async () => {
     await renderScreen(<BuildJobScreen />);
     await settle();
 
@@ -108,8 +117,65 @@ describe('Build Resume: BUILD 01 / 02', () => {
     expect(mockPush).toHaveBeenCalledWith('/create/build/jobs');
     await act(async () => fireEvent.press(screen.getByLabelText('Add a job from anywhere')));
     expect(mockPush).toHaveBeenCalledWith('/create/build/add');
-    await act(async () => fireEvent.press(screen.getByLabelText('Edit your profile')));
-    expect(mockPush).toHaveBeenCalledWith('/profile/edit');
+  });
+
+  it('BUILD 01 builds from a resume instead, through Customize (toreview §139)', async () => {
+    await renderScreen(<BuildJobScreen />);
+    await settle();
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Change what the resume is built from')),
+    );
+    await settle();
+    expect(screen.getByText('Build from')).toBeOnTheScreen();
+    expect(screen.getByText('Your profile')).toBeOnTheScreen();
+    // The two latest resumes, then an upload; older ones and cover letters are not offered.
+    expect(screen.getByText('UX Designer Resume')).toBeOnTheScreen();
+    expect(screen.getByText('Product Designer')).toBeOnTheScreen();
+    expect(screen.queryByText('Stripe — Senior PD')).not.toBeOnTheScreen();
+    expect(screen.queryByText('Stripe cover letter')).not.toBeOnTheScreen();
+    expect(screen.getByText('Upload from your device')).toBeOnTheScreen();
+
+    await act(async () => fireEvent.press(screen.getByText('UX Designer Resume')));
+    await settle();
+    expect(screen.getByText('Built from UX Designer Resume')).toBeOnTheScreen();
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/tailor',
+      params: { jobId: 'job_stripe', resumeId: 'res_1' },
+    });
+    expect(mockPush).not.toHaveBeenCalledWith(
+      expect.objectContaining({ pathname: '/create/build/compare' }),
+    );
+  });
+
+  it('BUILD 01 builds from a resume uploaded from the device', async () => {
+    pick.mockResolvedValue({ name: 'George_Smith_Resume.pdf', uri: 'file:///tmp/george.pdf' });
+    await renderScreen(<BuildJobScreen />);
+    await settle();
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Change what the resume is built from')),
+    );
+    await settle();
+    await act(async () => fireEvent.press(screen.getByText('Upload from your device')));
+    expect(screen.getByText('Reading George_Smith_Resume.pdf…')).toBeOnTheScreen();
+    await settle();
+
+    expect(screen.getByText(/^Built from /)).toBeOnTheScreen();
+    expect(screen.queryByText(/^Built from your profile/)).not.toBeOnTheScreen();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
+    );
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: '/create/tailor',
+        params: expect.objectContaining({ jobId: 'job_stripe', resumeId: expect.any(String) }),
+      }),
+    );
   });
 
   it('BUILD 01 offers Browse jobs when nothing is saved', async () => {

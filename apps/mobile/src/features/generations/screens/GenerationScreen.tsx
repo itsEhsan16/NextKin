@@ -158,7 +158,7 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this generation"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -170,7 +170,7 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
   if (!run) {
     return page(
       <StateView
-        icon="magic"
+        icon="Stars02"
         title="This generation has finished or was removed"
         message="Whatever it produced is in your documents."
         actionLabel="Go to Resumes"
@@ -240,7 +240,7 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
             again. */}
         <StateView
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Generation failed"
           message={run.error ?? 'It stopped part-way through. Nothing was saved.'}
           actionLabel="Try again"

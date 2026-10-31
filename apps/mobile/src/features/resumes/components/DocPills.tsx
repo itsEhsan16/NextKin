@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Resume } from '@/data/models';
@@ -6,6 +5,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { docPillLabel, docPillTone } from '../docMeta';
+import { Icon } from '@/ui/Icon';
 
 export type DocTypePillProps = {
   resume: Resume;
@@ -46,8 +46,6 @@ export function DocTypePill({ resume, style }: DocTypePillProps) {
   );
 }
 
-const REFRESH_ICON = 8;
-
 /**
  * Amber "Update available" pill overlaid on stale documents (Figma 1:1440).
  *
@@ -61,7 +59,7 @@ export function UpdateAvailablePill({
   announce?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { colors, radii, spacing, s } = useTheme();
+  const { colors, radii, spacing } = useTheme();
   const styles = useStyles();
   return (
     <View
@@ -77,7 +75,7 @@ export function UpdateAvailablePill({
         style,
       ]}
     >
-      <FontAwesome5 name="sync-alt" size={s(REFRESH_ICON)} color={colors.warningStrong} solid />
+      <Icon name="RefreshCw01" size="xs" color={colors.warningStrong} />
       <Text variant="microBadge" color="warningStrong" numberOfLines={1}>
         Update available
       </Text>

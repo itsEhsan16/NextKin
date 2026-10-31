@@ -1,10 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 type NewDocProps = {
   onPress: () => void;
@@ -48,7 +48,7 @@ export function NewDocTile({ onPress, style }: NewDocProps) {
           },
         ]}
       >
-        <FontAwesome5 name="plus" size={s(20)} color={colors.textOnDark} solid />
+        <Icon name="Plus" size={s(36.36)} color={colors.textOnDark} />
       </View>
       <Text variant="label" align="center">
         New
@@ -94,7 +94,7 @@ export function NewDocRow({ onPress, style }: NewDocProps) {
           },
         ]}
       >
-        <FontAwesome5 name="plus" size={s(17)} color={colors.textOnDark} solid />
+        <Icon name="Plus" size="lg" color={colors.textOnDark} />
       </View>
       <Text variant="label">New resume or cover letter</Text>
     </Pressable>

@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, {
@@ -16,6 +15,7 @@ import type { ListRowArt } from '@/ui/ListRow';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { layoutTransition } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 export type RubricCardProps = {
   component: ScoreRubricComponent;
@@ -34,7 +34,6 @@ const PILL_PAD_LEFT = 9 / 0.75;
 const PILL_PAD_RIGHT = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
 const CHEVRON_SLOT = 12 / 0.75;
-const CHEVRON = 10 / 0.75;
 
 /**
  * One weighted component of the published rubric (V2 §7.8), as a RESUMES 10 card: its drawing,
@@ -87,11 +86,10 @@ export function RubricCard({ component, art, expanded, onToggle }: RubricCardPro
           </View>
           <View style={styles.chevronSlot}>
             <Animated.View style={chevronStyle}>
-              <FontAwesome5
-                name="chevron-down"
-                size={s(CHEVRON)}
+              <Icon
+                name="ChevronDown"
+                size="md"
                 color={expanded ? colors.textBody : colors.iconMuted}
-                solid
               />
             </Animated.View>
           </View>

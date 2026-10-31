@@ -67,7 +67,7 @@ export function CoverLetterCard({ letter, job, resumeTitle, onEdit }: CoverLette
             </Text>
           </View>
         ) : (
-          <EntryTile tile={{ kind: 'glyph', icon: 'file-alt' }} size="sm" />
+          <EntryTile tile={{ kind: 'glyph', icon: 'File06' }} size="sm" />
         )}
         <View style={styles.headText}>
           <Text variant="title" numberOfLines={1}>

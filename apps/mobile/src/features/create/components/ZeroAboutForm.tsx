@@ -42,7 +42,7 @@ export function ZeroAboutForm({ about, errors, onChange, onBlurField }: ZeroAbou
     <Card radius="cardLg" style={styles.card}>
       <TextField
         label="Full name"
-        icon="user"
+        icon="User01"
         value={about.fullName}
         onChangeText={(fullName) => onChange({ ...about, fullName })}
         onBlur={() => onBlurField('fullName')}
@@ -87,7 +87,7 @@ export function ZeroAboutForm({ about, errors, onChange, onBlurField }: ZeroAbou
 
       <TextField
         label="Role you want"
-        icon="briefcase"
+        icon="Briefcase01"
         value={about.role}
         onChangeText={(role) => onChange({ ...about, role })}
         onBlur={() => onBlurField('role')}

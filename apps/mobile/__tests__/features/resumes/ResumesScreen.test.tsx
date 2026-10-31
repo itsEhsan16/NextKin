@@ -23,15 +23,19 @@ jest.mock('expo-router', () => ({
 // Reanimated's out-of-act layout callbacks can wedge late in a long walk.
 jest.mock('@/navigation', () => {
   const actual = jest.requireActual('@/navigation');
+  // Built per call: the factory runs before `mockOpenCreate` is initialised.
+  const createSheet = () => ({
+    progress: { value: 0 },
+    isOpen: false,
+    open: mockOpenCreate,
+    close: jest.fn(),
+    toggle: jest.fn(),
+  });
   return {
     ...actual,
-    useCreateSheet: () => ({
-      progress: { value: 0 },
-      isOpen: false,
-      open: mockOpenCreate,
-      close: jest.fn(),
-      toggle: jest.fn(),
-    }),
+    useCreateSheet: createSheet,
+    // useResumesActions reads the optional form: root-stack screens share it, outside the tabs.
+    useOptionalCreateSheet: createSheet,
   };
 });
 

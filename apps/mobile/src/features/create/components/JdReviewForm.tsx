@@ -139,7 +139,7 @@ export function JdReviewForm({
       <Section index={4}>
         <View style={{ gap: spacing[4] }}>
           {/* Section-level, not page-level: the rest of the form is still usable. */}
-          {noSkills ? <StateView compact icon="tags" title="No skills found" /> : null}
+          {noSkills ? <StateView compact icon="Tag03" title="No skills found" /> : null}
           <JdSkillGroup
             title="Required skills"
             noun="required skill"

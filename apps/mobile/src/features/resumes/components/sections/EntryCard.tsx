@@ -29,7 +29,6 @@ const GAP = 14 / 0.75;
 const HEADER_GAP = 12 / 0.75;
 const TITLE_GAP = 2 / 0.75;
 const DELETE = 34 / 0.75;
-const DELETE_GLYPH = 12 / 0.75;
 
 /**
  * One entry of a structured list section (V2 §7.11), drawn as RESUMES 07's role card: the letter
@@ -69,10 +68,10 @@ export function EntryCard({
         </View>
         {confirming ? null : (
           <IconButton
-            icon="trash-alt"
+            icon="Trash01"
             label={deleteLabel}
             size={s(DELETE)}
-            iconSize={s(DELETE_GLYPH)}
+            iconSize="sm"
             iconColor="textSecondary"
             onPress={() => setConfirming(true)}
             style={{ backgroundColor: colors.surfaceCard }}

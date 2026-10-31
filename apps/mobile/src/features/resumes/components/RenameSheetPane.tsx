@@ -79,7 +79,7 @@ export function RenameSheetPane({ resume, renaming, onSubmit, onCancel }: Rename
       </View>
       <TextField
         label="Name"
-        icon="file-alt"
+        icon="File06"
         style={styles.field}
         value={draft}
         onChangeText={(value) => {

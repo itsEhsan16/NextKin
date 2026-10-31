@@ -72,7 +72,7 @@ export function BuildChooseJobScreen() {
     body = (
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your jobs"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -91,7 +91,7 @@ export function BuildChooseJobScreen() {
     body =
       tab === 'saved' ? (
         <StateView
-          icon="bookmark"
+          icon="Bookmark"
           title="No saved jobs yet"
           message="Save jobs you like and they'll show up here."
           actionLabel="Browse jobs"
@@ -99,7 +99,7 @@ export function BuildChooseJobScreen() {
         />
       ) : (
         <StateView
-          icon="briefcase"
+          icon="Briefcase01"
           title="No top matches yet"
           message="Complete your profile and we'll find jobs that fit."
           actionLabel="Browse jobs"
@@ -109,7 +109,7 @@ export function BuildChooseJobScreen() {
   } else if (list.length === 0) {
     body = (
       <StateView
-        icon="search"
+        icon="SearchLg"
         title="No jobs match your search"
         message="Try a different title or company."
         actionLabel="Clear search"

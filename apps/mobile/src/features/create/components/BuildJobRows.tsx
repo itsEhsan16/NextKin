@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Fragment, type ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -12,6 +11,7 @@ import { Text } from '@/ui/Text';
 
 import { CheckDisc } from './TailorResumeRows';
 import { jobMetaLine } from './TailorVsCard';
+import { Icon } from '@/ui/Icon';
 
 // BUILD 01 (652:22 / 652:23) and BUILD 02 (652:100 / 652:101) at 390, in artboard units.
 const LIST_PAD = 4.75 / 0.75; // both cards' rows sit 4.75 in from the hairline
@@ -19,7 +19,6 @@ const ROW_PAD_X = 14 / 0.75;
 const ROW_PAD_Y = 12 / 0.75;
 const ROW_GAP = 12 / 0.75;
 const LINE_GAP = 3 / 0.75;
-const CHEVRON = 9 / 0.75;
 const PICK_RADIUS = 16 / 0.75;
 const PICK_BORDER = 1 / 0.75;
 const RADIO = 22 / 0.75; // 652:101's check tile
@@ -40,7 +39,7 @@ export type BuildJobRowProps = {
  * the match pill under it.
  */
 export function BuildJobRow({ job, variant, selected = false, onPress }: BuildJobRowProps) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const radio = variant === 'radio';
   const meta = jobMetaLine(job);
@@ -57,7 +56,7 @@ export function BuildJobRow({ job, variant, selected = false, onPress }: BuildJo
       />
     )
   ) : (
-    <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+    <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
   );
 
   return (

@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import UploadIcon from '../../../../assets/icons/create/upload.svg';
@@ -13,6 +12,7 @@ import { Spinner } from '@/ui/motion';
 import { ResumeThumbnail } from '@/features/resumes/components/ResumeThumbnail';
 
 import { tailorResumeMeta } from './tailorResumeMeta';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 // TAILOR 01 / 01b / 01c at 390 (606:162, 606:197, 606:383, 608:662), in artboard units.
 const ROW_RADIUS = 13 / 0.75;
@@ -25,12 +25,9 @@ const THUMB_W = 32 / 0.75;
 const THUMB_H = 40 / 0.75;
 const THUMB_RADIUS = 5 / 0.75;
 const CHECK_DISC = 22 / 0.75;
-const CHECK_GLYPH = 10 / 0.75;
 const FILE_TILE = 36 / 0.75;
 const FILE_TILE_RADIUS = 9 / 0.75;
-const FILE_GLYPH = 16 / 0.75;
 const ERROR_GAP = 5 / 0.75;
-const ERROR_GLYPH = 10 / 0.75;
 const RETRY_H = 30 / 0.75;
 const RETRY_PAD_X = 12 / 0.75;
 const UPLOAD_RADIUS = 15 / 0.75;
@@ -38,21 +35,19 @@ const UPLOAD_PAD_Y = 12 / 0.75;
 const UPLOAD_LINE_GAP = 2 / 0.75;
 const UPLOAD_ICON_W = 36 / 0.75;
 const UPLOAD_ICON_H = 37.3472 / 0.75;
-const UPLOAD_CHEVRON = 9 / 0.75;
 const LINK_PAD_LEFT = 12 / 0.75; // 606:390
 const LINK_GAP = 6 / 0.75;
-const LINK_GLYPH = 11 / 0.75;
 const LINK_H = 16 / 0.75;
 const SKELETON_TITLE_H = 14 / 0.75; // the 15/20 title's cap height, roughly
 const SKELETON_META_H = 11 / 0.75;
 
 /** The brand check disc a picked row ends on (606:166). */
 export function CheckDisc() {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   return (
     <View style={[styles.checkDisc, { backgroundColor: colors.brand }]}>
-      <FontAwesome5 name="check" size={s(CHECK_GLYPH)} color={colors.textOnBrand} solid />
+      <Icon name="Check" size="md" color={colors.textOnBrand} />
     </View>
   );
 }
@@ -114,10 +109,10 @@ export function ResumeOptionRow({
 export type PhoneFileState = 'reading' | 'ready' | 'unreadable' | 'failed';
 
 /** Red for a PDF, blue for Word — the export sheet's tiles (580:1622 / 580:1630). */
-function fileLook(name: string): { icon: string; bg: ColorToken; fg: ColorToken } {
+function fileLook(name: string): { icon: LineIconName; bg: ColorToken; fg: ColorToken } {
   return /\.docx?$/i.test(name)
-    ? { icon: 'file-word', bg: 'tileInfo', fg: 'glyphInfo' }
-    : { icon: 'file-pdf', bg: 'dangerSurface', fg: 'glyphDanger' };
+    ? { icon: 'File04', bg: 'tileInfo', fg: 'glyphInfo' }
+    : { icon: 'File04', bg: 'dangerSurface', fg: 'glyphDanger' };
 }
 
 /**
@@ -150,12 +145,7 @@ export function PhoneFileRow({
     <View
       style={[styles.fileTile, { backgroundColor: refused ? colors.surfaceCard : colors[look.bg] }]}
     >
-      <FontAwesome5
-        name={look.icon}
-        size={s(FILE_GLYPH)}
-        color={refused ? colors.iconMuted : colors[look.fg]}
-        solid
-      />
+      <Icon name={look.icon} size="md" color={refused ? colors.iconMuted : colors[look.fg]} />
     </View>
   );
 
@@ -181,12 +171,7 @@ export function PhoneFileRow({
             {fileName}
           </Text>
           <View style={[styles.errorLine, { gap: s(ERROR_GAP) }]}>
-            <FontAwesome5
-              name="exclamation-circle"
-              size={s(ERROR_GLYPH)}
-              color={colors.glyphDanger}
-              solid
-            />
+            <Icon name="AlertCircle" size="xs" color={colors.glyphDanger} />
             <Text
               variant="micro"
               color="danger"
@@ -281,12 +266,7 @@ export function UploadPromptRow({ onPress }: { onPress: () => void }) {
           PDF or DOCX from your phone
         </Text>
       </View>
-      <FontAwesome5
-        name="chevron-right"
-        size={s(UPLOAD_CHEVRON)}
-        color={colors.iconChevron}
-        solid
-      />
+      <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
     </Pressable>
   );
 }
@@ -304,7 +284,7 @@ export function UploadDifferentLink({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       style={styles.link}
     >
-      <FontAwesome5 name="upload" size={s(LINK_GLYPH)} color={colors.brand} solid />
+      <Icon name="UploadCloud02" size="xs" color={colors.brand} />
       <Text variant="microBadge" color="brand">
         Upload a different file
       </Text>

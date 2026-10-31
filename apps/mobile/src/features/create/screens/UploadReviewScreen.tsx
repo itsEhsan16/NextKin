@@ -68,7 +68,7 @@ export function UploadReviewScreen() {
   if (!draft || !resumeId) {
     return page(
       <StateView
-        icon="file-upload"
+        icon="UploadCloud02"
         title="Nothing to review"
         actionLabel="Upload a resume"
         onAction={actions.openUpload}
@@ -86,7 +86,7 @@ export function UploadReviewScreen() {
   if (groups.length === 0) {
     return page(
       <StateView
-        icon="file-alt"
+        icon="File06"
         title="We couldn't find anything to add"
         // The action opens the DOCUMENT, not the profile, so the manual route has to be named:
         // without it this state is a profile dead end that offers no way to a profile at all.

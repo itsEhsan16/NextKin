@@ -117,7 +117,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
   const retryState = (title: string, onAction: () => void) => (
     <StateView
       tone="danger"
-      icon="exclamation-triangle"
+      icon="AlertTriangle"
       title={title}
       message="Check your connection and try again."
       actionLabel="Try again"
@@ -132,7 +132,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
   if (resumeId == null && resumes.data && sources.length === 0) {
     return page(
       <StateView
-        icon="magic"
+        icon="Stars02"
         title="No tailored resumes yet"
         message="A letter is written from a resume you tailored for the job. Tailor one first."
         actionLabel="Find a job to tailor for"
@@ -146,7 +146,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     return isNotFound(resume.error)
       ? page(
           <StateView
-            icon="file-alt"
+            icon="File06"
             title="This resume isn't available"
             message="It may have been deleted. Pick the job the letter is for."
             actionLabel="Choose a job"

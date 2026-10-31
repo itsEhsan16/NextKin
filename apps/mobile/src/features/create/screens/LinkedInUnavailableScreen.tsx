@@ -38,7 +38,7 @@ export function LinkedInUnavailableScreen() {
     >
       <View style={styles.body}>
         <StateView
-          icon="link"
+          icon="Link01"
           title="LinkedIn import isn't available yet"
           message={WHY}
           actionLabel="Upload a PDF instead"

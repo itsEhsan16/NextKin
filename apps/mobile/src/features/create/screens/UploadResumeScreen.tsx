@@ -101,7 +101,7 @@ export function UploadResumeScreen() {
           noteTone="danger"
           primary={{
             label: file && !parsing ? 'Choose another file' : 'Choose a file',
-            icon: 'upload',
+            icon: 'UploadCloud02',
             loading: picking || parsing || landed,
             onPress: () => void choose(),
           }}

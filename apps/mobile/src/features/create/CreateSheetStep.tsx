@@ -5,6 +5,7 @@ import {
   View,
   type StyleProp,
   type ViewStyle,
+  type ViewInstance,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -64,7 +65,7 @@ export function CreateSheetStep({
   // Nothing mounts or unmounts when the steps slide past each other, so a screen reader would
   // otherwise keep focus on a row that just left the tree. Move it to the incoming header —
   // but not on first mount, where the platform already focuses into the freshly opened sheet.
-  const headerRef = useRef<View>(null);
+  const headerRef = useRef<ViewInstance>(null);
   const wasVisible = useRef(visible);
   useEffect(() => {
     if (visible && !wasVisible.current) {
@@ -92,8 +93,7 @@ export function CreateSheetStep({
       >
         {onBack ? (
           <IconButton
-            icon="chevron-left"
-            iconSize={s(14)}
+            icon="ChevronLeft"
             iconColor="textPrimary"
             label="Back"
             size={s(BACK_BUTTON)}
@@ -106,8 +106,7 @@ export function CreateSheetStep({
         </Text>
         {onClose ? (
           <IconButton
-            icon="times"
-            iconSize={s(14)}
+            icon="XClose"
             iconColor="textPrimary"
             label="Close"
             size={s(BACK_BUTTON)}

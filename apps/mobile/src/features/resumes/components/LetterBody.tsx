@@ -14,7 +14,6 @@ export type LetterBodyProps = {
 };
 
 const ACTION = 36;
-const ACTION_GLYPH = 13;
 
 /**
  * A cover letter's body (V2 §7.10): greeting, paragraphs and signoff in one card, edited as one
@@ -39,11 +38,11 @@ export function LetterBody({ content, onEdit }: LetterBodyProps) {
             {label}
           </Text>
           <IconButton
-            icon="pen"
+            icon="Edit03"
             label={`Edit ${label.toLowerCase()}`}
             variant="ghost"
             size={s(ACTION)}
-            iconSize={s(ACTION_GLYPH)}
+            iconSize="sm"
             iconColor="iconDefault"
             onPress={onEdit}
           />

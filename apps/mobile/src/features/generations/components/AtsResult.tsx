@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
@@ -18,6 +17,7 @@ import { Card } from '@/ui/Card';
 import { ScoreRing } from '@/ui/Progress';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 // ATS 03 at 390 (646:51), in artboard units.
 const HERO_GAP = 14 / 0.75; // 646:56
@@ -26,7 +26,6 @@ const LINK_TOP = 4 / 0.75; // 646:60
 const LINK_PAD_X = 12 / 0.75; // 646:61
 const LINK_PAD_Y = 7 / 0.75;
 const LINK_GAP = 6 / 0.75;
-const LINK_CHEVRON = 8 / 0.75;
 const RING = 96 / 0.75; // 646:65
 const RING_STROKE = 7.2 / 0.75; // TAILOR 02's ring in proportion (86 / 6.45)
 const RING_TO_PILL = 8 / 0.75;
@@ -92,7 +91,7 @@ function ResultHero({ result, onRubric }: { result: AtsCheckResult; onRubric: ()
           <Text variant="captionSemiBold" color="brand">
             {`How the ${SCORE_LABEL} works`}
           </Text>
-          <FontAwesome5 name="chevron-right" size={s(LINK_CHEVRON)} color={colors.brand} solid />
+          <Icon name="ChevronRight" size="sm" color={colors.brand} />
         </Pressable>
       </View>
       <View

@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import type { Resume } from '@/data/models';
@@ -10,6 +9,7 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { CheckDisc, useRowLook } from './TailorResumeRows';
+import { Icon } from '@/ui/Icon';
 
 // COVER 00 at 390 (613:1402 picked / 613:1411 not, 613:1423), in artboard units.
 const ROW_RADIUS = 13 / 0.75;
@@ -21,7 +21,6 @@ const LINE_GAP = 1 / 0.75;
 const LINK_PAD_LEFT = 12 / 0.75;
 const LINK_GAP = 6 / 0.75;
 const LINK_INNER_GAP = 4.5 / 0.75;
-const LINK_CHEVRON = 8 / 0.75;
 const LINK_H = 16 / 0.75;
 
 /**
@@ -92,7 +91,7 @@ export function TailorFirstLink({ onPress }: { onPress: () => void }) {
         <Text variant="microBadge" color="brand">
           Tailor a resume for it first
         </Text>
-        <FontAwesome5 name="chevron-right" size={s(LINK_CHEVRON)} color={colors.brand} solid />
+        <Icon name="ChevronRight" size="sm" color={colors.brand} />
       </Pressable>
     </View>
   );

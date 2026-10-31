@@ -145,7 +145,7 @@ export function CustomizeKeywords({ comparison, choices, onChange }: CustomizeKe
         {adding ? null : (
           <Button
             label="Add a keyword"
-            icon="plus"
+            icon="Plus"
             variant="ghost"
             onPress={() => setAdding(true)}
           />

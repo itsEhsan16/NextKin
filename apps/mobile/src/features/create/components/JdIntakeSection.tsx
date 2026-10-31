@@ -40,14 +40,14 @@ const CAPTION_SKELETON = 14;
 const CHOICES = [
   {
     key: 'paste',
-    icon: 'paste',
+    icon: 'Clipboard',
     label: 'Paste the description',
     description: 'Copy the posting and drop the text in',
   },
-  { key: 'file', icon: 'file-upload', label: 'Upload a file', description: 'PDF, DOCX or TXT' },
+  { key: 'file', icon: 'UploadCloud02', label: 'Upload a file', description: 'PDF, DOCX or TXT' },
   {
     key: 'job',
-    icon: 'bookmark',
+    icon: 'Bookmark',
     label: 'From a job you saved',
     description: 'Pick one of the jobs on your saved list',
   },
@@ -127,7 +127,7 @@ export function JdIntakeSection({ value, onChange, jobId, pasteError }: JdIntake
         <StateView
           compact
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Couldn't load that job"
           message="Check your connection and try again."
           actionLabel="Try again"
@@ -235,7 +235,7 @@ export function JdIntakeSection({ value, onChange, jobId, pasteError }: JdIntake
         <Button
           label={file ? 'Choose a different file' : 'Choose a file'}
           variant="ghost"
-          icon="file-upload"
+          icon="UploadCloud02"
           loading={picking}
           onPress={() => void upload()}
           style={styles.startAligned}

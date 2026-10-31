@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -13,11 +12,11 @@ import { layoutTransition } from '@/ui/motion';
 
 import { addEntry, removeEntry } from '../../sectionEdits';
 import type { SectionFieldsProps } from './types';
+import { Icon } from '@/ui/Icon';
 
 /** FilterChip's `removable` metrics, so this chip is that chip — see the note on the component. */
 const PADDING_X = 13;
 const PADDING_Y = 6;
-const TIMES = 9;
 const CHIP_HEIGHT = 32;
 
 /**
@@ -61,7 +60,7 @@ function EntryChip({
       <Text variant="caption" color="textBody" numberOfLines={1}>
         {label}
       </Text>
-      <FontAwesome5 name="times" size={s(TIMES)} color={colors.iconMuted} solid />
+      <Icon name="XClose" size="xs" color={colors.iconMuted} />
     </Pressable>
   );
 }

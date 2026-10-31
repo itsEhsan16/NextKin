@@ -4,7 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import type { ContentEducation } from '@/data/models';
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
-import { TextField } from '@/ui/TextField';
+import { TextField, useFieldChain } from '@/ui/TextField';
 import { layoutTransition } from '@/ui/motion';
 
 import { newEducation, removeAt, replaceAt } from '../../sectionEdits';
@@ -21,6 +21,7 @@ export function EducationEditor({
   onBlurField,
 }: SectionFieldsProps<ContentEducation[]>) {
   const { motion, s } = useTheme();
+  const link = useFieldChain(value.length * 3);
   const reduced = useReducedMotion();
   const layout = layoutTransition(reduced);
 
@@ -47,8 +48,9 @@ export function EducationEditor({
             >
               <View style={{ gap: s(FIELD_GAP) }}>
                 <TextField
+                  {...link(index * 3)}
                   label="Institution"
-                  icon="university"
+                  icon="Building01"
                   accessibilityLabel={`${name}, institution`}
                   placeholder="National Institute of Design"
                   value={entry.institution}
@@ -57,8 +59,9 @@ export function EducationEditor({
                   error={errors[`${entry.id}.institution`]}
                 />
                 <TextField
+                  {...link(index * 3 + 1)}
                   label="Qualification"
-                  icon="graduation-cap"
+                  icon="GraduationHat01"
                   accessibilityLabel={`${name}, qualification`}
                   placeholder="M.Des, Interaction Design"
                   value={entry.degree}
@@ -67,8 +70,9 @@ export function EducationEditor({
                   error={errors[`${entry.id}.degree`]}
                 />
                 <TextField
+                  {...link(index * 3 + 2)}
                   label="Dates"
-                  icon="calendar-alt"
+                  icon="Calendar"
                   accessibilityLabel={`${name}, dates`}
                   placeholder="2014 — 2016"
                   value={entry.period}

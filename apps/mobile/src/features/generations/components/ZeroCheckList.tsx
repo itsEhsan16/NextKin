@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Fragment } from 'react';
 import { View } from 'react-native';
 
@@ -7,6 +6,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 // ZERO 03 at 390 (613:420 / 613:427), in artboard units.
 const COUNT_PAD = 14 / 0.75;
@@ -21,7 +21,6 @@ const ROW_GAP = 12 / 0.75;
 const LINE_GAP = 2 / 0.75;
 const SLOT_W = 18 / 0.75;
 const SLOT_H = 20 / 0.75;
-const GLYPH = 16 / 0.75;
 /** The divider starts under the text, past the icon slot (613:434). */
 const RULE_INSET = 45 / 0.75;
 
@@ -38,7 +37,7 @@ export function ZeroCheckList({
   total: number;
   rows: readonly ZeroCheckRow[];
 }) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const ratio = total > 0 ? checked / total : 0;
 
@@ -77,9 +76,9 @@ export function ZeroCheckList({
             <View accessible accessibilityLabel={`${row.title}, ${row.detail}`} style={styles.row}>
               <View style={styles.slot}>
                 {row.done ? (
-                  <FontAwesome5 name="check-circle" size={s(GLYPH)} color={colors.success} solid />
+                  <Icon name="CheckCircle" size="md" color={colors.success} />
                 ) : (
-                  <FontAwesome5 name="circle" size={s(GLYPH)} color={colors.iconChevron} />
+                  <Icon name="Circle" size="md" color={colors.iconChevron} />
                 )}
               </View>
               <View style={styles.grow}>

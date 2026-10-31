@@ -52,7 +52,7 @@ export function CoverReady({
         {letterError ? (
           <StateView
             tone="danger"
-            icon="exclamation-triangle"
+            icon="AlertTriangle"
             title="Couldn't load the letter"
             message="It is saved in Resumes. Check your connection and try again."
             actionLabel="Try again"

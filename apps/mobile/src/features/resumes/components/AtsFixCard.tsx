@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, useRef } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -11,6 +10,7 @@ import { Text } from '@/ui/Text';
 import { layoutTransition, Spinner, SuccessMark, useBecameTrue } from '@/ui/motion';
 
 import { fixSectionLabel, type FixRow } from '../atsFixRows';
+import { Icon } from '@/ui/Icon';
 
 export type AtsFixCardProps = {
   row: FixRow;
@@ -30,7 +30,6 @@ const PILL_PAD_X = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
 const APPLY_H = 30 / 0.75;
 const APPLY_PAD_X = 12 / 0.75;
-const NOTE_GLYPH = 13 / 0.75;
 
 /** V2 §7.8: a keyword the profile does not back is shown, never written in. */
 const GAP_NOTE = "Not on your profile — only add it if it's true";
@@ -88,9 +87,9 @@ export function AtsFixCard({ row, onApply, onLayout }: AtsFixCardProps) {
           {done ? (
             <SuccessMark size={s(STATUS_GLYPH)} animate={justDone} />
           ) : gap ? (
-            <FontAwesome5 name="info-circle" size={s(NOTE_GLYPH)} color={colors.iconMuted} solid />
+            <Icon name="InfoCircle" size="sm" color={colors.iconMuted} />
           ) : (
-            <FontAwesome5 name="circle" size={s(STATUS_GLYPH)} color={colors.borderDashed} />
+            <Icon name="Circle" size="md" color={colors.borderDashed} />
           )}
         </View>
 

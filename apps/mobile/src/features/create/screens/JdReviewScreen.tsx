@@ -110,7 +110,7 @@ export function JdReviewScreen({ draftId }: JdReviewScreenProps) {
     return body(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this job description"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -124,7 +124,7 @@ export function JdReviewScreen({ draftId }: JdReviewScreenProps) {
   if (!data) {
     return body(
       <StateView
-        icon="file-alt"
+        icon="File06"
         title="We couldn't find that job description"
         message="It may have been removed."
         actionLabel="Start a new one"

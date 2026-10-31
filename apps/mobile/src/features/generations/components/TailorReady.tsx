@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -11,6 +10,7 @@ import { Text } from '@/ui/Text';
 
 import { NextStepNote } from './NextStepNote';
 import { TailorCheckRow } from './TailorCheckRow';
+import { Icon } from '@/ui/Icon';
 
 export type TailorReadyProps = {
   /** A tailoring run's record; it supplies the "Up from" pill and the changes when they are not passed. */
@@ -37,12 +37,10 @@ const PILL_PAD_L = 9 / 0.75;
 const PILL_PAD_R = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
 const PILL_GAP = 5 / 0.75;
-const PILL_GLYPH = 9.5 / 0.75;
 const TEXT_TO_CARD = 18 / 0.75;
 const CARD_PAD = 14 / 0.75;
 const HEADER_PAD_B = 4 / 0.75;
 const LINK_GAP = 4.5 / 0.75;
-const LINK_GLYPH = 8 / 0.75;
 const LINK_H = 16 / 0.75;
 const CARD_TO_NOTE = 14 / 0.75;
 
@@ -51,7 +49,7 @@ const CARD_TO_NOTE = 14 / 0.75;
  * or lower says what the score was instead, in grey.
  */
 function ScorePill({ score, baseline }: { score?: number; baseline: number }) {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
   if (score == null) return null;
   const up = score > baseline;
@@ -65,9 +63,7 @@ function ScorePill({ score, baseline }: { score?: number; baseline: number }) {
         },
       ]}
     >
-      {up ? (
-        <FontAwesome5 name="arrow-up" size={s(PILL_GLYPH)} color={colors.success} solid />
-      ) : null}
+      {up ? <Icon name="ArrowUp" size="sm" color={colors.success} /> : null}
       <Text variant="microBadge" color={up ? 'success' : 'textSecondary'}>
         {up ? `Up from ${baseline}` : `Was ${baseline}`}
       </Text>
@@ -118,7 +114,7 @@ export function TailorReady({
             <Text variant="viewAllLink" color="brand">
               See all
             </Text>
-            <FontAwesome5 name="chevron-right" size={s(LINK_GLYPH)} color={colors.brand} solid />
+            <Icon name="ChevronRight" size="sm" color={colors.brand} />
           </Pressable>
         </View>
         {(changes ?? (run ? tailorChanges(run) : [])).map((change) => (

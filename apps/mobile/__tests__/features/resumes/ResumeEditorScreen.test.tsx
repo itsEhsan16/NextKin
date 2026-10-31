@@ -49,15 +49,18 @@ const settle = async (steps = 4) => {
   }
 };
 
-async function renderEditor(id: string) {
+/**
+ * On the phone the editor is a root-stack screen, above the tabs' `CreateSheetProvider`;
+ * `withCreateSheet: false` mounts it that way.
+ */
+async function renderEditor(id: string, { withCreateSheet = true } = {}) {
   const queryClient = createQueryClient();
   clients.push(queryClient);
+  const editor = <ResumeEditorScreen id={id} />;
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
       <QueryClientProvider client={queryClient}>
-        <CreateSheetProvider>
-          <ResumeEditorScreen id={id} />
-        </CreateSheetProvider>
+        {withCreateSheet ? <CreateSheetProvider>{editor}</CreateSheetProvider> : editor}
       </QueryClientProvider>
     </SafeAreaProvider>,
   );
@@ -193,5 +196,14 @@ describe('ResumeEditorScreen (V2 §7.11 — no artboard)', () => {
     expect(screen.queryByRole('header', { name: 'Skills', ...shown })).toBeNull();
     expect(screen.getByText('Not scored yet')).toBeOnTheScreen();
     expect(screen.queryByLabelText('What this score measures')).toBeNull();
+  }, 60000);
+
+  // It used to throw on open there: `useResumesActions` demanded the create sheet (toreview §74.3).
+  it('opens outside the create sheet provider, as the root stack mounts it', async () => {
+    await renderEditor('res_base', { withCreateSheet: false });
+    await settle();
+
+    expect(screen.getByRole('header', { name: 'Product Designer' })).toBeOnTheScreen();
+    expect(screen.getByLabelText('Download')).toBeEnabled();
   }, 60000);
 });

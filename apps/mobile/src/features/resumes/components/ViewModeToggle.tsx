@@ -1,13 +1,13 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useEffect, useRef } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
-import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
+import { a11yButton, haptics } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
+import { useSlidingPill } from '@/ui/motion';
 
 import type { ResumesViewMode } from '../resumesStore';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type ViewModeToggleProps = {
   value: ResumesViewMode;
@@ -25,42 +25,25 @@ export type ViewModeToggleProps = {
 const TRACK_WIDTH = 104;
 const INSET = 4;
 const CELL = (TRACK_WIDTH - INSET * 2) / 2;
-const ICON = 15;
 
-const MODES: readonly { key: ResumesViewMode; icon: string; label: string }[] = [
-  { key: 'grid', icon: 'th-large', label: 'Grid view' },
-  { key: 'list', icon: 'list', label: 'List view' },
+const MODES: readonly { key: ResumesViewMode; icon: LineIconName; label: string }[] = [
+  { key: 'grid', icon: 'Grid01', label: 'Grid view' },
+  { key: 'list', icon: 'List', label: 'List view' },
 ];
 
 /**
- * Grid ⇄ list switch. A miniature of SegmentedControl (which is label-only) with the same
- * sliding-pill spring; two fixed cells keep the geometry static so no measuring pass is needed.
+ * Grid ⇄ list switch. A miniature of SegmentedControl (which is label-only) on the same
+ * sliding pill; two fixed cells keep the geometry static so no measuring pass is needed.
  */
 export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) {
-  const { colors, radii, shadows, motion, sizes, s } = useTheme();
-  const reduced = useReducedMotion();
+  const { colors, radii, shadows, sizes, s } = useTheme();
 
   const index = value === 'grid' ? 0 : 1;
   // Device space, like the track and pill they position. The raw artboard form put the pill
   // 13dp past its cell at 390 and hung it outside the track entirely.
   const inset = s(INSET);
   const cell = s(CELL);
-  const offset = useSharedValue(inset + index * cell);
-  const mounted = useRef(false);
-
-  useEffect(() => {
-    const target = inset + index * cell;
-    if (!mounted.current) {
-      // First paint seats the pill with no motion — a persisted "list" preference must not
-      // replay a slide from grid on every entry.
-      mounted.current = true;
-      offset.set(target);
-      return;
-    }
-    offset.set(withSpring(target, withReducedMotion(reduced, motion.springs.snappy)));
-  }, [cell, index, inset, motion.springs.snappy, offset, reduced]);
-
-  const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }));
+  const pillStyle = useSlidingPill(inset + index * cell);
 
   return (
     <View
@@ -98,7 +81,7 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
             {...a11yButton(mode.label)}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
-            feedback="none"
+            feedback="subtle"
             haptic="none"
             onPress={() => {
               if (selected) return;
@@ -107,11 +90,10 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
             }}
             style={styles.cell}
           >
-            <FontAwesome5
+            <Icon
               name={mode.icon}
-              size={s(ICON)}
+              size="sm"
               color={selected ? colors.textPrimary : colors.iconMuted}
-              solid
             />
           </Pressable>
         );

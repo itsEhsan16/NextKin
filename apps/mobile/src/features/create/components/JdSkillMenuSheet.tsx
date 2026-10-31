@@ -56,7 +56,7 @@ export function JdSkillMenuSheet<K extends string = string>({
           </Text>
           {/* Named for the menu rather than for the skill: the title blanks on nothing, and a
               label built from it would read "Close " between two skills. */}
-          <IconButton icon="times" label="Close skill options" onPress={onClose} />
+          <IconButton icon="XClose" label="Close skill options" onPress={onClose} />
         </View>
 
         {commands.map((command) => (

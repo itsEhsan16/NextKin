@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { memo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -13,6 +12,7 @@ import { docPillLabel } from '../docMeta';
 import { AtsBadge } from './AtsBadge';
 import { DocTypePill, UpdateAvailablePill } from './DocPills';
 import { ResumeThumbnail } from './ResumeThumbnail';
+import { Icon } from '@/ui/Icon';
 
 export type ResumeGridCardProps = {
   resume: Resume;
@@ -93,7 +93,7 @@ export const ResumeGridCard = memo(function ResumeGridCard({
             hitSlop={hitSlopFor(s(MENU_ICON))}
             onPress={() => onOpenMenu(resume)}
           >
-            <FontAwesome5 name="ellipsis-h" size={s(MENU_ICON)} color={colors.iconMuted} solid />
+            <Icon name="DotsHorizontal" size="md" color={colors.iconMuted} />
           </Pressable>
         </View>
 

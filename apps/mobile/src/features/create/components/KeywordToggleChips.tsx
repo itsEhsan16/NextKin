@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { hitSlopFor } from '@/lib';
@@ -7,6 +6,7 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { KEYWORD_CHIP } from './TailorKeywords';
+import { Icon } from '@/ui/Icon';
 
 export type ToggleChipItem = { label: string; on: boolean; quote?: string };
 
@@ -56,11 +56,10 @@ export function KeywordToggleChips({ items, onToggle, style }: KeywordToggleChip
             !item.on && styles.dashed,
           ]}
         >
-          <FontAwesome5
-            name={item.on ? 'check' : 'plus'}
-            size={s(KEYWORD_CHIP.check)}
+          <Icon
+            name={item.on ? 'Check' : 'Plus'}
+            size="xs"
             color={item.on ? colors.brand : colors.warningStrong}
-            solid
           />
           <Text variant="microBadge" color={item.on ? 'brand' : 'warningStrong'} numberOfLines={1}>
             {item.label}

@@ -1,8 +1,8 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 // "Almost there" at 390 (653:173), in artboard units.
 const PAD_LEFT = 14 / 0.75;
@@ -12,7 +12,6 @@ const GAP = 14 / 0.75;
 const RADIUS = 16 / 0.75;
 const ART = 72 / 0.75; // 653:174
 const ART_RADIUS = 18 / 0.75;
-const ROBOT = 26 / 0.75;
 const TEXT_GAP = 3 / 0.75;
 
 const TEXT =
@@ -33,7 +32,7 @@ export function BuildAlmostThere() {
         importantForAccessibility="no-hide-descendants"
         style={[styles.art, { backgroundColor: colors.tileBrand }]}
       >
-        <FontAwesome5 name="robot" size={s(ROBOT)} color={colors.brand} solid />
+        <Icon name="Stars02" size={s(40.78)} color={colors.brand} />
       </View>
       <View style={styles.text}>
         <Text variant="label">Almost there!</Text>

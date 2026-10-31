@@ -10,7 +10,7 @@ import {
   type ZeroResolution,
 } from '@/data/models';
 import { scaledSheet } from '@/theme';
-import { TextField } from '@/ui/TextField';
+import { TextField, useFieldChain } from '@/ui/TextField';
 
 import {
   CheckButtons,
@@ -65,6 +65,7 @@ function useDates(period: string) {
  */
 export function RoleCheckForm({ role, ...props }: CheckFormProps & { role: ContentRole }) {
   const styles = useStyles();
+  const link = useFieldChain(2);
   const [title, setTitle] = useState(role.title);
   const [company, setCompany] = useState(isBlank(role.company) ? '' : role.company);
   const [tried, setTried] = useState(false);
@@ -105,8 +106,9 @@ export function RoleCheckForm({ role, ...props }: CheckFormProps & { role: Conte
       <CheckHeader title="Is this role right?" subtitle={props.subtitle} onClose={props.onClose} />
       <View style={styles.fields}>
         <TextField
+          {...link(0)}
           label="Job title"
-          icon="briefcase"
+          icon="Briefcase01"
           value={title}
           onChangeText={setTitle}
           helper={GUESS}
@@ -114,8 +116,9 @@ export function RoleCheckForm({ role, ...props }: CheckFormProps & { role: Conte
           autoCapitalize="words"
         />
         <TextField
+          {...link(1)}
           label="Company"
-          icon="building"
+          icon="Building02"
           value={company}
           onChangeText={setCompany}
           placeholder="[Company Name]"
@@ -160,7 +163,7 @@ export function SkillCheckForm({ skill, ...props }: CheckFormProps & { skill: st
       <View style={styles.fields}>
         <TextField
           label="Skill"
-          icon="tools"
+          icon="Tool02"
           value={name}
           onChangeText={setName}
           helper={GUESS}
@@ -189,6 +192,7 @@ export function EducationCheckForm({
   ...props
 }: CheckFormProps & { entry: ContentEducation }) {
   const styles = useStyles();
+  const link = useFieldChain(2);
   const [degree, setDegree] = useState(isBlank(entry.degree) ? '' : entry.degree);
   const [school, setSchool] = useState(isBlank(entry.institution) ? '' : entry.institution);
   const dates = useDates(entry.period);
@@ -215,8 +219,9 @@ export function EducationCheckForm({
       <CheckHeader title="Where did you study?" subtitle={props.subtitle} onClose={props.onClose} />
       <View style={styles.fields}>
         <TextField
+          {...link(0)}
           label="Degree"
-          icon="graduation-cap"
+          icon="GraduationHat01"
           value={degree}
           onChangeText={setDegree}
           placeholder="[Degree]"
@@ -224,8 +229,9 @@ export function EducationCheckForm({
           autoCapitalize="words"
         />
         <TextField
+          {...link(1)}
           label="School"
-          icon="university"
+          icon="Building01"
           value={school}
           onChangeText={setSchool}
           placeholder="[Institution]"

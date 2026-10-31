@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useCurrentUser, useProfile, useSavedJobs } from '@/data/queries';
+import { useCurrentUser, useProfile, useResumes, useSavedJobs } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Screen } from '@/ui/Screen';
@@ -18,10 +18,13 @@ import {
   BUILD_LEDE,
   BUILD_TITLE,
   BuildAnywhereTile,
-  BuildFromProfileRow,
+  BuildFromRow,
   BuildSectionTitle,
 } from '../components/BuildSourceRows';
+import { BuildSourceSheet } from '../components/BuildSourceSheet';
+import { useBuildSourceStore } from '../buildSourceStore';
 import { FLOW_ART, FlowHero } from '../components/FlowHero';
+import { useBuildSourceUpload } from '../hooks/useBuildSourceUpload';
 import { useBuildActions } from '../hooks/useStartBuild';
 
 // BUILD 01 at 390 (652:2), in artboard units.
@@ -30,13 +33,13 @@ const HERO_TO_SECTION = 22 / 0.75; // 652:16
 const TITLE_TO_CARD = 10 / 0.75; // 652:21
 const CARD_TO_OR = 16 / 0.75; // 652:57 / 652:62
 const EMPTY_GAP = 12 / 0.75;
-const TOP_JOBS = 3;
+const TOP_JOBS = 1; // the owner's cut (2026-10-27): one saved job, the rest behind See all
 
 /**
- * BUILD 01 (652:2) — "Which job is this resume for?", Home's Build Resume (toreview §74): the top
- * three saved jobs, a job from anywhere under the OR, and the profile the resume is built from,
- * pinned at the foot. A job opens BUILD 04b, the profile against the job; nothing is spent until
- * the build starts there.
+ * BUILD 01 (652:2) — "Which job is this resume for?", Home's Build Resume (toreview §74): the
+ * latest saved job, a job from anywhere under the OR, and what the resume is built from, pinned at
+ * the foot. A job opens BUILD 04b, the profile against the job, or Customize when the foot was
+ * changed to a resume (§139); nothing is spent until the run starts there.
  */
 export function BuildJobScreen() {
   const { spacing, s } = useTheme();
@@ -47,6 +50,14 @@ export function BuildJobScreen() {
   const saved = useSavedJobs();
   const profile = useProfile();
   const user = useCurrentUser();
+  const resumes = useResumes();
+  const resumeId = useBuildSourceStore((state) => state.resumeId);
+  const setResumeId = useBuildSourceStore((state) => state.setResumeId);
+  const [sourceOpen, setSourceOpen] = useState(false);
+  const sourceUpload = useBuildSourceUpload();
+
+  // The source belongs to this visit of the flow: leaving BUILD 01 builds from the profile again.
+  useEffect(() => () => setResumeId(null), [setResumeId]);
 
   // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
   // with its data already here slides in whole with the push.
@@ -60,7 +71,7 @@ export function BuildJobScreen() {
     savedBlock = (
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your saved jobs"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -101,24 +112,31 @@ export function BuildJobScreen() {
 
   const roles = profile.data?.experiences.length;
   const skills = profile.data?.skills.length;
-  const footer =
-    roles != null && skills != null ? (
-      <View
-        style={{
-          paddingHorizontal: spacing.gutter,
-          paddingTop: spacing[4],
-          paddingBottom: spacing[4] + insets.bottom,
-        }}
-      >
-        <BuildFromProfileRow
-          name={user.data?.firstName ?? ''}
-          avatarUrl={user.data?.avatarUrl}
-          roles={roles}
-          skills={skills}
-          onEdit={actions.openProfileEditor}
-        />
-      </View>
-    ) : undefined;
+  const picked = resumeId ? resumes.data?.find((resume) => resume.id === resumeId) : undefined;
+  const profileSource =
+    roles != null && skills != null
+      ? { name: user.data?.firstName ?? '', avatarUrl: user.data?.avatarUrl, roles, skills }
+      : undefined;
+  const footer = profileSource ? (
+    <View
+      style={{
+        paddingHorizontal: spacing.gutter,
+        paddingTop: spacing[4],
+        paddingBottom: spacing[4] + insets.bottom,
+      }}
+    >
+      <BuildFromRow
+        source={
+          sourceUpload.reading
+            ? { kind: 'reading', fileName: sourceUpload.reading }
+            : picked
+              ? { kind: 'resume', resume: picked }
+              : { kind: 'profile', ...profileSource }
+        }
+        onChange={() => setSourceOpen(true)}
+      />
+    </View>
+  ) : undefined;
 
   return (
     <Screen
@@ -146,6 +164,18 @@ export function BuildJobScreen() {
         <OrDivider />
         <BuildAnywhereTile onPress={actions.openAddJob} />
       </Animated.View>
+
+      {profileSource ? (
+        <BuildSourceSheet
+          open={sourceOpen}
+          onClose={() => setSourceOpen(false)}
+          profile={profileSource}
+          resumes={resumes.data}
+          resumeId={picked ? picked.id : null}
+          onPick={setResumeId}
+          onUpload={() => void sourceUpload.upload()}
+        />
+      ) : null}
     </Screen>
   );
 }

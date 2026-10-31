@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -12,6 +11,7 @@ import { TextField } from '@/ui/TextField';
 import { itemExit, layoutTransition } from '@/ui/motion';
 
 import { removeAt, replaceAt } from '../../sectionEdits';
+import { Icon } from '@/ui/Icon';
 
 export type BulletRowsProps = {
   /** Namespaces the error keys, so two entries never share one. */
@@ -27,13 +27,11 @@ export type BulletRowsProps = {
 // "What you did" at 390 (RESUMES 07 577:8659), in artboard units.
 const LIST_GAP = 8 / 0.75;
 const REMOVE = 22 / 0.75;
-const REMOVE_GLYPH = 9.5 / 0.75;
 const ADD_HEIGHT = 46 / 0.75;
 const ADD_RADIUS = 13.5 / 0.75;
 const ADD_BORDER = 1 / 0.75;
 const ADD_GAP = 10 / 0.75;
 const ADD_DISC = 24 / 0.75;
-const ADD_GLYPH = 10 / 0.75;
 /** Add bullet sits 14 under the last bullet (577:8673). */
 const ADD_TOP = 14 / 0.75;
 
@@ -46,7 +44,7 @@ const newBulletId = () => {
 
 /** The dashed lavender "+ Add bullet" row under a bullet list (577:8673). */
 function AddBullet({ entryName, onPress }: { entryName: string; onPress: () => void }) {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
   return (
     <Pressable
@@ -62,7 +60,7 @@ function AddBullet({ entryName, onPress }: { entryName: string; onPress: () => v
       <View
         style={[styles.disc, { borderRadius: radii.full, backgroundColor: colors.surfaceInverse }]}
       >
-        <FontAwesome5 name="plus" size={s(ADD_GLYPH)} color={colors.textOnDark} solid />
+        <Icon name="Plus" size="md" color={colors.textOnDark} />
       </View>
       <Text variant="bodySemiBold">Add bullet</Text>
     </Pressable>
@@ -119,10 +117,10 @@ export function BulletRows({
               minLines={2}
               trailing={
                 <IconButton
-                  icon="times"
+                  icon="XClose"
                   label={`Remove bullet ${index + 1} of ${entryName}`}
                   size={s(REMOVE)}
-                  iconSize={s(REMOVE_GLYPH)}
+                  iconSize="sm"
                   iconColor="textSecondary"
                   variant="ghost"
                   onPress={() => {

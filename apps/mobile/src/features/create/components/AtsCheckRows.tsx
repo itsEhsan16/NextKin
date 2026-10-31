@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -11,6 +10,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { Spinner } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 // ATS 01 / 01b at 390 (645:22, 645:31, 645:37, 645:82, 645:91), in artboard units.
 const ROW_PAD_X = 15 / 0.75;
@@ -19,7 +19,6 @@ const ROW_GAP = 12 / 0.75;
 const LINE_GAP = 2 / 0.75;
 const FILE_TILE = 40 / 0.75; // 645:19
 const FILE_TILE_RADIUS = 11 / 0.75;
-const FILE_GLYPH = 16 / 0.75;
 const PILL_H = 32 / 0.75; // 645:20
 const PILL_PAD_X = 13 / 0.75;
 const PILL_RADIUS = 10 / 0.75;
@@ -29,7 +28,6 @@ const PASTE_GAP = 14 / 0.75;
 const PASTE_BORDER = 1.25 / 0.75;
 const PASTE_ICON_W = 46 / 0.75; // 649:2
 const PASTE_ICON_H = 45.8903 / 0.75;
-const CHEVRON = 9 / 0.75;
 const TIP_PAD_X = 12 / 0.75; // 645:82
 const TIP_PAD_Y = 10 / 0.75;
 const TIP_GAP = 10 / 0.75;
@@ -37,7 +35,6 @@ const TIP_RADIUS = 12 / 0.75;
 const TIP_SPARKLE_W = 20 / 0.75;
 const TIP_SPARKLE_H = 19.591 / 0.75;
 const LINK_GAP = 7 / 0.75; // 645:92 → 645:93
-const LINK_GLYPH = 12 / 0.75;
 const LINK_H = 17 / 0.75;
 
 export type AtsFileState = 'reading' | 'ready' | 'unreadable' | 'failed';
@@ -127,12 +124,7 @@ export function AtsFileRow({
     <PickRow
       leading={
         <View style={[styles.fileTile, { backgroundColor: colors.dangerSurface }]}>
-          <FontAwesome5
-            name={pdf ? 'file-pdf' : 'file-alt'}
-            size={s(FILE_GLYPH)}
-            color={colors.glyphDanger}
-            solid
-          />
+          <Icon name={pdf ? 'File04' : 'File06'} size="md" color={colors.glyphDanger} />
         </View>
       }
       trailing={
@@ -209,7 +201,7 @@ export function PasteJdTile({ onPress }: { onPress: () => void }) {
           For a job that isn’t on NextKin
         </Text>
       </View>
-      <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+      <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
     </Pressable>
   );
 }
@@ -244,7 +236,7 @@ export function UseSavedJobLink({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       style={styles.link}
     >
-      <FontAwesome5 name="bookmark" size={s(LINK_GLYPH)} color={colors.brand} solid />
+      <Icon name="Bookmark" size="sm" color={colors.brand} />
       <Text variant="captionSemiBold" color="brand">
         Use a saved job instead
       </Text>

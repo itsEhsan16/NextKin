@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Subscription } from '@/data/models';
@@ -9,6 +8,7 @@ import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
 import CrownIcon from '../../../../assets/icons/upgrade-crown.svg';
+import { Icon } from '@/ui/Icon';
 
 export type UsageMeterProps = {
   subscription: Subscription;
@@ -16,7 +16,6 @@ export type UsageMeterProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const CHEVRON = 9;
 /** The crown's drawn box, 15.27 × 13 on the 390 board (Figma 529:63), over 0.75. */
 const CROWN_W = 15.27 / 0.75;
 const CROWN_H = 13 / 0.75;
@@ -51,7 +50,7 @@ export function UsageMeter({ subscription, onUpgrade, style }: UsageMeterProps) 
         >
           <CrownIcon width={s(CROWN_W)} height={s(CROWN_H)} />
           <Text variant="captionSemiBold">Upgrade</Text>
-          <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.textPrimary} solid />
+          <Icon name="ChevronRight" size="xs" color={colors.textPrimary} />
         </Pressable>
       </View>
       <ProgressBar

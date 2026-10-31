@@ -19,6 +19,7 @@ import { BuildReviewCard } from '../components/BuildReviewCard';
 import { BuildReviewSkeleton } from '../components/BuildReviewSkeleton';
 import { BuildReviewSource } from '../components/BuildReviewSource';
 import { FLOW_ART, FlowHero } from '../components/FlowHero';
+import { useBuildSourceStore } from '../buildSourceStore';
 import { useBuildActions } from '../hooks/useStartBuild';
 
 export type BuildReviewScreenProps = {
@@ -29,8 +30,10 @@ export type BuildReviewScreenProps = {
 
 const TITLE = 'Add the job — we read it';
 const LEDE = 'We read the job description and pull out what it asks for.';
-const CTA = 'Compare with my profile';
-const NEXT = 'Next, we compare these with your profile.';
+// Built from a resume (§139), the comparison is with that resume.
+const ctaFor = (fromResume: boolean) => `Compare with my ${fromResume ? 'resume' : 'profile'}`;
+const nextFor = (fromResume: boolean) =>
+  `Next, we compare these with your ${fromResume ? 'resume' : 'profile'}.`;
 
 // BUILD 04 at 390 (653:56), in artboard units.
 const HEADER_TO_ART = 8 / 0.75; // 661:32 rides up over 653:60
@@ -62,6 +65,8 @@ export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
   const styles = useStyles();
   const router = useRouter();
   const actions = useBuildActions();
+  const fromResume = useBuildSourceStore((state) => state.resumeId != null);
+  const cta = ctaFor(fromResume);
 
   const draft = useJdDraft(jdId);
 
@@ -85,13 +90,13 @@ export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
     </Screen>
   );
 
-  const inertBar = <StickyActionBar floating primary={{ label: CTA, disabled: true }} />;
+  const inertBar = <StickyActionBar floating primary={{ label: cta, disabled: true }} />;
 
   if (draft.isError) {
     return isNotFound(draft.error)
       ? page(
           <StateView
-            icon="briefcase"
+            icon="Briefcase01"
             title="We lost that job"
             message="Add it again to build your resume."
             actionLabel="Add the job"
@@ -101,7 +106,7 @@ export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
       : page(
           <StateView
             tone="danger"
-            icon="exclamation-triangle"
+            icon="AlertTriangle"
             title="Couldn't load the job"
             message="Check your connection and try again."
             actionLabel="Try again"
@@ -128,13 +133,13 @@ export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
         />
       </Animated.View>
       <Animated.View entering={enter(3)} style={styles.block}>
-        <BuildTipCard text={NEXT} />
+        <BuildTipCard text={nextFor(fromResume)} />
       </Animated.View>
     </>,
     <StickyActionBar
       floating
       primary={{
-        label: CTA,
+        label: cta,
         leading: <SparkleIcon width={s(SPARKLE_W)} height={s(SPARKLE_H)} />,
         onPress: () => actions.openCompare({ jdId, ...(job.jobId ? { jobId: job.jobId } : {}) }),
       }}

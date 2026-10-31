@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import ScratchIcon from '../../../../assets/icons/create/scratch.svg';
@@ -9,6 +8,7 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { UploadPromptRow } from './TailorResumeRows';
+import { Icon } from '@/ui/Icon';
 
 // ZERO 00b's sheet at 390 (613:148), in artboard units.
 const HEADER_TO_ROWS = 14 / 0.75; // 613:156 + 613:157
@@ -22,7 +22,6 @@ const ROW_GAP = 12 / 0.75;
 const LINE_GAP = 2 / 0.75;
 const ICON_W = 36 / 0.75; // 613:184
 const ICON_H = 37.573 / 0.75;
-const CHEVRON = 9 / 0.75;
 
 /** "Start from nothing" (613:183): the lavender row that opens Zero Resume for this job. */
 function StartFromNothingRow({ onPress }: { onPress: () => void }) {
@@ -55,7 +54,7 @@ function StartFromNothingRow({ onPress }: { onPress: () => void }) {
           We write a first draft for this job from your name and years of work
         </Text>
       </View>
-      <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+      <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
     </Pressable>
   );
 }

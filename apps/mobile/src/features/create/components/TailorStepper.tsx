@@ -1,9 +1,9 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Fragment } from 'react';
 import { View } from 'react-native';
 
 import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type TailorStep = 'compare' | 'fix' | 'download';
 export type CoverStep = 'setup' | 'write' | 'download';
@@ -36,7 +36,6 @@ export const ZERO_STEPS: readonly FlowStepDef<ZeroStep>[] = [
 const GAP = 8 / 0.75;
 const STEP_GAP = 6 / 0.75;
 const DOT = 20 / 0.75;
-const CHECK = 9 / 0.75;
 const CONNECTOR_W = 22 / 0.75;
 const CONNECTOR_H = 1.5 / 0.75;
 
@@ -62,7 +61,7 @@ export function FlowStepper<K extends string>({
   current: K;
   allDone?: boolean;
 }) {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
   const STEPS = steps;
   const at = allDone ? STEPS.length : STEPS.findIndex((step) => step.key === current);
@@ -102,7 +101,7 @@ export function FlowStepper<K extends string>({
                 ]}
               >
                 {done ? (
-                  <FontAwesome5 name="check" size={s(CHECK)} color={colors.textOnBrand} solid />
+                  <Icon name="Check" size="sm" color={colors.textOnBrand} />
                 ) : (
                   <Text variant="microBadge" color={active ? 'textOnBrand' : 'textSecondary'}>
                     {String(index + 1)}

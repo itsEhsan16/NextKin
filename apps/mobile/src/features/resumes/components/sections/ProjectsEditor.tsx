@@ -4,7 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import type { ContentProject } from '@/data/models';
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
-import { TextField } from '@/ui/TextField';
+import { TextField, useFieldChain } from '@/ui/TextField';
 import { layoutTransition } from '@/ui/motion';
 
 import { newProject, removeAt, replaceAt } from '../../sectionEdits';
@@ -22,6 +22,7 @@ export function ProjectsEditor({
   onBlurField,
 }: SectionFieldsProps<ContentProject[]>) {
   const { motion, s } = useTheme();
+  const link = useFieldChain(value.length * 2);
   const reduced = useReducedMotion();
   const layout = layoutTransition(reduced);
 
@@ -48,6 +49,7 @@ export function ProjectsEditor({
             >
               <View style={{ gap: s(FIELD_GAP) }}>
                 <TextField
+                  {...link(index * 2)}
                   label="Name"
                   accessibilityLabel={`${name}, name`}
                   placeholder="Checkout redesign"
@@ -57,6 +59,7 @@ export function ProjectsEditor({
                   error={errors[`${project.id}.name`]}
                 />
                 <TextField
+                  ref={link(index * 2 + 1).ref}
                   label="Description"
                   accessibilityLabel={`${name}, description`}
                   placeholder="One line on what it was and who it was for."

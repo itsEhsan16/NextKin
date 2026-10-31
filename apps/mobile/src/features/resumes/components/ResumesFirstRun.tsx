@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import StartAiSparkleIcon from '../../../../assets/icons/resumes/start-ai-sparkle.svg';
@@ -7,6 +6,7 @@ import { a11yButton, a11yHeader } from '@/lib';
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type ResumesFirstRunProps = {
   onUpload: () => void;
@@ -17,7 +17,6 @@ export type ResumesFirstRunProps = {
 /** The illustration (Figma 395:1344 / 391:807), drawn 289.35 × 224.25 at 390. */
 const ART = { w: 289.349 / 0.75, h: 224.25 / 0.75 } as const;
 const CTA_HEIGHT = 64;
-const CTA_ICON = 16;
 /** "Start with AI" leads with its own sparkle (529:25), 21.28 × 22 and 6.5 short of the label. */
 const AI_SPARKLE = { w: 21.28 / 0.75, h: 22 / 0.75 } as const;
 const AI_GAP = 6.47 / 0.75;
@@ -40,7 +39,7 @@ function Cta({
   onPress,
 }: {
   tone: CtaTone;
-  icon?: string;
+  icon?: LineIconName;
   label: string;
   onPress: () => void;
 }) {
@@ -78,7 +77,7 @@ function Cta({
       {tone === 'brand' ? (
         <StartAiSparkleIcon width={s(AI_SPARKLE.w)} height={s(AI_SPARKLE.h)} />
       ) : icon ? (
-        <FontAwesome5 name={icon} size={s(CTA_ICON)} color={colors[surface.fg]} solid />
+        <Icon name={icon} size="sm" color={colors[surface.fg]} />
       ) : null}
       <Text variant="label" color={surface.fg}>
         {label}
@@ -127,8 +126,8 @@ export function ResumesFirstRun({
       </Text>
 
       <View style={{ gap: s(CTA_GAP), marginTop: s(CTAS_TOP) }}>
-        <Cta tone="primary" icon="upload" label="Upload PDF or DOCX" onPress={onUpload} />
-        <Cta tone="outline" icon="link" label="Import from LinkedIn" onPress={onImportLinkedIn} />
+        <Cta tone="primary" icon="UploadCloud02" label="Upload PDF or DOCX" onPress={onUpload} />
+        <Cta tone="outline" icon="Link01" label="Import from LinkedIn" onPress={onImportLinkedIn} />
         <Cta tone="brand" label="Start with AI" onPress={onStartWithAi} />
       </View>
 

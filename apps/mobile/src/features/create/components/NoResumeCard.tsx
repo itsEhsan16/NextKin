@@ -29,14 +29,14 @@ export function NoResumeCard({ onUpload, onBuild, onStartFromNothing }: NoResume
       <ProfileCard>
         <View style={{ padding: spacing[4], gap: spacing[4] }}>
           <SheetRow
-            icon="file-upload"
+            icon="UploadCloud02"
             label="Upload your resume"
             description="PDF or DOCX. We compare it with this job."
             onPress={onUpload}
           />
           {onBuild ? (
             <SheetRow
-              icon="user"
+              icon="User01"
               label="Build from my profile"
               description="We write one for this job from your profile."
               ai
@@ -45,7 +45,7 @@ export function NoResumeCard({ onUpload, onBuild, onStartFromNothing }: NoResume
           ) : null}
           {onStartFromNothing ? (
             <SheetRow
-              icon="magic"
+              icon="Stars02"
               label="Start from nothing"
               description="Three questions, and we draft the rest."
               ai

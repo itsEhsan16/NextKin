@@ -66,7 +66,7 @@ export function DateRow({
       <View style={styles.dates}>
         <SelectField
           label="From"
-          icon="calendar-alt"
+          icon="Calendar"
           value={formatZeroDate(start)}
           hint="Opens the month picker"
           onPress={() => onPick('from')}
@@ -74,7 +74,7 @@ export function DateRow({
         />
         <SelectField
           label="To"
-          icon="calendar-alt"
+          icon="Calendar"
           value={end === 'present' ? presentLabel : formatZeroDate(end)}
           hint="Opens the month picker"
           onPress={() => onPick('to')}

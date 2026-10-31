@@ -1,10 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type AddSectionTileProps = {
   /** The section's own label, e.g. "Projects" — the tile reads "Add projects". */
@@ -21,7 +21,6 @@ const PAD_X = 15 / 0.75;
 const GAP = 12 / 0.75;
 const BORDER = 1 / 0.75;
 const DISC = 40 / 0.75;
-const GLYPH = 14 / 0.75;
 
 /**
  * The empty state of one editor section (V2 §7.11): the dashed lavender tile every redesigned
@@ -29,7 +28,7 @@ const GLYPH = 14 / 0.75;
  * somewhere to write rather than as a section that failed to load.
  */
 export function AddSectionTile({ label, onPress, style }: AddSectionTileProps) {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
   const copy = `Add ${label.toLowerCase()}`;
 
@@ -48,7 +47,7 @@ export function AddSectionTile({ label, onPress, style }: AddSectionTileProps) {
       <View
         style={[styles.disc, { borderRadius: radii.full, backgroundColor: colors.surfaceInverse }]}
       >
-        <FontAwesome5 name="plus" size={s(GLYPH)} color={colors.textOnDark} solid />
+        <Icon name="Plus" size="lg" color={colors.textOnDark} />
       </View>
       <Text variant="title" style={styles.fill}>
         {copy}

@@ -144,7 +144,7 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your plan"
         message="Check your connection and try again."
         actionLabel="Try again"

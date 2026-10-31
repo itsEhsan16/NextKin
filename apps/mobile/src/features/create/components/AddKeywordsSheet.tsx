@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import type { TailorChoices, TailorKeyword } from '@/data/models';
@@ -12,6 +11,7 @@ import { Text } from '@/ui/Text';
 
 import { buildCostNote, spentNote } from '../generationQuota';
 import { AddSkipToggle, type TailorChoice } from './AddSkipToggle';
+import { Icon } from '@/ui/Icon';
 
 export type AddKeywordsSheetBodyProps = {
   /**
@@ -49,7 +49,6 @@ const ROW_TEXT_GAP = 2 / 0.75;
 const ROWS_TO_NOTE = 14 / 0.75;
 const NOTE_PAD_LEFT = 4 / 0.75;
 const NOTE_GAP = 8 / 0.75;
-const NOTE_GLYPH = 12 / 0.75;
 const NOTE_TO_CTA = 20 / 0.75;
 const CTA_TO_QUOTA = 10 / 0.75;
 const SPARKLE_W = 18 / 0.75;
@@ -170,7 +169,7 @@ export function AddKeywordsSheetBody({
       </View>
 
       <View style={styles.note}>
-        <FontAwesome5 name="info-circle" size={s(NOTE_GLYPH)} color={colors.iconMuted} solid />
+        <Icon name="InfoCircle" size="sm" color={colors.iconMuted} />
         <Text variant="micro" color="textSecondary" style={styles.noteText}>
           {NOTE[variant]}
         </Text>

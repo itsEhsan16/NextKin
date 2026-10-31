@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import type { Generation } from '@/data/models';
@@ -17,6 +16,7 @@ import {
   coverWritingLede,
 } from './coverRun';
 import { TailorCheckRow } from './TailorCheckRow';
+import { Icon } from '@/ui/Icon';
 
 // COVER 02 at 390 (644:115), in artboard units.
 const HERO_TO_CARD = 22 / 0.75; // 644:114
@@ -28,7 +28,6 @@ const NOTE_PAD_X = 12 / 0.75; // 644:144
 const NOTE_PAD_Y = 10 / 0.75;
 const NOTE_GAP = 10 / 0.75;
 const NOTE_RADIUS = 10 / 0.75;
-const NOTE_GLYPH = 14 / 0.75;
 
 const percentLabel = (n: number) => {
   'worklet';
@@ -41,7 +40,7 @@ const percentLabel = (n: number) => {
  * if the reader leaves; the ✕ above says so by taking them back, and the notification follows.
  */
 export function CoverProgress({ generation }: { generation: Generation }) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const percent = formatPercent(generation.progress);
 
@@ -92,7 +91,7 @@ export function CoverProgress({ generation }: { generation: Generation }) {
           <TailorCheckRow key={row.label} label={row.label} state={row.state} />
         ))}
         <View accessible style={[styles.note, { backgroundColor: colors.brandSurface }]}>
-          <FontAwesome5 name="lightbulb" size={s(NOTE_GLYPH)} color={colors.glyphNote} solid />
+          <Icon name="Lightbulb02" size="sm" color={colors.glyphNote} />
           <Text variant="micro" color="textBody" style={styles.noteText}>
             {COVER_HONESTY_NOTE}
           </Text>

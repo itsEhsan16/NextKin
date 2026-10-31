@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import {
@@ -16,6 +15,7 @@ import { Card } from '@/ui/Card';
 import { AnimatedNumber, ProgressBar, ScoreRing } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 import { Reveal, SuccessMark, useBecameTrue } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 export type GenerationHeroProps = {
   generation: Generation;
@@ -35,9 +35,6 @@ const percentLabel = (n: number) => {
 /**
  * The top of the progress screen (V2 §7.6): a live meter while the pipeline runs, and the score
  * the run landed on once it is ready.
- *
- * The bigger sibling of Home's `GenerationProgressCard` — same tile, same brand meter, same
- * percentage — so a user who taps the card through to here sees the thing they tapped, grown.
  */
 export function GenerationHero(props: GenerationHeroProps) {
   const ready = props.generation.status === 'ready';
@@ -118,7 +115,7 @@ function HeroBody({
             },
           ]}
         >
-          <FontAwesome5 name="magic" size={s(17)} color={colors.brand} solid />
+          <Icon name="Stars02" size="sm" color={colors.brand} />
         </View>
         <Text variant="title" style={styles.copy} numberOfLines={1}>
           {step?.label ?? ''}

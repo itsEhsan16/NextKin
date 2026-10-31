@@ -1,12 +1,12 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
-import { haptics, hitSlopFor, useReducedMotion, withReducedMotion } from '@/lib';
+import { haptics, hitSlopFor } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { useSlidingPill } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 export type TailorChoice = 'add' | 'skip';
 
@@ -24,7 +24,6 @@ const SEGMENT_H = 30 / 0.75;
 const TRACK_RADIUS = 11 / 0.75;
 const PILL_RADIUS = 8 / 0.75;
 const ICON_GAP = 5 / 0.75;
-const CHECK = 9 / 0.75;
 
 const SEGMENTS: readonly { key: TailorChoice; label: string }[] = [
   { key: 'add', label: 'Add' },
@@ -37,24 +36,11 @@ const SEGMENTS: readonly { key: TailorChoice; label: string }[] = [
  * so the pill needs no measuring and sits in place on the first frame.
  */
 export function AddSkipToggle({ keyword, value, onChange }: AddSkipToggleProps) {
-  const { colors, motion, shadows, s } = useTheme();
+  const { colors, shadows, s } = useTheme();
   const styles = useStyles();
-  const reduced = useReducedMotion();
 
   const index = value === 'add' ? 0 : 1;
-  const offset = useSharedValue(index * s(SEGMENT_W));
-  const placed = useRef(false);
-  useEffect(() => {
-    const target = index * s(SEGMENT_W);
-    if (!placed.current) {
-      placed.current = true;
-      offset.set(target);
-      return;
-    }
-    offset.set(withSpring(target, withReducedMotion(reduced, motion.springs.snappy)));
-  }, [index, motion.springs.snappy, offset, reduced, s]);
-
-  const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }));
+  const pillStyle = useSlidingPill(index * s(SEGMENT_W));
   const { top, bottom } = hitSlopFor(s(SEGMENT_H));
 
   return (
@@ -81,7 +67,7 @@ export function AddSkipToggle({ keyword, value, onChange }: AddSkipToggleProps) 
             accessibilityRole="radio"
             accessibilityLabel={`${segment.label} ${keyword}`}
             accessibilityState={{ selected }}
-            feedback="none"
+            feedback="subtle"
             haptic="none"
             hitSlop={{ top, bottom }}
             onPress={() => {
@@ -91,9 +77,7 @@ export function AddSkipToggle({ keyword, value, onChange }: AddSkipToggleProps) 
             }}
             style={styles.segment}
           >
-            {add && selected ? (
-              <FontAwesome5 name="check" size={s(CHECK)} color={colors.brand} solid />
-            ) : null}
+            {add && selected ? <Icon name="Check" size="xs" color={colors.brand} /> : null}
             <Text
               variant="captionSemiBold"
               color={selected ? (add ? 'brand' : 'textPrimary') : 'textSecondary'}

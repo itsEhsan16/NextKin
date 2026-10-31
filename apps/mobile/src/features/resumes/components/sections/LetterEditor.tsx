@@ -63,7 +63,7 @@ export function LetterEditor({
               style={styles.field}
             />
             <IconButton
-              icon="times"
+              icon="XClose"
               variant="ghost"
               label={`Remove paragraph ${index + 1}`}
               onPress={() => setParagraphs(removeAt(value.paragraphs, index))}
@@ -80,7 +80,7 @@ export function LetterEditor({
         <Button
           label="Add paragraph"
           variant="ghost"
-          icon="plus"
+          icon="Plus"
           onPress={() => setParagraphs([...value.paragraphs, ''])}
         />
       </View>

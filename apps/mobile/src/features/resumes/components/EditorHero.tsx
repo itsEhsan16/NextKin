@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import {
@@ -20,6 +19,7 @@ import { atsScoreColor } from '../docMeta';
 import { versionLine } from '../editorSections';
 import { DocTypePill, UpdateAvailablePill } from './DocPills';
 import { ResumeThumbnail } from './ResumeThumbnail';
+import { Icon } from '@/ui/Icon';
 
 export type EditorHeroProps = {
   resume: Resume;
@@ -43,7 +43,6 @@ const PILL_PAD_Y = 4 / 0.75;
 const RING = 64 / 0.75;
 const RING_STROKE = 4.8 / 0.75;
 const LINK_GAP = 4.5 / 0.75;
-const LINK_CHEVRON = 8 / 0.75;
 /** The rubric link is one 16pt line, padded out to the 44pt floor. */
 const LINK_HEIGHT = 16 / 0.75;
 
@@ -134,7 +133,7 @@ export function EditorHero({ resume, content, note, onOpenScore, onOpenRubric }:
             <Text variant="captionSemiBold" color="brand">
               What this score measures
             </Text>
-            <FontAwesome5 name="chevron-right" size={s(LINK_CHEVRON)} color={colors.brand} solid />
+            <Icon name="ChevronRight" size="sm" color={colors.brand} />
           </Pressable>
         </>
       ) : null}

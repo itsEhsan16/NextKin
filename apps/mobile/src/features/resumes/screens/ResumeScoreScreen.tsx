@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,6 +18,7 @@ import { ScoreBandPill } from '../components/ScoreBandPill';
 import { ScoreSection } from '../components/ScoreSection';
 import { atsBandColor, scoreContextLine } from '../docMeta';
 import { useResumesActions } from '../hooks/useResumesActions';
+import { Icon } from '@/ui/Icon';
 
 export type ResumeScoreScreenProps = { id: string };
 
@@ -42,7 +42,6 @@ const SUMMARY_WIDTH = 440;
 /** The CTA's sparkle (529:19) is drawn 23.99 × 24.83, 4 short of its label, at 390. */
 const CTA_SPARKLE = { w: 23.99 / 0.75, h: 24.83 / 0.75 } as const;
 const CTA_GAP = 4 / 0.75;
-const RECALC_ICON = 10 / 0.75;
 /** The rubric link is one `captionSemiBold` line; `hitSlopFor` pads it out to the 44pt floor. */
 const LINK_HEIGHT = 20;
 /** Skeleton bars standing in for the context line (captionSm) and that link. */
@@ -74,7 +73,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
           { paddingHorizontal: spacing.gutter, paddingTop: spacing.headerTopPushed },
         ]}
       >
-        <IconButton icon="chevron-left" label="Back" onPress={actions.goBack} />
+        <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
         <Text {...a11yHeader()} variant="scoreTitle" style={styles.headerTitle} align="center">
           ATS score
         </Text>
@@ -113,7 +112,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
     return body(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this score"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -229,7 +228,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
         </View>
 
         <View style={[styles.recalcRow, { gap: spacing[2], marginTop: s(SECTION_GAP) }]}>
-          <FontAwesome5 name="sync-alt" size={s(RECALC_ICON)} color={colors.iconMuted} solid />
+          <Icon name="RefreshCw01" size="xs" color={colors.iconMuted} />
           <Text variant="scoreRecalc" color="textSecondary" style={styles.fill}>
             Green checks appear the moment a fix lands — no re-scan needed.
           </Text>

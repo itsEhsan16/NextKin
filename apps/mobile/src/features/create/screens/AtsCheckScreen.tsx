@@ -139,7 +139,7 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
     page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title={title}
         message="Check your connection and try again."
         actionLabel="Try again"

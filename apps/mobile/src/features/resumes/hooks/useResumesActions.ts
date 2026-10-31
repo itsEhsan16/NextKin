@@ -3,15 +3,18 @@ import { useMemo } from 'react';
 
 import type { AtsCheckItem, EditableSectionKey, Resume } from '@/data/models';
 import type { UpgradeReason } from '@/features/billing';
-import { useCreateSheet } from '@/navigation';
+import { useOptionalCreateSheet } from '@/navigation';
 
 import { useResumesStore, type ResumeSurface } from '../resumesStore';
+
+const noop = () => {};
 
 /** Every tap target on the Resumes screens resolves here, keeping routing out of components. */
 export function useResumesActions() {
   const router = useRouter();
-  // The "+ New" tile is the same affordance as the FAB, so it opens the same create sheet.
-  const { open: openCreateSheet } = useCreateSheet();
+  // The "+ New" tile is the same affordance as the FAB, so it opens the same create sheet. The
+  // editor, score, rubric, fix and new screens sit above the tabs' provider and never show it.
+  const openCreateSheet = useOptionalCreateSheet()?.open ?? noop;
   const openMenuFor = useResumesStore((state) => state.openMenu);
   const openExportFor = useResumesStore((state) => state.openExport);
   const openSortSheet = useResumesStore((state) => state.openSort);

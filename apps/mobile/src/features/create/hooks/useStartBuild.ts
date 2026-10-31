@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { TailorChoices } from '@/data/models';
 import { useExtractJd, useStartGeneration, useSubscription } from '@/data/queries';
 
+import { useBuildSourceStore } from '../buildSourceStore';
 import { buildCostNote, spentNote } from '../generationQuota';
 import { useCreateActions } from './useCreateActions';
 
@@ -117,21 +118,31 @@ export function useStartBuild(): StartBuild {
 /** Where the BUILD screens go besides the run (the run itself is `useStartBuild`'s). */
 export function useBuildActions() {
   const router = useRouter();
-  const { goBack, openUpgrade } = useCreateActions();
+  const { goBack, openUpgrade, openCustomize } = useCreateActions();
+  const resumeId = useBuildSourceStore((state) => state.resumeId);
   return useMemo(
     () => ({
       goBack,
       openUpgrade,
       openChooseJob: () => router.push('/create/build/jobs'),
       openAddJob: () => router.push('/create/build/add'),
-      openCompare: ({ jobId, jdId }: BuildCompareTarget) =>
+      /**
+       * BUILD 04b, the profile against the job; built from a resume instead (toreview §139), the
+       * resume against the job on Customize, which owns that run.
+       */
+      openCompare: ({ jobId, jdId }: BuildCompareTarget) => {
+        if (resumeId) {
+          openCustomize({ jobId, jdId, resumeId });
+          return;
+        }
         router.push({
           pathname: '/create/build/compare',
           params: { ...(jobId ? { jobId } : {}), ...(jdId ? { jdId } : {}) },
-        }),
+        });
+      },
       openProfileEditor: () => router.push('/profile/edit'),
       browseJobs: () => router.navigate('/(tabs)/jobs'),
     }),
-    [goBack, openUpgrade, router],
+    [goBack, openCustomize, openUpgrade, resumeId, router],
   );
 }

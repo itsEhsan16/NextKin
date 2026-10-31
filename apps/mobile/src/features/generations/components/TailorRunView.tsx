@@ -116,7 +116,7 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
                 secondary={{ label: 'Edit', onPress: edit, style: { flexBasis: s(EDIT_W) } }}
                 primary={{
                   label: emailBlocked ? 'Try again' : 'Download PDF',
-                  icon: 'download',
+                  icon: 'Download01',
                   haptic: 'medium',
                   loading: busy,
                   onPress: download,
@@ -128,7 +128,7 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
                 // The run keeps going without this screen; the notification says when it lands.
                 primary={{
                   label: 'Leave and notify me',
-                  icon: 'bell',
+                  icon: 'Bell01',
                   variant: 'ghost',
                   onPress: close,
                 }}

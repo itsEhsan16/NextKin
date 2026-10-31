@@ -88,7 +88,7 @@ export function JobIntakeScreen({ resumeId }: JobIntakeScreenProps) {
             noteTone="danger"
             primary={{
               label: INTAKE_CTA,
-              icon: 'magic',
+              icon: 'Stars02',
               loading: extract.isPending,
               disabled: !jobIntakeReady(jd),
               onPress: analyze,

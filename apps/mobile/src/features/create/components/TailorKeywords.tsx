@@ -1,10 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { TailorKeyword } from '@/data/models';
 import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type TailorKeywordsProps = {
   keywords: readonly TailorKeyword[];
@@ -146,11 +146,10 @@ export function KeywordChips({
                 },
           ]}
         >
-          <FontAwesome5
-            name={item.have ? 'check' : 'exclamation'}
-            size={s(item.have ? CHECK : BANG)}
+          <Icon
+            name={item.have ? 'Check' : 'AlertCircle'}
+            size="xs"
             color={item.have ? colors.glyphSuccess : colors.warningStrong}
-            solid
           />
           <Text
             variant="microBadge"

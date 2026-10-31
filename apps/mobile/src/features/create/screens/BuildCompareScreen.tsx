@@ -101,7 +101,7 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't compare your profile"
         message="Check your connection and try again."
         actionLabel="Try again"

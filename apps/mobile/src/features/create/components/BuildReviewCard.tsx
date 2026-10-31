@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import type { JdDraft } from '@/data/models';
@@ -7,6 +6,7 @@ import { a11yButton, hitSlopFor, initialOf, pluralize } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type BuildReviewCardProps = {
   draft: JdDraft;
@@ -82,7 +82,7 @@ export function BuildReviewCard({ draft, asks, onEdit }: BuildReviewCardProps) {
           hitSlop={hitSlopFor(s(PENCIL))}
           onPress={onEdit}
         >
-          <FontAwesome5 name="pen" size={s(PENCIL)} color={colors.iconDefault} solid />
+          <Icon name="Edit03" size="sm" color={colors.iconDefault} />
         </Pressable>
       </View>
 

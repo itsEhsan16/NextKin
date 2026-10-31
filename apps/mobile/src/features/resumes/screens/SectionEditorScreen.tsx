@@ -170,7 +170,7 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
 
   const notThisDocument = page(
     <StateView
-      icon="file-alt"
+      icon="File06"
       title="That section isn't part of this document"
       actionLabel="Back to the document"
       onAction={() => router.back()}
@@ -194,7 +194,7 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load this section"
         message="Check your connection and try again."
         actionLabel="Try again"

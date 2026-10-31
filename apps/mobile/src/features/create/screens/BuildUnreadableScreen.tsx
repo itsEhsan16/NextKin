@@ -78,7 +78,7 @@ export function BuildUnreadableScreen({ url }: BuildUnreadableScreenProps) {
         >
           <Button
             label="Paste the description"
-            icon="file-alt"
+            icon="File06"
             size="lg"
             block
             onPress={() =>
@@ -91,7 +91,7 @@ export function BuildUnreadableScreen({ url }: BuildUnreadableScreenProps) {
           {url ? (
             <Button
               label="Try the link again"
-              icon="sync"
+              icon="RefreshCw01"
               variant="ghost"
               size="lg"
               block

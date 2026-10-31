@@ -129,7 +129,7 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     footer = (
       <StickyActionBar
         floating
-        primary={{ label: 'Leave and notify me', icon: 'bell', variant: 'ghost', onPress: close }}
+        primary={{ label: 'Leave and notify me', icon: 'Bell01', variant: 'ghost', onPress: close }}
       />
     );
   } else if (content.isError) {
@@ -137,7 +137,7 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     page = (
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your draft"
         message="It is saved in Resumes. Check your connection and try again."
         actionLabel="Try again"
@@ -160,7 +160,7 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
         }}
         primary={{
           label: 'Download PDF',
-          icon: 'download',
+          icon: 'Download01',
           haptic: 'medium',
           loading: download.busy,
           onPress: download.download,
@@ -176,7 +176,7 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
         note={`Download unlocks when all ${progress.total} are checked`}
         secondary={{
           label: 'Download',
-          icon: 'lock',
+          icon: 'Lock01',
           disabled: true,
           style: { flexBasis: s(DOWNLOAD_W) },
         }}
