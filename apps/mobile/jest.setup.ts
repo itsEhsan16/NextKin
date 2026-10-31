@@ -1,5 +1,48 @@
 import 'react-native-gesture-handler/jestSetup';
 
+// Gesture Handler 3's GestureDetector throws in dev unless a GestureHandlerRootView sits above it.
+// The app has one (AppProviders); component suites render detectors on their own, so the root
+// context defaults to present here, the way the library's own jestSetup mocks its internals.
+jest.mock('react-native-gesture-handler/src/GestureHandlerRootViewContext', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- hoisted factory.
+  const { createContext } = require('react');
+  return { __esModule: true, default: createContext(true) };
+});
+jest.mock('react-native-gesture-handler/lib/module/GestureHandlerRootViewContext', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- hoisted factory.
+  const { createContext } = require('react');
+  return { __esModule: true, default: createContext(true) };
+});
+
+// jest-expo 58.0.12 mocks `react-native/asset-registry`, but React Native 0.88's `AssetRegistry`
+// export, which expo-asset reads, comes from a private module. Without the same stub there, a font
+// registered through the mock (icon fonts) is looked up in the real, empty registry and throws.
+jest.mock('react-native/src/private/assets/AssetRegistry', () => ({
+  AssetRegistry: {
+    registerAsset: jest.fn(() => 1),
+    getAssetByID: jest.fn(() => ({
+      fileSystemLocation: '/full/path/to/directory',
+      httpServerLocation: '/assets/full/path/to/directory',
+      scales: [1],
+      fileHashes: ['md5'],
+      name: 'name',
+      exists: true,
+      type: 'type',
+      hash: 'md5',
+      uri: 'uri',
+      width: 1,
+      height: 1,
+    })),
+  },
+}));
+
+// Worklets ships its own jest mock too. Reanimated 4.7 calls `runOnUISync` when it loads, and the
+// web build the worklets resolver picks for tests throws on it; the mock runs it in place.
+jest.mock('react-native-worklets', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('react-native-worklets/src/mock'),
+);
+
 // Reanimated 4 ships its own jest mock.
 jest.mock('react-native-reanimated', () => {
   // jest.mock factories are hoisted above imports, so the mock needs require().

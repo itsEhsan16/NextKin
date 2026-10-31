@@ -8,7 +8,8 @@ const config: ExpoConfig = {
   scheme: 'nextkin',
   orientation: 'portrait',
   icon: './assets/icon.png',
-  userInterfaceStyle: 'automatic',
+  // Light only: the app has no dark mode, so the phone's dark theme must not reach it.
+  userInterfaceStyle: 'light',
   backgroundColor: '#FFFFFF',
   ios: {
     supportsTablet: false,

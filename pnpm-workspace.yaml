@@ -1,6 +1,8 @@
 packages:
   - apps/*
   - packages/*
+  # The AWS CDK app (toreview §133).
+  - aws/infra
 
 # React Native's toolchain resolves a lot of packages it never declares — @babel/runtime is
 # injected into app sources by transform-runtime, @react-native/assets-registry into every asset
@@ -15,9 +17,17 @@ allowBuilds:
   esbuild: true
   # Its only script prints a funding banner (opencollective-postinstall); nothing to build.
   tesseract.js: false
+  # jest-haste-map 30 (via jest-expo 58). Its script compiles only when asked to build from
+  # source; the prebuilt binary ships as an optional dependency.
+  '@parcel/watcher': false
 
 # Security floors from `pnpm scan:deps` (P13-01): a transitive dependency held below its fixed
 # release. Remove an entry once the package that pulls it in requires the fixed version itself.
 overrides:
   # next's optional image dependency; GHSA-wq5f-xc86-pv6w (librsvg) is fixed in 0.35.5.
   sharp@<0.35.5: 0.35.5
+  # Not a security floor: one React for the whole workspace. React Native 0.88 (Expo SDK 58) needs
+  # exactly 19.3.0, and @nextkin/shared's `react >=19` peer otherwise keeps an older copy nested
+  # under packages/shared, which the phone's bundle picks up for shared hooks (two Reacts).
+  react: 19.3.0
+  react-dom: 19.3.0
