@@ -6,13 +6,10 @@ import { brandButton } from '@/ui/brandButton';
 import { ArrowRightIcon, ExternalLinkIcon } from '@/ui/icons';
 import { outlineButton } from '@/ui/outlineButton';
 
-import { StableLabel } from '@/ui/StableLabel';
-
 import { jobPageHref } from '../jobPageLibrary';
 
 export type JobDetailActionsProps = {
   onApply: () => void;
-  applying: boolean;
   applied: boolean;
   /** The job whose full page the second button opens (724:2). */
   jobId: string;
@@ -23,15 +20,11 @@ export type JobDetailActionsProps = {
 /**
  * "Apply Now" + "View job details" (304:2772) — two `control-lg` halves. The board's "Save Job"
  * gave way to the job's full page (724:2) at the owner's word; the list card's bookmark still
- * saves (`toreview.md` §104). Apply calls the existing
- * `useApplyToJob()` mutation — in-app application recording, matching mobile's actual behaviour —
- * not an external redirect: the `Job` model has no `applyUrl` field, so the board's
- * external-link-style icon reads as a stylistic glyph, not a literal "opens outside the app"
- * requirement.
+ * saves (`toreview.md` §104). NextKin submits nothing, so Apply opens the employer's page and the
+ * app then asks whether they applied (owner, 2026-10-31).
  */
 export function JobDetailActions({
   onApply,
-  applying,
   applied,
   jobId,
   applicationHref,
@@ -50,14 +43,10 @@ export function JobDetailActions({
         <button
           type="button"
           onClick={onApply}
-          disabled={applying || applied}
+          disabled={applied}
           className={cn(brandButton, 'h-control-lg gap-2 rounded-md text-body-l font-semibold')}
         >
-          {applied ? (
-            'Applied'
-          ) : (
-            <StableLabel label="Apply Now" busyLabel="Applying…" busy={applying} />
-          )}
+          {applied ? 'Applied' : 'Apply Now'}
           {!applied && <ExternalLinkIcon className="size-4" />}
         </button>
       )}

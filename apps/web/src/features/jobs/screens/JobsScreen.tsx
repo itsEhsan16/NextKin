@@ -4,7 +4,6 @@ import { EMPTY_JOB_FILTERS, type Job, type JobFilters, type JobSort } from '@nex
 import {
   queryPhase,
   useApplications,
-  useApplyToJob,
   useCurrentUser,
   useJobCatalogue,
   useJobCount,
@@ -21,6 +20,7 @@ import { ResultsBar } from '@/ui/ResultsBar';
 import { StateView } from '@/ui/StateView';
 
 import { applicationHref } from '@/features/applications/applicationHref';
+import { useApplyOnSite } from '@/features/applications/applyAsk';
 import { JobDetailPanel } from '../components/JobDetailPanel';
 import { JobFilterChipsRow } from '../components/JobFilterChipsRow';
 import { JobList } from '../components/JobList';
@@ -83,7 +83,7 @@ export function JobsScreen({ initialJobId }: JobsScreenProps) {
   const user = useCurrentUser();
   const applications = useApplications();
   const save = useSaveJob();
-  const applyMutation = useApplyToJob();
+  const applyOnSite = useApplyOnSite();
 
   const jobsQuery = useJobs(effectiveFilters, sort);
   const countQuery = useJobCount(effectiveFilters);
@@ -127,8 +127,6 @@ export function JobsScreen({ initialJobId }: JobsScreenProps) {
   const application = selectedJob
     ? applications.data?.find((entry) => entry.application.jobId === selectedJob.id)?.application
     : undefined;
-  const alreadyApplied = application != null;
-  const justApplied = applyMutation.isSuccess && applyMutation.variables === selectedJob?.id;
 
   if (queryPhase(user) === 'error') {
     return (
@@ -218,9 +216,8 @@ export function JobsScreen({ initialJobId }: JobsScreenProps) {
             job={selectedJob}
             status={detailStatus}
             onRetry={() => void detailQuery.refetch()}
-            onApply={() => selectedJob && applyMutation.mutate(selectedJob.id)}
-            applying={applyMutation.isPending && applyMutation.variables === selectedJob?.id}
-            applied={alreadyApplied || justApplied}
+            onApply={() => selectedJob && applyOnSite(selectedJob)}
+            applied={application != null}
             applicationHref={application ? applicationHref(application.id) : undefined}
           />
         </div>

@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router/stack';
 
 import { useSessionStore } from '@/features/auth';
+import { ApplyAskHost } from '@/features/jobs';
 import { AccuracyConfirmHost } from '@/features/resumes';
 import { useStackAnimation } from '@/navigation';
 import { AppProviders, useAppReady } from '@/providers';
@@ -115,6 +116,7 @@ export default function RootLayout() {
       </Stack>
       {/* Above every screen: an export from the tabs, the editor or a finished run asks here. */}
       {signedIn ? <AccuracyConfirmHost /> : null}
+      {signedIn ? <ApplyAskHost /> : null}
     </AppProviders>
   );
 }

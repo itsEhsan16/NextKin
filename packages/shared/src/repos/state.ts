@@ -43,6 +43,7 @@ import type {
   AssistantConversation,
   FaqItem,
   Application,
+  ApplicationAsk,
   AtsScore,
   CareerDocument,
   ConnectedAccount,
@@ -105,6 +106,8 @@ export type MockState = {
   generations: Generation[];
   jobs: Job[];
   applications: Application[];
+  /** "Did you apply?" waiting for an answer; `dueAt` is an ISO time, `asksLeft` counts "not yet"s. */
+  applicationAsks: (ApplicationAsk & { dueAt: string; asksLeft: number })[];
   /** The candidate's own files (Figma 286:2026). Web draws them; mobile has no screen for them. */
   documents: CareerDocument[];
   /** Job descriptions the candidate pasted or uploaded, kept between the intake and review steps. */
@@ -200,6 +203,7 @@ function seedState(): MockState {
     generations: clone(generationsFixture),
     jobs: clone(web ? webJobsFixture : jobsFixture),
     applications: clone(web ? webApplicationsFixture : applicationsFixture),
+    applicationAsks: [],
     documents: clone(documentsFixture),
     jdDrafts: clone(jdDraftsFixture),
     notifications: clone(notificationsFixture),

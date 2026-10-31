@@ -8,7 +8,9 @@ import {
 
 import {
   EMPTY_JOB_FILTERS,
+  type ApplicationAnswer,
   type ApplicationStatus,
+  type ApplicationTarget,
   type ApplicationWithJob,
   type Job,
   type JobFilters,
@@ -133,12 +135,40 @@ export function useJobPicks() {
   });
 }
 
-/** "Apply now" → the Applied tab gains the row (NOTIF 07's post-apply flow). */
+/** "I applied", said directly: the Applied tab gains the row. NextKin submits nothing. */
 export function useApplyToJob() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => repos.jobs.apply(id),
     onSettled: () => queryClient.invalidateQueries({ queryKey: qk.jobs.applications() }),
+  });
+}
+
+/** The "Did you apply?" questions due now, oldest first. */
+export function useApplicationAsks() {
+  return useQuery({
+    queryKey: qk.jobs.applicationAsks(),
+    queryFn: () => repos.jobs.listApplicationAsks(),
+  });
+}
+
+/** Starts "Did you apply?" after a download or a trip to the employer's page. */
+export function useAskAboutApplication() {
+  return useMutation({
+    mutationFn: (target: ApplicationTarget) => repos.jobs.askAboutApplication(target),
+  });
+}
+
+export function useAnswerApplicationAsk() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, answer }: { id: string; answer: ApplicationAnswer }) =>
+      repos.jobs.answerApplicationAsk(id, answer),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: qk.jobs.applicationAsks() }),
+        queryClient.invalidateQueries({ queryKey: qk.jobs.applications() }),
+      ]),
   });
 }
 

@@ -98,6 +98,28 @@ export const jobCountSchema = z.object({ count: z.number().int().min(0) });
 export const saveJobSchema = z.object({ jobId: z.string().min(1).max(200) }).strict();
 export const savedNotesSchema = z.object({ notes: z.string().max(2000) }).strict();
 
+const applicationStatus = z.enum(['applied', 'viewed', 'in_review', 'interview', 'offer', 'not_selected', 'withdrawn']);
+
+export const applicationSchema = z.object({
+  id: z.string().min(1),
+  jobId: z.string().min(1),
+  status: applicationStatus,
+  appliedAt: z.string().min(1),
+  interviewAt: z.string().optional(),
+  resumeId: z.string().optional(),
+});
+export const applicationListSchema = z.object({ items: z.array(z.object({ application: applicationSchema, job: jobSchema })) });
+export const applicationStatusSchema = z.object({ status: applicationStatus }).strict();
+
+export const applicationAskSchema = z.object({ id: z.string().min(1), jobId: z.string().min(1), title: z.string().min(1), company: z.string().min(1) });
+export const applicationAsksSchema = z.object({ items: z.array(applicationAskSchema) });
+export const applicationAskResultSchema = z.object({ ask: applicationAskSchema.nullable() });
+export const applicationAnswerSchema = z.object({ answer: z.enum(['yes', 'not_yet', 'no']) }).strict();
+export const applicationTargetSchema = z.union([
+  z.object({ jobId: z.string().min(1).max(200), resumeId: z.string().min(1).max(100).optional() }).strict(),
+  z.object({ resumeId: z.string().min(1).max(100) }).strict(),
+]);
+
 const many = <T extends z.ZodType>(item: T) =>
   z.preprocess((v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]), z.array(item).max(20));
 

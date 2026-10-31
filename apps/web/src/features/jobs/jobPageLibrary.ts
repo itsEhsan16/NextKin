@@ -1,3 +1,4 @@
+import { applyPageOf } from '@nextkin/shared/jobs/applyPage';
 import type { Job, Profile } from '@nextkin/shared/models';
 import type { JobFactsKnown } from '@nextkin/shared/queries';
 import type { Route } from 'next';
@@ -83,7 +84,4 @@ export const siteLabel = (url: string): string =>
   url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 /** Where "Apply on company site" goes: the employer's application page, else its site. */
-export function applyUrl(job: Job): string {
-  const target = job.applyUrl ?? job.sourceUrl ?? job.companyWebsite;
-  return /^https?:\/\//.test(target) ? target : `https://${target}`;
-}
+export const applyUrl = (job: Job): string => applyPageOf(job) ?? '';

@@ -12,6 +12,7 @@ import {
   useResumes,
   useUnreadCount,
 } from '@/data/queries';
+import { useDueApplicationAsk } from '@/features/jobs';
 import { useReducedMotion } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
 import { useTheme } from '@/theme';
@@ -62,6 +63,8 @@ export function HomeScreen() {
   const actions = useHomeActions();
   // TAILOR 00c: a job link on the clipboard is asked about while Home is in view.
   useCopiedJobLink();
+  // A run finished last time, or yesterday's "not yet": asked once a visit.
+  useDueApplicationAsk();
   const queryClient = useQueryClient();
   const reduced = useReducedMotion();
 

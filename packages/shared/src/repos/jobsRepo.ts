@@ -1,5 +1,5 @@
 import { newId, simulate } from '../mock';
-import type { Application, Job } from '../models';
+import type { Application, ApplicationAsk, ApplicationTarget, Job } from '../models';
 import {
   JOB_COMPARATORS,
   JOBS_PAGE_SIZE,
@@ -30,9 +30,33 @@ const parseCursor = (cursor?: string): number => {
   return Number.isFinite(offset) && offset > 0 ? offset : 0;
 };
 
+/** How many times "Did you apply?" is asked, and how long "not yet" waits. */
+const ASKS = 2;
+const ASK_AGAIN_MS = 24 * 60 * 60 * 1000;
+
+const pickAsk = ({ id, jobId, title, company }: ApplicationAsk): ApplicationAsk => ({ id, jobId, title, company });
+
 export function createMockJobsRepo(store: MockStore): JobsRepo {
   const find = (id: string): Job => findOrThrow(store.state.jobs, id, 'Job');
   const emptyPage = (): Page<Job> => ({ items: [] });
+
+  const recordApplied = (id: string): Application => {
+    find(id);
+    const existing = store.state.applications.find((item) => item.jobId === id);
+    if (existing) return existing;
+    const application: Application = { id: newId('app'), jobId: id, status: 'applied', appliedAt: new Date().toISOString() };
+    store.state.applications = [application, ...store.state.applications];
+    return application;
+  };
+
+  /** The job an ask is about: named, or the one whose company and role a resume targets. */
+  const askedJob = (target: ApplicationTarget): Job | undefined => {
+    if ('jobId' in target) return find(target.jobId);
+    const resume = store.state.resumes.find((item) => item.id === target.resumeId);
+    if (!resume?.targetCompany) return undefined;
+    const company = normalise(resume.targetCompany);
+    return store.state.jobs.find((job) => normalise(job.company) === company);
+  };
 
   return {
     list: (filters, cursor, sort = 'relevance') =>
@@ -122,21 +146,54 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
         return clone(updated);
       }),
 
-    // NOTIF 07: "Apply now" submits for real ("Application sent to Stripe"), so the Applied
-    // tab gains the row. Idempotent — re-applying returns the existing application.
-    apply: (id) =>
+    // The candidate says they applied, so the Applied tab gains the row. NextKin submits nothing.
+    // Idempotent: re-applying returns the existing application.
+    apply: (id) => simulate(() => clone(recordApplied(id))),
+
+    // "Did you apply?" (owner, 2026-10-31). A job with an application, or a resume with no job
+    // behind it, asks nothing; a second ask for the same job does not restart the count.
+    askAboutApplication: (target) =>
       simulate(() => {
-        find(id);
-        const existing = store.state.applications.find((item) => item.jobId === id);
-        if (existing) return clone(existing);
-        const application: Application = {
-          id: newId('app'),
-          jobId: id,
-          status: 'applied',
-          appliedAt: new Date().toISOString(),
+        const job = askedJob(target);
+        if (!job) return null;
+        if (store.state.applications.some((item) => item.jobId === job.id)) return null;
+        const open = store.state.applicationAsks.find((item) => item.jobId === job.id);
+        if (open) return open.asksLeft === ASKS ? clone(pickAsk(open)) : null;
+        const ask = {
+          id: newId('ask'),
+          jobId: job.id,
+          title: job.title,
+          company: job.company,
+          dueAt: new Date().toISOString(),
+          asksLeft: ASKS,
         };
-        store.state.applications = [application, ...store.state.applications];
-        return clone(application);
+        store.state.applicationAsks = [...store.state.applicationAsks, ask];
+        return clone(pickAsk(ask));
+      }),
+
+    listApplicationAsks: () =>
+      simulate(
+        () => {
+          const now = Date.now();
+          return store.state.applicationAsks
+            .filter((ask) => ask.asksLeft > 0 && new Date(ask.dueAt).getTime() <= now)
+            .map(pickAsk);
+        },
+        { empty: () => [] },
+      ),
+
+    answerApplicationAsk: (id, answer) =>
+      simulate(() => {
+        const ask = findOrThrow(store.state.applicationAsks, id, 'Application ask');
+        if (answer === 'yes') recordApplied(ask.jobId);
+        const later = answer === 'not_yet' && ask.asksLeft > 1;
+        store.state.applicationAsks = later
+          ? store.state.applicationAsks.map((item) =>
+              item.id === id
+                ? { ...item, asksLeft: item.asksLeft - 1, dueAt: new Date(Date.now() + ASK_AGAIN_MS).toISOString() }
+                : item,
+            )
+          : store.state.applicationAsks.filter((item) => item.id !== id);
       }),
 
     // The web Applications board's "Update Status" (332:467): the candidate records where an

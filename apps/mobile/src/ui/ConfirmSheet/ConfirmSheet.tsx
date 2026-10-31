@@ -22,6 +22,9 @@ export type ConfirmSheetBodyProps = {
   /** Art → title in device px, where a board draws other than PROFILE 22's 14 (BILLING 02: 2). */
   artGap?: number;
   busy?: boolean;
+  /** A third answer under the two buttons, for a question that is more than yes or no. */
+  extraLabel?: string;
+  onExtra?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -44,6 +47,8 @@ export function ConfirmSheetBody({
   art,
   artGap,
   busy = false,
+  extraLabel,
+  onExtra,
   onConfirm,
   onCancel,
 }: ConfirmSheetBodyProps) {
@@ -74,6 +79,9 @@ export function ConfirmSheetBody({
           block
         />
         <Button label={cancelLabel} variant="ghost" size="lg" onPress={onCancel} block />
+        {extraLabel && onExtra ? (
+          <Button label={extraLabel} variant="ghost" size="lg" onPress={onExtra} block />
+        ) : null}
       </View>
     </View>
   );

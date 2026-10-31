@@ -7,7 +7,10 @@ import type { FigureDraft,
   ActivityEntry,
   AppSettings,
   Application,
+  ApplicationAnswer,
+  ApplicationAsk,
   ApplicationStatus,
+  ApplicationTarget,
   AssistantConversation,
   AssistantAttachment,
   AssistantMessage,
@@ -321,8 +324,17 @@ export type JobsRepo = {
    * the cap stay.
    */
   setSaved(id: string, saved: boolean): Promise<Job>;
-  /** Submits an application (NOTIF 07's post-apply flow). Idempotent per job. */
+  /** Records that the candidate applied; NextKin never submits anything. Idempotent per job. */
   apply(id: string): Promise<Application>;
+  /**
+   * Starts "Did you apply?" for a job, or for the job a resume was made for, and returns it when it
+   * should be asked now. Null when there is no job to ask about, or nothing left to ask.
+   */
+  askAboutApplication(target: ApplicationTarget): Promise<ApplicationAsk | null>;
+  /** The asks waiting for the candidate, oldest first. */
+  listApplicationAsks(): Promise<ApplicationAsk[]>;
+  /** "Yes" adds it to the Applied list, "not yet" asks once more a day later, "no" ends it. */
+  answerApplicationAsk(id: string, answer: ApplicationAnswer): Promise<void>;
   /** Records where an application has got to: the web board's "Update Status" (Figma 332:467). */
   updateApplicationStatus(id: string, status: ApplicationStatus): Promise<Application>;
   /** Home's "Top Job Matches": the open listings that best match the profile. */

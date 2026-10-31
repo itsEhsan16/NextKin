@@ -18,6 +18,7 @@ export function ConfirmDialog({
   title,
   message,
   confirmLabel,
+  cancelLabel = 'Cancel',
   busyLabel,
   busy = false,
   tone = 'danger',
@@ -29,6 +30,7 @@ export function ConfirmDialog({
   title: string;
   message: string;
   confirmLabel: string;
+  cancelLabel?: string;
   busyLabel?: string;
   busy?: boolean;
   tone?: 'danger' | 'brand';
@@ -68,7 +70,7 @@ export function ConfirmDialog({
                 'h-control-lg rounded-md px-5 text-body-l font-semibold',
               )}
             >
-              Cancel
+              {cancelLabel}
             </button>
             <button
               type="button"

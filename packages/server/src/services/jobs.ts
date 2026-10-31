@@ -1,5 +1,6 @@
 import { JOB_COMPARATORS, JOBS_PAGE_SIZE, matchesFilters, SAVED_JOB_COMPARATORS, similarJobs } from '@nextkin/shared/jobs/filters';
 import type { Job, JobFilters, JobSort, SavedJobsSort } from '@nextkin/shared/models/job';
+import { jobSchema } from '@nextkin/shared/schemas/job';
 import type { Page } from '@nextkin/shared/repos/types';
 import { sql } from 'kysely';
 
@@ -119,9 +120,14 @@ export async function getJob(deps: JobsDeps, identity: Identity, id: string): Pr
   if (!UUID.test(id)) throw errors.notFound('job');
   return deps.db.withUser(identity, async (tx) => {
     const found = await findListing(tx, identity.userId, id);
-    if (!found) throw errors.notFound('job');
-    const [decorated] = await decorate(tx, identity.userId, [{ normalized: found.normalized, rank: 0 }]);
-    return decorated!.job;
+    if (found) {
+      const [decorated] = await decorate(tx, identity.userId, [{ normalized: found.normalized, rank: 0 }]);
+      return decorated!.job;
+    }
+    // A job only an application still holds: a description with no listing, or one since closed.
+    const applied = await tx.selectFrom('applications').select('job').where('user_id', '=', identity.userId).where('job_id', '=', id).executeTakeFirst();
+    if (!applied) throw errors.notFound('job');
+    return jobSchema.parse(applied.job) as Job;
   });
 }
 

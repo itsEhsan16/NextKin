@@ -14510,3 +14510,25 @@ The owner asked for two things: the app must stay light even when the phone is i
 - **Step 0 status:** 9 commits on branch `stabilize/step-0`, not merged or pushed. Root typecheck, lint and test were green before the commits. The commits were split by area, so only the final state was checked, not each commit alone.
 - **Decide:** `aws/infra` commits the AWS account id `962942593570`. It is an identifier, not a credential, but check it is acceptable for this repo.
 - **Waiting on the owner:** the §140.4 phone check, which unblocks Phase 3.
+
+
+## 144. Step 1: make it real (owner, 2026-10-31)
+
+Branch `step-1/make-it-real`, built on `stabilize/step-0`. Nothing is merged or pushed.
+
+### 144.1 Applications and "Did you apply?"
+
+- **Why:** the Apply button said "Application sent to Stripe", but NextKin submits nothing and its own Terms say so. Applications also lived in the phone's memory and were lost.
+- **Change:**
+  - Migration 0043, `/api/v1/applications`, both apps. Apply opens the employer's page and asks.
+  - Asked after a download or a trip to the employer's page. A finished run for a job asks on the next open, 30 minutes on, so it never lands on the run's own ready screen.
+  - "Not yet" asks once more a day later, then stops. "I won't apply" ends it. The scrim and Android back count as "not yet".
+- **Calls made without you:**
+  - **Third answer.** "I won't apply" was added beside "Yes" and "Not yet", so someone who will never apply can end it at once.
+  - **Which runs ask.** Resume, cover letter and Zero Resume, and only with a job behind them. ATS checks and interview sets ask nothing.
+  - **The push primer is no longer raised after Apply.** It asked for a permission nothing uses yet, and its copy promises "when your application is viewed", which no employer event can tell us. `PushPrimerHost` stays for Step 4. **NOTIF 07 no longer matches the app.**
+  - **A pasted JD with no listing** gets a stable job id derived from the JD, so its Applied card still opens.
+  - **Where the question shows on mobile:** on Home, once a visit, not on every screen.
+- **Spec-derived, no board:** the sheet (mobile) and dialog (web). Check the wording and whether the third answer reads well.
+- **Still wrong, for later:** NOTIF 04's "Application updates: Viewed, moved stage, decision" and the seeded fixture rows describe employer events we can never see. The feed never files them (144.2), but the preference row still reads that way.
+- **Not verified on a device.** Jest covers both apps' flows; integration tests cover the server.

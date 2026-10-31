@@ -5,6 +5,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { useRaiseApplyAsk } from '@/features/applications/applyAsk';
 import { cn } from '@/lib/cn';
 import { formatApplicants, formatPostedAge } from '@/lib/format';
 import { brandButton } from '@/ui/brandButton';
@@ -64,11 +65,13 @@ export function JobPageTop(props: { job: Job } & (ListingBar | JdBar)) {
 }
 
 function ApplyLink({ job }: { job: Job }) {
+  const raise = useRaiseApplyAsk();
   return (
     <a
       href={applyUrl(job)}
       target="_blank"
       rel="noreferrer"
+      onClick={() => raise({ jobId: job.id })}
       className={cn(brandButton, 'h-control-md gap-2 rounded-full px-4 text-body-m font-semibold')}
     >
       Apply on company site

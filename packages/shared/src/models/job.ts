@@ -322,3 +322,14 @@ export type Application = {
 
 /** An application together with the listing it targets — what the Applied tab renders. */
 export type ApplicationWithJob = { application: Application; job: Job };
+
+/**
+ * "Did you apply?" (owner, 2026-10-31). NextKin never submits an application, so the candidate's
+ * answer is the only source of the Applied list. `id` is the application it would become.
+ */
+export type ApplicationAsk = { id: string; jobId: string; title: string; company: string };
+
+export type ApplicationAnswer = 'yes' | 'not_yet' | 'no';
+
+/** What the ask is about: a job, or a resume made for one. A resume with no job asks nothing. */
+export type ApplicationTarget = { jobId: string; resumeId?: string } | { resumeId: string };

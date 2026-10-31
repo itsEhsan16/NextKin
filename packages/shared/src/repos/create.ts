@@ -42,8 +42,7 @@ export const HTTP_FALLBACKS = {
 
 /**
  * Fallbacks that stay on the mock in Release 1 by decision, not by being unbuilt, so a production
- * configuration accepts them (ImBackendImplementationPlan L243): job applications (D-05) and link
- * import (D-17: the server never fetches a URL a user gives). Everything else still refuses.
+ * configuration accepts them. Link import until the reader lands; everything else still refuses.
  */
 export const STAYS_ON_MOCK: readonly string[] = [
   ...JOBS_FALLBACKS.map((method) => `jobs.${method}`),
@@ -143,8 +142,7 @@ export function createRepos(config: RepoConfig, mock: Repos): BuiltRepos {
     repos.generations = createHttpGenerationsRepo(config.http, mock.generations, config.adopt);
   }
   if (http.jobs === 'http') {
-    if (!config.adoptJob) throw new Error('The HTTP jobs repository needs somewhere to file listings for the mock-kept flows.');
-    repos.jobs = { ...mock.jobs, ...createHttpJobsRepo(config.http, mock.jobs, config.adoptJob) };
+    repos.jobs = { ...mock.jobs, ...createHttpJobsRepo(config.http, mock.jobs) };
   }
   if (http.support === 'http') {
     repos.support = createHttpSupportRepo(config.http);

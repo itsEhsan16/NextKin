@@ -12,6 +12,7 @@ export {
   type ExportFormat,
   type ResumeExport,
 } from '../repos';
+export { applyPageOf } from '../jobs/applyPage';
 export { EXPORT_BLOCK_MESSAGE, type ExportBlock } from '../models/exportBlock';
 export { createQueryClient, isConsentRequired, onConsentRequired } from './client';
 export { qk } from './keys';
@@ -89,7 +90,10 @@ export { unreadableJdId, useDraftFigure, useJdComparison, useJdJob, useJdMatch }
 export type { JobFactsKnown } from '../jobs/fromJd';
 export {
   useApplications,
+  useAnswerApplicationAsk,
+  useApplicationAsks,
   useApplyToJob,
+  useAskAboutApplication,
   useJob,
   useJobCatalogue,
   useJobCount,

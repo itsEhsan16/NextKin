@@ -34,7 +34,6 @@ export type JobDetailPanelProps = {
   status: 'pending' | 'error' | 'success' | 'empty';
   onRetry: () => void;
   onApply: () => void;
-  applying: boolean;
   applied: boolean;
   /** Where the recorded application opens, once there is one. */
   applicationHref?: Route;
@@ -107,7 +106,6 @@ function JobDetailBody({
   job,
   reveal,
   onApply,
-  applying,
   applied,
   applicationHref,
 }: JobDetailBodyProps) {
@@ -162,7 +160,6 @@ function JobDetailBody({
       <div className="mt-5">
         <JobDetailActions
           onApply={onApply}
-          applying={applying}
           applied={applied}
           applicationHref={applicationHref}
           jobId={job.id}

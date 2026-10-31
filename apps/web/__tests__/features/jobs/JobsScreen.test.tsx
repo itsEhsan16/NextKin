@@ -6,6 +6,7 @@ import { resetMockRepos } from '@nextkin/shared/repos';
 
 import { JobsScreen } from '@/features/jobs/screens/JobsScreen';
 import { recordValues } from '../../../testSupport/recordValues';
+import { ApplyAskHost } from '@/features/applications/components/ApplyAskHost';
 import { renderWithQuery, SETTLE_MS } from '../../../testSupport/render';
 
 /**
@@ -269,9 +270,14 @@ describe('JobsScreen', () => {
     expect(screen.queryByText('Afterpay')).not.toBeInTheDocument();
   });
 
-  it('applies to a job with no application yet and reflects the Applied state', async () => {
+  it('opens the employer’s page, asks, and reflects the Applied state on a yes', async () => {
     const user = userEvent.setup();
-    renderWithQuery(<JobsScreen />);
+    renderWithQuery(
+      <>
+        <JobsScreen />
+        <ApplyAskHost />
+      </>,
+    );
 
     // job_3 (Zalando) is the first listing on page one that no web application points at.
     await user.click(
@@ -282,10 +288,14 @@ describe('JobsScreen', () => {
       { name: 'Design Systems Engineer at Zalando' },
       { timeout: 3000 },
     );
+    const opened = jest.spyOn(window, 'open').mockReturnValue(null);
     await user.click(within(panel).getByRole('button', { name: /Apply Now/ }));
+    expect(opened).toHaveBeenCalledTimes(1);
+    opened.mockRestore();
 
-    // The mutation itself carries the same simulated latency as any other mock call (up to
-    // 900ms) — past the default `findBy` timeout's safety margin.
+    // NextKin submits nothing: the job joins the list only once the candidate says they applied.
+    // Each mock call carries a simulated latency (up to 900ms), past `findBy`'s default margin.
+    await user.click(await screen.findByRole('button', { name: 'Yes, I applied' }, { timeout: 3000 }));
     expect(
       await within(panel).findByRole('link', { name: 'View application' }, { timeout: 3000 }),
     ).toHaveAttribute('href', expect.stringMatching(/^\/applications\?application=/));

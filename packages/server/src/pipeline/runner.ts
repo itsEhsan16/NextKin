@@ -6,6 +6,7 @@ import { ContactDataError } from '../ai/pii';
 import { LlmError } from '../ai/types';
 import type { Database, Tx } from '../db/database';
 import type { Logger } from '../observability/logger';
+import { askAfterRun } from '../services/applications';
 import { activePrompt, promptVersion, type PromptVersion } from '../services/prompts';
 import { commitRun, releaseRun } from '../services/quotas';
 import { hasAiConsent } from '../services/consent';
@@ -275,6 +276,7 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
           .values({ user_id: row.user_id, kind: activity, title: `**${GENERATION_KIND_LABEL[kind]}** ready`, deep_link: `/generations/${row.id}`, resume_id: row.resume_id })
           .execute();
       }
+      await askAfterRun(tx, updated);
       return [await appendEvent(tx, row.id, row.user_id, 'completed', null, toSnapshot(updated, def.stages.length))];
     });
     return 'completed';

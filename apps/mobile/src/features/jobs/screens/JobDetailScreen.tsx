@@ -5,14 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Job } from '@/data/models';
 import { useJob, useSimilarJobs } from '@/data/queries';
 import { TailorResumeSheet } from '@/features/create/components/TailorResumeSheet';
-import { PushPrimerHost, useApplyFlow } from '@/features/notifications';
 import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
-import { Toast } from '@/ui/Toast';
 
 import { JobAboutSection } from '../components/JobAboutSection';
 import { JobCompanyCard } from '../components/JobCompanyCard';
@@ -22,6 +20,7 @@ import { JobDetailHero } from '../components/JobDetailHero';
 import { JobMatchCard } from '../components/JobMatchCard';
 import { SimilarJobCard } from '../components/SimilarJobCard';
 import { TailorResumeCta } from '../components/TailorResumeCta';
+import { useApplyFlow } from '../hooks/useApplyFlow';
 import { useJobsActions } from '../hooks/useJobsActions';
 import { useSaveJob } from '../hooks/useSaveJob';
 
@@ -43,7 +42,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
   const job = useJob(id, { seedFromLists: true });
   const similar = useSimilarJobs(id);
   const save = useSaveJob();
-  // NOTIF 07: Apply submits for real, confirms with a toast and may raise the push primer.
+  // NextKin submits nothing: Apply opens the employer's page, then asks "Did you apply?".
   const applyFlow = useApplyFlow(job.data);
   // TAILOR 01 (606:2): the Tailor row asks which resume first, over the page, then moves on.
   const [tailorOpen, setTailorOpen] = useState(false);
@@ -206,18 +205,12 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         }}
       />
 
-      <Toast
-        visible={applyFlow.toastVisible}
-        message={applyFlow.toastMessage}
-        onHide={applyFlow.hideToast}
-      />
       {/*
         The share fallback's toast. Share has no screen and no visible result of its own, so
         without this a share on a device with no OS sheet is a completely silent tap — which is
         what it was until now: the host shipped in 9H and was mounted nowhere.
       */}
       <JobsToastHost />
-      <PushPrimerHost />
     </>,
   );
 }

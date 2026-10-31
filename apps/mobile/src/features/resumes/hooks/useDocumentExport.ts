@@ -7,7 +7,9 @@ import {
   PlanLockedError,
   type ExportFormat,
   type ResumeExport,
+  useAskAboutApplication,
 } from '@/data/queries';
+import { useApplyAskStore } from '@/features/jobs/applyAskStore';
 import { shareFile } from '@/lib';
 
 import { useResumesStore, type ResumeSurface } from '../resumesStore';
@@ -56,6 +58,8 @@ export function useDocumentExport(id: string, surface: ResumeSurface = 'tabs') {
   const exportDoc = useConfirmedExport(id);
   const showToast = useResumesStore((state) => state.showToast);
   const closeExport = useResumesStore((state) => state.closeExport);
+  const askAbout = useAskAboutApplication();
+  const openAsk = useApplyAskStore((state) => state.open);
   // The router directly, not useResumesActions: that hook needs the tabs' create-sheet provider,
   // and the export also runs on pushed screens (the editor, a finished Build run) outside it.
   const router = useRouter();
@@ -87,8 +91,10 @@ export function useDocumentExport(id: string, surface: ResumeSurface = 'tabs') {
       closeExport();
       if (mockDocx) showToast(EXPORT_DOCX_AS_TEXT, surface, 'info');
       else showToast(savedSentence(result.format), surface);
+      // A resume made for a job has just left the phone: ask whether it went anywhere.
+      askAbout.mutate({ resumeId: id }, { onSuccess: (ask) => ask && openAsk(ask) });
     },
-    [closeExport, showToast, surface],
+    [askAbout, closeExport, id, openAsk, showToast, surface],
   );
 
   const run = useCallback(

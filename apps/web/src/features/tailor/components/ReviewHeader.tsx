@@ -5,6 +5,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useRaiseApplyAsk } from '@/features/applications/applyAsk';
 import { resumeHref } from '@/features/resumes/resumeHref';
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
@@ -51,6 +52,7 @@ export function ReviewHeader({
 }) {
   const router = useRouter();
   const fit = useFitToOnePage(resumeId);
+  const raiseApplyAsk = useRaiseApplyAsk();
   return (
     <header className="flex flex-wrap items-center gap-x-3.5 gap-y-3">
       {backHref && (
@@ -118,7 +120,12 @@ export function ReviewHeader({
           </MenuItem>
         )}
         {apply && (
-          <MenuItem onSelect={() => window.open(apply, '_blank', 'noreferrer')}>
+          <MenuItem
+            onSelect={() => {
+              window.open(apply, '_blank', 'noreferrer');
+              raiseApplyAsk({ resumeId });
+            }}
+          >
             Apply on {applyLabel}
           </MenuItem>
         )}

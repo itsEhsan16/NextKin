@@ -73,6 +73,21 @@ export interface AnonymousUploads {
   updated_at: Generated<Timestamp>;
 }
 
+export interface Applications {
+  applied_at: Timestamp | null;
+  ask_after: Timestamp | null;
+  asks_left: Generated<number>;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  interview_at: Timestamp | null;
+  job: Json;
+  job_id: string;
+  resume_id: string | null;
+  status: Generated<string>;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
 export interface AppSettings {
   key: string;
   updated_at: Generated<Timestamp>;
@@ -848,6 +863,7 @@ export interface DB {
   ai_calls: AiCalls;
   anonymous_uploads: AnonymousUploads;
   app_settings: AppSettings;
+  applications: Applications;
   ats_reports: AtsReports;
   audit_logs: AuditLogs;
   billing_accounts: BillingAccounts;

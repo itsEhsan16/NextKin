@@ -8,6 +8,7 @@ import {
 } from '@nextkin/shared/queries';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useRaiseApplyAsk } from '@/features/applications/applyAsk';
 import { deliverExport } from '@/lib/deliverExport';
 import { showToast } from '@/lib/toast';
 
@@ -22,6 +23,7 @@ import { showToast } from '@/lib/toast';
 export function useConfirmedDownload(id: string) {
   const exportResume = useExportResume(id);
   const confirm = useConfirmAccuracy(id);
+  const raiseApplyAsk = useRaiseApplyAsk();
   const [asking, setAsking] = useState(false);
   const [blocked, setBlocked] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
@@ -34,7 +36,11 @@ export function useConfirmedDownload(id: string) {
       fileName.current = name;
       setBlocked(null);
       exportResume.mutate('pdf', {
-        onSuccess: (result) => deliverExport(result, fileName.current || result.fileName),
+        onSuccess: (result) => {
+          deliverExport(result, fileName.current || result.fileName);
+          // A resume made for a job has just left the app: ask whether it went anywhere.
+          raiseApplyAsk({ resumeId: id });
+        },
         onError: (error) => {
           if (!(error instanceof ExportBlockedError)) {
             showToast('Couldn’t prepare the download.', {
@@ -52,7 +58,7 @@ export function useConfirmedDownload(id: string) {
         },
       });
     },
-    [exportResume],
+    [exportResume, id, raiseApplyAsk],
   );
   useEffect(() => {
     retry.current = () => start(fileName.current);

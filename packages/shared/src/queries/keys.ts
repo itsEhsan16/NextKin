@@ -58,6 +58,7 @@ export const qk = {
     picks: () => ['jobs', 'picks'] as const,
     todaysPicks: () => ['jobs', 'todays-picks'] as const,
     applications: () => ['jobs', 'applications'] as const,
+    applicationAsks: () => ['jobs', 'application-asks'] as const,
     byCompany: (company: string) => ['jobs', 'by-company', company] as const,
     /** A copied link as read (TAILOR 00c); nothing is kept until it is imported. */
     link: (url: string) => ['jobs', 'link', url] as const,

@@ -138,6 +138,10 @@ export async function createUserGraph(db: Database, label: string, rubricVersion
       .insertInto('saved_jobs')
       .values({ user_id: userId, apply_url_hash: hash(`job-${userId}`), snapshot: JSON.stringify({ title: 'Job' }) })
       .execute();
+    await tx
+      .insertInto('applications')
+      .values({ user_id: userId, job_id: randomUUID(), job: JSON.stringify({ title: 'Job' }) })
+      .execute();
 
     const chat = await tx.insertInto('chat_sessions').values({ user_id: userId }).returning('id').executeTakeFirstOrThrow();
     await tx.insertInto('chat_messages').values({ session_id: chat.id, user_id: userId, role: 'user', content: 'Hi' }).execute();
