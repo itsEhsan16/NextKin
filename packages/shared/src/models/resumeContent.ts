@@ -119,6 +119,11 @@ export type ResumeContent = {
   kind: 'resume';
   resumeId: string;
   versionId: string;
+  /**
+   * The resume's own header as its file printed it: the name and the contact row, in order
+   * (toreview §111). When present it is what the page shows, not the account's name and email.
+   */
+  header?: { name: string; items: { text: string; url?: string }[] };
   /** The line under the name: the title this document presents the candidate as. */
   headline?: string;
   /**

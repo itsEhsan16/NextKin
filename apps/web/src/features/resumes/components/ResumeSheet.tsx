@@ -8,6 +8,15 @@ import { Mail01 } from '@/ui/lineIcons';
 
 type ContactItem = { key: string; Icon: ComponentType<SVGProps<SVGSVGElement>>; label: string };
 
+/** A glyph for one item of a file's own contact row, by what it looks like. */
+function iconFor(text: string): ContactItem['Icon'] {
+  if (/@/.test(text) && !/\s/.test(text.trim())) return Mail01;
+  if (/^\+?[\d\s().-]{7,}$/.test(text.trim())) return PhoneIcon;
+  if (/^(https?:\/\/|www\.)|\.(com|in|io|dev|me|org|net)(\/|$)|linkedin|github/i.test(text))
+    return LinkIcon;
+  return LocationOutlineIcon;
+}
+
 /**
  * The document itself, as the Preview tab draws it (304:3321): the name and the line under it, the
  * contact details, then each section the body has, in the order the export prints them. The board
@@ -24,16 +33,25 @@ export function ResumeSheet({
   className?: string;
 }) {
   const { email, phone, location } = body.contact ?? {};
-  const contact: ContactItem[] = [
-    ...(email ? [{ key: 'email', Icon: Mail01, label: email }] : []),
-    ...(phone ? [{ key: 'phone', Icon: PhoneIcon, label: phone }] : []),
-    ...(location ? [{ key: 'location', Icon: LocationOutlineIcon, label: location }] : []),
-    ...(body.links ?? []).map((link) => ({ key: link, Icon: LinkIcon, label: link })),
-  ];
+  // The resume's own header wins (toreview §137): a tailored or uploaded resume shows the name and
+  // contacts its file printed, not the signed-in account's.
+  const contact: ContactItem[] = body.header
+    ? body.header.items.map((item, i) => ({
+        key: `${i}-${item.text}`,
+        Icon: iconFor(item.text),
+        label: item.text,
+      }))
+    : [
+        ...(email ? [{ key: 'email', Icon: Mail01, label: email }] : []),
+        ...(phone ? [{ key: 'phone', Icon: PhoneIcon, label: phone }] : []),
+        ...(location ? [{ key: 'location', Icon: LocationOutlineIcon, label: location }] : []),
+        ...(body.links ?? []).map((link) => ({ key: link, Icon: LinkIcon, label: link })),
+      ];
+  const shownName = body.header?.name ?? name;
 
   return (
     <div className={cn('rounded-md border border-border-card px-4 pb-4 pt-5', className)}>
-      <h3 className="text-h2 text-text-primary">{name}</h3>
+      <h3 className="text-h2 text-text-primary">{shownName}</h3>
       {body.headline && (
         <p className="mt-0.5 text-body-m font-semibold text-neutral-700">{body.headline}</p>
       )}

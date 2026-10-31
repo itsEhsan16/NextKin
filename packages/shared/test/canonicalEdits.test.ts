@@ -127,3 +127,17 @@ describe('applySkillFix', () => {
     expect(() => applySkillFix(DOC, { ...fix, type: 'gap', insertable: false })).toThrow(CanonicalEditError);
   });
 });
+
+describe('toResumeContent header (toreview §137)', () => {
+  it("keeps the resume's own printed header, so the page shows its name, not the account's", () => {
+    const withHeader: CanonicalResumeJson = {
+      ...DOC,
+      header: { name: 'Mohammad Ehsan', items: [{ text: 'md@example.com' }, { text: 'github.com/md', url: 'https://github.com/md' }] },
+    };
+    expect(editor(withHeader).header).toEqual({
+      name: 'Mohammad Ehsan',
+      items: [{ text: 'md@example.com' }, { text: 'github.com/md', url: 'https://github.com/md' }],
+    });
+    expect(editor(DOC).header).toBeUndefined();
+  });
+});

@@ -74,6 +74,7 @@ export function toResumeContent(json: CanonicalResumeJson, ids: { resumeId: stri
     kind: 'resume',
     resumeId: ids.resumeId,
     versionId: ids.versionId,
+    ...(json.header ? { header: { name: json.header.name, items: json.header.items.map((i) => ({ text: i.text, ...(i.url ? { url: i.url } : {}) })) } } : {}),
     ...(json.headline ? { headline: json.headline } : {}),
     summary: json.summary?.text ?? '',
     skills: json.skills.map((s) => s.name),
