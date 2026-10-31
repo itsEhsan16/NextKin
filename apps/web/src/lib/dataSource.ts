@@ -18,15 +18,15 @@ import { browserStorageUrl } from './storageUrl';
 export const DATA_SOURCES = parseDataSources(process.env.NEXT_PUBLIC_DATA_SOURCE);
 export const USES_BACKEND = Object.keys(DATA_SOURCES).length > 0;
 
-/** Where a lost session goes. Web's sign-in screens are design-gated, so only a dev page exists. */
-export const DEV_SIGN_IN = '/dev/sign-in';
+/** Where a lost session goes: the designed sign-in screen (toreview §133.1 item 5). */
+export const SIGN_IN = '/sign-in';
 
 const goToSignIn = () => {
-  if (typeof window === 'undefined' || process.env.NODE_ENV === 'production') return;
+  if (typeof window === 'undefined') return;
   // Outside React (the HTTP client's 401 hook), and a full load on purpose: it drops every cached
   // query of the session that just ended.
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  if (window.location.pathname !== DEV_SIGN_IN) window.location.assign(DEV_SIGN_IN);
+  if (window.location.pathname !== SIGN_IN) window.location.assign(SIGN_IN);
 };
 
 export const http = createHttpClient({
@@ -45,6 +45,11 @@ export function configureDataSource(): void {
     http,
     // A production build refuses an HTTP repository that still answers some methods from the mock.
     environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    // The AWS demo's named exceptions (toreview §133.1); unset everywhere else.
+    allowedFallbacks: (process.env.NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS ?? '')
+      .split(',')
+      .map((method) => method.trim())
+      .filter(Boolean),
     // Files go straight to storage from the browser: the JdFile's uri is a blob: URL (P7-02).
     // A page opened away from localhost reaches local storage through its own origin (§131.7).
     uploader: (target, file) => browserUploader({ ...target, url: browserStorageUrl(target.url) }, file),

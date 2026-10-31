@@ -1,0 +1,28 @@
+{
+  "name": "@nextkin/infra",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The AWS CDK app. Today: the single-account demo environment (toreview §133).",
+  "scripts": {
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "task": "node scripts/run-task.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.274.0",
+    "constructs": "10.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "aws-cdk": "2.1146.1",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.0"
+  }
+}

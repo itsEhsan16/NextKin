@@ -164,6 +164,15 @@ const schema = z.object({
   FEDERATION_APPLE_ISSUER: z.url().optional(),
   FEDERATION_CLIENT_ID: z.string().default('nextkin-local'),
   FEDERATION_CLIENT_SECRET: z.string().default('local-secret'),
+
+  // --- Seeding a shared dev environment (toreview §133) ---
+  // The seed's published password and TOTP secret are for laptops. A shared `dev` (the AWS demo)
+  // seeds only when both are given, from Secrets Manager, so its accounts are not the repo's.
+  SEED_PASSWORD: z.string().min(16).optional(),
+  SEED_TOTP_SECRET: z
+    .string()
+    .regex(/^[A-Z2-7]{32}$/, '32 base32 characters (A-Z, 2-7)')
+    .optional(),
 });
 
 export type Config = z.infer<typeof schema>;

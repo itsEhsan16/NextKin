@@ -59,6 +59,12 @@ export interface RepoConfig {
   http?: HttpClient;
   /** `production` refuses any mock fallback inside an HTTP repository. */
   environment?: 'development' | 'test' | 'production';
+  /**
+   * Fallbacks a production build may keep, each named (`notifications.list`). Only the AWS demo
+   * passes any (toreview §133.1): anything not on the list still refuses, so a new fallback cannot
+   * reach a build unnoticed.
+   */
+  allowedFallbacks?: readonly string[];
   user?: HttpUserRepoOptions;
   /** Posts files to presigned targets (P7-02): `browserUploader` on web, expo-file-system on mobile. */
   uploader?: FileUploader;
@@ -104,7 +110,8 @@ export function createRepos(config: RepoConfig, mock: Repos): BuiltRepos {
   if (wanted.length === 0) return { repos: mock, reset: () => {} };
   if (!config.http) throw new Error('An HTTP data source needs an HTTP client.');
   if (config.environment === 'production') {
-    const fallbacks = mockFallbacks(config).filter((method) => !STAYS_ON_MOCK.includes(method));
+    const allowed = [...STAYS_ON_MOCK, ...(config.allowedFallbacks ?? [])];
+    const fallbacks = mockFallbacks(config).filter((method) => !allowed.includes(method));
     if (fallbacks.length) throw new Error(`Production cannot answer from the mock: ${fallbacks.join(', ')}.`);
   }
 

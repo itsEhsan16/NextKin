@@ -1,0 +1,11 @@
+{
+  "app": "npx tsx bin/app.ts",
+  "watch": { "include": ["bin/**", "src/**"] },
+  "context": {
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true,
+    "@aws-cdk/aws-ecs:arnFormatIncludesClusterName": true,
+    "@aws-cdk/aws-ec2:restrictDefaultSecurityGroup": true,
+    "@aws-cdk/aws-s3:createDefaultLoggingPolicy": true
+  }
+}

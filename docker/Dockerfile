@@ -40,6 +40,14 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 
 # ---------------------------------------------------------------------------------------------
 FROM deps AS build
+# The web app's backend switch is read at build time (NEXT_PUBLIC_*). Empty: the mock, as before.
+ARG NEXT_PUBLIC_DATA_SOURCE=
+ARG NEXT_PUBLIC_API_BASE_URL=
+# The AWS demo's named mock fallbacks (toreview §133.1). Empty: a production build refuses them all.
+ARG NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS=
+ENV NEXT_PUBLIC_DATA_SOURCE=$NEXT_PUBLIC_DATA_SOURCE \
+    NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
+    NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS=$NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS
 COPY apps/web apps/web
 COPY packages packages
 RUN pnpm --filter @nextkin/web build && pnpm --filter @nextkin/server build
@@ -69,6 +77,14 @@ CMD ["node", "apps/web/server.js"]
 # ---------------------------------------------------------------------------------------------
 FROM runtime AS migrate
 COPY --from=build --chown=node:node /repo/packages/server/dist/migrate.mjs ./dist/migrate.mjs
+# The AWS demo seeds from this image too: `node dist/seed.mjs` (toreview §133).
+COPY --from=build --chown=node:node /repo/packages/server/dist/seed.mjs ./dist/seed.mjs
+# The seed hashes the demo accounts' passwords with argon2, a native addon kept out of the bundle.
+ARG ARGON2_VERSION
+RUN npm install --no-save --no-audit --no-fund "@node-rs/argon2@~${ARGON2_VERSION}" && rm -rf /root/.npm
+# The local identity provider's store, which migrate applies when IDENTITY_ADAPTER=local (the AWS
+# demo): read from ../auth/adapters/local/ relative to dist/.
+COPY --chown=node:node packages/server/src/auth/adapters/local/schema.sql ./auth/adapters/local/schema.sql
 # The runner reads MIGRATIONS_DIR (default aws/migrations) relative to /app.
 COPY --chown=node:node aws/migrations ./aws/migrations
 USER node

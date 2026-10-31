@@ -22,17 +22,32 @@ import { generateVolume, removeVolume } from '../seed/volume';
  * `pnpm seed` — reference data, the role accounts and the two demo personas (P2-08).
  * `pnpm seed -- --volume 5000` — also adds synthetic volume users for EXPLAIN and load work.
  * `pnpm seed -- --remove-volume` — deletes the volume users again.
- * Local and test only: seeding writes demo data and the volume path uses the superuser.
+ * Local and test, plus a shared `dev` (the AWS demo, toreview §133) when SEED_PASSWORD and
+ * SEED_TOTP_SECRET are set, so its accounts never carry the repo's published credentials. The
+ * volume paths use the superuser and stay local and test only.
  */
 const config = loadConfig();
-if (!['local', 'test'].includes(config.APP_ENV)) {
-  console.error(`seed: refused in ${config.APP_ENV}. Seeding is for local and test databases only.`);
+const sharedDev = config.APP_ENV === 'dev';
+if (!['local', 'test', 'dev'].includes(config.APP_ENV)) {
+  console.error(`seed: refused in ${config.APP_ENV}. Seeding is for local, test and dev databases only.`);
+  process.exit(1);
+}
+const devCredentials =
+  config.SEED_PASSWORD && config.SEED_TOTP_SECRET
+    ? { password: config.SEED_PASSWORD, totpSecret: config.SEED_TOTP_SECRET }
+    : undefined;
+if (sharedDev && !devCredentials) {
+  console.error('seed: dev needs SEED_PASSWORD and SEED_TOTP_SECRET; the published ones are for laptops.');
   process.exit(1);
 }
 
 const args = process.argv.slice(2);
 const volumeArg = args.indexOf('--volume');
 const volume = volumeArg >= 0 ? Number(args[volumeArg + 1] ?? 5000) : 0;
+if (sharedDev && (volume > 0 || args.includes('--remove-volume'))) {
+  console.error('seed: volume users are local and test only.');
+  process.exit(1);
+}
 
 if (args.includes('--remove-volume')) {
   if (!config.DATABASE_ADMIN_URL) throw new Error('DATABASE_ADMIN_URL is required to remove volume users.');
@@ -87,7 +102,7 @@ try {
   console.log(`seed: personas ${userFixture.email} (mobile) and ${webUserFixture.email} (web)`);
 
   if (config.IDENTITY_ADAPTER === 'local') {
-    for (const line of await seedIdentities(config.DATABASE_URL)) console.log(`seed: ${line}`);
+    for (const line of await seedIdentities(config.DATABASE_URL, devCredentials)) console.log(`seed: ${line}`);
   }
 
   if (volume > 0) {

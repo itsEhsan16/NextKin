@@ -48,4 +48,20 @@ describe('createRepos', () => {
     expect(() => createRepos({ ...config, environment: 'production' }, mock())).toThrow(/notifications\.list/);
     expect(() => createRepos({ sources: { profile: 'http' }, http, environment: 'production' }, mock())).not.toThrow();
   });
+
+  it('lets a production build keep only the fallbacks it names', () => {
+    // configureRepos supplies adopt and adoptJob; createRepos needs them spelled out.
+    const config = {
+      sources: parseDataSources('http'),
+      http,
+      uploader: async () => {},
+      adopt: () => {},
+      adoptJob: () => {},
+      environment: 'production' as const,
+    };
+    const all = mockFallbacks(config);
+    expect(() => createRepos({ ...config, allowedFallbacks: all }, mock())).not.toThrow();
+    const allButOne = all.filter((m) => m !== 'notifications.list');
+    expect(() => createRepos({ ...config, allowedFallbacks: allButOne }, mock())).toThrow(/notifications\.list/);
+  });
 });

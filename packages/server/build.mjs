@@ -11,6 +11,8 @@ import { build } from 'esbuild';
 const all = {
   worker: 'src/entrypoints/worker.ts',
   migrate: 'src/entrypoints/migrate.ts',
+  // Ships in the migrate image so the AWS demo can seed itself (toreview §133).
+  seed: 'src/entrypoints/seed.ts',
   'dlq-replay': 'src/entrypoints/dlq.ts',
   'render-check': 'src/entrypoints/render-check.ts',
   // The isolated parser thread (P7-05); pool.ts loads it from beside the worker bundle.
@@ -33,7 +35,9 @@ await build({
   target: 'node22',
   format: 'esm',
   sourcemap: true,
-  external: ['playwright-core', 'pdfjs-dist', 'tesseract.js'],
+  // @node-rs/argon2 (the local identity provider's hashing, reached by `seed`) is a native addon;
+  // the migrate image installs it beside the bundle.
+  external: ['playwright-core', 'pdfjs-dist', 'tesseract.js', '@node-rs/argon2'],
   // Bundled CommonJS dependencies (pg, the AWS SDK) still call require(); give ESM one.
   banner: {
     js: "import { createRequire as __nkCreateRequire } from 'node:module'; const require = __nkCreateRequire(import.meta.url);",

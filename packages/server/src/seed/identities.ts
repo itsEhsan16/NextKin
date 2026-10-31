@@ -25,7 +25,19 @@ const ACCOUNTS = [
   { sub: 'local|account:support', pool: 'admins', email: 'support@nextkin.test', name: 'Sam Support', groups: ['support'] },
 ] as const;
 
-export async function seedIdentities(databaseUrl: string): Promise<string[]> {
+/** A shared `dev` passes its own credentials; laptops use the published ones above. */
+export interface SeedCredentials {
+  password: string;
+  totpSecret: string;
+}
+
+const PUBLISHED: SeedCredentials = { password: SEED_PASSWORD, totpSecret: SEED_TOTP_SECRET };
+
+export async function seedIdentities(
+  databaseUrl: string,
+  credentials: SeedCredentials = PUBLISHED,
+): Promise<string[]> {
+  const published = credentials === PUBLISHED;
   const pool = new pg.Pool({ connectionString: databaseUrl, max: 2 });
   try {
     const idp = createLocalIdentityProvider({ pool, email: createMemoryEmail(), issuers: {} });
@@ -34,12 +46,14 @@ export async function seedIdentities(databaseUrl: string): Promise<string[]> {
         sub: account.sub,
         pool: account.pool,
         email: account.email,
-        password: SEED_PASSWORD,
+        password: credentials.password,
         name: account.name,
         groups: [...account.groups],
-        totpSecret: account.pool === 'admins' ? SEED_TOTP_SECRET : undefined,
+        totpSecret: account.pool === 'admins' ? credentials.totpSecret : undefined,
       });
     }
+    // Only the published credentials are printed; a shared dev's stay in Secrets Manager, out of logs.
+    if (!published) return ['accounts use SEED_PASSWORD; staff TOTP uses SEED_TOTP_SECRET'];
     return [
       `password for every seeded account: ${SEED_PASSWORD}`,
       `staff TOTP (admin@, curator@, support@): ${otpauthUrl(SEED_TOTP_SECRET, 'staff@nextkin.test')}`,
