@@ -43,11 +43,8 @@ FROM deps AS build
 # The web app's backend switch is read at build time (NEXT_PUBLIC_*). Empty: the mock, as before.
 ARG NEXT_PUBLIC_DATA_SOURCE=
 ARG NEXT_PUBLIC_API_BASE_URL=
-# The AWS demo's named mock fallbacks (toreview §133.1). Empty: a production build refuses them all.
-ARG NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS=
 ENV NEXT_PUBLIC_DATA_SOURCE=$NEXT_PUBLIC_DATA_SOURCE \
-    NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
-    NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS=$NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS
+    NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 COPY apps/web apps/web
 COPY packages packages
 RUN pnpm --filter @nextkin/web build && pnpm --filter @nextkin/server build
@@ -118,6 +115,21 @@ COPY --chown=node:node packages/server/vendor/tessdata ./vendor/tessdata
 COPY --chown=node:node packages/server/assets/fonts ./assets/fonts
 USER node
 CMD ["node", "dist/worker.mjs"]
+
+# =============================================================================================
+# link-reader: pages from the open web run here (toreview §144.3). It holds no database, no storage
+# and no model key: only its bearer token. Chromium has no sandbox to use in a container with no
+# capabilities, so the container is the sandbox: compose and the task definition keep it apart from
+# everything of the app's, and every request a page makes leaves through its own address check.
+FROM runtime AS link-reader
+ARG PLAYWRIGHT_VERSION
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright LINK_READER_HOST=0.0.0.0 LINK_READER_NO_SANDBOX=true HOME=/tmp
+RUN npm install --no-save --no-audit --no-fund "playwright-core@${PLAYWRIGHT_VERSION}" \
+ && npx playwright-core install --with-deps chromium \
+ && rm -rf /var/lib/apt/lists/* /root/.npm
+COPY --from=build --chown=node:node /repo/packages/server/dist/link-reader.mjs ./dist/link-reader.mjs
+USER node
+CMD ["node", "dist/link-reader.mjs"]
 
 # =============================================================================================
 # latex: the sealed LaTeX compile service (toreview §111). Tectonic 0.17 (static musl build,

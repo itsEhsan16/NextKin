@@ -4,7 +4,7 @@ import { generationResultSchema, generationSchema, type GenerationRequest, type 
 import { jdDraftSchema } from '../../schemas/jd';
 import type { AdoptedDocument } from '../adopt';
 import type { GenerationsRepo } from '../types';
-import type { HttpClient } from './client';
+import { ApiError, type HttpClient } from './client';
 import { isServerId } from './jdRepo';
 import { fetchDocument } from './serverDocs';
 
@@ -70,7 +70,7 @@ export function createHttpGenerationsRepo(
   http: HttpClient,
   mock: GenerationsRepo,
   adopt: (doc: AdoptedDocument) => void,
-  options: { everyMs?: number } = {},
+  options: { everyMs?: number; strict?: boolean } = {},
 ): GenerationsRepo {
   const adopted = new Set<string>();
   const finish = async (generation: Generation) => {
@@ -94,6 +94,8 @@ export function createHttpGenerationsRepo(
     },
     async start(input) {
       if (!servedOnServer(input)) {
+        // On the full backend there is no mock to fall back on: better a plain error than a made-up run.
+        if (options.strict) throw new ApiError('UNAVAILABLE', 'This can’t be run right now.', 503);
         // A mock run that starts from a server document reads it from the mock library: copy it there.
         for (const id of [input.baseResumeId, input.sourceResumeId]) {
           if (id && isServerId(id)) adopt(await fetchDocument(http, id));

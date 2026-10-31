@@ -7,6 +7,7 @@ import {
   isConsentRequired,
   isUnreadableFileError,
   unreadableJdId,
+  unreadableLinkMessage,
   useExtractJd,
 } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
@@ -17,7 +18,7 @@ import { useRevealStagger } from '@/ui/motion';
 
 import { FLOW_ART, FlowHero } from '../components/FlowHero';
 import { JdIntakeSheets } from '../components/JdIntakeSheets';
-import { JobIntake, jobIntakeReady } from '../components/JobIntake';
+import { JobIntake, jobIntakeInput, jobIntakeReady } from '../components/JobIntake';
 import { useCreateActions } from '../hooks/useCreateActions';
 
 export type JobIntakeScreenProps = {
@@ -49,9 +50,10 @@ export function JobIntakeScreen({ resumeId }: JobIntakeScreenProps) {
 
   const failure =
     extract.isError && !isConsentRequired(extract.error)
-      ? isUnreadableFileError(extract.error) || unreadableJdId(extract.error)
-        ? UNREADABLE
-        : READ_FAILED
+      ? (unreadableLinkMessage(extract.error) ??
+        (isUnreadableFileError(extract.error) || unreadableJdId(extract.error)
+          ? UNREADABLE
+          : READ_FAILED))
       : undefined;
 
   // The bar's note is a live region on Android only, so the failure is announced as well.
@@ -68,7 +70,7 @@ export function JobIntakeScreen({ resumeId }: JobIntakeScreenProps) {
       actions.openCustomize({ jobId: jd.jobId, resumeId }, { replace: true });
       return;
     }
-    extract.mutate(jd, {
+    extract.mutate(jobIntakeInput(jd), {
       onSuccess: (draft) => actions.openCustomize({ jdId: draft.id, resumeId }, { replace: true }),
     });
   };

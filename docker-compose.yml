@@ -164,6 +164,36 @@ services:
       valkey: { condition: service_healthy }
     profiles: [app]
 
+  # The link reader (toreview §144.3): pages from the open web, in Chromium. It sits only on
+  # `link-outbound`, with a route to the internet and none to anything of the app's, a read-only
+  # root, /tmp as its only writable path, no capabilities, and one secret: its bearer token.
+  #   pnpm stack:up -- --profile links    builds the image the first time (ask first: it is heavy)
+  # Locally `pnpm link-reader` does the same on the host with your Chromium, without the isolation.
+  link-reader:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: link-reader
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:?set in docker/versions.env}
+        PLAYWRIGHT_VERSION: ${LIB_PLAYWRIGHT:?set in docker/versions.env}
+    image: nextkin-link-reader:local
+    environment:
+      LINK_READER_TOKEN_FILE: /run/secrets/link_reader_token
+    secrets: [link_reader_token]
+    networks: [link-outbound]
+    ports:
+      - '127.0.0.1:${LINK_READER_PORT:-8791}:8791'
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=512m,mode=1777
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    mem_limit: 1536m
+    cpus: 2
+    pids_limit: 256
+    profiles: [links]
+
   # The sealed LaTeX compile service (toreview §111): Tectonic + Poppler behind POST /compile. It
   # sits only on `latex-sealed` (internal: no internet, no published port), with a read-only root,
   # /tmp as its only writable path, no capabilities, and one secret: the bearer token file.
@@ -220,11 +250,15 @@ networks:
   latex-sealed:
     internal: true
   latex-edge:
+  # The link reader's way out: the internet, and nothing of the app's.
+  link-outbound:
 
 secrets:
   # Written with a random value by `pnpm stack:up` when missing (scripts/stack.mjs); gitignored.
   latex_token:
     file: ./docker/latex/dev.token
+  link_reader_token:
+    file: ./docker/link-reader/dev.token
 
 volumes:
   pgdata:

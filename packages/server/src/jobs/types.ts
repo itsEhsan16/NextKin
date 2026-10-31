@@ -18,7 +18,8 @@ const salary = z.object({
 });
 
 export const normalizedJobSchema = z.object({
-  provider: z.enum(PROVIDERS),
+  /** `link`: a job the candidate added from a link. It is theirs: it never enters the shared cache. */
+  provider: z.enum([...PROVIDERS, 'link']),
   providerJobId: z.string().min(1).max(200),
   /** The employer's own page when known; else the provider's (tracked) listing URL. */
   applyUrl: z.string().min(1).max(2000),

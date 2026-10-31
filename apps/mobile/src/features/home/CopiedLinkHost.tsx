@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
-import { useImportJobLink, useJobLinkPreview } from '@/data/queries';
+import { unreadableLinkMessage, useImportJobLink, useJobLinkPreview } from '@/data/queries';
 import { Dialog } from '@/ui/Dialog';
 import { Toast } from '@/ui/Toast';
 
@@ -61,7 +61,7 @@ export function CopiedLinkHost() {
           setNotice(SAVED_NOTICE);
         }
       },
-      onError: () => setFailure(ADD_FAILED),
+      onError: (error) => setFailure(unreadableLinkMessage(error) ?? ADD_FAILED),
       onSettled: () => setBusy(null),
     });
   };

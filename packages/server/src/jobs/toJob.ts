@@ -43,7 +43,8 @@ export function toClientJob(listing: NormalizedJob, relevanceRank: number, user:
     ...(listing.salary ? { salary: listing.salary } : {}),
     postedAt: listing.postedAt,
     ...(listing.closingAt ? { closingAt: listing.closingAt } : {}),
-    source: listing.provider,
+    source: listing.provider === 'link' ? 'manual' : listing.provider,
+    ...(listing.provider === 'link' ? { sourceUrl: listing.applyUrl } : {}),
     ...(match?.matchScore !== undefined ? { matchScore: match.matchScore } : {}),
     ...(match?.matchBand ? { matchBand: match.matchBand } : {}),
     ...(match ? { matchBasis: match.matchBasis } : {}),
@@ -58,7 +59,7 @@ export function toClientJob(listing: NormalizedJob, relevanceRank: number, user:
     applyUrl: listing.applyUrl,
     descriptionKind: KIND[listing.descriptionKind],
     attribution: {
-      provider: listing.provider,
+      provider: listing.provider === 'link' ? 'manual' : listing.provider,
       label: attribution.label,
       ...(attribution.logoKey ? { logoKey: attribution.logoKey } : {}),
       ...(attribution.salaryBrand && listing.salary?.estimated ? { salaryBrand: attribution.salaryBrand } : {}),
@@ -75,5 +76,5 @@ export function toClientJob(listing: NormalizedJob, relevanceRank: number, user:
 
 /** What a save keeps of a listing (display terms permitting): no full provider description. */
 export function snapshotOf(listing: NormalizedJob): NormalizedJob {
-  return listing.provider === 'fixture' ? listing : { ...listing, description: listing.description.slice(0, 600) };
+  return listing.provider === 'fixture' || listing.provider === 'link' ? listing : { ...listing, description: listing.description.slice(0, 600) };
 }

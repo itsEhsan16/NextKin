@@ -79,6 +79,7 @@ export {
 } from './useInterview';
 export {
   isUnreadableLinkError,
+  unreadableLinkMessage,
   useExtractJd,
   JD_READING_POLL_MS,
   useJdDraft,

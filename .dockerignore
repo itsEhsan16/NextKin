@@ -23,3 +23,4 @@ apps/web/__tests__
 apps/web/testSupport
 apps/web/tsconfig.tsbuildinfo
 docker/latex/*.token
+docker/link-reader/*.token

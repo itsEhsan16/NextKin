@@ -18,6 +18,8 @@ export class Network extends Construct {
   readonly clamavSg: ec2.SecurityGroup;
   /** The LaTeX compile service (8790), for the app only (toreview §137). */
   readonly latexSg: ec2.SecurityGroup;
+  /** The link reader (8791), for the app only, with a way out to the web and nothing else (toreview §144.3). */
+  readonly linksSg: ec2.SecurityGroup;
   /** Aurora (5432), for the app only. */
   readonly dbSg: ec2.SecurityGroup;
 
@@ -60,6 +62,11 @@ export class Network extends Construct {
 
     this.latexSg = group('Latex', 'NextKin demo LaTeX compile service');
     this.latexSg.addIngressRule(this.appSg, ec2.Port.tcp(8790), 'App to the LaTeX service');
+
+    this.linksSg = new ec2.SecurityGroup(this, 'LinksSg', { vpc: this.vpc, description: 'NextKin demo link reader', allowAllOutbound: false });
+    this.linksSg.addIngressRule(this.appSg, ec2.Port.tcp(8791), 'App to the link reader');
+    this.linksSg.addEgressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443), 'Job pages and image pulls');
+    this.linksSg.addEgressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Job pages');
 
     this.dbSg = group('Db', 'NextKin demo Aurora');
     this.dbSg.addIngressRule(this.appSg, ec2.Port.tcp(5432), 'App to Postgres');

@@ -21,6 +21,8 @@ const all = {
   'latex-service': 'src/entrypoints/latex-service.ts',
   'latex-relay': 'src/entrypoints/latex-relay.ts',
   'latex-warmup': 'src/entrypoints/latex-warmup.ts',
+  // The link reader (toreview §144.3), which runs apart from the app.
+  'link-reader': 'src/entrypoints/link-reader.ts',
 };
 const names = process.argv.slice(2);
 const unknown = names.filter((n) => !(n in all));

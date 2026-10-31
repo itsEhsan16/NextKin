@@ -14549,3 +14549,34 @@ Branch `step-1/make-it-real`, built on `stabilize/step-0`. Nothing is merged or 
   - **A new user's feed is empty,** using the empty state the screen already has.
 - **Web has no feed page.** It has only the bell's unread dot. Decide whether web needs a page before the joint launch.
 - **Not verified on a device.**
+
+### 144.3 The link reader
+
+- **Why:** on the backend a pasted or copied link answered from the mock, so it could invent a job. The owner chose to build the reader now.
+- **The rule that holds it together: a site that refuses is taken at its word.** A robots.txt that says no, a 401, 403, 429 or 503, or a bot check ends the read. There is no retry, no disguised browser, no CAPTCHA solving and no unblocker. A headless-browser test against sites that had refused was stopped by this environment's safety check as bot-check circumvention, and that is the right line for the product too.
+- **How it works** (`packages/server/src/links`, entrypoint `link-reader`):
+  1. A separate service, so pages from the open web never run in the worker that holds the database and model keys. It holds only its bearer token.
+  2. `parseLink` refuses anything private, and the check repeats on every redirect and every address DNS returns.
+  3. It respects robots.txt, under an honest user agent.
+  4. A JobPosting block in the page's JSON-LD comes first, then the page's visible text. Hidden text is dropped.
+  5. Chromium runs only for a page the site served gladly that needs JavaScript. Every request it makes leaves through a guard proxy, which applies the same address check.
+  6. Haiku 5.5 then reads the text through the existing extraction. A page with no job on it fails plainly rather than becoming one.
+- **Real pages, read 2026-11-01 from this laptop:**
+  - Read: a Lever job (1 s, structured), an Ashby board (3 s, through the browser), a company careers page (1 s).
+  - Stopped honestly: LinkedIn and Indeed (robots.txt), Naukri (403), a missing page (404).
+  - **Not tested from a server address.** AWS's addresses may be treated differently, so expect more refusals there. Greenhouse was not reached: the test's link lookup found none.
+- **A real bug the tests caught:** a socket given an IP address never calls `lookup`, so the proxy would have let a page reach `10.0.0.1`. Literals are now checked in the proxy, with a test for each path.
+- **DECIDE: LinkedIn and Indeed.** Both ask robots not to read job pages, so links from the two sites people copy most end in "paste the description". The options:
+  - **Paste only** (what is built).
+  - **Read on the phone.** The user opens the page in the app, sees it, and the app reads the text on screen. Mobile only, and it needs `react-native-webview`.
+  - **Ignore robots.txt for a page a user asked for.** That is a legal call and not one I would make without advice: both sites' terms forbid it. Nothing here does this.
+- **Calls made without you:**
+  - **Limit:** 30 links an hour per account, so the reader can't be used as a free fetch service.
+  - **Reuse:** a link read in the last 7 days answers from the draft already held.
+  - **A robots.txt that can't be fetched allows the read,** and the page's own answer decides. RFC 9309 says to treat a 5xx as "disallow"; a broken file would otherwise read as a refusal. Say if you want the strict reading.
+  - **Copied links:** nothing leaves the phone until the user taps. The dialog names the job from its address alone, and the page is read only on "Tailor" or "Save". TAILOR 00c draws the job's real title, so the title can be rougher than the board's until then.
+  - **Sample data is gone on the full backend.** With every repository on the server, the mock store is emptied and the four remaining fallbacks fail plainly. `allowedFallbacks` and its build argument are removed, so the demo needs no exceptions. Web's Insights page still shows fixture numbers: its repository has no server side (see §38.11).
+- **Not done:**
+  - **The Docker image has not been built.** The Chromium base is heavy, so it waits for your OK. `pnpm link-reader` runs it on the host, without the isolation.
+  - **The AWS service is defined but not deployed.** It adds one Spot task (1 vCPU, 2 GB) to the demo's bill, and needs your `aws login`.
+  - The legal pages should say we read a link the user gives us.

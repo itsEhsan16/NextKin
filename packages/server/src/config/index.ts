@@ -103,6 +103,11 @@ const schema = z.object({
   LATEX_COMPILER_URL: z.url().default('http://127.0.0.1:8790'),
   LATEX_COMPILER_TOKEN_FILE: z.string().min(1).optional(),
   LATEX_COMPILER_TOKEN: z.string().min(32).optional(),
+  // The link reader (toreview §144.3): a separate service, so pages from the open web never run in
+  // the worker. Locally `pnpm link-reader` on 127.0.0.1:8791. The token comes as LaTeX's does.
+  LINK_READER_URL: z.url().default('http://127.0.0.1:8791'),
+  LINK_READER_TOKEN_FILE: z.string().min(1).optional(),
+  LINK_READER_TOKEN: z.string().min(32).optional(),
   // The isolated parser thread's limits (P7-05).
   PARSE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(20_000),
   PARSE_HEAP_MB: z.coerce.number().int().min(64).max(2048).default(256),

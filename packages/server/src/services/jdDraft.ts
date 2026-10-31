@@ -17,10 +17,11 @@ export type Row = {
   stats: unknown;
   language: string | null;
   job_id: string | null;
+  source_url: string | null;
   created_at: Date;
 };
 
-export const COLUMNS = ['id', 'source', 'raw_text', 'extracted', 'edited', 'status', 'error_message', 'stats', 'language', 'job_id', 'created_at'] as const;
+export const COLUMNS = ['id', 'source', 'raw_text', 'extracted', 'edited', 'status', 'error_message', 'stats', 'language', 'job_id', 'source_url', 'created_at'] as const;
 
 const present = <T>(value: T | null | undefined): value is T => value !== null && value !== undefined && value !== '';
 
@@ -53,6 +54,7 @@ export function toDraft(row: Row): JdDraft {
     ...lists,
     ...(x.softSkills?.length ? { softSkills: x.softSkills } : {}),
     rawText: row.raw_text,
+    ...(row.source_url ? { sourceUrl: row.source_url } : {}),
     ...(e.savedToJobs !== undefined ? { savedToJobs: e.savedToJobs } : {}),
     ...(row.job_id ? { jobId: row.job_id } : {}),
     requirements: row.status === 'ready' ? typedRequirements(jdLists({ ...lists, rawText: row.raw_text })) : [],

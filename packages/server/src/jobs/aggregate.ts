@@ -105,7 +105,7 @@ async function callProvider(deps: AggregateDeps, entry: { provider: JobProvider;
 }
 
 /** Keeps the richer of two listings: fuller description, then the employer's own link, then priority. */
-function richer(a: NormalizedJob, b: NormalizedJob, priority: Map<ProviderName, number>, direct: Set<ProviderName>): NormalizedJob {
+function richer(a: NormalizedJob, b: NormalizedJob, priority: ReadonlyMap<string, number>, direct: ReadonlySet<string>): NormalizedJob {
   const score = (n: NormalizedJob) => RICHNESS[n.descriptionKind] * 10 + (direct.has(n.provider) ? 1 : 0);
   if (score(a) !== score(b)) return score(a) > score(b) ? a : b;
   return (priority.get(a.provider) ?? 999) <= (priority.get(b.provider) ?? 999) ? a : b;
@@ -113,8 +113,8 @@ function richer(a: NormalizedJob, b: NormalizedJob, priority: Map<ProviderName, 
 
 async function fetchAndMerge(deps: AggregateDeps, key: string, query: ProviderQuery): Promise<MergedListings> {
   const { providers } = await deps.registry.active();
-  const priority = new Map(providers.map((p, i) => [p.provider.name, i]));
-  const direct = new Set(providers.filter((p) => p.provider.capabilities.directApply).map((p) => p.provider.name));
+  const priority = new Map<string, number>(providers.map((p, i) => [p.provider.name, i]));
+  const direct = new Set<string>(providers.filter((p) => p.provider.capabilities.directApply).map((p) => p.provider.name));
   const answers = await Promise.all(providers.map((entry) => callProvider(deps, entry, query)));
   const degraded = providers.filter((_, i) => answers[i] === null).map((p) => p.provider.name);
 

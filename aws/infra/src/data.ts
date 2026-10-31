@@ -32,6 +32,8 @@ export class Data extends Construct {
   readonly originVerify: secretsmanager.Secret;
   /** The worker's bearer token for the LaTeX compile service (toreview §137). */
   readonly latexToken: secretsmanager.Secret;
+  /** The worker's bearer token for the link reader (toreview §144.3). */
+  readonly linkReaderToken: secretsmanager.Secret;
 
   constructor(scope: Construct, id: string, network: Network) {
     super(scope, id);
@@ -67,6 +69,9 @@ export class Data extends Construct {
       excludeCharacters: '0189',
     });
     this.latexToken = secret('latex-token', 'Worker to LaTeX compile service bearer token', {
+      passwordLength: 48,
+    });
+    this.linkReaderToken = secret('link-reader-token', 'Worker to link reader bearer token', {
       passwordLength: 48,
     });
     this.originVerify = secret('origin-verify', 'CloudFront to load balancer header', {

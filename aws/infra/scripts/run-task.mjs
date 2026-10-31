@@ -12,7 +12,7 @@ import { spawnSync } from 'node:child_process';
 
 const TASKS = { 'db-roles': 'DbRolesTask', migrate: 'MigrateTask', seed: 'SeedTask' };
 // Support (Valkey, Mailpit) and ClamAV first, so web and worker find them when they start.
-const SERVICES = ['support', 'clamav', 'latex', 'web', 'worker'].map((s) => `nextkin-demo-${s}`);
+const SERVICES = ['support', 'clamav', 'latex', 'links', 'web', 'worker'].map((s) => `nextkin-demo-${s}`);
 const name = process.argv[2];
 if (!(name in TASKS) && name !== 'pause' && name !== 'resume') {
   console.error(`Usage: task <${[...Object.keys(TASKS), 'pause', 'resume'].join('|')}>`);

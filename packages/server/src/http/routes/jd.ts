@@ -1,9 +1,11 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { jobSchema } from '@nextkin/shared/schemas/job';
 import { comparisonQuerySchema, jdCreateSchema, jdDraftSchema, jdMatchSchema, jdPatchSchema, tailorComparisonSchema } from '@nextkin/shared/schemas/jd';
 
 import type { Database } from '../../db/database';
 import { createJd, getJd, updateJd } from '../../services/jd';
 import { jdMatch } from '../../services/jdMatch';
+import { saveLinkJob } from '../../services/jobs';
 import { compareResumeToJd } from '../../services/tailorCompare';
 import type { ApiEnv } from '../env';
 import { requireAuth } from '../middleware/guards';
@@ -12,8 +14,8 @@ import { authErrors, commonErrors, notFoundError } from './common';
 
 /**
  * Job descriptions (spec §11 `/api/v1/jd`; ImBackendImplementationPlan P9-01). A paste or a scanned
- * upload starts an extraction the client awaits by polling; the user's corrections are stored
- * beside it and are what generation reads. No URL is fetched here (D-17).
+ * upload or a link starts an extraction the client awaits by polling; the user's corrections are
+ * stored beside it and are what generation reads. The link reader service does the fetching.
  */
 
 const json = <S extends z.ZodType>(schema: S) => ({ required: true, content: { 'application/json': { schema } } });
@@ -28,9 +30,9 @@ export function jdRoutes(db: Database): OpenAPIHono<ApiEnv> {
       method: 'post',
       path: '/jd',
       tags: ['jd'],
-      summary: 'Read a pasted or uploaded job description. Poll it until it is ready.',
+      summary: 'Read a pasted, uploaded or linked job description. Poll it until it is ready.',
       request: { body: json(jdCreateSchema) },
-      responses: { 202: ok('Extracting.', jdDraftSchema), 422: { description: 'The file cannot be read (UNREADABLE_FILE).' }, ...authErrors, ...notFoundError, ...commonErrors },
+      responses: { 202: ok('Extracting.', jdDraftSchema), 422: { description: 'The file or link cannot be read (UNREADABLE_FILE, UNREADABLE_LINK).' }, ...authErrors, ...notFoundError, ...commonErrors },
     }),
     async (c) => c.json(checked(jdDraftSchema, await createJd(db, requireAuth(c).identity, c.req.valid('json'), c.get('requestId'))), 202),
   );
@@ -50,6 +52,11 @@ export function jdRoutes(db: Database): OpenAPIHono<ApiEnv> {
       responses: { 200: ok('The corrected draft.', jdDraftSchema), ...authErrors, ...notFoundError, ...commonErrors },
     }),
     async (c) => c.json(checked(jdDraftSchema, await updateJd(db, requireAuth(c).identity, c.req.valid('param').id, c.req.valid('json'))), 200),
+  );
+
+  app.openapi(
+    createRoute({ method: 'post', path: '/jd/{id}/save', tags: ['jd'], summary: 'Add the job a link was read into to Saved jobs. Idempotent; Free saves up to 10 open listings.', request: { params: idParam }, responses: { 200: ok('The saved job.', jobSchema), 402: { description: 'The Free cap (PLAN_LOCKED).' }, ...authErrors, ...notFoundError, ...commonErrors } }),
+    async (c) => c.json(checked(jobSchema, await saveLinkJob(db, requireAuth(c).identity, c.req.valid('param').id)), 200),
   );
 
   app.openapi(

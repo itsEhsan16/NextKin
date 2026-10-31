@@ -36353,7 +36353,7 @@
         "tags": [
           "jd"
         ],
-        "summary": "Read a pasted or uploaded job description. Poll it until it is ready.",
+        "summary": "Read a pasted, uploaded or linked job description. Poll it until it is ready.",
         "requestBody": {
           "required": true,
           "content": {
@@ -36577,6 +36577,112 @@
                       "source": {
                         "type": "string",
                         "enum": [
+                          "link"
+                        ]
+                      },
+                      "url": {
+                        "type": "string",
+                        "minLength": 4,
+                        "maxLength": 2000
+                      },
+                      "details": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "company": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "location": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "experienceLevel": {
+                            "type": "string",
+                            "enum": [
+                              "entry",
+                              "mid",
+                              "senior",
+                              "lead"
+                            ]
+                          },
+                          "employmentType": {
+                            "type": "string",
+                            "enum": [
+                              "full_time",
+                              "part_time",
+                              "contract",
+                              "internship",
+                              "freelance"
+                            ]
+                          },
+                          "domain": {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          "requiredSkills": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "maxItems": 40
+                          },
+                          "preferredSkills": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "maxItems": 40
+                          },
+                          "tools": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "maxItems": 40
+                          },
+                          "responsibilities": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 400
+                            },
+                            "maxItems": 40
+                          },
+                          "savedToJobs": {
+                            "type": "boolean"
+                          },
+                          "jobId": {
+                            "type": "string",
+                            "maxLength": 200
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "source",
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "enum": [
                           "job"
                         ]
                       },
@@ -36763,6 +36869,9 @@
                       "type": "string"
                     },
                     "rawText": {
+                      "type": "string"
+                    },
+                    "sourceUrl": {
                       "type": "string"
                     },
                     "savedToJobs": {
@@ -37198,7 +37307,7 @@
             }
           },
           "422": {
-            "description": "The file cannot be read (UNREADABLE_FILE)."
+            "description": "The file or link cannot be read (UNREADABLE_FILE, UNREADABLE_LINK)."
           },
           "429": {
             "description": "Too many requests (RATE_LIMITED). See Retry-After.",
@@ -37420,6 +37529,9 @@
                       "type": "string"
                     },
                     "rawText": {
+                      "type": "string"
+                    },
+                    "sourceUrl": {
                       "type": "string"
                     },
                     "savedToJobs": {
@@ -38166,6 +38278,9 @@
                     "rawText": {
                       "type": "string"
                     },
+                    "sourceUrl": {
+                      "type": "string"
+                    },
                     "savedToJobs": {
                       "type": "boolean"
                     },
@@ -38479,6 +38594,790 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Not allowed (FORBIDDEN), including a cross-site request on a cookie session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (NOT_FOUND).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests (RATE_LIMITED). See Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong on our side (INTERNAL).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jd/{id}/save": {
+      "post": {
+        "tags": [
+          "jd"
+        ],
+        "summary": "Add the job a link was read into to Saved jobs. Idempotent; Free saves up to 10 open listings.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The saved job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    },
+                    "company": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "companyLogoUrl": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "companyIndustry": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "companySize": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "companyWebsite": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "companyAbout": {
+                      "type": "string",
+                      "maxLength": 4000
+                    },
+                    "companyVerified": {
+                      "type": "boolean"
+                    },
+                    "companyTagline": {
+                      "type": "string",
+                      "maxLength": 300
+                    },
+                    "location": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "remote": {
+                      "type": "string",
+                      "enum": [
+                        "remote",
+                        "hybrid",
+                        "onsite"
+                      ]
+                    },
+                    "employmentType": {
+                      "type": "string",
+                      "enum": [
+                        "full_time",
+                        "part_time",
+                        "contract",
+                        "internship",
+                        "freelance"
+                      ]
+                    },
+                    "experienceLevel": {
+                      "type": "string",
+                      "enum": [
+                        "entry",
+                        "mid",
+                        "senior",
+                        "lead"
+                      ]
+                    },
+                    "experienceYears": {
+                      "type": "object",
+                      "properties": {
+                        "min": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "max": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "min",
+                        "max"
+                      ]
+                    },
+                    "reference": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "applicantsCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "salary": {
+                      "type": "object",
+                      "properties": {
+                        "min": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "max": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "currency": {
+                          "type": "string",
+                          "enum": [
+                            "USD",
+                            "EUR",
+                            "AUD",
+                            "INR"
+                          ]
+                        },
+                        "period": {
+                          "type": "string",
+                          "enum": [
+                            "year",
+                            "month",
+                            "hour"
+                          ]
+                        },
+                        "estimated": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "currency",
+                        "period"
+                      ]
+                    },
+                    "postedAt": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "adzuna",
+                        "jsearch",
+                        "manual",
+                        "fixture"
+                      ]
+                    },
+                    "sourceUrl": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "matchScore": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "matchBand": {
+                      "type": "string",
+                      "enum": [
+                        "strong",
+                        "good",
+                        "fair",
+                        "weak"
+                      ]
+                    },
+                    "matchBasis": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "full",
+                            "snippet",
+                            "title"
+                          ]
+                        },
+                        "requiredMet": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "requiredPartial": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "requiredTotal": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "preferredMet": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "preferredTotal": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "method": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "requiredMet",
+                        "requiredPartial",
+                        "requiredTotal",
+                        "preferredMet",
+                        "preferredTotal",
+                        "method"
+                      ]
+                    },
+                    "matchCriteria": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "met",
+                              "partial",
+                              "missing",
+                              "optional"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "state"
+                        ]
+                      }
+                    },
+                    "matchReason": {
+                      "type": "string",
+                      "maxLength": 400
+                    },
+                    "description": {
+                      "type": "string",
+                      "maxLength": 20000
+                    },
+                    "responsibilities": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "maxItems": 60
+                    },
+                    "requirements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "maxItems": 60
+                    },
+                    "benefits": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "maxItems": 40
+                    },
+                    "perks": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "maxItems": 40
+                    },
+                    "industries": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "maxItems": 20
+                    },
+                    "companyFounded": {
+                      "type": "integer"
+                    },
+                    "companyHeadquarters": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "applyUrl": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "descriptionKind": {
+                      "type": "string",
+                      "enum": [
+                        "full",
+                        "snippet",
+                        "title"
+                      ]
+                    },
+                    "attribution": {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "adzuna",
+                            "jsearch",
+                            "manual",
+                            "fixture"
+                          ]
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "logoKey": {
+                          "type": "string",
+                          "maxLength": 80
+                        },
+                        "salaryBrand": {
+                          "type": "string",
+                          "maxLength": 80
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "label"
+                      ]
+                    },
+                    "unavailable": {
+                      "type": "boolean"
+                    },
+                    "tags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "maxItems": 60
+                    },
+                    "isSaved": {
+                      "type": "boolean"
+                    },
+                    "savedAt": {
+                      "type": "string"
+                    },
+                    "isPick": {
+                      "type": "boolean"
+                    },
+                    "isTodaysPick": {
+                      "type": "boolean"
+                    },
+                    "relevanceRank": {
+                      "type": "integer"
+                    },
+                    "closingAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "company",
+                    "companyIndustry",
+                    "companySize",
+                    "companyWebsite",
+                    "location",
+                    "remote",
+                    "employmentType",
+                    "experienceLevel",
+                    "postedAt",
+                    "source",
+                    "description",
+                    "responsibilities",
+                    "requirements",
+                    "tags",
+                    "isSaved",
+                    "isPick",
+                    "isTodaysPick",
+                    "relevanceRank"
+                  ],
+                  "additionalProperties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not valid (VALIDATION_FAILED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "The Free cap (PLAN_LOCKED)."
           },
           "403": {
             "description": "Not allowed (FORBIDDEN), including a cross-site request on a cookie session.",

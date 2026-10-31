@@ -1,4 +1,4 @@
-import { unreadableJdId } from '@nextkin/shared/queries';
+import { unreadableJdId, unreadableLinkMessage } from '@nextkin/shared/queries';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
@@ -95,6 +95,7 @@ function AnalyzeStatusBody({
     );
   }
   const manual = unreadableJdId(error);
+  const linkMessage = unreadableLinkMessage(error);
   return (
     <p
       role="alert"
@@ -102,13 +103,13 @@ function AnalyzeStatusBody({
     >
       {manual ? (
         <>
-          We couldn’t read this as a job description.{' '}
+          {linkMessage ?? 'We couldn’t read this as a job description.'}{' '}
           <Link href={jdHref(manual, { edit: true })} className={NEXT}>
             Enter the details yourself
           </Link>
         </>
       ) : (
-        'We couldn’t read that job description. Check your connection and try again.'
+        (linkMessage ?? 'We couldn’t read that job description. Check your connection and try again.')
       )}
     </p>
   );

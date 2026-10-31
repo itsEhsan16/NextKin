@@ -9,7 +9,7 @@ import type { Database, Identity, Tx } from '../db/database';
 import { errors } from '../http/errors';
 import { jobIdOf } from '../jobs/ids';
 import { toClientJob } from '../jobs/toJob';
-import { findListing } from './jobs';
+import { findListing, UNNAMED_COMPANY } from './jobs';
 import { COLUMNS, toDraft, type Row } from './jdDraft';
 
 /**
@@ -25,8 +25,6 @@ import { COLUMNS, toDraft, type Row } from './jdDraft';
 export const RUN_DELAY_MINUTES = 30;
 const ASK_AGAIN_DAYS = 1;
 const MAX_ASKS_LISTED = 3;
-/** What a job with no company in its text is called. */
-export const UNNAMED_COMPANY = 'Company not named';
 
 /** The kinds of run that produce something to apply with. */
 const APPLYING_KINDS: readonly string[] = ['resume', 'cover_letter', 'zero_resume'];

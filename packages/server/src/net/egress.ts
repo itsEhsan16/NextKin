@@ -4,8 +4,9 @@ import type { Config } from '../config';
  * The egress allowlist (ImBackendImplementationPlan P11-06). Every outbound HTTP request the server
  * makes goes through `guardedFetch`, which refuses any host not on the list. The list is built from
  * the adapters this process actually uses: the Claude API only with a developer key, the job
- * providers only when real providers are on, the sign-in issuers that are configured. No URL a user
- * supplies is ever fetched (D-17), and lint bans the global `fetch` anywhere else in `src`.
+ * providers only when real providers are on, the sign-in issuers that are configured. This process
+ * never fetches a URL a user supplies: that is the link reader's job, in its own service
+ * (toreview §144.3). Lint bans the global `fetch` anywhere else in `src`.
  *
  * The AWS SDK, the OTLP exporter, SMTP and ClamAV use their own clients, outside this guard; in the
  * cloud they are held by network egress rules (X-04), and the threat model records that.
@@ -47,6 +48,11 @@ export const guardedFetch: typeof fetch = async (input, init) => {
  */
 export function latexEgressHosts(config: Pick<Config, 'LATEX_COMPILER_URL'>): string[] {
   return [new URL(config.LATEX_COMPILER_URL).hostname];
+}
+
+/** The link reader's host: the worker's allowlist only, since only the worker reads links. */
+export function linkReaderEgressHosts(config: Pick<Config, 'LINK_READER_URL'>): string[] {
+  return [new URL(config.LINK_READER_URL).hostname];
 }
 
 const JOB_PROVIDER_HOSTS =['api.adzuna.com', 'jsearch.p.rapidapi.com'];

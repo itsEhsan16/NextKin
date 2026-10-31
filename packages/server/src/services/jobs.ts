@@ -1,4 +1,5 @@
 import { JOB_COMPARATORS, JOBS_PAGE_SIZE, matchesFilters, SAVED_JOB_COMPARATORS, similarJobs } from '@nextkin/shared/jobs/filters';
+import type { JdDraft } from '@nextkin/shared/models/jd';
 import type { Job, JobFilters, JobSort, SavedJobsSort } from '@nextkin/shared/models/job';
 import { jobSchema } from '@nextkin/shared/schemas/job';
 import type { Page } from '@nextkin/shared/repos/types';
@@ -8,9 +9,11 @@ import type { Database, Identity, Tx } from '../db/database';
 import { decodeCursor, encodeCursor } from '../http/cursor';
 import { AppError, errors } from '../http/errors';
 import { mergedListings, type AggregateDeps, type CachedListing } from '../jobs/aggregate';
+import { applyUrlHashOf } from '../jobs/ids';
 import { matchContext, scoreMatch, type JobMatch } from '../jobs/matchScore';
 import { snapshotOf, toClientJob, type UserDecoration } from '../jobs/toJob';
 import { normalizedJobSchema, type NormalizedJob } from '../jobs/types';
+import { COLUMNS, toDraft, type Row } from './jdDraft';
 import { planOf } from './plan';
 
 /**
@@ -19,6 +22,9 @@ import { planOf } from './plan';
  * on the way out. Saved jobs are the user's own rows: idempotent, capped at 10 open listings on
  * Free (an 11th answers PLAN_LOCKED), and a listing its source has closed is flagged, never deleted.
  */
+
+/** What a job with no company in its text is called. */
+export const UNNAMED_COMPANY = 'Company not named';
 
 export interface JobsDeps {
   db: Database;
@@ -191,25 +197,70 @@ export async function setSaved(deps: JobsDeps, identity: Identity, id: string, s
     const found = await findListing(tx, identity.userId, id);
     if (!found) throw errors.notFound('job');
     const hash = found.normalized.applyUrlHash;
-    if (!saved) {
-      await tx.deleteFrom('saved_jobs').where('user_id', '=', identity.userId).where('apply_url_hash', '=', hash).execute();
-    } else {
-      await sql`SELECT pg_advisory_xact_lock(hashtext(${`saved_jobs:${identity.userId}`}))`.execute(tx);
-      const already = await tx.selectFrom('saved_jobs').select('id').where('user_id', '=', identity.userId).where('apply_url_hash', '=', hash).executeTakeFirst();
-      if (!already) {
-        const plan = await planOf(tx, identity.userId);
-        if (plan.savedJobs !== null) {
-          const open = await tx.selectFrom('saved_jobs').select((eb) => eb.fn.countAll<string>().as('n')).where('user_id', '=', identity.userId).where('expired_at', 'is', null).executeTakeFirstOrThrow();
-          if (Number(open.n) >= plan.savedJobs) throw new AppError('PLAN_LOCKED', `Free saves up to ${plan.savedJobs} jobs. Upgrade to save more.`, { reason: 'saved_jobs', limit: plan.savedJobs });
-        }
-        await tx
-          .insertInto('saved_jobs')
-          .values({ user_id: identity.userId, apply_url_hash: hash, jobs_cache_id: found.cacheId, snapshot: JSON.stringify(snapshotOf(found.normalized)) })
-          .onConflict((oc) => oc.columns(['user_id', 'apply_url_hash']).doNothing())
-          .execute();
-      }
-    }
+    if (saved) await keepSaved(tx, identity.userId, found.normalized, found.cacheId);
+    else await tx.deleteFrom('saved_jobs').where('user_id', '=', identity.userId).where('apply_url_hash', '=', hash).execute();
     const [decorated] = await decorate(tx, identity.userId, [{ normalized: found.normalized, rank: 0 }]);
+    return decorated!.job;
+  });
+}
+
+/** Adds to Saved jobs, under the plan's cap. Serialized per user, so two saves at 9 can't both pass. */
+async function keepSaved(tx: Tx, userId: string, listing: NormalizedJob, cacheId: string | null): Promise<void> {
+  const hash = listing.applyUrlHash;
+  await sql`SELECT pg_advisory_xact_lock(hashtext(${`saved_jobs:${userId}`}))`.execute(tx);
+  const already = await tx.selectFrom('saved_jobs').select('id').where('user_id', '=', userId).where('apply_url_hash', '=', hash).executeTakeFirst();
+  if (already) return;
+  const plan = await planOf(tx, userId);
+  if (plan.savedJobs !== null) {
+    const open = await tx.selectFrom('saved_jobs').select((eb) => eb.fn.countAll<string>().as('n')).where('user_id', '=', userId).where('expired_at', 'is', null).executeTakeFirstOrThrow();
+    if (Number(open.n) >= plan.savedJobs) throw new AppError('PLAN_LOCKED', `Free saves up to ${plan.savedJobs} jobs. Upgrade to save more.`, { reason: 'saved_jobs', limit: plan.savedJobs });
+  }
+  await tx
+    .insertInto('saved_jobs')
+    .values({ user_id: userId, apply_url_hash: hash, jobs_cache_id: cacheId, snapshot: JSON.stringify(snapshotOf(listing)) })
+    .onConflict((oc) => oc.columns(['user_id', 'apply_url_hash']).doNothing())
+    .execute();
+}
+
+/** A job added from a link, as a listing. What the page did not say stays empty or a plain default. */
+function listingFromLink(draft: JdDraft, url: string, closesAt: string | undefined): NormalizedJob {
+  const host = new URL(url).hostname.replace(/^www\./, '');
+  return {
+    provider: 'link',
+    providerJobId: draft.id,
+    applyUrl: url,
+    applyUrlHash: applyUrlHashOf(url),
+    title: draft.title,
+    company: draft.company ?? UNNAMED_COMPANY,
+    location: draft.location ?? '',
+    country: 'ZZ',
+    remote: draft.reading?.workArrangement ?? 'onsite',
+    employmentType: draft.employmentType ?? 'full_time',
+    experienceLevel: draft.experienceLevel ?? 'mid',
+    postedAt: draft.createdAt,
+    ...(closesAt ? { closingAt: closesAt } : {}),
+    descriptionKind: 'full',
+    description: draft.rawText.slice(0, 20000),
+    responsibilities: draft.responsibilities.slice(0, 60),
+    requirements: [...draft.requiredSkills, ...draft.preferredSkills].slice(0, 60),
+    tags: draft.requiredSkills.slice(0, 60),
+    requiredSkills: draft.requiredSkills.slice(0, 60),
+    preferredSkills: draft.preferredSkills.slice(0, 60),
+    companyProfile: { industry: draft.domain ?? '', size: '', website: new URL(url).origin },
+    attribution: { label: host.slice(0, 80) },
+    rank: 0,
+  };
+}
+
+/** Adds the job a link was read into to Saved jobs. Idempotent, and under the same cap. */
+export async function saveLinkJob(db: Database, identity: Identity, jdId: string): Promise<Job> {
+  return db.withUser(identity, async (tx) => {
+    const row = await tx.selectFrom('job_descriptions').select(COLUMNS).where('id', '=', jdId).executeTakeFirst();
+    if (!row || row.source !== 'link' || row.status !== 'ready' || !row.source_url) throw errors.notFound('job description');
+    const closesAt = (row.extracted as { closesAt?: string } | null)?.closesAt;
+    const listing = listingFromLink(toDraft(row as Row), row.source_url, closesAt);
+    await keepSaved(tx, identity.userId, listing, null);
+    const [decorated] = await decorate(tx, identity.userId, [{ normalized: listing, rank: 0 }]);
     return decorated!.job;
   });
 }

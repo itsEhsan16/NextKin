@@ -9,10 +9,10 @@ import { createMockJobsRepo } from './jobsRepo';
 import { createMockNotificationsRepo } from './notificationsRepo';
 import { createMockProfileRepo } from './profileRepo';
 import { createMockResumesRepo } from './resumesRepo';
-import { createMockStore, type MockStore } from './state';
+import { clearSampleData, createMockStore, type MockStore } from './state';
 import { createMockSupportRepo } from './supportRepo';
 import type { Repos } from './types';
-import { createRepos, type RepoConfig } from './create';
+import { createRepos, isFullBackend, type RepoConfig } from './create';
 import { createMockUserRepo } from './userRepo';
 
 export type { MockState, MockStore } from './state';
@@ -24,7 +24,7 @@ export { ConsentRequiredError, ExportBlockedError, PlanLockedError } from './sta
 
 export { DATA_EXPORT_MS } from './userRepo';
 export { ASSISTANT_TICK_MS } from './assistantRepo';
-export { createRepos, HTTP_FALLBACKS, HTTP_REPOS, mockFallbacks, parseDataSources, STAYS_ON_MOCK } from './create';
+export { createRepos, HTTP_FALLBACKS, HTTP_REPOS, isFullBackend, mockFallbacks, parseDataSources } from './create';
 export type { DataSource, RepoConfig, RepoName } from './create';
 export { ApiError, collectPages, createHttpClient } from './http/client';
 export type { HttpClient, HttpClientOptions, TokenStore } from './http/client';
@@ -60,6 +60,7 @@ export const mockStore: MockStore = createMockStore();
 export const repos: Repos = createMockRepos(mockStore);
 
 let resetHttp: () => void = () => {};
+let sampleData = true;
 
 export function configureRepos(config: RepoConfig): void {
   const built = createRepos(
@@ -68,6 +69,9 @@ export function configureRepos(config: RepoConfig): void {
   );
   Object.assign(repos, built.repos);
   resetHttp = built.reset;
+  // Sample data must not reach anyone on the real backend, even as a fallback.
+  sampleData = !isFullBackend(config.sources);
+  if (!sampleData) clearSampleData(mockStore);
 }
 
 /** Restores every fixture to its initial state (session mutations are discarded). */
@@ -82,5 +86,6 @@ export function resetMockRepos(): void {
  */
 export function resetRepos(): void {
   resetMockRepos();
+  if (!sampleData) clearSampleData(mockStore);
   resetHttp();
 }

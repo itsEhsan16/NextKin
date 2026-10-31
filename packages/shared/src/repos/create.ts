@@ -40,15 +40,6 @@ export const HTTP_FALLBACKS = {
   support: [],
 } as const satisfies Partial<Record<RepoName, readonly string[]>>;
 
-/**
- * Fallbacks that stay on the mock in Release 1 by decision, not by being unbuilt, so a production
- * configuration accepts them. Link import until the reader lands; everything else still refuses.
- */
-export const STAYS_ON_MOCK: readonly string[] = [
-  ...JOBS_FALLBACKS.map((method) => `jobs.${method}`),
-  'jd.extract:link',
-];
-
 export type HttpRepoName = keyof typeof HTTP_FALLBACKS;
 export const HTTP_REPOS = Object.keys(HTTP_FALLBACKS) as HttpRepoName[];
 
@@ -58,12 +49,6 @@ export interface RepoConfig {
   http?: HttpClient;
   /** `production` refuses any mock fallback inside an HTTP repository. */
   environment?: 'development' | 'test' | 'production';
-  /**
-   * Fallbacks a production build may keep, each named (`notifications.list`). Only the AWS demo
-   * passes any (toreview §133.1): anything not on the list still refuses, so a new fallback cannot
-   * reach a build unnoticed.
-   */
-  allowedFallbacks?: readonly string[];
   user?: HttpUserRepoOptions;
   /** Posts files to presigned targets (P7-02): `browserUploader` on web, expo-file-system on mobile. */
   uploader?: FileUploader;
@@ -89,8 +74,12 @@ export function parseDataSources(value: string | undefined): Partial<Record<Repo
   return sources;
 }
 
+/** Every repository on the server: nothing real can hold a mock id, so nothing answers from the mock. */
+export const isFullBackend = (sources: RepoConfig['sources']): boolean => HTTP_REPOS.every((name) => sources?.[name] === 'http');
+
 /** Every method an HTTP repository in this configuration still answers from the mock. */
 export function mockFallbacks(config: RepoConfig): string[] {
+  if (isFullBackend(config.sources)) return [];
   return HTTP_REPOS.filter((name) => config.sources?.[name] === 'http').flatMap((name) =>
     (HTTP_FALLBACKS[name] as readonly string[]).map((method) => `${name}.${method}`),
   );
@@ -109,11 +98,11 @@ export function createRepos(config: RepoConfig, mock: Repos): BuiltRepos {
   if (wanted.length === 0) return { repos: mock, reset: () => {} };
   if (!config.http) throw new Error('An HTTP data source needs an HTTP client.');
   if (config.environment === 'production') {
-    const allowed = [...STAYS_ON_MOCK, ...(config.allowedFallbacks ?? [])];
-    const fallbacks = mockFallbacks(config).filter((method) => !allowed.includes(method));
+    const fallbacks = mockFallbacks(config);
     if (fallbacks.length) throw new Error(`Production cannot answer from the mock: ${fallbacks.join(', ')}.`);
   }
 
+  const strict = isFullBackend(http);
   const resets: (() => void)[] = [];
   const repos: Repos = { ...mock };
   if (http.user === 'http') {
@@ -135,14 +124,14 @@ export function createRepos(config: RepoConfig, mock: Repos): BuiltRepos {
   }
   if (http.jd === 'http') {
     const bridge = config.adoptJob && config.adopt ? { adoptJob: config.adoptJob, adoptDocument: config.adopt } : undefined;
-    repos.jd = { ...mock.jd, ...createHttpJdRepo(config.http, config.uploader, mock.jd, bridge ? { bridge } : {}) };
+    repos.jd = { ...mock.jd, ...createHttpJdRepo(config.http, config.uploader, mock.jd, { strict, ...(bridge ? { bridge } : {}) }) };
   }
   if (http.generations === 'http') {
     if (!config.adopt) throw new Error('The HTTP generations repository needs somewhere to file finished documents.');
-    repos.generations = createHttpGenerationsRepo(config.http, mock.generations, config.adopt);
+    repos.generations = createHttpGenerationsRepo(config.http, mock.generations, config.adopt, { strict });
   }
   if (http.jobs === 'http') {
-    repos.jobs = { ...mock.jobs, ...createHttpJobsRepo(config.http, mock.jobs) };
+    repos.jobs = { ...mock.jobs, ...createHttpJobsRepo(config.http, mock.jobs, http.jd === 'http' ? repos.jd : undefined) };
   }
   if (http.support === 'http') {
     repos.support = createHttpSupportRepo(config.http);

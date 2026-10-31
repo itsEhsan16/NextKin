@@ -236,6 +236,26 @@ export type MockStore = {
  * Seeded on first read rather than when the module loads: a host picks its platform at module
  * scope, which runs after this module has loaded, and the seed has to come from that choice.
  */
+/** Empties everything a person would take for theirs: jobs, resumes, runs, alerts. */
+export function clearSampleData(store: MockStore): void {
+  Object.assign(store.state, {
+    resumes: [],
+    resumeVersions: [],
+    atsScores: {},
+    scoringJds: {},
+    contents: {},
+    contentVersions: {},
+    generations: [],
+    jobs: [],
+    applications: [],
+    applicationAsks: [],
+    documents: [],
+    jdDrafts: [],
+    notifications: [],
+    activity: [],
+  } satisfies Partial<MockState>);
+}
+
 export function createMockStore(): MockStore {
   let state: MockState | undefined;
   return {

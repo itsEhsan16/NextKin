@@ -1,4 +1,3 @@
-import { SAVED_JOB_COMPARATORS } from '../../jobs/filters';
 import type { Application, ApplicationWithJob, Job } from '../../models/job';
 import {
   applicationAskResultSchema,
@@ -11,18 +10,17 @@ import {
   jobPageSchema,
   jobSchema,
 } from '../../schemas/job';
-import type { JobsRepo, Page } from '../types';
+import { companyFromHost, linkHost, titleFromPath } from '../../mock/jobLink';
+import type { JdRepo, JobsRepo, Page } from '../types';
 import { newIdempotencyKey, type HttpClient } from './client';
 import { isServerId } from './jdRepo';
 
 /**
  * `JobsRepo` over `/api/v1/jobs` (ImBackendImplementationPlan P11-04, P11-05, P11-11). Search,
- * counts, picks, detail, similar, company, saved jobs and applications are served. Link import is
- * still listed here until the reader lands. A listing the server owns keeps its UUID; a job the
- * mock made (a link import) keeps its own id and stays in the mock library, and the saved list
- * shows both.
+ * counts, picks, detail, similar, company, saved jobs and applications are served, and a link is
+ * read on the server through its JD. A listing the server owns keeps its UUID.
  */
-export const JOBS_FALLBACKS = ['readLink', 'importFromLink'] as const satisfies readonly (keyof JobsRepo)[];
+export const JOBS_FALLBACKS = [] as const satisfies readonly (keyof JobsRepo)[];
 
 type Served = Exclude<keyof JobsRepo, (typeof JOBS_FALLBACKS)[number]>;
 
@@ -30,7 +28,7 @@ const job = (data: unknown) => jobSchema.parse(data) as Job;
 const application = (data: unknown) => applicationSchema.parse(data) as Application;
 const jobs = (data: unknown) => jobListSchema.parse(data).data as Job[];
 
-export function createHttpJobsRepo(http: HttpClient, mock: JobsRepo): Pick<JobsRepo, Served> {
+export function createHttpJobsRepo(http: HttpClient, mock: JobsRepo, jd?: Pick<JdRepo, 'extract'>): Pick<JobsRepo, Served> {
   const get = async (id: string): Promise<Job> => (isServerId(id) ? job(await http.request(`/jobs/${id}`)) : mock.get(id));
   return {
     async list(filters, cursor, sort = 'relevance') {
@@ -45,12 +43,7 @@ export function createHttpJobsRepo(http: HttpClient, mock: JobsRepo): Pick<JobsR
     get,
     listSimilar: async (id, limit = 3) => (isServerId(id) ? jobs(await http.request(`/jobs/${id}/similar`, { query: { limit } })) : mock.listSimilar(id, limit)),
     listByCompany: async (company) => jobs(await http.request('/jobs/by-company', { query: { company } })),
-    async listSaved(sort = 'recent') {
-      const server = jobs(await http.request('/jobs/saved', { query: { sort } }));
-      // A job saved from a copied link is the app's own record (D-17): merged in, the order kept.
-      const imported = (await mock.listSaved(sort)).filter((j) => j.sourceUrl && !isServerId(j.id));
-      return [...server, ...imported].sort(SAVED_JOB_COMPARATORS[sort]);
-    },
+    listSaved: async (sort = 'recent') => jobs(await http.request('/jobs/saved', { query: { sort } })),
     async setSaved(id, saved) {
       if (!isServerId(id)) return mock.setSaved(id, saved);
       return saved
@@ -67,6 +60,16 @@ export function createHttpJobsRepo(http: HttpClient, mock: JobsRepo): Pick<JobsR
       return applicationAskResultSchema.parse(await http.request('/applications/asks', { body: target })).ask;
     },
     listApplicationAsks: async () => applicationAsksSchema.parse(await http.request('/applications/asks')).items,
+    // Only the address is read here: nothing leaves the phone until the candidate says to use it.
+    async readLink(url) {
+      const host = linkHost(url);
+      return { url, host, title: titleFromPath(url) ?? 'Job posting', company: companyFromHost(host) ?? host };
+    },
+    async importFromLink(url) {
+      if (!jd) return mock.importFromLink(url);
+      const draft = await jd.extract({ source: 'link', url });
+      return job(await http.request(`/jd/${draft.id}/save`, { method: 'POST' }));
+    },
     async answerApplicationAsk(id, answer) {
       await http.request(`/applications/asks/${id}/answer`, { body: { answer } });
     },

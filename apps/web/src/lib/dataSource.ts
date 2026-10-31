@@ -45,11 +45,6 @@ export function configureDataSource(): void {
     http,
     // A production build refuses an HTTP repository that still answers some methods from the mock.
     environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-    // The AWS demo's named exceptions (toreview §133.1); unset everywhere else.
-    allowedFallbacks: (process.env.NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS ?? '')
-      .split(',')
-      .map((method) => method.trim())
-      .filter(Boolean),
     // Files go straight to storage from the browser: the JdFile's uri is a blob: URL (P7-02).
     // A page opened away from localhost reaches local storage through its own origin (§131.7).
     uploader: (target, file) => browserUploader({ ...target, url: browserStorageUrl(target.url) }, file),

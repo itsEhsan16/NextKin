@@ -57,6 +57,8 @@ export interface VerifiedJd {
   stats: { kept: number; dropped: number; droppedItems: string[] };
   /** The JD's sections as a model grouped them, when the rules could not (toreview §129). */
   reading?: JdReading;
+  /** When the page it was read from says it closes (toreview §144.3). */
+  closesAt?: string;
 }
 
 export const CACHE_DAYS = 30;

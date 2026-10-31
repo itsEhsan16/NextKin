@@ -28,9 +28,13 @@ step('stack init', 'pnpm', ['stack:init']);
 step('migrate', 'pnpm', ['migrate']);
 step('seed', 'pnpm', ['seed']);
 
+// The link reader runs beside the worker, on the host's Chromium (toreview §144.3).
+process.env.LINK_READER_TOKEN_FILE ??= join(root, 'docker/link-reader/dev.token');
+
 const children = [
   ['web', ['--filter', '@nextkin/web', 'dev']],
   ['worker', ['--filter', '@nextkin/server', 'worker']],
+  ['links', ['--filter', '@nextkin/server', 'link-reader']],
 ].map(([name, args]) => {
   const child = spawn('pnpm', args, { cwd: root, env: process.env, shell: isWindows });
   const prefix = (stream, out) =>

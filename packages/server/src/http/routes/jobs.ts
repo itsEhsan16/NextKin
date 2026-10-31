@@ -14,8 +14,8 @@ import { authErrors, commonErrors, notFoundError, writeErrors } from './common';
 /**
  * `/api/v1/jobs` (spec §11; ImBackendImplementationPlan P11-04, P11-05). Search and counts read the
  * merged provider result; picks are computed per user; every listing carries its match basis and
- * provider attribution. Saving is idempotent and capped on Free. Applications and link import stay
- * on the apps' mock (D-05, D-17): no route here applies, and nothing fetches a URL a user gives.
+ * provider attribution. Saving is idempotent and capped on Free. Applications have their own
+ * routes, and a link is read through `/jd`.
  */
 
 export interface JobRouteDeps {

@@ -3,7 +3,7 @@
 import type { JdInput } from '@nextkin/shared/models';
 import { useRef, useState, type DragEvent } from 'react';
 
-import { looksLikeLink, READS_LINKS } from '@/features/upload/components/JobInput';
+import { looksLikeLink } from '@/features/upload/components/JobInput';
 import { PickedFile } from '@/features/upload/components/PickedFile';
 import {
   FILE_ACCEPT,
@@ -43,10 +43,6 @@ export function otherJobInput(job: OtherJob): { input: JdInput } | { problem: st
   const text = job.text.trim();
   if (!text) return null;
   if (looksLikeLink(text)) {
-    if (!READS_LINKS)
-      return {
-        problem: 'Links can’t be read yet. Paste the description or upload it as a file.',
-      };
     const why = linkProblem(text);
     return why ? { problem: why } : { input: { source: 'link', url: text } };
   }

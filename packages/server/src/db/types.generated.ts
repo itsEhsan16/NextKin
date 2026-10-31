@@ -372,6 +372,7 @@ export interface JobDescriptions {
   raw_text: Generated<string>;
   s3_key: string | null;
   source: string;
+  source_url: string | null;
   stats: Json | null;
   status: Generated<string>;
   updated_at: Generated<Timestamp>;

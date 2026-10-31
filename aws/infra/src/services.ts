@@ -130,11 +130,12 @@ export class Services extends Construct {
     workerDef.addContainer('worker', {
       image: appImage('worker', webDataSource),
       command: withDatabaseUrls([...runtimeRoles], 'node dist/worker.mjs'),
-      environment: { ...environment, LATEX_COMPILER_URL: `http://latex.${DEMO.namespace}:8790` },
+      environment: { ...environment, LATEX_COMPILER_URL: `http://latex.${DEMO.namespace}:8790`, LINK_READER_URL: `http://links.${DEMO.namespace}:8791` },
       secrets: {
         ...secrets,
         ...roleSecrets(data, [...runtimeRoles]),
         LATEX_COMPILER_TOKEN: ecs.Secret.fromSecretsManager(data.latexToken),
+        LINK_READER_TOKEN: ecs.Secret.fromSecretsManager(data.linkReaderToken),
       },
       logging: logging('worker'),
     });
@@ -201,6 +202,27 @@ export class Services extends Construct {
       capacityProviderStrategies: spot,
       minHealthyPercent: 100,
       ...discoverable('latex'),
+    });
+
+    // --- links: the link reader (toreview §144.3). Pages from the open web run here, so it holds
+    // nothing of the app's: no database, no buckets, a task role with no permissions, and only
+    // ports 80 and 443 out. As with LaTeX, the shell writes the token to a file and drops the variable.
+    const linksDef = taskDef('links', 1024, 2048);
+    linksDef.addContainer('links', {
+      image: appImage('link-reader', webDataSource),
+      entryPoint: ['sh', '-c'],
+      command: [
+        'umask 077; printf %s "$LINK_READER_TOKEN" > /tmp/link_reader_token; unset LINK_READER_TOKEN; exec node dist/link-reader.mjs',
+      ],
+      environment: { LINK_READER_TOKEN_FILE: '/tmp/link_reader_token' },
+      secrets: { LINK_READER_TOKEN: ecs.Secret.fromSecretsManager(data.linkReaderToken) },
+      portMappings: [{ containerPort: 8791 }],
+      logging: logging('links'),
+    });
+    service('links', linksDef, network.linksSg, {
+      capacityProviderStrategies: spot,
+      minHealthyPercent: 100,
+      ...discoverable('links'),
     });
 
     // --- one-off tasks ---

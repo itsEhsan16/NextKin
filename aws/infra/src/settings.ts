@@ -39,19 +39,4 @@ export const DEMO = {
   queuePrefix: 'nextkin-demo-',
   queues: ['generation-priority', 'generation-standard', 'maintenance'],
   secretPrefix: 'nextkin-demo',
-  /**
-   * What web still answers from the mock with every repository on the API (owner, 2026-10-24: a
-   * real sign-in matters more than these). Exactly the list the first deploy's build refused; a
-   * new fallback still fails the build until it is added here on purpose.
-   */
-  allowedMockFallbacks: [
-    'notifications.list',
-    'notifications.markRead',
-    'notifications.markAllRead',
-    'notifications.remove',
-    'jd.compare:from-mock-document',
-    'generations.start:resume-from-library',
-    'generations.start:from-mock-listing',
-    'generations.start:from-mock-document',
-  ],
 } as const;

@@ -436,6 +436,9 @@ importers:
       nodemailer:
         specifier: ^10.1.0
         version: 10.1.0
+      parse5:
+        specifier: ~7.3.0
+        version: 7.3.0
       pdfjs-dist:
         specifier: ~6.4.299
         version: 6.4.299

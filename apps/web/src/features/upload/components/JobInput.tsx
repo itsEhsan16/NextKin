@@ -3,7 +3,6 @@
 import { isConsentRequired } from '@nextkin/shared/queries';
 import { useId, useRef, useState, type DragEvent, type FormEvent } from 'react';
 
-import { USES_BACKEND } from '@/lib/dataSource';
 import { cn } from '@/lib/cn';
 import { Callout } from '@/ui/Callout';
 import { CollapseFade } from '@/ui/CollapseFade';
@@ -16,13 +15,6 @@ import { PickedFile } from './PickedFile';
 
 /** A single link pasted on its own: read as a link, not as a description. */
 export const looksLikeLink = (text: string) => /^https?:\/\/\S+$/i.test(text.trim());
-
-/**
- * Pages are read by link only where the app can (toreview §114): the mock's stand-in reader in a
- * demo. Against the server, a link is not read yet (D-17, the link reader is still to come), so
- * the box asks for the posting's text instead of showing a made-up description.
- */
-export const READS_LINKS = !USES_BACKEND;
 
 /**
  * Add a job (toreview §114, owner 2026-10-19): one box for the description or its link, a file
@@ -41,7 +33,7 @@ export function JobInput({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
 
   const trimmed = text.trim();
   const isLink = !file && looksLikeLink(trimmed);
-  const linkBlocked = isLink && (!READS_LINKS || linkProblem(trimmed) !== null);
+  const linkBlocked = isLink && linkProblem(trimmed) !== null;
   const ready = file != null || (trimmed.length > 0 && !linkBlocked);
   // A consent refusal is the dialog's to handle: it carries the request on once agreed (§114).
   const status = busy
@@ -187,9 +179,7 @@ export function JobInput({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
       )}
       {isLink && linkBlocked && (
         <Callout tone="warning" className="mt-3">
-          {READS_LINKS
-            ? linkProblem(trimmed)
-            : 'Links can’t be read yet. Paste the description, or save the page as a PDF and upload it.'}
+          {linkProblem(trimmed)}
         </Callout>
       )}
       {!isLink && !file && (

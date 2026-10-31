@@ -94,3 +94,7 @@ export function useJobJd(jobId: string) {
 export function isUnreadableLinkError(error: unknown): boolean {
   return error instanceof Error && (error as { code?: unknown }).code === 'UNREADABLE_LINK';
 }
+
+/** Why a link could not be read, in the server's words: each says what the candidate can do next. */
+export const unreadableLinkMessage = (error: unknown): string | null =>
+  isUnreadableLinkError(error) ? (error as Error).message : null;

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createMockRepos } from '../src/repos';
-import { createRepos, mockFallbacks, parseDataSources } from '../src/repos/create';
+import { createRepos, isFullBackend, mockFallbacks, parseDataSources } from '../src/repos/create';
 import { createHttpClient } from '../src/repos/http/client';
 import { createMockStore } from '../src/repos/state';
 
@@ -40,28 +40,25 @@ describe('createRepos', () => {
     expect(() => createRepos({ sources: { profile: 'http' } }, mock())).toThrow(/HTTP client/);
   });
 
-  it('lists every fallback, and production refuses to build with one', () => {
-    const config = { sources: parseDataSources('http'), http, uploader: async () => {} };
-    expect(mockFallbacks(config).some((m) => m.startsWith('user.'))).toBe(false);
+  it('a production build on the full backend starts, with nothing left on the mock', () => {
+    const config = { sources: parseDataSources('http'), http, uploader: async () => {}, adopt: () => {}, adoptJob: () => {}, environment: 'production' as const };
+    expect(isFullBackend(config.sources)).toBe(true);
+    expect(mockFallbacks(config)).toEqual([]);
+    expect(() => createRepos(config, mock())).not.toThrow();
+  });
+
+  it('production refuses a partial backend that would answer from the mock', () => {
+    const sources = { jd: 'http', generations: 'http' } as const;
+    const config = { sources, http, uploader: async () => {}, adopt: () => {}, adoptJob: () => {} };
     expect(mockFallbacks(config)).toContain('jd.compare:from-mock-document');
-    expect(mockFallbacks(config).some((m) => m.startsWith('profile.'))).toBe(false);
     expect(() => createRepos({ ...config, environment: 'production' }, mock())).toThrow(/jd\.compare:from-mock-document/);
     expect(() => createRepos({ sources: { profile: 'http' }, http, environment: 'production' }, mock())).not.toThrow();
   });
 
-  it('lets a production build keep only the fallbacks it names', () => {
-    // configureRepos supplies adopt and adoptJob; createRepos needs them spelled out.
-    const config = {
-      sources: parseDataSources('http'),
-      http,
-      uploader: async () => {},
-      adopt: () => {},
-      adoptJob: () => {},
-      environment: 'production' as const,
-    };
-    const all = mockFallbacks(config);
-    expect(() => createRepos({ ...config, allowedFallbacks: all }, mock())).not.toThrow();
-    const allButOne = all.filter((m) => m !== 'jd.compare:from-mock-document');
-    expect(() => createRepos({ ...config, allowedFallbacks: allButOne }, mock())).toThrow(/jd\.compare:from-mock-document/);
+  it('on the full backend a run or a comparison it cannot serve fails plainly, and never reaches the mock', async () => {
+    const config = { sources: parseDataSources('http'), http, uploader: async () => {}, adopt: () => {}, adoptJob: () => {} };
+    const { repos } = createRepos(config, mock());
+    await expect(repos.generations.start({ kind: 'resume', jobId: 'job_mock' })).rejects.toMatchObject({ code: 'UNAVAILABLE' });
+    await expect(repos.jd.compare('res_mock', 'job_mock')).rejects.toMatchObject({ code: 'UNAVAILABLE' });
   });
 });

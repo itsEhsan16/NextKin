@@ -37,6 +37,8 @@ export const jdCreateSchema = z.discriminatedUnion('source', [
   z.object({ source: z.literal('paste'), text: z.string().trim().min(40).max(20000), details: jdPatchSchema.optional() }).strict(),
   z.object({ source: z.literal('file'), uploadId: z.uuid(), details: jdPatchSchema.optional() }).strict(),
   // P11: a listing on NextKin, by the id it carries. Read from the listing itself, no model call.
+  // A link: the reader service reads the page, and what it says goes through the same extraction.
+  z.object({ source: z.literal('link'), url: z.string().trim().min(4).max(2000), details: jdPatchSchema.optional() }).strict(),
   z.object({ source: z.literal('job'), jobId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i), details: jdPatchSchema.optional() }).strict(),
 ]);
 
@@ -69,6 +71,7 @@ export const jdDraftSchema = z.object({
   softSkills: z.array(z.string()).optional(),
   domain: z.string().optional(),
   rawText: z.string(),
+  sourceUrl: z.string().optional(),
   savedToJobs: z.boolean().optional(),
   /** The listing a draft was read from (P11). */
   jobId: z.string().optional(),

@@ -13,7 +13,8 @@ import { createClamavScanner } from '../scan/scan';
 import { buildStorage, teaserSalt } from '../storage/build';
 import { createLatexCompiler } from '../export/latex/compile';
 import { createPdfRenderer } from '../export/renderPdf';
-import { egressHostsFor, latexEgressHosts, setEgressAllowlist } from '../net/egress';
+import { createLinkReader } from '../links/client';
+import { egressHostsFor, latexEgressHosts, linkReaderEgressHosts, setEgressAllowlist } from '../net/egress';
 import { buildWorker } from '../worker/build';
 import { createDegradedSignal } from '../health/degraded';
 import { createSmtpEmail } from '../email/email';
@@ -26,7 +27,7 @@ import { buildPaymentProvider } from '../payments/build';
  */
 
 const config = loadConfig();
-setEgressAllowlist([...egressHostsFor(config), ...latexEgressHosts(config)]);
+setEgressAllowlist([...egressHostsFor(config), ...latexEgressHosts(config), ...linkReaderEgressHosts(config)]);
 const log = createLogger(config.LOG_LEVEL, 'worker');
 const checks = createDependencyChecks(config);
 
@@ -45,6 +46,9 @@ const pdf = createPdfRenderer(config.CHROMIUM_PATH ? { executablePath: config.CH
 // The sealed LaTeX service (toreview §111) once its token is configured; without it resumes keep
 // the Chromium PDF and their previews stay structured.
 const latex = config.LATEX_COMPILER_TOKEN || config.LATEX_COMPILER_TOKEN_FILE ? createLatexCompiler(config) : undefined;
+// The link reader (toreview §144.3) once its token is configured; without it a link is refused
+// plainly, and the candidate is asked to paste the text.
+const links = config.LINK_READER_TOKEN || config.LINK_READER_TOKEN_FILE ? createLinkReader(config) : undefined;
 const queue = createSqsQueue({ region: config.AWS_REGION, endpoint: config.SQS_ENDPOINT, prefix: config.SQS_QUEUE_PREFIX });
 
 const worker = buildWorker({
@@ -68,6 +72,7 @@ const worker = buildWorker({
   },
   // One warm Chromium for the life of the process (P10-04); launched on the first export.
   documents: { storage, exportsBucket: config.S3_BUCKET_EXPORTS, pdf, ...(latex ? { latex } : {}) },
+  ...(links ? { links } : {}),
   liveEvals: isLiveRoute(config),
   auditBucket: config.S3_BUCKET_AUDIT,
   // P12-07: the worker applies stored webhooks; it never asks the gateway for a change itself.

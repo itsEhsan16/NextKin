@@ -16,7 +16,7 @@ export const PLATFORM: ecs.RuntimePlatform = {
   operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
 };
 
-type Target = 'web' | 'worker' | 'migrate' | 'latex';
+type Target = 'web' | 'worker' | 'migrate' | 'latex' | 'link-reader';
 
 export function appImage(target: Target, webDataSource: string): ecs.ContainerImage {
   const buildArgs: Record<string, string> = { NODE_IMAGE: pinned('NODE_IMAGE') };
@@ -25,12 +25,8 @@ export function appImage(target: Target, webDataSource: string): ecs.ContainerIm
     buildArgs.PDFJS_VERSION = pinned('LIB_PDFJS_DIST');
     buildArgs.TESSERACT_VERSION = pinned('LIB_TESSERACT_JS');
   }
-  if (target === 'web') {
-    buildArgs.NEXT_PUBLIC_DATA_SOURCE = webDataSource;
-    if (webDataSource === 'http') {
-      buildArgs.NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS = DEMO.allowedMockFallbacks.join(',');
-    }
-  }
+  if (target === 'link-reader') buildArgs.PLAYWRIGHT_VERSION = pinned('LIB_PLAYWRIGHT');
+  if (target === 'web') buildArgs.NEXT_PUBLIC_DATA_SOURCE = webDataSource;
   if (target === 'migrate') buildArgs.ARGON2_VERSION = pinned('LIB_NODE_RS_ARGON2');
   if (target === 'latex') {
     buildArgs.TECTONIC_VERSION = pinned('TECTONIC_VERSION');

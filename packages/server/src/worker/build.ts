@@ -15,6 +15,7 @@ import { createRunner, MAX_RECEIVES, type RunnerDeps, type RunnerHooks } from '.
 import type { ScanPort } from '../scan/scan';
 import { createMemoryKv, type KvCache } from '../cache/kv';
 import type { LatexCompiler } from '../export/latex/compile';
+import type { LinkReader } from '../links/client';
 import type { PdfRenderer } from '../export/renderPdf';
 import { runExport } from '../services/exports';
 import { failRender, runRender } from '../services/renders';
@@ -52,6 +53,8 @@ export interface WorkerDeps {
   cache?: KvCache;
   /** Export rendering and the trash purge (P10). Without it, export messages fail and dead-letter. */
   documents?: { storage: StoragePort; exportsBucket: string; pdf: PdfRenderer; latex?: LatexCompiler };
+  /** The link reader (toreview §144.3). Without it, a link fails with a plain message. */
+  links?: LinkReader;
   /** Billing (P12-07): stored webhooks are applied here. Without it, webhook messages fail and dead-letter. */
   billing?: { provider: PaymentProvider; email: EmailPort };
   /** P12-03: evaluate prompt releases with the gateway (a live model route); otherwise the reference model. */
@@ -118,7 +121,7 @@ export function buildWorker(deps: WorkerDeps) {
         case 'jd.extract': {
           const f = deps.files;
           const outcome = await runJdExtract(
-            { db: deps.db, gateway: deps.gateway, cache, log, ...(f ? { files: { storage: f.storage, maxBytes: f.limits.documentBytes, limits: f.parse } } : {}) },
+            { db: deps.db, gateway: deps.gateway, cache, log, ...(deps.links ? { links: deps.links } : {}), ...(f ? { files: { storage: f.storage, maxBytes: f.limits.documentBytes, limits: f.parse } } : {}) },
             { ...envelope.payload, correlationId: envelope.correlationId },
             lastAttempt,
           );

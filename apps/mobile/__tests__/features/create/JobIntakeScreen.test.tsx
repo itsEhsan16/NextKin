@@ -6,7 +6,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { createQueryClient } from '@/data/queries';
 import { repos, resetMockRepos } from '@/data/repos';
 import { JobIntakeScreen } from '@/features/create';
-import { isBareLink, LINK_NOT_READ } from '@/features/create/components/JobIntake';
+import { isBareLink, jobIntakeInput } from '@/features/create/components/JobIntake';
 import { useCreateStore } from '@/features/create/createStore';
 
 const mockPush = jest.fn();
@@ -75,14 +75,17 @@ describe('JobIntakeScreen — Add a job (toreview §114)', () => {
     );
   });
 
-  it('says a pasted link cannot be read and asks for the text', async () => {
+  it('reads a pasted link as a link', async () => {
     await renderIntake();
     await act(async () => fireEvent.press(screen.getByLabelText(/^Paste the description/)));
     await act(async () =>
       fireEvent.changeText(screen.getByLabelText('Job description'), 'https://jobs.example.com/1'),
     );
-    expect(screen.getByText(LINK_NOT_READ)).toBeOnTheScreen();
-    expect(screen.getByLabelText('Analyze job')).toBeDisabled();
+    expect(screen.getByLabelText('Analyze job')).toBeEnabled();
+    expect(jobIntakeInput({ source: 'paste', text: ' https://jobs.example.com/1 ' })).toEqual({
+      source: 'link',
+      url: 'https://jobs.example.com/1',
+    });
     expect(isBareLink('www.example.com/job')).toBe(true);
     expect(isBareLink(JD)).toBe(false);
   });

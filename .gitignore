@@ -32,3 +32,4 @@ tests/load/results/
 
 # The LaTeX compile service's local bearer token (written by pnpm stack:up)
 docker/latex/*.token
+docker/link-reader/*.token
