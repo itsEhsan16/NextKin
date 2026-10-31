@@ -36,6 +36,28 @@ describe('profile sheets redesign', () => {
     expect(onSelect).toHaveBeenCalledWith('now');
   });
 
+  it('shows a disabled option without letting it be picked', async () => {
+    const onSelect = jest.fn();
+    await render(
+      <OptionSheetBody
+        title="Appearance"
+        variant="card"
+        options={[
+          { key: 'light', label: 'Light' },
+          { key: 'dark', label: 'Dark', caption: 'Coming soon', disabled: true },
+        ]}
+        selectedKey="light"
+        onSelect={onSelect}
+        onClose={jest.fn()}
+      />,
+    );
+    expect(screen.getByText('Coming soon')).toBeTruthy();
+    expect(screen.getByLabelText('Dark')).toBeDisabled();
+    expect(screen.getByLabelText('Light')).toBeEnabled();
+    fireEvent.press(screen.getByLabelText('Dark'));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
   it('centres the confirm under its art and routes both buttons', async () => {
     const onConfirm = jest.fn();
     const onCancel = jest.fn();

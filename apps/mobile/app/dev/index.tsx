@@ -1,12 +1,12 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useArtboardStore, useOverlayStore } from '@/dev';
 import { a11yButton, haptics } from '@/lib';
-import { useAppearanceStore, useTheme, type AppearancePreference } from '@/theme';
+import { useTheme } from '@/theme';
 import { Screen, Text } from '@/ui';
 import { DevButton, DevSection } from '@/ui/dev';
+import { Icon } from '@/ui/Icon';
 
 type GalleryRow = { href: Href; title: string; subtitle: string };
 
@@ -23,22 +23,12 @@ const ROWS: readonly GalleryRow[] = [
   },
 ];
 
-const APPEARANCE: readonly { key: AppearancePreference; label: string }[] = [
-  { key: 'system', label: 'System' },
-  { key: 'light', label: 'Light' },
-  { key: 'dark', label: 'Dark' },
-];
-
-const CHEVRON_SIZE = 14;
-
 export default function DevIndexRoute() {
-  const { colors, spacing, radii, sizes, opacity, scheme } = useTheme();
+  const { colors, spacing, radii, sizes, opacity } = useTheme();
   const router = useRouter();
   const showOverlay = useOverlayStore((s) => s.show);
   const artboard = useArtboardStore((s) => s.enabled);
   const setArtboard = useArtboardStore((s) => s.setEnabled);
-  const preference = useAppearanceStore((s) => s.preference);
-  const setPreference = useAppearanceStore((s) => s.setPreference);
 
   return (
     <Screen scroll edges={[]}>
@@ -73,7 +63,7 @@ export default function DevIndexRoute() {
                   {row.subtitle}
                 </Text>
               </View>
-              <FontAwesome5 name="chevron-right" size={CHEVRON_SIZE} color={colors.iconChevron} />
+              <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
             </Pressable>
           ))}
         </View>
@@ -100,20 +90,6 @@ export default function DevIndexRoute() {
         <View style={[styles.segments, { gap: spacing[2] }]}>
           <DevButton label="Off" active={!artboard} onPress={() => setArtboard(false)} grow />
           <DevButton label="On" active={artboard} onPress={() => setArtboard(true)} grow />
-        </View>
-      </DevSection>
-
-      <DevSection title="Appearance" description={`Resolved scheme: ${scheme}`}>
-        <View style={[styles.segments, { gap: spacing[2] }]}>
-          {APPEARANCE.map((option) => (
-            <DevButton
-              key={option.key}
-              label={option.label}
-              active={preference === option.key}
-              onPress={() => setPreference(option.key)}
-              grow
-            />
-          ))}
         </View>
       </DevSection>
     </Screen>

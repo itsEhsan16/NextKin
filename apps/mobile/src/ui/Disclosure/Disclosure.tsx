@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, type ReactNode } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
@@ -14,10 +13,8 @@ import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { layoutTransition } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
-/** Caret beside 13pt caption text; the row caret sits beside a 17pt title, so it is larger. */
-const CHEVRON_INLINE = 9;
-const CHEVRON_ROW = 12;
 /** Artboard gap between "Show more" and its caret. */
 const TOGGLE_GAP = 6;
 
@@ -108,12 +105,7 @@ export function Disclosure(props: DisclosureProps) {
             {props.title}
           </Text>
           <Animated.View style={chevronStyle}>
-            <FontAwesome5
-              name="chevron-down"
-              size={s(CHEVRON_ROW)}
-              color={colors.iconChevron}
-              solid
-            />
+            <Icon name="ChevronDown" size="sm" color={colors.iconChevron} />
           </Animated.View>
         </Pressable>
         {body}
@@ -144,12 +136,7 @@ export function Disclosure(props: DisclosureProps) {
       >
         <Text variant="captionSemiBold">{label}</Text>
         <Animated.View style={chevronStyle}>
-          <FontAwesome5
-            name="chevron-down"
-            size={s(CHEVRON_INLINE)}
-            color={colors.textPrimary}
-            solid
-          />
+          <Icon name="ChevronDown" size="xs" color={colors.textPrimary} />
         </Animated.View>
       </Pressable>
     </Animated.View>

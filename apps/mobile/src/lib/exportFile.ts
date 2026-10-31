@@ -8,19 +8,20 @@
 /** A path accepted by the File constructor: a uri string, or a Directory/File (both carry `uri`). */
 type PathLike = string | { readonly uri: string };
 
-/** The slice of expo-file-system's SDK 57 class API this file uses. */
+/** The slice of expo-file-system's class API (SDK 58) this file uses. */
 type ManagedFile = {
   readonly uri: string;
   readonly exists: boolean;
   create(): void;
-  write(text: string): void;
+  /** Async since SDK 58 (`writeSync` keeps the old blocking behaviour). */
+  write(text: string): Promise<void>;
   delete(): void;
   move(destination: ManagedFile): Promise<void>;
 };
 
 type FileSystemModule = {
   File: (new (...parts: PathLike[]) => ManagedFile) & {
-    /** SDK 57: downloads `url` to `destination` and resolves to the written file. */
+    /** Downloads `url` to `destination` and resolves to the written file. */
     downloadFileAsync(url: string, destination: ManagedFile): Promise<ManagedFile>;
   };
   Paths: { cache: PathLike };
@@ -65,8 +66,8 @@ function printModule(): PrintModule | null {
 export type WrittenFile = { uri: string; name: string };
 
 /**
- * Writes `text` to `name` in the cache directory. The SDK 57 class API is deliberate: the
- * function API moved to 'expo-file-system/legacy' and is deprecated.
+ * Writes `text` to `name` in the cache directory. The class API is deliberate: the function API
+ * moved to 'expo-file-system/legacy' and is deprecated.
  */
 export async function writeTextFile(name: string, text: string): Promise<WrittenFile | null> {
   const mod = fileSystemModule();
@@ -78,7 +79,7 @@ export async function writeTextFile(name: string, text: string): Promise<Written
     // session has to clear the previous copy rather than append to it.
     if (file.exists) file.delete();
     file.create();
-    file.write(text);
+    await file.write(text);
     return { uri: file.uri, name };
   } catch {
     return null;

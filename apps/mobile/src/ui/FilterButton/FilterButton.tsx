@@ -1,10 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton, pluralize } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type FilterButtonProps = {
   /** Number of active filters; renders the count badge when > 0. */
@@ -12,8 +12,6 @@ export type FilterButtonProps = {
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 };
-
-const ICON = 17;
 
 /** Figma 1:271 — 52pt outlined square with the sliders glyph and an ink count badge. */
 export function FilterButton({ count, onPress, style }: FilterButtonProps) {
@@ -42,7 +40,7 @@ export function FilterButton({ count, onPress, style }: FilterButtonProps) {
         style,
       ]}
     >
-      <FontAwesome5 name="sliders-h" size={s(ICON)} color={colors.textPrimary} solid />
+      <Icon name="Sliders01" size="sm" color={colors.textPrimary} />
 
       {count > 0 ? (
         <View

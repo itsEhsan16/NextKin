@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton } from '@/lib';
@@ -6,10 +5,11 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Chip } from '@/ui/Chip';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type EntryRowProps = {
-  /** FontAwesome 5 Free Solid glyph name. */
-  icon: string;
+  /** Untitled UI line icon. */
+  icon: LineIconName;
   title: string;
   /** The muted second line — "Flipkart · Mar 2022 – Present". */
   meta?: string;
@@ -25,9 +25,7 @@ export type EntryRowProps = {
 };
 
 /** Shared with `ListRow` so the two row shapes sit on one grid and one divider inset. */
-const ICON = 16;
 const ICON_SLOT = 20;
-const CHEVRON = 11;
 const PADDING_X = 20;
 const GUTTER = 16;
 const DEFAULT_MAX_TAGS = 3;
@@ -87,7 +85,7 @@ export function EntryRow({
       ]}
     >
       <View style={[styles.iconSlot, { width: s(ICON_SLOT) }]}>
-        <FontAwesome5 name={icon} size={s(ICON)} color={colors.iconDefault} solid />
+        <Icon name={icon} size="sm" color={colors.iconDefault} />
       </View>
 
       <View style={styles.body}>
@@ -115,9 +113,7 @@ export function EntryRow({
         ) : null}
       </View>
 
-      {showChevron ? (
-        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
-      ) : null}
+      {showChevron ? <Icon name="ChevronRight" size="sm" color={colors.iconChevron} /> : null}
     </Pressable>
   );
 }

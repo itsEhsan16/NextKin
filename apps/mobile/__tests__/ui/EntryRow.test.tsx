@@ -23,7 +23,7 @@ const shown = { includeHiddenElements: true } as const;
 const renderRow = (props: Partial<EntryRowProps> = {}) =>
   render(
     <EntryRow
-      icon="briefcase"
+      icon="Briefcase01"
       title="Senior UX Designer"
       meta="Flipkart · Mar 2022 – Present"
       onPress={onPress}

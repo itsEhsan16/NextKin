@@ -61,7 +61,7 @@ export function ScreenHeader({
       ]}
     >
       {onBack ? (
-        <IconButton icon="chevron-left" label={backLabel} onPress={onBack} />
+        <IconButton icon="ChevronLeft" label={backLabel} onPress={onBack} />
       ) : (
         <View style={slot} />
       )}

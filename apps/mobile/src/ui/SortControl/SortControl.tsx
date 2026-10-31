@@ -1,10 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton, hitSlopFor } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type SortControlProps = {
   /** The current order ("Relevance", "Last edited"). */
@@ -15,7 +15,6 @@ export type SortControlProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const CHEVRON = 9;
 /** The control is only as tall as its caption line, so slop is measured off that. */
 const ROW_HEIGHT = 20;
 
@@ -38,7 +37,7 @@ export function SortControl({ label, hint, onPress, style }: SortControlProps) {
       <Text variant="caption" color="textSecondary">
         {label}
       </Text>
-      <FontAwesome5 name="chevron-down" size={s(CHEVRON)} color={colors.iconMuted} solid />
+      <Icon name="ChevronDown" size="xs" color={colors.iconMuted} />
     </Pressable>
   );
 }

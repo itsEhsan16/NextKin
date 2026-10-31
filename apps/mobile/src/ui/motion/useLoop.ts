@@ -45,11 +45,7 @@ export function useLoop(
     clock.set(
       withDelay(
         delay,
-        withRepeat(
-          withTiming(1, { duration: period, easing: motion.easings.linear }),
-          -1,
-          reverse,
-        ),
+        withRepeat(withTiming(1, { duration: period, easing: motion.easings.linear }), -1, reverse),
       ),
     );
     return () => cancelAnimation(clock);

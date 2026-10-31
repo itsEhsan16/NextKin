@@ -1,26 +1,23 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useEffect, useRef, type ReactNode, type Ref } from 'react';
+import { useRef, type ReactNode, type Ref } from 'react';
 import {
-  AccessibilityInfo,
   StyleSheet,
   TextInput,
   View,
   type StyleProp,
   type TextInputProps,
   type ViewStyle,
+  type ViewInstance,
+  type TextInputInstance,
 } from 'react-native';
-import Animated, {
-  interpolateColor,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
-import { haptics, maxFontScale, useReducedMotion, withReducedMotion } from '@/lib';
+import { maxFontScale } from '@/lib';
 import { useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { useRevealOnFocus } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
-import { useSelectionProgress } from '@/ui/motion';
+
+import { useFieldChrome } from './useFieldChrome';
 
 export type TextFieldProps = {
   value: string;
@@ -39,8 +36,8 @@ export type TextFieldProps = {
   helper?: string;
   /** Replaces the helper, paints the danger border and is announced once. */
   error?: string;
-  /** Leading FontAwesome 5 Solid glyph, like SearchField's search icon. */
-  icon?: string;
+  /** Leading line icon, like SearchField's search icon. */
+  icon?: LineIconName;
   multiline?: boolean;
   /** Multiline only: the floor in text lines; the box never shrinks below sizes.textArea. */
   minLines?: number;
@@ -62,13 +59,12 @@ export type TextFieldProps = {
   accessibilityLabel?: string;
   testID?: string;
   /** React 19 passes ref as an ordinary prop — do not reach for forwardRef. */
-  ref?: Ref<TextInput>;
+  ref?: Ref<TextInputInstance>;
   style?: StyleProp<ViewStyle>;
 };
 
 /** SearchField's chrome, reused here: an 18pt inset and a 15pt leading glyph. */
 const INSET = 18;
-const ICON = 15;
 /** Three lines of body copy is the shortest textarea any Phase 9 form asks for. */
 const DEFAULT_MIN_LINES = 3;
 
@@ -111,46 +107,13 @@ export function TextField({
   ref,
   style,
 }: TextFieldProps) {
-  const { colors, motion, opacity, radii, sizes, spacing, typography, s } = useTheme();
+  const { colors, opacity, radii, sizes, spacing, typography, s } = useTheme();
   const revealOnFocus = useRevealOnFocus();
-  const fieldRef = useRef<View>(null);
-  const reduced = useReducedMotion();
+  const fieldRef = useRef<ViewInstance>(null);
 
-  // Resolved here, on the JS side, for the reason Toggle resolves its scaled lengths there: the
-  // worklet below captures these by value, and a token read from inside it would come off the UI
-  // runtime's copy of the theme rather than this render's.
-  //
-  // The error colour is blended in by the same updater rather than layered on as a static style
-  // after the animated one: React only owns borderColor until the first updater run: after that
-  // Reanimated's props registry owns it and re-applies it over every commit, so a static override
-  // later in the array would stop winning the moment the field was focused. One code path owns the
-  // border at all times. The error has its own progress, so the border fades to red (and back)
-  // rather than snapping when validation speaks.
-  const restBorder = colors.surfaceSubtle;
-  const focusedBorder = colors.surfaceSelected;
-  const errorBorder = colors.danger;
-
-  const focus = useSharedValue(0);
-  const errorProgress = useSelectionProgress(Boolean(error));
-  const borderStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(
-      errorProgress.value,
-      [0, 1],
-      [interpolateColor(focus.value, [0, 1], [restBorder, focusedBorder]), errorBorder],
-    ),
-  }));
-
-  // Once per falsy→truthy transition. Announced explicitly because iOS has no live region, and
-  // re-announcing on every keystroke while the same error stands would talk over the user typing
-  // the fix.
-  const previousError = useRef<string | undefined>(undefined);
-  useEffect(() => {
-    const wasShowing = Boolean(previousError.current);
-    previousError.current = error;
-    if (!error || wasShowing) return;
-    AccessibilityInfo.announceForAccessibility(error);
-    haptics.warning();
-  }, [error]);
+  // A visible edge at rest (a filled box with no edge read as a grey slab, not a field), the
+  // selected ink on focus, red under an error — see useFieldChrome.
+  const chrome = useFieldChrome(error, { rest: colors.borderDefault });
 
   // `TypeRole` takes leading off `TextStyle`, where it is optional; every role in the ramp sets
   // one, and sizes.textArea is the floor if some role ever does not.
@@ -192,13 +155,11 @@ export function TextField({
           },
           multiline ? { minHeight, paddingVertical: spacing[3] } : { height: sizes.searchField },
           editable ? null : { opacity: opacity.disabled },
-          // Owns borderColor outright, error included — see restBorder/focusedBorder above.
-          borderStyle,
+          // Owns borderColor outright, error included — see useFieldChrome.
+          chrome.borderStyle,
         ]}
       >
-        {icon ? (
-          <FontAwesome5 name={icon} size={s(ICON)} color={colors.textSecondary} solid />
-        ) : null}
+        {icon ? <Icon name={icon} size="sm" color={colors.textSecondary} /> : null}
         <TextInput
           ref={ref}
           testID={testID}
@@ -228,14 +189,14 @@ export function TextField({
             multiline ? 'newline' : returnKeyType === 'next' ? 'submit' : 'blurAndSubmit'
           }
           onFocus={() => {
-            focus.set(withTiming(1, withReducedMotion(reduced, motion.timings.fast)));
+            chrome.onFocus();
             // Asks the page to scroll this field clear of the keyboard. `null` outside a
             // keyboard-aware scrolling Screen — in a sheet, the sheet does its own lifting.
             revealOnFocus?.(fieldRef.current);
             onFocus?.();
           }}
           onBlur={() => {
-            focus.set(withTiming(0, withReducedMotion(reduced, motion.timings.fast)));
+            chrome.onBlur();
             onBlur?.();
           }}
           editable={editable}

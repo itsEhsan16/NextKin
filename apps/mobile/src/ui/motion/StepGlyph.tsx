@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   FadeIn,
@@ -13,6 +12,7 @@ import { useReducedMotion } from '@/lib';
 import { motion, useTheme, type ColorToken } from '@/theme';
 
 import { Spinner } from './Spinner';
+import { Icon, lineBox } from '@/ui/Icon';
 
 /**
  * Where a step stands: behind the work (`done`), on it (`current`), ahead of it (`todo`), or
@@ -87,13 +87,12 @@ export function StepGlyph({
           {state === 'current' ? (
             <Spinner size={ringSize} />
           ) : state === 'todo' ? (
-            <FontAwesome5 name="circle" size={todoSize} color={colors[todoColor]} />
+            <Icon name="Circle" size={lineBox(todoSize)} color={colors[todoColor]} />
           ) : (
-            <FontAwesome5
-              name={state === 'left' ? 'exclamation-circle' : 'check-circle'}
-              size={size}
+            <Icon
+              name={state === 'left' ? 'AlertCircle' : 'CheckCircle'}
+              size={lineBox(size)}
               color={state === 'left' ? colors.warningAccent : colors.success}
-              solid
             />
           )}
         </Animated.View>

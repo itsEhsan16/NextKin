@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,20 +6,13 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
-import {
-  a11yButton,
-  a11yHiddenWhen,
-  haptics,
-  hitSlopFor,
-  useReducedMotion,
-  withReducedMotion,
-} from '@/lib';
+import { a11yButton, a11yHiddenWhen, haptics, hitSlopFor } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
-import { useSelectionProgress } from '@/ui/motion';
+import { useSelectionProgress, useSlidingPill } from '@/ui/motion';
 
 export type Segment<K extends string = string> = {
   key: K;
@@ -56,14 +49,13 @@ export function SegmentedControl<K extends string = string>({
   size = 'md',
   style,
 }: SegmentedControlProps<K>) {
-  const { colors, radii, sizes, shadows, motion, s } = useTheme();
+  const { colors, radii, sizes, shadows, s } = useTheme();
   const compact = size === 'sm';
   const trackHeight = compact ? s(SM_TRACK) : sizes.segmentedControl;
   const pillHeight = compact ? s(SM_PILL) : sizes.segmentedPill;
   // Vertical only: sideways slop would reach into the neighbouring segment.
   const { top, bottom } = hitSlopFor(trackHeight);
   const verticalSlop = { top, bottom };
-  const reduced = useReducedMotion();
 
   const [trackWidth, setTrackWidth] = useState(0);
   // Derived from the two heights rather than scaled from the drawn 4pt: the track is read between
@@ -76,25 +68,8 @@ export function SegmentedControl<K extends string = string>({
     segments.findIndex((segment) => segment.key === value),
   );
 
-  const offset = useSharedValue(0);
-  // `slot` is 0 until onLayout measures the track, so the first pass has nowhere real to put the
-  // pill — guarding the instant branch on `slot === 0` meant the *measured* pass always sprang.
-  // With a persisted segment that read as the pill sliding over from Discover on every entry.
-  const placed = useRef(false);
-  useEffect(() => {
-    if (slot === 0) return;
-    const target = inset + index * slot;
-    if (!placed.current) {
-      // First real measurement: seat the pill under the active segment with no motion at all.
-      placed.current = true;
-      offset.set(target);
-      return;
-    }
-    // Every deliberate switch after that animates.
-    offset.set(withSpring(target, withReducedMotion(reduced, motion.springs.snappy)));
-  }, [index, inset, motion.springs.snappy, offset, reduced, slot]);
-
-  const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }));
+  // `slot` is 0 until onLayout measures the track, so there is nowhere real to put the pill yet.
+  const pillStyle = useSlidingPill(slot > 0 ? inset + index * slot : null);
 
   const measure = useCallback((event: LayoutChangeEvent) => {
     setTrackWidth(event.nativeEvent.layout.width);
@@ -149,7 +124,7 @@ export function SegmentedControl<K extends string = string>({
             {...a11yButton(segment.label)}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
-            feedback="none"
+            feedback="subtle"
             haptic="none"
             hitSlop={compact ? verticalSlop : undefined}
             onPress={() => select(segment.key)}

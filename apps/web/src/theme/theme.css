@@ -535,6 +535,11 @@
 html {
   scrollbar-gutter: stable;
 }
+/* Light only: `only` also stops browsers that force-darken pages (Chrome's auto-dark, Samsung
+   Internet) from repainting the app, and keeps native controls and scrollbars light. */
+:root {
+  color-scheme: only light;
+}
 /* A white page (sign-in) paints the reserved gutter white too, not the app's grey canvas. */
 body:has([data-canvas='card']) {
   background-color: var(--color-surface-card);

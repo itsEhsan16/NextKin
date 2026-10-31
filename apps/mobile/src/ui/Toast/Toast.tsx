@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
@@ -6,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { haptics, useReducedMotion } from '@/lib';
 import { useTheme, type ColorToken } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Text } from '@/ui/Text';
 
 /** What a toast reports: something done, something that failed, or plain news. */
@@ -20,7 +20,7 @@ export type ToastProps = {
    */
   tone?: ToastTone;
   /** Overrides the tone's glyph. */
-  icon?: string;
+  icon?: LineIconName;
   /** Auto-dismiss delay. The caller owns `visible`; this just asks it to flip. */
   durationMs?: number;
   onHide: () => void;
@@ -33,12 +33,11 @@ const PAD_X = 15 / 0.75;
 const PAD_Y = 11 / 0.75;
 const GAP = 9 / 0.75;
 const RADIUS = 13 / 0.75;
-const ICON = 12 / 0.75;
 
-const TONE_GLYPH: Record<ToastTone, { icon: string; color: ColorToken }> = {
-  success: { icon: 'check', color: 'successRing' },
-  error: { icon: 'exclamation-circle', color: 'dangerDot' },
-  info: { icon: 'info-circle', color: 'textOnDark' },
+const TONE_GLYPH: Record<ToastTone, { icon: LineIconName; color: ColorToken }> = {
+  success: { icon: 'Check', color: 'successRing' },
+  error: { icon: 'AlertCircle', color: 'dangerDot' },
+  info: { icon: 'InfoCircle', color: 'textOnDark' },
 };
 
 /**
@@ -109,11 +108,10 @@ export function Toast({
             },
           ]}
         >
-          <FontAwesome5
+          <Icon
             name={icon ?? TONE_GLYPH[tone].icon}
-            size={s(ICON)}
+            size="sm"
             color={colors[TONE_GLYPH[tone].color]}
-            solid
           />
           <Text variant="captionSemiBold" color="textOnDark" numberOfLines={2} style={styles.label}>
             {message}

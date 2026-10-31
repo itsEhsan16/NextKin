@@ -1,7 +1,6 @@
-import { StyleSheet, useColorScheme, useWindowDimensions } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import type { ImageStyle, TextStyle, ViewStyle } from 'react-native';
 
-import { useAppearanceStore } from './appearance';
 import { motion } from './motion';
 import { layoutScaleFor } from './scale';
 import {
@@ -25,7 +24,6 @@ export * from './typography';
 export * from './motion';
 export * from './scale';
 export * from './scaleTheme';
-export { useAppearanceStore, type AppearancePreference } from './appearance';
 
 export type Theme = {
   scheme: ColorScheme;
@@ -109,22 +107,16 @@ export function themeFor(scheme: ColorScheme, width: number): Theme {
   return theme;
 }
 
-/** Resolves the effective colour scheme from the OS scheme + the user's appearance preference. */
-export function useResolvedScheme(): ColorScheme {
-  const systemScheme = useColorScheme();
-  const preference = useAppearanceStore((s) => s.preference);
-  if (preference === 'system') return systemScheme === 'dark' ? 'dark' : 'light';
-  return preference;
-}
-
 /**
  * The single entry point for design tokens inside components. Every length it returns is already
  * projected onto this device, so components never scale anything themselves.
+ *
+ * Always light (owner, 2026-10-25): the app has no dark mode, so neither the OS scheme nor any
+ * setting reaches here. The dark tokens stay dormant until a dark design exists.
  */
 export function useTheme(): Theme {
-  const scheme = useResolvedScheme();
   const { width } = useWindowDimensions();
-  return themeFor(scheme, width);
+  return themeFor('light', width);
 }
 
 /** The unscaled, 1:1 artboard themes. Handy in tests; components must use `useTheme()`. */

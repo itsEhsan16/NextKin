@@ -56,7 +56,7 @@ describe('ScreenHeader', () => {
       <ScreenHeader
         title="ATS score"
         onBack={jest.fn()}
-        trailing={<IconButton icon="ellipsis-h" label="More" onPress={onPress} />}
+        trailing={<IconButton icon="DotsHorizontal" label="More" onPress={onPress} />}
       />,
     );
 

@@ -1,5 +1,5 @@
+import type { ImageSource } from 'expo-image';
 import type { ReactElement } from 'react';
-import type { ImageSourcePropType } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import AdobeLogo from '../../assets/logos/adobe.svg';
@@ -11,7 +11,8 @@ import GoogleLogo from '../../assets/logos/google.svg';
  */
 const ASSET_SCHEME = 'asset:';
 
-const mockImages: Record<string, ImageSourcePropType> = {
+/** Bundled images: `require()` of an asset resolves to its module id. */
+const mockImages: Record<string, number> = {
   'avatar-george': require('../../assets/mock/avatar-george.png'),
   'resume-thumb': require('../../assets/mock/resume-thumb.png'),
 };
@@ -27,8 +28,8 @@ const brandLogos: Record<string, LogoRenderer> = {
 const keyOf = (url: string): string | null =>
   url.startsWith(ASSET_SCHEME) ? url.slice(ASSET_SCHEME.length) : null;
 
-/** Resolves an image URL (remote or `asset:` key) to an expo-image / RN Image source. */
-export function resolveImageSource(url: string | undefined): ImageSourcePropType | undefined {
+/** Resolves an image URL (remote or `asset:` key) to an expo-image source. */
+export function resolveImageSource(url: string | undefined): ImageSource | number | undefined {
   if (!url) return undefined;
   const key = keyOf(url);
   if (key == null) return { uri: url };

@@ -37,3 +37,12 @@ export function useCreateSheet(): CreateSheetApi {
   if (!api) throw new Error('useCreateSheet must be used inside <CreateSheetProvider>.');
   return api;
 }
+
+/**
+ * The sheet's API, or null outside the tabs. For hooks shared with root-stack screens (the
+ * resume editor, score, rubric, fix and new screens), which sit above the provider and must not
+ * throw for an affordance they never show.
+ */
+export function useOptionalCreateSheet(): CreateSheetApi | null {
+  return useContext(CreateSheetContext);
+}

@@ -67,8 +67,7 @@ const renderNoTabBar = () => null;
 
 /**
  * Wraps every tab scene in the switch fade. Module-level for the same identity reason; the fade
- * lives here rather than in `animation: 'fade'`, which would quietly turn `freezeOnBlur` off
- * (see `TabSceneFade`).
+ * lives here rather than in `animation: 'fade'` (see `TabSceneFade`).
  */
 const renderTabScene: NonNullable<ComponentProps<typeof Tabs>['screenLayout']> = ({
   navigation,
@@ -92,7 +91,9 @@ const TabsNavigator = memo(function TabsNavigator() {
       screenOptions={{
         headerShown: false,
         lazy: true,
-        freezeOnBlur: true,
+        // No `freezeOnBlur`: Expo Router 58 ignores it. Its replacement, the navigator's
+        // `activityEnabled`, unmounts a hidden tab's effects, so it waits for its own pass
+        // (toreview §138).
         // No `tabBarStyle`: with a custom `tabBar` the navigator only ever reads `height` off it
         // (to seed BottomTabBarHeightContext), and a `tabBar` returning null occupies no space at
         // all. `Screen`'s `tabBarInset` stays the single source of bottom padding.

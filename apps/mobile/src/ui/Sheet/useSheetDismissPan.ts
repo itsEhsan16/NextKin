@@ -3,7 +3,7 @@
  * that file past the size guideline. Behaviour is unchanged.
  */
 import { useMemo } from 'react';
-import { Gesture, type PanGesture } from 'react-native-gesture-handler';
+import { Gesture } from 'react-native-gesture-handler';
 import {
   runOnJS,
   withSpring,
@@ -24,6 +24,12 @@ export type SheetDismissPanInput = {
   motionSheet: Theme['motion']['sheet'];
 };
 
+/**
+ * The builder API's pan. Gesture Handler 3 gave the name `PanGesture` to its new hook API, so the
+ * type comes from the builder itself.
+ */
+type SheetDismissPan = ReturnType<typeof Gesture.Pan>;
+
 export function useSheetDismissPan({
   enabled,
   progress,
@@ -31,7 +37,7 @@ export function useSheetDismissPan({
   onClose,
   snapBackSpring,
   motionSheet,
-}: SheetDismissPanInput): PanGesture {
+}: SheetDismissPanInput): SheetDismissPan {
   // Rebuilding the gesture on every render makes GestureDetector re-attach its handlers, so it
   // is memoised on everything the worklets capture (the documented RNGH pattern).
   return useMemo(

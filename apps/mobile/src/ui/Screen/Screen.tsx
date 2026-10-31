@@ -3,7 +3,7 @@ import {
   StyleSheet,
   View,
   type LayoutChangeEvent,
-  type ScrollView,
+  type ScrollViewInstance,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -53,7 +53,7 @@ export function Screen({
   // The three things `RevealProvider` needs to lift a focused field clear of the keyboard. Refs
   // rather than state on purpose: a scroll offset in state would re-render the page on every
   // frame of every scroll, and nothing here paints from these values.
-  const ownScrollRef = useRef<ScrollView>(null);
+  const ownScrollRef = useRef<ScrollViewInstance>(null);
   const activeScrollRef = scrollRef ?? ownScrollRef;
   // On the UI thread, so the header fade follows the scroll without a render per frame; the reveal
   // reads it synchronously when a field takes focus.

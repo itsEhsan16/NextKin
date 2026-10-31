@@ -10,6 +10,7 @@ export * from './Disclosure';
 export * from './EdgeFade';
 export * from './EntryRow';
 export * from './FilterButton';
+export * from './Icon';
 export * from './IconButton';
 export * from './IconTileGrid';
 export * from './ListRow';

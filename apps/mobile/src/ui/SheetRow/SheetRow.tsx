@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -8,10 +7,11 @@ import { AiBadge } from '@/ui/AiBadge';
 import { Chip } from '@/ui/Chip';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type SheetRowProps = {
-  /** FontAwesome 5 Free Solid glyph name. Ignored when `art` is given. */
-  icon?: string;
+  /** Untitled UI line icon. Ignored when `art` is given. */
+  icon?: LineIconName;
   /**
    * Pre-sized artwork in place of the glyph tile — the create sheet draws its own multi-tone icons
    * with the tile built in (Figma 431:7772 and siblings). It sits in the same 52-wide slot.
@@ -33,8 +33,6 @@ export type SheetRowProps = {
 };
 
 const TILE = 52;
-const TILE_ICON = 20;
-const LOCK_ICON = 14;
 /** Figma: tile at x=24, label at x=92 → a 16px gutter after the 52px tile. */
 const GUTTER = 16;
 
@@ -86,9 +84,7 @@ export function SheetRow({
             justifyContent: 'center',
           }}
         >
-          {icon ? (
-            <FontAwesome5 name={icon} size={s(TILE_ICON)} color={colors[tile.fg]} solid />
-          ) : null}
+          {icon ? <Icon name={icon} size="md" color={colors[tile.fg]} /> : null}
         </View>
       )}
 
@@ -111,9 +107,7 @@ export function SheetRow({
       </View>
 
       {/* The gate is shown, not enforced: the row opens and the caller routes it to upgrade. */}
-      {locked ? (
-        <FontAwesome5 name="lock" size={s(LOCK_ICON)} color={colors.iconMuted} solid />
-      ) : null}
+      {locked ? <Icon name="Lock01" size="xs" color={colors.iconMuted} /> : null}
     </Pressable>
   );
 }

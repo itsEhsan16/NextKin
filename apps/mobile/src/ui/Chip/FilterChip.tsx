@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   FadeIn,
@@ -12,6 +11,7 @@ import { useTheme } from '@/theme';
 import { layoutTransition, useSelectionProgress } from '@/ui/motion';
 import { Pressable } from '@/ui/Pressable';
 import { AnimatedText } from '@/ui/Text';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type FilterChipVariant =
   /** Outlined chip with a trailing ✕ — an applied filter you can remove (Figma 1:289). */
@@ -44,7 +44,7 @@ export type FilterChipProps = {
   /** `toggle`, `select`, `filter` and `radio` only: fills the chip (and shows the ✓ on the first and last). */
   selected?: boolean;
   /** FA5 Solid glyph shown before the label (e.g. `map-marker-alt` on a location picker). */
-  icon?: string;
+  icon?: LineIconName;
   /**
    * Accessible name when the visible label is not the whole of it — a bare "Figma" among three
    * chip groups on one page is ambiguous where "Figma, required skill" is not.
@@ -56,9 +56,6 @@ export type FilterChipProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const LEADING_ICON = 11;
-const TRAILING_ICON = 9;
-const TOGGLE_ICON = 10;
 /** Glyph → label. */
 const GLYPH_GAP = 6;
 
@@ -88,8 +85,6 @@ const PADDING_Y: Record<FilterChipVariant, number> = {
   radio: 8 / 0.75,
 };
 
-/** The `radio` chip's ✓ and its gap to the label (613:1511), at 390. */
-const RADIO_CHECK = 8 / 0.75;
 const RADIO_GAP = 5 / 0.75;
 
 /**
@@ -185,20 +180,10 @@ export function FilterChip({
           entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}
           exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
         >
-          <FontAwesome5
-            name="check"
-            size={s(variant === 'radio' ? RADIO_CHECK : TOGGLE_ICON)}
-            color={colors.textOnBrand}
-            solid
-          />
+          <Icon name="Check" size="xs" color={colors.textOnBrand} />
         </Animated.View>
       ) : icon ? (
-        <FontAwesome5
-          name={icon}
-          size={s(LEADING_ICON)}
-          color={filled ? colors.textOnBrand : colors.textSecondary}
-          solid
-        />
+        <Icon name={icon} size="xs" color={filled ? colors.textOnBrand : colors.textSecondary} />
       ) : null}
 
       <AnimatedText
@@ -219,9 +204,9 @@ export function FilterChip({
       </AnimatedText>
 
       {variant === 'removable' ? (
-        <FontAwesome5 name="times" size={s(TRAILING_ICON)} color={colors.iconMuted} solid />
+        <Icon name="XClose" size="xs" color={colors.iconMuted} />
       ) : variant === 'picker' ? (
-        <FontAwesome5 name="chevron-down" size={s(TRAILING_ICON)} color={colors.iconMuted} solid />
+        <Icon name="ChevronDown" size="xs" color={colors.iconMuted} />
       ) : null}
     </Pressable>
   );

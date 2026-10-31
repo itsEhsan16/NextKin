@@ -1,5 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
-import type { ScrollView, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
+import type { ScrollViewInstance, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
 import type { Edge } from 'react-native-safe-area-context';
 
 /** `Screen`'s props, split out of Screen.tsx to keep it under the size guideline. */
@@ -74,7 +74,7 @@ type ScrollScreenProps = ScreenBaseProps & {
   /** Pull-to-refresh control. */
   refreshControl?: ScrollViewProps['refreshControl'];
   /** Handle on the underlying ScrollView — e.g. tab re-tap scroll-to-top. */
-  scrollRef?: RefObject<ScrollView | null>;
+  scrollRef?: RefObject<ScrollViewInstance | null>;
   /**
    * Keep the end of the content in view while it grows — a streaming reply — as long as the
    * reader is already at the end. Scrolled up to read, the page stays where they put it.

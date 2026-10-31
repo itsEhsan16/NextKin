@@ -1,7 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
 import { a11yHeader } from '@/lib';
-import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Text } from '@/ui/Text';
 
@@ -20,17 +19,13 @@ export type TabTitleRowProps = {
  * that follows (`sizes.titleRowGap`).
  */
 export function TabTitleRow({ title, hasUnread, onPressNotifications }: TabTitleRowProps) {
-  const { s } = useTheme();
-
   return (
     <View style={styles.row}>
       <Text {...a11yHeader()} variant="screenTitle">
         {title}
       </Text>
       <IconButton
-        icon="bell"
-        iconStyle="regular"
-        iconSize={s(18)}
+        icon="Bell01"
         label={hasUnread ? 'Notifications, unread' : 'Notifications'}
         dot={hasUnread}
         onPress={onPressNotifications}

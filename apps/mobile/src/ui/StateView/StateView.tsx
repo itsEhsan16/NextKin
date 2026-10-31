@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
@@ -10,22 +9,21 @@ import Animated, {
 
 import { a11yButton, hitSlop8, useReducedMotion } from '@/lib';
 import { motion, useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { useShake } from '@/ui/motion';
 
 export type StateViewProps = {
-  /** FA5 glyph shown in the tile. Ignored when `illustration` is given. */
-  icon?: string;
+  /** Line icon shown in the tile. Ignored when `illustration` is given. */
+  icon?: LineIconName;
   /**
    * A full illustration in place of the icon tile — the Jobs empty states draw one (Figma
    * 395:1079 / 395:1212 / 395:1263). Pre-sized by the caller, and decorative: the title already
    * says everything it shows.
    */
   illustration?: ReactNode;
-  /** Solid (default) or Regular outline set — JOBS 07 draws the bookmark as an outline. */
-  iconStyle?: 'solid' | 'regular';
   title: string;
   message?: string;
   actionLabel?: string;
@@ -75,7 +73,6 @@ const settle: EntryExitAnimationFunction = () => {
 export function StateView({
   icon,
   illustration,
-  iconStyle = 'solid',
   title,
   message,
   actionLabel,
@@ -135,11 +132,10 @@ export function StateView({
               nudge,
             ]}
           >
-            <FontAwesome5
+            <Icon
               name={icon}
-              size={compact ? s(18) : s(32)}
+              size={compact ? 'sm' : s(36)}
               color={tone === 'danger' ? colors.danger : colors.iconDefault}
-              solid={iconStyle === 'solid'}
             />
           </Animated.View>
         </Animated.View>

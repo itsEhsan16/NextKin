@@ -14,7 +14,7 @@ const onPress = jest.fn();
 const renderRow = (props: Partial<SheetRowProps> = {}) =>
   render(
     <SheetRow
-      icon="file-word"
+      icon="File04"
       label="Export as DOCX"
       description="Keep your formatting in Word"
       onPress={onPress}

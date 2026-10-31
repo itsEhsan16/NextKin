@@ -45,7 +45,12 @@ const STROKE = 2.4;
  * `scales.popFrom` and the tick draws over `durations.draw`, a beat after it. Still under Reduce
  * Motion. Decorative — the words beside it say what succeeded.
  */
-export function SuccessMark({ size, variant = 'circle', radius, animate = true }: SuccessMarkProps) {
+export function SuccessMark({
+  size,
+  variant = 'circle',
+  radius,
+  animate = true,
+}: SuccessMarkProps) {
   const { colors, motion, radii } = useTheme();
   const reduced = useReducedMotion();
   const play = animate && !reduced;

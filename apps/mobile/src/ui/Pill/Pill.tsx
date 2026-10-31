@@ -1,7 +1,7 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Text } from '@/ui/Text';
 
 export type PillTone = 'neutral' | 'brand' | 'success' | 'warning' | 'plain';
@@ -12,7 +12,7 @@ export type PillProps = {
   /** The 6 dot before the label — a count of marks (INTERVIEW 01 577:975). */
   dot?: boolean;
   /** An FA5 Solid glyph before the label, in the label's colour — ✓ Confident (577:3893). */
-  icon?: string;
+  icon?: LineIconName;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -22,7 +22,6 @@ const PAD_RIGHT = 10 / 0.75;
 const PAD_Y = 4 / 0.75;
 const GAP = 5 / 0.75;
 const DOT = 6 / 0.75;
-const GLYPH = 9.5 / 0.75;
 
 const TONES: Record<PillTone, { bg: ColorToken; fg: ColorToken; dot: ColorToken }> = {
   neutral: { bg: 'surfaceSubtle', fg: 'textBody', dot: 'iconMuted' },
@@ -39,7 +38,7 @@ const TONES: Record<PillTone, { bg: ColorToken; fg: ColorToken; dot: ColorToken 
  * "Current" (`StatusPill`, 573:44) is the same shape.
  */
 export function Pill({ label, tone = 'neutral', dot = false, icon, style }: PillProps) {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
   const look = TONES[tone];
 
@@ -52,7 +51,7 @@ export function Pill({ label, tone = 'neutral', dot = false, icon, style }: Pill
           style={[styles.dot, { borderRadius: radii.full, backgroundColor: colors[look.dot] }]}
         />
       ) : null}
-      {icon ? <FontAwesome5 name={icon} size={s(GLYPH)} color={colors[look.fg]} solid /> : null}
+      {icon ? <Icon name={icon} size="xs" color={colors[look.fg]} /> : null}
       <Text variant="microBadge" color={look.fg} numberOfLines={1}>
         {label}
       </Text>

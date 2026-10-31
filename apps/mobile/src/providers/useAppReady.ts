@@ -1,6 +1,5 @@
 // Per-weight entries: the package root re-exports every weight/italic, which Metro would
 // bundle as ~1MB of unused font assets.
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
 import { PlusJakartaSans_400Regular } from '@expo-google-fonts/plus-jakarta-sans/400Regular';
 import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/500Medium';
@@ -12,7 +11,7 @@ import * as SystemUI from 'expo-system-ui';
 import { isRunningInExpoGo } from 'expo';
 import { useEffect } from 'react';
 
-import { colorsByScheme, durations, useResolvedScheme } from '@/theme';
+import { colorsByScheme, durations } from '@/theme';
 
 // Keep the native splash visible until fonts are in. Wrapped because the call throws
 // when the splash module is unavailable (web, some test environments).
@@ -24,17 +23,6 @@ try {
 } catch {
   // ignore
 }
-
-/**
- * The icon font every glyph in the app draws from (`solid` and the outline `regular` cut; no
- * brand icons are used). Loaded behind the splash with the text faces: left to load on first
- * use, every icon rendered blank for a beat and then popped in.
- */
-const ICON_FONTS: Record<string, number> = Object.fromEntries(
-  Object.entries(FontAwesome5.font as Record<string, number>).filter(([family]) =>
-    /^FontAwesome5Free-(Solid|Regular)$/.test(family),
-  ),
-);
 
 export type AppReadyState = {
   /** True once fonts are loaded (or failed, so the app still boots with system fonts). */
@@ -51,10 +39,7 @@ export function useAppReady(): AppReadyState {
     PlusJakartaSans_700Bold,
     // Brand wordmark only.
     Inter_700Bold,
-    ...ICON_FONTS,
   });
-  const scheme = useResolvedScheme();
-
   const ready = fontsLoaded || fontError !== null;
 
   useEffect(() => {
@@ -65,11 +50,12 @@ export function useAppReady(): AppReadyState {
   }, [ready]);
 
   useEffect(() => {
-    // Paints the root window so over-scroll and navigation gaps match the page surface.
-    SystemUI.setBackgroundColorAsync(colorsByScheme[scheme].surfacePage).catch(() => {
+    // Paints the root window so over-scroll and navigation gaps match the page surface. The app
+    // is light only, so this happens once.
+    SystemUI.setBackgroundColorAsync(colorsByScheme.light.surfacePage).catch(() => {
       // Unsupported on some platforms; purely cosmetic.
     });
-  }, [scheme]);
+  }, []);
 
   return { ready, error: fontError };
 }

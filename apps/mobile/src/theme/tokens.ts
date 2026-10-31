@@ -137,6 +137,9 @@ export const colorsByScheme = {
     ctaPrimaryLabel: palette.ink950,
     jobCardBar: palette.gray300,
   },
+  // Dormant: the app is light only (owner, 2026-10-25) and `useTheme()` never resolves 'dark'.
+  // These values were never drawn and need a design before Dark is offered. For one thing,
+  // `surfaceInverse` is white while `textOnDark` stays off-white, so those pairs vanish.
   dark: {
     textPrimary: '#F5F6F8',
     textBody: '#C9CDD6',
@@ -344,6 +347,16 @@ export const sizes = {
    */
   headerContentGap: 33,
   unreadDot: 8,
+  /**
+   * Line-icon boxes (`ui/Icon`), on the web's ramp: 12 / 16 / 20 / 24 at 390, so a phone draws
+   * the same icon at the same size as `apps/web`'s `iconSize`. The glyph sits inside the box
+   * with Untitled UI's own padding. `sm` beside text and in row trailers, `md` standing alone
+   * (header and close buttons), `lg` for a lead tile, `xs` inside chips and pills.
+   */
+  iconXs: 12 / 0.75,
+  iconSm: 16 / 0.75,
+  iconMd: 20 / 0.75,
+  iconLg: 24 / 0.75,
   /** Figma's 1px stroke, and the 2px rings (avatar stack, score ring, filter button). */
   border: 1,
   borderThick: 2,

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { StyleSheet, View, type TextInput } from 'react-native';
+import { StyleSheet, View, type TextInputInstance } from 'react-native';
 
 import { FormsSheetSections, FormsSheets, useFormsSheetDemos } from '@/dev';
 import { useTheme } from '@/theme';
@@ -39,7 +39,7 @@ export default function DevFormsRoute() {
   const [invalid, setInvalid] = useState(false);
   const [aboutRole, setAboutRole] = useState(false);
   const [rubric, setRubric] = useState(false);
-  const emailRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInputInstance>(null);
 
   // ScreenHeader carries no gutter of its own — Screen frames it — so these boxes stand in for
   // the page edges, which is the only way to see that both slots are one back button wide.
@@ -85,7 +85,7 @@ export default function DevFormsRoute() {
             value={email}
             onChangeText={setEmail}
             placeholder="ada@example.com"
-            icon="envelope"
+            icon="Mail01"
             helper="Only used for updates on your applications."
             error={invalid ? EMAIL_ERROR : undefined}
             keyboardType="email-address"
@@ -120,7 +120,7 @@ export default function DevFormsRoute() {
               onBack={() => {}}
               trailing={
                 <IconButton
-                  icon="ellipsis-h"
+                  icon="DotsHorizontal"
                   label="More options"
                   variant="ghost"
                   onPress={() => {}}
@@ -165,13 +165,13 @@ export default function DevFormsRoute() {
           description="`locked` adds the Pro badge and the trailing lock, and folds 'Pro feature' into the row's own name so it stays one focus stop rather than three. The gate is shown, not enforced: the row still opens, and the caller routes it to upgrade."
         >
           <SheetRow
-            icon="file-pdf"
+            icon="File04"
             label="Export as PDF"
             description="Fixed layout, ready to attach."
             onPress={() => {}}
           />
           <SheetRow
-            icon="file-word"
+            icon="File04"
             label="Export as DOCX"
             description="Editable in Word and Google Docs."
             locked

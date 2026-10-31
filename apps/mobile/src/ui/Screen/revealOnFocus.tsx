@@ -8,7 +8,12 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { Keyboard, useWindowDimensions, type ScrollView, type View } from 'react-native';
+import {
+  Keyboard,
+  useWindowDimensions,
+  type ScrollViewInstance,
+  type ViewInstance,
+} from 'react-native';
 
 /**
  * Scrolls a field that has just taken focus out from under the keyboard.
@@ -29,7 +34,7 @@ import { Keyboard, useWindowDimensions, type ScrollView, type View } from 'react
  * the other.
  */
 
-export type RevealOnFocus = (node: View | null) => void;
+export type RevealOnFocus = (node: ViewInstance | null) => void;
 
 /**
  * Whether the keyboard has finished opening. `KeyboardController.isVisible()` turns true as the
@@ -100,7 +105,7 @@ export function revealTarget({
 }
 
 export type RevealProviderProps = {
-  scrollRef: RefObject<ScrollView | null>;
+  scrollRef: RefObject<ScrollViewInstance | null>;
   /** Live scroll offset — the provider needs it to convert a window delta into a target offset. */
   getOffset: () => number;
   /** Height of the pinned footer, which rides above the keyboard and hides the field behind it. */
@@ -124,7 +129,7 @@ export function RevealProvider({
 }: RevealProviderProps) {
   const { height: windowHeight } = useWindowDimensions();
   /** The field waiting to be revealed. Held because focus usually precedes the keyboard. */
-  const pending = useRef<View | null>(null);
+  const pending = useRef<ViewInstance | null>(null);
 
   const run = useCallback(() => {
     const node = pending.current;

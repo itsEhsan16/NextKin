@@ -1,8 +1,8 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import SparkleIcon from '../../../assets/icons/ai-sparkle-trio.svg';
 import { scaledSheet, useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Text } from '@/ui/Text';
 
 export type NoteBarProps = {
@@ -11,7 +11,7 @@ export type NoteBarProps = {
    * The AI sparkle (Figma 577:8072) for a note about what the product does with the answer, or an
    * FA5 Solid glyph — `info-circle` (577:9087) — for a plain fact.
    */
-  icon?: 'sparkle' | string;
+  icon?: 'sparkle' | LineIconName;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -25,7 +25,6 @@ const GAP = 10 / 0.75;
 const SLOT = 22 / 0.75;
 const SPARKLE_W = 22 / 0.75;
 const SPARKLE_H = 21.5496 / 0.75;
-const GLYPH = 16 / 0.75;
 const RULE_H = 16 / 0.75;
 
 /**
@@ -43,7 +42,7 @@ export function NoteBar({ text, icon = 'sparkle', style }: NoteBarProps) {
         {icon === 'sparkle' ? (
           <SparkleIcon width={s(SPARKLE_W)} height={s(SPARKLE_H)} />
         ) : (
-          <FontAwesome5 name={icon} size={s(GLYPH)} color={colors.brand} solid />
+          <Icon name={icon} size="md" color={colors.brand} />
         )}
       </View>
       <View style={[styles.rule, { backgroundColor: colors.matchReasonRule }]} />

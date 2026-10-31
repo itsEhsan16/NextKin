@@ -9,3 +9,4 @@ export { useLoop, type LoopOptions } from './useLoop';
 export { useRevealStagger, type StaggerStep } from './useRevealStagger';
 export { useSelectionProgress } from './useSelectionProgress';
 export { useShake } from './useShake';
+export { useSlidingPill } from './useSlidingPill';

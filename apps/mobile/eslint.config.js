@@ -110,4 +110,15 @@ module.exports = defineConfig([
     files: ['src/data/**', '**/__tests__/**', '**/*.test.*', 'app/dev/**'],
     rules: { 'no-restricted-imports': 'off' },
   },
+  {
+    // Plain Node tooling: the TypeScript parser's scope never reaches these .js/.cjs files.
+    files: ['scripts/**/*.cjs', '__tests__/**/*.js'],
+    languageOptions: { globals: { __dirname: 'readonly', Buffer: 'readonly' } },
+  },
+  {
+    files: ['__tests__/**/*.js'],
+    languageOptions: {
+      globals: { describe: 'readonly', it: 'readonly', expect: 'readonly' },
+    },
+  },
 ]);

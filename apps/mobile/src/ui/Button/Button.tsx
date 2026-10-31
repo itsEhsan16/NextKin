@@ -1,6 +1,5 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect, type ReactNode } from 'react';
-import { ActivityIndicator, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -11,8 +10,10 @@ import Animated, {
 
 import { a11yButton, useReducedMotion } from '@/lib';
 import { useTheme, type ColorToken } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable, type PressHaptic } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Spinner } from '@/ui/motion';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerOutline';
 export type ButtonSize = 'md' | 'lg';
@@ -22,8 +23,8 @@ export type ButtonProps = {
   onPress?: () => void;
   variant?: ButtonVariant;
   size?: ButtonSize;
-  /** Optional leading FA5 glyph. */
-  icon?: string;
+  /** Optional leading line icon. */
+  icon?: LineIconName;
   /** An illustrated mark before the label — the AI sparkle (RESUMES 09 577:9552). Wins over `icon`. */
   leading?: ReactNode;
   loading?: boolean;
@@ -39,7 +40,11 @@ export type ButtonProps = {
  *
  * Loading keeps the label laid out — faded to nothing under a centred spinner — so a button that
  * hugs its label holds its width instead of shrinking to the spinner's, and the two cross-fade
- * rather than swap. A loading button is busy, not unavailable, so it keeps full strength.
+ * rather than swap. A loading button is busy, not unavailable, so it keeps full strength. The
+ * spinner is the app's own ring, the one every other wait draws.
+ *
+ * Held, it eases to `opacity.pressed` as well as scaling: on a solid block of colour the scale
+ * alone barely reads.
  */
 export function Button({
   label,
@@ -54,7 +59,7 @@ export function Button({
   block = false,
   style,
 }: ButtonProps) {
-  const { colors, motion, radii, sizes, spacing, s } = useTheme();
+  const { colors, motion, radii, sizes, spacing } = useTheme();
   const reduced = useReducedMotion();
   const busy = useSharedValue(loading ? 1 : 0);
   useEffect(() => {
@@ -79,6 +84,7 @@ export function Button({
       {...a11yButton(label)}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       feedback="scale"
+      pressDim
       haptic={haptic}
       onPress={onPress}
       disabled={isDisabled}
@@ -89,7 +95,7 @@ export function Button({
           borderRadius: radii.xl,
           paddingHorizontal: spacing[5],
           backgroundColor: look.bg,
-          borderWidth: look.border ? 1 : 0,
+          borderWidth: look.border ? sizes.border : 0,
           borderColor: look.border ?? 'transparent',
           flexDirection: 'row',
           alignItems: 'center',
@@ -105,8 +111,7 @@ export function Button({
         accessibilityElementsHidden={loading}
         importantForAccessibility={loading ? 'no-hide-descendants' : 'auto'}
       >
-        {leading ??
-          (icon ? <FontAwesome5 name={icon} size={s(14)} color={colors[look.fg]} solid /> : null)}
+        {leading ?? (icon ? <Icon name={icon} size="sm" color={colors[look.fg]} /> : null)}
         <Text variant="bodySemiBold" color={look.fg}>
           {label}
         </Text>
@@ -117,7 +122,7 @@ export function Button({
           exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
           style={[StyleSheet.absoluteFill, styles.spinner]}
         >
-          <ActivityIndicator color={colors[look.fg]} />
+          <Spinner size={sizes.iconSm} color={look.fg} />
         </Animated.View>
       ) : null}
     </Pressable>

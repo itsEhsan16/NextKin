@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Fragment, type FC, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
@@ -8,6 +7,7 @@ import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 /**
  * An illustrated row icon (Figma 399:5885 …): the component and its drawn box on the 390 board.
@@ -17,8 +17,8 @@ export type ListRowArt = { Icon: FC<SvgProps>; w: number; h: number };
 
 export type ListRowProps = (
   | {
-      /** FontAwesome 5 Free Solid glyph name. */
-      icon: string;
+      /** Untitled UI line icon. */
+      icon: LineIconName;
       art?: never;
     }
   | { art: ListRowArt; icon?: never }
@@ -36,9 +36,7 @@ export type ListRowProps = (
   style?: StyleProp<ViewStyle>;
 };
 
-const ICON = 16;
 const ICON_SLOT = 20;
-const CHEVRON = 11;
 /** Figma 1:2239: icon at x19, label at x55 → the divider inset below. */
 const PADDING_X = 20;
 const GUTTER = 16;
@@ -99,12 +97,7 @@ export function ListRow({
         {art ? (
           <art.Icon width={s(art.w / 0.75)} height={s(art.h / 0.75)} />
         ) : (
-          <FontAwesome5
-            name={icon}
-            size={s(ICON)}
-            color={danger ? colors.danger : colors.iconDefault}
-            solid
-          />
+          <Icon name={icon} size="sm" color={danger ? colors.danger : colors.iconDefault} />
         )}
       </View>
       <Text
@@ -125,9 +118,7 @@ export function ListRow({
           {value}
         </Text>
       ) : null}
-      {showChevron ? (
-        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
-      ) : null}
+      {showChevron ? <Icon name="ChevronRight" size="sm" color={colors.iconChevron} /> : null}
     </Pressable>
   );
 }

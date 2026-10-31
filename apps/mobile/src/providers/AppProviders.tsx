@@ -16,6 +16,8 @@ import { AppToastHost } from '@/ui/Toast';
 import { AiConsentGate } from '@/features/consent/AiConsentGate';
 import { ServiceBanner } from '@/features/system/ServiceBanner';
 
+import { AppErrorBoundary } from './AppErrorBoundary';
+
 // The mock-mode switch lives in @nextkin/shared, which must not import a native storage module,
 // so the host wires persistence. At module scope on purpose: it has to run before the first
 // render or a dev reload would come back in "normal" instead of the mode it was left in.
@@ -58,7 +60,10 @@ export function AppProviders({ children }: AppProvidersProps) {
           rendering nothing (or at zero insets) until the native measurement arrives. */}
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <QueryClientProvider client={queryClient}>
-            <ArtboardMode>{children}</ArtboardMode>
+            {/* Inside the providers, so a crashed screen's fallback keeps every context. */}
+            <AppErrorBoundary>
+              <ArtboardMode>{children}</ArtboardMode>
+            </AppErrorBoundary>
             {/* After the navigator, so a confirmation paints above whichever screen it lands on. */}
             <AppToastHost />
             {/* P12-12: opens when an AI action is refused for want of consent. */}
@@ -66,7 +71,8 @@ export function AppProviders({ children }: AppProvidersProps) {
             {/* P13-02, R-09: what is degraded right now, when the app runs on the backend. */}
             <ServiceBanner />
             <FigmaOverlay />
-            <StatusBar style="auto" />
+            {/* Dark icons always: "auto" follows the OS and would go white over the light app. */}
+            <StatusBar style="dark" />
           </QueryClientProvider>
         </SafeAreaProvider>
       </KeyboardProvider>

@@ -33,6 +33,11 @@ export type PressableProps = Omit<RNPressableProps, 'style'> & {
    */
   dimDisabled?: boolean;
   /**
+   * Also ease to `opacity.pressed` while held — for a solid-filled control (a Button), where a
+   * scale alone barely reads on a block of colour.
+   */
+  pressDim?: boolean;
+  /**
    * Mirrors the press (0 → 1) into a shared value the caller owns, so something drawn outside
    * this surface can move with it — the FAB's glow, which is a sibling.
    */
@@ -54,6 +59,7 @@ export function Pressable({
   feedback = 'scale',
   haptic = 'none',
   dimDisabled = true,
+  pressDim = false,
   pressProgress,
   onPress,
   onPressIn,
@@ -91,8 +97,9 @@ export function Pressable({
     shownOpacity.set(reduced ? restOpacity : withTiming(restOpacity, motion.timings.fast));
   }, [motion.timings.fast, reduced, restOpacity, shownOpacity]);
 
+  const heldOpacity = pressDim && !reduced ? opacity.pressed : 1;
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: shownOpacity.value,
+    opacity: shownOpacity.value * (1 - pressed.value * (1 - heldOpacity)),
     transform: [{ scale: 1 - pressed.value * (1 - target) }],
   }));
 

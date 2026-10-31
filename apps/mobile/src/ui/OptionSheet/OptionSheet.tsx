@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -8,6 +7,7 @@ import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Sheet } from '@/ui/Sheet';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type SheetOption<K extends string = string> = {
   key: K;
@@ -19,6 +19,8 @@ export type SheetOption<K extends string = string> = {
    * takes the card look below.
    */
   leading?: ReactNode;
+  /** Shown but not choosable yet ("Coming soon"): dimmed, announced as disabled, never selected. */
+  disabled?: boolean;
 };
 
 /**
@@ -40,8 +42,6 @@ export type OptionSheetBodyProps<K extends string = string> = {
   footnote?: string;
 };
 
-const CHECK = 14;
-
 // The card look at 390 (PROFILE 17 577:436), in artboard units.
 const CARD_TOP = 16 / 0.75; // handle → header: the board's 30 less the handle and its margin
 const CARD_BOTTOM = 30 / 0.75;
@@ -60,7 +60,6 @@ const ROW_PAD_Y = 16 / 0.75;
 const TILED_ROW_PAD_Y = 10 / 0.75;
 const OPTIONS_TO_FOOTNOTE = 14 / 0.75;
 const CHECK_DISC = 22 / 0.75;
-const CHECK_DISC_GLYPH = 10 / 0.75;
 
 /**
  * An option sheet's title row: `headline` and a ✕. Exported so a sheet that shows a loading or
@@ -110,7 +109,7 @@ export function OptionSheetHeader({
         </Text>
       )}
       <IconButton
-        icon="times"
+        icon="XClose"
         label={`Close ${title.toLowerCase()}`}
         onPress={onClose}
         {...(card
@@ -173,7 +172,8 @@ export function OptionSheetBody<K extends string = string>({
               accessible
               accessibilityRole="radio"
               accessibilityLabel={option.label}
-              accessibilityState={{ selected }}
+              accessibilityState={{ selected, disabled: option.disabled === true }}
+              disabled={option.disabled}
               feedback="subtle"
               haptic="selection"
               hitSlop={card ? undefined : hitSlop8}
@@ -212,15 +212,10 @@ export function OptionSheetBody<K extends string = string>({
               </View>
               {selected && card ? (
                 <View style={[styles.checkDisc, { backgroundColor: colors.brand }]}>
-                  <FontAwesome5
-                    name="check"
-                    size={s(CHECK_DISC_GLYPH)}
-                    color={colors.textOnBrand}
-                    solid
-                  />
+                  <Icon name="Check" size="md" color={colors.textOnBrand} />
                 </View>
               ) : selected ? (
-                <FontAwesome5 name="check" size={s(CHECK)} color={colors.textPrimary} solid />
+                <Icon name="Check" size="md" color={colors.textPrimary} />
               ) : null}
             </Pressable>
           );

@@ -22,9 +22,9 @@ export type TabSceneFadeProps = {
  * Fades a tab's scene in when the user switches to it, in step with the tab bar's own 180 ms
  * cross-fade.
  *
- * Done here rather than with the navigator's `animation: 'fade'` on purpose: that option turns an
- * unfocused tab's activity state into an Animated value, which silently disables `freezeOnBlur`,
- * so every hidden tab would re-render on each app update. This keeps the freeze.
+ * Done here rather than with the navigator's `animation: 'fade'` on purpose: on SDK 57 that option
+ * turned an unfocused tab's activity state into an Animated value, which silently disabled
+ * `freezeOnBlur`. (Expo Router 58 no longer freezes tabs at all; see toreview §138.)
  *
  * Only a real tab switch fades. A tab also blurs when a stack screen is pushed over it, and is
  * visible again while that screen pops — so a blur hides the scene only when the tab navigator

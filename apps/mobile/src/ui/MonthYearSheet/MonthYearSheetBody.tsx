@@ -7,7 +7,13 @@
  * from chips the app already ships, so it introduces no new visual language.
  */
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type ScrollViewInstance,
+} from 'react-native';
 
 import { a11yHeader } from '@/lib';
 import { columnWidth, useTheme } from '@/theme';
@@ -66,7 +72,7 @@ export function MonthYearSheetBody({
   );
   const years = useMemo(() => yearOptions(min, max), [min, max]);
 
-  const stripRef = useRef<ScrollView>(null);
+  const stripRef = useRef<ScrollViewInstance>(null);
   const revealed = useRef(false);
   // The strip starts on the newest year, which is rarely the selected one. Bring the selection
   // into view on its first layout only — a later pass (rotation, Dynamic Type) must not yank the
@@ -93,7 +99,7 @@ export function MonthYearSheetBody({
         <Text {...a11yHeader(title)} variant="headline">
           {title}
         </Text>
-        <IconButton icon="times" label={`Close ${title.toLowerCase()}`} onPress={onClose} />
+        <IconButton icon="XClose" label={`Close ${title.toLowerCase()}`} onPress={onClose} />
       </View>
 
       {allowPresent ? (

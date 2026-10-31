@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -12,10 +11,10 @@ import Animated, {
 import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 const SHEET_HEIGHT = 200;
 const STAGE_HEIGHT = 280;
-const FAB_ICON_SIZE = 22;
 
 /**
  * (a) + (b): the sheet, the scrim and the FAB glyph are all driven by ONE `progress` shared
@@ -127,7 +126,7 @@ export function SheetFabDemo() {
         ]}
       >
         <Animated.View style={glyphStyle}>
-          <FontAwesome5 name="plus" size={s(FAB_ICON_SIZE)} color={colors.fabGlyph} />
+          <Icon name="Plus" size={s(40)} color={colors.fabGlyph} />
         </Animated.View>
       </Pressable>
     </View>

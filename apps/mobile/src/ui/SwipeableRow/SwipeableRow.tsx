@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   StyleSheet,
@@ -19,6 +18,7 @@ import Animated, {
 
 import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -28,7 +28,7 @@ import { claimSwipeRow, releaseSwipeRow, type SwipeRowHandle } from './swipeRegi
 export type SwipeAction = {
   key: string;
   /** FA5 Solid glyph. */
-  icon: string;
+  icon: LineIconName;
   label: string;
   /** Brand (the primary, e.g. Mark read), ink (More) or a quiet grey. */
   tone: 'brand' | 'ink' | 'neutral';
@@ -283,7 +283,7 @@ const LOOK: Record<SwipeAction['tone'], { bg: ColorToken; fg: ColorToken }> = {
  * unfinished against a rounded card.
  */
 function ActionPanel({ action, first, width, gap, radius, armed, onPress }: ActionPanelProps) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const look = LOOK[action.tone];
 
@@ -310,7 +310,7 @@ function ActionPanel({ action, first, width, gap, radius, armed, onPress }: Acti
         // The label keeps its own width and hugs the row's edge as the panel stretches.
         style={[styles.action, { width }]}
       >
-        <FontAwesome5 name={action.icon} size={s(17)} color={colors[look.fg]} solid />
+        <Icon name={action.icon} size="sm" color={colors[look.fg]} />
         <Text variant="microBadge" color={look.fg} align="center">
           {action.label}
         </Text>
