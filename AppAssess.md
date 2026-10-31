@@ -179,6 +179,24 @@ Waiting on you:
 
 ### Step 2: Fix the flow (2–3 weeks)
 
+**Status, 2026-11-01: the code is done, and the rest needs you.** It's on branch `step-2/fix-the-flow`, on top of Step 1. Nothing is pushed or merged.
+
+Done:
+
+1. There's one "Make a resume for a job" start. It uses your best resume or your profile, with Change to switch.
+2. A new account goes straight to its first resume: upload or start from nothing, check jobs and dates, then pick a job. Anyone who skips gets a small card on Home.
+3. The whole job has its own page, and Customize shows the plan to reach 8.5 with what each step adds.
+4. Running and failed runs sit at the top of History, and the bell reports when they end. Spec §7.2 now says so.
+5. Saved resumes open with no connection, and the app says plainly when it's offline.
+
+Waiting on you:
+
+1. A phone pass: none of this has run on a device, and the new screens have no board. Airplane mode is the check for saved resumes.
+2. The privacy call on keeping resume text on the phone (`toreview.md` §145.5).
+3. The 15-minute test with real people. That's the "done when" below, and it can't be measured from here.
+
+The plan was:
+
 1. Merge Build and Tailor into one "Make a resume for a job" entry point. Keep the two paths as internal detail.
 2. Build the first five minutes: upload, confirm employers and dates, get one tailored resume (`WhyNextKin.md` §4.2).
 3. Bring the JD page and path-to-8.5 plan across from the web.

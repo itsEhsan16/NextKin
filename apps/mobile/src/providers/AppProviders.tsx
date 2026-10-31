@@ -6,10 +6,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { watchConnection } from '@/data/connection';
 import { auth, configureDataSource, onSignedOut, USES_BACKEND } from '@/data/dataSource';
 import { configureMockMode } from '@/data/mock';
 import { flushEvents } from '@/data/queries';
-import { createQueryClient } from '@/data/queries/client';
+import { createAppQueryClient, restoreResumes } from '@/data/savedResumes';
 import { ArtboardMode, FigmaOverlay } from '@/dev';
 import { useSessionStore } from '@/features/auth';
 import { startCrashReports } from '@/lib/crashReports';
@@ -19,6 +20,7 @@ import { AiConsentGate } from '@/features/consent/AiConsentGate';
 import { ServiceBanner } from '@/features/system/ServiceBanner';
 
 import { AppErrorBoundary } from './AppErrorBoundary';
+import { useSavedResumes } from './useSavedResumes';
 
 // First, so a failure in anything below is reported.
 startCrashReports();
@@ -46,6 +48,8 @@ if (USES_BACKEND) {
   });
 }
 
+watchConnection();
+
 // Usage events leave with the app: the next open may be days away.
 if (USES_BACKEND) {
   AppState.addEventListener('change', (state) => {
@@ -61,7 +65,12 @@ export type AppProvidersProps = { children: ReactNode };
  */
 export function AppProviders({ children }: AppProvidersProps) {
   // Lazy initial state keeps a single client per app lifetime (survives re-renders/fast refresh).
-  const [queryClient] = useState(createQueryClient);
+  const [queryClient] = useState(() => {
+    const client = createAppQueryClient();
+    if (useSessionStore.getState().status === 'signed_in') restoreResumes(client);
+    return client;
+  });
+  useSavedResumes(queryClient);
 
   return (
     <GestureHandlerRootView style={styles.root}>

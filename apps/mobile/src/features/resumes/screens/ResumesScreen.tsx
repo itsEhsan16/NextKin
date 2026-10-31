@@ -19,6 +19,7 @@ import { ResumesFirstRun } from '../components/ResumesFirstRun';
 import { ResumesFilterBar } from '../components/ResumesFilterBar';
 import { ResumesHeader } from '../components/ResumesHeader';
 import { useResumesActions } from '../hooks/useResumesActions';
+import { useSaveNewestResumes } from '../hooks/useSaveNewestResumes';
 import { useResumesStore } from '../resumesStore';
 
 /** Column gap from the artboard: 228 + 16 + 228 fills the 472pt content width. */
@@ -70,6 +71,7 @@ export function ResumesScreen() {
 
   // Sorted in the query's `select`, so the filters below never re-order and the cache is shared.
   const resumes = useResumes(sort);
+  useSaveNewestResumes(resumes.data);
   const subscription = useSubscription();
   const unread = useUnreadCount();
 

@@ -3,7 +3,13 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { atsBandFor, atsQuickWins, RESUME_SECTION_ORDER } from '@/data/models';
-import { useRegenerateSection, useResume, useResumeContent, useResumeScore } from '@/data/queries';
+import {
+  useIsOnline,
+  useRegenerateSection,
+  useResume,
+  useResumeContent,
+  useResumeScore,
+} from '@/data/queries';
 import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Screen } from '@/ui/Screen';
@@ -51,6 +57,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   const router = useRouter();
   const actions = useResumesActions();
 
+  const online = useIsOnline();
   const resume = useResume(id);
   const doc = resume.data;
 
@@ -113,18 +120,24 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
     <StickyActionBar primary={{ label: DOWNLOAD, icon: 'Download01', disabled: true }} />,
   );
 
-  if (resume.isError) {
-    return page(
+  // Only with nothing to show: a saved copy stays on screen when its refresh fails (toreview §145.5).
+  const couldNotLoad = (retry: () => void) =>
+    page(
       <StateView
         tone="danger"
         icon="AlertTriangle"
-        title="Couldn't load this document"
-        message="Check your connection and try again."
+        title={online ? "Couldn't load this document" : 'Not saved on this phone yet'}
+        message={
+          online
+            ? 'Check your connection and try again.'
+            : 'Open it once while you’re connected, and it’ll be here next time.'
+        }
         actionLabel="Try again"
-        onAction={() => void resume.refetch()}
+        onAction={retry}
       />,
     );
-  }
+
+  if (resume.isError && !doc) return couldNotLoad(() => void resume.refetch());
 
   if (resume.isPending || !doc) return loading;
 
@@ -145,18 +158,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
 
   if (content.isPending || (isScored && score.isPending)) return loading;
 
-  if (content.isError || !content.data) {
-    return page(
-      <StateView
-        tone="danger"
-        icon="AlertTriangle"
-        title="Couldn't load this document"
-        message="Check your connection and try again."
-        actionLabel="Try again"
-        onAction={() => void content.refetch()}
-      />,
-    );
-  }
+  if (!content.data) return couldNotLoad(() => void content.refetch());
 
   const body = content.data;
   const isLetter = body.kind === 'cover_letter';

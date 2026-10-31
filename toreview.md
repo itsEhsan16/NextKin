@@ -14694,3 +14694,36 @@ Branch `step-2/fix-the-flow`, built on Step 1. Nothing is merged or pushed.
 - **Off the board (rule 7):** BUILD 04 gained "See the whole job" and the warning. The job page and the plan have no board and are built from TAILOR 02's card, BUILD 04's card and the job page's sections. The titles are the web's. Check both on your phone.
 - **A gap in the years check, not fixed:** "20+ years of experience with React" raises the warning, while "20+ years of React" didn't in my test. It's the engine's reading of the sentence, on both apps.
 - **Not proven:** "Add the result" was tested on the mock's plain draft. The server's AI draft is built and used by web, but hasn't been tried from the phone, and needs the OpenRouter key either way.
+
+### 145.5 Saved resumes with no connection
+
+- **Why:** with no connection every screen failed the same way, and a resume someone already had couldn't be read.
+- **Change:**
+  - **Saved on the phone:** the resume list and each resume's body and score, so opening one works with no connection. The top five finished resumes are loaded ahead of time, and anything else once it has been opened. The copy updates a second after anything changes, and drops a resume deleted elsewhere.
+  - **A plain note:** "You're offline. Your saved resumes are still here." It takes the place of the service banner, and goes when the connection returns, which also refreshes what's stale.
+  - **A resume that isn't saved** says so: "Not saved on this phone yet", and what to do.
+  - **A saved resume stays on screen** when its refresh fails. It used to swap to the error state.
+- **Also fixed: a forced sign-out left the last account's data in memory.** Only the sign-outs started from a screen cleared it, so a session that expired didn't, and the next account on that phone could briefly see it. Every way of signing out now clears memory and the saved copy, in one place.
+- **Privacy, your call:**
+  - **Resume text now sits on the phone, not encrypted,** in the app's private storage. Other apps can't read it, but a rooted phone or a forensic copy could. Expo Go offers no encrypted store big enough for it. Android and iOS full-disk encryption apply as usual.
+  - **It only holds what the person could already see,** and every sign-out and account deletion wipes it.
+  - **Android backups are off** (`allowBackup: false`), so the copy doesn't go to Google Drive. This takes effect in store builds, and also stops prefs carrying to a new phone. iOS still includes it in the person's own device backup. Excluding it needs native code, so it's left for the release pass.
+  - **Add this to the privacy policy** before launch: resumes are stored on the device for offline use.
+- **Other calls made without you:**
+  - **Reading only.** Editing, exporting and starting a run still need a connection, and fail with their usual messages.
+  - **A page view is the app's own layout,** not the typeset PDF. The PDF's links last minutes, so they can't be saved this way. A PDF already downloaded is in the phone's files.
+  - **Wi-Fi with no internet counts as online,** and requests fail and say so. Testing for real internet would mean pinging a third party from every phone.
+  - **A new app version starts with an empty copy,** and refills as resumes load, so an old shape can't break a new build.
+- **Also fixed: a bad signal could sign someone out.** If the access token had expired and the connection dropped during the refresh, or the server had an outage, the app treated it as a refused token: it dropped the tokens and signed out. Now only the server saying no ends a session. This would also have wiped the saved copy.
+- **Check on your phone:** the note sits at the top of the screen, over the header, like the service banner. One tap hides it until the connection next drops, but the first tap on Back lands on the note. Say if it should sit elsewhere.
+- **Not tested on a device.** Connection changes and the storage were tested with stand-ins. Airplane mode on a real phone is the check that matters.
+
+Also for the first resume (§145.2): an unscored resume now says "Add a job to see a score. We don't guess." (`WhyNextKin.md` §4.2).
+
+### 145.6 What was proved, and what wasn't
+
+- **Passed on the laptop:** typecheck and lint across the repo, and every unit suite (engines 193, shared 161, server 284, mobile 1,937, web 407). The Android bundle built, so the new package resolves.
+- **Integration: 1,189 passed, 18 failed, and none of the 18 comes from Step 2.** Step 2's only server change is one line, the `cancelled` field.
+  - **15 need services that aren't running:** ClamAV for the upload and scan tests (13), and stripe-mock for payments (2). ClamAV is a heavy image, so I didn't pull it.
+  - **3 are out of date:** `renders` (2) and `documentEditor` (1) still expect Letter paper and template revision 1. Paper now follows the person's location (§130) and the template has moved on. They need updating, in their own change.
+- **Not proved:** nothing in Step 2 has run on a phone, and no model step has run live (the OpenRouter key is still expired). The "under 15 minutes" target needs real people.

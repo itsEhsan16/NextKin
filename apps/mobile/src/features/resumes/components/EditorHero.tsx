@@ -46,13 +46,17 @@ const LINK_GAP = 4.5 / 0.75;
 /** The rubric link is one 16pt line, padded out to the 44pt floor. */
 const LINK_HEIGHT = 16 / 0.75;
 
+/** A score is always against a job (D-15), and the page says so (WhyNextKin.md §4.2). */
+const NO_SCORE_WHY = 'Add a job to see a score. We don’t guess.';
+
 /**
  * The card at the top of the editor (RESUMES 06): the page thumbnail, the document's name and
  * history, its type pill and the score ring, then the AI note and the rubric link (V2 §7.8 —
  * every score display links the published rubric). The ring opens the score panel.
  *
  * An unscored draft is normal rather than broken, so it shows no ring, note or link rather than
- * a zero. A cover letter's tone is shown read-only: rewriting it spends a generation (§13.5).
+ * a zero, and says what a score needs (D-15). A cover letter's tone is shown read-only: rewriting
+ * it spends a generation (§13.5).
  */
 export function EditorHero({ resume, content, note, onOpenScore, onOpenRubric }: EditorHeroProps) {
   const { colors, radii, sizes, spacing, s } = useTheme();
@@ -113,6 +117,12 @@ export function EditorHero({ resume, content, note, onOpenScore, onOpenRubric }:
           </Text>
         )}
       </View>
+
+      {score == null && content?.kind !== 'cover_letter' ? (
+        <Text variant="micro" color="textSecondary">
+          {NO_SCORE_WHY}
+        </Text>
+      ) : null}
 
       {note ? <NoteBar text={note} /> : null}
 

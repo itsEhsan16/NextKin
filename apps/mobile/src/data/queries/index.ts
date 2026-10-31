@@ -5,6 +5,7 @@ export * from '@nextkin/shared/queries';
 // Mobile-only helpers over the shared hooks.
 export { useQueriesSettled } from './useQueriesSettled';
 export { useBackendServiceStatus } from './useBackendServiceStatus';
+export { useIsOnline } from './useIsOnline';
 export {
   backendAuth,
   useConfirmSignUp,

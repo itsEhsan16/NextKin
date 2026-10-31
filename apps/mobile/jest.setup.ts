@@ -1,5 +1,11 @@
 import 'react-native-gesture-handler/jestSetup';
 
+// The library's own stand-in for its native module.
+jest.mock('@react-native-community/netinfo', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- hoisted factory.
+  require('@react-native-community/netinfo/jest/netinfo-mock.js'),
+);
+
 // Gesture Handler 3's GestureDetector throws in dev unless a GestureHandlerRootView sits above it.
 // The app has one (AppProviders); component suites render detectors on their own, so the root
 // context defaults to present here, the way the library's own jestSetup mocks its internals.

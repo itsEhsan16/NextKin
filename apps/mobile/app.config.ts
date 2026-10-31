@@ -28,6 +28,8 @@ const config: ExpoConfig = {
   },
   android: {
     package: 'com.nextkin.app',
+    // Saved resumes live in the app's storage; they shouldn't leave the phone in a device backup.
+    allowBackup: false,
     predictiveBackGestureEnabled: false,
     adaptiveIcon: {
       backgroundColor: '#FFFFFF',
