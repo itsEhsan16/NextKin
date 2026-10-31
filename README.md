@@ -9,8 +9,8 @@ This repository is the pnpm monorepo for the product: the Next.js web app in
 [apps/mobile](apps/mobile/), and [packages/shared](packages/shared/), the data layer they both
 build on.
 
-[![Expo SDK](https://img.shields.io/badge/Expo-SDK%2057-000020?logo=expo&logoColor=white)](https://docs.expo.dev/versions/v57.0.0/)
-[![React Native](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
+[![Expo SDK](https://img.shields.io/badge/Expo-SDK%2058-000020?logo=expo&logoColor=white)](https://docs.expo.dev/versions/v58.0.0/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.88-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![pnpm](https://img.shields.io/badge/pnpm-workspace-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
 
@@ -42,7 +42,8 @@ is considered done.
 
 ## Quick start
 
-Requires **Node 22**, **pnpm 11** and the **Expo Go** app (SDK 57) on a physical device.
+Requires **Node 22** (22.13 or later), **pnpm 11** and the **Expo Go** app (SDK 58) on a physical
+device.
 
 ```sh
 pnpm install     # installs the whole workspace
@@ -76,7 +77,7 @@ NextKin/
 │   ├── web/               @nextkin/web — Next.js 16 App Router (see its README)
 │   │   ├── app/           routes — thin: each file renders a feature screen
 │   │   └── src/           theme / ui / navigation / features / lib / providers
-│   └── mobile/            @nextkin/mobile — Expo SDK 57 app (see its README)
+│   └── mobile/            @nextkin/mobile — Expo SDK 58 app (see its README)
 │       ├── app/           expo-router routes — thin: each file renders a feature screen
 │       └── src/
 │           ├── theme/     colour / spacing / radii / shadow / typography / motion tokens
@@ -97,18 +98,18 @@ mobile has a custom ink ramp and `#4733F9`. They share Plus Jakarta Sans and no 
 
 | Concern | Choice |
 | --- | --- |
-| Runtime | Expo SDK 57 (React Native 0.86, React 19.2, New Architecture, Hermes) |
+| Runtime | Expo SDK 58 (React Native 0.88, React 19.3, New Architecture, Hermes) |
 | Routing | Expo Router (typed routes), custom floating tab bar |
 | Motion | Reanimated 4 + Worklets, Gesture Handler — UI-thread only |
 | Lists | FlashList v2 · images through `expo-image` |
 | Server state | TanStack Query v5 over a mock repository layer with simulated latency |
 | Client state | Zustand (per-feature slices) |
 | Forms | React Hook Form + zod |
-| Styling | `StyleSheet.create` + typed theme tokens, dark-mode ready |
+| Styling | `StyleSheet.create` + typed theme tokens, light only |
 | Storage | `expo-sqlite/kv-store` for UI preferences |
 | Testing | Jest (`jest-expo`) + React Native Testing Library · Maestro for device E2E |
 
-**Expo Go is the verification target**, so every dependency must run inside the Expo Go SDK 57
+**Expo Go is the verification target**, so every dependency must run inside the Expo Go SDK 58
 runtime — no custom native modules, no `expo-dev-client`, no `react-native-mmkv`. Install with
 `npx expo install` so versions match the SDK.
 

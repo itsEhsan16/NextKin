@@ -1,0 +1,234 @@
+# NextKin mobile app: assessment
+
+**Date:** 2026-10-31. **Scope:** `apps/mobile`, plus the shared data layer and the backend where the app depends on them.
+
+**Evidence:** I read the code, the V2 spec and `toreview.md`, and ran the mobile typecheck, tests and lint. I did not run the app on a phone. Everything said below about look and feel comes from code and the review log, not from using the app.
+
+---
+
+## 1. The verdict
+
+**NextKin mobile is a well-built, near-complete prototype. It is not yet a product a real user can rely on.**
+
+The screens, flows and code quality are ahead of most apps at this stage. The gap is in everything behind the screens: the app has barely been proven against the real backend, a production build cannot currently run on that backend at all, and none of the store or live-operations work has started.
+
+The next step is therefore not more screens. It is to get the existing app working for real, on real phones, with real resumes and real jobs, and then to make the "AI that will not lie on your resume" promise visible on mobile.
+
+| Area | Score /10 | Why |
+|---|---|---|
+| Feature coverage | 8.5 | 60 product routes cover nearly all of the candidate side of the spec |
+| Code quality | 8 | Strict types, 1,881 passing tests, clear boundaries; some oversized screens |
+| Flow and UX | 6.5 | The core loop is complete, but there are too many entry points and a slow first run |
+| Trust features (the USP) | 4 | The rubric and accuracy check exist; the evidence behind them is hidden |
+| Works on real data | 3 | Wired in code, not proven on a device; several parts are still mock |
+| Operations (crashes, analytics, updates) | 1 | None of it exists on the client |
+| Store readiness | 1 | No accounts, no Apple sign-in, no working production configuration |
+
+The scores are my judgement, not measurements. Treat them as a ranking of where the risk sits.
+
+---
+
+## 2. Current status
+
+### What was measured
+
+| Check | Result |
+|---|---|
+| Typecheck | Passes |
+| Tests | 1,881 passing across 211 suites. Jest warned that a worker had to be force-exited (a leaking test or timer) |
+| `expo lint` (what CI runs) | Passes, and catches a planted violation. It only covers `src/` and `app/` |
+| ESLint on the whole app | 14 errors, 2 warnings, all in `scripts/` and `__tests__/`, which `expo lint` skipped. Fixed in Step 0, and both folders are now in the lint script |
+| Size | About 63,700 lines; 16 feature areas |
+| Files over the 250-line rule | 38. The worst is `JobsScreen.tsx` at 554 lines; tokens and generated files inflate the count |
+| Stray hex colours outside the theme | 1 real case (`GetStartedScreen.tsx:25`); the other hits are comments |
+| Uncommitted work | **281 changed files in `apps/mobile`** on `main` |
+
+### Where the app sits
+
+- **Default data:** with no settings, the app runs entirely on mock data. Any email and password signs you in.
+- **Backend link:** an HTTP layer exists for 10 repositories and can be switched on with `EXPO_PUBLIC_DATA_SOURCE=http`.
+- **Backend proof:** the basic device test (sign up in Expo Go, confirm the email code, profile edits survive a restart) is still recorded as not proved (`toreview.md` P5-08). Tailored runs on the backend are also marked unverified on a device.
+- **Screen checks:** `toreview.md` has 74 "not verified" or similar notes across the project and 92 open "Decide" items. The Build flow has not been compared side by side with its boards since §74.
+- **UI pass:** §140 stopped at Profile as a sample. Phase 3 (the rollout to all other areas and the tab bar) is waiting on your phone check, so the app currently has one polished area and the rest partly updated.
+
+---
+
+## 3. The flow
+
+### How a user moves through the app today
+
+`Welcome → Onboarding → Sign up → Home → (Build or Tailor) → Job → Resume source → Generation → Ready → Accuracy check → Export → Applied`
+
+The pieces are all there and connected. What works well:
+
+- Every signed-in route is explicitly guarded, so a deep link cannot land on top of sign-in.
+- Exports pass through an accuracy confirmation, which is rare in this category.
+- Unsaved-changes protection now catches swipe-back and Android back on the profile forms.
+- One error boundary now catches screen crashes.
+
+### Where the flow is weak
+
+1. **Too many ways to start.** Home's Build, the + sheet's Tailor, Job Detail, a copied link, Upload and ATS Check all begin in slightly different places, and Build has its own resume source picker. §139 already asks whether two job flows are really wanted. A user should not need to learn the difference between Build and Tailor.
+2. **No fast first result.** The spec's target is a first resume within 15 minutes for at least 55% of signups. Nothing yet takes a new user from upload to one tailored resume with minimal confirmation.
+3. **Failed runs can vanish.** Removing the Home progress card (§141) removed the only Home route back to a failed run. It also departs from spec §7.2, which requires live status on the dashboard.
+4. **Mobile has fallen behind web on the best flow.** The web now has the JD page and the "path to 8.5" plan (§129). Mobile still uses its older path.
+5. **No return loop.** Push is only a permission prompt: nothing registers a device with the server. Application tracking is not saved to the server either. So the app gives people little reason to come back, and the week-4 retention target of 20% depends on exactly that.
+6. **Not built for phone moments.** Mobile's real advantage is catching a job the moment you see it. You can't yet share a posting from LinkedIn or a browser into NextKin, and links can't be read at all (see blocker 3).
+
+---
+
+## 4. Quality
+
+### Strong
+
+- **Architecture.** Data goes through one query layer, screens stay thin, and web and mobile share the data layer.
+- **Consistency.** Theme tokens and motion tokens are followed closely. `useReducedMotion` appears in 83 files.
+- **Accessibility groundwork.** The app has a shared `Pressable`, roles and labels on most controls, and error announcements.
+- **Failure discipline.** The crash that cost several days (§138.7) was traced to its real cause, and a test now guards against it.
+
+### Needs attention
+
+- **Tests can't see the real app.** They run against mocks, and worklets run as plain JS, which is why they missed that crash. There are six Maestro flows, and they run on mock data in Expo Go.
+- **Offline.** `apps/mobile` and the shared package contain no network-state handling or saved query cache. Nothing shows the last resume without a connection.
+- **Large screens.** `JobsScreen.tsx`, `AssistantScreen.tsx`, `GenerationScreen.tsx` and others exceed the size rule.
+- **Possible state gaps.** The Certifications, Education, Experience and Links list screens showed no loading state in a pattern search. They may inherit it from elsewhere; check before treating this as a defect.
+- **Screen-reader and large-text testing.** There is no record of a full TalkBack or VoiceOver pass. Only 11 places in `src/` set a font-scale cap, so large system text is also untested.
+- **Release-only behaviour.** Every state check so far ran in development mode. A release build disables the mock-mode switch, so empty and error states can't be exercised there.
+
+---
+
+## 5. Readiness blockers
+
+### Must fix before anyone outside the team uses it
+
+| # | Blocker | Evidence | Why it matters |
+|---|---|---|---|
+| 1 | **A production build on the backend will crash at launch** | `createRepos` refuses mock fallbacks in production. Mobile's `configureRepos` call passes no allowed list, and `notifications.list` and others are still fallbacks. It runs at module level in `AppProviders.tsx`, outside the error boundary. An existing test confirms the throw; I traced the crash path by reading the code and did not run a release build | Expo Go never hits this because `__DEV__` is true, so it would first appear in a real build |
+| 2 | **A release build today would be all mock** | `eas.json` sets no `EXPO_PUBLIC_*` values, and there is no `.env` in `apps/mobile` | A tester could sign in with anything and see invented jobs and scores |
+| 3 | **A copied link can produce an invented job** | `CopiedLinkHost.tsx` calls `readLink`, which stays on the mock even on the backend. The link reader was never built (§110, §114). `JobIntake` has the right guard message, but this path does not | This is the one thing the brand promises never to do. It must be blocked or built |
+| 4 | **Notifications are fake on the backend** | `notifications.list`, `markRead`, `markAllRead` and `remove` are all mock | Users would see made-up alerts |
+| 5 | **Applications are lost** | `apply`, `listApplications` and `updateApplicationStatus` stay on an in-memory mock by decision D-05, but the UI shows them as real | "Applied" disappears, with no warning. Either back it with the server or hide it |
+| 6 | **Google sign-in isn't connected** | Mobile shows "isn't connected in this build yet" | The button is on the main sign-in screens |
+| 7 | **No Apple sign-in** | Only Google is drawn, while spec §7.1 requires both | An App Store app offering Google sign-in generally has to offer an equivalent such as Sign in with Apple |
+| 8 | **Domain mismatch** | Billing, Terms, Privacy and share links use `nextkin.app`; the domain bought is `nextkin.ai` (§133) | Billing and legal links may go nowhere. Check who owns `nextkin.app` |
+
+### Must fix before the stores
+
+- **Store accounts:** the Apple Developer and Google Play accounts and the first reviews are all "not started" in `doc/lead-time-tracker.md`. The D-U-N-S number is ready, so both can be filed now as an organization.
+- **Payments rule check:** Pro is bought in a browser (D-18). Selling digital subscriptions outside store billing is restricted and the rules vary by country, so get this checked for the US, Germany and Australia. Do it before a store rejection does it for you.
+- **Store paperwork:** Privacy details, the Data safety form, review demo accounts, legal review and the listing itself.
+- **Release basics:** there is no crash reporting, analytics or over-the-air updates. The version is `0.1.0`, and the signing key decision is open.
+- **The Expo Go-only rule:** it blocks parts of a real release. Remote push doesn't work in Expo Go on Android, and sharing into the app and universal links need native setup. Keep Expo Go for daily screen work, but allow a proper development build for the release track.
+
+### What the product itself still lacks
+
+These are the items from `WhyNextKin.md` §5 that remain open:
+
+- **Real jobs:** job providers (D-12) are undecided, so listings are still fixtures.
+- **Real resumes:** quality has mostly been tested on synthetic resumes.
+- **The timeline engine:** it stays flag-only until a curator approves the knowledge base. This is the headline USP.
+- **Live quality numbers:** none of the spec's KPIs has a mobile measurement behind it.
+
+---
+
+## 6. What "best app for its purpose" means
+
+The app is being built to be **the trusted application engine for serious candidates**. Being the best here doesn't mean having the most features. It means three things competitors don't do together:
+
+1. **It never lies.** Every claim can be traced, and users can see that.
+2. **It is fast at the moment that matters.** See a job, get a truthful tailored resume, send it, from your phone.
+3. **It stays honest about the odds.** It shows the real fit, the real gaps and the real basis of every number.
+
+Today the engine can do much of this, but the user can't see it. So I would lead with visible honesty rather than new features.
+
+---
+
+## 7. Recommended plan
+
+The durations are rough estimates for one focused developer. External approvals are extra.
+
+### Step 0: Stabilize (2–3 days)
+
+1. Commit the 281 changed files in small groups. That much uncommitted work on `main` is the biggest avoidable risk here, especially with several sessions running at once.
+2. Fix the ESLint errors in `scripts/` and `__tests__/`, and add both folders to the lint script.
+3. Do your phone check of the §140 Profile sample, then run Phase 3 across the remaining areas.
+4. Answer the decisions in section 8.
+
+**Done when:** all checks are green and the working tree is clean.
+
+### Step 1: Make it real (2–3 weeks)
+
+1. Fix blockers 1–5: real notifications, block or build link reading, and a decision on applications.
+2. Add a `staging` EAS profile that points at the AWS demo environment.
+3. Complete the P5-08 device test, then run the full loop on the backend on one Android phone and one iPhone.
+4. Add crash reporting and basic product analytics. Without them, nothing that follows can be measured.
+5. Add automated smoke tests on a release build against the backend, and clear the "not verified" list for the core flow.
+
+**Done when:** five real people finish upload → tailored resume → PDF on their own phones, with no mock data anywhere in the path.
+
+### Step 2: Fix the flow (2–3 weeks)
+
+1. Merge Build and Tailor into one "Make a resume for a job" entry point. Keep the two paths as internal detail.
+2. Build the first five minutes: upload, confirm employers and dates, get one tailored resume (`WhyNextKin.md` §4.2).
+3. Bring the JD page and path-to-8.5 plan across from the web.
+4. Give failed and running generations one visible home, and update spec §7.2 to match.
+5. Add basic offline viewing of saved resumes, and clear messages when there's no connection.
+
+**Done when:** a new user reaches a first resume in under 15 minutes in testing.
+
+### Step 3: Show the truth (2–3 weeks)
+
+This is where NextKin stops looking like another resume builder (`WhyNextKin.md` §4.5).
+
+1. Lead the score card with "x of y required", then the parts, then what the score doesn't measure.
+2. Give every fix its basis, e.g. "you tagged this skill at Acme".
+3. Show provenance on the profile: confirmed, parsed or assumed.
+4. Show "what changed and why" between versions, including what was removed and why.
+5. Show an export receipt: "23 of 23 bullets readable".
+6. Add the gap interview: up to seven short, skippable questions, decided by code, not by the model.
+
+**Done when:** a tester can point at any line of a resume and see where it came from.
+
+### Step 4: Create the habit (3–4 weeks)
+
+1. Real push: job matches, finished runs and application follow-ups, all opt-in.
+2. Share a job into NextKin from any browser or app, once a real link reader exists.
+3. Lightweight "I applied" tracking on the server, which also makes a useful Home number (needs D-05).
+4. Fit labels next to skills: location, remote, salary and sponsorship, with clear reasons why a job is hidden.
+5. Interview prep tied to real applications.
+
+**Done when:** week-4 retention can be measured and is heading towards the 20% target.
+
+### Step 5: Launch (4–6 weeks, mostly waiting on reviews)
+
+1. File the Apple and Google accounts now, because their lead times run in parallel with everything above.
+2. Add Sign in with Apple and connect Google.
+3. Get a payments ruling, fix the domains, and finish legal review.
+4. Run an accessibility pass with TalkBack, VoiceOver and large text.
+5. Test on a low-end Android phone, covering launch time, list scrolling and memory.
+6. Run a closed beta with real job seekers, then release in stages.
+
+**Launch gate (from spec §2.2):** generation reliability ≥ 98%, zero anachronistic claims on automated checks, ATS rubric mean ≥ 85% on real resumes, and a crash-free rate you've chosen in advance.
+
+---
+
+## 8. Decisions needed from you
+
+1. **Launch order.** D-06 says web and mobile launch together, while spec §14.4 says mobile follows validated web demand. **My recommendation:** run a mobile beta alongside the web launch, but don't let the store release hold up the web launch.
+2. **Expo Go rule.** **My recommendation:** keep it for screen work and allow a development build for release work.
+3. **Link reading.** Build the reader, or remove every link path. **My recommendation:** block the mock path now and build the reader in Step 4, since it unlocks sharing into the app.
+4. **Application tracking (D-05).** **My recommendation:** build the small "I applied" version, since hiding it leaves the app with no return loop.
+5. **Job providers (D-12).** This is the largest open product dependency. The job board and match scores aren't real until it's decided.
+6. **One flow or two.** **My recommendation:** one, as in Step 2.
+7. **Payments on mobile.** Keep the browser checkout or add store billing, once the rule check is back.
+8. **Home's run status (§141).** Accept the departure from the spec, or add a smaller indicator. **My recommendation:** a small indicator, shown only while a run is active or has failed.
+
+---
+
+## 9. What this assessment did not cover
+
+- No use of the app on a phone, and no visual comparison with Figma.
+- No release build, no performance measurements and no battery or memory testing.
+- No run of the backend or of `pnpm test:integration`.
+- No AI output quality review.
+- Store policy points are from general knowledge and need checking against the current rules.

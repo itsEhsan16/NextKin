@@ -1,6 +1,6 @@
 # NextKin mobile app
 
-React Native app for NextKin Apply, built with **Expo SDK 57** (React Native 0.86, React 19.2,
+React Native app for NextKin Apply, built with **Expo SDK 58** (React Native 0.88, React 19.3,
 New Architecture, Hermes), **Expo Router**, TypeScript `strict`, Reanimated 4 and FlashList v2.
 
 The current milestone is **UI end-to-end**: every screen runs against a typed mock data layer
@@ -12,7 +12,7 @@ part of this repository.
 
 ## Run it in Expo Go
 
-Expo Go (SDK 57) on a physical device is the verification target until an Expo/EAS account
+Expo Go (SDK 58) on a physical device is the verification target until an Expo/EAS account
 exists. Your phone and computer must be on the same Wi-Fi (or use `--tunnel`).
 
 ```sh
@@ -50,7 +50,7 @@ workspace package. All three must be green before a change is considered done.
 
 ```
 apps/mobile/
-  app.config.ts          scheme "nextkin", portrait, userInterfaceStyle automatic, typedRoutes
+  app.config.ts          scheme "nextkin", portrait, userInterfaceStyle light, typedRoutes
   app/                   expo-router routes - THIN: each file just renders a feature screen
     _layout.tsx          providers (Query, gesture root, SafeArea, theme), font gate, splash hide,
                          and the session gate: every signed-in route is declared inside it
@@ -73,7 +73,7 @@ apps/mobile/
     dev/                 __DEV__-only gallery: tokens, type, motion, mock modes, filters, forms
   src/
     theme/               tokens.ts (colours, spacing, radii, sizes, shadows), typography.ts,
-                         motion.ts, appearance.ts, index.ts (useTheme)
+                         motion.ts, index.ts (useTheme, always light)
     ui/                  primitives, one folder each (Text, Pressable, Button, Card, Sheet, ...)
     navigation/          FloatingTabBar, Fab, shared sheet-progress value
     providers/           app-level providers composed by app/_layout.tsx
@@ -213,7 +213,7 @@ pnpm --filter @nextkin/mobile test -- --watch # watch mode
 
 Until an Expo/EAS account exists the app must run unmodified inside Expo Go, which means:
 
-- **No custom native modules.** Only libraries bundled in the Expo Go SDK 57 runtime may be used.
+- **No custom native modules.** Only libraries bundled in the Expo Go SDK 58 runtime may be used.
   Everything currently installed qualifies (Reanimated 4 + worklets, Gesture Handler, Screens,
   Safe Area Context, FlashList v2, expo-image, expo-font, expo-haptics, expo-sqlite,
   expo-notifications permission APIs, react-native-svg, and — added in Phase 9A —
@@ -223,8 +223,8 @@ Until an Expo/EAS account exists the app must run unmodified inside Expo Go, whi
 - **Two of those are weaker than they look in Expo Go.** `expo-store-review` needs store URLs in
   `app.config.ts` to have an action at all, and DOCX cannot be rendered on device — the mock's
   export returns render inputs and the screen prints a PDF or writes text.
-- **`expo-file-system` is the SDK 57 class API** (`File`, `Paths`); the function API it replaced
-  now lives behind `expo-file-system/legacy` and is deprecated.
+- **`expo-file-system` is the class API** (`File`, `Paths`); the function API it replaced now
+  lives behind `expo-file-system/legacy` and is deprecated. Since SDK 58 `File.write()` is async.
 - **Deferred until dev builds:** `expo-dev-client`, EAS Build/Update, `react-native-mmkv`
   (preferences use `expo-sqlite/kv-store` instead), `@react-native-vector-icons/*`
   (icons come from `@expo/vector-icons`, bundled in Expo Go).
@@ -233,6 +233,13 @@ Until an Expo/EAS account exists the app must run unmodified inside Expo Go, whi
 - **Perf budgets are measured in release-like mode** (`start:prod`) in Expo Go and re-validated on
   a real release build once EAS is set up. Dev-mode frame drops are not a regression.
 - **Config plugins that change native code have no effect** in Expo Go; keep `app.config.ts` to
-  settings Expo Go honours (scheme, orientation, splash, icons, interface style).
-- **Expo Go must match SDK 57.** If the store version of Expo Go moves ahead, pin the matching
-  Expo Go build on the test device before upgrading the SDK.
+  settings Expo Go honours (scheme, orientation, splash, icons, interface style). The dev server
+  reads it once at start, so restart Metro after changing it.
+- **The app is light only.** `userInterfaceStyle` is `light` and `useTheme()` never resolves dark,
+  so the phone's dark mode changes nothing (Profile → Appearance shows Dark as "Coming soon").
+- **Expo Go must match SDK 58.** Each Expo Go build runs one SDK. If the store version of Expo Go
+  moves ahead, pin the matching Expo Go build on the test device before upgrading the SDK (older
+  builds are on GitHub under `expo/expo-go-releases`). The app moved from SDK 57 to 58 on
+  2026-10-25, when the store Expo Go did (toreview §138).
+- **React Native 0.88's strict TypeScript API** is the default: refs take instance types
+  (`ScrollViewInstance`, `TextInputInstance`, `ViewInstance`), not the component names.

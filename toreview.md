@@ -14037,8 +14037,11 @@ environment by flipping a flag — production is a separate build of the full ar
 1. **Root user.** Recommended instead: root signs in once, turns on MFA, sets a budget alert,
    enables IAM Identity Center and creates an admin user; all setup then runs through
    `aws sso login`. No root access keys, ever. Pending the owner.
-2. **Where `nextkin.ai` is registered.** If not Route 53: delegate NS to a Route 53 hosted zone, or
-   add records at the registrar. Needed for the ACM certificate and SES.
+2. **Where `nextkin.ai` is registered: Namecheap** (owner, 2026-10-24). Recommended: keep the
+   registration at Namecheap, create a Route 53 hosted zone and switch Namecheap to Custom DNS with
+   its four nameservers, after copying any existing records (MX/TXT for email, website). Fallback if
+   the root domain must stay on Namecheap DNS: delegate only a subdomain with NS records. Pending
+   the owner's choice and the record check.
 3. **Data in the demo.** OpenRouter has no ZDR agreement and the demo is not the hardened
    environment. Recommend synthetic or team-member resumes only, no outside users' real data (L4
    in spirit).
@@ -14098,3 +14101,404 @@ gradient Sign in with an arrow. The desktop split layout is unchanged except two
 shares: the subtitle "Welcome back. Continue where you left off." and Forgot password's place
 under the field. Sign up and Forgot password stay dimmed as "Coming soon" (the mockup draws them
 full colour); they brighten once those flows exist.
+
+**Done 2026-10-24 (NextKin account `962942593570`, CLI profile `nextkin`; Mitow stays on `default`):**
+root MFA on (owner, console); Organization `o-9et8drtjst` created with all features, this account as
+management; member account `nextkin-nonprod` = `505846296511` (email
+`thewebcros+nextkin-nonprod@gmail.com`, billing access for IAM denied); budget `nextkin-monthly`
+$100/month, email at 80% actual and 100% forecast to thewebcros@gmail.com (amount is a placeholder,
+client said "no limit for now"). Owner chose Org + nonprod and thewebcros@gmail.com as the Identity
+Center admin. **Open:** which account holds the `nextkin.ai` apex hosted zone — recommended the
+future `prod` account with `demo`/`dev` delegated to nonprod; until prod exists, putting it in the
+management account means a manual zone migration later.
+
+**Reversed the same day (owner, 2026-10-24):** the demo runs directly in the management account
+`962942593570`, and no Identity Center admin user is created; setup runs as root through the
+short-lived `aws login` session (root MFA on, no root access keys). This supersedes "Org + nonprod",
+item 1 above and the zone question: the `nextkin.ai` zone goes in this account. **Accepted
+consequences:** workloads sit in the management account, which the Organization's SCPs cannot
+restrict, and a later prod/nonprod split means moving resources. **Open:** keep or close the empty
+`nextkin-nonprod` account `505846296511` (keeping it is free; a closure becomes final after 90 days).
+**Blocked:** creating the hosted zone was denied by the Claude Code permission classifier (DNS
+changes); it needs the owner to run it or allow it. *Update:* the owner ran it; zone
+`Z085134212NA4HYMHDZPA` exists. Namecheap still serves DNS (parking page + Namecheap email
+forwarding MX); the owner deferred the nameserver switch ("leave the domain for now").
+
+### 133.1 The demo CDK app, `aws/infra/` (2026-10-24)
+
+Owner choices: `aws/infra/` (not `infra/`), a Valkey container, a ClamAV task, public subnets
+without NAT. Built without the domain. Judgement calls made while building, each to review:
+
+1. **HTTPS through CloudFront's own `*.cloudfront.net` domain.** CloudFront → ALB is plain HTTP
+   (no certificate without a domain); the ALB accepts only CloudFront's origin-facing prefix list
+   *and* a secret `X-Origin-Verify` header. Switch the origin to HTTPS when `nextkin.ai` gets an ACM
+   certificate.
+2. **x86_64 Fargate, not Graviton,** so the Windows laptop builds images natively (no QEMU). Images
+   are CDK assets in the bootstrap ECR repository, not a named ECR repo.
+3. **Database URLs are assembled in the container shell** (`sh -c 'export DATABASE_URL=…; exec
+   node …'`): ECS injects secrets only as whole values, the server reads full URLs. Role passwords
+   are alphanumeric so no escaping is needed. `sslmode=no-verify`: encrypted, but the RDS CA is not
+   verified. Production should ship the RDS CA bundle and verify.
+4. **Seed in a shared `dev`:** `seed.ts` used to refuse everything but local/test. It now also runs
+   in `dev` when `SEED_PASSWORD` and `SEED_TOTP_SECRET` are set (new optional config keys), so the
+   demo's accounts never use the repo's published `NextKin-local-2026` / fixed TOTP. Volume seeding
+   stays local/test. `seed` is bundled into the migrate image.
+5. **Web on the API, through the designed `/sign-in` screen.** Owner pointed at the designed login
+   (2026-10-24). The screen already called `auth.login` on the backend; what was missing was the
+   redirect: `SessionGate` and the HTTP client's 401 hook sent signed-out users to `/dev/sign-in`
+   and were switched off in production builds. Both now go to `/sign-in` in every build
+   (`SIGN_IN` in `apps/web/src/lib/dataSource.ts`). `/dev/sign-in` itself is unchanged. The demo
+   builds web with `NEXT_PUBLIC_DATA_SOURCE=http` by default (`-c webDataSource=mock` reverts).
+   Not yet checked in a running production build.
+   **Blocked at the first deploy (2026-10-24):** the web production build with
+   `NEXT_PUBLIC_DATA_SOURCE=http` fails by design (`packages/shared/src/repos/create.ts`): eight
+   methods still answer from the mock (`notifications.list/markRead/markAllRead/remove`,
+   `jd.compare:from-mock-document`, `generations.start:resume-from-library|from-mock-listing|
+   from-mock-document`). The demo was deployed with `-c webDataSource=mock` meanwhile; the API is
+   live for mobile. **Owner decision:** (a) build those endpoints, (b) a demo-only allowance for
+   these fallbacks (shows fixture data beside real data), or (c) keep web on the mock.
+   **Resolved (owner, 2026-10-24: "the login screen should work, only these accounts, no direct
+   landing on Home"):** (b), narrowly. `RepoConfig.allowedFallbacks` names the exceptions a
+   production build may keep; web reads them from `NEXT_PUBLIC_ALLOWED_MOCK_FALLBACKS`; only the
+   demo passes the eight (`DEMO.allowedMockFallbacks` in aws/infra), so a new fallback still fails
+   the build. Notifications, that JD compare path and those three generation starts show fixture
+   data in the demo. `apps/web/proxy.ts` now sends a visit to any `(app)` page without the
+   `__Host-nk_session` cookie to `/sign-in` before rendering (optimistic; SessionGate catches an
+   expired session). Verified on the deployed demo: `/`, `/resumes`, `/jobs` signed out → 307
+   `/sign-in`; seeded George (web) signs in, `/` → 200; a wrong password → 401. Not yet tried in a
+   browser. Sign-up is still visible but its email code lands in Mailpit, so only seeded accounts
+   can get in.
+6. **Email goes to a Mailpit container** and is never delivered (no SES without the domain), so
+   sign-up and reset codes cannot reach users. Seeded accounts only, for now.
+7. **No LaTeX compile service** in the demo: LaTeX export will fail; Chromium PDF export works.
+8. **Cost:** ≈ $100–115/month if left running. **Owner chose to pause between demos** (2026-10-24):
+   `task pause` / `task resume` set the four services to 0 / 1; ≈ $25/month stays (ALB, secrets,
+   storage), ≈ $30–40/month with a few demo hours a week. A `cdk deploy` resumes (the stack sets 1).
+   ClamAV has no ECS health check, so `resume` returns before its signatures finish loading.
+9. **S3:** S3-managed keys, no Object Lock on the audit bucket, no replication; buckets are
+   RETAINed on destroy, the database leaves a final snapshot.
+11. **Integration tests (2026-10-24, all profiles but auth/obs):** 1,122 pass, 4 fail, none on
+    this work's code paths: `documentEditor.int.test.ts` (expects `template_rev` 1, gets 2),
+    `latexCompile.int.test.ts` (broken-source failure answer) and two in `renders.int.test.ts`.
+    The LaTeX three may be a stale `nextkin-latex:local` image (`stack:up` does not rebuild).
+    Not proven pre-existing; for the session that owns the editor and LaTeX export.
+10. **Deployed 2026-10-24** (`NextkinDemo`, `https://d3hc44bxjik4qf.cloudfront.net`, web on the
+    mock per item 5). db-roles, migrate (42 + the local IdP schema) and seed ran; `/health/deep` is
+    200 on all four dependencies; the ALB refuses direct connections; `pro@nextkin.test` signs in
+    through the API with the demo's password and the published one gets 401. Fixes the first
+    deploys needed: `@node-rs/argon2` kept out of the bundle and installed in the migrate image
+    (seed reaches it); `auth/adapters/local/schema.sql` copied into the migrate image (the image had
+    never run migrate against a database); `sqs:ListQueues` for the health probe; `region` saved on
+    the `nextkin` CLI profile (CDK's `aws login` refresh needs it). **Not done:** the OpenRouter key
+    is still the generated placeholder, so AI features fail until the owner sets it; nothing was
+    tried in a browser or on a phone yet. Git Bash needs `MSYS_NO_PATHCONV=1` for `aws logs tail
+    /nextkin-demo/...`.
+
+## 137. The AWS demo: no LaTeX preview, and the wrong name on the review page (owner, 2026-10-25)
+
+### 137.1 The name
+
+- **What the owner saw:** the review page's preview showed "Priya Pro / pro@nextkin.test", the signed-in account, instead of the uploaded resume's own name and contacts.
+- **Cause:** the tailored version keeps the base's printed header (`tailorMerge`), but `toResumeContent` dropped `header`. `ReviewStep` then passed the account's name to `ResumeSheet`.
+- **Fix:**
+  - `ResumeContent.header` now carries the printed header.
+  - `ResumeSheet` prints the header's name and its items in order, and falls back to the account only when a resume has no header.
+  - Tests: `canonicalEdits.test.ts` and `__tests__/features/resumes/ResumeSheet.test.tsx`.
+- **Unaffected:** the LaTeX PDF already used `doc.header?.name ?? who.name`.
+
+### 137.2 LaTeX on the demo
+
+- **Cause:** §133.1 item 7 deployed the demo without the compile service. The worker had no `LATEX_COMPILER_TOKEN`, so previews stayed structured and downloads came from Chromium.
+- **Added to `aws/infra`:**
+  - a `latex` Fargate service (Spot, 1 vCPU / 2 GB) from the Dockerfile's `latex` target, with Tectonic pinned from `docker/versions.env`
+  - Cloud Map name `latex.nextkin.internal`
+  - its own security group admitting only the app on 8790
+  - a generated secret `nextkin-demo/latex-token`, written to a 0600 file at start because the service reads its token from a file
+  - for the worker: `LATEX_COMPILER_URL` plus the token secret
+  - pause/resume (`scripts/run-task.mjs`) now includes `latex`
+- **Differs from local:** outbound stays open, because the subnets are public and it must pull its image. Tectonic only reads its build-time cache.
+- **Cost:** about $15–30 a month while the demo runs.
+- **`cdk diff`:** checked. New latex resources only, plus new web/worker/migrate/seed task definitions from the current tree. No new migrations: still 42.
+- **Deployed 2026-10-25** on the owner's word ("do it yourself"). The owner's own first try had failed only because Docker Desktop was stopped.
+  - `cdk deploy` took 294s.
+  - `nextkin-demo-latex`, `-worker` and `-web` are all 1/1 and COMPLETED.
+  - The latex log shows `listening` on 8790, and `/health/deep` returns 200.
+  - **Not yet seen:** a render on the demo. The first preview after the deploy should show typeset pages; check `/nextkin-demo/worker` for `render.ready`.
+
+## 138. Mobile is light only, and the Expo Go launch crash (owner, 2026-10-25)
+
+The owner asked for two things: the app must stay light even when the phone is in dark mode, and the reason it "keeps crashing in Expo Go". The facts: Android, Expo Go 57.0.9, the app closes back to Expo Go right after opening, it started today, the phone is in dark mode (the app followed it), and there is no USB, so no logcat.
+
+### 138.1 What changed
+
+- **Light only.**
+  - `app.config.ts`: `userInterfaceStyle: 'light'`.
+  - `useTheme()` always resolves `'light'`. `useResolvedScheme` and the persisted appearance store (`theme/appearance.ts`, key `prefs.appearance`) are gone.
+  - `<StatusBar style="dark">` (it was `auto`, which went white over the light app).
+  - The native window is painted the light `surfacePage` once.
+  - The dev gallery's System/Light/Dark buttons are removed.
+- **Profile → Appearance stays, as the owner chose.** Light is selected. System and Dark are greyed out with "Coming soon", like web's Settings. `SheetOption` gained `disabled`: dimmed by `Pressable`, announced as disabled, never selected.
+- **Web:** `color-scheme: only light` on `:root`, so browsers that force-darken pages leave it alone.
+- **The resume screens no longer throw on open (§74.3, confirmed).** `useResumesActions` read the create sheet through the strict `useCreateSheet`. The editor, score, rubric, fix and new screens are root-stack screens above the tabs' `CreateSheetProvider`, so all five threw while rendering. It now uses `useOptionalCreateSheet()`; only the Resumes tab offers "+ New". A regression test renders the editor without the provider.
+- **One error boundary** (`src/providers/AppErrorBoundary.tsx`), inside the providers around the navigator. Before this a render error in any screen unmounted the whole app (a red screen in Expo Go, a closed app in a release build). It logs the error to Metro and shows a `StateView` with "Try again", which remounts the navigator.
+
+### 138.2 Calls made without you
+
+- **The dark tokens stay, dormant.** "Coming soon" reads as a future dark mode, so `colorsByScheme.dark`, `darkTheme` and `themeFor(scheme, …)` were kept, just unreachable. They were never designed and are broken (`surfaceInverse` white under off-white `textOnDark`), so they need a design before Dark is offered. A comment in `tokens.ts` says so.
+- **The fallback's copy:** "Something went wrong" / "This screen ran into a problem. Try again to reload it." / "Try again". It follows the app's other danger states; there is no board for it.
+- **Both disabled rows say "Coming soon"**, and System lost its "Follows your device setting" caption.
+
+### 138.3 The launch crash: what is known
+
+- **Evidence:** the Metro log of the run (started by another session at 13:30). Three launches between 13:30 and 13:56. Each time the bundle loaded and the app rendered: a require-cycle warning, then about 36–39 Reanimated warnings, then silence. No JS error at all, so it is a native crash just after the first render.
+- **Ruled out:**
+  - the bundle (it builds, 15.9 MB);
+  - backend mode (no `EXPO_PUBLIC_*` is baked in);
+  - today's code changes (§137.1's `header`, a type and a spread);
+  - oversized images (largest 1 MP);
+  - a worklets/reanimated mismatch (0.10.1 / 4.5.1 match Expo's SDK 57 versions);
+  - the SDK 58 store update (the phone has 57.0.9);
+  - expo-notifications (skipped on Android in Expo Go);
+  - the Figma overlay and artboard mode.
+- **Leading hypothesis, not proven:** the dark path at launch. Both complaints appeared today with the phone in dark mode, and `automatic` let Expo Go and the theme follow it. 138.1 removes that path, so the owner's next launch is the test.
+- **If it still crashes:** add temporary `[boot]` markers (providers, fonts, tabs layout, Home, each TabWarmup tab) and read the last one before silence. Bisect there: skip layout animations with `LayoutAnimationConfig`, skip TabWarmup, drop KeyboardProvider. Then align SDK 57 patches with `expo install --check`/`--fix`. Without USB, a phone bug report (Developer options) carries the native crash in its logcat.
+
+### 138.4 Seen and left alone
+
+- **~39 Reanimated warnings on every launch:** "Property opacity of AnimatedComponent(View) may be overwritten by a layout animation". Views apply an `entering` animation and an animated opacity on the same node. Harmless on their own, but they are the noisiest thing in the launch log.
+- **The job-detail match card's `<Filter>` blur** (`MatchIllustration.tsx`): on Android it blurs with the deprecated RenderScript and allocates bitmaps per draw. It is not on the launch path.
+- **Metro crawls `aws/infra/cdk.out`** (about 41k files, staged copies of the repo) since `aws/infra` joined the workspace (§133). The bundle still builds, but a `blockList` entry in `metro.config.js` would keep Metro off it.
+- **22 packages behind Expo's SDK 57 versions** (`expo` 57.0.15 → ~57.0.31, `react-native` 0.86.2 → 0.86.3, `expo-router` → ~57.0.29). Superseded by the move to SDK 58 (138.6).
+- **The store's Expo Go is SDK 58 now** (SDK 58 shipped 2026-09-29). When this was written the phone still ran the SDK 57 build, 57.0.9; the app has since moved to SDK 58 too (138.6).
+
+### 138.5 Not verified on a device
+
+- the app staying open on launch with the phone in dark mode;
+- the light UI and dark status-bar icons under the phone's dark mode;
+- opening a resume (editor, score) without a red screen;
+- the Appearance sheet's greyed rows.
+
+### 138.6 Result of 138.1 on the phone, and the move to SDK 58
+
+- **138.1 did not stop the crash.** With the light-only build on the same phone (Samsung Galaxy, Expo Go 57.0.9, dark mode), Metro showed the same pattern: bundle, Home renders (~36 layout-animation warnings), silence, no JS error, and nothing caught by the new error boundary. So the dark path was not the cause.
+- **The owner then installed Expo Go 58 from the store and chose to upgrade the app to SDK 58** rather than sideload Expo Go 57.0.9 again.
+- **Why SDK 58 may also fix the crash:** a native crash just after a screen mounts, on a Samsung, matches expo/expo#51995: a Fabric focus-search use-after-free in React Native 0.86. Its fix is gated off there and always on from 0.88. This is a match by symptom only; no native log was captured.
+- **What changed:**
+  - Every SDK 58 version from Expo's API: `expo` 58.0.19, `react-native` 0.88.0, `react` 19.3.0, Reanimated 4.7.1, Worklets 0.13.0, Gesture Handler 3.3.0, `expo-router` 58.0.26, FlashList 2.3.2, Screens 4.30, `jest-expo` 58.0.12, `eslint-config-expo` 58.0.4, `@types/react` 19.3.0.
+  - **React 19.3.0 for the whole workspace, web included.** React Native 0.88 needs exactly 19.3.0, and `@nextkin/shared` resolves React from the shared root. A pnpm `overrides` entry pins `react`/`react-dom` 19.3.0: `@nextkin/shared`'s `react >=19` peer had kept 19.2.3 nested under `packages/shared`, which would have handed the phone two Reacts.
+  - `allowBuilds`: `@parcel/watcher` is false. It arrives with Jest 30's haste map via jest-expo 58; its script builds only from source, and the prebuilt binary ships as an optional dependency.
+  - React Native 0.88's strict TypeScript API: 27 refs now take instance types (`ScrollViewInstance`, `TextInputInstance`, `ViewInstance`).
+  - `resolveImageSource` returns expo-image's `ImageSource`.
+  - The sheet pan's type is `ReturnType<typeof Gesture.Pan>`: Gesture Handler 3 gave the name `PanGesture` to its new hook API.
+  - `exportFile.ts` awaits `File.write()`, which is async since SDK 58.
+  - Jest:
+    - `@react-native/jest-preset` 0.88.0 is pinned, because pnpm had kept 0.86.2 against jest-expo's `^0.88.0` peer.
+    - A local `jest.resolver.js` chains Reanimated's resolver over React Native's.
+    - Worklets' own mock is used.
+    - FlashList joins the transform allow-list.
+    - Gesture Handler 3's root-view context defaults to present.
+    - React Native 0.88's private `AssetRegistry` gets the stub jest-expo 58.0.12 only puts on the old path.
+  - Docs: CLAUDE.md, `apps/mobile/AGENTS.md`, both READMEs.
+- **Calls made without you:**
+  - **Jest stays on 29.7.** `expo install --check` suggests Jest 30 and `@types/jest` 30. jest-expo 58 still supports 29, web is on 29.7 too, and Jest 30 removes matcher aliases the suites may use. It is a separate pass.
+  - **Tabs no longer freeze when hidden.** Expo Router 58 ignores `freezeOnBlur`. Its replacement, the navigator's `activityEnabled`, hides a tab inside React `<Activity>`, which unmounts its effects (TabWarmup's prefetched tabs would stop fetching). Left off for now; hidden tabs stay mounted and live, as a plain tab navigator does.
+  - **`Stack.Protected` now redirects** instead of removing a failed guard's routes. The signed-out flow was left to the suites and the phone to confirm.
+- **Temporary:** `src/dev/bootLog.ts` and its `[boot]` markers (providers, fonts, tabs layout, the four tab screens, TabWarmup) stay until the phone confirms SDK 58 launches; then they come out. *(Removed 2026-10-27, see 138.7.)*
+- **Not verified on a device yet:** the launch on Expo Go 58 and every screen on the new versions.
+- **Also fixed after the upgrade:** `@expo/metro-runtime` and `@expo/dom-webview` were still on their SDK 57 versions, because pnpm kept the old locked copies behind the new peer ranges. They are now pinned in the mobile manifest (~58.0.15 / ~58.0.2). `expo-doctor` is 19/20; the one open check is the deferred Jest 30.
+
+### 138.7 The real cause of the crash (found 2026-10-27, fixed, confirmed on the phone)
+
+- **Cause: a bug in our own code.** `isAtEnd()` in `src/ui/Screen/scrollMath.ts` is a worklet that `Screen`'s scroll handler runs on the UI thread. It took its default as a parameter default (`slop = FOLLOW_END_SLOP`). The worklets Babel plugin copies only what the function *body* references, so the constant never reached the UI thread. The first scroll event on any scrolling `Screen` threw `ReferenceError: Property 'FOLLOW_END_SLOP' doesn't exist`. On the UI thread that is fatal: Expo Go was killed with no red screen and nothing in Metro.
+- **Evidence:** an Android bug report from the owner's Galaxy S23 (Android 16), taken on 10-27. All 10 Expo Go crashes since 10-25, on both SDK 57 and SDK 58, carry this exact `FATAL EXCEPTION` and stack (`isAtEnd_scrollMathTs1` ← `ScreenTsx1` ← `useAnimatedScrollHandler`).
+- **Why it looked random:** any tiny scroll triggered it: an overscroll, a layout nudge (Expo Go's "Tools" hint collapsing ~18 s after launch), the keyboard, or a pushed screen (Create an account). The bisect tests that passed simply had no scrolling `Screen` (bare root, `<Slot />` before the user touched anything) or got no scroll event. So 138.3's dark-mode theory and 138.6's React Native focus-search theory were both wrong. The SDK 58 upgrade was not needed for the crash; it stays because the store Expo Go is SDK 58.
+- **Fix:** the default is resolved in the body (`slop ?? FOLLOW_END_SLOP`), and the compiled worklet now captures the constant. Confirmed on the phone: Create an account, scrolling, and every tab, with no crash.
+- **Guard:** `__tests__/ui/workletDefaults.test.js` scans `src/` and fails on any worklet whose parameter default is not a literal. It fails on the old code. Jest itself can't see this bug, because it runs worklets as plain JS.
+- **Cleanup:** the `[boot]` markers, `bootLog.ts` and the warmup bisect switch are removed. The root layout is back to HEAD.
+- **How to read a phone crash without USB:** Developer options → Take bug report → share the zip; then search `dumpstate.txt` for `FATAL EXCEPTION` with `host.exp.exponent`.
+
+
+## 139. Home's Build Resume opens the BUILD flow again (owner, 2026-10-27)
+
+- **Why:** the owner sent the BUILD 01–07 boards (01, 02, 03, 04, 04b, 04c, 05, 05b, 06, 07) and asked why the build flow skips them.
+  - Cause: §114.3 (2026-10-19) pointed Home's "Build Resume" tile at `/create/tailor` (Add a job → Customize). BUILD 01–04 were still built but unreachable from Home; Build was reachable only from Customize's no-resume card, which jumps straight to 04b.
+- **Change:** `useHomeActions` maps `build-resume` to `/create/build` (BUILD 01). The chain was already wired and is unchanged:
+  - 01 → a saved-job row (or 02's "Build resume for …") → 04b;
+  - 01 "Add a job from anywhere" → 03 → 04 "We read the job" → 04b, or 05b when a link can't be read;
+  - 04b → 04c Add/Skip sheet → 05 building → 06 ready → 07 download sheet.
+- **Kept from §114:** "Tailor to a job" (the + sheet, Job Detail) still runs the one-screen Customize path, and Customize's no-resume card still opens 04b.
+- **Decide:** §114 called Home's tile "Build Resume — for a specific job" the one job → resume flow. Home now has two job flows again: Build (from the profile) and Tailor (from a resume). Confirm that's wanted.
+- **Unverified on a device:** Jest covers the tile route and the BUILD 01/02, 03–04b and 05–07 suites (42 tests). The screens themselves have not been compared side by side with the boards in Expo Go since §74, and §114/§132 changes since then (shared buttons, the edit-only "Job details" behind 04's pencil) may have moved details.
+
+- **Follow-up, same day — build from a resume:** the owner asked where to pick a resume instead of the profile. BUILD 01's foot row ("Built from your profile · Edit", 652:70) now ends in **Change**, which opens a "Build from" option sheet (card look): **Your profile** plus every ready resume (`tailorableResumes`, so no cover letters, drafts or archived ones).
+  - Picking a resume makes the row read "Built from <resume>" and routes every job pick in the flow (01's rows, 02's CTA, 04's CTA, which now says "Compare with my resume") to **Customize** `/create/tailor?jobId|jdId&resumeId`, the resume-against-the-job screen that owns that run. The profile path is unchanged (04b → 04c → BUILD run).
+  - State: `buildSourceStore` (memory only), reset when BUILD 01 unmounts, so every new Build starts from the profile.
+  - **Decide:** spec-derived, no board. "Edit" on 01 became "Change"; the profile is still edited from 04b's "Edit". A resume source leaves the BUILD visuals at 04b (Customize looks like TAILOR 02, not BUILD 04b), and 02's footnote still counts a "resume build". Upload-from-phone is not offered in this sheet (Tailor's own sheet has it).
+- **Follow-up, same day — trimmed:** BUILD 01 shows **one** saved job (the board draws three; the rest are behind "See all (12)"). The "Build from" sheet offers **Your profile, the two most recently updated resumes, and "Upload from your device"** (PDF or DOCX, read by `useImportResume`). While the file is read the foot row says "Reading <file>…"; an unreadable or failed file is a toast and the source stays as it was. A picked resume older than the latest two stays in the list in the second slot.
+
+
+## 140. Mobile UI quality pass: Untitled UI icons, shared input chrome (owner, 2026-10-27)
+
+- **Why:** the owner asked for a polish pass on the mobile app. The goals were the web's icon set, consistent inputs and a smoother flow, with no palette change and no redesign.
+  - **Phases:** the plan has three phases. **Phases 0–2 are done and stop here for an on-device check**; Profile is the sample area.
+  - **Phase 3 waits** for that check: the area-by-area rollout, the layout scaffolding and the tab bar.
+- **Owner decisions (2026-10-27):**
+  - Auth keeps its look and moves onto the shared logic.
+  - Untitled UI replaces the generic glyphs, the auth field glyphs **and the tab-bar icons**. The tab bar is in Phase 3.
+  - Fields get a visible resting edge and a focus edge.
+  - One sample area goes first.
+
+### 140.1 Icons
+
+- **No direct import:** `@untitledui/icons` 0.0.23 (the web's pin) renders DOM `<svg>`, so mobile cannot import it.
+  - It is a mobile **devDependency** only. `scripts/gen-line-icons.cjs` copies the path data of a named list into `src/ui/Icon/lineIcons.generated.ts`.
+  - `ui/Icon` draws that data with react-native-svg: stroke 2 and round caps, as on the web. Nothing from the package ships in the bundle.
+- **Sizes:** new `sizes.iconXs/Sm/Md/Lg` match the web's 12/16/20/24 at 390.
+  - Every icon takes a ramp name.
+  - A few sizes still come from the caller; they use `lineBox()` or `glyphSpan`, both documented in `Icon.tsx`.
+- **FontAwesome5 is gone from `src/` and `app/`.** That was about 156 glyphs in 110 files, converted by a codemod plus hand edits.
+  - The FA5 font preload in `useAppReady` is removed, so two fewer fonts load behind the splash.
+  - `@expo/vector-icons` stays in package.json because Expo's own packages use it.
+- **Sizing rule (judgement call):**
+  - An FA5 glyph filled its font size. An Untitled glyph sits inside its 24 grid, and chevrons, ✕, ✓ and + span only about half of it.
+  - Each old size was divided by that fill and snapped to the nearest ramp step. The drawn glyph stays about the same size, and roughly 20 arbitrary sizes collapse to four.
+  - Header and close buttons all use `md` now; they had ranged from 14 to 18.
+- **Glyph map:** every name is typed, so `tsc` rejects an unknown one. The full table is in the scratch codemod.
+
+  | FA5 | Untitled UI |
+  |---|---|
+  | chevron-* | Chevron* |
+  | times | XClose |
+  | check | Check |
+  | check-circle | CheckCircle |
+  | exclamation-triangle | AlertTriangle |
+  | exclamation-circle | AlertCircle |
+  | info-circle | InfoCircle |
+  | plus | Plus |
+  | file-* | File06 / File04 |
+  | download | Download01 |
+  | upload | UploadCloud02 |
+  | pen | Edit03 |
+  | trash-alt | Trash01 |
+  | sync, redo | RefreshCw01 |
+  | lock | Lock01 |
+  | bell | Bell01 |
+  | envelope | Mail01 |
+  | search | SearchLg |
+  | magic, robot | Stars02 |
+  | external-link | LinkExternal01 |
+  | link | Link01 |
+  | briefcase | Briefcase01 |
+  | bookmark | Bookmark |
+  | ellipsis-h | DotsHorizontal |
+  | bars | Menu01 |
+  | map-marker | MarkerPin01 |
+  | building | Building02 |
+  | university | Building01 |
+  | graduation-cap | GraduationHat01 |
+  | certificate | Award01 |
+  | crown | Star01 |
+  | id-badge | Passport |
+  | code-branch | GitBranch01 |
+  | comments | MessageChatSquare |
+  | history | ClockRewind |
+  | signal | BarChart07 |
+  | paste | Clipboard |
+  | sliders-h | Sliders01 |
+  | sign-out | LogOut01 |
+  | wifi | Wifi |
+  | globe | Globe02 |
+
+- **Decide:** the line set has no exact match for six glyphs, so these maps are approximate:
+  - `crown` (upgrade) → Star01
+  - `robot` → Stars02
+  - `id-badge` → Passport
+  - `running` → Rocket01
+  - `ban` → SlashCircle01
+  - `city` → Building07
+- **State glyphs:** solid versus regular used to carry state in three places.
+  - The saved bookmark now uses `filled`: `Icon` fills the closed shape.
+  - Criterion rows (met, missing, optional) already differ by glyph and colour, so they only lose the solid fill.
+  - The application-status pill's FA5 dot is now a plain filled dot.
+- **Data glyphs:** the shared notification and next-step models carry FA5 names (`chart-bar`, `envelope`…).
+  - That contract is untouched. Mobile translates at the edge with `dataGlyph()`; an unknown name becomes InfoCircle.
+  - **Decide:** whether the API should move to neutral names later.
+- **Spinner:** `Spinner` is now drawn like the web's, a ring with one open quarter, not FA5's circle-notch. `Button`'s loading state uses it instead of the platform `ActivityIndicator`.
+- **Old field icons:** the five `assets/icons/onboarding/field-*.svg` files are no longer referenced. They are **not deleted**; delete them once the auth look is approved.
+
+### 140.2 Inputs
+
+- **`useFieldChrome`** (`ui/TextField`) holds what every text box shares: the animated rest/focus/error edge, the error announcement (once per error) and the warning haptic. `TextField`, `SearchField`, `SelectField` and `AuthField` all use it.
+- **Resting edge (visible change):** `TextField`, `SearchField` and `SelectField` now rest on `borderDefault`. The edge used to be the fill colour, so a field read as a grey slab. Focus is still `surfaceSelected`.
+- **SearchField:** focus edge, an `sm` glyph (it was 12) and a clear (XCircle) button once there is a query.
+- **SelectField:**
+  - `error` adds the edge, a caption and the announcement.
+  - `open` gives the focused edge and turns the chevron while its picker is up. It is wired on the profile date fields and the link-kind field.
+  - The double disabled dimming is gone.
+- **Auth (deviation from the plan):** the plan called for a `TextField` variant and a `Button` pill variant.
+  - Instead, the auth components take the shared *behaviour*, because their geometry comes from board metrics the primitives don't accept.
+  - `AuthField` keeps its exact box. It gains the focus edge, the animated error, the announcement, the haptic, the cursor colour and the font-scale cap. Its glyphs are now Mail01, Lock01, User01, Eye and EyeOff.
+  - **`AuthCta`** replaces the hand-built Sign In and Create account pills with the same look. While the request runs, a loading ring replaces the arrow and repeat taps are ignored. Before this, a tap showed nothing until the server answered.
+- **Button:**
+  - The border width comes from `sizes.border`.
+  - A held press now also eases to `opacity.pressed`, through `Pressable`'s opt-in `pressDim`. A scale alone barely reads on a solid fill.
+- **Segmented switches:** `SegmentedControl`, the resumes grid/list toggle and Tailor's Add/Skip now share `useSlidingPill`.
+  - The "seat first, spring after" logic had been copied three times.
+  - Each keeps its own geometry and role (tabs versus radios); they are not merged into one component.
+  - All three now give subtle press feedback; they had none.
+- **Keyboard Next was dead** in the profile forms. Fields said `returnKeyType="next"` but nothing took focus, and TextField holds the keyboard up for a Next field.
+  - New `useFieldChain(n)` moves Next to the next field and shows Done on the last.
+  - Applied to the profile Experience, Education, Certification and Link forms, the resume Experience, Education and Projects editors, and the Zero role and education check forms.
+- **Kept as is:**
+  - The location suggestion chips in `IdentityFields`. They already have press, haptic and label, and `FilterChip` would change their look.
+  - `Toggle`, because a switch should not scale.
+
+### 140.3 Flow
+
+- **`useUnsavedGuard`** (`src/navigation`):
+  - **Before:** the profile forms and Edit profile asked "Discard changes?" only on the header chevron. The iOS edge swipe and Android back threw edits away silently.
+  - **Now:** the guard uses navigation's `usePreventRemove`, so every way off the page lands in the same discard sheet. Saves and deletes still leave without a question.
+- **Unverified on a device:** the guard relies on a save's `onSuccess` running before the render that clears `isPending`; TanStack batches it that way.
+  - Edit profile leaves from a later promise, so it calls `release()` explicitly.
+  - Check that saving a profile entry never shows "Discard changes?".
+  - Check that the iOS swipe and Android back both ask while there are edits.
+- **Not yet covered:** `SectionEditorScreen` (resumes) still asks on the chevron only. It is in Phase 3.
+
+### 140.4 Check on the phone (Profile sample)
+
+- **Icons** on Profile, Edit profile and the entry forms: weight and size next to text, and the header buttons.
+- **Fields** at rest (the new edge), focused, and with an error. Also the date fields and link kind while their sheet is open.
+- **Flow:** keyboard Next walks the form, swipe-back with edits asks, and Save leaves without asking.
+- **Auth:**
+  - field focus
+  - the Sign In ring while the request runs
+  - the back chevron's position: its box changed, because the line chevron is drawn at the board's length
+
+
+## 141. Home's generation progress card removed (owner, 2026-10-31)
+
+- **Why:** the owner sent a screenshot of the "Tailoring your resume / 56% / View progress" card on Home and called it unnecessary.
+- **Change:** the card is gone from Home, along with `ActiveGenerationCard`, `GenerationProgressCard`, `usePrefetchActiveGeneration` and Home's open and retry generation actions. A run's own screen (`/generations/[id]`) is unchanged.
+- **Decide:** this departs from the binding spec. V2 §7.2 says "If a generation job is in progress (7.6), the Dashboard shows its live status." Update the spec, or say if a smaller indicator should replace the card.
+- **Decide:** the card was also the only Home entry for a **failed** run ("Try again"). Someone who leaves a run's screen and comes back to Home now sees nothing about that run. Check whether History or a notification is enough.
+- **Stale reference:** `doc/NextKin-Mobile-UI-Implementation-Plan.md` still names the card (§8 intro and 9B). `useActiveGeneration` stays in `packages/shared` with no mobile caller.
+
+### 140.5 Profile header fixes (owner screenshot, 2026-10-31)
+
+- **Regression from 140.1, fixed:** the "Open to offers" dot was a solid 7-pt FA5 circle and became a hollow line ring. It is a plain filled dot again. The other `Circle` uses were outline rings before, so they are right.
+- **Headline cut off ("Senior UX Designer · Ben…"):** Edit had its own column beside all the text. It now sits in the name's row, so the headline gets the full width. **Layout change to PROFILE 01:** check it on the phone.
+
+## 142. Home: Your Resume Progress moved to the end (owner, 2026-10-31)
+
+- **Change:** the card now follows the shortcuts grid (My Resumes, History, Saved Jobs, Interview Prep), and `HomeSkeleton` follows the same order. This reorders the Home board on the owner's instruction.
+
+## 143. Mobile assessment written to AppAssess.md (owner, 2026-10-31)
+
+- **What:** `AppAssess.md` at the repo root covers status, flow, quality, readiness and a five-step plan. No app code changed.
+- **Judgement calls:** the scorecard and the plan's durations are estimates. Section 8 of that file lists eight decisions for the owner.
+- **Found, not fixed:**
+  - A production build on `http` throws at module scope: `configureRepos` in `apps/mobile/src/data/dataSource.ts` passes no `allowedFallbacks`. An existing test confirms the throw; the launch crash itself was traced by reading, not by a release build.
+  - `CopiedLinkHost` reads links from the mock even on the backend, so a copied link can invent a job.
+  - Billing, legal and share URLs use `nextkin.app`, while the purchased domain is `nextkin.ai`.
+  - `expo lint` covers only `src/` and `app/`, so 14 errors in `scripts/` and `__tests__/` went unseen. CI lint itself was green. Both are fixed, and the lint script now covers those folders.
+- **Stale:** the `STAYS_ON_MOCK` comment still cites D-17 for link import, though the owner overrode D-17 on 2026-10-18 and the reader was not built.
