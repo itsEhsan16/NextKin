@@ -32,6 +32,7 @@ const goToSignIn = () => {
 export const http = createHttpClient({
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? '',
   client: 'web',
+  platform: 'web',
   onSignedOut: goToSignIn,
 });
 

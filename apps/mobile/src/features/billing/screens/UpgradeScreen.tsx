@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import type { PlanId } from '@/data/models';
-import { usePlans, useSubscription, useUpgradePlan } from '@/data/queries';
+import { track, usePlans, useSubscription, useUpgradePlan } from '@/data/queries';
 import { haptics } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 
@@ -70,6 +70,7 @@ const GAP_LG = 18 / 0.75;
  * confirm says again after it.
  */
 export function UpgradeScreen({ reason }: UpgradeScreenProps) {
+  useEffect(() => track('paywall_seen', reason ? { reason } : undefined), [reason]);
   const { spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useBillingActions();

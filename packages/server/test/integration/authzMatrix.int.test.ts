@@ -167,6 +167,7 @@ const MATRIX: Record<string, Entry> = {
   'GET /api/v1/jobs/todays-picks': { access: 'user' },
   'GET /api/v1/jobs/saved': { access: 'user' },
   'POST /api/v1/jd/{id}/save': { access: 'user' },
+  'POST /api/v1/events': { access: 'user', body: { events: [{ name: 'app_opened', at: '2026-01-01T00:00:00.000Z' }] } },
   'GET /api/v1/notifications': { access: 'user' },
   'POST /api/v1/notifications/read-all': { access: 'user' },
   'POST /api/v1/notifications/{id}/read': { access: 'user' },

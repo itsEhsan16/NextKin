@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { RefreshControl, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
   qk,
   queryPhase,
+  track,
   useCurrentUser,
   useDashboardStats,
   useJobPicks,
@@ -65,6 +66,7 @@ export function HomeScreen() {
   useCopiedJobLink();
   // A run finished last time, or yesterday's "not yet": asked once a visit.
   useDueApplicationAsk();
+  useEffect(() => track('app_opened'), []);
   const queryClient = useQueryClient();
   const reduced = useReducedMotion();
 

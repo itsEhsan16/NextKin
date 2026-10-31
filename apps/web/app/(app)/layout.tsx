@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ApplyAskHost } from '@/features/applications/components/ApplyAskHost';
 import { RunWatcher } from '@/features/tailor/RunWatcher';
 import { Sidebar } from '@/navigation/Sidebar';
+import { AppOpened } from '@/providers/AppOpened';
 import { SessionGate } from '@/providers/SessionGate';
 import { TopBar } from '@/navigation/TopBar';
 import { Toaster } from '@/ui/Toaster';
@@ -25,6 +26,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Runs the user left with "Leave and notify me" (toreview §114). */}
       <RunWatcher />
       <ApplyAskHost />
+      <AppOpened />
       <SessionGate />
     </div>
   );

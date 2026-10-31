@@ -20,6 +20,8 @@ allowBuilds:
   # jest-haste-map 30 (via jest-expo 58). Its script compiles only when asked to build from
   # source; the prebuilt binary ships as an optional dependency.
   '@parcel/watcher': false
+  # Its script downloads the CLI; the binary already ships as an optional dependency.
+  '@sentry/cli': false
 
 # Security floors from `pnpm scan:deps` (P13-01): a transitive dependency held below its fixed
 # release. Remove an entry once the package that pulls it in requires the fixed version itself.

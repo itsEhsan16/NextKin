@@ -20,6 +20,7 @@ import { repos } from '../repos';
 
 import { findCachedJob } from './jobCache';
 import { qk } from './keys';
+import { track } from './track';
 
 /** Paged job search. Flatten with `data.pages.flatMap((page) => page.items)`. */
 export function useJobs(filters: JobFilters = EMPTY_JOB_FILTERS, sort: JobSort = 'relevance') {
@@ -156,6 +157,9 @@ export function useApplicationAsks() {
 export function useAskAboutApplication() {
   return useMutation({
     mutationFn: (target: ApplicationTarget) => repos.jobs.askAboutApplication(target),
+    onSuccess: (_ask, target) => {
+      if ('jobId' in target) track('apply_opened');
+    },
   });
 }
 
@@ -164,6 +168,7 @@ export function useAnswerApplicationAsk() {
   return useMutation({
     mutationFn: ({ id, answer }: { id: string; answer: ApplicationAnswer }) =>
       repos.jobs.answerApplicationAsk(id, answer),
+    onSuccess: (_result, { answer }) => track('apply_answered', { answer }),
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: qk.jobs.applicationAsks() }),

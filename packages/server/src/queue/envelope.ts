@@ -30,6 +30,7 @@ export const MAINTENANCE_JOBS = [
   'audit_export',
   'closing_alerts',
   'notification_purge',
+  'event_purge',
 ] as const;
 export type MaintenanceJob = (typeof MAINTENANCE_JOBS)[number];
 

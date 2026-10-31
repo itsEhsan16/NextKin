@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { track } from '@nextkin/shared/queries';
+
 import { auth, USES_BACKEND } from '../dataSource';
 
 /**
@@ -65,6 +67,7 @@ export const useStartSignUp = () => useAction(startSignUp);
 const confirmSignUp = async ({ email, password, code }: Credentials & { code: string }) => {
   await auth.confirm(email.trim(), code.trim());
   await auth.login(email.trim(), password);
+  track('sign_up_completed');
 };
 
 export const useConfirmSignUp = () => useAction(confirmSignUp);

@@ -485,6 +485,17 @@ export interface Plans {
   tier: string;
 }
 
+export interface ProductEvents {
+  app_version: string | null;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  name: string;
+  occurred_at: Timestamp;
+  platform: string;
+  properties: Generated<Json>;
+  user_id: string;
+}
+
 export interface ProfileLinks {
   created_at: Generated<Timestamp>;
   id: Generated<string>;
@@ -906,6 +917,7 @@ export interface DB {
   outbox: Outbox;
   payments: Payments;
   plans: Plans;
+  product_events: ProductEvents;
   profile_links: ProfileLinks;
   profile_skills: ProfileSkills;
   profiles: Profiles;

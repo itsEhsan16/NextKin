@@ -13,6 +13,7 @@ export {
   type ResumeExport,
 } from '../repos';
 export { applyPageOf } from '../jobs/applyPage';
+export { flushEvents, track } from './track';
 export { EXPORT_BLOCK_MESSAGE, type ExportBlock } from '../models/exportBlock';
 export { createQueryClient, isConsentRequired, onConsentRequired } from './client';
 export { qk } from './keys';

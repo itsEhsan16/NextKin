@@ -1,22 +1,27 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { useState, type ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
+import { AppState, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { auth, configureDataSource, onSignedOut, USES_BACKEND } from '@/data/dataSource';
 import { configureMockMode } from '@/data/mock';
+import { flushEvents } from '@/data/queries';
 import { createQueryClient } from '@/data/queries/client';
 import { ArtboardMode, FigmaOverlay } from '@/dev';
 import { useSessionStore } from '@/features/auth';
+import { startCrashReports } from '@/lib/crashReports';
 import { storage } from '@/lib/storage';
 import { AppToastHost } from '@/ui/Toast';
 import { AiConsentGate } from '@/features/consent/AiConsentGate';
 import { ServiceBanner } from '@/features/system/ServiceBanner';
 
 import { AppErrorBoundary } from './AppErrorBoundary';
+
+// First, so a failure in anything below is reported.
+startCrashReports();
 
 // The mock-mode switch lives in @nextkin/shared, which must not import a native storage module,
 // so the host wires persistence. At module scope on purpose: it has to run before the first
@@ -38,6 +43,13 @@ if (USES_BACKEND) {
   void auth.http.tokens?.get().then((tokens) => {
     if (!tokens && useSessionStore.getState().status === 'signed_in')
       useSessionStore.getState().signOut();
+  });
+}
+
+// Usage events leave with the app: the next open may be days away.
+if (USES_BACKEND) {
+  AppState.addEventListener('change', (state) => {
+    if (state === 'background') flushEvents();
   });
 }
 

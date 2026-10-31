@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import type { AiGateway } from '../ai/gateway';
 import { runKbCandidates } from '../services/kbCandidates';
+import { purgeEvents } from '../services/events';
 import { purgeNotifications, runClosingAlerts } from '../services/notifications';
 import { computeSkillTrends } from '../services/skillsExplorer';
 import { purgeDeletedAccounts, purgeExpiredExports } from '../services/privacy';
@@ -66,6 +67,8 @@ export async function runMaintenanceJob(job: MaintenanceJob, deps: JobDeps): Pro
       return runClosingAlerts(db, log, deps.now?.());
     case 'notification_purge':
       return purgeNotifications(db, deps.now?.());
+    case 'event_purge':
+      return purgeEvents(db, deps.now?.());
     case 'jobs_cache_expiry': {
       const result = await db.withSystem('maintenance: delete expired job listings', (tx) =>
         tx.deleteFrom('jobs_cache').where('expires_at', '<', sql<Date>`now()`).executeTakeFirst(),

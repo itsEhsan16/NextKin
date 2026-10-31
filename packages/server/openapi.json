@@ -70012,6 +70012,378 @@
         }
       }
     },
+    "/api/v1/events": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Record a batch of usage events. Dropped quietly for someone who opted out.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "enum": [
+                            "app_opened",
+                            "sign_up_completed",
+                            "job_added",
+                            "link_unreadable",
+                            "apply_opened",
+                            "apply_answered",
+                            "paywall_seen"
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "how": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9_-]{1,40}$"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9_-]{1,40}$"
+                            },
+                            "answer": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9_-]{1,40}$"
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 30
+                  }
+                },
+                "required": [
+                  "events"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted."
+          },
+          "400": {
+            "description": "The request is not valid (VALIDATION_FAILED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed (FORBIDDEN), including a cross-site request on a cookie session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests (RATE_LIMITED). See Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong on our side (INTERNAL).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/billing/plans": {
       "get": {
         "tags": [

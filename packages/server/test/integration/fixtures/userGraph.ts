@@ -139,6 +139,10 @@ export async function createUserGraph(db: Database, label: string, rubricVersion
       .values({ user_id: userId, apply_url_hash: hash(`job-${userId}`), snapshot: JSON.stringify({ title: 'Job' }) })
       .execute();
     await tx
+      .insertInto('product_events')
+      .values({ user_id: userId, name: 'app_opened', platform: 'web', occurred_at: new Date() })
+      .execute();
+    await tx
       .insertInto('notifications')
       .values({ user_id: userId, category: 'ai', body: 'Done', description: '', visual: JSON.stringify({ kind: 'sparkle' }), dedupe_key: 'test' })
       .execute();

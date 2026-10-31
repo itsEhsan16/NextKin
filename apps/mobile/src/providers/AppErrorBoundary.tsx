@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View } from 'react-native';
 
+import { reportError } from '@/lib';
 import { useTheme } from '@/theme';
 import { StateView } from '@/ui/StateView';
 
@@ -27,6 +28,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
   override componentDidCatch(error: Error, info: ErrorInfo) {
     // Reaches the Metro terminal in development, which is where a phone's errors are read.
     console.error('[AppErrorBoundary]', error, info.componentStack);
+    reportError(error, 'AppErrorBoundary');
   }
 
   private retry = () => this.setState({ error: null });

@@ -1,7 +1,8 @@
 // Expo's default Metro config auto-detects the pnpm workspace root (hoisted node_modules).
-const { getDefaultConfig } = require('expo/metro-config');
+// Sentry's version adds the debug ids that tie a crash to its source map (V2 §8.9).
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // `.svg` files import as React components (react-native-svg) so Figma vector assets are
 // committed as-is and tinted via `color` / currentColor.

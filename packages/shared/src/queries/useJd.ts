@@ -4,6 +4,7 @@ import type { JdDraft, JdDraftPatch, JdInput } from '../models';
 import { repos } from '../repos';
 
 import { qk } from './keys';
+import { track } from './track';
 
 /**
  * Reads a pasted, uploaded or job-board JD into editable fields (V2 §7.5). Write-through: the
@@ -14,8 +15,12 @@ export function useExtractJd() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: JdInput) => repos.jd.extract(input),
-    onSuccess: (draft) => {
+    onSuccess: (draft, input) => {
       queryClient.setQueryData(qk.jd.detail(draft.id), draft);
+      track('job_added', { how: input.source });
+    },
+    onError: (error) => {
+      if (isUnreadableLinkError(error)) track('link_unreadable');
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: qk.jd.all }),
   });

@@ -39,6 +39,7 @@ export function createMockRepos(store: MockStore = createMockStore()): Repos {
     jobs: createMockJobsRepo(store),
     jd: createMockJdRepo(store),
     notifications: createMockNotificationsRepo(store),
+    events: { send: async () => undefined },
     generations: createMockGenerationsRepo(store),
     support: createMockSupportRepo(store),
     interview: createMockInterviewRepo(store),

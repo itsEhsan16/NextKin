@@ -21,6 +21,7 @@
       },
       "env": {
         "NEXTKIN_REQUIRE_BACKEND": "true",
+        "EXPO_PUBLIC_APP_ENV": "staging",
         "EXPO_PUBLIC_DATA_SOURCE": "http",
         "EXPO_PUBLIC_API_BASE_URL": "https://d3hc44bxjik4qf.cloudfront.net"
       }
@@ -34,6 +35,7 @@
       },
       "env": {
         "NEXTKIN_REQUIRE_BACKEND": "true",
+        "EXPO_PUBLIC_APP_ENV": "production",
         "EXPO_PUBLIC_DATA_SOURCE": "http"
       }
     }

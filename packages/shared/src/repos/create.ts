@@ -38,6 +38,7 @@ export const HTTP_FALLBACKS = {
   interview: [],
   assistant: [],
   support: [],
+  events: [],
 } as const satisfies Partial<Record<RepoName, readonly string[]>>;
 
 export type HttpRepoName = keyof typeof HTTP_FALLBACKS;
@@ -141,6 +142,14 @@ export function createRepos(config: RepoConfig, mock: Repos): BuiltRepos {
   }
   if (http.interview === 'http') {
     repos.interview = createHttpInterviewRepo(config.http, mock.interview);
+  }
+  if (http.events === 'http') {
+    const client = config.http;
+    repos.events = {
+      async send(events) {
+        await client.request('/events', { body: { events } });
+      },
+    };
   }
   if (http.notifications === 'http') {
     repos.notifications = { ...mock.notifications, ...createHttpNotificationsRepo(config.http) };

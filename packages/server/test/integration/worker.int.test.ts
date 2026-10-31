@@ -214,7 +214,7 @@ describe('the scheduler (P6-06)', () => {
     const [ja, jb] = await Promise.all([a.tick(), b.tick()]);
     const claimed = [...ja, ...jb];
     expect(new Set(claimed).size).toBe(claimed.length);
-    expect(claimed.sort()).toEqual(['account_purge', 'anonymous_upload_purge', 'audit_export', 'closing_alerts', 'eval_nightly', 'generation_sweep', 'jobs_cache_expiry', 'kb_candidates', 'notification_purge', 'outbox_cleanup', 'trash_purge', 'trending', 'upload_orphan_sweep']);
+    expect(claimed.sort()).toEqual(['account_purge', 'anonymous_upload_purge', 'audit_export', 'closing_alerts', 'eval_nightly', 'event_purge', 'generation_sweep', 'jobs_cache_expiry', 'kb_candidates', 'notification_purge', 'outbox_cleanup', 'trash_purge', 'trending', 'upload_orphan_sweep']);
     expect(await a.tick()).toEqual([]);
     await db.withSystem('test: forget the far-future claims', (tx) => tx.deleteFrom('scheduler_runs').where('window_start', '>=', new Date('2031-01-01')).execute());
   });

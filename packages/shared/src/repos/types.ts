@@ -1,3 +1,4 @@
+import type { ProductEvent } from '../schemas/events';
 import type { FigureDraft,
   TailorComparison,
   AiConsent,
@@ -345,6 +346,11 @@ export type JobsRepo = {
   importFromLink(url: string): Promise<Job>;
 };
 
+/** Usage events (owner, 2026-10-31): fire and forget, and a no-op on the mock. */
+export type EventsRepo = {
+  send(events: ProductEvent[]): Promise<void>;
+};
+
 export type NotificationsRepo = {
   /** Flat list, newest first. Grouping (Today / Yesterday / …) is a UI concern. */
   list(): Promise<Notification[]>;
@@ -501,6 +507,7 @@ export type Repos = {
   resumes: ResumesRepo;
   jobs: JobsRepo;
   notifications: NotificationsRepo;
+  events: EventsRepo;
   jd: JdRepo;
   generations: GenerationsRepo;
   support: SupportRepo;

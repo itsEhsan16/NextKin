@@ -1,5 +1,6 @@
 export * from './a11y';
 export * from './clipboard';
+export * from './crashReports';
 export * from './documentPicker';
 export * from './exportFile';
 export * from './format';

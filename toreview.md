@@ -14593,3 +14593,17 @@ Branch `step-1/make-it-real`, built on `stabilize/step-0`. Nothing is merged or 
   - Web's seeded legal rows keep the old address until the next `pnpm seed`.
 - **The AWS demo can't take sign-ups:** email goes to Mailpit (§133.1), so a tester on `staging` must use a seeded account. The demo is paused between uses and needs `task resume` first.
 - **Not verified:** no EAS build was run. It costs a build credit and needs your say-so.
+
+### 144.5 Monitoring
+
+- **Owner's choice:** Sentry for crashes, our own server for usage events.
+- **Crash reports** (`apps/mobile/src/lib/crashReports.ts`): off until `EXPO_PUBLIC_SENTRY_DSN` is set, so Expo Go and every build today behave as before. A report carries no user, no request and no typed text. The error boundary reports what it catches.
+- **To turn it on, you need to:** create a Sentry account and project, then give me the DSN. I'll add it to the `staging` and `production` profiles, plus the `@sentry/react-native/expo` plugin and `SENTRY_AUTH_TOKEN` on EAS so crashes show real source lines. Native crashes, like the §138 worklet crash, only report from a real build, not Expo Go.
+- **Server crash reports are not done.** V2 §8.9 wants them too. Web and the worker still log only to their own logs.
+- **Usage events** (migration 0047, `POST /api/v1/events`, both apps): a fixed list of seven names and short labels, so nothing a person typed can travel. Kept 13 months. "Share anonymized data" off records nothing. Mobile sends on backgrounding, web on leaving the page.
+- **Most KPIs need no client events:** activation, time to first resume, export completion and generation reliability come from `generations`, `export_events` and `users`. No dashboard reads any of this yet.
+- **Calls made without you:**
+  - **Retention of 13 months,** enough for a year-on-year view.
+  - **Mobile onboarding has no event:** it happens before sign-in, so there is no account to attach it to.
+  - **`paywall_seen` is mobile only** for now.
+- **Check:** the privacy policy needs to name Sentry and these events.
