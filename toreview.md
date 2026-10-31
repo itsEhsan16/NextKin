@@ -14677,3 +14677,20 @@ Branch `step-2/fix-the-flow`, built on Step 1. Nothing is merged or pushed.
   - **A first run counts as history,** so someone whose first run is working doesn't see "Nothing here yet".
 - **Check on your phone:** the wording "Not finished". A run with no document to name reads "Started Resume" (the feed's existing words), and a row can show that for a moment until the resumes load.
 - **Web has no home for this.** It has no History page, and its Home doesn't show runs, so the bell is all it has, although §7.2 now binds both. That's outside this mobile step: decide when web is next touched.
+
+### 145.4 The whole job, and the plan to fit it
+
+- **Why:** web had both (§115, §129) and mobile had neither. It stopped at BUILD 04's card and a list of fixes with no points.
+- **The whole job** (`/create/jd`, new): BUILD 04's card, then anything the job asks that nobody could have ("Requirements to double-check"), the role, then the rest of the posting section by section, and the full text folded. Pay and the work arrangement show only when the text states them. It opens from "See the whole job" on BUILD 04 and from Details on Customize. The pencil still corrects the job.
+- **The plan** (Customize, in place of "What to improve"): how far the honest steps go, what the AI alone reaches, each step with what it adds and the score after it, a line where 8.5 is reached, and the honest ceiling when it can't be. "I have this" and "Add the result" work as on web, and the score updates as you answer.
+- **Shared now:** `planGoalLine`, `shortOnYears` and `tickKeyword`, so both apps say the same thing. Web's CompareStep reads the first two.
+- **Calls made without you:**
+  - **BUILD 04 still comes first,** not the job page, unlike web, where Analyze opens the JD page. It's a designed board and the one start you chose, so the page is a side trip with no button of its own: Back returns to the flow.
+  - **A tick now carries the AI's pick of role** on mobile too, from the chips as well as the plan (§129.6, which replaces §116). Nothing asks where, and the pick shows on the plan, where it can be changed.
+  - **The place is chosen with chips in the step,** not a sheet, and "Add the result" opens in the step too. Both stay beside what they change.
+  - **Left off the phone:** the "Where your points go" bar and the job page's match card. The screen is long already, the steps carry the same numbers, and Customize scores the job right after. Say if you want the bar.
+  - **Four steps before "Show all"** (web shows six), or every step up to the goal if that's more.
+  - **The job's keyword chips stay below the plan,** so a skill can appear in both. They're the same tick, and the chips also cover soft skills and anything the plan doesn't list.
+- **Off the board (rule 7):** BUILD 04 gained "See the whole job" and the warning. The job page and the plan have no board and are built from TAILOR 02's card, BUILD 04's card and the job page's sections. The titles are the web's. Check both on your phone.
+- **A gap in the years check, not fixed:** "20+ years of experience with React" raises the warning, while "20+ years of React" didn't in my test. It's the engine's reading of the sentence, on both apps.
+- **Not proven:** "Add the result" was tested on the mock's plain draft. The server's AI draft is built and used by web, but hasn't been tried from the phone, and needs the OpenRouter key either way.

@@ -4,10 +4,11 @@ import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { JD_SOURCE_LABEL, profileKeywordFit, type JdDraft } from '@/data/models';
-import { useJdDraft } from '@/data/queries';
+import { useJdJob } from '@/data/queries';
 import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
 
 import { scaledSheet, useTheme } from '@/theme';
+import { Button } from '@/ui/Button';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
@@ -19,6 +20,7 @@ import { BuildReviewCard } from '../components/BuildReviewCard';
 import { BuildReviewSkeleton } from '../components/BuildReviewSkeleton';
 import { BuildReviewSource } from '../components/BuildReviewSource';
 import { FLOW_ART, FlowHero } from '../components/FlowHero';
+import { JdDoubleCheck } from '../components/JdDoubleCheck';
 import { useBuildSource } from '../buildSourceStore';
 import { useBuildActions } from '../hooks/useStartBuild';
 
@@ -42,7 +44,7 @@ const BLOCK_GAP = 12 / 0.75; // 653:75 / 653:108
 const SPARKLE_W = 18 / 0.75; // 653:114
 const SPARKLE_H = 17.6315 / 0.75;
 
-const isNotFound = (error: unknown): boolean =>
+export const isNotFound = (error: unknown): boolean =>
   typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'NOT_FOUND';
 
 /** The grey row's label: the link as typed (no scheme), "Pasted description", or the file. */
@@ -58,7 +60,9 @@ export function sourceLabel(draft: JdDraft, fileName?: string): string {
 /**
  * BUILD 04 (653:56) — the job as read (toreview §74): where it came from with a Change back to
  * BUILD 03, one card with what the job asks for, and "Compare with my profile", which opens BUILD
- * 04b. Nothing is spent here. Editing is the pencil on the card.
+ * 04b. Nothing is spent here. Editing is the pencil on the card. Under the card, off the board
+ * (toreview §145.4): the way to the whole job, and anything the job asks that nobody could have,
+ * which only shows when there is some.
  */
 export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
   const { spacing, s } = useTheme();
@@ -68,7 +72,7 @@ export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
   const fromResume = useBuildSource() != null;
   const cta = ctaFor(fromResume);
 
-  const draft = useJdDraft(jdId);
+  const { draft, view } = useJdJob(jdId);
 
   // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
   // with its data already here slides in whole with the push.
@@ -131,8 +135,19 @@ export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
           asks={asks}
           onEdit={() => router.push({ pathname: '/create/jd-review', params: { draftId: jdId } })}
         />
+        <Button
+          label="See the whole job"
+          variant="ghost"
+          block
+          onPress={() => router.push({ pathname: '/create/jd', params: { draftId: jdId } })}
+        />
       </Animated.View>
-      <Animated.View entering={enter(3)} style={styles.block}>
+      {view && view.plausibility.length > 0 ? (
+        <Animated.View entering={enter(3)} style={styles.block}>
+          <JdDoubleCheck notes={view.plausibility} />
+        </Animated.View>
+      ) : null}
+      <Animated.View entering={enter(4)} style={styles.block}>
         <BuildTipCard text={nextFor(fromResume)} />
       </Animated.View>
     </>,

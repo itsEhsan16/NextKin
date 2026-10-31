@@ -40,9 +40,9 @@ export function useCreateActions() {
         if (options.replace) router.replace(href);
         else router.push(href);
       },
-      /** "Details": the JD as read, to correct and come back (never a step in front of a run). */
+      /** "Details": the whole job as read, to check and come back (never a step before a run). */
       openJobDetails: (draftId: string) =>
-        router.push({ pathname: '/create/jd-review', params: { draftId } }),
+        router.push({ pathname: '/create/jd', params: { draftId } }),
       /** No resume, a profile with roles: BUILD 04b for this job, then its run. */
       openBuildCompare: ({ jobId, jdId }: Omit<CustomizeTarget, 'resumeId'>) =>
         router.push({

@@ -16,10 +16,10 @@ import { useRevealStagger } from '@/ui/motion';
 
 import { CustomizeKeywords } from '../components/CustomizeKeywords';
 import { CustomizeOptions } from '../components/CustomizeOptions';
+import { CustomizePlan } from '../components/CustomizePlan';
 import { NoResumeCard } from '../components/NoResumeCard';
 import { TailorCompareSkeleton } from '../components/TailorCompareSkeleton';
 import { TailorHero } from '../components/TailorHero';
-import { TailorImproveCard } from '../components/TailorImproveCard';
 import { TailorResumeSheet } from '../components/TailorResumeSheet';
 import { TailorStepper } from '../components/TailorStepper';
 import { TailorVsCard } from '../components/TailorVsCard';
@@ -45,9 +45,9 @@ const SPARKLE_H = 17.6315 / 0.75;
 /**
  * Customize (toreview §114, owner 2026-10-19): everything before "Create my resume", on one
  * screen, for a listing or a JD the user brought. The base resume is picked for them (Change
- * swaps it); the score is said out of 10 with its band; missing keywords are chips the user taps
- * when they have them, each with an optional "Used in…"; the parts to improve sit folded under
- * Options, all on. One button starts the run `tailorRunInput` builds — the same one the web asks
+ * swaps it); the score is said out of 10 with its band; the plan to reach 8.5 comes next (§129);
+ * missing keywords are chips the user taps when they have them; the parts to improve sit folded
+ * under Options, all on. One button starts the run `tailorRunInput` builds — the same one the web asks
  * for. With no resume yet, the page offers upload, a build from the profile, or a fresh start.
  *
  * Spec-derived (CLAUDE.md rule 7): no board draws the merged screen, so it is TAILOR 02's
@@ -212,14 +212,14 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
         />
       </Animated.View>
       <Animated.View entering={enter(2)} style={{ marginTop: s(SECTION_GAP) }}>
+        <CustomizePlan comparison={result} choices={choices} onChange={(n) => update(() => n)} />
+      </Animated.View>
+      <Animated.View entering={enter(4)} style={{ marginTop: s(SECTION_GAP) }}>
         <CustomizeKeywords
           comparison={result}
           choices={choices}
           onChange={(n) => update(() => n)}
         />
-      </Animated.View>
-      <Animated.View entering={enter(4)} style={{ marginTop: s(SECTION_GAP) }}>
-        <TailorImproveCard improvements={result.improvements} />
       </Animated.View>
       <Animated.View entering={enter(5)} style={{ marginTop: s(SECTION_GAP) }}>
         <CustomizeOptions choices={choices} onChange={(n) => update(() => n)} />

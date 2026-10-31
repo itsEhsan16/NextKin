@@ -63,6 +63,7 @@ export default function RootLayout() {
           <Stack.Screen name="create/build/review" />
           <Stack.Screen name="create/build/compare" />
           <Stack.Screen name="create/build/unreadable" />
+          <Stack.Screen name="create/jd" />
           <Stack.Screen name="create/jd-review" />
           <Stack.Screen name="create/cover-letter" />
           <Stack.Screen name="create/ats-check" />

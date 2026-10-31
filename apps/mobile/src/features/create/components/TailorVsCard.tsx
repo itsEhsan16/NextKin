@@ -18,7 +18,7 @@ export type TailorVsCardProps = {
   resume: Resume;
   /** Opens the resume picker (TAILOR 01) on the resume being compared. */
   onChange: () => void;
-  /** "Details": the job description as read, to correct it (never a required step, §114). */
+  /** "Details": the whole job as read, to check it (never a required step, §114). */
   onDetails?: () => void;
 };
 
@@ -149,7 +149,7 @@ export function TailorVsCard({ target, resume, onChange, onDetails }: TailorVsCa
             <VsPill
               label="Details"
               spoken="Job details"
-              hint="See and correct what we read from the job"
+              hint="See the whole job as we read it"
               onPress={onDetails}
             />
           ) : undefined

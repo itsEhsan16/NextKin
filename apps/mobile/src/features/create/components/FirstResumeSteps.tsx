@@ -15,7 +15,11 @@ const STEPS: readonly { stage: FirstResumeStage; label: string; caption: string 
 ];
 
 /** The same words a screen reader gets for the run's own steps. */
-const STATE_LABEL: Record<StepState, string> = { done: 'done', current: 'next', todo: 'after that' };
+const STATE_LABEL: Record<StepState, string> = {
+  done: 'done',
+  current: 'next',
+  todo: 'after that',
+};
 
 const stateOf = (index: number, current: number): StepState =>
   index < current ? 'done' : index === current ? 'current' : 'todo';

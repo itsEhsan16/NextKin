@@ -5,6 +5,8 @@ import type { GenerationInput } from '../models/generation';
 import type { TailorComparison, TailorConfirmation, TailorExperienceDepth, TailorFigure, TailorFix, TailorKeyword } from '../models/tailor';
 import type { FixPlan } from '../scoring/fixPlan';
 
+export type { FixPlan, PlanStep } from '../scoring/fixPlan';
+
 /**
  * The one "Customize" screen of the job → resume flow (toreview §114, owner 2026-10-19), as pure
  * state both apps render: which parts to improve (all on), how deep into the work history, the
@@ -57,6 +59,25 @@ export function projectedScore(plan: FixPlan | undefined, c: CustomizeChoices): 
   return Math.min(10, Math.round(total * 10) / 10);
 }
 
+/** The plan's headline (toreview §129): how many steps reach the goal, or the honest ceiling. */
+export function planGoalLine(plan: FixPlan): string {
+  const { steps, target } = plan;
+  if (!target)
+    return steps.length === 0
+      ? 'Nothing measured is missing'
+      : `${steps.length} ${steps.length === 1 ? 'step' : 'steps'} to improve`;
+  if (target.steps === 0) return `Already above ${target.goal.toFixed(1)}`;
+  if (target.reaches && target.steps !== null) {
+    const after = steps[target.steps - 1]?.totalAfter ?? target.goal;
+    return `${target.steps} ${target.steps === 1 ? 'step' : 'steps'} to reach ${after.toFixed(1)}/10`;
+  }
+  return `Best possible for this job: ${target.ceiling.toFixed(1)}/10`;
+}
+
+/** Only years the roles don't show keep this plan from its goal, and nothing honest adds those. */
+export const shortOnYears = (plan: FixPlan): boolean =>
+  plan.target?.reaches === false && plan.steps.some((s) => s.kind === 'years' && s.who === 'nobody');
+
 export function setFigure(c: CustomizeChoices, roleId: string, line: number, text: string | null): CustomizeChoices {
   const figures = { ...(c.figures ?? {}) };
   if (text && text.trim()) figures[figureKey(roleId, line)] = text;
@@ -76,10 +97,17 @@ export function toggleKeyword(c: CustomizeChoices, label: string, on: boolean): 
   return { ...c, added: c.added.filter((l) => l !== label), places };
 }
 
+/** A keyword ticked or unticked. A tick takes the plan's pick of role when it has one (§129.6). */
+export function tickKeyword(c: CustomizeChoices, label: string, on: boolean, plan: FixPlan | undefined): CustomizeChoices {
+  const next = toggleKeyword(c, label, on);
+  const where = on ? plan?.steps.find((s) => s.keyword === label)?.where : undefined;
+  return where ? setPlace(next, label, { where, note: '', by: 'ai' }) : next;
+}
+
 /** "Select all" over the shown keywords; again, "Clear all" (owner, toreview §113). */
-export function toggleAll(c: CustomizeChoices, labels: readonly string[]): CustomizeChoices {
+export function toggleAll(c: CustomizeChoices, labels: readonly string[], plan?: FixPlan): CustomizeChoices {
   const allOn = labels.length > 0 && labels.every((l) => c.added.includes(l));
-  return labels.reduce((next, label) => toggleKeyword(next, label, !allOn), c);
+  return labels.reduce((next, label) => tickKeyword(next, label, !allOn, plan), c);
 }
 
 export function setPlace(c: CustomizeChoices, label: string, place: KeywordPlace | null): CustomizeChoices {

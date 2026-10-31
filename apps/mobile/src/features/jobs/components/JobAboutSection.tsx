@@ -19,7 +19,7 @@ export type JobAboutSectionProps = {
 const COLLAPSED_BULLETS = 4;
 const BULLET = 5;
 
-function Bullet({ label }: { label: string }) {
+export function JobBullet({ label }: { label: string }) {
   const { colors, radii, spacing, s } = useTheme();
   return (
     <View style={[styles.bulletRow, { gap: spacing[3] }]}>
@@ -85,7 +85,7 @@ export function JobAboutSection({
 
       <View style={{ gap: spacing[3] }}>
         {bullets.map((label) => (
-          <Bullet key={label} label={label} />
+          <JobBullet key={label} label={label} />
         ))}
       </View>
 
@@ -95,7 +95,7 @@ export function JobAboutSection({
             {"What we're looking for"}
           </Text>
           {requirements.map((label) => (
-            <Bullet key={label} label={label} />
+            <JobBullet key={label} label={label} />
           ))}
         </View>
       ) : null}

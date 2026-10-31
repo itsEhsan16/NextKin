@@ -111,6 +111,15 @@ describe('BuildReviewScreen (BUILD 04)', () => {
     expect(mockBack).toHaveBeenCalled();
   });
 
+  it('opens the whole job from under the card', async () => {
+    const jdId = await seedDraft();
+    await renderReview(jdId);
+    await settle();
+
+    await act(async () => fireEvent.press(screen.getByLabelText('See the whole job')));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/create/jd', params: { draftId: jdId } });
+  });
+
   it('compares the read job with the profile, spending nothing', async () => {
     const startSpy = jest.spyOn(repos.generations, 'start');
     const jdId = await seedDraft();

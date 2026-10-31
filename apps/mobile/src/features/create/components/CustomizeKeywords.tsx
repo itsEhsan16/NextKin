@@ -5,6 +5,7 @@ import type { TailorComparison, TailorKeyword } from '@/data/models';
 import {
   keywordGroups,
   shownKeywords,
+  tickKeyword,
   toggleAll,
   toggleKeyword,
   type CustomizeChoices,
@@ -57,7 +58,8 @@ export function CustomizeKeywords({ comparison, choices, onChange }: CustomizeKe
       on: choices.added.includes(keyword.label),
       ...(keyword.quote ? { quote: keyword.quote } : {}),
     }));
-  const toggle = (label: string, on: boolean) => onChange(toggleKeyword(choices, label, on));
+  const toggle = (label: string, on: boolean) =>
+    onChange(tickKeyword(choices, label, on, comparison.plan));
 
   const offered = [...groups.top, ...groups.soft, ...(moreOpen ? groups.more : [])].map(
     (keyword) => keyword.label,
@@ -139,7 +141,7 @@ export function CustomizeKeywords({ comparison, choices, onChange }: CustomizeKe
           <Button
             label={allOn ? 'Clear all' : 'Select all'}
             variant="ghost"
-            onPress={() => onChange(toggleAll(choices, offered))}
+            onPress={() => onChange(toggleAll(choices, offered, comparison.plan))}
           />
         ) : null}
         {adding ? null : (

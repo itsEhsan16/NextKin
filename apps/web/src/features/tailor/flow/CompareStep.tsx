@@ -7,8 +7,8 @@ import {
   type Resume,
   type TailorComparison,
 } from '@nextkin/shared/models';
-import type { FixPlan, PlanStep } from '@nextkin/shared/scoring/fixPlan';
-import { projectedScore } from '@nextkin/shared/tailor/customize';
+import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
+import { planGoalLine, projectedScore, shortOnYears } from '@nextkin/shared/tailor/customize';
 import Link from 'next/link';
 import type { Route } from 'next';
 import type { ReactNode } from 'react';
@@ -57,21 +57,6 @@ export function JobLogoTile({ job }: { job: Job }) {
   );
 }
 
-/** The plan's headline (toreview §129): how many steps reach the goal, or the honest ceiling. */
-function goalLine(plan: FixPlan, steps: readonly PlanStep[]): string {
-  const target = plan.target;
-  if (!target)
-    return steps.length === 0
-      ? 'Nothing measured is missing'
-      : `${steps.length} ${steps.length === 1 ? 'step' : 'steps'} to improve`;
-  if (target.steps === 0) return `Already above ${target.goal.toFixed(1)}`;
-  if (target.reaches && target.steps !== null) {
-    const after = steps[target.steps - 1]?.totalAfter ?? target.goal;
-    return `${target.steps} ${target.steps === 1 ? 'step' : 'steps'} to reach ${after.toFixed(1)}/10`;
-  }
-  return `Best possible for this job: ${target.ceiling.toFixed(1)}/10`;
-}
-
 /**
  * W-FLOW 03 (850:2), step 3: your plan to fit this job — the job beside your resume (with Change),
  * the score out of 10 and what the AI can win back now, where the points go, then the fix plan.
@@ -105,8 +90,7 @@ export function CompareStep({
   const band = atsBandFor(comparison.score);
   const target = plan?.target;
   const projected = projectedScore(plan, choices.choices);
-  const short =
-    target && !target.reaches && steps.some((s) => s.kind === 'years' && s.who === 'nobody');
+  const short = plan && target && shortOnYears(plan);
   const scored = comparison.scored !== false;
 
   return (
@@ -165,7 +149,7 @@ export function CompareStep({
                   ATS score · {ATS_BAND_LABEL[band]}
                 </span>
                 <p className="text-title-l font-bold text-text-primary">
-                  {plan ? goalLine(plan, steps) : 'Nothing measured is missing'}
+                  {plan ? planGoalLine(plan) : 'Nothing measured is missing'}
                 </p>
                 {target && target.ai > plan!.score && (
                   <p className="text-body-m font-medium text-text-secondary">
