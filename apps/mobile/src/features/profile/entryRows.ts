@@ -1,5 +1,6 @@
 import type { Certification, Education, Experience, LinkKind, ProfileLink } from '@/data/models';
 import { formatMonthYear } from '@/lib';
+import type { LineIconName } from '@/ui/Icon';
 
 /**
  * NextKin V2 §7.3 — the row copy behind the four career-profile lists (experience, education,
@@ -13,7 +14,7 @@ import { formatMonthYear } from '@/lib';
  * initial, a link kind's glyph, or — for LinkedIn alone — the illustrated mark the boards draw.
  */
 export type EntryTileSpec =
-  { kind: 'letter'; name: string } | { kind: 'glyph'; icon: string } | { kind: 'linkedin' };
+  { kind: 'letter'; name: string } | { kind: 'glyph'; icon: LineIconName } | { kind: 'linkedin' };
 
 /**
  * One card on a profile list (PROFILE 04 / 07 / 12): a title over who and when, an optional status
@@ -143,18 +144,18 @@ export function certificationRow(entry: Certification, now: Date = new Date()): 
 /**
  * Glyphs for the link kinds, as the link-kind sheet draws them (PROFILE 14 577:9800). LinkedIn has
  * an illustrated mark of its own on the boards, so its glyph is only the fallback a plain row uses.
- * FontAwesome's brand marks live in the Brands set, which the app does not load.
+ * The line set has no brand marks.
  */
-export const LINK_KIND_ICON: Record<LinkKind, string> = {
-  portfolio: 'palette',
-  linkedin: 'id-badge',
-  github: 'code-branch',
-  website: 'globe',
-  other: 'link',
+export const LINK_KIND_ICON: Record<LinkKind, LineIconName> = {
+  portfolio: 'Palette',
+  linkedin: 'Passport',
+  github: 'GitBranch01',
+  website: 'Globe02',
+  other: 'Link01',
 };
 
 /** The link's own glyph; a link saved before the kind existed falls back to the chain. */
-export const linkIcon = (kind: LinkKind | undefined): string =>
+export const linkIcon = (kind: LinkKind | undefined): LineIconName =>
   kind ? LINK_KIND_ICON[kind] : LINK_KIND_ICON.other;
 
 /**

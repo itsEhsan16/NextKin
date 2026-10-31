@@ -103,6 +103,7 @@ export function EducationFormScreen({ id }: EducationFormScreenProps) {
     >
       {draft ? (
         <EducationFields
+          picking={pickerOpen ? picking : null}
           draft={draft}
           patch={form.patch}
           errors={form.errors}

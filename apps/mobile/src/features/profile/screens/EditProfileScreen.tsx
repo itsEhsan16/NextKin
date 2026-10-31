@@ -11,6 +11,7 @@ import {
 } from '@/data/queries';
 import { pickImage } from '@/lib';
 import { useTheme } from '@/theme';
+import { useUnsavedGuard } from '@/navigation';
 import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -79,7 +80,6 @@ export function EditProfileScreen() {
   /** Fields the reader has left. An error on the first keystroke reads as a telling-off. */
   const [touched, setTouched] = useState<Record<string, true>>({});
   const [refused, setRefused] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Seeded once, not on every change of the cached aggregates: both writes are optimistic and
   // roll back on failure, and a re-seed on that rollback would discard the edit being retried.
@@ -102,6 +102,9 @@ export function EditProfileScreen() {
 
   const dirty = draft != null && base != null && identityDirty(draft, base);
   const failed = saveName.isError || saveProfile.isError;
+  // Every way off the page asks while there are edits — the swipe and Android's back included.
+  const discard = useUnsavedGuard(dirty && !saveName.isPending && !saveProfile.isPending);
+  const { ask, release } = discard;
 
   const change = useCallback((key: keyof IdentityDraft, value: string) => {
     setDraft((entry) => (entry ? { ...entry, [key]: value } : entry));
@@ -111,9 +114,9 @@ export function EditProfileScreen() {
   }, []);
 
   const requestBack = useCallback(() => {
-    if (dirty) setConfirmOpen(true);
+    if (dirty) ask(() => router.back());
     else router.back();
-  }, [dirty, router]);
+  }, [ask, dirty, router]);
 
   /**
    * The photo is committed the moment it is picked rather than held for Save. A picked photo is
@@ -142,11 +145,12 @@ export function EditProfileScreen() {
     // it does not escape as an unhandled one.
     void Promise.all(writes)
       .then(() => {
+        release();
         router.back();
         showAppToast('Profile saved');
       })
       .catch(() => undefined);
-  }, [base, draft, router, saveName, saveProfile]);
+  }, [base, draft, release, router, saveName, saveProfile]);
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
@@ -164,18 +168,15 @@ export function EditProfileScreen() {
 
       {/* A sibling of the page, never a child of its scroller. */}
       <ConfirmSheet
-        open={confirmOpen}
+        open={discard.open}
         title="Discard changes?"
         message={DISCARD_MESSAGE}
         art={<ConfirmArt kind="discard" />}
         artGap={0}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
-        onConfirm={() => {
-          setConfirmOpen(false);
-          router.back();
-        }}
-        onCancel={() => setConfirmOpen(false)}
+        onConfirm={discard.confirm}
+        onCancel={discard.cancel}
       />
     </View>
   );
@@ -184,7 +185,7 @@ export function EditProfileScreen() {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your profile"
         message="Check your connection and try again."
         actionLabel="Try again"

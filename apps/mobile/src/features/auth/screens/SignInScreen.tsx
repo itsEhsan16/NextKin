@@ -1,10 +1,7 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { AccessibilityInfo, View, type TextInput } from 'react-native';
+import { AccessibilityInfo, View, type TextInputInstance } from 'react-native';
 
-import EmailIcon from '../../../../assets/icons/onboarding/field-email.svg';
-import PasswordIcon from '../../../../assets/icons/onboarding/field-password.svg';
 import { backendAuth, usePasswordSignIn } from '@/data/queries';
 
 import {
@@ -17,6 +14,7 @@ import {
 } from '../authForms';
 import { board } from '../board';
 import { AuthDivider } from '../components/AuthDivider';
+import { AuthCta } from '../components/AuthCta';
 import { AuthField } from '../components/AuthField';
 import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
@@ -31,6 +29,7 @@ import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { glyphSpan } from '@/ui/Icon';
 
 /**
  * What the reset link would say, said instead. V2 §7.1 puts the whole flow behind Cognito — a
@@ -66,7 +65,7 @@ const RESET = {
  */
 export function SignInScreen() {
   const router = useRouter();
-  const { colors, radii, sizes, s } = useTheme();
+  const { sizes, s } = useTheme();
   const styles = useStyles();
   const signIn = useSessionStore((state) => state.signIn);
   const markSeen = useOnboardingStore((state) => state.markSeen);
@@ -78,7 +77,7 @@ export function SignInScreen() {
   const signInRequest = usePasswordSignIn();
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
 
   const validation = validateSignIn(draft);
   const allErrors = validation.ok ? {} : validation.errors;
@@ -162,10 +161,10 @@ export function SignInScreen() {
           }}
         >
           <IconButton
-            icon="arrow-left"
+            icon="ArrowLeft"
             label="Go back"
             variant="ghost"
-            iconSize={backGlyph}
+            iconSize={backGlyph / glyphSpan.chevron}
             onPress={() => router.back()}
           />
         </View>
@@ -186,7 +185,7 @@ export function SignInScreen() {
           <AuthField
             label="Email address"
             metrics={SIGN_IN}
-            renderIcon={(props) => <EmailIcon {...props} />}
+            icon="Mail01"
             value={draft.email}
             onChangeText={(email) => patch({ email })}
             onBlur={() => blur('email')}
@@ -200,7 +199,7 @@ export function SignInScreen() {
             ref={passwordRef}
             label="Password"
             metrics={SIGN_IN}
-            renderIcon={(props) => <PasswordIcon {...props} />}
+            icon="Lock01"
             value={draft.password}
             onChangeText={(password) => patch({ password })}
             onBlur={() => blur('password')}
@@ -232,32 +231,15 @@ export function SignInScreen() {
           </Text>
         </Pressable>
 
-        <Pressable
-          haptic="medium"
-          accessibilityRole="button"
-          accessibilityLabel="Sign In"
-          accessibilityState={{ busy: signInRequest.isPending }}
+        <AuthCta
+          label="Sign In"
           onPress={submit}
-          style={[
-            styles.pill,
-            {
-              height: s(board(SIGN_IN.ctaHeight)),
-              marginTop: s(board(SIGN_IN.ctaTop)),
-              borderRadius: radii.full,
-              backgroundColor: colors.ctaPrimary,
-            },
-          ]}
-        >
-          <Text variant="authCta" color="ctaPrimaryLabel">
-            Sign In
-          </Text>
-          <FontAwesome5
-            name="arrow-right"
-            size={s(board(SIGN_IN.ctaArrow))}
-            color={colors.ctaPrimaryLabel}
-            style={{ position: 'absolute', right: s(board(SIGN_IN.ctaArrowRight)) }}
-          />
-        </Pressable>
+          loading={signInRequest.isPending}
+          height={s(board(SIGN_IN.ctaHeight))}
+          arrow={s(board(SIGN_IN.ctaArrow))}
+          arrowRight={s(board(SIGN_IN.ctaArrowRight))}
+          style={{ marginTop: s(board(SIGN_IN.ctaTop)) }}
+        />
 
         {(refused && !validation.ok) || serverError ? (
           <Text
@@ -317,5 +299,4 @@ const useStyles = scaledSheet(() => ({
   centred: { alignItems: 'center' },
   forgot: { alignSelf: 'flex-end' },
   underline: { textDecorationLine: 'underline' },
-  pill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
 }));

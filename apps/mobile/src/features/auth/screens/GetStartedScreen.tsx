@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
@@ -11,9 +10,16 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 /** Figma 307:4338. */
-const LAYOUT = { heroTop: 48.68, art: { width: 387.45, height: 200.5 }, gutter: 22, gap: 12.21, floor: 105 };
+const LAYOUT = {
+  heroTop: 48.68,
+  art: { width: 387.45, height: 200.5 },
+  gutter: 22,
+  gap: 12.21,
+  floor: 105,
+};
 const BUTTON = { height: 57.86, arrow: 21, arrowRight: 31.75 };
 /** The drawn fill: rgba(84,73,238,0.67) over white, to #A099FB. */
 const PILL = { from: '#8E88F4', to: '#A099FB' };
@@ -71,9 +77,9 @@ export function GetStartedScreen() {
           <Text variant="authButton" color="onboardingInk">
             Create an account
           </Text>
-          <FontAwesome5
-            name="arrow-right"
-            size={s(board(BUTTON.arrow))}
+          <Icon
+            name="ArrowRight"
+            size={s(46.98)}
             color={colors.onboardingInk}
             style={{ position: 'absolute', right: s(board(BUTTON.arrowRight)) }}
           />
@@ -107,5 +113,10 @@ export function GetStartedScreen() {
 const useStyles = scaledSheet(() => ({
   centred: { alignItems: 'center' },
   art: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
 }));

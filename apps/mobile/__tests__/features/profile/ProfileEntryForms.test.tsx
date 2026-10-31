@@ -21,6 +21,7 @@ const clients: QueryClient[] = [];
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: mockBack, replace: jest.fn() }),
   Link: ({ children }: PropsWithChildren) => children,
+  usePreventRemove: () => () => undefined,
 }));
 
 const metrics: Metrics = {

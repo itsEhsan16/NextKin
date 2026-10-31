@@ -118,6 +118,7 @@ export function ExperienceFormScreen({ id }: ExperienceFormScreenProps) {
     >
       {draft ? (
         <ExperienceFields
+          picking={pickerOpen ? picking : null}
           draft={draft}
           patch={form.patch}
           errors={form.errors}

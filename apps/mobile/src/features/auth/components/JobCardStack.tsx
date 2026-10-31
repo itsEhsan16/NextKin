@@ -21,7 +21,10 @@ const CARDS = [
 ] as const;
 
 /** The two grey rules standing in for a job's meta line. */
-const BARS = [{ width: 105, height: 5 }, { width: 69, height: 5 }] as const;
+const BARS = [
+  { width: 105, height: 5 },
+  { width: 69, height: 5 },
+] as const;
 
 /**
  * Onboarding slide 2's illustration (Figma 290:1041): three tilted job cards with a figure

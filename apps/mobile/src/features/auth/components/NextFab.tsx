@@ -1,12 +1,10 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-
 import { board } from '../board';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
+import { Icon } from '@/ui/Icon';
 
 /** Figma 307:4286 — a 72pt ink circle carrying the advance arrow. */
 const BOX = 72;
-const GLYPH = 26;
 
 export type NextFabProps = {
   onPress: () => void;
@@ -42,7 +40,7 @@ export function NextFab({ onPress, label }: NextFabProps) {
         },
       ]}
     >
-      <FontAwesome5 name="arrow-right" size={s(board(GLYPH))} color={colors.textOnDark} solid />
+      <Icon name="ArrowRight" size={s(58.16)} color={colors.textOnDark} />
     </Pressable>
   );
 }

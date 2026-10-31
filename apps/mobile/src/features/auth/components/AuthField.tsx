@@ -1,15 +1,22 @@
-import { useRef, useState, type ReactElement } from 'react';
-import { TextInput, View, type KeyboardTypeOptions, type TextInputProps } from 'react-native';
-import type { SvgProps } from 'react-native-svg';
+import { useRef, useState } from 'react';
+import {
+  TextInput,
+  View,
+  type KeyboardTypeOptions,
+  type TextInputProps,
+  type ViewInstance,
+  type TextInputInstance,
+} from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import RevealOnIcon from '../../../../assets/icons/onboarding/field-reveal-on.svg';
-import RevealIcon from '../../../../assets/icons/onboarding/field-reveal.svg';
 import { board } from '../board';
-import { hitSlopFor } from '@/lib';
+import { hitSlopFor, maxFontScale } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { useRevealOnFocus } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { useFieldChrome } from '@/ui/TextField';
 
 /**
  * The drawn box, as the using screen's board draws it. `SIGN_UP` and `SIGN_IN` both satisfy this
@@ -29,8 +36,8 @@ export type AuthFieldProps = {
   /** Doubles as the placeholder: the board draws no label above the box. */
   label: string;
   metrics: AuthFieldMetrics;
-  /** The board's own glyph, invoked inline rather than passed as a component. */
-  renderIcon: (props: SvgProps) => ReactElement;
+  /** The leading glyph, from the line set the rest of the app draws with. */
+  icon: LineIconName;
   value: string;
   onChangeText: (value: string) => void;
   onBlur?: () => void;
@@ -41,18 +48,17 @@ export type AuthFieldProps = {
   autoCapitalize?: TextInputProps['autoCapitalize'];
   returnKeyType?: TextInputProps['returnKeyType'];
   onSubmit?: () => void;
-  ref?: React.Ref<TextInput>;
+  ref?: React.Ref<TextInputInstance>;
 };
 
 /**
  * An auth field — sign-up (Figma 307:4395) and sign-in (309:294), which draw it slightly
  * differently, so the box comes in as `metrics` rather than being read off one of them.
  *
- * `src/ui/TextField` is the app's text-entry primitive and stays so; this is a different control
- * — outlined rather than filled, a leading glyph, and the label carried by the placeholder
- * instead of a line above the box — so it is built here against its artboard rather than by
- * bending the primitive into a second shape for one screen. If auth gains another designed form,
- * the two should be folded together as a TextField variant. See toreview.md.
+ * It keeps its artboard's shape — outlined rather than filled, a leading glyph, and the label
+ * carried by the placeholder instead of a line above the box — but not its own behaviour: focus,
+ * error and announcement come from `useFieldChrome`, the same as `TextField`, so a tap on an
+ * auth box lands visibly and a validation failure is said out loud (toreview.md §140).
  *
  * The error row is always rendered once there is anything to say, so a message swaps in rather
  * than pushing the form down — the behaviour `TextField` established.
@@ -60,7 +66,7 @@ export type AuthFieldProps = {
 export function AuthField({
   label,
   metrics,
-  renderIcon,
+  icon,
   value,
   onChangeText,
   onBlur,
@@ -79,14 +85,15 @@ export function AuthField({
   // The page scrolls a focused field clear of the keyboard, exactly as it does for TextField.
   // Skipping this is what left the email and password boxes under the keyboard on device.
   const revealOnFocus = useRevealOnFocus();
-  const fieldRef = useRef<View>(null);
+  const fieldRef = useRef<ViewInstance>(null);
 
   const glyph = s(board(metrics.fieldIcon));
+  const chrome = useFieldChrome(error, { rest: colors.authFieldBorder });
 
   return (
     // Measured whole, error row included, so the reveal lifts the message with the box.
     <View ref={fieldRef}>
-      <View
+      <Animated.View
         style={[
           styles.box,
           {
@@ -94,19 +101,25 @@ export function AuthField({
             paddingHorizontal: s(board(metrics.fieldPadding)),
             borderRadius: s(board(metrics.fieldRadius)),
             borderWidth: s(board(metrics.hairline)),
-            borderColor: error ? colors.danger : colors.authFieldBorder,
           },
+          chrome.borderStyle,
         ]}
       >
         <View style={{ marginRight: s(board(metrics.fieldIconGap)) }}>
-          {renderIcon({ width: glyph, height: glyph })}
+          <Icon name={icon} size={glyph} color={colors.iconMuted} />
         </View>
         <TextInput
           ref={ref}
           value={value}
           onChangeText={onChangeText}
-          onBlur={onBlur}
-          onFocus={() => revealOnFocus?.(fieldRef.current)}
+          onBlur={() => {
+            chrome.onBlur();
+            onBlur?.();
+          }}
+          onFocus={() => {
+            chrome.onFocus();
+            revealOnFocus?.(fieldRef.current);
+          }}
           placeholder={label}
           placeholderTextColor={colors.textTertiary}
           accessibilityLabel={label}
@@ -117,6 +130,9 @@ export function AuthField({
           returnKeyType={returnKeyType}
           onSubmitEditing={onSubmit}
           submitBehavior={returnKeyType === 'next' ? 'submit' : 'blurAndSubmit'}
+          selectionColor={colors.textPrimary}
+          cursorColor={colors.textPrimary}
+          maxFontSizeMultiplier={maxFontScale.body}
           style={[styles.input, typography.authField, { color: colors.textPrimary }]}
         />
         {secure ? (
@@ -128,14 +144,10 @@ export function AuthField({
             onPress={() => setRevealed((shown) => !shown)}
           >
             {/* Struck through while the password is masked, which is the state the board draws. */}
-            {revealed ? (
-              <RevealOnIcon width={glyph} height={glyph} />
-            ) : (
-              <RevealIcon width={glyph} height={glyph} />
-            )}
+            <Icon name={revealed ? 'Eye' : 'EyeOff'} size={glyph} color={colors.iconMuted} />
           </Pressable>
         ) : null}
-      </View>
+      </Animated.View>
       {error ? (
         <Text
           variant="authMeta"

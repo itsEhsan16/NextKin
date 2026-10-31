@@ -1,5 +1,5 @@
 import { profileFixture } from '@/data/mock';
-import type { Certification, Education, Experience, ProfileLink } from '@/data/models';
+import type { Certification, Experience, ProfileLink } from '@/data/models';
 import {
   certificationDraft,
   certificationEntry,

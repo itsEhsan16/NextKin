@@ -172,7 +172,7 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't check your export"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -247,7 +247,7 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
         ready
           ? {
               label: block.cta,
-              icon: 'file-download',
+              icon: 'Download01',
               loading: saving,
               onPress: () => void download(),
             }

@@ -1,6 +1,6 @@
 import { LINK_KIND_LABEL } from '@/data/models';
 import { SelectField } from '@/ui/SelectField';
-import { TextField } from '@/ui/TextField';
+import { TextField, useFieldChain } from '@/ui/TextField';
 
 import { linkIcon } from '../../entryRows';
 import type { LinkDraft } from '../../profileForms';
@@ -13,6 +13,8 @@ export type LinkFieldsProps = {
   errors: Record<string, string>;
   blur: (key: string) => void;
   onPickKind: () => void;
+  /** The kind list is up. */
+  kindOpen?: boolean;
 };
 
 /**
@@ -23,7 +25,8 @@ export type LinkFieldsProps = {
  * V2 §6.2: there is no supported LinkedIn API, so a LinkedIn link here is an address to open, not
  * an import. The helper under the field says so rather than implying otherwise.
  */
-export function LinkFields({ draft, patch, errors, blur, onPickKind }: LinkFieldsProps) {
+export function LinkFields({ draft, patch, errors, blur, onPickKind, kindOpen }: LinkFieldsProps) {
+  const link = useFieldChain(2);
   return (
     <SectionCard art={PROFILE_ROW_ART.links} title="Link">
       <SelectField
@@ -31,22 +34,24 @@ export function LinkFields({ draft, patch, errors, blur, onPickKind }: LinkField
         icon={linkIcon(draft.kind)}
         value={LINK_KIND_LABEL[draft.kind]}
         hint="Opens the list of link types"
+        open={kindOpen}
         onPress={onPickKind}
       />
       <TextField
+        {...link(0)}
         label="Name"
-        icon="tag"
+        icon="Tag01"
         value={draft.label}
         onChangeText={(label) => patch({ label })}
         onBlur={() => blur('label')}
         placeholder="What to call this link"
         error={errors.label}
         autoCapitalize="words"
-        returnKeyType="next"
       />
       <TextField
+        {...link(1)}
         label="Web address"
-        icon="globe"
+        icon="Globe02"
         value={draft.url}
         onChangeText={(url) => patch({ url })}
         onBlur={() => blur('url')}
@@ -56,7 +61,6 @@ export function LinkFields({ draft, patch, errors, blur, onPickKind }: LinkField
         keyboardType="url"
         autoCapitalize="none"
         autoComplete="url"
-        returnKeyType="done"
       />
     </SectionCard>
   );

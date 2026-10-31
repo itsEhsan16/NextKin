@@ -18,7 +18,10 @@ export function SlideDots({ count, index, size, gap }: SlideDotsProps) {
 
   return (
     // One node for the whole group: three separate "dot" announcements say nothing useful.
-    <View accessible accessibilityRole="text" accessibilityLabel={`Slide ${index + 1} of ${count}`}
+    <View
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`Slide ${index + 1} of ${count}`}
       style={[styles.row, { gap: s(board(gap)) }]}
     >
       {Array.from({ length: count }, (_, dot) => (

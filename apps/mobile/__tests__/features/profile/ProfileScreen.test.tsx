@@ -66,7 +66,9 @@ describe('ProfileScreen (PROFILE 01/02)', () => {
     expect(screen.getByLabelText('12 applications')).toBeOnTheScreen();
     expect(screen.getByLabelText('2 interviews')).toBeOnTheScreen();
     // The average of the seeded documents' engine scores (C-11), not a fixture's 87.
-    expect(screen.getByLabelText(`${mockStore.state.profile.stats.avgAtsScore} avg ats score`)).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText(`${mockStore.state.profile.stats.avgAtsScore} avg ats score`),
+    ).toBeOnTheScreen();
 
     // — Completeness card (1:2217) —
     expect(screen.getByRole('header', { name: 'Profile 72% complete' })).toBeOnTheScreen();
@@ -145,7 +147,10 @@ describe('ProfileScreen (PROFILE 01/02)', () => {
     // — A next-step chip opens the editor that answers it; the tap alone does not tick it off
     //   (§85). The step leaves once its data is saved — see ProfileSheetsHost.test. —
     mockPush.mockClear();
-    expect(screen.getByLabelText('Add skills')).toHaveProp('accessibilityHint', 'Opens your skills');
+    expect(screen.getByLabelText('Add skills')).toHaveProp(
+      'accessibilityHint',
+      'Opens your skills',
+    );
     fireEvent.press(screen.getByLabelText('Add skills'));
     expect(mockPush).toHaveBeenCalledWith('/profile/skills');
     fireEvent.press(screen.getByLabelText('Set salary range'));

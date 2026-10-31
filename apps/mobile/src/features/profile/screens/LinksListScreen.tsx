@@ -37,7 +37,7 @@ export function LinksListScreen() {
       profile.links.map((link) => ({
         ...linkRow(link),
         action: {
-          icon: 'external-link-alt',
+          icon: 'LinkExternal01',
           label: `Open ${link.label}`,
           onPress: () => open(link.url),
         },
@@ -57,7 +57,7 @@ export function LinksListScreen() {
       heading={{ title: 'Your links' }}
       add={{ title: 'Add a link', caption: 'Portfolio, LinkedIn, GitHub or a website' }}
       onOpen={actions.openLinkEntry}
-      note={{ text: NOTE, icon: 'info-circle' }}
+      note={{ text: NOTE, icon: 'InfoCircle' }}
       empty={{ art: PROFILE_ROW_ART.links, title: 'No links yet', message: LEDE }}
       overlay={
         <Toast

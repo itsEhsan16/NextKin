@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Animated from 'react-native-reanimated';
 
 import type { Profile } from '@/data/models';
@@ -11,14 +10,13 @@ import { Text } from '@/ui/Text';
 import { itemExit, layoutTransition } from '@/ui/motion';
 
 import { nextStepHint } from '../nextSteps';
+import { Icon } from '@/ui/Icon';
 
 export type CompletenessCardProps = {
   profile: Profile;
   /** Opens the editor that answers the step (`useProfileActions().openNextStep`). */
   onOpenStep: (id: string) => void;
 };
-
-const PLUS = 9;
 
 /**
  * Figma 1:2217 — "Profile 72% complete" with the ink meter and the next-step chips.
@@ -74,7 +72,7 @@ export function CompletenessCard({ profile, onOpenStep }: CompletenessCardProps)
                   },
                 ]}
               >
-                <FontAwesome5 name="plus" size={s(PLUS)} color={colors.textPrimary} solid />
+                <Icon name="Plus" size="xs" color={colors.textPrimary} />
                 <Text variant="captionSemiBold">{step.label}</Text>
               </Pressable>
             </Animated.View>

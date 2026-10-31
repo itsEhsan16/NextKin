@@ -16,6 +16,8 @@ export type DateFieldProps = {
   /** Shown instead of the date, inert — the end of a role still held reads "Present". */
   fixedValue?: string;
   onPress: () => void;
+  /** Its month picker is up. */
+  open?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -33,6 +35,7 @@ export function DateField({
   emptyValue = NO_DATE,
   fixedValue,
   onPress,
+  open,
   style,
 }: DateFieldProps) {
   const picked = value.length > 0 ? formatMonthYear(value) : undefined;
@@ -40,11 +43,12 @@ export function DateField({
   return (
     <SelectField
       label={label}
-      icon="calendar-alt"
+      icon="Calendar"
       value={fixedValue ?? picked ?? (answered ? emptyValue : undefined)}
       placeholder={NO_DATE}
       hint="Opens the month picker"
       disabled={fixedValue != null}
+      open={open}
       onPress={onPress}
       style={style}
     />

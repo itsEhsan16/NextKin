@@ -80,7 +80,7 @@ export function EntryListEmpty({
       </View>
       <Button
         label={addLabel}
-        icon="plus"
+        icon="Plus"
         size="lg"
         block
         onPress={onAdd}

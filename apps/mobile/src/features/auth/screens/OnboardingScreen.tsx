@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -7,6 +6,7 @@ import {
   View,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
+  type ScrollViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -23,6 +23,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { Icon, glyphSpan } from '@/ui/Icon';
 
 /**
  * Figma 307:4175 / 307:4281 (slides 1-2) and 309:2 (slide 3) — one bar, drawn twice.
@@ -70,7 +71,7 @@ export function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const styles = useStyles();
   const markSeen = useOnboardingStore((state) => state.markSeen);
-  const scroller = useRef<ScrollView>(null);
+  const scroller = useRef<ScrollViewInstance>(null);
   const [index, setIndex] = useState(0);
 
   const finish = () => {
@@ -160,7 +161,11 @@ export function OnboardingScreen() {
             {/* 309:8 is the same drawn glyph as the round button's — DM Sans Light 41 in a 31
                 box — so it takes the same 26 `NextFab` renders it at. FontAwesome carries every
                 other arrow in the app; a text node sized like an icon is not worth introducing. */}
-            <FontAwesome5 name="arrow-right" size={s(board(CTA.arrow))} color={colors.textOnDark} />
+            <Icon
+              name="ArrowRight"
+              size={s(board(CTA.arrow)) / glyphSpan.arrow}
+              color={colors.textOnDark}
+            />
           </Pressable>
         ) : (
           <NextFab onPress={advance} label={`Next, slide ${index + 2} of ${SLIDES.length}`} />

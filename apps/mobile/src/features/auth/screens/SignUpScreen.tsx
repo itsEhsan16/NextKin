@@ -1,11 +1,7 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { AccessibilityInfo, View, type TextInput } from 'react-native';
+import { AccessibilityInfo, View, type TextInputInstance } from 'react-native';
 
-import EmailIcon from '../../../../assets/icons/onboarding/field-email.svg';
-import NameIcon from '../../../../assets/icons/onboarding/field-name.svg';
-import PasswordIcon from '../../../../assets/icons/onboarding/field-password.svg';
 import { backendAuth, useStartSignUp } from '@/data/queries';
 
 import {
@@ -20,6 +16,7 @@ import { usePendingSignUp } from '../pendingSignUp';
 import { board } from '../board';
 import { SIGN_UP, dividerMargin } from '../signUpLayout';
 import { AuthDivider } from '../components/AuthDivider';
+import { AuthCta } from '../components/AuthCta';
 import { AuthField } from '../components/AuthField';
 import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
@@ -29,9 +26,9 @@ import { useSessionStore } from '../sessionStore';
 import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
-import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { glyphSpan } from '@/ui/Icon';
 
 /**
  * Create an account (Figma 307:4386).
@@ -53,7 +50,7 @@ import { Text } from '@/ui/Text';
  */
 export function SignUpScreen() {
   const router = useRouter();
-  const { colors, radii, sizes, s } = useTheme();
+  const { sizes, s } = useTheme();
   const styles = useStyles();
   const signIn = useSessionStore((state) => state.signIn);
   const markSeen = useOnboardingStore((state) => state.markSeen);
@@ -65,8 +62,8 @@ export function SignUpScreen() {
   const startPending = usePendingSignUp((state) => state.start);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInputInstance>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
 
   const validation = validateSignUp(draft);
   const allErrors = validation.ok ? {} : validation.errors;
@@ -150,10 +147,10 @@ export function SignUpScreen() {
         }}
       >
         <IconButton
-          icon="arrow-left"
+          icon="ArrowLeft"
           label="Go back"
           variant="ghost"
-          iconSize={backGlyph}
+          iconSize={backGlyph / glyphSpan.chevron}
           onPress={() => router.back()}
         />
       </View>
@@ -174,7 +171,7 @@ export function SignUpScreen() {
         <AuthField
           label="Full name"
           metrics={SIGN_UP}
-          renderIcon={(props) => <NameIcon {...props} />}
+          icon="User01"
           value={draft.fullName}
           onChangeText={(fullName) => patch({ fullName })}
           onBlur={() => blur('fullName')}
@@ -188,7 +185,7 @@ export function SignUpScreen() {
           ref={emailRef}
           label="Email address"
           metrics={SIGN_UP}
-          renderIcon={(props) => <EmailIcon {...props} />}
+          icon="Mail01"
           value={draft.email}
           onChangeText={(email) => patch({ email })}
           onBlur={() => blur('email')}
@@ -202,7 +199,7 @@ export function SignUpScreen() {
           ref={passwordRef}
           label="Password"
           metrics={SIGN_UP}
-          renderIcon={(props) => <PasswordIcon {...props} />}
+          icon="Lock01"
           value={draft.password}
           onChangeText={(password) => patch({ password })}
           onBlur={() => blur('password')}
@@ -214,32 +211,15 @@ export function SignUpScreen() {
         />
       </View>
 
-      <Pressable
-        haptic="medium"
-        accessibilityRole="button"
-        accessibilityLabel="Create account"
-        accessibilityState={{ busy: startSignUp.isPending }}
+      <AuthCta
+        label="Create account"
         onPress={submit}
-        style={[
-          styles.pill,
-          {
-            height: s(board(SIGN_UP.ctaHeight)),
-            marginTop: s(board(SIGN_UP.ctaTop)),
-            borderRadius: radii.full,
-            backgroundColor: colors.ctaPrimary,
-          },
-        ]}
-      >
-        <Text variant="authCta" color="ctaPrimaryLabel">
-          Create account
-        </Text>
-        <FontAwesome5
-          name="arrow-right"
-          size={s(board(SIGN_UP.ctaArrow))}
-          color={colors.ctaPrimaryLabel}
-          style={{ position: 'absolute', right: s(board(SIGN_UP.ctaArrowRight)) }}
-        />
-      </Pressable>
+        loading={startSignUp.isPending}
+        height={s(board(SIGN_UP.ctaHeight))}
+        arrow={s(board(SIGN_UP.ctaArrow))}
+        arrowRight={s(board(SIGN_UP.ctaArrowRight))}
+        style={{ marginTop: s(board(SIGN_UP.ctaTop)) }}
+      />
 
       {(refused && !validation.ok) || serverError ? (
         <Text
@@ -281,5 +261,4 @@ export function SignUpScreen() {
 
 const useStyles = scaledSheet(() => ({
   centred: { alignItems: 'center' },
-  pill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
 }));

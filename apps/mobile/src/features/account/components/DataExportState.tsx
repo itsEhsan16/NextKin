@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
@@ -20,6 +19,7 @@ import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
 import { dataExportBlock, dataExportExpiryLine, dataExportFileLine } from '../dataExportCopy';
+import { Icon } from '@/ui/Icon';
 
 // ACCOUNT 03 "File" card at 390 (577:3820), in artboard units.
 const FILE_GAP = 12 / 0.75;
@@ -27,7 +27,6 @@ const FILE_TILE = 44 / 0.75;
 const FILE_TILE_RADIUS = 11.282 / 0.75;
 const FILE_LINE_GAP = 4 / 0.75;
 const EXPIRY_GAP = 6 / 0.75;
-const CLOCK = 11 / 0.75;
 /** The export drawing inside the tile — the History feed's own (577:3823 = history/export). */
 const EXPORT_FILE_ART: ListRowArt = { Icon: ExportFileIcon, w: 30.7692, h: 19.0225 };
 const EXPORT_FILE_ART_W = 33.8462 / 0.75;
@@ -99,7 +98,7 @@ export type DataExportFileCardProps = { status: DataExportStatus };
 
 /** The built file: its tile, name and size, and when the link expires (ACCOUNT 03 577:3820). */
 export function DataExportFileCard({ status }: DataExportFileCardProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, spacing } = useTheme();
   const styles = useStyles();
   const fileLine = dataExportFileLine(status);
   const expiry = dataExportExpiryLine(status);
@@ -113,7 +112,7 @@ export function DataExportFileCard({ status }: DataExportFileCardProps) {
         {fileLine ? <Text variant="label">{fileLine}</Text> : null}
         {expiry ? (
           <View style={styles.expiry}>
-            <FontAwesome5 name="clock" size={s(CLOCK)} color={colors.textSecondary} />
+            <Icon name="Clock" size="xs" color={colors.textSecondary} />
             <Text variant="micro" color="textSecondary" style={styles.fill}>
               {expiry}
             </Text>
@@ -143,7 +142,7 @@ export function DataExportFailedCard({ status }: { status: DataExportStatus }) {
       <StateView
         compact
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title={block.title}
         message={block.body}
       />

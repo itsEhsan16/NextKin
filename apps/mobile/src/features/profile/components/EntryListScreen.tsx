@@ -17,10 +17,11 @@ import type { EntryRow } from '../entryRows';
 import { EntryListEmpty, type EntryListEmptyConfig } from './EntryListEmpty';
 import { useProfileActions } from '../hooks/useProfileActions';
 import { AddCard, EntryCard, SectionHeading, StatusPill, SummaryCard, tileFor } from './cards';
+import type { LineIconName } from '@/ui/Icon';
 
 /** A card plus the optional second target the Links list gives it ("Open"). */
 export type EntryListRow = EntryRow & {
-  action?: { icon: string; label: string; onPress: () => void };
+  action?: { icon: LineIconName; label: string; onPress: () => void };
 };
 
 export type EntryListScreenProps = {
@@ -38,7 +39,7 @@ export type EntryListScreenProps = {
   /** PROFILE 10: what the list says while it is empty. */
   empty: EntryListEmptyConfig;
   /** The lavender line under the list — Links' §6.2 note (577:9086). */
-  note?: { text: string; icon?: string };
+  note?: { text: string; icon?: LineIconName };
   /** Rendered as a sibling of the page, never inside its scroller (toasts, sheets). */
   overlay?: ReactNode;
 };
@@ -108,7 +109,7 @@ export function EntryListScreen({
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your profile"
         message="Check your connection and try again."
         actionLabel="Try again"

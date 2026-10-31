@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import PlanMarkIcon from '../../../../assets/icons/profile/plan-mark.svg';
@@ -8,6 +7,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { Icon } from '@/ui/Icon';
 
 export type PlanCardProps = {
   subscription: Subscription;
@@ -27,7 +27,6 @@ const MARK = { w: 39 / 0.75, h: 40.5294 / 0.75 } as const;
 const PAD_LEFT = 12;
 const PAD_Y = 9;
 const MARK_GAP = 9;
-const CHEVRON = 10;
 
 /** Figma 95:2430 — "NextKin Free · 2 of 2 resumes · 5 AI credits left · Upgrade ›". */
 export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
@@ -69,7 +68,7 @@ export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
         {subscription.plan === 'free' ? (
           <View style={[styles.upgrade, { gap: spacing[1] + 2 }]}>
             <Text variant="segmentActive">Upgrade</Text>
-            <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.textPrimary} solid />
+            <Icon name="ChevronRight" size="xs" color={colors.textPrimary} />
           </View>
         ) : null}
       </Pressable>

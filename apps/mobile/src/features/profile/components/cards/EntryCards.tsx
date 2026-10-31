@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -9,17 +8,16 @@ import { Text } from '@/ui/Text';
 
 import { EntryTile, type EntryTileContent } from './EntryTile';
 import { CARD_RADIUS, ProfileCard } from './ProfileCard';
+import { Icon, type LineIconName } from '@/ui/Icon';
 
 // The list cards at 390 (PROFILE 04 573:47, PROFILE 12 577:9050), in artboard units.
 const CARD_GAP = 10 / 0.75;
 const HEADER_GAP = 12 / 0.75;
 const LINE_GAP = 2 / 0.75;
-const CHEVRON = 9 / 0.75;
 const CHIP_GAP = 6 / 0.75;
 const CHIP_PAD_X = 10 / 0.75;
 const CHIP_PAD_Y = 4 / 0.75;
 const ACTION = 36 / 0.75;
-const ACTION_GLYPH = 12 / 0.75;
 const PILL_PAD_LEFT = 9 / 0.75;
 const PILL_PAD_RIGHT = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
@@ -27,7 +25,6 @@ const PILL_GAP = 5 / 0.75;
 const PILL_DOT = 6 / 0.75;
 const ADD_MIN_HEIGHT = 86 / 0.75;
 const ADD_DISC = 40 / 0.75;
-const ADD_GLYPH = 14 / 0.75;
 const ADD_BORDER = 1 / 0.75;
 
 export type EntryCardProps = {
@@ -42,7 +39,7 @@ export type EntryCardProps = {
   /** The skills or field under the header (573:54). */
   chips?: readonly string[];
   /** A second target at the end — the Links list's Open (577:9048). Replaces the chevron. */
-  action?: { icon: string; label: string; onPress: () => void };
+  action?: { icon: LineIconName; label: string; onPress: () => void };
   onPress: () => void;
 };
 
@@ -84,9 +81,7 @@ export function EntryCard({
         ) : null}
       </View>
       {pill}
-      {action ? null : (
-        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
-      )}
+      {action ? null : <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />}
     </View>
   );
 
@@ -132,12 +127,7 @@ export function EntryCard({
             { borderRadius: radii.full, backgroundColor: colors.surfaceSubtle },
           ]}
         >
-          <FontAwesome5
-            name={action.icon}
-            size={s(ACTION_GLYPH)}
-            color={colors.textPrimary}
-            solid
-          />
+          <Icon name={action.icon} size="sm" color={colors.textPrimary} />
         </Pressable>
       </ProfileCard>
     );
@@ -225,7 +215,7 @@ export function AddCard({
       <View
         style={[styles.disc, { borderRadius: radii.full, backgroundColor: colors.surfaceInverse }]}
       >
-        <FontAwesome5 name="plus" size={s(ADD_GLYPH)} color={colors.textOnDark} solid />
+        <Icon name="Plus" size="lg" color={colors.textOnDark} />
       </View>
       <View style={styles.text}>
         <Text variant="title">{title}</Text>

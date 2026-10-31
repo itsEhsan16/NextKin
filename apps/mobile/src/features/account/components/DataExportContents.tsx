@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Fragment } from 'react';
 import { View } from 'react-native';
 
@@ -19,6 +18,7 @@ import {
   DATA_EXPORT_PRIVACY_LINE,
   type DataExportSection,
 } from '../dataExportCopy';
+import { Icon } from '@/ui/Icon';
 
 // ACCOUNT 02 at 390 (577:3105, 577:3210) and ACCOUNT 03 (577:3849), in artboard units.
 const HEADING_TO_CARD = 12 / 0.75;
@@ -38,9 +38,7 @@ const PRIVACY_ROW_GAP = 10 / 0.75;
 const PRIVACY_SLOT_W = 36 / 0.75;
 const PRIVACY_SLOT_H = 30 / 0.75;
 const PRIVACY_ART_W = 32 / 0.75;
-const CHEVRON = 9 / 0.75;
 const LINK_GAP = 4.5 / 0.75;
-const LINK_CHEVRON = 8 / 0.75;
 const LINK_H = 16 / 0.75;
 
 /**
@@ -104,7 +102,7 @@ export function DataExportContents() {
 
 /** The privacy policy as a card row with its own explainer (ACCOUNT 02 577:3210). */
 export function PrivacyPolicyRow({ onPress }: { onPress: () => void }) {
-  const { colors, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
 
   return (
@@ -124,7 +122,7 @@ export function PrivacyPolicyRow({ onPress }: { onPress: () => void }) {
             {DATA_EXPORT_PRIVACY_LINE}
           </Text>
         </View>
-        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+        <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
       </Pressable>
     </ProfileCard>
   );
@@ -146,7 +144,7 @@ export function PrivacyPolicyLink({ onPress }: { onPress: () => void }) {
       <Text variant="microBadge" color="brand">
         Privacy policy
       </Text>
-      <FontAwesome5 name="chevron-right" size={s(LINK_CHEVRON)} color={colors.brand} solid />
+      <Icon name="ChevronRight" size="sm" color={colors.brand} />
     </Pressable>
   );
 }

@@ -11,6 +11,7 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), navigate: jest.fn(), back: jest.fn(), replace: mockReplace }),
   // Rendered rather than swallowed, so a redirect is visible to the assertions below.
   Redirect: ({ href }: { href: string }) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock is hoisted above imports.
     const { Text } = require('react-native') as typeof import('react-native');
     return <Text testID="redirect">{href}</Text>;
   },

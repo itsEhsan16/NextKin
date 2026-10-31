@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { StyleSheet, View } from 'react-native';
 
 import { AVAILABILITY_LABEL, type Profile, type User } from '@/data/models';
@@ -15,15 +14,19 @@ export type ProfileIdentityProps = {
   onEdit: () => void;
 };
 
-const DOT = 7;
-const DETAILS_TOP = 10;
 const PILL_PAD_X = 12;
 const PILL_PAD_Y = 5;
-const EDIT_TOP = 18;
 const DETAILS_GAP = 2;
 const PILL_TOP = 8;
+/** The availability dot, solid, in the pill's own colour. */
+const DOT = 7;
 
-/** Header block of PROFILE 01: ring + avatar, name, headline · city, availability, Edit. */
+/**
+ * Header block of PROFILE 01: ring + avatar, name, headline · city, availability, Edit.
+ *
+ * Edit sits in the name's row rather than in a column of its own: as a column it took its width
+ * from every line beside it, and cut "Senior UX Designer · Bengaluru" off at "Ben…" on a phone.
+ */
 export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps) {
   const { colors, radii, sizes, spacing, s } = useTheme();
   const availability = profile.preferences.availability;
@@ -39,10 +42,27 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
         </Text>
       </CompletenessRing>
 
-      <View style={[styles.details, { gap: s(DETAILS_GAP), paddingTop: s(DETAILS_TOP) }]}>
-        <Text variant="displaySemiBold" numberOfLines={1}>
-          {`${user.firstName} ${user.lastName}`}
-        </Text>
+      <View style={[styles.details, { gap: s(DETAILS_GAP) }]}>
+        <View style={[styles.nameRow, { gap: spacing[3] }]}>
+          <Text variant="displaySemiBold" numberOfLines={1} style={styles.name}>
+            {`${user.firstName} ${user.lastName}`}
+          </Text>
+          <Pressable
+            {...a11yButton('Edit profile')}
+            feedback="scale"
+            haptic="light"
+            onPress={onEdit}
+            style={{
+              borderRadius: radii.full,
+              borderWidth: sizes.border,
+              borderColor: colors.borderDefault,
+              paddingHorizontal: spacing[5],
+              paddingVertical: spacing[2] + 1,
+            }}
+          >
+            <Text variant="bodySemiBold">Edit</Text>
+          </Pressable>
+        </View>
         {profile.headline ? (
           <Text variant="bodyMedium" color="textSecondary" numberOfLines={1}>
             {[profile.headline, profile.location].filter(Boolean).join(' · ')}
@@ -64,33 +84,20 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
               },
             ]}
           >
-            <FontAwesome5 name="circle" size={s(DOT)} color={colors.success} solid />
+            <View
+              style={{
+                width: s(DOT),
+                height: s(DOT),
+                borderRadius: radii.full,
+                backgroundColor: colors.success,
+              }}
+            />
             <Text variant="pillStrong" color="success">
               {AVAILABILITY_LABEL[availability]}
             </Text>
           </View>
         ) : null}
       </View>
-
-      <Pressable
-        {...a11yButton('Edit profile')}
-        feedback="scale"
-        haptic="light"
-        onPress={onEdit}
-        style={[
-          styles.edit,
-          {
-            borderRadius: radii.full,
-            borderWidth: sizes.border,
-            borderColor: colors.borderDefault,
-            marginTop: s(EDIT_TOP),
-            paddingHorizontal: spacing[5],
-            paddingVertical: spacing[2] + 1,
-          },
-        ]}
-      >
-        <Text variant="bodySemiBold">Edit</Text>
-      </Pressable>
     </View>
   );
 }
@@ -98,6 +105,7 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start' },
   details: { flex: 1 },
+  nameRow: { flexDirection: 'row', alignItems: 'center' },
+  name: { flex: 1 },
   pill: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },
-  edit: {},
 });

@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { TextInput } from 'react-native';
+import type { TextInputInstance } from 'react-native';
 
 import { SectionCard } from '@/features/profile/components/cards';
 import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
@@ -43,8 +43,8 @@ export function PasswordGroup({
   disabled,
   onSubmit,
 }: PasswordGroupProps) {
-  const nextRef = useRef<TextInput>(null);
-  const confirmRef = useRef<TextInput>(null);
+  const nextRef = useRef<TextInputInstance>(null);
+  const confirmRef = useRef<TextInputInstance>(null);
 
   return (
     <SectionCard art={PROFILE_ROW_ART.privacy} title="Password">
@@ -54,7 +54,7 @@ export function PasswordGroup({
         onChangeText={(value) => onChange('current', value)}
         onBlur={() => onBlurField('current')}
         error={errors.current}
-        icon="lock"
+        icon="Lock01"
         secureTextEntry
         autoCapitalize="none"
         autoComplete="current-password"
@@ -69,7 +69,7 @@ export function PasswordGroup({
         onChangeText={(value) => onChange('next', value)}
         onBlur={() => onBlurField('next')}
         error={errors.next}
-        icon="lock"
+        icon="Lock01"
         secureTextEntry
         autoCapitalize="none"
         autoComplete="new-password"
@@ -84,7 +84,7 @@ export function PasswordGroup({
         onChangeText={(value) => onChange('confirm', value)}
         onBlur={() => onBlurField('confirm')}
         error={errors.confirm}
-        icon="lock"
+        icon="Lock01"
         secureTextEntry
         autoCapitalize="none"
         autoComplete="new-password"
@@ -103,7 +103,7 @@ export function PasswordGroup({
 
       {status ? <AccountStatusLine message={status.message} tone={status.tone} /> : null}
 
-      <NoteBar icon="shield-alt" text={PASSWORD_NOTE} />
+      <NoteBar icon="ShieldTick" text={PASSWORD_NOTE} />
     </SectionCard>
   );
 }

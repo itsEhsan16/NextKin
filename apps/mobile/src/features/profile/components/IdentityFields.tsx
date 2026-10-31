@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { StyleSheet, View, type TextInput } from 'react-native';
+import { StyleSheet, View, type TextInputInstance } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { a11yButton, hitSlop8, useReducedMotion } from '@/lib';
@@ -37,8 +37,8 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
 
   // Chained with returnKeyType="next": the keyboard's Next key hands focus down the form rather
   // than dismissing itself between every field.
-  const lastNameRef = useRef<TextInput>(null);
-  const headlineRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInputInstance>(null);
+  const headlineRef = useRef<TextInputInstance>(null);
 
   const cities = citySuggestions(draft.location);
 
@@ -48,7 +48,7 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
         <View style={[styles.names, { gap: s(NAME_GAP) }]}>
           <TextField
             label="First name"
-            icon="user"
+            icon="User01"
             value={draft.firstName}
             onChangeText={(value) => onChange('firstName', value)}
             onBlur={() => onBlurField('firstName')}
@@ -62,7 +62,7 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
           <TextField
             ref={lastNameRef}
             label="Last name"
-            icon="user"
+            icon="User01"
             value={draft.lastName}
             onChangeText={(value) => onChange('lastName', value)}
             onBlur={() => onBlurField('lastName')}
@@ -78,7 +78,7 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
         <TextField
           ref={headlineRef}
           label="Headline"
-          icon="id-badge"
+          icon="Passport"
           placeholder="Senior UX Designer"
           value={draft.headline}
           onChangeText={(value) => onChange('headline', value)}
@@ -93,7 +93,7 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
           // "Optional" carries what the cut helper carried: the validator only speaks after a bad
           // value is typed, so nothing else says this one may be left blank.
           optional
-          icon="hourglass-half"
+          icon="Hourglass03"
           suffix="years"
           value={draft.yearsExperience}
           onChangeText={(value) => onChange('yearsExperience', value)}
@@ -107,7 +107,7 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
       <SectionCard art={PROFILE_ROW_ART.locations} title="Location">
         <TextField
           accessibilityLabel="Location"
-          icon="map-marker-alt"
+          icon="MarkerPin01"
           placeholder="City or region"
           value={draft.location}
           onChangeText={(value) => onChange('location', value)}

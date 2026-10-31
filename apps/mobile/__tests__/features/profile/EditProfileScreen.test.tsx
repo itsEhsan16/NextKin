@@ -10,6 +10,12 @@ import { EditProfileScreen } from '@/features/profile';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+/** The guard's removal hook: records whether it is armed and the callback a swipe-back would hit. */
+const mockPrevent: { armed: boolean; onBlocked?: (event: { repeat: () => void }) => void } = {
+  armed: false,
+};
+const mockRepeat = jest.fn();
+const mockRelease = jest.fn();
 const clients: QueryClient[] = [];
 
 jest.mock('expo-router', () => ({
@@ -20,6 +26,11 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
   }),
   Link: ({ children }: PropsWithChildren) => children,
+  usePreventRemove: (armed: boolean, onBlocked: (event: { repeat: () => void }) => void) => {
+    mockPrevent.armed = armed;
+    mockPrevent.onBlocked = onBlocked;
+    return mockRelease;
+  },
 }));
 
 const metrics: Metrics = {
@@ -152,5 +163,26 @@ describe('EditProfileScreen (V2 §7.3 — no artboard)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText('Discard')));
     expect(mockBack).toHaveBeenCalledTimes(1);
+  }, 60000);
+
+  it('asks on a swipe back too, and finishes that same swipe on Discard', async () => {
+    await renderScreen();
+    await settle();
+    expect(mockPrevent.armed).toBe(false);
+
+    await act(async () =>
+      fireEvent.changeText(screen.getByLabelText('Headline'), 'Half a thought'),
+    );
+    expect(mockPrevent.armed).toBe(true);
+
+    // What navigation does when the edge swipe or Android's back tries to remove the screen.
+    await act(async () => mockPrevent.onBlocked?.({ repeat: mockRepeat }));
+    expect(screen.getByText('Discard changes?')).toBeOnTheScreen();
+    expect(mockRepeat).not.toHaveBeenCalled();
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Discard')));
+    expect(mockRelease).toHaveBeenCalled();
+    expect(mockRepeat).toHaveBeenCalledTimes(1);
+    expect(mockBack).not.toHaveBeenCalled();
   }, 60000);
 });

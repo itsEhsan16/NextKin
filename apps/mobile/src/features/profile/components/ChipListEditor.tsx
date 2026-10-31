@@ -163,7 +163,7 @@ export function ChipListEditor({
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your profile"
         message="Check your connection and try again."
         actionLabel="Try again"

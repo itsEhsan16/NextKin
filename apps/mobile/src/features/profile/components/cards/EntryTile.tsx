@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import LinkedInArt from '../../../../../assets/icons/create/linkedin.svg';
@@ -9,6 +8,7 @@ import { Text } from '@/ui/Text';
 
 import type { EntryTileSpec } from '../../entryRows';
 import { Art } from './ProfileCard';
+import { Icon, lineBox, type LineIconName } from '@/ui/Icon';
 
 /**
  * What leads an entry: a company or school's initial on grey (573:42), a link kind's glyph on the
@@ -16,7 +16,7 @@ import { Art } from './ProfileCard';
  */
 export type EntryTileContent =
   | { kind: 'letter'; name: string }
-  | { kind: 'glyph'; icon: string }
+  | { kind: 'glyph'; icon: LineIconName }
   /** A short code on the brand tint — the language sheet's "EN" / "DE" (577:1849). */
   | { kind: 'code'; code: string }
   | { kind: 'art'; art: ListRowArt };
@@ -70,7 +70,7 @@ export function EntryTile({
       }}
     >
       {tile.kind === 'glyph' ? (
-        <FontAwesome5 name={tile.icon} size={s(metrics.glyph / 0.75)} color={colors.brand} solid />
+        <Icon name={tile.icon} size={lineBox(s(metrics.glyph / 0.75))} color={colors.brand} />
       ) : tile.kind === 'code' ? (
         <Text variant="tileCode" color="brand">
           {tile.code}

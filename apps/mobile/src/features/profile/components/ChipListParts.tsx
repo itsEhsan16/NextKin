@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -11,14 +10,13 @@ import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
 import { itemExit, layoutTransition } from '@/ui/motion';
+import { Icon } from '@/ui/Icon';
 
 // The editor chips and add row at 390 (PROFILE 05 573:254 / 573:272, 573:263), in artboard units.
 const CHIP_PAD_LEFT = 12 / 0.75;
 const CHIP_PAD_RIGHT = 11 / 0.75;
 const CHIP_PAD_Y = 7 / 0.75;
 const CHIP_GAP = 6 / 0.75;
-const TIMES = 9 / 0.75;
-const PLUS = 8.5 / 0.75;
 const CHIP_HEIGHT = 31 / 0.75;
 const ROW_GAP = 8 / 0.75;
 const COLUMN_GAP = 7 / 0.75;
@@ -68,13 +66,11 @@ export function EditorChip({
         },
       ]}
     >
-      {chosen ? null : <FontAwesome5 name="plus" size={s(PLUS)} color={colors.brand} solid />}
+      {chosen ? null : <Icon name="Plus" size="sm" color={colors.brand} />}
       <Text variant="caption" color={chosen ? 'textPrimary' : 'textBody'} numberOfLines={1}>
         {label}
       </Text>
-      {chosen ? (
-        <FontAwesome5 name="times" size={s(TIMES)} color={colors.textSecondary} solid />
-      ) : null}
+      {chosen ? <Icon name="XClose" size="sm" color={colors.textSecondary} /> : null}
     </Pressable>
   );
 }
@@ -189,7 +185,7 @@ export function ChipField({
             setEntry(text);
             if (problem) setProblem(undefined);
           }}
-          icon="plus"
+          icon="Plus"
           placeholder={placeholder}
           accessibilityLabel={addLabel}
           error={problem}

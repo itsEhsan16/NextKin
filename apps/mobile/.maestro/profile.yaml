@@ -1,13 +1,12 @@
-# Profile picker sheet: Appearance → Dark → back to System (PROFILE 01/02).
+# Profile picker sheet: Appearance is light only; System and Dark are "Coming soon" (PROFILE 01/02).
 appId: host.exp.exponent
 ---
 - runFlow: signIn.yaml
 - tapOn: "Profile"
 - assertVisible: "George Smith"
-- tapOn: "Appearance, System"
-- assertVisible: "Follows your device setting"
+- tapOn: "Appearance"
+- assertVisible: "Coming soon"
 - tapOn: "Dark"
-- assertVisible: "Appearance, Dark"
-- tapOn: "Appearance, Dark"
-- tapOn: "System"
-- assertVisible: "Appearance, System"
+- assertVisible: "Coming soon"
+- tapOn: "Close appearance"
+- assertVisible: "Appearance"

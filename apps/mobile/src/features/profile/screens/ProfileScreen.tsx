@@ -1,9 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { useCallback, useRef, useState } from 'react';
-import { RefreshControl, View, type ScrollView } from 'react-native';
-
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { RefreshControl, View, type ScrollViewInstance } from 'react-native';
 
 import { qk, useCurrentUser, useProfile, useSubscription, useUnreadCount } from '@/data/queries';
 import { a11yButton } from '@/lib';
@@ -24,6 +22,7 @@ import { ProfileSkeleton } from '../components/ProfileSkeleton';
 import { ProfileStatsCard } from '../components/ProfileStatsCard';
 import { useProfileActions } from '../hooks/useProfileActions';
 import { PROFILE_ROW_ART as ART } from '../profileRowArt';
+import { Icon } from '@/ui/Icon';
 
 /**
  * The 390 board's respaced rhythm (toreview.md 38.1), in artboard units: 31 between the cards at
@@ -58,7 +57,7 @@ export function ProfileScreen() {
   const subscription = useSubscription();
   const unread = useUnreadCount();
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   useTabScrollToTop(
     'profile',
     useCallback(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), []),
@@ -105,7 +104,7 @@ export function ProfileScreen() {
       <Screen header={titleRow} headerStyle={{ paddingTop: spacing.headerTop }}>
         <StateView
           tone="danger"
-          icon="exclamation-triangle"
+          icon="AlertTriangle"
           title="Couldn't load your profile"
           message="Check your connection and try again."
           actionLabel="Try again"
@@ -248,8 +247,8 @@ export function ProfileScreen() {
 }
 
 function SignOutIcon() {
-  const { colors, s } = useTheme();
-  return <FontAwesome5 name="sign-out-alt" size={s(16)} color={colors.danger} solid />;
+  const { colors } = useTheme();
+  return <Icon name="LogOut01" size="sm" color={colors.danger} />;
 }
 
 const useStyles = scaledSheet((s) => ({

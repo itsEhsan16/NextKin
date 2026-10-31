@@ -119,6 +119,7 @@ export function CertificationFormScreen({ id }: CertificationFormScreenProps) {
     >
       {draft ? (
         <CertificationFields
+          picking={pickerOpen ? picking : null}
           draft={draft}
           patch={form.patch}
           errors={form.errors}

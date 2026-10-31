@@ -138,9 +138,9 @@ describe('entryRows (V2 §7.3 card copy, PROFILE 04 / 07 / 12)', () => {
   });
 
   it('gives each link kind its own glyph and falls back to the chain', () => {
-    expect(linkIcon('github')).toBe('code-branch');
-    expect(linkIcon('linkedin')).toBe('id-badge');
-    expect(linkIcon(undefined)).toBe('link');
+    expect(linkIcon('github')).toBe('GitBranch01');
+    expect(linkIcon('linkedin')).toBe('Passport');
+    expect(linkIcon(undefined)).toBe('Link01');
   });
 
   it('labels a link by its own name over its tidied address', () => {
@@ -153,7 +153,7 @@ describe('entryRows (V2 §7.3 card copy, PROFILE 04 / 07 / 12)', () => {
 
     expect(linkRow(link)).toEqual({
       id: 'link_portfolio',
-      tile: { kind: 'glyph', icon: 'palette' },
+      tile: { kind: 'glyph', icon: 'Palette' },
       title: 'Portfolio',
       subtitle: 'georgesmith.design',
     });

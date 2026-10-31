@@ -207,7 +207,7 @@ export function EmailPasswordScreen() {
     return page(
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your account"
         message="Check your connection and try again."
         actionLabel="Try again"

@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { ProfileCard } from '@/features/profile/components/cards';
@@ -9,6 +8,7 @@ import { Text } from '@/ui/Text';
 
 import { SESSIONS_NOTE } from '../accountForms';
 import { AccountStatusLine } from './AccountStatusLine';
+import { Icon } from '@/ui/Icon';
 
 export const SIGN_OUT_EVERYWHERE = 'Sign out everywhere';
 
@@ -16,7 +16,6 @@ export const SIGN_OUT_EVERYWHERE = 'Sign out everywhere';
 const HEADER_GAP = 10 / 0.75;
 const TILE = 32 / 0.75;
 const TILE_RADIUS = 9 / 0.75;
-const GLYPH = 13 / 0.75;
 const TITLE_GAP = 1 / 0.75;
 
 export type SessionsGroupProps = {
@@ -30,14 +29,14 @@ export type SessionsGroupProps = {
  * being decided.
  */
 export function SessionsGroup({ status, onSignOutEverywhere }: SessionsGroupProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, spacing } = useTheme();
   const styles = useStyles();
 
   return (
     <ProfileCard style={{ padding: spacing[5], gap: spacing[4] }}>
       <View style={styles.header}>
         <View style={[styles.tile, { backgroundColor: colors.tileBrandStrong }]}>
-          <FontAwesome5 name="laptop" size={s(GLYPH)} color={colors.brand} solid />
+          <Icon name="Laptop01" size="sm" color={colors.brand} />
         </View>
         <View style={styles.titles}>
           <Text {...a11yHeader()} variant="title">
@@ -52,7 +51,7 @@ export function SessionsGroup({ status, onSignOutEverywhere }: SessionsGroupProp
       <Button
         label={SIGN_OUT_EVERYWHERE}
         variant="dangerOutline"
-        icon="sign-out-alt"
+        icon="LogOut01"
         onPress={onSignOutEverywhere}
         block
       />

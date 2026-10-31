@@ -7,9 +7,12 @@ import { createQueryClient } from '@/data/queries';
 import { mockStore, resetMockRepos } from '@/data/repos';
 import { useSessionStore } from '@/features/auth';
 import { ProfileSheetsHost, useProfileStore } from '@/features/profile';
-import { DELETE_ACCOUNT_FAILED, PREFERENCE_REVERTED } from '@/features/profile/ProfileSheetsHost';
+import {
+  APPEARANCE_COMING_SOON,
+  DELETE_ACCOUNT_FAILED,
+  PREFERENCE_REVERTED,
+} from '@/features/profile/ProfileSheetsHost';
 import { storage } from '@/lib';
-import { useAppearanceStore } from '@/theme';
 
 const stepIds = () => mockStore.state.profile.nextSteps.map((step) => step.id);
 
@@ -25,8 +28,6 @@ const INITIAL = useProfileStore.getState();
 describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
   beforeEach(() => {
     resetMockRepos();
-    storage.remove('prefs.appearance');
-    useAppearanceStore.setState({ preference: 'system' });
     // jest.setup's kv-store stands on one module-scoped Map per file that nothing resets between
     // the tests in it, so a test that signs out would otherwise leak into the ones after it.
     storage.remove('prefs.session');
@@ -55,13 +56,16 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
       </SafeAreaProvider>,
     );
 
-    // — Appearance writes the real, persisted theme preference —
+    // — Appearance is light only: System and Dark show, greyed out, until a dark design exists —
     expect(screen.getByRole('header', { name: 'Appearance' })).toBeOnTheScreen();
-    expect(screen.getByText('Follows your device setting')).toBeOnTheScreen();
-    expect(screen.getByLabelText('System')).toBeSelected();
+    expect(screen.getByLabelText('Light')).toBeSelected();
+    expect(screen.getByLabelText('System')).toBeDisabled();
+    expect(screen.getByLabelText('Dark')).toBeDisabled();
+    expect(screen.getAllByText(APPEARANCE_COMING_SOON)).toHaveLength(2);
     fireEvent.press(screen.getByLabelText('Dark'));
-    expect(useAppearanceStore.getState().preference).toBe('dark');
-    expect(storage.get('prefs.appearance')).toBe('dark');
+    expect(screen.getByLabelText('Light')).toBeSelected();
+    expect(useProfileStore.getState().sheetOpen).toBe(true);
+    fireEvent.press(screen.getByLabelText('Light'));
     expect(useProfileStore.getState().sheetOpen).toBe(false);
 
     // — Availability writes through the profile repo —

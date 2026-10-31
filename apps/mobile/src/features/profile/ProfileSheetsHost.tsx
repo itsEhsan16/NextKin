@@ -14,7 +14,6 @@ import {
 } from '@/data/queries';
 import { useSessionStore } from '@/features/auth';
 import { formatLakh } from '@/lib';
-import { useAppearanceStore, type AppearancePreference } from '@/theme';
 import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
 
@@ -22,6 +21,7 @@ import { Art, EntryTile } from './components/cards';
 import { NEXT_STEP } from './nextSteps';
 import { PROFILE_DANGER_ART, PROFILE_ROW_ART as ART } from './profileRowArt';
 import { useProfileStore } from './profileStore';
+import type { LineIconName } from '@/ui/Icon';
 
 /**
  * The pickers close on the tap and write optimistically, so a refused write flips the choice back
@@ -33,17 +33,31 @@ export const PREFERENCE_REVERTED = "Couldn't save — changed back";
 export const DELETE_ACCOUNT_FAILED =
   "We couldn't delete your account. Check your connection and try again.";
 
-const glyph = (icon: string) => <EntryTile tile={{ kind: 'glyph', icon }} size="sm" />;
+const glyph = (icon: LineIconName) => <EntryTile tile={{ kind: 'glyph', icon }} size="sm" />;
 
-const APPEARANCE_OPTIONS: readonly SheetOption<AppearancePreference>[] = [
+/** Under a theme the app does not have yet; the web Settings picker says the same. */
+export const APPEARANCE_COMING_SOON = 'Coming soon';
+
+/**
+ * The app is light only (owner, 2026-10-25), so Light is the one choosable row. System and Dark
+ * stay on the board's sheet, greyed out, until a dark design exists.
+ */
+const APPEARANCE_OPTIONS: readonly SheetOption<'system' | 'light' | 'dark'>[] = [
   {
     key: 'system',
     label: 'System',
-    caption: 'Follows your device setting',
-    leading: glyph('mobile-alt'),
+    caption: APPEARANCE_COMING_SOON,
+    leading: glyph('Phone01'),
+    disabled: true,
   },
-  { key: 'light', label: 'Light', leading: glyph('sun') },
-  { key: 'dark', label: 'Dark', leading: glyph('moon') },
+  { key: 'light', label: 'Light', leading: glyph('Sun') },
+  {
+    key: 'dark',
+    label: 'Dark',
+    caption: APPEARANCE_COMING_SOON,
+    leading: glyph('Moon01'),
+    disabled: true,
+  },
 ];
 
 const LANGUAGE_OPTIONS: readonly SheetOption<Language>[] = (['en', 'de'] as const).map((key) => ({
@@ -76,7 +90,7 @@ const SALARY_OPTIONS: readonly SheetOption[] = [
 
 /**
  * Mounts the Profile screen's sheets once, above the tab bar and the FAB, alongside the
- * filters and resume-menu hosts. Appearance writes the real theme store (persisted); the
+ * filters and resume-menu hosts. Appearance shows Light as the only theme (nothing to save); the
  * preference pickers write through the profile repo; sign-out and delete-account now end the
  * mock session for real and drop the app onto the design-gated sign-in screen (plan §Phase 9A).
  */
@@ -84,9 +98,6 @@ export function ProfileSheetsHost() {
   const sheet = useProfileStore((state) => state.sheet);
   const open = useProfileStore((state) => state.sheetOpen);
   const closeSheet = useProfileStore((state) => state.closeSheet);
-
-  const preference = useAppearanceStore((state) => state.preference);
-  const setPreference = useAppearanceStore((state) => state.setPreference);
 
   const profile = useProfile();
   const updatePreferences = useUpdatePreferences();
@@ -120,11 +131,9 @@ export function ProfileSheetsHost() {
           variant="card"
           art={headerArt(ART.appearance)}
           options={APPEARANCE_OPTIONS}
-          selectedKey={preference}
-          onSelect={(key) => {
-            setPreference(key);
-            closeSheet();
-          }}
+          selectedKey="light"
+          // Light is the only row that can be picked, and it is already the theme.
+          onSelect={closeSheet}
           onClose={closeSheet}
         />
       );
@@ -174,7 +183,8 @@ export function ProfileSheetsHost() {
           onSelect={(key) => {
             const floor = key === 'none' ? undefined : Number(key);
             void savePreferences({
-              minSalary: floor == null ? undefined : { min: floor, currency: 'INR', period: 'year' },
+              minSalary:
+                floor == null ? undefined : { min: floor, currency: 'INR', period: 'year' },
             }).then((saved) => {
               // "Set salary range" on the completeness card is answered by a floor that has
               // landed — not by the chip's tap that opened this sheet, and not by "No minimum".

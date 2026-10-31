@@ -70,7 +70,7 @@ export function EmailGroup({
       <TextField
         label="New email address"
         placeholder="you@example.com"
-        icon="envelope"
+        icon="Mail01"
         value={value}
         onChangeText={onChange}
         onBlur={onBlur}

@@ -113,6 +113,7 @@ export function LinkFormScreen({ id }: LinkFormScreenProps) {
     >
       {draft ? (
         <LinkFields
+          kindOpen={kindOpen}
           draft={draft}
           patch={form.patch}
           errors={form.errors}

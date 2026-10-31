@@ -1,4 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { View } from 'react-native';
 
 import { a11yButton, hitSlopFor } from '@/lib';
@@ -11,6 +10,7 @@ import { Spinner } from '@/ui/motion';
 import { PROFILE_ROW_ART } from '../profileRowArt';
 import { ProfileCard, SectionCard } from './cards';
 import { CompletenessRing, EDIT_RING } from './CompletenessRing';
+import { Icon } from '@/ui/Icon';
 
 // PROFILE 03's identity card at 390 (577:5349), in artboard units.
 const PAD = 16 / 0.75;
@@ -22,13 +22,10 @@ const BUTTON_TO_HELPER = 7 / 0.75;
 const PHOTO_BUTTON_H = 32 / 0.75;
 const PHOTO_BUTTON_PAD_X = 12 / 0.75;
 const PHOTO_BUTTON_GAP = 5 / 0.75;
-const CAMERA = 10 / 0.75;
 /** The Account card's email row (577:5472). */
 const ROW_PAD_X = 14 / 0.75;
 const ROW_PAD_Y = 11 / 0.75;
 const ROW_GAP = 12 / 0.75;
-const ROW_GLYPH = 13 / 0.75;
-const CHEVRON = 9 / 0.75;
 
 const HELPER = 'Saves as soon as you pick it — no need to press Save.';
 
@@ -89,7 +86,7 @@ export function EditIdentityCard({
             <Spinner size={s(15 / 0.75)} color="textPrimary" />
           ) : (
             <>
-              <FontAwesome5 name="camera" size={s(CAMERA)} color={colors.textPrimary} solid />
+              <Icon name="Camera01" size="xs" color={colors.textPrimary} />
               <Text variant="captionSemiBold">Change photo</Text>
             </>
           )}
@@ -109,7 +106,7 @@ export function EditIdentityCard({
 
 /** The Account card: the email, which opens email and password settings (577:5455). */
 export function AccountCard({ email, onPress }: { email: string; onPress: () => void }) {
-  const { colors, radii, s } = useTheme();
+  const { colors, radii } = useTheme();
   const styles = useStyles();
 
   return (
@@ -121,14 +118,14 @@ export function AccountCard({ email, onPress }: { email: string; onPress: () => 
         onPress={onPress}
         style={[styles.row, { borderRadius: radii.xl, backgroundColor: colors.surfaceSubtle }]}
       >
-        <FontAwesome5 name="envelope" size={s(ROW_GLYPH)} color={colors.textSecondary} solid />
+        <Icon name="Mail01" size="sm" color={colors.textSecondary} />
         <View style={styles.rowText}>
           <Text variant="menuRow">Email</Text>
           <Text variant="caption" color="textSecondary" numberOfLines={1}>
             {email}
           </Text>
         </View>
-        <FontAwesome5 name="chevron-right" size={s(CHEVRON)} color={colors.iconChevron} solid />
+        <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
       </Pressable>
     </SectionCard>
   );

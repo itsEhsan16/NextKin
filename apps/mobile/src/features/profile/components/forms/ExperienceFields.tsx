@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
-import { TextField } from '@/ui/TextField';
+import { TextField, useFieldChain } from '@/ui/TextField';
 
 import type { ExperienceDraft } from '../../profileForms';
 import { PROFILE_ROW_ART } from '../../profileRowArt';
@@ -21,6 +21,8 @@ export type ExperienceFieldsProps = {
   errors: Record<string, string>;
   blur: (key: string) => void;
   onPickDate: (field: ExperienceDateField) => void;
+  /** The date whose picker is up, if one is. */
+  picking?: ExperienceDateField | null;
 };
 
 /** The Start / End pair's gap at 390 (573:217). */
@@ -36,8 +38,10 @@ export function ExperienceFields({
   errors,
   blur,
   onPickDate,
+  picking,
 }: ExperienceFieldsProps) {
   const { s } = useTheme();
+  const link = useFieldChain(2);
 
   return (
     <>
@@ -47,26 +51,26 @@ export function ExperienceFields({
         subtitle="Where you worked and what you were called"
       >
         <TextField
+          {...link(0)}
           label="Company"
-          icon="building"
+          icon="Building02"
           value={draft.company}
           onChangeText={(company) => patch({ company })}
           onBlur={() => blur('company')}
           placeholder="Where you worked"
           error={errors.company}
           autoCapitalize="words"
-          returnKeyType="next"
         />
         <TextField
+          {...link(1)}
           label="Job title"
-          icon="briefcase"
+          icon="Briefcase01"
           value={draft.title}
           onChangeText={(title) => patch({ title })}
           onBlur={() => blur('title')}
           placeholder="What you were called"
           error={errors.title}
           autoCapitalize="words"
-          returnKeyType="next"
         />
       </SectionCard>
 
@@ -80,6 +84,7 @@ export function ExperienceFields({
           <DateField
             label="Start"
             value={draft.startDate}
+            open={picking === 'startDate'}
             onPress={() => onPickDate('startDate')}
             style={datePair.half}
           />
@@ -91,6 +96,7 @@ export function ExperienceFields({
             // not undo. The end date is dropped where it belongs — at serialisation, in
             // `experienceEntry`, which omits it whenever `current` is true.
             fixedValue={draft.current ? 'Present' : undefined}
+            open={picking === 'endDate'}
             onPress={() => onPickDate('endDate')}
             style={datePair.half}
           />

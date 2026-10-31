@@ -3,6 +3,7 @@ import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
+import { useUnsavedGuard } from '@/navigation';
 import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -94,7 +95,7 @@ export function ProfileFormShell({
   children,
 }: ProfileFormShellProps) {
   const { spacing, s } = useTheme();
-  const [discardOpen, setDiscardOpen] = useState(false);
+  const discard = useUnsavedGuard(status === 'ready' && dirty && !saving && !remove?.busy);
   const saveLabel = isNew ? 'Save' : 'Save changes';
   const [removeOpen, setRemoveOpen] = useState(false);
 
@@ -108,14 +109,14 @@ export function ProfileFormShell({
   }, [note]);
 
   /**
-   * The one way off this page. Android's hardware back is not intercepted: `BackHandler` is
-   * owned by `Sheet` alone in this codebase, and an open sheet already claims it. The header
-   * chevron is the affordance that asks the question.
+   * The header chevron asks while there are edits; the edge swipe and Android's back are caught by
+   * the same guard and land in the same sheet.
    */
+  const { ask } = discard;
   const requestBack = useCallback(() => {
-    if (status === 'ready' && dirty) setDiscardOpen(true);
+    if (status === 'ready' && dirty) ask(onLeave);
     else onLeave();
-  }, [dirty, onLeave, status]);
+  }, [ask, dirty, onLeave, status]);
 
   const body =
     status === 'loading' ? (
@@ -123,7 +124,7 @@ export function ProfileFormShell({
     ) : status === 'error' ? (
       <StateView
         tone="danger"
-        icon="exclamation-triangle"
+        icon="AlertTriangle"
         title="Couldn't load your profile"
         message="Check your connection and try again."
         actionLabel="Try again"
@@ -131,7 +132,7 @@ export function ProfileFormShell({
       />
     ) : status === 'missing' ? (
       <StateView
-        icon="folder-open"
+        icon="Folder"
         title="That entry no longer exists"
         actionLabel={`Back to ${listLabel}`}
         onAction={onLeave}
@@ -145,7 +146,7 @@ export function ProfileFormShell({
         {remove ? (
           <Button
             label={remove.label}
-            icon="trash-alt"
+            icon="Trash01"
             variant="dangerOutline"
             size="lg"
             block
@@ -195,18 +196,15 @@ export function ProfileFormShell({
       {sheets}
 
       <ConfirmSheet
-        open={discardOpen}
+        open={discard.open}
         title="Discard changes?"
         message={DISCARD_MESSAGE}
         art={<ConfirmArt kind="discard" />}
         artGap={0}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
-        onConfirm={() => {
-          setDiscardOpen(false);
-          onLeave();
-        }}
-        onCancel={() => setDiscardOpen(false)}
+        onConfirm={discard.confirm}
+        onCancel={discard.cancel}
       />
 
       {remove ? (
