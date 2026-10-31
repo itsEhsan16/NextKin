@@ -207,12 +207,14 @@ describe('the worker (P6-01, P6-03, P6-05)', () => {
 describe('the scheduler (P6-06)', () => {
   it('two workers ticking together never schedule the same run twice', async () => {
     const now = () => new Date('2031-01-06T10:30:00Z'); // a window no other test uses
+    // A run that failed part-way leaves its claims behind.
+    await db.withSystem('test: forget the far-future claims', (tx) => tx.deleteFrom('scheduler_runs').where('window_start', '>=', new Date('2031-01-01')).execute());
     const a = createScheduler({ db, log, now });
     const b = createScheduler({ db, log, now });
     const [ja, jb] = await Promise.all([a.tick(), b.tick()]);
     const claimed = [...ja, ...jb];
     expect(new Set(claimed).size).toBe(claimed.length);
-    expect(claimed.sort()).toEqual(['account_purge', 'anonymous_upload_purge', 'audit_export', 'eval_nightly', 'generation_sweep', 'jobs_cache_expiry', 'kb_candidates', 'outbox_cleanup', 'trash_purge', 'trending', 'upload_orphan_sweep']);
+    expect(claimed.sort()).toEqual(['account_purge', 'anonymous_upload_purge', 'audit_export', 'closing_alerts', 'eval_nightly', 'generation_sweep', 'jobs_cache_expiry', 'kb_candidates', 'notification_purge', 'outbox_cleanup', 'trash_purge', 'trending', 'upload_orphan_sweep']);
     expect(await a.tick()).toEqual([]);
     await db.withSystem('test: forget the far-future claims', (tx) => tx.deleteFrom('scheduler_runs').where('window_start', '>=', new Date('2031-01-01')).execute());
   });
