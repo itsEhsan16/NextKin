@@ -12,7 +12,7 @@ export function useJdReviewActions() {
        * Where a draft id that resolves to nothing sends the user: the intake that makes one.
        * Replace, because the form behind this never had a description to go back to.
        */
-      openTailor: () => router.replace('/create/tailor'),
+      openTailor: () => router.replace('/create/build'),
     }),
     [router],
   );

@@ -19,7 +19,7 @@ import { BuildReviewCard } from '../components/BuildReviewCard';
 import { BuildReviewSkeleton } from '../components/BuildReviewSkeleton';
 import { BuildReviewSource } from '../components/BuildReviewSource';
 import { FLOW_ART, FlowHero } from '../components/FlowHero';
-import { useBuildSourceStore } from '../buildSourceStore';
+import { useBuildSource } from '../buildSourceStore';
 import { useBuildActions } from '../hooks/useStartBuild';
 
 export type BuildReviewScreenProps = {
@@ -65,7 +65,7 @@ export function BuildReviewScreen({ jdId, fileName }: BuildReviewScreenProps) {
   const styles = useStyles();
   const router = useRouter();
   const actions = useBuildActions();
-  const fromResume = useBuildSourceStore((state) => state.resumeId != null);
+  const fromResume = useBuildSource() != null;
   const cta = ctaFor(fromResume);
 
   const draft = useJdDraft(jdId);

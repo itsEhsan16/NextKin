@@ -1,10 +1,10 @@
-import { useLocalSearchParams } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 
-import { JobIntakeScreen, TailorCompareScreen } from '@/features/create';
+import { TailorCompareScreen } from '@/features/create';
 
 /**
- * The job → resume flow (toreview §114): with a listing (`jobId`) or a read JD (`jdId`), the one
- * Customize screen; with neither, "Add a job", which opens Customize once the job is read.
+ * Customize, for a listing (`jobId`) or a read JD (`jdId`). With neither there is no job yet, so
+ * this is the one start, BUILD 01 (toreview §145.1).
  */
 export default function TailorRoute() {
   const { jobId, jdId, resumeId } = useLocalSearchParams<{
@@ -12,9 +12,6 @@ export default function TailorRoute() {
     jdId?: string;
     resumeId?: string;
   }>();
-  return jobId || jdId ? (
-    <TailorCompareScreen jobId={jobId} jdId={jdId} resumeId={resumeId} />
-  ) : (
-    <JobIntakeScreen resumeId={resumeId} />
-  );
+  if (jobId || jdId) return <TailorCompareScreen jobId={jobId} jdId={jdId} resumeId={resumeId} />;
+  return <Redirect href={{ pathname: '/create/build', params: resumeId ? { resumeId } : {} }} />;
 }

@@ -22,7 +22,7 @@ import {
   BuildSectionTitle,
 } from '../components/BuildSourceRows';
 import { BuildSourceSheet } from '../components/BuildSourceSheet';
-import { useBuildSourceStore } from '../buildSourceStore';
+import { useBuildSource, useBuildSourceStore } from '../buildSourceStore';
 import { FLOW_ART, FlowHero } from '../components/FlowHero';
 import { useBuildSourceUpload } from '../hooks/useBuildSourceUpload';
 import { useBuildActions } from '../hooks/useStartBuild';
@@ -35,13 +35,19 @@ const CARD_TO_OR = 16 / 0.75; // 652:57 / 652:62
 const EMPTY_GAP = 12 / 0.75;
 const TOP_JOBS = 1; // the owner's cut (2026-10-27): one saved job, the rest behind See all
 
+export type BuildJobScreenProps = {
+  /** The resume to start from, when the flow was opened from one. */
+  resumeId?: string;
+};
+
 /**
- * BUILD 01 (652:2) — "Which job is this resume for?", Home's Build Resume (toreview §74): the
- * latest saved job, a job from anywhere under the OR, and what the resume is built from, pinned at
- * the foot. A job opens BUILD 04b, the profile against the job, or Customize when the foot was
- * changed to a resume (§139); nothing is spent until the run starts there.
+ * BUILD 01 (652:2) — "Which job is this resume for?", the one start for a resume for a job
+ * (toreview §74, §145.1): the latest saved job, a job from anywhere under the OR, and what the
+ * resume is built from, pinned at the foot. A job opens Customize against that resume, or BUILD
+ * 04b, the profile against the job, when there is none or the foot was changed to the profile.
+ * Nothing is spent until the run starts there.
  */
-export function BuildJobScreen() {
+export function BuildJobScreen({ resumeId: requested }: BuildJobScreenProps) {
   const { spacing, s } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
@@ -51,13 +57,18 @@ export function BuildJobScreen() {
   const profile = useProfile();
   const user = useCurrentUser();
   const resumes = useResumes();
-  const resumeId = useBuildSourceStore((state) => state.resumeId);
-  const setResumeId = useBuildSourceStore((state) => state.setResumeId);
+  const resumeId = useBuildSource();
+  const pick = useBuildSourceStore((state) => state.pick);
+  const reset = useBuildSourceStore((state) => state.reset);
   const [sourceOpen, setSourceOpen] = useState(false);
   const sourceUpload = useBuildSourceUpload();
 
-  // The source belongs to this visit of the flow: leaving BUILD 01 builds from the profile again.
-  useEffect(() => () => setResumeId(null), [setResumeId]);
+  // The source belongs to this visit of the flow: leaving BUILD 01 starts the choice over. A resume's
+  // own "Tailor to a job" arrives with that resume already picked.
+  useEffect(() => {
+    if (requested) pick(requested);
+    return reset;
+  }, [pick, requested, reset]);
 
   // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
   // with its data already here slides in whole with the push.
@@ -172,7 +183,7 @@ export function BuildJobScreen() {
           profile={profileSource}
           resumes={resumes.data}
           resumeId={picked ? picked.id : null}
-          onPick={setResumeId}
+          onPick={pick}
           onUpload={() => void sourceUpload.upload()}
         />
       ) : null}

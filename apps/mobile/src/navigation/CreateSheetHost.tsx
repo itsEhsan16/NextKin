@@ -8,7 +8,7 @@ import { Sheet } from '@/ui/Sheet';
 import { useCreateSheet } from './createSheet';
 
 type CreateHref =
-  | '/create/tailor'
+  | '/create/build'
   | '/create/cover-letter'
   | '/create/ats-check'
   | '/create/upload'
@@ -21,7 +21,7 @@ type CreateHref =
  * a destination stops compiling instead of shipping a dead tap.
  */
 const CREATE_ROUTES: Record<Exclude<CreateAction, 'new-resume'>, CreateHref> = {
-  'tailor-to-a-job': '/create/tailor',
+  'tailor-to-a-job': '/create/build',
   'cover-letter': '/create/cover-letter',
   'ats-check': '/create/ats-check',
   'upload-resume': '/create/upload',

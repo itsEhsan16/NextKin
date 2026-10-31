@@ -29,8 +29,6 @@ export {
 export { LinkedInUnavailableScreen } from './screens/LinkedInUnavailableScreen';
 export { JdReviewScreen, type JdReviewScreenProps } from './screens/JdReviewScreen';
 export { TailorCompareScreen, type TailorCompareScreenProps } from './screens/TailorCompareScreen';
-export { JobIntakeScreen, type JobIntakeScreenProps } from './screens/JobIntakeScreen';
-export { JobIntake, type JobIntakeProps } from './components/JobIntake';
 export { UploadResumeScreen } from './screens/UploadResumeScreen';
 export { UploadReviewScreen } from './screens/UploadReviewScreen';
 export { ZeroResumeScreen } from './screens/ZeroResumeScreen';

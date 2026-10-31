@@ -60,7 +60,6 @@ export function useCreateActions() {
       openUpload: () => router.push('/create/upload'),
       /** The parsed rows waiting to be accepted; the draft itself travels in `useImportStore`. */
       openUploadReview: () => router.replace('/create/upload-review'),
-      openTailor: () => router.push('/create/tailor'),
       /** TAILOR 02 swaps the compared resume in place, so back still leaves the flow in one step. */
       compareResume: (resumeId: string) => router.setParams({ resumeId }),
       openCoverLetter: () => router.push('/create/cover-letter'),

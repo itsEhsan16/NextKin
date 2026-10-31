@@ -14623,3 +14623,25 @@ Branch `step-1/make-it-real`, built on `stabilize/step-0`. Nothing is merged or 
   - **The Maestro flow `backend/coreLoop.yaml`** needs a device, and a build.
   - **Nothing here has been seen on a phone.**
 - **Left running by this session,** all started 00:37: the link reader, the worker and `next dev` on port 3000.
+- **Update, 2026-11-01:** you stopped the leftover processes, and `coreLoop.int.test.ts` now passes. The live model step still waits on a new OpenRouter key.
+
+## 145. Step 2: fix the flow (owner, 2026-11-01)
+
+Branch `step-2/fix-the-flow`, built on Step 1. Nothing is merged or pushed.
+
+**Owner decisions:**
+- One start for a resume for a job, with a smart source.
+- A new user goes straight in after sign-up, and anyone who skips sees a three-step card on Home.
+- A run in progress lives in History and the bell, not on Home, and the spec follows.
+
+### 145.1 One start
+
+- **Change:** Home's Build Resume, the + sheet's row and a resume's own "Tailor to a job" all open BUILD 01. Job Detail and a copied link skip it, because the job is already known.
+- **The source picks itself:** the base resume, else the newest, else the profile. "Change" still switches it, and the choice lasts one visit.
+- **Three outcomes from BUILD 01:**
+  - With a resume: Customize, which keeps that resume's own structure.
+  - With a profile and no resume: BUILD 04b, as the boards draw it.
+  - With neither: Customize's no-resume card, which offers an upload or a start from nothing. It used to be a comparison against nothing.
+- **Removed:** "Add a job" (`JobIntakeScreen`). BUILD 03 does its job and also reads links, and `/create/tailor` with no job now redirects to BUILD 01.
+- **Visible effect you may notice:** for anyone with a resume, BUILD 04b and 04c no longer appear unless they switch to the profile. That follows your choice, and the boards stay reachable.
+- **Copy, spec-derived:** the + sheet row is now "Make a resume for a job". Home's tile keeps the board's "Build Resume", so the two words differ. Say if you want them the same.

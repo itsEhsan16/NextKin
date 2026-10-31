@@ -6,8 +6,9 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { subscriptionFixture, useMockModeStore } from '@/data/mock';
 import type { Subscription } from '@/data/models';
 import { createQueryClient, qk } from '@/data/queries';
-import { repos, resetMockRepos } from '@/data/repos';
+import { mockStore, repos, resetMockRepos } from '@/data/repos';
 import { BuildChooseJobScreen, BuildJobScreen } from '@/features/create';
+import { useBuildSourceStore } from '@/features/create/buildSourceStore';
 import { pickDocument } from '@/lib';
 
 jest.mock('@/lib', () => ({
@@ -63,6 +64,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
+    useBuildSourceStore.getState().reset();
     [mockPush, mockNavigate, mockBack, mockReplace].forEach((mock) => mock.mockClear());
   });
 
@@ -75,7 +77,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
     jest.useRealTimers();
   });
 
-  it('BUILD 01 lists the top three saved jobs, and a tap opens the comparison', async () => {
+  it('BUILD 01 lists the saved job, starts from the best resume, and a tap opens the comparison', async () => {
     const extractSpy = jest.spyOn(repos.jd, 'extract');
     const startSpy = jest.spyOn(repos.generations, 'start');
     await renderScreen(<BuildJobScreen />);
@@ -90,9 +92,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
     expect(screen.queryByText('Design Systems Lead')).not.toBeOnTheScreen();
     expect(screen.getByText('See all (12)')).toBeOnTheScreen();
     expect(screen.getByText('Stripe · Bengaluru · Remote')).toBeOnTheScreen();
-    expect(
-      screen.getByText(/^Built from your profile · \d+ roles?, \d+ skills?$/),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Built from Product Designer')).toBeOnTheScreen();
     // Nothing is spent here, so nothing says what it costs.
     expect(screen.queryByText(/resume builds this month/)).not.toBeOnTheScreen();
 
@@ -102,11 +102,74 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await settle();
 
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/create/build/compare',
-      params: { jobId: 'job_stripe' },
+      pathname: '/create/tailor',
+      params: { jobId: 'job_stripe', resumeId: 'res_base' },
     });
     expect(extractSpy).not.toHaveBeenCalled();
     expect(startSpy).not.toHaveBeenCalled();
+  });
+
+  it('BUILD 01 builds from the profile for someone with no resume', async () => {
+    mockStore.state.resumes = [];
+    await renderScreen(<BuildJobScreen />);
+    await settle();
+
+    expect(
+      screen.getByText(/^Built from your profile · \d+ roles?, \d+ skills?$/),
+    ).toBeOnTheScreen();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/build/compare',
+      params: { jobId: 'job_stripe' },
+    });
+  });
+
+  it('BUILD 01 sends someone with no resume and no roles to the upload-or-start card', async () => {
+    mockStore.state.resumes = [];
+    mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
+    await renderScreen(<BuildJobScreen />);
+    await settle();
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/tailor',
+      params: { jobId: 'job_stripe' },
+    });
+  });
+
+  it('BUILD 01 can be switched to the profile, and starts over on the next visit', async () => {
+    await renderScreen(<BuildJobScreen />);
+    await settle();
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Change what the resume is built from')),
+    );
+    await settle();
+    await act(async () => fireEvent.press(screen.getByText('Your profile')));
+    await settle();
+    expect(screen.getByText(/^Built from your profile/)).toBeOnTheScreen();
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/build/compare',
+      params: { jobId: 'job_stripe' },
+    });
+
+    await cleanup();
+    expect(useBuildSourceStore.getState().picked).toBeUndefined();
+  });
+
+  it('BUILD 01 starts from a resume\u2019s own "Tailor to a job"', async () => {
+    await renderScreen(<BuildJobScreen resumeId="res_1" />);
+    await settle();
+
+    expect(screen.getByText('Built from UX Designer Resume')).toBeOnTheScreen();
   });
 
   it('BUILD 01 routes See all and the anywhere tile', async () => {
@@ -190,6 +253,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
   });
 
   it('BUILD 02 preselects the first job, searches, switches tabs and compares the pick', async () => {
+    useBuildSourceStore.setState({ picked: null });
     const startSpy = jest.spyOn(repos.generations, 'start');
     await renderScreen(<BuildChooseJobScreen />);
     await settle();

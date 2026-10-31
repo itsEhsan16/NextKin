@@ -5,6 +5,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { createQueryClient } from '@/data/queries';
 import { repos, resetMockRepos } from '@/data/repos';
+import { useBuildSourceStore } from '@/features/create/buildSourceStore';
 import { BuildReviewScreen } from '@/features/create';
 
 const mockPush = jest.fn();
@@ -62,6 +63,8 @@ async function renderReview(jdId: string) {
 
 describe('BuildReviewScreen (BUILD 04)', () => {
   beforeEach(() => {
+    // From the profile unless a test says otherwise: BUILD 01 picks the source.
+    useBuildSourceStore.setState({ picked: null });
     jest.useFakeTimers();
     resetMockRepos();
     [mockPush, mockReplace, mockBack].forEach((mock) => mock.mockClear());

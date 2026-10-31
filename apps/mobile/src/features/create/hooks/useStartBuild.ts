@@ -2,9 +2,9 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import type { TailorChoices } from '@/data/models';
-import { useExtractJd, useStartGeneration, useSubscription } from '@/data/queries';
+import { useExtractJd, useProfile, useStartGeneration, useSubscription } from '@/data/queries';
 
-import { useBuildSourceStore } from '../buildSourceStore';
+import { useBuildSource } from '../buildSourceStore';
 import { buildCostNote, spentNote } from '../generationQuota';
 import { useCreateActions } from './useCreateActions';
 
@@ -119,7 +119,9 @@ export function useStartBuild(): StartBuild {
 export function useBuildActions() {
   const router = useRouter();
   const { goBack, openUpgrade, openCustomize } = useCreateActions();
-  const resumeId = useBuildSourceStore((state) => state.resumeId);
+  const resumeId = useBuildSource();
+  const profile = useProfile();
+  const profileIsEmpty = profile.data?.experiences.length === 0;
   return useMemo(
     () => ({
       goBack,
@@ -127,12 +129,13 @@ export function useBuildActions() {
       openChooseJob: () => router.push('/create/build/jobs'),
       openAddJob: () => router.push('/create/build/add'),
       /**
-       * BUILD 04b, the profile against the job; built from a resume instead (toreview §139), the
-       * resume against the job on Customize, which owns that run.
+       * BUILD 04b, the profile against the job. From a resume (toreview §139), the resume against
+       * the job on Customize, which owns that run. With neither to compare, Customize again: its
+       * no-resume card is what offers an upload or a start from nothing.
        */
       openCompare: ({ jobId, jdId }: BuildCompareTarget) => {
-        if (resumeId) {
-          openCustomize({ jobId, jdId, resumeId });
+        if (resumeId || profileIsEmpty) {
+          openCustomize({ jobId, jdId, ...(resumeId ? { resumeId } : {}) });
           return;
         }
         router.push({
@@ -143,6 +146,6 @@ export function useBuildActions() {
       openProfileEditor: () => router.push('/profile/edit'),
       browseJobs: () => router.navigate('/(tabs)/jobs'),
     }),
-    [goBack, openCustomize, openUpgrade, resumeId, router],
+    [goBack, openCustomize, openUpgrade, profileIsEmpty, resumeId, router],
   );
 }

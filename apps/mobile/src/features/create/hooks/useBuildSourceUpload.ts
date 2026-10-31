@@ -14,7 +14,7 @@ import { useBuildSourceStore } from '../buildSourceStore';
  */
 export function useBuildSourceUpload() {
   const importResume = useImportResume();
-  const setResumeId = useBuildSourceStore((state) => state.setResumeId);
+  const pick = useBuildSourceStore((state) => state.pick);
   const [reading, setReading] = useState<string | null>(null);
 
   const upload = async () => {
@@ -23,7 +23,7 @@ export function useBuildSourceUpload() {
     setReading(file.name);
     try {
       const { resume } = await importResume.mutateAsync(file);
-      setResumeId(resume.id);
+      pick(resume.id);
     } catch (error) {
       showAppToast(
         isUnreadableFileError(error)

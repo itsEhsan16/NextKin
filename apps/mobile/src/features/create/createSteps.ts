@@ -55,8 +55,8 @@ export const CREATE_ROOT_ROWS: readonly CreateRow[] = [
   {
     key: 'tailor-to-a-job',
     art: { Icon: TailorIcon, w: 52, h: 51.9935 },
-    label: 'Tailor to a job',
-    description: 'Add a job and get your resume made for it',
+    label: 'Make a resume for a job',
+    description: 'Pick a job and get your resume made for it',
     ai: true,
   },
   {

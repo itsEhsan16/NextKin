@@ -55,8 +55,8 @@ describe('Create sheet (CREATE 01 / CREATE 02)', () => {
 
     expect(await screen.findByLabelText(/^Check my resume/)).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Create' })).toBeOnTheScreen();
-    expect(screen.getByText('Tailor to a job')).toBeOnTheScreen();
-    expect(screen.getByText('Add a job and get your resume made for it')).toBeOnTheScreen();
+    expect(screen.getByText('Make a resume for a job')).toBeOnTheScreen();
+    expect(screen.getByText('Pick a job and get your resume made for it')).toBeOnTheScreen();
     expect(screen.getByText('Score your resume against a job')).toBeOnTheScreen();
     expect(screen.getByText('New resume')).toBeOnTheScreen();
     expect(screen.getByText('Start fresh or import your existing resume')).toBeOnTheScreen();
@@ -68,8 +68,8 @@ describe('Create sheet (CREATE 01 / CREATE 02)', () => {
     await screen.findByLabelText(/^Check my resume/);
 
     // The badge is folded into the row's own label rather than being a separate focus stop,
-    // so a screen reader announces it once: "Tailor to a job, AI powered, button".
-    expect(screen.getByLabelText(/^Tailor to a job, AI powered/)).toBeOnTheScreen();
+    // so a screen reader announces it once: "Make a resume for a job, AI powered, button".
+    expect(screen.getByLabelText(/^Make a resume for a job, AI powered/)).toBeOnTheScreen();
     expect(screen.queryByLabelText(/^New resume, AI powered/)).toBeNull();
     expect(screen.queryByLabelText(/^Check my resume, AI powered/)).toBeNull();
     // ...and never as a nested element of its own.

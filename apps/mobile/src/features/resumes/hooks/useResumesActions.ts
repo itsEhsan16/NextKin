@@ -59,9 +59,9 @@ export function useResumesActions() {
       uploadResume: () => router.push('/create/upload'),
       importLinkedIn: () => router.push('/create/import-linkedin'),
       startWithAi: () => router.push('/resumes/new'),
-      /** Carries the document through, so the intake screen starts from this resume. */
+      /** Carries the document through, so the one start begins from this resume. */
       tailorResume: (resume: Resume) =>
-        router.push({ pathname: '/create/tailor', params: { resumeId: resume.id } }),
+        router.push({ pathname: '/create/build', params: { resumeId: resume.id } }),
       /**
        * A sheet, not a screen: the format choice is three rows and the file has to be handed to
        * the OS share sheet from the surface that asked for it (V2 §7.12).
