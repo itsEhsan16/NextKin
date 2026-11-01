@@ -19,6 +19,7 @@ import { buildWorker } from '../worker/build';
 import { createDegradedSignal } from '../health/degraded';
 import { createSmtpEmail } from '../email/email';
 import { buildPaymentProvider } from '../payments/build';
+import { buildPush } from '../push/push';
 
 /**
  * The worker process (same image as `web`, its own entrypoint — V2 §9.5; ImBackendImplementationPlan
@@ -75,6 +76,7 @@ const worker = buildWorker({
   ...(links ? { links } : {}),
   liveEvals: isLiveRoute(config),
   auditBucket: config.S3_BUCKET_AUDIT,
+  push: buildPush(config, log),
   // P12-07: the worker applies stored webhooks; it never asks the gateway for a change itself.
   billing: {
     provider: buildPaymentProvider(config, () => async () => {

@@ -16,12 +16,15 @@ export type Every = 'minute' | 'hour' | 'day' | 'week';
 
 export const SCHEDULE: readonly { job: MaintenanceJob; every: Every }[] = [
   { job: 'generation_sweep', every: 'minute' },
+  { job: 'push_send', every: 'minute' },
   { job: 'anonymous_upload_purge', every: 'hour' },
   { job: 'upload_orphan_sweep', every: 'hour' },
   { job: 'trash_purge', every: 'day' },
   { job: 'closing_alerts', every: 'day' },
   { job: 'application_follow_ups', every: 'day' },
   { job: 'interview_reminders', every: 'day' },
+  { job: 'push_purge', every: 'day' },
+  { job: 'weekly_digest', every: 'day' },
   { job: 'notification_purge', every: 'day' },
   { job: 'event_purge', every: 'day' },
   { job: 'jobs_cache_expiry', every: 'day' },

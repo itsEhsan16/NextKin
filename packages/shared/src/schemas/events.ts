@@ -13,6 +13,7 @@ export const EVENT_NAMES = [
   'apply_opened',
   'apply_answered',
   'paywall_seen',
+  'push_opened',
 ] as const;
 
 export type EventName = (typeof EVENT_NAMES)[number];

@@ -26,6 +26,7 @@ import { processTeaser } from '../services/teaser';
 import { scanUpload } from '../services/uploads';
 import type { StoragePort } from '../storage/storage';
 import type { QueuePort } from '../queue/port';
+import type { PushPort } from '../push/push';
 import { runMaintenanceJob } from '../scheduler/jobs';
 import { createScheduler } from '../scheduler/scheduler';
 import { createConsumer } from './consumer';
@@ -61,6 +62,8 @@ export interface WorkerDeps {
   liveEvals?: boolean;
   /** P12-02: the audit archive bucket for the nightly export. */
   auditBucket?: string;
+  /** Sends what's due; null where push is off. */
+  push?: PushPort | null;
   /** Off in tests that drive the relay or the scheduler by hand. */
   relay?: boolean;
   scheduler?: boolean;
@@ -195,6 +198,7 @@ export function buildWorker(deps: WorkerDeps) {
         gateway: deps.gateway,
         ...(deps.documents ? { documents: { storage: deps.documents.storage, exportsBucket: deps.documents.exportsBucket } } : {}),
         ...(deps.auditBucket ? { auditBucket: deps.auditBucket } : {}),
+        push: deps.push ?? null,
       });
       log.info({ event: 'maintenance.done', job, affected }, 'maintenance job done');
     },

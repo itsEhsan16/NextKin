@@ -582,6 +582,33 @@ export interface PromptTemplateVersions {
   version: number;
 }
 
+export interface PushDevices {
+  created_at: Generated<Timestamp>;
+  endpoint_arn: string | null;
+  id: Generated<string>;
+  platform: string;
+  time_zone: Generated<string>;
+  token: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
+export interface PushMessages {
+  attempts: Generated<number>;
+  body: string;
+  created_at: Generated<Timestamp>;
+  due_at: Timestamp;
+  id: Generated<string>;
+  kind: string;
+  notification_id: string | null;
+  outcome: string | null;
+  rank: Generated<number>;
+  sent_at: Timestamp | null;
+  title: string;
+  url: string | null;
+  user_id: string;
+}
+
 export interface QualityFlags {
   created_at: Generated<Timestamp>;
   id: Generated<string>;
@@ -927,6 +954,8 @@ export interface DB {
   prompt_evaluations: PromptEvaluations;
   prompt_template_versions: PromptTemplateVersions;
   prompt_templates: PromptTemplates;
+  push_devices: PushDevices;
+  push_messages: PushMessages;
   quality_flags: QualityFlags;
   resume_parses: ResumeParses;
   resume_renders: ResumeRenders;

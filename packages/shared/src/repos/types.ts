@@ -48,6 +48,7 @@ import type { FigureDraft,
   JobSort,
   Notification,
   NotificationPrefs,
+  PushDevice,
   NotificationSettings,
   Plan,
   PlanId,
@@ -385,6 +386,10 @@ export type NotificationsRepo = {
   setSettings(settings: NotificationSettings): Promise<NotificationSettings>;
   /** "Reset to default" (247:1298): back to what a new account starts with. */
   resetSettings(): Promise<NotificationSettings>;
+  /** This phone said yes to push. Repeating it is fine; a new account on the phone takes it over. */
+  registerDevice(device: PushDevice): Promise<void>;
+  /** This phone stops hearing, on signing out. */
+  removeDevice(token: string): Promise<void>;
 };
 
 export type JdRepo = {

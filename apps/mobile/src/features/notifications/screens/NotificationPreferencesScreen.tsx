@@ -1,14 +1,16 @@
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import {
   NOTIFICATION_CATEGORIES,
   type NotificationCategory,
   type NotificationPrefs,
 } from '@/data/models';
+import { registerPushDevice } from '@/data/pushDevice';
 import { useNotificationPrefs, useSetNotificationPrefs } from '@/data/queries';
 import { a11yHeader, usePushPermission } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { AiBadge } from '@/ui/AiBadge';
+import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { IconButton } from '@/ui/IconButton';
 import { Screen } from '@/ui/Screen';
@@ -68,8 +70,7 @@ const PERMISSION_COPY = {
   granted: 'System permission is on. You can revoke it at any time in your device settings.',
   denied:
     'System permission is off. Turn it on in your device settings for anything to reach your lock screen.',
-  undetermined:
-    "You haven't allowed notifications yet — applying to a job will offer to turn them on.",
+  undetermined: "You haven't allowed notifications yet.",
 } as const;
 
 /**
@@ -80,7 +81,7 @@ export function NotificationPreferencesScreen() {
   const { spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useNotificationsActions();
-  const { status } = usePushPermission();
+  const { status, request } = usePushPermission();
 
   const prefs = useNotificationPrefs();
   const setPrefs = useSetNotificationPrefs();
@@ -177,6 +178,27 @@ export function NotificationPreferencesScreen() {
             <Text variant="caption" color="textSecondary" style={{ marginTop: spacing[6] }}>
               {PERMISSION_COPY[status]}
             </Text>
+          ) : null}
+          {status === 'undetermined' ? (
+            <Button
+              label="Turn on notifications"
+              variant="secondary"
+              block
+              onPress={() =>
+                void request().then((answer) => {
+                  if (answer === 'granted') void registerPushDevice().catch(() => undefined);
+                })
+              }
+              style={{ marginTop: spacing[3] }}
+            />
+          ) : status === 'denied' ? (
+            <Button
+              label="Open device settings"
+              variant="secondary"
+              block
+              onPress={() => void Linking.openSettings()}
+              style={{ marginTop: spacing[3] }}
+            />
           ) : null}
         </>
       )}

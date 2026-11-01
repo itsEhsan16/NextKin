@@ -8,6 +8,7 @@ import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-c
 
 import { watchConnection } from '@/data/connection';
 import { auth, configureDataSource, onSignedOut, USES_BACKEND } from '@/data/dataSource';
+import { forgetPushDevice } from '@/data/pushDevice';
 import { configureMockMode } from '@/data/mock';
 import { flushEvents } from '@/data/queries';
 import { createAppQueryClient, restoreResumes } from '@/data/savedResumes';
@@ -40,7 +41,10 @@ configureDataSource();
 if (USES_BACKEND) {
   onSignedOut(() => useSessionStore.getState().signOut());
   useSessionStore.subscribe((state, previous) => {
-    if (previous.status === 'signed_in' && state.status === 'signed_out') void auth.logout();
+    // The phone leaves first, while the session it has to prove itself with still works.
+    if (previous.status === 'signed_in' && state.status === 'signed_out') {
+      void forgetPushDevice().finally(() => auth.logout());
+    }
   });
   void auth.http.tokens?.get().then((tokens) => {
     if (!tokens && useSessionStore.getState().status === 'signed_in')

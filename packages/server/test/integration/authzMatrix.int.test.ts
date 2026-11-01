@@ -177,6 +177,8 @@ const MATRIX: Record<string, Entry> = {
   'POST /api/v1/notifications/read-all': { access: 'user' },
   'POST /api/v1/notifications/{id}/read': { access: 'user' },
   'DELETE /api/v1/notifications/{id}': { access: 'user' },
+  'POST /api/v1/notifications/devices': { access: 'user', body: { platform: 'android', token: 'matrix-probe', timeZone: 'UTC' } },
+  'POST /api/v1/notifications/devices/remove': { access: 'user', body: { token: 'matrix-probe' } },
   'GET /api/v1/applications': { access: 'user' },
   'POST /api/v1/applications': { access: 'user', body: { jobId: 'matrix-probe' } },
   'PATCH /api/v1/applications/{id}': { access: 'user', body: { status: 'interview' } },

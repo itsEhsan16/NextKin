@@ -8,13 +8,14 @@ import { jobIdOf } from '../jobs/ids';
 import { normalizedJobSchema } from '../jobs/types';
 import type { Logger } from '../observability/logger';
 import { notificationPrefs } from './profileRead';
+import { queuePush } from './push';
 
 /**
  * The notification feed (owner, 2026-10-31; changes D-05). A row records something that happened
  * on NextKin and nothing else: no employer event reaches us, so nothing here may say an application
- * was viewed or moved. `notify` honours the categories the candidate switched off, except billing,
- * which is off by default for push but is about their money. A row's `dedupeKey` keeps a retried
- * job from saying the same thing twice.
+ * was viewed or moved. Every row goes in the feed. The category switches choose what reaches the
+ * lock screen, as NOTIF 04 says, so `notify` queues a push only for a category that's on. A row's
+ * `dedupeKey` keeps a retried job from saying the same thing twice.
  */
 
 export const FEED_LIMIT = 100;
@@ -31,9 +32,15 @@ export interface NewNotification {
   deepLink?: string;
   visual: NotificationVisual;
   dedupeKey: string;
-  /** Filed whatever the candidate's switches say: a matter of their account or their money. */
-  always?: boolean;
+  /** Which nudge wins a morning, lower first; only the categories in `NUDGES` use it. */
+  pushRank?: number;
 }
+
+/** What we choose to raise, rather than the result of something they did: 9am, one a day. */
+const NUDGES: ReadonlySet<NotificationCategory> = new Set(['matches', 'closing', 'applications']);
+
+/** The push is the row's words: its headline without the emphasis, and its grey line. */
+const plainText = (body: string): string => body.replace(/\*\*/g, '');
 
 interface Row {
   id: string;
@@ -62,8 +69,7 @@ const toNotification = (row: Row): Notification => ({
 /** Files one notification, inside the transaction of what it reports, as its owner. */
 export async function notify(tx: Tx, userId: string, item: NewNotification): Promise<void> {
   const profile = await tx.selectFrom('profiles').select('preferences').where('user_id', '=', userId).executeTakeFirst();
-  if (!item.always && !notificationPrefs(profile?.preferences).categories[item.category]) return;
-  await tx
+  const row = await tx
     .insertInto('notifications')
     .values({
       user_id: userId,
@@ -75,7 +81,18 @@ export async function notify(tx: Tx, userId: string, item: NewNotification): Pro
       dedupe_key: item.dedupeKey,
     })
     .onConflict((oc) => oc.columns(['user_id', 'dedupe_key']).doNothing())
-    .execute();
+    .returning('id')
+    .executeTakeFirst();
+  const prefs = notificationPrefs(profile?.preferences);
+  if (!row || !prefs.categories[item.category]) return;
+  await queuePush(tx, userId, prefs, {
+    title: plainText(item.body),
+    body: item.description,
+    notificationId: row.id,
+    nudge: NUDGES.has(item.category),
+    ...(item.deepLink ? { url: item.deepLink } : {}),
+    ...(item.pushRank === undefined ? {} : { rank: item.pushRank }),
+  });
 }
 
 /** "for Stripe": the company a run's document targets, when it has one. */
@@ -130,7 +147,7 @@ export const BILLING_NOTICE = {
 } as const;
 
 export const notifyBilling = (tx: Tx, userId: string, notice: keyof typeof BILLING_NOTICE, dedupeKey: string): Promise<void> =>
-  notify(tx, userId, { category: 'billing', always: true, ...BILLING_NOTICE[notice], deepLink: '/upgrade', visual: { kind: 'glyph', icon: 'credit-card', tone: 'brand', regular: true }, dedupeKey: `billing:${dedupeKey}` });
+  notify(tx, userId, { category: 'billing', ...BILLING_NOTICE[notice], deepLink: '/upgrade', visual: { kind: 'glyph', icon: 'credit-card', tone: 'brand', regular: true }, dedupeKey: `billing:${dedupeKey}` });
 
 const closesIn = (days: number): string => (days <= 1 ? 'closes tomorrow' : `closes in ${days} days`);
 
@@ -163,6 +180,7 @@ export async function runClosingAlerts(db: Database, log: Logger, now = new Date
         deepLink: `/jobs/${jobIdOf(row.apply_url_hash)}`,
         visual: { kind: 'glyph', icon: 'clock', tone: 'warning', regular: true },
         dedupeKey: `closing:${row.apply_url_hash}`,
+        pushRank: 1,
       }),
     );
     filed++;

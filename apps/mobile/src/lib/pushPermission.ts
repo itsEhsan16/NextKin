@@ -2,13 +2,30 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
+import type { TappedNotification } from './pushDevice';
+
 /** Distilled from expo-notifications' PermissionStatus + canAskAgain. */
 export type PushPermission = 'undetermined' | 'granted' | 'denied';
 
 type PermissionResponse = { granted: boolean; canAskAgain: boolean };
-type NotificationsModule = {
+type Subscription = { remove(): void };
+export type NotificationsModule = {
   getPermissionsAsync(): Promise<PermissionResponse>;
   requestPermissionsAsync(): Promise<PermissionResponse>;
+  getDevicePushTokenAsync(): Promise<{ data: unknown }>;
+  setNotificationChannelAsync(id: string, channel: { name: string; importance: number }): Promise<unknown>;
+  setNotificationHandler(handler: {
+    handleNotification: () => Promise<{
+      shouldShowBanner: boolean;
+      shouldShowList: boolean;
+      shouldPlaySound: boolean;
+      shouldSetBadge: boolean;
+    }>;
+  }): void;
+  getLastNotificationResponseAsync(): Promise<TappedNotification | null>;
+  clearLastNotificationResponseAsync(): Promise<void>;
+  addNotificationResponseReceivedListener(listener: (response: TappedNotification) => void): Subscription;
+  addNotificationReceivedListener(listener: () => void): Subscription;
 };
 
 let cached: NotificationsModule | null | undefined;
@@ -21,7 +38,7 @@ let cached: NotificationsModule | null | undefined;
  * primer still shows; its CTA is inert until a dev build exists — plan §Phase 7), while iOS
  * Expo Go and dev builds get the real permission API.
  */
-function notificationsModule(): NotificationsModule | null {
+export function notificationsModule(): NotificationsModule | null {
   if (cached !== undefined) return cached;
   const inExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
   if (Platform.OS === 'android' && inExpoGo) {
@@ -43,7 +60,7 @@ const toPermission = (response: PermissionResponse): PushPermission => {
 };
 
 /**
- * Push-permission STATE only — no tokens, no delivery (V2 §9.12 defers push to Release 2).
+ * Push-permission state; the token itself is `pushDevice.ts`.
  * The OS dialog fires exclusively from `requestPushPermission` / `usePushPermission().request`,
  * never as a side effect of reading the status (canvas note 1:2939: contextual asks roughly
  * triple opt-in; an iOS denial is permanent). Errors degrade to 'undetermined' so a missing

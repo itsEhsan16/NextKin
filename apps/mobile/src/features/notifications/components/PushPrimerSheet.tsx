@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
-import { a11yButton, a11yHeader, hitSlop8, requestPushPermission } from '@/lib';
+import { registerPushDevice } from '@/data/pushDevice';
+import { a11yButton, a11yHeader, getPushPermission, hitSlop8, requestPushPermission, storage } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
@@ -12,21 +13,45 @@ import { Icon } from '@/ui/Icon';
 
 const BELL_TILE = 64;
 
+export const PRIMER_LEDE =
+  'We’ll tell you when a resume is ready or a saved job is closing, and remind you to check in on applications. Nothing else.';
+export const primerTitleForApplication = (company: string): string =>
+  `Get a reminder to check on ${company}`;
+export const PRIMER_TITLE_FOR_RUN = 'Get told when it’s ready';
+
+const RUN_ASKED_KEY = 'push.primerAskedForRun';
+
+/** After "Yes, I applied": only to someone who hasn't answered the system's question yet. */
+export async function offerPush(title: string): Promise<void> {
+  if ((await getPushPermission()) === 'undetermined') {
+    useNotificationsStore.getState().openPrimer(title);
+  }
+}
+
+/** A first run is the first time anyone waits on us. Asked once; the applied moment can ask again. */
+export async function offerPushForRun(): Promise<void> {
+  if (storage.get<boolean>(RUN_ASKED_KEY)) return;
+  storage.set(RUN_ASKED_KEY, true);
+  await offerPush(PRIMER_TITLE_FOR_RUN);
+}
+
 /**
- * NOTIF 07 (Figma 1:2928) — the contextual push ask, raised over Job Detail right after an
- * application is sent. The OS dialog fires ONLY from "Turn on notifications" (note 1:2939 —
- * never at launch, never on the sheet appearing); "Not now" just closes, and the primer may
- * return after a later application because an iOS denial is permanent.
+ * NOTIF 07 (Figma 1:2928) — the contextual push ask. The OS dialog fires ONLY from "Turn on
+ * notifications" (note 1:2939 — never at launch, never on the sheet appearing); "Not now" just
+ * closes, and the primer may return after a later application because an iOS denial is permanent.
+ *
+ * The board's copy promised word "when your application is viewed", an employer event no one can
+ * tell us (toreview §144.1), so the headline and the line say what actually arrives.
  */
 export function PushPrimerHost() {
   const { colors, radii, sizes, spacing, s } = useTheme();
   const styles = useStyles();
 
   const open = useNotificationsStore((state) => state.primerOpen);
-  const company = useNotificationsStore((state) => state.primerCompany);
+  const title = useNotificationsStore((state) => state.primerTitle);
   const closePrimer = useNotificationsStore((state) => state.closePrimer);
 
-  if (!company) return null;
+  if (!title) return null;
 
   return (
     <Sheet
@@ -57,7 +82,7 @@ export function PushPrimerHost() {
             align="center"
             style={{ marginTop: spacing[5] }}
           >
-            {`Get notified when ${company} responds`}
+            {title}
           </Text>
           <Text
             variant="body"
@@ -65,9 +90,7 @@ export function PushPrimerHost() {
             align="center"
             style={[styles.lede, { marginTop: spacing[3] }]}
           >
-            {
-              "We'll tell you when your application is viewed, changes stage, or gets a decision. Nothing else."
-            }
+            {PRIMER_LEDE}
           </Text>
         </View>
 
@@ -77,8 +100,10 @@ export function PushPrimerHost() {
           block
           haptic="medium"
           onPress={() => {
-            // Fire-and-forget: the OS dialog owns the interaction from here.
-            void requestPushPermission();
+            // The OS dialog owns the interaction from here; a yes registers the phone.
+            void requestPushPermission().then((answer) => {
+              if (answer === 'granted') void registerPushDevice().catch(() => undefined);
+            });
             closePrimer();
           }}
           style={{ marginTop: spacing[6] }}

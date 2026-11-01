@@ -19,6 +19,7 @@ const LOCAL_ONLY_ADAPTERS: Record<string, readonly string[]> = {
   JOBS_ADAPTER: ['fixture', 'recorded'],
   PAYMENT_ADAPTER: ['fake', 'stripeMock'],
   SECRETS_ADAPTER: ['local'],
+  PUSH_ADAPTER: ['log'],
 };
 
 const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
@@ -131,6 +132,13 @@ const schema = z.object({
   // Record mode: calls go to the live provider and each response is written as a fixture.
   AI_RECORD: z.stringbool().default(false),
 
+  // Push (owner, 2026-11-01; V2 §9.12). `off` until a Firebase project and an Apple key sit behind
+  // an SNS platform application for each platform; `log` is the local stand-in.
+  PUSH_ADAPTER: z.enum(['off', 'log', 'sns']).default('off'),
+  PUSH_SNS_ANDROID_ARN: z.string().min(1).optional(),
+  PUSH_SNS_IOS_ARN: z.string().min(1).optional(),
+  SNS_ENDPOINT: z.url().optional(),
+
   // --- API kernel (P3) ---
   // The web app's origin. Cookie-session writes must come from it (CSRF).
   APP_ORIGIN: z.url().default('http://localhost:3000'),
@@ -226,6 +234,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     if (config.APP_EXTRA_ORIGINS.length) refused.push(`APP_EXTRA_ORIGINS (local tunnels) is refused in ${config.APP_ENV}`);
     if (config.SQS_ENDPOINT) refused.push(`SQS_ENDPOINT override is refused in ${config.APP_ENV}`);
     if (config.PAYMENT_ADAPTER === 'stripe' && (!config.STRIPE_SECRET_KEY || !config.STRIPE_WEBHOOK_SECRET)) refused.push(`PAYMENT_ADAPTER=stripe needs STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in ${config.APP_ENV}`);
+    if (config.SNS_ENDPOINT) refused.push(`SNS_ENDPOINT override is refused in ${config.APP_ENV}`);
+    if (config.PUSH_ADAPTER === 'sns' && (!config.PUSH_SNS_ANDROID_ARN || !config.PUSH_SNS_IOS_ARN)) refused.push(`PUSH_ADAPTER=sns needs PUSH_SNS_ANDROID_ARN and PUSH_SNS_IOS_ARN in ${config.APP_ENV}`);
     if (refused.length) throw new ConfigError(refused);
   }
   return config;

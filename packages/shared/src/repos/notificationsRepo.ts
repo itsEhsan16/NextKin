@@ -60,5 +60,9 @@ export function createMockNotificationsRepo(store: MockStore): NotificationsRepo
         store.state.notificationSettings = clone(notificationSettingsFixture);
         return clone(notificationSettingsFixture);
       }),
+
+    // The mock delivers nothing, so there's nothing for a phone to register with.
+    registerDevice: () => simulate(() => undefined),
+    removeDevice: () => simulate(() => undefined),
   };
 }

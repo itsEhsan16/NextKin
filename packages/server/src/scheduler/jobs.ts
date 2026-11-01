@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import type { AiGateway } from '../ai/gateway';
 import { runFollowUps, runInterviewReminders } from '../services/applications';
+import { purgePushMessages, runWeeklyDigest, sendDuePushes } from '../services/push';
 import { runKbCandidates } from '../services/kbCandidates';
 import { purgeEvents } from '../services/events';
 import { purgeNotifications, runClosingAlerts } from '../services/notifications';
@@ -12,6 +13,7 @@ import type { Logger } from '../observability/logger';
 import { cleanupOutbox } from '../outbox/outbox';
 import type { EventPublisher } from '../pipeline/events';
 import type { MaintenanceJob } from '../queue/envelope';
+import type { PushPort } from '../push/push';
 import type { StoragePort } from '../storage/storage';
 import { sweepStuckGenerations } from '../services/generations';
 import { purgeDocuments, TRASH_DAYS } from '../services/resumes';
@@ -36,6 +38,8 @@ export interface JobDeps {
   documents?: { storage: StoragePort; exportsBucket: string };
   /** P12-02: the bucket the nightly audit export writes to (Object Lock at X-05). */
   auditBucket?: string;
+  /** Null where push is off: what's due is closed as `off`, so it doesn't wait for ever. */
+  push?: PushPort | null;
   /** The clock, injectable so the 30-day boundary can be tested (day 29 kept, day 31 gone). */
   now?: () => Date;
 }
@@ -70,6 +74,12 @@ export async function runMaintenanceJob(job: MaintenanceJob, deps: JobDeps): Pro
       return runFollowUps(db, deps.now?.());
     case 'interview_reminders':
       return runInterviewReminders(db, deps.now?.());
+    case 'push_send':
+      return sendDuePushes({ db, log, push: deps.push ?? null }, deps.now?.());
+    case 'push_purge':
+      return purgePushMessages(db, deps.now?.());
+    case 'weekly_digest':
+      return runWeeklyDigest(db, deps.now?.());
     case 'notification_purge':
       return purgeNotifications(db, deps.now?.());
     case 'event_purge':

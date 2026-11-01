@@ -31,6 +31,10 @@ const config: ExpoConfig = {
     // Saved resumes live in the app's storage; they shouldn't leave the phone in a device backup.
     allowBackup: false,
     predictiveBackGestureEnabled: false,
+    // A file secret on EAS; absent in Expo Go, which can't receive a push anyway.
+    ...(process.env.GOOGLE_SERVICES_JSON
+      ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON }
+      : {}),
     adaptiveIcon: {
       backgroundColor: '#FFFFFF',
       foregroundImage: './assets/android-icon-foreground.png',
@@ -44,6 +48,8 @@ const config: ExpoConfig = {
     'expo-font',
     'expo-sqlite',
     'expo-secure-store',
+    // Native only: a development or release build. Daily screen work in Expo Go ignores it.
+    ['expo-notifications', { color: '#4733F9', defaultChannel: 'default' }],
     [
       'expo-splash-screen',
       {

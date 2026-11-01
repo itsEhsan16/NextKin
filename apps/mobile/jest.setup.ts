@@ -113,6 +113,13 @@ jest.mock('expo-notifications', () => ({
   requestPermissionsAsync: jest.fn(() =>
     Promise.resolve({ granted: true, canAskAgain: false, status: 'granted' }),
   ),
+  getDevicePushTokenAsync: jest.fn(() => Promise.resolve({ type: 'android', data: 'test-token' })),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+  setNotificationHandler: jest.fn(),
+  getLastNotificationResponseAsync: jest.fn(() => Promise.resolve(null)),
+  clearLastNotificationResponseAsync: jest.fn(() => Promise.resolve()),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
 
 jest.mock('expo-sqlite/kv-store', () => {

@@ -31,6 +31,9 @@ export const MAINTENANCE_JOBS = [
   'closing_alerts',
   'application_follow_ups',
   'interview_reminders',
+  'push_send',
+  'push_purge',
+  'weekly_digest',
   'notification_purge',
   'event_purge',
 ] as const;

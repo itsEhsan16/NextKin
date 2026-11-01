@@ -45,6 +45,10 @@ export type Notification = {
   stack?: { companies: string[]; more?: number };
 };
 
+/** A phone that said yes to push (owner, 2026-11-01). The time zone puts a nudge on its clock. */
+export type PushPlatform = 'android' | 'ios';
+export type PushDevice = { platform: PushPlatform; token: string; timeZone: string };
+
 export type NotificationCategoryMeta = {
   key: NotificationCategory;
   /** Preferences row title (Figma 1:2719). */
@@ -78,7 +82,7 @@ export const NOTIFICATION_CATEGORIES: readonly NotificationCategoryMeta[] = [
   {
     key: "applications",
     label: "Application updates",
-    description: "Viewed, moved stage, decision",
+    description: "Follow-ups and interview reminders",
     singular: "Application update",
     keepName: "application updates",
   },

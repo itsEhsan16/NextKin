@@ -14,18 +14,18 @@ type NotificationsState = {
   menuOpen: boolean;
 
   /**
-   * Push primer (NOTIF 07), raised over Job Detail after an application is sent. The company
-   * name personalises the headline; retained after close for the exit animation. Never
-   * suppressed permanently — note 1:2939: "Not now" costs nothing and the primer may return
-   * on a later application.
+   * Push primer (NOTIF 07), raised at a moment the candidate would want to hear back: "Yes, I
+   * applied", or their first run. The headline names that moment; retained after close for the
+   * exit animation. Never suppressed permanently — note 1:2939: "Not now" costs nothing and the
+   * primer may return on a later application.
    */
-  primerCompany: string | null;
+  primerTitle: string | null;
   primerOpen: boolean;
 
   setFilter: (filter: NotificationFilter) => void;
   openMenu: (notification: Notification) => void;
   closeMenu: () => void;
-  openPrimer: (company: string) => void;
+  openPrimer: (title: string) => void;
   closePrimer: () => void;
 };
 
@@ -33,12 +33,12 @@ export const useNotificationsStore = create<NotificationsState>((set) => ({
   filter: 'all',
   menuNotification: null,
   menuOpen: false,
-  primerCompany: null,
+  primerTitle: null,
   primerOpen: false,
 
   setFilter: (filter) => set({ filter }),
   openMenu: (menuNotification) => set({ menuNotification, menuOpen: true }),
   closeMenu: () => set({ menuOpen: false }),
-  openPrimer: (primerCompany) => set({ primerCompany, primerOpen: true }),
+  openPrimer: (primerTitle) => set({ primerTitle, primerOpen: true }),
   closePrimer: () => set({ primerOpen: false }),
 }));

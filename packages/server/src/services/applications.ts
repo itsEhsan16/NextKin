@@ -294,6 +294,7 @@ export async function runFollowUps(db: Database, now = new Date()): Promise<numb
         deepLink: `/applications/${row.id}`,
         visual: { kind: 'logo', company: job.company },
         dedupeKey: `follow-up:${row.id}:${days}`,
+        pushRank: 2,
       });
       filed++;
     });
@@ -324,6 +325,7 @@ export async function runInterviewReminders(db: Database, now = new Date()): Pro
         deepLink: `/applications/${row.id}`,
         visual: { kind: 'logo', company: job.company },
         dedupeKey: `interview:${row.id}:${row.interview_at!.toISOString()}`,
+        pushRank: 0,
       }),
     );
   }

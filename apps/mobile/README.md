@@ -228,8 +228,9 @@ Until an Expo/EAS account exists the app must run unmodified inside Expo Go, whi
 - **Deferred until dev builds:** `expo-dev-client`, EAS Build/Update, `react-native-mmkv`
   (preferences use `expo-sqlite/kv-store` instead), `@react-native-vector-icons/*`
   (icons come from `@expo/vector-icons`, bundled in Expo Go).
-- **Push delivery is out of scope.** `expo-notifications` is used only for the permission prompt;
-  remote push needs a dev build and a backend.
+- **Push needs a development build.** Expo Go skips registration; `expo-notifications` still gives
+  it the permission prompt on iOS. The server sends through Amazon SNS, so a phone needs the build's
+  Firebase file and an Apple key behind an SNS platform application (`aws/setup/07-push.md`).
 - **Perf budgets are measured in release-like mode** (`start:prod`) in Expo Go and re-validated on
   a real release build once EAS is set up. Dev-mode frame drops are not a regression.
 - **Config plugins that change native code have no effect** in Expo Go; keep `app.config.ts` to

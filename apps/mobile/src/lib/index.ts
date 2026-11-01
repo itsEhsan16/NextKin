@@ -8,6 +8,7 @@ export * from './haptics';
 export * from './imagePicker';
 export * from './openUrl';
 export * from './pushPermission';
+export * from './pushDevice';
 export * from './reducedMotion';
 export * from './richText';
 export * from './share';

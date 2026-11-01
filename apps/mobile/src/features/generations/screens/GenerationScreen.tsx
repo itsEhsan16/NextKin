@@ -9,6 +9,8 @@ import {
   useRetryGeneration,
 } from '@/data/queries';
 import { COVER_STEPS, FlowStepper, ZERO_STEPS } from '@/features/create/components/TailorStepper';
+// Deep import on purpose: the notifications barrel drags its screens in. This is plain.
+import { offerPushForRun } from '@/features/notifications/components/PushPrimerSheet';
 import { haptics } from '@/lib';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
@@ -97,6 +99,12 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
       haptics.error();
     }
   }, [status]);
+
+  // The first wait anyone has on us is the moment to offer a tap when it's done.
+  const waiting = status === 'queued' || status === 'generating';
+  useEffect(() => {
+    if (waiting) void offerPushForRun();
+  }, [waiting]);
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <Screen

@@ -82,6 +82,15 @@ const notificationVisual = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('glyph'), icon: z.string(), tone: z.enum(['brand', 'success', 'warning', 'info', 'neutral']), regular: z.boolean().optional() }),
 ]);
 
+export const pushDeviceSchema = z
+  .object({
+    platform: z.enum(['android', 'ios']),
+    token: z.string().min(1).max(4096),
+    timeZone: z.string().min(1).max(64),
+  })
+  .strict();
+export const pushDeviceTokenSchema = z.object({ token: z.string().min(1).max(4096) }).strict();
+
 export const notificationSchema = z.object({
   id: z.string(),
   category: z.enum(['matches', 'closing', 'applications', 'ai', 'billing']),

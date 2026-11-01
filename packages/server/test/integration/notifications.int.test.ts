@@ -16,7 +16,7 @@ import { deleteUsers, key, log } from './fixtures/pipeline';
 /**
  * The notification feed (owner, 2026-10-31; changes D-05). It holds what really happened: runs,
  * saved jobs closing, billing. A retried job never says a thing twice, a category switched off
- * files nothing, and nobody reads another account's rows.
+ * only keeps it off the lock screen, and nobody reads another account's rows.
  */
 const config = loadConfig();
 let db: Database;
@@ -74,12 +74,12 @@ describe('the feed', () => {
     expect(await feed(userId)).toHaveLength(1);
   });
 
-  it('honours a category the candidate switched off, but always tells them about their money', async () => {
+  it('keeps a category switched off in the feed: the switches choose what reaches the lock screen', async () => {
     const userId = await backendUser(db, users);
     const prefs = await account.notifications.getPrefs(db, as(userId));
     await account.notifications.setPrefs(db, as(userId), { ...prefs, categories: { ...prefs.categories, ai: false, billing: false } });
     await file(userId, 'muted');
-    expect(await feed(userId)).toHaveLength(0);
+    expect(await feed(userId)).toHaveLength(1);
     await db.withUser(as(userId), (tx) => notifications.notifyBilling(tx, userId, 'failed', 'failed:sub:today'));
     const [row] = await feed(userId);
     expect(row).toMatchObject({ category: 'billing', deepLink: '/upgrade' });

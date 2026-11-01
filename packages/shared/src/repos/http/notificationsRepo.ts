@@ -32,5 +32,11 @@ export function createHttpNotificationsRepo(http: HttpClient): Pick<Notification
     // Whole-set replace, as the interface says: two quick flips each send the full set.
     setSettings: (next) => settings('/me/notification-settings', { method: 'PUT', body: next }),
     resetSettings: () => settings('/me/notification-settings/reset', { method: 'POST' }),
+    async registerDevice(device) {
+      await http.request('/notifications/devices', { method: 'POST', body: device });
+    },
+    async removeDevice(token) {
+      await http.request('/notifications/devices/remove', { method: 'POST', body: { token } });
+    },
   };
 }

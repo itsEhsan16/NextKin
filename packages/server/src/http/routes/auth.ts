@@ -11,6 +11,7 @@ import { errors } from '../errors';
 import { requireAuth } from '../middleware/guards';
 import { trustedOrigins, type OriginCheck } from '../origins';
 import { checked } from '../respond';
+import { removeAllDevices } from '../../services/push';
 import { authErrors, commonErrors } from './common';
 
 /**
@@ -261,6 +262,7 @@ export function authRoutes(deps: AuthRouteDeps): OpenAPIHono<ApiEnv> {
       const sub = await subFor(deps.db, identity.userId);
       for (const record of await deps.sessions.destroyAllForUser(identity.userId)) await deps.idp.revokeSession(record.sessionRef);
       if (sub) await deps.idp.globalSignOut(sub);
+      await deps.db.withUser(identity, (tx) => removeAllDevices(tx, identity.userId));
       await deps.auth.securityEvent(identity.userId, 'sign_out_all', requestMeta(c));
       c.header('Set-Cookie', clearSessionCookie());
       return c.body(null, 204);

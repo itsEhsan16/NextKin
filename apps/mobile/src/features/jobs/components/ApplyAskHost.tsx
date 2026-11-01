@@ -2,6 +2,11 @@ import { useState } from 'react';
 
 import type { ApplicationAnswer, ApplicationAsk } from '@/data/models';
 import { useAnswerApplicationAsk } from '@/data/queries';
+// Deep import on purpose: the notifications barrel drags its screens in. This is plain.
+import {
+  offerPush,
+  primerTitleForApplication,
+} from '@/features/notifications/components/PushPrimerSheet';
 import { ConfirmSheet } from '@/ui/ConfirmSheet';
 import { showAppToast } from '@/ui/Toast';
 
@@ -35,7 +40,9 @@ export function ApplyAskHost() {
       { id: ask.id, answer: value },
       {
         onSuccess: () => {
-          if (value === 'yes') showAppToast(APPLY_ASK_SAVED);
+          if (value !== 'yes') return;
+          showAppToast(APPLY_ASK_SAVED);
+          void offerPush(primerTitleForApplication(ask.company));
         },
       },
     );
