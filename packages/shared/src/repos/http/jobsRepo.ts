@@ -54,7 +54,8 @@ export function createHttpJobsRepo(http: HttpClient, mock: JobsRepo, jd?: Pick<J
       return applicationListSchema.parse(await http.request('/applications')).items as ApplicationWithJob[];
     },
     apply: async (id) => (isServerId(id) ? application(await http.request('/applications', { body: { jobId: id } })) : mock.apply(id)),
-    updateApplicationStatus: async (id, status) => application(await http.request(`/applications/${id}`, { method: 'PATCH', body: { status } })),
+    updateApplicationStatus: async (id, status, interviewAt) => application(await http.request(`/applications/${id}`, { method: 'PATCH', body: { status, ...(interviewAt === undefined ? {} : { interviewAt }) } })),
+    checkInApplication: async (id) => application(await http.request(`/applications/${id}/check-in`, { method: 'POST' })),
     async askAboutApplication(target) {
       if ('jobId' in target && !isServerId(target.jobId)) return mock.askAboutApplication(target);
       return applicationAskResultSchema.parse(await http.request('/applications/asks', { body: target })).ask;

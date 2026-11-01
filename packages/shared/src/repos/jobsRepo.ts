@@ -198,10 +198,27 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
 
     // The web Applications board's "Update Status" (332:467): the candidate records where an
     // application has got to. Nothing the employer sends moves it in the mock.
-    updateApplicationStatus: (id, status) =>
+    updateApplicationStatus: (id, status, interviewAt) =>
       simulate(() => {
         const current = findOrThrow(store.state.applications, id, 'Application');
-        const updated: Application = { ...current, status };
+        const { interviewAt: held, ...rest } = current;
+        const day = status !== 'interview' ? null : interviewAt === undefined ? held : interviewAt;
+        const updated: Application = {
+          ...rest,
+          status,
+          checkedAt: new Date().toISOString(),
+          ...(day ? { interviewAt: day } : {}),
+        };
+        store.state.applications = store.state.applications.map((item) =>
+          item.id === id ? updated : item,
+        );
+        return clone(updated);
+      }),
+
+    checkInApplication: (id) =>
+      simulate(() => {
+        const current = findOrThrow(store.state.applications, id, 'Application');
+        const updated: Application = { ...current, checkedAt: new Date().toISOString() };
         store.state.applications = store.state.applications.map((item) =>
           item.id === id ? updated : item,
         );

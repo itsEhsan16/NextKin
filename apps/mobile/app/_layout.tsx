@@ -49,6 +49,7 @@ export default function RootLayout() {
           <Stack.Screen name="jobs/[id]/index" />
           <Stack.Screen name="jobs/[id]/company" />
           <Stack.Screen name="jobs/[id]/criteria" />
+          <Stack.Screen name="applications/[id]" />
           <Stack.Screen name="notifications/index" />
           <Stack.Screen name="notifications/preferences" />
           <Stack.Screen name="resumes/[id]/index" />

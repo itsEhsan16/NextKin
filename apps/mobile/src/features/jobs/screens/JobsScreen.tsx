@@ -157,6 +157,7 @@ export function JobsScreen() {
     }
   }, [activeQuery, picks, segment]);
 
+  const { openApplication } = actions;
   const renderItem = useCallback(
     ({ item }: { item: JobRow }) => {
       if (item.kind === 'applied') {
@@ -166,7 +167,7 @@ export function JobsScreen() {
             variant="applied"
             application={item.application}
             footer={appliedNote(item.application)}
-            onPress={actions.openJob}
+            onPress={() => openApplication(item.application.id)}
           />
         );
       }
@@ -182,7 +183,7 @@ export function JobsScreen() {
         />
       );
     },
-    [actions.openJob, actions.tailorResume, handleToggleSave],
+    [actions.openJob, actions.tailorResume, handleToggleSave, openApplication],
   );
 
   // Everything the list header renders from; changing any of it must repaint the header.

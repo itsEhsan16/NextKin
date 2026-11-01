@@ -3,10 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { RefreshControl, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
+import { applicationProgress, applicationProgressLine } from '@/data/models';
 import {
   qk,
   queryPhase,
   track,
+  useApplications,
   useCurrentUser,
   useDashboardStats,
   useJobPicks,
@@ -21,6 +23,7 @@ import { Screen } from '@/ui/Screen';
 import { StateView } from '@/ui/StateView';
 import { layoutTransition } from '@/ui/motion';
 
+import { ApplicationsCard } from '../components/ApplicationsCard';
 import { BrandBlock } from '../components/BrandBlock';
 import { HeroBlock } from '../components/HeroBlock';
 import { HomeHeader } from '../components/HomeHeader';
@@ -77,6 +80,7 @@ export function HomeScreen() {
   const picks = useJobPicks();
   const resumes = useResumes();
   const stats = useDashboardStats();
+  const applications = useApplications();
   const unread = useUnreadCount();
   // The progress card subscribes to the live run itself; this only starts its fetch alongside
   // the rest, without re-rendering Home on every tick.
@@ -96,6 +100,7 @@ export function HomeScreen() {
         queryClient.invalidateQueries({ queryKey: qk.jobs.picks() }),
         queryClient.invalidateQueries({ queryKey: qk.resumes.list() }),
         queryClient.invalidateQueries({ queryKey: qk.notifications.list() }),
+        queryClient.invalidateQueries({ queryKey: qk.jobs.applications() }),
       ]);
     } finally {
       setRefreshing(false);
@@ -109,6 +114,15 @@ export function HomeScreen() {
         ?.filter((resume) => resume.status === 'ready')
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0],
     [resumes.data],
+  );
+
+  // Nothing until a first application: an empty count would only say they haven't applied yet.
+  const applicationsLine = useMemo(
+    () =>
+      applications.data?.length
+        ? applicationProgressLine(applicationProgress(applications.data, new Date()))
+        : undefined,
+    [applications.data],
   );
 
   const animate = !reduced && !user.isPending;
@@ -172,6 +186,11 @@ export function HomeScreen() {
                 onPickJob={firstResume.pickJob}
                 onDismiss={firstResume.dismiss}
               />
+            </Section>
+          ) : null}
+          {applicationsLine ? (
+            <Section index={2} animate={animate}>
+              <ApplicationsCard line={applicationsLine} onPress={actions.viewApplications} />
             </Section>
           ) : null}
           <Section index={2} animate={animate}>

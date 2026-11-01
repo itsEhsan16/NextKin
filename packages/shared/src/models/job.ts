@@ -317,6 +317,8 @@ export type Application = {
   appliedAt: string;
   /** ISO-8601; set when status is 'interview' so the pill can name the day. */
   interviewAt?: string;
+  /** ISO-8601; the last time the candidate said where this stands, which answers a follow-up. */
+  checkedAt?: string;
   resumeId?: string;
 };
 

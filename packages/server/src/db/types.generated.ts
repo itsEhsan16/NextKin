@@ -77,7 +77,9 @@ export interface Applications {
   applied_at: Timestamp | null;
   ask_after: Timestamp | null;
   asks_left: Generated<number>;
+  checked_at: Timestamp | null;
   created_at: Generated<Timestamp>;
+  follow_ups_sent: Generated<number>;
   id: Generated<string>;
   interview_at: Timestamp | null;
   job: Json;

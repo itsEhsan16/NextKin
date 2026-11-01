@@ -1,5 +1,6 @@
 import { sql } from 'kysely';
 import type { AiGateway } from '../ai/gateway';
+import { runFollowUps, runInterviewReminders } from '../services/applications';
 import { runKbCandidates } from '../services/kbCandidates';
 import { purgeEvents } from '../services/events';
 import { purgeNotifications, runClosingAlerts } from '../services/notifications';
@@ -65,6 +66,10 @@ export async function runMaintenanceJob(job: MaintenanceJob, deps: JobDeps): Pro
     }
     case 'closing_alerts':
       return runClosingAlerts(db, log, deps.now?.());
+    case 'application_follow_ups':
+      return runFollowUps(db, deps.now?.());
+    case 'interview_reminders':
+      return runInterviewReminders(db, deps.now?.());
     case 'notification_purge':
       return purgeNotifications(db, deps.now?.());
     case 'event_purge':

@@ -29,6 +29,8 @@ export const MAINTENANCE_JOBS = [
   'account_purge',
   'audit_export',
   'closing_alerts',
+  'application_follow_ups',
+  'interview_reminders',
   'notification_purge',
   'event_purge',
 ] as const;

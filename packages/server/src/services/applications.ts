@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 
+import { FOLLOW_UP_DAYS, OPEN_APPLICATION_STATUSES } from '@nextkin/shared/models/applicationProgress';
 import type { JdDraft } from '@nextkin/shared/models/jd';
 import type { Application, ApplicationAnswer, ApplicationAsk, ApplicationStatus, ApplicationTarget, ApplicationWithJob, Job } from '@nextkin/shared/models/job';
 import { jobSchema } from '@nextkin/shared/schemas/job';
@@ -11,6 +12,7 @@ import { jobIdOf } from '../jobs/ids';
 import { toClientJob } from '../jobs/toJob';
 import { findListing, UNNAMED_COMPANY } from './jobs';
 import { COLUMNS, toDraft, type Row } from './jdDraft';
+import { notify } from './notifications';
 
 /**
  * Applications (owner, 2026-10-31; changes D-05). NextKin never submits an application, so a row
@@ -25,6 +27,12 @@ import { COLUMNS, toDraft, type Row } from './jdDraft';
 export const RUN_DELAY_MINUTES = 30;
 const ASK_AGAIN_DAYS = 1;
 const MAX_ASKS_LISTED = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+/** A daily job reminds about an interview in exactly one run: the one 12 to 36 hours before it. */
+const REMINDER_FROM_HOURS = 12;
+const REMINDER_TO_HOURS = 36;
+const MAX_DUE_ROWS = 5000;
 
 /** The kinds of run that produce something to apply with. */
 const APPLYING_KINDS: readonly string[] = ['resume', 'cover_letter', 'zero_resume'];
@@ -39,9 +47,10 @@ interface ApplicationRow {
   asks_left: number;
   applied_at: Date | null;
   interview_at: Date | null;
+  checked_at: Date | null;
 }
 
-const ROW = ['id', 'job_id', 'resume_id', 'status', 'job', 'ask_after', 'asks_left', 'applied_at', 'interview_at'] as const;
+const ROW = ['id', 'job_id', 'resume_id', 'status', 'job', 'ask_after', 'asks_left', 'applied_at', 'interview_at', 'checked_at'] as const;
 
 const toApplication = (row: ApplicationRow): Application => ({
   id: row.id,
@@ -49,6 +58,7 @@ const toApplication = (row: ApplicationRow): Application => ({
   status: row.status as ApplicationStatus,
   appliedAt: row.applied_at!.toISOString(),
   ...(row.interview_at ? { interviewAt: row.interview_at.toISOString() } : {}),
+  ...(row.checked_at ? { checkedAt: row.checked_at.toISOString() } : {}),
   ...(row.resume_id ? { resumeId: row.resume_id } : {}),
 });
 
@@ -227,11 +237,96 @@ export async function recordApplied(db: Database, identity: Identity, jobId: str
   });
 }
 
-export async function setStatus(db: Database, identity: Identity, id: string, status: ApplicationStatus): Promise<Application> {
+/**
+ * Saying where an application stands answers any follow-up. A day only belongs to an interview, so
+ * another status clears it; `interviewAt` left out keeps the day already there.
+ */
+export async function setStatus(db: Database, identity: Identity, id: string, status: ApplicationStatus, interviewAt?: string | null): Promise<Application> {
   return db.withUser(identity, async (tx) => {
-    const row = await tx.updateTable('applications').set({ status }).where('id', '=', id).where('applied_at', 'is not', null).returning(ROW).executeTakeFirst();
+    const day = status !== 'interview' ? { interview_at: null } : interviewAt === undefined ? {} : { interview_at: interviewAt ? new Date(interviewAt) : null };
+    const row = await tx.updateTable('applications').set({ status, checked_at: sql`now()`, ...day }).where('id', '=', id).where('applied_at', 'is not', null).returning(ROW).executeTakeFirst();
     if (!row) throw errors.notFound('application');
     return toApplication(row as ApplicationRow);
   });
+}
+
+/** "No news yet": a follow-up answered, with the application left where it was. */
+export async function checkIn(db: Database, identity: Identity, id: string): Promise<Application> {
+  return db.withUser(identity, async (tx) => {
+    const row = await tx.updateTable('applications').set({ checked_at: sql`now()` }).where('id', '=', id).where('applied_at', 'is not', null).returning(ROW).executeTakeFirst();
+    if (!row) throw errors.notFound('application');
+    return toApplication(row as ApplicationRow);
+  });
+}
+
+/**
+ * The follow-ups (owner, 2026-11-01): "Any news from Stripe?" at 7 and 21 days, then it stops. A
+ * word from the candidate since the point passed counts as the answer, and uses that follow-up up.
+ * Found as the system, filed as each owner, and safe to run twice: `follow_ups_sent` moves in the
+ * same transaction as the row it files.
+ */
+export async function runFollowUps(db: Database, now = new Date()): Promise<number> {
+  const open = await db.withSystem('applications: open ones with a follow-up due', (tx) =>
+    tx
+      .selectFrom('applications')
+      .select(['id', 'user_id', 'job', 'applied_at', 'checked_at', 'follow_ups_sent'])
+      .where('status', 'in', [...OPEN_APPLICATION_STATUSES])
+      .where('follow_ups_sent', '<', FOLLOW_UP_DAYS.length)
+      .where('applied_at', '<=', new Date(now.getTime() - FOLLOW_UP_DAYS[0] * DAY_MS))
+      .limit(MAX_DUE_ROWS)
+      .execute(),
+  );
+  let filed = 0;
+  for (const row of open) {
+    const days = FOLLOW_UP_DAYS[row.follow_ups_sent];
+    if (days === undefined || !row.applied_at) continue;
+    const dueAt = row.applied_at.getTime() + days * DAY_MS;
+    if (dueAt > now.getTime()) continue;
+    const answered = row.checked_at !== null && row.checked_at.getTime() >= dueAt;
+    const job = storedJob(row);
+    await db.withUser({ userId: row.user_id, role: 'user' }, async (tx) => {
+      const moved = await tx.updateTable('applications').set({ follow_ups_sent: row.follow_ups_sent + 1 }).where('id', '=', row.id).where('follow_ups_sent', '=', row.follow_ups_sent).executeTakeFirst();
+      if (answered || Number(moved.numUpdatedRows) === 0) return;
+      await notify(tx, row.user_id, {
+        category: 'applications',
+        body: `**Any news from ${job.company}?**`,
+        description: `You applied for ${job.title} ${days} days ago. Tell us where it stands.`,
+        deepLink: `/applications/${row.id}`,
+        visual: { kind: 'logo', company: job.company },
+        dedupeKey: `follow-up:${row.id}:${days}`,
+      });
+      filed++;
+    });
+  }
+  return filed;
+}
+
+/** The day before an interview the candidate has dated, once for that date. */
+export async function runInterviewReminders(db: Database, now = new Date()): Promise<number> {
+  const due = await db.withSystem('applications: interviews coming up', (tx) =>
+    tx
+      .selectFrom('applications')
+      .select(['id', 'user_id', 'job', 'interview_at'])
+      .where('status', '=', 'interview')
+      .where('interview_at', '>', new Date(now.getTime() + REMINDER_FROM_HOURS * HOUR_MS))
+      .where('interview_at', '<=', new Date(now.getTime() + REMINDER_TO_HOURS * HOUR_MS))
+      .limit(MAX_DUE_ROWS)
+      .execute(),
+  );
+  for (const row of due) {
+    if (!row.interview_at) continue;
+    const job = storedJob(row);
+    await db.withUser({ userId: row.user_id, role: 'user' }, (tx) =>
+      notify(tx, row.user_id, {
+        category: 'applications',
+        body: `**Your ${job.company} interview is coming up**`,
+        description: `Open it to practice for ${job.title}.`,
+        deepLink: `/applications/${row.id}`,
+        visual: { kind: 'logo', company: job.company },
+        dedupeKey: `interview:${row.id}:${row.interview_at!.toISOString()}`,
+      }),
+    );
+  }
+  return due.length;
 }
 

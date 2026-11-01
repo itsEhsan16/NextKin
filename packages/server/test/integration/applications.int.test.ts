@@ -9,6 +9,7 @@ import { createFixtureProvider } from '../../src/jobs/providers/fixture';
 import type { ProviderRegistry } from '../../src/jobs/registry';
 import * as applications from '../../src/services/applications';
 import * as jobs from '../../src/services/jobs';
+import * as notifications from '../../src/services/notifications';
 import { backendUser, readyJd, runToEnd } from './fixtures/documents';
 import { deleteUsers, log } from './fixtures/pipeline';
 
@@ -72,6 +73,85 @@ describe('applications', () => {
     await expect(applications.setStatus(db, as(other), application.id, 'offer')).rejects.toThrow();
     await expect(applications.answerAsk(db, as(other), application.id, 'yes')).rejects.toThrow();
     expect(await applications.listApplications(db, as(other))).toHaveLength(0);
+  });
+});
+
+describe('follow-ups', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const applyDaysAgo = async (userId: string, days: number) => {
+    const job = await aListing(userId);
+    const application = await applications.recordApplied(db, as(userId), job.id);
+    await db.withUser(as(userId), (tx) => tx.updateTable('applications').set({ applied_at: new Date(Date.now() - days * DAY) }).where('id', '=', application.id).execute());
+    return { job, application };
+  };
+  const feed = (userId: string) => notifications.listNotifications(db, as(userId));
+  const inDays = (days: number) => new Date(Date.now() + days * DAY);
+
+  it('asks at a week, once more at three, and then stops', async () => {
+    const userId = await backendUser(db, users);
+    const { job, application } = await applyDaysAgo(userId, 8);
+    await applications.runFollowUps(db);
+    await applications.runFollowUps(db);
+    const [row, ...rest] = await feed(userId);
+    expect(rest).toHaveLength(0);
+    expect(row).toMatchObject({ category: 'applications', body: `**Any news from ${job.company}?**`, deepLink: `/applications/${application.id}` });
+
+    await applications.runFollowUps(db, inDays(14));
+    expect(await feed(userId)).toHaveLength(2);
+    await applications.runFollowUps(db, inDays(90));
+    expect(await feed(userId)).toHaveLength(2);
+  });
+
+  it('asks nothing in the first week, or once the candidate has said', async () => {
+    const userId = await backendUser(db, users);
+    await applyDaysAgo(userId, 2);
+    await applications.runFollowUps(db);
+    expect(await feed(userId)).toHaveLength(0);
+
+    const other = await backendUser(db, users);
+    const { application } = await applyDaysAgo(other, 9);
+    await applications.checkIn(db, as(other), application.id);
+    await applications.runFollowUps(db);
+    expect(await feed(other)).toHaveLength(0);
+
+    const closed = await backendUser(db, users);
+    const moved = await applyDaysAgo(closed, 9);
+    await applications.setStatus(db, as(closed), moved.application.id, 'not_selected');
+    await applications.runFollowUps(db, inDays(30));
+    expect(await feed(closed)).toHaveLength(0);
+  });
+
+  it('keeps a day only on an interview, and answers a follow-up with any status', async () => {
+    const userId = await backendUser(db, users);
+    const { application } = await applyDaysAgo(userId, 1);
+    const day = inDays(3).toISOString();
+    const interview = await applications.setStatus(db, as(userId), application.id, 'interview', day);
+    expect(interview).toMatchObject({ status: 'interview', interviewAt: day });
+    expect(interview.checkedAt).toBeDefined();
+    expect((await applications.setStatus(db, as(userId), application.id, 'interview')).interviewAt).toBe(day);
+    expect((await applications.setStatus(db, as(userId), application.id, 'interview', null)).interviewAt).toBeUndefined();
+    await applications.setStatus(db, as(userId), application.id, 'interview', day);
+    expect((await applications.setStatus(db, as(userId), application.id, 'offer')).interviewAt).toBeUndefined();
+  });
+
+  it('reminds once, the day before a dated interview, and again if the day moves', async () => {
+    const userId = await backendUser(db, users);
+    const { job, application } = await applyDaysAgo(userId, 1);
+    const hours = (n: number) => new Date(Date.now() + n * 3_600_000).toISOString();
+    await applications.setStatus(db, as(userId), application.id, 'interview', hours(50));
+    await applications.runInterviewReminders(db);
+    expect(await feed(userId)).toHaveLength(0);
+
+    await applications.setStatus(db, as(userId), application.id, 'interview', hours(24));
+    await applications.runInterviewReminders(db);
+    await applications.runInterviewReminders(db);
+    const [row, ...rest] = await feed(userId);
+    expect(rest).toHaveLength(0);
+    expect(row).toMatchObject({ body: `**Your ${job.company} interview is coming up**`, deepLink: `/applications/${application.id}` });
+
+    await applications.setStatus(db, as(userId), application.id, 'interview', hours(30));
+    await applications.runInterviewReminders(db);
+    expect(await feed(userId)).toHaveLength(2);
   });
 });
 

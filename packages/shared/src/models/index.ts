@@ -10,6 +10,7 @@ export * from './interview';
 export * from './jd';
 export * from './jobLink';
 export * from './job';
+export * from './applicationProgress';
 export * from './notification';
 export * from './plan';
 export * from './profile';

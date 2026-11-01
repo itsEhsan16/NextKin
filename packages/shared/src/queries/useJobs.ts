@@ -185,8 +185,15 @@ export function useAnswerApplicationAsk() {
 export function useUpdateApplicationStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: ApplicationStatus }) =>
-      repos.jobs.updateApplicationStatus(id, status),
+    mutationFn: ({
+      id,
+      status,
+      interviewAt,
+    }: {
+      id: string;
+      status: ApplicationStatus;
+      interviewAt?: string | null;
+    }) => repos.jobs.updateApplicationStatus(id, status, interviewAt),
     onMutate: async ({ id, status }) => {
       await queryClient.cancelQueries({ queryKey: qk.jobs.applications() });
       const previous = queryClient.getQueryData<ApplicationWithJob[]>(qk.jobs.applications());
@@ -200,6 +207,15 @@ export function useUpdateApplicationStatus() {
     onError: (_error, _variables, context) => {
       if (context?.previous) queryClient.setQueryData(qk.jobs.applications(), context.previous);
     },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: qk.jobs.applications() }),
+  });
+}
+
+/** "No news yet": a follow-up answered, with nothing moved. */
+export function useCheckInApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => repos.jobs.checkInApplication(id),
     onSettled: () => queryClient.invalidateQueries({ queryKey: qk.jobs.applications() }),
   });
 }

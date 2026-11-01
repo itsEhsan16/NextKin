@@ -55,6 +55,8 @@ export function useJobsActions() {
       openSort: openSortSheet,
       openLocationPicker: openLocationSheet,
       openJob: (job: Job) => router.push({ pathname: '/jobs/[id]', params: { id: job.id } }),
+      openApplication: (id: string) =>
+        router.push({ pathname: '/applications/[id]', params: { id } }),
       viewAllJobs: () => router.navigate('/(tabs)/jobs'),
       goBack: () => router.back(),
       shareJob,

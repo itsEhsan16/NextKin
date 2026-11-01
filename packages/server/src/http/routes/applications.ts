@@ -67,7 +67,15 @@ export function applicationRoutes(db: Database): OpenAPIHono<ApiEnv> {
 
   app.openapi(
     createRoute({ method: 'patch', path: '/applications/{id}', tags: ['applications'], summary: 'Record where an application has got to, as the candidate says.', request: { params: idParam, body: json(applicationStatusSchema) }, responses: { 200: ok('The application.', applicationSchema), ...errs } }),
-    async (c) => c.json(checked(applicationSchema, await applications.setStatus(db, requireAuth(c).identity, c.req.valid('param').id, c.req.valid('json').status)), 200),
+    async (c) => {
+      const { status, interviewAt } = c.req.valid('json');
+      return c.json(checked(applicationSchema, await applications.setStatus(db, requireAuth(c).identity, c.req.valid('param').id, status, interviewAt)), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({ method: 'post', path: '/applications/{id}/check-in', tags: ['applications'], summary: 'Say there is no news yet, which answers a follow-up without moving the application.', request: { params: idParam }, responses: { 200: ok('The application.', applicationSchema), ...errs } }),
+    async (c) => c.json(checked(applicationSchema, await applications.checkIn(db, requireAuth(c).identity, c.req.valid('param').id)), 200),
   );
 
   return app;

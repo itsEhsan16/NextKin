@@ -106,10 +106,12 @@ export const applicationSchema = z.object({
   status: applicationStatus,
   appliedAt: z.string().min(1),
   interviewAt: z.string().optional(),
+  checkedAt: z.string().optional(),
   resumeId: z.string().optional(),
 });
 export const applicationListSchema = z.object({ items: z.array(z.object({ application: applicationSchema, job: jobSchema })) });
-export const applicationStatusSchema = z.object({ status: applicationStatus }).strict();
+/** `interviewAt` only means something on an interview; null clears the day. */
+export const applicationStatusSchema = z.object({ status: applicationStatus, interviewAt: z.iso.datetime().nullable().optional() }).strict();
 
 export const applicationAskSchema = z.object({ id: z.string().min(1), jobId: z.string().min(1), title: z.string().min(1), company: z.string().min(1) });
 export const applicationAsksSchema = z.object({ items: z.array(applicationAskSchema) });

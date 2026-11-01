@@ -355,7 +355,9 @@ export type JobsRepo = {
   /** "Yes" adds it to the Applied list, "not yet" asks once more a day later, "no" ends it. */
   answerApplicationAsk(id: string, answer: ApplicationAnswer): Promise<void>;
   /** Records where an application has got to: the web board's "Update Status" (Figma 332:467). */
-  updateApplicationStatus(id: string, status: ApplicationStatus): Promise<Application>;
+  updateApplicationStatus(id: string, status: ApplicationStatus, interviewAt?: string | null): Promise<Application>;
+  /** "No news yet": answers a follow-up without moving the application. */
+  checkInApplication(id: string): Promise<Application>;
   /** Home's "Top Job Matches": the open listings that best match the profile. */
   listPicks(): Promise<Job[]>;
   /** Reads a copied job link without keeping anything (TAILOR 00c). UNREADABLE_LINK if blocked. */

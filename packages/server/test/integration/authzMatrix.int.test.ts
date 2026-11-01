@@ -180,6 +180,7 @@ const MATRIX: Record<string, Entry> = {
   'GET /api/v1/applications': { access: 'user' },
   'POST /api/v1/applications': { access: 'user', body: { jobId: 'matrix-probe' } },
   'PATCH /api/v1/applications/{id}': { access: 'user', body: { status: 'interview' } },
+  'POST /api/v1/applications/{id}/check-in': { access: 'user' },
   'GET /api/v1/applications/asks': { access: 'user' },
   'POST /api/v1/applications/asks': { access: 'user', body: { resumeId: 'matrix-probe' } },
   'POST /api/v1/applications/asks/{id}/answer': { access: 'user', body: { answer: 'no' } },
