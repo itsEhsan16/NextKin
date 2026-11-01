@@ -33,6 +33,7 @@ export function CertificationsListScreen() {
   return (
     <EntryListScreen
       title="Certifications"
+      kind="certifications"
       select={selectRows}
       summary={{
         art: PROFILE_ROW_ART.certifications,

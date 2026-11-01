@@ -21,6 +21,7 @@ export function ExperienceListScreen() {
   return (
     <EntryListScreen
       title="Work experience"
+      kind="experience"
       select={selectRows}
       summary={{
         art: PROFILE_ROW_ART.experience,

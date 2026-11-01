@@ -1,4 +1,11 @@
-import type { Certification, Education, Experience, LinkKind, ProfileLink } from '@/data/models';
+import type {
+  Certification,
+  Education,
+  Experience,
+  FactProvenance,
+  LinkKind,
+  ProfileLink,
+} from '@/data/models';
 import { formatMonthYear } from '@/lib';
 import type { LineIconName } from '@/ui/Icon';
 
@@ -30,6 +37,8 @@ export type EntryRow = {
   meta?: string;
   pill?: { label: string; tone: 'success' | 'danger' };
   tags?: string[];
+  /** Where the fact came from (toreview §146.3). Links aren't facts, so they have none. */
+  source?: FactProvenance;
 };
 
 const PRESENT = 'Present';
@@ -87,6 +96,7 @@ export function experienceRow(entry: Experience): EntryRow {
     ...(dates ? { meta: dates } : {}),
     ...(entry.current ? { pill: { label: CURRENT, tone: 'success' as const } } : {}),
     ...(entry.skills.length > 0 ? { tags: [...entry.skills] } : {}),
+    ...(entry.provenance ? { source: entry.provenance } : {}),
   };
 }
 
@@ -100,6 +110,7 @@ export function educationRow(entry: Education): EntryRow {
     ...(present(entry.institution) ? { subtitle: entry.institution } : {}),
     ...(dates ? { meta: dates } : {}),
     ...(entry.field ? { tags: [entry.field] } : {}),
+    ...(entry.provenance ? { source: entry.provenance } : {}),
   };
 }
 
@@ -138,6 +149,7 @@ export function certificationRow(entry: Certification, now: Date = new Date()): 
     ...(certificationExpired(entry, now)
       ? { pill: { label: EXPIRED, tone: 'danger' as const } }
       : {}),
+    ...(entry.provenance ? { source: entry.provenance } : {}),
   };
 }
 

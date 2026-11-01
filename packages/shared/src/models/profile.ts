@@ -2,8 +2,20 @@ import type { EmploymentType, SalaryRange } from '../models';
 
 /** NextKin V2 spec §10 — Profile aggregate (candidate app). */
 
+/**
+ * Where a fact on the profile came from (toreview §146.3): the person's own word, read from their
+ * resume and let through the review, or assumed. A row written before the server sent this has none.
+ */
+export type FactProvenance = 'user' | 'parsed_confirmed' | 'assumed';
+
+/** What can be confirmed: a row of these lists, or the whole of one. */
+export type FactKind = 'experience' | 'education' | 'certifications' | 'skills';
+
+export type ConfirmFacts = { kind: FactKind; id?: string };
+
 export type Experience = {
   id: string;
+  provenance?: FactProvenance;
   company: string;
   title: string;
   /** ISO-8601 date (YYYY-MM-DD) */
@@ -18,6 +30,7 @@ export type Experience = {
 
 export type Education = {
   id: string;
+  provenance?: FactProvenance;
   institution: string;
   degree: string;
   field?: string;
@@ -35,6 +48,7 @@ export type Education = {
 /** A credential row on the profile (V2 §10 profile aggregate; no artboard yet — plan phase 9F). */
 export type Certification = {
   id: string;
+  provenance?: FactProvenance;
   name: string;
   issuer: string;
   /** ISO date (YYYY-MM-DD). */
@@ -166,6 +180,8 @@ export type Profile = {
    */
   linkedinConnected?: boolean;
   skills: string[];
+  /** The skills read from a resume and not yet confirmed. Absent when there are none. */
+  skillsToConfirm?: string[];
   experiences: Experience[];
   education: Education[];
   certifications: Certification[];
@@ -178,6 +194,17 @@ export type Profile = {
   nextSteps: NextStep[];
   preferences: ProfilePreferences;
 };
+
+/** The profile once these facts are the person's own word. The mock and the screen agree on it. */
+export function withConfirmedFacts(profile: Profile, { kind, id }: ConfirmFacts): Profile {
+  const mark = <T extends { id: string; provenance?: FactProvenance }>(rows: T[]): T[] =>
+    rows.map((row) => (id === undefined || row.id === id ? { ...row, provenance: 'user' as const } : row));
+  if (kind === 'experience') return { ...profile, experiences: mark(profile.experiences) };
+  if (kind === 'education') return { ...profile, education: mark(profile.education) };
+  if (kind === 'certifications') return { ...profile, certifications: mark(profile.certifications) };
+  const { skillsToConfirm: _confirmed, ...rest } = profile;
+  return rest;
+}
 
 /** The identity fields the "Edit profile" form writes back (plan phase 9F). */
 export type ProfilePatch = Partial<Pick<Profile, 'headline' | 'location' | 'yearsExperience'>>;

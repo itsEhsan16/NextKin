@@ -128,6 +128,22 @@ export function profileRepoContract(make: Make): void {
     expect(after.education).toHaveLength(before.education.length);
   });
 
+  it('marks what it read from a resume, and a confirmation makes it the person’s word', async () => {
+    const { profile } = await make();
+    const read = await profile.applyProfileDraft({
+      skills: ['Zig'],
+      experiences: [{ id: '', company: 'Parsed Co', title: 'Engineer', startDate: '2020-01-01', current: true, skills: [] }],
+    });
+    const role = read.experiences.find((entry) => entry.company === 'Parsed Co');
+    expect(role?.provenance).toBe('parsed_confirmed');
+    expect(read.skillsToConfirm).toContain('Zig');
+
+    const confirmed = await profile.confirmFacts({ kind: 'experience', id: role!.id });
+    expect(confirmed.experiences.find((entry) => entry.id === role!.id)?.provenance).toBe('user');
+
+    expect((await profile.confirmFacts({ kind: 'skills' })).skillsToConfirm).toBeUndefined();
+  });
+
   it('completeNextStep returns the whole profile; an unknown step is NotFoundError', async () => {
     const { profile } = await make();
     const current = await profile.getProfile();

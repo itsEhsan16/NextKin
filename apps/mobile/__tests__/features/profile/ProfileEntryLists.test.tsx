@@ -5,12 +5,13 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
-import { resetMockRepos } from '@/data/repos';
+import { mockStore, resetMockRepos } from '@/data/repos';
 import {
   CertificationsListScreen,
   EducationListScreen,
   ExperienceListScreen,
   LinksListScreen,
+  SkillsScreen,
 } from '@/features/profile';
 import { openExternalUrl } from '@/lib';
 
@@ -75,6 +76,48 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
     clients.splice(0).forEach((client) => client.clear());
     useMockModeStore.setState({ mode: 'normal' });
     jest.useRealTimers();
+  });
+
+  it('says where a role came from, and one tap makes it the person’s word', async () => {
+    const { profile } = mockStore.state;
+    mockStore.state.profile = {
+      ...profile,
+      experiences: profile.experiences.map((entry, index) => ({
+        ...entry,
+        provenance: index === 0 ? ('parsed_confirmed' as const) : ('user' as const),
+      })),
+    };
+    await mount(<ExperienceListScreen />);
+
+    expect(screen.getByText('From your resume', shown)).toBeOnTheScreen();
+    expect(screen.getAllByText('Confirmed', shown)).toHaveLength(3);
+
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Confirm /, shown)));
+    await settle();
+
+    expect(screen.queryByText('From your resume', shown)).toBeNull();
+    expect(screen.getAllByText('Confirmed', shown)).toHaveLength(4);
+    expect(mockStore.state.profile.experiences[0]?.provenance).toBe('user');
+  });
+
+  it('says nothing about the source of a row that has none', async () => {
+    await mount(<ExperienceListScreen />);
+    expect(screen.queryByText('Confirmed', shown)).toBeNull();
+    expect(screen.queryByText('From your resume', shown)).toBeNull();
+  });
+
+  it('confirms the skills read from a resume together', async () => {
+    mockStore.state.profile = { ...mockStore.state.profile, skillsToConfirm: ['Figma', 'Sketch'] };
+    await mount(<SkillsScreen />);
+
+    expect(screen.getByText('2 skills from your resume', shown)).toBeOnTheScreen();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Confirm the skills from your resume', shown)),
+    );
+    await settle();
+
+    expect(screen.queryByText('2 skills from your resume', shown)).toBeNull();
+    expect(mockStore.state.profile.skillsToConfirm).toBeUndefined();
   });
 
   it('lists the roles with their dates and opens the one that was pressed', async () => {

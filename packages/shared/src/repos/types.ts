@@ -56,6 +56,7 @@ import type { FigureDraft,
   ProfileDraft,
   ProfileLink,
   ProfilePatch,
+  ConfirmFacts,
   ProfilePreferences,
   Resume,
   ResumeContent,
@@ -196,6 +197,8 @@ export type ProfileRepo = {
    * says so).
    */
   applyProfileDraft(draft: ProfileDraft): Promise<Profile>;
+  /** Makes facts read from a resume the person's own word: one row, or a whole kind (§146.3). */
+  confirmFacts(input: ConfirmFacts): Promise<Profile>;
 };
 
 export type ExportFormat = 'pdf' | 'docx' | 'txt';

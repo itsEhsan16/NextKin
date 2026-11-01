@@ -1,4 +1,4 @@
-import type { Certification, Education, Experience, Profile, ProfileLink } from '../../models/profile';
+import type { Certification, ConfirmFacts, Education, Experience, Profile, ProfileLink } from '../../models/profile';
 import { profileSchema } from '../../schemas/profile';
 import { NotFoundError } from '../state';
 import type { ProfileRepo } from '../types';
@@ -86,6 +86,7 @@ export function createHttpProfileRepo(http: HttpClient): ProfileRepo & { reset()
     removeCertification: (id) => remove('certifications', id),
     upsertLink: (entry: ProfileLink) => upsert('links', entry),
     removeLink: (id) => remove('links', id),
+    confirmFacts: (input: ConfirmFacts) => call('/profile/confirm', { method: 'POST', body: input }),
     applyProfileDraft: (draft) => call('/profile/draft', { method: 'POST', body: draft, idempotencyKey: newIdempotencyKey() }),
   };
 }

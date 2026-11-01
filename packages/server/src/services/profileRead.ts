@@ -3,6 +3,7 @@ import { skillWarnings } from './skillChecks';
 import { DEFAULT_NOTIFICATION_PREFS, DEFAULT_NOTIFICATION_SETTINGS } from '@nextkin/shared/models/notification';
 import type { NotificationPrefs, NotificationSettings } from '@nextkin/shared/models/notification';
 import type { NextStep, Profile, ProfilePreferences, ProfileStats } from '@nextkin/shared/models/profile';
+import type { FactProvenance } from '@nextkin/shared/models/profile';
 import { sql, type RawBuilder } from 'kysely';
 import type { Tx } from '../db/database';
 
@@ -75,7 +76,7 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
   const [roles, roleSkills, education, certifications, links, skills] = await Promise.all([
     tx
       .selectFrom('experience')
-      .select(['id', 'company', 'title', 'is_current', 'description', dateText('start_date').as('start'), dateText('end_date').as('end')])
+      .select(['id', 'provenance', 'company', 'title', 'is_current', 'description', dateText('start_date').as('start'), dateText('end_date').as('end')])
       .where('user_id', '=', userId)
       .orderBy('sort_order')
       .orderBy('created_at')
@@ -83,19 +84,19 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
     tx.selectFrom('experience_skills').select(['experience_id', 'raw_name']).where('user_id', '=', userId).orderBy('created_at').execute(),
     tx
       .selectFrom('education')
-      .select(['id', 'institution', 'degree', 'field', 'is_current', 'end_precision', dateText('start_date').as('start'), dateText('end_date').as('end')])
+      .select(['id', 'provenance', 'institution', 'degree', 'field', 'is_current', 'end_precision', dateText('start_date').as('start'), dateText('end_date').as('end')])
       .where('user_id', '=', userId)
       .orderBy('sort_order')
       .orderBy('created_at')
       .execute(),
     tx
       .selectFrom('certifications')
-      .select(['id', 'name', 'issuer', 'credential_url', dateText('issued_on').as('issued'), dateText('expires_on').as('expires')])
+      .select(['id', 'provenance', 'name', 'issuer', 'credential_url', dateText('issued_on').as('issued'), dateText('expires_on').as('expires')])
       .where('user_id', '=', userId)
       .orderBy('created_at')
       .execute(),
     tx.selectFrom('profile_links').select(['id', 'label', 'url', 'kind']).where('user_id', '=', userId).orderBy('sort_order').orderBy('created_at').execute(),
-    tx.selectFrom('profile_skills').select('raw_name').where('user_id', '=', userId).orderBy('sort_order').execute(),
+    tx.selectFrom('profile_skills').select(['raw_name', 'provenance']).where('user_id', '=', userId).orderBy('sort_order').execute(),
   ]);
 
   const tagsByRole = new Map<string, string[]>();
@@ -123,6 +124,7 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
     tagline: opt(row.tagline),
     skills: skills.map((s) => s.raw_name),
     experiences: roles.map((role) => ({
+      provenance: role.provenance as FactProvenance,
       id: role.id,
       company: role.company,
       title: role.title,
@@ -133,6 +135,7 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
       summary: opt(role.description),
     })),
     education: education.map((e) => ({
+      provenance: e.provenance as FactProvenance,
       id: e.id,
       institution: e.institution,
       degree: e.degree,
@@ -144,6 +147,7 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
       current: e.is_current,
     })),
     certifications: certifications.map((c) => ({
+      provenance: c.provenance as FactProvenance,
       id: c.id,
       name: c.name,
       issuer: c.issuer,
@@ -157,6 +161,8 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
     nextSteps,
     preferences: jobPreferences(row.preferences),
   };
+  const toConfirm = skills.filter((s) => s.provenance !== 'user').map((s) => s.raw_name);
+  if (toConfirm.length > 0) profile.skillsToConfirm = toConfirm;
   const warnings = skillWarnings(profile.experiences);
   if (warnings.length > 0) profile.skillWarnings = warnings;
   return { profile, rowVersion: row.row_version, completenessBps: completeness.bps, storedCompletenessBps: row.completeness_bps };

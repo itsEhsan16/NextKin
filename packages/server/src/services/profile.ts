@@ -1,4 +1,5 @@
 import type { Certification, Education, Experience, ProfileDraft, ProfileLink, ProfilePreferences } from '@nextkin/shared/models/profile';
+import type { ConfirmFacts, FactProvenance } from '@nextkin/shared/models/profile';
 import { sql } from 'kysely';
 import type { Database, Identity, Tx } from '../db/database';
 import { errors } from '../http/errors';
@@ -15,7 +16,7 @@ import { loadProfile, stepId, type LoadedProfile } from './profileRead';
  */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-type Provenance = 'user' | 'parsed_confirmed';
+type Provenance = Exclude<FactProvenance, 'assumed'>;
 type Section = 'experience' | 'education' | 'certifications' | 'profile_links';
 
 const notFound = (what: string) => errors.notFound(what);
@@ -165,7 +166,7 @@ export const entries = {
   replaceExperience: (db: Database, identity: Identity, id: string, e: Omit<Experience, 'id'>) =>
     write(db, identity, async (tx) => {
       await assertOwned(tx, 'experience', identity.userId, id, 'Experience');
-      await tx.updateTable('experience').set(experienceRow(e)).where('id', '=', id).execute();
+      await tx.updateTable('experience').set({ ...experienceRow(e), provenance: 'user' }).where('id', '=', id).execute();
       await setRoleSkills(tx, identity.userId, id, e.skills, 'user');
     }),
   createEducation: (db: Database, identity: Identity, e: Omit<Education, 'id'>) =>
@@ -173,7 +174,7 @@ export const entries = {
   replaceEducation: (db: Database, identity: Identity, id: string, e: Omit<Education, 'id'>) =>
     write(db, identity, async (tx) => {
       await assertOwned(tx, 'education', identity.userId, id, 'Education');
-      await tx.updateTable('education').set(educationRow(e)).where('id', '=', id).execute();
+      await tx.updateTable('education').set({ ...educationRow(e), provenance: 'user' }).where('id', '=', id).execute();
     }),
   createCertification: (db: Database, identity: Identity, c: Omit<Certification, 'id'>) =>
     write(db, identity, async (tx) => {
@@ -182,7 +183,7 @@ export const entries = {
   replaceCertification: (db: Database, identity: Identity, id: string, c: Omit<Certification, 'id'>) =>
     write(db, identity, async (tx) => {
       await assertOwned(tx, 'certifications', identity.userId, id, 'Certification');
-      await tx.updateTable('certifications').set(certificationRow(c)).where('id', '=', id).execute();
+      await tx.updateTable('certifications').set({ ...certificationRow(c), provenance: 'user' }).where('id', '=', id).execute();
     }),
   createLink: (db: Database, identity: Identity, l: Omit<ProfileLink, 'id'>) =>
     write(db, identity, async (tx) => {
@@ -215,8 +216,8 @@ export function replaceSkills(db: Database, identity: Identity, skills: string[]
 }
 
 /**
- * Commits the accepted rows of a parsed upload (§7.4) as `parsed_confirmed` facts, with the mock's
- * dedupe rules: a role matches on company AND title, a degree on institution, a skill on its
+ * Commits the accepted rows of a parsed upload (§7.4) as `parsed_confirmed` facts, or as `user` when
+ * the person answered for each of them (a finished Zero Resume review), with the mock's dedupe rules: a role matches on company AND title, a degree on institution, a skill on its
  * lower-cased text. Kept rows are appended with server ids.
  */
 export interface DraftChoices {
@@ -232,7 +233,7 @@ export interface DraftChoices {
  * apps' `applyProfileDraft` does) adds only what is new, `replace` swaps the section for the
  * draft's. The headline is filled when empty, or replaced on request.
  */
-export function applyDraft(db: Database, identity: Identity, draft: ProfileDraft, choices: DraftChoices = {}) {
+export function applyDraft(db: Database, identity: Identity, draft: ProfileDraft, choices: DraftChoices = {}, provenance: Provenance = 'parsed_confirmed') {
   return write(db, identity, async (tx) => {
     const userId = identity.userId;
     const mode = (section: keyof DraftChoices) => choices[section] ?? 'merge';
@@ -251,7 +252,7 @@ export function applyDraft(db: Database, identity: Identity, draft: ProfileDraft
         const key = normalise(skill);
         if (!key || known.has(key)) continue;
         known.add(key);
-        await tx.insertInto('profile_skills').values({ user_id: userId, raw_name: skill.trim(), sort_order: order++, provenance: 'parsed_confirmed' }).execute();
+        await tx.insertInto('profile_skills').values({ user_id: userId, raw_name: skill.trim(), sort_order: order++, provenance }).execute();
       }
     }
     if (mode('experiences') !== 'keep') {
@@ -260,7 +261,7 @@ export function applyDraft(db: Database, identity: Identity, draft: ProfileDraft
         const key = `${normalise(e.company)}\u0000${normalise(e.title)}`;
         if (roles.has(key)) continue;
         roles.add(key);
-        await insertExperience(tx, userId, e, 'parsed_confirmed');
+        await insertExperience(tx, userId, e, provenance);
       }
     }
     if (mode('education') !== 'keep') {
@@ -268,13 +269,42 @@ export function applyDraft(db: Database, identity: Identity, draft: ProfileDraft
       for (const e of draft.education ?? []) {
         if (schools.has(normalise(e.institution))) continue;
         schools.add(normalise(e.institution));
-        await insertEducation(tx, userId, e, 'parsed_confirmed');
+        await insertEducation(tx, userId, e, provenance);
       }
     }
     if (mode('certifications') !== 'keep') {
       for (const c of draft.certifications ?? []) {
-        await tx.insertInto('certifications').values({ ...certificationRow(c), user_id: userId, provenance: 'parsed_confirmed' }).execute();
+        await tx.insertInto('certifications').values({ ...certificationRow(c), user_id: userId, provenance }).execute();
       }
+    }
+  });
+}
+
+/**
+ * Makes facts the person's own word (toreview §146.3): one row, or every row of a kind. A role takes
+ * its skill tags with it. Skills have no row of their own to the client, so they go as a list.
+ */
+export function confirmFacts(db: Database, identity: Identity, { kind, id }: ConfirmFacts) {
+  return write(db, identity, async (tx) => {
+    const userId = identity.userId;
+    if (kind === 'skills') {
+      await tx.updateTable('profile_skills').set({ provenance: 'user' }).where('user_id', '=', userId).execute();
+      return;
+    }
+    if (id) await assertOwned(tx, kind, userId, id, 'Fact');
+    await tx
+      .updateTable(kind)
+      .set({ provenance: 'user' })
+      .where('user_id', '=', userId)
+      .$if(id !== undefined, (q) => q.where('id', '=', id!))
+      .execute();
+    if (kind === 'experience') {
+      await tx
+        .updateTable('experience_skills')
+        .set({ provenance: 'user' })
+        .where('user_id', '=', userId)
+        .$if(id !== undefined, (q) => q.where('experience_id', '=', id!))
+        .execute();
     }
   });
 }

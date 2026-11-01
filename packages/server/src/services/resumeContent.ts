@@ -162,7 +162,8 @@ export async function resolveZeroCheck(db: Database, identity: Identity, id: str
     const finished = zeroProgress(toResumeContent(next, { resumeId: id, versionId: '' })).left === 0;
     return { next, finished };
   });
-  if (done.finished) await applyDraft(db, identity, draftOf(done.next));
+  // The person answered for every one of these, so they're confirmed, not read (toreview §146.3).
+  if (done.finished) await applyDraft(db, identity, draftOf(done.next), {}, 'user');
   return db.withUser(identity, async (tx) => {
     const content = (await readContent(tx, identity.userId, id)) as ResumeContent;
     return { content, resume: await resumeCard(tx, id), finished: done.finished };

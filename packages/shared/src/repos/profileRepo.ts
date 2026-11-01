@@ -1,5 +1,5 @@
 import { newId, simulate } from '../mock';
-import type { Profile } from '../models';
+import { withConfirmedFacts, type Profile } from '../models';
 
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ProfileRepo } from './types';
@@ -107,7 +107,7 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
     upsertExperience: (entry) =>
       simulate(() => {
         const { profile } = store.state;
-        const { entries, added } = upsertEntry(profile.experiences, entry, 'exp');
+        const { entries, added } = upsertEntry(profile.experiences, { ...entry, provenance: 'user' }, 'exp');
         return save({
           ...profile,
           experiences: entries,
@@ -128,7 +128,7 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
     upsertEducation: (entry) =>
       simulate(() => {
         const { profile } = store.state;
-        const { entries, added } = upsertEntry(profile.education, entry, 'edu');
+        const { entries, added } = upsertEntry(profile.education, { ...entry, provenance: 'user' }, 'edu');
         return save({
           ...profile,
           education: entries,
@@ -161,7 +161,7 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
     upsertCertification: (entry) =>
       simulate(() => {
         const { profile } = store.state;
-        const { entries, added } = upsertEntry(profile.certifications, entry, 'cert');
+        const { entries, added } = upsertEntry(profile.certifications, { ...entry, provenance: 'user' }, 'cert');
         return save({
           ...profile,
           certifications: entries,
@@ -206,6 +206,7 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
     applyProfileDraft: (draft) =>
       simulate(() => {
         const { profile } = store.state;
+        const read = <T extends object>(row: T) => ({ ...row, provenance: 'parsed_confirmed' as const });
         const known = new Set(profile.skills.map(normalise));
         const skills = (draft.skills ?? []).filter((skill) => {
           const key = normalise(skill);
@@ -239,11 +240,24 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
           ...profile,
           headline,
           skills: [...profile.skills, ...clone(skills)],
-          experiences: [...profile.experiences, ...withFreshIds(experiences, 'exp')],
-          education: [...profile.education, ...withFreshIds(education, 'edu')],
-          certifications: [...profile.certifications, ...withFreshIds(certifications, 'cert')],
+          ...(skills.length > 0
+            ? { skillsToConfirm: [...(profile.skillsToConfirm ?? []), ...clone(skills)] }
+            : {}),
+          experiences: [...profile.experiences, ...withFreshIds(experiences.map(read), 'exp')],
+          education: [...profile.education, ...withFreshIds(education.map(read), 'edu')],
+          certifications: [...profile.certifications, ...withFreshIds(certifications.map(read), 'cert')],
           completeness: nudge(profile.completeness, added),
         });
+      }),
+
+    confirmFacts: (input) =>
+      simulate(() => {
+        const { profile } = store.state;
+        if (input.id !== undefined && input.kind !== 'skills') {
+          const rows = input.kind === 'experience' ? profile.experiences : input.kind === 'education' ? profile.education : profile.certifications;
+          findOrThrow<{ id: string }>(rows, input.id, 'Fact');
+        }
+        return save(withConfirmedFacts(profile, input));
       }),
   };
 }

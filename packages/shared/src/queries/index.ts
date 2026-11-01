@@ -126,6 +126,7 @@ export { usePrivacySettings, useUpdatePrivacySettings } from './usePrivacy';
 export { useCompleteNextStep, useProfile, useUpdatePreferences } from './useProfile';
 export {
   useApplyProfileDraft,
+  useConfirmFacts,
   useRemoveCertification,
   useRemoveEducation,
   useRemoveExperience,

@@ -8,6 +8,7 @@ import type {
   ProfileDraft,
   ProfilePreferences,
 } from '../models/profile';
+import type { ConfirmFacts } from '../models/profile';
 import { profileLinkSchema } from './settings';
 
 /**
@@ -20,8 +21,17 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD.');
 const text = (max: number) => z.string().trim().min(1).max(max);
 const tag = z.string().trim().min(1).max(120);
 
+const provenance = z.enum(['user', 'parsed_confirmed', 'assumed']);
+
+/** What a tap on Confirm sends (toreview §146.3): one row, or a whole kind. */
+export const confirmFactsSchema = z.object({
+  kind: z.enum(['experience', 'education', 'certifications', 'skills']),
+  id: z.string().optional(),
+}) satisfies z.ZodType<ConfirmFacts>;
+
 export const experienceSchema = z.object({
   id: z.string(),
+  provenance: provenance.optional(),
   company: text(200),
   title: text(200),
   startDate: isoDate,
@@ -33,6 +43,7 @@ export const experienceSchema = z.object({
 
 export const educationSchema = z.object({
   id: z.string(),
+  provenance: provenance.optional(),
   institution: text(200),
   degree: text(200),
   field: z.string().max(200).optional(),
@@ -45,6 +56,7 @@ export const educationSchema = z.object({
 
 export const certificationSchema = z.object({
   id: z.string(),
+  provenance: provenance.optional(),
   name: text(200),
   issuer: text(200),
   issuedOn: isoDate.optional(),
@@ -94,6 +106,7 @@ export const profileSchema = z.object({
   tagline: z.string().optional(),
   linkedinConnected: z.boolean().optional(),
   skills: z.array(z.string()),
+  skillsToConfirm: z.array(z.string()).optional(),
   experiences: z.array(experienceSchema),
   education: z.array(educationSchema),
   certifications: z.array(certificationSchema),

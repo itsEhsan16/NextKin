@@ -15031,6 +15031,14 @@
                               "id": {
                                 "type": "string"
                               },
+                              "provenance": {
+                                "type": "string",
+                                "enum": [
+                                  "user",
+                                  "parsed_confirmed",
+                                  "assumed"
+                                ]
+                              },
                               "company": {
                                 "type": "string",
                                 "minLength": 1,
@@ -15084,6 +15092,14 @@
                             "properties": {
                               "id": {
                                 "type": "string"
+                              },
+                              "provenance": {
+                                "type": "string",
+                                "enum": [
+                                  "user",
+                                  "parsed_confirmed",
+                                  "assumed"
+                                ]
                               },
                               "institution": {
                                 "type": "string",
@@ -15144,6 +15160,14 @@
                             "properties": {
                               "id": {
                                 "type": "string"
+                              },
+                              "provenance": {
+                                "type": "string",
+                                "enum": [
+                                  "user",
+                                  "parsed_confirmed",
+                                  "assumed"
+                                ]
                               },
                               "name": {
                                 "type": "string",
@@ -15741,6 +15765,14 @@
                               "id": {
                                 "type": "string"
                               },
+                              "provenance": {
+                                "type": "string",
+                                "enum": [
+                                  "user",
+                                  "parsed_confirmed",
+                                  "assumed"
+                                ]
+                              },
                               "company": {
                                 "type": "string",
                                 "minLength": 1,
@@ -15794,6 +15826,14 @@
                             "properties": {
                               "id": {
                                 "type": "string"
+                              },
+                              "provenance": {
+                                "type": "string",
+                                "enum": [
+                                  "user",
+                                  "parsed_confirmed",
+                                  "assumed"
+                                ]
                               },
                               "institution": {
                                 "type": "string",
@@ -15854,6 +15894,14 @@
                             "properties": {
                               "id": {
                                 "type": "string"
+                              },
+                              "provenance": {
+                                "type": "string",
+                                "enum": [
+                                  "user",
+                                  "parsed_confirmed",
+                                  "assumed"
+                                ]
                               },
                               "name": {
                                 "type": "string",
@@ -16492,6 +16540,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -16499,6 +16553,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -16552,6 +16614,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -16611,6 +16681,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -19600,6 +19678,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -19607,6 +19691,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -19660,6 +19752,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -19719,6 +19819,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -20424,6 +20532,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -20431,6 +20545,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -20484,6 +20606,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -20543,6 +20673,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -21565,6 +21703,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -21572,6 +21716,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -21625,6 +21777,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -21684,6 +21844,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -22532,6 +22700,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "parsed_confirmed",
+                      "assumed"
+                    ]
+                  },
                   "company": {
                     "type": "string",
                     "minLength": 1,
@@ -22625,6 +22801,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -22632,6 +22814,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -22685,6 +22875,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -22744,6 +22942,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -23593,6 +23799,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "parsed_confirmed",
+                      "assumed"
+                    ]
+                  },
                   "company": {
                     "type": "string",
                     "minLength": 1,
@@ -23686,6 +23900,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -23693,6 +23913,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -23746,6 +23974,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -23805,6 +24041,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -24514,6 +24758,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -24521,6 +24771,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -24574,6 +24832,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -24633,6 +24899,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -25304,6 +25578,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "parsed_confirmed",
+                      "assumed"
+                    ]
+                  },
                   "institution": {
                     "type": "string",
                     "minLength": 1,
@@ -25403,6 +25685,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -25410,6 +25698,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -25463,6 +25759,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -25522,6 +25826,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -26371,6 +26683,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "parsed_confirmed",
+                      "assumed"
+                    ]
+                  },
                   "institution": {
                     "type": "string",
                     "minLength": 1,
@@ -26470,6 +26790,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -26477,6 +26803,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -26530,6 +26864,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -26589,6 +26931,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -27298,6 +27648,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -27305,6 +27661,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -27358,6 +27722,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -27417,6 +27789,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -28088,6 +28468,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "parsed_confirmed",
+                      "assumed"
+                    ]
+                  },
                   "name": {
                     "type": "string",
                     "minLength": 1,
@@ -28167,6 +28555,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -28174,6 +28568,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -28227,6 +28629,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -28286,6 +28696,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -29135,6 +29553,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "parsed_confirmed",
+                      "assumed"
+                    ]
+                  },
                   "name": {
                     "type": "string",
                     "minLength": 1,
@@ -29214,6 +29640,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -29221,6 +29653,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -29274,6 +29714,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -29333,6 +29781,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -30042,6 +30498,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -30049,6 +30511,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -30102,6 +30572,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -30161,6 +30639,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -30908,6 +31394,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -30915,6 +31407,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -30968,6 +31468,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -31027,6 +31535,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -31952,6 +32468,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -31959,6 +32481,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -32012,6 +32542,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -32071,6 +32609,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -32780,6 +33326,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -32787,6 +33339,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -32840,6 +33400,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -32899,6 +33467,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -33624,6 +34200,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -33631,6 +34213,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -33684,6 +34274,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -33743,6 +34341,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -34376,6 +34982,14 @@
                         "id": {
                           "type": "string"
                         },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "parsed_confirmed",
+                            "assumed"
+                          ]
+                        },
                         "company": {
                           "type": "string",
                           "minLength": 1,
@@ -34429,6 +35043,14 @@
                       "properties": {
                         "id": {
                           "type": "string"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "parsed_confirmed",
+                            "assumed"
+                          ]
                         },
                         "institution": {
                           "type": "string",
@@ -34489,6 +35111,14 @@
                       "properties": {
                         "id": {
                           "type": "string"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "parsed_confirmed",
+                            "assumed"
+                          ]
                         },
                         "name": {
                           "type": "string",
@@ -34574,6 +35204,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -34581,6 +35217,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -34634,6 +35278,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -34693,6 +35345,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -35518,6 +36178,882 @@
         }
       }
     },
+    "/api/v1/profile/confirm": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Make facts read from a resume the person's own word: one row, or every row of a kind.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "experience",
+                      "education",
+                      "certifications",
+                      "skills"
+                    ]
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The profile.",
+            "headers": {
+              "ETag": {
+                "description": "The profile version, for If-Match.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "headline": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "yearsExperience": {
+                      "type": "integer"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "bio": {
+                      "type": "string"
+                    },
+                    "tagline": {
+                      "type": "string"
+                    },
+                    "linkedinConnected": {
+                      "type": "boolean"
+                    },
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "experiences": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
+                          },
+                          "company": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "startDate": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "endDate": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "current": {
+                            "type": "boolean"
+                          },
+                          "skills": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "maxItems": 50
+                          },
+                          "summary": {
+                            "type": "string",
+                            "maxLength": 4000
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "company",
+                          "title",
+                          "startDate",
+                          "current",
+                          "skills"
+                        ]
+                      }
+                    },
+                    "education": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
+                          },
+                          "institution": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "degree": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "field": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "startDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  ""
+                                ]
+                              }
+                            ]
+                          },
+                          "endDate": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "endPrecision": {
+                            "type": "string",
+                            "enum": [
+                              "year"
+                            ]
+                          },
+                          "current": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "institution",
+                          "degree",
+                          "startDate",
+                          "current"
+                        ]
+                      }
+                    },
+                    "certifications": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "issuer": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "issuedOn": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "expiresOn": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "credentialUrl": {
+                            "type": "string",
+                            "maxLength": 2000,
+                            "format": "uri"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "issuer"
+                        ]
+                      }
+                    },
+                    "links": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 100
+                          },
+                          "url": {
+                            "type": "string",
+                            "maxLength": 2000,
+                            "format": "uri"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "portfolio",
+                              "linkedin",
+                              "github",
+                              "website",
+                              "other"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "url"
+                        ]
+                      }
+                    },
+                    "stats": {
+                      "type": "object",
+                      "properties": {
+                        "applications": {
+                          "type": "integer"
+                        },
+                        "interviews": {
+                          "type": "integer"
+                        },
+                        "avgAtsScore": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "completeness": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "skillWarnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "experienceId": {
+                            "type": "string"
+                          },
+                          "skill": {
+                            "type": "string"
+                          },
+                          "verdict": {
+                            "type": "string",
+                            "enum": [
+                              "invalid",
+                              "suspect",
+                              "unverified"
+                            ]
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "experienceId",
+                          "skill",
+                          "verdict",
+                          "message"
+                        ]
+                      }
+                    },
+                    "nextSteps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "icon": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "icon"
+                        ]
+                      }
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "availability": {
+                          "type": "string",
+                          "enum": [
+                            "immediately",
+                            "2_weeks",
+                            "1_month",
+                            "open_to_offers",
+                            "not_looking"
+                          ]
+                        },
+                        "minSalary": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "max": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "enum": [
+                                "USD",
+                                "EUR",
+                                "AUD",
+                                "INR"
+                              ]
+                            },
+                            "period": {
+                              "type": "string",
+                              "enum": [
+                                "year",
+                                "month",
+                                "hour"
+                              ]
+                            },
+                            "estimated": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "currency",
+                            "period"
+                          ]
+                        },
+                        "locations": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "maxItems": 20
+                        },
+                        "remote": {
+                          "type": "string",
+                          "enum": [
+                            "remote",
+                            "hybrid",
+                            "onsite",
+                            "any"
+                          ]
+                        },
+                        "language": {
+                          "type": "string",
+                          "enum": [
+                            "en",
+                            "de"
+                          ]
+                        },
+                        "desiredRoles": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "maxItems": 5
+                        },
+                        "employmentTypes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "full_time",
+                              "part_time",
+                              "contract",
+                              "internship",
+                              "freelance"
+                            ]
+                          }
+                        },
+                        "industries": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "maxItems": 20
+                        },
+                        "careerGoal": {
+                          "type": "string",
+                          "enum": [
+                            "first_job",
+                            "better_role",
+                            "new_field",
+                            "exploring"
+                          ]
+                        },
+                        "experienceBand": {
+                          "type": "string",
+                          "enum": [
+                            "new_grad",
+                            "1_2",
+                            "3_5",
+                            "6_10",
+                            "10_plus"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "availability",
+                        "locations",
+                        "remote",
+                        "language",
+                        "desiredRoles"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "skills",
+                    "experiences",
+                    "education",
+                    "certifications",
+                    "links",
+                    "stats",
+                    "completeness",
+                    "nextSteps",
+                    "preferences"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not valid (VALIDATION_FAILED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed (FORBIDDEN), including a cross-site request on a cookie session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (NOT_FOUND).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests (RATE_LIMITED). See Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong on our side (INTERNAL).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "PLAN_LOCKED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "PRECONDITION_REQUIRED",
+                            "IDEMPOTENCY_MISMATCH",
+                            "UNREADABLE_FILE",
+                            "UNREADABLE_LINK",
+                            "ZERO_BLANK",
+                            "EXPORT_BLOCKED",
+                            "CONSENT_REQUIRED",
+                            "UPGRADE_REQUIRED",
+                            "PAYLOAD_TOO_LARGE",
+                            "RATE_LIMITED",
+                            "UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {},
+                        "request_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/profile/next-steps/{id}/complete": {
       "post": {
         "tags": [
@@ -35581,6 +37117,12 @@
                         "type": "string"
                       }
                     },
+                    "skillsToConfirm": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
                     "experiences": {
                       "type": "array",
                       "items": {
@@ -35588,6 +37130,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "company": {
                             "type": "string",
@@ -35641,6 +37191,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "institution": {
                             "type": "string",
@@ -35700,6 +37258,14 @@
                         "properties": {
                           "id": {
                             "type": "string"
+                          },
+                          "provenance": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "parsed_confirmed",
+                              "assumed"
+                            ]
                           },
                           "name": {
                             "type": "string",

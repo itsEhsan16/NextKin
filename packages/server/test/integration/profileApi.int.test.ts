@@ -17,7 +17,7 @@ afterAll(async () => {
   await h.close();
 });
 
-type Json = Record<string, unknown> & { completeness: number; nextSteps: { id: string }[]; experiences: { id: string; startDate: string; endDate?: string }[] };
+type Json = Record<string, unknown> & { completeness: number; nextSteps: { id: string }[]; experiences: { provenance?: string; id: string; startDate: string; endDate?: string }[] };
 
 async function signedIn() {
   const cookie = await webLogin(h, await registered(h));
@@ -46,6 +46,29 @@ describe('completeness is derived from the data', () => {
     expect(res.status).toBe(201);
     expect(json!.completeness).toBe(0.45);
     expect(json!.nextSteps.some((s) => s.id === 'step_experience')).toBe(false);
+  });
+
+  it('says what it read from a resume, and a confirmation or an edit makes it the person’s', async () => {
+    const { send } = await signedIn();
+    const draft = (await send('/profile/draft', { body: { skills: ['Go'], experiences: [{ ...role, id: 'x' }, { ...role, id: 'y', company: 'Second Co' }] } })).json!;
+    const [first, second] = draft.experiences;
+    expect(first!.provenance).toBe('parsed_confirmed');
+    expect(draft.skillsToConfirm).toEqual(['Go']);
+
+    const confirmed = (await send('/profile/confirm', { body: { kind: 'experience', id: first!.id } })).json!;
+    expect(confirmed.experiences.map((e) => e.provenance)).toEqual(['user', 'parsed_confirmed']);
+
+    const edited = (await send(`/profile/experience/${second!.id}`, { method: 'PUT', body: { ...role, company: 'Second Co', title: 'Renamed' } })).json!;
+    expect(edited.experiences[1]!.provenance).toBe('user');
+
+    const skills = (await send('/profile/confirm', { body: { kind: 'skills' } })).json!;
+    expect(skills.skillsToConfirm).toBeUndefined();
+  });
+
+  it('won’t confirm a row that isn’t yours', async () => {
+    const { send } = await signedIn();
+    const { res } = await send('/profile/confirm', { body: { kind: 'experience', id: '00000000-0000-7000-8000-000000000000' } });
+    expect(res.status).toBe(404);
   });
 
   it('no call moves completeness without a data change', async () => {

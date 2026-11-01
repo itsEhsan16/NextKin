@@ -14757,3 +14757,16 @@ The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when
 - **A fix on a score saved earlier has no basis** until that resume is next scored. A gap keeps its old note until then.
 - **The wording is mine.** It's in `fixBasis` in `packages/shared/src/scoring/report.ts`.
 - **Web next:** the data is there. Web has no fix screen yet.
+
+### 146.3 Where a profile fact came from
+
+- **Change:** the server now returns where each role, degree, certification and skill came from, and the lists show it: "Confirmed", "From your resume" or "Assumed". "Confirm" takes one tap. Skills go as a group: "12 skills from your resume · Confirm".
+- **Editing a row makes it yours.** Before, an edited row stayed marked as read from the resume.
+- **A finished Zero Resume review now saves as confirmed.** The person answered for each fact, so "read from a resume" was wrong.
+- **Calls made without you:**
+  - **"Confirmed" shows on every row,** not only the ones to act on. It's the honest version of what you asked for, but it adds a line to each card. Say if you'd rather show only what needs a look.
+  - **Saving the Skills screen confirms the whole list,** because the screen rewrites it. The person has just looked at it.
+  - **"Assumed" can't appear yet.** Nothing writes it to the profile, because a Zero Resume guess stays on the resume until it's answered. The label is there for when the gap interview needs it.
+  - **Confirming changes no score.** It's a label for now: the engines treat a confirmed row and a read one the same.
+- **Off the board (rule 7):** PROFILE 04, 07 and 10 have no source row. It's the app's pill and a text link. Check it on your phone.
+- **Web next:** the data is there. Web's profile doesn't show it yet.

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
 import { SCORE_LABEL, SKILL_SUGGESTIONS } from '@/data/models';
-import { useProfile, useUpdateSkills } from '@/data/queries';
+import { useConfirmFacts, useProfile, useUpdateSkills } from '@/data/queries';
 
 import { countOf, listsEqual } from '../chipEdits';
 import { ChipListEditor } from '../components/ChipListEditor';
+import { FactSource } from '../components/FactSource';
 import { useProfileActions } from '../hooks/useProfileActions';
 import { PROFILE_ROW_ART } from '../profileRowArt';
 
@@ -19,6 +20,7 @@ export function SkillsScreen() {
   const actions = useProfileActions();
   const profile = useProfile();
   const save = useUpdateSkills();
+  const confirm = useConfirmFacts();
   const [draft, setDraft] = useState<string[] | null>(null);
 
   // The draft is compared against the profile as it stands *now*, not against the copy it was
@@ -27,6 +29,7 @@ export function SkillsScreen() {
   const saved = profile.data?.skills;
   const items = draft ?? saved ?? [];
   const dirty = draft != null && saved != null && !listsEqual(draft, saved);
+  const toConfirm = profile.data?.skillsToConfirm?.length ?? 0;
 
   return (
     <ChipListEditor
@@ -46,6 +49,16 @@ export function SkillsScreen() {
       addLabel="Add a skill"
       note={NOTE}
       onChange={setDraft}
+      below={
+        toConfirm > 0 ? (
+          <FactSource
+            provenance="parsed_confirmed"
+            label={`${countOf(toConfirm, 'skill')} from your resume`}
+            what="the skills from your resume"
+            onConfirm={() => confirm.mutate({ kind: 'skills' })}
+          />
+        ) : undefined
+      }
       loading={profile.isPending}
       error={profile.isError}
       onRetry={() => void profile.refetch()}

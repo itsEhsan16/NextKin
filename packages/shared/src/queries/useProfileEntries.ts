@@ -9,6 +9,7 @@ import type {
   ProfileLink,
   ProfilePatch,
 } from '../models';
+import { withConfirmedFacts, type ConfirmFacts } from '../models';
 import { repos } from '../repos';
 
 import { qk } from './keys';
@@ -175,6 +176,12 @@ export const useRemoveLink = profileMutation(
 export const useUpdateProfile = profileMutation(
   (patch: ProfilePatch) => repos.profile.updateProfile(patch),
   (previous, patch) => ({ ...previous, ...patch }),
+);
+
+/** Makes facts read from a resume the person's own word (toreview §146.3). */
+export const useConfirmFacts = profileMutation(
+  (input: ConfirmFacts) => repos.profile.confirmFacts(input),
+  withConfirmedFacts,
 );
 
 /** Commits the accepted rows of a parsed upload — nothing lands until the user says so (§7.4). */

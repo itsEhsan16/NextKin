@@ -40,6 +40,8 @@ export type EntryCardProps = {
   chips?: readonly string[];
   /** A second target at the end — the Links list's Open (577:9048). Replaces the chevron. */
   action?: { icon: LineIconName; label: string; onPress: () => void };
+  /** Under the card's press target, so it can hold a target of its own (toreview §146.3). */
+  footer?: ReactNode;
   onPress: () => void;
 };
 
@@ -55,6 +57,7 @@ export function EntryCard({
   pill,
   chips,
   action,
+  footer,
   onPress,
 }: EntryCardProps) {
   const { colors, radii, spacing, s } = useTheme();
@@ -133,12 +136,29 @@ export function EntryCard({
     );
   }
 
+  const label = chips && chips.length > 0 ? `${summary}, ${chips.join(', ')}` : summary;
+
+  if (footer) {
+    return (
+      <ProfileCard style={{ padding: spacing[5], gap: s(CARD_GAP) }}>
+        <Pressable
+          {...a11yButton(label, 'Opens this entry')}
+          feedback="subtle"
+          haptic="light"
+          onPress={onPress}
+          style={{ gap: s(CARD_GAP) }}
+        >
+          {header}
+          {chipRow}
+        </Pressable>
+        {footer}
+      </ProfileCard>
+    );
+  }
+
   return (
     <Pressable
-      {...a11yButton(
-        chips && chips.length > 0 ? `${summary}, ${chips.join(', ')}` : summary,
-        'Opens this entry',
-      )}
+      {...a11yButton(label, 'Opens this entry')}
       feedback="subtle"
       haptic="light"
       onPress={onPress}

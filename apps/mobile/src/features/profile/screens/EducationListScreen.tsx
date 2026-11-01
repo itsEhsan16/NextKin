@@ -18,6 +18,7 @@ export function EducationListScreen() {
   return (
     <EntryListScreen
       title="Education"
+      kind="education"
       select={selectRows}
       summary={{
         art: PROFILE_ROW_ART.education,

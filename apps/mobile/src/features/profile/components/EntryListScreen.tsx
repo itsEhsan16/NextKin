@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import type { Profile } from '@/data/models';
-import { useProfile } from '@/data/queries';
+import type { FactKind, Profile } from '@/data/models';
+import { useConfirmFacts, useProfile } from '@/data/queries';
 import { useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import type { ListRowArt } from '@/ui/ListRow';
@@ -15,6 +15,7 @@ import { StateView } from '@/ui/StateView';
 
 import type { EntryRow } from '../entryRows';
 import { EntryListEmpty, type EntryListEmptyConfig } from './EntryListEmpty';
+import { FactSource } from './FactSource';
 import { useProfileActions } from '../hooks/useProfileActions';
 import { AddCard, EntryCard, SectionHeading, StatusPill, SummaryCard, tileFor } from './cards';
 import type { LineIconName } from '@/ui/Icon';
@@ -26,6 +27,8 @@ export type EntryListRow = EntryRow & {
 
 export type EntryListScreenProps = {
   title: string;
+  /** What this list's facts are, for a confirmation. Links aren't facts, so they have none. */
+  kind?: FactKind;
   /** Reads this list's cards off the profile — see `entryRows`. */
   select: (profile: Profile) => EntryListRow[];
   /** The head card: the list's icon, "4 roles on your profile", and why the list matters. */
@@ -64,6 +67,7 @@ const SKELETON_CARD = 112 / 0.75;
  */
 export function EntryListScreen({
   title,
+  kind,
   select,
   summary,
   heading,
@@ -78,6 +82,7 @@ export function EntryListScreen({
   const reduced = useReducedMotion();
   const actions = useProfileActions();
   const profile = useProfile();
+  const confirm = useConfirmFacts();
 
   const page = (children: ReactNode) => (
     <View style={rootStyle.root}>
@@ -163,6 +168,15 @@ export function EntryListScreen({
               pill={row.pill ? <StatusPill label={row.pill.label} tone={row.pill.tone} /> : null}
               chips={row.tags}
               action={row.action}
+              footer={
+                row.source && kind ? (
+                  <FactSource
+                    provenance={row.source}
+                    what={row.title}
+                    onConfirm={() => confirm.mutate({ kind, id: row.id })}
+                  />
+                ) : undefined
+              }
               onPress={() => onOpen(row.id)}
             />
           </Animated.View>

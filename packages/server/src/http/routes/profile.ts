@@ -3,6 +3,7 @@ import type { Context } from 'hono';
 import { profileLinkInputSchema } from '@nextkin/shared/schemas/settings';
 import {
   certificationInputSchema,
+  confirmFactsSchema,
   educationInputSchema,
   experienceInputSchema,
   preferencesPatchSchema,
@@ -173,6 +174,18 @@ export function profileRoutes(deps: ProfileDeps): OpenAPIHono<ApiEnv> {
       responses: { 200: whole('The profile.'), ...authErrors, ...writeErrors, ...commonErrors },
     }),
     async (c) => respond(c, await profile.applyDraft(db, requireAuth(c).identity, c.req.valid('json'))),
+  );
+
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/profile/confirm',
+      tags: ['profile'],
+      summary: 'Make facts read from a resume the person\'s own word: one row, or every row of a kind.',
+      request: { body: body(confirmFactsSchema) },
+      responses: { 200: whole('The profile.'), ...authErrors, ...notFoundError, ...commonErrors },
+    }),
+    async (c) => respond(c, await profile.confirmFacts(db, requireAuth(c).identity, c.req.valid('json'))),
   );
 
   app.openapi(
