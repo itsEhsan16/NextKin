@@ -14932,3 +14932,17 @@ Branch `step-4/create-the-habit`, on top of Step 3. Nothing is merged or pushed.
 ### 147.7 What web still needs
 
 The server and shared data are ready. Web's pass needs the application status with interview day and "No news yet", the Home line, fit labels, hidden picks, the practice card, and a notification feed page (§144.2). Push and share-in are mobile only.
+
+- **The account data export** includes the two push tables, because it reads every owned table. Device tokens and SNS addresses are redacted in it.
+
+### 147.8 What was proved, and what wasn't
+
+- **Passed on the laptop:** typecheck and lint across the repo, every unit suite (engines 203, shared 227, server 296, mobile 1,986, web 407) and the Android bundle. Expo accepts the push and share plugin settings, including the iOS share extension target.
+- **Integration: 1,286 passed, 4 failed, and none of the 4 comes from Step 4.** They're the same four as §146.8: `renders` (2), `documentEditor` (1) and `latexCompile`'s broken-source test. Neither those tests nor the code they exercise changed on this branch. The token redaction came after that run; the privacy suite was rerun and passes.
+- **Ran for real:** `pnpm metrics:retention` against the local database.
+- **Not proved:**
+  - **Nothing in Step 4 has run on a phone.** Push and share-in can't run in Expo Go at all, and no development build exists.
+  - **No push has ever left through SNS.** The adapter's calls and message shapes are tested against a fake client, and the shapes come from AWS's documentation. The first real send may need changes, especially reading a tapped push on each platform.
+  - **Receiving a share has never run.** Jest covers the logic, not Android's intent or the iOS extension.
+  - **Job alerts have only seen Adzuna-shaped test rows.**
+  - **The retention number has no real users behind it.**
