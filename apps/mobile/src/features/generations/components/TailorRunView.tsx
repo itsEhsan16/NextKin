@@ -160,6 +160,7 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
                 domain={domain}
                 score={resume.data?.atsScore}
                 onSeeChanges={seeChanges}
+                onOpenQuestions={actions.openGapInterview}
               />
             </>
           ) : (

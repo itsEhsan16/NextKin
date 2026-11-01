@@ -7,6 +7,9 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
+// Deep import on purpose: the profile barrel drags its screens in.
+import { GapInterviewCard } from '@/features/profile/components/GapInterviewCard';
+
 import { NextStepNote } from './NextStepNote';
 import { Icon } from '@/ui/Icon';
 
@@ -20,6 +23,8 @@ export type TailorReadyProps = {
   score?: number;
   /** Opens the Versions page, where every change sits with its reason (toreview §146.5). */
   onSeeChanges: () => void;
+  /** Opens the gap interview, when there's anything to ask (toreview §146.7). */
+  onOpenQuestions: () => void;
   /**
    * Another flow's parts on the same layout (BUILD 06 599:27): the pill beside "Saved to
    * Resumes", and what sits under the link in place of the next-step note.
@@ -77,6 +82,7 @@ export function TailorReady({
   domain,
   score,
   onSeeChanges,
+  onOpenQuestions,
   pill,
   next,
 }: TailorReadyProps) {
@@ -109,6 +115,8 @@ export function TailorReady({
         </Text>
         <Icon name="ChevronRight" size="sm" color={colors.brand} />
       </Pressable>
+
+      <GapInterviewCard onOpen={onOpenQuestions} style={styles.note} />
 
       {next ? (
         <View style={styles.note}>{next}</View>

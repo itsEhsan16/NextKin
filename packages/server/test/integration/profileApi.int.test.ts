@@ -65,6 +65,26 @@ describe('completeness is derived from the data', () => {
     expect(skills.skillsToConfirm).toBeUndefined();
   });
 
+  it('asks what the profile lacks, and an answer lands as the person’s word', async () => {
+    const { send } = await signedIn();
+    const added = (await send('/profile/experience', { body: { ...role, endDate: undefined, skills: ['Go'] } })).json!;
+    const id = added.experiences[0]!.id;
+    const asked = (await send('/profile/gaps')).json as unknown as { questions: { id: string; title: string }[] };
+    expect(asked.questions[0]).toMatchObject({ id: `role_end:${id}`, title: 'Are you still at Acme?' });
+
+    const res = await send(`/profile/gaps/${encodeURIComponent(`role_end:${id}`)}`, { body: { kind: 'role_end', end: '2022-03-31' } });
+    expect(res.res.status).toBe(200);
+    expect((res.json as unknown as { questions: { id: string }[] }).questions.some((q) => q.id === `role_end:${id}`)).toBe(false);
+    const after = (await send('/profile')).json!;
+    expect(after.experiences[0]!.provenance).toBe('user');
+    // The interview's own records stay out of the job preferences.
+    expect(after.preferences).not.toHaveProperty('gapAnswers');
+
+    // Answered once, it's not there to answer again; a skip is remembered the same way.
+    const again = await send(`/profile/gaps/${encodeURIComponent(`role_end:${id}`)}`, { body: { kind: 'skip' } });
+    expect(again.res.status).toBe(404);
+  });
+
   it('won’t confirm a row that isn’t yours', async () => {
     const { send } = await signedIn();
     const { res } = await send('/profile/confirm', { body: { kind: 'experience', id: '00000000-0000-7000-8000-000000000000' } });

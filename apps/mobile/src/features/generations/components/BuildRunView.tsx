@@ -120,6 +120,7 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
                 domain={domain}
                 score={score}
                 onSeeChanges={seeChanges}
+                onOpenQuestions={actions.openGapInterview}
                 pill={<BuildBandPill score={score} />}
                 next={
                   <BuildNextTiles

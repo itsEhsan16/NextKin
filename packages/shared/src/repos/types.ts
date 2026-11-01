@@ -57,6 +57,8 @@ import type { FigureDraft,
   ProfileLink,
   ProfilePatch,
   ConfirmFacts,
+  GapAnswer,
+  GapQuestion,
   ProfilePreferences,
   Resume,
   ExportReceipt,
@@ -202,6 +204,10 @@ export type ProfileRepo = {
   applyProfileDraft(draft: ProfileDraft): Promise<Profile>;
   /** Makes facts read from a resume the person's own word: one row, or a whole kind (§146.3). */
   confirmFacts(input: ConfirmFacts): Promise<Profile>;
+  /** What the gap interview still has to ask (toreview §146.7). */
+  getGapQuestions(): Promise<GapQuestion[]>;
+  /** An answer or a skip. Answers with what's left to ask. */
+  answerGap(id: string, answer: GapAnswer): Promise<GapQuestion[]>;
 };
 
 export type ExportFormat = 'pdf' | 'docx' | 'txt';

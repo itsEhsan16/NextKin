@@ -88,6 +88,7 @@ export default function RootLayout() {
           <Stack.Screen name="account/export" />
           <Stack.Screen name="profile/edit" />
           <Stack.Screen name="profile/skills" />
+          <Stack.Screen name="profile/questions" />
           <Stack.Screen name="profile/desired-roles" />
           <Stack.Screen name="profile/locations" />
           <Stack.Screen name="profile/experience/index" />

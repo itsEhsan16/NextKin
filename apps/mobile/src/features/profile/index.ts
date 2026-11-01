@@ -14,4 +14,6 @@ export { LinkFormScreen } from './screens/LinkFormScreen';
 export { LinksListScreen } from './screens/LinksListScreen';
 export { LocationsScreen } from './screens/LocationsScreen';
 export { ProfileScreen } from './screens/ProfileScreen';
+export { GapInterviewCard } from './components/GapInterviewCard';
+export { GapInterviewScreen } from './screens/GapInterviewScreen';
 export { SkillsScreen } from './screens/SkillsScreen';

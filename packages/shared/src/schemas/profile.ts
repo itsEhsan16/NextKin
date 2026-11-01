@@ -8,7 +8,7 @@ import type {
   ProfileDraft,
   ProfilePreferences,
 } from '../models/profile';
-import type { ConfirmFacts } from '../models/profile';
+import type { ConfirmFacts, GapAnswer } from '../models/profile';
 import { profileLinkSchema } from './settings';
 
 /**
@@ -28,6 +28,31 @@ export const confirmFactsSchema = z.object({
   kind: z.enum(['experience', 'education', 'certifications', 'skills']),
   id: z.string().optional(),
 }) satisfies z.ZodType<ConfirmFacts>;
+
+export const gapQuestionListSchema = z.object({
+  questions: z.array(
+    z.object({
+      id: z.string(),
+      kind: z.enum(['role_end', 'role_skills', 'education_year', 'date_gap', 'skill_home']),
+      title: z.string(),
+      detail: z.string(),
+      roleId: z.string().optional(),
+      educationId: z.string().optional(),
+      skill: z.string().optional(),
+      suggestions: z.array(z.string()).optional(),
+      roles: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
+    }),
+  ),
+});
+
+export const gapAnswerSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('skip') }),
+  z.object({ kind: z.literal('role_end'), end: isoDate.nullable() }),
+  z.object({ kind: z.literal('role_skills'), skills: z.array(tag).min(1).max(20) }),
+  z.object({ kind: z.literal('education_year'), year: z.number().int().min(1950).max(2100) }),
+  z.object({ kind: z.literal('date_gap'), reason: z.enum(['study', 'break', 'freelance', 'leave_off']) }),
+  z.object({ kind: z.literal('skill_home'), roleId: z.string().nullable() }),
+]) satisfies z.ZodType<GapAnswer>;
 
 export const experienceSchema = z.object({
   id: z.string(),

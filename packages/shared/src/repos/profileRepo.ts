@@ -1,5 +1,6 @@
 import { newId, simulate } from '../mock';
 import { withConfirmedFacts, type Profile } from '../models';
+import { gapChanges, gapQuestionsOf, gapRecord } from '../scoring/gapQuestions';
 
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ProfileRepo } from './types';
@@ -248,6 +249,25 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
           certifications: [...profile.certifications, ...withFreshIds(certifications.map(read), 'cert')],
           completeness: nudge(profile.completeness, added),
         });
+      }),
+
+    getGapQuestions: () =>
+      simulate(() => gapQuestionsOf(store.state.profile, store.state.gapAnswers), { empty: () => [] }),
+
+    answerGap: (id, answer) =>
+      simulate(() => {
+        const { profile, gapAnswers } = store.state;
+        const question = gapQuestionsOf(profile, gapAnswers).find((item) => item.id === id);
+        if (!question) throw new NotFoundError('GapQuestion', id);
+        const { experience, education } = gapChanges(profile, question, answer);
+        const mine = <T extends object>(row: T) => ({ ...row, provenance: 'user' as const });
+        store.state.profile = {
+          ...profile,
+          experiences: profile.experiences.map((row) => (row.id === experience?.id ? mine(experience) : row)),
+          education: profile.education.map((row) => (row.id === education?.id ? mine(education) : row)),
+        };
+        store.state.gapAnswers = { ...gapAnswers, [id]: gapRecord(answer) };
+        return gapQuestionsOf(store.state.profile, store.state.gapAnswers);
       }),
 
     confirmFacts: (input) =>

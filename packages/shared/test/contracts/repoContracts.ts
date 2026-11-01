@@ -144,6 +144,20 @@ export function profileRepoContract(make: Make): void {
     expect((await profile.confirmFacts({ kind: 'skills' })).skillsToConfirm).toBeUndefined();
   });
 
+  it('asks about what the profile lacks, once, and an answer lands on the profile', async () => {
+    const { profile } = await make();
+    const added = await profile.upsertExperience({ id: '', company: 'Gap Co', title: 'Engineer', startDate: '2020-01-01', current: false, skills: ['Go'] });
+    const role = added.experiences.find((entry) => entry.company === 'Gap Co')!;
+    const asked = (await profile.getGapQuestions()).find((q) => q.id === `role_end:${role.id}`);
+    expect(asked?.title).toBe('Are you still at Gap Co?');
+
+    const left = await profile.answerGap(asked!.id, { kind: 'role_end', end: '2022-03-01' });
+    expect(left.some((q) => q.id === asked!.id)).toBe(false);
+    const after = await profile.getProfile();
+    expect(after.experiences.find((entry) => entry.id === role.id)).toMatchObject({ endDate: '2022-03-01', provenance: 'user' });
+    await expect(profile.answerGap(asked!.id, { kind: 'skip' })).rejects.toBeTruthy();
+  });
+
   it('completeNextStep returns the whole profile; an unknown step is NotFoundError', async () => {
     const { profile } = await make();
     const current = await profile.getProfile();

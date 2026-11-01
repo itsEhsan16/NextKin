@@ -6,6 +6,8 @@ import {
   confirmFactsSchema,
   educationInputSchema,
   experienceInputSchema,
+  gapAnswerSchema,
+  gapQuestionListSchema,
   preferencesPatchSchema,
   profileDraftSchema,
   profilePatchSchema,
@@ -14,6 +16,7 @@ import {
 } from '@nextkin/shared/schemas/profile';
 import type { IdempotencyStore } from '../../cache/stores';
 import type { Database } from '../../db/database';
+import * as gaps from '../../services/gaps';
 import * as profile from '../../services/profile';
 import type { LoadedProfile } from '../../services/profileRead';
 import type { ApiEnv } from '../env';
@@ -174,6 +177,16 @@ export function profileRoutes(deps: ProfileDeps): OpenAPIHono<ApiEnv> {
       responses: { 200: whole('The profile.'), ...authErrors, ...writeErrors, ...commonErrors },
     }),
     async (c) => respond(c, await profile.applyDraft(db, requireAuth(c).identity, c.req.valid('json'))),
+  );
+
+  app.openapi(
+    createRoute({ method: 'get', path: '/profile/gaps', tags: ['profile'], summary: 'What the gap interview still has to ask.', responses: { 200: { description: 'The questions left.', content: { 'application/json': { schema: gapQuestionListSchema } } }, ...authErrors, ...commonErrors } }),
+    async (c) => c.json(checked(gapQuestionListSchema, { questions: await gaps.listGapQuestions(db, requireAuth(c).identity) }), 200),
+  );
+
+  app.openapi(
+    createRoute({ method: 'post', path: '/profile/gaps/{id}', tags: ['profile'], summary: 'Answer or skip a question. Answers with what is left to ask.', request: { params: idParam, body: body(gapAnswerSchema) }, responses: { 200: { description: 'The questions left.', content: { 'application/json': { schema: gapQuestionListSchema } } }, ...authErrors, ...notFoundError, ...commonErrors } }),
+    async (c) => c.json(checked(gapQuestionListSchema, { questions: await gaps.answerGapQuestion(db, requireAuth(c).identity, c.req.valid('param').id, c.req.valid('json')) }), 200),
   );
 
   app.openapi(

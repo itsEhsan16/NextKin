@@ -44,6 +44,8 @@ export function useGenerationsActions() {
       openScore: (resumeId: string) =>
         router.push({ pathname: '/resumes/[id]/score', params: { id: resumeId } }),
       /** The document itself (V2 §7.11) — the editor, whether or not the run produced a score. */
+      /** The gap interview, offered under a finished resume (toreview §146.7). */
+      openGapInterview: () => router.push('/profile/questions'),
       /** What changed and why, version by version (toreview §146.5). */
       openVersions: (resumeId: string) =>
         router.push({ pathname: '/resumes/[id]/versions', params: { id: resumeId } }),

@@ -16,6 +16,7 @@ import { TabTitleRow } from '@/ui/TabTitleRow';
 import { Text } from '@/ui/Text';
 
 import { CompletenessCard } from '../components/CompletenessCard';
+import { GapInterviewCard } from '../components/GapInterviewCard';
 import { PlanCard } from '../components/PlanCard';
 import { ProfileIdentity } from '../components/ProfileIdentity';
 import { ProfileSkeleton } from '../components/ProfileSkeleton';
@@ -149,6 +150,8 @@ export function ProfileScreen() {
       <ProfileStatsCard stats={current.stats} />
 
       <CompletenessCard profile={current} onOpenStep={actions.openNextStep} />
+
+      <GapInterviewCard onOpen={actions.openGapInterview} />
 
       {/* Wrapped: `openUpgrade` takes an optional reason, and the card has none to give (§85). */}
       {subscription.data ? (

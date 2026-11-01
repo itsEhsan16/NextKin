@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Profile, ProfilePreferences } from '../models';
+import type { GapAnswer, Profile, ProfilePreferences } from '../models';
 import { repos } from '../repos';
 
 import { qk } from './keys';
@@ -12,6 +12,23 @@ export function useProfile() {
   return useQuery({
     queryKey: qk.profile.me(),
     queryFn: () => repos.profile.getProfile(),
+  });
+}
+
+/** What the gap interview still has to ask (toreview §146.7). Answers move it, so it's kept fresh. */
+export function useGapQuestions() {
+  return useQuery({ queryKey: qk.profile.gaps(), queryFn: () => repos.profile.getGapQuestions(), staleTime: 0 });
+}
+
+/** An answer or a skip. The server sends back what's left, and the profile has moved with it. */
+export function useAnswerGap() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, answer }: { id: string; answer: GapAnswer }) => repos.profile.answerGap(id, answer),
+    onSuccess: (left) => {
+      queryClient.setQueryData(qk.profile.gaps(), left);
+      void queryClient.invalidateQueries({ queryKey: qk.profile.me() });
+    },
   });
 }
 

@@ -42,6 +42,7 @@ export function useProfileActions() {
       openExperience: () => router.push('/profile/experience'),
       openEducation: () => router.push('/profile/education'),
       openSkills: () => router.push('/profile/skills'),
+      openGapInterview: () => router.push('/profile/questions'),
       openCertifications: () => router.push('/profile/certifications'),
       openLinks: () => router.push('/profile/links'),
       openDesiredRoles: () => router.push('/profile/desired-roles'),

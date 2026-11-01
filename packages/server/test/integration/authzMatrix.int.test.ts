@@ -88,6 +88,8 @@ const MATRIX: Record<string, Entry> = {
   'PUT /api/v1/profile/skills': { access: 'user', body: { skills: [] } },
   'POST /api/v1/profile/draft': { access: 'user', body: {} },
   'POST /api/v1/profile/confirm': { access: 'user', body: { kind: 'skills' } },
+  'GET /api/v1/profile/gaps': { access: 'user' },
+  'POST /api/v1/profile/gaps/{id}': { access: 'user', body: { kind: 'skip' } },
   'POST /api/v1/profile/next-steps/{id}/complete': { access: 'user' },
   'POST /api/v1/uploads/presign': { access: 'user', body: { purpose: 'resume', fileName: 'cv.pdf', contentType: 'application/pdf', size: 1000 } },
   'POST /api/v1/uploads/{id}/confirm': { access: 'user' },

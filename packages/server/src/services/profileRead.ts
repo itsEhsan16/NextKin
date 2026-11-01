@@ -47,8 +47,9 @@ export interface StoredPreferences extends Partial<ProfilePreferences> {
 }
 
 export function jobPreferences(stored: unknown): ProfilePreferences {
-  const job: Partial<ProfilePreferences> & { notifications?: unknown } = { ...((stored ?? {}) as StoredPreferences) };
+  const job: Partial<ProfilePreferences> & { notifications?: unknown; gapAnswers?: unknown } = { ...((stored ?? {}) as StoredPreferences) };
   delete job.notifications;
+  delete job.gapAnswers;
   return { ...DEFAULT_JOB_PREFERENCES, ...job };
 }
 

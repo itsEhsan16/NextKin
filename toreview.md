@@ -14812,3 +14812,23 @@ The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when
 - **What the count doesn't mean:** it's our own read-back, not a test against any employer's software. The wording stays "we read it back".
 - **An export from before today has no receipt,** so its toast is the plain "Saved as PDF".
 - **Web next:** the status route carries the receipt. Web shows nothing after a download yet.
+
+### 146.7 The gap interview
+
+- **Change:** "Quick questions" is a new screen of up to seven short, skippable questions about holes in the profile. It's offered from a card on Profile and under a finished resume, never in the first-run path. The card only shows when there's something to ask.
+- **Code decides what to ask.** The rules are in `packages/engines/src/gaps.ts`, which is pure, and no model is involved. It finds:
+  - a role with no end date that isn't current
+  - a role with no skills
+  - an education with no year
+  - more than three months between roles
+  - a listed skill no role shows (three at most, so a long list can't crowd out the rest)
+- **An answer is the person's own fact.** It goes through the profile's own writes, so it shows as "Confirmed". A skip is remembered too, so nothing nags.
+- **Calls made without you:**
+  - **Two questions from `WhyNextKin.md` are left out.** "A bullet with no number" is already the plan's "Add the result". "A title we reworded" has no data reaching the client yet.
+  - **The questions are fixed sentences,** not phrased by a model. The review allowed a model to phrase them, but plain sentences need no key and can't drift.
+  - **A gap's reason is kept but goes nowhere yet:** the review says it should only appear if the person chooses, and nothing offers that choice. It stops the question coming back.
+  - **"A course or side project" adds no fact.** There's no profile field for it, so the question just goes away.
+  - **A date gap is judged on month-level dates only.** Year-only dates are too rough to call a gap.
+  - **No re-score after answering.** A resume's score belongs to that version, so answers count from the next resume made. Say if you'd like a nudge to remake one.
+- **Off the board (rule 7):** the screen, the card, and the card under TAILOR 05 and BUILD 06 are new, from the app's card, chips and field. The wording is all mine. Check it on your phone.
+- **Web next:** the routes are there. Web has no interview screen.

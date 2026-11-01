@@ -195,6 +195,35 @@ export type Profile = {
   preferences: ProfilePreferences;
 };
 
+/** One question of the gap interview (toreview §146.7). The engine picks it; these are its words. */
+export type GapQuestion = {
+  id: string;
+  kind: 'role_end' | 'role_skills' | 'education_year' | 'date_gap' | 'skill_home';
+  title: string;
+  /** Why it's asked. */
+  detail: string;
+  roleId?: string;
+  educationId?: string;
+  skill?: string;
+  /** Skills a role with none might have used, from the profile's own list. */
+  suggestions?: string[];
+  /** The roles a skill might belong to. */
+  roles?: { id: string; label: string }[];
+};
+
+/** Why there's a gap between roles. Kept, and never printed unless the person asks. */
+export type GapReason = 'study' | 'break' | 'freelance' | 'leave_off';
+
+export type GapAnswer =
+  | { kind: 'skip' }
+  /** A role's end: an ISO date, or null when they're still there. */
+  | { kind: 'role_end'; end: string | null }
+  | { kind: 'role_skills'; skills: string[] }
+  | { kind: 'education_year'; year: number }
+  | { kind: 'date_gap'; reason: GapReason }
+  /** The role a skill was used at, or null for a course or side project. */
+  | { kind: 'skill_home'; roleId: string | null };
+
 /** The profile once these facts are the person's own word. The mock and the screen agree on it. */
 export function withConfirmedFacts(profile: Profile, { kind, id }: ConfirmFacts): Profile {
   const mark = <T extends { id: string; provenance?: FactProvenance }>(rows: T[]): T[] =>

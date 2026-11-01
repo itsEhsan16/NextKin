@@ -23,6 +23,7 @@ export const qk = {
   profile: {
     all: ['profile'] as const,
     me: () => ['profile', 'me'] as const,
+    gaps: () => ['profile', 'gaps'] as const,
   },
   resumes: {
     all: ['resumes'] as const,

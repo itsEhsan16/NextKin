@@ -123,7 +123,13 @@ export {
   useUnreadCount,
 } from './useNotifications';
 export { usePrivacySettings, useUpdatePrivacySettings } from './usePrivacy';
-export { useCompleteNextStep, useProfile, useUpdatePreferences } from './useProfile';
+export {
+  useAnswerGap,
+  useCompleteNextStep,
+  useGapQuestions,
+  useProfile,
+  useUpdatePreferences,
+} from './useProfile';
 export {
   useApplyProfileDraft,
   useConfirmFacts,

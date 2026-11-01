@@ -83,6 +83,8 @@ export type MockState = {
   subscription: Subscription;
   dashboardStats: DashboardStats;
   profile: Profile;
+  /** The gap interview's questions already dealt with, by id (toreview §146.7). */
+  gapAnswers: Record<string, string>;
   resumes: Resume[];
   resumeVersions: ResumeVersion[];
   /** Score panels by resume id, computed by the engines (C-10); absent where no total exists (D-15). */
@@ -194,6 +196,7 @@ function seedState(): MockState {
     subscription: clone(subscriptionFixture),
     dashboardStats: clone(dashboardStatsFixture),
     profile: clone(web ? webProfileFixture : profileFixture),
+    gapAnswers: {},
     resumes: clone(resumes),
     resumeVersions: clone(web ? webResumeVersionsFixture : resumeVersionsFixture),
     atsScores: {},
@@ -239,6 +242,7 @@ export type MockStore = {
 /** Empties everything a person would take for theirs: jobs, resumes, runs, alerts. */
 export function clearSampleData(store: MockStore): void {
   Object.assign(store.state, {
+    gapAnswers: {},
     resumes: [],
     resumeVersions: [],
     atsScores: {},
