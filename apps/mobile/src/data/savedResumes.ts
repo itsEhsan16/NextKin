@@ -23,7 +23,7 @@ import { createQueryClient } from './queries/client';
 const KEY = 'offline.resumes';
 const SAVE_DELAY_MS = 1000;
 /** What reading a resume takes. Typeset pages stay out: their links expire within minutes. */
-const SAVED_PARTS: ReadonlySet<unknown> = new Set(['list', 'detail', 'content', 'score']);
+const SAVED_PARTS: ReadonlySet<unknown> = new Set(['list', 'detail', 'content', 'score', 'sources']);
 
 /** A build reads only its own copy: another version's data may not have the shape it expects. */
 const VERSION = Constants.expoConfig?.version;

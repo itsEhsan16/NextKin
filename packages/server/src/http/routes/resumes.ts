@@ -11,6 +11,7 @@ import {
   resumeCardSchema,
   resumeListSchema,
   resumeSectionKeySchema,
+  lineSourceListSchema,
   resumeVersionListSchema,
   sectionRunSchema,
   sectionRegenerateSchema,
@@ -107,6 +108,11 @@ export function resumeRoutes(deps: ResumeRouteDeps): OpenAPIHono<ApiEnv> {
 
   app.openapi(createRoute({ method: 'get', path: '/resumes/{id}/score', tags: ['resumes'], summary: 'The current version’s score panel.', request: { params: idParam }, responses: { 200: ok('The panel.', atsScorePanelSchema), ...errs } }), async (c) =>
     c.json(checked(atsScorePanelSchema, await read.getScore(db, requireAuth(c).identity, c.req.valid('param').id)), 200),
+  );
+
+  app.openapi(
+    createRoute({ method: 'get', path: '/resumes/{id}/sources', tags: ['resumes'], summary: 'Where each line of the current version came from.', request: { params: idParam }, responses: { 200: ok('The lines and their sources.', lineSourceListSchema), ...authErrors, ...notFoundError, ...commonErrors } }),
+    async (c) => c.json(checked(lineSourceListSchema, { data: await read.getLineSources(db, requireAuth(c).identity, c.req.valid('param').id) }), 200),
   );
 
   app.openapi(

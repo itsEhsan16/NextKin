@@ -59,6 +59,7 @@ import type { FigureDraft,
   ConfirmFacts,
   ProfilePreferences,
   Resume,
+  LineSource,
   ResumeContent,
   ResumeDocument,
   ResumeDocumentWrite,
@@ -246,6 +247,8 @@ export type ResumesRepo = {
   getVersions(id: string): Promise<ResumeVersion[]>;
   /** The structured body the editor edits — never a rendered file (V2 §7.11). */
   getContent(id: string): Promise<DocumentContent>;
+  /** Where each line of the current version came from (toreview §146.4). */
+  getLineSources(id: string): Promise<LineSource[]>;
   /** Writes one section. Generic over the section so the value is typed to what is written. */
   updateSection<K extends ResumeSectionKey>(
     id: string,

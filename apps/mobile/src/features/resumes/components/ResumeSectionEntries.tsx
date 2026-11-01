@@ -10,6 +10,7 @@ import { Text } from '@/ui/Text';
 
 import { COLLAPSED_ROLES } from '../editorSections';
 import { EntryBullet, ReviewPill } from './ResumeEntryBits';
+import { SourceLine } from './SourceLine';
 
 // The entries at 390 (RESUMES 06 577:7101 / 577:7168 / 577:7258), in artboard units.
 const ENTRY_GAP = 12 / 0.75;
@@ -48,7 +49,9 @@ function Bullets({ items }: { items: readonly string[] }) {
   return (
     <View style={styles.bullets}>
       {items.map((bullet) => (
-        <EntryBullet key={bullet} label={bullet} />
+        <SourceLine key={bullet} text={bullet}>
+          <EntryBullet label={bullet} />
+        </SourceLine>
       ))}
     </View>
   );
@@ -82,7 +85,13 @@ export function RoleEntry({ role }: { role: ContentRole }) {
   const styles = useStyles();
   return (
     <View style={styles.entry}>
-      <EntryHead name={role.company} title={role.title} meta={period(role.company, role.period)} />
+      <SourceLine text={role.title}>
+        <EntryHead
+          name={role.company}
+          title={role.title}
+          meta={period(role.company, role.period)}
+        />
+      </SourceLine>
       {role.needsReview ? <ReviewPill /> : null}
       <Bullets items={role.bullets} />
     </View>
@@ -94,11 +103,15 @@ export function ProjectEntry({ project }: { project: ContentProject }) {
   return (
     <View style={styles.project}>
       <View style={styles.projectHead}>
-        <Text variant="label">{project.name}</Text>
+        <SourceLine text={project.name}>
+          <Text variant="label">{project.name}</Text>
+        </SourceLine>
         {project.description ? (
-          <Text variant="body" color="textBody">
-            {project.description}
-          </Text>
+          <SourceLine text={project.description}>
+            <Text variant="body" color="textBody">
+              {project.description}
+            </Text>
+          </SourceLine>
         ) : null}
       </View>
       {project.needsReview ? <ReviewPill /> : null}
@@ -111,11 +124,13 @@ export function EducationEntry({ entry }: { entry: ContentEducation }) {
   const styles = useStyles();
   return (
     <View style={styles.entry}>
-      <EntryHead
-        name={entry.institution}
-        title={entry.degree}
-        meta={period(entry.institution, entry.period)}
-      />
+      <SourceLine text={entry.degree}>
+        <EntryHead
+          name={entry.institution}
+          title={entry.degree}
+          meta={period(entry.institution, entry.period)}
+        />
+      </SourceLine>
       {entry.needsReview ? <ReviewPill /> : null}
     </View>
   );

@@ -1,6 +1,7 @@
 import type { AtsScore, Resume, ResumeVersion } from '@nextkin/shared/models/resume';
-import { contentNeedsReview, type DocumentContent } from '@nextkin/shared/models/resumeContent';
+import { contentNeedsReview, type DocumentContent, type LineSource } from '@nextkin/shared/models/resumeContent';
 import { toLetterContent, toResumeContent } from '@nextkin/shared/scoring/canonical';
+import { lineSourcesOf } from '@nextkin/shared/scoring/lineSources';
 import { exportProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
 import { canonicalLetterSchema, canonicalResumeSchema } from '@nextkin/shared/schemas/resumeContent';
 
@@ -166,6 +167,33 @@ export async function getScore(db: Database, identity: Identity, id: string): Pr
     const panel = (report?.basis as ReportBasis)?.panel;
     if (!panel) throw errors.notFound('score'); // a blank or unscored document has no score
     return panel;
+  });
+}
+
+/**
+ * Where each line of the current version came from (toreview §146.4). A tailored version's claims
+ * cite the lines of the version it was made from, which its ledger names; an edit after it keeps
+ * those citations, so the newest version that names a base is the one to read them against.
+ */
+export async function getLineSources(db: Database, identity: Identity, id: string): Promise<LineSource[]> {
+  return db.withUser(identity, async (tx) => {
+    const row = await rows(tx).where('r.id', '=', id).executeTakeFirst();
+    if (!row) throw errors.notFound('resume');
+    if (!row.version_id) return [];
+    const current = await tx.selectFrom('resume_versions').select(['content', 'version_number']).where('id', '=', row.version_id).executeTakeFirstOrThrow();
+    const doc = canonicalResumeSchema.safeParse(current.content);
+    if (!doc.success) return []; // a cover letter has no lines of this kind
+    const history = await tx
+      .selectFrom('resume_versions')
+      .select('claim_ledger')
+      .where('resume_id', '=', id)
+      .where('version_number', '<=', current.version_number)
+      .orderBy('version_number', 'desc')
+      .execute();
+    const baseId = history.map((v) => (v.claim_ledger as { basis?: { versionId?: string } } | null)?.basis?.versionId).find(Boolean);
+    const base = baseId ? await tx.selectFrom('resume_versions').select('content').where('id', '=', baseId).executeTakeFirst() : undefined;
+    const parsed = base ? canonicalResumeSchema.safeParse(base.content) : undefined;
+    return lineSourcesOf(doc.data, parsed?.success ? parsed.data : undefined);
   });
 }
 

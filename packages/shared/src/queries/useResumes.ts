@@ -36,6 +36,16 @@ export function useResumeScore(id: string) {
   });
 }
 
+/** Fetched fresh each time: it answers for the version on screen, which an edit moves on. */
+export function useLineSources(id: string) {
+  return useQuery({
+    queryKey: qk.resumes.sources(id),
+    queryFn: () => repos.resumes.getLineSources(id),
+    enabled: id.length > 0,
+    staleTime: 0,
+  });
+}
+
 export function useResumeVersions(id: string) {
   return useQuery({
     queryKey: qk.resumes.versions(id),

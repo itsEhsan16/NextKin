@@ -166,6 +166,7 @@ export {
   useRestoreVersion,
   useResume,
   useResumeScore,
+  useLineSources,
   useResumeVersions,
   useResumes,
   useSetResumeAsBase,

@@ -102,6 +102,13 @@ export const resumeVersionSchema = z.object({
   actor: z.enum(['user', 'generation', 'restore', 'zero_review', 'upload']).optional(),
   locked: z.boolean().optional(),
 });
+export const lineSourceSchema = z.object({
+  text: z.string(),
+  origin: z.enum(['generated', 'user', 'assumed']),
+  facts: z.array(z.string()),
+  before: z.string().optional(),
+});
+export const lineSourceListSchema = z.object({ data: z.array(lineSourceSchema) });
 export const resumeVersionListSchema = z.object({ data: z.array(resumeVersionSchema) });
 export const atsFixResultSchema = z.object({ content: documentContentSchema, score: atsScorePanelSchema });
 export const zeroCheckResultSchema = z.object({ content: documentContentSchema, resume: resumeCardSchema, finished: z.boolean() });

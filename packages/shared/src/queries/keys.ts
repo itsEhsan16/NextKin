@@ -30,6 +30,8 @@ export const qk = {
     detail: (id: string) => ['resumes', 'detail', id] as const,
     score: (id: string) => ['resumes', 'score', id] as const,
     versions: (id: string) => ['resumes', 'versions', id] as const,
+    /** Where each line of the current version came from (toreview §146.4). */
+    sources: (id: string) => ['resumes', 'sources', id] as const,
     /** The document body the editor edits, separate from the Resume metadata in `detail`. */
     content: (id: string) => ['resumes', 'content', id] as const,
     /** The typeset pages of a version; `current` for whichever version is current. */

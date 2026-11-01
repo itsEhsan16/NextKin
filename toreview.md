@@ -14770,3 +14770,16 @@ The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when
   - **Confirming changes no score.** It's a label for now: the engines treat a confirmed row and a read one the same.
 - **Off the board (rule 7):** PROFILE 04, 07 and 10 have no source row. It's the app's pill and a text link. Check it on your phone.
 - **Web next:** the data is there. Web's profile doesn't show it yet.
+
+### 146.4 Where a line came from
+
+- **Change:** on the resume page, tapping any line opens "Where this came from": "Your words", "Written by the AI" or "Assumed", what it rests on, and the line it replaced when the AI reworded one. This is the step's "done when". The page looks as it did.
+- **How it stays true:** generated lines already cite the facts they rest on, and a tailored version names the version it was made from. A new route (`GET /resumes/{id}/sources`) turns those citations into words, and a citation it can't place is dropped rather than guessed.
+- **Calls made without you:**
+  - **Covers** the summary, skills, role and project lines, schools and certificates. A cover letter's paragraphs aren't covered yet: it's a resume step.
+  - **A line the person edited** reads "Your words", and loses its "before". It's theirs now.
+  - **An older tailored resume** shows the role but may not show "before" if its base version has gone.
+  - **Saved for offline:** a line's source is kept once it has been opened.
+- **Wording is mine:** "Where this came from", "Your words", "It rests on", "Your line before".
+- **Check on your phone:** a tap target is the line itself, so short ones (a skill chip) are small. There's no visible hint that a line can be tapped, so testers need telling. Say if you'd like a one-line hint on the page.
+- **Web next:** the route is there. Web's Text view could show the same thing.

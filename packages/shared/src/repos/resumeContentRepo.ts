@@ -17,6 +17,7 @@ import {
   regenerated,
   withSection,
 } from './resumeContentEdits';
+import { lineSourcesOfContent } from '../scoring/lineSources';
 import { rescoreStored } from './scoring';
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ResumesRepo } from './types';
@@ -31,6 +32,7 @@ export type ResumeContentRepo = Pick<
   ResumesRepo,
   | 'create'
   | 'getContent'
+  | 'getLineSources'
   | 'updateSection'
   | 'updateLetter'
   | 'regenerateSection'
@@ -120,6 +122,12 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
       }),
 
     getContent: (id) => simulate(() => clone(readContent(id))),
+
+    getLineSources: (id) =>
+      simulate(() => {
+        const content = readContent(id);
+        return content.kind === 'resume' ? lineSourcesOfContent(content, !find(id).isBase) : [];
+      }),
 
     updateSection: (id, section, value) =>
       simulate(() => {

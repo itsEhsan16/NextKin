@@ -115,6 +115,18 @@ export type ContentEducation = {
 /** The contact line a printed resume opens with (Figma 304:3326). */
 export type ContentContact = { email?: string; phone?: string; location?: string };
 
+/** Where one line of a resume came from (toreview §146.4). */
+export type LineSource = {
+  /** The line as the page prints it. */
+  text: string;
+  /** `generated`: the AI wrote it. `user`: the person's own. `assumed`: a guess to check. */
+  origin: 'generated' | 'user' | 'assumed';
+  /** What it rests on, in words: "Your Designer role at Acme". */
+  facts: string[];
+  /** The line it replaced, when the AI reworded one of the person's. */
+  before?: string;
+};
+
 export type ResumeContent = {
   kind: 'resume';
   resumeId: string;

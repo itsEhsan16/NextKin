@@ -5,6 +5,7 @@ import { useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
 import { EducationList, ExperienceBody, ProjectList } from './ResumeSectionEntries';
+import { SourceLine } from './SourceLine';
 
 export type ResumeSectionBodyProps = {
   content: ResumeContent;
@@ -22,19 +23,20 @@ function ChipWrap({ items }: { items: readonly string[] }) {
   return (
     <View style={[styles.wrap, { gap: s(PILL_GAP) }]}>
       {items.map((item) => (
-        <View
-          key={item}
-          style={{
-            paddingHorizontal: s(PILL_PAD_X),
-            paddingVertical: s(PILL_PAD_Y),
-            borderRadius: radii.full,
-            backgroundColor: colors.surfaceSubtle,
-          }}
-        >
-          <Text variant="micro" color="textBody" numberOfLines={1}>
-            {item}
-          </Text>
-        </View>
+        <SourceLine key={item} text={item}>
+          <View
+            style={{
+              paddingHorizontal: s(PILL_PAD_X),
+              paddingVertical: s(PILL_PAD_Y),
+              borderRadius: radii.full,
+              backgroundColor: colors.surfaceSubtle,
+            }}
+          >
+            <Text variant="micro" color="textBody" numberOfLines={1}>
+              {item}
+            </Text>
+          </View>
+        </SourceLine>
       ))}
     </View>
   );
@@ -52,9 +54,11 @@ export function ResumeSectionBody({ content, section }: ResumeSectionBodyProps) 
   switch (section) {
     case 'summary':
       return (
-        <Text variant="body" color="textBody">
-          {content.summary}
-        </Text>
+        <SourceLine text={content.summary}>
+          <Text variant="body" color="textBody">
+            {content.summary}
+          </Text>
+        </SourceLine>
       );
 
     case 'skills':

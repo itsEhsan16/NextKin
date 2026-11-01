@@ -6,6 +6,7 @@ import type { FakeScript } from '../../src/ai/providers/fake';
 import { loadConfig } from '../../src/config';
 import { createDatabase, type Database } from '../../src/db/database';
 import * as generations from '../../src/services/generations';
+import { getLineSources } from '../../src/services/resumeRead';
 import { compareResumeToJd } from '../../src/services/tailorCompare';
 import { insertVersion } from '../../src/services/versions';
 import { backendUser, readyJd, runToEnd } from './fixtures/documents';
@@ -158,6 +159,15 @@ describe('the AI places a ticked keyword (toreview §116)', () => {
     expect(doc.roles[0]!.bullets[0]!.text).toMatch(/deployed on Kubernetes$/);
     expect(doc.roles[0]!.skills).toContain('Kubernetes');
     const generation = await generations.getGeneration(db, identity, run.generationId);
+
+    // Any line can say where it came from: the role it rests on, and the line it replaced (§146.4).
+    const line = doc.roles[0]!.bullets[0]!;
+    const sources = await getLineSources(db, identity, generation.resumeId!);
+    expect(sources.find((source) => source.text === line.text)).toMatchObject({
+      origin: 'generated',
+      facts: [`Your ${doc.roles[0]!.title} role at ${doc.roles[0]!.company}`],
+      before: BASE.roles[0]!.bullets[0]!.text,
+    });
     expect(generation.tailor?.changes).toEqual(expect.arrayContaining([{ label: 'Put Kubernetes into Backend Engineer · Lumen Pay — check it’s where you used it', left: false }]));
   });
 });

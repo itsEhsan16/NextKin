@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { atsBandFor, atsQuickWins, RESUME_SECTION_ORDER } from '@/data/models';
@@ -19,8 +19,10 @@ import { StickyActionBar } from '@/ui/StickyActionBar';
 
 import { EditorHero } from '../components/EditorHero';
 import { LetterBody } from '../components/LetterBody';
+import { LineSourceSheet } from '../components/LineSourceSheet';
 import { ResumeEditorSkeleton } from '../components/ResumeEditorSkeleton';
 import { ResumeSectionCard } from '../components/ResumeSectionCard';
+import { LineSourceContext } from '../components/SourceLine';
 import {
   documentIsEmpty,
   downloadBlocked,
@@ -58,6 +60,8 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   const actions = useResumesActions();
 
   const online = useIsOnline();
+  // The line whose source is open (toreview §146.4).
+  const [line, setLine] = useState<string | null>(null);
   const resume = useResume(id);
   const doc = resume.data;
 
@@ -110,6 +114,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
           tabs layout, so each sheet is hosted here to cover the page rather than the content. */}
       <ResumeMenuHost surface="editor" />
       <ResumeExportHost surface="editor" />
+      <LineSourceSheet resumeId={id} line={line} onClose={() => setLine(null)} />
     </View>
   );
 
@@ -200,17 +205,19 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
       {body.kind === 'cover_letter' ? (
         <LetterBody content={body} onEdit={() => actions.openSection(id, 'letter')} />
       ) : (
-        RESUME_SECTION_ORDER.map((section, index) => (
-          <ResumeSectionCard
-            key={section}
-            content={body}
-            section={section}
-            index={index}
-            regenerating={regenerating === section}
-            onEdit={() => actions.openSection(id, section)}
-            onRegenerate={() => regenerate.mutate(section)}
-          />
-        ))
+        <LineSourceContext.Provider value={setLine}>
+          {RESUME_SECTION_ORDER.map((section, index) => (
+            <ResumeSectionCard
+              key={section}
+              content={body}
+              section={section}
+              index={index}
+              regenerating={regenerating === section}
+              onEdit={() => actions.openSection(id, section)}
+              onRegenerate={() => regenerate.mutate(section)}
+            />
+          ))}
+        </LineSourceContext.Provider>
       )}
     </>,
     <StickyActionBar
