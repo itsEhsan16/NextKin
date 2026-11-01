@@ -146,6 +146,8 @@ export async function createUserGraph(db: Database, label: string, rubricVersion
       .insertInto('notifications')
       .values({ user_id: userId, category: 'ai', body: 'Done', description: '', visual: JSON.stringify({ kind: 'sparkle' }), dedupe_key: 'test' })
       .execute();
+    await tx.insertInto('push_devices').values({ user_id: userId, platform: 'android', token: randomUUID() }).execute();
+    await tx.insertInto('push_messages').values({ user_id: userId, title: 'Done', body: '', kind: 'now', due_at: new Date() }).execute();
     await tx
       .insertInto('applications')
       .values({ user_id: userId, job_id: randomUUID(), job: JSON.stringify({ title: 'Job' }) })
