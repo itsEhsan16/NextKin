@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router/stack';
 
 import { useSessionStore } from '@/features/auth';
+import { ShareHost } from '@/features/create';
 import { ApplyAskHost } from '@/features/jobs';
 import { PushHost, PushPrimerHost } from '@/features/notifications';
 import { AccuracyConfirmHost } from '@/features/resumes';
@@ -72,6 +73,7 @@ export default function RootLayout() {
           <Stack.Screen name="create/ats-check" />
           <Stack.Screen name="create/zero-resume" />
           <Stack.Screen name="create/start" />
+          <Stack.Screen name="share" />
           <Stack.Screen name="create/upload" />
           <Stack.Screen name="create/upload-review" />
           <Stack.Screen name="create/import-linkedin" />
@@ -125,6 +127,7 @@ export default function RootLayout() {
       {signedIn ? <ApplyAskHost /> : null}
       {signedIn ? <PushPrimerHost /> : null}
       {signedIn ? <PushHost /> : null}
+      {signedIn ? <ShareHost /> : null}
     </AppProviders>
   );
 }

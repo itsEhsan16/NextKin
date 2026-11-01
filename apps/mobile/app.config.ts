@@ -50,6 +50,14 @@ const config: ExpoConfig = {
     'expo-secure-store',
     // Native only: a development or release build. Daily screen work in Expo Go ignores it.
     ['expo-notifications', { color: '#4733F9', defaultChannel: 'default' }],
+    // A job shared from a browser or another app: a link, or the job's text.
+    [
+      'expo-sharing',
+      {
+        android: { enabled: true, singleShareMimeTypes: ['text/plain'] },
+        ios: { enabled: true, activationRule: { supportsWebUrlWithMaxCount: 1, supportsText: true } },
+      },
+    ],
     [
       'expo-splash-screen',
       {

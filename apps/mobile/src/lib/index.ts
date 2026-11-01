@@ -9,6 +9,7 @@ export * from './imagePicker';
 export * from './openUrl';
 export * from './pushPermission';
 export * from './pushDevice';
+export * from './incomingShare';
 export * from './reducedMotion';
 export * from './richText';
 export * from './share';

@@ -122,6 +122,13 @@ jest.mock('expo-notifications', () => ({
   addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
 
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  shareAsync: jest.fn(() => Promise.resolve()),
+  getSharedPayloads: jest.fn(() => []),
+  clearSharedPayloads: jest.fn(),
+}));
+
 jest.mock('expo-sqlite/kv-store', () => {
   const store = new Map<string, string>();
   return {

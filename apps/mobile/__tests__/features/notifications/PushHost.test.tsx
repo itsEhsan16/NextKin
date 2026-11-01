@@ -15,6 +15,7 @@ const clients: QueryClient[] = [];
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), navigate: mockNavigate, back: jest.fn(), replace: jest.fn() }),
+  useRootNavigationState: () => ({ key: 'root' }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
 

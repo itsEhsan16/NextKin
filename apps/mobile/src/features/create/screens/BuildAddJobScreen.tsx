@@ -8,6 +8,7 @@ import { isUnreadableLinkError, useExtractJd } from '@/data/queries';
 import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
 import { pickDocument } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
+import { NoteBar } from '@/ui/NoteBar';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
@@ -24,6 +25,8 @@ export type BuildAddJobScreenProps = {
   mode?: string;
   /** Changes on every such return, so a second trip back clears the box again. */
   at?: string;
+  /** Why they've landed on the paste box: a shared link whose site won't be read. */
+  notice?: string;
 };
 
 type AddMode = 'link' | 'description' | 'file';
@@ -69,7 +72,7 @@ export function buildAddInput(text: string, file: JdFile | null): JdInput | null
  * either paste tab too, under the OR. The button READS the job and opens BUILD 04 to review it;
  * nothing is built (or counted) from here. A site that blocks reading opens BUILD 05b.
  */
-export function BuildAddJobScreen({ mode, at }: BuildAddJobScreenProps) {
+export function BuildAddJobScreen({ mode, at, notice }: BuildAddJobScreenProps) {
   const { spacing, s } = useTheme();
   const styles = useStyles();
   const router = useRouter();
@@ -189,6 +192,7 @@ export function BuildAddJobScreen({ mode, at }: BuildAddJobScreenProps) {
           </>
         ) : (
           <>
+            {notice ? <NoteBar icon="InfoCircle" text={notice} /> : null}
             <BuildAddPasteBox
               // Remounted on a return from 05b, so autoFocus fires again.
               key={at ?? 'first'}
@@ -205,7 +209,7 @@ export function BuildAddJobScreen({ mode, at }: BuildAddJobScreenProps) {
             {tab === 'link' ? (
               <BuildTipCard
                 title="Supported links"
-                text="Careers pages, LinkedIn, Naukri, or any job posting link."
+                text="Careers pages and most job posts. LinkedIn, Indeed and Naukri don’t let us read their pages, so paste those."
               />
             ) : null}
             <View style={styles.or}>

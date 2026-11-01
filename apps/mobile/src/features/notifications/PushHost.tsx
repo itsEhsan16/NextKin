@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useRootNavigationState, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 
 import { registerPushDevice } from '@/data/pushDevice';
@@ -15,6 +15,7 @@ export function PushHost() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { mutate: markRead } = useMarkNotificationRead();
+  const ready = useRootNavigationState()?.key != null;
 
   useEffect(() => {
     void registerPushDevice().catch(() => undefined);
@@ -22,7 +23,7 @@ export function PushHost() {
 
   useEffect(() => {
     const module = notificationsModule();
-    if (!module) return;
+    if (!module || !ready) return;
 
     const open = (response: TappedNotification) => {
       const tap = pushTapOf(response);
@@ -56,7 +57,7 @@ export function PushHost() {
       tapped.remove();
       received.remove();
     };
-  }, [markRead, queryClient, router]);
+  }, [markRead, queryClient, ready, router]);
 
   return null;
 }

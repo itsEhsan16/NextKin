@@ -9,6 +9,7 @@ export const EVENT_NAMES = [
   'app_opened',
   'sign_up_completed',
   'job_added',
+  'job_shared',
   'link_unreadable',
   'apply_opened',
   'apply_answered',

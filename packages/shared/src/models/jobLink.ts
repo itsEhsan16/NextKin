@@ -15,6 +15,38 @@ const JOB_WORDS =
 const JOB_BOARD_HOSTS =
   /(^|\.)(linkedin\.com|naukri\.com|indeed\.com|glassdoor\.[a-z.]+|greenhouse\.io|lever\.co|myworkdayjobs\.com|wellfound\.com|instahyre\.com|foundit\.in|iimjobs\.com|cutshort\.io)$/i;
 
+/** Shared text this long is the job itself; shorter is an app's wrapping around a link. */
+const JOB_TEXT_MIN = 200;
+const ANY_LINK = /https?:\/\/\S+/i;
+
+/**
+ * What was shared into NextKin, in the terms the job reader takes. Sharing is the tap, so unlike a
+ * copied link any web address will do: the reader says plainly if there's no job on it.
+ */
+export function sharedJobOf(
+  text: string | null | undefined,
+): { source: 'link'; url: string } | { source: 'paste'; text: string } | null {
+  const trimmed = text?.trim() ?? '';
+  if (trimmed.length >= JOB_TEXT_MIN) return { source: 'paste', text: trimmed };
+  const link = ANY_LINK.exec(trimmed)?.[0]?.replace(/[).,]+$/, '');
+  return link ? { source: 'link', url: link } : null;
+}
+
+const NO_READING = [
+  { host: /(^|\.)linkedin\.com$/i, name: 'LinkedIn' },
+  { host: /(^|\.)indeed\.[a-z.]+$/i, name: 'Indeed' },
+  { host: /(^|\.)naukri\.com$/i, name: 'Naukri' },
+];
+
+/** Names the site when it's one we know refuses, so the paste box can say whose rule it is. */
+export function blockedSiteNotice(url: string): string | null {
+  const host = /^https?:\/\/([^/?#]+)/i.exec(url)?.[1] ?? '';
+  const site = NO_READING.find((item) => item.host.test(host));
+  return site
+    ? `${site.name} doesn’t let us read its pages. Copy the job text and paste it here.`
+    : null;
+}
+
 /** The job link in copied text, as copied, or null when the text is anything else. */
 export function jobLinkIn(text: string | null | undefined): string | null {
   const candidate = text?.trim() ?? '';
