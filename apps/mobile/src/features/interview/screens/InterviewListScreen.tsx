@@ -3,12 +3,13 @@ import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { INTERVIEW_DISCLAIMER, type InterviewSet } from '@/data/models';
-import { useInterviewSets, useRemoveInterviewSet } from '@/data/queries';
+import { setForApplication } from '@/data/models';
+import { useApplications, useInterviewSets, useRemoveInterviewSet } from '@/data/queries';
 // Deep imports on purpose: those barrels drag their screens in. These are plain components.
 import { FLOW_ART, FlowHero } from '@/features/create/components/FlowHero';
 import { AddCard } from '@/features/profile/components/cards/EntryCards';
 import { AiPill } from '@/features/resumes/components/AiPill';
-import { useReducedMotion } from '@/lib';
+import { formatWeekdayDate, useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { ConfirmSheet } from '@/ui/ConfirmSheet';
 import { NoteBar } from '@/ui/NoteBar';
@@ -60,6 +61,7 @@ export function InterviewListScreen() {
   const actions = useInterviewActions();
 
   const sets = useInterviewSets();
+  const applications = useApplications();
   const remove = useRemoveInterviewSet();
 
   const deleteTarget = useInterviewStore((state) => state.deleteTarget);
@@ -78,6 +80,17 @@ export function InterviewListScreen() {
     }
     return result;
   }, [sets.data]);
+
+  // The set an upcoming interview would practise from, marked with its day.
+  const interviewDays = useMemo(() => {
+    const days = new Map<string, string>();
+    for (const { application } of applications.data ?? []) {
+      if (application.status !== 'interview' || !application.interviewAt) continue;
+      const set = setForApplication(sets.data ?? [], application);
+      if (set) days.set(set.id, formatWeekdayDate(application.interviewAt));
+    }
+    return days;
+  }, [applications.data, sets.data]);
 
   // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
   // with its data already here slides in whole with the push.
@@ -215,6 +228,7 @@ export function InterviewListScreen() {
             <InterviewSetCard
               set={set}
               superseded={superseded.has(set.id)}
+              interviewDay={interviewDays.get(set.id)}
               onOpen={(item) => actions.openSet(item.id)}
               onLongPress={requestDelete}
             />

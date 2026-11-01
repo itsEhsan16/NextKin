@@ -31,7 +31,11 @@ import {
   interviewSpentNote,
 } from '../interviewQuota';
 
-export type NewInterviewSetScreenProps = { resumeId?: string };
+export type NewInterviewSetScreenProps = {
+  resumeId?: string;
+  /** Filled in for role mode when an application opens this: the job's own title. */
+  roleTitle?: string;
+};
 
 const TITLE = 'New question set';
 const LEDE = 'Written from a resume and the job it was tailored to, or from a role title alone.';
@@ -55,7 +59,7 @@ const SHEET_THUMB_RADIUS = 8;
  * rather than off a flat counter — see `interviewQuota.ts`. Either mode starts the same async
  * run; the progress screen is shared with every other kind of AI work.
  */
-export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) {
+export function NewInterviewSetScreen({ resumeId, roleTitle: givenRole }: NewInterviewSetScreenProps) {
   const { colors, sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useInterviewActions();
@@ -76,7 +80,7 @@ export function NewInterviewSetScreen({ resumeId }: NewInterviewSetScreenProps) 
 
   const [chosenMode, setMode] = useState<InterviewSourceMode>('resume');
   const [chosenId, setChosenId] = useState<string | undefined>(resumeId);
-  const [roleTitle, setRoleTitle] = useState('');
+  const [roleTitle, setRoleTitle] = useState(givenRole ?? '');
   const [refused, setRefused] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
 

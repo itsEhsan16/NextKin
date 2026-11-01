@@ -28,6 +28,7 @@
     "migrate": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/migrate.ts",
     "migrate:rebaseline": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/migrate.ts --rebaseline",
     "seed": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/seed.ts",
+    "metrics:retention": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/retention.ts",
     "dlq:replay": "pnpm --filter @nextkin/server dlq replay",
     "perf:smoke": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/perf-smoke.ts",
     "eval": "pnpm --filter @nextkin/server eval",

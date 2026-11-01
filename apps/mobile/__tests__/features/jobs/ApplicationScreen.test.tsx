@@ -126,6 +126,43 @@ describe('ApplicationScreen (toreview §147.1)', () => {
     expect(current().interviewAt).toBeUndefined();
   });
 
+  it('offers practice once there is an interview, from the resume it was sent with', async () => {
+    seed({ resumeId: 'res_1' });
+    await mount();
+    await settle();
+    expect(screen.queryByText('Practice for this interview')).toBeNull();
+
+    await press(/^Where it stands/);
+    await press('Interview');
+    await settle();
+    expect(screen.getByText('Practice for this interview')).toBeOnTheScreen();
+    await press('Write practice questions');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/interview/new',
+      params: { resumeId: 'res_1', roleTitle: mockStore.state.jobs[0]?.title },
+    });
+  });
+
+  it('picks up the set already written for this job', async () => {
+    const application = seed({ status: 'interview' });
+    mockStore.state.interviewSets = [
+      {
+        id: 'set_1',
+        title: 'Practice',
+        source: 'resume',
+        jobId: application.jobId,
+        questions: [],
+        createdAt: new Date().toISOString(),
+      },
+    ];
+    await mount();
+    await settle();
+    // The card fetches the sets once the application has loaded.
+    await settle();
+    await press('Keep practising');
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/interview/[id]', params: { id: 'set_1' } });
+  });
+
   it('says so when the application is gone', async () => {
     seed();
     await mount('nope');

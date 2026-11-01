@@ -215,6 +215,7 @@ const MATRIX: Record<string, Entry> = {
   'POST /api/v1/billing/fake-checkout/{token}/complete': { access: 'public' },
   // P12: the admin API (§7.17, §16.6). Probed as every role; each route's permission decides.
   'GET /api/v1/admin/me': { access: 'admin' },
+  'GET /api/v1/admin/metrics/retention': { access: 'admin', permission: 'analytics.read' },
   'GET /api/v1/admin/users': { access: 'admin', permission: 'users.read' },
   'GET /api/v1/admin/users/{id}': { access: 'admin', permission: 'users.read' },
   'POST /api/v1/admin/users/{id}/suspend': { access: 'admin', permission: 'users.manage', body: { reason: 'abuse' } },

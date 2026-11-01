@@ -1,3 +1,5 @@
+import type { Application } from './job';
+
 /**
  * NextKin V2 spec §7.15 — interview practice sets.
  *
@@ -93,6 +95,20 @@ export type InterviewMarkCounts = {
 };
 
 /** The numbers a set's card and the practice header draw. */
+/** The newest practice set for an application: for its job, or the resume it was sent with. */
+export function setForApplication(
+  sets: readonly InterviewSet[],
+  application: Pick<Application, 'jobId' | 'resumeId'>,
+): InterviewSet | undefined {
+  return sets
+    .filter(
+      (set) =>
+        set.jobId === application.jobId ||
+        (application.resumeId !== undefined && set.resumeId === application.resumeId),
+    )
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+}
+
 export function interviewMarkCounts(set: Pick<InterviewSet, 'questions'>): InterviewMarkCounts {
   let confident = 0;
   let needsWork = 0;

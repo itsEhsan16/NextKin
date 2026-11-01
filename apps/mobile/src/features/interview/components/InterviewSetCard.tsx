@@ -19,6 +19,8 @@ export type InterviewSetCardProps = {
   set: InterviewSet;
   /** True when a newer set exists for the same target, so this one is captioned as earlier. */
   superseded: boolean;
+  /** The day of the interview it's for, when an application has one: "Thu 6 Nov". */
+  interviewDay?: string;
   onOpen: (set: InterviewSet) => void;
   onLongPress: (set: InterviewSet) => void;
 };
@@ -40,6 +42,7 @@ const LINE_GAP = 2 / 0.75;
 export const InterviewSetCard = memo(function InterviewSetCard({
   set,
   superseded,
+  interviewDay,
   onOpen,
   onLongPress,
 }: InterviewSetCardProps) {
@@ -76,6 +79,11 @@ export const InterviewSetCard = memo(function InterviewSetCard({
             <Text variant="caption" color="textBody" numberOfLines={1}>
               {`${counts.total} questions · ${when}${superseded ? ' · Earlier set' : ''}`}
             </Text>
+            {interviewDay ? (
+              <Text variant="captionSemiBold" color="brand" numberOfLines={1}>
+                {`Interview ${interviewDay}`}
+              </Text>
+            ) : null}
           </View>
           <Icon name="ChevronRight" size="sm" color={colors.iconChevron} />
         </View>

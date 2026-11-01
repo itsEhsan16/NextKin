@@ -11,6 +11,7 @@ import { searchAudit, toCsv } from '../../services/admin/audit';
 import * as catalog from '../../services/admin/catalog';
 import { PERMISSIONS, levelOf, requireStaff, type Permission } from '../../services/admin/permissions';
 import * as prompts from '../../services/admin/prompts';
+import { weekFourRetention } from '../../services/admin/retention';
 import * as kb from '../../services/admin/technologies';
 import * as users from '../../services/admin/users';
 import type { ApiEnv } from '../env';
@@ -67,6 +68,11 @@ export function adminRoutes(deps: AdminRouteDeps): OpenAPIHono<ApiEnv> {
 
   // --- Users ---------------------------------------------------------------------------------
   const read = admin('users.read');
+  app.openapi(createRoute({ method: 'get', path: '/admin/metrics/retention', tags: ['admin'], summary: 'Week-4 retention by signup week (V2 §2.2). Aggregate only.', responses: { 200: ok('Cohorts.'), ...errs } }), async (c) => {
+    requireStaff(c, 'analytics.read');
+    return c.json({ data: await weekFourRetention(db) }, 200);
+  });
+
   app.openapi(createRoute({ method: 'get', path: '/admin/users', tags: ['admin'], summary: read.describe('Search users by email, name or id'), request: { query: z.object({ q: z.string().max(120).optional() }) }, responses: { 200: ok('Users.'), ...errs } }), async (c) =>
     c.json({ data: await users.searchUsers(db, requireStaff(c, 'users.read'), c.req.valid('query').q ?? '') }, 200),
   );

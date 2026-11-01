@@ -27,6 +27,7 @@ import { Text } from '@/ui/Text';
 import { showAppToast } from '@/ui/Toast';
 
 import { NO_INTERVIEW_DAY, interviewDayOptions } from '../applicationDays';
+import { ApplicationPractice } from '../components/ApplicationPractice';
 import { useJobsActions } from '../hooks/useJobsActions';
 
 export type ApplicationScreenProps = { id: string };
@@ -179,6 +180,8 @@ export function ApplicationScreen({ id }: ApplicationScreenProps) {
           onPress={() => setSheet('day')}
         />
       ) : null}
+
+      {interview ? <ApplicationPractice application={application} job={job} /> : null}
 
       <NoteBar text={APPLICATION_NOTE} />
     </>,
