@@ -59,6 +59,7 @@ import type { FigureDraft,
   ConfirmFacts,
   ProfilePreferences,
   Resume,
+  ExportReceipt,
   LineSource,
   ResumeContent,
   VersionChange,
@@ -220,6 +221,8 @@ export type ResumeExport =
       url: string;
       /** ISO-8601; the link stops working after this. */
       expiresAt: string;
+      /** What read back from the file (toreview §146.6). */
+      receipt?: ExportReceipt;
     }
   | {
       delivery: 'render';

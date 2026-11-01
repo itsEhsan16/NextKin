@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AtsReport } from '../src/models/resume';
-import { scoreLead, summaryAfterLead, summaryFor } from '../src/models/resume';
+import { receiptClean, receiptSentence, scoreLead, summaryAfterLead, summaryFor } from '../src/models/resume';
 
 /** What a score card leads with, and what's left to say after it (toreview §146.1). Synthetic. */
 
@@ -78,5 +78,27 @@ describe('the summary around the lead', () => {
 
   it('has nothing to add when the lead says it all', () => {
     expect(summaryAfterLead(report({}))).toBe('');
+  });
+});
+
+describe('the export receipt', () => {
+  const clean = { sections: { found: 5, total: 5 }, bullets: { found: 23, total: 23 } };
+
+  it('says what read back', () => {
+    expect(receiptClean(clean)).toBe(true);
+    expect(receiptSentence(clean)).toBe('We read it back: 5 of 5 sections, 23 of 23 bullets.');
+  });
+
+  it('leaves out bullets a resume does not have', () => {
+    const none = { ...clean, bullets: { found: 0, total: 0 } };
+    expect(receiptSentence(none)).toBe('We read it back: 5 of 5 sections.');
+  });
+
+  it('says so plainly when something did not read back', () => {
+    const short = { ...clean, bullets: { found: 21, total: 23 } };
+    expect(receiptClean(short)).toBe(false);
+    expect(receiptSentence(short)).toBe('Only 21 of 23 bullets read back. Open the file and check it.');
+    const section = { ...clean, sections: { found: 4, total: 5 } };
+    expect(receiptSentence(section)).toBe('Only 4 of 5 sections read back. Open the file and check it.');
   });
 });

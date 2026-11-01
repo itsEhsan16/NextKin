@@ -1,6 +1,13 @@
 import { useCallback, useState } from 'react';
 
-import type { DocumentContent, Generation, ResumeContent, TailorRun } from '@/data/models';
+import {
+  receiptSentence,
+  type DocumentContent,
+  type ExportReceipt,
+  type Generation,
+  type ResumeContent,
+  type TailorRun,
+} from '@/data/models';
 import {
   EXPORT_BLOCK_MESSAGE,
   useCurrentUser,
@@ -73,13 +80,15 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
   const user = useCurrentUser();
 
   const [saved, setSaved] = useState<TailorSavedFile | null>(null);
+  const [receipt, setReceipt] = useState<ExportReceipt | undefined>();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const pages = resume.data?.pageCount;
   const onSaved = useCallback(
-    (name: string) => {
+    (name: string, read?: ExportReceipt) => {
       setSaved({ name, meta: savedPagesLabel(pages) });
+      setReceipt(read);
       setSheetOpen(true);
     },
     [pages],
@@ -167,6 +176,7 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
         <TailorSavedSheet
           open={sheetOpen}
           files={[saved]}
+          {...(receipt ? { receipt: receiptSentence(receipt) } : {})}
           company={company}
           domain={domain}
           onApply={() => {

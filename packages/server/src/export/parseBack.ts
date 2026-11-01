@@ -1,5 +1,7 @@
 import { analyzeDocx } from '../parsing/docx';
-import { expectedLines, type RenderModel } from './model';
+import type { ExportReceipt } from '@nextkin/shared/models/resume';
+
+import { expectedLines, type RenderModel, type RenderSection } from './model';
 
 /**
  * Parse-back (ImBackendImplementationPlan P10-06, old Q-06). Every export is read back the way a
@@ -86,6 +88,36 @@ export function compareWithModel(model: RenderModel, text: string): ParseBackRes
     })
     .map((s) => s.heading || 'Letter');
   return { ok: lost.size === 0, missing, outOfOrder, sectionsLost, checked: lines.length };
+}
+
+/** Loose on purpose: a typesetter hyphenates at a line's end, and picks its own dashes and quotes. */
+const loose = (text: string) => squash(text).replace(/[\p{Pd}'’‘"“”`]/gu, '');
+
+/**
+ * What a person is told after a download (toreview §146.6): how much of what they're sending reads
+ * back from the file itself. It asks whether each line is there at all, not whether it's in order:
+ * a typeset page sets dates beside titles and groups skills, and reading order is the layout check's
+ * job. A section counts when every line in it does, its heading aside, because the file may use its
+ * own heading.
+ */
+export function receiptOf(model: RenderModel, text: string): ExportReceipt {
+  const stream = loose(text);
+  const reads = (line: string) => stream.includes(loose(line));
+  const bullets = model.sections.flatMap((s) => s.blocks.flatMap((b) => (b.kind === 'entry' ? b.bullets : [])));
+  const linesOf = (section: RenderSection) =>
+    section.blocks.flatMap((block) => {
+      if (block.kind === 'entry') return [block.title, ...block.bullets];
+      return section.heading === 'Skills' ? block.text.split(', ') : [block.text];
+    });
+  return {
+    sections: { found: model.sections.filter((s) => linesOf(s).every(reads)).length, total: model.sections.length },
+    bullets: { found: bullets.filter(reads).length, total: bullets.length },
+  };
+}
+
+/** A file's text as a simple parser gets it. */
+export function readingText(format: 'pdf' | 'docx' | 'txt', bytes: Uint8Array): Promise<string> | string {
+  return format === 'pdf' ? pdfReadingText(bytes) : format === 'docx' ? docxReadingText(bytes) : new TextDecoder().decode(bytes);
 }
 
 export async function parseBack(model: RenderModel, format: 'pdf' | 'docx' | 'txt', bytes: Uint8Array): Promise<ParseBackResult> {

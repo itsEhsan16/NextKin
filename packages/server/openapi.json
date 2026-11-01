@@ -63390,6 +63390,45 @@
                     "atsSafe": {
                       "type": "boolean"
                     },
+                    "receipt": {
+                      "type": "object",
+                      "properties": {
+                        "sections": {
+                          "type": "object",
+                          "properties": {
+                            "found": {
+                              "type": "number"
+                            },
+                            "total": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "found",
+                            "total"
+                          ]
+                        },
+                        "bullets": {
+                          "type": "object",
+                          "properties": {
+                            "found": {
+                              "type": "number"
+                            },
+                            "total": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "found",
+                            "total"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sections",
+                        "bullets"
+                      ]
+                    },
                     "message": {
                       "type": "string"
                     }
@@ -63826,6 +63865,45 @@
                     },
                     "atsSafe": {
                       "type": "boolean"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "properties": {
+                        "sections": {
+                          "type": "object",
+                          "properties": {
+                            "found": {
+                              "type": "number"
+                            },
+                            "total": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "found",
+                            "total"
+                          ]
+                        },
+                        "bullets": {
+                          "type": "object",
+                          "properties": {
+                            "found": {
+                              "type": "number"
+                            },
+                            "total": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "found",
+                            "total"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sections",
+                        "bullets"
+                      ]
                     },
                     "message": {
                       "type": "string"

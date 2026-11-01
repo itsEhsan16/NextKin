@@ -14797,3 +14797,18 @@ The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when
 - **Wording is mine,** including every reason. They're in `packages/shared/src/scoring/versionChanges.ts`.
 - **Off the board (rule 7):** TAILOR 05 and BUILD 06 lose a card, by your decision. The Versions page has no board and uses the app's disclosure rows.
 - **Web next:** the route is there, and web's Versions tab only lists notes today.
+
+### 146.6 The export receipt
+
+- **Why:** a typeset resume PDF only got a layout check, so there was nothing true to count.
+- **Change:** every resume export is now read back from the finished file, and the count travels with it. The toast says "Saved as PDF. We read it back: 5 of 5 sections, 23 of 23 bullets." The finished screen's "Saved" sheet shows the same line.
+- **Tested on real PDFs:** the real typesetter compiled a resume in all three page designs, and every section and bullet read back. The first run found a bullet that didn't, and the cause was my check, not the file: one font writes a different hyphen character. The check now treats all dashes alike.
+- **Calls made without you:**
+  - **A short count doesn't stop the download.** The file still goes, and the toast says "Only 21 of 23 bullets read back. Open the file and check it." That's what the check has always done. Say if you'd rather hold the file.
+  - **The count asks whether each line is there, not in what order.** A typeset page sets dates beside titles and groups skills, so order would fail good files. The layout check already covers reading order.
+  - **A section counts when all its lines do,** headings aside, because a file can use its own heading.
+  - **No template name, and no "certified".** The review suggested "Template: NextKin Classic (certified)". Nobody has certified anything, and V2 §7.8 rules out that kind of claim.
+  - **Resumes only.** A cover letter has no bullets to count.
+- **What the count doesn't mean:** it's our own read-back, not a test against any employer's software. The wording stays "we read it back".
+- **An export from before today has no receipt,** so its toast is the plain "Saved as PDF".
+- **Web next:** the status route carries the receipt. Web shows nothing after a download yet.

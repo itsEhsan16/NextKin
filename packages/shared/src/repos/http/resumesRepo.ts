@@ -153,7 +153,7 @@ export function createHttpResumesRepo(http: HttpClient, uploader: FileUploader, 
         (e) => e.status !== 'pending',
       );
       if (done.status === 'failed' || !done.url || !done.expiresAt) throw new ApiError('UNAVAILABLE', done.message ?? 'We could not make that file. Try again.', 503);
-      return { delivery: 'file', format: done.format, fileName: done.fileName, mimeType: done.mimeType, url: done.url, expiresAt: done.expiresAt };
+      return { delivery: 'file', format: done.format, fileName: done.fileName, mimeType: done.mimeType, url: done.url, expiresAt: done.expiresAt, ...(done.receipt ? { receipt: done.receipt } : {}) };
     },
 
     async preview(id, versionId) {

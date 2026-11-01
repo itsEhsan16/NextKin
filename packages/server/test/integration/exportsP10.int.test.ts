@@ -126,6 +126,8 @@ describe('export delivery (P10-07, P10-08)', () => {
       expect(ready).toMatchObject({ status: 'ready', atsSafe: true });
       const row = await db.withUser(as(userId), (tx) => tx.selectFrom('export_events').select(['parse_back']).where('id', '=', ready.id).executeTakeFirstOrThrow());
       expect(row.parse_back).toMatchObject({ ok: true, missing: [] });
+      expect(ready.receipt?.bullets.found).toBe(ready.receipt?.bullets.total);
+      expect(ready.receipt?.sections.found).toBe(ready.receipt?.sections.total);
     }
   });
 

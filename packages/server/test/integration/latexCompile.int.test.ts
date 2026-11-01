@@ -3,7 +3,13 @@ import { join } from 'node:path';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { describe, expect, it } from 'vitest';
 
+import { MARKETS } from '@nextkin/engines/markets';
+
+import { CERTIFICATION_RESUME } from '../../src/export/certify';
 import { createLatexCompiler } from '../../src/export/latex/compile';
+import { resumeModel } from '../../src/export/model';
+import { pdfReadingText, receiptOf } from '../../src/export/parseBack';
+import { sourceOf } from '../../src/services/renders';
 import { latexResumeOf } from '../../src/export/latex/fromCanonical';
 import { texOf } from '../../src/export/latex/jakeTemplate';
 import { warmupResume } from '../../src/export/latex/warmupSources';
@@ -44,6 +50,19 @@ describe.skipIf(!ready)('the LaTeX compile service (latex profile)', () => {
     const links = (await page.getAnnotations()).filter((a: { subtype: string }) => a.subtype === 'Link').map((a: { url?: string }) => a.url);
     // XeTeXinterwordspaceshaping=2 once kept only the first of these (toreview §111.4).
     expect(links).toEqual(['tel:+919847012345', 'mailto:alex.rivera@example.com', 'https://www.linkedin.com/in/alex-rivera', 'https://github.com/alexrivera']);
+  });
+
+  // The receipt says what a real typeset page reads back as, in each of the page designs.
+  it.each(['jake', 'modern', 'elegant'] as const)('reads a typeset %s resume back whole (toreview §146.6)', async (template) => {
+    const doc = { ...CERTIFICATION_RESUME, template };
+    const who = { name: 'Alex Rivera', email: 'alex.rivera@example.com', phone: '+91 98470 12345', location: 'Bengaluru' };
+    const { tex } = sourceOf(doc, who, { density: 0, paper: 'letter', market: MARKETS.profiles.us });
+    const { pdf } = await compiler().compile(tex);
+    const model = resumeModel(doc, who);
+    const receipt = receiptOf(model, await pdfReadingText(pdf));
+    expect(receipt.bullets.total).toBeGreaterThan(0);
+    expect(receipt.bullets.found).toBe(receipt.bullets.total);
+    expect(receipt.sections.found).toBe(receipt.sections.total);
   });
 
   it('answers a broken source with a compile failure and Tectonic’s log', async () => {

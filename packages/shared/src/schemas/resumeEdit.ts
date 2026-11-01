@@ -133,6 +133,12 @@ export const exportStatusSchema = z.object({
   url: z.string().optional(),
   expiresAt: z.string().optional(),
   atsSafe: z.boolean().optional(),
+  receipt: z
+    .object({
+      sections: z.object({ found: z.number(), total: z.number() }),
+      bullets: z.object({ found: z.number(), total: z.number() }),
+    })
+    .optional(),
   message: z.string().optional(),
 });
 export const trashListSchema = z.object({ data: z.array(z.object({ id: z.string(), title: z.string(), trashedAt: z.string(), purgeAt: z.string() })) });

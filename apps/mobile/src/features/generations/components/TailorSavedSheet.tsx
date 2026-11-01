@@ -32,6 +32,8 @@ export type TailorSavedSheetBodyProps = {
   /** Override Tailor's "Saved. Now apply on …" title and its lede (COVER 04 613:1738). */
   title?: string;
   lede?: string;
+  /** What read back from the file (toreview §146.6). */
+  receipt?: string;
   onApply: () => void;
   onDone: () => void;
 };
@@ -112,6 +114,7 @@ export function TailorSavedSheetBody({
   domain,
   title,
   lede,
+  receipt,
   onApply,
   onDone,
 }: TailorSavedSheetBodyProps) {
@@ -147,6 +150,11 @@ export function TailorSavedSheetBody({
           </View>
         ))}
       </Card>
+      {receipt ? (
+        <Text variant="micro" color="textSecondary" align="center" style={styles.lede}>
+          {receipt}
+        </Text>
+      ) : null}
 
       <View style={styles.actions}>
         {domain ? (

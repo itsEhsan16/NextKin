@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 
+import type { ExportReceipt } from '@/data/models';
 import { EXPORT_BLOCK_MESSAGE, ExportBlockedError, type ResumeExport } from '@/data/queries';
 import { ExportCancelledError, materialize, useConfirmedExport } from '@/features/resumes';
 import { shareFile } from '@/lib';
@@ -19,7 +20,7 @@ export const TAILOR_SHARE_UNAVAILABLE = "This device can't share files right now
  */
 export function useTailorDownload(
   resumeId: string,
-  onSaved: (fileName: string) => void,
+  onSaved: (fileName: string, receipt?: ExportReceipt) => void,
   onError: (message: string) => void,
 ) {
   const exportDoc = useConfirmedExport(resumeId);
@@ -57,7 +58,7 @@ export function useTailorDownload(
       });
       if (shared === 'unavailable') return onError(TAILOR_SHARE_UNAVAILABLE);
       markExported(resumeId, file.name);
-      onSaved(file.name);
+      onSaved(file.name, result.delivery === 'file' ? result.receipt : undefined);
     })().finally(() => setBusy(false));
   }, [busy, exportDoc, onError, onSaved, resumeId]);
 

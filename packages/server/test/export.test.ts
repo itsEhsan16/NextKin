@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CERTIFICATION_RESUME } from '../src/export/certify';
 import { exportFileName, expectedLines, marketPeriod, resumeModel } from '../src/export/model';
-import { compareWithModel, parseBack } from '../src/export/parseBack';
+import { compareWithModel, parseBack, receiptOf } from '../src/export/parseBack';
 import { renderDocx } from '../src/export/renderDocx';
 import { fixPdfDates } from '../src/export/renderPdf';
 import { renderTxt } from '../src/export/renderTxt';
@@ -55,6 +55,40 @@ describe('parse-back (Q-06)', () => {
   it('ignores spacing, case and bullet glyphs, never words', () => {
     const text = expectedLines(MODEL).map((l) => `• ${l.toUpperCase().replace(/ /g, '  ')}`).join('\n');
     expect(compareWithModel(MODEL, text).ok).toBe(true);
+  });
+});
+
+describe('the export receipt (toreview §146.6)', () => {
+  const text = new TextDecoder().decode(renderTxt(MODEL));
+  const bullets = MODEL.sections.flatMap((s) => s.blocks.flatMap((b) => (b.kind === 'entry' ? b.bullets : [])));
+
+  it('counts every section and bullet of a file that reads back whole', () => {
+    expect(bullets.length).toBeGreaterThan(0);
+    expect(receiptOf(MODEL, text)).toEqual({
+      sections: { found: MODEL.sections.length, total: MODEL.sections.length },
+      bullets: { found: bullets.length, total: bullets.length },
+    });
+  });
+
+  it('counts a bullet that didn’t, and the section it sits in', () => {
+    const lost = bullets[0]!;
+    const receipt = receiptOf(MODEL, text.replace(lost, ''));
+    expect(receipt.bullets).toEqual({ found: bullets.length - 1, total: bullets.length });
+    expect(receipt.sections.found).toBe(MODEL.sections.length - 1);
+  });
+
+  it('isn’t thrown by what a typesetter does: a hyphen at a line’s end, curled quotes', () => {
+    const lost = bullets[0]!;
+    const middle = Math.floor(lost.length / 2);
+    const hyphenated = `${lost.slice(0, middle)}-${String.fromCharCode(10)}${lost.slice(middle)}`.replace(/'/g, '’');
+    expect(receiptOf(MODEL, text.replace(lost, hyphenated)).bullets.found).toBe(bullets.length);
+  });
+
+  it('counts a skill wherever the file set it', () => {
+    const skills = MODEL.sections.find((s) => s.heading === 'Skills')?.blocks[0];
+    if (skills?.kind !== 'paragraph') throw new Error('expected a skills line');
+    const grouped = skills.text.split(', ').map((skill) => `Tools: ${skill}`).join(String.fromCharCode(10));
+    expect(receiptOf(MODEL, text.replace(skills.text, grouped)).sections.found).toBe(MODEL.sections.length);
   });
 });
 

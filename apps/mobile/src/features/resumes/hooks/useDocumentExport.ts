@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 
+import { receiptClean, receiptSentence, type ExportReceipt } from '@/data/models';
 import {
   EXPORT_BLOCK_MESSAGE,
   ExportBlockedError,
@@ -41,6 +42,15 @@ export function withExtension(fileName: string, extension: string): string {
 
 const savedSentence = (format: ExportFormat): string =>
   format === 'pdf' ? EXPORT_SAVED_PDF : format === 'docx' ? EXPORT_SAVED_DOCX : EXPORT_SAVED_TEXT;
+
+/** What the toast says once a file has gone: saved, and what read back (toreview §146.6). */
+export function savedNotice(format: ExportFormat, receipt: ExportReceipt | undefined) {
+  if (!receipt) return { text: savedSentence(format), tone: 'success' as const };
+  return {
+    text: `${savedSentence(format)}. ${receiptSentence(receipt)}`,
+    tone: receiptClean(receipt) ? ('success' as const) : ('info' as const),
+  };
+}
 
 /**
  * Turns V2 §7.12's export into a file on the device and hands it to the OS share sheet.
@@ -89,8 +99,12 @@ export function useDocumentExport(id: string, surface: ResumeSurface = 'tabs') {
       }
 
       closeExport();
+      const saved = savedNotice(
+        result.format,
+        result.delivery === 'file' ? result.receipt : undefined,
+      );
       if (mockDocx) showToast(EXPORT_DOCX_AS_TEXT, surface, 'info');
-      else showToast(savedSentence(result.format), surface);
+      else showToast(saved.text, surface, saved.tone);
       // A resume made for a job has just left the phone: ask whether it went anywhere.
       askAbout.mutate({ resumeId: id }, { onSuccess: (ask) => ask && openAsk(ask) });
     },

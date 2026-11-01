@@ -84,6 +84,28 @@ export type ResumeVersion = {
   locked?: boolean;
 };
 
+export type ReadBackCount = { found: number; total: number };
+
+/** What read back from a downloaded file, counted from the file itself (toreview §146.6). */
+export type ExportReceipt = { sections: ReadBackCount; bullets: ReadBackCount };
+
+/** Everything read back. A shorter count is said plainly, and the file is still theirs to use. */
+export const receiptClean = ({ sections, bullets }: ExportReceipt): boolean =>
+  sections.found === sections.total && bullets.found === bullets.total;
+
+/** "We read it back: 5 of 5 sections, 23 of 23 bullets." */
+export function receiptSentence(receipt: ExportReceipt): string {
+  const { sections, bullets } = receipt;
+  if (!receiptClean(receipt)) {
+    const [left, total] = bullets.found < bullets.total ? [bullets.found, bullets.total] : [sections.found, sections.total];
+    const noun = bullets.found < bullets.total ? 'bullets' : 'sections';
+    return `Only ${left} of ${total} ${noun} read back. Open the file and check it.`;
+  }
+  const counts = [`${sections.found} of ${sections.total} sections`];
+  if (bullets.total > 0) counts.push(`${bullets.found} of ${bullets.total} bullets`);
+  return `We read it back: ${counts.join(', ')}.`;
+}
+
 /** One change a version made, and why (toreview §146.5). */
 export type VersionChange = {
   kind: 'added' | 'removed' | 'reworded';

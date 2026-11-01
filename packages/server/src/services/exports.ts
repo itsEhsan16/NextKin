@@ -1,12 +1,13 @@
 import { MARKETS, marketForLocation, paperForLocation } from '@nextkin/engines/markets';
 import { EXPORT_BLOCK_MESSAGE, type ExportBlock } from '@nextkin/shared/models/exportBlock';
+import type { ExportReceipt } from '@nextkin/shared/models/resume';
 import { exportProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
 import { contentNeedsReview } from '@nextkin/shared/models/resumeContent';
 import { canonicalLetterSchema, canonicalResumeSchema } from '@nextkin/shared/schemas/resumeContent';
 
 import type { Database, Identity } from '../db/database';
 import { letterModel, resumeModel, exportFileName, type RenderModel } from '../export/model';
-import { parseBack } from '../export/parseBack';
+import { parseBack, readingText, receiptOf } from '../export/parseBack';
 import { renderDocx } from '../export/renderDocx';
 import type { LatexCompiler } from '../export/latex/compile';
 import type { PdfRenderer } from '../export/renderPdf';
@@ -53,6 +54,7 @@ export interface ExportStatus {
   url?: string;
   expiresAt?: string;
   atsSafe?: boolean;
+  receipt?: ExportReceipt;
   message?: string;
 }
 
@@ -109,7 +111,7 @@ export async function requestExport(deps: ExportDeps, identity: Identity, resume
   return statusOf(deps, created.row);
 }
 
-type EventRow = { id: string; status: string; format: string; file_name: string; object_key: string | null; ats_safe: boolean | null; error_message: string | null };
+type EventRow = { parse_back: unknown; id: string; status: string; format: string; file_name: string; object_key: string | null; ats_safe: boolean | null; error_message: string | null };
 
 async function statusOf(deps: ExportDeps, row: EventRow): Promise<ExportStatus> {
   const format = row.format as ExportFormat;
@@ -117,7 +119,8 @@ async function statusOf(deps: ExportDeps, row: EventRow): Promise<ExportStatus> 
   if (row.status === 'failed') return { ...base, status: 'failed', message: row.error_message ?? 'We could not make that file. Try again.' };
   if (row.status !== 'ready' || !row.object_key) return { ...base, status: 'pending' };
   const url = await deps.storage.presignGet(deps.bucket, row.object_key, { seconds: MAX_PRESIGN_GET_SECONDS, downloadName: row.file_name });
-  return { ...base, status: 'ready', url, expiresAt: new Date(Date.now() + MAX_PRESIGN_GET_SECONDS * 1000).toISOString(), ...(row.ats_safe !== null ? { atsSafe: row.ats_safe } : {}) };
+  const receipt = (row.parse_back as { receipt?: ExportReceipt } | null)?.receipt;
+  return { ...base, status: 'ready', url, ...(receipt ? { receipt } : {}), expiresAt: new Date(Date.now() + MAX_PRESIGN_GET_SECONDS * 1000).toISOString(), ...(row.ats_safe !== null ? { atsSafe: row.ats_safe } : {}) };
 }
 
 export async function exportStatus(deps: ExportDeps, identity: Identity, exportId: string): Promise<ExportStatus> {
@@ -158,12 +161,17 @@ export async function runExport(deps: ExportDeps & { pdf: PdfRenderer; latex?: L
     // the Chromium model's line-by-line read-back covers the other files.
     const typesetCheck = typeset ? await readBackTypeset(typeset, canonicalResumeSchema.parse(job.version.content).template) : null;
     const check = typeset ? null : await parseBack(model, format, bytes);
+    // Every resume gets a receipt, a typeset one too. A read that fails makes no claim either way.
+    const text = job.docType === 'resume' ? await Promise.resolve(readingText(format, bytes)).catch(() => null) : null;
+    const receipt = job.docType === 'resume' && text !== null ? receiptOf(model, text) : undefined;
+    const layout = check ?? (typesetCheck ? { kind: 'layout', ...typesetCheck } : null);
+    const readBack = layout || receipt ? { ...layout, ...(receipt ? { receipt } : {}) } : null;
     const key = exportKey(payload.userId, event.resume_version_id, event.id, format);
     await deps.storage.write(deps.bucket, key, bytes, MIME[format]);
     await deps.db.withUser(identity, (tx) =>
       tx
         .updateTable('export_events')
-        .set({ status: 'ready', object_key: key, size_bytes: bytes.length, ats_safe: check ? template.atsSafe && check.ok : (typesetCheck?.ok ?? null), parse_back: check ? JSON.stringify(check) : typesetCheck ? JSON.stringify({ kind: 'layout', ...typesetCheck }) : null, completed_at: new Date() })
+        .set({ status: 'ready', object_key: key, size_bytes: bytes.length, ats_safe: check ? template.atsSafe && check.ok : (typesetCheck?.ok ?? null), parse_back: readBack ? JSON.stringify(readBack) : null, completed_at: new Date() })
         .where('id', '=', event.id)
         .where('status', '=', 'pending')
         .execute(),
