@@ -23,6 +23,7 @@ export const SCHEDULE: readonly { job: MaintenanceJob; every: Every }[] = [
   { job: 'closing_alerts', every: 'day' },
   { job: 'application_follow_ups', every: 'day' },
   { job: 'interview_reminders', every: 'day' },
+  { job: 'match_alerts', every: 'day' },
   { job: 'push_purge', every: 'day' },
   { job: 'weekly_digest', every: 'day' },
   { job: 'notification_purge', every: 'day' },

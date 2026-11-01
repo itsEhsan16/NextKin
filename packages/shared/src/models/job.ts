@@ -131,6 +131,8 @@ export type Job = {
   companyTagline?: string;
   location: string;
   remote: RemoteType;
+  /** The listing didn't say, so `remote` is only a default and can't count against the job. */
+  workplaceUnstated?: boolean;
   employmentType: EmploymentType;
   experienceLevel: ExperienceLevel;
   /**

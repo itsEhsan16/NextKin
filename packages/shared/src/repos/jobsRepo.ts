@@ -1,5 +1,11 @@
 import { newId, simulate } from '../mock';
-import type { Application, ApplicationAsk, ApplicationTarget, Job } from '../models';
+import {
+  NOTHING_HIDDEN,
+  type Application,
+  type ApplicationAsk,
+  type ApplicationTarget,
+  type Job,
+} from '../models';
 import {
   JOB_COMPARATORS,
   JOBS_PAGE_SIZE,
@@ -235,7 +241,9 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
     readLink: (url) => simulate(() => clone(readJobLink(store, url)), LINK_LATENCY),
     importFromLink: (url) => simulate(() => clone(importJobLink(store, url)), LINK_LATENCY),
 
-    // Home "Top Job Matches": best match first, newest breaks ties.
+    // Home "Top Job Matches": best match first, newest breaks ties. The sample picks are the
+    // board's, so they aren't held to the sample profile's preferences: that would hide Google,
+    // which the board puts first (toreview §147.3). The server filters real picks.
     listPicks: () =>
       simulate(
         () =>
@@ -246,5 +254,6 @@ export function createMockJobsRepo(store: MockStore): JobsRepo {
           ),
         { empty: () => [] },
       ),
+    getHiddenPicks: () => simulate(() => clone(NOTHING_HIDDEN), { empty: () => NOTHING_HIDDEN }),
   };
 }

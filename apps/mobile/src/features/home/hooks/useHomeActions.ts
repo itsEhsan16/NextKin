@@ -40,6 +40,8 @@ export function useHomeActions() {
       findJobs: () => router.navigate('/(tabs)/jobs'),
       viewAllJobs: () => router.navigate('/(tabs)/jobs'),
       viewAllResumes: () => router.navigate('/(tabs)/resumes'),
+      viewDiscover: () =>
+        router.navigate({ pathname: '/(tabs)/jobs', params: { segment: 'discover' } }),
       viewApplications: () =>
         router.navigate({ pathname: '/(tabs)/jobs', params: { segment: 'applied' } }),
       openJob: (job: Job) => router.push({ pathname: '/jobs/[id]', params: { id: job.id } }),

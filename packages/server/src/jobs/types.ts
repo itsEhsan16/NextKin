@@ -31,6 +31,8 @@ export const normalizedJobSchema = z.object({
   /** ISO 3166 alpha-2. Real providers serve US, DE and AU; the fixture catalogue is Indian too. */
   country: z.string().length(2),
   remote: z.enum(['remote', 'hybrid', 'onsite']),
+  /** A provider that doesn't say: `remote` is then only a default, and can't count against the job. */
+  workplaceUnstated: z.boolean().optional(),
   employmentType: z.enum(['full_time', 'part_time', 'contract', 'internship', 'freelance']),
   experienceLevel: z.enum(['entry', 'mid', 'senior', 'lead']),
   experienceYears: z.object({ min: z.number().min(0), max: z.number().min(0) }).optional(),

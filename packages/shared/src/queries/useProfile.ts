@@ -65,6 +65,10 @@ export function useUpdatePreferences() {
     onError: (_error, _patch, context) => {
       if (context?.previous) queryClient.setQueryData(qk.profile.me(), context.previous);
     },
-    onSettled: () => refetchWhenQueueEmpty(queryClient, PREFERENCES_QUEUE, qk.profile.all),
+    onSettled: () => {
+      // Picks are chosen against these preferences.
+      void queryClient.invalidateQueries({ queryKey: qk.jobs.picks() });
+      return refetchWhenQueueEmpty(queryClient, PREFERENCES_QUEUE, qk.profile.all);
+    },
   });
 }

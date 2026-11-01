@@ -31,6 +31,7 @@ export const MAINTENANCE_JOBS = [
   'closing_alerts',
   'application_follow_ups',
   'interview_reminders',
+  'match_alerts',
   'push_send',
   'push_purge',
   'weekly_digest',

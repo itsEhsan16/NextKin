@@ -1,6 +1,7 @@
 import { JOB_COMPARATORS, JOBS_PAGE_SIZE, matchesFilters, SAVED_JOB_COMPARATORS, similarJobs } from '@nextkin/shared/jobs/filters';
 import type { JdDraft } from '@nextkin/shared/models/jd';
 import type { Job, JobFilters, JobSort, SavedJobsSort } from '@nextkin/shared/models/job';
+import { splitPicks, type HiddenPicks } from '@nextkin/shared/models/jobFit';
 import { jobSchema } from '@nextkin/shared/schemas/job';
 import type { Page } from '@nextkin/shared/repos/types';
 import { sql } from 'kysely';
@@ -15,6 +16,7 @@ import { snapshotOf, toClientJob, type UserDecoration } from '../jobs/toJob';
 import { normalizedJobSchema, type NormalizedJob } from '../jobs/types';
 import { COLUMNS, toDraft, type Row } from './jdDraft';
 import { planOf } from './plan';
+import { jobPreferences } from './profileRead';
 
 /**
  * Jobs for the apps (ImBackendImplementationPlan P11-03…P11-05; V2 §7.13). Search, counts and
@@ -83,12 +85,23 @@ async function openListings(deps: JobsDeps): Promise<Listed[]> {
 const bestFirst = (a: { job: Job; match: JobMatch | null }, b: { job: Job; match: JobMatch | null }) =>
   (b.match?.sortKey ?? -1) - (a.match?.sortKey ?? -1) || b.job.postedAt.localeCompare(a.job.postedAt);
 
-/** Home's "Top Job Matches": the ten open listings that best match the profile. */
-export async function listPicks(deps: JobsDeps, identity: Identity): Promise<Job[]> {
+const PICKS = 10;
+
+/** The best matches that fit, and what was passed over because a stated fact clashed. */
+async function picksOf(deps: JobsDeps, identity: Identity): Promise<{ kept: Job[]; hidden: HiddenPicks }> {
   const open = await openListings(deps);
-  const decorated = await deps.db.withUser(identity, (tx) => decorate(tx, identity.userId, open, { isPick: true }));
-  return decorated.filter((d) => (d.match?.sortKey ?? -1) >= 0).sort(bestFirst).slice(0, 10).map((d) => d.job);
+  return deps.db.withUser(identity, async (tx) => {
+    const decorated = await decorate(tx, identity.userId, open, { isPick: true });
+    const ranked = decorated.filter((d) => (d.match?.sortKey ?? -1) >= 0).sort(bestFirst).map((d) => d.job);
+    const profile = await tx.selectFrom('profiles').select('preferences').where('user_id', '=', identity.userId).executeTakeFirst();
+    return splitPicks(ranked, jobPreferences(profile?.preferences), PICKS);
+  });
 }
+
+/** Home's "Top Job Matches": the ten open listings that best match the profile and fit. */
+export const listPicks = async (deps: JobsDeps, identity: Identity): Promise<Job[]> => (await picksOf(deps, identity)).kept;
+
+export const hiddenPicks = async (deps: JobsDeps, identity: Identity): Promise<HiddenPicks> => (await picksOf(deps, identity)).hidden;
 
 /** The Jobs tab's carousel: the best matches posted in the last two days, else the freshest. */
 export async function listTodaysPicks(deps: JobsDeps, identity: Identity): Promise<Job[]> {

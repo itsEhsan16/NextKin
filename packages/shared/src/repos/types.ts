@@ -48,6 +48,7 @@ import type { FigureDraft,
   JobSort,
   Notification,
   NotificationPrefs,
+  HiddenPicks,
   PushDevice,
   NotificationSettings,
   Plan,
@@ -359,8 +360,10 @@ export type JobsRepo = {
   updateApplicationStatus(id: string, status: ApplicationStatus, interviewAt?: string | null): Promise<Application>;
   /** "No news yet": answers a follow-up without moving the application. */
   checkInApplication(id: string): Promise<Application>;
-  /** Home's "Top Job Matches": the open listings that best match the profile. */
+  /** Home's "Top Job Matches": the open listings that best match the profile and fit. */
   listPicks(): Promise<Job[]>;
+  /** What those picks left out for clashing with the candidate's preferences, and why. */
+  getHiddenPicks(): Promise<HiddenPicks>;
   /** Reads a copied job link without keeping anything (TAILOR 00c). UNREADABLE_LINK if blocked. */
   readLink(url: string): Promise<JobLinkPreview>;
   /** Saves the job behind a copied link, adding it to NextKin first when needed. Idempotent. */

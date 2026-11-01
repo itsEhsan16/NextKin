@@ -35,6 +35,7 @@ export function toClientJob(listing: NormalizedJob, relevanceRank: number, user:
     ...(company.headquarters ? { companyHeadquarters: company.headquarters } : {}),
     location: listing.location,
     remote: listing.remote,
+    ...(listing.workplaceUnstated ? { workplaceUnstated: true } : {}),
     employmentType: listing.employmentType,
     experienceLevel: listing.experienceLevel,
     ...(listing.experienceYears ? { experienceYears: listing.experienceYears } : {}),

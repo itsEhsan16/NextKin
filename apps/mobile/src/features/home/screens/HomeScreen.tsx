@@ -11,6 +11,7 @@ import {
   useApplications,
   useCurrentUser,
   useDashboardStats,
+  useHiddenPicks,
   useJobPicks,
   useResumes,
   useUnreadCount,
@@ -26,6 +27,7 @@ import { layoutTransition } from '@/ui/motion';
 import { ApplicationsCard } from '../components/ApplicationsCard';
 import { BrandBlock } from '../components/BrandBlock';
 import { HeroBlock } from '../components/HeroBlock';
+import { HiddenPicksNote } from '../components/HiddenPicksNote';
 import { HomeHeader } from '../components/HomeHeader';
 import { FirstResumeCard } from '../components/FirstResumeCard';
 import { HomeSkeleton } from '../components/HomeSkeleton';
@@ -78,6 +80,7 @@ export function HomeScreen() {
 
   const user = useCurrentUser();
   const picks = useJobPicks();
+  const hiddenPicks = useHiddenPicks();
   const resumes = useResumes();
   const stats = useDashboardStats();
   const applications = useApplications();
@@ -204,6 +207,9 @@ export function HomeScreen() {
               onPressJob={actions.openJob}
               onRetry={() => void picks.refetch()}
             />
+            {hiddenPicks.data?.count ? (
+              <HiddenPicksNote hidden={hiddenPicks.data} onPress={actions.viewDiscover} />
+            ) : null}
           </Section>
           <Section index={4} animate={animate}>
             <ShortcutGrid stats={stats.data} onShortcut={actions.shortcut} />

@@ -93,6 +93,8 @@ export { unreadableJdId, useDraftFigure, useJdComparison, useJdJob, useJdMatch }
 export type { JobFactsKnown } from '../jobs/fromJd';
 export {
   useApplications,
+  useHiddenPicks,
+  useJobFit,
   useCheckInApplication,
   useAnswerApplicationAsk,
   useApplicationAsks,

@@ -67,7 +67,7 @@ export function appliedNote(application: Application): FooterNote {
  * the same information as a string for the card's accessibility label.
  */
 
-export function jobCardLabel(job: Job, note: string, extra?: string): string {
+export function jobCardLabel(job: Job, note: string, extra?: string, clash?: string): string {
   return [
     job.title,
     job.company,
@@ -75,6 +75,7 @@ export function jobCardLabel(job: Job, note: string, extra?: string): string {
     job.matchBand ? MATCH_BAND_LABEL[job.matchBand] : undefined,
     job.matchReason,
     extra,
+    clash,
     note,
   ]
     .filter(Boolean)

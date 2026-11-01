@@ -2,11 +2,12 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
-import type { Application, Job } from '@/data/models';
+import { jobClashes, type Application, type Job, type ProfilePreferences } from '@/data/models';
 import { JOB_SORT_LABEL, SAVED_JOBS_SORT_LABEL } from '@/data/models';
 import {
   queryPhase,
   useApplications,
+  useProfile,
   useJobs,
   useSavedJobs,
   useTodaysPicks,
@@ -88,6 +89,7 @@ export function JobsScreen() {
   const discover = useJobs({ ...filters, query: debouncedQuery || undefined }, sort);
   const saved = useSavedJobs();
   const applications = useApplications();
+  const preferences = useProfile().data?.preferences;
 
   const chips = useMemo(() => appliedFilterChips(filters), [filters]);
 
@@ -176,6 +178,7 @@ export function JobsScreen() {
         <JobCard
           job={item.job}
           variant={isSaved ? 'saved' : 'discover'}
+          {...clashOf(item.job, preferences)}
           footer={isSaved ? savedNote(item.job) : discoverNote(item.job)}
           onPress={actions.openJob}
           onToggleSave={handleToggleSave}
@@ -183,7 +186,7 @@ export function JobsScreen() {
         />
       );
     },
-    [actions.openJob, actions.tailorResume, handleToggleSave, openApplication],
+    [actions.openJob, actions.tailorResume, handleToggleSave, openApplication, preferences],
   );
 
   // Everything the list header renders from; changing any of it must repaint the header.
@@ -534,6 +537,12 @@ function matchesQuery(job: Job, query: string): boolean {
 
 function filterByQuery(jobs: Job[], query: string): Job[] {
   return query ? jobs.filter((job) => matchesQuery(job, query)) : jobs;
+}
+
+/** The first thing a listing states that clashes: the Jobs tab labels it, and never hides it. */
+function clashOf(job: Job, preferences: ProfilePreferences | undefined): { clash?: string } {
+  const [clash] = preferences ? jobClashes(job, preferences) : [];
+  return clash ? { clash } : {};
 }
 
 function matchesStatusChip(application: Application, chip: string): boolean {

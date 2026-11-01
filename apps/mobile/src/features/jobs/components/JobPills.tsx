@@ -190,6 +190,11 @@ export function applicationStatusLabel(application: Application): string {
   }
 }
 
+/** What clashes with the candidate's preferences, on a card that's still shown. */
+export function ClashPill({ label }: { label: string }) {
+  return <JobPill label={label} tone="warning" />;
+}
+
 export function ApplicationStatusPill({ application }: { application: Application }) {
   return (
     <JobPill

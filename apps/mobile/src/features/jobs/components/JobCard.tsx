@@ -11,7 +11,7 @@ import { Text } from '@/ui/Text';
 
 import { JobCardFooter } from './JobCardFooter';
 import { appliedCardLabel, jobCardLabel, jobTags, type FooterNote } from './jobCardMeta';
-import { ApplicationStatusPill, MatchBadge, TagPill } from './JobPills';
+import { ApplicationStatusPill, ClashPill, MatchBadge, TagPill } from './JobPills';
 import { MatchReason } from './MatchReason';
 
 /** Which tab the card is standing in, which is what decides its badge and its footer. */
@@ -26,6 +26,8 @@ export type JobCardProps = {
   variant?: JobCardVariant;
   /** Required by the `applied` variant, which shows its status in place of the match badge. */
   application?: Application;
+  /** What clashes with the candidate's preferences, when something does. Search hides nothing. */
+  clash?: string;
   /** Footer copy and its colour; built by `jobCardMeta` so the card stays presentational. */
   footer: FooterNote;
   onPress: (job: Job) => void;
@@ -59,6 +61,7 @@ export const JobCard = memo(function JobCard({
   job,
   variant = 'discover',
   application,
+  clash,
   footer,
   onPress,
   onToggleSave,
@@ -76,7 +79,7 @@ export const JobCard = memo(function JobCard({
   const label =
     applied && application
       ? appliedCardLabel(job, application, footer.note)
-      : jobCardLabel(job, footer.note);
+      : jobCardLabel(job, footer.note, undefined, clash);
 
   const actions = useMemo(
     () =>
@@ -133,6 +136,8 @@ export const JobCard = memo(function JobCard({
             <TagPill key={tag} label={tag} />
           ))}
         </View>
+
+        {clash ? <ClashPill label={clash} /> : null}
 
         {!chevron && job.matchReason ? <MatchReason reason={job.matchReason} /> : null}
 

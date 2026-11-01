@@ -52,6 +52,7 @@ export const jobSchema = z
     companyTagline: z.string().max(300).optional(),
     location: z.string().max(200),
     remote,
+    workplaceUnstated: z.boolean().optional(),
     employmentType: employment,
     experienceLevel: level,
     experienceYears: z.object({ min: z.number().min(0), max: z.number().min(0) }).optional(),
@@ -92,6 +93,7 @@ export const jobSchema = z
 
 export const jobPageSchema = pageSchema(jobSchema);
 export const jobListSchema = z.object({ data: z.array(jobSchema) });
+export const hiddenPicksSchema = z.object({ count: z.number().int().min(0), reasons: z.array(z.string()) });
 export const jobCountSchema = z.object({ count: z.number().int().min(0) });
 
 /** A save, by the id the listing carries everywhere (search, picks, saved, deep links). */

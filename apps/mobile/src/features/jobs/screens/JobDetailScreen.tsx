@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Job } from '@/data/models';
-import { useJob, useSimilarJobs } from '@/data/queries';
+import { useJob, useJobFit, useSimilarJobs } from '@/data/queries';
 import { TailorResumeSheet } from '@/features/create/components/TailorResumeSheet';
 import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
@@ -17,6 +17,7 @@ import { JobCompanyCard } from '../components/JobCompanyCard';
 import { JobsToastHost } from '../JobsToastHost';
 import { JobDetailActions } from '../components/JobDetailActions';
 import { JobDetailHero } from '../components/JobDetailHero';
+import { FitLabels } from '../components/FitLabels';
 import { JobMatchCard } from '../components/JobMatchCard';
 import { SimilarJobCard } from '../components/SimilarJobCard';
 import { TailorResumeCta } from '../components/TailorResumeCta';
@@ -40,6 +41,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
 
   // Opened from a list, the page paints at once from the list's copy while the detail loads.
   const job = useJob(id, { seedFromLists: true });
+  const fit = useJobFit(job.data);
   const similar = useSimilarJobs(id);
   const save = useSaveJob();
   // NextKin submits nothing: Apply opens the employer's page, then asks "Did you apply?".
@@ -139,6 +141,8 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
             onSeeFullCriteria={() => actions.openFullCriteria(current)}
           />
         ) : null}
+
+        <FitLabels labels={fit} />
 
         <TailorResumeCta onPress={() => setTailorOpen(true)} />
 

@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import type { AiGateway } from '../ai/gateway';
 import { runFollowUps, runInterviewReminders } from '../services/applications';
+import { runMatchAlerts } from '../services/jobAlerts';
 import { purgePushMessages, runWeeklyDigest, sendDuePushes } from '../services/push';
 import { runKbCandidates } from '../services/kbCandidates';
 import { purgeEvents } from '../services/events';
@@ -74,6 +75,8 @@ export async function runMaintenanceJob(job: MaintenanceJob, deps: JobDeps): Pro
       return runFollowUps(db, deps.now?.());
     case 'interview_reminders':
       return runInterviewReminders(db, deps.now?.());
+    case 'match_alerts':
+      return runMatchAlerts(db, log, deps.now?.());
     case 'push_send':
       return sendDuePushes({ db, log, push: deps.push ?? null }, deps.now?.());
     case 'push_purge':

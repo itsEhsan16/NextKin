@@ -83,6 +83,7 @@ export function jobFromDraft(draft: JdDraft, id: string): Job {
     companyWebsite: '',
     location: draft.location ?? '',
     remote: draft.reading?.workArrangement ?? 'onsite',
+    ...(draft.reading?.workArrangement ? {} : { workplaceUnstated: true }),
     employmentType: draft.employmentType ?? 'full_time',
     experienceLevel: draft.experienceLevel ?? 'mid',
     postedAt: draft.createdAt,

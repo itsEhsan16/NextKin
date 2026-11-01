@@ -169,6 +169,7 @@ const MATRIX: Record<string, Entry> = {
   'GET /api/v1/jobs/search': { access: 'user' },
   'GET /api/v1/jobs/count': { access: 'user' },
   'GET /api/v1/jobs/picks': { access: 'user' },
+  'GET /api/v1/jobs/picks/hidden': { access: 'user' },
   'GET /api/v1/jobs/todays-picks': { access: 'user' },
   'GET /api/v1/jobs/saved': { access: 'user' },
   'POST /api/v1/jd/{id}/save': { access: 'user' },

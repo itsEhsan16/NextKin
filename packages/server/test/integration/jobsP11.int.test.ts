@@ -14,6 +14,7 @@ import { buildProviders, createProviderRegistry, type ActiveProviders, type Prov
 import { ProviderError, type JobProvider, type ProviderName } from '../../src/jobs/types';
 import { SEED_ADMIN_ID } from '../../src/seed/reference';
 import * as jobs from '../../src/services/jobs';
+import * as profile from '../../src/services/profile';
 import { backendUser } from './fixtures/documents';
 import { createUser, deleteUsers, log } from './fixtures/pipeline';
 
@@ -177,6 +178,25 @@ describe('picks, detail, similar and company (P11-05)', () => {
     const company = await jobs.listByCompany(d, as(userId), one.company.toUpperCase());
     expect(company.some((j) => j.id === one.id)).toBe(true);
     await expect(jobs.getJob(d, as(userId), '00000000-0000-8000-8000-000000000000')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+});
+
+describe('fit (toreview §147.3)', () => {
+  it('leaves a clash out of picks and says why, and search still shows it', async () => {
+    const userId = await backendUser(db, users);
+    const d = fixtureDeps();
+    const searched = await jobs.searchJobs(d, as(userId), EMPTY_JOB_FILTERS, 'relevance');
+    expect((await jobs.hiddenPicks(d, as(userId))).count).toBe(0);
+
+    const loaded = await profile.getProfile(db, as(userId));
+    await profile.updatePreferences(db, as(userId), loaded.rowVersion, { remote: 'remote' });
+
+    const picks = await jobs.listPicks(d, as(userId));
+    expect(picks.every((j) => j.remote === 'remote')).toBe(true);
+    const hidden = await jobs.hiddenPicks(d, as(userId));
+    expect(hidden.count).toBeGreaterThan(0);
+    expect(hidden.reasons[0]).toContain('you prefer remote');
+    expect((await jobs.searchJobs(d, as(userId), EMPTY_JOB_FILTERS, 'relevance')).items).toHaveLength(searched.items.length);
   });
 });
 

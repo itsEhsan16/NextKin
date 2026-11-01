@@ -61,6 +61,7 @@ export const qk = {
     /** The sort is in the key: two orders are two cached lists, not one list re-fetched. */
     saved: (sort: SavedJobsSort = 'recent') => ['jobs', 'saved', sort] as const,
     picks: () => ['jobs', 'picks'] as const,
+    hiddenPicks: () => ['jobs', 'picks', 'hidden'] as const,
     todaysPicks: () => ['jobs', 'todays-picks'] as const,
     applications: () => ['jobs', 'applications'] as const,
     applicationAsks: () => ['jobs', 'application-asks'] as const,

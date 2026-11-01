@@ -5,6 +5,7 @@ export { LocationSheetHost } from './LocationSheetHost';
 export { FiltersSheetBody, type FiltersSheetBodyProps } from './components/FiltersSheetBody';
 export { LocationSheetBody, type LocationSheetBodyProps } from './components/LocationSheetBody';
 export { ApplyAskHost } from './components/ApplyAskHost';
+export { FitLabels } from './components/FitLabels';
 export { useDueApplicationAsk } from './hooks/useDueApplicationAsk';
 export { useJobsActions } from './hooks/useJobsActions';
 export {

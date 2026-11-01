@@ -5,9 +5,13 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import {
   EMPTY_JOB_FILTERS,
+  jobFit,
+  type FitJob,
+  type FitLabel,
   type ApplicationAnswer,
   type ApplicationStatus,
   type ApplicationTarget,
@@ -21,6 +25,7 @@ import { repos } from '../repos';
 import { findCachedJob } from './jobCache';
 import { qk } from './keys';
 import { track } from './track';
+import { useProfile } from './useProfile';
 
 /** Paged job search. Flatten with `data.pages.flatMap((page) => page.items)`. */
 export function useJobs(filters: JobFilters = EMPTY_JOB_FILTERS, sort: JobSort = 'relevance') {
@@ -134,6 +139,20 @@ export function useJobPicks() {
     queryKey: qk.jobs.picks(),
     queryFn: () => repos.jobs.listPicks(),
   });
+}
+
+/** What Home's picks left out for clashing with the candidate's preferences, and why. */
+export function useHiddenPicks() {
+  return useQuery({
+    queryKey: qk.jobs.hiddenPicks(),
+    queryFn: () => repos.jobs.getHiddenPicks(),
+  });
+}
+
+/** How one job sits with their preferences. Nothing yet while the profile is loading. */
+export function useJobFit(job: FitJob | undefined): FitLabel[] {
+  const preferences = useProfile().data?.preferences;
+  return useMemo(() => (job && preferences ? jobFit(job, preferences) : []), [job, preferences]);
 }
 
 /** "I applied", said directly: the Applied tab gains the row. NextKin submits nothing. */

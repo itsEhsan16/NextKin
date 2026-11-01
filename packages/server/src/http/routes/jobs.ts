@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import { jobCountSchema, jobFiltersQuerySchema, jobListSchema, jobPageSchema, jobSchema, jobSearchQuerySchema, savedNotesSchema, saveJobSchema } from '@nextkin/shared/schemas/job';
+import { hiddenPicksSchema, jobCountSchema, jobFiltersQuerySchema, jobListSchema, jobPageSchema, jobSchema, jobSearchQuerySchema, savedNotesSchema, saveJobSchema } from '@nextkin/shared/schemas/job';
 
 import type { IdempotencyStore } from '../../cache/stores';
 import type { Flags } from '../../flags/flags';
@@ -54,6 +54,10 @@ export function jobRoutes(deps: JobRouteDeps): OpenAPIHono<ApiEnv> {
       requireAuth(c);
       return c.json(checked(jobCountSchema, { count: await jobs.countJobs(d, c.req.valid('query')) }), 200);
     },
+  );
+
+  app.openapi(createRoute({ method: 'get', path: '/jobs/picks/hidden', tags: ['jobs'], summary: 'What the picks left out for clashing with the candidate’s preferences, and why.', responses: { 200: ok('What was left out.', hiddenPicksSchema), ...errs } }), async (c) =>
+    c.json(checked(hiddenPicksSchema, await jobs.hiddenPicks(d, requireAuth(c).identity)), 200),
   );
 
   app.openapi(createRoute({ method: 'get', path: '/jobs/picks', tags: ['jobs'], summary: 'The open listings that best match the profile.', responses: { 200: ok('Picks.', jobListSchema), ...errs } }), async (c) =>
