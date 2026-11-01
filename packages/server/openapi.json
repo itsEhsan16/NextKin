@@ -41659,6 +41659,111 @@
                             "type": "string"
                           }
                         },
+                        "report": {
+                          "type": "object",
+                          "properties": {
+                            "jdMatch": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "percent": {
+                                  "type": "number"
+                                },
+                                "requiredMet": {
+                                  "type": "number"
+                                },
+                                "requiredPartial": {
+                                  "type": "number"
+                                },
+                                "requiredTotal": {
+                                  "type": "number"
+                                },
+                                "preferredMet": {
+                                  "type": "number"
+                                },
+                                "preferredTotal": {
+                                  "type": "number"
+                                },
+                                "completeness": {
+                                  "type": "string",
+                                  "enum": [
+                                    "full",
+                                    "snippet"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "percent",
+                                "requiredMet",
+                                "requiredPartial",
+                                "requiredTotal",
+                                "preferredMet",
+                                "preferredTotal",
+                                "completeness"
+                              ]
+                            },
+                            "components": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "key": {
+                                    "type": "string",
+                                    "enum": [
+                                      "keywords",
+                                      "timeline",
+                                      "sections",
+                                      "formatting",
+                                      "achievements"
+                                    ]
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "weight": {
+                                    "type": "number"
+                                  },
+                                  "score": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "points": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "basis": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "label",
+                                  "weight",
+                                  "score",
+                                  "points",
+                                  "basis"
+                                ]
+                              }
+                            },
+                            "notMeasured": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "jdMatch",
+                            "components",
+                            "notMeasured"
+                          ]
+                        },
                         "fixes": {
                           "type": "array",
                           "items": {
@@ -42042,6 +42147,111 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "report": {
+                          "type": "object",
+                          "properties": {
+                            "jdMatch": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "percent": {
+                                  "type": "number"
+                                },
+                                "requiredMet": {
+                                  "type": "number"
+                                },
+                                "requiredPartial": {
+                                  "type": "number"
+                                },
+                                "requiredTotal": {
+                                  "type": "number"
+                                },
+                                "preferredMet": {
+                                  "type": "number"
+                                },
+                                "preferredTotal": {
+                                  "type": "number"
+                                },
+                                "completeness": {
+                                  "type": "string",
+                                  "enum": [
+                                    "full",
+                                    "snippet"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "percent",
+                                "requiredMet",
+                                "requiredPartial",
+                                "requiredTotal",
+                                "preferredMet",
+                                "preferredTotal",
+                                "completeness"
+                              ]
+                            },
+                            "components": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "key": {
+                                    "type": "string",
+                                    "enum": [
+                                      "keywords",
+                                      "timeline",
+                                      "sections",
+                                      "formatting",
+                                      "achievements"
+                                    ]
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "weight": {
+                                    "type": "number"
+                                  },
+                                  "score": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "points": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "basis": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "label",
+                                  "weight",
+                                  "score",
+                                  "points",
+                                  "basis"
+                                ]
+                              }
+                            },
+                            "notMeasured": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "jdMatch",
+                            "components",
+                            "notMeasured"
+                          ]
                         },
                         "fixes": {
                           "type": "array",
@@ -42971,6 +43181,111 @@
                                   "type": "string"
                                 }
                               },
+                              "report": {
+                                "type": "object",
+                                "properties": {
+                                  "jdMatch": {
+                                    "type": [
+                                      "object",
+                                      "null"
+                                    ],
+                                    "properties": {
+                                      "percent": {
+                                        "type": "number"
+                                      },
+                                      "requiredMet": {
+                                        "type": "number"
+                                      },
+                                      "requiredPartial": {
+                                        "type": "number"
+                                      },
+                                      "requiredTotal": {
+                                        "type": "number"
+                                      },
+                                      "preferredMet": {
+                                        "type": "number"
+                                      },
+                                      "preferredTotal": {
+                                        "type": "number"
+                                      },
+                                      "completeness": {
+                                        "type": "string",
+                                        "enum": [
+                                          "full",
+                                          "snippet"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "percent",
+                                      "requiredMet",
+                                      "requiredPartial",
+                                      "requiredTotal",
+                                      "preferredMet",
+                                      "preferredTotal",
+                                      "completeness"
+                                    ]
+                                  },
+                                  "components": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "key": {
+                                          "type": "string",
+                                          "enum": [
+                                            "keywords",
+                                            "timeline",
+                                            "sections",
+                                            "formatting",
+                                            "achievements"
+                                          ]
+                                        },
+                                        "label": {
+                                          "type": "string"
+                                        },
+                                        "weight": {
+                                          "type": "number"
+                                        },
+                                        "score": {
+                                          "type": [
+                                            "number",
+                                            "null"
+                                          ]
+                                        },
+                                        "points": {
+                                          "type": [
+                                            "number",
+                                            "null"
+                                          ]
+                                        },
+                                        "basis": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "key",
+                                        "label",
+                                        "weight",
+                                        "score",
+                                        "points",
+                                        "basis"
+                                      ]
+                                    }
+                                  },
+                                  "notMeasured": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "jdMatch",
+                                  "components",
+                                  "notMeasured"
+                                ]
+                              },
                               "fixes": {
                                 "type": "array",
                                 "items": {
@@ -43671,6 +43986,111 @@
                               "items": {
                                 "type": "string"
                               }
+                            },
+                            "report": {
+                              "type": "object",
+                              "properties": {
+                                "jdMatch": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "percent": {
+                                      "type": "number"
+                                    },
+                                    "requiredMet": {
+                                      "type": "number"
+                                    },
+                                    "requiredPartial": {
+                                      "type": "number"
+                                    },
+                                    "requiredTotal": {
+                                      "type": "number"
+                                    },
+                                    "preferredMet": {
+                                      "type": "number"
+                                    },
+                                    "preferredTotal": {
+                                      "type": "number"
+                                    },
+                                    "completeness": {
+                                      "type": "string",
+                                      "enum": [
+                                        "full",
+                                        "snippet"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "percent",
+                                    "requiredMet",
+                                    "requiredPartial",
+                                    "requiredTotal",
+                                    "preferredMet",
+                                    "preferredTotal",
+                                    "completeness"
+                                  ]
+                                },
+                                "components": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "key": {
+                                        "type": "string",
+                                        "enum": [
+                                          "keywords",
+                                          "timeline",
+                                          "sections",
+                                          "formatting",
+                                          "achievements"
+                                        ]
+                                      },
+                                      "label": {
+                                        "type": "string"
+                                      },
+                                      "weight": {
+                                        "type": "number"
+                                      },
+                                      "score": {
+                                        "type": [
+                                          "number",
+                                          "null"
+                                        ]
+                                      },
+                                      "points": {
+                                        "type": [
+                                          "number",
+                                          "null"
+                                        ]
+                                      },
+                                      "basis": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "key",
+                                      "label",
+                                      "weight",
+                                      "score",
+                                      "points",
+                                      "basis"
+                                    ]
+                                  }
+                                },
+                                "notMeasured": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "required": [
+                                "jdMatch",
+                                "components",
+                                "notMeasured"
+                              ]
                             },
                             "fixes": {
                               "type": "array",
@@ -44376,6 +44796,111 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "report": {
+                          "type": "object",
+                          "properties": {
+                            "jdMatch": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "percent": {
+                                  "type": "number"
+                                },
+                                "requiredMet": {
+                                  "type": "number"
+                                },
+                                "requiredPartial": {
+                                  "type": "number"
+                                },
+                                "requiredTotal": {
+                                  "type": "number"
+                                },
+                                "preferredMet": {
+                                  "type": "number"
+                                },
+                                "preferredTotal": {
+                                  "type": "number"
+                                },
+                                "completeness": {
+                                  "type": "string",
+                                  "enum": [
+                                    "full",
+                                    "snippet"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "percent",
+                                "requiredMet",
+                                "requiredPartial",
+                                "requiredTotal",
+                                "preferredMet",
+                                "preferredTotal",
+                                "completeness"
+                              ]
+                            },
+                            "components": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "key": {
+                                    "type": "string",
+                                    "enum": [
+                                      "keywords",
+                                      "timeline",
+                                      "sections",
+                                      "formatting",
+                                      "achievements"
+                                    ]
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "weight": {
+                                    "type": "number"
+                                  },
+                                  "score": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "points": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "basis": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "label",
+                                  "weight",
+                                  "score",
+                                  "points",
+                                  "basis"
+                                ]
+                              }
+                            },
+                            "notMeasured": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "jdMatch",
+                            "components",
+                            "notMeasured"
+                          ]
                         },
                         "fixes": {
                           "type": "array",
@@ -45617,6 +46142,111 @@
                             "type": "string"
                           }
                         },
+                        "report": {
+                          "type": "object",
+                          "properties": {
+                            "jdMatch": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "percent": {
+                                  "type": "number"
+                                },
+                                "requiredMet": {
+                                  "type": "number"
+                                },
+                                "requiredPartial": {
+                                  "type": "number"
+                                },
+                                "requiredTotal": {
+                                  "type": "number"
+                                },
+                                "preferredMet": {
+                                  "type": "number"
+                                },
+                                "preferredTotal": {
+                                  "type": "number"
+                                },
+                                "completeness": {
+                                  "type": "string",
+                                  "enum": [
+                                    "full",
+                                    "snippet"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "percent",
+                                "requiredMet",
+                                "requiredPartial",
+                                "requiredTotal",
+                                "preferredMet",
+                                "preferredTotal",
+                                "completeness"
+                              ]
+                            },
+                            "components": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "key": {
+                                    "type": "string",
+                                    "enum": [
+                                      "keywords",
+                                      "timeline",
+                                      "sections",
+                                      "formatting",
+                                      "achievements"
+                                    ]
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "weight": {
+                                    "type": "number"
+                                  },
+                                  "score": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "points": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "basis": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "label",
+                                  "weight",
+                                  "score",
+                                  "points",
+                                  "basis"
+                                ]
+                              }
+                            },
+                            "notMeasured": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "jdMatch",
+                            "components",
+                            "notMeasured"
+                          ]
+                        },
                         "fixes": {
                           "type": "array",
                           "items": {
@@ -46378,6 +47008,111 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "report": {
+                          "type": "object",
+                          "properties": {
+                            "jdMatch": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "percent": {
+                                  "type": "number"
+                                },
+                                "requiredMet": {
+                                  "type": "number"
+                                },
+                                "requiredPartial": {
+                                  "type": "number"
+                                },
+                                "requiredTotal": {
+                                  "type": "number"
+                                },
+                                "preferredMet": {
+                                  "type": "number"
+                                },
+                                "preferredTotal": {
+                                  "type": "number"
+                                },
+                                "completeness": {
+                                  "type": "string",
+                                  "enum": [
+                                    "full",
+                                    "snippet"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "percent",
+                                "requiredMet",
+                                "requiredPartial",
+                                "requiredTotal",
+                                "preferredMet",
+                                "preferredTotal",
+                                "completeness"
+                              ]
+                            },
+                            "components": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "key": {
+                                    "type": "string",
+                                    "enum": [
+                                      "keywords",
+                                      "timeline",
+                                      "sections",
+                                      "formatting",
+                                      "achievements"
+                                    ]
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "weight": {
+                                    "type": "number"
+                                  },
+                                  "score": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "points": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "basis": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "label",
+                                  "weight",
+                                  "score",
+                                  "points",
+                                  "basis"
+                                ]
+                              }
+                            },
+                            "notMeasured": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "jdMatch",
+                            "components",
+                            "notMeasured"
+                          ]
                         },
                         "fixes": {
                           "type": "array",

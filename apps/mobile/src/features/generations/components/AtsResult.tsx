@@ -6,10 +6,13 @@ import {
   atsCheckTitle,
   SCORE_LABEL,
   SCORE_LABEL_CAPS,
+  scoreLead,
   type AtsCheckResult,
 } from '@/data/models';
 // Deep imports on purpose: the resumes barrel drags its screens in.
 import { ScoreBandPill } from '@/features/resumes/components/ScoreBandPill';
+import { ScoreNotMeasured } from '@/features/resumes/components/ScoreNotMeasured';
+import { ScoreParts } from '@/features/resumes/components/ScoreParts';
 import { atsScoreColor } from '@/features/resumes/docMeta';
 import { a11yButton, a11yHeader, useReducedMotion } from '@/lib';
 import { motion, scaledSheet, useTheme } from '@/theme';
@@ -67,16 +70,25 @@ const chipIn = (index: number) =>
     motion.stagger.card * 3 + Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
   ).duration(motion.durations.fast);
 
-/** The verdict beside the ring (646:56): band and job, what that means, and how it is scored. */
+/**
+ * The verdict beside the ring (646:56): the count of required skills (toreview §146.1), band and
+ * job, what that means, and how it is scored. A check from before §146 keeps the board's headline.
+ */
 function ResultHero({ result, onRubric }: { result: AtsCheckResult; onRubric: () => void }) {
   const { colors, radii, s } = useTheme();
   const styles = useStyles();
+  const lead = scoreLead(result.report);
   return (
     <View style={styles.hero}>
       <View style={styles.heroText}>
         <Text variant="headlineLg" {...a11yHeader()}>
-          {atsCheckTitle(result)}
+          {lead?.headline ?? atsCheckTitle(result)}
         </Text>
+        {lead ? (
+          <Text variant="captionSemiBold" color="textSecondary">
+            {`${lead.detail}. ${atsCheckTitle(result)}.`}
+          </Text>
+        ) : null}
         <Text variant="captionRegular" color="textSecondary">
           {ATS_CHECK_LEDE[result.band]}
         </Text>
@@ -238,12 +250,22 @@ export function AtsResult({ result, onRubric, arrived = false }: AtsResultProps)
         <ResultHero result={result} onRubric={onRubric} />
       </Animated.View>
       <View style={styles.cards}>
-        <Animated.View entering={arrival?.block(1)}>
+        {result.report ? (
+          <Animated.View entering={arrival?.block(1)}>
+            <ScoreParts parts={result.report.components} />
+          </Animated.View>
+        ) : null}
+        <Animated.View entering={arrival?.block(2)}>
           <MissingCard missing={result.missing} arrival={arrival} />
         </Animated.View>
-        <Animated.View entering={arrival?.block(2)}>
+        <Animated.View entering={arrival?.block(3)}>
           <FixCard fixes={result.fixes} />
         </Animated.View>
+        {result.report ? (
+          <Animated.View entering={arrival?.block(4)}>
+            <ScoreNotMeasured lines={result.report.notMeasured} />
+          </Animated.View>
+        ) : null}
       </View>
     </View>
   );

@@ -2,56 +2,48 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import FixSparkleIcon from '../../../../assets/icons/score/fix-sparkle.svg';
-import { ATS_BAND_LABEL, atsQuickWins, SCORE_LABEL } from '@/data/models';
+import { atsQuickWins } from '@/data/models';
 import { useResume, useResumeScore } from '@/data/queries';
-import { a11yButton, a11yHeader, hitSlopFor, pluralize } from '@/lib';
+import { a11yButton, a11yHeader, pluralize } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
-import { ScoreRing } from '@/ui/Progress';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
-import { ScoreBandPill } from '../components/ScoreBandPill';
+import { SCORE_HERO_LINK, SCORE_HERO_RING, ScoreHero } from '../components/ScoreHero';
+import { ScoreNotMeasured } from '../components/ScoreNotMeasured';
+import { ScoreParts } from '../components/ScoreParts';
 import { ScoreSection } from '../components/ScoreSection';
-import { atsBandColor, scoreContextLine } from '../docMeta';
 import { useResumesActions } from '../hooks/useResumesActions';
 import { Icon } from '@/ui/Icon';
 
 export type ResumeScoreScreenProps = { id: string };
 
-const RING = 132;
-const RING_STROKE = 10;
 /**
- * Vertical rhythm on the 390 board (95:2310), in artboard units: back button → ring 28 (37),
- * ring → band pill 22 (29), pill → summary 18.5 (25), summary → context 8 (11), context →
- * divider 22 (29), divider → first heading 24 (32), sections 31.25 apart (42) and the same
- * again down to the recalc line.
+ * Vertical rhythm on the 390 board (95:2310), in artboard units: back button → the lead 28 (37),
+ * context → divider 22 (29), divider → first heading 24 (32), sections 31.25 apart (42) and the
+ * same again down to the recalc line.
  */
 const RING_TOP = 37;
-const PILL_TOP = 29;
-const SUMMARY_TOP = 25;
-const CONTEXT_TOP = 11;
 const DIVIDER_TOP = 29;
 const DIVIDER_BOTTOM = 32;
 const SECTION_GAP = 42;
-/** The summary wraps inside 330 at 390 (95:2321). */
-const SUMMARY_WIDTH = 440;
 /** The CTA's sparkle (529:19) is drawn 23.99 × 24.83, 4 short of its label, at 390. */
 const CTA_SPARKLE = { w: 23.99 / 0.75, h: 24.83 / 0.75 } as const;
 const CTA_GAP = 4 / 0.75;
-/** The rubric link is one `captionSemiBold` line; `hitSlopFor` pads it out to the 44pt floor. */
-const LINK_HEIGHT = 20;
 /** Skeleton bars standing in for the context line (captionSm) and that link. */
 const CONTEXT_SKELETON = 200;
 const LINK_SKELETON = 160;
 
 /**
- * RESUMES 04 — ATS score panel (Figma 95:2310). Pushed from a card's ATS badge. The back row is
- * pinned above the scroller, and so is the "Fix N quick wins" bar below it, which disappears
- * once nothing is left to fix. The bar's CTA is `sizes.buttonLg`, the height of every other
+ * RESUMES 04 — ATS score panel (Figma 95:2310), off the board at its top (owner, 2026-11-01,
+ * toreview §146.1): the count of required skills leads with a smaller ring beside it, then where
+ * the points go and what the score doesn't measure, then the board's checklist. Pushed from a
+ * card's ATS badge. The back row is pinned above the scroller, and so is the "Fix N quick wins" bar
+ * below it, which disappears once nothing is left to fix. The bar's CTA is `sizes.buttonLg`, the height of every other
  * sticky CTA in the app — a flat `s(56)` put it at 42 on a phone, under the 44pt floor.
  */
 export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
@@ -86,24 +78,21 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
 
   if (resume.isPending || score.isPending) {
     return body(
-      <View style={{ padding: spacing.gutter, gap: spacing[4], alignItems: 'center' }}>
-        <Skeleton
-          width={s(RING)}
-          height={s(RING)}
-          radius="full"
-          style={{ marginTop: spacing[4] }}
-        />
-        <Skeleton width={s(120)} height={s(30)} radius="full" />
+      <View style={{ padding: spacing.gutter, gap: spacing[4] }}>
+        <View style={[styles.lead, { gap: spacing[4], marginTop: spacing[4] }]}>
+          <View style={[styles.fill, { gap: spacing[2] }]}>
+            <Skeleton width="80%" height={s(34)} />
+            <Skeleton width="60%" height={s(20)} />
+            <Skeleton width={s(120)} height={s(30)} radius="full" />
+          </View>
+          <Skeleton width={s(SCORE_HERO_RING)} height={s(SCORE_HERO_RING)} radius="full" />
+        </View>
         <Skeleton width="90%" height={s(20)} />
         {/* The context line and the rubric link, so the cards below hold still when data lands. */}
         <Skeleton width={s(CONTEXT_SKELETON)} height={s(18)} />
-        <Skeleton width={s(LINK_SKELETON)} height={s(LINK_HEIGHT)} />
-        <Skeleton
-          height={s(120)}
-          radius="card"
-          style={{ alignSelf: 'stretch', marginTop: spacing[4] }}
-        />
-        <Skeleton height={s(120)} radius="card" style={{ alignSelf: 'stretch' }} />
+        <Skeleton width={s(LINK_SKELETON)} height={s(SCORE_HERO_LINK)} />
+        <Skeleton height={s(120)} radius="card" style={{ marginTop: spacing[4] }} />
+        <Skeleton height={s(120)} radius="card" />
       </View>,
     );
   }
@@ -126,6 +115,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
 
   const current = score.data;
   const quickWins = atsQuickWins(current).length;
+  const { report } = current;
 
   return body(
     <>
@@ -138,73 +128,20 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.top}>
-          <ScoreRing
-            score={current.total}
-            label="ATS SCORE"
-            size={s(RING)}
-            strokeWidth={s(RING_STROKE)}
-            ringColor={atsBandColor(current.band)}
-            trackColor="surfaceSubtle"
-            numberVariant="scoreHero"
-            numberColor="textPrimary"
-            labelVariant="scoreRingLabel"
-            labelColor="textSecondary"
-            accessibilityLabel={`ATS score ${current.total}, ${ATS_BAND_LABEL[current.band]}`}
-            // The library card's memory: opened from it, the ring carries on from the score the
-            // card showed instead of sweeping up from 0 on every visit; a fix sweeps old → new.
-            memoryKey={`ats:${id}`}
-          />
+        <ScoreHero
+          id={id}
+          score={current}
+          resume={resume.data}
+          onRubric={() => actions.openScoreRubric(id)}
+          onAsk={() => actions.askAboutScore(id)}
+        />
 
-          <ScoreBandPill band={current.band} style={{ marginTop: s(PILL_TOP) }} />
-
-          <Text
-            variant="scoreSummary"
-            color="textSecondary"
-            align="center"
-            style={[styles.summary, { marginTop: s(SUMMARY_TOP) }]}
-          >
-            {current.summary}
-          </Text>
-          <Text
-            variant="scoreContext"
-            color="textTertiary"
-            align="center"
-            style={{ marginTop: s(CONTEXT_TOP) }}
-          >
-            {scoreContextLine(resume.data)}
-          </Text>
-
-          {/* V2 §7.8 — every score display carries a link to the published rubric. */}
-          <Pressable
-            {...a11yButton(
-              'What this score measures',
-              `Opens the rubric behind the ${SCORE_LABEL}`,
-            )}
-            feedback="subtle"
-            haptic="selection"
-            hitSlop={hitSlopFor(s(LINK_HEIGHT))}
-            onPress={() => actions.openScoreRubric(id)}
-            style={{ marginTop: spacing[4] }}
-          >
-            <Text variant="captionSemiBold" color="link">
-              What this score measures
-            </Text>
-          </Pressable>
-          {/* V2 §7.16 — the assistant opens with this document as its context. */}
-          <Pressable
-            {...a11yButton('Ask about this score', 'Opens the AI assistant about this document')}
-            feedback="subtle"
-            haptic="selection"
-            hitSlop={hitSlopFor(s(LINK_HEIGHT))}
-            onPress={() => actions.askAboutScore(id)}
-            style={{ marginTop: spacing[4] }}
-          >
-            <Text variant="captionSemiBold" color="link">
-              Ask about this score
-            </Text>
-          </Pressable>
-        </View>
+        {report ? (
+          <View style={{ gap: s(SECTION_GAP), marginTop: s(DIVIDER_TOP) }}>
+            <ScoreParts parts={report.components} />
+            <ScoreNotMeasured lines={report.notMeasured} />
+          </View>
+        ) : null}
 
         <View
           style={{
@@ -281,8 +218,7 @@ const useStyles = scaledSheet((s) => ({
   fill: { flex: 1 },
   headerRow: { flexDirection: 'row', alignItems: 'center' },
   headerTitle: { flex: 1 },
-  top: { alignItems: 'center' },
-  summary: { maxWidth: s(SUMMARY_WIDTH) },
+  lead: { flexDirection: 'row', alignItems: 'center' },
   recalcRow: { flexDirection: 'row', alignItems: 'center' },
   stickyBar: { borderTopWidth: StyleSheet.hairlineWidth },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },

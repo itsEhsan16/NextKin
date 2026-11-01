@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore } from '@/data/mock';
-import { atsCheckTitle } from '@/data/models';
+import { atsCheckTitle, scoreLead } from '@/data/models';
 import { createQueryClient } from '@/data/queries';
 import { GENERATION_TICK_MS, mockStore, repos, resetMockRepos } from '@/data/repos';
 import { GenerationScreen } from '@/features/generations';
@@ -114,7 +114,13 @@ describe('GenerationScreen — ATS check run (ATS 02–03)', () => {
     // totals, so the screen is held to whatever the stored check says.
     const check = mockStore.state.generations.find((g) => g.id === id)?.atsCheck;
     if (!check) throw new Error('the check should have a result');
-    expect(screen.getByRole('header', { name: atsCheckTitle(check) })).toBeOnTheScreen();
+    // The count leads, with the verdict beside it, then the parts and what isn't measured.
+    const lead = scoreLead(check.report);
+    if (!lead) throw new Error('a check against a job counts its required skills');
+    expect(screen.getByRole('header', { name: lead.headline })).toBeOnTheScreen();
+    expect(screen.getByText(`${lead.detail}. ${atsCheckTitle(check)}.`)).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Where your points go' })).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'What this doesn’t measure' })).toBeOnTheScreen();
     expect(screen.getByLabelText(`ATS score ${check.score} for this job`)).toBeOnTheScreen();
     // The uploaded CV shows Fintech in a dated role, and a check reads the document on its own
     // terms, so Stripe's listing has nothing left missing.

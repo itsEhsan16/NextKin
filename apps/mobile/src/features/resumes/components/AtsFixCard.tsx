@@ -67,6 +67,8 @@ export function AtsFixCard({ row, onApply, onLayout }: AtsFixCardProps) {
   const tick = reduced ? undefined : FadeIn.duration(motion.durations.base);
 
   const section = fixSectionLabel(item.section);
+  // What the fix rests on (toreview §146.2). A score from before then has none, so a gap keeps its note.
+  const basis = item.basis ?? (gap ? GAP_NOTE : undefined);
 
   const handleLayout = onLayout
     ? (event: LayoutChangeEvent) => onLayout(item.id, event.nativeEvent.layout.y)
@@ -96,9 +98,7 @@ export function AtsFixCard({ row, onApply, onLayout }: AtsFixCardProps) {
         <View style={styles.text}>
           <View
             accessible
-            accessibilityLabel={[item.label, item.suggestion, gap ? GAP_NOTE : undefined]
-              .filter(Boolean)
-              .join('. ')}
+            accessibilityLabel={[item.label, item.suggestion, basis].filter(Boolean).join('. ')}
             style={styles.copy}
           >
             <Text variant="label" color={gap ? 'textSecondary' : 'textPrimary'}>
@@ -109,9 +109,9 @@ export function AtsFixCard({ row, onApply, onLayout }: AtsFixCardProps) {
                 {item.suggestion}
               </Text>
             ) : null}
-            {gap ? (
+            {basis ? (
               <Text variant="caption" color="textTertiary">
-                {GAP_NOTE}
+                {basis}
               </Text>
             ) : null}
           </View>

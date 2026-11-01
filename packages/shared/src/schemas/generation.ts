@@ -18,6 +18,32 @@ const atsCheck = z.object({
   company: z.string().optional(),
   jobTitle: z.string().optional(),
   missing: z.array(z.string()),
+  report: z
+    .object({
+      jdMatch: z
+        .object({
+          percent: z.number(),
+          requiredMet: z.number(),
+          requiredPartial: z.number(),
+          requiredTotal: z.number(),
+          preferredMet: z.number(),
+          preferredTotal: z.number(),
+          completeness: z.enum(['full', 'snippet']),
+        })
+        .nullable(),
+      components: z.array(
+        z.object({
+          key: z.enum(['keywords', 'timeline', 'sections', 'formatting', 'achievements']),
+          label: z.string(),
+          weight: z.number(),
+          score: z.number().nullable(),
+          points: z.number().nullable(),
+          basis: z.string(),
+        }),
+      ),
+      notMeasured: z.array(z.string()),
+    })
+    .optional(),
   fixes: z.array(z.object({ key: z.enum(['columns', 'summary', 'results', 'length']), title: z.string(), detail: z.string() })),
 });
 

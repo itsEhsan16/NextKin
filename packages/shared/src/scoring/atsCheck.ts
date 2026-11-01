@@ -51,6 +51,7 @@ export function atsCheckFrom(args: {
     band: score.band,
     missing: report.requirements.filter((r) => r.status === 'gap' || r.status === 'partial').map((r) => r.text),
     fixes: fixes.slice(0, MAX_FIXES),
+    report: { jdMatch: report.jdMatch, components: report.components, notMeasured: report.notMeasured },
     ...(company ? { company } : {}),
     ...(jobTitle ? { jobTitle } : {}),
   };

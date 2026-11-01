@@ -128,7 +128,9 @@ describe('AtsFixScreen (V2 §7.8 — no artboard)', () => {
 
     // — The gap is listed, explained, and has no Apply: §7.8 forbids inserting it —
     expect(screen.getByText('"Kubernetes" is not in your profile')).toBeOnTheScreen();
-    expect(screen.getByText("Not on your profile — only add it if it's true")).toBeOnTheScreen();
+    expect(
+      screen.getByText('Not in your profile, so we won’t add it. Have you used it?'),
+    ).toBeOnTheScreen();
     expect(screen.getAllByLabelText('Apply')).toHaveLength(2);
     expect(screen.getByLabelText('Apply all 2')).toBeOnTheScreen();
 

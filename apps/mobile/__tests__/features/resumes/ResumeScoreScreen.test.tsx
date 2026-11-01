@@ -79,12 +79,33 @@ describe('ResumeScoreScreen (RESUMES 04 — 95:2310)', () => {
 
     // — Hero (1:2113–1:2121): the engine's number and band, and a summary led by the job match —
     expect(
-      await screen.findByLabelText(`ATS score ${score.total}, ${ATS_BAND_LABEL[score.band]}`, {}, { timeout: 10000 }),
+      await screen.findByLabelText(
+        `ATS score ${score.total}, ${ATS_BAND_LABEL[score.band]}`,
+        {},
+        { timeout: 10000 },
+      ),
     ).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'ATS score' })).toBeOnTheScreen();
-    expect(screen.getByText(score.summary)).toBeOnTheScreen();
+    // — The count leads, and what's left of the summary doesn't repeat it —
     expect(score.summary).toMatch(/^Meets 1 of 2 required skills\./);
-    expect(screen.getByText('Stripe — Senior PD — Tailored · recalculates as you edit')).toBeOnTheScreen();
+    expect(screen.getByText('1 of 2 required')).toBeOnTheScreen();
+    expect(screen.getByText('1 missing')).toBeOnTheScreen();
+    expect(screen.queryByText(score.summary)).toBeNull();
+
+    // — Then where the points go, each with what it rests on, then what isn't measured —
+    expect(screen.getByRole('header', { name: 'Where your points go' })).toBeOnTheScreen();
+    for (const part of score.report?.components ?? []) {
+      expect(
+        screen.getByLabelText(new RegExp(`^${part.label}: .*${part.basis}`)),
+      ).toBeOnTheScreen();
+    }
+    expect(screen.getByRole('header', { name: 'What this doesn’t measure' })).toBeOnTheScreen();
+    for (const line of score.report?.notMeasured ?? []) {
+      expect(screen.getByText(line)).toBeOnTheScreen();
+    }
+    expect(
+      screen.getByText('Stripe — Senior PD — Tailored · recalculates as you edit'),
+    ).toBeOnTheScreen();
 
     // — Section headers with their pass counts, each a check the number rests on —
     for (const section of score.sections) {

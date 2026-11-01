@@ -14727,3 +14727,33 @@ Also for the first resume (§145.2): an unscored resume now says "Add a job to s
   - **15 need services that aren't running:** ClamAV for the upload and scan tests (13), and stripe-mock for payments (2). ClamAV is a heavy image, so I didn't pull it.
   - **3 are out of date:** `renders` (2) and `documentEditor` (1) still expect Letter paper and template revision 1. Paper now follows the person's location (§130) and the template has moved on. They need updating, in their own change.
 - **Not proved:** nothing in Step 2 has run on a phone, and no model step has run live (the OpenRouter key is still expired). The "under 15 minutes" target needs real people.
+
+## 146. Step 3: show the truth (owner, 2026-11-01)
+
+The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when a tester can point at any line of a resume and see where it came from.
+
+- **Owner decisions:**
+  - **Apps:** mobile now, web next. Server and shared data are built for both, and web gets its own pass before the joint launch.
+  - **Score screen:** the count of required skills leads, with a smaller ring beside it.
+  - **What changed:** a Versions page. The finished screen stays clean, with one "See what changed" link. This keeps §119 and carries it to mobile.
+  - **Gap interview:** its own screen, offered from a card on Profile and after a finished resume, never in the first-run path.
+  - **Where a line came from:** tap a line on the resume page and a small sheet says.
+  - **Commits:** each finished piece on `step-3/show-the-truth`, built on Step 2. Nothing pushed or merged.
+
+### 146.1 The score card
+
+- **Change (mobile):** RESUMES 04 and ATS 03 lead with "4 of 7 required" and "2 partly · 1 missing", with a smaller ring beside it. Then "Where your points go" (the five parts, each with what it rests on), then "What this doesn't measure". The board's checklist follows.
+- **Shared:** `scoreLead` and `summaryAfterLead`. The ATS check run now keeps the counts, parts and the list, so a check saved before today keeps the board's headline.
+- **Off the board (rule 7):** both screens depart from their boards at the top, by your decision. The parts card uses TAILOR 02's card and the app's meter, and the title is the web's. Check both on your phone.
+- **Calls made without you:**
+  - **When the job marks nothing as required,** the lead counts what it lists: "1 of 3 listed".
+  - **"What this doesn't measure" is always open,** not folded. It's four lines.
+  - **Customize keeps its ring-first hero.** It's a plan to act on, and the plan under it already says how far the honest steps go.
+- **Web next:** ATS 03 and `ScoreSummaryCard` lead with `JobMatch`, a different count (the top ten keywords), so the two apps can show different numbers until web's pass.
+
+### 146.2 Every fix says what it rests on
+
+- **Change:** every fix now has a `basis` in words, from the same run that made the fix: "You tagged it at Acme." or "Not in your profile, so we won't add it. Have you used it?". It shows on the mobile fix cards, and plan steps now show the job's line and the basis together (it was one or the other).
+- **A fix on a score saved earlier has no basis** until that resume is next scored. A gap keeps its old note until then.
+- **The wording is mine.** It's in `fixBasis` in `packages/shared/src/scoring/report.ts`.
+- **Web next:** the data is there. Web has no fix screen yet.

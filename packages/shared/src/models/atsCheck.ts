@@ -1,4 +1,4 @@
-import { ATS_BAND_LABEL, type AtsBand } from './resume';
+import { ATS_BAND_LABEL, type AtsBand, type AtsReport } from './resume';
 
 /**
  * The ATS check for a resume made outside NextKin (V2 §7.8, toreview §73): one file measured
@@ -23,6 +23,8 @@ export type AtsCheckResult = {
   missing: string[];
   /** The most useful changes, at most three. */
   fixes: AtsCheckFix[];
+  /** What the number rests on (toreview §146.1). A check run before §146 has none. */
+  report?: Pick<AtsReport, 'jdMatch' | 'components' | 'notMeasured'>;
 };
 
 /** "Fair for Stripe’s job" — or "for this job" when the description names no company. */

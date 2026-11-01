@@ -29,6 +29,8 @@ const SECTION_LABEL: Record<SectionCheckId, string> = {
   contact: 'Contact details complete',
 };
 
+export { summaryFor } from '../models/resume';
+
 const pass = (id: string, label: string, passed: boolean): AtsCheckItem => ({ id, label, passed });
 
 export function checklistFor(result: ScoreResult, report: AtsReport, doc: ScoringDocument): AtsSection[] {
@@ -51,6 +53,7 @@ export function checklistFor(result: ScoreResult, report: AtsReport, doc: Scorin
         ...(bullet ? { suggestion: `Add the real figure to "${bullet}"` } : {}),
         section: 'experience' as const,
         fixId: fix.id,
+        ...(fix.basis ? { basis: fix.basis } : {}),
       };
     }),
     pass('summary', SECTION_LABEL.summary, sectionPassed('summary')),
@@ -84,13 +87,15 @@ export function checklistFor(result: ScoreResult, report: AtsReport, doc: Scorin
           suggestion: fix.section === 'experience' ? `Add "${req.text}" to the role your profile shows it in` : `Add "${req.text}" to your skills`,
           section: fix.section ?? 'skills',
           fixId: fix.id,
+          ...(fix.basis ? { basis: fix.basis } : {}),
         });
       } else if (req.status === 'partial' && req.years) {
         keywords.push({ ...base, label: `"${req.text}": ${req.years.shown} of ${req.years.asked}+ years shown`, passed: false, fixable: false });
       } else if (req.status === 'partial') {
         keywords.push({ ...base, label: `"${req.text}" is listed, but no dated role shows it`, passed: false, fixable: false });
       } else {
-        keywords.push({ ...base, label: `"${req.text}" is not in your profile`, passed: false, fixable: false, supported: false });
+        const gap = report.fixes.find((f) => f.requirementId === req.id && f.type === 'gap');
+        keywords.push({ ...base, label: `"${req.text}" is not in your profile`, passed: false, fixable: false, supported: false, ...(gap?.basis ? { basis: gap.basis } : {}) });
       }
     }
     sections.push({ key: 'keywords', label: 'Keywords', items: keywords });
@@ -120,21 +125,3 @@ export function checklistFor(result: ScoreResult, report: AtsReport, doc: Scorin
   return sections;
 }
 
-/** The line under the band, led by the job match (G17). Never chosen from the total. */
-export function summaryFor(report: AtsReport): string {
-  const parts: string[] = [];
-  if (report.jdMatch && report.jdMatch.requiredTotal > 0) {
-    const { requiredMet, requiredTotal, requiredPartial } = report.jdMatch;
-    parts.push(`Meets ${requiredMet} of ${requiredTotal} required skills${requiredPartial ? `, ${requiredPartial} partly` : ''}.`);
-  } else if (report.jdMatch && report.jdMatch.preferredTotal > 0) {
-    parts.push(`Shows ${report.jdMatch.preferredMet} of ${report.jdMatch.preferredTotal} skills the job lists.`);
-  }
-  const backed = report.fixes.filter((f) => f.type === 'surface_backed_skill');
-  if (backed.length > 0) {
-    const gain = Math.round(backed.reduce((sum, f) => sum + f.impact, 0) * 10) / 10;
-    parts.push(`${backed.length} ${backed.length === 1 ? 'skill' : 'skills'} your profile backs could add ${gain} points.`);
-  }
-  if (report.timeline.flags.some((f) => f.verdict === 'invalid')) parts.push('A technology claim conflicts with its role’s dates.');
-  if (parts.length === 0) parts.push('Every check this score rests on is listed below.');
-  return parts.join(' ');
-}

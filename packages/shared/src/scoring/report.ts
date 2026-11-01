@@ -62,8 +62,45 @@ function fixLabel(fix: Fix, doc: ScoringDocument): string {
   }
 }
 
-function toFix(fix: Fix, doc: ScoringDocument): AtsFix {
-  const base = { id: fix.id, type: fix.type, label: fixLabel(fix, doc), impact: points(fix.impactBps) ?? 0, insertable: fix.type === 'surface_backed_skill' };
+const SECTION_BASIS: Record<SectionCheckId, string> = {
+  summary: 'There’s no summary of 15 words or more.',
+  skills: 'Fewer than three skills are listed.',
+  experience_dates: 'A role is missing a start or an end date.',
+  education: 'No education is listed.',
+  contact: 'An email, or a phone number or location, is missing.',
+};
+
+const joined = (names: readonly string[]) =>
+  names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+
+/**
+ * What a fix rests on, in words (G17, toreview §146.2): the fact behind it, read off the same run
+ * as the fix, never a general tip. A skill names the roles the person tagged it at.
+ */
+function fixBasis(fix: Fix, backing: ScoringDocument): string {
+  switch (fix.type) {
+    case 'surface_backed_skill': {
+      const companies = [...new Set(fix.evidenceRoleIds.flatMap((id) => backing.roles.find((r) => r.id === id)?.company ?? []))];
+      if (companies.length > 0) return `You tagged it at ${joined(companies)}.`;
+      return fix.evidenceRoleIds.length > 0 ? 'A role on your profile shows it.' : 'It’s in your profile’s skills list.';
+    }
+    case 'gap':
+      return 'Not in your profile, so we won’t add it. Have you used it?';
+    case 'ask_for_number':
+      return 'This line has no measured result yet. Only you know the real one.';
+    case 'complete_section':
+      return SECTION_BASIS[fix.check];
+    case 'formatting':
+      return 'Found in your file’s layout.';
+    case 'mirror_wording':
+      return 'The same skill, in the job’s own words. This adds no points.';
+    case 'resolve_timeline':
+      return 'Checked against the role’s dates and the technology’s release date.';
+  }
+}
+
+function toFix(fix: Fix, doc: ScoringDocument, backing: ScoringDocument): AtsFix {
+  const base = { id: fix.id, type: fix.type, label: fixLabel(fix, doc), basis: fixBasis(fix, backing), impact: points(fix.impactBps) ?? 0, insertable: fix.type === 'surface_backed_skill' };
   switch (fix.type) {
     case 'surface_backed_skill':
       return { ...base, requirementId: fix.requirementId, skill: fix.skillName, section: 'roleId' in fix.target ? 'experience' : 'skills', ...('roleId' in fix.target ? { roleId: fix.target.roleId } : {}) };
@@ -111,7 +148,7 @@ function flagOf(pair: TimelinePair): AtsTimelineFlag {
   };
 }
 
-export function toAtsReport(result: ScoreResult, doc: ScoringDocument, previous?: AtsReport): AtsReport {
+export function toAtsReport(result: ScoreResult, doc: ScoringDocument, previous?: AtsReport, profile?: ScoringDocument): AtsReport {
   const provenance = {
     engine: result.stamp.engine,
     rubric: result.stamp.rubric,
@@ -152,7 +189,7 @@ export function toAtsReport(result: ScoreResult, doc: ScoringDocument, previous?
       ...(e.years ? { years: { asked: e.years.asked, shown: years(e.years.shownMonths) } } : {}),
       ...(e.wording ? { documentWording: e.wording.resume } : {}),
     })),
-    fixes: result.fixes.map((f) => toFix(f, doc)),
+    fixes: result.fixes.map((f) => toFix(f, doc, profile ?? doc)),
     timeline: {
       checked: t.counts.checked,
       valid: t.counts.valid,
@@ -206,7 +243,7 @@ export function scoreDocument(args: {
   const result = score(input);
   const path = args.path && result.total !== null ? planToTarget(input, args.path) : undefined;
   const plausibility = resumePlausibility(document, asOf);
-  const report = { ...toAtsReport(result, document, previous?.report), ...(plausibility.length ? { plausibility } : {}) };
+  const report = { ...toAtsReport(result, document, previous?.report, profile), ...(plausibility.length ? { plausibility } : {}) };
   const sections = checklistFor(result, report, document);
   const atsScore: AtsScore | undefined =
     result.total === null || result.band === null

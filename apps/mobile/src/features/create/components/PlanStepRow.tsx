@@ -150,8 +150,13 @@ export function PlanStepRow({
         </View>
         <View style={[styles.text, { gap: spacing[1] }]}>
           <Text variant="menuRow">{step.title}</Text>
+          {step.need ? (
+            <Text variant="micro" color="textSecondary">
+              {`“${step.need}”`}
+            </Text>
+          ) : null}
           <Text variant="micro" color="textSecondary">
-            {step.need ? `“${step.need}”` : step.basis}
+            {step.basis}
           </Text>
           <Text variant="micro" color={step.kind === 'keyword' ? 'warningStrong' : 'textBody'}>
             {step.kind === 'number' && figure ? 'Your figure is in' : step.have}

@@ -184,6 +184,8 @@ export type AtsCheckItem = {
   keyword?: string;
   /** The typed fix in `AtsScore.report.fixes` this line applies, when it has one. */
   fixId?: string;
+  /** What the fix rests on, in words: `AtsFix.basis`. */
+  basis?: string;
 };
 
 /** "Content", "Format", "Keywords", "Best practices" (Figma RESUMES 04). */
@@ -262,6 +264,8 @@ export type AtsFix = {
   roleId?: string;
   skill?: string;
   section?: AtsFixTarget;
+  /** What it rests on, in words (G17): "You tagged it at Acme." A score written before §146 has none. */
+  basis?: string;
 };
 
 /** A technology claim the timeline engine flagged (V2 §7.7). */
@@ -313,6 +317,62 @@ export type AtsReport = {
     reason: 'content_change' | 'method_change';
   };
 };
+
+export type ScoreLead = { headline: string; detail: string };
+
+/**
+ * What a score card leads with (toreview §146.1): how much of what the job requires the resume
+ * shows, ahead of the total. Null with nothing to count against (D-15).
+ */
+export function scoreLead(report: Pick<AtsReport, 'jdMatch'> | undefined): ScoreLead | null {
+  const match = report?.jdMatch;
+  if (!match) return null;
+  if (match.requiredTotal > 0) {
+    const { requiredMet: met, requiredPartial: partly, requiredTotal: total } = match;
+    const missing = total - met - partly;
+    const rest = [partly > 0 ? `${partly} partly` : '', missing > 0 ? `${missing} missing` : ''];
+    return {
+      headline: `${met} of ${total} required`,
+      detail: rest.filter(Boolean).join(' · ') || 'All of them met',
+    };
+  }
+  if (match.preferredTotal > 0) {
+    return {
+      headline: `${match.preferredMet} of ${match.preferredTotal} listed`,
+      detail: 'The job marks none as required',
+    };
+  }
+  return null;
+}
+
+/** What the report adds to the count: what the profile could win back, and any conflict. */
+function summaryNotes(report: AtsReport): string[] {
+  const notes: string[] = [];
+  const backed = report.fixes.filter((f) => f.type === 'surface_backed_skill');
+  if (backed.length > 0) {
+    const gain = Math.round(backed.reduce((sum, f) => sum + f.impact, 0) * 10) / 10;
+    notes.push(`${backed.length} ${backed.length === 1 ? 'skill' : 'skills'} your profile backs could add ${gain} points.`);
+  }
+  if (report.timeline.flags.some((f) => f.verdict === 'invalid')) notes.push('A technology claim conflicts with its role’s dates.');
+  return notes;
+}
+
+/** The line under the band, led by the job match (G17). Never chosen from the total. */
+export function summaryFor(report: AtsReport): string {
+  const parts: string[] = [];
+  if (report.jdMatch && report.jdMatch.requiredTotal > 0) {
+    const { requiredMet, requiredTotal, requiredPartial } = report.jdMatch;
+    parts.push(`Meets ${requiredMet} of ${requiredTotal} required skills${requiredPartial ? `, ${requiredPartial} partly` : ''}.`);
+  } else if (report.jdMatch && report.jdMatch.preferredTotal > 0) {
+    parts.push(`Shows ${report.jdMatch.preferredMet} of ${report.jdMatch.preferredTotal} skills the job lists.`);
+  }
+  parts.push(...summaryNotes(report));
+  if (parts.length === 0) parts.push('Every check this score rests on is listed below.');
+  return parts.join(' ');
+}
+
+/** The same line under a `scoreLead`, which has already said the count. */
+export const summaryAfterLead = (report: AtsReport): string => summaryNotes(report).join(' ');
 
 /** Band thresholds shared by fixtures and UI meters. */
 export function atsBandFor(total: number): AtsBand {
