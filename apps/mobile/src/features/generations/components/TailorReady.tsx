@@ -1,32 +1,30 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
-import { tailorChanges, type TailorChange, type TailorRun } from '@/data/models';
+import type { TailorRun } from '@/data/models';
 import { a11yButton, a11yHeader, hitSlopFor } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { NextStepNote } from './NextStepNote';
-import { TailorCheckRow } from './TailorCheckRow';
 import { Icon } from '@/ui/Icon';
 
 export type TailorReadyProps = {
-  /** A tailoring run's record; it supplies the "Up from" pill and the changes when they are not passed. */
+  /** A tailoring run's record; it supplies the "Up from" pill. */
   run?: TailorRun;
   company?: string;
   /** "stripe.com" — where the next-step note says to apply. */
   domain?: string;
   /** The tailored resume's score, once it has loaded. */
   score?: number;
-  onSeeAll: () => void;
+  /** Opens the Versions page, where every change sits with its reason (toreview §146.5). */
+  onSeeChanges: () => void;
   /**
    * Another flow's parts on the same layout (BUILD 06 599:27): the pill beside "Saved to
-   * Resumes", the change rows, and what sits under the card in place of the next-step note.
+   * Resumes", and what sits under the link in place of the next-step note.
    */
   pill?: ReactNode;
-  changes?: readonly TailorChange[];
   next?: ReactNode;
 };
 
@@ -37,12 +35,10 @@ const PILL_PAD_L = 9 / 0.75;
 const PILL_PAD_R = 10 / 0.75;
 const PILL_PAD_Y = 4 / 0.75;
 const PILL_GAP = 5 / 0.75;
-const TEXT_TO_CARD = 18 / 0.75;
-const CARD_PAD = 14 / 0.75;
-const HEADER_PAD_B = 4 / 0.75;
+const TEXT_TO_LINK = 18 / 0.75;
 const LINK_GAP = 4.5 / 0.75;
 const LINK_H = 16 / 0.75;
-const CARD_TO_NOTE = 14 / 0.75;
+const LINK_TO_NOTE = 14 / 0.75;
 
 /**
  * "Up from 72" is a claim, so it is made only when the score did go up. A run that landed level
@@ -71,15 +67,17 @@ function ScorePill({ score, baseline }: { score?: number; baseline: number }) {
   );
 }
 
-/** TAILOR 05 (608:267) under the preview: the title, the score line, what changed, what next. */
+/**
+ * TAILOR 05 (608:267) under the preview: the title, the score line, the way to what changed, and
+ * what next. The board's list of changes moved to the Versions page (owner, toreview §146.5).
+ */
 export function TailorReady({
   run,
   company,
   domain,
   score,
-  onSeeAll,
+  onSeeChanges,
   pill,
-  changes,
   next,
 }: TailorReadyProps) {
   const { colors, s } = useTheme();
@@ -99,32 +97,18 @@ export function TailorReady({
         </Text>
       </View>
 
-      <Card radius="cardLg" style={styles.card}>
-        <View style={styles.header}>
-          <Text {...a11yHeader()} variant="titleSm" style={styles.headerTitle}>
-            What changed for this job
-          </Text>
-          <Pressable
-            {...a11yButton('See all changes', 'Opens the tailored resume')}
-            feedback="subtle"
-            hitSlop={hitSlopFor(s(LINK_H))}
-            onPress={onSeeAll}
-            style={styles.link}
-          >
-            <Text variant="viewAllLink" color="brand">
-              See all
-            </Text>
-            <Icon name="ChevronRight" size="sm" color={colors.brand} />
-          </Pressable>
-        </View>
-        {(changes ?? (run ? tailorChanges(run) : [])).map((change) => (
-          <TailorCheckRow
-            key={change.label}
-            label={change.label}
-            state={change.left ? 'left' : 'done'}
-          />
-        ))}
-      </Card>
+      <Pressable
+        {...a11yButton('See what changed', 'Opens this resume’s versions')}
+        feedback="subtle"
+        hitSlop={hitSlopFor(s(LINK_H))}
+        onPress={onSeeChanges}
+        style={styles.link}
+      >
+        <Text variant="viewAllLink" color="brand">
+          See what changed
+        </Text>
+        <Icon name="ChevronRight" size="sm" color={colors.brand} />
+      </Pressable>
 
       {next ? (
         <View style={styles.note}>{next}</View>
@@ -151,14 +135,12 @@ const useStyles = scaledSheet((s) => ({
     paddingRight: s(PILL_PAD_R),
     paddingVertical: s(PILL_PAD_Y),
   },
-  card: { marginTop: s(TEXT_TO_CARD), padding: s(CARD_PAD) },
-  header: {
+  link: {
+    marginTop: s(TEXT_TO_LINK),
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(LINE_GAP),
-    paddingBottom: s(HEADER_PAD_B),
+    gap: s(LINK_GAP),
   },
-  headerTitle: { flex: 1 },
-  link: { flexDirection: 'row', alignItems: 'center', gap: s(LINK_GAP) },
-  note: { marginTop: s(CARD_TO_NOTE) },
+  note: { marginTop: s(LINK_TO_NOTE) },
 }));

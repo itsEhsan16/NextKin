@@ -126,6 +126,7 @@ const MATRIX: Record<string, Entry> = {
   'GET /api/v1/resumes/{id}/score': { access: 'user' },
   'GET /api/v1/resumes/{id}/sources': { access: 'user' },
   'GET /api/v1/resumes/{id}/versions': { access: 'user' },
+  'GET /api/v1/resumes/{id}/versions/{versionId}/changes': { access: 'user' },
   'POST /api/v1/resumes/{id}/restore': { access: 'user', body: { versionId: '00000000-0000-7000-8000-000000000002' } },
   'GET /api/v1/resumes/{id}/content': { access: 'user' },
   'PUT /api/v1/resumes/{id}/sections/{section}': { access: 'user', body: { value: 'A probe summary.' } },

@@ -61,6 +61,7 @@ import type { FigureDraft,
   Resume,
   LineSource,
   ResumeContent,
+  VersionChange,
   ResumeDocument,
   ResumeDocumentWrite,
   ResumeDocType,
@@ -245,6 +246,8 @@ export type ResumesRepo = {
   create(input: { title: string; docType: ResumeDocType }): Promise<Resume>;
   getScore(id: string): Promise<AtsScore>;
   getVersions(id: string): Promise<ResumeVersion[]>;
+  /** What one version changed against the one before it, and why (toreview §146.5). */
+  getVersionChanges(id: string, versionId: string): Promise<VersionChange[]>;
   /** The structured body the editor edits — never a rendered file (V2 §7.11). */
   getContent(id: string): Promise<DocumentContent>;
   /** Where each line of the current version came from (toreview §146.4). */

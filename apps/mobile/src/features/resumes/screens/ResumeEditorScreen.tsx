@@ -200,6 +200,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
         note={note}
         onOpenScore={() => actions.openScore(doc)}
         onOpenRubric={() => actions.openScoreRubric(id)}
+        onOpenVersions={() => actions.openVersions(id)}
       />
 
       {body.kind === 'cover_letter' ? (

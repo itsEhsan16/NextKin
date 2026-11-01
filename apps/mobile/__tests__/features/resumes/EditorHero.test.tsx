@@ -22,6 +22,7 @@ async function renderHero(over: Partial<Resume>, content?: DocumentContent) {
         {...(content ? { content } : {})}
         onOpenScore={jest.fn()}
         onOpenRubric={jest.fn()}
+        onOpenVersions={jest.fn()}
       />
     </SafeAreaProvider>,
   );

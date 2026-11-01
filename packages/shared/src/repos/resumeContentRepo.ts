@@ -18,6 +18,7 @@ import {
   withSection,
 } from './resumeContentEdits';
 import { lineSourcesOfContent } from '../scoring/lineSources';
+import { versionChanges } from '../scoring/versionChanges';
 import { rescoreStored } from './scoring';
 import { clone, findOrThrow, type MockStore, NotFoundError } from './state';
 import type { ResumesRepo } from './types';
@@ -33,6 +34,7 @@ export type ResumeContentRepo = Pick<
   | 'create'
   | 'getContent'
   | 'getLineSources'
+  | 'getVersionChanges'
   | 'updateSection'
   | 'updateLetter'
   | 'regenerateSection'
@@ -127,6 +129,25 @@ export function createResumeContentRepo(store: MockStore): ResumeContentRepo {
       simulate(() => {
         const content = readContent(id);
         return content.kind === 'resume' ? lineSourcesOfContent(content, !find(id).isBase) : [];
+      }),
+
+    getVersionChanges: (id, versionId) =>
+      simulate(() => {
+        const versions = store.state.resumeVersions
+          .filter((version) => version.resumeId === id)
+          .sort((a, b) => a.version - b.version);
+        const index = versions.findIndex((version) => version.id === versionId);
+        const version = versions[index];
+        if (!version) throw new NotFoundError('ResumeVersion', versionId);
+        const after = store.state.contentVersions[versionId];
+        if (after?.kind !== 'resume') return [];
+        const earlier = versions[index - 1];
+        const before = earlier ? store.state.contentVersions[earlier.id] : undefined;
+        return versionChanges({
+          before: before?.kind === 'resume' ? before : undefined,
+          after,
+          actor: version.actor ?? 'user',
+        });
       }),
 
     updateSection: (id, section, value) =>

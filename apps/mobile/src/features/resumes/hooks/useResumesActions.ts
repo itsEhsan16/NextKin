@@ -37,6 +37,9 @@ export function useResumesActions() {
       // a card or the score panel can all reach it with what they already hold.
       openScoreRubric: (resumeId: string) =>
         router.push({ pathname: '/resumes/[id]/rubric', params: { id: resumeId } }),
+      /** What changed and why, version by version (toreview §146.5). */
+      openVersions: (resumeId: string) =>
+        router.push({ pathname: '/resumes/[id]/versions', params: { id: resumeId } }),
       /**
        * Both document kinds open the same editor (V2 §7.11): the score panel is a view *of* a
        * document, not the document, and an unscored draft has no panel at all — so the library,

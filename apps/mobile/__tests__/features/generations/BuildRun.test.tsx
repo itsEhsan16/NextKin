@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { buildChanges, profileKeywordFit, type JdInput, type TailorChoices } from '@/data/models';
+import type { JdInput, TailorChoices } from '@/data/models';
 import { useMockModeStore } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
 import { GENERATION_TICK_MS, mockStore, repos, resetMockRepos } from '@/data/repos';
@@ -146,8 +146,8 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     });
   });
 
-  it('lands on the ready screen with the band pill, the honest changes and the next steps', async () => {
-    const { id, jdId } = await startBuild({ source: 'job', jobId: 'job_cred' }, 'job_cred');
+  it('lands on the ready screen with the band pill, the way to what changed and the next steps', async () => {
+    const { id } = await startBuild({ source: 'job', jobId: 'job_cred' }, 'job_cred');
     await renderGeneration(id);
     await finish();
 
@@ -159,16 +159,6 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     expect(screen.queryByText(/^Up from/)).toBeNull();
     expect(screen.getByText('Saved to Resumes')).toBeOnTheScreen();
 
-    // Exactly the changes the model derives from the job and the profile, nothing more.
-    const draft = mockStore.state.jdDrafts.find((d) => d.id === jdId)!;
-    const changes = buildChanges('CRED', profileKeywordFit(draft, mockStore.state.profile.skills));
-    expect(screen.getByLabelText('Summary aimed at the CRED role, done')).toBeOnTheScreen();
-    for (const change of changes) {
-      expect(
-        screen.getByLabelText(`${change.label}, ${change.left ? 'left out' : 'done'}`),
-      ).toBeOnTheScreen();
-    }
-
     await act(async () => fireEvent.press(screen.getByLabelText('Cover letter for this job')));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/create/cover-letter',
@@ -176,8 +166,12 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     });
     await act(async () => fireEvent.press(screen.getByLabelText('Practice the interview')));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/interview/new', params: { resumeId } });
-    await act(async () => fireEvent.press(screen.getByLabelText('See all changes')));
-    expect(mockPush).toHaveBeenCalledWith({ pathname: '/resumes/[id]', params: { id: resumeId } });
+    // The list moved to the Versions page: the finished screen keeps one way there (§146.5).
+    await act(async () => fireEvent.press(screen.getByLabelText('See what changed')));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/resumes/[id]/versions',
+      params: { id: resumeId },
+    });
 
     // BUILD 07: Download PDF raises the app's download sheet; its PDF row hands the file over.
     mockRenderPdf.mockResolvedValue({ uri: 'file:///cache/built.pdf', name: 'built.pdf' });
@@ -193,7 +187,7 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     expect(screen.getByText('Saved as PDF', hidden)).toBeOnTheScreen();
   });
 
-  it('says what the user answered on BUILD 04c', async () => {
+  it('keeps what the user answered on BUILD 04c on the run', async () => {
     const { id } = await startBuild({ source: 'job', jobId: 'job_cred' }, 'job_cred', {
       added: ['Fintech'],
       skipped: ['Payments'],
@@ -201,9 +195,10 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     await renderGeneration(id);
     await finish();
 
-    expect(screen.getByLabelText('Added fintech, done')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Payments left out, as you chose, left out')).toBeOnTheScreen();
-    expect(screen.queryByLabelText(/it is not on your profile/)).toBeNull();
+    expect(mockStore.state.generations.find((g) => g.id === id)?.build).toEqual({
+      added: ['Fintech'],
+      skipped: ['Payments'],
+    });
   });
 
   it('builds for a pasted job without a letter tile, an Apply button or a job to return to', async () => {

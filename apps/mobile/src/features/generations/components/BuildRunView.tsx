@@ -1,12 +1,10 @@
-import { useMemo } from 'react';
 import { View } from 'react-native';
 
-import { buildChanges, profileKeywordFit, type Generation } from '@/data/models';
+import type { Generation } from '@/data/models';
 import {
   useCurrentUser,
   useJdDraft,
   useJob,
-  useProfile,
   useResume,
   useResumeContent,
 } from '@/data/queries';
@@ -54,7 +52,6 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
 
   const job = useJob(jobId ?? '');
   const draft = useJdDraft(generation.jdId ?? '');
-  const profile = useProfile();
   const resume = useResume(resumeId);
   const content = useResumeContent(ready ? resumeId : '');
   const user = useCurrentUser();
@@ -62,19 +59,12 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
   const company = draft.data?.company ?? job.data?.company;
   const website = jobId ? job.data?.companyWebsite : undefined;
   const domain = website ? siteHost(website) || undefined : undefined;
-  // Only once both have loaded: a change list read off half the inputs would claim too little.
-  // The fit is read against the profile as it was before 04c added anything, so a skill the
-  // user added reads as added, not as already there.
-  const changes = useMemo(() => {
-    if (!draft.data || !profile.data) return [];
-    const added = new Set((generation.build?.added ?? []).map((label) => label.toLowerCase()));
-    const before = profile.data.skills.filter((skill) => !added.has(skill.toLowerCase()));
-    return buildChanges(company, profileKeywordFit(draft.data, before), generation.build);
-  }, [company, draft.data, generation.build, profile.data]);
-
   const close = () => actions.closeBuild(jobId);
   const edit = () => {
     if (resumeId) actions.openDocument(resumeId);
+  };
+  const seeChanges = () => {
+    if (resumeId) actions.openVersions(resumeId);
   };
   const download = () => {
     if (resume.data) openExport(resume.data, 'run');
@@ -129,9 +119,8 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
                 company={company}
                 domain={domain}
                 score={score}
-                onSeeAll={edit}
+                onSeeChanges={seeChanges}
                 pill={<BuildBandPill score={score} />}
-                changes={changes}
                 next={
                   <BuildNextTiles
                     // A letter is written for a job; a pasted or uploaded one is not on NextKin.

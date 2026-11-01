@@ -50,7 +50,8 @@ export interface ValidationOutput {
   timeline: TimelineReport;
   lint: LintSuggestion[];
   revisions: number;
-  stripped: { claimId: string; reason: string }[];
+  /** Lines the check took out of the draft: the line itself for the Versions page (§146.5). */
+  stripped: { claimId: string; reason: string; text?: string }[];
   /** A tailored run's merge (toreview §110.3): what changed against the base, and its length. */
   tailor?: { baseVersionId: string; changes: TailorChange[]; pages: number; density?: LatexDensity; pagesCompiled?: boolean; pageBasis?: string };
 }
@@ -105,6 +106,10 @@ export async function queueForReview(db: Database, names: string[]): Promise<voi
   });
 }
 
+/** A claim's words, by its id in the document. */
+const claimTextOf = (doc: CanonicalResumeJson, id: string): string | undefined =>
+  id === 's' ? doc.summary?.text : (doc.skills.find((s) => s.id === id)?.name ?? doc.roles.flatMap((r) => r.bullets).find((b) => b.id === id)?.text);
+
 export interface ValidateArgs {
   gateway: AiGateway;
   prompt: PromptVersion;
@@ -133,7 +138,7 @@ export async function validateDocument(args: ValidateArgs): Promise<ValidationOu
     revisions += 1;
     const wanted = violatingSections(ledger);
     const failures = ledger.results.filter((r) => r.status === 'violation').map((r) => ({ claimId: r.claimId, issues: r.issues.filter((i) => i.severity === 'hard').map((i) => i.detail) }));
-    const claimText = (id: string) => (id === 's' ? doc.summary?.text : doc.skills.find((s) => s.id === id)?.name ?? doc.roles.flatMap((r) => r.bullets).find((b) => b.id === id)?.text) ?? null;
+    const claimText = (id: string) => claimTextOf(doc, id);
     const { data } = await args.gateway.extract({
       stage: 'resume_revise',
       system: args.prompt.body.system.map((text) => ({ text })),
@@ -153,7 +158,12 @@ export async function validateDocument(args: ValidateArgs): Promise<ValidationOu
   const preStripViolations = ledger.counts.violations;
 
   // Still invented after the bounded rewrites: strip it (G13), and read the result once more.
-  const { document: strippedEngine, stripped } = stripHardFacts(toEngineResume(doc), ledger, facts);
+  const { document: strippedEngine, stripped: taken } = stripHardFacts(toEngineResume(doc), ledger, facts);
+  const before = doc;
+  const stripped = taken.map((line) => {
+    const text = claimTextOf(before, line.claimId);
+    return text ? { ...line, text } : line;
+  });
   if (stripped.length > 0) {
     const keepIds = new Set([...(strippedEngine.summary ? [strippedEngine.summary.id] : []), ...strippedEngine.skills.map((s) => s.id), ...strippedEngine.roles.flatMap((r) => r.bullets.map((b) => b.id))]);
     doc = {

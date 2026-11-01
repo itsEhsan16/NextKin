@@ -168,6 +168,7 @@ export {
   useResumeScore,
   useLineSources,
   useResumeVersions,
+  useVersionChanges,
   useResumes,
   useSetResumeAsBase,
 } from './useResumes';

@@ -28,6 +28,7 @@ export type EditorHeroProps = {
   note?: string;
   onOpenScore: () => void;
   onOpenRubric: () => void;
+  onOpenVersions: () => void;
 };
 
 // RESUMES 06 hero at 390 (577:6939), in artboard units.
@@ -58,7 +59,14 @@ const NO_SCORE_WHY = 'Add a job to see a score. We don’t guess.';
  * a zero, and says what a score needs (D-15). A cover letter's tone is shown read-only: rewriting
  * it spends a generation (§13.5).
  */
-export function EditorHero({ resume, content, note, onOpenScore, onOpenRubric }: EditorHeroProps) {
+export function EditorHero({
+  resume,
+  content,
+  note,
+  onOpenScore,
+  onOpenRubric,
+  onOpenVersions,
+}: EditorHeroProps) {
   const { colors, radii, sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const score = resume.atsScore;
@@ -125,6 +133,21 @@ export function EditorHero({ resume, content, note, onOpenScore, onOpenRubric }:
       ) : null}
 
       {note ? <NoteBar text={note} /> : null}
+
+      <View style={[styles.rule, { backgroundColor: colors.divider }]} />
+      <Pressable
+        {...a11yButton('See what changed', 'Opens this resume’s versions')}
+        feedback="subtle"
+        haptic="selection"
+        hitSlop={hitSlopFor(s(LINK_HEIGHT))}
+        onPress={onOpenVersions}
+        style={[styles.link, { borderRadius: radii.xs }]}
+      >
+        <Text variant="captionSemiBold" color="brand">
+          See what changed
+        </Text>
+        <Icon name="ChevronRight" size="sm" color={colors.brand} />
+      </Pressable>
 
       {score != null ? (
         <>

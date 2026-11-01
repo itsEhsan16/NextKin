@@ -13,6 +13,7 @@ import {
   resumeSectionKeySchema,
   lineSourceListSchema,
   resumeVersionListSchema,
+  versionChangeListSchema,
   sectionRunSchema,
   sectionRegenerateSchema,
   sectionUpdateSchema,
@@ -113,6 +114,14 @@ export function resumeRoutes(deps: ResumeRouteDeps): OpenAPIHono<ApiEnv> {
   app.openapi(
     createRoute({ method: 'get', path: '/resumes/{id}/sources', tags: ['resumes'], summary: 'Where each line of the current version came from.', request: { params: idParam }, responses: { 200: ok('The lines and their sources.', lineSourceListSchema), ...authErrors, ...notFoundError, ...commonErrors } }),
     async (c) => c.json(checked(lineSourceListSchema, { data: await read.getLineSources(db, requireAuth(c).identity, c.req.valid('param').id) }), 200),
+  );
+
+  app.openapi(
+    createRoute({ method: 'get', path: '/resumes/{id}/versions/{versionId}/changes', tags: ['resumes'], summary: 'What one version changed against the one it was made from, and why.', request: { params: idParam.extend({ versionId: z.string() }) }, responses: { 200: ok('The changes.', versionChangeListSchema), ...authErrors, ...notFoundError, ...commonErrors } }),
+    async (c) => {
+      const { id, versionId } = c.req.valid('param');
+      return c.json(checked(versionChangeListSchema, { data: await read.getVersionChanges(db, requireAuth(c).identity, id, versionId) }), 200);
+    },
   );
 
   app.openapi(

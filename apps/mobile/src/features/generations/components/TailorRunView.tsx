@@ -93,6 +93,9 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
   const edit = () => {
     if (resumeId) actions.openDocument(resumeId);
   };
+  const seeChanges = () => {
+    if (resumeId) actions.openVersions(resumeId);
+  };
   const doc = resumeBody(content.data);
   const name = user.data ? `${user.data.firstName} ${user.data.lastName}`.trim() : '';
 
@@ -147,7 +150,7 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
                 company={company}
                 domain={domain}
                 score={resume.data?.atsScore}
-                onSeeAll={edit}
+                onSeeChanges={seeChanges}
               />
             </>
           ) : (

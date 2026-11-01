@@ -102,6 +102,17 @@ export const resumeVersionSchema = z.object({
   actor: z.enum(['user', 'generation', 'restore', 'zero_review', 'upload']).optional(),
   locked: z.boolean().optional(),
 });
+export const versionChangeListSchema = z.object({
+  data: z.array(
+    z.object({
+      kind: z.enum(['added', 'removed', 'reworded']),
+      where: z.string(),
+      text: z.string(),
+      before: z.string().optional(),
+      why: z.string(),
+    }),
+  ),
+});
 export const lineSourceSchema = z.object({
   text: z.string(),
   origin: z.enum(['generated', 'user', 'assumed']),

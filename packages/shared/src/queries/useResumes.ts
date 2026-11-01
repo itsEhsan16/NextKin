@@ -46,6 +46,16 @@ export function useLineSources(id: string) {
   });
 }
 
+/** A version never changes, so what it changed never does either. */
+export function useVersionChanges(id: string, versionId: string) {
+  return useQuery({
+    queryKey: qk.resumes.versionChanges(id, versionId),
+    queryFn: () => repos.resumes.getVersionChanges(id, versionId),
+    enabled: id.length > 0 && versionId.length > 0,
+    staleTime: Infinity,
+  });
+}
+
 export function useResumeVersions(id: string) {
   return useQuery({
     queryKey: qk.resumes.versions(id),

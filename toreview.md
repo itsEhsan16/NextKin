@@ -14783,3 +14783,17 @@ The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when
 - **Wording is mine:** "Where this came from", "Your words", "It rests on", "Your line before".
 - **Check on your phone:** a tap target is the line itself, so short ones (a skill chip) are small. There's no visible hint that a line can be tapped, so testers need telling. Say if you'd like a one-line hint on the page.
 - **Web next:** the route is there. Web's Text view could show the same thing.
+
+### 146.5 What changed and why
+
+- **Change:** a new Versions page lists a resume's versions, newest first. Each opens on the lines it added, reworded or left out, with the old line and the reason. It opens from "See what changed" on the resume page and on the finished screen.
+- **The finished screen is clean, as you chose:** TAILOR 05's "What changed for this job" card is gone on mobile, in favour of one link. BUILD 06 shares the screen, so it changed too. `tailorChanges` and `buildChanges` now have no caller. I've left them until web's pass decides what it needs.
+- **How it stays true:** the diff reads the two versions, so it can't report a change that didn't happen. A tailored version is compared with the resume it was made from, not the version before it.
+- **New: what the check took out.** When the validator strips a line from the AI's draft, it now keeps the line's text, and the page shows it with the reason in plain words: "This states a number you never gave." That's for runs from now on. Older runs only have a count.
+- **Calls made without you:**
+  - **Left-out lines say** "Left out of this version. The resume it was made from still has it." I don't have a line-by-line reason for these yet: a run can drop a line to fit the page budget, or because the model chose not to use it, and the record doesn't say which.
+  - **A first version shows** "No lines changed in this version."
+  - **Restore isn't on this page.** Mobile has never had it, though the server and web's data layer do.
+- **Wording is mine,** including every reason. They're in `packages/shared/src/scoring/versionChanges.ts`.
+- **Off the board (rule 7):** TAILOR 05 and BUILD 06 lose a card, by your decision. The Versions page has no board and uses the app's disclosure rows.
+- **Web next:** the route is there, and web's Versions tab only lists notes today.

@@ -141,7 +141,7 @@ describe('GenerationScreen — job-first tailoring run (TAILOR 04–06)', () => 
     });
   });
 
-  it('lands on the ready screen with the score rise and only the changes the run made', async () => {
+  it('lands on the ready screen with the score rise and a way to what changed', async () => {
     const id = await startTailorRun();
     await renderGeneration(id);
     await settle(GENERATION_TICK_MS * 9);
@@ -154,11 +154,7 @@ describe('GenerationScreen — job-first tailoring run (TAILOR 04–06)', () => 
     expect(score).toBeGreaterThan(72);
     expect(screen.getByText('Up from 72')).toBeOnTheScreen();
     expect(screen.getByText('Saved to Resumes')).toBeOnTheScreen();
-    expect(
-      screen.getByLabelText('Added merchant onboarding and usability testing, done'),
-    ).toBeOnTheScreen();
-    expect(screen.getByLabelText('Trimmed from 3 pages to 2, done')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Fintech left out, as you chose, left out')).toBeOnTheScreen();
+    expect(screen.getByLabelText('See what changed')).toBeOnTheScreen();
     expect(screen.getByText('Next: download it, then apply on stripe.com')).toBeOnTheScreen();
 
     // Download → the file goes to the share sheet → TAILOR 06 names it and links out.

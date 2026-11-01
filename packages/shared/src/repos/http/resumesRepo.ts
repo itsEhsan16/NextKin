@@ -2,7 +2,7 @@ import type { AtsScore, Resume, ResumeVersion } from '../../models/resume';
 import type { DocumentContent, ResumeSectionKey } from '../../models/resumeContent';
 import type { ResumeDocument } from '../../models/resumeDocument';
 import type { ZeroCheckResult } from '../../models/zeroResume';
-import { atsFixResultSchema, documentContentSchema, lineSourceListSchema, exportStatusSchema, resumeCardSchema, resumeListSchema, resumeVersionListSchema, sectionRunSchema, zeroCheckResultSchema } from '../../schemas/resumeEdit';
+import { atsFixResultSchema, documentContentSchema, lineSourceListSchema, versionChangeListSchema, exportStatusSchema, resumeCardSchema, resumeListSchema, resumeVersionListSchema, sectionRunSchema, zeroCheckResultSchema } from '../../schemas/resumeEdit';
 import { resumeDocumentSchema } from '../../schemas/resumeDocument';
 import { resumeFitSchema } from '../../schemas/resumeFit';
 import { resumePreviewSchema } from '../../schemas/resumePreview';
@@ -109,6 +109,7 @@ export function createHttpResumesRepo(http: HttpClient, uploader: FileUploader, 
     getScore: async (id) => (isServerId(id) ? ((await http.request(`/resumes/${id}/score`)) as AtsScore) : mock.getScore(id)),
     getVersions: async (id) => (isServerId(id) ? (resumeVersionListSchema.parse(await http.request(`/resumes/${id}/versions`)).data as ResumeVersion[]) : mock.getVersions(id)),
     getContent: async (id) => (isServerId(id) ? loadContent(id) : mock.getContent(id)),
+    getVersionChanges: async (id, versionId) => (isServerId(id) ? versionChangeListSchema.parse(await http.request(`/resumes/${id}/versions/${versionId}/changes`)).data : mock.getVersionChanges(id, versionId)),
     getLineSources: async (id) => (isServerId(id) ? lineSourceListSchema.parse(await http.request(`/resumes/${id}/sources`)).data : mock.getLineSources(id)),
     updateSection: async (id, section, value) => (isServerId(id) ? writeBody(id, `/resumes/${id}/sections/${section}`, 'PUT', { value }) : mock.updateSection(id, section, value)),
     getDocument: async (id) => (isServerId(id) ? editorDocument(await http.request(`/resumes/${id}/document`)) : mock.getDocument(id)),

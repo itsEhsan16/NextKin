@@ -1,12 +1,14 @@
-import type { AtsScore, Resume, ResumeVersion } from '@nextkin/shared/models/resume';
+import type { AtsScore, Resume, ResumeVersion, VersionChange } from '@nextkin/shared/models/resume';
 import { contentNeedsReview, type DocumentContent, type LineSource } from '@nextkin/shared/models/resumeContent';
 import { toLetterContent, toResumeContent } from '@nextkin/shared/scoring/canonical';
 import { lineSourcesOf } from '@nextkin/shared/scoring/lineSources';
 import { exportProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
+import { versionChanges, type VersionActor } from '@nextkin/shared/scoring/versionChanges';
 import { canonicalLetterSchema, canonicalResumeSchema } from '@nextkin/shared/schemas/resumeContent';
 
 import type { Database, Identity, Tx } from '../db/database';
 import { errors } from '../http/errors';
+import { readCheckpoint } from '../pipeline/snapshot';
 import { planOf } from './plan';
 
 /**
@@ -170,6 +172,8 @@ export async function getScore(db: Database, identity: Identity, id: string): Pr
   });
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Where each line of the current version came from (toreview §146.4). A tailored version's claims
  * cite the lines of the version it was made from, which its ledger names; an edit after it keeps
@@ -194,6 +198,49 @@ export async function getLineSources(db: Database, identity: Identity, id: strin
     const base = baseId ? await tx.selectFrom('resume_versions').select('content').where('id', '=', baseId).executeTakeFirst() : undefined;
     const parsed = base ? canonicalResumeSchema.safeParse(base.content) : undefined;
     return lineSourcesOf(doc.data, parsed?.success ? parsed.data : undefined);
+  });
+}
+
+/**
+ * What one version changed against the one it was made from, and why (toreview §146.5): the version
+ * a tailored run names as its base, else the one before it. The run's check says what it took out.
+ */
+export async function getVersionChanges(db: Database, identity: Identity, id: string, versionId: string): Promise<VersionChange[]> {
+  if (!UUID.test(versionId)) throw errors.notFound('resume version'); // not a 500 from the uuid cast
+  return db.withUser(identity, async (tx) => {
+    const version = await tx
+      .selectFrom('resume_versions')
+      .select(['content', 'version_number', 'created_by', 'claim_ledger', 'generation_id'])
+      .where('id', '=', versionId)
+      .where('resume_id', '=', id)
+      .executeTakeFirst();
+    if (!version) throw errors.notFound('resume version');
+    const after = canonicalResumeSchema.safeParse(version.content);
+    if (!after.success) return []; // a cover letter has no lines of this kind
+
+    const baseId = (version.claim_ledger as { basis?: { versionId?: string } } | null)?.basis?.versionId;
+    const earlier = await (baseId
+      ? tx.selectFrom('resume_versions').select('content').where('id', '=', baseId)
+      : tx.selectFrom('resume_versions').select('content').where('resume_id', '=', id).where('version_number', '<', version.version_number).orderBy('version_number', 'desc').limit(1)
+    ).executeTakeFirst();
+    const parsed = earlier ? canonicalResumeSchema.safeParse(earlier.content) : undefined;
+    const before = parsed?.success ? parsed.data : undefined;
+
+    const run = version.generation_id
+      ? await tx.selectFrom('generations').select('checkpoint').where('id', '=', version.generation_id).executeTakeFirst()
+      : undefined;
+    const validated = run ? (readCheckpoint(run).outputs.validate as { stripped?: { text?: string; reason: string }[] } | undefined) : undefined;
+    const dropped = (validated?.stripped ?? []).flatMap((line) => (line.text ? [{ text: line.text, reason: line.reason }] : []));
+
+    const ids = { resumeId: id, versionId };
+    const rewordedFrom = new Map(before ? lineSourcesOf(after.data, before).flatMap((line) => (line.before ? [[line.text, line.before] as const] : [])) : []);
+    return versionChanges({
+      before: before ? toResumeContent(before, ids) : undefined,
+      after: toResumeContent(after.data, ids),
+      actor: version.created_by as VersionActor,
+      rewordedFrom,
+      dropped,
+    });
   });
 }
 

@@ -56,6 +56,7 @@ export default function RootLayout() {
           <Stack.Screen name="resumes/[id]/fix" />
           <Stack.Screen name="resumes/[id]/score" />
           <Stack.Screen name="resumes/[id]/rubric" />
+          <Stack.Screen name="resumes/[id]/versions" />
           <Stack.Screen name="create/tailor" />
           <Stack.Screen name="create/build/index" />
           <Stack.Screen name="create/build/jobs" />

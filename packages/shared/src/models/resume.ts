@@ -84,6 +84,18 @@ export type ResumeVersion = {
   locked?: boolean;
 };
 
+/** One change a version made, and why (toreview §146.5). */
+export type VersionChange = {
+  kind: 'added' | 'removed' | 'reworded';
+  /** "Summary", "Skills", "Designer at Acme". */
+  where: string;
+  /** The line now, or the line that went. */
+  text: string;
+  /** A rewording's old line. */
+  before?: string;
+  why: string;
+};
+
 export type AtsBand = 'strong' | 'good' | 'fair' | 'weak';
 
 /** Band pill copy on the score panel (Figma 1:2119). */
