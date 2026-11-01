@@ -238,6 +238,26 @@ This is where NextKin stops looking like another resume builder (`WhyNextKin.md`
 
 ### Step 4: Create the habit (3–4 weeks)
 
+**Status, 2026-11-01: the mobile side is built and tested on the laptop, and the rest needs you.** It's on branch `step-4/create-the-habit`, on top of Step 3. Nothing is pushed or merged. Web gets its own pass before the joint launch.
+
+Done on mobile:
+
+1. Push is built through Amazon SNS, with quiet hours and one nudge a day. It's off until a Firebase project and an Apple key exist.
+2. A job can be shared in from any browser or app. LinkedIn and Indeed links go to the paste box with a plain reason.
+3. Each application has its own page. Follow-ups ask at 7 and 21 days, and Home shows "5 applied · 1 interview · 2 to check on".
+4. Jobs show how they fit on location, workplace and salary. Picks and alerts leave out a clash and say why. There's no sponsorship label, by your call.
+5. An application at "Interview" offers practice for that job and a reminder the day before.
+6. `pnpm metrics:retention` measures week-4 retention.
+
+Waiting on you:
+
+1. A Firebase project, an Apple Developer account, and an EAS development build. Without them, push and share-in can't run on a phone. Steps are in `aws/setup/07-push.md`.
+2. Job providers (D-12). Job alerts stay silent until real listings exist.
+3. A phone pass, and the calls in `toreview.md` §147.
+4. Real users. "Heading towards 20%" takes real people and at least four weeks.
+
+The plan was:
+
 1. Real push: job matches, finished runs and application follow-ups, all opt-in.
 2. Share a job into NextKin from any browser or app, using the link reader from Step 1.
 3. Use the saved applications for a Home number and follow-ups.

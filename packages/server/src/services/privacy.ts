@@ -32,7 +32,7 @@ const MAX_FILE_BYTES = 25 * 1024 * 1024;
 /** Tables the archive leaves out: secrets and transient plumbing, not the user's data. */
 const NOT_EXPORTED = new Set(['idempotency_keys']);
 /** Columns that are secrets even inside the user's own archive. */
-const REDACT: Record<string, string[]> = { sessions: ['id_hash'] };
+const REDACT: Record<string, string[]> = { sessions: ['id_hash'], push_devices: ['token', 'endpoint_arn'] };
 
 export interface PrivacyDeps {
   db: Database;

@@ -15,6 +15,7 @@ them start clocks that run for weeks.
 | **3** | [Accounts and access](01-accounts-and-access.md) | Engineer + client | 2 days | Every AWS resource |
 | **4** | [Local development](04-local-development.md) | Engineer | Half a day | Nothing — it needs no AWS, so start it in parallel with 1–3 |
 | **5** | [First deployment](05-first-deployment.md) | Engineer | Days | The M0 exit gate |
+| **6** | [Turning push on](07-push.md) | Client + engineer | Hours, once the Apple account exists | Push on any phone |
 
 ## Start the clocks first
 

@@ -14841,3 +14841,94 @@ The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when
   - **1 is new to the list only because the typesetter wasn't running before:** `latexCompile`'s "broken source" test compiles a plain `article` document, and the sealed image doesn't hold `size10.clo`, so it fails with a different error from the one the test expects. The test is unchanged, and real resumes compile.
 - **Not proved:** nothing in Step 3 has run on a phone, and the tester check needs a person. No model ran live, because the OpenRouter key is still expired, so "Add the result" and the Versions page have only seen scripted runs. Web shows none of this yet.
 - **A finished Zero Resume review saving as confirmed** (§146.3) has no test of its own. The change is one argument.
+
+## 147. Step 4: create the habit (owner, 2026-11-01)
+
+Branch `step-4/create-the-habit`, on top of Step 3. Nothing is merged or pushed.
+
+- **Owner's calls:** mobile now and web next, as in Step 3. Push through Amazon SNS, as the spec says. Lock-screen text names the company. Job alerts are built but silent until real listings arrive. LinkedIn and Indeed links go to the paste box. No sponsorship labels. A job that clashes is hidden from picks and alerts only. Home shows "5 applied · 1 interview · 2 to check on". Follow-ups ask at 7 and 21 days, then stop.
+
+### 147.1 Applications, follow-ups and the Home number
+
+- **Why:** mobile showed a status but had no way to change it, and nothing set an interview day, so there was nothing for a follow-up to act on.
+- **Change:** a page for one application (`/applications/[id]`), migration 0048, two daily jobs (`application_follow_ups`, `interview_reminders`), and a card on Home.
+- **Calls made without you:**
+  - **The Applied tab now opens the application, not the job.** The page has a "View the job" button. JOBS 03 doesn't draw this.
+  - **The choices are "No news yet", "Heard back", "Interview", "Offer", "Not selected" and "Withdrawn".** "Heard back" saves as `in_review`. `viewed` isn't offered, because a candidate can't know it.
+  - **The interview day is a list of the next 30 days, with no time.** The app has no date picker, and a list needs no new dependency.
+  - **"To check on" doesn't expire.** An open application stays on the count until the candidate says something, however old it is.
+  - **A reminder says "is coming up", not "tomorrow".** The daily job runs once in UTC, so "tomorrow" would be a day out in some time zones.
+  - **The Home card sits above Quick Start** and appears after a first application. Sample data has applications, so it shows in Expo Go.
+- **Spec-derived, no board:** the application page and the Home card. Check the wording.
+
+### 147.2 Push
+
+- **Change:** migration 0049, `src/push/push.ts` (SNS, a local stand-in that only logs, and a test adapter), `services/push.ts`, a `push_send` job every minute, `PushHost` on the phone. SNS needs the phone's own Firebase or Apple token, so the app reads that rather than an Expo token.
+- **To turn it on:** `aws/setup/07-push.md`. It needs a Firebase project, an Apple key, two SNS platform applications and a development build. It's off until then, and staging and production refuse a half-set configuration. The worker's AWS permission isn't in the CDK yet; the note lists it.
+- **Calls made without you:**
+  - **A category switched off now keeps its row in the feed, and only stays off the lock screen.** NOTIF 04 has always said this, but §144.2 built it as "files nothing". This also retires §144.2's "billing always files": every category now files.
+  - **DECIDE: a failed payment.** Plan & billing defaults to off, so nobody gets a push about a failed payment unless they switch it on. It's in the feed either way. Say if a failed payment should push regardless.
+  - **Results go at once, and quiet hours hold them to 8am.** Run results and billing are in this group.
+  - **Everything we choose to raise lands at 9am on the phone's clock, one a day.** Most important first, that's interview reminders, closing alerts, follow-ups, job alerts and the digest. What loses stays in the feed. Waiting for 9am can take up to a day, so a closing alert can arrive a day after the feed row.
+  - **The weekly digest is a push only,** Sunday 9am on the phone's clock, counting unread rows from the week. It adds no row to the feed. It isn't the email digest the spec plans.
+  - **A push is dropped if its row was read or removed first.**
+  - **The ask (NOTIF 07) comes after "Yes, I applied" and on a first run.** Its copy changed, because the board promises word "when your application is viewed", which nobody can tell us. NOTIF 04's "Application updates" caption changed too, to "Follow-ups and interview reminders", and it gained "Turn on notifications" and "Open device settings". **NOTIF 04 and 07 no longer match the app.**
+  - **The time zone comes from the phone** at each launch, not from Settings.
+  - **Signing out removes the phone, and "sign out everywhere" removes all of them.** If a session has already died, the phone stays registered until the next sign-in on it, so it could still get a push in that gap.
+- **Still needed:**
+  - **A notification icon.** Android draws the status-bar icon from a 96×96 white-on-transparent PNG. Without one it may show a white square. Needs a designer, then one line in `app.config.ts`.
+  - **The privacy policy must name Amazon SNS, Google and Apple,** because the push text carries an employer's name through them.
+  - **In Expo Go on Android the ask's button does nothing,** because push can't exist there.
+- **Spec:** V2 lists push and application tracking under Release 2. Both are now in, by your Step 4 plan and D-05's change. I updated §6.2 and §9.12 locally; `doc/` is gitignored.
+
+### 147.3 Fit labels, hidden picks and job alerts
+
+- **The rule:** only what a listing states can clash. A job that says nothing about pay or place reads "not stated" and is never hidden.
+- **Calls made without you:**
+  - **Workplace:** a remote preference accepts only remote. Hybrid accepts remote and hybrid. On-site accepts on-site and hybrid.
+  - **Place is matched on the words in the listing,** with a short list of other spellings (Bangalore, Bombay, Gurgaon, München, Köln). A preference of "Germany" won't match a listing that only says "Berlin", so that job would read as a clash, and picks would hide it. Real listings will show how often this happens.
+  - **Pay is compared on the top of the range, in one currency only.** A different currency reads "we can't compare it", because a rough rate would turn a guess into a claim about pay. An estimated salary never rules a job out.
+  - **A provider that doesn't state the workplace** is now marked, so its default can't count against the job (`workplaceUnstated`). Whoever builds the real Adzuna adapter must set it.
+- **Sample data behaves differently, on purpose.**
+  - **Home's sample picks aren't filtered.** The sample profile prefers remote, which would hide 4 of the board's 10 picks, Google first among them. So **the "2 hidden" note can't be seen on sample data.** The server does filter, and an integration test proves it.
+  - **The Jobs tab shows amber labels on sample jobs** for the same reason, so JOBS 01 now differs from its board. Job Detail gains an "Against your preferences" card.
+- **Job alerts are silent today.** The batch refuses sample listings, so it finds nothing until providers exist. Tests prove it works on Adzuna-shaped rows.
+- **DECIDE at X-12: what alerts read.** The batch reads the shared listing cache, which only holds what someone has searched. A person would only hear about jobs someone else happened to search for. Good alerts need a daily fetch per person's preferences, which costs provider quota, so it belongs in the D-12 budget meeting.
+- **Alerts go to** anyone active in the last 30 days or with a phone registered. They count only strong and good matches, posted in the last 24 hours, and skip jobs already saved or applied to.
+
+### 147.4 Sharing a job in
+
+- **Change:** `expo-sharing`'s receive side, `ShareHost`, `/share`, `+native-intent.ts`. A share lands on Home, then the host takes it, so a share made before sign-in survives sign-in.
+- **Risk:** Expo marks receiving as experimental in SDK 58. On iOS the extension opens the main app, which Expo's own page says Apple doesn't officially support and may stop working. Test on a real iPhone before relying on it.
+- **Calls made without you:**
+  - **A share reads straight away.** Sharing is the tap, so unlike a copied link nothing asks first.
+  - **200 characters or more counts as the job's text;** anything shorter is treated as an app's wrapping around a link.
+  - **Any web address is tried,** not just ones that look like jobs. The reader says plainly if there's no job on the page.
+  - **Naukri is named alongside LinkedIn and Indeed,** because it refuses too.
+  - **BUILD 03's "Supported links" tip changed.** It claimed LinkedIn and Naukri links work, and they don't. The board still says so.
+- **It lands on the Build review,** the one start from Step 2. The Tailor dialog for copied links is untouched.
+- **Not verified:** nothing about receiving has run on a device. Jest covers the logic only.
+
+### 147.5 Interview prep tied to applications
+
+- **Change:** an application at "Interview" shows a practice card: the set already written for that job or that resume, or a way to write one. The Interview list marks a set with its interview day, and the reminder opens this page.
+- **Calls made without you:**
+  - **The card only appears at "Interview",** so it's never one more thing to do before that.
+  - **With no resume on the application,** the new-set screen opens normally, with the job's title filled in for role mode.
+- **Spec-derived, no board:** the card and the day line on INTERVIEW 01.
+
+### 147.6 Measuring week-4 retention
+
+- **Change:** `pnpm metrics:retention`, and `GET /api/v1/admin/metrics/retention` behind the existing `analytics.read` permission. There's no admin page, because the admin portal has no web screens yet.
+- **Definition, from V2 §2.2:** of people who finished a first resume within 72 hours of signing up, the share who generated, scored, edited or saved a job 21 to 28 days after activating.
+- **Calls made without you:**
+  - **It reads the tables that record what people did, not usage events.** "Share anonymized data" off would otherwise hide people from the number.
+  - **Week 4 counts from activation,** not from sign-up.
+  - **A week stays "still counting" until everyone in it has had a full fourth week.** The rate can only rise until then.
+  - **Staff don't count, and deleted accounts drop out,** so a week's number can change later.
+- **Two new events:** `push_opened` and `job_shared`, so what brings people back can be compared.
+- **"Heading towards 20%" can't be answered yet.** It takes real people and at least four weeks. The numbers on this laptop are test accounts and mean nothing.
+
+### 147.7 What web still needs
+
+The server and shared data are ready. Web's pass needs the application status with interview day and "No news yet", the Home line, fit labels, hidden picks, the practice card, and a notification feed page (§144.2). Push and share-in are mobile only.
