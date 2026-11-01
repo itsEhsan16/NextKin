@@ -14832,3 +14832,12 @@ The plan is `AppAssess.md` Step 3 and `WhyNextKin.md` §4.1 and §4.5. Done when
   - **No re-score after answering.** A resume's score belongs to that version, so answers count from the next resume made. Say if you'd like a nudge to remake one.
 - **Off the board (rule 7):** the screen, the card, and the card under TAILOR 05 and BUILD 06 are new, from the app's card, chips and field. The wording is all mine. Check it on your phone.
 - **Web next:** the routes are there. Web has no interview screen.
+
+### 146.8 What was proved, and what wasn't
+
+- **Passed on the laptop:** typecheck and lint across the repo, and every unit suite (engines 203, shared 206, server 288, mobile 1,959, web 407). The Android bundle built.
+- **Integration: 1,236 passed, 4 failed, and none of the 4 comes from Step 3.** This run had the scanner, the Stripe stand-in and the real typesetter up, so the 15 service failures in §145.6 now pass.
+  - **3 are the out-of-date tests from §145.6:** `renders` (2) and `documentEditor` (1).
+  - **1 is new to the list only because the typesetter wasn't running before:** `latexCompile`'s "broken source" test compiles a plain `article` document, and the sealed image doesn't hold `size10.clo`, so it fails with a different error from the one the test expects. The test is unchanged, and real resumes compile.
+- **Not proved:** nothing in Step 3 has run on a phone, and the tester check needs a person. No model ran live, because the OpenRouter key is still expired, so "Add the result" and the Versions page have only seen scripted runs. Web shows none of this yet.
+- **A finished Zero Resume review saving as confirmed** (§146.3) has no test of its own. The change is one argument.

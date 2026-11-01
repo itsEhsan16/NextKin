@@ -207,7 +207,25 @@ The plan was:
 
 ### Step 3: Show the truth (2–3 weeks)
 
-This is where NextKin stops looking like another resume builder (`WhyNextKin.md` §4.5).
+**Status, 2026-11-01: the mobile side is done, and the rest needs you.** It's on branch `step-3/show-the-truth`, on top of Step 2. Nothing is pushed or merged. Web gets its own pass before the joint launch; the server and shared data are ready for it.
+
+Done on mobile:
+
+1. The score screens lead with the required skills, then the parts, then what the score doesn't measure.
+2. Every fix says what it rests on.
+3. The profile shows where each fact came from, with one tap to confirm.
+4. A Versions page says what changed and why, including what the check took out of the AI's draft.
+5. A download says what read back from the file, tested on real typeset PDFs in all three page designs.
+6. The gap interview asks up to seven short, skippable questions, chosen by code.
+7. Tapping any line of a resume says where it came from.
+
+Waiting on you:
+
+1. A phone pass: none of this has run on a device, and most of it has no board.
+2. The calls listed in `toreview.md` §146, starting with whether "Confirmed" should show on every profile row.
+3. The tester check: pointing at any line and seeing where it came from.
+
+This is where NextKin stops looking like another resume builder (`WhyNextKin.md` §4.5). The plan was:
 
 1. Lead the score card with "x of y required", then the parts, then what the score doesn't measure.
 2. Give every fix its basis, e.g. "you tagged this skill at Acme".
