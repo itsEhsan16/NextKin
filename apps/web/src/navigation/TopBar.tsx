@@ -112,22 +112,20 @@ export function TopBar() {
             </Soon>
           )}
 
-          <Soon>
-            <button
-              aria-disabled="true"
-              type="button"
-              aria-label={hasUnread ? 'Notifications, unread' : 'Notifications'}
-              className={cn(
-                'relative flex size-control-md shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary shadow-card hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-                pressable,
-              )}
-            >
-              <BellIcon className="size-[18px]" />
-              {hasUnread && (
-                <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-danger-dot ring-2 ring-surface-card" />
-              )}
-            </button>
-          </Soon>
+          {/* The feed (toreview §148.1). */}
+          <Link
+            href="/notifications"
+            aria-label={hasUnread ? 'Notifications, unread' : 'Notifications'}
+            className={cn(
+              'relative flex size-control-md shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary shadow-card hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              pressable,
+            )}
+          >
+            <BellIcon className="size-[18px]" />
+            {hasUnread && (
+              <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-danger-dot ring-2 ring-surface-card" />
+            )}
+          </Link>
 
           {/* The way into the Profile page (476:4) from every screen. */}
           <Link

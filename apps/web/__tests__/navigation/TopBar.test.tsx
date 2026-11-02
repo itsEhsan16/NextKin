@@ -21,7 +21,10 @@ describe('TopBar', () => {
       'href',
       '/upload-jd',
     );
-    expect(screen.getByRole('button', { name: /^Notifications/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Notifications/ })).toHaveAttribute(
+      'href',
+      '/notifications',
+    );
     // The avatar is the way into the Account page (307:3443).
     expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/profile');
     expect(screen.queryByRole('link', { name: 'Back to Jobs' })).not.toBeInTheDocument();
@@ -33,7 +36,7 @@ describe('TopBar', () => {
 
     expect(
       await screen.findByRole(
-        'button',
+        'link',
         { name: 'Notifications, unread' },
         { timeout: SETTLE_MS.normal },
       ),
