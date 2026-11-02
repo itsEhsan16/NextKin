@@ -1,5 +1,4 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 
 import type { DocumentContent, ResumeContent, ResumeSectionKey, ZeroResolution } from '../models';
 import { type CoverLetterPatch, repos } from '../repos';
@@ -44,23 +43,6 @@ export function useResumeContent(id: string) {
     queryFn: () => repos.resumes.getContent(id),
     enabled: id.length > 0,
   });
-}
-
-/**
- * Loads these documents' bodies ahead of time, so the phone's saved copy (toreview §145.5) holds the
- * newest resumes even if they haven't been opened here yet.
- */
-export function usePrefetchResumeContent(ids: readonly string[]) {
-  const queryClient = useQueryClient();
-  const key = ids.join();
-  useEffect(() => {
-    for (const id of key ? key.split(',') : []) {
-      void queryClient.prefetchQuery({
-        queryKey: qk.resumes.content(id),
-        queryFn: () => repos.resumes.getContent(id),
-      });
-    }
-  }, [key, queryClient]);
 }
 
 /**

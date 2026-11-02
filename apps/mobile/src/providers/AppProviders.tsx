@@ -11,7 +11,7 @@ import { auth, configureDataSource, onSignedOut, USES_BACKEND } from '@/data/dat
 import { forgetPushDevice } from '@/data/pushDevice';
 import { configureMockMode } from '@/data/mock';
 import { flushEvents } from '@/data/queries';
-import { createAppQueryClient, restoreResumes } from '@/data/savedResumes';
+import { clearOldResumeCopy, createAppQueryClient } from '@/data/savedResumes';
 import { ArtboardMode, FigmaOverlay } from '@/dev';
 import { useSessionStore } from '@/features/auth';
 import { startCrashReports } from '@/lib/crashReports';
@@ -21,7 +21,7 @@ import { AiConsentGate } from '@/features/consent/AiConsentGate';
 import { ServiceBanner } from '@/features/system/ServiceBanner';
 
 import { AppErrorBoundary } from './AppErrorBoundary';
-import { useSavedResumes } from './useSavedResumes';
+import { useWipeOnSignOut } from './useWipeOnSignOut';
 
 // First, so a failure in anything below is reported.
 startCrashReports();
@@ -54,6 +54,9 @@ if (USES_BACKEND) {
 
 watchConnection();
 
+// Resumes aren't kept on the phone (toreview §148.1): a copy an earlier build saved goes.
+clearOldResumeCopy();
+
 // Usage events leave with the app: the next open may be days away.
 if (USES_BACKEND) {
   AppState.addEventListener('change', (state) => {
@@ -69,12 +72,8 @@ export type AppProvidersProps = { children: ReactNode };
  */
 export function AppProviders({ children }: AppProvidersProps) {
   // Lazy initial state keeps a single client per app lifetime (survives re-renders/fast refresh).
-  const [queryClient] = useState(() => {
-    const client = createAppQueryClient();
-    if (useSessionStore.getState().status === 'signed_in') restoreResumes(client);
-    return client;
-  });
-  useSavedResumes(queryClient);
+  const [queryClient] = useState(createAppQueryClient);
+  useWipeOnSignOut(queryClient);
 
   return (
     <GestureHandlerRootView style={styles.root}>

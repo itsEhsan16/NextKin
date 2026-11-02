@@ -125,7 +125,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
     <StickyActionBar primary={{ label: DOWNLOAD, icon: 'Download01', disabled: true }} />,
   );
 
-  // Only with nothing to show: a saved copy stays on screen when its refresh fails (toreview §145.5).
+  // Only with nothing to show: what's already loaded stays on screen when a refresh fails.
   const couldNotLoad = (retry: () => void) =>
     page(
       <StateView

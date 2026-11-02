@@ -14,7 +14,7 @@ import { Pressable } from '@/ui/Pressable';
  * what still works; a tap hides it until the message changes. In mock mode it never shows. With no
  * connection it says that instead: nothing else matters until it's back (toreview §145.5).
  */
-export const OFFLINE_NOTE = 'You’re offline. Your saved resumes are still here.';
+export const OFFLINE_NOTE = 'You’re offline. Resumes open again once you’re back online.';
 
 export function ServiceBanner() {
   const status = useBackendServiceStatus();

@@ -45,7 +45,7 @@ describe('ServiceBanner', () => {
 
     await act(async () => onlineManager.setOnline(false));
     expect(
-      screen.getByText('You’re offline. Your saved resumes are still here.'),
+      screen.getByText('You’re offline. Resumes open again once you’re back online.'),
     ).toBeOnTheScreen();
     expect(screen.queryByLabelText(new RegExp(AI))).toBeNull();
 

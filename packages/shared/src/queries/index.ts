@@ -151,7 +151,6 @@ export {
   useApplyAtsFix,
   useRegenerateSection,
   useResolveZeroCheck,
-  usePrefetchResumeContent,
   useResumeContent,
   useFitToOnePage,
   useRewriteSection,
