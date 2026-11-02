@@ -169,7 +169,8 @@ export function EntryListScreen({
               chips={row.tags}
               action={row.action}
               footer={
-                row.source && kind ? (
+                // Only what needs a look (owner, toreview §148.1): a confirmed row says nothing.
+                row.source && row.source !== 'user' && kind ? (
                   <FactSource
                     provenance={row.source}
                     what={row.title}

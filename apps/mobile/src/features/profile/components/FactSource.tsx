@@ -7,8 +7,7 @@ import { Pill, type PillTone } from '@/ui/Pill';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
-const SOURCE: Record<FactProvenance, { label: string; tone: PillTone }> = {
-  user: { label: 'Confirmed', tone: 'success' },
+const SOURCE: Record<Exclude<FactProvenance, 'user'>, { label: string; tone: PillTone }> = {
   parsed_confirmed: { label: 'From your resume', tone: 'neutral' },
   assumed: { label: 'Assumed', tone: 'warning' },
 };
@@ -24,29 +23,29 @@ export type FactSourceProps = {
 
 /**
  * Where a fact on the profile came from (toreview §146.3): you, your resume, or an assumption, with
- * one tap to make it yours. Spec-derived from the app's status pill and a text link.
+ * one tap to make it yours. Spec-derived from the app's status pill and a text link. Only what needs
+ * a look shows (owner, toreview §148.1): a fact that is already yours draws nothing.
  */
 export function FactSource({ provenance, what, label, onConfirm }: FactSourceProps) {
   const { spacing } = useTheme();
   const styles = useStyles();
+  if (provenance === 'user') return null;
   const source = SOURCE[provenance];
 
   return (
     <View style={[styles.row, { gap: spacing[3] }]}>
       <Pill label={label ?? source.label} tone={source.tone} />
-      {provenance === 'user' ? null : (
-        <Pressable
-          {...a11yButton(`Confirm ${what}`, 'Marks this as true, in your own word')}
-          feedback="subtle"
-          haptic="light"
-          hitSlop={hitSlop8}
-          onPress={onConfirm}
-        >
-          <Text variant="captionSemiBold" color="link">
-            Confirm
-          </Text>
-        </Pressable>
-      )}
+      <Pressable
+        {...a11yButton(`Confirm ${what}`, 'Marks this as true, in your own word')}
+        feedback="subtle"
+        haptic="light"
+        hitSlop={hitSlop8}
+        onPress={onConfirm}
+      >
+        <Text variant="captionSemiBold" color="link">
+          Confirm
+        </Text>
+      </Pressable>
     </View>
   );
 }

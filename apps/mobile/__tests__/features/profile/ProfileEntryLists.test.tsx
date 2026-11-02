@@ -90,13 +90,15 @@ describe('Profile entry lists (V2 §7.3 — no artboard)', () => {
     await mount(<ExperienceListScreen />);
 
     expect(screen.getByText('From your resume', shown)).toBeOnTheScreen();
-    expect(screen.getAllByText('Confirmed', shown)).toHaveLength(3);
+    // A confirmed row says nothing (toreview §148.1).
+    expect(screen.queryByText('Confirmed', shown)).toBeNull();
+    expect(screen.getAllByLabelText(/^Confirm /, shown)).toHaveLength(1);
 
     await act(async () => fireEvent.press(screen.getByLabelText(/^Confirm /, shown)));
     await settle();
 
     expect(screen.queryByText('From your resume', shown)).toBeNull();
-    expect(screen.getAllByText('Confirmed', shown)).toHaveLength(4);
+    expect(screen.queryByLabelText(/^Confirm /, shown)).toBeNull();
     expect(mockStore.state.profile.experiences[0]?.provenance).toBe('user');
   });
 
