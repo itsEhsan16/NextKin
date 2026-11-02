@@ -15006,3 +15006,10 @@ Built on branch `step-4/owner-answers`, on top of Step 4 (§148.4). Nothing is p
   - Spec-derived; no board.
 
 - **Proved on the laptop, 2026-11-02:** typecheck, lint, every unit suite (engines 203, shared 227, server 296, mobile 1,979, web 412) and the Android bundle. Integration: 1,287 passed, 4 failed, the same four as §146.8. Nothing here has run on a phone or in a browser.
+
+### 148.5 Running the whole app in Docker (2026-11-02)
+
+- **Uploads failed in Docker.** The server signed upload links for `seaweedfs:8333`, a name only containers resolve, so the browser could not send the file. New local-only `S3_PUBLIC_ENDPOINT` signs links for the address a browser reaches; staging and production refuse it.
+- **Scanned resumes failed in the worker image (and the AWS demo).** The OCR models were looked for at `/vendor/tessdata`, because the path was worked out for the source layout; in the bundle they sit one folder up. The lookup now tries both.
+- **The compose file still lacks the settings the web and worker need** (`CURSOR_SECRET` among them), so `pnpm stack:up -- --profile app` crashes. The live run used an override outside the repo. Decide whether to move those settings into `docker-compose.yml`.
+- **Proved live:** sign-up, a pasted job read by Haiku, a resume written by Sonnet, a text PDF and a scanned PDF uploaded, scanned for viruses and read.

@@ -39,11 +39,17 @@ export const userUploadKey = (userId: string) => `users/${userId}/uploads/${rand
 export const anonymousKey = () => `anonymous/${randomUUID()}`;
 export const quarantineKey = (key: string) => `quarantine/${key}`;
 
-export function createS3Storage(options: { region: string; endpoint?: string; forcePathStyle?: boolean }): StoragePort {
+/**
+ * `publicEndpoint`: where a browser reaches storage, when that isn't where this process does. In Docker
+ * the server talks to `seaweedfs:8333`, a name only containers resolve, so links handed to a browser
+ * are signed for the laptop's address instead. Unset, both are the same.
+ */
+export function createS3Storage(options: { region: string; endpoint?: string; publicEndpoint?: string; forcePathStyle?: boolean }): StoragePort {
   const s3 = new S3Client({ region: options.region, endpoint: options.endpoint, forcePathStyle: options.forcePathStyle });
+  const signer = options.publicEndpoint ? new S3Client({ region: options.region, endpoint: options.publicEndpoint, forcePathStyle: options.forcePathStyle }) : s3;
   return {
     async presignPost({ bucket, key, contentType, maxBytes }) {
-      const { url, fields } = await createPresignedPost(s3, {
+      const { url, fields } = await createPresignedPost(signer, {
         Bucket: bucket,
         Key: key,
         Conditions: [
@@ -90,7 +96,7 @@ export function createS3Storage(options: { region: string; endpoint?: string; fo
       if (key.startsWith('quarantine/')) throw new Error('quarantined objects are never presigned');
       const seconds = Math.min(opts.seconds ?? MAX_PRESIGN_GET_SECONDS, MAX_PRESIGN_GET_SECONDS);
       const disposition = opts.downloadName ? `attachment; filename="${opts.downloadName.replace(/["\\\r\n]/g, '')}"` : undefined;
-      return getSignedUrl(s3, new GetObjectCommand({ Bucket: bucket, Key: key, ResponseContentDisposition: disposition }), { expiresIn: seconds });
+      return getSignedUrl(signer, new GetObjectCommand({ Bucket: bucket, Key: key, ResponseContentDisposition: disposition }), { expiresIn: seconds });
     },
   };
 }

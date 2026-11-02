@@ -46,6 +46,8 @@ const schema = z.object({
   AWS_REGION: z.string().min(1).default('us-east-1'),
   // Endpoint overrides point the real AWS SDK at the local stand-ins (L1). Unset in the cloud.
   S3_ENDPOINT: z.url().optional(),
+  // Where a browser reaches the local stand-in, when the server reaches it by a container name.
+  S3_PUBLIC_ENDPOINT: z.url().optional(),
   S3_FORCE_PATH_STYLE: bool.default(false),
   S3_BUCKET_UPLOADS: z.string().min(1).default('nextkin-uploads'),
   SQS_ENDPOINT: z.url().optional(),
@@ -231,6 +233,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     if (config.OPENROUTER_API_KEY) refused.push(`OPENROUTER_API_KEY (a developer key, toreview §108) is refused in ${config.APP_ENV}`);
     if (config.LATEX_COMPILER_TOKEN && /local|test|change-me|dev/i.test(config.LATEX_COMPILER_TOKEN)) refused.push(`LATEX_COMPILER_TOKEN looks like a placeholder in ${config.APP_ENV}`);
     if (config.S3_ENDPOINT) refused.push(`S3_ENDPOINT override is refused in ${config.APP_ENV}`);
+    if (config.S3_PUBLIC_ENDPOINT) refused.push(`S3_PUBLIC_ENDPOINT override is refused in ${config.APP_ENV}`);
     if (config.APP_EXTRA_ORIGINS.length) refused.push(`APP_EXTRA_ORIGINS (local tunnels) is refused in ${config.APP_ENV}`);
     if (config.SQS_ENDPOINT) refused.push(`SQS_ENDPOINT override is refused in ${config.APP_ENV}`);
     if (config.PAYMENT_ADAPTER === 'stripe' && (!config.STRIPE_SECRET_KEY || !config.STRIPE_WEBHOOK_SECRET)) refused.push(`PAYMENT_ADAPTER=stripe needs STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in ${config.APP_ENV}`);

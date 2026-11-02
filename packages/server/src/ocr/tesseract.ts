@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createWorker } from 'tesseract.js';
@@ -22,7 +22,10 @@ export interface OcrPort {
   close(): Promise<void>;
 }
 
-export const TESSDATA_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../vendor/tessdata'); // not import.meta.dirname: Next's bundle leaves it undefined
+// From the source (src/ocr) the models are two folders up; from the worker image's bundle (dist) one.
+// Not import.meta.dirname: Next's bundle leaves it undefined.
+const HERE = dirname(fileURLToPath(import.meta.url));
+export const TESSDATA_DIR = [join(HERE, '../../vendor/tessdata'), join(HERE, '../vendor/tessdata')].find((dir) => existsSync(dir)) ?? join(HERE, '../../vendor/tessdata');
 export const TESSDATA_SHA256: Record<'eng' | 'deu', string> = {
   eng: '7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2',
   deu: '19d219bbb6672c869d20a9636c6816a81eb9a71796cb93ebe0cb1530e2cdb22d',

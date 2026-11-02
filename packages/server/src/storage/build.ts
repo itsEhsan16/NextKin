@@ -9,7 +9,7 @@ import { createS3Storage, type StoragePort } from './storage';
  * for presign, confirm, the avatar and the teaser; the worker adds the scanner and OCR.
  */
 export function buildStorage(config: Config): StoragePort {
-  return createS3Storage({ region: config.AWS_REGION, endpoint: config.S3_ENDPOINT, forcePathStyle: config.S3_FORCE_PATH_STYLE });
+  return createS3Storage({ region: config.AWS_REGION, endpoint: config.S3_ENDPOINT, ...(config.S3_PUBLIC_ENDPOINT ? { publicEndpoint: config.S3_PUBLIC_ENDPOINT } : {}), forcePathStyle: config.S3_FORCE_PATH_STYLE });
 }
 
 /** The teaser keeps only a salted hash of the IP; the salt derives from a secret every environment has. */
