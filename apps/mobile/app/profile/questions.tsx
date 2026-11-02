@@ -1,5 +1,8 @@
+import { useLocalSearchParams } from 'expo-router';
+
 import { GapInterviewScreen } from '@/features/profile';
 
 export default function GapInterviewRoute() {
-  return <GapInterviewScreen />;
+  const { resumeId } = useLocalSearchParams<{ resumeId?: string }>();
+  return <GapInterviewScreen resumeId={resumeId} />;
 }

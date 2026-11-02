@@ -1,8 +1,9 @@
+import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { GapQuestion } from '@/data/models';
-import { queryPhase, useAnswerGap, useGapQuestions } from '@/data/queries';
+import { queryPhase, useAnswerGap, useGapQuestions, useResume } from '@/data/queries';
 import { pluralize } from '@/lib';
 import { useTheme } from '@/theme';
 import { MonthYearSheet } from '@/ui/MonthYearSheet';
@@ -16,18 +17,37 @@ import { GapQuestionCard } from '../components/GapQuestionCard';
 import { useProfileActions } from '../hooks/useProfileActions';
 
 const LEDE = 'Short answers about your own history. Skip any of them.';
+export const REMAKE_TITLE = 'Your profile has new facts';
+export const REMAKE_MESSAGE = 'Make this resume again to use them.';
+
+export type GapInterviewScreenProps = {
+  /** The resume just finished, when the questions were opened from it. */
+  resumeId?: string;
+};
 
 /**
  * The gap interview (owner, 2026-11-01, toreview §146.7): up to seven short, skippable questions the
  * engine picked from holes in the profile. What's answered becomes the person's own fact, and the
  * next resume is written from it. It's reached from Profile and from a finished resume, never in the
  * first-run path. Spec-derived from the app's cards, chips and fields.
+ *
+ * Answers don't change a finished resume's score: it belongs to that version. So once the last
+ * question is answered, it offers once to make the resume again (owner, toreview §148.1).
  */
-export function GapInterviewScreen() {
+export function GapInterviewScreen({ resumeId }: GapInterviewScreenProps) {
   const { spacing, s } = useTheme();
   const actions = useProfileActions();
   const questions = useGapQuestions();
   const answer = useAnswerGap();
+  const router = useRouter();
+  const resume = useResume(resumeId ?? '');
+  // Answers saved on this visit; skips don't count, because they add nothing to the profile.
+  const [answered, setAnswered] = useState(0);
+  const save = (id: string, next: Parameters<typeof answer.mutate>[0]['answer']) =>
+    answer.mutate(
+      { id, answer: next },
+      { onSuccess: () => next.kind !== 'skip' && setAnswered((count) => count + 1) },
+    );
   // The role whose end is being picked, in the page's sheet.
   const [dating, setDating] = useState<GapQuestion | null>(null);
   const status = queryPhase(questions);
@@ -53,10 +73,7 @@ export function GapInterviewScreen() {
         onClose={() => setDating(null)}
         onSelect={(picked) => {
           if (dating) {
-            answer.mutate({
-              id: dating.id,
-              answer: { kind: 'role_end', end: picked === 'present' ? null : picked },
-            });
+            save(dating.id, { kind: 'role_end', end: picked === 'present' ? null : picked });
           }
           setDating(null);
         }}
@@ -88,6 +105,23 @@ export function GapInterviewScreen() {
   }
 
   const list = questions.data ?? [];
+  if (list.length === 0 && answered > 0) {
+    const jobId = resume.data?.linkedJobId;
+    return page(
+      <StateView
+        icon="CheckCircle"
+        title={REMAKE_TITLE}
+        message={REMAKE_MESSAGE}
+        actionLabel={jobId ? 'Make it again' : 'Make a resume with them'}
+        onAction={() =>
+          jobId
+            ? router.push({ pathname: '/create/tailor', params: { jobId } })
+            : router.push('/create/build')
+        }
+      />,
+    );
+  }
+
   if (list.length === 0) {
     return page(
       <StateView
@@ -118,7 +152,7 @@ export function GapInterviewScreen() {
           key={question.id}
           question={question}
           busy={answer.isPending && answer.variables?.id === question.id}
-          onAnswer={(next) => answer.mutate({ id: question.id, answer: next })}
+          onAnswer={(next) => save(question.id, next)}
           onPickDate={() => setDating(question)}
         />
       ))}

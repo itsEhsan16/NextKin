@@ -9,10 +9,11 @@ import { mockStore, resetMockRepos } from '@/data/repos';
 import { GapInterviewCard, GapInterviewScreen } from '@/features/profile';
 
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 const clients: QueryClient[] = [];
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), navigate: jest.fn(), back: mockBack, replace: jest.fn() }),
+  useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: mockBack, replace: jest.fn() }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
@@ -62,6 +63,7 @@ describe('GapInterviewScreen (toreview §146.7)', () => {
     jest.useFakeTimers();
     resetMockRepos();
     mockBack.mockClear();
+    mockPush.mockClear();
   });
 
   afterEach(async () => {
@@ -92,7 +94,7 @@ describe('GapInterviewScreen (toreview §146.7)', () => {
       skills: ['Figma', 'Go'],
       provenance: 'user',
     });
-    expect(screen.getByText('Nothing to ask right now')).toBeOnTheScreen();
+    expect(screen.getByText('Your profile has new facts')).toBeOnTheScreen();
   });
 
   it('takes a finished year, and won’t save one that isn’t a year', async () => {
@@ -171,7 +173,38 @@ describe('GapInterviewScreen (toreview §146.7)', () => {
     await settle();
 
     expect(mockStore.state.profile.experiences[0]?.skills).toEqual(['Figma', 'Sketch', 'Zeplin']);
-    expect(screen.getByText('Nothing to ask right now')).toBeOnTheScreen();
+    expect(screen.getByText('Your profile has new facts')).toBeOnTheScreen();
+  });
+
+  it('offers once to make the resume again, for the job it was made for', async () => {
+    seed({ skills: ['Figma', 'Go'] });
+    const resume = mockStore.state.resumes.find((item) => item.linkedJobId);
+    if (!resume?.linkedJobId) throw new Error('expected a resume made for a job');
+    await mount(<GapInterviewScreen resumeId={resume.id} />);
+    await settle();
+    await press('Designer at Acme');
+    await press('Save');
+    await settle();
+
+    expect(
+      screen.getByLabelText('Your profile has new facts. Make this resume again to use them.'),
+    ).toBeOnTheScreen();
+    await press('Make it again');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/tailor',
+      params: { jobId: resume.linkedJobId },
+    });
+  });
+
+  it('offers a new resume when opened from the profile', async () => {
+    seed({ skills: ['Figma', 'Go'] });
+    await mount();
+    await settle();
+    await press('Designer at Acme');
+    await press('Save');
+    await settle();
+    await press('Make a resume with them');
+    expect(mockPush).toHaveBeenCalledWith('/create/build');
   });
 
   it('offers a retry when it can’t load', async () => {
