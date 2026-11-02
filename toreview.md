@@ -15073,3 +15073,14 @@ The owner sent a mockup for a new step 3 and one popup per option. Built with ou
   - **A profile with no roles:** the profile popup says so and its button becomes "Fill in my profile", which opens the profile.
   - **Step 2's "Other ways to start" stays** (§150), though it now repeats three of these options. Say if it should go.
 - **Not verified in a browser.** Web tests pass (424, including 5 new ones for this step). `TailorScreen.tsx` is 304 lines, over the 250-line rule.
+
+## 152. Web: the separate resume list step is gone (owner, 2026-11-03)
+
+The owner: the resume list step shouldn't be there, since the "How would you like to create your resume?" step (§151) offers every way to start. Tailor and Build are now three steps again: Job → Resume → Enhance. "Resume" is the how-to-create step.
+
+- **Which resume gets tailored:** the base, as before. "Change" in the tailor popup, or "Edit" beside the starting resume, opens the existing resume chooser (search, upload inside it).
+- **With no resume on NextKin,** "Tailor my selected resume" is greyed out with "You don't have a resume on NextKin yet. Upload one, or pick another way." Upload (or the profile, when it has roles) is picked instead. This replaces the old no-resume step and Build's old step 2, and `StartStep.tsx` is deleted.
+- **Build Resume** opens with "Create from my profile" picked; with no roles in the profile, on "Tailor my selected resume".
+- **Old links:** `?step=method` opens this step; `?step=compare` still opens Enhance.
+- **Kept for other flows:** the resume list step (`ResumeStep`, `ResumePicker`, `OtherWays`) still serves the cover letter. §150's resume-step calls apply only there now.
+- **Not verified in a browser.** Web tests pass (425).

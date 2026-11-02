@@ -15,14 +15,19 @@ import { listingLines } from './tailorLibrary';
 export type TailorTargetRef = { kind: 'job' | 'jd'; id: string };
 
 /**
- * The W-FLOW steps after the job (toreview §126): which resume, how to make the new one (toreview
- * §151), then what to add. The comparison folded into Enhance (owner, 2026-11-02, toreview §149).
+ * The W-FLOW steps after the job (toreview §126): how to make the resume — which includes which
+ * resume to tailor (toreview §151–§152) — then what to add. The comparison folded into Enhance
+ * (owner, 2026-11-02, toreview §149).
  */
-export type TailorStep = 'resume' | 'method' | 'enhance';
+export type TailorStep = 'resume' | 'enhance';
 
-/** `?step=` as a step. An old `compare` link opens Enhance, where the comparison now lives. */
+/**
+ * `?step=` as a step. An old `compare` link opens Enhance, where the comparison now lives; an old
+ * `method` link opens the resume step, which it became (toreview §152).
+ */
 export function parseTailorStep(value: string | null): TailorStep | undefined {
-  if (value === 'resume' || value === 'method' || value === 'enhance') return value;
+  if (value === 'resume' || value === 'enhance') return value;
+  if (value === 'method') return 'resume';
   return value === 'compare' ? 'enhance' : undefined;
 }
 

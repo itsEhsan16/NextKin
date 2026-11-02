@@ -25,7 +25,7 @@ export const JOB_FLOWS: Record<JobFlow, FlowCopy> = {
   build: {
     name: 'Build Resume',
     eyebrow: 'Build a resume',
-    steps: ['Job', 'Resume', 'Method', 'Enhance'],
+    steps: ['Job', 'Resume', 'Enhance'],
     jobTitle: 'Let’s start with the job',
     jobLede:
       'We’ll use the job details to build your resume around it, highlight relevant skills, and suggest improvements.',
@@ -33,7 +33,7 @@ export const JOB_FLOWS: Record<JobFlow, FlowCopy> = {
   tailor: {
     name: 'Tailor to a Job',
     eyebrow: 'Tailor to a job',
-    steps: ['Job', 'Resume', 'Method', 'Enhance'],
+    steps: ['Job', 'Resume', 'Enhance'],
     jobTitle: 'Let’s start with the job',
     jobLede:
       'We’ll use the job details to tailor your resume, highlight relevant skills, and suggest improvements.',

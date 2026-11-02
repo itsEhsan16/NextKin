@@ -17,7 +17,7 @@ const wait = { timeout: SETTLE_MS.normal * 4 };
 const target = { kind: 'job', id: 'job_google' } as const;
 
 async function openOnMethod() {
-  renderWithQuery(<TailorScreen target={target} resumeId="res_pd" step="method" />);
+  renderWithQuery(<TailorScreen target={target} resumeId="res_pd" step="resume" />);
   return screen.findByRole('radiogroup', { name: 'How to create it' }, wait);
 }
 
@@ -37,12 +37,15 @@ describe('How would you like to create your resume? (toreview §151)', () => {
       'Upload a resume',
     ]);
     expect(radios[0]).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByText('Step 3 of 4')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 of 3')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Edit job' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Edit starting resume' })).toHaveAttribute(
-      'href',
-      '/jobs/job_google/tailor?resumeId=res_pd&step=resume',
-    );
+  });
+
+  it('Edit beside the starting resume opens the resume chooser', async () => {
+    const user = userEvent.setup();
+    await openOnMethod();
+    await user.click(screen.getByRole('button', { name: 'Edit starting resume' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
   it('Continue opens the tailor popup, which goes on to Enhance', async () => {

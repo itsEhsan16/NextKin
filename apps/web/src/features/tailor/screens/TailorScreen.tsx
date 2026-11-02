@@ -28,8 +28,7 @@ import { BuildEnhanceStep } from '../flow/BuildSteps';
 import { JobLogoTile } from '../flow/EntityRow';
 import { EnhanceStep } from '../flow/EnhanceStep';
 import { MethodStep } from '../flow/MethodStep';
-import { ResumeStep, UploadRow } from '../flow/ResumeStep';
-import { BuildStep, NoResumeStep } from '../flow/StartStep';
+import { UploadRow } from '../flow/ResumeStep';
 import { useBuildFlow } from '../flow/useBuildFlow';
 import {
   tailorPath,
@@ -40,8 +39,8 @@ import {
 } from '../tailorTarget';
 import { useTailorChoices, useTailorRun } from '../useTailorRun';
 
-const STEPS = ['Job', 'Resume', 'Method', 'Enhance'] as const;
-const STEP_INDEX: Record<TailorStep, number> = { resume: 1, method: 2, enhance: 3 };
+const STEPS = ['Job', 'Resume', 'Enhance'] as const;
+const STEP_INDEX: Record<TailorStep, number> = { resume: 1, enhance: 2 };
 
 export type TailorScreenProps = {
   target: TailorTargetRef;
@@ -82,21 +81,13 @@ export function TailorScreen({
   const [choosing, setChoosing] = useState(false);
 
   const step: TailorStep = asked ?? (requested ? 'enhance' : 'resume');
-  const go = (next: TailorStep, id: string = resumeId) =>
-    router.push(
-      tailorPath(target, {
-        step: next,
-        ...(id ? { resumeId: id } : {}),
-        ...(build ? { mode: 'build' as const } : {}),
-      }),
-    );
   const pick = (id: string) => {
     setChoosing(false);
     if (id === resumeId) return;
     setPicked(id);
     choices.resetKeywords();
-    // A swap on the comparison is kept in the address, so a reload compares the same resume.
-    if (step !== 'resume') replaceQuery('resumeId', id);
+    // A swap is kept in the address, so a reload keeps the same resume.
+    replaceQuery('resumeId', id);
   };
   const switched = useReveal(true, runId ? `run-${run.data?.status === 'ready'}` : step);
 
@@ -158,60 +149,14 @@ export function TailorScreen({
   } else if (!job || !resumes.data) {
     body = wait;
   } else if (step === 'resume') {
-    const backHref = jobFlowHref(build ? 'build' : 'tailor');
-    if (build && tailorable.length === 0)
-      body = (
-        <BuildStep
-          job={job}
-          profile={builder.profile.data}
-          onBuild={() => go('enhance')}
-          zeroHref={zeroHref}
-          backHref={backHref}
-          resumeCount={tailorable.length}
-          tailorHref={tailorPath(target, { step: 'resume' })}
-        />
-      );
-    else if (noResumes)
-      body = (
-        <NoResumeStep
-          job={job}
-          profile={builder.profile.data}
-          onBuild={() => router.push(tailorPath(target, { step: 'enhance', mode: 'build' }))}
-          zeroHref={zeroHref}
-          backHref={backHref}
-          onUploaded={(id) => go('enhance', id)}
-        />
-      );
-    else
-      body = (
-        <ResumeStep
-          job={job}
-          resumes={tailorable}
-          loading={false}
-          failed={false}
-          onRetry={() => void resumes.refetch()}
-          value={resumeId}
-          onPick={pick}
-          onContinue={() => go('method')}
-          backHref={backHref}
-          blankHref={zeroHref}
-          profileHref={tailorPath(target, { step: 'enhance', mode: 'build' })}
-        />
-      );
-  } else if (step === 'method') {
     const hasRoles = (builder.profile.data?.experiences.length ?? 0) > 0;
     body = (
       <MethodStep
         job={job}
-        resumeTitle={tailorable.find((r) => r.id === resumeId)?.title}
+        resumeTitle={noResumes ? undefined : tailorable.find((r) => r.id === resumeId)?.title}
         profile={builder.profile.data}
-        initial={build ? 'profile' : 'tailor'}
+        initial={!noResumes && (!build || !hasRoles) ? 'tailor' : hasRoles ? 'profile' : 'upload'}
         jobHref={jobFlowHref(build ? 'build' : 'tailor')}
-        resumeHref={tailorPath(target, {
-          step: 'resume',
-          ...(resumeId ? { resumeId } : {}),
-          ...(build ? { mode: 'build' as const } : {}),
-        })}
         zeroHref={zeroHref}
         onChangeResume={() => setChoosing(true)}
         onTailor={() => router.push(tailorPath(target, { step: 'enhance', resumeId }))}
@@ -226,7 +171,7 @@ export function TailorScreen({
       />
     );
   } else if (build) {
-    const back = tailorPath(target, { step: 'method', mode: 'build' });
+    const back = tailorPath(target, { step: 'resume', mode: 'build' });
     if (!builder.comparison) body = wait;
     else
       body = (
@@ -244,7 +189,7 @@ export function TailorScreen({
       );
   } else if (comparison.data) {
     const measured = comparison.data;
-    const back = tailorPath(target, { step: 'method', resumeId });
+    const back = tailorPath(target, { step: 'resume', resumeId });
     const toggle = (keyword: string, on: boolean) =>
       choices.setAdded(
         on ? [...choices.added, keyword] : choices.added.filter((k) => k !== keyword),

@@ -27,9 +27,10 @@ const NEXT = [
 ];
 
 /**
- * Step 3 (owner mockup 2026-11-02, toreview §151): how to make the resume — tailor the one picked
- * in step 2, build from the profile, start from nothing with AI, or upload one. Continue opens the
- * chosen way's popup, which says what it does and goes on.
+ * Step 2 (owner mockup 2026-11-02, toreview §151–§152): how to make the resume — tailor one you
+ * have (the base, or another chosen with Change), build from the profile, start from nothing with
+ * AI, or upload one. Continue opens the chosen way's popup, which says what it does and goes on.
+ * With no resume yet, tailoring is off until one is uploaded.
  */
 export function MethodStep({
   job,
@@ -37,7 +38,6 @@ export function MethodStep({
   profile,
   initial,
   jobHref,
-  resumeHref,
   zeroHref,
   onChangeResume,
   onTailor,
@@ -49,9 +49,8 @@ export function MethodStep({
   profile: Profile | undefined;
   /** Build Resume opens on the profile; tailoring on the picked resume. */
   initial: Method;
-  /** "Edit" beside the job and the resume: back to steps 1 and 2. */
+  /** "Edit" beside the job, and Back: step 1. */
   jobHref: Route;
-  resumeHref: Route;
   zeroHref: Route;
   onChangeResume: () => void;
   onTailor: () => void;
@@ -66,8 +65,8 @@ export function MethodStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="method-step"
-            step={3}
-            of={4}
+            step={2}
+            of={3}
             title="How would you like to create your resume?"
             lede={`Choose how to create your resume for the ${job.title} role. You can start from your selected resume, build from your profile, or create a new one.`}
           />
@@ -84,7 +83,12 @@ export function MethodStep({
                 method={m}
                 on={method === m}
                 onPick={() => setMethod(m)}
-                line={methodLine(m, resumeTitle)}
+                disabled={m === 'tailor' && !resumeTitle}
+                line={
+                  m === 'tailor' && !resumeTitle
+                    ? 'You don’t have a resume on NextKin yet. Upload one, or pick another way.'
+                    : methodLine(m, resumeTitle)
+                }
                 recommended={m === 'tailor'}
               />
             ))}
@@ -101,8 +105,8 @@ export function MethodStep({
               <Selection
                 icon={<File06 className="size-5" />}
                 label="Starting resume"
-                value={resumeTitle ?? '—'}
-                href={resumeHref}
+                value={resumeTitle ?? 'None yet'}
+                {...(resumeTitle ? { onEdit: onChangeResume } : {})}
               />
             </div>
             <div className="flex flex-col gap-3.5 rounded-xl bg-surface-brand p-5">
@@ -129,7 +133,7 @@ export function MethodStep({
       </section>
 
       <FlowFooter note={<TrustNote />}>
-        <Link href={resumeHref} className={backButton}>
+        <Link href={jobHref} className={backButton}>
           Back
         </Link>
         <button type="button" onClick={() => setOpen(method)} className={primaryButton}>

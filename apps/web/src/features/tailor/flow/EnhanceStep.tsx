@@ -133,8 +133,8 @@ export function EnhanceStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="enhance-step"
-            step={4}
-            of={4}
+            step={3}
+            of={3}
             title="Choose what to add"
             lede="Tick only the keywords you really have. The AI places each one where your experience backs it."
           />

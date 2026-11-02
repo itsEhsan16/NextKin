@@ -68,7 +68,7 @@ export function ResumeStep({
           <StepHeading
             id="resume-step"
             step={2}
-            of={copy?.of ?? 4}
+            of={copy?.of ?? 3}
             title={copy?.title ?? 'Choose a starting resume'}
             lede={
               copy?.lede ??

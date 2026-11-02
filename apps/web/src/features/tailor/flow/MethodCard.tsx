@@ -19,12 +19,15 @@ export function MethodCard({
   onPick,
   line,
   recommended,
+  disabled = false,
 }: {
   method: Method;
   on: boolean;
   onPick: () => void;
   line: string;
   recommended: boolean;
+  /** Tailoring with no resume to tailor. */
+  disabled?: boolean;
 }) {
   return (
     <div
@@ -32,7 +35,9 @@ export function MethodCard({
         'relative flex items-center gap-5 rounded-lg border bg-surface-card py-4 pl-5 pr-6 transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard',
         on
           ? 'border-brand-600 shadow-card ring-1 ring-brand-600'
-          : 'border-border-default hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
+          : disabled
+            ? 'border-border-subtle opacity-60'
+            : 'border-border-default hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
       )}
     >
       <button
@@ -40,6 +45,7 @@ export function MethodCard({
         role="radio"
         aria-checked={on}
         aria-label={METHOD_TITLE[method]}
+        disabled={disabled}
         onClick={onPick}
         className="absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       />
@@ -74,18 +80,24 @@ export function MethodCard({
   );
 }
 
-/** "Your selections": the job or the starting resume, with Edit back to its step. */
+/** "Your selections": the job (Edit goes back to step 1) or the resume (Edit opens the chooser). */
 export function Selection({
   icon,
   label,
   value,
   href,
+  onEdit,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
-  href: Route;
+  href?: Route;
+  onEdit?: () => void;
 }) {
+  const edit = {
+    'aria-label': `Edit ${label.toLowerCase()}`,
+    className: cn(textLink, 'text-body-m'),
+  };
   return (
     <div className="flex items-center gap-3.5 rounded-lg border border-border-subtle px-4 py-3.5">
       <span
@@ -98,13 +110,15 @@ export function Selection({
         <p className="text-caption-m font-medium text-text-tertiary">{label}</p>
         <p className="text-body-l font-bold text-text-primary">{value}</p>
       </div>
-      <Link
-        href={href}
-        aria-label={`Edit ${label.toLowerCase()}`}
-        className={cn(textLink, 'text-body-m')}
-      >
-        Edit
-      </Link>
+      {href ? (
+        <Link href={href} {...edit}>
+          Edit
+        </Link>
+      ) : onEdit ? (
+        <button type="button" onClick={onEdit} {...edit}>
+          Edit
+        </button>
+      ) : null}
     </div>
   );
 }
