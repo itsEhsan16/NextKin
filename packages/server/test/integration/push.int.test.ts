@@ -96,6 +96,16 @@ describe('sending', () => {
     expect(await notifications.listNotifications(db, as(userId))).toHaveLength(1);
   });
 
+  it('pushes a failed payment with billing switched off, but not a receipt', async () => {
+    const { userId } = await phone();
+    const prefs = await account.notifications.getPrefs(db, as(userId));
+    expect(prefs.categories.billing).toBe(false);
+    await db.withUser(as(userId), (tx) => notifications.notifyBilling(tx, userId, 'paid', 'paid:test'));
+    expect(await waiting(userId)).toHaveLength(0);
+    await db.withUser(as(userId), (tx) => notifications.notifyBilling(tx, userId, 'failed', 'failed:test'));
+    expect((await waiting(userId)).map((row) => row.title)).toEqual(['Your payment didn’t go through']);
+  });
+
   it('drops a push for a row that was read or removed before it left', async () => {
     const { userId } = await phone();
     await withoutQuietHours(userId);

@@ -14,7 +14,8 @@ import { queuePush } from './push';
  * The notification feed (owner, 2026-10-31; changes D-05). A row records something that happened
  * on NextKin and nothing else: no employer event reaches us, so nothing here may say an application
  * was viewed or moved. Every row goes in the feed. The category switches choose what reaches the
- * lock screen, as NOTIF 04 says, so `notify` queues a push only for a category that's on. A row's
+ * lock screen, as NOTIF 04 says, so `notify` queues a push only for a category that's on.
+ * One exception: a failed payment always pushes, because Pro is about to end (toreview §148.1). A row's
  * `dedupeKey` keeps a retried job from saying the same thing twice.
  */
 
@@ -34,6 +35,8 @@ export interface NewNotification {
   dedupeKey: string;
   /** Which nudge wins a morning, lower first; only the categories in `NUDGES` use it. */
   pushRank?: number;
+  /** Reaches the lock screen even with its category switched off: a failed payment (toreview §148.1). */
+  pushAlways?: boolean;
 }
 
 /** What we choose to raise, rather than the result of something they did: 9am, one a day. */
@@ -84,7 +87,7 @@ export async function notify(tx: Tx, userId: string, item: NewNotification): Pro
     .returning('id')
     .executeTakeFirst();
   const prefs = notificationPrefs(profile?.preferences);
-  if (!row || !prefs.categories[item.category]) return;
+  if (!row || (!prefs.categories[item.category] && !item.pushAlways)) return;
   await queuePush(tx, userId, prefs, {
     title: plainText(item.body),
     body: item.description,
@@ -147,7 +150,7 @@ export const BILLING_NOTICE = {
 } as const;
 
 export const notifyBilling = (tx: Tx, userId: string, notice: keyof typeof BILLING_NOTICE, dedupeKey: string): Promise<void> =>
-  notify(tx, userId, { category: 'billing', ...BILLING_NOTICE[notice], deepLink: '/upgrade', visual: { kind: 'glyph', icon: 'credit-card', tone: 'brand', regular: true }, dedupeKey: `billing:${dedupeKey}` });
+  notify(tx, userId, { category: 'billing', ...BILLING_NOTICE[notice], deepLink: '/upgrade', visual: { kind: 'glyph', icon: 'credit-card', tone: 'brand', regular: true }, dedupeKey: `billing:${dedupeKey}`, ...(notice === 'failed' ? { pushAlways: true } : {}) });
 
 const closesIn = (days: number): string => (days <= 1 ? 'closes tomorrow' : `closes in ${days} days`);
 
