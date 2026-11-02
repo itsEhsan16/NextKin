@@ -15020,4 +15020,10 @@ Built on branch `step-4/owner-answers`, on top of Step 4 (§148.4). Nothing is p
 Branch `web/one-enhance-step`, on top of `step-4/owner-answers`. Nothing is merged or pushed.
 
 - **The flow is Job, Resume, Enhance.** Step 3 (W-FLOW 03, "Your plan to fit this job") folded into Enhance, which gains a header row (the job against the resume, Change, the ATS score now), an "Add real results" list, and the points bar and full fix plan behind "See the full plan". **The W-FLOW 03 board is no longer a step.** An old `step=compare` link opens Enhance. Build Resume does the same: its comparison is the header, and "What the build improves" is behind a link.
-- **Results by picking.** "Add the result" asks what improved (Made it faster, Saved money, Reached more people, Fewer errors or bugs), then roughly how much, and code builds the line, for example "…, cutting costs by about 25
+- **Results by picking.** "Add the result" asks what improved (Made it faster, Saved money, Reached more people, Fewer errors or bugs), then roughly how much, and code builds the line, for example "…, cutting costs by about 25%." Nothing is preselected, and the AI never picks a value. "Something else" keeps the typed version. **The kinds, sizes and wording are mine: check them.** Every combination counts as a measured result (tested).
+- **Calls made without you:**
+  - The other plan steps (contact, timeline, wording) appear only in the full plan.
+  - "Add real results" shows three lines, then "Show N more".
+  - `EnhanceStep.tsx` is now 386 lines, over the 250-line rule.
+- **Mobile is unchanged.** Its plan screen gets the same treatment in its own pass.
+- **Not verified in a browser.** Web tests pass (416).
