@@ -68,10 +68,36 @@ describe('where a line came from (toreview §146.4)', () => {
     expect(screen.getByText(/^This line has no source yet/)).toBeOnTheScreen();
   });
 
+  it('washes a line the AI wrote or guessed, and leaves the person’s own plain', async () => {
+    const origins: Record<string, 'generated' | 'assumed' | 'user'> = {
+      a: 'generated',
+      b: 'assumed',
+      c: 'user',
+    };
+    await render(
+      <LineSourceContext.Provider value={{ open: jest.fn(), originOf: (text) => origins[text] }}>
+        {['a', 'b', 'c', 'd'].map((text) => (
+          <SourceLine key={text} text={text}>
+            <Text>{text}</Text>
+          </SourceLine>
+        ))}
+      </LineSourceContext.Provider>,
+    );
+    expect(screen.getAllByTestId('ai-line')).toHaveLength(2);
+    expect(screen.getByLabelText('a')).toHaveProp(
+      'accessibilityHint',
+      'Written by the AI. Shows where it came from',
+    );
+    expect(screen.getByLabelText('c')).toHaveProp(
+      'accessibilityHint',
+      'Shows where this came from',
+    );
+  });
+
   it('makes a line tappable only where the page can answer', async () => {
     const open = jest.fn();
     await render(
-      <LineSourceContext.Provider value={open}>
+      <LineSourceContext.Provider value={{ open, originOf: () => 'user' }}>
         <SourceLine text={LINE}>
           <Text>{LINE}</Text>
         </SourceLine>

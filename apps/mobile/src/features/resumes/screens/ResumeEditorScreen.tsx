@@ -22,7 +22,7 @@ import { LetterBody } from '../components/LetterBody';
 import { LineSourceSheet } from '../components/LineSourceSheet';
 import { ResumeEditorSkeleton } from '../components/ResumeEditorSkeleton';
 import { ResumeSectionCard } from '../components/ResumeSectionCard';
-import { LineSourceContext } from '../components/SourceLine';
+import { LineSourceContext, useLineSourceValue } from '../components/SourceLine';
 import {
   documentIsEmpty,
   downloadBlocked,
@@ -62,6 +62,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   const online = useIsOnline();
   // The line whose source is open (toreview §146.4).
   const [line, setLine] = useState<string | null>(null);
+  const lineSources = useLineSourceValue(id, setLine);
   const resume = useResume(id);
   const doc = resume.data;
 
@@ -206,7 +207,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
       {body.kind === 'cover_letter' ? (
         <LetterBody content={body} onEdit={() => actions.openSection(id, 'letter')} />
       ) : (
-        <LineSourceContext.Provider value={setLine}>
+        <LineSourceContext.Provider value={lineSources}>
           {RESUME_SECTION_ORDER.map((section, index) => (
             <ResumeSectionCard
               key={section}
