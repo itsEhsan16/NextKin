@@ -14695,7 +14695,7 @@ Branch `step-2/fix-the-flow`, built on Step 1. Nothing is merged or pushed.
 - **A gap in the years check, not fixed:** "20+ years of experience with React" raises the warning, while "20+ years of React" didn't in my test. It's the engine's reading of the sentence, on both apps.
 - **Not proven:** "Add the result" was tested on the mock's plain draft. The server's AI draft is built and used by web, but hasn't been tried from the phone, and needs the OpenRouter key either way.
 
-### 145.5 Saved resumes with no connection
+### 145.5 Saved resumes with no connection (superseded by §148.1: no copy is kept)
 
 - **Why:** with no connection every screen failed the same way, and a resume someone already had couldn't be read.
 - **Change:**
@@ -14949,7 +14949,7 @@ The server and shared data are ready. Web's pass needs the application status wi
 
 ## 148. Owner's answers to the open calls from Steps 1–4 (owner, 2026-11-02)
 
-None of these is built yet. Each changes what's on the Step 1–4 branches.
+Built on branch `step-4/owner-answers`, on top of Step 4 (§148.4). Nothing is pushed or merged.
 
 ### 148.1 To build
 
@@ -14979,3 +14979,30 @@ None of these is built yet. Each changes what's on the Step 1–4 branches.
   - What makes a category active, and how categories map to provider queries per country.
   - Whether Adzuna's terms allow holding a twice-daily fetch (V2 §7.13 allows 24–72 hour caching of display metadata only).
   - The reasons must come from the match engine, not the model (G13–G18).
+
+### 148.4 Built, and the calls made doing it
+
+- **No offline copy:**
+  - Step 2's saved copy is gone, and a copy an earlier build left is deleted at launch.
+  - Memory is still wiped on every sign-out.
+  - The note now says "You're offline. Resumes open again once you're back online."
+  - `networkMode: 'always'` stays, so a screen with no connection shows its error instead of sitting on a skeleton.
+- **A failed payment pushes** even with Plan & billing off. Receipts, renewals and plan changes still follow the switch.
+- **Profile:** a confirmed row now shows nothing. "From your resume" and "Assumed" keep their pill and Confirm.
+- **The purple wash:**
+  - It uses the existing lavender brand surface (`colors.brandSurface`), so there's no new colour.
+  - It covers lines the AI wrote and lines it guessed. The candidate's own lines stay plain.
+  - The page loads its line sources as it opens, so the wash appears a moment after the text, and not at all with no connection.
+  - The resume page boards don't draw it.
+- **Home counts:** only screen readers ever read them on mobile, and now they say nothing at zero. Web's Home shows none.
+- **The remake nudge:**
+  - It appears only after at least one real answer this visit; skips don't count.
+  - From a finished resume it opens TAILOR 01 for that job, so the candidate picks the resume to tailor from rather than re-tailoring the tailored copy.
+  - From Profile it opens Build.
+- **Web feed page:**
+  - `/notifications`, and the bell now links there.
+  - The phone's links are mapped to web pages: an application to the Applications page, a run to the resume library (web has no run page), and jobs and Upgrade as they are.
+  - Anything else gets no link, so a row never lands on a 404.
+  - Spec-derived; no board.
+
+- **Proved on the laptop, 2026-11-02:** typecheck, lint, every unit suite (engines 203, shared 227, server 296, mobile 1,979, web 412) and the Android bundle. Integration: 1,287 passed, 4 failed, the same four as §146.8. Nothing here has run on a phone or in a browser.
