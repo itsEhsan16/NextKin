@@ -56,8 +56,8 @@ export function BuildEnhanceStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="build-enhance"
-            step={3}
-            of={3}
+            step={4}
+            of={4}
             title="Choose what to add"
             lede="Tick only the keywords you really have. They go on the resume and on your profile."
           />

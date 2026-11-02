@@ -15049,3 +15049,27 @@ The owner sent two mockups for the first two steps. They're built with our token
   - **The cover letter and ATS check** use the same resume step, without "Start from a blank resume" or "Use my profile", since those don't fit them.
   - **"Your data is private and secure"** is a claim on every flow page. Check that legal is happy with the wording.
 - **Not verified in a browser.** Web tests pass (419). `OtherJobBox.tsx` (259 lines) and `ResumePicker.tsx` (251) sit just over the 250-line rule.
+
+## 151. Web: "How would you like to create your resume?" and its four popups (owner, 2026-11-02)
+
+The owner sent a mockup for a new step 3 and one popup per option. Built with our tokens on branch `web/one-enhance-step`. Tailor and Build now have four steps: Job → Resume → Method → Enhance.
+
+- **The step:** four radio cards (Tailor my selected resume, marked Recommended; Create from my profile; Start from scratch with AI; Upload a resume), each with its picture, a line and three points. On the right, "Your selections" (the job and the starting resume, each with Edit back to its step) and "What happens next?". The footer is the same trust note as steps 1–2.
+- **Continue opens the picked way's popup:**
+  - **Tailor:** what it does, the selected resume with Change (opens the resume chooser), then **Tailor Resume** → Enhance.
+  - **Profile:** "Your profile includes Experience (n) · Education (n) · Skills (n)" with View profile (new tab), then **Use My Profile** → Enhance in build mode.
+  - **Scratch with AI:** "You'll be asked for", then **Start with AI** → Zero Resume for this job.
+  - **Upload:** a drop zone, then **Upload & Continue**, disabled until a file is chosen; it reads the file, saves it to Resumes and goes to Enhance with it.
+- **Calls made without you:**
+  - **The step's label is "Method",** not the mockup's "Compare": §149 folded the comparison into Enhance, and this step compares nothing.
+  - **Copy changed where the mockup promised what the app doesn't do:**
+    - Scratch asks for "Your name · Years of experience · The role you want" (what Zero Resume really asks), not "Target role · Experience level · Key skills · (Optional) work history".
+    - Upload drops "Up to 10 MB": the board's size limit was dropped in §106.1.
+    - "What happens next?" describes the real Enhance step (pick keywords and results, a new version is written and the original isn't changed, review and download) instead of "compare it with the job".
+    - The tailor popup's points say "Add the job's skills and keywords you choose" and "suggestions … like adding real results", which is what Enhance offers.
+  - **Pictures reuse our flow art:** tailor uses the profile-and-target drawing, profile the document-and-briefcase one, scratch the robot, upload the folder. The mockup's own drawings (a document with a plus, one with an up arrow) would need new art.
+  - **Build Resume** now shows the resume picker as step 2 when you have resumes, then this step with "Create from my profile" picked. With no resumes it keeps its old step 2.
+  - **Tailoring with no resumes** keeps the old step 2 (upload, build, or start from nothing) and skips this step, since there is nothing to tailor.
+  - **A profile with no roles:** the profile popup says so and its button becomes "Fill in my profile", which opens the profile.
+  - **Step 2's "Other ways to start" stays** (§150), though it now repeats three of these options. Say if it should go.
+- **Not verified in a browser.** Web tests pass (424, including 5 new ones for this step). `TailorScreen.tsx` is 304 lines, over the 250-line rule.

@@ -136,7 +136,7 @@ describe('Choosing the resume (toreview §110)', () => {
       'true',
     );
     await user.click(screen.getByRole('button', { name: /Continue/ }));
-    expect(push).toHaveBeenCalledWith('/jobs/job_google/tailor?resumeId=res_pd&step=enhance');
+    expect(push).toHaveBeenCalledWith('/jobs/job_google/tailor?resumeId=res_pd&step=method');
   });
 });
 

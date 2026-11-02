@@ -8,6 +8,7 @@ import {
   useResumes,
   useSubscription,
 } from '@nextkin/shared/queries';
+import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 
@@ -26,6 +27,7 @@ import { TailorRunView } from '../components/TailorRunView';
 import { BuildEnhanceStep } from '../flow/BuildSteps';
 import { JobLogoTile } from '../flow/EntityRow';
 import { EnhanceStep } from '../flow/EnhanceStep';
+import { MethodStep } from '../flow/MethodStep';
 import { ResumeStep, UploadRow } from '../flow/ResumeStep';
 import { BuildStep, NoResumeStep } from '../flow/StartStep';
 import { useBuildFlow } from '../flow/useBuildFlow';
@@ -38,8 +40,8 @@ import {
 } from '../tailorTarget';
 import { useTailorChoices, useTailorRun } from '../useTailorRun';
 
-const STEPS = ['Job', 'Resume', 'Enhance'] as const;
-const STEP_INDEX: Record<TailorStep, number> = { resume: 1, enhance: 2 };
+const STEPS = ['Job', 'Resume', 'Method', 'Enhance'] as const;
+const STEP_INDEX: Record<TailorStep, number> = { resume: 1, method: 2, enhance: 3 };
 
 export type TailorScreenProps = {
   target: TailorTargetRef;
@@ -82,10 +84,11 @@ export function TailorScreen({
   const step: TailorStep = asked ?? (requested ? 'enhance' : 'resume');
   const go = (next: TailorStep, id: string = resumeId) =>
     router.push(
-      tailorPath(
-        target,
-        build ? { step: next, mode: 'build' } : { step: next, ...(id ? { resumeId: id } : {}) },
-      ),
+      tailorPath(target, {
+        step: next,
+        ...(id ? { resumeId: id } : {}),
+        ...(build ? { mode: 'build' as const } : {}),
+      }),
     );
   const pick = (id: string) => {
     setChoosing(false);
@@ -156,7 +159,7 @@ export function TailorScreen({
     body = wait;
   } else if (step === 'resume') {
     const backHref = jobFlowHref(build ? 'build' : 'tailor');
-    if (build)
+    if (build && tailorable.length === 0)
       body = (
         <BuildStep
           job={job}
@@ -189,14 +192,41 @@ export function TailorScreen({
           onRetry={() => void resumes.refetch()}
           value={resumeId}
           onPick={pick}
-          onContinue={() => go('enhance')}
+          onContinue={() => go('method')}
           backHref={backHref}
           blankHref={zeroHref}
           profileHref={tailorPath(target, { step: 'enhance', mode: 'build' })}
         />
       );
+  } else if (step === 'method') {
+    const hasRoles = (builder.profile.data?.experiences.length ?? 0) > 0;
+    body = (
+      <MethodStep
+        job={job}
+        resumeTitle={tailorable.find((r) => r.id === resumeId)?.title}
+        profile={builder.profile.data}
+        initial={build ? 'profile' : 'tailor'}
+        jobHref={jobFlowHref(build ? 'build' : 'tailor')}
+        resumeHref={tailorPath(target, {
+          step: 'resume',
+          ...(resumeId ? { resumeId } : {}),
+          ...(build ? { mode: 'build' as const } : {}),
+        })}
+        zeroHref={zeroHref}
+        onChangeResume={() => setChoosing(true)}
+        onTailor={() => router.push(tailorPath(target, { step: 'enhance', resumeId }))}
+        onProfile={() =>
+          router.push(
+            hasRoles
+              ? tailorPath(target, { step: 'enhance', mode: 'build' })
+              : ('/profile' as Route),
+          )
+        }
+        onUploaded={(id) => router.push(tailorPath(target, { step: 'enhance', resumeId: id }))}
+      />
+    );
   } else if (build) {
-    const back = tailorPath(target, { step: 'resume', mode: 'build' });
+    const back = tailorPath(target, { step: 'method', mode: 'build' });
     if (!builder.comparison) body = wait;
     else
       body = (
@@ -214,7 +244,7 @@ export function TailorScreen({
       );
   } else if (comparison.data) {
     const measured = comparison.data;
-    const back = tailorPath(target, { step: 'resume', resumeId });
+    const back = tailorPath(target, { step: 'method', resumeId });
     const toggle = (keyword: string, on: boolean) =>
       choices.setAdded(
         on ? [...choices.added, keyword] : choices.added.filter((k) => k !== keyword),

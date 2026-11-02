@@ -46,3 +46,7 @@ export { ShieldTick } from '@untitledui/icons/ShieldTick';
 export { SwitchVertical01 } from '@untitledui/icons/SwitchVertical01';
 export { User01 } from '@untitledui/icons/User01';
 export { Upload01 } from '@untitledui/icons/Upload01';
+export { Clipboard } from '@untitledui/icons/Clipboard';
+export { Folder } from '@untitledui/icons/Folder';
+export { Target04 } from '@untitledui/icons/Target04';
+export { Zap } from '@untitledui/icons/Zap';
