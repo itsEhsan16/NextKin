@@ -37,3 +37,12 @@ export { XClose } from '@untitledui/icons/XClose';
 
 /** The two icon sizes of the flows: 16px beside body text, 20px on its own. */
 export const iconSize = { sm: 'size-4 shrink-0', md: 'size-5 shrink-0' } as const;
+export { Bookmark } from '@untitledui/icons/Bookmark';
+export { Briefcase01 } from '@untitledui/icons/Briefcase01';
+export { Calendar } from '@untitledui/icons/Calendar';
+export { Link01 } from '@untitledui/icons/Link01';
+export { LinkExternal01 } from '@untitledui/icons/LinkExternal01';
+export { ShieldTick } from '@untitledui/icons/ShieldTick';
+export { SwitchVertical01 } from '@untitledui/icons/SwitchVertical01';
+export { User01 } from '@untitledui/icons/User01';
+export { Upload01 } from '@untitledui/icons/Upload01';

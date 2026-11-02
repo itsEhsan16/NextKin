@@ -15027,3 +15027,25 @@ Branch `web/one-enhance-step`, on top of `step-4/owner-answers`. Nothing is merg
   - `EnhanceStep.tsx` is now 386 lines, over the 250-line rule.
 - **Mobile is unchanged.** Its plan screen gets the same treatment in its own pass.
 - **Not verified in a browser.** Web tests pass (416).
+
+## 150. Web: the job and resume steps, redesigned (owner, 2026-11-02)
+
+The owner sent two mockups for the first two steps. They're built with our tokens and components, on branch `web/one-enhance-step`. The mockups show four steps; the flow keeps three (§149).
+
+- **Job step:**
+  - "Let's start with the job", with two panels.
+  - **Your saved jobs:** a search, four a page with "Showing 4 of 12 jobs" and ‹ 1 / 3 ›, and "Manage jobs", which opens Jobs in a new tab. Each row shows when the job was saved.
+  - **Add a new job:** three tabs (Paste job description, Paste job link, Upload file), a character counter, a tip, and **Analyze job**, which reads the job straight away. Continue does the same for a pasted job.
+- **Resume step:**
+  - "Choose a starting resume", with a lede that names the role and company.
+  - **The list:** "Your resumes / All resumes" tabs with counts, a search, a sort (Recently updated, or Name A–Z), and five a page with numbered pages.
+  - **Each row:** the role, when it changed, Preview, and a ⋮ menu with Open in the editor and Make a copy.
+  - **On the right, "Other ways to start":** Upload a resume, Start from a blank resume (Zero Resume for this job), Use my profile (Build from the profile for this job), and a tip.
+- **Footer:** "Your credits won't be used until you create a resume." and "Your data is private and secure."
+- **Calls made without you:**
+  - **"Your resumes"** means the ones you'd start from: the base, and any not already tailored for a company. "All resumes" adds the tailored copies.
+  - **The match pills on saved jobs are gone,** because the mockup draws none. The match still shows on the Jobs page and on Enhance.
+  - **"Try a sample job" stays** beside the tip, for an empty account.
+  - **The cover letter and ATS check** use the same resume step, without "Start from a blank resume" or "Use my profile", since those don't fit them.
+  - **"Your data is private and secure"** is a claim on every flow page. Check that legal is happy with the wording.
+- **Not verified in a browser.** Web tests pass (419). `OtherJobBox.tsx` (259 lines) and `ResumePicker.tsx` (251) sit just over the 250-line rule.

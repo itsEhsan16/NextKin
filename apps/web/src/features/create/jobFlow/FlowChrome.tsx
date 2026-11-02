@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
 import { cardSurface } from '@/ui/Card';
 import { iconButton } from '@/ui/iconButton';
-import { ChevronRight, InfoCircle } from '@/ui/lineIcons';
+import { ChevronRight, InfoCircle, ShieldTick } from '@/ui/lineIcons';
 import { SparkleIllustration } from '@/ui/illustrations';
 
 import { FlowSteps } from '../components/FlowSteps';
@@ -161,5 +161,56 @@ export function FlowFooter({
       </p>
       <div className="flex shrink-0 items-center gap-3">{children}</div>
     </div>
+  );
+}
+
+/** A panel inside a step card (W-FLOW 01–02 redesign, toreview §150): bordered, on white. */
+export const panel =
+  'flex min-w-0 flex-col gap-4 rounded-xl border border-border-subtle bg-surface-card p-5';
+
+/** A panel's head: the round icon tile, its title and line, and an action on the right. */
+export function PanelHead({
+  icon,
+  title,
+  subtitle,
+  aside,
+}: {
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+  aside?: ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3.5">
+      <span
+        aria-hidden
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-50 text-text-brand"
+      >
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-title-l font-bold text-text-primary">{title}</h2>
+        <p className="text-body-m text-text-tertiary">{subtitle}</p>
+      </div>
+      {aside && <div className="shrink-0 pt-1">{aside}</div>}
+    </div>
+  );
+}
+
+/** The footer's two reassurances (toreview §150): nothing is spent yet, and the data stays private. */
+export function TrustNote({
+  spend = 'Your credits won’t be used until you create a resume.',
+}: {
+  spend?: string;
+}) {
+  return (
+    <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+      <span className="font-semibold text-text-primary">{spend}</span>
+      <span aria-hidden className="hidden h-4 w-px bg-border-default sm:block" />
+      <span className="flex items-center gap-1.5">
+        <ShieldTick aria-hidden className="size-4.5 shrink-0 text-neutral-400" />
+        Your data is private and secure.
+      </span>
+    </span>
   );
 }

@@ -7,7 +7,14 @@ import { useState } from 'react';
 
 import { ArrowRight } from '@/ui/lineIcons';
 
-import { backButton, FlowFooter, primaryButton, StepHeading, stepCard } from './FlowChrome';
+import {
+  backButton,
+  FlowFooter,
+  primaryButton,
+  StepHeading,
+  stepCard,
+  TrustNote,
+} from './FlowChrome';
 import { JOB_FLOWS, type JobFlow, type PickedJob } from './jobFlow';
 import { emptyOtherJob, OtherJobBox, otherJobInput, type OtherJob } from './OtherJobBox';
 import { SavedJobList } from './SavedJobList';
@@ -24,7 +31,7 @@ export function JobStep({
   onPicked,
   stepNo = 1,
   backHref = '/' as Route,
-  note = 'Nothing is spent until you create the resume.',
+  note,
   busyLabel,
 }: {
   flow: JobFlow;
@@ -32,6 +39,7 @@ export function JobStep({
   /** Where the job comes in this flow: second for the ATS check (863:2). */
   stepNo?: number;
   backHref?: Route;
+  /** The footer's own words; else the two reassurances (toreview §150). */
   note?: string;
   /** Held while the caller works on the pick (the ATS check starts its run). */
   busyLabel?: string;
@@ -58,6 +66,11 @@ export function JobStep({
       if (pickedSaved) onPicked({ kind: 'job', id: pickedSaved });
       return;
     }
+    readOther();
+  };
+  // Analyze job reads the new job straight away, whatever was picked on the left.
+  const readOther = () => {
+    setSource('other');
     const read = otherJobInput(other);
     if (!read) return setProblem('Paste the job description or its link, or upload a file.');
     if ('problem' in read) return setProblem(read.problem);
@@ -76,8 +89,8 @@ export function JobStep({
             lede={copy.jobLede}
           />
         </div>
-        <div className="grid divide-y divide-border-subtle lg:grid-cols-5 lg:divide-x lg:divide-y-0">
-          <div className="min-w-0 px-8 pb-8 pt-6 lg:col-span-3 lg:pl-8">
+        <div className="grid gap-5 px-8 pb-8 pt-4 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
+          <div className="min-w-0">
             <SavedJobList
               jobs={jobs}
               loading={saved.isPending}
@@ -91,11 +104,12 @@ export function JobStep({
               }}
             />
           </div>
-          <div className="flex min-w-0 px-8 pb-8 pt-6 lg:col-span-2 lg:pr-8">
+          <div className="flex min-w-0 flex-col">
             <OtherJobBox
               value={other}
               selected={using === 'other'}
               busy={extract.isPending}
+              onAnalyze={readOther}
               problem={problem ?? (failed ? READ_FAILED : null)}
               onChange={(value) => {
                 setOther(value);
@@ -108,7 +122,7 @@ export function JobStep({
         </div>
       </section>
 
-      <FlowFooter note={note}>
+      <FlowFooter note={note ?? <TrustNote />}>
         <Link href={backHref} className={backButton}>
           Back
         </Link>

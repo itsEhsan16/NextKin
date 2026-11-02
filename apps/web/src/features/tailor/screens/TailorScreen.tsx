@@ -191,6 +191,8 @@ export function TailorScreen({
           onPick={pick}
           onContinue={() => go('enhance')}
           backHref={backHref}
+          blankHref={zeroHref}
+          profileHref={tailorPath(target, { step: 'enhance', mode: 'build' })}
         />
       );
   } else if (build) {

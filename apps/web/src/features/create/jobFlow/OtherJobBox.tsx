@@ -14,11 +14,19 @@ import {
 } from '@/features/upload/uploadLibrary';
 import { cn } from '@/lib/cn';
 import { Button } from '@/ui/Button';
-import { ProfilePaperPlaneIllustration } from '@/ui/illustrations';
-import { Lightbulb02, UploadCloud02, iconSize } from '@/ui/lineIcons';
+import {
+  File06,
+  Lightbulb02,
+  Link01,
+  Plus,
+  Stars02,
+  UploadCloud02,
+  iconSize,
+} from '@/ui/lineIcons';
+import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { textLink } from '@/ui/textLink';
 
-import { ColumnHead } from './FlowChrome';
+import { PanelHead, panel } from './FlowChrome';
 
 export type OtherJob = { text: string; file: File | null };
 export const emptyOtherJob: OtherJob = { text: '', file: null };
@@ -49,11 +57,25 @@ export function otherJobInput(job: OtherJob): { input: JdInput } | { problem: st
   return { input: { source: 'paste', text: job.text } };
 }
 
+type Tab = 'paste' | 'link' | 'file';
+
+const TABS: readonly Segment<Tab>[] = [
+  {
+    id: 'paste',
+    label: 'Paste job description',
+    icon: <File06 aria-hidden className={iconSize.sm} />,
+  },
+  { id: 'link', label: 'Paste job link', icon: <Link01 aria-hidden className={iconSize.sm} /> },
+  { id: 'file', label: 'Upload file', icon: <UploadCloud02 aria-hidden className={iconSize.sm} /> },
+];
+
+const box =
+  'rounded-xl border bg-neutral-50/60 transition-[background-color,border-color,box-shadow] duration-base ease-standard focus-within:border-border-selected focus-within:bg-surface-card focus-within:ring-4 focus-within:ring-brand-100';
+
 /**
- * W-FLOW 01's right column (849:289): a job from anywhere — paste the description or its link, or
- * upload or drop a file on the box. Typing here picks it over a saved job; it is read when the
- * step continues. "No job handy?" fills in a sample. While the step reads it (`busy`) the box is
- * held as it is: no typing, picking or dropping over the text being read (toreview §131).
+ * W-FLOW 01's "Add a new job" (849:289, redesigned in toreview §150): paste the description, paste
+ * its link, or upload a file, one tab each, then Analyze job. Writing here picks it over a saved job.
+ * While the step reads it (`busy`) the box is held as it is (toreview §131).
  */
 export function OtherJobBox({
   value,
@@ -61,16 +83,20 @@ export function OtherJobBox({
   selected,
   problem,
   busy = false,
+  onAnalyze,
 }: {
   value: OtherJob;
   onChange: (next: OtherJob) => void;
   selected: boolean;
   problem?: string | null;
   busy?: boolean;
+  /** Reads the job now, as Continue would. */
+  onAnalyze: () => void;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [tab, setTab] = useState<Tab>(value.file ? 'file' : 'paste');
 
   const pick = (file: File) => {
     if (busy) return;
@@ -84,57 +110,100 @@ export function OtherJobBox({
     const dropped = event.dataTransfer.files[0];
     if (dropped) pick(dropped);
   };
+  const ready = value.file != null || value.text.trim().length > 0;
+  const border = selected || dragging ? 'border-border-brand-strong' : 'border-border-default';
+  const typed = value.file ? '' : value.text;
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-3.5">
-      <ColumnHead
-        art={<ProfilePaperPlaneIllustration className="h-auto w-11" />}
-        title="Use another job"
-        subtitle="From LinkedIn, a careers page or anywhere else."
+    <div className={panel}>
+      <PanelHead
+        icon={<Plus className="size-5" />}
+        title="Add a new job"
+        subtitle="Don’t see your job? Add it using one of the options below."
       />
-      <div
-        onDragOver={(event) => {
-          event.preventDefault();
-          if (!busy) setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={drop}
-        className={cn(
-          'flex min-h-60 flex-1 flex-col gap-3 rounded-xl border bg-neutral-50/60 p-4 transition-[background-color,border-color,box-shadow] duration-base ease-standard focus-within:border-border-selected focus-within:bg-surface-card focus-within:ring-4 focus-within:ring-brand-100',
-          selected || dragging ? 'border-border-brand-strong' : 'border-border-default',
-          dragging && 'bg-surface-brand',
-        )}
-      >
-        {value.file ? (
-          <div className="flex-1">
-            <PickedFile file={value.file} reading={busy} onRemove={() => onChange(emptyOtherJob)} />
+      <SegmentedControl
+        segments={TABS}
+        value={tab}
+        onChange={setTab}
+        label="How to add the job"
+        fill
+      />
+
+      {tab === 'paste' && (
+        <div className="flex flex-col gap-1.5">
+          <div className={cn(box, border, 'flex min-h-44 p-4')}>
+            <textarea
+              aria-label="Job description or link"
+              value={typed}
+              maxLength={MAX_JD_CHARS}
+              readOnly={busy}
+              aria-busy={busy || undefined}
+              onChange={(event) => onChange({ text: event.target.value, file: null })}
+              placeholder="Paste the full job description here…"
+              className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
+            />
           </div>
-        ) : (
-          <textarea
-            aria-label="Job description or link"
-            value={value.text}
-            maxLength={MAX_JD_CHARS}
-            readOnly={busy}
-            aria-busy={busy || undefined}
-            onChange={(event) => onChange({ text: event.target.value, file: null })}
-            placeholder="Paste the job description, or a link to the posting…"
-            className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
-          />
-        )}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <Button
-            variant="secondary"
-            disabled={busy}
-            icon={<UploadCloud02 aria-hidden className={cn(iconSize.sm, 'text-text-brand')} />}
-            onClick={() => fileInput.current?.click()}
-          >
-            Upload a file
-          </Button>
-          <span className="text-body-s font-medium text-text-tertiary">
-            or drop one here · PDF or DOCX
-          </span>
+          <p className="self-end text-body-s font-medium text-text-tertiary">
+            {typed.length.toLocaleString('en-US')} / {MAX_JD_CHARS.toLocaleString('en-US')}
+          </p>
         </div>
-      </div>
+      )}
+
+      {tab === 'link' && (
+        <label className={cn(box, border, 'flex items-center gap-2.5 px-4 py-3')}>
+          <Link01 aria-hidden className={cn(iconSize.sm, 'text-text-tertiary')} />
+          <input
+            type="url"
+            aria-label="Job link"
+            value={typed}
+            readOnly={busy}
+            onChange={(event) => onChange({ text: event.target.value, file: null })}
+            placeholder="https://careers.example.com/jobs/123"
+            className="min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-text-tertiary"
+          />
+        </label>
+      )}
+
+      {tab === 'file' && (
+        <div
+          onDragOver={(event) => {
+            event.preventDefault();
+            if (!busy) setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={drop}
+          className={cn(
+            box,
+            border,
+            'flex min-h-44 flex-col items-center justify-center gap-2.5 border-dashed p-4 text-center',
+            dragging && 'bg-surface-brand',
+          )}
+        >
+          {value.file ? (
+            <div className="w-full">
+              <PickedFile
+                file={value.file}
+                reading={busy}
+                onRemove={() => onChange(emptyOtherJob)}
+              />
+            </div>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                disabled={busy}
+                icon={<UploadCloud02 aria-hidden className={cn(iconSize.sm, 'text-text-brand')} />}
+                onClick={() => fileInput.current?.click()}
+              >
+                Upload a file
+              </Button>
+              <span className="text-body-s font-medium text-text-tertiary">
+                or drop one here · PDF or DOCX
+              </span>
+            </>
+          )}
+        </div>
+      )}
       <input
         ref={fileInput}
         type="file"
@@ -148,27 +217,43 @@ export function OtherJobBox({
           event.target.value = '';
         }}
       />
+
       {(fileError ?? problem) ? (
         <p role="alert" className="text-body-m text-danger-600">
           {fileError ?? problem}
         </p>
       ) : (
-        !value.text &&
-        !value.file && (
-          <p className="flex items-center gap-1.5 text-body-m font-medium text-text-tertiary">
-            <Lightbulb02 aria-hidden className={iconSize.sm} />
-            No job handy?
+        <p className="flex flex-wrap items-center gap-1.5 text-body-m text-text-tertiary">
+          <Lightbulb02 aria-hidden className={iconSize.sm} />
+          <span>
+            <span className="font-semibold text-text-secondary">Tip:</span> Include the complete job
+            description for better suggestions.
+          </span>
+          {!ready && (
             <button
               type="button"
               disabled={busy}
-              onClick={() => onChange({ text: SAMPLE_JD, file: null })}
+              onClick={() => {
+                setTab('paste');
+                onChange({ text: SAMPLE_JD, file: null });
+              }}
               className={textLink}
             >
               Try a sample job
             </button>
-          </p>
-        )
+          )}
+        </p>
       )}
+
+      <button
+        type="button"
+        disabled={!ready || busy}
+        onClick={onAnalyze}
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border-brand-strong bg-brand-50 text-body-l font-semibold text-text-brand transition-colors duration-press ease-standard hover:bg-brand-100 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+      >
+        <Stars02 aria-hidden className={iconSize.sm} />
+        {busy ? 'Reading the job…' : 'Analyze job'}
+      </button>
     </div>
   );
 }

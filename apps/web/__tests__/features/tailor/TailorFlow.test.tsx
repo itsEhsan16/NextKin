@@ -126,7 +126,7 @@ describe('Choosing the resume (toreview §110)', () => {
     renderWithQuery(<TailorScreen target={{ kind: 'job', id: 'job_google' }} />);
     const step = await screen.findByRole(
       'region',
-      { name: 'Which resume should we start from?' },
+      { name: 'Choose a starting resume' },
       wait,
     );
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

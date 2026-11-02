@@ -1,7 +1,6 @@
 'use client';
 
-import type { Job, MatchBand } from '@nextkin/shared/models';
-import { MATCH_BAND_LABEL } from '@nextkin/shared/models';
+import type { Job } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -12,25 +11,18 @@ import { formatCoarseAge } from '@/lib/format';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { fieldBox } from '@/ui/fieldBox';
 import { SearchIcon } from '@/ui/icons';
-import { ArrowRight } from '@/ui/lineIcons';
-import { AssistantBookmarkIllustration } from '@/ui/illustrations';
+import { ArrowRight, Bookmark, LinkExternal01 } from '@/ui/lineIcons';
+import { Pager, pageOf } from '@/ui/Pager';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
-import { ColumnHead } from './FlowChrome';
+import { PanelHead, panel } from './FlowChrome';
 
-/** W-FLOW 01 draws the bands as green, amber and grey pills (849:229, 849:244, 849:283). */
-const PILL: Record<MatchBand, string> = {
-  strong: 'bg-success-surface text-success-text',
-  good: 'bg-warning-50 text-warning-text',
-  fair: 'bg-surface-muted text-text-secondary',
-  weak: 'bg-surface-muted text-text-secondary',
-};
-
-/** The board lists five; the rest open in place under "See all saved jobs". */
-const FIRST = 5;
+/** Four a page, as the redesigned W-FLOW 01 draws it (toreview §150). */
+const PAGE = 4;
 
 const moreLink = cn(textLink, 'flex items-center gap-1.5 self-start pt-1 text-body-m');
+const manageLink = cn(textLink, 'flex items-center gap-1.5 text-body-m text-text-brand');
 
 function Radio({ on }: { on: boolean }) {
   return (
@@ -47,9 +39,8 @@ function Radio({ on }: { on: boolean }) {
 }
 
 /**
- * W-FLOW 01's left column (849:201): your saved jobs, newest first, as cards with a radio, the
- * company's mark, the role, where and when it was saved, and how well you match. A search sits in
- * the column's head; five show, the rest open under "See all saved jobs".
+ * W-FLOW 01's saved jobs (849:201, redesigned in toreview §150): a panel with a search, your saved
+ * jobs newest first, four a page, each with a radio, the company's mark, where, and when it was saved.
  */
 export function SavedJobList({
   jobs,
@@ -67,39 +58,49 @@ export function SavedJobList({
   onChange: (jobId: string) => void;
 }) {
   const [query, setQuery] = useState('');
-  const [all, setAll] = useState(false);
+  const [page, setPage] = useState(1);
   const q = query.trim().toLowerCase();
   const found = q
     ? jobs.filter((job) => `${job.title} ${job.company} ${job.location}`.toLowerCase().includes(q))
     : jobs;
-  const shown = all || q ? found : found.slice(0, FIRST);
+  const paged = pageOf(found, page, PAGE);
+  const shown = paged.items;
 
   const head = (
-    <ColumnHead
-      art={<AssistantBookmarkIllustration className="h-auto w-11" />}
-      title="Your saved jobs"
-      subtitle={jobs.length > 0 ? `${jobs.length} saved · newest first` : 'Jobs you save show here'}
-      aside={
-        jobs.length > 1 ? (
-          <label
-            className={cn(
-              fieldBox,
-              'w-60 gap-2 px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-600',
-            )}
-          >
-            <SearchIcon aria-hidden className="size-3.5 shrink-0 text-text-tertiary" />
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search saved jobs"
-              aria-label="Search saved jobs"
-              className="min-w-0 flex-1 bg-transparent text-body-m outline-none placeholder:text-text-tertiary"
-            />
-          </label>
-        ) : undefined
-      }
-    />
+    <>
+      <PanelHead
+        icon={<Bookmark className="size-5" />}
+        title="Your saved jobs"
+        subtitle="Choose a job you’ve saved, or add a new one."
+        aside={
+          <Link href={'/jobs' as Route} target="_blank" className={manageLink}>
+            Manage jobs
+            <LinkExternal01 aria-hidden className="size-3.5" />
+          </Link>
+        }
+      />
+      {jobs.length > 1 && (
+        <label
+          className={cn(
+            fieldBox,
+            'w-full gap-2 px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-600',
+          )}
+        >
+          <SearchIcon aria-hidden className="size-3.5 shrink-0 text-text-tertiary" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+            }}
+            placeholder="Search saved jobs…"
+            aria-label="Search saved jobs"
+            className="min-w-0 flex-1 bg-transparent text-body-m outline-none placeholder:text-text-tertiary"
+          />
+        </label>
+      )}
+    </>
   );
 
   let body;
@@ -139,13 +140,7 @@ export function SavedJobList({
         <div role="radiogroup" aria-label="Your saved jobs" className="flex flex-col gap-3">
           {shown.map((job) => {
             const on = job.id === value;
-            const meta = [
-              job.company,
-              job.location,
-              job.savedAt ? `Saved ${formatCoarseAge(job.savedAt).toLowerCase()}` : null,
-            ]
-              .filter(Boolean)
-              .join(' · ');
+            const meta = [job.company, job.location].filter(Boolean).join(' · ');
             return (
               <button
                 key={job.id}
@@ -174,14 +169,9 @@ export function SavedJobList({
                   </span>
                   <span className="block truncate text-body-m text-text-tertiary">{meta}</span>
                 </span>
-                {job.matchBand && (
-                  <span
-                    className={cn(
-                      'shrink-0 rounded-full px-2.5 py-0.5 text-caption-m font-semibold',
-                      PILL[job.matchBand],
-                    )}
-                  >
-                    {MATCH_BAND_LABEL[job.matchBand]}
+                {job.savedAt && (
+                  <span className="shrink-0 text-body-s font-medium text-text-tertiary">
+                    Saved {formatCoarseAge(job.savedAt).toLowerCase()}
                   </span>
                 )}
               </button>
@@ -193,18 +183,23 @@ export function SavedJobList({
             </p>
           )}
         </div>
-        {!q && !all && jobs.length > FIRST && (
-          <button type="button" onClick={() => setAll(true)} className={moreLink}>
-            See all saved jobs ({jobs.length})
-            <ArrowRight aria-hidden className="size-4" />
-          </button>
+        {found.length > 0 && (
+          <Pager
+            page={paged.page}
+            pages={paged.pages}
+            onPage={setPage}
+            shown={shown.length}
+            total={found.length}
+            noun="jobs"
+            label="Saved job pages"
+          />
         )}
       </>
     );
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <div className={panel}>
       {head}
       {body}
     </div>

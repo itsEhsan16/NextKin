@@ -26,17 +26,17 @@ export const JOB_FLOWS: Record<JobFlow, FlowCopy> = {
     name: 'Build Resume',
     eyebrow: 'Build a resume',
     steps: ['Job', 'Resume', 'Enhance'],
-    jobTitle: 'Which job is this resume for?',
+    jobTitle: 'Let’s start with the job',
     jobLede:
-      'Pick one of your saved jobs, or bring one from anywhere. We’ll compare your profile with it next.',
+      'We’ll use the job details to build your resume around it, highlight relevant skills, and suggest improvements.',
   },
   tailor: {
     name: 'Tailor to a Job',
     eyebrow: 'Tailor to a job',
     steps: ['Job', 'Resume', 'Enhance'],
-    jobTitle: 'Which job is this resume for?',
+    jobTitle: 'Let’s start with the job',
     jobLede:
-      'Pick one of your saved jobs, or bring one from anywhere. We’ll compare your resume with it next.',
+      'We’ll use the job details to tailor your resume, highlight relevant skills, and suggest improvements.',
   },
   'cover-letter': {
     name: 'Cover Letter',

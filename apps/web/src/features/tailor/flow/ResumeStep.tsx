@@ -7,29 +7,28 @@ import { useRef, useState, type DragEvent } from 'react';
 
 import {
   backButton,
-  ColumnHead,
   FlowFooter,
   primaryButton,
   StepHeading,
   stepCard,
+  TrustNote,
 } from '@/features/create/jobFlow/FlowChrome';
-import { ResumeRow } from '@/features/create/jobFlow/FlowRows';
 import { useResumeUpload } from '@/features/create/jobFlow/useResumeUpload';
 import { RESUME_INPUT_ACCEPT } from '@/features/onboarding/resumeUpload';
 import { cn } from '@/lib/cn';
 import { AiLoader } from '@/ui/AiLoader';
 import { Button } from '@/ui/Button';
-import { Callout } from '@/ui/Callout';
 import { ArrowRight, UploadCloud02, iconSize } from '@/ui/lineIcons';
 import { Spinner } from '@/ui/Spinner';
-import { JdArtUploadFileIllustration, NavDocumentsIllustration } from '@/ui/illustrations';
-import { Skeleton } from '@/ui/Skeleton';
-import { StateView } from '@/ui/StateView';
+import { JdArtUploadFileIllustration } from '@/ui/illustrations';
+
+import { OtherWays } from './OtherWays';
+import { ResumePicker } from './ResumePicker';
 
 /**
- * W-FLOW 02 (849:318), step 2: which resume to start from — yours on the left, the base picked
- * first, or one uploaded on the right, read the moment it lands and then picked. The original is
- * never changed; tailoring makes a new version.
+ * W-FLOW 02 (849:318, redesigned in toreview §150), step 2: which resume to start from — yours on
+ * the left with a search, a sort and pages, the base picked first; on the right other ways to start.
+ * The original is never changed; tailoring makes a new version.
  */
 export function ResumeStep({
   job,
@@ -42,6 +41,8 @@ export function ResumeStep({
   onContinue,
   backHref,
   copy,
+  blankHref,
+  profileHref,
 }: {
   /** Another flow's words for the same step: the cover letter's, the ATS check's. */
   copy?: { title: string; lede: string; of: number; note?: string };
@@ -54,6 +55,10 @@ export function ResumeStep({
   onPick: (resumeId: string) => void;
   onContinue: () => void;
   backHref: Route;
+  /** "Start from a blank resume": Zero Resume for this job. */
+  blankHref?: Route;
+  /** "Use my profile": a build from the profile for this job. */
+  profileHref?: Route;
 }) {
   const company = job.company.trim();
   return (
@@ -63,61 +68,36 @@ export function ResumeStep({
           <StepHeading
             id="resume-step"
             step={2}
-            of={copy?.of ?? 4}
-            title={copy?.title ?? 'Which resume should we start from?'}
+            of={copy?.of ?? 3}
+            title={copy?.title ?? 'Choose a starting resume'}
             lede={
               copy?.lede ??
-              `We’ll compare it with ${company ? `${company}’s` : 'this'} job next. Your original stays as it is — we make a new version.`
+              `Select a resume to use as a base. We’ll tailor it for the ${job.title} role${company ? ` at ${company}` : ''}.`
             }
           />
         </div>
-        <div className="grid divide-y divide-border-subtle lg:grid-cols-5 lg:divide-x lg:divide-y-0">
-          <div className="flex min-w-0 flex-col gap-3 px-8 pb-8 pt-6 lg:col-span-3 lg:pl-8">
-            <ColumnHead
-              art={<NavDocumentsIllustration className="h-auto w-11" />}
-              title="Your resumes"
-              subtitle="Your base resume is picked first"
+        <div className="grid divide-y divide-border-subtle lg:grid-cols-[minmax(0,13fr)_minmax(0,6fr)] lg:divide-x lg:divide-y-0">
+          <div className="min-w-0 px-8 pb-8 pt-6">
+            <ResumePicker
+              resumes={resumes}
+              loading={loading}
+              failed={failed}
+              onRetry={onRetry}
+              value={value}
+              onPick={onPick}
             />
-            {failed ? (
-              <StateView
-                tone="danger"
-                title="Couldn't load your resumes"
-                message="Check your connection and try again."
-                actionLabel="Try again"
-                onAction={onRetry}
-              />
-            ) : loading ? (
-              <div className="flex flex-col gap-3" aria-label="Loading your resumes">
-                {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
-                ))}
-              </div>
-            ) : (
-              <div role="radiogroup" aria-label="Your resumes" className="flex flex-col gap-3">
-                {resumes.map((resume) => (
-                  <ResumeRow
-                    key={resume.id}
-                    resume={resume}
-                    on={resume.id === value}
-                    onPick={() => onPick(resume.id)}
-                  />
-                ))}
-              </div>
-            )}
           </div>
-          <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-2 lg:pr-8">
-            <ColumnHead
-              art={<JdArtUploadFileIllustration className="h-auto w-11" />}
-              title="Use another resume"
-              subtitle="Upload one from your computer."
+          <div className="min-w-0 px-8 pb-8 pt-6">
+            <OtherWays
+              onUploaded={onPick}
+              {...(blankHref ? { blankHref } : {})}
+              {...(profileHref ? { profileHref } : {})}
             />
-            <DropZone onRead={onPick} />
-            <Callout>We keep its own sections and order, and save it to Resumes.</Callout>
           </div>
         </div>
       </section>
 
-      <FlowFooter note={copy?.note ?? 'Nothing is spent until you create the resume.'}>
+      <FlowFooter note={copy?.note ?? <TrustNote />}>
         <Link href={backHref} className={backButton}>
           Back
         </Link>

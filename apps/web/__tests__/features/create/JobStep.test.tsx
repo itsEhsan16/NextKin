@@ -27,7 +27,7 @@ describe('Choose the job', () => {
     const user = userEvent.setup();
     renderWithQuery(<JobFlowScreen flow="build" />);
     expect(
-      screen.getByRole('heading', { name: 'Which job is this resume for?' }),
+      screen.getByRole('heading', { name: 'Let’s start with the job' }),
     ).toBeInTheDocument();
     const list = await screen.findByRole('radiogroup', { name: 'Your saved jobs' }, wait);
     const [first, second] = within(list).getAllByRole('radio');
