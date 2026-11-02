@@ -15,7 +15,10 @@
  */
 export interface SecurityHeaderOptions {
   dev: boolean;
-  /** The S3 endpoint override (local only), e.g. http://127.0.0.1:8333. */
+  /**
+   * The S3 endpoint a browser reaches (local only), e.g. http://127.0.0.1:8333: S3_PUBLIC_ENDPOINT
+   * when the server reaches storage by another name, as in Docker, else S3_ENDPOINT.
+   */
   s3Endpoint?: string | undefined;
   awsRegion?: string | undefined;
   /** NEXT_PUBLIC_API_BASE_URL, when the API is on another origin. */

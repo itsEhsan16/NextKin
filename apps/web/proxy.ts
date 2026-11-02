@@ -6,7 +6,8 @@ import { pageSecurityHeaders } from '@/lib/securityHeaders';
 // because the storage origin is runtime configuration: the built image runs locally and in the cloud.
 const headers = pageSecurityHeaders({
   dev: process.env.NODE_ENV === 'development',
-  s3Endpoint: process.env.S3_ENDPOINT,
+  // Where a browser reaches storage, when the server reaches it by a container name (Docker).
+  s3Endpoint: process.env.S3_PUBLIC_ENDPOINT ?? process.env.S3_ENDPOINT,
   awsRegion: process.env.AWS_REGION,
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
 });

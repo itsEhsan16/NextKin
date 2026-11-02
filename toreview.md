@@ -15013,3 +15013,4 @@ Built on branch `step-4/owner-answers`, on top of Step 4 (§148.4). Nothing is p
 - **Scanned resumes failed in the worker image (and the AWS demo).** The OCR models were looked for at `/vendor/tessdata`, because the path was worked out for the source layout; in the bundle they sit one folder up. The lookup now tries both.
 - **The compose file still lacks the settings the web and worker need** (`CURSOR_SECRET` among them), so `pnpm stack:up -- --profile app` crashes. The live run used an override outside the repo. Decide whether to move those settings into `docker-compose.yml`.
 - **Proved live:** sign-up, a pasted job read by Haiku, a resume written by Sonnet, a text PDF and a scanned PDF uploaded, scanned for viruses and read.
+- **The page blocked the upload too.** Its security policy allowed sending data only to the server's storage address, `seaweedfs:8333`. The web now allows `S3_PUBLIC_ENDPOINT` when it is set.
