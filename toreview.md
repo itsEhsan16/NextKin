@@ -14946,3 +14946,36 @@ The server and shared data are ready. Web's pass needs the application status wi
   - **Receiving a share has never run.** Jest covers the logic, not Android's intent or the iOS extension.
   - **Job alerts have only seen Adzuna-shaped test rows.**
   - **The retention number has no real users behind it.**
+
+## 148. Owner's answers to the open calls from Steps 1–4 (owner, 2026-11-02)
+
+None of these is built yet. Each changes what's on the Step 1–4 branches.
+
+### 148.1 To build
+
+- **Saved resumes leave the phone (§145.5).** The owner chose not to keep resumes offline at all, over encrypting them. This removes the Step 2 offline copy (`src/data/savedResumes.ts`, the restore on launch and the wipe on sign-out). A resume then needs a connection to open, and the "no connection" note should say so.
+- **A failed payment always pushes (§147.2).** Only that one billing event ignores the Plan & billing switch. Receipts and renewals still follow it.
+- **Web gets a notification feed page (§144.2)**, in web's own pass before the joint launch.
+- **Profile rows show their source only when it needs a look (§146.3).** "Parsed, confirm" and "Assumed" stay. "Confirmed" rows show nothing, and the source still shows on a tap.
+- **AI lines are washed light purple (§146.4).** The owner chose this over a written hint, so people can see what was added. It needs a theme token for the wash, and a rule for which lines count: lines the AI wrote, reworded or assumed, but not the candidate's own words.
+- **Home's shortcut counts hide at zero (§145.2),** as V2 asks: no zeroed statistics on a new account.
+- **One nudge after the gap questions (§146.7):** "Your profile has new facts. Make this resume again to use them," with one tap to start.
+
+### 148.2 Settled as built
+
+- **robots.txt that can't be fetched still allows the read (§144.3).** The page's own answer decides.
+- **A short read-back saves the file and warns (§146.6).**
+- **The + sheet's "Make a resume for a job" and Home's "Build Resume" stay different (§145.1).**
+- **The plan screen stays without the points bar (§145.4).**
+
+### 148.3 Job alerts when providers arrive (§147.3, for D-12 and X-12)
+
+- **The owner's design:**
+  - Fetch twice a day by active job category, not per person. If people are looking for Software Engineer and Designer roles, fetch those two, and store the results in the shared job store.
+  - Our own engine then filters and ranks those jobs for each person: desired roles, skills, experience, location, salary and other preferences.
+  - Each person gets about 7–10 recommendations, each with why it matches.
+- **This changes the batch:** it reads that store rather than whatever someone searched. The daily count becomes a list of 7–10 with reasons, so the push and feed row need new words.
+- **Open for D-12:**
+  - What makes a category active, and how categories map to provider queries per country.
+  - Whether Adzuna's terms allow holding a twice-daily fetch (V2 §7.13 allows 24–72 hour caching of display metadata only).
+  - The reasons must come from the match engine, not the model (G13–G18).
