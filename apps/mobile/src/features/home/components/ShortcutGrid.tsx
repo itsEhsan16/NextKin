@@ -83,13 +83,16 @@ const LABEL_GAP = 6.4;
  */
 function spokenValue(key: Shortcut, stats: DashboardStats | undefined): string | undefined {
   if (!stats) return undefined;
+  // No zeroed statistics on a new account (V2 §7.2; owner, toreview §148.1): a count shows once it's
+  // above zero, and the tile is still the way in.
+  const counted = (count: number, text: string) => (count > 0 ? text : undefined);
   switch (key) {
     case 'my-resumes':
-      return pluralize(stats.resumesCount, 'Resume');
+      return counted(stats.resumesCount, pluralize(stats.resumesCount, 'Resume'));
     case 'history':
-      return pluralize(stats.activitiesCount, 'Activity', 'Activities');
+      return counted(stats.activitiesCount, pluralize(stats.activitiesCount, 'Activity', 'Activities'));
     case 'saved-jobs':
-      return `${stats.savedJobsCount} Saved`;
+      return counted(stats.savedJobsCount, `${stats.savedJobsCount} Saved`);
     case 'interview-prep':
       return undefined;
   }
