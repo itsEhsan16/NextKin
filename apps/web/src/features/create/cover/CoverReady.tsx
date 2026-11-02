@@ -16,7 +16,7 @@ import { LetterPage } from '@/features/editor/preview/LetterPage';
 import { DownloadPrompts } from '@/features/resumes/components/DownloadPrompts';
 import { resumeEditorHref } from '@/features/resumes/resumeHref';
 import { useConfirmedDownload } from '@/features/resumes/useConfirmedDownload';
-import { JobLogoTile } from '@/features/tailor/flow/CompareStep';
+import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { cn } from '@/lib/cn';
 import { Callout } from '@/ui/Callout';
 import { showToast } from '@/lib/toast';

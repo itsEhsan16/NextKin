@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { ResumeStep } from '@/features/tailor/flow/ResumeStep';
-import { JobLogoTile } from '@/features/tailor/flow/CompareStep';
+import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { tailorPath, useTailorTarget, type TailorTargetRef } from '@/features/tailor/tailorTarget';
 import { cn } from '@/lib/cn';
 import { CoverLetterIllustration } from '@/ui/illustrations';

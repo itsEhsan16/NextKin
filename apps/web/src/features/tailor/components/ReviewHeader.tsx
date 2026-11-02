@@ -18,7 +18,7 @@ import { StableLabel } from '@/ui/StableLabel';
 
 import type { Job } from '@nextkin/shared/models';
 
-import { JobLogoTile } from '../flow/CompareStep';
+import { JobLogoTile } from '../flow/EntityRow';
 import { fitMessage } from './FitToPage';
 
 const BUTTON = 'h-control-md gap-2 rounded-md px-4 text-body-m font-semibold';

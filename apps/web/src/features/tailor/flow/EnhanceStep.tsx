@@ -1,6 +1,6 @@
 'use client';
 
-import type { Job, TailorComparison, TailorFix } from '@nextkin/shared/models';
+import type { Job, Resume, TailorComparison, TailorFix } from '@nextkin/shared/models';
 import { projectedScore } from '@nextkin/shared/tailor/customize';
 import type { Route } from 'next';
 import Link from 'next/link';
@@ -22,6 +22,9 @@ import { NavAiAssistantIllustration, ProfileSkillsIllustration } from '@/ui/illu
 
 import type { TailorChoices } from '../useTailorRun';
 import { EXPERIENCE_DEPTH_LABEL, FIX_ROWS } from '../tailorLibrary';
+import { EnhanceHeader } from './EnhanceHeader';
+import { FullPlan } from './FullPlan';
+import { RealResults } from './RealResults';
 
 const linkButton = cn(textLink, 'text-body-m');
 
@@ -46,13 +49,17 @@ function partLine(
 }
 
 /**
- * W-FLOW 04 (852:2), step 4: choose what to add — every keyword from the job, the missing ones to
- * tick (and, for each, where it was used), the ones already on the resume, and on the right what
+ * W-FLOW 04 (852:2), now the one step after picking a resume (owner, 2026-11-02, toreview §149):
+ * the job against the resume with its score, every keyword from the job to tick (and where each
+ * goes), the lines to finish with a real result, the full plan a link away, and on the right what
  * the AI will change, the projection and the honesty note. Then Create my resume.
  */
 export function EnhanceStep({
   job,
   comparison,
+  resume,
+  onChangeResume,
+  onToggle,
   choices,
   allowanceNote,
   spent,
@@ -62,6 +69,9 @@ export function EnhanceStep({
 }: {
   job: Job;
   comparison: TailorComparison;
+  resume: Resume | undefined;
+  onChangeResume: () => void;
+  onToggle: (keyword: string, on: boolean) => void;
   choices: TailorChoices;
   allowanceNote: string;
   spent: boolean;
@@ -123,12 +133,19 @@ export function EnhanceStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="enhance-step"
-            step={4}
-            of={4}
+            step={3}
+            of={3}
             title="Choose what to add"
             lede="Tick only the keywords you really have. The AI places each one where your experience backs it."
           />
         </div>
+        <EnhanceHeader
+          job={job}
+          resume={resume}
+          onChangeResume={onChangeResume}
+          score={comparison.score}
+          scored={comparison.scored !== false}
+        />
         <div className="grid divide-y divide-border-subtle lg:grid-cols-8 lg:divide-x lg:divide-y-0">
           <div className="flex min-w-0 flex-col gap-4.5 px-8 pb-8 pt-6 lg:col-span-5 lg:pl-8">
             <ColumnHead
@@ -239,6 +256,12 @@ export function EnhanceStep({
                 </div>
               </div>
             )}
+            <RealResults
+              steps={comparison.plan?.steps ?? []}
+              resumeId={comparison.resumeId}
+              figureOf={(b) => choices.figureOf(b.roleId, b.index)}
+              onFigure={(b, text) => choices.setFigure(b.roleId, b.index, text)}
+            />
           </div>
 
           <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-3 lg:pr-8">
@@ -340,6 +363,7 @@ export function EnhanceStep({
             <Callout>{NEVER_ADDS_SKILLS}</Callout>
           </div>
         </div>
+        <FullPlan comparison={comparison} choices={choices} onToggle={onToggle} />
       </section>
 
       <FlowFooter note={allowanceNote}>

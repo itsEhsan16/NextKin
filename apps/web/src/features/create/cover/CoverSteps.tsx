@@ -5,7 +5,7 @@ import type { Route } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { JobLogoTile } from '@/features/tailor/flow/CompareStep';
+import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { cn } from '@/lib/cn';
 import { ArrowRight, Check } from '@/ui/lineIcons';
 import { SparkleIllustration } from '@/ui/illustrations';

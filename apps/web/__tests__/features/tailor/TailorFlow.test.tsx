@@ -6,7 +6,7 @@ import { repos, resetMockRepos } from '@nextkin/shared/repos';
 
 import { JobPageScreen } from '@/features/jobs/screens/JobPageScreen';
 import { TailorScreen, type TailorScreenProps } from '@/features/tailor/screens/TailorScreen';
-import { isTailorStep } from '@/features/tailor/tailorTarget';
+import { parseTailorStep } from '@/features/tailor/tailorTarget';
 import { SAMPLE_JD } from '@/features/upload/uploadLibrary';
 import { Toaster } from '@/ui/Toaster';
 import { renderWithQuery, SETTLE_MS } from '../../../testSupport/render';
@@ -33,7 +33,7 @@ function RoutedTailor(props: TailorScreenProps) {
     navigate = setHref;
   }, []);
   const asked = new URL(href || '/', 'http://nextkin.test').searchParams.get('step');
-  return <TailorScreen {...props} step={isTailorStep(asked) ? asked : props.step} />;
+  return <TailorScreen {...props} step={parseTailorStep(asked) ?? props.step} />;
 }
 
 describe('Job page (724:2)', () => {
@@ -136,7 +136,7 @@ describe('Choosing the resume (toreview §110)', () => {
       'true',
     );
     await user.click(screen.getByRole('button', { name: /Continue/ }));
-    expect(push).toHaveBeenCalledWith('/jobs/job_google/tailor?resumeId=res_pd&step=compare');
+    expect(push).toHaveBeenCalledWith('/jobs/job_google/tailor?resumeId=res_pd&step=enhance');
   });
 });
 
@@ -148,35 +148,31 @@ describe('Tailor flow (734:2, 734:679)', () => {
     push.mockImplementation((href: string) => navigate(href));
   });
 
-  it('compares the base resume, then starts a run with only the keywords ticked', async () => {
+  it('compares and enhances on one step, then starts a run with only the keywords ticked', async () => {
     const user = userEvent.setup();
     const start = jest.spyOn(repos.generations, 'start');
     renderWithQuery(<RoutedTailor target={{ kind: 'job', id: 'job_google' }} resumeId="res_pd" />);
 
-    // Step 3 (toreview §115, §126): the score, where its points go, and the steps by worth.
-    const compare = await screen.findByRole('region', { name: 'Your plan to fit this job' }, wait);
-    expect(within(compare).getByText('Product Designer Resume (base)')).toBeInTheDocument();
-    expect(
-      within(compare).getByRole('img', { name: 'ATS score: 5.6 out of 10' }),
-    ).toBeInTheDocument();
-    expect(within(compare).getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
-    expect(within(compare).getByRole('img', { name: /: \d\.\d of 4\.0$/ })).toBeInTheDocument();
-    expect(within(compare).getByRole('heading', { name: 'Your fix plan' })).toBeInTheDocument();
-    // Prototyping is only in the skills list: a step to show it in a role, worth the other half.
-    expect(within(compare).getByText('Show Prototyping in a role')).toBeInTheDocument();
-    const figma = within(compare).getByText('Add Figma').closest('li')!;
-    // The job's own line asking for it.
-    expect(within(figma).getByText(/^“.*Figma.*”$/)).toBeInTheDocument();
-    expect(within(figma).getByText(/^\+\d\.\d$/)).toBeInTheDocument();
-
-    // "I have this" in the plan is the same tick as step 4's keyword capsule.
-    const have = within(figma).getByRole('button', { name: 'I have this' });
-    await user.click(have);
-    expect(have).toHaveAttribute('aria-pressed', 'true');
-
-    await user.click(screen.getByRole('button', { name: /Continue/ }));
-    expect(push).toHaveBeenCalledWith('/jobs/job_google/tailor?resumeId=res_pd&step=enhance');
+    // One step after the resume (owner, toreview §149): the job against the resume, with its score.
     const enhance = await screen.findByRole('region', { name: 'Choose what to add' }, wait);
+    expect(within(enhance).getByText('Product Designer Resume (base)')).toBeInTheDocument();
+    expect(
+      within(enhance).getByRole('img', { name: 'ATS score: 5.6 out of 10' }),
+    ).toBeInTheDocument();
+    expect(within(enhance).getByRole('button', { name: 'Change' })).toBeInTheDocument();
+
+    // The full plan is a link away, and its ticks are the keywords' ticks.
+    const planLink = within(enhance).getByRole('button', { name: /See the full plan/ });
+    expect(planLink).toHaveAttribute('aria-expanded', 'false');
+    await user.click(planLink);
+    expect(within(enhance).getByRole('button', { name: 'Hide the full plan' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(within(enhance).getByRole('heading', { name: 'Your fix plan' })).toBeInTheDocument();
+    expect(within(enhance).getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
+    const figma = within(enhance).getByText('Add Figma').closest('li')!;
+    await user.click(within(figma).getByRole('button', { name: 'I have this' }));
     expect(within(enhance).getByRole('button', { name: 'Figma' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -195,17 +191,25 @@ describe('Tailor flow (734:2, 734:679)', () => {
     start.mockRestore();
   }, 20000);
 
+  it('opens an old step 3 link on Enhance', async () => {
+    renderWithQuery(
+      <TailorScreen
+        target={{ kind: 'job', id: 'job_google' }}
+        resumeId="res_pd"
+        step={parseTailorStep('compare')}
+      />,
+    );
+    expect(
+      await screen.findByRole('region', { name: 'Choose what to add' }, wait),
+    ).toBeInTheDocument();
+  }, 20000);
+
   it('tailors to a job description the user brought', async () => {
     const user = userEvent.setup();
     const draft = await repos.jd.extract({ source: 'paste', text: SAMPLE_JD });
     renderWithQuery(<RoutedTailor target={{ kind: 'jd', id: draft.id }} resumeId="res_pd" />);
-    const compare = await screen.findByRole('region', { name: 'Your plan to fit this job' }, wait);
-    expect(within(compare).getByText(new RegExp(draft.title))).toBeInTheDocument();
-    expect(within(compare).getByRole('heading', { name: 'Your fix plan' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Continue/ }));
-    expect(
-      await screen.findByRole('region', { name: 'Choose what to add' }, wait),
-    ).toBeInTheDocument();
+    const enhance = await screen.findByRole('region', { name: 'Choose what to add' }, wait);
+    expect(within(enhance).getAllByText(new RegExp(draft.title)).length).toBeGreaterThan(0);
     await user.click(screen.getByRole('button', { name: /Create my resume/ }));
     await waitFor(
       () =>

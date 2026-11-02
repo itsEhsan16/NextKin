@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 
-import { isTailorStep, type TailorTargetRef } from '../tailorTarget';
+import { parseTailorStep, type TailorTargetRef } from '../tailorTarget';
 import { TailorScreen } from './TailorScreen';
 
 /**
@@ -25,7 +25,7 @@ export function TailorRoute({ target }: { target: TailorTargetRef }) {
       {...(resumeId ? { resumeId } : {})}
       {...(run ? { runId: run } : {})}
       {...(build ? { build } : {})}
-      {...(isTailorStep(step) ? { step } : {})}
+      {...(parseTailorStep(step) ? { step: parseTailorStep(step) } : {})}
     />
   );
 }

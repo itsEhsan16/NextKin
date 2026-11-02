@@ -23,8 +23,8 @@ import { StateView } from '@/ui/StateView';
 
 import { TailorResumeDialog } from '../components/TailorResumeDialog';
 import { TailorRunView } from '../components/TailorRunView';
-import { BuildCompareStep, BuildEnhanceStep } from '../flow/BuildSteps';
-import { CompareStep, JobLogoTile } from '../flow/CompareStep';
+import { BuildEnhanceStep } from '../flow/BuildSteps';
+import { JobLogoTile } from '../flow/EntityRow';
 import { EnhanceStep } from '../flow/EnhanceStep';
 import { ResumeStep, UploadRow } from '../flow/ResumeStep';
 import { BuildStep, NoResumeStep } from '../flow/StartStep';
@@ -38,8 +38,8 @@ import {
 } from '../tailorTarget';
 import { useTailorChoices, useTailorRun } from '../useTailorRun';
 
-const STEPS = ['Job', 'Resume', 'Compare', 'Enhance'] as const;
-const STEP_INDEX: Record<TailorStep, number> = { resume: 1, compare: 2, enhance: 3 };
+const STEPS = ['Job', 'Resume', 'Enhance'] as const;
+const STEP_INDEX: Record<TailorStep, number> = { resume: 1, enhance: 2 };
 
 export type TailorScreenProps = {
   target: TailorTargetRef;
@@ -79,7 +79,7 @@ export function TailorScreen({
   const builder = useBuildFlow(target, build);
   const [choosing, setChoosing] = useState(false);
 
-  const step: TailorStep = asked ?? (requested ? 'compare' : 'resume');
+  const step: TailorStep = asked ?? (requested ? 'enhance' : 'resume');
   const go = (next: TailorStep, id: string = resumeId) =>
     router.push(
       tailorPath(
@@ -161,7 +161,7 @@ export function TailorScreen({
         <BuildStep
           job={job}
           profile={builder.profile.data}
-          onBuild={() => go('compare')}
+          onBuild={() => go('enhance')}
           zeroHref={zeroHref}
           backHref={backHref}
           resumeCount={tailorable.length}
@@ -173,10 +173,10 @@ export function TailorScreen({
         <NoResumeStep
           job={job}
           profile={builder.profile.data}
-          onBuild={() => router.push(tailorPath(target, { step: 'compare', mode: 'build' }))}
+          onBuild={() => router.push(tailorPath(target, { step: 'enhance', mode: 'build' }))}
           zeroHref={zeroHref}
           backHref={backHref}
-          onUploaded={(id) => go('compare', id)}
+          onUploaded={(id) => go('enhance', id)}
         />
       );
     else
@@ -189,28 +189,17 @@ export function TailorScreen({
           onRetry={() => void resumes.refetch()}
           value={resumeId}
           onPick={pick}
-          onContinue={() => go('compare')}
+          onContinue={() => go('enhance')}
           backHref={backHref}
         />
       );
   } else if (build) {
-    const back = tailorPath(target, {
-      step: step === 'enhance' ? 'compare' : 'resume',
-      mode: 'build',
-    });
+    const back = tailorPath(target, { step: 'resume', mode: 'build' });
     if (!builder.comparison) body = wait;
-    else if (step === 'compare')
-      body = (
-        <BuildCompareStep
-          job={job}
-          comparison={builder.comparison}
-          backHref={back}
-          onContinue={() => go('enhance')}
-        />
-      );
     else
       body = (
         <BuildEnhanceStep
+          job={job}
           comparison={builder.comparison}
           added={builder.added}
           onAdded={builder.setAdded}
@@ -223,39 +212,26 @@ export function TailorScreen({
       );
   } else if (comparison.data) {
     const measured = comparison.data;
-    const back = tailorPath(
-      target,
-      step === 'enhance' ? { step: 'compare', resumeId } : { step: 'resume', resumeId },
-    );
+    const back = tailorPath(target, { step: 'resume', resumeId });
     const toggle = (keyword: string, on: boolean) =>
       choices.setAdded(
         on ? [...choices.added, keyword] : choices.added.filter((k) => k !== keyword),
       );
-    body =
-      step === 'compare' ? (
-        <CompareStep
-          job={job}
-          comparison={measured}
-          resume={tailorable.find((r) => r.id === resumeId)}
-          onChangeResume={() => setChoosing(true)}
-          choices={choices}
-          onToggle={toggle}
-          allowanceNote={`We only add skills you tick. ${left} of ${limit} tailored resumes left this month.`}
-          backHref={back}
-          onContinue={() => go('enhance')}
-        />
-      ) : (
-        <EnhanceStep
-          job={job}
-          comparison={measured}
-          choices={choices}
-          allowanceNote={quota}
-          spent={spent}
-          pending={tailor.pending}
-          backHref={back}
-          onCreate={() => !spent && tailor.create(measured, choices.choices)}
-        />
-      );
+    body = (
+      <EnhanceStep
+        job={job}
+        comparison={measured}
+        resume={tailorable.find((r) => r.id === resumeId)}
+        onChangeResume={() => setChoosing(true)}
+        onToggle={toggle}
+        choices={choices}
+        allowanceNote={quota}
+        spent={spent}
+        pending={tailor.pending}
+        backHref={back}
+        onCreate={() => !spent && tailor.create(measured, choices.choices)}
+      />
+    );
   }
 
   const done = runId && run.data?.status === 'ready';

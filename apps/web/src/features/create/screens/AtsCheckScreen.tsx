@@ -11,7 +11,7 @@ import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 
 import { tailorPath, useTailorTarget } from '@/features/tailor/tailorTarget';
-import { JobLogoTile } from '@/features/tailor/flow/CompareStep';
+import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { cn } from '@/lib/cn';
 import { AtsCheckIllustration } from '@/ui/illustrations';
 import { outlineButton } from '@/ui/outlineButton';
@@ -116,12 +116,12 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
       const fixHref = g.jobId
         ? tailorPath(
             { kind: 'job', id: g.jobId },
-            { resumeId: g.sourceResumeId ?? '', step: 'compare' },
+            { resumeId: g.sourceResumeId ?? '', step: 'enhance' },
           )
         : g.jdId
           ? tailorPath(
               { kind: 'jd', id: g.jdId },
-              { resumeId: g.sourceResumeId ?? '', step: 'compare' },
+              { resumeId: g.sourceResumeId ?? '', step: 'enhance' },
             )
           : undefined;
       return frame(

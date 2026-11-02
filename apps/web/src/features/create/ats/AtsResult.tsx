@@ -12,7 +12,7 @@ import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
 import type { Route } from 'next';
 import Link from 'next/link';
 
-import { JobLogoTile } from '@/features/tailor/flow/CompareStep';
+import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { cn } from '@/lib/cn';
 import { Callout } from '@/ui/Callout';
 import { iconButton } from '@/ui/iconButton';

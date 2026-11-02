@@ -15014,3 +15014,10 @@ Built on branch `step-4/owner-answers`, on top of Step 4 (§148.4). Nothing is p
 - **The compose file still lacks the settings the web and worker need** (`CURSOR_SECRET` among them), so `pnpm stack:up -- --profile app` crashes. The live run used an override outside the repo. Decide whether to move those settings into `docker-compose.yml`.
 - **Proved live:** sign-up, a pasted job read by Haiku, a resume written by Sonnet, a text PDF and a scanned PDF uploaded, scanned for viruses and read.
 - **The page blocked the upload too.** Its security policy allowed sending data only to the server's storage address, `seaweedfs:8333`. The web now allows `S3_PUBLIC_ENDPOINT` when it is set.
+
+## 149. Web: one Enhance step, and results by picking (owner, 2026-11-02)
+
+Branch `web/one-enhance-step`, on top of `step-4/owner-answers`. Nothing is merged or pushed.
+
+- **The flow is Job, Resume, Enhance.** Step 3 (W-FLOW 03, "Your plan to fit this job") folded into Enhance, which gains a header row (the job against the resume, Change, the ATS score now), an "Add real results" list, and the points bar and full fix plan behind "See the full plan". **The W-FLOW 03 board is no longer a step.** An old `step=compare` link opens Enhance. Build Resume does the same: its comparison is the header, and "What the build improves" is behind a link.
+- **Results by picking.** "Add the result" asks what improved (Made it faster, Saved money, Reached more people, Fewer errors or bugs), then roughly how much, and code builds the line, for example "…, cutting costs by about 25

@@ -106,7 +106,7 @@ describe('ATS Check', () => {
     expect(screen.getByText('What would raise it')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Fix it for this job' })).toHaveAttribute(
       'href',
-      `/jd/${draft.id}/tailor?resumeId=res_pd&step=compare`,
+      `/jd/${draft.id}/tailor?resumeId=res_pd&step=enhance`,
     );
     expect(screen.getByRole('link', { name: 'Check another' })).toHaveAttribute(
       'href',
