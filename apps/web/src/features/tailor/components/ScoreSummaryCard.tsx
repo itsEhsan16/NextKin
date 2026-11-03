@@ -19,8 +19,8 @@ const tenths = (score: number) => (score / 10).toFixed(1);
 /**
  * The review's score card (toreview §121, from the owner's mockup): the ring, the band in words,
  * what it rests on — the job's key keywords the resume shows, and how the score moved — then one
- * plain next step. Every number is the run's own (G17). When the plan promised a score for the
- * user's answers (toreview §129), the card says whether the run met it, and plainly when it didn't.
+ * plain next step. Every number is the run's own (G17). A plan score the run missed (toreview §129)
+ * is still said, in a few words (owner, 2026-11-04: "too much unnecessary text").
  */
 export function ScoreSummaryCard({
   score,
@@ -52,22 +52,18 @@ export function ScoreSummaryCard({
     baseline == null
       ? null
       : score > baseline
-        ? `Up from ${tenths(baseline)}.`
+        ? `Up from ${tenths(baseline)}`
         : score < baseline
-          ? `Down from ${tenths(baseline)}.`
-          : 'The same as before.';
-  // A point of rounding either way is the same promise kept.
+          ? `Down from ${tenths(baseline)}`
+          : 'Same as before';
+  // A point of rounding either way is the same promise kept; a miss is said, briefly.
   const promise =
-    projected == null
-      ? null
-      : score >= projected - 1
-        ? `The plan promised ${tenths(projected)}.`
-        : `The plan promised ${tenths(projected)}; this version reached less. See what changed, or ask the assistant to add what’s missing.`;
+    projected != null && score < projected - 1 ? `Plan aimed for ${tenths(projected)}` : null;
   const missing = match?.missing ?? [];
   const tip =
     missing.length === 0
-      ? 'Every key keyword of this job is on your resume. Make the bullets show results to stand out further.'
-      : `Still missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ` and ${missing.length - 3} more` : ''}. Add ${missing.length === 1 ? 'it' : 'them'} only if ${missing.length === 1 ? 'it’s' : 'they’re'} true.`;
+      ? 'All key keywords are in. Add results to stand out.'
+      : `Missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ` +${missing.length - 3}` : ''}. Add only what’s true.`;
   const good = band === 'strong' || band === 'good';
   return (
     // Compact: it is the one fixed block above the assistant, which takes the rest (toreview §122).
@@ -97,11 +93,13 @@ export function ScoreSummaryCard({
           )}
         </div>
         <p className="mt-1 text-body-m text-text-secondary">
-          {match
-            ? `Your resume shows ${match.matched} of this job’s ${match.total} key keywords.`
-            : 'Your score for this job.'}
-          {moved ? ` ${moved}` : ''}
-          {promise ? ` ${promise}` : ''}
+          {[
+            match ? `${match.matched} of ${match.total} key keywords` : 'Your score for this job',
+            moved,
+            promise,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         </p>
         <p
           className={cn(

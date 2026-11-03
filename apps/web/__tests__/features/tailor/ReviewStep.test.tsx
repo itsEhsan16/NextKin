@@ -56,7 +56,7 @@ describe('the tailored resume, ready', () => {
     expect(
       within(score).getByRole('img', { name: 'ATS score: 7.1 out of 10' }),
     ).toBeInTheDocument();
-    expect(within(score).getByText(/Up from 5\.3\./)).toBeInTheDocument();
+    expect(within(score).getByText(/Up from 5\.3/)).toBeInTheDocument();
     // Already saved: the pill opens it in Resumes; the main actions sit beside it.
     expect(screen.getByRole('link', { name: 'Saved to Resumes' })).toHaveAttribute(
       'href',
@@ -83,7 +83,7 @@ describe('the tailored resume, ready', () => {
     const user = userEvent.setup();
     const pasted: Job = { ...job, applyUrl: undefined, sourceUrl: undefined, companyWebsite: '' };
     renderWithQuery(<ReviewStep job={pasted} generation={run({ score: 49 })} user={undefined} />);
-    expect(await screen.findByText(/Down from 5\.3\./, {}, wait)).toBeInTheDocument();
+    expect(await screen.findByText(/Down from 5\.3/, {}, wait)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'More actions' }));
     expect(await screen.findByRole('menuitem', { name: 'Open in Resumes' })).toBeInTheDocument();
     expect(screen.queryByRole('menuitem', { name: /Apply on/ })).not.toBeInTheDocument();
