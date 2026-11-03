@@ -109,7 +109,7 @@ export const jdStructuredSchema = z
           importance,
         }),
       )
-      .max(80),
+      .max(120),
     education: z.array(text.extend({ importance })).max(20),
     languages: z
       .array(

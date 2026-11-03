@@ -24,8 +24,9 @@ import type { PromptVersion } from '../../services/prompts';
  * (`jd:<version>:<hash>`), so the same JD pasted twice makes one model call (§9.11).
  */
 
-const quote = z.string().trim().min(1).max(400);
-const said = z.object({ text: z.string().trim().min(1).max(200), quote });
+// Duties are copied whole, and a posting's duty lines can run past 200 characters (toreview §159).
+const quote = z.string().trim().min(1).max(600);
+const said = z.object({ text: z.string().trim().min(1).max(600), quote });
 const importance = z.enum(['required', 'preferred']);
 
 /**
@@ -51,7 +52,7 @@ export const jdExtractionSchema = z.object({
   negotiable: z.object({ quote }).nullable(),
   experience: z.array(said).max(10),
   responsibilities: z.array(said.extend({ group: z.string().max(80).nullable() })).max(40),
-  skills: z.array(z.object({ name: z.string().trim().min(1).max(120), quote, category: z.enum(['language', 'framework', 'database', 'cloud', 'tool', 'api', 'domain', 'soft', 'other']), importance })).max(60),
+  skills: z.array(z.object({ name: z.string().trim().min(1).max(120), quote, category: z.enum(['language', 'framework', 'database', 'cloud', 'tool', 'api', 'domain', 'soft', 'other']), importance })).max(100),
   education: z.array(said.extend({ importance })).max(10),
   languages: z.array(z.object({ name: z.string().trim().min(1).max(60), quote, importance, level: z.enum(['basic', 'intermediate', 'advanced', 'fluent', 'native']).nullable() })).max(8),
   benefits: z.array(said).max(30),

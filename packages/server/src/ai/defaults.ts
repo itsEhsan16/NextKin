@@ -14,8 +14,9 @@ import type { Prices, Routing } from './routing';
 // Version 4 (toreview §110.4): the resume reader copies every bullet word for word, so its answer
 // is longer than the fields it read before: 8000 tokens out.
 // Version 5 (toreview §153): the job reader places the whole posting, each fact quoted: 8000 out.
+// Version 6 (toreview §159): it also lists the posting's themes; a long posting reaches ~7.5k: 12000.
 export const ROUTING_DEFAULT: Routing = {
-  version: 5,
+  version: 6,
   stages: {
     default: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
@@ -51,8 +52,8 @@ export const ROUTING_DEFAULT: Routing = {
     ],
     // The fast tier: extraction and KB candidates, where code verifies what the model read.
     jd_extract: [
-      { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 8000, inputBudgetTokens: 12000, temperature: 0 },
-      { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 8000, inputBudgetTokens: 12000, temperature: 0 },
+      { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 12000, inputBudgetTokens: 12000, temperature: 0 },
+      { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 12000, inputBudgetTokens: 12000, temperature: 0 },
     ],
     // "Add the result" drafts (toreview §129): one bullet in, one bullet out; code checks it.
     figure_draft: [
