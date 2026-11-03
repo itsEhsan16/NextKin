@@ -15178,7 +15178,7 @@ The owner: Build Resume and Tailor to a Job had become identical, so remove Tail
 
 - **Quick Start shows four tiles** (Build Resume, Zero Resume, Cover Letter, ATS Check), as mobile does. Build Resume's step 2 asks how to make the resume: tailor one you have, build from the profile, start from scratch, or upload.
 - **The starting option** is now "Tailor my selected resume" when you have a resume, else "Create from my profile" when the profile lists past jobs, else upload. Before, Build opened on the profile.
-- ** redirects to **, so old links and bookmarks still work, and its route page is gone. The Resumes page's "Tailor to a job" option opens the same flow. The job page's "Tailor my resume" is unchanged: it opens tailoring for that job directly.
-- **Kept on purpose:** Zero Resume stays, because it works without a job. The  art stays in , unused.
+- **`/create/tailor` redirects to `/create/build`**, so old links and bookmarks still work, and its route page is gone. The Resumes page's "Tailor to a job" option opens the same flow. The job page's "Tailor my resume" is unchanged: it opens tailoring for that job directly.
+- **Kept on purpose:** Zero Resume stays, because it works without a job. The `TailorToAJobIllustration` art stays in `ui/illustrations`, unused.
 - **Wording:** the flow's first step now says "tailor a resume you have or build a new one".
 - **Not verified in a browser.** Web tests pass (427).
