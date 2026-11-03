@@ -15182,3 +15182,12 @@ The owner: Build Resume and Tailor to a Job had become identical, so remove Tail
 - **Kept on purpose:** Zero Resume stays, because it works without a job. The `TailorToAJobIllustration` art stays in `ui/illustrations`, unused.
 - **Wording:** the flow's first step now says "tailor a resume you have or build a new one".
 - **Not verified in a browser.** Web tests pass (427).
+
+## 156. Web: the Add-a-new-job tabs (owner, 2026-11-03)
+
+The owner: the white pill on "Upload file" ran past the right edge of its track, and the step changed size when switching between paste, link and file.
+
+- **The pill:** a filling SegmentedControl let its segments keep their full width, so three long labels pushed the last segment, and the thumb with it, out of the track. Filling segments now grow from their own width and may shrink, with 12px padding instead of 16px. A label that still doesn't fit is cut with an ellipsis instead of overflowing. This applies everywhere the control fills its track.
+- **The size:** the three tab bodies now share one grid cell. Only the chosen one is seen, read out or focusable (the others are invisible, aria-hidden and inert), so the box is always as tall as the tallest tab, the paste box with its counter. The file drop zone stretches to fill it.
+- **Checked elsewhere:** the job, application and resume detail panels and the preview panes switch tabs inside fixed, scrolling frames, so they keep their size. The list filters (Applications, Documents, Resumes, Help, the cover letter's resume list) show different numbers of rows per tab by nature, and were left as they are.
+- **Not verified in a browser.** Web tests pass (428).

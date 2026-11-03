@@ -66,6 +66,19 @@ describe('the redesigned start screens (toreview §150)', () => {
     );
   });
 
+  it('keeps every way to add a job in one box, so switching never resizes it (toreview §156)', async () => {
+    const user = userEvent.setup();
+    renderWithQuery(<JobFlowScreen flow="build" />);
+    await screen.findByRole('radiogroup', { name: 'Your saved jobs' }, wait);
+    const paste = screen.getByRole('textbox', { name: 'Job description or link' });
+    await user.click(screen.getByRole('tab', { name: /Paste job link/ }));
+    // The paste box stays in place, unseen and out of reach, holding the box's height.
+    expect(paste.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(paste.closest('[inert]')).not.toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Job description or link' })).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'Job link' })).toBeVisible();
+  });
+
   it('lists resumes five a page, splits yours from all, sorts and searches', async () => {
     const user = userEvent.setup();
     const list = [

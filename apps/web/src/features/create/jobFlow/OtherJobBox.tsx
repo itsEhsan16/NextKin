@@ -1,7 +1,7 @@
 'use client';
 
 import type { JdInput } from '@nextkin/shared/models';
-import { useRef, useState, type DragEvent } from 'react';
+import { useRef, useState, type DragEvent, type ReactNode } from 'react';
 
 import { looksLikeLink } from '@/features/upload/components/JobInput';
 import { PickedFile } from '@/features/upload/components/PickedFile';
@@ -72,6 +72,19 @@ const TABS: readonly Segment<Tab>[] = [
 const box =
   'rounded-xl border bg-neutral-50/60 transition-[background-color,border-color,box-shadow] duration-base ease-standard focus-within:border-border-selected focus-within:bg-surface-card focus-within:ring-4 focus-within:ring-brand-100';
 
+/** One tab's body, stacked with the others: only the chosen one is seen, heard or focusable. */
+function TabPane({ on, children }: { on: boolean; children: ReactNode }) {
+  return (
+    <div
+      aria-hidden={!on}
+      inert={!on}
+      className={cn('col-start-1 row-start-1 flex flex-col', !on && 'invisible')}
+    >
+      {children}
+    </div>
+  );
+}
+
 /**
  * W-FLOW 01's "Add a new job" (849:289, redesigned in toreview §150): paste the description, paste
  * its link, or upload a file, one tab each, then Analyze job. Writing here picks it over a saved job.
@@ -129,81 +142,87 @@ export function OtherJobBox({
         fill
       />
 
-      {tab === 'paste' && (
-        <div className="flex flex-col gap-1.5">
-          <div className={cn(box, border, 'flex min-h-44 p-4')}>
-            <textarea
-              aria-label="Job description or link"
-              value={typed}
-              maxLength={MAX_JD_CHARS}
-              readOnly={busy}
-              aria-busy={busy || undefined}
-              onChange={(event) => onChange({ text: event.target.value, file: null })}
-              placeholder="Paste the full job description here…"
-              className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
-            />
-          </div>
-          <p className="self-end text-body-s font-medium text-text-tertiary">
-            {typed.length.toLocaleString('en-US')} / {MAX_JD_CHARS.toLocaleString('en-US')}
-          </p>
-        </div>
-      )}
-
-      {tab === 'link' && (
-        <label className={cn(box, border, 'flex items-center gap-2.5 px-4 py-3')}>
-          <Link01 aria-hidden className={cn(iconSize.sm, 'text-text-tertiary')} />
-          <input
-            type="url"
-            aria-label="Job link"
-            value={typed}
-            readOnly={busy}
-            onChange={(event) => onChange({ text: event.target.value, file: null })}
-            placeholder="https://careers.example.com/jobs/123"
-            className="min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-text-tertiary"
-          />
-        </label>
-      )}
-
-      {tab === 'file' && (
-        <div
-          onDragOver={(event) => {
-            event.preventDefault();
-            if (!busy) setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={drop}
-          className={cn(
-            box,
-            border,
-            'flex min-h-44 flex-col items-center justify-center gap-2.5 border-dashed p-4 text-center',
-            dragging && 'bg-surface-brand',
-          )}
-        >
-          {value.file ? (
-            <div className="w-full">
-              <PickedFile
-                file={value.file}
-                reading={busy}
-                onRemove={() => onChange(emptyOtherJob)}
+      {/* Every tab's body in one grid cell: the box is as tall as the tallest, so switching tabs
+          never resizes the step (owner, toreview §156). */}
+      <div className="grid">
+        <TabPane on={tab === 'paste'}>
+          <div className="flex flex-col gap-1.5">
+            <div className={cn(box, border, 'flex min-h-44 p-4')}>
+              <textarea
+                aria-label="Job description or link"
+                value={typed}
+                maxLength={MAX_JD_CHARS}
+                readOnly={busy}
+                aria-busy={busy || undefined}
+                onChange={(event) => onChange({ text: event.target.value, file: null })}
+                placeholder="Paste the full job description here…"
+                className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
               />
             </div>
-          ) : (
-            <>
-              <Button
-                variant="secondary"
-                disabled={busy}
-                icon={<UploadCloud02 aria-hidden className={cn(iconSize.sm, 'text-text-brand')} />}
-                onClick={() => fileInput.current?.click()}
-              >
-                Upload a file
-              </Button>
-              <span className="text-body-s font-medium text-text-tertiary">
-                or drop one here · PDF, DOC or DOCX
-              </span>
-            </>
-          )}
-        </div>
-      )}
+            <p className="self-end text-body-s font-medium text-text-tertiary">
+              {typed.length.toLocaleString('en-US')} / {MAX_JD_CHARS.toLocaleString('en-US')}
+            </p>
+          </div>
+        </TabPane>
+
+        <TabPane on={tab === 'link'}>
+          <label className={cn(box, border, 'flex items-center gap-2.5 px-4 py-3')}>
+            <Link01 aria-hidden className={cn(iconSize.sm, 'text-text-tertiary')} />
+            <input
+              type="url"
+              aria-label="Job link"
+              value={typed}
+              readOnly={busy}
+              onChange={(event) => onChange({ text: event.target.value, file: null })}
+              placeholder="https://careers.example.com/jobs/123"
+              className="min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-text-tertiary"
+            />
+          </label>
+        </TabPane>
+
+        <TabPane on={tab === 'file'}>
+          <div
+            onDragOver={(event) => {
+              event.preventDefault();
+              if (!busy) setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={drop}
+            className={cn(
+              box,
+              border,
+              'flex min-h-44 flex-1 flex-col items-center justify-center gap-2.5 border-dashed p-4 text-center',
+              dragging && 'bg-surface-brand',
+            )}
+          >
+            {value.file ? (
+              <div className="w-full">
+                <PickedFile
+                  file={value.file}
+                  reading={busy}
+                  onRemove={() => onChange(emptyOtherJob)}
+                />
+              </div>
+            ) : (
+              <>
+                <Button
+                  variant="secondary"
+                  disabled={busy}
+                  icon={
+                    <UploadCloud02 aria-hidden className={cn(iconSize.sm, 'text-text-brand')} />
+                  }
+                  onClick={() => fileInput.current?.click()}
+                >
+                  Upload a file
+                </Button>
+                <span className="text-body-s font-medium text-text-tertiary">
+                  or drop one here · PDF, DOC or DOCX
+                </span>
+              </>
+            )}
+          </div>
+        </TabPane>
+      </div>
       <input
         ref={fileInput}
         type="file"

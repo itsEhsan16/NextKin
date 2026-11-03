@@ -92,13 +92,15 @@ export function SegmentedControl<T extends string>({
             title={segment.title}
             onClick={() => onChange(segment.id)}
             className={cn(
-              'relative flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 font-semibold transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-              fill && 'flex-1',
+              'relative flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-full font-semibold transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              // Filling the track, segments grow from their own width and may shrink below it, so
+              // three long labels never push the last one (and the thumb) out of the track.
+              fill ? 'min-w-0 flex-auto px-3' : 'px-4',
               selected ? 'text-text-primary' : 'text-text-tertiary hover:text-text-primary',
             )}
           >
             {segment.icon}
-            {segment.label}
+            <span className="min-w-0 truncate">{segment.label}</span>
           </button>
         );
       })}
