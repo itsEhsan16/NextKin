@@ -136,6 +136,7 @@ export const tailorComparisonSchema = z.object({
   pagesEstimated: z.boolean().optional(),
   jobMatch: jobMatchSchema.optional(),
   places: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
+  picks: z.record(z.string(), z.array(z.string())).optional(),
   plan: z
     .object({
       score: z.number(),

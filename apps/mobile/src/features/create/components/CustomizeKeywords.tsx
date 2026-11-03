@@ -59,7 +59,7 @@ export function CustomizeKeywords({ comparison, choices, onChange }: CustomizeKe
       ...(keyword.quote ? { quote: keyword.quote } : {}),
     }));
   const toggle = (label: string, on: boolean) =>
-    onChange(tickKeyword(choices, label, on, comparison.plan));
+    onChange(tickKeyword(choices, label, on, comparison.picks));
 
   const offered = [...groups.top, ...groups.soft, ...(moreOpen ? groups.more : [])].map(
     (keyword) => keyword.label,
@@ -141,7 +141,7 @@ export function CustomizeKeywords({ comparison, choices, onChange }: CustomizeKe
           <Button
             label={allOn ? 'Clear all' : 'Select all'}
             variant="ghost"
-            onPress={() => onChange(toggleAll(choices, offered, comparison.plan))}
+            onPress={() => onChange(toggleAll(choices, offered, comparison.picks))}
           />
         ) : null}
         {adding ? null : (

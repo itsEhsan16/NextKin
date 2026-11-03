@@ -2,6 +2,7 @@ import type { TailorComparison } from '@nextkin/shared/models/tailor';
 import { TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
 import { documentText, placesOf } from '@nextkin/shared/scoring/documentFacts';
 import { experienceMonths } from '@nextkin/shared/scoring/pageBudget';
+import { fitPlacesOf } from '@nextkin/shared/scoring/placeFit';
 import { comparisonOf, improvementsFor, keywordsFrom } from '@nextkin/shared/scoring/tailorComparison';
 import { yearsAskedOf } from '@nextkin/shared/scoring/yearsAsked';
 
@@ -52,6 +53,8 @@ export async function compareResumeToJd(db: Database, identity: Identity, jdId: 
       ...(draft.softSkills?.length ? { softSkills: draft.softSkills } : {}),
       resumeText: documentText(doc),
       places: placesOf(doc),
+      fitPlaces: fitPlacesOf(doc),
+      asOf,
     });
   });
 }

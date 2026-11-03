@@ -1,3 +1,4 @@
+import type { PartialDate } from '@nextkin/engines/dates';
 import { phraseKey, wordCount } from '@nextkin/engines/text';
 
 import {
@@ -14,6 +15,7 @@ import { jdLists } from './adapters';
 import type { DocumentScore, ScoringJd } from './report';
 import { fixPlanOf } from './fixPlan';
 import { quoteOf, says } from './jdText';
+import { picksFor, type FitPlace } from './placeFit';
 import { yearsRow, type YearsAsked } from './yearsAsked';
 
 export { quoteOf } from './jdText';
@@ -229,6 +231,9 @@ export function comparisonOf(args: {
   /** All of the resume's text, for whether it says a soft skill. */
   resumeText?: string;
   places?: TailorPlace[];
+  /** The places' own lines, for where each missing keyword fits (toreview §163). */
+  fitPlaces?: readonly FitPlace[];
+  asOf?: PartialDate;
 }): TailorComparison {
   const total = args.result?.score?.total;
   const soft: TailorKeyword[] = (args.softSkills ?? []).map((label) => {
@@ -238,6 +243,7 @@ export function comparisonOf(args: {
   const keywords = [...keywordsFrom(args.result, args.rawText, args.title), ...soft];
   const jobMatch = jobMatchOf(keywords);
   const plan = fixPlanOf({ result: args.result, ...(args.rawText ? { rawText: args.rawText } : {}), improvements: args.improvements });
+  const picks = args.fitPlaces ? picksFor(keywords, args.fitPlaces, args.asOf) : {};
   return {
     resumeId: args.resumeId,
     ...(args.jobId ? { jobId: args.jobId } : {}),
@@ -247,6 +253,7 @@ export function comparisonOf(args: {
     keywords,
     ...(jobMatch ? { jobMatch } : {}),
     ...(args.places?.length ? { places: args.places } : {}),
+    ...(Object.keys(picks).length ? { picks } : {}),
     ...(plan ? { plan } : {}),
     improvements: args.improvements,
     ...(args.pageCount != null ? { pageCount: args.pageCount } : {}),

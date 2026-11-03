@@ -131,11 +131,8 @@ export function ShowInRole({
               where={placed?.where}
               by={placed?.by}
               emptyLabel="Say where you used it"
-              onPlace={(where) =>
-                where
-                  ? choices.placeKeyword(step.keyword, where, 'you')
-                  : choices.setAdded(choices.added.filter((l) => l !== step.keyword))
-              }
+              onToggle={(where, on) => choices.togglePlace(step.keyword, where, on)}
+              onClear={() => choices.setAdded(choices.added.filter((l) => l !== step.keyword))}
             />
           </li>
         );

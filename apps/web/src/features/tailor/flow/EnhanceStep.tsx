@@ -17,13 +17,13 @@ import { Callout } from '@/ui/Callout';
 import { ArrowUp, Check as CheckMark, Stars02, iconSize } from '@/ui/lineIcons';
 import { CollapseFade } from '@/ui/CollapseFade';
 import { ChevronDownIcon } from '@/ui/icons';
-import { FilterCheckboxItem, FilterDropdown } from '@/ui/FilterDropdown';
 import { NavAiAssistantIllustration, ProfileSkillsIllustration } from '@/ui/illustrations';
 
 import type { TailorChoices } from '../useTailorRun';
 import { EXPERIENCE_DEPTH_LABEL, FIX_ROWS } from '../tailorLibrary';
 import { EnhanceHeader } from './EnhanceHeader';
 import { FullPlan } from './FullPlan';
+import { PlacePicker } from './PlacePicker';
 import { MoreFixes, ShowInRole } from './PlanExtras';
 import { RealResults } from './RealResults';
 
@@ -86,16 +86,15 @@ export function EnhanceStep({
   const soft = missing.filter((k) => k.kind === 'soft');
   const labels = missing.map((k) => k.label);
   const allOn = labels.length > 0 && labels.every((l) => choices.added.includes(l));
-  // A tick takes the plan's pick of role when it has one (owner, toreview §129).
-  const pickOf = (label: string) => comparison.plan?.steps.find((s) => s.keyword === label)?.where;
-  const toggle = (label: string) => {
-    if (choices.added.includes(label))
-      return choices.setAdded(choices.added.filter((l) => l !== label));
-    const pick = pickOf(label);
-    if (pick) choices.placeKeyword(label, pick, 'ai');
-    else choices.setAdded([...choices.added, label]);
-  };
-  const tickedHard = hard.filter((k) => choices.added.includes(k.label));
+  // A tick takes the places picked from the resume's own lines (owner, toreview §163); a keyword
+  // that fits nowhere is a skills-list tick, with no row below.
+  const picks = comparison.picks;
+  const toggle = (label: string) => choices.tick(label, !choices.added.includes(label), picks);
+  const placed = hard.filter(
+    (k) =>
+      choices.added.includes(k.label) &&
+      ((picks?.[k.label]?.length ?? 0) > 0 || choices.places[k.label] !== undefined),
+  );
   const places = comparison.places ?? [];
   const steps = comparison.plan?.steps ?? [];
   const off = FIX_ROWS.filter((row) => !choices.fixes.has(row.key));
@@ -158,12 +157,14 @@ export function EnhanceStep({
                   <span className="flex gap-3.5">
                     <button
                       type="button"
+                      disabled={allOn}
                       onClick={() =>
-                        choices.setAdded(
-                          allOn ? [...choices.added] : [...new Set([...choices.added, ...labels])],
+                        choices.tickAll(
+                          labels.filter((l) => !choices.added.includes(l)),
+                          picks,
                         )
                       }
-                      className={cn(linkButton, 'text-text-brand')}
+                      className={cn(linkButton, 'text-text-brand disabled:text-text-tertiary')}
                     >
                       Select all
                     </button>
@@ -181,95 +182,34 @@ export function EnhanceStep({
               }
             />
             {group('Missing from your resume', 'Tick the ones you have', hard)}
-            {tickedHard.length > 0 && (
+            {placed.length > 0 && (
               <div className="flex flex-col rounded-lg bg-neutral-50 pb-3">
-                {tickedHard.map((k) => {
-                  const where = choices.places[k.label]?.where;
-                  const byAi = choices.places[k.label]?.by === 'ai';
-                  const place = places.find((p) => p.id === where);
+                {placed.map((k) => {
+                  const place = choices.places[k.label];
                   return (
                     <div key={k.label} className="flex items-center gap-3 pb-1.5 pl-4 pr-3.5 pt-3">
                       <CheckMark aria-hidden className="size-4 shrink-0 text-text-brand" />
                       <span className="min-w-24 flex-1 truncate text-body-l font-semibold text-text-primary">
                         {k.label}
                       </span>
-                      {places.length > 0 && (
-                        <FilterDropdown
-                          align="end"
-                          trigger={
-                            <button
-                              type="button"
-                              title={place?.label}
-                              className={cn(
-                                'flex min-w-0 max-w-[60%] items-center gap-2 rounded-md border bg-surface-card px-3 py-1.5 text-body-m font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-                                place
-                                  ? 'border-border-brand-strong text-brand-700'
-                                  : 'border-border-default text-text-secondary',
-                              )}
-                            >
-                              <span className="truncate">
-                                {place
-                                  ? `${byAi ? 'AI places it in' : 'Used in'}: ${place.label}`
-                                  : 'Say where (optional)'}
-                              </span>
-                              <ChevronDownIcon
-                                aria-hidden
-                                className="size-3 shrink-0 text-text-tertiary"
-                              />
-                            </button>
-                          }
-                        >
-                          {places.map((p) => (
-                            <FilterCheckboxItem
-                              key={p.id}
-                              checked={p.id === where}
-                              closeOnSelect
-                              onCheckedChange={(on) =>
-                                choices.setPlaces(
-                                  on
-                                    ? {
-                                        ...choices.places,
-                                        [k.label]: { where: p.id, note: '', by: 'you' },
-                                      }
-                                    : Object.fromEntries(
-                                        Object.entries(choices.places).filter(
-                                          ([l]) => l !== k.label,
-                                        ),
-                                      ),
-                                )
-                              }
-                            >
-                              {p.label}
-                            </FilterCheckboxItem>
-                          ))}
-                        </FilterDropdown>
-                      )}
+                      <PlacePicker
+                        places={places}
+                        where={place?.where}
+                        by={place?.by}
+                        onToggle={(where, on) => choices.togglePlace(k.label, where, on)}
+                        onClear={() => choices.clearPlaces(k.label)}
+                      />
                     </div>
                   );
                 })}
                 <p className="pl-10 pt-1.5 text-body-s font-medium text-text-tertiary">
-                  The AI picks the role each fits best; without one it goes in Skills.
+                  The AI chose where each fits from your own lines. Change any; with none chosen it
+                  goes in Skills.
                 </p>
               </div>
             )}
             {group('Soft skills', null, soft)}
-            {have.length > 0 && (
-              <div className="flex flex-col gap-2.5">
-                <p className="text-body-l font-bold text-text-primary">Already on your resume</p>
-                <div className="flex flex-wrap gap-2.5">
-                  {have.map((k) => (
-                    <Capsule key={k.label} label={k.label} state="have" />
-                  ))}
-                </div>
-              </div>
-            )}
             <ShowInRole steps={steps} places={places} choices={choices} />
-            <RealResults
-              steps={steps}
-              resumeId={comparison.resumeId}
-              figureOf={(b) => choices.figureOf(b.roleId, b.index)}
-              onFigure={(b, text) => choices.setFigure(b.roleId, b.index, text)}
-            />
             <MoreFixes steps={steps} resumeId={comparison.resumeId} />
           </div>
 
@@ -374,6 +314,13 @@ export function EnhanceStep({
         </div>
         <FullPlan comparison={comparison} />
       </section>
+
+      <RealResults
+        steps={steps}
+        resumeId={comparison.resumeId}
+        figureOf={(b) => choices.figureOf(b.roleId, b.index)}
+        onFigure={(b, text) => choices.setFigure(b.roleId, b.index, text)}
+      />
 
       <FlowFooter note={allowanceNote}>
         <Link href={backHref} className={backButton}>

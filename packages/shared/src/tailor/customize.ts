@@ -16,8 +16,11 @@ export type { FixPlan, PlanStep } from '../scoring/fixPlan';
 
 export const CUSTOMIZE_FIXES: readonly TailorFix[] = ['headline', 'summary', 'skills', 'experience', 'projects', 'length'];
 
-/** Where a tapped keyword was used; `by: 'ai'` is the plan's pick, kept (toreview §129). */
-export type KeywordPlace = { where: string; note: string; by?: 'ai' | 'you' };
+/**
+ * Where a tapped keyword was used: one or more roles or projects (owner, toreview §163). `by: 'ai'`
+ * is the set the comparison picked, untouched; any edit makes it the user's own (`'you'`).
+ */
+export type KeywordPlace = { where: readonly string[]; note: string; by?: 'ai' | 'you' };
 
 export type CustomizeChoices = {
   fixes: readonly TailorFix[];
@@ -48,7 +51,7 @@ export function projectedScore(plan: FixPlan | undefined, c: CustomizeChoices): 
   let total = plan.target.ai;
   for (const s of plan.steps) {
     if (s.who !== 'you' || s.worth === null) continue;
-    const placed = s.keyword !== undefined && c.added.includes(s.keyword) && c.places[s.keyword] !== undefined;
+    const placed = s.keyword !== undefined && c.added.includes(s.keyword) && (c.places[s.keyword]?.where.length ?? 0) > 0;
     if (s.kind === 'keyword' && s.keyword && c.added.includes(s.keyword)) total += placed ? s.worth : s.worth / 2;
     else if (s.kind === 'evidence' && placed) total += s.worth;
     else if (s.kind === 'number' && s.bullet) {
@@ -97,24 +100,36 @@ export function toggleKeyword(c: CustomizeChoices, label: string, on: boolean): 
   return { ...c, added: c.added.filter((l) => l !== label), places };
 }
 
-/** A keyword ticked or unticked. A tick takes the plan's pick of role when it has one (§129.6). */
-export function tickKeyword(c: CustomizeChoices, label: string, on: boolean, plan: FixPlan | undefined): CustomizeChoices {
+/**
+ * A keyword ticked or unticked. A tick takes the places the comparison picked for it, as the AI's
+ * (toreview §163); a keyword with none is a skills-list tick only.
+ */
+export function tickKeyword(c: CustomizeChoices, label: string, on: boolean, picks?: Readonly<Record<string, readonly string[]>>): CustomizeChoices {
   const next = toggleKeyword(c, label, on);
-  const where = on ? plan?.steps.find((s) => s.keyword === label)?.where : undefined;
-  return where ? setPlace(next, label, { where, note: '', by: 'ai' }) : next;
+  const where = on ? picks?.[label] : undefined;
+  return where?.length ? setPlace(next, label, { where, note: '', by: 'ai' }) : next;
 }
 
 /** "Select all" over the shown keywords; again, "Clear all" (owner, toreview §113). */
-export function toggleAll(c: CustomizeChoices, labels: readonly string[], plan?: FixPlan): CustomizeChoices {
+export function toggleAll(c: CustomizeChoices, labels: readonly string[], picks?: Readonly<Record<string, readonly string[]>>): CustomizeChoices {
   const allOn = labels.length > 0 && labels.every((l) => c.added.includes(l));
-  return labels.reduce((next, label) => tickKeyword(next, label, !allOn, plan), c);
+  return labels.reduce((next, label) => tickKeyword(next, label, !allOn, picks), c);
 }
 
+/** A keyword's places replaced; none left drops the entry (Skills only). */
 export function setPlace(c: CustomizeChoices, label: string, place: KeywordPlace | null): CustomizeChoices {
   const places = { ...c.places };
-  if (place) places[label] = place;
+  if (place?.where.length) places[label] = { ...place, where: [...new Set(place.where)] };
   else delete places[label];
   return { ...c, places };
+}
+
+/** One place switched on or off for a ticked keyword: the set is the user's from then on. */
+export function togglePlace(c: CustomizeChoices, label: string, where: string, on: boolean): CustomizeChoices {
+  const now = c.places[label]?.where ?? [];
+  const next = on ? [...now, where] : now.filter((w) => w !== where);
+  const ticked = on && !c.added.includes(label) ? { ...c, added: [...c.added, label] } : c;
+  return setPlace(ticked, label, { where: next, note: c.places[label]?.note ?? '', by: 'you' });
 }
 
 export function setFix(c: CustomizeChoices, fix: TailorFix, on: boolean): CustomizeChoices {
@@ -145,9 +160,10 @@ export const nothingChosen = (c: CustomizeChoices) => c.fixes.length === 0 && c.
 /** The run "Create my resume" starts: the comparison's JD and resume, and these choices. */
 export function tailorRunInput(comparison: TailorComparison, c: CustomizeChoices, jobId?: string): GenerationInput {
   const missing = comparison.keywords.filter((k) => !k.onResume).map((k) => k.label);
+  // One confirmation per place (toreview §163); the server reads each the same way.
   const confirmed: TailorConfirmation[] = c.added.flatMap((keyword) => {
     const place = c.places[keyword];
-    return place ? [{ keyword, where: place.where, ...(place.note.trim() ? { note: place.note.trim() } : {}), ...(place.by ? { by: place.by } : {}) }] : [];
+    return [...new Set(place?.where ?? [])].map((where) => ({ keyword, where, ...(place!.note.trim() ? { note: place!.note.trim() } : {}), ...(place!.by ? { by: place!.by } : {}) }));
   });
   const figures: TailorFigure[] = Object.entries(c.figures ?? {}).flatMap(([key, text]) => {
     const at = key.lastIndexOf('#');

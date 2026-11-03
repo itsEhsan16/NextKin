@@ -66,7 +66,7 @@ function choicesWith(extra: Partial<TailorChoices> = {}) {
   return {
     added: [],
     places: {},
-    placeKeyword: jest.fn(),
+    togglePlace: jest.fn(),
     setAdded: jest.fn(),
     ...extra,
   } as unknown as TailorChoices;
@@ -88,14 +88,14 @@ describe('the plan inside Enhance', () => {
     expect(screen.queryByText('Docker')).toBeNull();
     await user.click(within(row).getByRole('button', { name: 'Say where you used it' }));
     await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Intern · Acme' }));
-    expect(choices.placeKeyword).toHaveBeenCalledWith('Claude Code', 'role_old', 'you');
+    expect(choices.togglePlace).toHaveBeenCalledWith('Claude Code', 'role_old', true);
   });
 
   it('"Skills only" takes the skill back', async () => {
     const user = userEvent.setup();
     const choices = choicesWith({
       added: ['Claude Code', 'Git'],
-      places: { 'Claude Code': { where: 'role_web', note: '', by: 'you' } },
+      places: { 'Claude Code': { where: ['role_web'], note: '', by: 'you' } },
     });
     renderWithQuery(<ShowInRole steps={[evidence]} places={places} choices={choices} />);
     await user.click(screen.getByRole('button', { name: /Used in: Full-Stack Developer/ }));

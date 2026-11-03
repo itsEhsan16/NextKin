@@ -94,6 +94,11 @@ export type TailorComparison = {
   jobMatch?: JobMatch;
   /** Where a ticked keyword may be said to have been used: the resume's roles and projects. */
   places?: TailorPlace[];
+  /**
+   * Where each missing keyword fits, decided beforehand from the places' own lines (toreview §163):
+   * place ids, best first. A keyword with none is a skills-list keyword only.
+   */
+  picks?: Record<string, string[]>;
   /** "Your fix plan" (toreview §115): where the points go, and the steps ranked by worth. */
   plan?: FixPlan;
 };

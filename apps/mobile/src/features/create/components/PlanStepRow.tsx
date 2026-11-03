@@ -7,6 +7,7 @@ import {
   setFigure,
   setPlace,
   tickKeyword,
+  togglePlace,
   type CustomizeChoices,
   type FixPlan,
   type KeywordPlace,
@@ -50,18 +51,22 @@ function whoOf(step: PlanStep): { label: string; tone: PillTone } {
 const placeNote = (place: KeywordPlace | undefined): string => {
   if (!place) return 'In your Skills only: counts half';
   return place.by === 'ai'
-    ? 'Counts in full · the role it fits best, change it if you like'
+    ? 'Counts in full · where your lines fit it, change it if you like'
     : 'Counts in full';
 };
 
-/** "AI places it in…" (toreview §129.6): the AI's pick by default, any other place, or Skills. */
+/**
+ * "AI adds it to…" (toreview §163): the places picked from your lines, any others you switch on,
+ * or Skills only. Several may be on at once.
+ */
 function PlacePicker(props: {
   keyword: string;
   places: readonly TailorPlace[];
   place: KeywordPlace | undefined;
-  onPick: (where: string | null) => void;
+  onToggle: (where: string, on: boolean) => void;
+  onSkillsOnly: () => void;
 }) {
-  const { keyword, places, place, onPick } = props;
+  const { keyword, places, place, onToggle, onSkillsOnly } = props;
   const { spacing } = useTheme();
   const styles = useStyles();
   return (
@@ -70,22 +75,20 @@ function PlacePicker(props: {
         {placeNote(place)}
       </Text>
       <View style={[styles.wrap, { gap: spacing[2] }]}>
-        {places.map((item) => (
-          <FilterChip
-            key={item.id}
-            label={item.label}
-            variant="radio"
-            selected={place?.where === item.id}
-            accessibilityLabel={`Used ${keyword} at ${item.label}`}
-            onPress={() => onPick(item.id)}
-          />
-        ))}
-        <FilterChip
-          label={SKILLS_ONLY}
-          variant="radio"
-          selected={!place}
-          onPress={() => onPick(null)}
-        />
+        {places.map((item) => {
+          const selected = place?.where.includes(item.id) ?? false;
+          return (
+            <FilterChip
+              key={item.id}
+              label={item.label}
+              variant="toggle"
+              selected={selected}
+              accessibilityLabel={`Used ${keyword} at ${item.label}`}
+              onPress={() => onToggle(item.id, !selected)}
+            />
+          );
+        })}
+        <FilterChip label={SKILLS_ONLY} variant="toggle" selected={!place} onPress={onSkillsOnly} />
       </View>
     </View>
   );
@@ -189,7 +192,7 @@ export function PlanStepRow({
             variant="toggle"
             selected={on}
             accessibilityLabel={`${step.kind === 'keyword' ? 'I have' : 'Show in a role:'} ${keyword}`}
-            onPress={() => onChange(tickKeyword(choices, keyword, !on, plan))}
+            onPress={() => onChange(tickKeyword(choices, keyword, !on, comparison.picks))}
             style={styles.start}
           />
           {on && places.length > 0 ? (
@@ -197,9 +200,8 @@ export function PlanStepRow({
               keyword={keyword}
               places={places}
               place={place}
-              onPick={(where) =>
-                onChange(setPlace(choices, keyword, where ? { where, note: '', by: 'you' } : null))
-              }
+              onToggle={(where, next) => onChange(togglePlace(choices, keyword, where, next))}
+              onSkillsOnly={() => onChange(setPlace(choices, keyword, null))}
             />
           ) : null}
         </View>

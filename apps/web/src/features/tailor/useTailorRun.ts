@@ -7,6 +7,9 @@ import {
   setFix,
   setPlace,
   tailorRunInput,
+  tickKeyword,
+  toggleAll,
+  togglePlace,
   type CustomizeChoices,
   type KeywordPlace,
 } from '@nextkin/shared/tailor/customize';
@@ -41,13 +44,20 @@ export function useTailorChoices() {
           Object.entries(c.places).filter(([label]) => added.includes(label)),
         ),
       })),
-    setPlaces: (places: Record<string, KeywordPlace>) => setChoices((c) => ({ ...c, places })),
-    /** One skill placed at a role or project (or unplaced); placing it also ticks it. */
-    placeKeyword: (keyword: string, where: string | null, by: 'ai' | 'you' = 'you') =>
-      setChoices((c) => {
-        const ticked = !c.added.includes(keyword) ? { ...c, added: [...c.added, keyword] } : c;
-        return setPlace(ticked, keyword, where ? { where, note: '', by } : null);
-      }),
+    /**
+     * A keyword ticked or unticked, taking the places the comparison picked for it (toreview §163);
+     * with none it is a skills-list tick only.
+     */
+    tick: (keyword: string, on: boolean, picks?: TailorComparison['picks']) =>
+      setChoices((c) => tickKeyword(c, keyword, on, picks)),
+    /** "Select all" over these keywords, each with its picks; again, "Clear". */
+    tickAll: (keywords: readonly string[], picks?: TailorComparison['picks']) =>
+      setChoices((c) => toggleAll(c, keywords, picks)),
+    /** One place switched on or off for a keyword (it ticks it); the set is the user's from then. */
+    togglePlace: (keyword: string, where: string, on: boolean) =>
+      setChoices((c) => togglePlace(c, keyword, where, on)),
+    /** Every place cleared: the keyword stays ticked, in Skills only. */
+    clearPlaces: (keyword: string) => setChoices((c) => setPlace(c, keyword, null)),
     /** A bullet rewritten with its real result (toreview §129), or back to the original. */
     figureOf: (roleId: string, line: number) => choices.figures?.[figureKey(roleId, line)],
     setFigure: (roleId: string, line: number, text: string | null) =>

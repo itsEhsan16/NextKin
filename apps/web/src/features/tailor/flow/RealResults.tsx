@@ -3,8 +3,10 @@
 import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
 import { useState } from 'react';
 
+import { ColumnHead, stepCard } from '@/features/create/jobFlow/FlowChrome';
 import { cn } from '@/lib/cn';
 import { CollapseFade } from '@/ui/CollapseFade';
+import { InsightsStarIllustration } from '@/ui/illustrations';
 import { ChevronDownIcon } from '@/ui/icons';
 import { Check } from '@/ui/lineIcons';
 import { textLink } from '@/ui/textLink';
@@ -73,7 +75,7 @@ function ResultRow({
 
 /**
  * "Add real results" (owner, 2026-11-02, toreview §149): the lines with no measured result, from the
- * plan's own steps, each finished by two picks. The rest of the plan sits beside it (toreview §161).
+ * plan's own steps, each finished by two picks. Its own card under Enhance (owner, toreview §163).
  */
 export function RealResults({
   steps,
@@ -91,13 +93,15 @@ export function RealResults({
   if (bullets.length === 0) return null;
   const shown = all ? bullets : bullets.slice(0, SHOWN);
   return (
-    <div className="flex flex-col gap-2.5">
-      <p className="flex flex-wrap items-baseline gap-2">
-        <span className="text-body-l font-bold text-text-primary">Add real results</span>
-        <span className="text-body-s font-medium text-text-tertiary">
-          Lines that say what you did but not what came of it
-        </span>
-      </p>
+    <section
+      aria-label="Add real results"
+      className={cn(stepCard, 'flex flex-col gap-3.5 px-8 py-6')}
+    >
+      <ColumnHead
+        art={<InsightsStarIllustration className="h-auto w-11" />}
+        title="Add real results"
+        subtitle="Lines that say what you did but not what came of it. Pick only what’s true."
+      />
       <ul className="flex flex-col gap-2">
         {shown.map((bullet) => (
           <ResultRow
@@ -118,6 +122,6 @@ export function RealResults({
           {all ? 'Show fewer' : `Show ${bullets.length - SHOWN} more`}
         </button>
       )}
-    </div>
+    </section>
   );
 }

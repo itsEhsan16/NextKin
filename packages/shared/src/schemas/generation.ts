@@ -104,10 +104,10 @@ export const tailoringSchema = z
     experience: z.enum(['quick', 'full']).optional(),
     // A long JD names 40+ terms, and reaching 8.5 can mean ticking most of them (toreview §129).
     keywords: z.array(z.string().trim().min(1).max(120)).max(80),
-    /** Ticked keywords the user says they used, and where (toreview §112): a role or `project:<id>`. */
+    /** Ticked keywords the user says they used, and where (toreview §112): a role or `project:<id>`, up to three per keyword (§163). */
     confirmed: z
       .array(z.object({ keyword: z.string().trim().min(1).max(120), where: z.string().trim().min(1).max(100), note: z.string().trim().max(200).optional(), by: z.enum(['ai', 'you']).optional() }).strict())
-      .max(80)
+      .max(240)
       .optional(),
     /** Bullets the user rewrote with their real result (toreview §129). */
     figures: z.array(z.object({ where: z.string().trim().min(1).max(100), line: z.number().int().min(0).max(60), text: z.string().trim().min(1).max(300) }).strict()).max(40).optional(),

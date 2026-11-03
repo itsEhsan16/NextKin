@@ -52,7 +52,15 @@ export async function prepareTailor(
   // place the user chose is a citable line; the AI's pick (`by: 'ai'`) only lets that role name the
   // keyword, on a line about that work (owner, toreview §162, after §159 dropped it entirely).
   const places = new Set(placesOf(base.doc).map((p) => p.id));
-  const confirmed = (args.tailoring.confirmed ?? []).filter((c) => places.has(c.where)).map((c) => ({ keyword: c.keyword.trim(), where: c.where, ...(c.note?.trim() ? { note: c.note.trim() } : {}), ...(c.by ? { by: c.by } : {}) }));
+  // A keyword may be at several places (§163); each (keyword, place) counts once.
+  const seen = new Set<string>();
+  const firstTime = (c: { keyword: string; where: string }) => {
+    const id = `${key(c.keyword)} ${c.where}`;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  };
+  const confirmed = (args.tailoring.confirmed ?? []).filter((c) => places.has(c.where) && firstTime(c)).map((c) => ({ keyword: c.keyword.trim(), where: c.where, ...(c.note?.trim() ? { note: c.note.trim() } : {}), ...(c.by ? { by: c.by } : {}) }));
   const ticked = [...new Map([...args.tailoring.keywords, ...confirmed.map((c) => c.keyword)].map((k) => [key(k), k.trim()])).values()];
   const tickedKeys = new Set(ticked.map(key));
   const baseline = measureBase(base, draft, args.asOf);

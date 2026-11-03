@@ -3,6 +3,7 @@ import type { JdDraft } from '../models/jd';
 import type { DocumentScore } from '../scoring/report';
 import { comparisonOf, improvementsFor, keywordsFrom } from '../scoring/tailorComparison';
 import { placesOfContent } from '../scoring/documentFacts';
+import { fitPlacesOfContent } from '../scoring/placeFit';
 
 /**
  * "Your resume vs this job" (TAILOR 02, toreview §56), on the mock. The comparison's pure parts
@@ -44,7 +45,7 @@ export function compareResumeToJob(args: {
       }),
     ...(pageCount != null ? { pageCount } : {}),
     // Where a tapped keyword may be said to be used (toreview §114), so the mock offers it too.
-    ...(body ? { places: placesOfContent(body) } : {}),
+    ...(body ? { places: placesOfContent(body), fitPlaces: fitPlacesOfContent(body) } : {}),
   });
 }
 

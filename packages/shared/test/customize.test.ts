@@ -36,8 +36,8 @@ describe('the Customize choices', () => {
 
   it('taps, selects all, clears all, and forgets a place when a keyword is untapped', () => {
     let c = toggleKeyword(initialChoices(), 'KYC', true);
-    c = setPlace(c, 'KYC', { where: 'web', note: ' built checks ' });
-    expect(c.places.KYC?.where).toBe('web');
+    c = setPlace(c, 'KYC', { where: ['web'], note: ' built checks ' });
+    expect(c.places.KYC?.where).toEqual(['web']);
     c = toggleAll(c, ['KYC', 'Vue']);
     expect(c.added).toEqual(['KYC', 'Vue']);
     c = toggleAll(c, ['KYC', 'Vue']);
@@ -45,9 +45,9 @@ describe('the Customize choices', () => {
     expect(c.places).toEqual({});
   });
 
-  it('builds the run: ticks added, the rest skipped, a place confirmed', () => {
+  it('builds the run: ticks added, the rest skipped, each place confirmed once', () => {
     let c = toggleKeyword(initialChoices(), 'KYC', true);
-    c = setPlace(c, 'KYC', { where: 'web', note: ' built checks ' });
+    c = setPlace(c, 'KYC', { where: ['web', 'project:p1', 'web'], note: ' built checks ' });
     c = setFix(c, 'summary', false);
     const input = tailorRunInput(comparison, c, 'job1');
     expect(input).toMatchObject({ kind: 'resume', jdId: 'jd1', jobId: 'job1', baseResumeId: 'r1' });
@@ -58,7 +58,10 @@ describe('the Customize choices', () => {
       added: ['KYC'],
       skipped: ['Vue', 'Fintech', 'teamwork'],
       experience: 'full',
-      confirmed: [{ keyword: 'KYC', where: 'web', note: 'built checks' }],
+      confirmed: [
+        { keyword: 'KYC', where: 'web', note: 'built checks' },
+        { keyword: 'KYC', where: 'project:p1', note: 'built checks' },
+      ],
     });
     expect(input.tailor?.fixes).not.toContain('summary');
   });
@@ -87,9 +90,9 @@ describe('figures and the projection (toreview §129)', () => {
     expect(projectedScore(plan, c)).toBe(6.8);
     c = toggleKeyword(c, 'KYC', true);
     expect(projectedScore(plan, c)).toBe(7.4); // listed only: half of 1.2
-    c = setPlace(c, 'KYC', { where: 'role_a', note: '' });
+    c = setPlace(c, 'KYC', { where: ['role_a'], note: '' });
     expect(projectedScore(plan, c)).toBe(8);
-    c = setPlace(toggleKeyword(c, 'React', true), 'React', { where: 'role_a', note: '' });
+    c = setPlace(toggleKeyword(c, 'React', true), 'React', { where: ['role_a'], note: '' });
     expect(projectedScore(plan, c)).toBe(8.6);
     c = setFigure(c, 'role_a', 1, 'Ran the onboarding checks');
     expect(projectedScore(plan, c)).toBe(8.6);

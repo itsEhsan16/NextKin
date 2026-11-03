@@ -185,6 +185,46 @@ describe('Tailor flow (734:2, 734:679)', () => {
     start.mockRestore();
   }, 20000);
 
+  it('ticks take the places picked from the resume, several if you like (toreview §163)', async () => {
+    const user = userEvent.setup();
+    const start = jest.spyOn(repos.generations, 'start');
+    renderWithQuery(<RoutedTailor target={{ kind: 'job', id: 'job_google' }} resumeId="res_pd" />);
+    const enhance = await screen.findByRole('region', { name: 'Choose what to add' }, wait);
+    expect(within(enhance).queryByText('Already on your resume')).toBeNull();
+
+    // Figma fits no line of this resume: a skills-list tick, with no row to place it.
+    await user.click(within(enhance).getByRole('button', { name: 'Figma' }));
+    expect(within(enhance).queryByRole('button', { name: /AI adds it to|Skills only/ })).toBeNull();
+
+    // User Research fits the Google role: the tick shows where the AI adds it.
+    await user.click(within(enhance).getByRole('button', { name: 'User Research' }));
+    const picker = within(enhance).getByRole('button', {
+      name: 'AI adds it to: Software Engineer · Google',
+    });
+    await user.click(picker);
+    await user.click(
+      await screen.findByRole('menuitemcheckbox', {
+        name: 'Software Development Engineer · Adobe',
+      }),
+    );
+    await user.keyboard('{Escape}');
+    expect(
+      within(enhance).getByRole('button', { name: 'Used in: Software Engineer · Google +1' }),
+    ).toBeInTheDocument();
+
+    // Results are their own card, outside the keyword step.
+    const results = screen.getByRole('region', { name: 'Add real results' });
+    expect(enhance).not.toContainElement(results);
+
+    await user.click(screen.getByRole('button', { name: /Create my resume/ }));
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(1), wait);
+    expect(start.mock.calls[0]![0].tailor?.confirmed).toEqual([
+      { keyword: 'User Research', where: 'role_google', by: 'you' },
+      { keyword: 'User Research', where: 'role_adobe', by: 'you' },
+    ]);
+    start.mockRestore();
+  }, 30000);
+
   it('opens an old step 3 link on Enhance', async () => {
     renderWithQuery(
       <TailorScreen

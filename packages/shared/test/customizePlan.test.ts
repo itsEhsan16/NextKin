@@ -6,6 +6,7 @@ import {
   planGoalLine,
   shortOnYears,
   tickKeyword,
+  togglePlace,
   toggleAll,
 } from '../src/tailor/customize';
 
@@ -61,31 +62,40 @@ describe('shortOnYears', () => {
   });
 });
 
-describe('a tick on the plan', () => {
-  const picked = plan({ steps: [step({ keyword: 'Go', where: 'role_1' }), step({ keyword: 'Rust' })] });
+describe('a tick and the places picked for it (toreview §163)', () => {
+  const picks = { Go: ['role_1', 'project:p1'] };
 
-  it('takes the plan’s pick of role, marked as the AI’s', () => {
-    const c = tickKeyword(initialChoices(), 'Go', true, picked);
+  it('takes every picked place, marked as the AI’s', () => {
+    const c = tickKeyword(initialChoices(), 'Go', true, picks);
     expect(c.added).toEqual(['Go']);
-    expect(c.places.Go).toEqual({ where: 'role_1', note: '', by: 'ai' });
+    expect(c.places.Go).toEqual({ where: ['role_1', 'project:p1'], note: '', by: 'ai' });
   });
 
-  it('stays a plain tick with no pick, or with no plan', () => {
-    expect(tickKeyword(initialChoices(), 'Rust', true, picked).places).toEqual({});
-    expect(tickKeyword(initialChoices(), 'Go', true, undefined).places).toEqual({});
+  it('is a skills-list tick with no picks', () => {
+    expect(tickKeyword(initialChoices(), 'Rust', true, picks).places).toEqual({});
+    expect(tickKeyword(initialChoices(), 'Go', true).places).toEqual({});
   });
 
-  it('forgets the place when it is unticked', () => {
-    const on = tickKeyword(initialChoices(), 'Go', true, picked);
-    const off = tickKeyword(on, 'Go', false, picked);
+  it('forgets the places when it is unticked', () => {
+    const on = tickKeyword(initialChoices(), 'Go', true, picks);
+    const off = tickKeyword(on, 'Go', false, picks);
     expect(off.added).toEqual([]);
     expect(off.places).toEqual({});
   });
 
+  it('an edit makes the set the user’s; none left is Skills only, still ticked', () => {
+    let c = tickKeyword(initialChoices(), 'Go', true, picks);
+    c = togglePlace(c, 'Go', 'role_2', true);
+    expect(c.places.Go).toEqual({ where: ['role_1', 'project:p1', 'role_2'], note: '', by: 'you' });
+    c = togglePlace(togglePlace(togglePlace(c, 'Go', 'role_1', false), 'Go', 'project:p1', false), 'Go', 'role_2', false);
+    expect(c.places).toEqual({});
+    expect(c.added).toEqual(['Go']);
+  });
+
   it('applies to Select all, and Clear all takes the places back', () => {
-    const on = toggleAll(initialChoices(), ['Go', 'Rust'], picked);
+    const on = toggleAll(initialChoices(), ['Go', 'Rust'], picks);
     expect(on.added).toEqual(['Go', 'Rust']);
     expect(Object.keys(on.places)).toEqual(['Go']);
-    expect(toggleAll(on, ['Go', 'Rust'], picked).places).toEqual({});
+    expect(toggleAll(on, ['Go', 'Rust'], picks).places).toEqual({});
   });
 });

@@ -158,6 +158,23 @@ describe('a resume as the facts a tailored version cites', () => {
     expect(pay.responsibilities).toEqual(['Built the settlement service in Go', 'Reworked PostgreSQL indexes for the ledger API', 'Used Kafka']);
     expect(pay.skills).toEqual(expect.arrayContaining(['Kafka', 'Docker']));
   });
+
+  it('one keyword at several places: a line at each of yours, a skill at each of the AI’s (§163)', () => {
+    const facts = factsOfDocument(BASE, {
+      added: ['Kafka', 'Docker'],
+      confirmed: [
+        { keyword: 'Kafka', where: 'pay', by: 'you' },
+        { keyword: 'Kafka', where: 'mid', by: 'you' },
+        { keyword: 'Docker', where: 'pay', by: 'ai' },
+        { keyword: 'Docker', where: 'mid', by: 'ai' },
+      ],
+    });
+    for (const role of facts.roles.slice(0, 2)) {
+      expect(role.responsibilities.filter((r) => r === 'Used Kafka')).toHaveLength(1);
+      expect(role.responsibilities.some((r) => r.includes('Docker'))).toBe(false);
+      expect(role.skills).toEqual(expect.arrayContaining(['Kafka', 'Docker']));
+    }
+  });
 });
 
 describe('the user’s figures (toreview §129)', () => {

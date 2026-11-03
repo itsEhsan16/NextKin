@@ -17,6 +17,7 @@ import { jdFromDraft, scoreContent } from './scoring';
 import { clone, findOrThrow, type MockStore } from './state';
 import type { JdRepo } from './types';
 import { placesOfContent } from '../scoring/documentFacts';
+import { fitPlacesOfContent } from '../scoring/placeFit';
 
 /**
  * NextKin V2 spec §7.5 — JD upload, extraction and the review screen.
@@ -119,7 +120,7 @@ export function createMockJdRepo(store: MockStore): JdRepo {
             jdId,
             rawText: draft.rawText,
             title: draft.title,
-            ...(body ? { places: placesOfContent(body) } : {}),
+            ...(body ? { places: placesOfContent(body), fitPlaces: fitPlacesOfContent(body) } : {}),
             ...(draft.softSkills?.length ? { softSkills: draft.softSkills } : {}),
             ...(draft.jobId ? { jobId: draft.jobId } : {}),
             result,
