@@ -96,7 +96,7 @@ export function Selection({
 }) {
   const edit = {
     'aria-label': `Edit ${label.toLowerCase()}`,
-    className: cn(textLink, 'text-body-m'),
+    className: cn(textLink, 'shrink-0 text-body-m'),
   };
   return (
     <div className="flex items-center gap-3.5 rounded-lg border border-border-subtle px-4 py-3.5">
@@ -108,7 +108,14 @@ export function Selection({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-caption-m font-medium text-text-tertiary">{label}</p>
-        <p className="text-body-l font-bold text-text-primary">{value}</p>
+        {/* A file name has no spaces to wrap at: it breaks anywhere, two lines at most, and the
+            whole name is on hover, so it never runs under Edit. */}
+        <p
+          title={value}
+          className="line-clamp-2 text-body-l font-bold text-text-primary [overflow-wrap:anywhere]"
+        >
+          {value}
+        </p>
       </div>
       {href ? (
         <Link href={href} {...edit}>

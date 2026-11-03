@@ -106,6 +106,15 @@ export function EnhanceStep({
   const goal = target?.goal;
   const projected = projectedScore(comparison.plan, choices.choices);
   const gain = projected !== undefined && base !== undefined ? projected - base : 0;
+  // What the user's own answers add on top of the AI's steps: the ATS card's estimate (§166).
+  const withoutAnswers = projectedScore(comparison.plan, {
+    ...choices.choices,
+    added: [],
+    places: {},
+    figures: {},
+  });
+  const answersGain =
+    projected !== undefined && withoutAnswers !== undefined ? projected - withoutAnswers : 0;
 
   const group = (title: string, hint: string | null, items: typeof missing) =>
     items.length > 0 && (
@@ -145,6 +154,8 @@ export function EnhanceStep({
           onChangeResume={onChangeResume}
           score={comparison.score}
           scored={comparison.scored !== false}
+          gain={answersGain}
+          selected={choices.added.length}
         />
         <div className="grid divide-y divide-border-subtle lg:grid-cols-8 lg:divide-x lg:divide-y-0">
           <div className="flex min-w-0 flex-col gap-4.5 px-8 pb-8 pt-6 lg:col-span-5 lg:pl-8">

@@ -4,7 +4,7 @@ import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
-import { CheckIcon } from '@/ui/icons';
+import { Check } from '@/ui/lineIcons';
 
 import { menuSurfaceMotion, tickMotion } from './menuMotion';
 
@@ -69,13 +69,15 @@ export function FilterCheckboxItem({
       onCheckedChange={onCheckedChange}
       onSelect={closeOnSelect ? undefined : (event) => event.preventDefault()}
       className={cn(
-        'flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-body-m text-text-primary outline-none transition-colors duration-press ease-standard',
+        'group/item flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-body-m text-text-primary outline-none transition-colors duration-press ease-standard',
         'data-[highlighted]:bg-surface-muted',
       )}
     >
-      <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-border-default text-text-brand">
+      {/* A checkbox, square and filled when ticked (owner, 2026-11-04): the filled check-circle
+          inside a round box read as a broken radio. */}
+      <span className="flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-border-default bg-surface-card text-white transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600 group-data-[state=checked]/item:bg-brand-600">
         <Dropdown.ItemIndicator className={tickMotion}>
-          <CheckIcon className="size-3" />
+          <Check aria-hidden className="size-3" />
         </Dropdown.ItemIndicator>
       </span>
       <span className="truncate">{children}</span>
