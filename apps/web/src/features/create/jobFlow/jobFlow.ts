@@ -28,7 +28,7 @@ export const JOB_FLOWS: Record<JobFlow, FlowCopy> = {
     steps: ['Job', 'Resume', 'Enhance'],
     jobTitle: 'Let’s start with the job',
     jobLede:
-      'We’ll use the job details to build your resume around it, highlight relevant skills, and suggest improvements.',
+      'We’ll use the job details to tailor a resume you have or build a new one, highlight relevant skills, and suggest improvements.',
   },
   tailor: {
     name: 'Tailor to a Job',

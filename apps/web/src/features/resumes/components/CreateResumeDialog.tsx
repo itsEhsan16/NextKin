@@ -110,7 +110,8 @@ export function CreateResumeDialog({
   const next = () => {
     if (way === 'tailor') {
       close(false);
-      router.push('/create/tailor' as Route);
+      // The one flow for a job (toreview §155); its step 2 starts on tailoring a resume you have.
+      router.push('/create/build' as Route);
     } else if (way === 'scratch') {
       if (create.isPending) return;
       create.mutate(

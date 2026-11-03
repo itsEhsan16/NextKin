@@ -14,22 +14,16 @@ describe('HomeScreen', () => {
       screen.getByText('Everything you need to build your career, in one place.'),
     ).toBeInTheDocument();
 
-    // Quick Start ships five tiles on web; mobile's equivalent has four.
-    for (const label of [
-      'Build Resume',
-      'Zero Resume',
-      'Tailor to a Job',
-      'Cover Letter',
-      'ATS Check',
-    ]) {
+    // Four tiles, as on mobile: Build Resume covers tailoring too (toreview §155).
+    for (const label of ['Build Resume', 'Zero Resume', 'Cover Letter', 'ATS Check']) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
+    expect(screen.queryByText('Tailor to a Job')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Quick Start' })).toBeInTheDocument();
     // Each tile opens its own flow (toreview §125).
     const hrefs: Record<string, string> = {
       'Build Resume': '/create/build',
       'Zero Resume': '/create/zero-resume',
-      'Tailor to a Job': '/create/tailor',
       'Cover Letter': '/create/cover-letter',
       'ATS Check': '/create/ats-check',
     };

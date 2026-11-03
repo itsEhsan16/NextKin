@@ -15171,3 +15171,14 @@ The owner asked for the three items §153 left open. All three are done on `jd/s
 - golden-0.1.0 ran live through OpenRouter on prompt version 5 and passed the bar: extraction precision 1.0, recall 0.99, no anachronisms or untraceable facts, revision rate 3%, for $0.41.
 - 61 new recordings replace 64 that neither eval replays any more.
 - Both `pnpm eval --recorded` and `pnpm eval:jd` pass offline.
+
+## 155. Web: one Quick Start tile for a job (owner, 2026-11-03)
+
+The owner: Build Resume and Tailor to a Job had become identical, so remove Tailor to a Job.
+
+- **Quick Start shows four tiles** (Build Resume, Zero Resume, Cover Letter, ATS Check), as mobile does. Build Resume's step 2 asks how to make the resume: tailor one you have, build from the profile, start from scratch, or upload.
+- **The starting option** is now "Tailor my selected resume" when you have a resume, else "Create from my profile" when the profile lists past jobs, else upload. Before, Build opened on the profile.
+- ** redirects to **, so old links and bookmarks still work, and its route page is gone. The Resumes page's "Tailor to a job" option opens the same flow. The job page's "Tailor my resume" is unchanged: it opens tailoring for that job directly.
+- **Kept on purpose:** Zero Resume stays, because it works without a job. The  art stays in , unused.
+- **Wording:** the flow's first step now says "tailor a resume you have or build a new one".
+- **Not verified in a browser.** Web tests pass (427).

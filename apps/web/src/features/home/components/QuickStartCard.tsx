@@ -8,7 +8,6 @@ import {
   AtsCheckIllustration,
   BuildResumeIllustration,
   CoverLetterIllustration,
-  TailorToAJobIllustration,
   ZeroResumeIllustration,
 } from '@/ui/illustrations';
 
@@ -21,10 +20,10 @@ type Tile = {
 };
 
 /**
- * Five entry points (286:216). Mobile's Quick Start has four — the web board adds "Tailor to a
- * Job" and renames the hints, so the copy here is the web board's, not mobile's. Each opens its
- * own flow (toreview §125): Build makes a new resume for a job from the profile, Tailor reworks
- * one you have; Zero Resume, Cover Letter and ATS Check are mobile's flows on the web.
+ * Four entry points (286:216, less its "Tailor to a Job": owner, toreview §155). Build Resume is
+ * the one flow for a job: its step 2 asks how — tailor a resume you have, build from the profile,
+ * start from scratch or upload — so a second tile for tailoring opened the same screens. Zero
+ * Resume, Cover Letter and ATS Check are mobile's flows on the web; the hints are the web board's.
  */
 const TILES: readonly Tile[] = [
   {
@@ -41,13 +40,6 @@ const TILES: readonly Tile[] = [
     hint: 'Build from scratch',
     href: '/create/zero-resume' as Route,
     Art: ZeroResumeIllustration,
-  },
-  {
-    key: 'tailor',
-    label: 'Tailor to a Job',
-    hint: 'Tailored to JD',
-    href: '/create/tailor' as Route,
-    Art: TailorToAJobIllustration,
   },
   {
     key: 'cover-letter',

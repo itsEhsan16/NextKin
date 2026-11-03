@@ -42,8 +42,12 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
 
   // The Account page became Profile (476:4, `toreview.md` §91); old links and bookmarks land there.
+  // Tailor to a Job and Build Resume became one flow (owner, toreview §155): its step 2 offers both.
   async redirects() {
-    return [{ source: '/account', destination: '/profile', permanent: false }];
+    return [
+      { source: '/account', destination: '/profile', permanent: false },
+      { source: '/create/tailor', destination: '/create/build', permanent: false },
+    ];
   },
 
   // P11-07: the sitemap is built by the API from the published Skills Explorer entries.

@@ -283,7 +283,7 @@ describe('ResumesScreen', () => {
     expect(push).not.toHaveBeenCalled();
     expect(screen.getByRole('tab', { name: 'All Resumes (5)', hidden: true })).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
-    expect(push).toHaveBeenCalledWith('/create/tailor');
+    expect(push).toHaveBeenCalledWith('/create/build');
 
     // Cancel makes nothing either.
     await user.click(screen.getByRole('button', { name: 'Create New Resume' }));

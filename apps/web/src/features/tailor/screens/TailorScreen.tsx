@@ -155,8 +155,9 @@ export function TailorScreen({
         job={job}
         resumeTitle={noResumes ? undefined : tailorable.find((r) => r.id === resumeId)?.title}
         profile={builder.profile.data}
-        initial={!noResumes && (!build || !hasRoles) ? 'tailor' : hasRoles ? 'profile' : 'upload'}
-        jobHref={jobFlowHref(build ? 'build' : 'tailor')}
+        // A resume to tailor when there is one; else the profile, else an upload (toreview §155).
+        initial={!noResumes ? 'tailor' : hasRoles ? 'profile' : 'upload'}
+        jobHref={jobFlowHref('build')}
         zeroHref={zeroHref}
         onChangeResume={() => setChoosing(true)}
         onTailor={() => router.push(tailorPath(target, { step: 'enhance', resumeId }))}

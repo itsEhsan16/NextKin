@@ -11,7 +11,7 @@ import { renderWithQuery, SETTLE_MS } from '../../../testSupport/render';
 const push = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push, replace: jest.fn() }),
-  usePathname: () => '/create/tailor',
+  usePathname: () => '/create/build',
   useSearchParams: () => new URLSearchParams(),
 }));
 
