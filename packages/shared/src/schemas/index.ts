@@ -10,4 +10,5 @@ export * from './resumePreview';
 export * from './resumeContent';
 export * from './resumeDocument';
 export * from './jd';
+export * from './jdStructured';
 export * from './resumeFit';

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { jobSchema } from './job';
+import { jdStructuredSchema } from './jdStructured';
 
 /**
  * Job descriptions over the wire (spec §11 `/api/v1/jd`; ImBackendImplementationPlan P9-01).
@@ -93,6 +94,9 @@ export const jdDraftSchema = z.object({
   language: z.enum(['en', 'de', 'other']).optional(),
   /** The JD in its sections, when a model grouped them (toreview §129); else the page reads them. */
   reading: jdReadingSchema.optional(),
+  /** The posting understood (toreview §153). */
+  structured: jdStructuredSchema.optional(),
+  stage: z.enum(['reading', 'understanding', 'checking']).optional(),
   createdAt: z.string(),
 });
 

@@ -1,4 +1,5 @@
 import type { JdReading } from '../jobs/jdSections';
+import type { JdStructured } from './jdStructured';
 import type { EmploymentType, ExperienceLevel, Job } from './job';
 
 /**
@@ -101,9 +102,18 @@ export type JdDraft = {
    * reads the sections from `rawText` itself (`jobs/jdSections.ts`).
    */
   reading?: JdReading;
+  /**
+   * The posting understood (toreview §153): every fact in its place with the words it came from,
+   * issues flagged. Absent on drafts read before it, which the server reads again once.
+   */
+  structured?: JdStructured;
+  /** Where the reading is while `extracting`, so the page shows the real step. */
+  stage?: JdStage;
   /** ISO-8601 */
   createdAt: string;
 };
+
+export type JdStage = 'reading' | 'understanding' | 'checking';
 
 /** One typed requirement (C-10; the extractor verifies spans from P9). */
 export type JdRequirement = {
@@ -119,5 +129,5 @@ export type JdRequirement = {
 
 /** Every edit the review screen can make; identity, origin and the source text are fixed. */
 export type JdDraftPatch = Partial<
-  Omit<JdDraft, 'id' | 'createdAt' | 'source' | 'rawText' | 'sourceUrl' | 'requirements' | 'status' | 'error' | 'extraction' | 'language' | 'reading'>
+  Omit<JdDraft, 'id' | 'createdAt' | 'source' | 'rawText' | 'sourceUrl' | 'requirements' | 'status' | 'error' | 'extraction' | 'language' | 'reading' | 'structured' | 'stage'>
 >;

@@ -8,6 +8,7 @@ export * from './generation';
 export * from './insights';
 export * from './interview';
 export * from './jd';
+export * from './jdStructured';
 export * from './jobLink';
 export * from './job';
 export * from './applicationProgress';
