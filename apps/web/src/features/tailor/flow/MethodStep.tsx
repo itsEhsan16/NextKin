@@ -60,6 +60,16 @@ export function MethodStep({
   const [method, setMethod] = useState<Method | null>(null);
   const [open, setOpen] = useState<Method | null>(null);
   const [uploaded, setUploaded] = useState<{ resumeId: string; name: string } | null>(null);
+  const startingPoint =
+    method === 'tailor'
+      ? (resumeTitle ?? 'Your resume')
+      : method === 'upload'
+        ? (uploaded?.name ?? 'Your uploaded resume')
+        : method === 'profile'
+          ? 'Your profile'
+          : method === 'zero'
+            ? 'A new draft written with AI'
+            : 'Not chosen yet';
   const go = () => {
     if (method === 'tailor') onTailor();
     else if (method === 'profile') onProfile();
@@ -96,7 +106,11 @@ export function MethodStep({
                     ? 'You don’t have a resume on NextKin yet. Upload one, or pick another way.'
                     : m === 'upload' && uploaded
                       ? `Uploaded and read: “${uploaded.name}”. We’ll tailor it to this job.`
-                      : methodLine(m, resumeTitle)
+                      : // The resume is named once it is chosen in the popup, not before (§158).
+                        methodLine(
+                          m,
+                          m === 'tailor' && method === 'tailor' ? resumeTitle : undefined,
+                        )
                 }
                 recommended={m === 'tailor'}
               />
@@ -111,11 +125,12 @@ export function MethodStep({
                 value={job.title}
                 href={jobHref}
               />
+              {/* What the resume starts from, once a popup chose it; Edit opens that popup again. */}
               <Selection
                 icon={<File06 className="size-5" />}
-                label="Starting resume"
-                value={resumeTitle ?? 'None yet'}
-                {...(resumeTitle ? { onEdit: onChangeResume } : {})}
+                label="Starting point"
+                value={startingPoint}
+                {...(method ? { onEdit: () => setOpen(method) } : {})}
               />
             </div>
             <div className="flex flex-col gap-3.5 rounded-xl bg-surface-brand p-5">

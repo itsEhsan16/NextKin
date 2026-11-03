@@ -42,11 +42,20 @@ describe('How would you like to create your resume? (toreview §151, §157)', ()
     expect(screen.getByRole('link', { name: 'Edit job' })).toBeInTheDocument();
   });
 
-  it('Edit beside the starting resume opens the resume chooser', async () => {
+  it('the starting point is unchosen until a popup chooses it; Edit then reopens that popup (§158)', async () => {
     const user = userEvent.setup();
-    await openOnMethod();
-    await user.click(screen.getByRole('button', { name: 'Edit starting resume' }));
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    const ways = await openOnMethod();
+    expect(screen.getByText('Not chosen yet')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit starting point' })).not.toBeInTheDocument();
+    await user.click(within(ways).getByRole('radio', { name: 'Create from my profile' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Create from my profile' });
+    await user.click(await within(dialog).findByRole('button', { name: /Use my profile/ }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByText('Your profile')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Edit starting point' }));
+    expect(
+      await screen.findByRole('dialog', { name: 'Create from my profile' }),
+    ).toBeInTheDocument();
   });
 
   it('pressing a way opens its popup; completing it chooses the way; Continue goes on', async () => {

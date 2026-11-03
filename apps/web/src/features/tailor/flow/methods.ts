@@ -37,7 +37,7 @@ export function methodLine(method: Method, resumeTitle: string | undefined): str
     case 'tailor':
       return resumeTitle
         ? `Use “${resumeTitle}” as a base and tailor it to the job with AI.`
-        : 'Use your selected resume as a base and tailor it to the job with AI.';
+        : 'Use one of your resumes as a base and tailor it to the job with AI.';
     case 'profile':
       return 'Build a resume using your saved work experience, education, and skills.';
     case 'zero':

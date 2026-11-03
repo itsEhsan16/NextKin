@@ -15204,3 +15204,12 @@ The owner: none of the four ways should start selected. Pressing a way opens its
 - **Continue** goes on with the chosen way: tailor or upload to Enhance, profile to Enhance in build mode, scratch to Zero Resume.
 - This replaces §155's pre-selected starting option.
 - **Not verified in a browser.** Web tests pass (428).
+
+## 158. Web: no resume named until one is chosen (owner, 2026-11-03)
+
+The owner asked why a resume already showed as selected. "Your selections" listed the base resume as the "Starting resume", and the Tailor card named it, before anything was chosen (left over from §152's default pick).
+
+- **Starting point:** the side panel row is now "Starting point" and reads "Not chosen yet" until a popup is completed. Then it reads the chosen resume, the uploaded file, "Your profile" or "A new draft written with AI". Its Edit reopens that way's popup.
+- **The Tailor card** says "Use one of your resumes as a base…" until it is chosen, then names the resume.
+- **Inside the Tailor popup,** the base is still offered as the selected resume, with Change, as the mockup draws it. Completing the popup is what chooses it.
+- **Not verified in a browser.** Web tests pass.
