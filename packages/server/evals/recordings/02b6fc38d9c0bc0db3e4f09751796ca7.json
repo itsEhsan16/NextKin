@@ -1,0 +1,70 @@
+{
+  "key": "02b6fc38d9c0bc0db3e4f09751796ca7",
+  "recordedAt": "2026-11-03T12:04:49.865Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Junior Developer\",\n  \"company\": \"Webly\",\n  \"requirementsBacked\": [\n   \"Git\"\n  ],\n  \"r"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Junior Developer",
+      "summary": {
+        "text": "Junior developer at Startly who fixes bugs in a customer portal and writes unit tests in Python. Skilled in Git, JavaScript and Python, applied to day-to-day development work.",
+        "evidence": [
+          "jr_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Git",
+          "evidence": [
+            "jr_1"
+          ]
+        },
+        {
+          "name": "JavaScript",
+          "evidence": [
+            "jr_1"
+          ]
+        },
+        {
+          "name": "Python",
+          "evidence": [
+            "jr_1#r1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "jr_1",
+          "bullets": [
+            {
+              "text": "Fixed 40 bugs in the customer portal",
+              "evidence": [
+                "jr_1#r0"
+              ]
+            },
+            {
+              "text": "Wrote unit tests in Python",
+              "evidence": [
+                "jr_1#r1"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 511,
+      "outputTokens": 375,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

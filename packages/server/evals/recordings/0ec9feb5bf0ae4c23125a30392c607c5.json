@@ -1,0 +1,70 @@
+{
+  "key": "0ec9feb5bf0ae4c23125a30392c607c5",
+  "recordedAt": "2026-11-03T12:04:43.556Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Junior Backend Developer\",\n  \"company\": \"Startwerk\",\n  \"requirementsBacked\": [],\n  \"r"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Junior Backend Developer",
+      "summary": {
+        "text": "Junior developer who fixed 40 bugs in a customer portal and wrote unit tests in Python, working at Startly since July 2024.",
+        "evidence": [
+          "jr_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Python",
+          "evidence": [
+            "jr_1"
+          ]
+        },
+        {
+          "name": "JavaScript",
+          "evidence": [
+            "jr_1"
+          ]
+        },
+        {
+          "name": "Git",
+          "evidence": [
+            "jr_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "jr_1",
+          "bullets": [
+            {
+              "text": "Fixed 40 bugs in the customer portal",
+              "evidence": [
+                "jr_1#r0"
+              ]
+            },
+            {
+              "text": "Wrote unit tests in Python",
+              "evidence": [
+                "jr_1#r1"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 506,
+      "outputTokens": 358,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

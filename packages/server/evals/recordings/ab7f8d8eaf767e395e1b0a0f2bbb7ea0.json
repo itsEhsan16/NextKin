@@ -1,0 +1,88 @@
+{
+  "key": "ab7f8d8eaf767e395e1b0a0f2bbb7ea0",
+  "recordedAt": "2026-11-03T12:03:38.794Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "de",
+      "title": {
+        "text": "Produktdesigner",
+        "quote": "Produktdesigner bei Formwerk, Köln."
+      },
+      "company": {
+        "text": "Formwerk",
+        "quote": "Produktdesigner bei Formwerk, Köln."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Formwerk in Köln sucht einen Produktdesigner. Erfahrung mit Figma und Nutzerforschung wird vorausgesetzt; Prototyping wird gewünscht.",
+      "locations": [
+        {
+          "text": "Köln",
+          "quote": "Produktdesigner bei Formwerk, Köln.",
+          "city": "Köln",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Erfahrung mit Figma und Nutzerforschung",
+          "quote": "Erfahrung mit Figma und Nutzerforschung ist erforderlich."
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "Figma",
+          "quote": "Erfahrung mit Figma und Nutzerforschung ist erforderlich.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Nutzerforschung",
+          "quote": "Erfahrung mit Figma und Nutzerforschung ist erforderlich.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "Prototyping",
+          "quote": "Wünschenswert: Prototyping.",
+          "category": "other",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 319,
+      "outputTokens": 1049,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

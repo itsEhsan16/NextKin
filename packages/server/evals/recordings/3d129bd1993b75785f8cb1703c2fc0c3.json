@@ -1,0 +1,98 @@
+{
+  "key": "3d129bd1993b75785f8cb1703c2fc0c3",
+  "recordedAt": "2026-11-03T12:01:40.420Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Backend Engineer",
+        "quote": "Backend Engineer at Freightly, Chicago."
+      },
+      "company": {
+        "text": "Freightly",
+        "quote": "Backend Engineer at Freightly, Chicago."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": null
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "This is a Backend Engineer role at Freightly in Chicago. The engineer will migrate legacy services and should have Kubernetes, Docker and Go, with Terraform as a nice-to-have.",
+      "locations": [
+        {
+          "text": "Chicago",
+          "quote": "Backend Engineer at Freightly, Chicago.",
+          "city": "Chicago",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "You will migrate legacy services.",
+          "quote": "You will migrate legacy services.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Kubernetes",
+          "quote": "Requirements: Kubernetes, Docker and Go.",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "Docker",
+          "quote": "Requirements: Kubernetes, Docker and Go.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Go",
+          "quote": "Requirements: Kubernetes, Docker and Go.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Terraform",
+          "quote": "Nice to have: Terraform.",
+          "category": "tool",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 309,
+      "outputTokens": 1117,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "key": "b752319c5dc3699ca94fb68bdbf8669e",
+  "recordedAt": "2026-11-03T12:05:04.016Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Data Analyst\",\n  \"company\": \"Wattle Analytics\",\n  \"requirementsBacked\": [\n   \"SQL\"\n  "
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Teacher moving into data",
+      "summary": {
+        "text": "Mathematics teacher since 2014 who builds SQL reports on attendance trends and tracks results for 150 students in Microsoft Excel. Presents findings to parents and staff each term.",
+        "evidence": [
+          "sw_1#r0",
+          "sw_1#r1",
+          "sw_1#r2",
+          "sw_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "SQL",
+          "evidence": [
+            "sw_1"
+          ]
+        },
+        {
+          "name": "Microsoft Excel",
+          "evidence": [
+            "sw_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "sw_1",
+          "bullets": [
+            {
+              "text": "Built a SQL report of attendance trends as a side project.",
+              "evidence": [
+                "sw_1#r1"
+              ]
+            },
+            {
+              "text": "Tracked results for 150 students in Microsoft Excel.",
+              "evidence": [
+                "sw_1#r0"
+              ]
+            },
+            {
+              "text": "Presented results to parents and staff each term.",
+              "evidence": [
+                "sw_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 577,
+      "outputTokens": 427,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

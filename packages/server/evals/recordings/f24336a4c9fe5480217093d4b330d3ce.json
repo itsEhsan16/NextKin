@@ -1,0 +1,102 @@
+{
+  "key": "f24336a4c9fe5480217093d4b330d3ce",
+  "recordedAt": "2026-11-03T12:03:47.949Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Produktdesigner\",\n  \"company\": \"Formwerk\",\n  \"requirementsBacked\": [\n   \"Figma\",\n   \""
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Produktdesigner",
+      "summary": {
+        "text": "Product designer working in Figma, with Nutzerforschung and Prototyping skills. Ran 30 moderated user research sessions, redesigned checkout for a 12% conversion lift and led a design system adopted by 5 squads.",
+        "evidence": [
+          "ds_1",
+          "ds_1#r0",
+          "ds_1#r1",
+          "ds_1#r2"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Figma",
+          "evidence": [
+            "ds_1"
+          ]
+        },
+        {
+          "name": "User research",
+          "evidence": [
+            "ds_1"
+          ]
+        },
+        {
+          "name": "Prototyping",
+          "evidence": [
+            "ds_1"
+          ]
+        },
+        {
+          "name": "Design systems",
+          "evidence": [
+            "ds_1"
+          ]
+        },
+        {
+          "name": "Sketch",
+          "evidence": [
+            "ds_2"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "ds_1",
+          "bullets": [
+            {
+              "text": "Ran 30 moderated user research sessions (Nutzerforschung) to inform product design decisions.",
+              "evidence": [
+                "ds_1#r2"
+              ]
+            },
+            {
+              "text": "Redesigned checkout, lifting conversion 12%.",
+              "evidence": [
+                "ds_1#r0"
+              ]
+            },
+            {
+              "text": "Led the design system adopted by 5 squads.",
+              "evidence": [
+                "ds_1#r1"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "ds_2",
+          "bullets": [
+            {
+              "text": "Designed mobile apps in Sketch for 14 clients.",
+              "evidence": [
+                "ds_2#r0"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 761,
+      "outputTokens": 1334,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

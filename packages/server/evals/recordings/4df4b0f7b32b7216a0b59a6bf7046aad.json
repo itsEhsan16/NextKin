@@ -1,0 +1,83 @@
+{
+  "key": "4df4b0f7b32b7216a0b59a6bf7046aad",
+  "recordedAt": "2026-11-03T12:03:07.704Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"iOS Engineer\",\n  \"company\": \"Healthstep\",\n  \"requirementsBacked\": [\n   \"Swift\",\n   \"F"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "iOS Engineer",
+      "summary": {
+        "text": "iOS engineer who ships apps in Swift and Objective-C, with Firebase offline sync and an app taken to 1 million installs. Built 8 client apps in Objective-C earlier in a mobile developer role.",
+        "evidence": [
+          "mo_1#r0",
+          "mo_1#r1",
+          "mo_2#r0"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Swift",
+          "evidence": [
+            "mo_1"
+          ]
+        },
+        {
+          "name": "Firebase",
+          "evidence": [
+            "mo_1"
+          ]
+        },
+        {
+          "name": "Objective-C",
+          "evidence": [
+            "mo_2"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "mo_1",
+          "bullets": [
+            {
+              "text": "Shipped the iOS app in Swift to 1 million installs",
+              "evidence": [
+                "mo_1#r0"
+              ]
+            },
+            {
+              "text": "Added offline sync with Firebase",
+              "evidence": [
+                "mo_1#r1"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "mo_2",
+          "bullets": [
+            {
+              "text": "Built 8 client apps in Objective-C",
+              "evidence": [
+                "mo_2#r0"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 704,
+      "outputTokens": 462,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

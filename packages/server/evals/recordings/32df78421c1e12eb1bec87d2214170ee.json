@@ -1,0 +1,95 @@
+{
+  "key": "32df78421c1e12eb1bec87d2214170ee",
+  "recordedAt": "2026-11-03T12:02:19.525Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Data Analyst",
+        "quote": "Data Analyst at Shopwise, Melbourne VIC."
+      },
+      "company": {
+        "text": "Shopwise",
+        "quote": "Data Analyst at Shopwise, Melbourne VIC."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Shopwise is hiring a Data Analyst in Melbourne, VIC. The posting asks for SQL, Python and Tableau experience, with pandas as a nice-to-have.",
+      "locations": [
+        {
+          "text": "Melbourne VIC",
+          "quote": "Data Analyst at Shopwise, Melbourne VIC.",
+          "city": "Melbourne",
+          "region": "VIC",
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Experience with Tableau is required",
+          "quote": "Experience with Tableau is required."
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "SQL",
+          "quote": "SQL and Python are required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Python",
+          "quote": "SQL and Python are required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Tableau",
+          "quote": "Experience with Tableau is required.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "pandas",
+          "quote": "Nice to have: pandas.",
+          "category": "framework",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "responsibilities_placeholder": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 308,
+      "outputTokens": 1116,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

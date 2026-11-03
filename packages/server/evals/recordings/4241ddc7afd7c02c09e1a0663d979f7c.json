@@ -1,0 +1,73 @@
+{
+  "key": "4241ddc7afd7c02c09e1a0663d979f7c",
+  "recordedAt": "2026-11-03T12:04:14.929Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Registered Nurse\",\n  \"company\": \"Harbour Health\",\n  \"requirementsBacked\": [\n   \"patie"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Registered Nurse",
+      "summary": {
+        "text": "Registered nurse providing patient care on a surgical ward, caring for up to 8 patients per shift and documenting care in electronic health records. Has trained 5 new nurses since April 2017.",
+        "evidence": [
+          "nu_1#r0",
+          "nu_1#r1",
+          "nu_1#r2",
+          "nu_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Patient care",
+          "evidence": [
+            "nu_1"
+          ]
+        },
+        {
+          "name": "Electronic health records",
+          "evidence": [
+            "nu_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "nu_1",
+          "bullets": [
+            {
+              "text": "Delivered patient care for up to 8 patients per shift on a surgical ward",
+              "evidence": [
+                "nu_1#r0"
+              ]
+            },
+            {
+              "text": "Documented care in the electronic health records system",
+              "evidence": [
+                "nu_1#r1"
+              ]
+            },
+            {
+              "text": "Trained 5 new nurses",
+              "evidence": [
+                "nu_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 571,
+      "outputTokens": 421,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "key": "58a5a14bdda94307a25d98ca33a5ad15",
+  "recordedAt": "2026-11-03T12:03:54.977Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Product Manager\",\n  \"company\": \"Billfold\",\n  \"requirementsBacked\": [\n   \"product mana"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Product Manager",
+      "summary": {
+        "text": "Product manager who owns the payments roadmap across 3 engineering teams and launches payment products, including instant payouts used by 8,000 merchants in the first quarter. Runs customer discovery interviews to shape product management decisions.",
+        "evidence": [
+          "pm_1#r0",
+          "pm_1#r1",
+          "pm_1#r2",
+          "pm_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Product management",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Roadmapping",
+          "evidence": [
+            "pm_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "pm_1",
+          "bullets": [
+            {
+              "text": "Owned the payments roadmap for 3 engineering teams",
+              "evidence": [
+                "pm_1#r0"
+              ]
+            },
+            {
+              "text": "Launched instant payouts, used by 8,000 merchants in the first quarter",
+              "evidence": [
+                "pm_1#r1"
+              ]
+            },
+            {
+              "text": "Ran discovery interviews with 25 customers",
+              "evidence": [
+                "pm_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 586,
+      "outputTokens": 442,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

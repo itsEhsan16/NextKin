@@ -1,0 +1,97 @@
+{
+  "key": "1fac14a7a71aec8a183547a5ef0e3da9",
+  "recordedAt": "2026-11-03T12:01:32.265Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Senior Backend Engineer",
+        "quote": "Senior Backend Engineer at Paywell, Austin, TX."
+      },
+      "company": {
+        "text": "Paywell",
+        "quote": "Senior Backend Engineer at Paywell, Austin, TX."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "senior",
+        "quote": "Senior Backend Engineer"
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "Austin, TX",
+          "quote": "Senior Backend Engineer at Paywell, Austin, TX.",
+          "city": "Austin",
+          "region": "TX",
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "strong Go and PostgreSQL experience",
+          "quote": "strong Go and PostgreSQL experience"
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "Go",
+          "quote": "strong Go and PostgreSQL experience",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "PostgreSQL",
+          "quote": "strong Go and PostgreSQL experience",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Kubernetes",
+          "quote": "Experience with Kubernetes is required.",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "Redis",
+          "quote": "Nice to have: Redis.",
+          "category": "database",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 317,
+      "outputTokens": 1019,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 5554
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

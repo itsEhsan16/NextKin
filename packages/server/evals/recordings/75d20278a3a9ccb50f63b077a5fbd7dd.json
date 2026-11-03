@@ -1,0 +1,94 @@
+{
+  "key": "75d20278a3a9ccb50f63b077a5fbd7dd",
+  "recordedAt": "2026-11-03T12:01:48.807Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Backend Engineer",
+        "quote": "Backend Engineer at Koala Bank, Sydney, NSW."
+      },
+      "company": {
+        "text": "Koala Bank",
+        "quote": "Backend Engineer at Koala Bank, Sydney, NSW."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Backend Engineer role at Koala Bank in Sydney, NSW. The posting requires Java, Kafka and PostgreSQL experience, with Scala as a nice-to-have.",
+      "locations": [
+        {
+          "text": "Sydney, NSW",
+          "quote": "Backend Engineer at Koala Bank, Sydney, NSW.",
+          "city": "Sydney",
+          "region": "NSW",
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Experience with PostgreSQL is required",
+          "quote": "Experience with PostgreSQL is required."
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "Java",
+          "quote": "Java and Kafka are required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Kafka",
+          "quote": "Java and Kafka are required.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "PostgreSQL",
+          "quote": "Experience with PostgreSQL is required.",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Scala",
+          "quote": "Nice to have: Scala.",
+          "category": "language",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 314,
+      "outputTokens": 1204,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

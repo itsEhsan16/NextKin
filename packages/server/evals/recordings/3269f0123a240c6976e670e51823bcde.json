@@ -1,0 +1,83 @@
+{
+  "key": "3269f0123a240c6976e670e51823bcde",
+  "recordedAt": "2026-11-03T12:03:04.587Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "iOS Engineer",
+        "quote": "iOS Engineer at Healthstep, San Francisco."
+      },
+      "company": {
+        "text": "Healthstep",
+        "quote": "iOS Engineer at Healthstep, San Francisco."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "San Francisco",
+          "quote": "iOS Engineer at Healthstep, San Francisco.",
+          "city": "San Francisco",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "Swift",
+          "quote": "Swift is required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Firebase",
+          "quote": "Experience with Firebase is required.",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "Objective-C",
+          "quote": "Objective-C.",
+          "category": "language",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 305,
+      "outputTokens": 929,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

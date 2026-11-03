@@ -1,0 +1,77 @@
+{
+  "key": "1b83be6d0cd7b9839969ad563b80bef9",
+  "recordedAt": "2026-11-03T12:04:24.506Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Clinical Nurse",
+        "quote": "Clinical Nurse at Mercy Example, Boston."
+      },
+      "company": {
+        "text": "Mercy Example",
+        "quote": "Clinical Nurse at Mercy Example, Boston."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "Boston",
+          "quote": "Clinical Nurse at Mercy Example, Boston.",
+          "city": "Boston",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "patient care",
+          "quote": "patient care is required.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "phlebotomy",
+          "quote": "Nice to have: phlebotomy.",
+          "category": "domain",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 295,
+      "outputTokens": 869,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

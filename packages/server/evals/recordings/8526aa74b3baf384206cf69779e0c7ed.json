@@ -1,0 +1,71 @@
+{
+  "key": "8526aa74b3baf384206cf69779e0c7ed",
+  "recordedAt": "2026-11-03T12:04:33.633Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Junior Software Engineer\",\n  \"company\": \"Codecamp\",\n  \"requirementsBacked\": [\n   \"Jav"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Junior Software Engineer",
+      "summary": {
+        "text": "Junior developer at Startly who fixes bugs in a customer portal and writes unit tests in Python. Skilled in JavaScript, Python and Git, with a focus on software quality.",
+        "evidence": [
+          "profile#summary",
+          "jr_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "JavaScript",
+          "evidence": [
+            "jr_1"
+          ]
+        },
+        {
+          "name": "Python",
+          "evidence": [
+            "jr_1"
+          ]
+        },
+        {
+          "name": "Git",
+          "evidence": [
+            "jr_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "jr_1",
+          "bullets": [
+            {
+              "text": "Wrote unit tests in Python",
+              "evidence": [
+                "jr_1#r1"
+              ]
+            },
+            {
+              "text": "Fixed 40 bugs in the customer portal",
+              "evidence": [
+                "jr_1#r0"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 529,
+      "outputTokens": 379,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

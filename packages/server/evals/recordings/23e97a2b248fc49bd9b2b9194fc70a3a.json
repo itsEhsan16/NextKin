@@ -1,0 +1,73 @@
+{
+  "key": "23e97a2b248fc49bd9b2b9194fc70a3a",
+  "recordedAt": "2026-11-03T12:04:01.835Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Technical Product Manager\",\n  \"company\": \"Platypus Labs\",\n  \"requirementsBacked\": [\n "
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Technical Product Manager",
+      "summary": {
+        "text": "Product manager who owns payments roadmaps across 3 engineering teams and launches products used by thousands of merchants. Runs customer discovery and manages work in Jira.",
+        "evidence": [
+          "pm_1",
+          "pm_1#r0",
+          "pm_1#r1",
+          "pm_1#r2"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Product management",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Jira",
+          "evidence": [
+            "pm_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "pm_1",
+          "bullets": [
+            {
+              "text": "Owned the payments roadmap for 3 engineering teams",
+              "evidence": [
+                "pm_1#r0"
+              ]
+            },
+            {
+              "text": "Launched instant payouts, used by 8,000 merchants in the first quarter",
+              "evidence": [
+                "pm_1#r1"
+              ]
+            },
+            {
+              "text": "Ran discovery interviews with 25 customers",
+              "evidence": [
+                "pm_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 597,
+      "outputTokens": 423,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

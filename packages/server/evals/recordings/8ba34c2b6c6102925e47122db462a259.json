@@ -1,0 +1,86 @@
+{
+  "key": "8ba34c2b6c6102925e47122db462a259",
+  "recordedAt": "2026-11-03T12:04:47.252Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Junior Developer",
+        "quote": "Junior Developer at Webly, Seattle."
+      },
+      "company": {
+        "text": "Webly",
+        "quote": "Junior Developer at Webly, Seattle."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": "Junior Developer at Webly, Seattle."
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "The posting is for a Junior Developer at Webly in Seattle. It lists React and TypeScript as required and Git as nice to have.",
+      "locations": [
+        {
+          "text": "Seattle",
+          "quote": "Junior Developer at Webly, Seattle.",
+          "city": "Seattle",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "React",
+          "quote": "React and TypeScript are required.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "TypeScript",
+          "quote": "React and TypeScript are required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Git",
+          "quote": "Nice to have: Git.",
+          "category": "tool",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 291,
+      "outputTokens": 988,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

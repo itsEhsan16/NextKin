@@ -1,0 +1,79 @@
+{
+  "key": "03c97881b1444776fc968fea849af867",
+  "recordedAt": "2026-11-03T12:04:57.865Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Junior Data Analyst\",\n  \"company\": \"Schoolmetrics\",\n  \"requirementsBacked\": [\n   \"SQL"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Mathematics Teacher Moving into Data Analysis",
+      "summary": {
+        "text": "Mathematics teacher since 2014 who tracks results for 150 students in Microsoft Excel and built a SQL report of attendance trends. Presents results to parents and staff each term.",
+        "evidence": [
+          "sw_1#r0",
+          "sw_1#r1",
+          "sw_1#r2",
+          "sw_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "SQL",
+          "evidence": [
+            "sw_1"
+          ]
+        },
+        {
+          "name": "Microsoft Excel",
+          "evidence": [
+            "sw_1"
+          ]
+        },
+        {
+          "name": "Communication",
+          "evidence": [
+            "sw_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "sw_1",
+          "bullets": [
+            {
+              "text": "Built a SQL report of attendance trends as a side project.",
+              "evidence": [
+                "sw_1#r1"
+              ]
+            },
+            {
+              "text": "Tracked results for 150 students in Microsoft Excel.",
+              "evidence": [
+                "sw_1#r0"
+              ]
+            },
+            {
+              "text": "Presented results to parents and staff each term.",
+              "evidence": [
+                "sw_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 604,
+      "outputTokens": 457,
+      "cacheReadTokens": 2445,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

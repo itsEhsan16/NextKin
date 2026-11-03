@@ -1,0 +1,92 @@
+{
+  "key": "cf588286e5dd6e240b4a7a3bba14cd89",
+  "recordedAt": "2026-11-03T12:04:18.424Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Backend Engineer",
+        "quote": "Backend Engineer at Paywell, Austin, TX."
+      },
+      "company": {
+        "text": "Paywell",
+        "quote": "Backend Engineer at Paywell, Austin, TX."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "Austin, TX",
+          "quote": "Backend Engineer at Paywell, Austin, TX.",
+          "city": "Austin",
+          "region": "TX",
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "Go",
+          "quote": "Go and PostgreSQL are required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "PostgreSQL",
+          "quote": "Go and PostgreSQL are required.",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Kubernetes",
+          "quote": "Kubernetes is required.",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "Redis",
+          "quote": "Redis.",
+          "category": "database",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "config": {
+        "language": "en"
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 308,
+      "outputTokens": 958,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}
