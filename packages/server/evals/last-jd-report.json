@@ -1,0 +1,608 @@
+{
+  "mode": "recorded",
+  "golden": "jd-structure-0.1.0",
+  "cases": 22,
+  "checks": [
+    {
+      "caseId": "formatted",
+      "check": "required:React",
+      "pass": true,
+      "detail": "React, TypeScript, REST APIs"
+    },
+    {
+      "caseId": "formatted",
+      "check": "required:TypeScript",
+      "pass": true,
+      "detail": "React, TypeScript, REST APIs"
+    },
+    {
+      "caseId": "formatted",
+      "check": "preferred:GraphQL",
+      "pass": true,
+      "detail": "GraphQL, Storybook"
+    },
+    {
+      "caseId": "formatted",
+      "check": "notRequired:GraphQL",
+      "pass": true,
+      "detail": "React, TypeScript, REST APIs"
+    },
+    {
+      "caseId": "formatted",
+      "check": "pay",
+      "pass": true,
+      "detail": "{\"component\":\"base\",\"min\":120000,\"max\":150000,\"currency\":\"USD\",\"period\":\"year\"}"
+    },
+    {
+      "caseId": "formatted",
+      "check": "minYears",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "caseId": "formatted",
+      "check": "maxYears",
+      "pass": true,
+      "detail": "5"
+    },
+    {
+      "caseId": "formatted",
+      "check": "workMode",
+      "pass": true,
+      "detail": "hybrid"
+    },
+    {
+      "caseId": "formatted",
+      "check": "employmentType",
+      "pass": true,
+      "detail": "full_time"
+    },
+    {
+      "caseId": "formatted",
+      "check": "noIssues",
+      "pass": true
+    },
+    {
+      "caseId": "formatted",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "4"
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "required:React",
+      "pass": true,
+      "detail": "React, Node.js, REST APIs, reconciliation"
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "required:Node.js",
+      "pass": true,
+      "detail": "React, Node.js, REST APIs, reconciliation"
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "pay",
+      "pass": true,
+      "detail": "{\"component\":\"unknown\",\"min\":45000,\"max\":80000,\"currency\":\"INR\",\"period\":\"month\"}"
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "minYears",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "workMode",
+      "pass": true,
+      "detail": "onsite"
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "daysPerWeek",
+      "pass": true,
+      "detail": "[\"Five days working\"]"
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "notBenefit:five days",
+      "pass": true
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "notBenefit:working",
+      "pass": true
+    },
+    {
+      "caseId": "one-paragraph",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "no-headings-bullets",
+      "check": "required:SQL",
+      "pass": true,
+      "detail": "SQL, Python, Power BI, dashboards"
+    },
+    {
+      "caseId": "no-headings-bullets",
+      "check": "required:Python",
+      "pass": true,
+      "detail": "SQL, Python, Power BI, dashboards"
+    },
+    {
+      "caseId": "no-headings-bullets",
+      "check": "minYears",
+      "pass": true,
+      "detail": "2"
+    },
+    {
+      "caseId": "no-headings-bullets",
+      "check": "workMode",
+      "pass": true,
+      "detail": "remote"
+    },
+    {
+      "caseId": "no-headings-bullets",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "caseId": "repeated",
+      "check": "required:Go",
+      "pass": true,
+      "detail": "Go, PostgreSQL"
+    },
+    {
+      "caseId": "repeated",
+      "check": "required:PostgreSQL",
+      "pass": true,
+      "detail": "Go, PostgreSQL"
+    },
+    {
+      "caseId": "repeated",
+      "check": "daysPerWeek",
+      "pass": true,
+      "detail": "[\"5 working days\",\"Flexible hours\"]"
+    },
+    {
+      "caseId": "repeated",
+      "check": "benefit:health insurance",
+      "pass": true,
+      "detail": "health insurance | annual learning budget"
+    },
+    {
+      "caseId": "repeated",
+      "check": "notBenefit:working days",
+      "pass": true,
+      "detail": "health insurance | annual learning budget"
+    },
+    {
+      "caseId": "salary-unclear",
+      "check": "payUnclear",
+      "pass": true,
+      "detail": "unclear"
+    },
+    {
+      "caseId": "salary-unclear",
+      "check": "minYears",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "salary-unclear",
+      "check": "workMode",
+      "pass": true,
+      "detail": "onsite"
+    },
+    {
+      "caseId": "salary-unclear",
+      "check": "employmentType",
+      "pass": true,
+      "detail": "full_time"
+    },
+    {
+      "caseId": "salary-unclear",
+      "check": "issue:compensation",
+      "pass": true,
+      "detail": "compensation"
+    },
+    {
+      "caseId": "salary-unclear",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "2"
+    },
+    {
+      "caseId": "years-conflict",
+      "check": "required:Kubernetes",
+      "pass": true,
+      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation"
+    },
+    {
+      "caseId": "years-conflict",
+      "check": "required:Terraform",
+      "pass": true,
+      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation"
+    },
+    {
+      "caseId": "years-conflict",
+      "check": "issue:experience",
+      "pass": true,
+      "detail": "experience"
+    },
+    {
+      "caseId": "duties-and-skills",
+      "check": "required:Python",
+      "pass": true,
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
+    },
+    {
+      "caseId": "duties-and-skills",
+      "check": "required:PyTorch",
+      "pass": true,
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
+    },
+    {
+      "caseId": "duties-and-skills",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "caseId": "must-and-nice",
+      "check": "required:Java",
+      "pass": true,
+      "detail": "Java, Spring Boot, MySQL"
+    },
+    {
+      "caseId": "must-and-nice",
+      "check": "required:Spring Boot",
+      "pass": true,
+      "detail": "Java, Spring Boot, MySQL"
+    },
+    {
+      "caseId": "must-and-nice",
+      "check": "required:MySQL",
+      "pass": true,
+      "detail": "Java, Spring Boot, MySQL"
+    },
+    {
+      "caseId": "must-and-nice",
+      "check": "preferred:Kafka",
+      "pass": true,
+      "detail": "Kafka, Docker"
+    },
+    {
+      "caseId": "must-and-nice",
+      "check": "preferred:Docker",
+      "pass": true,
+      "detail": "Kafka, Docker"
+    },
+    {
+      "caseId": "must-and-nice",
+      "check": "notRequired:Kafka",
+      "pass": true,
+      "detail": "Java, Spring Boot, MySQL"
+    },
+    {
+      "caseId": "must-and-nice",
+      "check": "notRequired:Docker",
+      "pass": true,
+      "detail": "Java, Spring Boot, MySQL"
+    },
+    {
+      "caseId": "many-locations",
+      "check": "required:Selenium",
+      "pass": true,
+      "detail": "Selenium, Java"
+    },
+    {
+      "caseId": "many-locations",
+      "check": "minYears",
+      "pass": true,
+      "detail": "2"
+    },
+    {
+      "caseId": "many-locations",
+      "check": "maxYears",
+      "pass": true,
+      "detail": "4"
+    },
+    {
+      "caseId": "many-locations",
+      "check": "locations",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "caseId": "remote-vs-office",
+      "check": "required:Figma",
+      "pass": true,
+      "detail": "Figma"
+    },
+    {
+      "caseId": "remote-vs-office",
+      "check": "issue:workMode",
+      "pass": true,
+      "detail": "workMode"
+    },
+    {
+      "caseId": "big-stack",
+      "check": "required:TypeScript",
+      "pass": true,
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+    },
+    {
+      "caseId": "big-stack",
+      "check": "required:Node.js",
+      "pass": true,
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+    },
+    {
+      "caseId": "big-stack",
+      "check": "required:PostgreSQL",
+      "pass": true,
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+    },
+    {
+      "caseId": "big-stack",
+      "check": "required:Kubernetes",
+      "pass": true,
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+    },
+    {
+      "caseId": "big-stack",
+      "check": "required:AWS",
+      "pass": true,
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+    },
+    {
+      "caseId": "table",
+      "check": "required:Excel",
+      "pass": true,
+      "detail": "Tally, GST filing, Excel, invoicing, GST returns, vendor reconciliation"
+    },
+    {
+      "caseId": "table",
+      "check": "pay",
+      "pass": true,
+      "detail": "{\"component\":\"unknown\",\"min\":600000,\"max\":900000,\"currency\":\"INR\",\"period\":\"year\"}"
+    },
+    {
+      "caseId": "table",
+      "check": "minYears",
+      "pass": true,
+      "detail": "2"
+    },
+    {
+      "caseId": "table",
+      "check": "maxYears",
+      "pass": true,
+      "detail": "4"
+    },
+    {
+      "caseId": "freshers-conflict",
+      "check": "minYears",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "freshers-conflict",
+      "check": "freshersOk",
+      "pass": true
+    },
+    {
+      "caseId": "freshers-conflict",
+      "check": "issue:experience",
+      "pass": true,
+      "detail": "experience"
+    },
+    {
+      "caseId": "incomplete",
+      "check": "required:Python",
+      "pass": true,
+      "detail": "Python"
+    },
+    {
+      "caseId": "incomplete",
+      "check": "noPay",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "caseId": "incomplete",
+      "check": "noYears",
+      "pass": true,
+      "detail": "undefined"
+    },
+    {
+      "caseId": "incomplete",
+      "check": "noWorkMode",
+      "pass": true
+    },
+    {
+      "caseId": "eligibility",
+      "check": "noYears",
+      "pass": true,
+      "detail": "undefined"
+    },
+    {
+      "caseId": "eligibility",
+      "check": "workMode",
+      "pass": true,
+      "detail": "field"
+    },
+    {
+      "caseId": "eligibility",
+      "check": "sensitive",
+      "pass": true,
+      "detail": "[\"Male candidates only\",\"Age 21-30 years\",\"Must have a two-wheeler and valid driving licence\"]"
+    },
+    {
+      "caseId": "scraped-chrome",
+      "check": "required:Kotlin",
+      "pass": true,
+      "detail": "Kotlin, Jetpack Compose"
+    },
+    {
+      "caseId": "scraped-chrome",
+      "check": "minYears",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "caseId": "scraped-chrome",
+      "check": "chrome:applicants",
+      "pass": true,
+      "detail": "build android apps in kotlin with jetpack compose."
+    },
+    {
+      "caseId": "scraped-chrome",
+      "check": "chrome:Apply for job",
+      "pass": true,
+      "detail": "build android apps in kotlin with jetpack compose."
+    },
+    {
+      "caseId": "scraped-chrome",
+      "check": "chrome:Similar jobs",
+      "pass": true,
+      "detail": "build android apps in kotlin with jetpack compose."
+    },
+    {
+      "caseId": "scraped-chrome",
+      "check": "chrome:Cookie",
+      "pass": true,
+      "detail": "build android apps in kotlin with jetpack compose."
+    },
+    {
+      "caseId": "german",
+      "check": "required:Python",
+      "pass": true,
+      "detail": "Python, Django, Microservices, PostgreSQL"
+    },
+    {
+      "caseId": "german",
+      "check": "required:Django",
+      "pass": true,
+      "detail": "Python, Django, Microservices, PostgreSQL"
+    },
+    {
+      "caseId": "german",
+      "check": "language",
+      "pass": true,
+      "detail": "de"
+    },
+    {
+      "caseId": "hourly-contract",
+      "check": "required:Airflow",
+      "pass": true,
+      "detail": "ETL, Airflow, dbt, Snowflake"
+    },
+    {
+      "caseId": "hourly-contract",
+      "check": "required:dbt",
+      "pass": true,
+      "detail": "ETL, Airflow, dbt, Snowflake"
+    },
+    {
+      "caseId": "hourly-contract",
+      "check": "pay",
+      "pass": true,
+      "detail": "{\"component\":\"unknown\",\"min\":45,\"max\":45,\"currency\":\"USD\",\"period\":\"hour\"}"
+    },
+    {
+      "caseId": "hourly-contract",
+      "check": "workMode",
+      "pass": true,
+      "detail": "remote"
+    },
+    {
+      "caseId": "hourly-contract",
+      "check": "employmentType",
+      "pass": true,
+      "detail": "contract"
+    },
+    {
+      "caseId": "lpa-variable",
+      "check": "pay",
+      "pass": true,
+      "detail": "{\"component\":\"total\",\"min\":1200000,\"max\":1800000,\"currency\":\"INR\",\"period\":\"year\"}"
+    },
+    {
+      "caseId": "lpa-variable",
+      "check": "minYears",
+      "pass": true,
+      "detail": "4"
+    },
+    {
+      "caseId": "lpa-variable",
+      "check": "maxYears",
+      "pass": true,
+      "detail": "6"
+    },
+    {
+      "caseId": "deadline-passed",
+      "check": "freshersOk",
+      "pass": true
+    },
+    {
+      "caseId": "deadline-passed",
+      "check": "issue:application",
+      "pass": true,
+      "detail": "application"
+    },
+    {
+      "caseId": "perks-vs-schedule",
+      "check": "benefit:health insurance",
+      "pass": true,
+      "detail": "health insurance | provident fund | gratuity"
+    },
+    {
+      "caseId": "perks-vs-schedule",
+      "check": "notBenefit:monday",
+      "pass": true,
+      "detail": "health insurance | provident fund | gratuity"
+    },
+    {
+      "caseId": "perks-vs-schedule",
+      "check": "notBenefit:night shift",
+      "pass": true,
+      "detail": "health insurance | provident fund | gratuity"
+    },
+    {
+      "caseId": "injection",
+      "check": "required:Go",
+      "pass": true,
+      "detail": "Go, gRPC, payment services"
+    },
+    {
+      "caseId": "injection",
+      "check": "notRequired:Rust",
+      "pass": true,
+      "detail": "Go, gRPC, payment services"
+    },
+    {
+      "caseId": "injection",
+      "check": "notRequired:Haskell",
+      "pass": true,
+      "detail": "Go, gRPC, payment services"
+    },
+    {
+      "caseId": "injection",
+      "check": "noPay",
+      "pass": true,
+      "detail": "null"
+    }
+  ],
+  "passRate": 1,
+  "invented": [],
+  "verdict": {
+    "pass": true,
+    "failures": []
+  },
+  "spentUsd": 0
+}

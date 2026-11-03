@@ -1,0 +1,143 @@
+{
+  "key": "f33beb0698fa20ee8856e43cc1b642db",
+  "recordedAt": "2026-11-03T11:32:12.801Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Full-stack Developer",
+        "quote": "Full-stack Developer"
+      },
+      "company": {
+        "text": "Paylane Fintech Private Limited",
+        "quote": "Paylane Fintech Private Limited, Indiranagar, Bengaluru"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": {
+        "value": "full_time",
+        "quote": "Full Time"
+      },
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is for a Full-stack Developer who builds and maintains web applications for UPI collections and payouts. The work also includes integrating partner bank APIs for UPI, IMPS and NEFT.",
+      "locations": [
+        {
+          "text": "Indiranagar, Bengaluru",
+          "quote": "Paylane Fintech Private Limited, Indiranagar, Bengaluru",
+          "city": "Bengaluru",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [
+        {
+          "value": "onsite",
+          "quote": "Work from Office"
+        }
+      ],
+      "schedule": [],
+      "pay": [
+        {
+          "component": "fixed",
+          "quote": "Fixed ₹45,000 - ₹80,000"
+        },
+        {
+          "component": "total",
+          "quote": "Earning Potential ₹80,000"
+        },
+        {
+          "component": "base",
+          "quote": "₹45,000 - ₹80,000 monthly"
+        }
+      ],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Min. 1 year",
+          "quote": "Min. 1 year"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Build and maintain web applications for UPI collections and payouts.",
+          "quote": "Build and maintain web applications for UPI collections and payouts.",
+          "group": null
+        },
+        {
+          "text": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "UPI",
+          "quote": "UPI collections and payouts",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "IMPS",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "NEFT",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "partner bank APIs",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "web application development",
+          "quote": "Build and maintain web applications for UPI collections and payouts.",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "ambiguous",
+          "field": "pay",
+          "note": "Pay lines give a monthly range of ₹45,000 - ₹80,000, a fixed range of the same figures, and an earning potential of ₹80,000; the posting does not say how they relate.",
+          "quotes": [
+            "₹45,000 - ₹80,000 monthly",
+            "Fixed ₹45,000 - ₹80,000",
+            "Earning Potential ₹80,000"
+          ]
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 402,
+      "outputTokens": 1617,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

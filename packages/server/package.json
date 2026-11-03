@@ -24,6 +24,7 @@
     "openapi:check": "tsx src/entrypoints/openapi.ts --check",
     "eval": "tsx --env-file-if-exists=../../.env evals/run.ts",
     "eval:assistant": "tsx --env-file-if-exists=../../.env evals/runAssistant.ts",
+    "eval:jd": "tsx --env-file-if-exists=../../.env evals/runJd.ts",
     "dlq": "tsx --env-file-if-exists=../../.env src/entrypoints/dlq.ts",
     "drills": "vitest run --project drills",
     "render-check": "tsx --env-file-if-exists=../../.env src/entrypoints/render-check.ts",

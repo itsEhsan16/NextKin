@@ -1,0 +1,147 @@
+{
+  "key": "5dfae9b9070473b5d95deb87df846507",
+  "recordedAt": "2026-11-03T11:32:42.212Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Platform Engineer",
+        "quote": "Platform Engineer at Lumenrail"
+      },
+      "company": {
+        "text": "Lumenrail",
+        "quote": "Platform Engineer at Lumenrail"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The Platform Engineer role centres on a stack spanning TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana and Prometheus. The posting says the candidate must be comfortable across this stack. The role is to improve deployment speed and reliability.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "You will improve deployment speed and reliability.",
+          "quote": "You will improve deployment speed and reliability.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "TypeScript",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Node.js",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "React",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "Next.js",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "PostgreSQL",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Redis",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Kafka",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Docker",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Kubernetes",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Terraform",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "AWS",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "GitHub Actions",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Grafana",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Prometheus",
+          "quote": "Our stack: TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus.",
+          "category": "tool",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 370,
+      "outputTokens": 2422,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

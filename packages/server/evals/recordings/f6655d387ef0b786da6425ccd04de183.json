@@ -1,0 +1,83 @@
+{
+  "key": "f6655d387ef0b786da6425ccd04de183",
+  "recordedAt": "2026-11-03T11:33:19.307Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Graduate Trainee",
+        "quote": "Graduate Trainee — Stonebridge Logistics"
+      },
+      "company": {
+        "text": "Stonebridge Logistics",
+        "quote": "Graduate Trainee — Stonebridge Logistics"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": "Freshers welcome."
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "Stonebridge Logistics is offering a Graduate Trainee role for freshers. The posting says the trainee will learn route planning and warehouse operations.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Freshers welcome",
+          "quote": "Freshers welcome."
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "route planning",
+          "quote": "Learn route planning and warehouse operations.",
+          "category": "domain",
+          "importance": "preferred"
+        },
+        {
+          "name": "warehouse operations",
+          "quote": "Learn route planning and warehouse operations.",
+          "category": "domain",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [
+        {
+          "kind": "deadline",
+          "text": "Apply by 15 Oct 2026",
+          "quote": "Apply by 15 Oct 2026."
+        }
+      ],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 306,
+      "outputTokens": 952,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

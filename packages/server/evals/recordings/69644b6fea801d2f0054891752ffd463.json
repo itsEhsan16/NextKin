@@ -1,0 +1,122 @@
+{
+  "key": "69644b6fea801d2f0054891752ffd463",
+  "recordedAt": "2026-11-03T11:32:00.948Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Data Analyst",
+        "quote": "Data Analyst at Northwind Retail Analytics"
+      },
+      "company": {
+        "text": "Northwind Retail Analytics",
+        "quote": "Data Analyst at Northwind Retail Analytics"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The Data Analyst role involves daily SQL and Python work and building weekly sales dashboards in Power BI. The analyst also presents findings to store managers. The role requires 2+ years in analytics and is remote within India.",
+      "locations": [
+        {
+          "text": "Remote within India",
+          "quote": "Remote within India",
+          "city": null,
+          "region": null,
+          "country": "India"
+        }
+      ],
+      "workModes": [
+        {
+          "value": "remote",
+          "quote": "Remote within India"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "SQL and Python every day",
+          "quote": "SQL and Python every day",
+          "group": null
+        },
+        {
+          "text": "Build weekly sales dashboards in Power BI",
+          "quote": "Build weekly sales dashboards in Power BI",
+          "group": null
+        },
+        {
+          "text": "Present findings to store managers",
+          "quote": "Present findings to store managers",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "SQL",
+          "quote": "SQL and Python every day",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Python",
+          "quote": "SQL and Python every day",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Power BI",
+          "quote": "Build weekly sales dashboards in Power BI",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "dashboards",
+          "quote": "Build weekly sales dashboards in Power BI",
+          "category": "tool",
+          "importance": "required"
+        }
+      ],
+      "experience": [
+        {
+          "text": "2+ years in analytics",
+          "quote": "2+ years in analytics"
+        }
+      ],
+      "pay": [],
+      "negotiable": null,
+      "schedule": [],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [
+        {
+          "text": "Remote within India",
+          "quote": "Remote within India",
+          "kind": "location",
+          "sensitive": false
+        }
+      ],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 323,
+      "outputTokens": 1377,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

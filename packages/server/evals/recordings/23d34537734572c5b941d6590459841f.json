@@ -1,0 +1,86 @@
+{
+  "key": "23d34537734572c5b941d6590459841f",
+  "recordedAt": "2026-11-03T11:32:57.604Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Field Sales Executive",
+        "quote": "Field Sales Executive — Crestline Foods"
+      },
+      "company": {
+        "text": "Crestline Foods",
+        "quote": "Field Sales Executive — Crestline Foods"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a Field Sales Executive at Crestline Foods. The posting says the job involves visiting retail stores and growing distribution in the assigned territory.",
+      "locations": [],
+      "workModes": [
+        {
+          "value": "field",
+          "quote": "Visit retail stores and grow distribution in your territory."
+        }
+      ],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "Visit retail stores and grow distribution in your territory.",
+          "quote": "Visit retail stores and grow distribution in your territory.",
+          "group": null
+        }
+      ],
+      "skills": [],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [
+        {
+          "text": "Male candidates only",
+          "quote": "Male candidates only.",
+          "kind": "gender",
+          "sensitive": true
+        },
+        {
+          "text": "Age 21-30 years",
+          "quote": "Age 21-30 years.",
+          "kind": "age",
+          "sensitive": true
+        },
+        {
+          "text": "Must have a two-wheeler and valid driving licence",
+          "quote": "Must have a two-wheeler and valid driving licence.",
+          "kind": "other",
+          "sensitive": false
+        }
+      ],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 320,
+      "outputTokens": 984,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -258,3 +258,29 @@ describe('structureJd', () => {
     });
   });
 });
+
+describe('one note per question', () => {
+  it('leaves out the model’s note on a field code already flagged, and names fields one way', () => {
+    const raw = 'Salary ₹45,000 - ₹80,000 monthly. Earning Potential ₹80,000.';
+    const s = structureJd(
+      raw,
+      {
+        ...empty,
+        pay: [
+          { component: 'unknown', quote: '₹45,000 - ₹80,000 monthly' },
+          { component: 'total', quote: 'Earning Potential ₹80,000' },
+        ],
+        issues: [
+          {
+            kind: 'ambiguous',
+            field: 'pay',
+            note: 'Unclear pay',
+            quotes: ['Earning Potential ₹80,000'],
+          },
+        ],
+      },
+      opts,
+    );
+    expect(s.issues.map((i) => [i.field, i.by])).toEqual([['compensation', 'rules']]);
+  });
+});

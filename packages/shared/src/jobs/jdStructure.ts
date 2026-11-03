@@ -63,6 +63,17 @@ export type StructureOptions = {
   today: string;
 };
 
+/** The model's name for a field, as the checks name it: "pay" and "salary" are compensation. */
+const FIELD_ALIASES: readonly [RegExp, string][] = [
+  [/pay|salary|compensation|ctc|wage/i, 'compensation'],
+  [/experience|years|freshers?|seniority/i, 'experience'],
+  [/remote|work.?mode|arrangement|office|hybrid/i, 'workMode'],
+  [/deadline|closing|apply|application/i, 'application'],
+  [/title|role/i, 'title'],
+];
+export const fieldOf = (field: string): string =>
+  FIELD_ALIASES.find(([re]) => re.test(field))?.[1] ?? field.trim().slice(0, 40);
+
 /** Same words, ignoring letter case and punctuation: a phrase inside its own quote. */
 const within = (text: string, quote: string) =>
   ` ${factKey(quote)} `.includes(` ${factKey(text)} `);
@@ -209,19 +220,14 @@ export function structureJd(
   const experience = readExperience(experienceLines);
   issues.push(...experience.issues);
 
+  // Sensitive is code's call (age, gender, marital status and the like), so a plain requirement
+  // such as a driving licence is never flagged because the model guessed.
   const eligibility = many(reading.eligibility, (e) => ({ kind: e.kind, sensitive: false })).map(
-    (e) => {
-      const src = reading.eligibility.find(
-        (x) =>
-          e.quotes.some((q) => q.text.includes(x.quote.trim())) ||
-          factKey(x.text) === factKey(e.value),
-      );
-      const sensitive =
-        Boolean(src?.sensitive) ||
-        ['age', 'gender'].includes(e.kind) ||
-        SENSITIVE.test(e.quotes.map((q) => q.text).join(' '));
-      return { ...e, sensitive };
-    },
+    (e) => ({
+      ...e,
+      sensitive:
+        ['age', 'gender'].includes(e.kind) || SENSITIVE.test(e.quotes.map((q) => q.text).join(' ')),
+    }),
   );
   for (const e of eligibility.filter((x) => x.sensitive)) {
     issues.push({
@@ -292,13 +298,18 @@ export function structureJd(
   for (const i of reading.issues) {
     const quotes = i.quotes.map((q) => locate(hay, q)).filter((q): q is JdQuote => q !== null);
     if (quotes.length === 0 || quotes.length < i.quotes.length) continue;
+    // One note per question: the model's field named the way the checks name it, and left out where
+    // code already raised that field (its note names the figures).
+    const field = fieldOf(i.field);
     const dup = issues.some(
-      (x) => x.field === i.field && x.quotes.some((q) => quotes.some((p) => q.start === p.start)),
+      (x) =>
+        x.field === field &&
+        (x.by === 'rules' || x.quotes.some((q) => quotes.some((p) => q.start === p.start))),
     );
     if (!dup)
       issues.push({
         kind: i.kind,
-        field: i.field,
+        field,
         note: i.note.trim().slice(0, 400),
         quotes,
         by: 'model',

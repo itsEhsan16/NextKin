@@ -1,0 +1,94 @@
+{
+  "key": "bfb99b7a5a5e2b0250b46ed70184d794",
+  "recordedAt": "2026-11-03T11:33:01.482Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Android Developer",
+        "quote": "Android Developer"
+      },
+      "company": {
+        "text": "Mintcove Apps",
+        "quote": "Mintcove Apps · Kochi"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is for an Android Developer who builds Android apps in Kotlin with Jetpack Compose. The posting lists 3+ years of Android experience.",
+      "locations": [
+        {
+          "text": "Kochi",
+          "quote": "Mintcove Apps · Kochi",
+          "city": "Kochi",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "3+ years of Android experience",
+          "quote": "3+ years of Android experience."
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Build Android apps in Kotlin with Jetpack Compose",
+          "quote": "Build Android apps in Kotlin with Jetpack Compose.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Kotlin",
+          "quote": "Build Android apps in Kotlin with Jetpack Compose.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Jetpack Compose",
+          "quote": "Build Android apps in Kotlin with Jetpack Compose.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "Android development",
+          "quote": "3+ years of Android experience.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 389,
+      "outputTokens": 1049,
+      "cacheReadTokens": 5554,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}
