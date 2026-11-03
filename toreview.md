@@ -15289,3 +15289,27 @@ After §161 the owner asked for the Enhance step as it was: each ticked keyword 
   - **The AI's pick** only adds X to that role's skills, so a bullet there may name it on a line about that work (writer prompt v7). It adds no line, so it never raises the role's bullet count, which is how §159's internship got nine tool lines. If no line fits, X stays in Skills. The merge still drops bolt-on "Used X, Y and Z" lines.
 - **Results:** `canCarryResult` is gone; every line with no figure is offered "Add the result" again, "Used Git…" lines included. **Risk, as the owner was told:** a figure on a tool line reads as made up ("…, cutting the time it took by about 10%"), which the scanner flagged in §159.
 - **Not re-run live:** the Nuvexa tailoring with these rules, and the evals. Tests pass (engines 205, shared 253, server 308, web tailor 27, mobile create 155).
+
+## 163. Enhance: places picked from your lines, several per keyword, results in their own card (owner, 2026-11-04)
+
+Owner feedback on the local Enhance step (every tick read "AI places it in: Developer Intern"): (1) a keyword with no place is just a tick; (2) keywords that need a place get one decided beforehand, shown on tick and changeable; (3) hide "Already on your resume"; (4) results in their own container; (5) several places per keyword, the AI's pre-selected.
+
+- **Picks** (`scoring/placeFit.ts`, on every comparison as `picks`): every role **and project** scored from its own lines: already names it 100, KB-related skill used there 4 each, keyword words in its lines 3 each (plural-stripped; two words with the same first six letters count as one form, so "integrations" meets "integrated"), a technology of the same narrow kind 2 each (language, framework, library, database, cloud only). A dated role must pass the timeline check. Picked: score ≥ 2 and ≥ half the best, at most 3. **No fit, no pick** (the old fallback to the current role is gone). The plan's own `where` and scoring are unchanged.
+- **Generic words never make a fit:** api, data, tool, system, platform, service, app, application, feature, management, development, developer, web, website, software, solution, project, business, operation, internal, online, live, real, time, based, using, work, database. Without this, "LLM APIs" and "Flipkart APIs" landed on a project for its "RESTful APIs".
+- **Checked on the owner's Nuvexa comparison** (local data): Integrations → Ease Home, Dashboards → iRedirectX; the other 32 missing keywords are keyword-only because no line of the resume describes that work (webhooks, n8n, Docker, OpenAI, LangChain…). **Known miss:** NoSQL isn't matched to the internship's MongoDB (NoSQL has no taxonomy family).
+- **Several places** (`KeywordPlace.where: string[]`): a tick takes the picks as the AI's set (`by: 'ai'`: a skill there, no line, §162); any edit makes the whole set the user's (`by: 'you'`: a "Used X" line at each). The run sends one confirmation per place (cap 80 → 240, deduped on the server).
+- **Web:** a tick with no picks adds no row; rows show "AI adds it to: X (+N)" or "Used in: …" in one multi-select `PlacePicker` (stays open; "Skills only" clears). "Select all" now places too (it used to only tick). "Already on your resume" is gone (the header count stays). "Add real results" is its own card under the step, same editor.
+- **Calls made without you:** a keyword-only tick can't be given a place by hand (it has no row); mobile gets the same model with multi-select chips, nothing else redesigned there; the projected score still counts role places only (projects aren't scored for skills).
+- **Checked:** all suites pass (engines 205, shared 262, server 310, web 430, mobile 1980); typecheck and lint clean. **Not done:** a live tailoring run with these picks; a look in a real browser.
+
+## 164. Sign out (owner, 2026-11-04)
+
+The owner: "there is no option to log out". There wasn't: §133 built sign-in and the redirect to it, but the only Sign out was on `/dev/sign-in`, and Settings had only "Sign out of other devices".
+
+- **The avatar opens a menu** (`navigation/AccountMenu.tsx`): name and email, Profile, Settings, Sign out. It used to be a plain link to Profile.
+- **Settings → Security** has "Sign out" (ends this session) above "Sign out of other devices".
+- **`lib/signOut.ts`:** `auth.logout()`, then a full load of `/sign-in` so no cached data of the ended session stays. A failed request shows an error toast and keeps the user signed in where they are. On the mock it only goes to the sign-in screen.
+- **Checked on the local stack in a browser:** sign in as pro@, open the menu, Sign out → `/sign-in`, the session cookie is gone, and `/resumes` then redirects to `/sign-in`. Tests: TopBar menu, signOut success and failure.
+- **Mobile:** has "Sign out everywhere" (Account → Email & password), which ends this device too, but no single-device sign out. Not changed here.
+
+**Also (owner, same day): the review score card is shorter** (`ScoreSummaryCard.tsx`): "10 of 10 key keywords · Up from 5.9", plus "· Plan aimed for 8.0" only when the run missed the plan by more than rounding; the tip is one short line ("All key keywords are in. Add results to stand out." / "Missing: A, B, C +N. Add only what's true.").

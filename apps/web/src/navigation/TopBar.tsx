@@ -1,6 +1,6 @@
 'use client';
 
-import { useCurrentUser, useUnreadCount } from '@nextkin/shared/queries';
+import { useUnreadCount } from '@nextkin/shared/queries';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -11,8 +11,9 @@ import { brandButton } from '@/ui/brandButton';
 import { BellIcon, SearchIcon, UploadIcon } from '@/ui/icons';
 import { pageColumn, topBarHeight } from '@/ui/pageFrame';
 import { pressable } from '@/ui/pressable';
-import { UserAvatar } from '@/ui/UserAvatar';
 import { Soon } from '@/ui/Soon';
+
+import { AccountMenu } from './AccountMenu';
 
 /** A primary action with a `null` destination is an inert button. */
 type UploadAction = { label: string; href: Route | null };
@@ -50,7 +51,8 @@ const uploadAction = cn(
 );
 
 /**
- * The app-wide actions: search, Upload New JD, notifications and the avatar. They sit on a band of
+ * The app-wide actions: search, Upload New JD, notifications and the avatar, whose menu holds
+ * Profile, Settings and Sign out (toreview §164). They sit on a band of
  * their own above every page, pinned while the page scrolls under it (`toreview.md` §28). There is
  * one bar in the `(app)` layout rather than one per page, so it is in the same place everywhere
  * and what is typed into the search survives a navigation.
@@ -60,7 +62,6 @@ const uploadAction = cn(
  */
 export function TopBar() {
   const pathname = usePathname();
-  const user = useCurrentUser();
   const unread = useUnreadCount();
 
   // A document opened in the viewer starts in the band too (563:1377).
@@ -127,21 +128,8 @@ export function TopBar() {
             )}
           </Link>
 
-          {/* The way into the Profile page (476:4) from every screen. */}
-          <Link
-            href="/profile"
-            aria-label="Your profile"
-            className={cn(
-              'shrink-0 rounded-full hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-              pressable,
-            )}
-          >
-            <UserAvatar
-              name={user.data ? `${user.data.firstName} ${user.data.lastName}` : ''}
-              avatarUrl={user.data?.avatarUrl}
-              className="size-control-md rounded-full"
-            />
-          </Link>
+          {/* Profile (476:4), Settings and Sign out, from every screen. */}
+          <AccountMenu />
         </div>
       </div>
     </header>

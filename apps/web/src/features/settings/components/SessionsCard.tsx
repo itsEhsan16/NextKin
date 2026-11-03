@@ -1,9 +1,11 @@
 import type { AccountSession, SessionDevice } from '@nextkin/shared/models';
 import { useSignOutEverywhere } from '@nextkin/shared/queries';
+import { useState } from 'react';
 import type { ComponentType, SVGProps } from 'react';
 
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { cn } from '@/lib/cn';
+import { signOut } from '@/lib/signOut';
 import { buttonClass } from '@/ui/Button';
 import { iconButton } from '@/ui/iconButton';
 import { LogoutIcon, MoreVerticalIcon } from '@/ui/icons';
@@ -38,7 +40,8 @@ const DEVICE_ICON: Record<SessionDevice, ComponentType<SVGProps<SVGSVGElement>>>
  * "Active sessions" (254:555): every signed-in device, this one marked green and named, the rest
  * with when they were last used and a menu. The board draws neither the menu open nor a longer
  * list behind "View all", so both say "Coming soon" (`toreview.md` §21, §102). "Sign out of other
- * devices" in Settings → Security does end the others, and this list follows it.
+ * devices" in Settings → Security does end the others, and this list follows it; "Sign out" beside
+ * it ends this one (owner, toreview §164).
  */
 export function SessionsCard({
   sessions,
@@ -51,7 +54,8 @@ export function SessionsCard({
    */
   inSecurity?: boolean;
 }) {
-  const signOut = useSignOutEverywhere();
+  const signOutOthers = useSignOutEverywhere();
+  const [leaving, setLeaving] = useState(false);
   const others = sessions.some((session) => !session.current);
 
   return (
@@ -133,13 +137,34 @@ export function SessionsCard({
           })}
         </ul>
       )}
-      {inSecurity && others && (
+      {inSecurity && (
         <div className="mt-5 flex flex-wrap items-center gap-4">
           <button
             type="button"
-            aria-disabled={signOut.isPending}
+            aria-disabled={leaving}
             onClick={() => {
-              if (!signOut.isPending) signOut.mutate();
+              if (leaving) return;
+              setLeaving(true);
+              void signOut().finally(() => setLeaving(false));
+            }}
+            className={cn(
+              buttonClass({ variant: 'secondary', size: 'md' }),
+              'aria-disabled:cursor-default aria-disabled:opacity-60',
+            )}
+          >
+            <LogoutIcon aria-hidden className="size-4" />
+            <StableLabel label="Sign out" busyLabel="Signing out…" busy={leaving} />
+          </button>
+          <span className="text-body-s text-text-tertiary">Ends this session.</span>
+        </div>
+      )}
+      {inSecurity && others && (
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <button
+            type="button"
+            aria-disabled={signOutOthers.isPending}
+            onClick={() => {
+              if (!signOutOthers.isPending) signOutOthers.mutate();
             }}
             className={cn(
               buttonClass({ variant: 'secondary', size: 'md' }),
@@ -150,7 +175,7 @@ export function SessionsCard({
             <StableLabel
               label="Sign out of other devices"
               busyLabel="Signing out…"
-              busy={signOut.isPending}
+              busy={signOutOthers.isPending}
             />
           </button>
           <span className="text-body-s text-text-tertiary">

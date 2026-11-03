@@ -1,10 +1,17 @@
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { usePathname } from 'next/navigation';
 
+import { signOut } from '@/lib/signOut';
 import { TopBar } from '@/navigation/TopBar';
 import { renderWithQuery, SETTLE_MS } from '../../testSupport/render';
 
-jest.mock('next/navigation', () => ({ usePathname: jest.fn(() => '/') }));
+const push = jest.fn();
+jest.mock('next/navigation', () => ({
+  usePathname: jest.fn(() => '/'),
+  useRouter: () => ({ push }),
+}));
+jest.mock('@/lib/signOut', () => ({ signOut: jest.fn(() => Promise.resolve()) }));
 
 const onPage = (path: string) => jest.mocked(usePathname).mockReturnValue(path);
 
@@ -25,9 +32,24 @@ describe('TopBar', () => {
       'href',
       '/notifications',
     );
-    // The avatar is the way into the Account page (307:3443).
-    expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/profile');
+    expect(screen.getByRole('button', { name: 'Your account' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Back to Jobs' })).not.toBeInTheDocument();
+  });
+
+  it('opens the account menu from the avatar: who is signed in, Profile, Settings, Sign out (§164)', async () => {
+    const user = userEvent.setup();
+    onPage('/');
+    renderWithQuery(<TopBar />);
+
+    await user.click(screen.getByRole('button', { name: 'Your account' }));
+    expect(await screen.findByRole('menuitem', { name: 'Profile' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument();
+    await user.click(screen.getByRole('menuitem', { name: 'Profile' }));
+    expect(push).toHaveBeenCalledWith('/profile');
+
+    await user.click(screen.getByRole('button', { name: 'Your account' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Sign out' }));
+    expect(signOut).toHaveBeenCalledTimes(1);
   });
 
   it("shows the user's photo, and says so when there are unread notifications", async () => {
