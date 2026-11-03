@@ -24,8 +24,14 @@ if (!['', 'mock', 'http'].includes(webDataSource)) {
   throw new Error(`webDataSource must be mock or http, not "${webDataSource}"`);
 }
 
+// The app's own domain (toreview §165), kept in cdk.json so no deploy drops it by accident: the
+// zone from the first deploy, the certificate and aliases once `appDomainLive` is true.
+const appDomain = app.node.tryGetContext('appDomain') as string | undefined;
+const appDomainLive = String(app.node.tryGetContext('appDomainLive') ?? 'false') === 'true';
+
 new DemoStack(app, DEMO.stack, {
   env: { account: NEXTKIN_ACCOUNT, region: REGION },
   description: 'NextKin demo: internal testing and client demos (APP_ENV=dev)',
   webDataSource,
+  ...(appDomain ? { appDomain: { name: appDomain, live: appDomainLive } } : {}),
 });

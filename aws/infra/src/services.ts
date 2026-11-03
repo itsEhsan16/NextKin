@@ -23,6 +23,8 @@ export interface ServicesProps {
   network: Network;
   data: Data;
   appOrigin: string;
+  /** More origins the server trusts: the cloudfront.net address once the own domain is live. */
+  extraOrigins?: readonly string[];
   /** NEXT_PUBLIC_DATA_SOURCE baked into the web build: '' (mock) or 'http'. */
   webDataSource: string;
 }
@@ -38,7 +40,7 @@ export class Services extends Construct {
 
   constructor(scope: Construct, id: string, props: ServicesProps) {
     super(scope, id);
-    const { network, data, appOrigin, webDataSource } = props;
+    const { network, data, appOrigin, extraOrigins, webDataSource } = props;
 
     this.cluster = new ecs.Cluster(this, 'Cluster', {
       vpc: network.vpc,
@@ -93,7 +95,7 @@ export class Services extends Construct {
       },
     });
 
-    const environment = appEnvironment(data, appOrigin);
+    const environment = appEnvironment(data, appOrigin, extraOrigins);
     const secrets = appSecrets(data);
     const runtimeRoles = ['app', 'maintenance', 'readonly'] as const;
     const grantApp = (definition: ecs.FargateTaskDefinition) => {

@@ -7,6 +7,7 @@ import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Construct } from 'constructs';
 
 import type { Data } from './data';
+import type { AppDomain } from './domain';
 import type { Network } from './network';
 
 const VERIFY_HEADER = 'X-Origin-Verify';
@@ -14,7 +15,9 @@ const VERIFY_HEADER = 'X-Origin-Verify';
 /**
  * The front door (toreview §133). CloudFront's default *.cloudfront.net domain gives HTTPS without
  * our own domain; the load balancer answers 403 unless CloudFront's secret header is present.
- * CloudFront to the load balancer is plain HTTP until nextkin.ai has a certificate.
+ * CloudFront to the load balancer is plain HTTP until nextkin.ai has a certificate. With the app's
+ * own domain live (toreview §165), the distribution answers at that name too, and it becomes the
+ * app's origin; the cloudfront.net address keeps working beside it.
  *
  * Route classes follow aws/architecture.md: nothing private is cached, and compression is off for
  * the app because it would buffer the SSE progress and assistant streams.
@@ -23,10 +26,12 @@ export class Edge extends Construct {
   readonly alb: elbv2.ApplicationLoadBalancer;
   readonly listener: elbv2.ApplicationListener;
   readonly distribution: cloudfront.Distribution;
-  /** https://<id>.cloudfront.net: the app's origin and the API's public URL. */
+  /** The app's origin and the API's public URL: the own domain when live, else the default. */
   readonly appOrigin: string;
+  /** https://<id>.cloudfront.net, which keeps answering after the switch. */
+  readonly defaultOrigin: string;
 
-  constructor(scope: Construct, id: string, network: Network, data: Data) {
+  constructor(scope: Construct, id: string, network: Network, data: Data, domain?: AppDomain) {
     super(scope, id);
 
     this.alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', {
@@ -55,8 +60,16 @@ export class Edge extends Construct {
       customHeaders: { [VERIFY_HEADER]: data.originVerify.secretValue.unsafeUnwrap() },
     });
 
+    const own = domain?.certificate
+      ? {
+          domainNames: [domain.name],
+          certificate: domain.certificate,
+          minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+        }
+      : {};
     this.distribution = new cloudfront.Distribution(this, 'Cdn', {
       comment: 'NextKin demo',
+      ...own,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       defaultBehavior: {
@@ -78,7 +91,9 @@ export class Edge extends Construct {
         },
       },
     });
-    this.appOrigin = `https://${this.distribution.distributionDomainName}`;
+    this.defaultOrigin = `https://${this.distribution.distributionDomainName}`;
+    this.appOrigin = domain?.certificate ? `https://${domain.name}` : this.defaultOrigin;
+    if (domain?.certificate) domain.pointAt(this.distribution);
   }
 
   /** Sends CloudFront's requests (and only those) to the web service. */

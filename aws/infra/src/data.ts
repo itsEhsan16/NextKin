@@ -135,11 +135,11 @@ export class Data extends Construct {
     }
   }
 
-  /** Browser uploads go straight to S3 by presigned POST, from the app's origin only. */
-  allowBrowserUploads(appOrigin: string): void {
+  /** Browser uploads go straight to S3 by presigned POST, from the app's own origins only. */
+  allowBrowserUploads(appOrigins: readonly string[]): void {
     for (const target of [this.buckets.uploads, this.buckets.anonymous]) {
       target.addCorsRule({
-        allowedOrigins: [appOrigin],
+        allowedOrigins: [...new Set(appOrigins)],
         allowedMethods: [s3.HttpMethods.POST, s3.HttpMethods.PUT, s3.HttpMethods.GET],
         allowedHeaders: ['*'],
         maxAge: 3000,

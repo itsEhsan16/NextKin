@@ -75,7 +75,11 @@ export function roleSecrets(data: Data, roles: RoleName[]): Record<string, ecs.S
 }
 
 /** The environment shared by web, worker, migrate and seed. Adapters follow APP_ENV=dev (L3). */
-export function appEnvironment(data: Data, appOrigin: string): Record<string, string> {
+export function appEnvironment(
+  data: Data,
+  appOrigin: string,
+  extraOrigins: readonly string[] = [],
+): Record<string, string> {
   return {
     APP_ENV: 'dev',
     LOG_LEVEL: 'info',
@@ -103,6 +107,8 @@ export function appEnvironment(data: Data, appOrigin: string): Record<string, st
     SECRETS_ADAPTER: 'local',
     APP_ORIGIN: appOrigin,
     API_PUBLIC_URL: appOrigin,
+    // The cloudfront.net address stays trusted after the own domain goes live (toreview §165).
+    ...(extraOrigins.length ? { APP_EXTRA_ORIGINS: extraOrigins.join(',') } : {}),
     // Expo Go reaches the demo too; dev allows exp:// (config refuses it in staging).
     MOBILE_REDIRECT_ALLOWLIST: 'nextkin://,exp://',
     TRUSTED_IP_HEADER: 'cloudfront-viewer-address',

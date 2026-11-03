@@ -84,6 +84,23 @@ too. Eight web methods still answer from fixtures (notifications and three gener
 `EXPO_PUBLIC_API_BASE_URL` set to `AppUrl` in `apps/mobile/.env.local`. To deploy web on the mock
 fixtures instead, add `-c webDataSource=mock`.
 
+## The app's own address: app.nextkin.ai
+
+`nextkin.ai` stays on Namecheap's DNS (with its email forwarding). Only `app.nextkin.ai` is
+delegated to a Route 53 zone the stack owns (toreview §165). Two settings in `cdk.json` drive it:
+`appDomain` (the name) and `appDomainLive` (phase 2). Keep both there; removing `appDomain`
+deletes the zone and breaks the delegation.
+
+1. **Phase 1** (`appDomainLive: false`): deploy. The stack outputs `DomainNameServers`.
+2. **At Namecheap** → Domain List → nextkin.ai → Advanced DNS: delete any record whose host is
+   `app`, then add four **NS** records, host `app`, one per nameserver from the output (no trailing
+   dot needed). Check: `nslookup -type=NS app.nextkin.ai 8.8.8.8` lists the four.
+3. **Phase 2**: set `appDomainLive` to `true` in `cdk.json` and deploy. ACM validates the
+   certificate in the zone (a few minutes), CloudFront answers at `app.nextkin.ai`, and the app's
+   origin moves there. The old `cloudfront.net` address stays trusted (`APP_EXTRA_ORIGINS`, S3 CORS).
+
+To roll back: `appDomainLive: false` and deploy; then the NS records at Namecheap can go.
+
 ## Day to day
 
 | Task | Command |
