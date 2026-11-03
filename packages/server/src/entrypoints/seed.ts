@@ -61,6 +61,18 @@ const db = createDatabase({
   onPrivilegedAccess: (e) => console.log(`seed: ${e.kind} access — ${e.purpose}`),
 });
 
+// Prompts, routing and the other reference rows only: a shared `dev` gets new prompt versions
+// without its accounts being replaced (toreview §160).
+if (args.includes('--reference-only')) {
+  try {
+    await seedReference(db);
+    console.log('seed: reference data only (plans, prompts, routing, settings); accounts untouched');
+  } finally {
+    await db.destroy();
+  }
+  process.exit(0);
+}
+
 try {
   await seedReference(db);
   console.log('seed: reference data (plans, rubric v1, dataset versions, settings)');

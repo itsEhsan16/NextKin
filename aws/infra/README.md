@@ -90,6 +90,7 @@ fixtures instead, add `-c webDataSource=mock`.
 |---|---|
 | Redeploy after code changes | `pnpm --filter @nextkin/infra cdk deploy --profile nextkin` |
 | New migrations | Deploy, then `pnpm --filter @nextkin/infra task migrate` |
+| New prompt or routing versions | Deploy, then `pnpm --filter @nextkin/infra task seed-reference` (leaves the accounts alone; `task seed` replaces them) |
 | Logs (Git Bash: prefix `MSYS_NO_PATHCONV=1`) | `aws logs tail /nextkin-demo/web --follow --profile nextkin --region us-east-1` (also `worker`, `clamav`, `valkey`, `migrate`, `seed`) |
 | A shell in a task | `aws ecs execute-command --cluster <ClusterName> --task <id> --container web --interactive --command sh --profile nextkin --region us-east-1` |
 | **Pause between demos** | `pnpm --filter @nextkin/infra task pause` (every service to 0) |

@@ -116,7 +116,7 @@ describe('ResumeEditorScreen (V2 §7.11 — no artboard)', () => {
     ).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Skills', ...shown })).toBeOnTheScreen();
     expect(screen.getByText('Design systems', shown)).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'Experience', ...shown })).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Work Experience', ...shown })).toBeOnTheScreen();
     expect(screen.getByText('Senior UX Designer', shown)).toBeOnTheScreen();
     expect(screen.getByText('Flipkart · Mar 2022 — Present', shown)).toBeOnTheScreen();
     expect(
@@ -144,7 +144,7 @@ describe('ResumeEditorScreen (V2 §7.11 — no artboard)', () => {
     expect(screen.queryByLabelText(/^Score \d+$/)).toBeNull();
 
     // — The pen opens that one section on its own page (§7.11) —
-    await act(async () => fireEvent.press(screen.getByLabelText('Edit Experience', shown)));
+    await act(async () => fireEvent.press(screen.getByLabelText('Edit Work Experience', shown)));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/resumes/[id]/edit/[section]',
       params: { id: 'res_base', section: 'experience' },
@@ -192,7 +192,7 @@ describe('ResumeEditorScreen (V2 §7.11 — no artboard)', () => {
     expect(screen.getByText('Professional')).toBeOnTheScreen();
 
     // A letter has no §7.11 sections, and it is never scored — the absence is stated, not drawn.
-    expect(screen.queryByRole('header', { name: 'Experience', ...shown })).toBeNull();
+    expect(screen.queryByRole('header', { name: 'Work Experience', ...shown })).toBeNull();
     expect(screen.queryByRole('header', { name: 'Skills', ...shown })).toBeNull();
     expect(screen.getByText('Not scored yet')).toBeOnTheScreen();
     expect(screen.queryByLabelText('What this score measures')).toBeNull();

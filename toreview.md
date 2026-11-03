@@ -15252,3 +15252,12 @@ The 84 older recordings are replaced by 86 new ones, and both evals replay offli
 - Not checked against the scanner again.
 
 **Follow-up (same day):** the live regeneration first failed: the job reader's answers broke the model schema on long postings (a duty line over 200 characters, more than 60 skills). Text and quotes now allow 600 characters, the reader may list up to 100 skills (120 stored), and its output cap is 12,000 tokens (routing v6). Re-run live on the Nuvexa posting: the reading now lists Workflow automation, Internal tools, AI agents, Dashboards, Integrations and Google Workspace. The regenerated resume has no bolt-on lines, no figures on tool lines, real work in every bullet, and "Work Experience". **Still open:** the file's catch-all skill line holds every ticked keyword (28 here, including "D2C operations", and "web scraping" landed under Front End), and the summary's last sentence lists tools. "Amazon" alone was read as a required skill.
+
+## 160. Merge to main and deploy the AWS demo (owner, 2026-11-03)
+
+The owner asked to merge, commit, push and deploy the latest to AWS.
+
+- **Merge:** `jd/structured-engine` fast-forwarded into `main` (main had nothing of its own).
+- **Another session's work went in too:** five web files changed by the parallel session that day (Edit leads the resume detail actions; job-match cards wrap their basis instead of truncating; the Enhance header and step), committed separately after typecheck, lint and tests were green. Not checked in a browser by this session.
+- **Prompts on the demo without wiping it:** the demo's `task seed` replaces every seeded account (and whatever was made in them). New `seed --reference-only` installs only the reference rows (plans, prompts, routing, settings); `pnpm --filter @nextkin/infra task seed-reference` runs it on the demo through a `SEED_ARGS` override of the seed task. The full `task seed` is unchanged.
+- **Order on the demo:** `cdk deploy`, `task migrate` (migration 0050), `task seed-reference` (jd.extract v6, resume.generate v7, routing v6).

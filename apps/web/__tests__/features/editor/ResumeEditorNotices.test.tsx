@@ -29,7 +29,7 @@ const toggle = (heading: string) => {
 };
 /** The Google role's row, which keeps its title when its company is cleared. */
 const googleRole = () => {
-  const row = within(screen.getByRole('region', { name: 'Experience' }))
+  const row = within(screen.getByRole('region', { name: 'Work Experience' }))
     .getAllByRole('button', { name: /^Software Engineer( · Google)?\b/ })
     .find((b) => b.hasAttribute('aria-expanded'));
   if (!row) throw new Error('No row for the Google role');
@@ -78,20 +78,20 @@ describe('the resume editor’s checklist and banners', () => {
     const user = userEvent.setup();
     await open();
     await user.click(googleRole());
-    const experience = screen.getByRole('region', { name: 'Experience' });
+    const experience = screen.getByRole('region', { name: 'Work Experience' });
     await user.clear(within(experience).getAllByRole('textbox', { name: 'Company' })[0]!);
-    await user.click(toggle('Experience'));
+    await user.click(toggle('Work Experience'));
     await user.click(googleRole());
     expect(googleRole()).toHaveAttribute('aria-expanded', 'false');
-    expect(toggle('Experience')).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle('Work Experience')).toHaveAttribute('aria-expanded', 'false');
 
     await user.click(screen.getByRole('button', { name: 'Download PDF' }));
     const dialog = await screen.findByRole('dialog', { name: 'A few things before you download' });
     const problem = within(dialog).getByRole('button', { name: /add the employer/ });
-    expect(problem).toHaveTextContent(/^Experience/);
+    expect(problem).toHaveTextContent(/^Work Experience/);
     await user.click(problem);
 
-    await waitFor(() => expect(toggle('Experience')).toHaveAttribute('aria-expanded', 'true'));
+    await waitFor(() => expect(toggle('Work Experience')).toHaveAttribute('aria-expanded', 'true'));
     expect(googleRole()).toHaveAttribute('aria-expanded', 'true');
     expect(await saved()).toBeInTheDocument();
   }, 15000);

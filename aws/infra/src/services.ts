@@ -262,7 +262,8 @@ export class Services extends Construct {
     const seed = taskDef('seed', 512, 1024);
     seed.addContainer('seed', {
       image: migrateImage,
-      command: withDatabaseUrls([...runtimeRoles], 'node dist/seed.mjs'),
+      // SEED_ARGS is empty unless `task seed-reference` sets it to --reference-only.
+      command: withDatabaseUrls([...runtimeRoles], 'node dist/seed.mjs $SEED_ARGS'),
       environment,
       secrets: {
         ...secrets,

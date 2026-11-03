@@ -2,6 +2,8 @@
 //   pnpm --filter @nextkin/infra task db-roles   create the database roles (once, on a new database)
 //   pnpm --filter @nextkin/infra task migrate    apply aws/migrations as the owner role
 //   pnpm --filter @nextkin/infra task seed       reference data, demo accounts and personas
+//   pnpm --filter @nextkin/infra task seed-reference   prompts, routing and other reference rows only;
+//                                                 the demo's accounts are left as they are (toreview §160)
 // And pauses the demo between demos (owner, 2026-10-24), which stops the Fargate and public-IP
 // charges; the load balancer, secrets and database storage keep billing, and Aurora idles at zero:
 //   pnpm --filter @nextkin/infra task pause      every service to 0 tasks
@@ -9,8 +11,13 @@
 // A `cdk deploy` also resumes, because the stack sets one task per service.
 // Uses the `nextkin` CLI profile unless AWS_PROFILE says otherwise. Logs: /nextkin-demo/<name>.
 import { spawnSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-const TASKS = { 'db-roles': 'DbRolesTask', migrate: 'MigrateTask', seed: 'SeedTask' };
+const TASKS = { 'db-roles': 'DbRolesTask', migrate: 'MigrateTask', seed: 'SeedTask', 'seed-reference': 'SeedTask' };
+// The seed container's command passes `$SEED_ARGS` on to seed.mjs.
+const ARGS = { 'seed-reference': '--reference-only' };
 // Support (Valkey, Mailpit) and ClamAV first, so web and worker find them when they start.
 const SERVICES = ['support', 'clamav', 'latex', 'links', 'web', 'worker'].map((s) => `nextkin-demo-${s}`);
 const name = process.argv[2];
@@ -52,13 +59,19 @@ if (name === 'pause' || name === 'resume') {
   process.exit(0);
 }
 
-const network = `awsvpcConfiguration={subnets=[${outputs.Subnets}],securityGroups=[${outputs.AppSecurityGroup}],assignPublicIp=ENABLED}`;
+function overridesFile(args) {
+  const file = join(tmpdir(), 'nextkin-task-overrides.json');
+  writeFileSync(file, JSON.stringify({ containerOverrides: [{ name: 'seed', environment: [{ name: 'SEED_ARGS', value: args }] }] }));
+  return `file://${file}`;
+}
+ network = `awsvpcConfiguration={subnets=[${outputs.Subnets}],securityGroups=[${outputs.AppSecurityGroup}],assignPublicIp=ENABLED}`;
 const started = aws(
   'ecs', 'run-task',
   '--cluster', outputs.ClusterName,
   '--task-definition', outputs[TASKS[name]],
   '--launch-type', 'FARGATE',
   '--network-configuration', network,
+  ...(ARGS[name] ? ['--overrides', overridesFile(ARGS[name])] : []),
 );
 const task = started.tasks?.[0];
 if (!task) {
@@ -72,5 +85,5 @@ const done = aws('ecs', 'describe-tasks', '--cluster', outputs.ClusterName, '--t
 const container = done.containers[0];
 const code = container.exitCode;
 console.log(`${name}: exit ${code ?? 'none'}${done.stoppedReason ? ` (${done.stoppedReason})` : ''}`);
-console.log(`logs: aws logs tail /nextkin-demo/${name} --profile ${profile} --region us-east-1`);
+console.log(`logs: aws logs tail /nextkin-demo/${name.replace('-reference', '')} --profile ${profile} --region us-east-1`);
 process.exit(code === 0 ? 0 : 1);

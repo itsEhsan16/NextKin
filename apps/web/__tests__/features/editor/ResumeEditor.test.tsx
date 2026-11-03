@@ -21,7 +21,7 @@ const SECTIONS = [
   'Header',
   'Summary',
   'Skills',
-  'Experience',
+  'Work Experience',
   'Projects',
   'Education',
   'Certifications',
@@ -40,7 +40,7 @@ const toggle = (heading: string) => {
 };
 /** A role's row in Experience, which opens and closes its form. */
 const entry = (company: RegExp) =>
-  within(screen.getByRole('region', { name: 'Experience' })).getByRole('button', {
+  within(screen.getByRole('region', { name: 'Work Experience' })).getByRole('button', {
     name: company,
     expanded: false,
   });
@@ -63,14 +63,14 @@ describe('the resume editor', () => {
       expect(screen.getByRole('region', { name: heading })).toBeInTheDocument();
     }
     // Each heading carries a count of what the section holds.
-    expect(toggle('Experience')).toHaveTextContent('2 roles');
+    expect(toggle('Work Experience')).toHaveTextContent('2 roles');
     expect(toggle('Certifications')).toHaveTextContent('Empty — left off the page');
 
     // A filled-in resume opens Summary and Experience only; its roles start closed.
     for (const heading of SECTIONS) {
       expect(toggle(heading)).toHaveAttribute(
         'aria-expanded',
-        String(heading === 'Summary' || heading === 'Experience'),
+        String(heading === 'Summary' || heading === 'Work Experience'),
       );
     }
     expect(entry(/· Google/)).toHaveAttribute('aria-expanded', 'false');
@@ -101,7 +101,7 @@ describe('the resume editor', () => {
     for (const heading of SECTIONS) {
       expect(toggle(heading)).toHaveAttribute('aria-expanded', 'true');
     }
-    expect(toggle('Experience')).toHaveTextContent('Empty — left off the page');
+    expect(toggle('Work Experience')).toHaveTextContent('Empty — left off the page');
   });
 
   it('saves a change by itself, shows it live, and undoes and redoes it', async () => {
@@ -127,7 +127,7 @@ describe('the resume editor', () => {
   it('adds a role, switches the template and keeps both after a reload', async () => {
     const user = userEvent.setup();
     await open();
-    const experience = screen.getByRole('region', { name: 'Experience' });
+    const experience = screen.getByRole('region', { name: 'Work Experience' });
     await user.click(within(experience).getByRole('button', { name: 'Add a role' }));
     // A new, empty role opens by itself.
     expect(within(experience).getByRole('button', { name: /^New role/ })).toHaveAttribute(
@@ -159,7 +159,7 @@ describe('the resume editor', () => {
   it('moves a line with the arrow keys on its handle and removes it with its bin', async () => {
     const user = userEvent.setup();
     await open();
-    const experience = screen.getByRole('region', { name: 'Experience' });
+    const experience = screen.getByRole('region', { name: 'Work Experience' });
     const role = entry(/· Google/);
     await user.click(role);
     expect(role).toHaveAttribute('aria-expanded', 'true');

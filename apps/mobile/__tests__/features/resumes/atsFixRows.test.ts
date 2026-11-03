@@ -122,7 +122,7 @@ describe('atsFixRows (V2 §7.8 — the fix list is not the quick-win list)', () 
 
   it('names the section a fix lands in, including the one that is not a section', () => {
     expect(fixSectionLabel('skills')).toBe('Skills');
-    expect(fixSectionLabel('experience')).toBe('Experience');
+    expect(fixSectionLabel('experience')).toBe('Work Experience');
     // `links` is ResumeContent.links, not one of §7.11's six sections.
     expect(fixSectionLabel('links')).toBe('Links');
     expect(fixSectionLabel(undefined)).toBeUndefined();
