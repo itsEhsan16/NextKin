@@ -183,7 +183,12 @@ COPY docker/latex/fonts.conf docker/latex/warmup.sh /opt/tectonic/
 COPY --from=latex-bundle /warmup /opt/tectonic/warmup
 # Fill the cache: the template's own output for every density x paper (network on). Tectonic
 # writes the format file 0600, so open the cache to the service user (it stays root-owned).
-RUN sh /opt/tectonic/warmup.sh /opt/tectonic/warmup && chmod -R a+rX /opt/tectonic/cache
+# Then mark the bundle as checked far in the future (2100): with a network, Tectonic re-checks a
+# stale bundle even with --only-cached and rewrites this stamp, which the service user cannot do,
+# so every compile failed on the AWS demo once the build-time stamp aged (toreview §168).
+RUN sh /opt/tectonic/warmup.sh /opt/tectonic/warmup \
+ && for lock in /opt/tectonic/cache/bundles/hashes/*.lock; do printf %s 4102444800 > "$lock"; done \
+ && chmod -R a+rX /opt/tectonic/cache
 # Prove it is complete and usable as at run time: the same documents again as the service user,
 # from the cache alone (which that user cannot write), with no network at all.
 USER node

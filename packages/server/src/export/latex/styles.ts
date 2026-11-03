@@ -33,7 +33,9 @@ export interface LatexStyle {
 
 const JAKE: LatexStyle = {
   slug: 'jake',
-  rev: 3,
+  // Raised for toreview §168: renders that failed while the AWS demo's Tectonic could not run are
+  // made again under this revision.
+  rev: 4,
   banner: `% Classic: Jake's Resume layout (github.com/jakegut/resume, MIT), set for XeTeX/Tectonic in Lato.`,
   font: {
     regular: 'Lato-Regular.ttf',
@@ -51,7 +53,9 @@ const JAKE: LatexStyle = {
 
 const MODERN: LatexStyle = {
   slug: 'modern',
-  rev: 2,
+  // Raised for toreview §168: renders that failed while the AWS demo's Tectonic could not run are
+  // made again under this revision.
+  rev: 3,
   banner: '% NextKin Modern: one column in Roboto, name on the left, indigo headings.',
   font: {
     regular: 'Roboto-Regular.otf',
@@ -69,7 +73,9 @@ const MODERN: LatexStyle = {
 
 const ELEGANT: LatexStyle = {
   slug: 'elegant',
-  rev: 2,
+  // Raised for toreview §168: renders that failed while the AWS demo's Tectonic could not run are
+  // made again under this revision.
+  rev: 3,
   banner: '% NextKin Elegant: one column in TeX Gyre Termes (Times New Roman metrics), centred name.',
   font: {
     regular: 'texgyretermes-regular.otf',

@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { renderTemplateOf } from '../../src/services/renders';
 import { mobileLogin, registered, startHarness, type Harness } from './fixtures/authHarness';
 
 /**
@@ -81,7 +82,7 @@ describe('the resume editor document (toreview §124)', () => {
 
     // The version is queued for typesetting in its own template.
     const render = await h.db.withSystem('test: the render queued', (tx) => tx.selectFrom('resume_renders').select(['template_slug', 'template_rev']).where('resume_version_id', '=', second.versionId).executeTakeFirst());
-    expect(render).toEqual({ template_slug: 'modern', template_rev: 1 });
+    expect(render).toEqual({ template_slug: 'modern', template_rev: renderTemplateOf({ template: 'modern' }).rev });
 
     // The export gate moves on to the next check (the unverified email), past "incomplete".
     await expect(repos.resumes.export(created.id, 'pdf')).rejects.toSatisfy((e: unknown) => e instanceof ExportBlockedError && e.reason !== 'incomplete');
