@@ -1,0 +1,129 @@
+{
+  "key": "0340e661a1a35241559aa288c7b465c8",
+  "recordedAt": "2026-11-03T14:58:17.730Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "full stack developer",
+        "quote": "Looking for a full stack developer"
+      },
+      "company": null,
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "A full stack developer role requiring React, Node.js and REST APIs. The developer will build secure payment APIs, dashboards and reconciliation modules, working from the office five days a week.",
+      "locations": [],
+      "workModes": [
+        {
+          "value": "onsite",
+          "quote": "Work from office."
+        }
+      ],
+      "schedule": [
+        {
+          "kind": "days",
+          "text": "Five days working",
+          "quote": "Five days working."
+        }
+      ],
+      "pay": [
+        {
+          "component": "base",
+          "quote": "Salary is Rs. 45,000 to 80,000 monthly."
+        }
+      ],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Minimum one year experience",
+          "quote": "minimum one year experience"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "The candidate will develop secure payment APIs, dashboards and reconciliation modules.",
+          "quote": "The candidate will develop secure payment APIs, dashboards and reconciliation modules.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "full stack development",
+          "quote": "Looking for a full stack developer",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "React",
+          "quote": "Candidate should know React, Node.js and REST APIs.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "Node.js",
+          "quote": "Candidate should know React, Node.js and REST APIs.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "REST APIs",
+          "quote": "Candidate should know React, Node.js and REST APIs.",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "secure payment APIs",
+          "quote": "The candidate will develop secure payment APIs, dashboards and reconciliation modules.",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "dashboards",
+          "quote": "The candidate will develop secure payment APIs, dashboards and reconciliation modules.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "reconciliation modules",
+          "quote": "The candidate will develop secure payment APIs, dashboards and reconciliation modules.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "payments",
+          "quote": "secure payment APIs",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "website": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 348,
+      "outputTokens": 1355,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

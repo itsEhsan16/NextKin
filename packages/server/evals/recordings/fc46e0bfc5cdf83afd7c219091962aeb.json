@@ -1,0 +1,180 @@
+{
+  "key": "fc46e0bfc5cdf83afd7c219091962aeb",
+  "recordedAt": "2026-11-03T14:58:12.781Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Frontend Engineer",
+        "quote": "Frontend Engineer — Bluefin Labs"
+      },
+      "company": {
+        "text": "Bluefin Labs",
+        "quote": "Frontend Engineer — Bluefin Labs"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": {
+        "value": "full_time",
+        "quote": "Employment type: Full-time"
+      },
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Bluefin Labs is hiring a Frontend Engineer to build the customer dashboard and design system used by its 40,000 merchants. The role covers accessible React and TypeScript UI components, shipping new dashboard features each sprint with designers, and writing unit tests and reviewing pull requests.",
+      "locations": [
+        {
+          "text": "Austin, TX (Hybrid, 3 days in office)",
+          "quote": "Location: Austin, TX (Hybrid, 3 days in office)",
+          "city": "Austin",
+          "region": "TX",
+          "country": null
+        }
+      ],
+      "workModes": [
+        {
+          "value": "hybrid",
+          "quote": "Location: Austin, TX (Hybrid, 3 days in office)"
+        }
+      ],
+      "schedule": [],
+      "pay": [
+        {
+          "component": "base",
+          "quote": "$120,000 – $150,000 per year, plus equity."
+        },
+        {
+          "component": "unknown",
+          "quote": "plus equity"
+        }
+      ],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "3-5 years of professional frontend experience",
+          "quote": "3-5 years of professional frontend experience"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "You will build the customer dashboard and design system used by our 40,000 merchants.",
+          "quote": "You will build the customer dashboard and design system used by our 40,000 merchants.",
+          "group": null
+        },
+        {
+          "text": "Build accessible UI components in React and TypeScript",
+          "quote": "Build accessible UI components in React and TypeScript",
+          "group": null
+        },
+        {
+          "text": "Work with designers to ship new dashboard features every sprint",
+          "quote": "Work with designers to ship new dashboard features every sprint",
+          "group": null
+        },
+        {
+          "text": "Write unit tests and review pull requests",
+          "quote": "Write unit tests and review pull requests",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "React",
+          "quote": "Strong React and TypeScript",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "TypeScript",
+          "quote": "Strong React and TypeScript",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "REST APIs",
+          "quote": "Experience with REST APIs",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "GraphQL",
+          "quote": "GraphQL",
+          "category": "api",
+          "importance": "preferred"
+        },
+        {
+          "name": "Storybook",
+          "quote": "Storybook",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "unit testing",
+          "quote": "Write unit tests and review pull requests",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "code review",
+          "quote": "review pull requests",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "accessibility",
+          "quote": "Build accessible UI components",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "UI components",
+          "quote": "Build accessible UI components in React and TypeScript",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "design systems",
+          "quote": "build the customer dashboard and design system",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "dashboards",
+          "quote": "build the customer dashboard and design system",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "front end",
+          "quote": "3-5 years of professional frontend experience",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 477,
+      "outputTokens": 1730,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

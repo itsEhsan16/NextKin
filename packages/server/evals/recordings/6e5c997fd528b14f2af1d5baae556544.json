@@ -1,0 +1,123 @@
+{
+  "key": "6e5c997fd528b14f2af1d5baae556544",
+  "recordedAt": "2026-11-03T14:59:48.086Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Customer Support Specialist",
+        "quote": "Customer Support Specialist — Tidewell Telecom"
+      },
+      "company": {
+        "text": "Tidewell Telecom",
+        "quote": "Customer Support Specialist — Tidewell Telecom"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a Customer Support Specialist at Tidewell Telecom. The specialist answers customer queries by phone and chat in English and Hindi.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [
+        {
+          "text": "Monday to Friday",
+          "quote": "Monday to Friday, 9:30 am to 6:30 pm",
+          "kind": "days"
+        },
+        {
+          "text": "9:30 am to 6:30 pm",
+          "quote": "Monday to Friday, 9:30 am to 6:30 pm",
+          "kind": "hours"
+        },
+        {
+          "text": "Night shift once a month",
+          "quote": "Night shift once a month.",
+          "kind": "shift"
+        }
+      ],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "Answer customer queries by phone and chat in English and Hindi.",
+          "quote": "Answer customer queries by phone and chat in English and Hindi.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "customer support",
+          "quote": "Answer customer queries by phone and chat in English and Hindi.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "phone support",
+          "quote": "Answer customer queries by phone and chat",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "chat support",
+          "quote": "Answer customer queries by phone and chat",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [
+        {
+          "name": "English",
+          "quote": "Answer customer queries by phone and chat in English and Hindi.",
+          "importance": "required",
+          "level": null
+        },
+        {
+          "name": "Hindi",
+          "quote": "Answer customer queries by phone and chat in English and Hindi.",
+          "importance": "required",
+          "level": null
+        }
+      ],
+      "benefits": [
+        {
+          "text": "Health insurance",
+          "quote": "health insurance"
+        },
+        {
+          "text": "Provident fund",
+          "quote": "provident fund"
+        },
+        {
+          "text": "Gratuity",
+          "quote": "gratuity"
+        }
+      ],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 342,
+      "outputTokens": 1444,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

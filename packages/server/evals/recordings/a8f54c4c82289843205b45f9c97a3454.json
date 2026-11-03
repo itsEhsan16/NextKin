@@ -1,0 +1,101 @@
+{
+  "key": "a8f54c4c82289843205b45f9c97a3454",
+  "recordedAt": "2026-11-03T15:02:28.240Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Technical Product Manager",
+        "quote": "Technical Product Manager at Platypus Labs, Sydney, NSW."
+      },
+      "company": {
+        "text": "Platypus Labs",
+        "quote": "Technical Product Manager at Platypus Labs, Sydney, NSW."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "mid",
+        "quote": null
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "The posting is for a Technical Product Manager at Platypus Labs in Sydney, NSW. It requires product management experience, plus Python and AWS experience, with Jira as a nice-to-have.",
+      "locations": [
+        {
+          "text": "Sydney, NSW",
+          "quote": "Technical Product Manager at Platypus Labs, Sydney, NSW.",
+          "city": "Sydney",
+          "region": "NSW",
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Product management is required",
+          "quote": "product management is required"
+        },
+        {
+          "text": "Experience with Python and AWS is required",
+          "quote": "Experience with Python and AWS is required"
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "product management",
+          "quote": "product management is required",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "Python",
+          "quote": "Experience with Python and AWS is required",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "AWS",
+          "quote": "Experience with Python and AWS is required",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "Jira",
+          "quote": "Nice to have: Jira.",
+          "category": "tool",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 310,
+      "outputTokens": 1172,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

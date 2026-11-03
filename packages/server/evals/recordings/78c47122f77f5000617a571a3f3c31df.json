@@ -1,0 +1,104 @@
+{
+  "key": "78c47122f77f5000617a571a3f3c31df",
+  "recordedAt": "2026-11-03T14:59:25.155Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Android Developer",
+        "quote": "Android Developer"
+      },
+      "company": {
+        "text": "Mintcove Apps",
+        "quote": "Mintcove Apps"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Mintcove Apps is hiring an Android Developer in Kochi to build Android apps in Kotlin with Jetpack Compose. The posting asks for 3+ years of Android experience.",
+      "locations": [
+        {
+          "text": "Kochi",
+          "quote": "Mintcove Apps · Kochi",
+          "city": "Kochi",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "responsibilities": [
+        {
+          "text": "Build Android apps in Kotlin with Jetpack Compose.",
+          "quote": "Build Android apps in Kotlin with Jetpack Compose.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Android",
+          "quote": "3+ years of Android experience.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "Kotlin",
+          "quote": "Build Android apps in Kotlin with Jetpack Compose.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Jetpack Compose",
+          "quote": "Build Android apps in Kotlin with Jetpack Compose.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "Android app development",
+          "quote": "Build Android apps in Kotlin with Jetpack Compose.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "experience": [
+        {
+          "text": "3+ years of Android experience.",
+          "quote": "3+ years of Android experience."
+        }
+      ],
+      "application": [],
+      "companyAbout": [],
+      "issues": [],
+      "website": null,
+      "extras": [],
+      "pay": [],
+      "negotiable": null,
+      "schedule": [],
+      "benefits": [],
+      "eligibility": [],
+      "education": [],
+      "languages": [],
+      "responsibilities_placeholder": null,
+      "department_placeholder": null,
+      "referenceId_placeholder": null,
+      "company_placeholder": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 389,
+      "outputTokens": 1199,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

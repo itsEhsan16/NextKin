@@ -1,0 +1,88 @@
+{
+  "key": "82033c59fb217f3267d85b603314de4a",
+  "recordedAt": "2026-11-03T15:02:44.095Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Registered Nurse",
+        "quote": "Registered Nurse at Harbour Health, Sydney, NSW."
+      },
+      "company": {
+        "text": "Harbour Health",
+        "quote": "Registered Nurse at Harbour Health, Sydney, NSW."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "Sydney, NSW",
+          "quote": "Registered Nurse at Harbour Health, Sydney, NSW.",
+          "city": "Sydney",
+          "region": "NSW",
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "patient care experience is required",
+          "quote": "patient care experience is required"
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "patient care",
+          "quote": "patient care experience is required",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "Basic life support",
+          "quote": "Basic life support is required.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "electronic health records",
+          "quote": "Nice to have: electronic health records.",
+          "category": "tool",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 308,
+      "outputTokens": 931,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

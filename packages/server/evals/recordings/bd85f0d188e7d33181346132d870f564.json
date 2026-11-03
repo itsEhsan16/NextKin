@@ -1,0 +1,91 @@
+{
+  "key": "bd85f0d188e7d33181346132d870f564",
+  "recordedAt": "2026-11-03T15:02:23.950Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Product Manager\",\n  \"company\": \"Billfold\",\n  \"requirementsBacked\": [\n   \"product mana"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Product Manager",
+      "summary": {
+        "text": "Product manager who has owned a payments roadmap across 3 engineering teams since 2018. Launched instant payouts used by 8,000 merchants in the first quarter, informed by discovery interviews with 25 customers.",
+        "evidence": [
+          "pm_1",
+          "pm_1#r0",
+          "pm_1#r1",
+          "pm_1#r2"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Product management",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Roadmapping",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Stakeholder management",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "SQL",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Jira",
+          "evidence": [
+            "pm_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "pm_1",
+          "bullets": [
+            {
+              "text": "Owned the payments roadmap for 3 engineering teams, coordinating priorities across them.",
+              "evidence": [
+                "pm_1#r0"
+              ]
+            },
+            {
+              "text": "Launched instant payouts, used by 8,000 merchants in the first quarter.",
+              "evidence": [
+                "pm_1#r1"
+              ]
+            },
+            {
+              "text": "Ran discovery interviews with 25 customers to inform product decisions.",
+              "evidence": [
+                "pm_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 606,
+      "outputTokens": 526,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

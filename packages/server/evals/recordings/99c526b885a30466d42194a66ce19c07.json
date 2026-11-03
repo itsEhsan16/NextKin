@@ -1,0 +1,86 @@
+{
+  "key": "99c526b885a30466d42194a66ce19c07",
+  "recordedAt": "2026-11-03T15:02:37.117Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Associate Product Manager",
+        "quote": "Associate Product Manager at Growthy, Seattle."
+      },
+      "company": {
+        "text": "Growthy",
+        "quote": "Associate Product Manager at Growthy, Seattle."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": "Associate Product Manager"
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "The posting is for an Associate Product Manager at Growthy in Seattle. It lists roadmapping as a requirement, with SQL and Jira as nice-to-haves. The posting gives no further detail on duties.",
+      "locations": [
+        {
+          "text": "Seattle",
+          "quote": "Associate Product Manager at Growthy, Seattle.",
+          "city": "Seattle",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "roadmapping",
+          "quote": "roadmapping is required.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "SQL",
+          "quote": "Nice to have: SQL and Jira.",
+          "category": "language",
+          "importance": "preferred"
+        },
+        {
+          "name": "Jira",
+          "quote": "Nice to have: SQL and Jira.",
+          "category": "tool",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 297,
+      "outputTokens": 1058,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

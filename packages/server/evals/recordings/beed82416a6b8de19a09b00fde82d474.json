@@ -1,0 +1,34 @@
+{
+  "key": "beed82416a6b8de19a09b00fde82d474",
+  "recordedAt": "2026-11-03T15:01:00.094Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"rewrite\": {\n  \"summary\": true,\n  \"skills\": false,\n  \"roleIds\": []\n },\n \"failures\": [\n  {\n   \"claimId\": \"s\",\n"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "summary": {
+        "text": "Data analyst with SQL experience across reporting and analysis, from monthly risk reports at Northbank to Tableau revenue dashboards and automated Python reporting at Retailytics. Reconciled 3 data sources for a finance team.",
+        "evidence": [
+          "da_2#r0",
+          "da_1#r0",
+          "da_1#r1",
+          "da_2#r1"
+        ]
+      },
+      "skills": null,
+      "roles": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 1030,
+      "outputTokens": 209,
+      "cacheReadTokens": 1047,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

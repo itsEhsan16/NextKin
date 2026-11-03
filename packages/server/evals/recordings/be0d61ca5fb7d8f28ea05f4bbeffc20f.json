@@ -1,0 +1,126 @@
+{
+  "key": "be0d61ca5fb7d8f28ea05f4bbeffc20f",
+  "recordedAt": "2026-11-03T14:59:08.461Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Accounts Executive",
+        "quote": "Accounts Executive — Greenmark Traders"
+      },
+      "company": {
+        "text": "Greenmark Traders",
+        "quote": "Accounts Executive — Greenmark Traders"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The Accounts Executive role at Greenmark Traders handles invoicing, GST returns and vendor reconciliation. The posting lists 2-4 years of experience, a salary of ₹6-9 LPA, and Ahmedabad as the location, with Tally, GST filing and Excel as skills.",
+      "locations": [
+        {
+          "text": "Ahmedabad",
+          "quote": "Location | Ahmedabad",
+          "city": "Ahmedabad",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [
+        {
+          "component": "unknown",
+          "quote": "Salary | ₹6-9 LPA"
+        }
+      ],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "2-4 years",
+          "quote": "Experience | 2-4 years"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Handle invoicing, GST returns and vendor reconciliation.",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Tally",
+          "quote": "Skills | Tally, GST filing, Excel",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "GST filing",
+          "quote": "Skills | Tally, GST filing, Excel",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "Excel",
+          "quote": "Skills | Tally, GST filing, Excel",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "invoicing",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "GST returns",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "vendor reconciliation",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "application": [],
+      "issues": [
+        {
+          "kind": "ambiguous",
+          "field": "pay",
+          "note": "The salary is given in LPA without saying whether it is fixed, total or CTC.",
+          "quotes": [
+            "Salary | ₹6-9 LPA"
+          ]
+        }
+      ],
+      "extras": [],
+      "benefits": [],
+      "eligibility": [],
+      "education": [],
+      "languages": [],
+      "companyAbout": [],
+      "website": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 359,
+      "outputTokens": 1374,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

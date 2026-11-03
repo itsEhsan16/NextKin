@@ -1,0 +1,158 @@
+{
+  "key": "9497adc197fce648c7b15444daec8e98",
+  "recordedAt": "2026-11-03T14:58:33.252Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Full-stack Developer",
+        "quote": "Full-stack Developer"
+      },
+      "company": {
+        "text": "Paylane Fintech Private Limited",
+        "quote": "Paylane Fintech Private Limited"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": {
+        "value": "full_time",
+        "quote": "Full Time"
+      },
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a full-stack developer position at Paylane Fintech in Bengaluru. The work is to build and maintain web applications for UPI collections and payouts and to integrate partner bank APIs for UPI, IMPS and NEFT.",
+      "locations": [
+        {
+          "text": "Indiranagar, Bengaluru",
+          "quote": "Indiranagar, Bengaluru",
+          "city": "Bengaluru",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [
+        {
+          "value": "onsite",
+          "quote": "Work from Office"
+        }
+      ],
+      "schedule": [],
+      "pay": [
+        {
+          "component": "fixed",
+          "quote": "Fixed ₹45,000 - ₹80,000"
+        },
+        {
+          "component": "total",
+          "quote": "Earning Potential ₹80,000"
+        },
+        {
+          "component": "base",
+          "quote": "₹45,000 - ₹80,000 monthly"
+        }
+      ],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Min. 1 year",
+          "quote": "Min. 1 year"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Build and maintain web applications for UPI collections and payouts.",
+          "quote": "Build and maintain web applications for UPI collections and payouts.",
+          "group": null
+        },
+        {
+          "text": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "full-stack development",
+          "quote": "Full-stack Developer",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "web applications",
+          "quote": "Build and maintain web applications for UPI collections and payouts.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "UPI",
+          "quote": "Build and maintain web applications for UPI collections and payouts.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "partner bank APIs",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "IMPS",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "NEFT",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "integrations",
+          "quote": "Integrate partner bank APIs for UPI, IMPS and NEFT.",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "ambiguous",
+          "field": "pay",
+          "note": "Pay is shown as a monthly range, a fixed range and an earning potential figure; the posting does not say how these relate.",
+          "quotes": [
+            "₹45,000 - ₹80,000 monthly",
+            "Fixed ₹45,000 - ₹80,000",
+            "Earning Potential ₹80,000"
+          ]
+        }
+      ],
+      "benefits_placeholder": null,
+      "companyAbout_placeholder": null,
+      "department_placeholder": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 402,
+      "outputTokens": 1700,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

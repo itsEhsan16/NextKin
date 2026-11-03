@@ -7,13 +7,13 @@
       "caseId": "formatted",
       "check": "required:React",
       "pass": true,
-      "detail": "React, TypeScript, REST APIs"
+      "detail": "React, TypeScript, REST APIs, UI components"
     },
     {
       "caseId": "formatted",
       "check": "required:TypeScript",
       "pass": true,
-      "detail": "React, TypeScript, REST APIs"
+      "detail": "React, TypeScript, REST APIs, UI components"
     },
     {
       "caseId": "formatted",
@@ -25,7 +25,7 @@
       "caseId": "formatted",
       "check": "notRequired:GraphQL",
       "pass": true,
-      "detail": "React, TypeScript, REST APIs"
+      "detail": "React, TypeScript, REST APIs, UI components"
     },
     {
       "caseId": "formatted",
@@ -72,19 +72,19 @@
       "caseId": "one-paragraph",
       "check": "required:React",
       "pass": true,
-      "detail": "React, Node.js, REST APIs, dashboards, reconciliation"
+      "detail": "React, Node.js, REST APIs, dashboards, reconciliation modules"
     },
     {
       "caseId": "one-paragraph",
       "check": "required:Node.js",
       "pass": true,
-      "detail": "React, Node.js, REST APIs, dashboards, reconciliation"
+      "detail": "React, Node.js, REST APIs, dashboards, reconciliation modules"
     },
     {
       "caseId": "one-paragraph",
       "check": "pay",
       "pass": true,
-      "detail": "{\"component\":\"unknown\",\"min\":45000,\"max\":80000,\"currency\":\"INR\",\"period\":\"month\"}"
+      "detail": "{\"component\":\"base\",\"min\":45000,\"max\":80000,\"currency\":\"INR\",\"period\":\"month\"}"
     },
     {
       "caseId": "one-paragraph",
@@ -124,13 +124,13 @@
       "caseId": "no-headings-bullets",
       "check": "required:SQL",
       "pass": true,
-      "detail": "SQL, Python, Power BI, dashboards"
+      "detail": "SQL, Python, Power BI, dashboards, sales dashboards"
     },
     {
       "caseId": "no-headings-bullets",
       "check": "required:Python",
       "pass": true,
-      "detail": "SQL, Python, Power BI, dashboards"
+      "detail": "SQL, Python, Power BI, dashboards, sales dashboards"
     },
     {
       "caseId": "no-headings-bullets",
@@ -238,13 +238,13 @@
       "caseId": "duties-and-skills",
       "check": "required:Python",
       "pass": true,
-      "detail": "Python, PyTorch, Docker, FastAPI, ranking models, machine learning"
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
     },
     {
       "caseId": "duties-and-skills",
       "check": "required:PyTorch",
       "pass": true,
-      "detail": "Python, PyTorch, Docker, FastAPI, ranking models, machine learning"
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
     },
     {
       "caseId": "duties-and-skills",
@@ -315,8 +315,8 @@
     {
       "caseId": "many-locations",
       "check": "locations",
-      "pass": true,
-      "detail": "3"
+      "pass": false,
+      "detail": "1"
     },
     {
       "caseId": "remote-vs-office",
@@ -334,31 +334,31 @@
       "caseId": "big-stack",
       "check": "required:TypeScript",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
     },
     {
       "caseId": "big-stack",
       "check": "required:Node.js",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
     },
     {
       "caseId": "big-stack",
       "check": "required:PostgreSQL",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
     },
     {
       "caseId": "big-stack",
       "check": "required:Kubernetes",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
     },
     {
       "caseId": "big-stack",
       "check": "required:AWS",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
     },
     {
       "caseId": "table",
@@ -446,7 +446,7 @@
       "caseId": "scraped-chrome",
       "check": "required:Kotlin",
       "pass": true,
-      "detail": "Android, Kotlin, Jetpack Compose, Android apps"
+      "detail": "Android, Kotlin, Jetpack Compose"
     },
     {
       "caseId": "scraped-chrome",
@@ -512,7 +512,7 @@
       "caseId": "hourly-contract",
       "check": "pay",
       "pass": true,
-      "detail": "{\"component\":\"fixed\",\"min\":45,\"max\":45,\"currency\":\"USD\",\"period\":\"hour\"}"
+      "detail": "{\"component\":\"unknown\",\"min\":45,\"max\":45,\"currency\":\"USD\",\"period\":\"hour\"}"
     },
     {
       "caseId": "hourly-contract",
@@ -598,7 +598,7 @@
       "detail": "null"
     }
   ],
-  "passRate": 1,
+  "passRate": 0.99,
   "invented": [],
   "verdict": {
     "pass": true,

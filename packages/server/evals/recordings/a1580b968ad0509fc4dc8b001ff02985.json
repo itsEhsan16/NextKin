@@ -1,0 +1,33 @@
+{
+  "key": "a1580b968ad0509fc4dc8b001ff02985",
+  "recordedAt": "2026-11-03T15:02:33.022Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"rewrite\": {\n  \"summary\": true,\n  \"skills\": false,\n  \"roleIds\": []\n },\n \"failures\": [\n  {\n   \"claimId\": \"s\",\n"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "summary": {
+        "text": "Product manager who owned the payments roadmap for 3 engineering teams and launched instant payouts used by 8,000 merchants in the first quarter. Ran discovery interviews with 25 customers.",
+        "evidence": [
+          "pm_1#r0",
+          "pm_1#r1",
+          "pm_1#r2"
+        ]
+      },
+      "skills": null,
+      "roles": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 772,
+      "outputTokens": 192,
+      "cacheReadTokens": 1047,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

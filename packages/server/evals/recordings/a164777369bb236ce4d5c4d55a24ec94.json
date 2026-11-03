@@ -1,0 +1,33 @@
+{
+  "key": "a164777369bb236ce4d5c4d55a24ec94",
+  "recordedAt": "2026-11-03T15:02:55.138Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"rewrite\": {\n  \"summary\": true,\n  \"skills\": false,\n  \"roleIds\": []\n },\n \"failures\": [\n  {\n   \"claimId\": \"s\",\n"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "summary": {
+        "text": "Registered nurse since April 2017 on a surgical ward, caring for up to 8 patients per shift and documenting care in electronic health records. Has trained 5 new nurses.",
+        "evidence": [
+          "nu_1#r0",
+          "nu_1#r1",
+          "nu_1#r2"
+        ]
+      },
+      "skills": null,
+      "roles": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 717,
+      "outputTokens": 185,
+      "cacheReadTokens": 1047,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}
