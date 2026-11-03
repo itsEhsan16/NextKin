@@ -12,8 +12,11 @@ export type BuildReviewCardProps = {
   draft: JdDraft;
   /** Every skill the job asks for, once: `profileKeywordFit(draft, [])` order. */
   asks: readonly string[];
-  /** The pencil: opens the full JD review to correct what was read. */
-  onEdit: () => void;
+  /**
+   * The pencil: opens the full JD review to correct what was read. Absent on a job read into its
+   * structure, which NextKin owns (owner, toreview §153–§154).
+   */
+  onEdit?: () => void;
 };
 
 // "Job card" at 390 (653:76), in artboard units.
@@ -75,15 +78,17 @@ export function BuildReviewCard({ draft, asks, onEdit }: BuildReviewCardProps) {
             </Text>
           ) : null}
         </View>
-        <Pressable
-          {...a11yButton('Edit the job details', 'Correct what we read from the job')}
-          feedback="scale"
-          haptic="light"
-          hitSlop={hitSlopFor(s(PENCIL))}
-          onPress={onEdit}
-        >
-          <Icon name="Edit03" size="sm" color={colors.iconDefault} />
-        </Pressable>
+        {onEdit ? (
+          <Pressable
+            {...a11yButton('Edit the job details', 'Correct what we read from the job')}
+            feedback="scale"
+            haptic="light"
+            hitSlop={hitSlopFor(s(PENCIL))}
+            onPress={onEdit}
+          >
+            <Icon name="Edit03" size="sm" color={colors.iconDefault} />
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={[styles.rule, { backgroundColor: colors.divider }]} />

@@ -18,6 +18,8 @@ import { BuildReviewCard } from '../components/BuildReviewCard';
 import { BuildReviewSkeleton } from '../components/BuildReviewSkeleton';
 import { JdDoubleCheck } from '../components/JdDoubleCheck';
 import { JdReadingSections } from '../components/JdReadingSections';
+import { JdFactsCard, JdWorthKnowing } from '../components/jd/JdFactsCard';
+import { JdStructuredSections } from '../components/jd/JdStructuredSections';
 import { isNotFound } from './BuildReviewScreen';
 
 export type JdPageScreenProps = { draftId: string };
@@ -28,6 +30,10 @@ export type JdPageScreenProps = { draftId: string };
  * has no action of its own: Back returns to the flow. It keeps to what the job said. The web page's
  * match card is left to Customize, which scores the same job right after this. Spec-derived from
  * BUILD 04's card and the job page's sections.
+ *
+ * A job read into its structure (toreview §153–§154) is drawn from it: key facts with their
+ * source, anything worth knowing, then each section in its place. NextKin owns that reading
+ * (owner, 2026-11-03), so its card has no pencil; a job without one keeps the old page.
  */
 export function JdPageScreen({ draftId }: JdPageScreenProps) {
   const { spacing } = useTheme();
@@ -92,6 +98,41 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
   const { job, reading: posting, plausibility } = view;
   const aboutTheRole =
     job.description.length > 0 || job.responsibilities.length > 0 || job.requirements.length > 0;
+  const structured = draft.data.structured;
+  const fullText = (
+    <View>
+      <Disclosure
+        mode="row"
+        title="The full job description"
+        expanded={fullOpen}
+        onToggle={() => setFullOpen((open) => !open)}
+      >
+        <Text variant="prose" color="textBody" selectable>
+          {draft.data.rawText}
+        </Text>
+      </Disclosure>
+    </View>
+  );
+
+  if (structured) {
+    return page(
+      <>
+        <Animated.View entering={enter(0)}>
+          <BuildReviewCard
+            draft={draft.data}
+            asks={profileKeywordFit(draft.data, []).map((keyword) => keyword.label)}
+          />
+        </Animated.View>
+        <Animated.View entering={enter(1)} style={{ gap: spacing[6] }}>
+          <JdWorthKnowing issues={structured.issues} />
+          <JdFactsCard s={structured} />
+          <JdDoubleCheck notes={plausibility} />
+          <JdStructuredSections s={structured} />
+          {fullText}
+        </Animated.View>
+      </>,
+    );
+  }
 
   return page(
     <>
@@ -115,18 +156,7 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
           reading={posting}
           withResponsibilities={job.responsibilities.length === 0}
         />
-        <View>
-          <Disclosure
-            mode="row"
-            title="The full job description"
-            expanded={fullOpen}
-            onToggle={() => setFullOpen((open) => !open)}
-          >
-            <Text variant="prose" color="textBody" selectable>
-              {draft.data.rawText}
-            </Text>
-          </Disclosure>
-        </View>
+        {fullText}
       </Animated.View>
     </>,
   );

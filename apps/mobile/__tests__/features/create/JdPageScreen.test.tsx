@@ -7,6 +7,7 @@ import { useMockModeStore } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
 import { repos, resetMockRepos } from '@/data/repos';
 import { JdPageScreen } from '@/features/create';
+import { structureJd } from '@nextkin/shared/jobs/jdStructure';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -79,6 +80,7 @@ describe('JdPageScreen (the whole job as read)', () => {
   });
 
   afterEach(async () => {
+    jest.restoreAllMocks();
     await act(() => jest.runOnlyPendingTimersAsync());
     await cleanup();
     clients.splice(0).forEach((client) => client.clear());
@@ -134,6 +136,81 @@ describe('JdPageScreen (the whole job as read)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText('Edit the job details')));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/create/jd-review', params: { draftId } });
+  });
+
+  it('draws a structured job from its facts, flags what is unclear, and has no pencil (§154)', async () => {
+    const raw = [
+      'Full-stack Developer',
+      'Paylane Fintech · ₹45,000 - ₹80,000 monthly · Fixed ₹45,000 - ₹80,000 · Earning Potential ₹80,000',
+      'Work from Office. Min. 1 year. 5 working days.',
+      'Build secure REST APIs for merchants and partner banks.',
+      'Must know React.',
+    ].join('\n');
+    const said = (quote: string) => ({ text: quote, quote });
+    const structured = structureJd(
+      raw,
+      {
+        title: said('Full-stack Developer'),
+        company: said('Paylane Fintech'),
+        department: null,
+        industry: null,
+        employmentType: null,
+        seniority: null,
+        openings: null,
+        referenceId: null,
+        summary: 'A full-stack role building payment APIs.',
+        locations: [],
+        workModes: [{ value: 'onsite', quote: 'Work from Office' }],
+        schedule: [{ kind: 'days', ...said('5 working days') }],
+        pay: [
+          { component: 'unknown', quote: '₹45,000 - ₹80,000 monthly' },
+          { component: 'fixed', quote: 'Fixed ₹45,000 - ₹80,000' },
+          { component: 'total', quote: 'Earning Potential ₹80,000' },
+        ],
+        negotiable: null,
+        experience: [said('Min. 1 year')],
+        responsibilities: [
+          { ...said('Build secure REST APIs for merchants and partner banks.'), group: null },
+        ],
+        skills: [
+          {
+            name: 'React',
+            quote: 'Must know React',
+            category: 'framework',
+            importance: 'required',
+          },
+        ],
+        education: [],
+        languages: [],
+        benefits: [],
+        eligibility: [],
+        companyAbout: [],
+        website: null,
+        application: [],
+        extras: [],
+        issues: [],
+      },
+      { today: '2026-11-03' },
+    );
+    const draftId = await seedDraft();
+    const loading = repos.jd.get(draftId);
+    await settle();
+    const draft = await loading;
+    jest.spyOn(repos.jd, 'get').mockResolvedValue({ ...draft, rawText: raw, structured });
+    await renderPage(draftId);
+    await settle();
+
+    expect(screen.getByRole('header', { name: 'Key facts' })).toBeOnTheScreen();
+    expect(screen.getByText('₹45,000–₹80,000 a month')).toBeOnTheScreen();
+    expect(screen.getByText('Unclear in the job')).toBeOnTheScreen();
+    expect(screen.getByText('5 days a week')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Worth knowing' })).toBeOnTheScreen();
+    expect(screen.getByText('Summary written by NextKin from the job.')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Edit the job details')).toBeNull();
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Show where the job says salary')));
+    await settle();
+    expect(screen.getByText('“Fixed ₹45,000 - ₹80,000”')).toBeOnTheScreen();
   });
 
   it('says so when the job is gone, and offers a way back', async () => {

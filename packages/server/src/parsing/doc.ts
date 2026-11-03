@@ -1,4 +1,12 @@
-import WordExtractor from 'word-extractor';
+// @ts-expect-error -- word-extractor ships no types; the slice this reader uses is typed below.
+import WordExtractorModule from 'word-extractor';
+
+/** The part of `word-extractor` (MIT) the reader uses. */
+type WordDocument = {
+  getBody(): string;
+  getTextboxes(options: { includeHeadersAndFooters?: boolean; includeBody?: boolean }): string;
+};
+const WordExtractor = WordExtractorModule as new () => { extract(source: Buffer): Promise<WordDocument> };
 
 /**
  * Legacy Word documents (.doc, Word 97–2003; owner, 2026-11-03, toreview §154): the body, then any

@@ -24,7 +24,13 @@ import {
 import { AlertTriangle, InfoCircle } from '@/ui/lineIcons';
 
 import { MatchCard } from '../../jobs/components/page/JobSummary';
-import { WORK_MODE_LABEL, experienceText, locationText, payLabel, scheduleText } from './jdLabels';
+import {
+  WORK_MODE_LABEL,
+  experienceText,
+  locationText,
+  payLabel,
+  scheduleText,
+} from '@nextkin/shared/jobs/jdLabels';
 import { SourceQuotes } from './SourceQuotes';
 
 type Glyph = ComponentType<SVGProps<SVGSVGElement>>;

@@ -15142,3 +15142,32 @@ The owner sent a master prompt for a "JD intelligence engine" with a screenshot:
 - **The older golden set's live recordings** (golden-0.1.0) were made with prompt version 4 and need recording again with version 5. The scripted run still passes.
 - **The local database holds about 30 `jd.extract` prompt versions** left by integration test runs. Harmless, but the admin prompt list is noisy.
 - **File length:** `jdStructure.ts` is 364 lines, over the 250-line rule.
+
+## 154. The engine's three follow-ups: mobile, legacy Word, fresh recordings (owner, 2026-11-03)
+
+The owner asked for the three items §153 left open. All three are done on `jd/structured-engine`.
+
+**Mobile shows the structured job** (`apps/mobile/src/features/create/components/jd/`, `screens/JdPageScreen.tsx`):
+- **The layout:** BUILD 04's job card, then "Worth knowing", a "Key facts" card, the section list and the full text.
+  - **Key facts:** salary, experience, employment, work mode, location and schedule, each with a "Source" tap that shows the job's own words, and "Unclear in the job" where it applies.
+  - **Sections:** summary, responsibilities, skills, experience and qualifications, pay, benefits, schedule and conditions, how to apply, the company, and more from the job.
+- **How it's built:** spec-derived from the existing job sections, using only existing primitives (card, bullets, chips, pill, the warning box), theme tokens and the disclosure's motion, with reduced motion honoured.
+- **Shared wording:** the label helpers moved to `packages/shared/src/jobs/jdLabels.ts`, so both apps say every fact the same way. Mobile reaches them through `@/data/models/jd`.
+- **No pencil on a structured job,** matching the web (§153). A job without a structure keeps the old page and its pencil.
+- **Not done:** the separate review screen (`/create/jd-review`) that BUILD 04 opens is still reachable from the build flow. Removing correction from the mobile flows is a bigger change; say if you want it.
+- **Not checked on a phone.** Mobile tests pass (1,980), including a new one for the structured page. The plan's definition of done asks for an Expo Go side-by-side, and there is no board to compare against.
+
+**Legacy Word (.doc) job descriptions:**
+- **How it works:** a .doc is recognised by its first bytes and read inside the isolated parser by `word-extractor` (1.0.4, MIT, pure JavaScript, 74 KB, no native code), instead of the heavy LibreOffice image.
+- **Where it's accepted:** job descriptions only. Resumes still take PDF, DOCX and TXT.
+  - Accepted at every step: upload type rules, the scan's kind check, the web picker (which already listed .doc), and mobile's two job pickers.
+  - Their wording now reads "PDF, DOC, DOCX or TXT".
+- **Failures:** a damaged file, or another old Office file with the same container (.xls), fails with "This Word file could not be read. Save it as DOCX or PDF and upload it again."
+- **Known gap:** the old format keeps hidden text in a way the reader doesn't expose, so hidden text isn't separated for a .doc, as it is for a DOCX. The extraction still keeps only what it can quote.
+- **Test files:** the two .doc fixtures are word-extractor's own test data, because there's no Word or LibreOffice on this machine to make synthetic ones. Their source is noted in the test.
+- **Verified:** parser tests (read, refused for resumes, damaged), an integration test uploading a .doc job through the API, scanner, worker and reading, and the bundled parser builds.
+
+**The older test set, recorded again:**
+- golden-0.1.0 ran live through OpenRouter on prompt version 5 and passed the bar: extraction precision 1.0, recall 0.99, no anachronisms or untraceable facts, revision rate 3%, for $0.41.
+- 61 new recordings replace 64 that neither eval replays any more.
+- Both `pnpm eval --recorded` and `pnpm eval:jd` pass offline.

@@ -20,7 +20,12 @@ import {
 
 import { Bullets, JobSection } from '../../jobs/components/page/JobSections';
 import { hasSkill } from '../../jobs/jobPageLibrary';
-import { APPLICATION_LABEL, ELIGIBILITY_LABEL, LEVEL_LABEL, SKILL_GROUPS } from './jdLabels';
+import {
+  APPLICATION_LABEL,
+  ELIGIBILITY_LABEL,
+  LEVEL_LABEL,
+  SKILL_GROUPS,
+} from '@nextkin/shared/jobs/jdLabels';
 
 const PAY_PART: Record<string, string> = {
   base: 'Base',

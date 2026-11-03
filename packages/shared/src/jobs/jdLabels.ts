@@ -1,4 +1,3 @@
-import { payText } from '@nextkin/shared/jobs/jdChecks';
 import type {
   ApplicationKind,
   EligibilityKind,
@@ -6,9 +5,13 @@ import type {
   LanguageLevel,
   SkillCategory,
   WorkMode,
-} from '@nextkin/shared/models';
+} from '../models/jdStructured';
+import { payText } from './jdChecks';
 
-/** How the structured job page (toreview §153) says each value: plain words, never a code. */
+/**
+ * How a structured job (toreview §153) is said on either app's page: plain words, never a code.
+ * Shared so the web and the phone word every fact the same way.
+ */
 
 export const WORK_MODE_LABEL: Record<WorkMode, string> = {
   onsite: 'On-site',
