@@ -1,4 +1,4 @@
-import type { ContentRole, ResumeContent } from '@nextkin/shared/models';
+import { RESUME_SECTION_LABEL, type ContentRole, type ResumeContent } from '@nextkin/shared/models';
 import type { ComponentType, ReactNode, SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
@@ -79,8 +79,9 @@ export function ResumeSheet({
           <p className="text-body-s text-text-tertiary">{body.skills.join(' · ')}</p>
         </SheetSection>
       )}
+      {/* The printed heading (toreview §159, §167): "Work Experience", as the PDF says it. */}
       {body.experience.length > 0 && (
-        <SheetSection title="Experience">
+        <SheetSection title={RESUME_SECTION_LABEL.experience}>
           <ol className="flex flex-col gap-4">
             {body.experience.map((role) => (
               <SheetRole key={role.id} role={role} />

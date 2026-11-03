@@ -15313,3 +15313,33 @@ The owner: "there is no option to log out". There wasn't: §133 built sign-in an
 - **Mobile:** has "Sign out everywhere" (Account → Email & password), which ends this device too, but no single-device sign out. Not changed here.
 
 **Also (owner, same day): the review score card is shorter** (`ScoreSummaryCard.tsx`): "10 of 10 key keywords · Up from 5.9", plus "· Plan aimed for 8.0" only when the run missed the plan by more than rounding; the tip is one short line ("All key keywords are in. Add results to stand out." / "Missing: A, B, C +N. Add only what's true.").
+
+## 165. The demo at app.nextkin.ai (owner, 2026-11-04)
+
+The owner asked to put the AWS demo on `app.nextkin.ai`. A subdomain isn't registered: it is DNS under `nextkin.ai`, which is registered and served at Namecheap (with a parking page and Namecheap email forwarding, §133).
+
+- **Approach (my call, to review):** delegate only `app.nextkin.ai` to a Route 53 zone the CDK stack owns, by four NS records at Namecheap. The apex and its email forwarding stay on Namecheap. The older apex zone `Z085134212NA4HYMHDZPA` is left as it was (unused, ~$0.50/month; delete it or use it if the apex ever moves).
+- **Code** (`aws/infra`): `src/domain.ts` (zone; with `live`, an ACM certificate validated in the zone and A/AAAA aliases to CloudFront); `edge.ts` adds the alias and TLS 1.2_2021 when live and makes `https://app.nextkin.ai` the app origin; the `cloudfront.net` address stays trusted (`APP_EXTRA_ORIGINS`, which config allows in dev) and in the upload buckets' CORS. `cdk.json` holds `appDomain` and `appDomainLive`, so a deploy can't drop them by accident. README section "The app's own address".
+- **Phase 1 deployed 2026-11-04** (owner approved): only the hosted zone and two outputs. Nameservers: ns-1746.awsdns-26.co.uk, ns-607.awsdns-11.net, ns-363.awsdns-45.com, ns-1331.awsdns-38.org.
+- **Waiting on the owner:** the four NS records for host `app` at Namecheap. Then phase 2 (preview diff checked: certificate, two records, the distribution alias, CORS and the APP_ORIGIN/APP_EXTRA_ORIGINS task revisions; nothing deleted).
+- **Not done:** HTTPS between CloudFront and the ALB (§133.1 item 1); mobile still points at the cloudfront.net address until `EXPO_PUBLIC_API_BASE_URL` changes.
+
+- **Phase 2 deployed 2026-11-04** (762 s). At that moment Namecheap had **two** of the four NS records (`ns-1746`, `ns-607`); the browser agent stopped at a permission check. Delegation already worked through those two (public resolvers then see all four from the zone itself). **The owner should still add** `ns-363.awsdns-45.com` and `ns-1331.awsdns-38.org` for resilience.
+- **Checked:** `app.nextkin.ai` resolves to CloudFront (IPv4 and IPv6); TLS verifies; `/api/v1/health/deep` 200 on all four dependencies; in a real browser on both `https://app.nextkin.ai` and the old `cloudfront.net` address: sign in as pro@, a presigned POST straight to S3 from the page (204, so CORS allows both origins), and Sign out → `/sign-in`. The check left one unconfirmed 64-byte synthetic text object per origin in the uploads bucket.
+- **Not checked:** a live generation's SSE progress over the new name (the CloudFront behaviours are unchanged from before, so it should behave the same); mobile still uses the old address.
+
+## 166. Enhance: the ATS Match Score card, and three UI fixes (owner, 2026-11-04)
+
+- **ATS Match Score card** (`flow/AtsMatchCard.tsx`, in `EnhanceHeader`), built to the owner's reference: title with an info icon (the basis on hover), the ring "out of 10", the band pill, "+X points (est.)" and "If you add N selected keywords". **Call made:** the estimate counts only the user's own answers (the projection with them minus without them); `projectedScore` alone also includes the AI's own steps and would show a gain before anything is ticked. With no gain it says "Tick the keywords you have to see what they add." The right column's "About X/10 after this" box (the total with the AI's steps) stays.
+- **Menu checkboxes** (`ui/FilterDropdown.tsx`, every filter and select): a filled check-circle inside a round 8px-radius box read as a broken radio. Now a 4px-radius square that fills brand with a white tick.
+- **Starting point** (`MethodCard.tsx` `Selection`): a file name with no spaces ran under Edit. It now breaks anywhere, two lines at most, full name on hover; Edit doesn't shrink.
+- **Checked:** screenshots of the local app (menu, card with 5 ticks: 6.1 Fair, +0.3 est., starting-point row with a long file name); typecheck, lint, tailor/jobs/ui tests (73). **Not deployed** to AWS; not committed.
+
+## 167. Figures reworded into new claims, and the preview heading (owner, 2026-11-04)
+
+The owner flagged a tailored resume on app.nextkin.ai: lines ending "…cutting the time it took by about 10%" again, and an "Experience" heading.
+
+- **Where the 10% came from:** the run's own input (`01a1a339…`): three figures the user picked in "Add real results" (Made it faster · 10%) on the tool lines "Used Node.js…", "Applied OOP…", "Used Git…", offered since §162 ("every line again"). Not invented by the model.
+- **A real bug on top:** the writer reworded one into "Cut **build time** by about 10%…": a new claim. `keepFigures` kept any rewrite that still held a number. Now a rewrite stays only if it keeps every content word of the user's result clause (the last clause with a number, less its leading verb): "Cut ledger API p99 latency by 45%" keeps "…cutting ledger API p99 latency by 45%"; "Cut build time by about 10%" loses "took" and the user's own line comes back. Test in `tailor.test.ts`.
+- **Heading:** the web preview (`ResumeSheet.tsx`) hard-coded "Experience"; it now uses `RESUME_SECTION_LABEL.experience` ("Work Experience"), as the PDF does.
+- **Open (owner's call):** tool lines still get "Add the result", by the owner's §162 choice; the summary still lists tools (§159 open item).
