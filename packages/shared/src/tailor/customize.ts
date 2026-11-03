@@ -97,17 +97,19 @@ export function toggleKeyword(c: CustomizeChoices, label: string, on: boolean): 
   return { ...c, added: c.added.filter((l) => l !== label), places };
 }
 
-/** A keyword ticked or unticked. A tick takes the plan's pick of role when it has one (§129.6). */
-export function tickKeyword(c: CustomizeChoices, label: string, on: boolean, plan: FixPlan | undefined): CustomizeChoices {
-  const next = toggleKeyword(c, label, on);
-  const where = on ? plan?.steps.find((s) => s.keyword === label)?.where : undefined;
-  return where ? setPlace(next, label, { where, note: '', by: 'ai' }) : next;
+/**
+ * A keyword ticked or unticked. A tick no longer takes the plan's pick of role (owner, toreview
+ * §159, replacing §129.6): the run treats that pick as a skills-list keyword, so naming a role for
+ * it would promise what the resume won't do. A role is set only when the user picks one.
+ */
+export function tickKeyword(c: CustomizeChoices, label: string, on: boolean): CustomizeChoices {
+  return toggleKeyword(c, label, on);
 }
 
 /** "Select all" over the shown keywords; again, "Clear all" (owner, toreview §113). */
-export function toggleAll(c: CustomizeChoices, labels: readonly string[], plan?: FixPlan): CustomizeChoices {
+export function toggleAll(c: CustomizeChoices, labels: readonly string[]): CustomizeChoices {
   const allOn = labels.length > 0 && labels.every((l) => c.added.includes(l));
-  return labels.reduce((next, label) => tickKeyword(next, label, !allOn, plan), c);
+  return labels.reduce((next, label) => tickKeyword(next, label, !allOn), c);
 }
 
 export function setPlace(c: CustomizeChoices, label: string, place: KeywordPlace | null): CustomizeChoices {

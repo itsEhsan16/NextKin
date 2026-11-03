@@ -4,6 +4,7 @@ import type { FixPlan, PlanStep } from '../src/scoring/fixPlan';
 import {
   initialChoices,
   planGoalLine,
+  setPlace,
   shortOnYears,
   tickKeyword,
   toggleAll,
@@ -64,28 +65,26 @@ describe('shortOnYears', () => {
 describe('a tick on the plan', () => {
   const picked = plan({ steps: [step({ keyword: 'Go', where: 'role_1' }), step({ keyword: 'Rust' })] });
 
-  it('takes the plan’s pick of role, marked as the AI’s', () => {
-    const c = tickKeyword(initialChoices(), 'Go', true, picked);
+  // The plan's pick stays on the plan, never on the choices: the run lists it in Skills (§159).
+  it('is a plain tick, even when the plan picked a role', () => {
+    expect(picked.steps[0]?.where).toBe('role_1');
+    const c = tickKeyword(initialChoices(), 'Go', true);
     expect(c.added).toEqual(['Go']);
-    expect(c.places.Go).toEqual({ where: 'role_1', note: '', by: 'ai' });
+    expect(c.places).toEqual({});
   });
 
-  it('stays a plain tick with no pick, or with no plan', () => {
-    expect(tickKeyword(initialChoices(), 'Rust', true, picked).places).toEqual({});
-    expect(tickKeyword(initialChoices(), 'Go', true, undefined).places).toEqual({});
-  });
-
-  it('forgets the place when it is unticked', () => {
-    const on = tickKeyword(initialChoices(), 'Go', true, picked);
-    const off = tickKeyword(on, 'Go', false, picked);
+  it('forgets a place the user chose when it is unticked', () => {
+    const on = setPlace(tickKeyword(initialChoices(), 'Go', true), 'Go', { where: 'role_1', note: '', by: 'you' });
+    const off = tickKeyword(on, 'Go', false);
     expect(off.added).toEqual([]);
     expect(off.places).toEqual({});
   });
 
-  it('applies to Select all, and Clear all takes the places back', () => {
-    const on = toggleAll(initialChoices(), ['Go', 'Rust'], picked);
+  it('Select all ticks without places, and Clear all takes the places back', () => {
+    const on = toggleAll(initialChoices(), ['Go', 'Rust']);
     expect(on.added).toEqual(['Go', 'Rust']);
-    expect(Object.keys(on.places)).toEqual(['Go']);
-    expect(toggleAll(on, ['Go', 'Rust'], picked).places).toEqual({});
+    expect(on.places).toEqual({});
+    const placed = setPlace(on, 'Go', { where: 'role_1', note: '', by: 'you' });
+    expect(toggleAll(placed, ['Go', 'Rust']).places).toEqual({});
   });
 });

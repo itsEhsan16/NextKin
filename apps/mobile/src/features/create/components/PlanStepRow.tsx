@@ -189,7 +189,7 @@ export function PlanStepRow({
             variant="toggle"
             selected={on}
             accessibilityLabel={`${step.kind === 'keyword' ? 'I have' : 'Show in a role:'} ${keyword}`}
-            onPress={() => onChange(tickKeyword(choices, keyword, !on, plan))}
+            onPress={() => onChange(tickKeyword(choices, keyword, !on))}
             style={styles.start}
           />
           {on && places.length > 0 ? (

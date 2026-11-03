@@ -161,14 +161,14 @@ describe('CustomizePlan (your plan to fit this job)', () => {
     expect(screen.getByText('Nothing to change')).toBeOnTheScreen();
   });
 
-  it('takes the AI’s role on a tick, counts the answer, and lets the person change it', async () => {
+  it('ticks without a role, counts the answer, and lets the person say where (§159)', async () => {
     await renderPlan();
 
+    // The plan's pick is not applied: the run would list it in Skills only.
     await press('I have Kubernetes');
     expect(latest.added).toEqual(['Kubernetes']);
-    expect(latest.places.Kubernetes).toEqual({ where: 'role_1', note: '', by: 'ai' });
-    expect(screen.getByText(/^Counts in full · the role it fits best/)).toBeOnTheScreen();
-    expect(screen.getByText('With your answers so far: about 7.9/10')).toBeOnTheScreen();
+    expect(latest.places.Kubernetes).toBeUndefined();
+    expect(screen.getByText('In your Skills only: counts half')).toBeOnTheScreen();
 
     await press('Used Kubernetes at Intern · Acme');
     expect(latest.places.Kubernetes).toEqual({ where: 'role_2', note: '', by: 'you' });
