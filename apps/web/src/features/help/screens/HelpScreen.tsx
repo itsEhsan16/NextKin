@@ -65,16 +65,11 @@ export function HelpScreen() {
 
   return (
     <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-10')}>
-      {/* Tall enough that the art, below the bar's controls as the board places it (577:6581),
-          ends where the first cards begin. */}
-      <div className="relative xl:min-h-[10.5rem]">
-        <PageHeader
-          eyebrow="Help & support"
-          title="How can we help?"
-          subtitle="Search the answers below, or message support if you're still stuck."
-        />
-        <SettingsIllustration className="absolute bottom-0 right-0 hidden xl:block" />
-      </div>
+      <PageHeader
+        eyebrow="Help & support"
+        title="How can we help?"
+        subtitle="Search the answers below, or message support if you're still stuck."
+      />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
@@ -182,7 +177,11 @@ export function HelpScreen() {
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-6">
+        {/* The art stands on the support card, as Settings stands it on its card, so it takes no
+            height of its own and the cards start right under the header (577:6581). Scaled to
+            88px so it stays below the bar's controls on a header this short. */}
+        <div className="relative flex min-w-0 flex-col gap-6">
+          <SettingsIllustration className="absolute bottom-full right-2.5 hidden h-[88px] w-[225px] xl:block" />
           <MessageSupportCard />
           <PolicyCard doc="terms" />
           <PolicyCard doc="privacy" />
