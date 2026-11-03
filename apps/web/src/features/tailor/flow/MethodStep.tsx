@@ -3,6 +3,7 @@
 import type { Job, Profile } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import {
@@ -29,14 +30,14 @@ const NEXT = [
 /**
  * Step 2 (owner mockup 2026-11-02, toreview §151–§152): how to make the resume — tailor one you
  * have (the base, or another chosen with Change), build from the profile, start from nothing with
- * AI, or upload one. Continue opens the chosen way's popup, which says what it does and goes on.
- * With no resume yet, tailoring is off until one is uploaded.
+ * AI, or upload one. Nothing is chosen at first (owner, toreview §157): pressing a way opens its
+ * popup, completing the popup chooses it, and Continue goes on with the chosen way. With no resume
+ * yet, tailoring is off until one is uploaded.
  */
 export function MethodStep({
   job,
   resumeTitle,
   profile,
-  initial,
   jobHref,
   zeroHref,
   onChangeResume,
@@ -47,8 +48,6 @@ export function MethodStep({
   job: Job;
   resumeTitle: string | undefined;
   profile: Profile | undefined;
-  /** Build Resume opens on the profile; tailoring on the picked resume. */
-  initial: Method;
   /** "Edit" beside the job, and Back: step 1. */
   jobHref: Route;
   zeroHref: Route;
@@ -57,8 +56,16 @@ export function MethodStep({
   onProfile: () => void;
   onUploaded: (resumeId: string) => void;
 }) {
-  const [method, setMethod] = useState<Method>(initial);
+  const router = useRouter();
+  const [method, setMethod] = useState<Method | null>(null);
   const [open, setOpen] = useState<Method | null>(null);
+  const [uploaded, setUploaded] = useState<{ resumeId: string; name: string } | null>(null);
+  const go = () => {
+    if (method === 'tailor') onTailor();
+    else if (method === 'profile') onProfile();
+    else if (method === 'zero') router.push(zeroHref);
+    else if (method === 'upload' && uploaded) onUploaded(uploaded.resumeId);
+  };
   return (
     <div className="flex flex-col gap-6">
       <section aria-labelledby="method-step" className={stepCard}>
@@ -82,12 +89,14 @@ export function MethodStep({
                 key={m}
                 method={m}
                 on={method === m}
-                onPick={() => setMethod(m)}
+                onPick={() => setOpen(m)}
                 disabled={m === 'tailor' && !resumeTitle}
                 line={
                   m === 'tailor' && !resumeTitle
                     ? 'You don’t have a resume on NextKin yet. Upload one, or pick another way.'
-                    : methodLine(m, resumeTitle)
+                    : m === 'upload' && uploaded
+                      ? `Uploaded and read: “${uploaded.name}”. We’ll tailor it to this job.`
+                      : methodLine(m, resumeTitle)
                 }
                 recommended={m === 'tailor'}
               />
@@ -136,7 +145,7 @@ export function MethodStep({
         <Link href={jobHref} className={backButton}>
           Back
         </Link>
-        <button type="button" onClick={() => setOpen(method)} className={primaryButton}>
+        <button type="button" onClick={go} disabled={!method} className={primaryButton}>
           Continue
           <ArrowRight aria-hidden className="size-4.5" />
         </button>
@@ -152,10 +161,11 @@ export function MethodStep({
           setOpen(null);
           onChangeResume();
         }}
-        onTailor={onTailor}
-        onProfile={onProfile}
-        zeroHref={zeroHref}
-        onUploaded={onUploaded}
+        onChoose={(chosen, upload) => {
+          setMethod(chosen);
+          if (upload) setUploaded(upload);
+          setOpen(null);
+        }}
       />
     </div>
   );

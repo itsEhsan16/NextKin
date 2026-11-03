@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { resetMockRepos } from '@nextkin/shared/repos';
@@ -21,13 +21,13 @@ async function openOnMethod() {
   return screen.findByRole('radiogroup', { name: 'How to create it' }, wait);
 }
 
-describe('How would you like to create your resume? (toreview §151)', () => {
+describe('How would you like to create your resume? (toreview §151, §157)', () => {
   beforeEach(() => {
     resetMockRepos();
     push.mockClear();
   });
 
-  it('offers four ways, the picked resume first, and shows the selections', async () => {
+  it('offers four ways with none chosen, so Continue waits', async () => {
     const ways = await openOnMethod();
     const radios = within(ways).getAllByRole('radio');
     expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual([
@@ -36,7 +36,8 @@ describe('How would you like to create your resume? (toreview §151)', () => {
       'Start from scratch with AI',
       'Upload a resume',
     ]);
-    expect(radios[0]).toHaveAttribute('aria-checked', 'true');
+    for (const radio of radios) expect(radio).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('button', { name: /Continue/ })).toBeDisabled();
     expect(screen.getByText('Step 2 of 3')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Edit job' })).toBeInTheDocument();
   });
@@ -48,36 +49,43 @@ describe('How would you like to create your resume? (toreview §151)', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
-  it('Continue opens the tailor popup, which goes on to Enhance', async () => {
+  it('pressing a way opens its popup; completing it chooses the way; Continue goes on', async () => {
     const user = userEvent.setup();
-    await openOnMethod();
-    await user.click(screen.getByRole('button', { name: /Continue/ }));
+    const ways = await openOnMethod();
+    await user.click(within(ways).getByRole('radio', { name: 'Tailor my selected resume' }));
     const dialog = await screen.findByRole('dialog', { name: 'Tailor my selected resume' });
     expect(within(dialog).getByText('Selected resume')).toBeInTheDocument();
-    await user.click(within(dialog).getByRole('button', { name: /Tailor Resume/ }));
+    await user.click(within(dialog).getByRole('button', { name: /Use this resume/ }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    // Chosen, not gone yet: Continue moves on.
+    expect(within(ways).getByRole('radio', { name: 'Tailor my selected resume' })).toBeChecked();
+    expect(push).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: /Continue/ }));
     expect(push).toHaveBeenCalledWith('/jobs/job_google/tailor?resumeId=res_pd&step=enhance');
   });
 
-  it('the scratch popup names the three questions; Cancel closes it', async () => {
+  it('Cancel leaves the way unchosen', async () => {
     const user = userEvent.setup();
     const ways = await openOnMethod();
     await user.click(within(ways).getByRole('radio', { name: 'Start from scratch with AI' }));
-    await user.click(screen.getByRole('button', { name: /Continue/ }));
     const dialog = await screen.findByRole('dialog', { name: 'Start from scratch with AI' });
     expect(
       within(dialog).getByText('Your name · Years of experience · The role you want'),
     ).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(
+      within(ways).getByRole('radio', { name: 'Start from scratch with AI' }),
+    ).not.toBeChecked();
+    expect(screen.getByRole('button', { name: /Continue/ })).toBeDisabled();
   });
 
-  it('the upload popup waits for a file before it can go on', async () => {
+  it('the upload popup waits for a file before it can upload', async () => {
     const user = userEvent.setup();
     const ways = await openOnMethod();
     await user.click(within(ways).getByRole('radio', { name: 'Upload a resume' }));
-    await user.click(screen.getByRole('button', { name: /Continue/ }));
     const dialog = await screen.findByRole('dialog', { name: 'Upload a resume' });
-    const go = within(dialog).getByRole('button', { name: /Upload & Continue/ });
+    const go = within(dialog).getByRole('button', { name: /^Upload/ });
     expect(go).toBeDisabled();
     await user.upload(
       within(dialog).getByLabelText('Resume file'),
@@ -91,7 +99,6 @@ describe('How would you like to create your resume? (toreview §151)', () => {
     const user = userEvent.setup();
     const ways = await openOnMethod();
     await user.click(within(ways).getByRole('radio', { name: 'Create from my profile' }));
-    await user.click(screen.getByRole('button', { name: /Continue/ }));
     const dialog = await screen.findByRole('dialog', { name: 'Create from my profile' });
     expect(
       await within(dialog).findByText(/^Experience \(\d+\) · Education \(\d+\) · Skills \(\d+\)$/),

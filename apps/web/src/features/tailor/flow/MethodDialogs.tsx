@@ -28,8 +28,9 @@ const linkAction = cn(textLink, 'flex items-center gap-1 text-body-m font-semibo
 
 /**
  * The four popups behind "How would you like to create your resume?" (owner mockup 2026-11-02,
- * toreview §151). Each says what the way does and only asks what that way needs; the upload one
- * reads the file before it goes on.
+ * toreview §151). Each says what the way does and only asks what that way needs. Its button
+ * chooses that way (owner, toreview §157): the step's Continue then goes on. The upload one reads
+ * the file first, so a chosen upload is a resume ready to tailor.
  */
 export function MethodDialogs({
   open,
@@ -38,10 +39,7 @@ export function MethodDialogs({
   resumeTitle,
   profile,
   onChangeResume,
-  onTailor,
-  onProfile,
-  zeroHref,
-  onUploaded,
+  onChoose,
 }: {
   open: Method | null;
   onClose: () => void;
@@ -49,10 +47,8 @@ export function MethodDialogs({
   resumeTitle: string | undefined;
   profile: Profile | undefined;
   onChangeResume: () => void;
-  onTailor: () => void;
-  onProfile: () => void;
-  zeroHref: Route;
-  onUploaded: (resumeId: string) => void;
+  /** The way, chosen; an upload brings the resume it read. */
+  onChoose: (method: Method, upload?: { resumeId: string; name: string }) => void;
 }) {
   const router = useRouter();
   const roles = profile?.experiences.length ?? 0;
@@ -69,8 +65,8 @@ export function MethodDialogs({
           'Add the job’s skills and keywords you choose',
           'Get suggestions to make your lines stronger, like adding real results',
         ]}
-        confirmLabel="Tailor Resume"
-        onConfirm={onTailor}
+        confirmLabel="Use this resume"
+        onConfirm={() => onChoose('tailor')}
       >
         <DialogFact
           icon={<File06 className="size-5" />}
@@ -95,9 +91,10 @@ export function MethodDialogs({
           'Keep your details consistent across future resumes',
           'You can update your profile anytime',
         ]}
-        confirmLabel={roles > 0 || !profile ? 'Use My Profile' : 'Fill in my profile'}
+        confirmLabel={roles > 0 || !profile ? 'Use my profile' : 'Fill in my profile'}
         disabled={!profile}
-        onConfirm={onProfile}
+        // A profile with no roles has nothing to build from: the button opens the profile instead.
+        onConfirm={() => (roles > 0 ? onChoose('profile') : router.push('/profile' as Route))}
       >
         <DialogFact
           icon={<User01 className="size-5" />}
@@ -132,7 +129,7 @@ export function MethodDialogs({
           'You’re in full control — we mark every guess for you to check',
         ]}
         confirmLabel="Start with AI"
-        onConfirm={() => router.push(zeroHref)}
+        onConfirm={() => onChoose('zero')}
       >
         <DialogFact
           icon={<Clipboard className="size-5" />}
@@ -141,22 +138,26 @@ export function MethodDialogs({
         />
       </MethodDialog>
 
-      {open === 'upload' && <UploadDialog onClose={onClose} onUploaded={onUploaded} />}
+      {open === 'upload' && (
+        <UploadDialog onClose={onClose} onUploaded={(upload) => onChoose('upload', upload)} />
+      )}
     </>
   );
 }
 
-/** The upload popup: drop or browse, then "Upload & Continue" reads it and goes on. */
+/** The upload popup: drop or browse, then "Upload" reads it, and the read resume is the choice. */
 function UploadDialog({
   onClose,
   onUploaded,
 }: {
   onClose: () => void;
-  onUploaded: (resumeId: string) => void;
+  onUploaded: (upload: { resumeId: string; name: string }) => void;
 }) {
-  const upload = useResumeUpload(onUploaded);
-  const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const upload = useResumeUpload((resumeId) =>
+    onUploaded({ resumeId, name: file?.name ?? 'your resume' }),
+  );
+  const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const drop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -171,7 +172,7 @@ function UploadDialog({
       art={METHOD_ART.upload}
       title={METHOD_TITLE.upload}
       line="Upload an existing resume (PDF or DOCX), and we’ll read it and tailor it to this job."
-      confirmLabel="Upload & Continue"
+      confirmLabel="Upload"
       busyLabel="Reading your resume…"
       busy={upload.reading}
       disabled={!file}

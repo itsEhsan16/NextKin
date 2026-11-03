@@ -121,7 +121,7 @@ describe('Choosing the resume (toreview §110)', () => {
     list.mockRestore();
   }, 30000);
 
-  it('arriving without a pick opens on step 2 with the base picked, and no dialog asks (toreview §114, §152)', async () => {
+  it('arriving without a pick opens on step 2 with the base as the starting resume, nothing chosen and no dialog open (toreview §114, §152, §157)', async () => {
     renderWithQuery(<TailorScreen target={{ kind: 'job', id: 'job_google' }} />);
     const step = await screen.findByRole(
       'region',
@@ -130,7 +130,9 @@ describe('Choosing the resume (toreview §110)', () => {
     );
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(within(step).getByText('Product Designer Resume')).toBeInTheDocument();
-    expect(within(step).getByRole('radio', { name: 'Tailor my selected resume' })).toBeChecked();
+    expect(
+      within(step).getByRole('radio', { name: 'Tailor my selected resume' }),
+    ).not.toBeChecked();
   });
 });
 

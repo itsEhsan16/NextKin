@@ -15191,3 +15191,16 @@ The owner: the white pill on "Upload file" ran past the right edge of its track,
 - **The size:** the three tab bodies now share one grid cell. Only the chosen one is seen, read out or focusable (the others are invisible, aria-hidden and inert), so the box is always as tall as the tallest tab, the paste box with its counter. The file drop zone stretches to fill it.
 - **Checked elsewhere:** the job, application and resume detail panels and the preview panes switch tabs inside fixed, scrolling frames, so they keep their size. The list filters (Applications, Documents, Resumes, Help, the cover letter's resume list) show different numbers of rows per tab by nature, and were left as they are.
 - **Not verified in a browser.** Web tests pass (428).
+
+## 157. Web: nothing chosen until a popup is completed (owner, 2026-11-03)
+
+The owner: none of the four ways should start selected. Pressing a way opens its popup, completing the popup chooses it, and then Continue goes on.
+
+- **Nothing is selected on arrival.** Continue is disabled until a way is chosen. The starting resume (the base) still shows under "Your selections".
+- **Pressing a card opens its popup.** The popup's button now chooses the way and closes the popup instead of navigating. Cancel or closing leaves it unchosen.
+- **Button labels,** since they now choose rather than go on: "Use this resume" (was "Tailor Resume"), "Use my profile", "Start with AI", and "Upload" (was "Upload & Continue").
+- **Upload** reads the file in the popup. The card then says "Uploaded and read: <file>", and Continue tailors that resume.
+- **A profile with no roles:** its popup's button still opens the profile, because there is nothing to build from, so it can't be chosen.
+- **Continue** goes on with the chosen way: tailor or upload to Enhance, profile to Enhance in build mode, scratch to Zero Resume.
+- This replaces §155's pre-selected starting option.
+- **Not verified in a browser.** Web tests pass (428).
