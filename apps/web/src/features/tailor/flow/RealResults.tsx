@@ -73,7 +73,7 @@ function ResultRow({
 
 /**
  * "Add real results" (owner, 2026-11-02, toreview §149): the lines with no measured result, from the
- * plan's own steps, each finished by two picks. The rest of the plan is a link away.
+ * plan's own steps, each finished by two picks. The rest of the plan sits beside it (toreview §161).
  */
 export function RealResults({
   steps,

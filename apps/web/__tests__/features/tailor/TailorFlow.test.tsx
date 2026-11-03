@@ -159,18 +159,14 @@ describe('Tailor flow (734:2, 734:679)', () => {
     ).toBeInTheDocument();
     expect(within(enhance).getByRole('button', { name: 'Change' })).toBeInTheDocument();
 
-    // The full plan is a link away, and its ticks are the keywords' ticks.
-    const planLink = within(enhance).getByRole('button', { name: /See the full plan/ });
-    expect(planLink).toHaveAttribute('aria-expanded', 'false');
-    await user.click(planLink);
-    expect(within(enhance).getByRole('button', { name: 'Hide the full plan' })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
-    expect(within(enhance).getByRole('heading', { name: 'Your fix plan' })).toBeInTheDocument();
+    // The plan lives in the step itself (toreview §161): no old fix-plan table, and only where the
+    // points go is a link away.
+    expect(within(enhance).queryByRole('heading', { name: 'Your fix plan' })).toBeNull();
+    const pointsLink = within(enhance).getByRole('button', { name: 'See where your points go' });
+    await user.click(pointsLink);
+    expect(pointsLink).toHaveAttribute('aria-expanded', 'true');
     expect(within(enhance).getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
-    const figma = within(enhance).getByText('Add Figma').closest('li')!;
-    await user.click(within(figma).getByRole('button', { name: 'I have this' }));
+    await user.click(within(enhance).getByRole('button', { name: 'Figma' }));
     expect(within(enhance).getByRole('button', { name: 'Figma' })).toHaveAttribute(
       'aria-pressed',
       'true',

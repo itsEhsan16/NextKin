@@ -1,7 +1,6 @@
 'use client';
 
 import type { TailorComparison } from '@nextkin/shared/models';
-import { planGoalLine } from '@nextkin/shared/tailor/customize';
 import { useState } from 'react';
 
 import { cn } from '@/lib/cn';
@@ -9,25 +8,17 @@ import { CollapseFade } from '@/ui/CollapseFade';
 import { ChevronDownIcon } from '@/ui/icons';
 import { textLink } from '@/ui/textLink';
 
-import type { TailorChoices } from '../useTailorRun';
-import { PlanTable, PointsBar } from './PlanTable';
+import { PointsBar } from './PointsBar';
 
 /**
- * The whole plan, folded away (owner, 2026-11-02, toreview §149): where the points go and every step
- * to the target, as step 3 used to show them. Its ticks are the same ticks as the keywords above.
+ * Where the points go, folded away (owner, 2026-11-03, toreview §161). The plan's steps live in
+ * Enhance itself now (keywords, "Show these in a role", real results, "More to raise your score"),
+ * so only the bar of the score's parts stays behind a link.
  */
-export function FullPlan({
-  comparison,
-  choices,
-  onToggle,
-}: {
-  comparison: TailorComparison;
-  choices: TailorChoices;
-  onToggle: (keyword: string, on: boolean) => void;
-}) {
+export function FullPlan({ comparison }: { comparison: TailorComparison }) {
   const [open, setOpen] = useState(false);
-  const plan = comparison.plan;
-  if (!plan || (plan.steps.length === 0 && plan.parts.length === 0)) return null;
+  const parts = comparison.plan?.parts ?? [];
+  if (parts.length === 0) return null;
   return (
     <div className="border-t border-border-subtle">
       <button
@@ -36,7 +27,7 @@ export function FullPlan({
         onClick={() => setOpen((v) => !v)}
         className={cn(textLink, 'mx-8 my-4 flex items-center gap-1.5 text-body-m text-text-brand')}
       >
-        {open ? 'Hide the full plan' : `See the full plan · ${planGoalLine(plan)}`}
+        {open ? 'Hide where your points go' : 'See where your points go'}
         <ChevronDownIcon
           aria-hidden
           className={cn(
@@ -46,21 +37,7 @@ export function FullPlan({
         />
       </button>
       <CollapseFade axis="vertical" open={open}>
-        <PointsBar parts={plan.parts} />
-        {plan.steps.length > 0 && (
-          <PlanTable
-            steps={plan.steps}
-            target={plan.target}
-            added={choices.added}
-            places={comparison.places ?? []}
-            placeOf={(keyword) => choices.places[keyword]}
-            resumeId={comparison.resumeId}
-            figureOf={(b) => choices.figureOf(b.roleId, b.index)}
-            onToggle={onToggle}
-            onPlace={choices.placeKeyword}
-            onFigure={(b, text) => choices.setFigure(b.roleId, b.index, text)}
-          />
-        )}
+        <PointsBar parts={parts} />
       </CollapseFade>
     </div>
   );

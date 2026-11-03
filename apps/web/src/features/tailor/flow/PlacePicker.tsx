@@ -16,17 +16,20 @@ export function PlacePicker({
   places,
   where,
   by,
+  emptyLabel = 'Skills only',
   onPlace,
 }: {
   places: readonly TailorPlace[];
   where: string | undefined;
   by: PlacedBy | undefined;
+  /** The trigger's text with no place chosen. */
+  emptyLabel?: string;
   onPlace: (where: string | null) => void;
 }) {
   const place = places.find((p) => p.id === where);
   const label = place
     ? `${by === 'ai' ? 'AI places it in' : 'Used in'}: ${place.label}`
-    : 'Skills only';
+    : emptyLabel;
   return (
     <FilterDropdown
       align="end"

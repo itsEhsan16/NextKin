@@ -24,6 +24,7 @@ import type { TailorChoices } from '../useTailorRun';
 import { EXPERIENCE_DEPTH_LABEL, FIX_ROWS } from '../tailorLibrary';
 import { EnhanceHeader } from './EnhanceHeader';
 import { FullPlan } from './FullPlan';
+import { MoreFixes, ShowInRole } from './PlanExtras';
 import { RealResults } from './RealResults';
 
 const linkButton = cn(textLink, 'text-body-m');
@@ -51,15 +52,15 @@ function partLine(
 /**
  * W-FLOW 04 (852:2), now the one step after picking a resume (owner, 2026-11-02, toreview §149):
  * the job against the resume with its score, every keyword from the job to tick (and where each
- * goes), the lines to finish with a real result, the full plan a link away, and on the right what
- * the AI will change, the projection and the honesty note. Then Create my resume.
+ * goes), skills to show in a role, the lines to finish with a real result and the rest of the plan
+ * (toreview §161), and on the right what the AI will change, the projection and the honesty note.
+ * Then Create my resume.
  */
 export function EnhanceStep({
   job,
   comparison,
   resume,
   onChangeResume,
-  onToggle,
   choices,
   allowanceNote,
   spent,
@@ -71,7 +72,6 @@ export function EnhanceStep({
   comparison: TailorComparison;
   resume: Resume | undefined;
   onChangeResume: () => void;
-  onToggle: (keyword: string, on: boolean) => void;
   choices: TailorChoices;
   allowanceNote: string;
   spent: boolean;
@@ -97,6 +97,7 @@ export function EnhanceStep({
   };
   const tickedHard = hard.filter((k) => choices.added.includes(k.label));
   const places = comparison.places ?? [];
+  const steps = comparison.plan?.steps ?? [];
   const off = FIX_ROWS.filter((row) => !choices.fixes.has(row.key));
 
   // The AI's own steps, then what the user has answered at its measured gain (toreview §129). A
@@ -262,12 +263,14 @@ export function EnhanceStep({
                 </div>
               </div>
             )}
+            <ShowInRole steps={steps} places={places} choices={choices} />
             <RealResults
-              steps={comparison.plan?.steps ?? []}
+              steps={steps}
               resumeId={comparison.resumeId}
               figureOf={(b) => choices.figureOf(b.roleId, b.index)}
               onFigure={(b, text) => choices.setFigure(b.roleId, b.index, text)}
             />
+            <MoreFixes steps={steps} resumeId={comparison.resumeId} />
           </div>
 
           <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-3 lg:pr-8">
@@ -369,7 +372,7 @@ export function EnhanceStep({
             <Callout>{NEVER_ADDS_SKILLS}</Callout>
           </div>
         </div>
-        <FullPlan comparison={comparison} choices={choices} onToggle={onToggle} />
+        <FullPlan comparison={comparison} />
       </section>
 
       <FlowFooter note={allowanceNote}>

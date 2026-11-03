@@ -189,17 +189,12 @@ export function TailorScreen({
   } else if (comparison.data) {
     const measured = comparison.data;
     const back = tailorPath(target, { step: 'resume', resumeId });
-    const toggle = (keyword: string, on: boolean) =>
-      choices.setAdded(
-        on ? [...choices.added, keyword] : choices.added.filter((k) => k !== keyword),
-      );
     body = (
       <EnhanceStep
         job={job}
         comparison={measured}
         resume={tailorable.find((r) => r.id === resumeId)}
         onChangeResume={() => setChoosing(true)}
-        onToggle={toggle}
         choices={choices}
         allowanceNote={quota}
         spent={spent}

@@ -15264,3 +15264,18 @@ The owner asked to merge, commit, push and deploy the latest to AWS.
 
 - **Deployed 2026-11-03** (`NextkinDemo`, https://d3hc44bxjik4qf.cloudfront.net): `cdk deploy` (new images for every service, plus the isolated link reader `nextkin-demo-links`, 1 vCPU / 2 GB, about $35/month while running); migrate applied 0043–0050 (8 new, 42 in place); `task seed-reference` ran with accounts untouched; web and worker restarted after the migration; the demo was paused (support and ClamAV at 0), so `task resume` brought every service to 1. `/health/deep` is 200 on all four dependencies and `pro@` signs in. **Not yet done:** a tailoring run or a link read on the demo, or a check in a browser.
 - **Docker Desktop closed twice mid-build** when CDK built every image at once (2.5 GB of host RAM free). `--asset-parallelism=false` built them one at a time and the deploy went through; use it on this laptop.
+
+## 161. Web: the whole fix plan inside the new Enhance design (owner, 2026-11-03)
+
+The owner: "See the full plan" still opened the old W-FLOW 03 table ("Your fix plan", # / What the job asks / Who does it / Adds / Score after), and every step should be in the new design. §149 had moved keywords and results into Enhance and left the rest behind that link.
+
+- **In Enhance now, in the "Add real results" style** (`flow/PlanExtras.tsx`):
+  - **Show these in a role:** skills only in the skills list (half credit), with Required/Preferred, the job's line, what it adds, and the same place dropdown as the ticked keywords ("Say where you used it"). A place chosen here is the user's (`by: 'you'`), so per §159 it becomes a fact; "Skills only" takes the tick back.
+  - **More to raise your score:** every other step (contact and other sections, dates, layout, wording, years asked) with who does it (You fix it / AI does it / Nothing to change) and what it adds. The ones you fix link to the editor in a new tab.
+  - Three rows each, then "Show N more".
+- **Gone:** `PlanTable`, `PlanStepRow` and its test (its result-line tests moved to `PlanExtras.test.tsx`). "Where your points go" stays behind "See where your points go" (`PointsBar.tsx`).
+- **Calls made without you:**
+  - The headline and summary steps are not repeated on the left: "What the AI will change" lists them.
+  - The "8.5 reached here" line and the per-step "Score after" are gone; the right column's "About X/10 after this" carries the projection.
+  - "Fix in the editor" opens the base resume; the comparison does not refresh until the step is reopened.
+- **Checked:** a screenshot of the running page (mock data) shows the three sections and no table; web tests pass (429). **Not done:** mobile's plan screen; the AWS demo still runs the previous build until the next deploy.
