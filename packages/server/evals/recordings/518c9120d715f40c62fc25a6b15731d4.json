@@ -1,0 +1,109 @@
+{
+  "key": "518c9120d715f40c62fc25a6b15731d4",
+  "recordedAt": "2026-11-03T15:00:33.717Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Frontend Developer\",\n  \"company\": \"Klarwerk\",\n  \"requirementsBacked\": [\n   \"React\",\n "
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Frontend Engineer",
+      "summary": {
+        "text": "Frontend engineer building user interfaces in React and TypeScript for a dashboard serving 50,000 daily users. Earlier built marketing sites with jQuery and CSS, and wrote a component library used by 6 teams.",
+        "evidence": [
+          "fe_1",
+          "fe_2",
+          "fe_1#r0",
+          "fe_1#r2",
+          "fe_2#r0"
+        ]
+      },
+      "skills": [
+        {
+          "name": "React",
+          "evidence": [
+            "fe_1"
+          ]
+        },
+        {
+          "name": "jQuery",
+          "evidence": [
+            "fe_2"
+          ]
+        },
+        {
+          "name": "TypeScript",
+          "evidence": [
+            "fe_1"
+          ]
+        },
+        {
+          "name": "JavaScript",
+          "evidence": [
+            "fe_1"
+          ]
+        },
+        {
+          "name": "CSS",
+          "evidence": [
+            "fe_2"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "fe_1",
+          "bullets": [
+            {
+              "text": "Rebuilt the dashboard in React and TypeScript for 50,000 daily users",
+              "evidence": [
+                "fe_1#r0"
+              ]
+            },
+            {
+              "text": "Wrote the component library used by 6 teams",
+              "evidence": [
+                "fe_1#r2"
+              ]
+            },
+            {
+              "text": "Cut bundle size by 35% with code splitting",
+              "evidence": [
+                "fe_1#r1"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "fe_2",
+          "bullets": [
+            {
+              "text": "Built marketing sites with jQuery and CSS",
+              "evidence": [
+                "fe_2#r0"
+              ]
+            },
+            {
+              "text": "Maintained a PHP content system for 20 client sites",
+              "evidence": [
+                "fe_2#r1"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 839,
+      "outputTokens": 606,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

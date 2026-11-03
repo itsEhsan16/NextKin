@@ -1,0 +1,77 @@
+{
+  "key": "8453e65b7721b2bc398081ecbbee95ef",
+  "recordedAt": "2026-11-03T15:02:31.233Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Technical Product Manager\",\n  \"company\": \"Platypus Labs\",\n  \"requirementsBacked\": [\n "
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Technical Product Manager",
+      "summary": {
+        "text": "Product manager who owns the payments roadmap across 3 engineering teams and launched instant payouts used by 8,000 merchants in the first quarter. Runs customer discovery interviews and applies product management and Jira to payments work.",
+        "evidence": [
+          "profile#summary",
+          "pm_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Product management",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Roadmapping",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Jira",
+          "evidence": [
+            "pm_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "pm_1",
+          "bullets": [
+            {
+              "text": "Launched instant payouts, used by 8,000 merchants in the first quarter",
+              "evidence": [
+                "pm_1#r1"
+              ]
+            },
+            {
+              "text": "Owned the payments roadmap for 3 engineering teams",
+              "evidence": [
+                "pm_1#r0"
+              ]
+            },
+            {
+              "text": "Ran discovery interviews with 25 customers",
+              "evidence": [
+                "pm_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 597,
+      "outputTokens": 448,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}
