@@ -66,7 +66,7 @@ export function QuickStartCard() {
   return (
     <Card className="flex-1 p-6">
       <SectionHeader title="Quick Start" />
-      <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+      <ul className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {TILES.map(({ key, label, hint, href, Art }) => (
           <li key={key}>
             <Link
