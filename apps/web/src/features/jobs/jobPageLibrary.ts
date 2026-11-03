@@ -45,18 +45,37 @@ function listingMatchRows(job: Job, profile: Profile | undefined): MatchRow[] {
   // The server's count when there is one (the same ledger behind the number); else the tags.
   const basis = job.matchBasis;
   const skills = job.tags;
+  // A skill only listed on the profile earns half credit (D-14): counted apart, never as met
+  // (toreview §153), so "18 of 18" can't sit beside a 50% score.
   const have = basis
-    ? basis.requiredMet + basis.requiredPartial
+    ? basis.requiredMet
     : skills.filter((skill) => hasSkill(profile, skill)).length;
+  const listed = basis?.requiredPartial ?? 0;
   const total = basis ? basis.requiredTotal : skills.length;
   const years = profile?.yearsExperience;
   const range = job.experienceYears;
-  const experienceMet = years == null || range == null ? true : years >= range.min;
+  const experienceMet = years != null && range != null && years >= range.min;
+  // No data is not a pass: the row says what's missing instead.
+  const experienceValue =
+    range == null
+      ? 'Not stated'
+      : years == null
+        ? 'Add to your profile'
+        : experienceMet
+          ? 'Meets'
+          : 'Below';
   const places = profile?.preferences.locations ?? [];
   const locationMet =
     job.remote === 'remote' ||
-    places.length === 0 ||
     places.some((place) => norm(job.location).includes(norm(place).split(',')[0] ?? ''));
+  const locationValue =
+    job.remote === 'remote'
+      ? 'Remote'
+      : places.length === 0
+        ? 'Add to your profile'
+        : locationMet
+          ? 'Matches'
+          : 'Differs';
   const wanted = profile?.preferences.remote;
   const workMet =
     !wanted ||
@@ -64,9 +83,13 @@ function listingMatchRows(job: Job, profile: Profile | undefined): MatchRow[] {
     wanted === job.remote ||
     (wanted === 'hybrid' && job.remote !== 'remote');
   return [
-    { label: 'Experience level', value: experienceMet ? 'Meets' : 'Below', met: experienceMet },
-    { label: 'Skills', value: `${have} of ${total}`, met: have === total },
-    { label: 'Location', value: locationMet ? 'Matches' : 'Differs', met: locationMet },
+    { label: 'Experience level', value: experienceValue, met: experienceMet },
+    {
+      label: 'Skills',
+      value: listed > 0 ? `${have} shown · ${listed} listed of ${total}` : `${have} of ${total}`,
+      met: have === total,
+    },
+    { label: 'Location', value: locationValue, met: locationMet },
     { label: 'Work type', value: workMet ? 'Matches' : 'Differs', met: workMet },
   ];
 }

@@ -107,7 +107,11 @@ export function jobFromJd(
   const about = linesOf(reading, 'about_company').join('\n');
   // A line the reading files under another section (benefits, requirements, pay…) is that section's,
   // so it is not shown again as a duty; with none left, the reading's own duties stand in.
-  const key = (line: string) => line.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const key = (line: string) =>
+    line
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .trim();
   const elsewhere = new Set(
     reading.sections
       .filter((s) => s.kind !== 'overview' && s.kind !== 'responsibilities' && s.kind !== 'other')
@@ -118,8 +122,24 @@ export function jobFromJd(
   const responsibilities = duties.length ? duties : linesOf(reading, 'responsibilities');
   const skills = [...new Set([...draft.requiredSkills, ...draft.preferredSkills])];
   const lines = qualificationLines(draft.rawText);
-  const remote = remoteFromText(`${draft.location ?? ''}\n${draft.rawText}`) ?? reading.workArrangement ?? null;
-  const years = yearsFromText(draft.rawText);
+  // The structured reading (toreview §153) wins where it placed a fact: its work mode and years come
+  // from the lines that state them, not the first match anywhere in the text.
+  const s = draft.structured;
+  const mode = s?.workMode?.value;
+  const remote = s
+    ? mode === 'onsite' || mode === 'remote' || mode === 'hybrid'
+      ? mode
+      : null
+    : (remoteFromText(`${draft.location ?? ''}\n${draft.rawText}`) ??
+      reading.workArrangement ??
+      null);
+  const min = s?.experience.minYears?.value;
+  const max = s?.experience.maxYears?.value;
+  const years = s
+    ? min !== undefined && max !== undefined
+      ? { min, max }
+      : null
+    : yearsFromText(draft.rawText);
   const site = hostOf(draft.sourceUrl);
   const job: Job = {
     id: draft.id,
@@ -136,7 +156,13 @@ export function jobFromJd(
     postedAt: draft.createdAt,
     source: 'manual',
     ...(draft.sourceUrl ? { sourceUrl: draft.sourceUrl, applyUrl: draft.sourceUrl } : {}),
-    description: overview ? overview.slice(0, 1200) : descriptionOf(draft.rawText, draft.title),
+    // With the structure, the summary NextKin wrote from the posting, never the run of text before
+    // its first heading.
+    description: s
+      ? (s.summary ?? '')
+      : overview
+        ? overview.slice(0, 1200)
+        : descriptionOf(draft.rawText, draft.title),
     ...(benefits.length ? { benefits } : {}),
     ...(about ? { companyAbout: about.slice(0, 1200) } : {}),
     responsibilities,

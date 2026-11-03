@@ -14,16 +14,19 @@ export const factKey = (text: string): string =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 
+/** The most places one fact keeps: enough to show it was repeated, bounded for storage. */
+export const MAX_QUOTES = 12;
+
 /** Joins quotes, each place once, in the order the posting says them. */
 export function unionQuotes(a: readonly JdQuote[], b: readonly JdQuote[]): JdQuote[] {
   const out = [...a];
   for (const q of b) if (!out.some((o) => o.start === q.start && o.end === q.end)) out.push(q);
-  return out.sort((x, y) => x.start - y.start);
+  return out.sort((x, y) => x.start - y.start).slice(0, MAX_QUOTES);
 }
 
 /**
- * One fact per meaning: facts with the same key, or said in the same words, become one that keeps
- * every quote. Returns the facts and how many were merged.
+ * One fact per meaning: facts with the same key (the same words, case and punctuation aside, or the
+ * same parsed value) become one that keeps every quote. Returns the facts and how many merged.
  */
 export function mergeFacts<F extends JdFact<unknown>>(
   facts: readonly F[],
@@ -33,11 +36,8 @@ export function mergeFacts<F extends JdFact<unknown>>(
   let merged = 0;
   for (const fact of facts) {
     const k = key(fact);
-    const twin = out.find(
-      (o) =>
-        key(o) === k ||
-        o.quotes.some((q) => fact.quotes.some((p) => q.start === p.start && q.end === p.end)),
-    );
+    // By meaning only: two skills named in one line are two facts, not one.
+    const twin = out.find((o) => key(o) === k);
     if (twin) {
       twin.quotes = unionQuotes(twin.quotes, fact.quotes);
       if (fact.status === 'unclear') twin.status = 'unclear';
@@ -62,7 +62,8 @@ const RANK: Record<PayStatement['component'], number> = {
 
 /** "₹45,000 – ₹80,000 a month", as a note quotes it. */
 export function payText(p: PayStatement): string {
-  const fmt = (n: number) => n.toLocaleString('en-IN');
+  // Lakh grouping for rupees (45,000 · 4,50,000), thousands for everything else.
+  const fmt = (n: number) => n.toLocaleString(p.currency === 'INR' ? 'en-IN' : 'en-US');
   const sym: Record<string, string> = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
   const c = p.currency ? (sym[p.currency] ?? `${p.currency} `) : '';
   const amount =

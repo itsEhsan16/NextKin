@@ -48,7 +48,9 @@ export type MatchBasis = {
 
 /**
  * The one-line caption beside a match number or band (toreview §105.18: spec-derived until an
- * artboard draws it). "From a short listing · 3 of 5 required".
+ * artboard draws it). "From a short listing · 3 of 5 required". A skill the profile only lists earns
+ * half credit (D-14), so it is counted apart rather than as met (toreview §153): "From the full
+ * listing · 12 of 18 required shown in your roles · 6 only listed".
  */
 export function matchBasisCaption(basis: MatchBasis): string {
   const source =
@@ -58,8 +60,9 @@ export function matchBasisCaption(basis: MatchBasis): string {
         ? 'From a short listing'
         : 'From the job title only';
   if (basis.requiredTotal === 0) return `${source} · no required skills listed`;
-  const met = basis.requiredMet + basis.requiredPartial;
-  return `${source} · ${met} of ${basis.requiredTotal} required`;
+  const met = `${basis.requiredMet} of ${basis.requiredTotal} required`;
+  if (basis.requiredPartial === 0) return `${source} · ${met}`;
+  return `${source} · ${met} shown in your roles · ${basis.requiredPartial} only listed`;
 }
 
 /** Who a listing came from, as the provider's terms ask it to be credited (V2 §7.13). */

@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 
 import { repos, resetMockRepos } from '@nextkin/shared/repos';
 
+import { structureJd } from '@nextkin/shared/jobs/jdStructure';
+
 import { JdPageScreen } from '@/features/jd/screens/JdPageScreen';
 import { SAMPLE_JD } from '@/features/upload/uploadLibrary';
 import { renderWithQuery, SETTLE_MS } from '../../../testSupport/render';
@@ -31,6 +33,7 @@ describe('JdPageScreen', () => {
     replace.mockClear();
     editParam = null;
   });
+  afterEach(() => jest.restoreAllMocks());
 
   it('shows the whole posting by its sections, and what it asks that nobody could have (§129)', async () => {
     const user = userEvent.setup();
@@ -54,7 +57,11 @@ describe('JdPageScreen', () => {
     });
     renderWithQuery(<JdPageScreen id={draft.id} />);
 
-    const check = await screen.findByRole('region', { name: 'Requirements to double-check' }, LOADED);
+    const check = await screen.findByRole(
+      'region',
+      { name: 'Requirements to double-check' },
+      LOADED,
+    );
     expect(within(check).getByText('Asks for 20 years of React')).toBeInTheDocument();
     expect(within(check).getByText(/React was released in 2013/)).toBeInTheDocument();
 
@@ -137,12 +144,19 @@ describe('JdPageScreen', () => {
     expect(screen.getByText(/Senior Product Designer/, { selector: 'div' })).toBeInTheDocument();
   });
 
-  it('lets every field be corrected, and saves what the user confirms', async () => {
+  it('a read job has no "Edit details": NextKin owns the reading (owner, toreview §153)', async () => {
+    const draft = await pastedJd();
+    renderWithQuery(<JdPageScreen id={draft.id} />);
+    expect(await screen.findByRole('button', { name: /Tailor my resume/ }, LOADED)).toBeVisible();
+    expect(screen.queryByRole('button', { name: /Edit details/ })).not.toBeInTheDocument();
+  });
+
+  it('entering the details by hand (a job that couldn’t be read) saves what the user types', async () => {
     const user = userEvent.setup();
+    editParam = '1';
     const draft = await pastedJd();
     renderWithQuery(<JdPageScreen id={draft.id} />);
 
-    await user.click((await screen.findAllByRole('button', { name: /Edit details/ }, LOADED))[0]!);
     // W-FLOW 06: the edit is its own page, the original text beside the form.
     expect(await screen.findByRole('heading', { level: 1, name: 'Edit details' })).toBeVisible();
     expect(screen.getByText('Pasted job description')).toBeInTheDocument();
@@ -175,9 +189,7 @@ describe('JdPageScreen', () => {
     // "Save changes" sits in the header and submits the form through its `form` attribute.
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Staff Product Designer' }, LOADED),
-    ).toBeInTheDocument();
+    await screen.findByRole('heading', { level: 1, name: 'Staff Product Designer' }, LOADED);
     const saved = await repos.jd.get(draft.id);
     expect(saved.title).toBe('Staff Product Designer');
     expect(saved.company).toBe('Acme');
@@ -199,6 +211,91 @@ describe('JdPageScreen', () => {
     ).toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: 'Cancel' }));
     expect(replace).toHaveBeenCalledWith(`/jd/${draft.id}`, { scroll: false });
+  });
+
+  it('shows a structured job by its facts and sections, flags what is unclear, never a run-on paragraph (§153)', async () => {
+    const user = userEvent.setup();
+    const raw = [
+      'Full-stack Developer',
+      'Clearcred Technology Private Limited Pulikeshi Nagar ₹45,000 - ₹80,000 monthly Fixed ₹45,000 - ₹80,000 Earning Potential ₹80,000 Work from Office Min. 1 year 5 working days Apply for job Share 95 applicants',
+      'Build secure REST APIs for clients, merchants and partner banks.',
+      'Must know React and Node.js.',
+    ].join('\n');
+    const said = (quote: string) => ({ text: quote, quote });
+    const s = structureJd(
+      raw,
+      {
+        title: said('Full-stack Developer'),
+        company: said('Clearcred Technology Private Limited'),
+        department: null,
+        industry: null,
+        employmentType: null,
+        seniority: null,
+        openings: null,
+        referenceId: null,
+        summary: 'A full-stack role building payment APIs for merchants and banks.',
+        locations: [{ ...said('Pulikeshi Nagar'), city: null, region: null, country: null }],
+        workModes: [{ value: 'onsite', quote: 'Work from Office' }],
+        schedule: [{ kind: 'days', ...said('5 working days') }],
+        pay: [
+          { component: 'unknown', quote: '₹45,000 - ₹80,000 monthly' },
+          { component: 'fixed', quote: 'Fixed ₹45,000 - ₹80,000' },
+          { component: 'total', quote: 'Earning Potential ₹80,000' },
+        ],
+        negotiable: null,
+        experience: [said('Min. 1 year')],
+        responsibilities: [
+          {
+            ...said('Build secure REST APIs for clients, merchants and partner banks.'),
+            group: null,
+          },
+        ],
+        skills: [
+          {
+            name: 'React',
+            quote: 'Must know React and Node.js',
+            category: 'framework',
+            importance: 'required',
+          },
+          {
+            name: 'Node.js',
+            quote: 'Must know React and Node.js',
+            category: 'framework',
+            importance: 'required',
+          },
+        ],
+        education: [],
+        languages: [],
+        benefits: [],
+        eligibility: [],
+        companyAbout: [],
+        website: null,
+        application: [],
+        extras: [],
+        issues: [],
+      },
+      { today: '2026-11-03' },
+    );
+    const draft = await pastedJd();
+    jest
+      .spyOn(repos.jd, 'get')
+      .mockResolvedValue({ ...draft, rawText: raw, title: 'Full-stack Developer', structured: s });
+    renderWithQuery(<JdPageScreen id={draft.id} />);
+
+    const facts = await screen.findByLabelText('Key facts', undefined, LOADED);
+    expect(within(facts).getByText('₹45,000–₹80,000 a month')).toBeInTheDocument();
+    expect(within(facts).getByText('Unclear in the listing')).toBeInTheDocument();
+    expect(within(facts).getByText('1 year+')).toBeInTheDocument();
+    expect(within(facts).getByText('On-site')).toBeInTheDocument();
+    expect(within(facts).getByText('5 days a week')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Worth knowing' })).toBeInTheDocument();
+    expect(screen.getByText('Summary written by NextKin from the listing.')).toBeInTheDocument();
+    // The chrome of the page it was copied from is not shown as the job's description.
+    expect(screen.queryByText(/95 applicants/, { selector: 'p' })).not.toBeInTheDocument();
+    // Where the salary came from is one press away.
+    await user.click(screen.getByRole('button', { name: 'Show where the listing says salary' }));
+    expect(within(facts).getByText('“Fixed ₹45,000 - ₹80,000”')).toBeVisible();
+    expect(screen.getByRole('list', { name: 'Frameworks' })).toHaveTextContent('React');
   });
 
   it('says so when the JD is gone', async () => {

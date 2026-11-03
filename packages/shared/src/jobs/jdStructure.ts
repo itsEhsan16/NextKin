@@ -15,7 +15,7 @@ import {
   type SkillCategory,
   type WorkMode,
 } from '../models/jdStructured';
-import { factKey, mergeFacts, readExperience, readPay, SENSITIVE } from './jdChecks';
+import { factKey, MAX_QUOTES, mergeFacts, readExperience, readPay, SENSITIVE } from './jdChecks';
 import { haystackOf, locate, type Haystack } from './jdLocate';
 import { dateIn, daysPerWeekIn } from './jdParse';
 
@@ -267,8 +267,17 @@ export function structureJd(
   const skills: JdStructured['skills'] = [];
   for (const s of reading.skills) {
     const q = at(s.quote);
-    if (!q || !within(s.name, q.text)) continue;
-    const names = options.skillNames ? options.skillNames(s.name) : [s.name.trim()];
+    if (!q) continue;
+    const names = !within(s.name, q.text)
+      ? []
+      : options.skillNames
+        ? options.skillNames(s.name)
+        : [s.name.trim()];
+    // Quoted, but not a skill named in its own quote: dropped and counted like an unquoted one.
+    if (names.length === 0) {
+      kept -= 1;
+      dropped += 1;
+    }
     for (const name of names)
       skills.push({ ...fact(name, q), category: s.category, importance: s.importance });
   }
@@ -336,7 +345,7 @@ export function structureJd(
     },
     application,
     extras: many(reading.extras, () => ({}), true),
-    issues,
+    issues: issues.slice(0, 30).map((i) => ({ ...i, quotes: i.quotes.slice(0, MAX_QUOTES) })),
     stats: { kept, dropped, merged },
   };
 }

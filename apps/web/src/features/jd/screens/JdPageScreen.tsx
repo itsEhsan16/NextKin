@@ -13,7 +13,7 @@ import { useReveal } from '@/lib/useReveal';
 import { Button } from '@/ui/Button';
 import { cardSurface } from '@/ui/Card';
 import { JdRobotIllustration } from '@/ui/illustrations';
-import { Edit03, RefreshCw01, Stars02, iconSize } from '@/ui/lineIcons';
+import { RefreshCw01, Stars02, iconSize } from '@/ui/lineIcons';
 import { pageFillMin, pageFrame } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -26,6 +26,8 @@ import { JdEditPanel } from '../components/JdEditPanel';
 import { JdPlausibilityCallout, JdReadingSections } from '../components/JdReadingSections';
 import { JdSkills } from '../components/JdSkills';
 import { JdSourceSection } from '../components/JdSourceSection';
+import { JdBody } from '../structured/JdBody';
+import { JdTop } from '../structured/JdTop';
 import { useTailorDialog } from '../../tailor/useTailorDialog';
 import { jdTailorHref } from '../jdHref';
 
@@ -36,8 +38,23 @@ import { jdTailorHref } from '../jdHref';
  * responsibilities and qualifications, then the rest of the posting section by section (nice to
  * have, benefits, pay, place, the company, how to apply), the full text, and beside it the AI tools
  * — "Tailor my resume" is also the page's own primary action. Listing-only parts (posted,
- * applicants, Save, similar jobs) are left out. "Edit details" is V2 §7.5's review.
+ * applicants, Save, similar jobs) are left out.
+ *
+ * A job read into its structure (toreview §153) is shown from it: the quick facts, anything worth
+ * knowing, and each section in its place. NextKin owns that reading (owner, 2026-11-03), so a read
+ * job has no "Edit details"; entering the details by hand stays only for a job that couldn't be read.
  */
+const STAGE_TEXT = {
+  reading: { file: 'Reading the file…', link: 'Reading the page…' },
+  understanding: 'Understanding the job…',
+  checking: 'Checking what it says…',
+} as const;
+
+function stageText(stage: 'reading' | 'understanding' | 'checking' | undefined, source: string) {
+  if (stage === 'reading')
+    return source === 'link' ? STAGE_TEXT.reading.link : STAGE_TEXT.reading.file;
+  return stage ? STAGE_TEXT[stage] : 'Reading the job description…';
+}
 export function JdPageScreen({ id }: { id: string }) {
   const router = useRouter();
   const editParam = useSearchParams().get('edit') === '1';
@@ -102,21 +119,12 @@ export function JdPageScreen({ id }: { id: string }) {
               backLabel="Back to Upload a JD"
               actions={
                 !edit && !reading ? (
-                  <>
-                    <Button
-                      variant="secondary"
-                      icon={<Edit03 aria-hidden className={iconSize.sm} />}
-                      onClick={() => setEditing(true)}
-                    >
-                      Edit details
-                    </Button>
-                    <Button
-                      icon={<Stars02 aria-hidden className={iconSize.sm} />}
-                      onClick={tailorDialog.openDialog}
-                    >
-                      Tailor my resume
-                    </Button>
-                  </>
+                  <Button
+                    icon={<Stars02 aria-hidden className={iconSize.sm} />}
+                    onClick={tailorDialog.openDialog}
+                  >
+                    Tailor my resume
+                  </Button>
                 ) : undefined
               }
             />
@@ -146,7 +154,10 @@ export function JdPageScreen({ id }: { id: string }) {
                   </>
                 ) : (
                   <>
-                    <AiLoader text="Reading the job description…" className="text-body-l" />
+                    <AiLoader
+                      text={stageText(draft.data.stage, draft.data.source)}
+                      className="text-body-l"
+                    />
                     <p className="text-body-m text-text-secondary">
                       {stall === 'slow'
                         ? 'Taking longer than usual.'
@@ -162,32 +173,40 @@ export function JdPageScreen({ id }: { id: string }) {
                     role="status"
                     className="mx-8 mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-warning-50 px-4 py-3 text-body-s text-warning-text"
                   >
-                    We couldn’t find the job title in this text.
-                    <button
-                      type="button"
-                      onClick={() => setEditing(true)}
-                      className="rounded-sm font-semibold underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-                    >
-                      Add it
-                    </button>
+                    The listing doesn’t name the job title.
                   </p>
                 )}
-                <JobSummary job={view.job} profile={profile.data} known={view.known} />
-                <JdPlausibilityCallout notes={view.plausibility} />
-                <Responsibilities job={view.job} />
-                <JdSkills
-                  draft={draft.data}
-                  lines={
-                    view.job.requirements.length
-                      ? view.job.requirements
-                      : linesOf(view.reading, 'requirements')
-                  }
-                  profile={profile.data}
-                />
-                <JdReadingSections
-                  reading={view.reading}
-                  withResponsibilities={view.job.responsibilities.length === 0}
-                />
+                {draft.data.structured ? (
+                  <>
+                    <JdTop
+                      s={draft.data.structured}
+                      job={view.job}
+                      profile={profile.data}
+                      known={view.known}
+                    />
+                    <JdPlausibilityCallout notes={view.plausibility} />
+                    <JdBody s={draft.data.structured} profile={profile.data} />
+                  </>
+                ) : (
+                  <>
+                    <JobSummary job={view.job} profile={profile.data} known={view.known} />
+                    <JdPlausibilityCallout notes={view.plausibility} />
+                    <Responsibilities job={view.job} />
+                    <JdSkills
+                      draft={draft.data}
+                      lines={
+                        view.job.requirements.length
+                          ? view.job.requirements
+                          : linesOf(view.reading, 'requirements')
+                      }
+                      profile={profile.data}
+                    />
+                    <JdReadingSections
+                      reading={view.reading}
+                      withResponsibilities={view.job.responsibilities.length === 0}
+                    />
+                  </>
+                )}
               </div>
             )}
             {/* Open beside the review (V2 §7.5), closed on the page: a fresh section per mode. */}

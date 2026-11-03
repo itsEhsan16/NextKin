@@ -97,7 +97,7 @@ function Facts({ job, known }: { job: Job; known?: JobFactsKnown }) {
  * The match card (730:73): the score, its band and how it breaks down for this user. "How we
  * match" opens Help's answer on how the percentage is worked out.
  */
-function MatchCard({
+export function MatchCard({
   job,
   profile,
   known,
