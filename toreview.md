@@ -15141,4 +15141,4 @@ The owner sent a master prompt for a "JD intelligence engine" with a screenshot:
 - **Legacy .doc uploads** are not supported (owner's choice for this pass).
 - **The older golden set's live recordings** (golden-0.1.0) were made with prompt version 4 and need recording again with version 5. The scripted run still passes.
 - **The local database holds about 30 `jd.extract` prompt versions** left by integration test runs. Harmless, but the admin prompt list is noisy.
-- **File length:** `jdStructure.ts` is about 330 lines, over the 250-line rule.
+- **File length:** `jdStructure.ts` is 364 lines, over the 250-line rule.
