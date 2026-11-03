@@ -24,13 +24,15 @@ export const confirmedLine = (c: { keyword: string; note?: string }) => `Used ${
 /**
  * `confirmed` (toreview §112): a ticked keyword the user says they used at a role or project.
  * It joins that role's skills and becomes one more citable line of it, so a bullet there may name it.
+ * One the AI placed (`by: 'ai'`, owner, toreview §162) only joins the skills: a bullet there may
+ * name it where its own line describes that work, but it adds no line, so it never adds a bullet.
  */
 export function factsOfDocument(
   doc: CanonicalResumeJson,
   options: {
     added?: readonly string[];
     redact?: (text: string) => string;
-    confirmed?: readonly { keyword: string; where: string; note?: string }[];
+    confirmed?: readonly { keyword: string; where: string; note?: string; by?: 'ai' | 'you' }[];
     /**
      * Ticked keywords the AI places (toreview §116, owner): each dated role and project may carry
      * them, so the plan offers them wherever their era allows; the merge keeps one only where a
@@ -41,6 +43,8 @@ export function factsOfDocument(
 ): ProfileFacts {
   const placeable = options.placeable ?? [];
   const at = (where: string) => (options.confirmed ?? []).filter((c) => c.where === where);
+  // The user's own word is a citable line; the AI's pick is not.
+  const said = (where: string) => at(where).filter((c) => c.by !== 'ai');
   // Free text is what a model reads, so the caller's redaction (contact details) runs on it.
   const clean = options.redact ?? ((text: string) => text);
   const skills = [
@@ -61,7 +65,7 @@ export function factsOfDocument(
       start: date(role.start) ?? UNDATED,
       end: role.end === null ? null : date(role.end),
       ...(role.location ? { location: role.location } : {}),
-      responsibilities: [...role.bullets.map((b) => clean(b.text)), ...at(role.roleId).map((c) => clean(confirmedLine(c)))],
+      responsibilities: [...role.bullets.map((b) => clean(b.text)), ...said(role.roleId).map((c) => clean(confirmedLine(c)))],
       skills: [...new Set([...role.skills, ...at(role.roleId).map((c) => c.keyword), ...(role.start ? placeable : [])])],
     })),
     education: doc.education.map((e) => ({
@@ -78,7 +82,7 @@ export function factsOfDocument(
       issuer: c.issuer ?? '',
     })),
     projects: doc.projects.map((p) => {
-      const description = [p.description ?? '', ...p.bullets.map((b) => b.text), ...at(`project:${p.factId}`).map(confirmedLine)]
+      const description = [p.description ?? '', ...p.bullets.map((b) => b.text), ...said(`project:${p.factId}`).map(confirmedLine)]
         .filter(Boolean)
         .join('\n');
       const confirmedHere = at(`project:${p.factId}`);
@@ -88,7 +92,7 @@ export function factsOfDocument(
         name: p.name,
         ...(description ? { description: clean(description) } : {}),
         // Its lines, citable one by one, so a tailored run may reword them (toreview §113).
-        lines: [...p.bullets.map((b) => clean(b.text)), ...confirmedHere.map((c) => clean(confirmedLine(c)))],
+        lines: [...p.bullets.map((b) => clean(b.text)), ...said(`project:${p.factId}`).map((c) => clean(confirmedLine(c)))],
         skills: [...new Set([...stack, ...confirmedHere.map((c) => c.keyword), ...placeable])],
       };
     }),

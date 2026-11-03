@@ -145,6 +145,19 @@ describe('a resume as the facts a tailored version cites', () => {
     expect(facts.roles[3]?.start).toEqual({ year: 1970 });
     expect(facts.roles[0]?.end).toBeNull();
   });
+
+  it('a place the user chose is a line there; the AI’s pick only lets that role name it (§162)', () => {
+    const facts = factsOfDocument(BASE, {
+      added: ['Kafka', 'Docker'],
+      confirmed: [
+        { keyword: 'Kafka', where: 'pay', by: 'you' },
+        { keyword: 'Docker', where: 'pay', by: 'ai' },
+      ],
+    });
+    const pay = facts.roles[0]!;
+    expect(pay.responsibilities).toEqual(['Built the settlement service in Go', 'Reworked PostgreSQL indexes for the ledger API', 'Used Kafka']);
+    expect(pay.skills).toEqual(expect.arrayContaining(['Kafka', 'Docker']));
+  });
 });
 
 describe('the user’s figures (toreview §129)', () => {

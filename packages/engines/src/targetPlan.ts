@@ -19,7 +19,7 @@
 import { compareCodePoints, type Bps } from './bps';
 import type { ScoringDocument } from './document';
 import { bestRoleFor } from './placement';
-import { canCarryResult, isQuantified } from './quantified';
+import { isQuantified } from './quantified';
 import type { Importance } from './requirements';
 import { scoreCore, type Assumptions, type FormatCheckId, type ScoreInput, type ScoreResult, type SectionCheckId } from './rubric';
 
@@ -126,7 +126,7 @@ function candidates(input: ScoreInput, base: Omit<ScoreResult, 'fixes'>): PathAc
   }
   for (const r of input.document.roles) {
     r.bullets.forEach((text, bulletIndex) => {
-      if (!isQuantified(text, input.taxonomy) && canCarryResult(text)) actions.push({ type: 'add_figure', roleId: r.id, bulletIndex, text });
+      if (!isQuantified(text, input.taxonomy)) actions.push({ type: 'add_figure', roleId: r.id, bulletIndex, text });
     });
   }
   for (const check of base.components.find((c) => c.key === 'sections')?.checks ?? []) {

@@ -1,7 +1,6 @@
 import type { PartialDate } from '@nextkin/engines/dates';
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { resolveSkill } from '@nextkin/engines/normalizer';
-import { canCarryResult } from '@nextkin/engines/quantified';
 import type { Tailoring } from '@nextkin/shared/schemas/generation';
 import { factsOfDocument, placesOf, withChoices, withFigures } from '@nextkin/shared/scoring/documentFacts';
 import { TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
@@ -49,11 +48,11 @@ export async function prepareTailor(
   const base = await readBase(tx, userId, args.baseResumeId);
 
   const key = (name: string) => resolveSkill(TAXONOMY, name).id;
-  // A confirmation names a place of this resume (toreview §112); one naming another is ignored. Only
-  // a place the user chose is a fact (owner, toreview §159): the plan's own pick (`by: 'ai'`) put
-  // every ticked keyword into the latest role, so it is a skill-list keyword like any other.
+  // A confirmation names a place of this resume (toreview §112); one naming another is ignored. A
+  // place the user chose is a citable line; the AI's pick (`by: 'ai'`) only lets that role name the
+  // keyword, on a line about that work (owner, toreview §162, after §159 dropped it entirely).
   const places = new Set(placesOf(base.doc).map((p) => p.id));
-  const confirmed = (args.tailoring.confirmed ?? []).filter((c) => places.has(c.where) && c.by !== 'ai').map((c) => ({ keyword: c.keyword.trim(), where: c.where, ...(c.note?.trim() ? { note: c.note.trim() } : {}), ...(c.by ? { by: c.by } : {}) }));
+  const confirmed = (args.tailoring.confirmed ?? []).filter((c) => places.has(c.where)).map((c) => ({ keyword: c.keyword.trim(), where: c.where, ...(c.note?.trim() ? { note: c.note.trim() } : {}), ...(c.by ? { by: c.by } : {}) }));
   const ticked = [...new Map([...args.tailoring.keywords, ...confirmed.map((c) => c.keyword)].map((k) => [key(k), k.trim()])).values()];
   const tickedKeys = new Set(ticked.map(key));
   const baseline = measureBase(base, draft, args.asOf);
@@ -63,11 +62,10 @@ export async function prepareTailor(
 
   const baselineJobMatch = jobMatchOf(keywordsFrom(baseline, draft.rawText, draft.title));
   // A rewritten bullet replaces a line of this resume that exists (toreview §129); others are ignored.
-  // Only on a line that describes work with an outcome (toreview §159): a figure on "Used Git…" reads as made up.
-  const figures = (args.tailoring.figures ?? []).filter((f) => base.doc.roles.some((r) => r.roleId === f.where && f.line < r.bullets.length && canCarryResult(r.bullets[f.line]?.text ?? '')));
+  const figures = (args.tailoring.figures ?? []).filter((f) => base.doc.roles.some((r) => r.roleId === f.where && f.line < r.bullets.length));
   const source = withFigures(base.doc, figures);
-  // Ticked keywords with no place the user chose go in the skills list only (owner, toreview §159,
-  // replacing §116's "the AI places them"): a bullet names one only where its own lines support it.
+  // Ticked keywords with no place go in the skills list only (owner, toreview §159); a bullet names
+  // one only where its own lines support it.
   const facts = factsOfDocument(source, { added: ticked, confirmed, redact: redactContact });
   const projected = projectionOf({ source, facts, contact: base.contact, draft, ticked, confirmed, fixes: args.tailoring.fixes, asOf: args.asOf });
   await addProfileSkills(tx, userId, ticked);

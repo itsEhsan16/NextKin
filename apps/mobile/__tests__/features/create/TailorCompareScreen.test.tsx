@@ -116,6 +116,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
           skipped: [],
           fixes: ALL_FIXES,
           experience: 'full',
+          confirmed: [{ keyword: 'Fintech', where: 'exp_4', by: 'ai' }],
         },
       }),
     );
@@ -151,7 +152,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     expect(input?.tailor?.added).toEqual([]);
   });
 
-  it('a tap is all it takes: nothing asks where, and the plan’s pick stays off the run (§159)', async () => {
+  it('a tap is all it takes: nothing asks where, and the plan’s pick goes along (§129.6)', async () => {
     const startSpy = jest.spyOn(repos.generations, 'start');
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
@@ -161,7 +162,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await settle();
     const tailor = startSpy.mock.calls[0]?.[0]?.tailor;
     expect(tailor?.added).toEqual(['Fintech']);
-    expect(tailor?.confirmed).toBeUndefined();
+    expect(tailor?.confirmed).toEqual([{ keyword: 'Fintech', where: 'exp_4', by: 'ai' }]);
   });
 
   it('works for a pasted job description: the JD’s title, no listing on the run', async () => {

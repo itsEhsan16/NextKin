@@ -15280,4 +15280,12 @@ The owner: "See the full plan" still opened the old W-FLOW 03 table ("Your fix p
   - "Fix in the editor" opens the base resume; the comparison does not refresh until the step is reopened.
 - **Checked:** a screenshot of the running page (mock data) shows the three sections and no table; web tests pass (429). **Not done:** mobile's plan screen; the AWS demo still runs the previous build until the next deploy.
 
-- **Follow-up (owner, same day): no "AI places it in" on a tick.** Since §159 the run lists the plan's pick of role in Skills only, so ticking a keyword and showing "AI places it in: Developer Intern" promised a line the resume would not get. `tickKeyword` (shared, so mobile too) and the web Enhance step now only tick; a role is set only when the user picks one ("Used in: …"), and the hint says so. Old saved choices with `by: 'ai'` still show their label but the run ignores them, as before. "Add the result" on a "Used Git and pull requests…" line can no longer be offered (§159, `canCarryResult`); a screenshot showing it is from a build before that.
+## 162. AI placing back, and results on every line again (owner, 2026-11-03)
+
+After §161 the owner asked for the Enhance step as it was: each ticked keyword showing "AI places it in: <role>", and "Add the result" on every line without a figure. Asked, the owner chose both.
+
+- **AI placing:** a tick takes the plan's pick of role again (`tickKeyword`, web Enhance). §159 had dropped the AI's pick on the server, so that label was false. Now the run keeps it, with less weight than your own pick (`factsOfDocument`):
+  - **Your pick ("Used in")** adds a citable "Used X" line to that role, as before.
+  - **The AI's pick** only adds X to that role's skills, so a bullet there may name it on a line about that work (writer prompt v7). It adds no line, so it never raises the role's bullet count, which is how §159's internship got nine tool lines. If no line fits, X stays in Skills. The merge still drops bolt-on "Used X, Y and Z" lines.
+- **Results:** `canCarryResult` is gone; every line with no figure is offered "Add the result" again, "Used Git…" lines included. **Risk, as the owner was told:** a figure on a tool line reads as made up ("…, cutting the time it took by about 10%"), which the scanner flagged in §159.
+- **Not re-run live:** the Nuvexa tailoring with these rules, and the evals. Tests pass (engines 205, shared 253, server 308, web tailor 27, mobile create 155).

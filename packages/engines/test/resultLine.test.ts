@@ -1,21 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { canCarryResult } from '../src/quantified';
+import { isToolUseLine } from '../src/quantified';
 
-/** Which lines may be asked for a measured result (toreview §159). */
-describe('canCarryResult', () => {
-  it('an action line can carry a result', () => {
-    expect(canCarryResult('Built the onboarding flow for 40 merchants in Next.js')).toBe(true);
-    expect(canCarryResult('Automated the weekly sales report with n8n and Google Sheets')).toBe(true);
+/** Lines that say what was used, not what was done (toreview §159): the merge drops bolt-ons. */
+describe('isToolUseLine', () => {
+  it('an action line is not one', () => {
+    expect(isToolUseLine('Built the onboarding flow for 40 merchants in Next.js')).toBe(false);
+    expect(isToolUseLine('Automated the weekly sales report with n8n and Google Sheets')).toBe(false);
   });
 
-  it('a line that only says what was used or known cannot', () => {
-    expect(canCarryResult('Used Git and pull requests across GitHub projects and hackathons')).toBe(false);
-    expect(canCarryResult('Applied Object-Oriented Programming alongside MySQL and MongoDB databases')).toBe(false);
-    expect(canCarryResult('Familiar with Docker, Kubernetes and the AWS console')).toBe(false);
-  });
-
-  it('a fragment too short to say what was done cannot', () => {
-    expect(canCarryResult('Built dashboards')).toBe(false);
+  it('a line that only says what was used or known is', () => {
+    expect(isToolUseLine('Used Git and pull requests across GitHub projects and hackathons')).toBe(true);
+    expect(isToolUseLine('Applied Object-Oriented Programming alongside MySQL and MongoDB databases')).toBe(true);
+    expect(isToolUseLine('Familiar with Docker, Kubernetes and the AWS console')).toBe(true);
   });
 });

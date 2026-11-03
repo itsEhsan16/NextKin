@@ -60,10 +60,10 @@ export function isQuantified(bullet: string, taxonomy: Taxonomy): boolean {
 }
 
 /**
- * Whether a bullet describes work that can have a measured outcome (toreview §159). A line that
- * only says what was used or known ("Used Git and pull requests…", "Applied OOP…", "Familiar with
- * Docker") has no outcome to measure: a figure bolted onto it ("…, cutting the time it took by
- * about 10%") reads as made up. So it is never asked for a result; an action line is.
+ * A line that only says what was used or known ("Used Git and pull requests…", "Applied OOP…",
+ * "Familiar with Docker"), not what was done (toreview §159). The merge drops a written line like
+ * this that lists ticked keywords. Every line without a figure may still be asked for a result
+ * (owner, toreview §162).
  */
 const TOOL_ONLY_OPENERS = new Set([
   'used', 'using', 'applied', 'utilized', 'utilised', 'worked', 'familiar', 'knowledge', 'exposure',
@@ -75,8 +75,4 @@ const TOOL_ONLY_OPENERS = new Set([
 export function isToolUseLine(bullet: string): boolean {
   const first = (bullet.trim().split(/\s+/)[0] ?? '').toLowerCase().replace(/[^a-z]/g, '');
   return TOOL_ONLY_OPENERS.has(first);
-}
-
-export function canCarryResult(bullet: string): boolean {
-  return bullet.trim().split(/\s+/).length >= 3 && !isToolUseLine(bullet);
 }

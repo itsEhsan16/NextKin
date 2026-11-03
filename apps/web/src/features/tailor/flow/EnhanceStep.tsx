@@ -86,13 +86,15 @@ export function EnhanceStep({
   const soft = missing.filter((k) => k.kind === 'soft');
   const labels = missing.map((k) => k.label);
   const allOn = labels.length > 0 && labels.every((l) => choices.added.includes(l));
-  // A tick is only a tick: a role is set when the user says where (owner, toreview §159).
-  const toggle = (label: string) =>
-    choices.setAdded(
-      choices.added.includes(label)
-        ? choices.added.filter((l) => l !== label)
-        : [...choices.added, label],
-    );
+  // A tick takes the plan's pick of role when it has one (owner, toreview §129).
+  const pickOf = (label: string) => comparison.plan?.steps.find((s) => s.keyword === label)?.where;
+  const toggle = (label: string) => {
+    if (choices.added.includes(label))
+      return choices.setAdded(choices.added.filter((l) => l !== label));
+    const pick = pickOf(label);
+    if (pick) choices.placeKeyword(label, pick, 'ai');
+    else choices.setAdded([...choices.added, label]);
+  };
   const tickedHard = hard.filter((k) => choices.added.includes(k.label));
   const places = comparison.places ?? [];
   const steps = comparison.plan?.steps ?? [];
@@ -246,8 +248,7 @@ export function EnhanceStep({
                   );
                 })}
                 <p className="pl-10 pt-1.5 text-body-s font-medium text-text-tertiary">
-                  Say where you used each one to show it in that role; without a place it goes in
-                  Skills.
+                  The AI picks the role each fits best; without one it goes in Skills.
                 </p>
               </div>
             )}
