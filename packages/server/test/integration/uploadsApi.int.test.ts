@@ -47,7 +47,14 @@ const extraction: ExtractionInput = {
   certifications: [],
   skills: ['Kubernetes', 'Go'],
 };
-const fake = createFakeProvider({ script: (req) => (req.output?.name === 'resume' ? { data: extraction } : undefined) });
+/** A job posting read from a scan (toreview §153): one skill, quoting the words OCR found. */
+const posting = {
+  language: 'en', title: null, company: null, department: null, industry: null, employmentType: null, seniority: null, openings: null, referenceId: null, summary: null,
+  locations: [], workModes: [], schedule: [], pay: [], negotiable: null, experience: [], responsibilities: [],
+  skills: [{ name: 'Kubernetes', quote: 'Kubernetes', category: 'tool', importance: 'required' }],
+  education: [], languages: [], benefits: [], eligibility: [], companyAbout: [], website: null, application: [], extras: [], issues: [],
+};
+const fake = createFakeProvider({ script: (req) => (req.output?.name === 'resume' ? { data: extraction } : req.output?.name === 'job_description' ? { data: posting } : undefined) });
 
 beforeAll(async () => {
   h = await startHarness();
@@ -110,7 +117,7 @@ async function signedIn() {
 }
 
 /** presign → POST straight to storage → confirm, as the apps do. */
-async function upload(auth: Record<string, string>, purpose: 'resume' | 'avatar', fileName: string, contentType: string, body: Uint8Array) {
+async function upload(auth: Record<string, string>, purpose: 'resume' | 'avatar' | 'jd', fileName: string, contentType: string, body: Uint8Array) {
   const presigned = await json<{ upload: { id: string }; url: string; fields: Record<string, string> }>(
     await call(h, '/uploads/presign', { body: { purpose, fileName, contentType, size: body.length }, headers: auth }),
   );
@@ -155,6 +162,21 @@ describe('§7.4: every format becomes a verified draft', () => {
       }
     }, 90_000);
   }
+});
+
+describe('a scanned job posting (toreview §153)', () => {
+  it('is read by OCR, as a scanned resume is, instead of failing as unreadable', async () => {
+    const auth = await signedIn();
+    const uploadId = await upload(auth, 'jd', 'job.pdf', PDF, new Uint8Array(readFileSync(join(import.meta.dirname, '../fixtures/scanned-resume.pdf'))));
+    const started = await json<{ id: string }>(await call(h, '/jd', { body: { source: 'file', uploadId }, headers: auth }));
+    const jd = await until(
+      () => json<{ status: string; rawText: string; requiredSkills: string[] }>(call(h, `/jd/${started.id}`, { headers: auth })),
+      (d) => d.status === 'ready' || d.status === 'failed',
+    );
+    expect(jd.status).toBe('ready');
+    expect(jd.rawText).toMatch(/Kubernetes/);
+    expect(jd.requiredSkills).toEqual(['Kubernetes']);
+  }, 90_000);
 });
 
 describe('the scan gate (P7-03)', () => {

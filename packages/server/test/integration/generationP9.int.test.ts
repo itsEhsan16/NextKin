@@ -1,4 +1,5 @@
 import { canonicalResumeSchema } from '@nextkin/shared/schemas/resumeContent';
+import { sql } from 'kysely';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { fabricatingModel, groundedModel, stubbornModel } from '../../evals/referenceModel';
@@ -9,7 +10,7 @@ import type { RunnerHooks } from '../../src/pipeline/runner';
 import { runKbCandidates } from '../../src/services/kbCandidates';
 import { generationResult } from '../../src/services/documents';
 import * as generations from '../../src/services/generations';
-import { updateJd } from '../../src/services/jd';
+import { getJd, runJdExtract, updateJd } from '../../src/services/jd';
 import { getProfile } from '../../src/services/profile';
 import { backendUser, counted, JD_TEXT, readyJd, runToEnd } from './fixtures/documents';
 import { createUser, deleteUsers, fakeGateway, log } from './fixtures/pipeline';
@@ -71,6 +72,43 @@ describe('JD intake (P9-01)', () => {
     expect(edited.title).toBe('Staff Engineer');
     expect(edited.preferredSkills).toEqual(['Terraform']);
     expect(edited.requirements?.some((r) => r.id === 'req:redis')).toBe(false);
+  });
+
+  it('stores the structured reading, every fact quoting the stored text (toreview §153)', async () => {
+    const userId = await backendUser(db, users);
+    const jd = await readyJd(db, userId, groundedModel);
+    const s = jd.structured!;
+    expect(s.schemaVersion).toBe(2);
+    expect(s.skills.length).toBeGreaterThan(0);
+    for (const fact of s.skills) for (const q of fact.quotes) expect(JD_TEXT.slice(q.start, q.end)).toBe(q.text);
+    // The flat lists every consumer reads are the structure's.
+    expect(jd.requiredSkills).toEqual(s.skills.filter((k) => k.importance === 'required' && k.category !== 'soft').map((k) => k.value));
+  });
+
+  it('a JD read before the structure is read again once, from its stored text, and stays usable', async () => {
+    const userId = await backendUser(db, users);
+    const me = { userId, role: 'user' as const };
+    const jd = await readyJd(db, userId, groundedModel);
+    // As a row read before §153 looks: no structure, no version.
+    await db.withUser(me, (tx) =>
+      tx.updateTable('job_descriptions').set({ structure_version: null, extracted: sql`extracted - 'structured'` }).where('id', '=', jd.id).execute(),
+    );
+    const old = await getJd(db, me, jd.id);
+    expect(old.structured).toBeUndefined();
+    expect(old.status).toBe('ready');
+    await getJd(db, me, jd.id);
+    const queued = await db.withSystem('test: count the upgrades', (tx) =>
+      tx.selectFrom('outbox').select((eb) => eb.fn.countAll<string>().as('n')).where(sql`payload->'payload'->>'jdId'`, '=', jd.id).where(sql`payload->'payload'->>'upgrade'`, '=', 'true').executeTakeFirstOrThrow(),
+    );
+    expect(Number(queued.n)).toBe(1);
+    const { script, calls } = counted(groundedModel);
+    await runJdExtract({ db, gateway: fakeGateway(db, script), cache: createMemoryKv(), log }, { jdId: jd.id, userId, correlationId: null, upgrade: true }, false);
+    const upgraded = await getJd(db, me, jd.id);
+    expect(upgraded.structured?.schemaVersion).toBe(2);
+    expect(calls.job_description).toBe(1);
+    // Done once: running it again reads nothing.
+    await runJdExtract({ db, gateway: fakeGateway(db, script), cache: createMemoryKv(), log }, { jdId: jd.id, userId, correlationId: null, upgrade: true }, false);
+    expect(calls.job_description).toBe(1);
   });
 });
 

@@ -375,8 +375,10 @@ export interface JobDescriptions {
   s3_key: string | null;
   source: string;
   source_url: string | null;
+  stage: string | null;
   stats: Json | null;
   status: Generated<string>;
+  structure_version: number | null;
   updated_at: Generated<Timestamp>;
   upload_id: string | null;
   user_id: string;

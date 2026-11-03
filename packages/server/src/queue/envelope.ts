@@ -47,7 +47,8 @@ export const uploadScanSchema = z.object({ uploadId: z.uuid(), userId: z.uuid() 
 export const resumeParseSchema = z.object({ parseId: z.uuid(), userId: z.uuid() }).strict();
 export const teaserProcessSchema = z.object({ teaserId: z.uuid() }).strict();
 // P9: a job description's extraction, awaited by the client.
-export const jdExtractSchema = z.object({ jdId: z.uuid(), userId: z.uuid() }).strict();
+// `upgrade` (toreview §153): a JD read before the structured reading, read again once from its stored text.
+export const jdExtractSchema = z.object({ jdId: z.uuid(), userId: z.uuid(), upgrade: z.literal(true).optional() }).strict();
 // P10: rendering one export (PDF, DOCX or TXT) on the worker.
 export const exportRenderSchema = z.object({ exportId: z.uuid(), userId: z.uuid() }).strict();
 // toreview §111: typesetting one resume version with LaTeX on the worker.

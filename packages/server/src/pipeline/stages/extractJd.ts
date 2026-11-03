@@ -2,8 +2,11 @@ import { createHash } from 'node:crypto';
 
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { resolveSkill } from '@nextkin/engines/normalizer';
-import { phraseKey } from '@nextkin/engines/text';
+import { legacyFields, type JdLegacyFields } from '@nextkin/shared/jobs/jdLegacy';
 import type { JdReading } from '@nextkin/shared/jobs/jdSections';
+import { structureJd } from '@nextkin/shared/jobs/jdStructure';
+import type { JdStructured } from '@nextkin/shared/models/jdStructured';
+import { jdStructuredSchema } from '@nextkin/shared/schemas/jdStructured';
 import { z } from 'zod';
 
 import type { AiGateway, CallContext, CallMeta } from '../../ai/gateway';
@@ -21,40 +24,53 @@ import type { PromptVersion } from '../../services/prompts';
  * (`jd:<version>:<hash>`), so the same JD pasted twice makes one model call (§9.11).
  */
 
-const item = z.object({ text: z.string().trim().min(1).max(120), quote: z.string().trim().min(1).max(400) });
+const quote = z.string().trim().min(1).max(400);
+const said = z.object({ text: z.string().trim().min(1).max(200), quote });
+const importance = z.enum(['required', 'preferred']);
 
+/**
+ * What the model returns (toreview §153): the posting in its canonical places, every item quoting
+ * the words it came from. Code then checks each quote against the text, reads the numbers from the
+ * quotes itself, merges repeats and flags contradictions (`@nextkin/shared/jobs/jdStructure`).
+ */
 export const jdExtractionSchema = z.object({
-  title: z.string().trim().max(200).nullable(),
-  company: z.string().trim().max(200).nullable(),
-  location: z.string().trim().max(200).nullable(),
-  experienceLevel: z.enum(['entry', 'mid', 'senior', 'lead']).nullable(),
-  employmentType: z.enum(['full_time', 'part_time', 'contract', 'internship', 'freelance']).nullable(),
-  domain: z.string().trim().max(120).nullable(),
   language: z.enum(['en', 'de', 'other']),
-  requiredSkills: z.array(item).max(40),
-  preferredSkills: z.array(item).max(40),
-  tools: z.array(item).max(40),
-  responsibilities: z.array(item).max(40),
-  /** Traits and soft skills ("communication", "teamwork"): shown, never scored (toreview §112). */
-  softSkills: z.array(item).max(20),
+  title: said.nullable(),
+  company: said.nullable(),
+  department: said.nullable(),
+  industry: said.nullable(),
+  employmentType: z.object({ value: z.enum(['full_time', 'part_time', 'contract', 'internship', 'freelance']), quote }).nullable(),
+  seniority: z.object({ value: z.enum(['entry', 'mid', 'senior', 'lead']), quote: quote.nullable() }).nullable(),
+  openings: z.object({ value: z.number().int(), quote }).nullable(),
+  referenceId: said.nullable(),
+  summary: z.string().trim().max(600).nullable(),
+  locations: z.array(said.extend({ city: z.string().max(120).nullable(), region: z.string().max(120).nullable(), country: z.string().max(120).nullable() })).max(10),
+  workModes: z.array(z.object({ value: z.enum(['onsite', 'remote', 'hybrid', 'field', 'flexible']), quote })).max(6),
+  schedule: z.array(said.extend({ kind: z.enum(['days', 'hours', 'shift', 'weekends', 'overtime', 'travel', 'joining', 'other']) })).max(12),
+  pay: z.array(z.object({ component: z.enum(['base', 'fixed', 'variable', 'incentive', 'bonus', 'total', 'unknown']), quote })).max(8),
+  negotiable: z.object({ quote }).nullable(),
+  experience: z.array(said).max(10),
+  responsibilities: z.array(said.extend({ group: z.string().max(80).nullable() })).max(40),
+  skills: z.array(z.object({ name: z.string().trim().min(1).max(120), quote, category: z.enum(['language', 'framework', 'database', 'cloud', 'tool', 'api', 'domain', 'soft', 'other']), importance })).max(60),
+  education: z.array(said.extend({ importance })).max(10),
+  languages: z.array(z.object({ name: z.string().trim().min(1).max(60), quote, importance, level: z.enum(['basic', 'intermediate', 'advanced', 'fluent', 'native']).nullable() })).max(8),
+  benefits: z.array(said).max(30),
+  eligibility: z.array(said.extend({ kind: z.enum(['age', 'work_authorization', 'location', 'gender', 'background_check', 'other']), sensitive: z.boolean() })).max(12),
+  companyAbout: z.array(said).max(12),
+  website: said.nullable(),
+  application: z.array(said.extend({ kind: z.enum(['method', 'url', 'email', 'deadline', 'documents', 'process']) })).max(12),
+  extras: z.array(said).max(20),
+  issues: z.array(z.object({ kind: z.enum(['conflict', 'ambiguous']), field: z.string().max(40), note: z.string().max(400), quotes: z.array(quote).min(1).max(4) })).max(10),
 });
 export type JdExtraction = z.infer<typeof jdExtractionSchema>;
 
-/** What generation and the review screen read: verified lists, and what was dropped. */
-export interface VerifiedJd {
-  title: string | null;
-  company: string | null;
-  location: string | null;
-  experienceLevel: JdExtraction['experienceLevel'];
-  employmentType: JdExtraction['employmentType'];
-  domain: string | null;
+/** What generation and the page read: the flat lists every consumer knows, and the structure. */
+export interface VerifiedJd extends Omit<JdLegacyFields, 'softSkills'> {
   language: JdExtraction['language'];
-  requiredSkills: string[];
-  preferredSkills: string[];
-  tools: string[];
-  responsibilities: string[];
   softSkills?: string[];
   stats: { kept: number; dropped: number; droppedItems: string[] };
+  /** The posting understood (toreview §153). */
+  structured?: JdStructured;
   /** The JD's sections as a model grouped them, when the rules could not (toreview §129). */
   reading?: JdReading;
   /** When the page it was read from says it closes (toreview §144.3). */
@@ -123,42 +139,28 @@ export function splitSkills(text: string): string[] {
   return parts.every((p) => resolveSkill(TAXONOMY, p).known) ? parts : [text];
 }
 
-/** Keeps only what the text says, and only skills in the skill lists. */
-export function verify(raw: string, extraction: JdExtraction): VerifiedJd {
-  const haystack = normalise(raw);
-  const said = (value: string | null) => (value && haystack.includes(normalise(value)) ? value : null);
-  const droppedItems: string[] = [];
-  let kept = 0;
-  /** `skill`: a named skill, split; `quote`: the JD's own line; `name`: the item as named. */
-  const keep = (items: JdExtraction['requiredSkills'], mode: 'skill' | 'quote' | 'name' = 'skill') => {
-    const skills = mode === 'skill';
-    const out: string[] = [];
-    for (const { text, quote } of items) {
-      const quoted = haystack.includes(normalise(quote));
-      const own = ` ${phraseKey(quote)} `.includes(` ${phraseKey(text)} `);
-      if (quoted && own && (!skills || isSkillName(text))) {
-        // A responsibility is shown as the JD wrote it: its verified quote, which the model may not
-        // shorten; a skill is the name, split where it names several.
-        for (const name of skills ? splitSkills(text) : mode === 'quote' ? [quote] : [text]) if (!out.some((t) => phraseKey(t) === phraseKey(name))) out.push(name);
-        kept += 1;
-      } else droppedItems.push(text);
-    }
-    return out;
-  };
+/** A skill name as the taxonomy reads it: split where it names several, dropped if not a skill. */
+const skillNames = (name: string): string[] => (isSkillName(name) ? splitSkills(name.trim()) : []);
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * Keeps only what the text says (toreview §153): the structure is built from the quotes found in
+ * it, and the flat lists every consumer reads are derived from that structure.
+ */
+export function verify(raw: string, extraction: JdExtraction, options: { closesAt?: string; today?: string } = {}): VerifiedJd {
+  const structured = structureJd(raw, extraction, { skillNames, today: options.today ?? today(), ...(options.closesAt ? { closesAt: options.closesAt } : {}) });
+  const parsed = jdStructuredSchema.safeParse(structured);
+  if (!parsed.success) throw new Error(`the structured reading did not validate: ${parsed.error.issues[0]?.message ?? 'unknown'}`);
+  const legacy = legacyFields(structured);
+  const kept = new Set([...structured.skills.map((k) => k.value), ...structured.responsibilities.map((r) => r.value)]);
+  const droppedItems = [...extraction.skills.map((k) => k.name), ...extraction.responsibilities.map((r) => r.quote)].filter((name) => !kept.has(name) && !kept.has(name.trim()));
   return {
-    title: titleOf(raw, extraction.title),
-    company: said(extraction.company),
-    location: said(extraction.location),
-    experienceLevel: extraction.experienceLevel,
-    employmentType: extraction.employmentType,
-    domain: extraction.domain,
+    ...legacy,
+    title: titleOf(raw, legacy.title ?? extraction.title?.text ?? null),
     language: extraction.language,
-    requiredSkills: keep(extraction.requiredSkills),
-    preferredSkills: keep(extraction.preferredSkills),
-    tools: keep(extraction.tools),
-    responsibilities: keep(extraction.responsibilities, 'quote'),
-    softSkills: keep(extraction.softSkills ?? [], 'name'),
-    stats: { kept, dropped: droppedItems.length, droppedItems: droppedItems.slice(0, 20) },
+    stats: { kept: structured.stats.kept, dropped: structured.stats.dropped, droppedItems: droppedItems.slice(0, 20) },
+    structured,
   };
 }
 
@@ -168,20 +170,23 @@ export async function extractJd(args: {
   prompt: PromptVersion;
   text: string;
   context: CallContext;
+  /** When the page it was read from says it closes, so a past date is flagged. */
+  closesAt?: string;
 }): Promise<{ jd: VerifiedJd; cached: boolean; meta?: CallMeta }> {
   const key = `jd:${args.prompt.id}:${contentHash(args.text)}`;
   const hit = await args.cache.get<JdExtraction>(key);
-  if (hit) return { jd: verify(args.text, hit), cached: true };
+  const options = args.closesAt ? { closesAt: args.closesAt } : {};
+  if (hit) return { jd: verify(args.text, hit, options), cached: true };
   const { data, meta } = await args.gateway.extract({
     stage: 'jd_extract',
     system: args.prompt.body.system.map((text) => ({ text })),
-    input: { task: 'read this job description into typed fields, quoting the text for every item' },
+    input: { task: 'read this job posting into its canonical fields, quoting the text for every item' },
     untrusted: args.text,
     schema: jdExtractionSchema,
     name: 'job_description',
-    description: 'The job description as typed fields; every item quotes the text it came from.',
+    description: 'The job posting in its canonical fields; every item quotes the text it came from.',
     context: args.context,
   });
   await args.cache.set(key, data, CACHE_DAYS * 24 * 3600);
-  return { jd: verify(args.text, data), cached: false, meta };
+  return { jd: verify(args.text, data, options), cached: false, meta };
 }

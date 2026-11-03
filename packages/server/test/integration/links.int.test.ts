@@ -48,7 +48,8 @@ async function read(userId: string, links: LinkReader, url = URL_A, script: Fake
 
 /** What the model says of a page with no job on it: nothing it can quote. */
 const nothingOnThePage: FakeScript = () => ({
-  data: { title: null, company: null, location: null, experienceLevel: null, employmentType: null, domain: null, language: 'en', requiredSkills: [], preferredSkills: [], tools: [], responsibilities: [], softSkills: [] },
+  // The structured reading of a sign-in page (toreview §153): nothing placed.
+  data: { language: 'en', title: null, company: null, department: null, industry: null, employmentType: null, seniority: null, openings: null, referenceId: null, summary: null, locations: [], workModes: [], schedule: [], pay: [], negotiable: null, experience: [], responsibilities: [], skills: [], education: [], languages: [], benefits: [], eligibility: [], companyAbout: [], website: null, application: [], extras: [], issues: [] },
   text: '',
   stopReason: 'tool_use',
 });

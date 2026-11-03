@@ -15,9 +15,12 @@ import type { Logger } from '../observability/logger';
 import { enqueue } from '../outbox/outbox';
 import { DOCUMENT_KINDS } from '../parsing/analyzer';
 import { analyzeIsolated, type IsolationLimits } from '../parsing/pool';
-import { UnreadableError } from '../parsing/types';
-import { contentHash, extractJd, repairText, type VerifiedJd } from '../pipeline/stages/extractJd';
+import { UnreadableError, type Analysis } from '../parsing/types';
+import { contentHash, extractJd, repairText, verify, type JdExtraction, type VerifiedJd } from '../pipeline/stages/extractJd';
 import { JD_SECTIONS_TEMPLATE, structureJd } from '../pipeline/stages/jdSections';
+import { JD_STRUCTURE_VERSION } from '@nextkin/shared/models/jdStructured';
+import type { OcrPort } from '../ocr/tesseract';
+import { toGrayPng } from '../ocr/png';
 import type { StoragePort } from '../storage/storage';
 import { findListing } from './jobs';
 import { activePrompt } from './prompts';
@@ -148,7 +151,22 @@ async function jdFromLink(db: Database, identity: Identity, raw: string, details
   });
 }
 
-export const getJd = (db: Database, identity: Identity, id: string): Promise<JdDraft> => db.withUser(identity, async (tx) => toDraft(await findRow(tx, id)));
+/**
+ * A JD read before the structured reading (toreview §153) is read again once, in the background,
+ * from the text it already holds: no page or file is fetched twice. `structure_version = 1` marks it
+ * queued, so it is asked for once however often the page is opened.
+ */
+export const getJd = (db: Database, identity: Identity, id: string): Promise<JdDraft> =>
+  db.withUser(identity, async (tx) => {
+    const row = await findRow(tx, id);
+    if (row.status === 'ready' && row.source !== 'job' && row.structure_version === null && row.raw_text.trim()) {
+      const marked = await tx.updateTable('job_descriptions').set({ structure_version: 1 }).where('id', '=', id).where('structure_version', 'is', null).executeTakeFirst();
+      if (Number(marked.numUpdatedRows) > 0) {
+        await enqueue(tx, { queue: 'generation-standard', groupId: `${identity.userId}#jd`, type: 'jd.extract', payload: { jdId: id, userId: identity.userId, upgrade: true }, correlationId: null });
+      }
+    }
+    return toDraft(row);
+  });
 
 /**
  * V2 §7.5: "extraction failures return a clear message and allow manual entry of the structured
@@ -180,7 +198,7 @@ export interface JdExtractDeps {
   /** Links (toreview §144.3): the reader service. Absent, a link fails with a plain message. */
   links?: LinkReader;
   /** File JDs (P7): read the scanned upload. Absent where only pastes are served. */
-  files?: { storage: StoragePort; maxBytes: number; limits?: Partial<IsolationLimits> };
+  files?: { storage: StoragePort; maxBytes: number; limits?: Partial<IsolationLimits>; ocr?: () => Promise<OcrPort> };
 }
 
 /**
@@ -204,8 +222,43 @@ async function sectionsByModel(deps: JdExtractDeps, text: string, title: string 
 /** A job description names some of what the job asks. A page with none of it is something else. */
 const looksLikeAJob = (jd: VerifiedJd): boolean => jd.requiredSkills.length + jd.preferredSkills.length + jd.tools.length + jd.responsibilities.length >= 2;
 
+/** Scanned pages, read by OCR (toreview §153), as the resume upload does. */
+async function withOcr(deps: JdExtractDeps, analysis: Pick<Analysis, 'text' | 'images'>): Promise<string> {
+  if (analysis.images.length === 0 || !deps.files?.ocr) return analysis.text;
+  const ocr = await deps.files.ocr();
+  const pages: string[] = [];
+  for (const image of analysis.images) pages.push((await ocr.recognise(toGrayPng(image))).text);
+  return [analysis.text, ...pages].filter(Boolean).join('\n\n');
+}
+
+/**
+ * Reading a JD again from its stored text (toreview §153). The row stays ready and usable
+ * throughout; success adds the structure, and a failure leaves the old reading as it was.
+ */
+async function upgradeJd(deps: JdExtractDeps, message: { jdId: string; userId: string; correlationId: string | null }, lastAttempt: boolean): Promise<'ready' | 'failed' | 'skipped'> {
+  const identity: Identity = { userId: message.userId, role: 'user' };
+  const found = await deps.db.withUser(identity, (tx) => tx.selectFrom('job_descriptions').select(['status', 'raw_text', 'structure_version', 'extracted']).where('id', '=', message.jdId).executeTakeFirst());
+  if (!found || found.status !== 'ready' || found.structure_version !== 1 || !found.raw_text.trim()) return 'skipped';
+  try {
+    const prompt = await deps.db.withSystem('jd: read the extraction prompt', (tx) => activePrompt(tx, JD_TEMPLATE));
+    const closesAt = (found.extracted as { closesAt?: string } | null)?.closesAt;
+    const { jd } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, text: found.raw_text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}) });
+    await deps.db.withUser(identity, (tx) =>
+      tx.updateTable('job_descriptions').set({ extracted: JSON.stringify({ ...jd, ...(closesAt ? { closesAt } : {}) }), stats: JSON.stringify(jd.stats), structure_version: JD_STRUCTURE_VERSION }).where('id', '=', message.jdId).where('structure_version', '=', 1).execute(),
+    );
+    deps.log.info({ event: 'jd.upgraded', kept: jd.stats.kept, dropped: jd.stats.dropped }, 'job description read again into the structure');
+    return 'ready';
+  } catch (error) {
+    const transient = error instanceof LlmError ? error.retryable : true;
+    if (transient && !lastAttempt) throw error;
+    deps.log.warn({ event: 'jd.upgrade_failed', err: error instanceof Error ? error.message : String(error) }, 'job description left as it was read');
+    return 'failed';
+  }
+}
+
 /** The extraction job. Idempotent: a JD that is no longer extracting is left alone. */
-export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string; userId: string; correlationId: string | null }, lastAttempt: boolean): Promise<'ready' | 'failed' | 'skipped'> {
+export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string; userId: string; correlationId: string | null; upgrade?: boolean }, lastAttempt: boolean): Promise<'ready' | 'failed' | 'skipped'> {
+  if (message.upgrade) return upgradeJd(deps, message, lastAttempt);
   const identity: Identity = { userId: message.userId, role: 'user' };
   const found = await deps.db.withUser(identity, (tx) =>
     tx
@@ -220,9 +273,10 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
   const finish = (set: Record<string, unknown>) =>
     deps.db.withUser(identity, (tx) => tx.updateTable('job_descriptions').set(set).where('id', '=', message.jdId).where('status', '=', 'extracting').execute());
   const fail = async (text: string) => {
-    await finish({ status: 'failed', error_message: text });
+    await finish({ status: 'failed', error_message: text, stage: null });
     return 'failed' as const;
   };
+  const stage = (to: 'reading' | 'understanding' | 'checking') => finish({ stage: to });
 
   // Only a clean scan releases a file (P7-03). Still scanning: let the message come back.
   if (found.source === 'file' && found.upload_status !== 'clean') {
@@ -236,6 +290,7 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
   try {
     let text = found.raw_text;
     let closesAt: string | undefined;
+    if (found.source !== 'paste') await stage('reading');
     if (found.source === 'link') {
       if (!deps.links || !found.source_url) return fail(NO_ANSWER);
       const reading = await deps.links.read(found.source_url);
@@ -247,16 +302,22 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
       const bytes = await deps.files.storage.read(found.bucket, found.object_key, deps.files.maxBytes);
       const analysis = await analyzeIsolated(bytes, { allowed: DOCUMENT_KINDS, limits: deps.files.limits });
       // Hidden text never reaches the model (G9): the analyzer returns visible text only.
-      text = repairText(analysis.text).slice(0, MAX_TEXT);
+      text = repairText(await withOcr(deps, analysis)).slice(0, MAX_TEXT);
       if (text.replace(/\s+/g, '').length < 40) return fail(JD_FAILURE.unreadable);
     }
+    await stage('understanding');
     const prompt = await deps.db.withSystem('jd: read the extraction prompt', (tx) => activePrompt(tx, JD_TEMPLATE));
-    const { jd, cached } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id } });
+    const { jd, cached } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}) });
     // The model is the last check on a link: a sign-in page or a closed posting has text, not a job.
     if (found.source === 'link' && !looksLikeAJob(jd)) return fail(NOT_A_JOB);
-    const reading = await sectionsByModel(deps, text, jd.title, message);
+    await stage('checking');
+    // The structure places every line, so the separate section grouping (§129) runs only for a
+    // reading without one.
+    const reading = jd.structured ? undefined : await sectionsByModel(deps, text, jd.title, message);
     await finish({
       status: 'ready',
+      stage: null,
+      structure_version: jd.structured ? JD_STRUCTURE_VERSION : null,
       raw_text: text,
       extracted: JSON.stringify({ ...jd, ...(reading ? { reading } : {}), ...(closesAt ? { closesAt } : {}) }),
       stats: JSON.stringify(jd.stats),
@@ -275,6 +336,60 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
     const transient = error instanceof LlmError ? error.retryable : true;
     if (transient && !lastAttempt) throw error;
     return fail(JD_FAILURE.provider);
+  }
+}
+
+type Listing = NonNullable<Awaited<ReturnType<typeof findListing>>>['normalized'];
+
+/**
+ * A listing as the extraction would read it: each field quotes the line the stored text gives it.
+ * Requirement lines that state years are experience; the rest are kept as extras, never lost.
+ */
+function listingReading(n: Listing): JdExtraction {
+  const said = (text: string | null | undefined) => (text?.trim() ? { text: text.trim(), quote: text.trim() } : null);
+  const skills = (names: readonly string[], importance: 'required' | 'preferred', line: string) =>
+    names.map((name) => ({ name, quote: line, category: 'other' as const, importance }));
+  const years = (line: string) => /\b\d{1,2}\s*\+?\s*(?:-|to|–)?\s*\d{0,2}\s*(?:years?|yrs?)\b|\bfreshers?\b/i.test(line);
+  return {
+    language: 'en',
+    title: said(n.title),
+    company: said(n.company),
+    department: null,
+    industry: null,
+    employmentType: null,
+    seniority: n.experienceLevel ? { value: n.experienceLevel, quote: null } : null,
+    openings: null,
+    referenceId: null,
+    summary: null,
+    locations: n.location?.trim() ? [{ text: n.location.trim(), quote: n.location.trim(), city: null, region: null, country: null }] : [],
+    workModes: [],
+    schedule: [],
+    pay: [],
+    negotiable: null,
+    experience: n.requirements.filter(years).map((line) => ({ text: line, quote: line })),
+    responsibilities: n.responsibilities.slice(0, 30).map((line) => ({ text: line, quote: line, group: null })),
+    skills: [
+      ...skills(n.requiredSkills, 'required', `Skills: ${n.requiredSkills.join(', ')}`),
+      ...skills(n.preferredSkills, 'preferred', `Nice to have: ${n.preferredSkills.join(', ')}`),
+    ],
+    education: [],
+    languages: [],
+    benefits: [],
+    eligibility: [],
+    companyAbout: [],
+    website: null,
+    application: [],
+    extras: [...(n.description?.trim() ? [n.description.trim()] : []), ...n.requirements.filter((l) => !years(l))].slice(0, 20).map((line) => ({ text: line.slice(0, 200), quote: line.slice(0, 400) })),
+    issues: [],
+  };
+}
+
+/** The listing in the structure; a listing that won't validate is shown the old way, never blocked. */
+function listingStructure(rawText: string, n: Listing) {
+  try {
+    return verify(rawText, listingReading(n)).structured;
+  } catch {
+    return undefined;
   }
 }
 
@@ -324,6 +439,8 @@ export async function jdForListing(db: Database, identity: Identity, jobId: stri
       tools: [],
       responsibilities: n.responsibilities.slice(0, 30),
       stats: { kept: n.requiredSkills.length + n.preferredSkills.length, dropped: 0, droppedItems: [] },
+      // The listing's own fields, placed in the structure by code (toreview §153): no model call.
+      structured: listingStructure(rawText, n),
     };
     const row = await tx
       .insertInto('job_descriptions')
@@ -337,6 +454,7 @@ export async function jdForListing(db: Database, identity: Identity, jobId: stri
         stats: JSON.stringify(extracted.stats),
         content_hash: contentHash(rawText),
         language: 'en',
+        structure_version: extracted.structured ? JD_STRUCTURE_VERSION : null,
         job_id: jobId,
         jobs_cache_id: found.cacheId,
       })

@@ -50,8 +50,8 @@ export const ROUTING_DEFAULT: Routing = {
     ],
     // The fast tier: extraction and KB candidates, where code verifies what the model read.
     jd_extract: [
-      { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 4000, inputBudgetTokens: 12000, temperature: 0 },
-      { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 4000, inputBudgetTokens: 12000, temperature: 0 },
+      { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 8000, inputBudgetTokens: 12000, temperature: 0 },
+      { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 8000, inputBudgetTokens: 12000, temperature: 0 },
     ],
     // "Add the result" drafts (toreview §129): one bullet in, one bullet out; code checks it.
     figure_draft: [

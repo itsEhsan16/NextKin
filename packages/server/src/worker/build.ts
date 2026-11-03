@@ -124,7 +124,7 @@ export function buildWorker(deps: WorkerDeps) {
         case 'jd.extract': {
           const f = deps.files;
           const outcome = await runJdExtract(
-            { db: deps.db, gateway: deps.gateway, cache, log, ...(deps.links ? { links: deps.links } : {}), ...(f ? { files: { storage: f.storage, maxBytes: f.limits.documentBytes, limits: f.parse } } : {}) },
+            { db: deps.db, gateway: deps.gateway, cache, log, ...(deps.links ? { links: deps.links } : {}), ...(f ? { files: { storage: f.storage, maxBytes: f.limits.documentBytes, limits: f.parse, ocr: f.ocr } } : {}) },
             { ...envelope.payload, correlationId: envelope.correlationId },
             lastAttempt,
           );

@@ -1,4 +1,5 @@
-import { UNTITLED_JD, type JdDraft, type JdDraftPatch } from '@nextkin/shared/models/jd';
+import { UNTITLED_JD, type JdDraft, type JdDraftPatch, type JdStage } from '@nextkin/shared/models/jd';
+import { jdStructuredSchema } from '@nextkin/shared/schemas/jdStructured';
 import { jdLists, typedRequirements } from '@nextkin/shared/scoring/adapters';
 
 import type { Tx } from '../db/database';
@@ -18,10 +19,12 @@ export type Row = {
   language: string | null;
   job_id: string | null;
   source_url: string | null;
+  stage: string | null;
+  structure_version: number | null;
   created_at: Date;
 };
 
-export const COLUMNS = ['id', 'source', 'raw_text', 'extracted', 'edited', 'status', 'error_message', 'stats', 'language', 'job_id', 'source_url', 'created_at'] as const;
+export const COLUMNS = ['id', 'source', 'raw_text', 'extracted', 'edited', 'status', 'error_message', 'stats', 'language', 'job_id', 'source_url', 'stage', 'structure_version', 'created_at'] as const;
 
 const present = <T>(value: T | null | undefined): value is T => value !== null && value !== undefined && value !== '';
 
@@ -42,6 +45,9 @@ export function toDraft(row: Row): JdDraft {
   const employment = pick('employmentType', x.employmentType);
   const domain = pick('domain', x.domain);
   const stats = row.stats as { kept?: number; dropped?: number } | null;
+  // The structured reading is checked again on the way out: a row that no longer validates is shown
+  // the old way rather than half-drawn (toreview §153).
+  const structured = x.structured ? jdStructuredSchema.safeParse(x.structured) : undefined;
   return {
     id: row.id,
     source: row.source as JdDraft['source'],
@@ -63,6 +69,8 @@ export function toDraft(row: Row): JdDraft {
     ...(stats && typeof stats.kept === 'number' ? { extraction: { kept: stats.kept, dropped: stats.dropped ?? 0 } } : {}),
     ...(row.language ? { language: row.language as 'en' | 'de' } : x.language === 'other' ? { language: 'other' as const } : {}),
     ...(x.reading ? { reading: x.reading } : {}),
+    ...(structured?.success ? { structured: x.structured } : {}),
+    ...(row.status === 'extracting' && row.stage ? { stage: row.stage as JdStage } : {}),
     createdAt: row.created_at.toISOString(),
   };
 }

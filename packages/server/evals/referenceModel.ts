@@ -32,29 +32,49 @@ type Role = { roleId: string; title: string; company: string; facts: { id: strin
 type Project = { projectId: string; maxBullets: number; facts: { id: string; text: string }[] };
 type Profile = { headline: string | null; summary: string | null; summaryFactId: string | null; listedSkills: string[]; roles: Role[]; projects?: Project[] };
 
+/** The structured reading (toreview §153), as a careful model would give it for these short JDs. */
 function readJd(document: string) {
   const lines = document.split('\n').map((l) => l.trim()).filter(Boolean);
-  const required: { text: string; quote: string }[] = [];
-  const preferred: { text: string; quote: string }[] = [];
+  const skills: { name: string; quote: string; category: 'other'; importance: 'required' | 'preferred' }[] = [];
   for (const range of sentences(document)) {
     const sentence = document.slice(range.start, range.end).trim();
     const nice = /nice to have|preferred|bonus|plus/i.test(sentence);
-    for (const m of mentionsIn(TAXONOMY, sentence)) (nice ? preferred : required).push({ text: m.surface, quote: sentence });
+    for (const m of mentionsIn(TAXONOMY, sentence)) {
+      if (nice && skills.some((s) => s.name === m.surface && s.importance === 'required')) continue;
+      skills.push({ name: m.surface, quote: sentence, category: 'other', importance: nice ? 'preferred' : 'required' });
+    }
   }
   const company = /\bat ([A-Z][\w&.]+(?: [A-Z][\w&.]+)*)/.exec(document)?.[1] ?? null;
+  const title = lines[0]?.replace(/ at .*$/, '').replace(/[.,].*$/, '') ?? null;
+  const said = (text: string | null) => (text ? { text, quote: text } : null);
   return {
-    title: lines[0]?.replace(/ at .*$/, '').replace(/[.,].*$/, '') ?? null,
-    company,
-    location: null,
-    experienceLevel: null,
-    employmentType: null,
-    domain: null,
     language: /\b(und|wir|mit|für|Erfahrung)\b/.test(document) ? 'de' : 'en',
-    requiredSkills: required,
-    preferredSkills: preferred.filter((p) => !required.some((r) => r.text === p.text)),
-    tools: [],
+    title: said(title),
+    company: said(company),
+    department: null,
+    industry: null,
+    employmentType: null,
+    seniority: null,
+    openings: null,
+    referenceId: null,
+    summary: null,
+    locations: [],
+    workModes: [],
+    schedule: [],
+    pay: [],
+    negotiable: null,
+    experience: [],
     responsibilities: [],
-    softSkills: [],
+    skills,
+    education: [],
+    languages: [],
+    benefits: [],
+    eligibility: [],
+    companyAbout: [],
+    website: null,
+    application: [],
+    extras: [],
+    issues: [],
   };
 }
 
@@ -122,7 +142,7 @@ function answer(request: LlmRequest, mode: Mode): Json | undefined {
     case 'job_description': {
       const jd = readJd(document);
       // One item the text does not say, to prove the verifier drops and counts it.
-      return { ...jd, preferredSkills: [...jd.preferredSkills, { text: 'Blockchain', quote: 'Experience with blockchain is a plus' }] };
+      return { ...jd, skills: [...jd.skills, { name: 'Blockchain', quote: 'Experience with blockchain is a plus', category: 'other', importance: 'preferred' }] };
     }
     case 'resume': {
       const draft = groundedResume(input);
