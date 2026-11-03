@@ -56,14 +56,7 @@ export function EnhanceHeader({
       </div>
       {scored && (
         <div className="flex items-center gap-3">
-          <ScoreRing
-            score={score}
-            label="Out of 10"
-            name="ATS score"
-            size={64}
-            outOf10
-            tone={RING[band]}
-          />
+          <ScoreRing score={score} label="Out of 10" name="ATS score" outOf10 tone={RING[band]} />
           <span
             className={cn('rounded-full px-2.5 py-0.5 text-caption-m font-semibold', PILL[band])}
           >

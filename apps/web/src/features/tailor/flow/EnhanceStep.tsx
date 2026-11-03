@@ -189,7 +189,7 @@ export function EnhanceStep({
                   return (
                     <div key={k.label} className="flex items-center gap-3 pb-1.5 pl-4 pr-3.5 pt-3">
                       <CheckMark aria-hidden className="size-4 shrink-0 text-text-brand" />
-                      <span className="min-w-0 flex-1 truncate text-body-l font-semibold text-text-primary">
+                      <span className="min-w-24 flex-1 truncate text-body-l font-semibold text-text-primary">
                         {k.label}
                       </span>
                       {places.length > 0 && (
@@ -198,17 +198,23 @@ export function EnhanceStep({
                           trigger={
                             <button
                               type="button"
+                              title={place?.label}
                               className={cn(
-                                'flex items-center gap-2 rounded-md border bg-surface-card px-3 py-1.5 text-body-m font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                                'flex min-w-0 max-w-[60%] items-center gap-2 rounded-md border bg-surface-card px-3 py-1.5 text-body-m font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                                 place
                                   ? 'border-border-brand-strong text-brand-700'
                                   : 'border-border-default text-text-secondary',
                               )}
                             >
-                              {place
-                                ? `${byAi ? 'AI places it in' : 'Used in'}: ${place.label}`
-                                : 'Say where (optional)'}
-                              <ChevronDownIcon aria-hidden className="size-3 text-text-tertiary" />
+                              <span className="truncate">
+                                {place
+                                  ? `${byAi ? 'AI places it in' : 'Used in'}: ${place.label}`
+                                  : 'Say where (optional)'}
+                              </span>
+                              <ChevronDownIcon
+                                aria-hidden
+                                className="size-3 shrink-0 text-text-tertiary"
+                              />
                             </button>
                           }
                         >

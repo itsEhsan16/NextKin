@@ -46,17 +46,19 @@ export function ResumeDetailCard({ resume, reveal = false }: { resume: Resume; r
     >
       <div className="flex items-start gap-4">
         <ResumeTile accent={resume.accent} size="card" />
+        {/* One line for the title, cut short when long (the whole of it on hover), so the type
+            stays beside it and the card keeps its height. */}
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <h2 className="text-h2 font-semibold text-text-primary">{resume.title}</h2>
-            {resume.variant && (
-              <Tag tone={VARIANT_TONE[resume.variant]} shape="pill">
-                {VARIANT_LABEL[resume.variant]}
-              </Tag>
-            )}
-          </div>
+          <h2 title={resume.title} className="truncate text-h2 font-semibold text-text-primary">
+            {resume.title}
+          </h2>
           <p className="mt-1 text-body-m text-text-tertiary">{formatUpdated(resume.updatedAt)}</p>
         </div>
+        {resume.variant && (
+          <Tag tone={VARIANT_TONE[resume.variant]} shape="pill" className="mt-1 shrink-0">
+            {VARIANT_LABEL[resume.variant]}
+          </Tag>
+        )}
         {/* The rows' menu, so the card's kebab does what theirs does (toreview §131). */}
         <ResumeRowMenu resume={resume} />
       </div>

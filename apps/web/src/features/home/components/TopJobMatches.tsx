@@ -72,7 +72,10 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
                 type="button"
                 aria-label="Previous matches"
                 onClick={carousel.previous}
-                className={cn(iconButton, 'border border-border-subtle bg-surface-card text-text-secondary shadow-card')}
+                className={cn(
+                  iconButton,
+                  'border border-border-subtle bg-surface-card text-text-secondary shadow-card',
+                )}
               >
                 <ChevronRightIcon aria-hidden className="size-4 rotate-180" />
               </button>
@@ -80,7 +83,10 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
                 type="button"
                 aria-label="Next matches"
                 onClick={carousel.next}
-                className={cn(iconButton, 'border border-border-subtle bg-surface-card text-text-secondary shadow-card')}
+                className={cn(
+                  iconButton,
+                  'border border-border-subtle bg-surface-card text-text-secondary shadow-card',
+                )}
               >
                 <ChevronRightIcon aria-hidden className="size-4" />
               </button>
@@ -120,7 +126,9 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
           role="region"
           aria-roledescription="carousel"
           aria-label="Top job matches"
-          className={cn('mt-5 overflow-hidden', reveal && 'animate-reveal')}
+          // Clipped sideways only, so the slides beyond the two in view stay hidden while a hovered
+          // card's shadow still falls below the track.
+          className={cn('mt-5 overflow-x-clip', reveal && 'animate-reveal')}
           {...carousel.holdProps}
         >
           <ul
@@ -145,7 +153,7 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
                   // never read or tabbed to.
                   inert={clone}
                   aria-hidden={clone || undefined}
-                  className="w-full shrink-0 xl:w-[calc((100%-0.75rem)/2)]"
+                  className="flex w-full shrink-0 xl:w-[calc((100%-0.75rem)/2)]"
                 >
                   <JobMatchCard job={job} slot={slot} />
                 </li>
@@ -179,7 +187,9 @@ function JobMatchCard({ job, slot }: { job: Job; slot: number }) {
       href={jobPageHref(job.id)}
       className={cn(
         pressable,
-        'relative flex h-[172px] flex-col overflow-hidden rounded-lg bg-neutral-50 px-4 transition-[background-color,box-shadow] duration-base ease-standard hover:bg-surface-card hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+        // At least the board's 172, taller when a long title or basis needs it; the two in view
+        // share the taller height.
+        'relative flex min-h-[172px] flex-1 flex-col overflow-hidden rounded-lg border border-border-subtle bg-neutral-50 px-4 pb-3.5 transition-[background-color,box-shadow] duration-base ease-standard hover:bg-surface-card hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
       )}
     >
       {/* Behind the copy and clipped by the card, exactly as the board stacks it. */}
@@ -207,7 +217,12 @@ function JobMatchCard({ job, slot }: { job: Job; slot: number }) {
       <p className="relative mt-0.5 text-body-s font-medium text-text-tertiary">{job.company}</p>
       {/* The basis behind the number (G16; toreview §105.18). */}
       {match != null && job.matchBasis && (
-        <p className="relative mt-0.5 truncate text-caption-m text-text-tertiary">
+        // Kept left of the character (up to 124px wide) and wrapped to two lines rather than run
+        // under it; the whole sentence stays on hover.
+        <p
+          title={matchBasisCaption(job.matchBasis)}
+          className="relative mt-0.5 line-clamp-2 pr-32 text-caption-m text-text-tertiary"
+        >
           {matchBasisCaption(job.matchBasis)}
         </p>
       )}
@@ -218,7 +233,7 @@ function JobMatchCard({ job, slot }: { job: Job; slot: number }) {
       </div>
 
       {job.applicantsCount != null && (
-        <div className="relative mb-3.5 mt-auto flex items-center gap-2">
+        <div className="relative mt-auto flex items-center gap-2 pt-2.5">
           <ApplicantStack />
           <span className="text-caption-m font-medium text-text-tertiary">
             {formatApplicants(job.applicantsCount)}
