@@ -64,7 +64,8 @@ function overridesFile(args) {
   writeFileSync(file, JSON.stringify({ containerOverrides: [{ name: 'seed', environment: [{ name: 'SEED_ARGS', value: args }] }] }));
   return `file://${file}`;
 }
- network = `awsvpcConfiguration={subnets=[${outputs.Subnets}],securityGroups=[${outputs.AppSecurityGroup}],assignPublicIp=ENABLED}`;
+
+const network = `awsvpcConfiguration={subnets=[${outputs.Subnets}],securityGroups=[${outputs.AppSecurityGroup}],assignPublicIp=ENABLED}`;
 const started = aws(
   'ecs', 'run-task',
   '--cluster', outputs.ClusterName,
