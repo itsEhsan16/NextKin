@@ -233,7 +233,7 @@ export function structureJd(
     issues.push({
       kind: 'sensitive',
       field: 'eligibility',
-      note: `The employer lists this as a condition: “${e.quotes[0]?.text ?? e.value}”. Some places restrict conditions like this; it is shown as the listing states it.`,
+      note: `The employer lists this as a condition: “${(e.quotes[0]?.text ?? e.value).replace(/[.;,\s]+$/, '')}”. Some places restrict conditions like this; it is shown as the listing states it.`,
       quotes: e.quotes,
       by: 'rules',
     });

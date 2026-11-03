@@ -15084,3 +15084,61 @@ The owner: the resume list step shouldn't be there, since the "How would you lik
 - **Old links:** `?step=method` opens this step; `?step=compare` still opens Enhance.
 - **Kept for other flows:** the resume list step (`ResumeStep`, `ResumePicker`, `OtherWays`) still serves the cover letter. §150's resume-step calls apply only there now.
 - **Not verified in a browser.** Web tests pass (425).
+
+## 153. The job description engine: every posting read into one structure (owner, 2026-11-03)
+
+The owner sent a master prompt for a "JD intelligence engine" with a screenshot: a run-on paragraph ("… ₹45,000 - ₹80,000 monthly Fixed … Apply for job Share … 95 applicants …") and a "50% · 18 of 18 required" match card. Built on branch `jd/structured-engine`.
+
+**The owner's answers:**
+- Job seekers only, fully autonomous. No review or correction screen, no publish flow; NextKin owns the quality.
+- One structured model call plus code checks.
+- OCR for scanned job PDFs; legacy .doc not in this pass.
+- Fix the match card's wording; keep the score.
+
+**What was built:**
+- **One canonical structure** (`packages/shared/src/models/jdStructured.ts`, schema version 2) for paste, link, file and listing alike: identity, summary, locations, work mode, schedule, pay, experience, responsibilities, skills (category, required or preferred), education, languages, benefits, eligibility, company, how to apply, extras, and issues.
+  - Every fact keeps the posting's own words and their place in the text.
+  - Status is "stated", "interpreted" or "unclear". There are no confidence numbers, because the model gives none that are calibrated.
+- **Extraction** (`jd.extract` prompt version 5, Haiku, 8,000 tokens out, routing version 5): the whole posting placed by meaning rather than headings, page furniture left out, contradictions reported and never resolved.
+- **Code checks** (`packages/shared/src/jobs/jdStructure.ts`, `jdChecks.ts`, `jdParse.ts`, `jdLocate.ts`):
+  - Any item whose quote isn't in the text is dropped.
+  - Pay, years, days a week and dates are read from the quotes by code (₹, $, €, lakh, LPA, k, per month, year or hour; freshers).
+  - Repeats merge into one fact that keeps every quote.
+  - Working days are moved out of benefits.
+  - Conflicts are flagged: two experience asks, freshers beside a minimum, pay lines that don't say how they relate, remote beside office, two closing dates, a passed closing date.
+  - Age, gender and similar conditions are flagged as sensitive, by code only, never by the model's guess.
+  - The result is validated with zod before it's stored.
+- **Compatibility:** the flat lists every consumer reads (match, tailoring, generation, interview prep, the whole mobile app) are derived from the structure, so none of them changed.
+- **Worker:** reports its stage (reading, understanding, checking). A scanned job PDF is read by OCR like a scanned resume. Postings read before this are read again once, in the background, from their stored text; the page keeps the old layout until that lands.
+- **Migration** `0050_jd_structured.sql`: `structure_version` and `stage` on `job_descriptions`.
+- **The JD page** (`apps/web/src/features/jd/structured/`):
+  - A header with chips and the match card.
+  - A grid of quick facts (salary, experience, employment, work mode, location, schedule), each with "Source", which opens the words it came from.
+  - "Worth knowing" notes for anything unclear or contradictory.
+  - Sections in their place, empty ones hidden. The run-on paragraph is gone.
+  - "Edit details" is gone from a read job. Entering details by hand stays only for a job that couldn't be read.
+- **Match card:** the score is unchanged.
+  - The caption and the Skills row count skills only listed on the profile apart from those shown in a dated role: "12 of 18 required shown in your roles · 6 only listed". That explains a 50% beside a full skills count (D-14 half credit).
+  - Experience and Location say "Not stated" or "Add to your profile" instead of passing when there's no data. The caption is shared, so mobile shows it too.
+- **Measured:** `pnpm eval:jd` scores 22 hand-labelled synthetic postings, one per scenario in the brief. Each is labelled with what a correct reading finds and what it must not invent. The first live run through OpenRouter passed 100 of 100 checks for $0.18, and the answers are recorded for replay. A live end-to-end paste through the Docker stack produced:
+  - pay marked unclear;
+  - five days moved to the schedule;
+  - the age condition flagged;
+  - "Apply for job" and "95 applicants" dropped.
+
+**Calls made without you:**
+- **"Tools" is no longer a separate list.** A tool the posting requires is now required, where before every tool counted as preferred. Scores can move slightly for postings that require a tool.
+- **No annual figure is worked out from a monthly one.** The brief allowed a derived value if labelled; none is stored or shown.
+- **A pay line without a period takes the one the other lines agree on,** marked "interpreted". For example, "Earning potential ₹80,000" beside a monthly range reads as a month.
+- **The summary is the one part NextKin writes itself.** It's labelled "Summary written by NextKin from the listing" and never feeds matching or tailoring.
+- **The JSON-LD facts the link reader finds** reach the model inside the page text, not as a separate block.
+- **The three years-of-experience parsers in the scoring engines are unchanged,** so scoring doesn't move. The page's years come from the structure.
+- **Section grouping by a second model call (§129) now runs only for a reading without a structure.** That saves a call per posting.
+
+**Not done or not verified:**
+- **Not looked at in a browser.** Web tests pass (427), including one that renders a structured page.
+- **Mobile** still shows its own JD screens from the flat fields. It doesn't draw the structure yet.
+- **Legacy .doc uploads** are not supported (owner's choice for this pass).
+- **The older golden set's live recordings** (golden-0.1.0) were made with prompt version 4 and need recording again with version 5. The scripted run still passes.
+- **The local database holds about 30 `jd.extract` prompt versions** left by integration test runs. Harmless, but the admin prompt list is noisy.
+- **File length:** `jdStructure.ts` is about 330 lines, over the 250-line rule.

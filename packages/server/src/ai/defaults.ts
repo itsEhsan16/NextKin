@@ -13,8 +13,9 @@ import type { Prices, Routing } from './routing';
 // the assistant's on-topic classifier on the fast tier.
 // Version 4 (toreview §110.4): the resume reader copies every bullet word for word, so its answer
 // is longer than the fields it read before: 8000 tokens out.
+// Version 5 (toreview §153): the job reader places the whole posting, each fact quoted: 8000 out.
 export const ROUTING_DEFAULT: Routing = {
-  version: 4,
+  version: 5,
   stages: {
     default: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
