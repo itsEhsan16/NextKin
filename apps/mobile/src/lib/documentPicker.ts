@@ -1,11 +1,13 @@
 /** File picking for resume upload and document attachment (plan §Phase 9A). */
 
-export type DocumentKind = 'pdf' | 'docx' | 'txt';
+export type DocumentKind = 'pdf' | 'docx' | 'doc' | 'txt';
 export type PickedDocument = { name: string; uri: string; mimeType?: string; size?: number };
 
 const DOCUMENT_MIME: Record<DocumentKind, string> = {
   pdf: 'application/pdf',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  // Legacy Word, for job descriptions (toreview §154).
+  doc: 'application/msword',
   txt: 'text/plain',
 };
 

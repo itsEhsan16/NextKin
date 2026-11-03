@@ -29,7 +29,7 @@ export const browserUploader: FileUploader = async (target, file) => {
 const guessType = (file: JdFile): string => {
   if (file.mimeType) return file.mimeType;
   const ext = file.name.toLowerCase().split('.').pop();
-  return ext === 'pdf' ? 'application/pdf' : ext === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : ext === 'png' ? 'image/png' : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'webp' ? 'image/webp' : 'text/plain';
+  return ext === 'pdf' ? 'application/pdf' : ext === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : ext === 'doc' ? 'application/msword' : ext === 'png' ? 'image/png' : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'webp' ? 'image/webp' : 'text/plain';
 };
 
 export async function uploadFile(http: HttpClient, uploader: FileUploader, purpose: UploadPurpose, file: JdFile): Promise<Upload> {

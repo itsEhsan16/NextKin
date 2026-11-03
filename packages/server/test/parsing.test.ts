@@ -8,7 +8,7 @@ import { createMemoryTrace } from '../src/ai/trace';
 import { createLogger } from '../src/observability/logger';
 import { createTesseractOcr, type OcrPort } from '../src/ocr/tesseract';
 import { toGrayPng } from '../src/ocr/png';
-import { analyze, OCR_MIN_CHARS_PER_PAGE, sniff } from '../src/parsing/analyzer';
+import { analyze, DOCUMENT_KINDS, JD_DOCUMENT_KINDS, OCR_MIN_CHARS_PER_PAGE, sniff } from '../src/parsing/analyzer';
 import { crossCheck, extractionSchema, extractResume, normalise, type Extraction, type ExtractionInput } from '../src/parsing/extract';
 import { analyzeIsolated } from '../src/parsing/pool';
 import { makeDocx } from './fixtures/makeDocx';
@@ -154,6 +154,32 @@ describe('DOCX guards', () => {
   it('refuses any DOCTYPE (XXE)', async () => {
     const xxe = makeDocx([[{ text: '&xxe;' }]], { doctype: '<!DOCTYPE w:document [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>' });
     await expect(analyze(xxe)).rejects.toMatchObject({ code: 'dtd_refused' });
+  });
+});
+
+/**
+ * Legacy Word (toreview §154). The two .doc files are word-extractor's own test data (MIT,
+ * github.com/morungos/node-word-extractor, `__tests__/data/test01.doc` and
+ * `badfile-01-bad-header.doc`): no Word or LibreOffice here to make synthetic ones.
+ */
+describe('legacy Word (.doc)', () => {
+  const doc = () => new Uint8Array(readFileSync(join(import.meta.dirname, 'fixtures/legacy-word.doc')));
+
+  it('is known by its bytes, and read in the isolated parser when a job description allows it', async () => {
+    expect(sniff(doc())).toBe('doc');
+    const result = await analyzeIsolated(doc(), { allowed: JD_DOCUMENT_KINDS });
+    expect(result.kind).toBe('doc');
+    expect(result.text).toContain('This text has been inserted');
+    expect(result.facts.chars).toBeGreaterThan(40);
+  });
+
+  it('is refused where only PDF, DOCX and text are allowed (resumes)', async () => {
+    await expect(analyze(doc(), { allowed: DOCUMENT_KINDS })).rejects.toMatchObject({ code: 'type_mismatch' });
+  });
+
+  it('a damaged one fails with a plain message, never a crash', async () => {
+    const broken = new Uint8Array(readFileSync(join(import.meta.dirname, 'fixtures/legacy-word-broken.doc')));
+    await expect(analyze(broken, { allowed: JD_DOCUMENT_KINDS })).rejects.toMatchObject({ name: 'UnreadableError' });
   });
 });
 

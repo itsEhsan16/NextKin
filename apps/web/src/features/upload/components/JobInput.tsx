@@ -129,7 +129,7 @@ export function JobInput({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
           >
             upload a file
           </button>{' '}
-          (PDF, DOCX or TXT, up to 5 MB), or drop it on the box.
+          (PDF, DOC, DOCX or TXT, up to 5 MB), or drop it on the box.
         </span>
         {!text && !file && (
           <button

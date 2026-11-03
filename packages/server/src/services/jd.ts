@@ -13,7 +13,7 @@ import { LinkError, parseLink, type LinkFailure } from '../links/address';
 import { LinkReaderUnavailableError, type LinkReader } from '../links/client';
 import type { Logger } from '../observability/logger';
 import { enqueue } from '../outbox/outbox';
-import { DOCUMENT_KINDS } from '../parsing/analyzer';
+import { JD_DOCUMENT_KINDS } from '../parsing/analyzer';
 import { analyzeIsolated, type IsolationLimits } from '../parsing/pool';
 import { UnreadableError, type Analysis } from '../parsing/types';
 import { contentHash, extractJd, repairText, verify, type JdExtraction, type VerifiedJd } from '../pipeline/stages/extractJd';
@@ -300,7 +300,7 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
     if (found.source === 'file') {
       if (!deps.files || !found.bucket || !found.object_key) return fail(JD_FAILURE.unreadable);
       const bytes = await deps.files.storage.read(found.bucket, found.object_key, deps.files.maxBytes);
-      const analysis = await analyzeIsolated(bytes, { allowed: DOCUMENT_KINDS, limits: deps.files.limits });
+      const analysis = await analyzeIsolated(bytes, { allowed: JD_DOCUMENT_KINDS, limits: deps.files.limits });
       // Hidden text never reaches the model (G9): the analyzer returns visible text only.
       text = repairText(await withOcr(deps, analysis)).slice(0, MAX_TEXT);
       if (text.replace(/\s+/g, '').length < 40) return fail(JD_FAILURE.unreadable);

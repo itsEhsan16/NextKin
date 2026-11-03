@@ -44,7 +44,7 @@ const CHOICES = [
     label: 'Paste the description',
     description: 'Copy the posting and drop the text in',
   },
-  { key: 'file', icon: 'UploadCloud02', label: 'Upload a file', description: 'PDF, DOCX or TXT' },
+  { key: 'file', icon: 'UploadCloud02', label: 'Upload a file', description: 'PDF, DOC, DOCX or TXT' },
   {
     key: 'job',
     icon: 'Bookmark',
@@ -98,7 +98,7 @@ export function JdIntakeSection({ value, onChange, jobId, pasteError }: JdIntake
   const upload = useCallback(async () => {
     setPicking(true);
     try {
-      const file = await pickDocument(['pdf', 'docx', 'txt']);
+      const file = await pickDocument(['pdf', 'docx', 'doc', 'txt']);
       // A cancel — or expo-document-picker being unavailable in Expo Go — is not an error: the
       // mode stays where it was and nothing is said.
       if (file) onChange({ source: 'file', file });

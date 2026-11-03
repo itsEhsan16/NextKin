@@ -177,6 +177,18 @@ describe('a scanned job posting (toreview §153)', () => {
     expect(jd.rawText).toMatch(/Kubernetes/);
     expect(jd.requiredSkills).toEqual(['Kubernetes']);
   }, 90_000);
+
+  it('a legacy Word (.doc) job description is scanned, read and placed (toreview §154)', async () => {
+    const auth = await signedIn();
+    const uploadId = await upload(auth, 'jd', 'job.doc', 'application/msword', new Uint8Array(readFileSync(join(import.meta.dirname, '../fixtures/legacy-word.doc'))));
+    const started = await json<{ id: string }>(await call(h, '/jd', { body: { source: 'file', uploadId }, headers: auth }));
+    const jd = await until(
+      () => json<{ status: string; rawText: string }>(call(h, `/jd/${started.id}`, { headers: auth })),
+      (d) => d.status === 'ready' || d.status === 'failed',
+    );
+    expect(jd.status).toBe('ready');
+    expect(jd.rawText).toContain('This text has been inserted');
+  }, 90_000);
 });
 
 describe('the scan gate (P7-03)', () => {

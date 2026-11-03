@@ -1,3 +1,4 @@
+import { analyzeDoc } from './doc';
 import { analyzeDocx } from './docx';
 import { pdfLayout, textFileLayout } from './layout';
 import { analyzePdf } from './pdf';
@@ -21,6 +22,8 @@ export function sniff(bytes: Uint8Array): FileKind {
     const head = new TextDecoder('latin1').decode(b.subarray(0, Math.min(b.length, 64 * 1024)));
     return head.includes('word/') ? 'docx' : 'unknown';
   }
+  // An OLE compound file (Word 97–2003, but also old Excel and Outlook files): the reader tells.
+  if (b.length >= 8 && b[0] === 0xd0 && b[1] === 0xcf && b[2] === 0x11 && b[3] === 0xe0 && b[4] === 0xa1 && b[5] === 0xb1 && b[6] === 0x1a && b[7] === 0xe1) return 'doc';
   if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'png';
   if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'jpeg';
   if (b.length >= 12 && String.fromCharCode(...b.subarray(0, 4)) === 'RIFF' && String.fromCharCode(...b.subarray(8, 12)) === 'WEBP') return 'webp';
@@ -64,6 +67,8 @@ function analyzeTxt(bytes: Uint8Array): { text: string; hidden: HiddenRun[] } {
 }
 
 export const DOCUMENT_KINDS: readonly FileKind[] = ['pdf', 'docx', 'txt'];
+/** A job description may also be a legacy Word file (toreview §154). */
+export const JD_DOCUMENT_KINDS: readonly FileKind[] = [...DOCUMENT_KINDS, 'doc'];
 
 export async function analyze(bytes: Uint8Array, options: { allowed?: readonly FileKind[] } = {}): Promise<Analysis> {
   const kind = sniff(bytes);
@@ -91,6 +96,16 @@ export async function analyze(bytes: Uint8Array, options: { allowed?: readonly F
       images,
       links: result.links,
     };
+  }
+  if (kind === 'doc') {
+    let result;
+    try {
+      result = await analyzeDoc(bytes);
+    } catch {
+      // An OLE file that is not a Word document (an old .xls), or a damaged one.
+      throw new UnreadableError('corrupt', 'This Word file could not be read. Save it as DOCX or PDF and upload it again.');
+    }
+    return { kind, text: result.text, hidden: [], facts: { pages: 1, chars: result.chars, lowTextPages: [], ocr: false }, images: [] };
   }
   if (kind === 'docx') {
     const result = analyzeDocx(bytes);

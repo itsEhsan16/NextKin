@@ -30,7 +30,7 @@ export type UploadRow = Selectable<Uploads>;
 /** What the bytes must be for each purpose, whatever the file was called. */
 export const PURPOSE_KINDS: Record<UploadPurpose, readonly FileKind[]> = {
   resume: ['pdf', 'docx', 'txt'],
-  jd: ['pdf', 'docx', 'txt'],
+  jd: ['pdf', 'docx', 'doc', 'txt'],
   avatar: ['png', 'jpeg', 'webp'],
 };
 

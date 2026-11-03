@@ -198,7 +198,7 @@ export function OtherJobBox({
                 Upload a file
               </Button>
               <span className="text-body-s font-medium text-text-tertiary">
-                or drop one here · PDF or DOCX
+                or drop one here · PDF, DOC or DOCX
               </span>
             </>
           )}

@@ -107,7 +107,7 @@ export function BuildAddJobScreen({ mode, at, notice }: BuildAddJobScreenProps) 
   const upload = async () => {
     setPicking(true);
     try {
-      const picked = await pickDocument(['pdf', 'docx', 'txt']);
+      const picked = await pickDocument(['pdf', 'docx', 'doc', 'txt']);
       // A cancel (or no picker in this runtime) is not an error: nothing changes.
       if (!picked) return;
       if (picked.size != null && picked.size > MAX_FILE_BYTES) return fail(TOO_BIG);
@@ -187,7 +187,7 @@ export function BuildAddJobScreen({ mode, at, notice }: BuildAddJobScreenProps) 
             {uploadTile}
             <BuildTipCard
               title="What we can read"
-              text="A PDF, DOCX or TXT of the job posting, up to 5 MB."
+              text="A PDF, DOC, DOCX or TXT of the job posting, up to 5 MB."
             />
           </>
         ) : (

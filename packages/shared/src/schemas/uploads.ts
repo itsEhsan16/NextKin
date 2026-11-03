@@ -13,7 +13,8 @@ export type UploadPurpose = (typeof UPLOAD_PURPOSES)[number];
 /** What each purpose accepts, by declared type. The bytes are checked again after upload. */
 export const UPLOAD_TYPES: Record<UploadPurpose, readonly string[]> = {
   resume: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
-  jd: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
+  // A job description may also be a legacy Word file (toreview §154).
+  jd: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'text/plain'],
   avatar: ['image/jpeg', 'image/png', 'image/webp'],
 };
 

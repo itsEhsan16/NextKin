@@ -5,7 +5,7 @@ import type { FileLayout } from './layout';
  * user and go nowhere else (G9).
  */
 
-export type FileKind = 'pdf' | 'docx' | 'txt' | 'png' | 'jpeg' | 'webp' | 'unknown';
+export type FileKind = 'pdf' | 'docx' | 'doc' | 'txt' | 'png' | 'jpeg' | 'webp' | 'unknown';
 
 export interface HiddenRun {
   page: number;
