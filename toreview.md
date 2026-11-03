@@ -15213,3 +15213,40 @@ The owner asked why a resume already showed as selected. "Your selections" liste
 - **The Tailor card** says "Use one of your resumes as a base…" until it is chosen, then names the resume.
 - **Inside the Tailor popup,** the base is still offered as the selected resume, with Change, as the mockup draws it. Completing the popup is what chooses it.
 - **Not verified in a browser.** Web tests pass.
+
+## 159. Better tailored resumes: no keyword stuffing, results only on real work (owner, 2026-11-03)
+
+The owner showed a third-party scanner's report on a resume NextKin tailored for "Nuvexa Biotech – Full Stack Developer": a 59% match, hard and soft skills missing, the experience heading not recognised, and results flagged. The run itself was traced (generation `01a1a1bb…`). The causes:
+
+1. **The job reading (prompt v5) missed the posting's themes.** "Automation" appears 13 times, but the reading listed none of: automation or workflow automation, front end, internal tools, report generation, Google Workspace, AI agents. Enhance never offered them.
+2. **Keyword stuffing.** All 31 ticked keywords were assigned by the plan (`by: 'ai'`) to the latest role, the internship. Each became a "Used X" fact the writer had to use, producing lines like "Used web scraping with Playwright and Puppeteer, ETL, Metabase and Looker Studio for D2C operations data and Flipkart APIs."
+3. **Figures on lines that can't carry one,** such as "Used Git and pull requests …, cutting the time it took by about 10%".
+4. **The section heading** was the bare "Experience".
+5. **Leadership** shown by the facts (running workshops, coordinating volunteers) was never said.
+
+The candidate's own gap (a 3-month internship against a 1–3 year ask) is real and is not hidden.
+
+**Owner's decision:** a ticked keyword goes into a bullet only where a real fact supports it, and never as a bolt-on line. Every other ticked keyword goes to the skills list. This replaces §116, where the AI placed ticked keywords in roles.
+
+**What changed:**
+- **Places you chose:** only places the user chose (`by: 'you'`) become facts (`services/tailorStart.ts`). The plan's own pick is treated as a skill-list keyword, and ticked keywords are no longer offered to every role and project (`placeable` is gone).
+- **Bolt-on lines:** a written line that opens with "Used / Applied / Worked …" and lists two or more ticked keywords is dropped by code (`tailorMerge.ts`). Its keywords stay in Skills.
+- **Writer prompt** (`resume.generate` v7):
+  - weave a keyword only into a line about the work it was used for;
+  - never write a line whose point is listing tools;
+  - at most two new skills per bullet;
+  - in the summary, say the candidate led or coordinated people when the facts show it.
+- **Results:** "Add real results" asks only about lines that describe work (`canCarryResult` in `engines/quantified.ts`). A figure on a "Used / Applied / Familiar with …" line, or a line under three words, is never asked for, and at run start it is not applied.
+- **Heading:** a tailored resume's bare "Experience" heading becomes "Work Experience". A heading the file chose otherwise is kept. New resumes default to "Work Experience" in the PDF, the plain export and the editor.
+- **Job reader** (`jd.extract` v6): also lists the posting's recurring kinds of work and themes, and each named product in a list, as keywords in the posting's own words.
+
+**Measured:** both evals ran live through OpenRouter and pass.
+- jd-structure: 100 of 100 checks.
+- golden: no anachronisms, untraceable facts or gap insertions; supported recall 0.96, up from 0.94; extraction precision 1.0, recall 0.99.
+
+The 84 older recordings are replaced by 86 new ones, and both evals replay offline.
+
+**Open:**
+- Matching or beating a named third-party scanner is not a goal (V2 §7.8). The changes aim at honest, readable resumes that name the job's own terms where the facts support them.
+- The live regeneration of the Nuvexa run is reported in chat.
+- Not checked against the scanner again.

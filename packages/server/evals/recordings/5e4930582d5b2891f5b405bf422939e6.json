@@ -1,0 +1,115 @@
+{
+  "key": "5e4930582d5b2891f5b405bf422939e6",
+  "recordedAt": "2026-11-03T14:40:43.128Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Site Reliability Engineer\",\n  \"company\": \"Netzwerk AG\",\n  \"requirementsBacked\": [\n   "
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Site Reliability Engineer",
+      "summary": {
+        "text": "DevOps engineer running Kubernetes clusters for 120 services and provisioning AWS infrastructure with Terraform across 3 regions. Earlier work as a systems administrator managing 200 Linux servers with Puppet.",
+        "evidence": [
+          "do_1",
+          "do_2",
+          "do_1#r0",
+          "do_1#r1",
+          "do_2#r0"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Kubernetes",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "Terraform",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "AWS",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "Jenkins",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "Linux",
+          "evidence": [
+            "do_2"
+          ]
+        },
+        {
+          "name": "Puppet",
+          "evidence": [
+            "do_2"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "do_1",
+          "bullets": [
+            {
+              "text": "Ran Kubernetes clusters for 120 services",
+              "evidence": [
+                "do_1#r1"
+              ]
+            },
+            {
+              "text": "Provisioned AWS infrastructure with Terraform across 3 regions",
+              "evidence": [
+                "do_1#r0"
+              ]
+            },
+            {
+              "text": "Moved CI from Jenkins to GitHub Actions",
+              "evidence": [
+                "do_1#r2"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "do_2",
+          "bullets": [
+            {
+              "text": "Managed 200 Linux servers with Puppet",
+              "evidence": [
+                "do_2#r0"
+              ]
+            },
+            {
+              "text": "Cut provisioning time from 2 days to 3 hours",
+              "evidence": [
+                "do_2#r1"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 873,
+      "outputTokens": 621,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "key": "2bc2e4bb5a385d7a2c86a8a44e7d283d",
+  "recordedAt": "2026-11-03T14:39:18.650Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Backend Engineer",
+        "quote": "Backend Engineer at Freightly, Chicago."
+      },
+      "company": {
+        "text": "Freightly",
+        "quote": "Backend Engineer at Freightly, Chicago."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Freightly is hiring a Backend Engineer in Chicago. The role requires Kubernetes, Docker and Go, and involves migrating legacy services. Terraform is a nice-to-have.",
+      "locations": [
+        {
+          "text": "Chicago",
+          "quote": "Backend Engineer at Freightly, Chicago.",
+          "city": "Chicago",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "You will migrate legacy services.",
+          "quote": "You will migrate legacy services.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Kubernetes",
+          "quote": "Requirements: Kubernetes, Docker and Go.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Docker",
+          "quote": "Requirements: Kubernetes, Docker and Go.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Go",
+          "quote": "Requirements: Kubernetes, Docker and Go.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Terraform",
+          "quote": "Nice to have: Terraform.",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "legacy service migration",
+          "quote": "You will migrate legacy services.",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 309,
+      "outputTokens": 1145,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

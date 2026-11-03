@@ -1,6 +1,7 @@
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { leftOutChecker } from '@nextkin/engines/leftOut';
 import { resolveSkill } from '@nextkin/engines/normalizer';
+import { isToolUseLine } from '@nextkin/engines/quantified';
 import { checkProjectBullets } from '@nextkin/engines/projectClaims';
 import { toResumeContent } from '@nextkin/shared/scoring/canonical';
 import { factsOfDocument, undatedRoleIds } from '@nextkin/shared/scoring/documentFacts';
@@ -189,16 +190,30 @@ function groupsFor(groups: NonNullable<CanonicalResumeJson['skillGroups']>, skil
 function projectsFor(base: CanonicalResumeJson, generated: CanonicalResumeJson, request: TailorRunInput): CanonicalResumeJson['projects'] {
   const facts = factsOfDocument(base, { ...(request.confirmed ? { confirmed: request.confirmed } : {}) });
   const leftOut = leftOutChecker(TAXONOMY, request.skipped);
+  const named = leftOutChecker(TAXONOMY, request.added);
   return base.projects.map((project, pi) => {
     const keptProject = { ...project, bullets: project.bullets.map((b, bi) => kept(b, `kept-p${pi}-${bi}`, `${project.factId}#p${bi}`)) };
     if (!request.fixes.includes('projects')) return keptProject;
-    const bullets = generated.projects.find((g) => g.factId === project.factId)?.bullets ?? [];
+    const bullets = (generated.projects.find((g) => g.factId === project.factId)?.bullets ?? []).filter((b) => !isBoltOn(b.text, named));
     const own = facts.projects.find((f) => f.id === project.factId);
     if (bullets.length === 0 || !own) return keptProject;
     const issues = checkProjectBullets({ id: own.id, name: own.name, lines: own.lines ?? [], skills: own.skills ?? [] }, bullets, TAXONOMY, leftOut);
     return issues.length === 0 ? { ...project, bullets } : keptProject;
   });
 }
+
+/**
+ * A bare "Experience" heading becomes "Work Experience" on a tailored resume (toreview §159): it is
+ * the name recruiters' search tools look for. Any other heading the file chose is kept as written.
+ */
+const standardHeadings = (headings: Record<string, string>): Record<string, string> =>
+  /^\s*experience\s*$/i.test(headings.experience ?? '') ? { ...headings, experience: 'Work Experience' } : headings;
+
+/**
+ * A bolt-on line (owner, toreview §159): "Used webhooks, NoSQL and WhatsApp Business API in the
+ * platform" says no work, only lists ticked keywords. It is dropped; the keywords stay in Skills.
+ */
+const isBoltOn = (text: string, named: (text: string) => readonly string[]) => isToolUseLine(text) && named(text).length >= 2;
 
 export function mergeTailored(args: {
   base: CanonicalResumeJson;
@@ -220,8 +235,9 @@ export function mergeTailored(args: {
   const roles = base.roles.map((role, ri) => {
     const rewritten = generated.roles.find((g) => g.roleId === role.roleId);
     // The header is the base's: employers, titles and dates are facts, never rewritten.
-    const fresh = rewrites.has(role.roleId) && rewritten && rewritten.bullets.length > 0;
-    const next = fresh ? keepFigures(role, rewrittenRole(role, rewritten.bullets), request.figures ?? [], ri) : keptRole(role, ri);
+    const written = (rewritten?.bullets ?? []).filter((b) => !isBoltOn(b.text, ticked));
+    const fresh = rewrites.has(role.roleId) && written.length > 0;
+    const next = fresh ? keepFigures(role, rewrittenRole(role, written), request.figures ?? [], ri) : keptRole(role, ri);
     // A keyword the user confirmed here, or one the AI placed in its lines (toreview §112, §116), is
     // one of the role's skills from now on — only where a line of the role says it.
     const placed = rewrites.has(role.roleId) ? ticked(next.bullets.map((b) => b.text).join('\n')) : [];
@@ -244,6 +260,7 @@ export function mergeTailored(args: {
     ...(base.skillGroups ? { skillGroups: placeInGroups(groupsFor(base.skillGroups, skills, fixes.has('skills')), request.added, TAXONOMY) } : {}),
     roles,
     projects: projectsFor(base, generated, request),
+    ...(base.layout ? { layout: { ...base.layout, headings: standardHeadings(base.layout.headings) } } : {}),
   };
   return reconcileStructure(merged);
 }

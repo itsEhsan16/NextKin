@@ -1,0 +1,92 @@
+{
+  "key": "cf4b4dd522c85c818ff422ee5bf4a754",
+  "recordedAt": "2026-11-03T14:42:37.545Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Junior Data Analyst",
+        "quote": "Junior Data Analyst at Schoolmetrics, Chicago."
+      },
+      "company": {
+        "text": "Schoolmetrics",
+        "quote": "Junior Data Analyst at Schoolmetrics, Chicago."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": "Junior Data Analyst"
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "Chicago",
+          "quote": "Junior Data Analyst at Schoolmetrics, Chicago.",
+          "city": "Chicago",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "SQL",
+          "quote": "SQL and Microsoft Excel are required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Microsoft Excel",
+          "quote": "SQL and Microsoft Excel are required.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Tableau",
+          "quote": "Nice to have: Tableau and Python.",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "Python",
+          "quote": "Nice to have: Tableau and Python.",
+          "category": "language",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 309,
+      "outputTokens": 988,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

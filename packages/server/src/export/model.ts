@@ -66,7 +66,7 @@ export function resumeModel(doc: CanonicalResumeJson, who: Identity, market: Mar
   if (doc.skills.length) sections.push({ heading: 'Skills', blocks: [{ kind: 'paragraph', text: doc.skills.map((s) => s.name).join(', ') }] });
   if (doc.roles.length) {
     sections.push({
-      heading: 'Experience',
+      heading: 'Work Experience',
       // As the PDF sets it: the employer, then the job title, both bold (toreview §130).
       blocks: doc.roles.map((r) => ({ kind: 'entry', title: r.company, subtitle: r.title, meta: joinMeta(r.location, marketPeriod(r.start, r.end, market)), bullets: r.bullets.map((b) => b.text) })),
     });

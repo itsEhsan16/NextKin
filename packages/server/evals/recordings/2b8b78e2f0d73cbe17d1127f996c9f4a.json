@@ -1,0 +1,55 @@
+{
+  "key": "2b8b78e2f0d73cbe17d1127f996c9f4a",
+  "recordedAt": "2026-11-03T14:42:49.080Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Reporting Analyst",
+        "quote": "Reporting Analyst at Zahlenwerk, Hamburg, Germany."
+      },
+      "company": {
+        "text": "Zahlenwerk",
+        "quote": "Reporting Analyst at Zahlenwerk, Hamburg, Germany."
+      },
+      "locations": [
+        {
+          "text": "Hamburg, Germany",
+          "quote": "Reporting Analyst at Zahlenwerk, Hamburg, Germany.",
+          "city": "Hamburg",
+          "region": null,
+          "country": "Germany"
+        }
+      ],
+      "skills": [
+        {
+          "name": "Microsoft Excel",
+          "quote": "Microsoft Excel is required.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "SQL",
+          "quote": "Nice to have: SQL.",
+          "category": "language",
+          "importance": "preferred"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 305,
+      "outputTokens": 396,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -176,3 +176,28 @@ describe('the user’s figures (toreview §129)', () => {
     expect(texts(merged, 'pay')).toEqual(['Built settlement services', figure.text]);
   });
 });
+
+describe('no bolt-on lines (owner, toreview §159)', () => {
+  it('drops a written line that only lists ticked keywords; they stay in Skills', () => {
+    const generated: CanonicalResumeJson = {
+      ...GENERATED,
+      roles: GENERATED.roles.map((role) =>
+        role.roleId === 'pay'
+          ? { ...role, bullets: [...role.bullets, line('bolt', 'Used Terraform, Redis and Docker in the platform', 'generated', ['pay#r0'])] }
+          : role,
+      ),
+    };
+    const merged = mergeTailored({ base: BASE, generated, request: request({ added: ['Terraform', 'Redis', 'Docker'], skipped: [] }), job: JOB });
+    expect(texts(merged, 'pay')).not.toContain('Used Terraform, Redis and Docker in the platform');
+    expect(texts(merged, 'pay')).toContain('Built the settlement service in Go, rewritten');
+    expect(merged.skills.map((s) => s.name)).toEqual(expect.arrayContaining(['Terraform', 'Redis', 'Docker']));
+  });
+
+  it('a bare "Experience" heading becomes "Work Experience"; a heading the file chose otherwise is kept', () => {
+    const layout = (experience: string) => ({ order: ['summary', 'experience'], headings: { summary: 'Summary', experience } });
+    const bare = mergeTailored({ base: { ...BASE, layout: layout('Experience') }, generated: GENERATED, request: request(), job: JOB });
+    expect(bare.layout?.headings.experience).toBe('Work Experience');
+    const own = mergeTailored({ base: { ...BASE, layout: layout('Professional Experience') }, generated: GENERATED, request: request(), job: JOB });
+    expect(own.layout?.headings.experience).toBe('Professional Experience');
+  });
+});

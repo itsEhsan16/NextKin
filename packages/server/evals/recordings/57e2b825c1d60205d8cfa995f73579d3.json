@@ -1,0 +1,67 @@
+{
+  "key": "57e2b825c1d60205d8cfa995f73579d3",
+  "recordedAt": "2026-11-03T14:42:06.788Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Backend Engineer\",\n  \"company\": \"Paywell\",\n  \"requirementsBacked\": [],\n  \"requirement"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Registered Nurse",
+      "summary": {
+        "text": "Registered nurse since April 2017 on a surgical ward, caring for up to 8 patients per shift and documenting care in electronic health records. Has trained 5 new nurses.",
+        "evidence": [
+          "nu_1#r0",
+          "nu_1#r1",
+          "nu_1#r2",
+          "nu_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Electronic health records",
+          "evidence": [
+            "nu_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "nu_1",
+          "bullets": [
+            {
+              "text": "Cared for up to 8 patients per shift on a surgical ward",
+              "evidence": [
+                "nu_1#r0"
+              ]
+            },
+            {
+              "text": "Documented patient care in the electronic health records system",
+              "evidence": [
+                "nu_1#r1"
+              ]
+            },
+            {
+              "text": "Trained 5 new nurses",
+              "evidence": [
+                "nu_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 558,
+      "outputTokens": 393,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

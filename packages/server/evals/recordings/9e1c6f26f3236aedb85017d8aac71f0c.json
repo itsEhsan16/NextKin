@@ -1,0 +1,83 @@
+{
+  "key": "9e1c6f26f3236aedb85017d8aac71f0c",
+  "recordedAt": "2026-11-03T14:41:00.279Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Android Engineer",
+        "quote": "Android Engineer at Kanga Apps, Perth."
+      },
+      "company": {
+        "text": "Kanga Apps",
+        "quote": "Android Engineer at Kanga Apps, Perth."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Kanga Apps is seeking an Android Engineer in Perth. The posting lists Kotlin and Firebase experience as required, with Java as a nice-to-have.",
+      "locations": [
+        {
+          "text": "Perth",
+          "quote": "Android Engineer at Kanga Apps, Perth.",
+          "city": "Perth",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "Kotlin",
+          "quote": "Kotlin is required.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Firebase",
+          "quote": "Experience with Firebase is required.",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "Java",
+          "quote": "Nice to have: Java.",
+          "category": "language",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 303,
+      "outputTokens": 991,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

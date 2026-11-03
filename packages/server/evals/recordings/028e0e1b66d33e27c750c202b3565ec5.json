@@ -1,0 +1,95 @@
+{
+  "key": "028e0e1b66d33e27c750c202b3565ec5",
+  "recordedAt": "2026-11-03T14:41:36.889Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Product Manager",
+        "quote": "Product Manager at Billfold, Chicago."
+      },
+      "company": {
+        "text": "Billfold",
+        "quote": "Product Manager at Billfold, Chicago."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "Chicago",
+          "quote": "Product Manager at Billfold, Chicago.",
+          "city": "Chicago",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "product management and roadmapping experience",
+          "quote": "product management and roadmapping experience are required"
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "product management",
+          "quote": "product management and roadmapping experience are required",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "roadmapping",
+          "quote": "product management and roadmapping experience are required",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "stakeholder management",
+          "quote": "Stakeholder management is required.",
+          "category": "soft",
+          "importance": "required"
+        },
+        {
+          "name": "SQL",
+          "quote": "Nice to have: SQL.",
+          "category": "language",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "company_placeholder": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 305,
+      "outputTokens": 978,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

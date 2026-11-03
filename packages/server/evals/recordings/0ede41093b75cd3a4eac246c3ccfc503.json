@@ -1,0 +1,109 @@
+{
+  "key": "0ede41093b75cd3a4eac246c3ccfc503",
+  "recordedAt": "2026-11-03T14:38:25.918Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Junior Web Developer",
+        "quote": "Junior Web Developer — Pixelnest Studio"
+      },
+      "company": {
+        "text": "Pixelnest Studio",
+        "quote": "Junior Web Developer — Pixelnest Studio"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": "Freshers can also apply."
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is for a junior web developer at Pixelnest Studio. The work includes building landing pages for client campaigns. The posting asks for at least one year of experience in HTML, CSS and JavaScript, and says freshers can also apply.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Minimum 1 year experience in HTML, CSS and JavaScript",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript."
+        },
+        {
+          "text": "Freshers can apply",
+          "quote": "Freshers can also apply."
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Build landing pages for client campaigns.",
+          "quote": "Build landing pages for client campaigns.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "HTML",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "CSS",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "JavaScript",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "landing pages",
+          "quote": "Build landing pages for client campaigns.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "conflict",
+          "field": "experience",
+          "note": "The posting asks for a minimum of 1 year of experience, but also says freshers can apply. These two statements do not clearly agree.",
+          "quotes": [
+            "Minimum 1 year experience in HTML, CSS and JavaScript.",
+            "Freshers can also apply."
+          ]
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 317,
+      "outputTokens": 1256,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

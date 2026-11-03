@@ -1,0 +1,120 @@
+{
+  "key": "173f3cac307f8da1513ec1ad48d916c4",
+  "recordedAt": "2026-11-03T14:40:35.368Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Platform Engineer\",\n  \"company\": \"Outback Cloud\",\n  \"requirementsBacked\": [\n   \"Kuber"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "DevOps Engineer",
+      "summary": {
+        "text": "DevOps engineer who runs Kubernetes clusters and provisions AWS infrastructure with Terraform, for a Platform Engineer role. Moved CI from Jenkins to GitHub Actions and earlier managed 200 Linux servers with Puppet.",
+        "evidence": [
+          "do_1#r0",
+          "do_1#r1",
+          "do_1#r2",
+          "do_2#r0"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Kubernetes",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "Terraform",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "AWS",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "Jenkins",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "GitHub Actions",
+          "evidence": [
+            "do_1"
+          ]
+        },
+        {
+          "name": "Puppet",
+          "evidence": [
+            "do_2"
+          ]
+        },
+        {
+          "name": "Linux",
+          "evidence": [
+            "do_2"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "do_1",
+          "bullets": [
+            {
+              "text": "Ran Kubernetes clusters for 120 services",
+              "evidence": [
+                "do_1#r1"
+              ]
+            },
+            {
+              "text": "Provisioned AWS infrastructure with Terraform across 3 regions",
+              "evidence": [
+                "do_1#r0"
+              ]
+            },
+            {
+              "text": "Moved CI from Jenkins to GitHub Actions",
+              "evidence": [
+                "do_1#r2"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "do_2",
+          "bullets": [
+            {
+              "text": "Managed 200 Linux servers with Puppet",
+              "evidence": [
+                "do_2#r0"
+              ]
+            },
+            {
+              "text": "Cut provisioning time from 2 days to 3 hours",
+              "evidence": [
+                "do_2#r1"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 877,
+      "outputTokens": 654,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

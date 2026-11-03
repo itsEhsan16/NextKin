@@ -1,0 +1,80 @@
+{
+  "key": "051ed40d3400e5c55f0c4747b006b4dc",
+  "recordedAt": "2026-11-03T14:40:15.889Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "de",
+      "title": {
+        "text": "Datenanalyst",
+        "quote": "Datenanalyst bei Handelsdaten, Hamburg."
+      },
+      "company": null,
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [
+        {
+          "text": "Hamburg",
+          "quote": "Datenanalyst bei Handelsdaten, Hamburg.",
+          "city": "Hamburg",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "SQL",
+          "quote": "sehr gute Kenntnisse in SQL und Python sind erforderlich.",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Python",
+          "quote": "sehr gute Kenntnisse in SQL und Python sind erforderlich.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Tableau",
+          "quote": "Erfahrung mit Tableau.",
+          "category": "tool",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 329,
+      "outputTokens": 891,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

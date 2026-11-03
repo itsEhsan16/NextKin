@@ -1,0 +1,114 @@
+{
+  "key": "7872fa8443eb64cccdc72e6a1214843f",
+  "recordedAt": "2026-11-03T14:38:33.826Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Field Sales Executive",
+        "quote": "Field Sales Executive — Crestline Foods"
+      },
+      "company": {
+        "text": "Crestline Foods",
+        "quote": "Field Sales Executive — Crestline Foods"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Crestline Foods is hiring a Field Sales Executive to visit retail stores and grow distribution in the assigned territory. The posting requires a two-wheeler and a valid driving licence.",
+      "locations": [],
+      "workModes": [
+        {
+          "value": "field",
+          "quote": "Visit retail stores and grow distribution in your territory."
+        }
+      ],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "Visit retail stores and grow distribution in your territory.",
+          "quote": "Visit retail stores and grow distribution in your territory.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "field sales",
+          "quote": "Field Sales Executive",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "retail store visits",
+          "quote": "Visit retail stores",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "distribution growth",
+          "quote": "grow distribution in your territory",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [
+        {
+          "text": "Male candidates only",
+          "quote": "Male candidates only.",
+          "kind": "gender",
+          "sensitive": true
+        },
+        {
+          "text": "Age 21-30 years",
+          "quote": "Age 21-30 years.",
+          "kind": "age",
+          "sensitive": true
+        },
+        {
+          "text": "Must have a two-wheeler and valid driving licence",
+          "quote": "Must have a two-wheeler and valid driving licence.",
+          "kind": "other",
+          "sensitive": false
+        }
+      ],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "ambiguous",
+          "field": "workModes",
+          "note": "The posting describes field visits to retail stores but does not explicitly name a work mode; 'field' is inferred from the duty wording.",
+          "quotes": [
+            "Visit retail stores and grow distribution in your territory."
+          ]
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 320,
+      "outputTokens": 1209,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

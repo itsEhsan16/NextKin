@@ -1,0 +1,126 @@
+{
+  "key": "0a1df18207c7a42ff2d11a9a0f635d8a",
+  "recordedAt": "2026-11-03T14:37:47.855Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Senior DevOps Engineer",
+        "quote": "Senior DevOps Engineer — Harbor Cloud"
+      },
+      "company": {
+        "text": "Harbor Cloud",
+        "quote": "Senior DevOps Engineer — Harbor Cloud"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "senior",
+        "quote": "Senior DevOps Engineer"
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a senior DevOps engineering position at Harbor Cloud. The engineer owns CI/CD pipelines and an on-call rotation and is expected to have experience running production infrastructure on AWS.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "3+ years of experience with Kubernetes and Terraform",
+          "quote": "3+ years of experience with Kubernetes and Terraform"
+        },
+        {
+          "text": "5-7 years of experience running production infrastructure on AWS",
+          "quote": "you bring 5-7 years of experience running production infrastructure on AWS"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "You will own our CI/CD pipelines",
+          "quote": "You will own our CI/CD pipelines and on-call rotation.",
+          "group": null
+        },
+        {
+          "text": "You will own our on-call rotation",
+          "quote": "You will own our CI/CD pipelines and on-call rotation.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Kubernetes",
+          "quote": "3+ years of experience with Kubernetes and Terraform",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "Terraform",
+          "quote": "3+ years of experience with Kubernetes and Terraform",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "AWS",
+          "quote": "you bring 5-7 years of experience running production infrastructure on AWS",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "CI/CD pipelines",
+          "quote": "You will own our CI/CD pipelines and on-call rotation.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "on-call rotation",
+          "quote": "You will own our CI/CD pipelines and on-call rotation.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "production infrastructure",
+          "quote": "you bring 5-7 years of experience running production infrastructure on AWS",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "conflict",
+          "field": "experience",
+          "note": "Two different experience requirements for Kubernetes and Terraform and AWS: one says 3+ years with Kubernetes and Terraform, the other says 5-7 years running production infrastructure on AWS. These are not the same skill set, but the posting gives two year ranges without saying how they relate.",
+          "quotes": [
+            "3+ years of experience with Kubernetes and Terraform",
+            "you bring 5-7 years of experience running production infrastructure on AWS"
+          ]
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 346,
+      "outputTokens": 1509,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -15,7 +15,7 @@ import type { LatexContactItem, LatexDensity, LatexEntry, LatexResume, LatexSect
 const HEADINGS: Record<(typeof STANDARD_ORDER)[number], string> = {
   summary: 'Summary',
   skills: 'Skills',
-  experience: 'Experience',
+  experience: 'Work Experience',
   projects: 'Projects',
   education: 'Education',
   certifications: 'Certifications',

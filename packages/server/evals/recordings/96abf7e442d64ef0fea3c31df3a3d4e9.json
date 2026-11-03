@@ -1,0 +1,94 @@
+{
+  "key": "96abf7e442d64ef0fea3c31df3a3d4e9",
+  "recordedAt": "2026-11-03T14:41:25.627Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Product Designer\",\n  \"company\": \"Gestalt GmbH\",\n  \"requirementsBacked\": [\n   \"Figma\","
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Product Designer",
+      "summary": {
+        "text": "Product designer working in Figma and Sketch, who led a design system adopted by 5 squads and redesigned checkout to lift conversion 12%. Designed mobile apps for 14 clients and ran 30 moderated user research sessions.",
+        "evidence": [
+          "ds_1",
+          "ds_2"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Figma",
+          "evidence": [
+            "ds_1"
+          ]
+        },
+        {
+          "name": "Design systems",
+          "evidence": [
+            "ds_1"
+          ]
+        },
+        {
+          "name": "Sketch",
+          "evidence": [
+            "ds_2"
+          ]
+        },
+        {
+          "name": "User research",
+          "evidence": [
+            "ds_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "ds_1",
+          "bullets": [
+            {
+              "text": "Led the design system adopted by 5 squads",
+              "evidence": [
+                "ds_1#r1"
+              ]
+            },
+            {
+              "text": "Redesigned checkout, lifting conversion 12%",
+              "evidence": [
+                "ds_1#r0"
+              ]
+            },
+            {
+              "text": "Ran 30 moderated user research sessions",
+              "evidence": [
+                "ds_1#r2"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "ds_2",
+          "bullets": [
+            {
+              "text": "Designed mobile apps in Sketch for 14 clients",
+              "evidence": [
+                "ds_2#r0"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 755,
+      "outputTokens": 1153,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

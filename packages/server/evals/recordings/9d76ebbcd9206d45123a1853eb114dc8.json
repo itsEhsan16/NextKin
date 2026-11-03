@@ -1,0 +1,33 @@
+{
+  "key": "9d76ebbcd9206d45123a1853eb114dc8",
+  "recordedAt": "2026-11-03T14:40:12.450Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"rewrite\": {\n  \"summary\": true,\n  \"skills\": false,\n  \"roleIds\": []\n },\n \"failures\": [\n  {\n   \"claimId\": \"s\",\n"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "summary": {
+        "text": "Data analyst working with SQL, Python and pandas on reporting and dashboards. Built weekly Tableau revenue dashboards read by 40 managers and automated reporting in Python and pandas, saving 10 hours a week.",
+        "evidence": [
+          "da_1#r0",
+          "da_1#r1",
+          "da_2#r0"
+        ]
+      },
+      "skills": null,
+      "roles": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 1021,
+      "outputTokens": 404,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 1047
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

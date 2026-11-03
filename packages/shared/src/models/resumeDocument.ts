@@ -103,7 +103,7 @@ export const STANDARD_SECTION_KEYS: readonly StandardSectionKey[] = ['summary', 
 export const DEFAULT_SECTION_HEADING: Record<StandardSectionKey, string> = {
   summary: 'Summary',
   skills: 'Skills',
-  experience: 'Experience',
+  experience: 'Work Experience',
   projects: 'Projects',
   education: 'Education',
   certifications: 'Certifications',

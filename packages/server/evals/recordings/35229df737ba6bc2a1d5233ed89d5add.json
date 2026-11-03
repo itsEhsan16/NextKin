@@ -1,0 +1,130 @@
+{
+  "key": "35229df737ba6bc2a1d5233ed89d5add",
+  "recordedAt": "2026-11-03T14:37:36.138Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Backend Developer",
+        "quote": "Backend Developer, Quillbyte Software, Kochi."
+      },
+      "company": {
+        "text": "Quillbyte Software",
+        "quote": "Backend Developer, Quillbyte Software, Kochi."
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a Backend Developer position at Quillbyte Software in Kochi. The posting says the team builds APIs in Go and PostgreSQL, and the developer will design and maintain Go services and PostgreSQL schemas.",
+      "locations": [
+        {
+          "text": "Kochi",
+          "quote": "Backend Developer, Quillbyte Software, Kochi.",
+          "city": "Kochi",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [
+        {
+          "text": "5 working days",
+          "quote": "5 working days. We build APIs in Go and PostgreSQL.",
+          "kind": "days"
+        },
+        {
+          "text": "Flexible hours",
+          "quote": "Flexible hours and 5 working days a week.",
+          "kind": "hours"
+        }
+      ],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "You will design and maintain Go services and PostgreSQL schemas.",
+          "quote": "You will design and maintain Go services and PostgreSQL schemas.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Go",
+          "quote": "We build APIs in Go and PostgreSQL.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "PostgreSQL",
+          "quote": "We build APIs in Go and PostgreSQL.",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "APIs",
+          "quote": "We build APIs in Go and PostgreSQL.",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "Go services",
+          "quote": "You will design and maintain Go services and PostgreSQL schemas.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "database schema design",
+          "quote": "You will design and maintain Go services and PostgreSQL schemas.",
+          "category": "database",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [
+        {
+          "text": "Health insurance",
+          "quote": "health insurance"
+        },
+        {
+          "text": "Annual learning budget",
+          "quote": "annual learning budget"
+        },
+        {
+          "text": "Flexible hours",
+          "quote": "Flexible hours and 5 working days a week."
+        }
+      ],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [
+        {
+          "text": "Why join us? Flexible hours and 5 working days a week.",
+          "quote": "Why join us? Flexible hours and 5 working days a week."
+        }
+      ],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 361,
+      "outputTokens": 1371,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

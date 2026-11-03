@@ -72,13 +72,13 @@
       "caseId": "one-paragraph",
       "check": "required:React",
       "pass": true,
-      "detail": "React, Node.js, REST APIs, reconciliation"
+      "detail": "React, Node.js, REST APIs, dashboards, reconciliation"
     },
     {
       "caseId": "one-paragraph",
       "check": "required:Node.js",
       "pass": true,
-      "detail": "React, Node.js, REST APIs, reconciliation"
+      "detail": "React, Node.js, REST APIs, dashboards, reconciliation"
     },
     {
       "caseId": "one-paragraph",
@@ -154,13 +154,13 @@
       "caseId": "repeated",
       "check": "required:Go",
       "pass": true,
-      "detail": "Go, PostgreSQL"
+      "detail": "Go, PostgreSQL, Go services"
     },
     {
       "caseId": "repeated",
       "check": "required:PostgreSQL",
       "pass": true,
-      "detail": "Go, PostgreSQL"
+      "detail": "Go, PostgreSQL, Go services"
     },
     {
       "caseId": "repeated",
@@ -220,13 +220,13 @@
       "caseId": "years-conflict",
       "check": "required:Kubernetes",
       "pass": true,
-      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation"
+      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation, production infrastructure"
     },
     {
       "caseId": "years-conflict",
       "check": "required:Terraform",
       "pass": true,
-      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation"
+      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation, production infrastructure"
     },
     {
       "caseId": "years-conflict",
@@ -238,13 +238,13 @@
       "caseId": "duties-and-skills",
       "check": "required:Python",
       "pass": true,
-      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models, machine learning"
     },
     {
       "caseId": "duties-and-skills",
       "check": "required:PyTorch",
       "pass": true,
-      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models, machine learning"
     },
     {
       "caseId": "duties-and-skills",
@@ -256,19 +256,19 @@
       "caseId": "must-and-nice",
       "check": "required:Java",
       "pass": true,
-      "detail": "Java, Spring Boot, MySQL"
+      "detail": "Java, Spring Boot, MySQL, order-processing services"
     },
     {
       "caseId": "must-and-nice",
       "check": "required:Spring Boot",
       "pass": true,
-      "detail": "Java, Spring Boot, MySQL"
+      "detail": "Java, Spring Boot, MySQL, order-processing services"
     },
     {
       "caseId": "must-and-nice",
       "check": "required:MySQL",
       "pass": true,
-      "detail": "Java, Spring Boot, MySQL"
+      "detail": "Java, Spring Boot, MySQL, order-processing services"
     },
     {
       "caseId": "must-and-nice",
@@ -286,13 +286,13 @@
       "caseId": "must-and-nice",
       "check": "notRequired:Kafka",
       "pass": true,
-      "detail": "Java, Spring Boot, MySQL"
+      "detail": "Java, Spring Boot, MySQL, order-processing services"
     },
     {
       "caseId": "must-and-nice",
       "check": "notRequired:Docker",
       "pass": true,
-      "detail": "Java, Spring Boot, MySQL"
+      "detail": "Java, Spring Boot, MySQL, order-processing services"
     },
     {
       "caseId": "many-locations",
@@ -334,31 +334,31 @@
       "caseId": "big-stack",
       "check": "required:TypeScript",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
     },
     {
       "caseId": "big-stack",
       "check": "required:Node.js",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
     },
     {
       "caseId": "big-stack",
       "check": "required:PostgreSQL",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
     },
     {
       "caseId": "big-stack",
       "check": "required:Kubernetes",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
     },
     {
       "caseId": "big-stack",
       "check": "required:AWS",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed"
     },
     {
       "caseId": "table",
@@ -446,7 +446,7 @@
       "caseId": "scraped-chrome",
       "check": "required:Kotlin",
       "pass": true,
-      "detail": "Kotlin, Jetpack Compose"
+      "detail": "Android, Kotlin, Jetpack Compose, Android apps"
     },
     {
       "caseId": "scraped-chrome",
@@ -482,13 +482,13 @@
       "caseId": "german",
       "check": "required:Python",
       "pass": true,
-      "detail": "Python, Django, Microservices, PostgreSQL"
+      "detail": "Python, Django, PostgreSQL, Microservices"
     },
     {
       "caseId": "german",
       "check": "required:Django",
       "pass": true,
-      "detail": "Python, Django, Microservices, PostgreSQL"
+      "detail": "Python, Django, PostgreSQL, Microservices"
     },
     {
       "caseId": "german",
@@ -500,19 +500,19 @@
       "caseId": "hourly-contract",
       "check": "required:Airflow",
       "pass": true,
-      "detail": "ETL, Airflow, dbt, Snowflake"
+      "detail": "ETL pipelines, Airflow, dbt, Snowflake"
     },
     {
       "caseId": "hourly-contract",
       "check": "required:dbt",
       "pass": true,
-      "detail": "ETL, Airflow, dbt, Snowflake"
+      "detail": "ETL pipelines, Airflow, dbt, Snowflake"
     },
     {
       "caseId": "hourly-contract",
       "check": "pay",
       "pass": true,
-      "detail": "{\"component\":\"unknown\",\"min\":45,\"max\":45,\"currency\":\"USD\",\"period\":\"hour\"}"
+      "detail": "{\"component\":\"fixed\",\"min\":45,\"max\":45,\"currency\":\"USD\",\"period\":\"hour\"}"
     },
     {
       "caseId": "hourly-contract",

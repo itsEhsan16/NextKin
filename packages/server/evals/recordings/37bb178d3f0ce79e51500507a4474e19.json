@@ -1,0 +1,108 @@
+{
+  "key": "37bb178d3f0ce79e51500507a4474e19",
+  "recordedAt": "2026-11-03T14:39:14.438Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Senior Backend Engineer\",\n  \"company\": \"Paywell\",\n  \"requirementsBacked\": [\n   \"Go\",\n"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Senior Backend Engineer",
+      "summary": {
+        "text": "Backend engineer building payment systems in Go and PostgreSQL, with Kubernetes experience migrating 40 services with zero downtime. Built a settlement service processing 2 million transactions daily and cut API p99 latency from 800 ms to 440 ms.",
+        "evidence": [
+          "be_1#r0",
+          "be_1#r1",
+          "be_1#r2",
+          "be_1"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Go",
+          "evidence": [
+            "be_1#r0"
+          ]
+        },
+        {
+          "name": "PostgreSQL",
+          "evidence": [
+            "be_1#r1"
+          ]
+        },
+        {
+          "name": "Kubernetes",
+          "evidence": [
+            "be_1#r2"
+          ]
+        },
+        {
+          "name": "Python",
+          "evidence": [
+            "be_2#r0"
+          ]
+        },
+        {
+          "name": "MySQL",
+          "evidence": [
+            "be_2#r1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "be_1",
+          "bullets": [
+            {
+              "text": "Built the settlement service in Go, processing 2 million transactions daily",
+              "evidence": [
+                "be_1#r0"
+              ]
+            },
+            {
+              "text": "Reduced API p99 latency from 800 ms to 440 ms by reworking PostgreSQL indexes",
+              "evidence": [
+                "be_1#r1"
+              ]
+            },
+            {
+              "text": "Moved 40 services onto Kubernetes with zero downtime",
+              "evidence": [
+                "be_1#r2"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "be_2",
+          "bullets": [
+            {
+              "text": "Developed order APIs in Python for 300 merchants",
+              "evidence": [
+                "be_2#r0"
+              ]
+            },
+            {
+              "text": "Maintained the MySQL catalogue schema with a team of 12",
+              "evidence": [
+                "be_2#r1"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 894,
+      "outputTokens": 644,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 2589
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

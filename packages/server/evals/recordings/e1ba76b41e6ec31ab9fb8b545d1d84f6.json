@@ -1,0 +1,115 @@
+{
+  "key": "e1ba76b41e6ec31ab9fb8b545d1d84f6",
+  "recordedAt": "2026-11-03T14:39:37.515Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Frontend Engineer\",\n  \"company\": \"Notely\",\n  \"requirementsBacked\": [\n   \"React\",\n   \""
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Frontend Engineer",
+      "summary": {
+        "text": "Frontend engineer who rebuilt a dashboard in React and TypeScript for 50,000 daily users and wrote a component library used by 6 teams. Earlier built marketing sites with JavaScript-era tools such as jQuery and CSS.",
+        "evidence": [
+          "fe_1",
+          "fe_2",
+          "fe_1#r0",
+          "fe_1#r2",
+          "fe_2#r0"
+        ]
+      },
+      "skills": [
+        {
+          "name": "React",
+          "evidence": [
+            "fe_1"
+          ]
+        },
+        {
+          "name": "TypeScript",
+          "evidence": [
+            "fe_1"
+          ]
+        },
+        {
+          "name": "JavaScript",
+          "evidence": [
+            "fe_1"
+          ]
+        },
+        {
+          "name": "CSS",
+          "evidence": [
+            "fe_2"
+          ]
+        },
+        {
+          "name": "jQuery",
+          "evidence": [
+            "fe_2"
+          ]
+        },
+        {
+          "name": "PHP",
+          "evidence": [
+            "fe_2"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "fe_1",
+          "bullets": [
+            {
+              "text": "Rebuilt the dashboard in React and TypeScript for 50,000 daily users",
+              "evidence": [
+                "fe_1#r0"
+              ]
+            },
+            {
+              "text": "Cut bundle size by 35% with code splitting",
+              "evidence": [
+                "fe_1#r1"
+              ]
+            },
+            {
+              "text": "Wrote the component library used by 6 teams",
+              "evidence": [
+                "fe_1#r2"
+              ]
+            }
+          ]
+        },
+        {
+          "roleId": "fe_2",
+          "bullets": [
+            {
+              "text": "Built marketing sites with jQuery and CSS",
+              "evidence": [
+                "fe_2#r0"
+              ]
+            },
+            {
+              "text": "Maintained a PHP content system for 20 client sites",
+              "evidence": [
+                "fe_2#r1"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 852,
+      "outputTokens": 635,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

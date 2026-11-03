@@ -1,0 +1,119 @@
+{
+  "key": "b05723c704d295661403e406f07c82b2",
+  "recordedAt": "2026-11-03T14:38:08.417Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Product Designer",
+        "quote": "Product Designer, Cedarloop"
+      },
+      "company": {
+        "text": "Cedarloop",
+        "quote": "Product Designer, Cedarloop"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Cedarloop is hiring a Product Designer. The role involves designing flows in Figma and running usability tests. The posting gives conflicting statements about whether the work is fully remote or done from an office in Chennai.",
+      "locations": [
+        {
+          "text": "Chennai",
+          "quote": "Work from office in Chennai, all five days.",
+          "city": "Chennai",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [
+        {
+          "value": "remote",
+          "quote": "This is a fully remote role."
+        },
+        {
+          "value": "onsite",
+          "quote": "Work from office in Chennai, all five days."
+        }
+      ],
+      "schedule": [
+        {
+          "text": "all five days",
+          "quote": "Work from office in Chennai, all five days.",
+          "kind": "days"
+        }
+      ],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "design flows in Figma",
+          "quote": "design flows in Figma and run usability tests.",
+          "group": null
+        },
+        {
+          "text": "run usability tests",
+          "quote": "design flows in Figma and run usability tests.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Figma",
+          "quote": "design flows in Figma",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "usability testing",
+          "quote": "run usability tests",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "flow design",
+          "quote": "design flows in Figma",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "conflict",
+          "field": "workModes",
+          "note": "The posting says the role is fully remote, but also says to work from the office in Chennai all five days. Not resolved here.",
+          "quotes": [
+            "This is a fully remote role.",
+            "Work from office in Chennai, all five days."
+          ]
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 1130,
+      "outputTokens": 1143,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

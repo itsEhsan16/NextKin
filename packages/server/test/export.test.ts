@@ -16,7 +16,7 @@ const MODEL = resumeModel(CERTIFICATION_RESUME, { name: 'Alex Example', email: '
 
 describe('the render model', () => {
   it('uses the conventional headings in §7.12’s order, and market date formats (Q-07)', () => {
-    expect(MODEL.sections.map((s) => s.heading)).toEqual(['Summary', 'Skills', 'Experience', 'Projects', 'Certifications', 'Education']);
+    expect(MODEL.sections.map((s) => s.heading)).toEqual(['Summary', 'Skills', 'Work Experience', 'Projects', 'Certifications', 'Education']);
     expect(marketPeriod('2021-03', null, MARKETS.profiles.us)).toBe('Mar 2021 – Present');
     expect(marketPeriod('2021-03', '2023-11', MARKETS.profiles.de)).toBe('03/2021 – 11/2023');
     expect(marketPeriod('2014', '2018', MARKETS.profiles.de)).toBe('2014 – 2018');

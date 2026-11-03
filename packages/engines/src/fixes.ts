@@ -16,7 +16,7 @@ import { evidenceOf, type ScoringDocument } from './document';
 import type { Importance } from './requirements';
 import { evidenceTier } from './requirements';
 import { scoreCore, type FormatCheckId, type ScoreInput, type ScoreResult, type SectionCheckId } from './rubric';
-import { isQuantified } from './quantified';
+import { canCarryResult, isQuantified } from './quantified';
 import type { Substitution } from './substitutions';
 
 export type Fix =
@@ -107,7 +107,7 @@ export function buildFixes(input: ScoreInput, base: Omit<ScoreResult, 'fixes'>):
   }
 
   for (const role of input.document.roles) {
-    const index = role.bullets.findIndex((b) => !isQuantified(b, input.taxonomy));
+    const index = role.bullets.findIndex((b) => !isQuantified(b, input.taxonomy) && canCarryResult(b));
     if (index < 0) continue;
     const next = { ...input, document: withQuantifiedBullet(input.document, role.id, index) };
     fixes.push({ id: `number:${role.id}:${index}`, type: 'ask_for_number', roleId: role.id, bulletIndex: index, impactBps: impact(next) });

@@ -1,0 +1,79 @@
+{
+  "key": "d5630d32336d2938f055f9b1aff62822",
+  "recordedAt": "2026-11-03T14:41:40.062Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "firstUserChars": "<input>\n{\n \"target\": {\n  \"title\": \"Product Manager\",\n  \"company\": \"Billfold\",\n  \"requirementsBacked\": [\n   \"product mana"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "headline": "Product Manager",
+      "summary": {
+        "text": "Product manager who owned the payments roadmap for 3 engineering teams at Ledgerly and launched instant payouts used by 8,000 merchants in the first quarter. Runs customer discovery interviews to shape product management and roadmapping decisions.",
+        "evidence": [
+          "pm_1",
+          "pm_1#r0",
+          "pm_1#r1",
+          "pm_1#r2"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Product management",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Roadmapping",
+          "evidence": [
+            "pm_1"
+          ]
+        },
+        {
+          "name": "Jira",
+          "evidence": [
+            "pm_1"
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "roleId": "pm_1",
+          "bullets": [
+            {
+              "text": "Owned the payments roadmap for 3 engineering teams",
+              "evidence": [
+                "pm_1#r0"
+              ]
+            },
+            {
+              "text": "Launched instant payouts, used by 8,000 merchants in the first quarter",
+              "evidence": [
+                "pm_1#r1"
+              ]
+            },
+            {
+              "text": "Ran discovery interviews with 25 customers",
+              "evidence": [
+                "pm_1#r2"
+              ]
+            }
+          ]
+        }
+      ],
+      "projects": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 586,
+      "outputTokens": 471,
+      "cacheReadTokens": 2589,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-sonnet-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

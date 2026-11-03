@@ -59,7 +59,7 @@ describe('latexResumeOf', () => {
     const plain = latexResumeOf({ ...document, layout: undefined, sections: undefined, skillGroups: undefined }, account);
     expect(plain.name).toBe('Account Name');
     expect(plain.contact).toEqual([{ text: 'account@example.com', url: 'mailto:account@example.com' }]);
-    expect(plain.sections.map((s) => s.heading)).toEqual(['Summary', 'Skills', 'Experience', 'Projects', 'Education']);
+    expect(plain.sections.map((s) => s.heading)).toEqual(['Summary', 'Skills', 'Work Experience', 'Projects', 'Education']);
   });
 
   it('produces TeX the lint accepts', () => {

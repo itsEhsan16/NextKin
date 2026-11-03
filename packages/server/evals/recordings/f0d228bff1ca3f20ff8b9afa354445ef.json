@@ -1,0 +1,128 @@
+{
+  "key": "f0d228bff1ca3f20ff8b9afa354445ef",
+  "recordedAt": "2026-11-03T14:37:52.630Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Machine Learning Engineer",
+        "quote": "Machine Learning Engineer, Tallyhawk AI"
+      },
+      "company": {
+        "text": "Tallyhawk AI",
+        "quote": "Machine Learning Engineer, Tallyhawk AI"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Tallyhawk AI is hiring a Machine Learning Engineer to train ranking models in Python with PyTorch, deploy models behind a FastAPI service, and monitor model drift with monthly retraining.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "Train ranking models in Python with PyTorch",
+          "quote": "Train ranking models in Python with PyTorch",
+          "group": null
+        },
+        {
+          "text": "Deploy models behind a FastAPI service",
+          "quote": "Deploy models behind a FastAPI service",
+          "group": null
+        },
+        {
+          "text": "Monitor model drift and retrain monthly",
+          "quote": "Monitor model drift and retrain monthly",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Python",
+          "quote": "Python, PyTorch, Docker",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "PyTorch",
+          "quote": "Python, PyTorch, Docker",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "Docker",
+          "quote": "Python, PyTorch, Docker",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "FastAPI",
+          "quote": "Deploy models behind a FastAPI service",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "ranking models",
+          "quote": "Train ranking models in Python with PyTorch",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "model deployment",
+          "quote": "Deploy models behind a FastAPI service",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "model drift monitoring",
+          "quote": "Monitor model drift and retrain monthly",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "model retraining",
+          "quote": "Monitor model drift and retrain monthly",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "machine learning",
+          "quote": "Machine Learning Engineer, Tallyhawk AI",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "responsibilities_placeholder": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 341,
+      "outputTokens": 1363,
+      "cacheReadTokens": 5724,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

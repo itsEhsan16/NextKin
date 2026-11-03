@@ -49,7 +49,7 @@ export const isEditableSectionKey = (value: string): value is EditableSectionKey
 export const RESUME_SECTION_LABEL: Record<ResumeSectionKey, string> = {
   summary: 'Professional summary',
   skills: 'Skills',
-  experience: 'Experience',
+  experience: 'Work Experience',
   projects: 'Projects',
   certifications: 'Certifications',
   education: 'Education',
