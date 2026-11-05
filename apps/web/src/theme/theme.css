@@ -139,6 +139,17 @@
   --color-border-danger: #f1a8a8;
   --color-danger-text: #b91c1c;
 
+  /* Admin portal (Figma 382:936): the slate and indigo steps its boards bind that no user-app
+     board did, and the amber its warning badges draw (#b45309, darker than the user app's
+     warning text). */
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-500: #6366f1;
+  --color-warning-600: #b45309;
+
   /* Jobs board one-offs: the company-name text on every job card/detail panel (distinct from
      `text-tertiary`, used consistently for this one role), and the handwritten illustration
      caption colour (imported raw, same treatment as `radius-panel`). */
@@ -277,6 +288,14 @@
   --shadow-popover: 0 8px 24px -4px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06);
   /* A control lifted off its track: the active segment, the picked file, the active nav row. */
   --shadow-raised: 0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.08);
+  /* The admin boards' one-pixel lift under a field, a button or a card body (Figma 382:936). */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  /* The admin boards' buttons: the 1px lift plus a 2px inset shade along the bottom edge. */
+  --shadow-button-xs: inset 0 -2px 0 rgba(16, 24, 40, 0.05), 0 1px 2px rgba(16, 24, 40, 0.05);
+  /* The admin boards' modal and side panel (Figma 407:2698, 406:1691). */
+  /* A page drawn as a sheet on a card (the Templates board's thumbnails, 407:1841). */
+  --shadow-lg: 0 4px 6px -2px rgba(16, 24, 40, 0.03), 0 12px 16px -4px rgba(16, 24, 40, 0.08);
+  --shadow-modal: 0 8px 8px -4px rgba(16, 24, 40, 0.03), 0 20px 24px -4px rgba(16, 24, 40, 0.08);
   /* Dialogs: the one surface above everything. */
   --shadow-dialog: 0 24px 48px -12px rgba(15, 23, 42, 0.25);
   /* The primary button's lit top edge and soft drop. */
@@ -319,6 +338,8 @@
   --transition-duration-think: 1400ms;
   /* The loading line's light crossing the track once. */
   --transition-duration-sweep: 2000ms;
+  /* The gap between one chart column's arrival and the next (the admin Overview's bars). */
+  --stagger-step: 24ms;
 
   /*
    * Pressed feedback (`toreview.md` §84): buttons and clickable cards settle to 98% while held,
@@ -344,6 +365,12 @@
    */
   --animate-ring-sweep: ring-sweep var(--transition-duration-meter) var(--ease-decelerate) backwards;
   --animate-meter-grow: meter-grow var(--transition-duration-meter) var(--ease-decelerate) backwards;
+  /* A chart's column rising from its baseline (the admin Overview's bars); pair with `origin-bottom`. */
+  --animate-bar-grow: bar-grow var(--transition-duration-meter) var(--ease-decelerate) backwards;
+  /* A sparkline drawing itself from the left; the path takes `pathLength="1"` and a dasharray of 1. */
+  --animate-line-draw: line-draw var(--transition-duration-meter) var(--ease-decelerate) backwards;
+  /* An admin side panel sliding in from the window's right edge. */
+  --animate-drawer-in: drawer-in var(--transition-duration-base) var(--ease-decelerate);
   /*
    * Art that is "working" (the Upload a JD robot while a description is read): it rises a little
    * and settles, on a loop, only while the work runs. Reduced motion stills it (the global rule).
@@ -383,6 +410,21 @@
   @keyframes meter-grow {
     from {
       width: 0;
+    }
+  }
+  @keyframes bar-grow {
+    from {
+      scale: 1 0;
+    }
+  }
+  @keyframes drawer-in {
+    from {
+      translate: 100% 0;
+    }
+  }
+  @keyframes line-draw {
+    from {
+      stroke-dashoffset: 1;
     }
   }
   @keyframes float {
@@ -601,6 +643,53 @@ html body[data-scroll-locked] {
     opacity: 0;
     translate: 0 6px;
   }
+}
+
+/**
+ * The admin portal fits its 1920 board to the window (`features/admin/shell/adminScale.ts`): the
+ * whole body zooms while the admin shell is on the page, so its menus and dialogs, which render
+ * into `<body>`, scale with it. `--admin-zoom` is set by an inline script before the first paint.
+ */
+body:has([data-admin-shell]) {
+  zoom: var(--admin-zoom, 1);
+}
+
+/**
+ * The admin portal reads 10% larger than the app (owner, 2026-11-05): every type token, size and
+ * line height, is scaled on the body while the portal or its sign-in is on the page, so dialogs and
+ * menus that render into `<body>` follow too. Generated from the tokens above (×1.1).
+ */
+body:has([data-admin-shell]),
+body:has([data-admin-signin]) {
+  --text-hero: 37.4px;
+  --text-hero--line-height: 46.2px;
+  --text-display-xl: 57.2px;
+  --text-display-xl--line-height: 61.6px;
+  --text-display-l: 33px;
+  --text-display-l--line-height: 41.8px;
+  --text-h1: 24.2px;
+  --text-h1--line-height: 33px;
+  --text-h2: 19.8px;
+  --text-h2--line-height: 28.6px;
+  --text-title-l: 17.6px;
+  --text-title-l--line-height: 26.4px;
+  --text-body-l: 16.5px;
+  --text-body-l--line-height: 26.4px;
+  --text-body-l--letter-spacing: 0px;
+  --text-prose: 16.5px;
+  --text-prose--line-height: 28.6px;
+  --text-prose--letter-spacing: 0px;
+  --text-body-m: 15.4px;
+  --text-body-m--line-height: 24.2px;
+  --text-body-m--letter-spacing: 0px;
+  --text-body-s: 14.3px;
+  --text-body-s--line-height: 22px;
+  --text-body-s--letter-spacing: 0px;
+  --text-caption-m: 13.2px;
+  --text-caption-m--line-height: 19.8px;
+  --text-caption-m--letter-spacing: 0px;
+  --text-micro: 12.1px;
+  --text-micro--line-height: 17.6px;
 }
 
 /**

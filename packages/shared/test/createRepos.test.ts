@@ -15,7 +15,7 @@ describe('parseDataSources', () => {
     expect(parseDataSources('mock')).toEqual({});
   });
   it('http flips every repository that has an HTTP implementation; a list flips those only', () => {
-    expect(parseDataSources('http')).toEqual({ user: 'http', events: 'http', resumes: 'http', profile: 'http', notifications: 'http', jd: 'http', generations: 'http', jobs: 'http', interview: 'http', assistant: 'http', support: 'http' });
+    expect(parseDataSources('http')).toEqual({ user: 'http', events: 'http', resumes: 'http', profile: 'http', notifications: 'http', jd: 'http', generations: 'http', jobs: 'http', interview: 'http', assistant: 'http', support: 'http', admin: 'http' });
     expect(parseDataSources('profile, user')).toEqual({ profile: 'http', user: 'http' });
   });
   it('naming a repository with no HTTP implementation is an error, not a silent mock', () => {

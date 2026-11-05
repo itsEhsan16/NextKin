@@ -7,7 +7,8 @@ import { showToast } from './toast';
  * session that just ended. On the mock there is no session, so it only goes to the sign-in screen.
  * A failed request keeps the user where they are and says so, rather than seeming signed out.
  */
-export async function signOut(): Promise<void> {
+/** `destination` is where a signed-out browser lands: staff go to the staff sign-in. */
+export async function signOut(destination: string = SIGN_IN): Promise<void> {
   if (USES_BACKEND) {
     try {
       await auth.logout();
@@ -16,5 +17,5 @@ export async function signOut(): Promise<void> {
       return;
     }
   }
-  window.location.assign(SIGN_IN);
+  window.location.assign(destination);
 }

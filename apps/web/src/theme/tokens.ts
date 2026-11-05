@@ -89,6 +89,16 @@ export const colors = {
   // Settings → Privacy & data mockup — see theme.css.
   borderDanger: '#f1a8a8',
   dangerText: '#b91c1c',
+
+  // Admin portal (Figma 382:936) — the steps of the slate and indigo ramps its boards bind that no
+  // user-app board did, and the amber its warning badges draw. See theme.css.
+  neutral300: '#cbd5e1',
+  neutral500: '#64748b',
+  neutral600: '#475569',
+  brand200: '#c7d2fe',
+  brand300: '#a5b4fc',
+  brand500: '#6366f1',
+  warning600: '#b45309',
 } as const;
 
 export type ColorToken = keyof typeof colors;
@@ -124,6 +134,15 @@ export type TypographyRole = keyof typeof typography;
 
 export const space = [2, 4, 6, 8, 12, 16, 20, 24] as const;
 
+/**
+ * The admin portal's icon sizes (Figma 382:937 and the screens): 12 inside a delta badge, 16 in a
+ * queue row or a footnote, 18 in a card header, 20 in a nav row or a button, 24 for a dialog's close. Numbers, because the
+ * animated icons take a pixel `size` rather than a class.
+ */
+export const iconSizes = { xs: 12, sm: 16, md: 18, lg: 20, xl: 24 } as const;
+
+export type IconSize = keyof typeof iconSizes;
+
 /** The three control heights (`h-control-*`, `size-control-*`) — see theme.css. */
 export const controls = { sm: 36, md: 40, lg: 44, xl: 48 } as const;
 
@@ -135,6 +154,14 @@ export const shadows = {
   cardHover: '0 2px 4px rgba(15, 23, 42, 0.05), 0 12px 24px -6px rgba(15, 23, 42, 0.12)',
   popover: '0 8px 24px -4px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06)',
   raised: '0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.08)',
+  /** The admin boards' lift under a field, a button or a card body. */
+  xs: '0 1px 2px rgba(16, 24, 40, 0.05)',
+  /** The admin boards' buttons: the lift plus a 2px inset shade along the bottom. */
+  buttonXs: 'inset 0 -2px 0 rgba(16, 24, 40, 0.05), 0 1px 2px rgba(16, 24, 40, 0.05)',
+  /** A page drawn as a sheet on a card (Templates' thumbnails). */
+  lg: '0 4px 6px -2px rgba(16, 24, 40, 0.03), 0 12px 16px -4px rgba(16, 24, 40, 0.08)',
+  /** The admin boards' modal and side panel. */
+  modal: '0 8px 8px -4px rgba(16, 24, 40, 0.03), 0 20px 24px -4px rgba(16, 24, 40, 0.08)',
   dialog: '0 24px 48px -12px rgba(15, 23, 42, 0.25)',
   button: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 2px rgba(15, 23, 42, 0.12)',
 } as const;
@@ -144,7 +171,17 @@ export const shadows = {
  * feels rather than how a phone lays out, so they transfer where the layout tokens do not.
  */
 export const motion = {
-  durations: { press: 120, fast: 180, base: 220, snappy: 250, meter: 800, slide: 600, float: 2800, think: 1400, sweep: 2000 },
+  durations: {
+    press: 120,
+    fast: 180,
+    base: 220,
+    snappy: 250,
+    meter: 800,
+    slide: 600,
+    float: 2800,
+    think: 1400,
+    sweep: 2000,
+  },
   easings: {
     standard: 'cubic-bezier(0.2, 0, 0, 1)',
     decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
@@ -152,6 +189,8 @@ export const motion = {
   },
   /** What a held button or card settles to, and what menus and tooltips grow from. */
   pressedScale: 0.98,
+  /** `--stagger-step`: how far apart a chart's columns arrive (the admin Overview). */
+  staggerStep: 24,
   /**
    * Waits before something appears, not animation lengths: how long a pointer rests on a rail icon
    * before its label shows. Moving on to the next icon shows that one at once (Radix's skip delay).

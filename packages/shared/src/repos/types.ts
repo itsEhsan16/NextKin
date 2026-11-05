@@ -1,5 +1,10 @@
 import type { ProductEvent } from '../schemas/events';
 import type { FigureDraft,
+  AdminActivity,
+  AdminMe,
+  AdminOverview,
+  AdminQueue,
+  AdminRange,
   TailorComparison,
   AiConsent,
   AccountSecurity,
@@ -529,6 +534,24 @@ export type InsightsRepo = {
   get(range: InsightsRange): Promise<CareerInsights>;
 };
 
+/**
+ * The admin portal (V2 §7.17, P12; Figma 382:936): what the signed-in staff member may do, the
+ * Overview's aggregates, the work queues and the audit trail. Staff-only: every HTTP call sits
+ * behind `/api/v1/admin/*`, which refuses a user session.
+ */
+export type AdminRepo = {
+  me(): Promise<AdminMe>;
+  overview(range: AdminRange): Promise<AdminOverview>;
+  queues(): Promise<AdminQueue[]>;
+  /** The newest audit rows, filtered by a free-text query over action, staff and target. */
+  activity(query: string): Promise<AdminActivity[]>;
+};
+
+import type { AdminPeopleRepo } from './adminPeopleRepo';
+import type { AdminContentRepo } from './adminContentRepo';
+import type { AdminBusinessRepo } from './adminBusinessRepo';
+import type { AdminTrustRepo } from './adminTrustRepo';
+
 export type Repos = {
   user: UserRepo;
   profile: ProfileRepo;
@@ -543,4 +566,9 @@ export type Repos = {
   assistant: AssistantRepo;
   documents: DocumentsRepo;
   insights: InsightsRepo;
+  admin: AdminRepo;
+  adminPeople: AdminPeopleRepo;
+  adminContent: AdminContentRepo;
+  adminBusiness: AdminBusinessRepo;
+  adminTrust: AdminTrustRepo;
 };

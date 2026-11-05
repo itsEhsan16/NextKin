@@ -45,6 +45,11 @@ export {
   type AssistantReplyState,
 } from './useAssistant';
 export { useInsights } from './useInsights';
+export { useAdminActivity, useAdminMe, useAdminOverview, useAdminQueues } from './useAdmin';
+export * from './useAdminPeople';
+export * from './useAdminContent';
+export * from './useAdminBusiness';
+export * from './useAdminTrust';
 export {
   useBilling,
   useCancelSubscription,

@@ -25,8 +25,9 @@ const goToSignIn = () => {
   if (typeof window === 'undefined') return;
   // Outside React (the HTTP client's 401 hook), and a full load on purpose: it drops every cached
   // query of the session that just ended.
-  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  if (window.location.pathname !== SIGN_IN) window.location.assign(SIGN_IN);
+  // Staff whose session lapses go back to the staff sign-in (Figma 410:1605), not the user app's.
+  const target = window.location.pathname.startsWith('/admin') ? '/admin/sign-in' : SIGN_IN;
+  if (window.location.pathname !== target) window.location.assign(target);
 };
 
 export const http = createHttpClient({
@@ -47,7 +48,8 @@ export function configureDataSource(): void {
     environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     // Files go straight to storage from the browser: the JdFile's uri is a blob: URL (P7-02).
     // A page opened away from localhost reaches local storage through its own origin (§131.7).
-    uploader: (target, file) => browserUploader({ ...target, url: browserStorageUrl(target.url) }, file),
+    uploader: (target, file) =>
+      browserUploader({ ...target, url: browserStorageUrl(target.url) }, file),
     user: {
       navigate: (url) => window.location.assign(url),
       linkReturnTo: '/settings',

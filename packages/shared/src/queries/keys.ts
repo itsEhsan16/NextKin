@@ -124,4 +124,11 @@ export const qk = {
     all: ['documents'] as const,
     list: () => ['documents', 'list'] as const,
   },
+  admin: {
+    all: ['admin'] as const,
+    me: () => ['admin', 'me'] as const,
+    overview: (range: string) => ['admin', 'overview', range] as const,
+    queues: () => ['admin', 'queues'] as const,
+    activity: (query: string) => ['admin', 'activity', query] as const,
+  },
 } as const;
