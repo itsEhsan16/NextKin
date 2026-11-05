@@ -15920,11 +15920,16 @@ This section records what was built and the judgement calls made without the own
 
 **State:**
 - `pnpm typecheck`, `pnpm lint` and the unit and contract tests are green.
-- **The integration suites are written and haven't run.**
-  - Docker Desktop was off.
-  - Applying migrations `0051`–`0055` to the shared local database would make the main checkout's runner refuse to start ("applied migration 0051 is missing from disk") until this branch merges.
-  - Owner decision: run them against the local stack, or against a separate database. They are `adminStaffPortal`, `adminPeoplePortal`, `adminContentPortal`, `adminBusinessPortal`, `adminTrustPortal` and the updated `authzMatrix`/`authSessions`/`adminP12`.
-- `db/types.generated.ts` was edited by hand for the new tables. Run `pnpm --filter @nextkin/server db:types` once the stack is up.
+- **Integration suites, run after the merge (2026-11-05):** all of the admin suites pass, plus `authzMatrix`, `rls` and `authSessions`. 23 failures remain, all from before this work and in areas it didn't touch:
+  - uploads and the files contract, which need the ClamAV profile;
+  - the Stripe contract, which needs stripe-mock;
+  - renders and library, including the "Work Experience" heading change;
+  - one tailor keyword test.
+- **Fixes the run found:**
+  - **`staff_accounts` is exempt from the RLS suite's user-owned discovery.** It's system-only by design, and renaming its `user_id` column would have meant editing an applied migration.
+  - A staff session's `/me/email` and connected-accounts changes now answer 409, not a confusing 401.
+  - The failure drawer always shows the stage that failed.
+- `db/types.generated.ts` is regenerated from the migrated schema.
 
 **Staff sign-in (`0051_staff_accounts.sql`, `auth/staff/*`, `routes/authStaff.ts`):**
 - **The account:** `app.staff_accounts` holds staff accounts: an argon2id password, the TOTP secret sealed with AES-256-GCM under the new `STAFF_TOTP_KEY`, a must-change flag, and a lockout after 5 failures for 15 minutes. Only the system role reads or writes it.

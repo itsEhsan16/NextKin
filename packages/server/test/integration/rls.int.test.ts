@@ -32,6 +32,9 @@ const DISCOVER_OWNED = `
   join pg_attribute a on a.attrelid = c.oid and not a.attisdropped
   where c.relkind = 'r'
     and (a.attname in ('user_id', 'owner_user_id') or (c.relname = 'users' and a.attname = 'id'))
+    -- Staff credentials (toreview §171.13): linked to a users row but never the user's to read;
+    -- only the system role touches them, so they have no owner policy by design.
+    and c.relname not in ('staff_accounts')
   order by c.relname`;
 
 /** Every table in the app schema must have RLS enabled and forced, with at least one policy. */

@@ -8,7 +8,7 @@ import type { Staff } from '../../src/services/admin/permissions';
 import * as failures from '../../src/services/admin/trustFailures';
 import * as reports from '../../src/services/admin/trustReports';
 import { log } from './fixtures/pipeline';
-import { ORIGIN, registered, startHarness, type Harness } from './fixtures/authHarness';
+import { ORIGIN, registered, startHarness, webLogin, type Harness } from './fixtures/authHarness';
 
 /**
  * The admin portal's Trust & safety backend against Postgres (toreview §171.13): the failure queue
@@ -35,6 +35,8 @@ async function staffMember(level: Staff['level']): Promise<Staff> {
 
 async function member(): Promise<string> {
   const email = await registered(h);
+  // The users row is made at the first sign-in, not at sign-up.
+  await webLogin(h, email);
   const user = await h.db.withSystem('test: find the user', (tx) => tx.selectFrom('users').select('id').where('email', '=', email).executeTakeFirstOrThrow());
   return user.id;
 }

@@ -245,6 +245,8 @@ export async function failureDetail(db: Database, staff: Staff, id: string): Pro
 
     const completed = new Set(run.completed);
     const names = PIPELINES[run.kind as RunKind]?.stages.map((stage) => stage.name) ?? [...completed];
+    // The stage that failed is always shown, even one the kind's pipeline no longer lists (an old run).
+    if (row.stage && !names.includes(row.stage)) names.push(row.stage);
     const stages = names.map((name) => {
       // The stage's last completion and the start before it: how long its finished attempt took.
       const doneAt = [...events].reverse().find((e) => e.event === 'stage_completed' && e.stage === name);

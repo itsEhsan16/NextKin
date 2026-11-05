@@ -1,4 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import type { Context } from 'hono';
 import {
   accountSecuritySchema,
   activityEntrySchema,
@@ -42,6 +43,14 @@ const json = <S extends z.ZodType>(schema: S) => ({ required: true, content: { '
 const ok = <S extends z.ZodType>(description: string, schema: S) => ({ description, content: { 'application/json': { schema } } });
 const connectedList = z.object({ items: z.array(connectedAccountSchema) });
 
+/**
+ * A staff sign-in (toreview §171.13) has no account at the users' identity provider: its email and
+ * sign-in are the server's own staff account, managed by a Super Admin, so these changes refuse.
+ */
+function notStaff(c: Context<ApiEnv>): void {
+  if (c.get('auth')?.staff) throw errors.conflict('A staff account’s email and sign-in are managed by a Super Admin.');
+}
+
 export function accountRoutes(deps: AccountDeps): OpenAPIHono<ApiEnv> {
   const app = new OpenAPIHono<ApiEnv>();
   const { db } = deps;
@@ -76,6 +85,7 @@ export function accountRoutes(deps: AccountDeps): OpenAPIHono<ApiEnv> {
     }),
     async (c) => {
       const { identity } = requireAuth(c);
+      notStaff(c);
       await idp().requestEmailChange(await sub(identity.userId), c.req.valid('json').email).catch(authErrorToApp);
       return c.json(checked(acceptedSchema, { status: 'accepted' as const }), 202);
     },
@@ -92,6 +102,7 @@ export function accountRoutes(deps: AccountDeps): OpenAPIHono<ApiEnv> {
     }),
     async (c) => {
       const { identity } = requireAuth(c);
+      notStaff(c);
       const { email } = await idp().confirmEmailChange(await sub(identity.userId), c.req.valid('json').code).catch(authErrorToApp);
       return c.json(checked(userSchema, await account.setEmail(db, identity, email)), 200);
     },
@@ -146,6 +157,7 @@ export function accountRoutes(deps: AccountDeps): OpenAPIHono<ApiEnv> {
     }),
     async (c) => {
       const { identity } = requireAuth(c);
+      notStaff(c);
       const subject = await sub(identity.userId);
       await idp().unlinkIdentity(subject, c.req.valid('param').provider).catch(authErrorToApp);
       const items = account.connectedAccounts(await idp().listIdentities(subject));

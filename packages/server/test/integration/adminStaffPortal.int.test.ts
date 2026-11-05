@@ -34,7 +34,7 @@ describe('first sign-in of a new staff account', () => {
     expect(enrol).toMatchObject({ status: 'enroll_totp', otpauthUrl: expect.stringContaining('otpauth://totp/NextKin:') });
     expect(first.headers.get('set-cookie')).toBeNull();
 
-    expect((await step('enroll', { challenge: enrol.challenge, code: '000000' })).status).toBe(422);
+    expect((await step('enroll', { challenge: enrol.challenge, code: '000000' })).status).toBe(400);
     const enrolled = await step('enroll', { challenge: enrol.challenge, code: totpAt(enrol.secret, Date.now()) });
     const change = await enrolled.json();
     expect(change).toMatchObject({ status: 'change_password', backupCodes: expect.any(Array) });
@@ -42,8 +42,8 @@ describe('first sign-in of a new staff account', () => {
     expect(enrolled.headers.get('set-cookie')).toBeNull();
 
     // Too short, then the temporary password itself: both refused, the step stays open.
-    expect((await step('password', { challenge: change.challenge, password: 'short-one' })).status).toBe(422);
-    expect((await step('password', { challenge: change.challenge, password: member.password })).status).toBe(422);
+    expect((await step('password', { challenge: change.challenge, password: 'short-one' })).status).toBe(400);
+    expect((await step('password', { challenge: change.challenge, password: member.password })).status).toBe(400);
     const done = await step('password', { challenge: change.challenge, password: 'a brand new staff passphrase' });
     expect(done.status).toBe(200);
     expect(await done.json()).toMatchObject({ status: 'signed_in', user: { role: 'curator' } });
@@ -51,7 +51,7 @@ describe('first sign-in of a new staff account', () => {
     expect((await call(h, '/admin/me', { headers: withCookie(cookie) })).status).toBe(200);
 
     // The challenge is spent, and the old password no longer works.
-    expect((await step('password', { challenge: change.challenge, password: 'another new passphrase!' })).status).toBe(422);
+    expect((await step('password', { challenge: change.challenge, password: 'another new passphrase!' })).status).toBe(400);
     expect((await login({ email: member.email, password: member.password })).status).toBe(401);
     const again = await login({ email: member.email, password: 'a brand new staff passphrase', totp: nextCode(enrol.secret) });
     expect(await again.json()).toMatchObject({ status: 'signed_in' });
@@ -136,7 +136,7 @@ describe('Settings', () => {
     expect(await patched.json()).toMatchObject({ sessionTimeoutMinutes: 60 });
     // The suite's requests carry no client address, so any list would shut this session out.
     const lockout = await call(h, '/admin/settings', { method: 'PATCH', body: { allowedNetworks: [{ cidr: '203.0.113.0/24', label: 'Office' }] }, headers: withCookie(boss, true) });
-    expect(lockout.status).toBe(422);
+    expect(lockout.status).toBe(400);
 
     const codes = await (await call(h, '/admin/settings/backup-codes', { method: 'POST', headers: withCookie(curator, true) })).json();
     expect(codes.codes).toHaveLength(10);

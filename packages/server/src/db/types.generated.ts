@@ -25,17 +25,6 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export interface AccountDeletions {
-  completed_at: Timestamp | null;
-  due_at: Generated<Timestamp>;
-  id: Generated<string>;
-  origin: string;
-  purge_requested_at: Timestamp | null;
-  requested_at: Generated<Timestamp>;
-  requested_by: string | null;
-  subject_user_id: string;
-}
-
 export interface AbuseReports {
   acted_at: Timestamp | null;
   acted_by: string | null;
@@ -51,6 +40,17 @@ export interface AbuseReports {
   subject_user_id: string | null;
 }
 
+export interface AccountDeletions {
+  completed_at: Timestamp | null;
+  due_at: Generated<Timestamp>;
+  id: Generated<string>;
+  origin: string;
+  purge_requested_at: Timestamp | null;
+  requested_at: Generated<Timestamp>;
+  requested_by: string | null;
+  subject_user_id: string;
+}
+
 export interface Activity {
   created_at: Generated<Timestamp>;
   deep_link: string | null;
@@ -61,6 +61,15 @@ export interface Activity {
   resume_id: string | null;
   title: string;
   user_id: string;
+}
+
+export interface AdminSettings {
+  allowed_networks: Generated<Json>;
+  id: Generated<boolean>;
+  reauth_for_sensitive: Generated<boolean>;
+  session_timeout_minutes: Generated<number>;
+  updated_at: Generated<Timestamp>;
+  updated_by: string | null;
 }
 
 export interface AiCalls {
@@ -319,6 +328,16 @@ export interface ExportEvents {
   user_id: string;
 }
 
+export interface GenerationEvents {
+  created_at: Generated<Timestamp>;
+  event: string;
+  generation_id: string;
+  id: Generated<Int8>;
+  snapshot: Json;
+  stage: string | null;
+  user_id: string;
+}
+
 export interface GenerationFailureActions {
   action: string;
   created_at: Generated<Timestamp>;
@@ -328,16 +347,6 @@ export interface GenerationFailureActions {
   id: Generated<string>;
   staff_user_id: string;
   subject_user_id: string;
-}
-
-export interface GenerationEvents {
-  created_at: Generated<Timestamp>;
-  event: string;
-  generation_id: string;
-  id: Generated<Int8>;
-  snapshot: Json;
-  stage: string | null;
-  user_id: string;
 }
 
 export interface Generations {
@@ -522,15 +531,6 @@ export interface Payments {
   user_id: string;
 }
 
-export interface PriceBookVersions {
-  annual: Json;
-  created_at: Generated<Timestamp>;
-  created_by: string | null;
-  effective_from: Generated<Timestamp>;
-  monthly: Json;
-  version: number;
-}
-
 export interface Plans {
   active: Generated<boolean>;
   created_at: Generated<Timestamp>;
@@ -541,6 +541,15 @@ export interface Plans {
   prices: Generated<Json>;
   quotas: Json;
   tier: string;
+}
+
+export interface PriceBookVersions {
+  annual: Json;
+  created_at: Generated<Timestamp>;
+  created_by: string | null;
+  effective_from: Generated<Timestamp>;
+  monthly: Json;
+  version: number;
 }
 
 export interface ProductEvents {
@@ -867,6 +876,37 @@ export interface SkillTrends {
   window_days: number;
 }
 
+export interface StaffAccounts {
+  created_at: Generated<Timestamp>;
+  email: string;
+  failed_attempts: Generated<number>;
+  id: Generated<string>;
+  invited_by: string | null;
+  last_sign_in_at: Timestamp | null;
+  last_sign_in_ip: string | null;
+  locked_until: Timestamp | null;
+  must_change_password: Generated<boolean>;
+  name: string;
+  password_changed_at: Timestamp | null;
+  password_hash: string;
+  role: string;
+  status: Generated<string>;
+  totp_added_at: Timestamp | null;
+  totp_last_step: Int8 | null;
+  totp_last_used_at: Timestamp | null;
+  totp_sealed: string | null;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
+export interface StaffBackupCodes {
+  code_hash: string;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  staff_id: string;
+  used_at: Timestamp | null;
+}
+
 export interface Subscriptions {
   billing_account_id: string;
   cancel_at_period_end: Generated<boolean>;
@@ -987,49 +1027,9 @@ export interface WebhookEvents {
   type: string;
 }
 
-export interface StaffAccounts {
-  created_at: Generated<Timestamp>;
-  email: string;
-  failed_attempts: Generated<number>;
-  id: Generated<string>;
-  invited_by: string | null;
-  last_sign_in_at: Timestamp | null;
-  last_sign_in_ip: string | null;
-  locked_until: Timestamp | null;
-  must_change_password: Generated<boolean>;
-  name: string;
-  password_changed_at: Timestamp | null;
-  password_hash: string;
-  role: string;
-  status: Generated<string>;
-  totp_added_at: Timestamp | null;
-  totp_last_step: Int8 | null;
-  totp_last_used_at: Timestamp | null;
-  totp_sealed: string | null;
-  updated_at: Generated<Timestamp>;
-  user_id: string;
-}
-
-export interface StaffBackupCodes {
-  code_hash: string;
-  created_at: Generated<Timestamp>;
-  id: Generated<string>;
-  staff_id: string;
-  used_at: Timestamp | null;
-}
-
-export interface AdminSettings {
-  allowed_networks: Generated<Json>;
-  id: Generated<boolean>;
-  reauth_for_sensitive: Generated<boolean>;
-  session_timeout_minutes: Generated<number>;
-  updated_at: Generated<Timestamp>;
-  updated_by: string | null;
-}
-
 export interface DB {
-  account_deletions: AccountDeletions;
   abuse_reports: AbuseReports;
+  account_deletions: AccountDeletions;
   activity: Activity;
   admin_settings: AdminSettings;
   ai_calls: AiCalls;
