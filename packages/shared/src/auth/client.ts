@@ -39,6 +39,9 @@ export function createAuthClient(options: AuthClientOptions) {
     resendCode: (email: string) => authCall('/auth/resend', { email }).then(() => undefined),
     login: async (email: string, password: string) =>
       signedIn(await authCall('/auth/login', { email, password, client: http.client })),
+    /** Web, after Clerk signs the browser in: its session token becomes our session cookie (§169). */
+    clerkExchange: async (token: string) =>
+      signedIn(await authCall('/auth/clerk/exchange', { token })),
     /** Mobile, after the federated redirect brings the app back with `?code=`. */
     exchange: async (code: string) => signedIn(await authCall('/auth/token/exchange', { code })),
     /** Where to send the browser (web) or the in-app browser session (mobile) to sign in with a provider. */

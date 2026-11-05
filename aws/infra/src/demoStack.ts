@@ -12,6 +12,8 @@ export interface DemoStackProps extends StackProps {
   webDataSource: string;
   /** The app's own domain (toreview §165): phase 1 the zone, phase 2 (`live`) the rest. */
   appDomain?: { name: string; live: boolean };
+  /** Clerk's publishable key (toreview §169): set, sign-up and sign-in go through Clerk. */
+  clerkPublishableKey?: string;
 }
 
 /**
@@ -26,7 +28,7 @@ export class DemoStack extends Stack {
     Tags.of(this).add('environment', 'demo');
 
     const network = new Network(this, 'Network');
-    const data = new Data(this, 'Data', network);
+    const data = new Data(this, 'Data', network, { clerk: Boolean(props.clerkPublishableKey) });
     const domain = props.appDomain ? new AppDomain(this, 'Domain', props.appDomain) : undefined;
     const edge = new Edge(this, 'Edge', network, data, domain);
     const extraOrigins = edge.appOrigin === edge.defaultOrigin ? [] : [edge.defaultOrigin];
@@ -37,6 +39,7 @@ export class DemoStack extends Stack {
       appOrigin: edge.appOrigin,
       extraOrigins,
       webDataSource: props.webDataSource,
+      ...(props.clerkPublishableKey ? { clerkPublishableKey: props.clerkPublishableKey } : {}),
     });
     edge.routeTo(services.web, data);
 

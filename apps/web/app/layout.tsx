@@ -4,6 +4,10 @@ import type { ReactNode } from 'react';
 
 import '@/theme/theme.css';
 
+import { ClerkProvider } from '@clerk/nextjs';
+
+import { clerkAppearance } from '@/features/auth/clerkAppearance';
+import { CLERK_ENABLED, CLERK_PUBLISHABLE_KEY, SESSION_BRIDGE, SIGN_UP } from '@/lib/clerk';
 import { cn } from '@/lib/cn';
 import { sidebarBootScript } from '@/navigation/sidebarBoot';
 import { AppProviders } from '@/providers/AppProviders';
@@ -43,7 +47,22 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* First in the body, so it runs before anything paints: the remembered sidebar state,
             for the CSS to draw from (`toreview.md` §84). */}
         <script dangerouslySetInnerHTML={{ __html: sidebarBootScript }} />
-        <AppProviders>{children}</AppProviders>
+        {/* Clerk only when sign-in goes through it (toreview §169); the mock never loads it. */}
+        {CLERK_ENABLED ? (
+          <ClerkProvider
+            publishableKey={CLERK_PUBLISHABLE_KEY}
+            signInUrl="/sign-in"
+            signUpUrl={SIGN_UP}
+            signInForceRedirectUrl={SESSION_BRIDGE}
+            signUpForceRedirectUrl={SESSION_BRIDGE}
+            afterSignOutUrl="/sign-in"
+            appearance={clerkAppearance}
+          >
+            <AppProviders>{children}</AppProviders>
+          </ClerkProvider>
+        ) : (
+          <AppProviders>{children}</AppProviders>
+        )}
       </body>
     </html>
   );

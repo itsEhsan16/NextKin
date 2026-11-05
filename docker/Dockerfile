@@ -43,8 +43,11 @@ FROM deps AS build
 # The web app's backend switch is read at build time (NEXT_PUBLIC_*). Empty: the mock, as before.
 ARG NEXT_PUBLIC_DATA_SOURCE=
 ARG NEXT_PUBLIC_API_BASE_URL=
+# Clerk's publishable key (public; toreview §169). Empty: the designed sign-in, no Clerk.
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 ENV NEXT_PUBLIC_DATA_SOURCE=$NEXT_PUBLIC_DATA_SOURCE \
-    NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+    NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 COPY apps/web apps/web
 COPY packages packages
 RUN pnpm --filter @nextkin/web build && pnpm --filter @nextkin/server build

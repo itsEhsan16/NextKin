@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@clerk/nextjs": "7.9.24",
     "@nextkin/server": "workspace:*",
     "@nextkin/shared": "workspace:*",
     "@radix-ui/react-avatar": "^1.1.10",

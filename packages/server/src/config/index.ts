@@ -53,7 +53,10 @@ const schema = z.object({
   SQS_ENDPOINT: z.url().optional(),
   SQS_QUEUE_PREFIX: z.string().default(''),
 
-  IDENTITY_ADAPTER: z.enum(['local', 'cognito']).default('local'),
+  IDENTITY_ADAPTER: z.enum(['local', 'clerk', 'cognito']).default('local'),
+  // Clerk (owner, 2026-11-04, toreview §169): the Backend API key, server only. The browser's
+  // publishable key is NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, read by the web app, not here.
+  CLERK_SECRET_KEY: z.string().startsWith('sk_').optional(),
   // No "always clean" choice exists: without clamd the verdict is `failed` (P7-03).
   SCAN_ADAPTER: z.enum(['clamav', 'guardduty']).default('clamav'),
   OCR_ADAPTER: z.enum(['tesseract', 'textract']).default('tesseract'),
@@ -215,6 +218,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   }
   const config = parsed.data;
 
+  if (config.IDENTITY_ADAPTER === 'clerk' && !config.CLERK_SECRET_KEY) {
+    throw new ConfigError(['CLERK_SECRET_KEY: required when IDENTITY_ADAPTER=clerk']);
+  }
+
   // L3: fakes and stand-ins cannot reach a shared environment that real users touch.
   if (config.APP_ENV === 'staging' || config.APP_ENV === 'production') {
     const refused = Object.entries(LOCAL_ONLY_ADAPTERS)
@@ -229,6 +236,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     }
     if (/local|test|change-me/i.test(config.CURSOR_SECRET)) refused.push(`CURSOR_SECRET looks like a placeholder in ${config.APP_ENV}`);
     if (config.AI_RECORD) refused.push(`AI_RECORD (fixture recording) is refused in ${config.APP_ENV}`);
+    if (config.CLERK_SECRET_KEY?.startsWith('sk_test_')) refused.push(`CLERK_SECRET_KEY is a Clerk development key and is refused in ${config.APP_ENV}`);
     if (config.ANTHROPIC_API_KEY) refused.push(`ANTHROPIC_API_KEY (a developer key, D-23) is refused in ${config.APP_ENV}; production uses Claude Platform on AWS`);
     if (config.OPENROUTER_API_KEY) refused.push(`OPENROUTER_API_KEY (a developer key, toreview §108) is refused in ${config.APP_ENV}`);
     if (config.LATEX_COMPILER_TOKEN && /local|test|change-me|dev/i.test(config.LATEX_COMPILER_TOKEN)) refused.push(`LATEX_COMPILER_TOKEN looks like a placeholder in ${config.APP_ENV}`);

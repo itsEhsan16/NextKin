@@ -1,3 +1,5 @@
+import { clerkFrontendOrigin } from './clerk';
+
 /**
  * Security headers for every page (P13-01 follow-up; `toreview.md` §105.21). The API sets its own
  * in `packages/server` (Hono); these cover the HTML the Next server renders.
@@ -12,6 +14,11 @@
  * - **Storage is the one other origin.** Uploads POST straight to object storage and avatars load
  *   from presigned GETs, so its origin is allowed for `connect-src` and `img-src`. Locally that is
  *   the S3 endpoint; in the cloud, S3 itself (the endpoint override is refused there, L3).
+ * - **Clerk, when sign-in goes through it** (toreview §169): its Frontend API (named by the
+ *   publishable key) for scripts and calls, img.clerk.com for avatars, Cloudflare Turnstile
+ *   (challenges.cloudflare.com, the only frame a page shows) and Clerk Protect, the bot check
+ *   that refuses sign-up without it: a script from cdn.protect.clerk.com, the `blob:` scripts it
+ *   makes, and calls to *.client.protect.clerk.com on several ports.
  */
 export interface SecurityHeaderOptions {
   dev: boolean;
@@ -23,7 +30,13 @@ export interface SecurityHeaderOptions {
   awsRegion?: string | undefined;
   /** NEXT_PUBLIC_API_BASE_URL, when the API is on another origin. */
   apiBaseUrl?: string | undefined;
+  /** NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, when sign-in goes through Clerk. */
+  clerkPublishableKey?: string | undefined;
 }
+
+const TURNSTILE = 'https://challenges.cloudflare.com';
+const PROTECT_SCRIPT = 'https://cdn.protect.clerk.com';
+const PROTECT_CONNECT = ['https://*.protect.clerk.com', 'https://*.protect.clerk.com:*'];
 
 const originOf = (url: string | undefined): string | null => {
   if (!url) return null;
@@ -47,18 +60,26 @@ export function storageOrigins(
 export function contentSecurityPolicy(options: SecurityHeaderOptions): string {
   const storage = storageOrigins(options);
   const api = originOf(options.apiBaseUrl);
+  const clerk = clerkFrontendOrigin(options.clerkPublishableKey);
+  const clerkScript = clerk ? ` ${clerk} ${TURNSTILE} ${PROTECT_SCRIPT} blob:` : '';
   // blob: because the browser uploader reads the picked file back from its blob: URL with fetch.
-  const connect = ["'self'", 'blob:', ...storage, ...(api ? [api] : [])];
+  const connect = [
+    "'self'",
+    'blob:',
+    ...storage,
+    ...(api ? [api] : []),
+    ...(clerk ? [clerk, ...PROTECT_CONNECT, 'https://clerk-telemetry.com'] : []),
+  ];
   const insecure = [...storage, ...(api ? [api] : [])].some((o) => o.startsWith('http:'));
   const directives = [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline'${options.dev ? " 'unsafe-eval'" : ''}`,
+    `script-src 'self' 'unsafe-inline'${options.dev ? " 'unsafe-eval'" : ''}${clerkScript}`,
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' data: blob: ${storage.join(' ')}`,
+    `img-src 'self' data: blob: ${storage.join(' ')}${clerk ? ' https://img.clerk.com' : ''}`,
     "font-src 'self' data:",
     `connect-src ${connect.join(' ')}`,
     "worker-src 'self' blob:",
-    "frame-src 'none'",
+    clerk ? `frame-src ${TURNSTILE}` : "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

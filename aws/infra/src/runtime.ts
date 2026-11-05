@@ -18,7 +18,11 @@ export const PLATFORM: ecs.RuntimePlatform = {
 
 type Target = 'web' | 'worker' | 'migrate' | 'latex' | 'link-reader';
 
-export function appImage(target: Target, webDataSource: string): ecs.ContainerImage {
+export function appImage(
+  target: Target,
+  webDataSource: string,
+  clerkPublishableKey?: string,
+): ecs.ContainerImage {
   const buildArgs: Record<string, string> = { NODE_IMAGE: pinned('NODE_IMAGE') };
   if (target === 'worker') {
     buildArgs.PLAYWRIGHT_VERSION = pinned('LIB_PLAYWRIGHT');
@@ -27,6 +31,8 @@ export function appImage(target: Target, webDataSource: string): ecs.ContainerIm
   }
   if (target === 'link-reader') buildArgs.PLAYWRIGHT_VERSION = pinned('LIB_PLAYWRIGHT');
   if (target === 'web') buildArgs.NEXT_PUBLIC_DATA_SOURCE = webDataSource;
+  // Inlined by Next at build time; public by design (toreview §169).
+  if (target === 'web' && clerkPublishableKey) buildArgs.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = clerkPublishableKey;
   if (target === 'migrate') buildArgs.ARGON2_VERSION = pinned('LIB_NODE_RS_ARGON2');
   if (target === 'latex') {
     buildArgs.TECTONIC_VERSION = pinned('TECTONIC_VERSION');
@@ -95,7 +101,8 @@ export function appEnvironment(
     SQS_QUEUE_PREFIX: DEMO.queuePrefix,
     CLAMAV_HOST: `clamav.${DEMO.namespace}`,
     CLAMAV_PORT: '3310',
-    IDENTITY_ADAPTER: 'local',
+    // Clerk once its secret exists (toreview §169); the local IdP otherwise.
+    IDENTITY_ADAPTER: data.clerkSecretKey ? 'clerk' : 'local',
     SCAN_ADAPTER: 'clamav',
     OCR_ADAPTER: 'tesseract',
     EMAIL_ADAPTER: 'smtp',
@@ -119,5 +126,6 @@ export function appSecrets(data: Data): Record<string, ecs.Secret> {
   return {
     CURSOR_SECRET: ecs.Secret.fromSecretsManager(data.cursorSecret),
     OPENROUTER_API_KEY: ecs.Secret.fromSecretsManager(data.openRouterKey),
+    ...(data.clerkSecretKey ? { CLERK_SECRET_KEY: ecs.Secret.fromSecretsManager(data.clerkSecretKey) } : {}),
   };
 }

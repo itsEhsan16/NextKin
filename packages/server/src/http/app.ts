@@ -14,6 +14,8 @@ import { authenticate, clientVersionFloor, csrf, rateLimit, type Authenticator }
 import { setResponseValidation } from './respond';
 import { trustedOrigins } from './origins';
 import { authRoutes, type AuthRouteDeps } from './routes/auth';
+import type { ClerkIdentityProvider } from '../auth/adapters/clerk/provider';
+import { clerkAuthRoutes } from './routes/authClerk';
 import { federatedRoutes, type FederatedDeps } from './routes/authFederated';
 import { healthRoutes } from './routes/health';
 import { NO_SIGNAL, observedEmail, observedPayments, type DegradedSignal } from '../health/degraded';
@@ -84,7 +86,11 @@ export interface ApiDeps {
   authenticate?: Authenticator;
   inFlight?: InFlight;
   /** Identity routes (P4). Present when the process has an identity provider and sessions. */
-  identity?: Omit<AuthRouteDeps, 'db' | 'appOrigin'> & Omit<FederatedDeps, 'db' | 'appOrigin' | 'idp' | 'auth' | 'sessions'>;
+  identity?: Omit<AuthRouteDeps, 'db' | 'appOrigin'> &
+    Omit<FederatedDeps, 'db' | 'appOrigin' | 'idp' | 'auth' | 'sessions'> & {
+      /** Set when IDENTITY_ADAPTER=clerk: mounts /auth/clerk/exchange (toreview §169). */
+      clerk?: ClerkIdentityProvider;
+    };
   /** Uploads, parsing and the teaser (P7). Without storage these routes are not mounted. */
   files?: Omit<UploadRouteDeps, 'db' | 'signAvatar'>;
   /** Generation events (P6-13): who publishes cancel/retry events, and the SSE fan-out hub. */
@@ -179,6 +185,17 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
         appOrigin: config.appOrigin,
       }),
     );
+    if (deps.identity.clerk) {
+      app.route(
+        '/',
+        clerkAuthRoutes({
+          clerk: deps.identity.clerk,
+          auth: deps.identity.auth,
+          appOrigin: config.appOrigin,
+          ...(config.extraOrigins ? { extraOrigins: config.extraOrigins } : {}),
+        }),
+      );
+    }
   }
   if (deps.db) {
     const idempotency = deps.idempotency ?? memory.idempotency;

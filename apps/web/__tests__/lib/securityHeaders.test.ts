@@ -51,4 +51,29 @@ describe('page security headers', () => {
     expect(headers['Content-Security-Policy']).toContain("base-uri 'self'");
     expect(headers['X-Content-Type-Options']).toBe('nosniff');
   });
+
+  it('allows the Clerk Frontend API, avatars and the Turnstile bot check when sign-in uses Clerk', () => {
+    const csp = contentSecurityPolicy({
+      dev: false,
+      clerkPublishableKey: 'pk_test_ZXhhbXBsZS1hcHAuY2xlcmsuYWNjb3VudHMuZGV2JA==',
+    });
+    const clerk = 'https://example-app.clerk.accounts.dev';
+    expect(directive(csp, 'script-src')).toContain(clerk);
+    expect(directive(csp, 'script-src')).toContain('https://challenges.cloudflare.com');
+    expect(directive(csp, 'connect-src')).toContain(clerk);
+    // Clerk Protect: without these, Clerk refuses sign-up "for your security".
+    expect(directive(csp, 'script-src')).toContain('https://cdn.protect.clerk.com');
+    expect(directive(csp, 'connect-src')).toContain('https://*.protect.clerk.com:*');
+    expect(directive(csp, 'img-src')).toContain('https://img.clerk.com');
+    expect(directive(csp, 'frame-src')).toBe('frame-src https://challenges.cloudflare.com');
+  });
+
+  it('ignores a malformed publishable key', () => {
+    expect(
+      directive(
+        contentSecurityPolicy({ dev: false, clerkPublishableKey: 'pk_test_%%%' }),
+        'frame-src',
+      ),
+    ).toBe("frame-src 'none'");
+  });
 });

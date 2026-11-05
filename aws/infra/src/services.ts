@@ -27,6 +27,8 @@ export interface ServicesProps {
   extraOrigins?: readonly string[];
   /** NEXT_PUBLIC_DATA_SOURCE baked into the web build: '' (mock) or 'http'. */
   webDataSource: string;
+  /** NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY baked into the web build, when sign-in uses Clerk. */
+  clerkPublishableKey?: string;
 }
 
 /**
@@ -40,7 +42,7 @@ export class Services extends Construct {
 
   constructor(scope: Construct, id: string, props: ServicesProps) {
     super(scope, id);
-    const { network, data, appOrigin, extraOrigins, webDataSource } = props;
+    const { network, data, appOrigin, extraOrigins, webDataSource, clerkPublishableKey } = props;
 
     this.cluster = new ecs.Cluster(this, 'Cluster', {
       vpc: network.vpc,
@@ -113,7 +115,7 @@ export class Services extends Construct {
     // --- web: Next.js and the /api/v1 backend ---
     const webDef = taskDef('web', 512, 1024);
     webDef.addContainer('web', {
-      image: appImage('web', webDataSource),
+      image: appImage('web', webDataSource, clerkPublishableKey),
       command: withDatabaseUrls([...runtimeRoles], 'node apps/web/server.js'),
       environment,
       secrets: { ...secrets, ...roleSecrets(data, [...runtimeRoles]) },

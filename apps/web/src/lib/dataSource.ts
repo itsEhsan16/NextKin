@@ -21,12 +21,20 @@ export const USES_BACKEND = Object.keys(DATA_SOURCES).length > 0;
 /** Where a lost session goes: the designed sign-in screen (toreview §133.1 item 5). */
 export const SIGN_IN = '/sign-in';
 
+/**
+ * Pages a signed-out visitor is meant to be on: sign-in, and with Clerk sign-up and the session
+ * bridge (toreview §169). A 401 from a background call there is expected, not a lost session.
+ */
+const AUTH_PAGES = [SIGN_IN, '/sign-up', '/session'];
+export const isAuthPage = (pathname: string) =>
+  AUTH_PAGES.some((page) => pathname === page || pathname.startsWith(`${page}/`));
+
 const goToSignIn = () => {
   if (typeof window === 'undefined') return;
   // Outside React (the HTTP client's 401 hook), and a full load on purpose: it drops every cached
   // query of the session that just ended.
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  if (window.location.pathname !== SIGN_IN) window.location.assign(SIGN_IN);
+  if (!isAuthPage(window.location.pathname)) window.location.assign(SIGN_IN);
 };
 
 export const http = createHttpClient({
@@ -47,7 +55,8 @@ export function configureDataSource(): void {
     environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     // Files go straight to storage from the browser: the JdFile's uri is a blob: URL (P7-02).
     // A page opened away from localhost reaches local storage through its own origin (§131.7).
-    uploader: (target, file) => browserUploader({ ...target, url: browserStorageUrl(target.url) }, file),
+    uploader: (target, file) =>
+      browserUploader({ ...target, url: browserStorageUrl(target.url) }, file),
     user: {
       navigate: (url) => window.location.assign(url),
       linkReturnTo: '/settings',

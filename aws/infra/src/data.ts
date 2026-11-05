@@ -34,8 +34,10 @@ export class Data extends Construct {
   readonly latexToken: secretsmanager.Secret;
   /** The worker's bearer token for the link reader (toreview §144.3). */
   readonly linkReaderToken: secretsmanager.Secret;
+  /** Clerk's Backend API key, when sign-in goes through Clerk (toreview §169); made outside CDK. */
+  readonly clerkSecretKey?: secretsmanager.ISecret;
 
-  constructor(scope: Construct, id: string, network: Network) {
+  constructor(scope: Construct, id: string, network: Network, options: { clerk?: boolean } = {}) {
     super(scope, id);
 
     const secret = (
@@ -59,6 +61,15 @@ export class Data extends Construct {
     this.openRouterKey = secret('openrouter-api-key', 'OpenRouter key: replace this value', {
       passwordLength: 16,
     });
+    if (options.clerk) {
+      // Created by hand with the real key before the deploy that turns Clerk on (README): a
+      // generated placeholder would fail the server's config check and stall the rollout.
+      this.clerkSecretKey = secretsmanager.Secret.fromSecretNameV2(
+        this,
+        'ClerkSecretKey',
+        `${DEMO.secretPrefix}/clerk-secret-key`,
+      );
+    }
     this.seedPassword = secret('seed-password', 'Password for every seeded demo account', {
       passwordLength: 24,
     });

@@ -1,5 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextRequest, NextResponse, type NextFetchEvent } from 'next/server';
 
+import { clerkMiddleware } from '@clerk/nextjs/server';
+
+import { CLERK_ENABLED, CLERK_PUBLISHABLE_KEY } from '@/lib/clerk';
 import { pageSecurityHeaders } from '@/lib/securityHeaders';
 
 // Page security headers (src/lib/securityHeaders.ts). A proxy rather than next.config `headers()`
@@ -10,6 +13,7 @@ const headers = pageSecurityHeaders({
   s3Endpoint: process.env.S3_PUBLIC_ENDPOINT ?? process.env.S3_ENDPOINT,
   awsRegion: process.env.AWS_REGION,
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+  clerkPublishableKey: CLERK_ENABLED ? CLERK_PUBLISHABLE_KEY : undefined,
 });
 
 // On the backend, the app's pages need a session: a visit without the session cookie goes to the
@@ -48,8 +52,12 @@ function withHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
-export function proxy(request: NextRequest) {
-  if (USES_BACKEND && needsSession(request.nextUrl.pathname) && !request.cookies.has(SESSION_COOKIE)) {
+function pages(request: NextRequest) {
+  if (
+    USES_BACKEND &&
+    needsSession(request.nextUrl.pathname) &&
+    !request.cookies.has(SESSION_COOKIE)
+  ) {
     const signIn = request.nextUrl.clone();
     signIn.pathname = '/sign-in';
     signIn.search = '';
@@ -58,7 +66,33 @@ export function proxy(request: NextRequest) {
   return withHeaders(NextResponse.next());
 }
 
+// With Clerk, its middleware runs first: it keeps the browser's Clerk session current (the
+// development instance's handshake included) for the sign-in pages and the session bridge. The
+// app's own pages still go by the server session cookie above, never by Clerk's (toreview §169).
+const clerkPages = clerkMiddleware((_auth, request) => pages(request));
+
+/**
+ * The scheme the visitor used. CloudFront reaches the load balancer over plain HTTP, so the
+ * balancer says `x-forwarded-proto: http`, and Clerk's handshake would send the browser back to
+ * an http:// address. CloudFront's own `cloudfront-forwarded-proto` names the visitor's scheme;
+ * the balancer only accepts requests from CloudFront (the origin-verify header), so it is trusted.
+ */
+function withViewerScheme(request: NextRequest): NextRequest {
+  const viewer = request.headers.get('cloudfront-forwarded-proto');
+  if (viewer !== 'https' && viewer !== 'http') return request;
+  const headers = new Headers(request.headers);
+  headers.set('x-forwarded-proto', viewer);
+  return new NextRequest(request, { headers });
+}
+
+const clerkProxy = (request: NextRequest, event: NextFetchEvent) =>
+  clerkPages(withViewerScheme(request), event);
+
+export const proxy = CLERK_ENABLED ? clerkProxy : pages;
+
 export const config = {
   // Pages only: the API sets its own headers, and static assets need none.
-  matcher: ['/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:png|svg|jpg|jpeg|webp|ico|txt|woff2?)$).*)'],
+  matcher: [
+    '/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:png|svg|jpg|jpeg|webp|ico|txt|woff2?)$).*)',
+  ],
 };

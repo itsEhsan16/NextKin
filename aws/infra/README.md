@@ -113,3 +113,19 @@ To roll back: `appDomainLive: false` and deploy; then the NS records at Namechea
 | **Pause between demos** | `pnpm --filter @nextkin/infra task pause` (every service to 0) |
 | Resume before a demo | `pnpm --filter @nextkin/infra task resume` (2–4 min; ClamAV needs a few more for uploads) |
 | Tear down | `pnpm --filter @nextkin/infra cdk destroy --profile nextkin`. The buckets are kept and the database leaves a final snapshot |
+
+## Sign-up through Clerk (toreview §169)
+
+Off until `clerkPublishableKey` is set. To turn it on:
+
+1. Create the secret with the real key **before** deploying (never a placeholder: the server
+   refuses one and the rollout stalls):
+   `aws secretsmanager create-secret --name nextkin-demo/clerk-secret-key --secret-string sk_test_… --profile nextkin --region us-east-1`
+2. Add `"clerkPublishableKey": "pk_test_…"` to `context` in `cdk.json` (it is public).
+3. `pnpm --filter @nextkin/infra cdk deploy --profile nextkin`. The web image is rebuilt with the
+   key, and web and worker switch to `IDENTITY_ADAPTER=clerk`.
+4. In the Clerk Dashboard, allow the demo's origins if asked (https://app.nextkin.ai).
+
+To change the key later: `put-secret-value` on the same secret, then `--force-new-deployment` on
+web and worker. To turn Clerk off: remove `clerkPublishableKey` and deploy.
+

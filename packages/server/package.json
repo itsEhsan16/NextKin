@@ -38,6 +38,7 @@
     "@aws-sdk/client-sqs": "^3.1149.0",
     "@aws-sdk/s3-presigned-post": "^3.1149.0",
     "@aws-sdk/s3-request-presigner": "^3.1149.0",
+    "@clerk/backend": "3.26.6",
     "@hono/zod-openapi": "^1.6.3",
     "@nextkin/engines": "workspace:*",
     "@nextkin/shared": "workspace:*",

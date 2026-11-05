@@ -1,3 +1,4 @@
+import { CLERK_ENABLED } from './clerk';
 import { auth, SIGN_IN, USES_BACKEND } from './dataSource';
 import { showToast } from './toast';
 
@@ -6,6 +7,8 @@ import { showToast } from './toast';
  * clears its cookie, then a full load of the sign-in screen drops every cached query of the
  * session that just ended. On the mock there is no session, so it only goes to the sign-in screen.
  * A failed request keeps the user where they are and says so, rather than seeming signed out.
+ * With Clerk (toreview §169) the browser's Clerk session ends too: otherwise the sign-in screen
+ * would see it still live and sign straight back in.
  */
 export async function signOut(): Promise<void> {
   if (USES_BACKEND) {
@@ -15,6 +18,13 @@ export async function signOut(): Promise<void> {
       showToast("You weren't signed out. Check your connection and try again.", { tone: 'error' });
       return;
     }
+    if (CLERK_ENABLED) await clerkSignOut();
   }
   window.location.assign(SIGN_IN);
+}
+
+/** Clerk's browser object, which ClerkProvider puts on `window`; best effort, the server already ended the session. */
+async function clerkSignOut(): Promise<void> {
+  const clerk = (window as { Clerk?: { signOut(): Promise<unknown> } }).Clerk;
+  await clerk?.signOut().catch(() => {});
 }

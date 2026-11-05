@@ -15352,3 +15352,89 @@ The owner saw the plain on-screen sheet, not typeset pages, for a resume on app.
 - **Fix** (`docker/Dockerfile`, latex-tex stage): after the warm-up, the bundle's check stamp is set to 2100, so Tectonic never sees it as stale; the cache stays read-only. Checked with and without a network: compiles, the stamp is untouched.
 - **Re-render:** a failed render is permanent for its (version, template revision, density, paper), so the three templates' revisions go up (jake 4, modern 3, elegant 3): every resume is typeset again on its next preview. `documentEditor.int.test.ts` read a stale `template_rev: 1` (§133.1 item 11); it now asks `renderTemplateOf`.
 - **Not done:** taking the AWS latex task off the network (needs ECR VPC endpoints, about $7–15/month each, or private subnets with NAT); the fix doesn't depend on it.
+
+## 169. Sign-up through Clerk, for now (owner, 2026-11-04)
+
+The owner asked for Clerk so new users can sign up (web, local and the demo), and chose "Clerk everywhere" over keeping the local IdP for daily use. V2 §9.4.1 names Cognito as production identity; this is an **owner override for the time being**, and X-07 (Cognito) stays in the plan behind the same `IdentityProvider` port.
+
+- **Shape:** Clerk's `<SignIn/>`/`<SignUp/>` run in the browser (email codes, passwords, social). `/session` then posts the Clerk session token to `POST /api/v1/auth/clerk/exchange`; the server verifies it (`@clerk/backend`), checks Clerk still holds the session open (a revoked one's token verifies for up to 60 s), creates the `users` row on first sight (`identity_sub` = Clerk user id), and sets the usual `__Host-nk_session` cookie. Every other route, RLS, the sessions list and logout are unchanged. Logout and sign-out-everywhere also revoke in Clerk; account deletion deletes the Clerk user. Adapter: `packages/server/src/auth/adapters/clerk/provider.ts` (unit tests in `test/clerkIdentity.test.ts`).
+- **Config:** `IDENTITY_ADAPTER=clerk` needs `CLERK_SECRET_KEY`; the web reads `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (inlined at build). Staging/production refuse an `sk_test_` key. Integration tests keep `local` (the harness forces it).
+- **Web:** `ClerkProvider` and `clerkMiddleware` load only when the backend and a publishable key are both set; the mock keeps the designed sign-in screen. The page CSP gains the Frontend API origin (decoded from the key), img.clerk.com and Cloudflare Turnstile (`frame-src` is no longer `'none'` with Clerk on). `/sign-in` became an optional catch-all; `/sign-up` and `/session` are new.
+- **Demo:** opt-in by CDK context `clerkPublishableKey`. Set, the deploy reads the secret `nextkin-demo/clerk-secret-key`, which is **created by hand with the real `sk_…` first** (a generated placeholder would fail config and stall the ECS rollout), bakes the key into the web image and switches `IDENTITY_ADAPTER` to `clerk`. **Not deployed.** Steps in `aws/infra/README.md` → "Sign-up through Clerk".
+- **Judgement calls:**
+  - Clerk's form is styled with the web theme's CSS variables (`clerkAppearance.ts`), its card chrome dropped, inside the designed sign-in frame. No board exists for sign-up; this is spec-derived (§7.1) and is replaced when one arrives.
+  - No linking by email: a Clerk sign-up whose email matches an old local-IdP user (e.g. the seeded `pro@nextkin.test`) becomes a **new** app user. Seeded accounts can't sign in under Clerk (the seed only provisions the local IdP).
+  - Staff (admins pool, TOTP) has no Clerk equivalent yet: `/auth/admin/login` and `setGroups` refuse under Clerk, so admin sign-in needs the local IdP until roles move to Clerk metadata or Cognito.
+- **Open / unverified:**
+  - Not run against a real Clerk instance: the CLI wasn't logged in, so no keys were pulled. Needs a browser pass: sign up, email code, land on Home, sign out, sign back in, sign-out-everywhere.
+  - `pnpm test:integration` not run (Docker Desktop was off). The change only adds a branch in `buildIdentity` and a route mounted under Clerk.
+  - Whether Clerk resolves `var(--…)` colours for its derived shades (hover, borders) is unchecked; fall back to hex only inside `src/theme` if it doesn't.
+  - Mobile is out of scope: under `IDENTITY_ADAPTER=clerk` its password sign-in (`/auth/login`) is refused. `@clerk/expo` + bearer exchange is the follow-up.
+  - Clerk's development instance shows its "Development mode" badge, also on the demo, until a production instance is made (`clerk deploy`, needs a domain).
+- **Demo deployed 2026-11-04; first sign-up failed** ("We couldn't complete this request… For your security"). Cause: Clerk Protect, Clerk's bot check, loads `cdn.protect.clerk.com/…/bootstrap.js`, runs `blob:` scripts and calls `*.client.protect.clerk.com` on several ports; the page CSP blocked the script, so Clerk refused the sign-up. Found with a headless Chrome probe; with CSP bypassed it reached "Verifying your request" (headless can't pass the bot check itself). CSP now allows those (`blob:` in `script-src` only when Clerk is on). Also fixed: the HTTP client's 401 hook sent `/sign-up` and `/session` to `/sign-in` whenever a background call answered 401 (`isAuthPage` in `dataSource.ts`). And Clerk's own card header showed under ours: its styles now sit in a `clerk` cascade layer below Tailwind's utilities (`cssLayerName`, `theme.css`).
+- **Clerk production deferred (owner, 2026-11-04):** the demo stays on the development instance (badge, dev limits) until a Google Cloud OAuth client and the Apple Developer account exist; then `clerk deploy --domain …` (domain still to choose: nextkin.ai at Namecheap vs app.nextkin.ai in Route 53), put the `pk_live_`/`sk_live_` keys in `cdk.json` and the secret, redeploy. The project is linked to the app (`clerk link`), so `clerk deploy status` works from the repo root.
+- **Second demo pass (2026-11-04):** (a) Clerk's dev handshake sent the browser to `http://app.nextkin.ai/?__clerk_handshake=…` ("site doesn't support a secure connection"): CloudFront → ALB is `HTTP_ONLY`, so the balancer's `x-forwarded-proto` is `http` and Clerk builds its return URL from it. The proxy now hands Clerk `cloudfront-forwarded-proto` (sent by the `ALL_VIEWER_AND_CLOUDFRONT_2022` origin request policy; trusted because the ALB only takes CloudFront traffic). Unverified until deployed. (b) The layer change made my element overrides win and they broke Clerk's card (clipped label and social buttons, no input border): the overrides are gone except the hidden header, and the colours are now the `tokens.ts` hex values, since Clerk can't derive shades from `var(--…)`. The form keeps Clerk's own card look inside the designed frame.
+
+
+## 170. The AI reviews the whole tailored resume; code checks every edit (owner, 2026-11-04)
+
+The owner scanned a tailored resume ("Capco – Jr Java Full Stack Engineer", Pune) in Jobscan: 92%, but the page had problems no part of the pipeline could see, because the model only ever wrote pieces (summary, bullets) and code copied the rest unread:
+- the headline was aimed at the job title by code after the model ran, so the summary ("Full-stack developer…") never matched it;
+- the header kept "Open to relocating to Lucknow" for a Pune job (the header is never a model input, G5);
+- Spring Boot, Spring Security and JUnit 5 landed under "Front End" (`groupFor` matched the taxonomy's `framework` category, which React and Spring share);
+- JD phrases were listed as skills ("Java fundamentals", "cloud environments", "secure coding");
+- two "Also" lines; "Git" next to "Git & GitHub workflows".
+
+The owner's direction: more robust, and give the AI more power, rather than patching items one by one.
+
+**Owner's decisions (asked, 2026-11-04):**
+1. **Header lines** that don't fit the job (relocating elsewhere, availability, another target role): **asked in Enhance** before the run — Keep / Remove / Change. The AI never decides what the user is willing to do.
+2. **Ticked keywords:** the AI may drop ticked job phrases that aren't skills and merge duplicates, and files the rest on the right line; **every real skill the user ticked stays listed**.
+3. **Order:** the AI may reorder sections, projects and bullets by relevance to the job; text unchanged.
+4. **Scoring:** a skill only listed in Skills gets partial credit. Already true (D-14 evidence tiers in `engines/requirements.ts`); nothing to build.
+
+**Plan:**
+- A `review` stage after `validate` on tailored runs: the model reads the whole merged resume (contact items hidden; non-contact header statements shown), the job and the facts, and returns typed edits. Code applies each edit only if it passes its check (summary and bullets through the claim ledger, measured results kept; skills never vanish unless a phrase or a duplicate; orders must be permutations; header items only flagged). The page fit, ledger and "what changed" move after it.
+- Deterministic baseline fixes that hold when the model is off or wrong: back-end frameworks go to a back-end line; same-label lines merge; the PDF's "Also" fold joins an existing "Also" line.
+- The generator learns the aimed headline (`target.headline`), so the summary matches it from the start.
+- Enhance: header checks on the comparison, the user's choice carried on the run.
+
+**What was built (2026-11-04):**
+- **`review` stage** (`pipeline/stages/review.ts`, edits in `reviewEdits.ts`), between `validate` and `score` on `resume` runs. An untailored run passes through. On a tailored run, the model (`resume.review` v1, routing v7 `resume_review`, generation tier) gets the job, the whole merged page and the facts. Contact is not sent; header statements are. It returns `issues` plus typed `edits`: summary, bullet, move/drop skill, rename line, order sections/projects/bullets, flag header. Each edit is applied only if it passes its check:
+  - summary and bullets go through the claim ledger (left-out keywords included), must keep every number the old text stated, and may only cite their own role's or project's facts;
+  - nothing changes in a part the user switched off;
+  - a ticked real skill can never be dropped; a drop needs a kept duplicate, or must be a ticked phrase the taxonomy doesn't know that isn't a name;
+  - orders must be permutations;
+  - header items are flagged only, never changed.
+
+  Applied and refused edits are stored on `tailor.review`; "what changed" names the moves, drops, orders and header notes. A review that can't run (model error, no job) leaves the merge's document as it was. The page fit, ledger and changes moved from `validate` into this stage, so `persist`/`score` read `outputs.review ?? outputs.validate`.
+- **Deterministic fixes:**
+  - `groupFor` sends back-end frameworks and test libraries to a back-end or testing line, and never onto a front-end line by category alone;
+  - `tidyGroups` merges lines with the same label and lists a skill once;
+  - the PDF's "Also" fold joins an existing "Also" line.
+- **Writer `resume.generate` v8:** `target.headline` is passed when the headline is aimed; the summary opens in that line of work without claiming its seniority.
+- **Header checks** (`shared/scoring/headerChecks.ts`):
+  - the comparison flags statements that don't fit the job: relocating elsewhere (offers "Change to <job city>"), or seeking another role;
+  - web Enhance shows "Check your header" with Keep / Remove / Change (`HeaderChecks.tsx`, spec-derived, no board);
+  - the run carries `tailoring.header`, and the merge applies it to statements only.
+
+**Verified:**
+- typecheck, lint and unit tests are green in all workspaces (server 328, shared 270, web 437, mobile 1980, engines 205), with new tests in `reviewEdits.test.ts`, `headerChecks.test.ts` and `skillGroups.test.ts`.
+- `pnpm test:integration`: 23 failures, all of which also fail on a clean checkout of HEAD (e609dec) on the same stack:
+  - scanner and upload tests;
+  - billing;
+  - renders: page count and density;
+  - library edits;
+  - `tailorConfirmP14` "keeps it where a rewritten line says it", which still expects §116 AI placement that §159 removed.
+
+  None is new; they predate this work and still need fixing.
+
+**Open / unverified:**
+- **Not run against a live model.** The review prompt's quality is unmeasured; the reference model returns no edits. Next step: re-run the Capco tailor live and compare with Jobscan. `evals/recordings` predate writer v8, so `--recorded` replays will miss until a live `pnpm eval --live` re-records them.
+- **Needs `pnpm seed --reference-only`** on every stack, the demo included, before tailored runs work: the runner refuses a pipeline whose `resume.review` prompt has no active version. Done on the local stack, 2026-11-04.
+- **Mobile Enhance has no header card yet:** its runs send no `header` choices and keep the header as typed. The AI review still runs and can flag it in "what changed".
+- **The ready screen** shows the review's notes only through "what changed"; there is no one-tap "remove it" from there yet.
+- **Judgement calls:**
+  - a review edit to sections, projects or bullet order is allowed even when those parts are switched off, since order isn't text;
+  - header choices default to Keep;
+  - the review runs on the generation tier (Sonnet), so a tailored run costs one more call.
