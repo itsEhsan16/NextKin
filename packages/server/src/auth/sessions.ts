@@ -27,8 +27,14 @@ export interface SessionRecord {
   sub: string;
   pool: 'users' | 'admins';
   client: ClientKind;
-  /** The identity provider's session, revoked on logout. */
+  /** The identity provider's session, revoked on logout. A staff session's starts `staff:`. */
   sessionRef: string;
+  /** Staff sessions (toreview §171.13): ended after this long without a request. */
+  idleSeconds?: number;
+  /** Staff sessions: a shorter absolute lifetime than the users' 30 days. */
+  lifetimeSeconds?: number;
+  /** Staff sessions: when the authenticator was last proven (sign-in or re-authentication). */
+  mfaAt?: number;
   createdAt: number;
   expiresAt: number;
   lastSeenAt: number;
@@ -46,6 +52,8 @@ export const hashSessionId = (id: string) => createHash('sha256').update(id).dig
 export const newSessionId = () => randomBytes(32).toString('base64url');
 
 export interface SessionStore {
+  /** Rewrites a live session's record (staff re-authentication moves `mfaAt`). */
+  update(id: string, patch: Pick<Partial<SessionRecord>, 'mfaAt'>): Promise<SessionRecord | null>;
   create(id: string, record: Omit<SessionRecord, 'createdAt' | 'expiresAt' | 'lastSeenAt'>, meta?: SessionMeta): Promise<SessionRecord>;
   get(id: string): Promise<SessionRecord | null>;
   destroy(id: string): Promise<SessionRecord | null>;
@@ -61,13 +69,24 @@ export function createSessionStore(valkey: Valkey, db: Database): SessionStore {
     );
   }
 
+  async function end(id: string): Promise<SessionRecord | null> {
+    const raw = await valkey.getdel(key(id));
+    if (!raw) return null;
+    const record = JSON.parse(raw) as SessionRecord;
+    await valkey.srem(setKey(record.userId), id);
+    await markRevoked(record.userId, [id]);
+    return record;
+  }
+
   return {
     async create(id, base, meta = {}) {
       const now = Date.now();
-      const record: SessionRecord = { ...base, createdAt: now, expiresAt: now + ABSOLUTE_SECONDS * 1000, lastSeenAt: now };
-      await valkey.set(key(id), JSON.stringify(record), 'EX', ABSOLUTE_SECONDS);
+      const lifetime = Math.min(base.lifetimeSeconds ?? ABSOLUTE_SECONDS, ABSOLUTE_SECONDS);
+      const record: SessionRecord = { ...base, createdAt: now, expiresAt: now + lifetime * 1000, lastSeenAt: now };
+      await valkey.set(key(id), JSON.stringify(record), 'EX', lifetime);
       await valkey.sadd(setKey(base.userId), id);
-      await valkey.expire(setKey(base.userId), ABSOLUTE_SECONDS);
+      // The set lives as long as the longest session in it.
+      if ((await valkey.ttl(setKey(base.userId))) < lifetime) await valkey.expire(setKey(base.userId), lifetime);
       await db.withUser({ userId: base.userId, role: base.role }, (tx) =>
         tx
           .insertInto('sessions')
@@ -91,6 +110,12 @@ export function createSessionStore(valkey: Valkey, db: Database): SessionStore {
       if (!raw) return null;
       const record = JSON.parse(raw) as SessionRecord;
       if (record.expiresAt < Date.now()) return null;
+      // Idle staff sessions end. `lastSeenAt` moves every five minutes at most, so a session ends
+      // between the limit and five minutes after it.
+      if (record.idleSeconds && Date.now() - record.lastSeenAt > record.idleSeconds * 1000 + TOUCH_EVERY_MS) {
+        await end(id);
+        return null;
+      }
       if (Date.now() - record.lastSeenAt > TOUCH_EVERY_MS) {
         // Throttled: "last active" in the sessions list, without a write per request.
         record.lastSeenAt = Date.now();
@@ -104,14 +129,15 @@ export function createSessionStore(valkey: Valkey, db: Database): SessionStore {
       return record;
     },
 
-    async destroy(id) {
-      const raw = await valkey.getdel(key(id));
+    async update(id, patch) {
+      const raw = await valkey.get(key(id));
       if (!raw) return null;
-      const record = JSON.parse(raw) as SessionRecord;
-      await valkey.srem(setKey(record.userId), id);
-      await markRevoked(record.userId, [id]);
+      const record = { ...(JSON.parse(raw) as SessionRecord), ...patch };
+      await valkey.set(key(id), JSON.stringify(record), 'KEEPTTL');
       return record;
     },
+
+    destroy: end,
 
     async destroyAllForUser(userId, exceptId) {
       const ids = (await valkey.smembers(setKey(userId))).filter((id) => id !== exceptId);
@@ -128,8 +154,8 @@ export function createSessionStore(valkey: Valkey, db: Database): SessionStore {
   };
 }
 
-export function sessionCookie(id: string): string {
-  return `${SESSION_COOKIE}=${id}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${ABSOLUTE_SECONDS}`;
+export function sessionCookie(id: string, maxAgeSeconds = ABSOLUTE_SECONDS): string {
+  return `${SESSION_COOKIE}=${id}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAgeSeconds}`;
 }
 
 export function clearSessionCookie(): string {

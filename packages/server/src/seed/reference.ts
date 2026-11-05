@@ -1,4 +1,5 @@
 import { sql } from 'kysely';
+import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { PRICES_DEFAULT, ROUTING_DEFAULT } from '../ai/defaults';
 import type { Database } from '../db/database';
 import { PRICES_KEY, ROUTING_KEY } from '../ai/routing';
@@ -9,6 +10,21 @@ import { stableId } from './ids';
  * Global reference data: plans, the current rubric, dataset versions, default settings. Written
  * through an admin session on the app role, the same path the Admin Portal will use (P12).
  */
+
+/** Display names for the engines' skill categories, as the skills editor lists them. */
+const SKILL_CATEGORY_NAMES: Record<string, string> = {
+  language: 'Languages',
+  framework: 'Frameworks',
+  library: 'Libraries',
+  database: 'Databases',
+  cloud: 'Cloud',
+  devops: 'DevOps',
+  tool: 'Tools',
+  methodology: 'Methodologies',
+  practice: 'Practices',
+  design: 'Design',
+  domain: 'Domain skills',
+};
 
 /** The seed's admin identity; also seeded as a real user by seedAccounts. */
 export const SEED_ADMIN_ID = stableId('account:admin');
@@ -56,9 +72,27 @@ export async function seedReference(db: Database): Promise<{ rubricVersionId: st
         .onConflict((oc) => oc.column('id').doUpdateSet({ name: plan.name, prices: JSON.stringify(plan.prices), quotas: JSON.stringify(plan.quotas) }))
         .execute();
     }
+    // The price book's first version is the seeded Pro prices (migration 0054); staff add the next.
+    const priceOf = (id: string) => JSON.stringify(PLANS.find((plan) => plan.id === id)?.prices ?? {});
+    await tx.insertInto('price_book_versions').values({ version: 1, monthly: priceOf('pro_monthly'), annual: priceOf('pro_annual') }).onConflict((oc) => oc.column('version').doNothing()).execute();
 
     await tx.insertInto('kb_dataset_versions').values({ version: 1, notes: 'Seed dataset (empty until M2-11).' }).onConflict((oc) => oc.doNothing()).execute();
     await tx.insertInto('taxonomy_versions').values({ version: 1, notes: 'Seed taxonomy (empty until Q-02).' }).onConflict((oc) => oc.doNothing()).execute();
+
+    // The skills editor's reviewed copy starts as the engines' compiled taxonomy (toreview §171.13).
+    // Insert-only: a staff edit is never overwritten by a re-seed, and live scoring keeps reading the
+    // compiled taxonomy until a release imports the reviewed copy.
+    for (const category of [...new Set(TAXONOMY.skills.map((skill) => skill.category))]) {
+      const name = SKILL_CATEGORY_NAMES[category] ?? category;
+      await tx.insertInto('skill_categories').values({ id: category, name }).onConflict((oc) => oc.doNothing()).execute();
+    }
+    for (const skill of TAXONOMY.skills) {
+      await tx
+        .insertInto('skills')
+        .values({ canonical_name: skill.name, aliases: [...skill.aliases], category_id: skill.category })
+        .onConflict((oc) => oc.column('canonical_name').doNothing())
+        .execute();
+    }
 
     // Rubric v1: spec §7.8's weights (keywords 40, timeline 20, sections 15, formatting 15,
     // achievements 10) and the bands the apps use (strong ≥ 85, good ≥ 70, fair ≥ 55, weak below).

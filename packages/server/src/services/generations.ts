@@ -338,6 +338,8 @@ export function retryGeneration(
         started_at: sql`now()`,
         quota_reservation: JSON.stringify(reserved),
         quota_released_at: null,
+        // V2 §2.2 measures reliability "without manual retry" (migration 0054).
+        manual_retries: sql`manual_retries + 1`,
       })
       .where("id", "=", row.id)
       .returningAll()

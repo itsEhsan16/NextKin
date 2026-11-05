@@ -1,10 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { totpAt } from '../../src/auth/totp';
 import { openApiDocument } from '../../src/http/app';
-import { randomUUID } from 'node:crypto';
-import { SEED_TOTP_SECRET } from '../../src/seed/identities';
-import { PERMISSIONS, type Permission } from '../../src/services/admin/permissions';
-import { cookieFrom, DOMAIN, grantConsent, ORIGIN, PASSWORD, registered, startHarness, webLogin, type Harness } from './fixtures/authHarness';
+import { PERMISSIONS, type StaffLevel } from '../../src/services/admin/permissions';
+import { businessMatrix } from './fixtures/matrix/business';
+import { contentMatrix } from './fixtures/matrix/content';
+import { peopleMatrix } from './fixtures/matrix/people';
+import { staffMatrix } from './fixtures/matrix/staff';
+import { trustMatrix } from './fixtures/matrix/trust';
+import type { Access, MatrixEntry } from './fixtures/matrix/types';
+import { makeStaff, staffLogin } from './fixtures/staffAccounts';
+import { grantConsent, ORIGIN, registered, startHarness, webLogin, type Harness } from './fixtures/authHarness';
 
 /**
  * The authorization matrix (ImBackendImplementationPlan P4 exit; spec §16.6 grows it in P12).
@@ -13,20 +17,8 @@ import { cookieFrom, DOMAIN, grantConsent, ORIGIN, PASSWORD, registered, startHa
  * session: anonymous gets 401, a role without access gets 403, a role with access gets neither.
  * Every signed-in probe uses a throwaway account, so the seeded demo accounts are never written.
  */
-type Access = 'public' | 'user' | 'admin';
 type Role = 'anonymous' | 'free' | 'pro' | 'support' | 'curator' | 'admin' | 'super_admin';
-
-interface Entry {
-  access: Access;
-  /** Admin routes (P12-01): the permission they need; its roles are the only ones allowed through. */
-  permission?: Permission;
-  /** A body that passes validation, so the probe reaches the access check. */
-  body?: unknown;
-  /** Headers the route requires before it gets as far as the access check. */
-  headers?: Record<string, string>;
-  /** A query string the route validates before the access check. */
-  query?: Record<string, string>;
-}
+type Entry = MatrixEntry;
 
 const SETTINGS = (() => {
   const on = { inApp: true, email: true, push: true };
@@ -224,7 +216,6 @@ const MATRIX: Record<string, Entry> = {
   'POST /api/v1/admin/users/{id}/delete': { access: 'admin', permission: 'users.manage', body: { reason: 'matrix probe' } },
   'POST /api/v1/admin/users/{id}/comp': { access: 'admin', permission: 'users.manage', body: { months: 1, reason: 'matrix probe' } },
   'GET /api/v1/admin/users/{id}/resumes/{resumeId}': { access: 'admin', permission: 'users.content' },
-  'PUT /api/v1/admin/staff/{id}/roles': { access: 'admin', permission: 'roles.assign', body: { groups: ['support'] } },
   'GET /api/v1/admin/audit': { access: 'admin', permission: 'audit.read' },
   'GET /api/v1/admin/audit/export': { access: 'admin', permission: 'audit.read' },
   'GET /api/v1/admin/prompts': { access: 'admin', permission: 'content.manage' },
@@ -283,6 +274,12 @@ const MATRIX: Record<string, Entry> = {
   'GET /api/v1/assistant/messages/{id}': { access: 'user' },
   'POST /api/v1/auth/token/exchange': { access: 'public' },
   'POST /api/v1/auth/token/refresh': { access: 'public' },
+  // The admin portal's areas (toreview §171.13), one file each so they can be built apart.
+  ...peopleMatrix,
+  ...contentMatrix,
+  ...businessMatrix,
+  ...trustMatrix,
+  ...staffMatrix,
 };
 
 const ALLOWED: Record<Access, Role[]> = {
@@ -297,7 +294,7 @@ const ROLES_FOR: Record<Access, Role[]> = {
   admin: ['anonymous', 'free', 'pro', 'support', 'curator', 'admin', 'super_admin'],
 };
 const allowedFor = (entry: Entry): Role[] => (entry.permission ? [...PERMISSIONS[entry.permission]] : ALLOWED[entry.access]);
-const GROUPS: Partial<Record<Role, string[]>> = { support: ['support'], curator: ['curator'], admin: ['admin'], super_admin: ['admin', 'super_admin'] };
+const STAFF_ROLES: readonly Role[] = ['support', 'curator', 'admin', 'super_admin'];
 
 let h: Harness;
 beforeAll(async () => {
@@ -314,18 +311,13 @@ afterAll(async () => {
  */
 async function sessionFor(role: Role): Promise<string | null> {
   if (role === 'anonymous') return null;
-  const groups = GROUPS[role];
-  if (groups) {
-    const email = `matrix-${role}-${randomUUID().slice(0, 8)}@${DOMAIN}`;
-    await h.stack.local!.upsertAccount({ sub: `local|matrix-${randomUUID()}`, pool: 'admins', email, password: PASSWORD, groups, totpSecret: SEED_TOTP_SECRET });
-    const res = await h.app.request('/api/v1/auth/admin/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', origin: ORIGIN },
-      body: JSON.stringify({ email, password: PASSWORD, totp: totpAt(SEED_TOTP_SECRET, Date.now()) }),
-    });
+  if (STAFF_ROLES.includes(role)) {
+    // Staff sign in with their own accounts (toreview §171.13), never the users' provider.
+    const member = await makeStaff(h, role as StaffLevel);
+    const cookie = await staffLogin(h, member);
     // Consented like the user probes (P12-12), so a 403 here can only mean forbidden.
-    await grantConsent(h.db, email);
-    return cookieFrom(res);
+    await grantConsent(h.db, member.email);
+    return cookie;
   }
   return webLogin(h, await registered(h));
 }

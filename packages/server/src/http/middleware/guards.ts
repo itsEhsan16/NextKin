@@ -122,6 +122,14 @@ const CLASSES: {
     anonymous: { name: 'figure', limit: 5, windowSeconds: 60 },
     user: { name: 'figure', limit: 40, windowSeconds: 60 },
   },
+  // Reporting a shared link (toreview §171.13): anyone holding a link may, so the bucket is small.
+  // Reading the link itself is a GET and keeps the default bucket.
+  {
+    prefix: '/api/v1/public/shared-reports',
+    writesOnly: true,
+    anonymous: { name: 'abuse-report', limit: 5, windowSeconds: 600 },
+    user: { name: 'abuse-report', limit: 10, windowSeconds: 600 },
+  },
   {
     prefix: '/api/v1/uploads',
     anonymous: { name: 'upload', limit: 5, windowSeconds: 60 },

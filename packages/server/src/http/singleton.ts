@@ -94,6 +94,7 @@ export function getApi(): OpenAPIHono<ApiEnv> {
       appOrigin: config.APP_ORIGIN,
       extraOrigins: config.APP_EXTRA_ORIGINS,
       cursorSecret: config.CURSOR_SECRET,
+      staffKey: config.STAFF_TOTP_KEY,
       trustedIpHeader: config.TRUSTED_IP_HEADER,
     },
     log,

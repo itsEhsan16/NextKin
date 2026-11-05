@@ -11,7 +11,8 @@ import { subscriptionFixture, userFixture } from '@nextkin/shared/mock/fixtures/
 import { loadConfig } from '../config';
 import { createDatabase } from '../db/database';
 import { seedAccounts } from '../seed/accounts';
-import { seedIdentities } from '../seed/identities';
+import { SEED_PASSWORD, seedIdentities } from '../seed/identities';
+import { seedStaff } from '../seed/staff';
 import { seedPersona } from '../seed/personas';
 import { seedReference } from '../seed/reference';
 import { seedContent } from '../seed/content';
@@ -115,6 +116,13 @@ try {
 
   if (config.IDENTITY_ADAPTER === 'local') {
     for (const line of await seedIdentities(config.DATABASE_URL, devCredentials)) console.log(`seed: ${line}`);
+  }
+  // Staff accounts are the server's own, under every identity adapter (toreview §171.13).
+  const staffPassword = devCredentials?.password ?? SEED_PASSWORD;
+  const staffCreated = await seedStaff(db, staffPassword);
+  console.log(`seed: staff accounts admin@ (Super Admin), curator@, support@nextkin.test: ${staffCreated} new, others kept as they are`);
+  if (staffCreated > 0 && !devCredentials) {
+    console.log(`seed: a new staff account's first sign-in at /admin/sign-in uses the temporary password ${SEED_PASSWORD}, sets up an authenticator, then chooses a new password`);
   }
 
   if (volume > 0) {

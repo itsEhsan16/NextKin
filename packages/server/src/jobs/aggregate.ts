@@ -7,6 +7,7 @@ import type { KvCache } from '../cache/kv';
 import type { Database } from '../db/database';
 import type { Logger } from '../observability/logger';
 import type { Breaker } from './breaker';
+import { countProviderCall } from './providerCalls';
 import { jobIdOf } from './ids';
 import type { ProviderRegistry } from './registry';
 import { normalizedJobSchema, type JobProvider, type NormalizedJob, type ProviderName, type ProviderQuery } from './types';
@@ -96,9 +97,11 @@ async function callProvider(deps: AggregateDeps, entry: { provider: JobProvider;
       sleep(timeoutMs).then(() => Promise.reject(new Error(`${provider.name} timed out`))),
     ]);
     await deps.breaker.success(provider.name);
+    void countProviderCall(deps.db, provider.name, false);
     return result;
   } catch (error) {
     await deps.breaker.failure(provider.name);
+    void countProviderCall(deps.db, provider.name, true);
     deps.log.warn({ event: 'jobs.provider_failed', provider: provider.name, errorName: error instanceof Error ? error.name : typeof error }, 'job provider failed');
     return null;
   }

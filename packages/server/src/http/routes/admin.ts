@@ -3,6 +3,8 @@ import type { Context } from 'hono';
 
 import type { IdentityProvider } from '../../auth/ports/identity';
 import type { SessionStore } from '../../auth/sessions';
+import type { StaffAuth } from '../../auth/staff/service';
+import type { EmailPort } from '../../email/email';
 import type { Database } from '../../db/database';
 import type { Logger } from '../../observability/logger';
 import type { PaymentProvider } from '../../payments/types';
@@ -33,6 +35,11 @@ export interface AdminRouteDeps {
   secrets: SecretsPort;
   idp?: IdentityProvider;
   sessions?: SessionStore;
+  /** Staff accounts and their sign-in (toreview §171.13). */
+  staff?: StaffAuth;
+  /** Invites and resets email the temporary password. */
+  email?: EmailPort;
+  appOrigin?: string;
 }
 
 const ok = (description: string) => ({ description, content: { 'application/json': { schema: z.unknown() } } });
@@ -116,11 +123,7 @@ export function adminRoutes(deps: AdminRouteDeps): OpenAPIHono<ApiEnv> {
       return c.json(await users.readUserResume(db, requireStaff(c, 'users.content'), p.id, p.resumeId, c.req.valid('query').reason ?? '', meta(c)), 200);
     },
   );
-  const roles = admin('roles.assign');
-  app.openapi(
-    createRoute({ method: 'put', path: '/admin/staff/{id}/roles', tags: ['admin'], summary: roles.describe('Set a staff account’s roles'), request: { params: id, body: json(z.object({ groups: z.array(z.string().max(30)).min(1).max(4) }).strict()) }, responses: { 200: ok('Roles.'), ...errs } }),
-    async (c) => c.json(await users.setRoles(userDeps, requireStaff(c, 'roles.assign'), c.req.valid('param').id, c.req.valid('json').groups, meta(c)), 200),
-  );
+  // Staff roles moved to `adminStaff.ts` with the staff accounts (toreview §171.13).
 
   // --- Audit ---------------------------------------------------------------------------------
   const audit = admin('audit.read');
