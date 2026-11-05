@@ -125,6 +125,7 @@ export function appEnvironment(
 export function appSecrets(data: Data): Record<string, ecs.Secret> {
   return {
     CURSOR_SECRET: ecs.Secret.fromSecretsManager(data.cursorSecret),
+    STAFF_TOTP_KEY: ecs.Secret.fromSecretsManager(data.staffTotpKey),
     OPENROUTER_API_KEY: ecs.Secret.fromSecretsManager(data.openRouterKey),
     ...(data.clerkSecretKey ? { CLERK_SECRET_KEY: ecs.Secret.fromSecretsManager(data.clerkSecretKey) } : {}),
   };

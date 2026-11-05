@@ -1,11 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { codeFrom } from '../../src/email/email';
-import { totpAt } from '../../src/auth/totp';
-import { SEED_PASSWORD, SEED_TOTP_SECRET } from '../../src/seed/identities';
+import { SEED_PASSWORD } from '../../src/seed/identities';
 import {
   address,
   call,
-  cookieFrom,
   mobileLogin,
   ORIGIN,
   PASSWORD,
@@ -161,18 +159,8 @@ describe('auth events are recorded', () => {
   });
 });
 
-describe('staff sign-in (admins pool)', () => {
-  it('needs TOTP, gets the staff role, and the seeded staff account works', async () => {
-    const body = { email: 'support@nextkin.test', password: SEED_PASSWORD };
-    const missing = await call(h, '/auth/admin/login', { body, headers: { origin: ORIGIN } });
-    expect(missing.status).toBe(401);
-    expect(await missing.json()).toMatchObject({ error: { details: { mfaRequired: true } } });
-    const res = await call(h, '/auth/admin/login', { body: { ...body, totp: totpAt(SEED_TOTP_SECRET, Date.now()) }, headers: { origin: ORIGIN } });
-    expect(res.status).toBe(200);
-    expect((await res.json()).user.role).toBe('support');
-    await call(h, '/auth/logout', { method: 'POST', headers: withCookie(cookieFrom(res), true) });
-  });
-
+describe('staff sign-in', () => {
+  // The staff steps themselves are in adminStaffPortal.int.test.ts (toreview §171.13).
   it('a staff account cannot sign in through the users login', async () => {
     const res = await call(h, '/auth/login', { body: { email: 'support@nextkin.test', password: SEED_PASSWORD, client: 'mobile' } });
     expect(res.status).toBe(401);

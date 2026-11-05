@@ -101,12 +101,20 @@ deletes the zone and breaks the delegation.
 
 To roll back: `appDomainLive: false` and deploy; then the NS records at Namecheap can go.
 
+## Staff sign-in (admin portal)
+
+Staff accounts are the server's own, never Clerk's: a password and an authenticator, with the
+authenticator secret sealed under the generated `nextkin-demo/staff-totp-key` secret. Don't rotate
+that secret casually: a new key voids every enrolled authenticator, and each staff member sets
+theirs up again after a Super Admin resets their sign-in. Invite everyone else from Staff & roles.
+
 ## Day to day
 
 | Task | Command |
 |---|---|
 | Redeploy after code changes | `pnpm --filter @nextkin/infra cdk deploy --profile nextkin` |
 | New migrations | Deploy, then `pnpm --filter @nextkin/infra task migrate` |
+| First Super Admin of the admin portal | `pnpm --filter @nextkin/infra task staff-create --email you@company.com --name Your_Name` prints a temporary password once (also in the `seed` log); sign in at `/admin/sign-in`, set up an authenticator, choose your own password (toreview §171.13) |
 | New prompt or routing versions | Deploy, then `pnpm --filter @nextkin/infra task seed-reference` (leaves the accounts alone; `task seed` replaces them) |
 | Logs (Git Bash: prefix `MSYS_NO_PATHCONV=1`) | `aws logs tail /nextkin-demo/web --follow --profile nextkin --region us-east-1` (also `worker`, `clamav`, `valkey`, `migrate`, `seed`) |
 | A shell in a task | `aws ecs execute-command --cluster <ClusterName> --task <id> --container web --interactive --command sh --profile nextkin --region us-east-1` |

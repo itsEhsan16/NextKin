@@ -1,3 +1,9 @@
+import { createMockAdminRepo } from './adminRepo';
+import { resetAdminMocks } from './adminMockReset';
+import { createMockAdminPeopleRepo } from './adminPeopleRepo';
+import { createMockAdminContentRepo } from './adminContentRepo';
+import { createMockAdminBusinessRepo } from './adminBusinessRepo';
+import { createMockAdminTrustRepo } from './adminTrustRepo';
 import { createMockAssistantRepo } from './assistantRepo';
 import { adoptDocument, adoptJob } from './adopt';
 import { createMockDocumentsRepo } from './documentsRepo';
@@ -19,12 +25,21 @@ export type { MockState, MockStore } from './state';
 export { NotFoundError } from './state';
 export * from './types';
 export { JOBS_PAGE_SIZE, matchesFilters } from './jobsRepo';
+export { matchesActivity } from './adminRepo';
+export { onAdminMockReset } from './adminMockReset';
 export { GENERATION_PROGRESS_STEP, GENERATION_TICK_MS, statusForProgress } from './generationsRepo';
 export { ConsentRequiredError, ExportBlockedError, PlanLockedError } from './state';
 
 export { DATA_EXPORT_MS } from './userRepo';
 export { ASSISTANT_TICK_MS } from './assistantRepo';
-export { createRepos, HTTP_FALLBACKS, HTTP_REPOS, isFullBackend, mockFallbacks, parseDataSources } from './create';
+export {
+  createRepos,
+  HTTP_FALLBACKS,
+  HTTP_REPOS,
+  isFullBackend,
+  mockFallbacks,
+  parseDataSources,
+} from './create';
 export type { DataSource, RepoConfig, RepoName } from './create';
 export { ApiError, collectPages, createHttpClient } from './http/client';
 export type { HttpClient, HttpClientOptions, TokenStore } from './http/client';
@@ -32,6 +47,10 @@ export { browserUploader } from './http/uploads';
 export type { FileUploader } from './http/uploads';
 
 export function createMockRepos(store: MockStore = createMockStore()): Repos {
+  const adminPeople = createMockAdminPeopleRepo();
+  const adminContent = createMockAdminContentRepo();
+  const adminBusiness = createMockAdminBusinessRepo();
+  const adminTrust = createMockAdminTrustRepo();
   return {
     user: createMockUserRepo(store),
     profile: createMockProfileRepo(store),
@@ -46,6 +65,17 @@ export function createMockRepos(store: MockStore = createMockStore()): Repos {
     assistant: createMockAssistantRepo(store),
     documents: createMockDocumentsRepo(store),
     insights: createMockInsightsRepo(),
+    // The queues count what the other admin areas hold, so the sidebar moves as staff clear them.
+    admin: createMockAdminRepo({
+      people: adminPeople,
+      content: adminContent,
+      business: adminBusiness,
+      trust: adminTrust,
+    }),
+    adminPeople,
+    adminContent,
+    adminBusiness,
+    adminTrust,
   };
 }
 
@@ -65,7 +95,11 @@ let sampleData = true;
 
 export function configureRepos(config: RepoConfig): void {
   const built = createRepos(
-    { adopt: (doc) => adoptDocument(mockStore, doc), adoptJob: (job) => adoptJob(mockStore, job), ...config },
+    {
+      adopt: (doc) => adoptDocument(mockStore, doc),
+      adoptJob: (job) => adoptJob(mockStore, job),
+      ...config,
+    },
     createMockRepos(mockStore),
   );
   Object.assign(repos, built.repos);
@@ -78,6 +112,7 @@ export function configureRepos(config: RepoConfig): void {
 /** Restores every fixture to its initial state (session mutations are discarded). */
 export function resetMockRepos(): void {
   mockStore.reset();
+  resetAdminMocks();
 }
 
 /**

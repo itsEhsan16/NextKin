@@ -1,5 +1,10 @@
 import type { AdoptedDocument } from './adopt';
 import type { HttpClient } from './http/client';
+import { createHttpAdminRepo } from './http/adminRepo';
+import { createHttpAdminPeopleRepo } from './http/adminPeopleRepo';
+import { createHttpAdminContentRepo } from './http/adminContentRepo';
+import { createHttpAdminBusinessRepo } from './http/adminBusinessRepo';
+import { createHttpAdminTrustRepo } from './http/adminTrustRepo';
 import { createHttpGenerationsRepo, GENERATIONS_FALLBACKS } from './http/generationsRepo';
 import { createHttpAssistantRepo } from './http/assistantRepo';
 import { createHttpSupportRepo } from './http/supportRepo';
@@ -39,6 +44,7 @@ export const HTTP_FALLBACKS = {
   assistant: [],
   support: [],
   events: [],
+  admin: [],
 } as const satisfies Partial<Record<RepoName, readonly string[]>>;
 
 export type HttpRepoName = keyof typeof HTTP_FALLBACKS;
@@ -150,6 +156,13 @@ export function createRepos(config: RepoConfig, mock: Repos): BuiltRepos {
         await client.request('/events', { body: { events } });
       },
     };
+  }
+  if (http.admin === 'http') {
+    repos.admin = createHttpAdminRepo(config.http);
+    repos.adminPeople = createHttpAdminPeopleRepo(config.http);
+    repos.adminContent = createHttpAdminContentRepo(config.http);
+    repos.adminBusiness = createHttpAdminBusinessRepo(config.http);
+    repos.adminTrust = createHttpAdminTrustRepo(config.http);
   }
   if (http.notifications === 'http') {
     repos.notifications = { ...mock.notifications, ...createHttpNotificationsRepo(config.http) };

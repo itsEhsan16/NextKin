@@ -23,6 +23,8 @@ export function createAuthenticator(idp: IdentityProvider, sessions: SessionStor
     const id = readSessionCookie(c.req.header('cookie'));
     if (!id) return null;
     const session = await sessions.get(id);
-    return session && session.client === 'web' ? { identity: { userId: session.userId, role: session.role }, via: 'cookie', sessionId: id, ...(session.superAdmin ? { superAdmin: true } : {}) } : null;
+    if (!session || session.client !== 'web') return null;
+    const staff = session.sub.startsWith('staff:') ? { staff: { accountId: session.sub.slice(6), mfaAt: session.mfaAt ?? session.createdAt } } : {};
+    return { identity: { userId: session.userId, role: session.role }, via: 'cookie', sessionId: id, ...(session.superAdmin ? { superAdmin: true } : {}), ...staff };
   };
 }

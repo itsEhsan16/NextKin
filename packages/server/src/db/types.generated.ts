@@ -25,6 +25,32 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface AccountDeletions {
+  completed_at: Timestamp | null;
+  due_at: Generated<Timestamp>;
+  id: Generated<string>;
+  origin: string;
+  purge_requested_at: Timestamp | null;
+  requested_at: Generated<Timestamp>;
+  requested_by: string | null;
+  subject_user_id: string;
+}
+
+export interface AbuseReports {
+  acted_at: Timestamp | null;
+  acted_by: string | null;
+  action: string | null;
+  action_note: string | null;
+  action_reason: string | null;
+  category: string;
+  created_at: Generated<Timestamp>;
+  id: Generated<Int8>;
+  reason: Generated<string>;
+  shared_report_id: string | null;
+  status: Generated<string>;
+  subject_user_id: string | null;
+}
+
 export interface Activity {
   created_at: Generated<Timestamp>;
   deep_link: string | null;
@@ -293,6 +319,17 @@ export interface ExportEvents {
   user_id: string;
 }
 
+export interface GenerationFailureActions {
+  action: string;
+  created_at: Generated<Timestamp>;
+  error_code: string | null;
+  failed_stage: string | null;
+  generation_id: string;
+  id: Generated<string>;
+  staff_user_id: string;
+  subject_user_id: string;
+}
+
 export interface GenerationEvents {
   created_at: Generated<Timestamp>;
   event: string;
@@ -317,6 +354,7 @@ export interface Generations {
   input: Generated<Json>;
   job_description_id: string | null;
   kind: string;
+  manual_retries: Generated<number>;
   org_id: string | null;
   prompt_template_version_id: string | null;
   provenance: Json | null;
@@ -382,6 +420,13 @@ export interface JobDescriptions {
   updated_at: Generated<Timestamp>;
   upload_id: string | null;
   user_id: string;
+}
+
+export interface JobProviderCalls {
+  calls: Generated<number>;
+  day: Timestamp;
+  errors: Generated<number>;
+  provider: string;
 }
 
 export interface JobProviderConfigs {
@@ -475,6 +520,15 @@ export interface Payments {
   subscription_id: string | null;
   tax_minor: Generated<Int8>;
   user_id: string;
+}
+
+export interface PriceBookVersions {
+  annual: Json;
+  created_at: Generated<Timestamp>;
+  created_by: string | null;
+  effective_from: Generated<Timestamp>;
+  monthly: Json;
+  version: number;
 }
 
 export interface Plans {
@@ -719,6 +773,8 @@ export interface RubricVersions {
   id: Generated<string>;
   is_current: Generated<boolean>;
   rationale: string;
+  rationale_updated_at: Timestamp | null;
+  rationale_updated_by: string | null;
   version: string;
   weights: Json;
 }
@@ -777,13 +833,30 @@ export interface SharedReports {
   user_id: string;
 }
 
+export interface SkillCategories {
+  created_at: Generated<Timestamp>;
+  created_by: string | null;
+  id: string;
+  name: string;
+}
+
+export interface SkillMergeDismissals {
+  dismissed_at: Generated<Timestamp>;
+  dismissed_by: string | null;
+  skill_id: string;
+  term_key: string;
+}
+
 export interface Skills {
   aliases: Generated<string[]>;
   canonical_name: string;
+  category_id: string | null;
   created_at: Generated<Timestamp>;
   id: Generated<string>;
+  parent: string | null;
   technology_id: string | null;
   updated_at: Generated<Timestamp>;
+  updated_by: string | null;
 }
 
 export interface SkillTrends {
@@ -914,8 +987,51 @@ export interface WebhookEvents {
   type: string;
 }
 
+export interface StaffAccounts {
+  created_at: Generated<Timestamp>;
+  email: string;
+  failed_attempts: Generated<number>;
+  id: Generated<string>;
+  invited_by: string | null;
+  last_sign_in_at: Timestamp | null;
+  last_sign_in_ip: string | null;
+  locked_until: Timestamp | null;
+  must_change_password: Generated<boolean>;
+  name: string;
+  password_changed_at: Timestamp | null;
+  password_hash: string;
+  role: string;
+  status: Generated<string>;
+  totp_added_at: Timestamp | null;
+  totp_last_step: Int8 | null;
+  totp_last_used_at: Timestamp | null;
+  totp_sealed: string | null;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
+export interface StaffBackupCodes {
+  code_hash: string;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  staff_id: string;
+  used_at: Timestamp | null;
+}
+
+export interface AdminSettings {
+  allowed_networks: Generated<Json>;
+  id: Generated<boolean>;
+  reauth_for_sensitive: Generated<boolean>;
+  session_timeout_minutes: Generated<number>;
+  updated_at: Generated<Timestamp>;
+  updated_by: string | null;
+}
+
 export interface DB {
+  account_deletions: AccountDeletions;
+  abuse_reports: AbuseReports;
   activity: Activity;
+  admin_settings: AdminSettings;
   ai_calls: AiCalls;
   anonymous_uploads: AnonymousUploads;
   app_settings: AppSettings;
@@ -935,10 +1051,12 @@ export interface DB {
   experience_skills: ExperienceSkills;
   export_events: ExportEvents;
   generation_events: GenerationEvents;
+  generation_failure_actions: GenerationFailureActions;
   generations: Generations;
   idempotency_keys: IdempotencyKeys;
   interview_question_sets: InterviewQuestionSets;
   job_descriptions: JobDescriptions;
+  job_provider_calls: JobProviderCalls;
   job_provider_configs: JobProviderConfigs;
   jobs_cache: JobsCache;
   kb_dataset_versions: KbDatasetVersions;
@@ -948,6 +1066,7 @@ export interface DB {
   outbox: Outbox;
   payments: Payments;
   plans: Plans;
+  price_book_versions: PriceBookVersions;
   product_events: ProductEvents;
   profile_links: ProfileLinks;
   profile_skills: ProfileSkills;
@@ -970,8 +1089,12 @@ export interface DB {
   security_events: SecurityEvents;
   sessions: Sessions;
   shared_reports: SharedReports;
+  skill_categories: SkillCategories;
+  skill_merge_dismissals: SkillMergeDismissals;
   skill_trends: SkillTrends;
   skills: Skills;
+  staff_accounts: StaffAccounts;
+  staff_backup_codes: StaffBackupCodes;
   subscriptions: Subscriptions;
   support_tickets: SupportTickets;
   taxonomy_versions: TaxonomyVersions;

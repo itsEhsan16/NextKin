@@ -163,6 +163,10 @@ const schema = z.object({
     .pipe(z.array(z.string().regex(/^https?:\/\/[^/\s]+$/, 'an origin such as https://*.trycloudflare.com'))),
   // Signs pagination cursors. Long and random in every shared environment.
   CURSOR_SECRET: z.string().min(32),
+  // Seals staff authenticator secrets (AES-256-GCM) and keys their backup-code hashes (toreview
+  // §171.13). Long and random in every shared environment; changing it voids every enrolled
+  // authenticator and backup code, so each staff member sets theirs up again.
+  STAFF_TOTP_KEY: z.string().min(32).default('local-staff-totp-key-not-for-shared-environments'),
   // The header a trusted proxy puts the client IP in. CloudFront-Viewer-Address in the cloud;
   // locally Next sets X-Forwarded-For from the socket. Never trust X-Forwarded-For behind the edge.
   TRUSTED_IP_HEADER: z.enum(['cloudfront-viewer-address', 'x-forwarded-for']).optional(),
@@ -235,6 +239,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       refused.push(`MOBILE_REDIRECT_ALLOWLIST may not include exp:// (Expo Go) in ${config.APP_ENV}`);
     }
     if (/local|test|change-me/i.test(config.CURSOR_SECRET)) refused.push(`CURSOR_SECRET looks like a placeholder in ${config.APP_ENV}`);
+    if (/local|test|change-me/i.test(config.STAFF_TOTP_KEY)) refused.push(`STAFF_TOTP_KEY looks like a placeholder in ${config.APP_ENV}`);
     if (config.AI_RECORD) refused.push(`AI_RECORD (fixture recording) is refused in ${config.APP_ENV}`);
     if (config.CLERK_SECRET_KEY?.startsWith('sk_test_')) refused.push(`CLERK_SECRET_KEY is a Clerk development key and is refused in ${config.APP_ENV}`);
     if (config.ANTHROPIC_API_KEY) refused.push(`ANTHROPIC_API_KEY (a developer key, D-23) is refused in ${config.APP_ENV}; production uses Claude Platform on AWS`);

@@ -165,15 +165,5 @@ describe('the admin API (P12-01…P12-05)', () => {
     const after = await catalog.setPlanPrices(h.db, superAdmin, 'pro_monthly', before.prices as { USD: number; EUR: number; AUD: number }, meta);
     expect(after.price_version).toBe(before.price_version + 1);
   });
-
-  it('roles are assigned by Super Admin to staff accounts only', async () => {
-    const superAdmin = await staffMember('super_admin');
-    const target = await staffMember('support');
-    await h.stack.local!.upsertAccount({ sub: `local|staff-${target.identity.userId}`, pool: 'admins', email: `t-${target.identity.userId.slice(0, 8)}@nkt.test`, password: PASSWORD, groups: ['support'] });
-    const deps = { db: h.db, log, provider: { name: 'fake' } as never, idp: h.stack.identity.idp, sessions: h.stack.identity.sessions };
-    expect(await users.setRoles(deps, superAdmin, target.identity.userId, ['curator'], meta)).toEqual({ groups: ['curator'] });
-    const row = await h.db.withSystem('test: read the role', (tx) => tx.selectFrom('users').select('role').where('id', '=', target.identity.userId).executeTakeFirstOrThrow());
-    expect(row.role).toBe('curator');
-    await expect(users.setRoles(deps, superAdmin, (await member()).userId, ['admin'], meta)).rejects.toMatchObject({ code: 'NOT_FOUND' });
-  });
+  // Role assignment moved with the staff accounts: adminStaffPortal.int.test.ts (toreview §171.13).
 });

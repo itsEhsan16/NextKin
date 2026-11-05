@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono, z, type RouteConfig } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { sql } from 'kysely';
-import { acceptedSchema, adminLoginSchema, changePasswordSchema, confirmSchema, emailOnlySchema, loginSchema, mobileSessionSchema, resetPasswordSchema, sessionSchema, signUpSchema } from '@nextkin/shared/schemas/auth';
+import { acceptedSchema, changePasswordSchema, confirmSchema, emailOnlySchema, loginSchema, mobileSessionSchema, resetPasswordSchema, sessionSchema, signUpSchema } from '@nextkin/shared/schemas/auth';
 import { AuthError, type IdentityProvider } from '../../auth/ports/identity';
 import { authErrorToApp, type AuthService } from '../../auth/service';
 import { clearSessionCookie, readSessionCookie, type SessionMeta, type SessionStore } from '../../auth/sessions';
@@ -170,35 +170,7 @@ export function authRoutes(deps: AuthRouteDeps): OpenAPIHono<ApiEnv> {
     },
   );
 
-  app.openapi(
-    route({
-      method: 'post',
-      path: '/auth/admin/login',
-      summary: 'Staff sign-in (admins pool): password plus TOTP. Web only.',
-      request: { body: json(adminLoginSchema) },
-      responses: {
-        200: ok('Signed in.', sessionSchema),
-        ...authErrors,
-        ...commonErrors,
-      },
-    }),
-    async (c) => {
-      const { email, password, totp } = c.req.valid('json');
-      assertSameOriginForWeb(c, 'web', trusted);
-      const result = await deps.idp
-        .signIn({
-          email,
-          password,
-          totp,
-          pool: 'admins',
-          clientId: 'nextkin-admin',
-        })
-        .catch(authErrorToApp);
-      const signedIn = await deps.auth.complete(result, 'web', requestMeta(c)).catch(authErrorToApp);
-      c.header('Set-Cookie', signedIn.cookie!);
-      return c.json(checked(sessionSchema, { user: signedIn.user }), 200);
-    },
-  );
+  // Staff sign-in is the server's own (`authStaff.ts`, toreview §171.13), not the identity provider's.
 
   app.openapi(
     route({

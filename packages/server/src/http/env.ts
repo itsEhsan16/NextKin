@@ -11,6 +11,8 @@ export interface Authenticated {
   sessionId?: string;
   /** A Super Admin staff session (§7.17), from the admin pool's `super_admin` group at sign-in. */
   superAdmin?: boolean;
+  /** Staff sessions (toreview §171.13): the staff account, and when its authenticator was last proven. */
+  staff?: { accountId: string; mfaAt: number };
 }
 
 /** Per-request values set by the middleware chain (ImBackendImplementationPlan P3-03). */

@@ -147,8 +147,12 @@ export interface DeletionDeps {
   log: Logger;
 }
 
-/** The irreversible part happens now; the purge removes what is left within a day (§8.5: within 30). */
-export async function deleteAccount(deps: DeletionDeps, identity: Identity): Promise<void> {
+/**
+ * The irreversible part happens now; the purge removes what is left within a day (§8.5: within 30).
+ * Each deletion opens a row in `account_deletions`, the record the admin deletion queue reads and
+ * which outlives the account; `requestedBy` names the staff member when an admin deleted it.
+ */
+export async function deleteAccount(deps: DeletionDeps, identity: Identity, requestedBy?: string): Promise<void> {
   const { sub, subscriptionRef } = await deps.db.withUser(identity, async (tx) => {
     const user = await tx.selectFrom('users').select(['identity_sub', 'status']).where('id', '=', identity.userId).executeTakeFirst();
     if (!user || user.status === 'deleted') throw errors.notFound('account');
@@ -171,6 +175,13 @@ export async function deleteAccount(deps: DeletionDeps, identity: Identity): Pro
       .execute();
     await tx.insertInto('security_events').values({ user_id: identity.userId, kind: 'deletion_requested' }).execute();
   });
+  await deps.db.withSystem('privacy: record a deletion request', (tx) =>
+    tx
+      .insertInto('account_deletions')
+      .values({ subject_user_id: identity.userId, origin: requestedBy ? 'admin' : 'user', requested_by: requestedBy ?? null })
+      .onConflict((oc) => oc.column('subject_user_id').where('completed_at', 'is', null).doNothing())
+      .execute(),
+  );
 }
 
 /** The daily purge: files by reference, then the user row (cascading through every owned table). */
@@ -187,6 +198,8 @@ export async function purgeDeletedAccounts(deps: PrivacyDeps & { avatarsBucket?:
       for (const a of archives) await deps.storage.remove(deps.exportsBucket, a.object_key!).catch(() => undefined);
       if (user.avatar_key && deps.avatarsBucket) await deps.storage.remove(deps.avatarsBucket, user.avatar_key).catch(() => undefined);
       await tx.deleteFrom('users').where('id', '=', user.id).execute();
+      // The request's record stays, now finished (the admin deletion queue, §8.5's 30 days).
+      await tx.updateTable('account_deletions').set({ completed_at: sql`now()` }).where('subject_user_id', '=', user.id).where('completed_at', 'is', null).execute();
     });
     purged++;
   }

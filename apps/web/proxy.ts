@@ -23,8 +23,13 @@ const headers = pageSecurityHeaders({
 const SESSION_COOKIE = '__Host-nk_session';
 const SOURCE = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? '').trim();
 const USES_BACKEND = SOURCE !== '' && SOURCE !== 'mock';
-/** The `(app)` route group: everything behind the shell. */
+/**
+ * The `(app)` route group: everything behind the shell. And the admin portal, whose own guard is
+ * the server (`/api/v1/admin/*` refuses a non-staff session); a signed-out visitor to it goes to
+ * the staff sign-in (Figma 410:1605) rather than the user app's.
+ */
 const APP_ROUTES = [
+  'admin',
   'applications',
   'assistant',
   'create',
@@ -41,8 +46,12 @@ const APP_ROUTES = [
   'upload-jd',
 ];
 
+/** Staff sign in here, so it must open without a session. */
+const ADMIN_SIGN_IN = '/admin/sign-in';
+
 function needsSession(pathname: string): boolean {
   if (pathname === '/') return true;
+  if (pathname === ADMIN_SIGN_IN || pathname.startsWith(`${ADMIN_SIGN_IN}/`)) return false;
   const first = pathname.split('/')[1] ?? '';
   return APP_ROUTES.includes(first);
 }
@@ -59,7 +68,7 @@ function pages(request: NextRequest) {
     !request.cookies.has(SESSION_COOKIE)
   ) {
     const signIn = request.nextUrl.clone();
-    signIn.pathname = '/sign-in';
+    signIn.pathname = request.nextUrl.pathname.startsWith('/admin') ? ADMIN_SIGN_IN : '/sign-in';
     signIn.search = '';
     return withHeaders(NextResponse.redirect(signIn));
   }

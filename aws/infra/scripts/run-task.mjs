@@ -4,6 +4,9 @@
 //   pnpm --filter @nextkin/infra task seed       reference data, demo accounts and personas
 //   pnpm --filter @nextkin/infra task seed-reference   prompts, routing and other reference rows only;
 //                                                 the demo's accounts are left as they are (toreview §160)
+//   pnpm --filter @nextkin/infra task staff-create --email you@co --name Your_Name   one staff account
+//                                                 (Super Admin unless --role); prints its temporary
+//                                                 password once (toreview §171.13)
 // And pauses the demo between demos (owner, 2026-10-24), which stops the Fargate and public-IP
 // charges; the load balancer, secrets and database storage keep billing, and Aurora idles at zero:
 //   pnpm --filter @nextkin/infra task pause      every service to 0 tasks
@@ -15,9 +18,14 @@ import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const TASKS = { 'db-roles': 'DbRolesTask', migrate: 'MigrateTask', seed: 'SeedTask', 'seed-reference': 'SeedTask' };
+const TASKS = { 'db-roles': 'DbRolesTask', migrate: 'MigrateTask', seed: 'SeedTask', 'seed-reference': 'SeedTask', 'staff-create': 'SeedTask' };
 // The seed container's command passes `$SEED_ARGS` on to seed.mjs.
-const ARGS = { 'seed-reference': '--reference-only' };
+// The seed container expands $SEED_ARGS unquoted, so each argument must be one word: write a name
+// with spaces as Ada_Admin (the seed turns underscores back into spaces).
+const ARGS = {
+  'seed-reference': '--reference-only',
+  'staff-create': ['--staff-create', ...process.argv.slice(3).filter((a) => a !== '--')].join(' '),
+};
 // Support (Valkey, Mailpit) and ClamAV first, so web and worker find them when they start.
 const SERVICES = ['support', 'clamav', 'latex', 'links', 'web', 'worker'].map((s) => `nextkin-demo-${s}`);
 const name = process.argv[2];
@@ -86,5 +94,6 @@ const done = aws('ecs', 'describe-tasks', '--cluster', outputs.ClusterName, '--t
 const container = done.containers[0];
 const code = container.exitCode;
 console.log(`${name}: exit ${code ?? 'none'}${done.stoppedReason ? ` (${done.stoppedReason})` : ''}`);
-console.log(`logs: aws logs tail /nextkin-demo/${name.replace('-reference', '')} --profile ${profile} --region us-east-1`);
+const logName = name === 'staff-create' ? 'seed' : name.replace('-reference', '');
+console.log(`logs: aws logs tail /nextkin-demo/${logName} --profile ${profile} --region us-east-1`);
 process.exit(code === 0 ? 0 : 1);

@@ -6,6 +6,7 @@ const base = {
   DATABASE_URL: 'postgres://nextkin_app:pw@127.0.0.1:5432/nextkin',
   VALKEY_URL: 'redis://127.0.0.1:6379',
   CURSOR_SECRET: 'Zq3v9Kp2Wm8Xr4Ty7Ub1Nc6Hd5Fg0JsQe8Lw',
+  STAFF_TOTP_KEY: 'Hk4m8Qw2Zr6Tb9Yp3Nd7Xc1Vf5Gj0Ls2Ue',
 };
 
 describe('loadConfig', () => {
@@ -107,6 +108,7 @@ describe('loadConfig', () => {
       } catch (error) {
         const { problems } = error as ConfigError;
         expect(problems.some((p) => p.startsWith('CURSOR_SECRET'))).toBe(true);
+        expect(problems.some((p) => p.startsWith('STAFF_TOTP_KEY'))).toBe(false);
         expect(problems.some((p) => p.startsWith('TRUSTED_IP_HEADER'))).toBe(true);
       }
     });

@@ -29,7 +29,8 @@
     "drills": "vitest run --project drills",
     "render-check": "tsx --env-file-if-exists=../../.env src/entrypoints/render-check.ts",
     "fixtures:jobs": "tsx src/entrypoints/write-job-fixtures.ts",
-    "load:users": "tsx --env-file-if-exists=../../.env src/entrypoints/load-users.ts"
+    "load:users": "tsx --env-file-if-exists=../../.env src/entrypoints/load-users.ts",
+    "staff:create": "tsx --env-file-if-exists=../../.env src/entrypoints/staff-create.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "~0.133.0",

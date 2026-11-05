@@ -15438,3 +15438,587 @@ The owner's direction: more robust, and give the AI more power, rather than patc
   - a review edit to sections, projects or bullet order is allowed even when those parts are switched off, since order isn't text;
   - header choices default to Keep;
   - the review runs on the generation tier (Sonnet), so a tailored run costs one more call.
+
+## 171. Admin portal, slice 1: the shell and the Overview (owner, 2026-11-05)
+
+Built on branch `admin/portal` in the worktree `../NextKin-admin`, off `main`. Numbered 171 because the design session's uncommitted notes (worktree `admin-dashboard-design-f15079`) call themselves §169 and §169.1, which clashes with the Clerk §169 on `jd/structured-engine`. Their content is summarised in 171.1.
+
+### 171.1 The boards (from the design session's notes)
+
+- **Page:** For-Next-Kin, "🛠 Admin" (`382:936`). The owner picked **Direction A · Light ops** (`394:536`); B (`397:551`) and C (`398:566`) stay for reference. Every screen is a clone of the shell template `401:1431`.
+- **The 23 boards, by sidebar group:**
+  - People: Users `404:614`, User detail `406:2360`, Suspend dialog `407:2388`, View resume content dialog `407:2782`, Staff & roles `408:2050`, Deletion requests `408:2745`.
+  - Content: AI prompts `406:662`, Prompt detail `407:3141`, Technology KB `409:1872`, KB review `410:1771`, Skills & aliases `406:1829`, Templates `407:1841`, ATS rubric `408:3123`.
+  - Business: Plans & pricing `406:2873`, Analytics `407:1430`, Job providers `408:3596`.
+  - Trust & safety: Generation failures `406:1195`, Abuse reports `407:946`, Audit log `408:1531`, Settings `409:1500`, MFA sign-in `410:1605`.
+- **Content the designer invented:** extra staff, earlier price-book versions, rubric v3 weights, retention values, error codes, the model name, template revisions. Check these when those screens are built.
+
+### 171.2 Built in this slice
+
+- **Routes:**
+  - `/admin` is the Overview.
+  - `/admin/<section>` shows "coming soon" for each unbuilt sidebar row. An address no row claims is a 404.
+  - The admin pages have their own layout (`app/admin/layout.tsx`), not the user app's `(app)` shell.
+- **Shell** (`src/features/admin/shell`):
+  - Sidebar rows are filtered by role, using `ADMIN_ROLE_PERMISSIONS` (a copy of the server's matrix).
+  - The top bar has breadcrumbs and a status pill that reads `/health/features`.
+  - Below 1024px the sidebar opens as an overlay.
+  - The staff card's sign-out uses the user app's `signOut`.
+- **Overview** (`screens/AdminOverviewScreen.tsx`): every card on board 394:536. Each card has loading, empty and error states, plus a "Not connected yet" state for data the source doesn't serve. Copy and figures match the board.
+- **Data:**
+  - `AdminRepo` in `packages/shared`: `me`, `overview(range)`, `queues` and `activity(query)`.
+  - Mock fixtures: `mock/fixtures/admin.ts`.
+  - HTTP: `repos/http/adminRepo.ts`.
+  - A new data-source key `admin`. `NEXT_PUBLIC_DATA_SOURCE=http` now includes it.
+- **Animated icons** (owner's request):
+  - `src/ui/animated/`: `AdminIcon` plus the `iconMap.ts` name map.
+  - A whole row, button or card plays its icon on hover or keyboard focus (`useIconHover`).
+  - Reduced motion keeps every icon still.
+
+### 171.3 Judgement calls to confirm
+
+- **Icon sources:**
+  - lucide-animated is the main source. Its icons are copied into `src/ui/animated/lucide/` by `scripts/vendor-animated-icons.mjs`: their `div` wrapper becomes a `span`, and `cn` is imported from `@/lib/cn`.
+  - react-useanimations fills the gaps: UserX01, Database01, Tag01, AlertTriangle, Flag01, DotsVertical, FilterLines.
+  - **animate-ui isn't used.** Every gap lucide-animated leaves is either filled by react-useanimations or missing from animate-ui too (no scale, building, coins or database).
+  - The admin pages now use two animation runtimes: `motion` and the useanimations player.
+- **Substituted glyphs:** where an animated set has no exact match for a board icon, the nearest equivalent is used.
+  - Scale02 (ATS rubric) → `gauge`
+  - CoinsStacked01 → `hand-coins`
+  - Globe01 → `earth`
+  - LayoutAlt01 → `layout-panel-top`
+  - BarChart10 → `chart-column-increasing`
+  - Stars02 → `sparkles`
+  - HomeLine → `home`
+  - Calendar → `calendar-days`
+
+  The strokes are Lucide's, not Untitled UI's, so they read slightly heavier than the board.
+- **Vendored icons keep their own durations and springs.** They are third-party, so they are exempt from the motion tokens.
+- **New tokens.** These are slate and indigo steps the admin boards bind that the user app had no use for:
+  - neutral 300, 500, 600
+  - brand 200, 300, 500
+  - warning 600 (`#b45309`)
+  - `--stagger-step`, and the `bar-grow` and `line-draw` animations
+- **Board copy that doesn't add up:**
+  - The Sat Nov 1 tooltip says 812 runs, but its kinds add to 813. The page prints 813.
+  - The donut's centre figure ($7,260) adds USD, EUR and AUD 1:1. The fixture keeps the board's figure. Real data needs an exchange rate.
+- **Layout:**
+  - Container queries decide the layout. The queue column sits beside the chart from 1400px of content; below that, the four lower cards go two by two.
+  - **Sizes are the board's own** (owner, 2026-11-05: "replicate the design"), not the user app's compact tokens. A box-by-box measurement at 1920 matches board 394:536, with two exceptions:
+    - The active row stays 38px. The board's active Overview row is 40, because it gains a border, but matching that would make the rows jump 2px on every navigation.
+    - The ⌘K key is 33px wide; the board's is 30, because the glyphs render wider.
+  - Where no token holds a board size, the value is written in place: the 20.8px wordmark, 42px search field, 38px rows, 44/46px header buttons, 38px card buttons, and -1.5% tracking on the title and the big figures. New token: `shadow-xs`, the board's 1px lift.
+  - **Fixed:** in a window shorter than the sidebar, the browser squeezed its items, and the search field and ⌘K key flattened (the owner's screenshot). The items no longer shrink; the sidebar scrolls instead.
+  - Hit areas stay 44px, but they sit around the board's smaller glyphs (the ⋮, the sign-out button, the top bar's icons) rather than growing the headers.
+  - **The portal scales to fit the board** (owner, 2026-11-05, pointing at MiTow's admin: "designed at 1920, adjusted, looks really good"). Scale = window width ÷ 1920, kept between 0.8 and 1, as `zoom` on `<body>` while the admin shell is on the page (`features/admin/shell/adminScale.ts`, `theme.css`). So a 1536 window (1920 at 125% Windows scaling) shows the board's exact composition at 80%, and menus and dialogs scale with it. Below 1536 the scale stays at 0.8 and the container queries reflow.
+    - **To confirm:**
+      - The 0.8 floor.
+      - At 1366, two KPI titles truncate ("Generation reliabi…").
+      - Browser zoom (Ctrl +) narrows the window, so the page partly cancels it until the floor is reached. That's a cost to anyone who zooms to read. If that matters for staff, the fix is to base the scale on the screen rather than the window.
+  - The sidebar's staff card is pinned at the foot and only the rows scroll, so on a short window the card stays visible.
+- **The charts are interactive** (owner, 2026-11-05; the boards draw only the resting state, so the interaction is my design):
+  - **ATS histogram:** a bucket in focus lifts and the rest fade. A tooltip gives the band, its checks and their share; on a tall bar it sits beside the bar, not over the heading. The mean marker hides while a bucket is in focus. The marker sits inside the bucket that holds the mean, at the mean's place in that band: 71.4 is 14% of the way across the 70–80 bar. It used to sit at 71.4% of the plot width, which the gaps between bars pushed onto the bar's edge, where it read as a glitch (owner, 2026-11-05). The board's own line is about 1px inside the bar. The score labels now sit on the boundaries between buckets.
+  - **AI cost:** the meter segment and its stage row share one focus. The segment's tooltip gives its amount and share.
+  - **Pro subscriptions:** a donut segment, or its currency row, thickens and the rest fade, and the middle switches to that currency's amount and share.
+  - Every one of these works from the keyboard as well: each bucket, row and legend item can be tabbed to, and has a spoken name.
+- **Export now works, on the data already on screen:** the Overview's Export saves the window's aggregates as a CSV; the activity card's Export saves the rows shown, with targets masked.
+- **Controls that look right but don't work yet:** the sidebar's ⌘K search, the bell, and the activity card's Filters. Each says "coming soon" on hover. They keep the board's full-strength look rather than the user app's 60% dim (`adminSoon`).
+- **Sidebar permissions the spec doesn't state.** Please confirm each:
+  - Staff & roles and Settings: `roles.assign`
+  - Deletion requests: `users.manage`
+  - Generation failures and Abuse reports: `users.read`
+  - ATS rubric: `analytics.read`, which is what the server's rubric route checks
+- **Lockfile churn:** `pnpm add` re-resolved some peer-dependency suffixes in `pnpm-lock.yaml` (expo-router, jest-expo, eslint-import-resolver). Typecheck, lint and tests passed afterwards.
+
+### 171.4 Backend gaps (the Overview on `http`)
+
+- **Served and shown:**
+  - runs by kind, and their failures
+  - the ATS buckets
+  - AI spend by tag
+  - active Pro count
+  - the KB review count and prompt drafts
+  - audit rows
+- **"Not connected yet":**
+  - **Overview cards and figures:**
+    - the four headline cards (no daily series, previous window or targets)
+    - runs per day and p95
+    - pipeline health (queue depth, SLA)
+    - provider share and error rates
+    - revenue per currency and the monthly/annual split
+    - the ATS mean and rubric version
+    - cost per resume
+  - **Queues:** generation failures, deletion requests, abuse reports, provider errors.
+- **No tailor kind on the server.** Tailor runs count as `resume`, so the HTTP mode shows Tailor as 0.
+- **Audit rows name the actor by id only.** There is no staff-list route, so on `http` the staff column shows a masked id.
+- **Staff can't sign in to the HTTP mode locally.** The local `.env` uses Clerk, which refuses `/auth/admin/login` (§169 on `jd/structured-engine`). It works with `IDENTITY_ADAPTER=local` and the seed. I didn't change `.env`.
+- **Staff sign-in** is built (171.8): on the backend, a signed-out visit to `/admin/*` goes to `/admin/sign-in`.
+
+### 171.6 People (owner, 2026-11-05: "not just one but all")
+
+Built: Users `404:614`, User detail `406:2360`, the Suspend dialog `407:2388` and View resume content dialog `407:2782`, Staff & roles `408:2050`, Deletion requests `408:2745`. Routes `/admin/users`, `/admin/users/[id]`, `/admin/staff`, `/admin/deletion-requests`.
+
+On the mock everything works and changes session state: search, tabs, sort, paging, row selection, suspend/reactivate, comp, password reset, role change and deletion.
+
+- **Judgement calls:**
+  - **Users table:**
+    - Rows keep the board's order. "Signed up" sorts newest first on the first click.
+    - Avatars are tinted by row position, as drawn.
+    - The pager counts the rows that exist ("Page 1 of 1"). The headline totals and tab counts keep the board's platform figures.
+  - **Export and Filters:** Export CSV saves the selected rows, or the page if none are selected. Filters is "coming soon".
+  - **Dialogs the boards don't draw:**
+    - Reactivate mirrors Suspend.
+    - Password reset, Delete account, Comp Pro (1/3/6/12 months), Process now, Change role and Invite staff are built from the kit.
+    - Each asks for a reason of 3+ characters where the server stores one.
+  - **Reading a resume** needs a reason of 10+ characters. The content opens in a read-only side panel and nothing is cached.
+  - **User detail tabs:** Overview is the board's layout; each other tab shows its card in full.
+  - **Role gating:**
+    - "View content" is disabled without `users.content`.
+    - Manage actions are hidden without `users.manage`.
+    - Role changes need `roles.assign`.
+    - Nobody can change their own role.
+  - **Staff avatars** are tinted by role, as on the Staff board. This differs from the Overview's audit rows.
+  - **Due dates:** the two boards disagree. On Deletion requests, "Due in 7 days" and "Days left" are worked out from the due dates, which gives 3 days. The Users card keeps its own board copy, "next due in 4 days".
+  - **The permission matrix** is built from `ADMIN_ROLE_PERMISSIONS`.
+  - **Breadcrumb:** it names the user ("People › Users › Aarav Mehta"), using the shell's new `useAdminCrumb`.
+- **Invented content:**
+  - Detail pages for users other than Aarav, built from their list rows.
+  - Free/Pro limits for cover letters, ATS checks and interview sets.
+  - Each user's resume entries, and the resume text in the viewer.
+  - 15 completed deletion requests behind the board's "21".
+  - The full Stripe customer id behind "cus ···8KfQ".
+- **Backend gaps (HTTP):**
+  - **Users list:** `/admin/users?q=` needs 2+ characters and returns at most 50 rows. It serves no plan, usage, last-active or resume count. So on HTTP the list asks staff to search first, and Free/Pro and Deletion pending can't filter.
+  - **Not served at all:**
+    - the Users headline totals
+    - per-user resume lists, usage, billing, MFA state, sign-in method and admin actions
+    - the staff list and invites
+    - the deletion queue
+  - **Security events** come without a device; the result is inferred from the event kind.
+  - **Resume content** has no documented shape, so the viewer lists its top-level fields.
+  - **Process now** calls the immediate `POST /admin/users/{id}/delete`; there is no queue endpoint.
+
+### 171.7 Business
+
+Built: Plans & pricing `406:2873`, Analytics `407:1430`, Job providers `408:3596`. Routes `/admin/plans`, `/admin/analytics`, `/admin/providers`.
+
+On the mock:
+- Price versions publish and retire the old one; the Free plan's price can't be edited.
+- Quotas save; blank means unlimited.
+- Providers switch on and off and take a daily ceiling.
+- Keys are write-only and only ever show "Key set".
+- Comps can be granted and ended.
+
+- **Judgement calls:**
+  - **ATS on Analytics:** bars only (`AtsSpreadCard`). The board draws no axis or mean marker there, and the darkest bar is the most common band.
+  - **Price versions:** one version always sets both Pro plans in all three currencies.
+  - **A provider switched back on** shows no health until traffic is measured.
+  - **Amber thresholds:**
+    - quota used at 60% or more
+    - error rate at 1% or more
+    - Free-plan cap share at 10% or more
+    - the funnel's weakest step
+  - **Add provider** is "coming soon": there is no create route. Provider priority has no UI because the board draws none.
+  - **Row menus:** the board draws only the ⋮. They offer "Start a new version from this" and "End comped access".
+  - **Analytics Export** saves the on-screen aggregates.
+- **Invented content:**
+  - Two comped rows on page 2.
+  - ATS bucket counts, fitted so the board's text holds exactly: 6,212 checks, 15% below 60, and 70–79 the most common. The bars are therefore approximate.
+  - Error sparklines and tooltip wording.
+  - The 7-day and 90-day windows, scaled from the 30-day figures.
+- **Backend gaps (HTTP):**
+  - **Plans:** price history, the comp list and ending a comp aren't served. Nor are plan member counts or who changed quotas.
+  - **Analytics:**
+    - Not served: the activation funnel, quota-at-cap shares, runs per active user, p95, and the ATS mean, median and rubric version.
+    - Not served: model tokens, cache hits and provider errors.
+    - Retention is week 4 only, and `/admin/analytics` covers 30 days whichever window is picked.
+  - **Providers:** calls today, health, error rate and trend, attribution, and when and by whom a key was added aren't served. Comp on HTTP needs a real user id.
+
+### 171.8 Trust & safety, Settings and staff sign-in
+
+Built: Generation failures `406:1195` with the run side panel `406:1691`, Abuse reports `407:946`, Audit log `408:1531`, Settings `409:1500`, MFA sign-in `410:1605`. Routes `/admin/failures`, `/admin/abuse-reports`, `/admin/audit`, `/admin/settings`, and `/admin/sign-in` (outside the shell).
+
+On the backend, `proxy.ts` sends a signed-out visitor to `/admin/*` to `/admin/sign-in`.
+
+- **Judgement calls:**
+  - **Failures and Abuse reports open on All.** Both boards highlight Open but list every status, and their totals are the All totals. The Open tab's count is indigo, as drawn.
+  - **Board figures that contradict the drawn rows are kept:** "oldest 2 h ago" and "oldest received 3 h ago". The open counts are recounted from the rows.
+  - **Fixture times never land in the future.** A drawn time of day that hasn't come yet today moves back a day.
+  - **Settings:**
+    - Only Security is drawn. Sessions and Data retention show their card from Security, and Notifications is "coming soon".
+    - The breadcrumb names the tab ("Settings › Security").
+    - Settings won't save an allowed-networks list that would lock you out.
+  - **Report actions** each ask for a reason code and a note. Suspend from a report settles the report only on the mock.
+  - **Small differences from the board:**
+    - The sign-in shield is 20px, not 24.
+    - The disabled toggle is at 60% opacity, not 50%.
+    - "Ask a Super Admin to reset MFA" is plain text, not a link.
+  - **Extra controls from the kit:** Filters menus, row ⋮ menus, and the Audit log's date range (7/30/90 days, all time).
+- **Invented content:**
+  - The 452 older failures, the page-2 reports and about 4,800 audit events behind the boards' totals.
+  - Run panels for runs other than c51a.
+  - Report reasons, owners and glyphs.
+  - The Settings confirm dialogs and the backup-code format.
+  - Staff IPs and ids.
+- **Design-gated:** the email-and-password step and the backup-code step of staff sign-in. No board draws them; they reuse the MFA card. On the mock any credentials work, then any 6 digits.
+- **Backend gaps (HTTP):**
+  - **Not served:** the failure queue and its actions; abuse reports and their actions; admin settings. Those screens say "Not connected yet" and their actions refuse.
+  - **Audit log:**
+    - There is no free-text search, so search filters the 500 rows served.
+    - With no total served, the count reads "500+ shown".
+    - Actors appear by masked id.
+    - Export downloads `/admin/audit/export` directly.
+  - **Sign-in:** `/auth/admin/login` accepts only 6-digit TOTP codes, not backup codes, and needs `IDENTITY_ADAPTER=local`.
+- **Audit fixes (2026-11-05, after the board audit, TAS-*):**
+  - **The mock audit log records staff actions.** `packages/shared/src/repos/adminAuditLog.ts` keeps this session's rows, newest first, ahead of the fixture; every admin mock repo calls `recordAdminAudit` where it changes something (people, content, prompts, KB, business, trust). The actor is Ehsan from 41.216.88.7. The rows go on mock reset. Judgement calls:
+    - Where the model has no target type, the row borrows one: runs file under Users ("run ···c51a"), reports under Resume content ("report RPT-1029"), plans under Users (as the HTTP mapping does), skills and categories under Technology KB, and templates and the rubric under Prompts.
+    - Action labels follow the server's vocabulary where it has one (`ACTION_LABEL` in `repos/http/adminTrustAudit.ts`). Settings changes, backup codes, runs and reports have no server code yet, so their labels are ours.
+    - Prompt autosaves and sandbox runs aren't recorded. Neither changes what users get.
+  - **IPs stay masked everywhere on the mock.** Export CSV writes the masked address, and search matches only the masked form, so the hidden octets can't be probed. The server's `/admin/audit/export` still has to follow the same rule; not checked.
+  - **Backup codes work on the mock.** Any code in the `xxxx-xxxx` form signs in once and spends one of the codes Settings counts. A refused code says "That backup code didn’t work. Each code works once." On HTTP the server still refuses them (above).
+  - **Templates in the audit log** read "Published template · template ···xxxx", but still file under Prompts. A `template` target type needs a change to `AuditTargetType` and to `SERVER_TARGET` in `repos/http/adminTrustAudit.ts` together. Not done here, because that file is under contract tests.
+  - **"500+ shown" on HTTP** needs the HTTP repo to set `AuditPage.loaded`, which is new and optional. The screen uses it. Until the repo sets it, the badge still counts the page's rows.
+  - Settings has an empty-mode producer: no networks, 0 of 10 backup codes.
+
+### 171.9 Content
+
+Built:
+- AI prompts `406:662` and Prompt detail `407:3141` (versions, editor, sandbox, eval, publish, roll back)
+- Technology KB `409:1872` and KB review `410:1771`
+- Skills & aliases `406:1829`
+- Templates `407:1841`
+- ATS rubric `408:3123`
+
+Routes: `/admin/prompts`, `/admin/prompts/[name]`, `/admin/technologies`, `/admin/technologies/review`, `/admin/skills`, `/admin/templates`, `/admin/rubric`.
+
+On the mock:
+- A draft moves to staged, then evaluated, then published. Publishing is refused without a passing eval, and roll back works.
+- KB entries can be approved, published or rejected. Add and edit put the entry in the review queue, and CSV/JSON import lists each invalid row with its reason.
+- Aliases can be added and terms mapped. Merges can be accepted or dismissed.
+- A template can't be published until it is certified.
+
+- **Judgement calls:**
+  - **Tables:** the KB and Skills tables load in the board's order and sort when a column header is clicked.
+  - **Review queue:** the "Staff edits" tab counts everything that isn't an import, so the board's 9 + 5 holds.
+  - **"Coming soon" controls:** Skills' Import and both Filters buttons. There is no skills import and no filter model.
+  - **"View all 41"** on the Unmapped card opens the 5 that are loaded.
+  - **Rubric evidence titles** are plain text, because no URLs exist.
+  - **Prompt editor:**
+    - It is a textarea over the highlighted text, so lines don't wrap.
+    - Editing a draft clears its eval.
+    - On HTTP, every save of the system prompt makes a new server version, because versions can't be changed.
+  - **Times:** the board's times (10:42, 10:44) show in the viewer's time zone. Fixture dates are held at noon UTC so they never shift a day.
+  - **Breadcrumbs:** they end on the page: "Content › AI prompts › tailor.rewrite" and "Content › Technology KB › Review queue".
+  - **Long files:** two are over the ~250-line guideline, `RubricScreen` (274) and `ReviewParts` (279).
+- **Invented content:**
+  - **Prompts:**
+    - Every stage page except tailor.rewrite.
+    - The User template, Output schema and Settings tabs on every prompt.
+    - tailor.rewrite v1–v10, and v14's text (written to match v15's change note).
+    - Extra sandbox samples.
+  - **KB review queue:**
+    - The six queue items from Vue to Kafka, and the detail of each one except Next.js.
+    - Svelte and Redis are moved to imports so the 9 + 5 holds.
+    - A `*.dev/releases` source URL for each cited technology.
+  - **Skills:** two merge suggestions (Vue.js → Vue, K8 → Kubernetes).
+  - **Rubric:** the v1 and v2 weights.
+  - **Totals with only one page of data:** the board's totals are kept (1,284 technologies over 129 pages, 412 skills over 52 pages), but only page 1 exists, so later pages are empty.
+- **Backend gaps (HTTP):**
+  - **Prompts:** not served:
+    - The sandbox.
+    - The stage facts, cost, p95, eval pass rate and cost per resume.
+    - Eval scores in the list, and authors.
+    - The User template, schema, settings and change note per version.
+  - **KB:**
+    - Only a release year is stored, not a day.
+    - Not served: the per-change field diff, editing a queued change, the imports list, the 30-day additions, the import/staff and report splits, and dataset dates.
+    - The list is capped at 500 rows.
+  - **Skills:** the whole skills editor.
+  - **Templates:** create, preview, revision number and usage count.
+  - **Rubric:**
+    - Not served: publish, editing the rationale, the checklist, and the dry-run impact.
+    - Criteria come as weights keyed by id, with no labels or descriptions.
+  - **How unserved parts behave:** reads return `null`, and the screen says "Not connected yet". Writes refuse with `ContentNotServedError`. No fixture data is used.
+
+- **AI prompts, after the board audit (CP-01–CP-25, 2026-11-05):**
+  - **Each version keeps its own text and eval on the mock.** A rollback shows the version it reached, and the Eval card shows a result only under the version it belongs to. A live version whose per-check results aren't held says "v14 scored 0.88 on its last eval. Run it again to see each check." A new draft starts from the live text with an empty change note. Saving with no draft open is refused, so the live text is never edited in place.
+  - **The mock eval is canned but follows the text.** Each check scores 0.86–1.00 from a hash of the prompt, so the same text scores the same, and an emptied system prompt scores 0 and fails. The baseline is the live version's own score. tailor.rewrite keeps the board's five checks (with Keyword coverage); the other stages keep two.
+  - **Sandbox:** there is one canned run for each seeded resume with the job it was seeded for (PM with Stripe, the board's; engineer with Shopify; designer with Figma). The last two are invented. Any other pairing is refused with a toast saying so, and a preview shows only for the samples it ran on. The other stages have no seeded samples, and their Sandbox card says so.
+  - **Invented history:** tailor.rewrite v1–v10 are now two weeks apart going back from v11, each scored 0.85 or 0.86, because each passed the gate to go live. v13 and older share one stand-in text: v14 without its outcome-first rule.
+  - **Prompt dates are shown in the viewer's zone**, as their times are. Prompt fixtures hold the board's days at local noon, so "Nov 5" reads Nov 5 in every zone and a write made now is dated the same way. The rest of Content keeps UTC days (`content/format.ts`).
+  - **Editor lines are all 26px.** The board's chip lines are 28px, and a textarea's single line height can't follow them, so the 14-line block is 390px against the board's 398. The chips are the board's (22px tall, medium, brand-100 border, radius 4) with 2px side padding, not 4. Negative margins cancel the padding and border, so a chip reaches into the spaces beside it; 4px would cover the letters next to it. A variable therefore sits where the plain text would be, 4–14px left of the board as chips add up along a line. The caret stays exact.
+  - **Autosave:** a pending edit is saved when the field loses focus and when the card unmounts (leaving the page, a publish). It isn't dropped. There is no leave-page warning, because the dirty window is now only the time the save takes.
+  - **Files:** the prompt models, fixtures and mock repo now live in their own files (`models/adminPrompts.ts`, `mock/fixtures/adminPrompts.ts`, `repos/adminPromptsRepo.ts`), and the Content files re-export or spread them. The Editor card has its own tabs (`prompts/EditorTabs.tsx`: board padding, slate-500 when idle, `aria-controls` with a tab panel), so the KB's `UnderlineTabs` is unchanged. The sample pickers are radio menus.
+  - **Kit button padding:** in the kit's primary button, the content sits 14px in, where the board draws 16. Publish v15 is 101px wide against 106, and Run in sandbox 155 against 159. This is the shared `adminButton.primary` (`px-3`, where the board needs `px-3.5`), so this pass left it alone.
+
+### 171.5 Not done
+
+- **Your check against the board.** On mock data, I compared screenshots in Edge with board 394:536 at 1920 and 1440 wide, and checked the 900-wide overlay: layout, copy and figures match. One fix came out of it: side by side, the Pipeline card had stretched to the height of Needs attention. It still needs your own side-by-side look.
+- **All 23 boards are built (2026-11-05).** Checked as follows:
+  - `pnpm typecheck`, `pnpm lint` and `pnpm test` are green: web 81 suites with 592 tests, shared 38 files, mobile 225 suites, plus server and engines.
+  - All 21 admin routes load in Edge at 1920 on mock data with no page errors.
+  - Each area was compared screenshot by screenshot with its boards.
+- **Still to do:** your own walk through each page, and HTTP mode with `IDENTITY_ADAPTER=local`, which hasn't been tried against a live stack.
+- **A formatter pass leaked outside the admin work, and was undone.** One parallel builder ran Prettier over the whole of `packages/shared/src`. It reformatted 93 unrelated files: scoring, schemas, repositories and fixtures, about 1,000 changed lines. The changes were formatting only; the shared package's existing files aren't Prettier-formatted. All 93 were restored from HEAD. The 8 shared files the admin work does change were rebuilt from HEAD plus only their intended edits. Typecheck and lint were green afterwards. Builders now format only the files they touch.
+- **Coming-soon pages leave the admin portal.** The shared `ComingSoon` page shows a "Help & support" footer that links to the user app's `/help`.
+- **Not committed.**
+
+### 171.11 Overview audit fixes (2026-11-05)
+
+- **The mock's queues are live.** Sidebar counts and Needs attention are counted from the People, Content and Trust mock repositories (KB queue, open failures and reports, open deletions, prompt drafts awaiting an eval), so they move as staff act. A queue line keeps the board's wording while its count is the board's, then falls back to a plain line. Provider errors have no incidents on the mock: the board's 2 stands while a switched-on provider is at 1% errors or more, and drops to 0 once none is.
+- **"Not connected yet" is now true on `http`** (it was false in 171.4):
+  - The four headline cards always draw; one the source doesn't send says "Not connected yet".
+  - Needs attention names the queues the role can open but the source doesn't count, and says "Nothing open", not "All clear", when only some were counted.
+  - A role without `audit.read` (a curator) gets no Recent admin activity card and no request for it.
+- **Still needed on `http` (not my files):** `repos/http/adminRepo.ts` should send `revenue: null` rather than `[]`. Until then, the card treats an empty list beside paying Pro subscribers as "Not connected yet", so the screen is honest either way. It could also serve New signups now that a KPI's `delta` may be `null` and its `trend` empty.
+- **Empty mode empties everything.** No signups, no runs, no spend, no paying users, no scores. The three rates say "Nothing to measure yet" (`AdminOverview.unmeasured`). Pipeline shows "—" and "no runs yet". AI generations drops its change and p95.
+- **Judgement calls:**
+  - The 7-day runs total is the chart's last seven bars added up (4,668), so the two agree. Failures split by kind at each kind's 30-day rate. The 90-day total is still the 30-day figure scaled.
+  - The chart's daily runs were re-read at the gridlines' scale (256px per 800 runs). The ceiling stays at the 800 line, and the 813-run Nov 1 bar overshoots it slightly, as on the board.
+  - The p95 shows only for "All kinds", since it is measured across every kind.
+  - The SLA is judged against a served `slaTargetRate` (99%). The note keeps the board's "met" and names the target only when the SLA is missed.
+  - The activity rows take the Audit log's instants for the same five events, and both pages print UTC. So 10:42 on the Overview is 10:42:18 on the Audit log, in every time zone.
+  - Provider bars run to the share's own text, as the board's tracks do. The board's fills are a share of 322px, wider than their own track, so they are drawn as a share of the track.
+  - The ATS change badge reads "↑ 2.1" with no "pts", because it is a change in a 0–100 score.
+- **Owner decision: the ATS check total.** The board prints "6,212 checks", but its bars add up to 5,492, and the page shows 5,492. Analytics fitted its buckets so that 6,212 holds (171.7), which leaves the two pages drawing different distributions. Which do you want?
+  - Refit the Overview's bars to 6,212. The bars would then no longer match the board.
+  - Use Analytics' buckets on both pages.
+  - Keep the honest 5,492.
+- **Board figures noted, not changed:** the provider shares add to 112% of today's lookups (62 + 38 + 12). Nov 1's tooltip says 812 runs, but its rows add to 813.
+
+### 171.12 After the board audit (2026-11-05)
+
+Twelve agents audited the admin portal (one has its own entry below). Each measured pages against the boards' boxes in Figma, exercised every control and read the code. They found about 250 issues. One fixer per area reproduced each issue before fixing it, so issues that didn't reproduce were left alone. The full lists are in the session scratchpad (`audit_result.json`, `fix_result.json`). These were fixed in the shared kit and shell:
+- **Zoom:**
+  - It now applies when the portal is entered client-side, after staff sign-in. Before, React skipped the inline script.
+  - It's measured against the content box, so the html's 15px scrollbar gutter no longer leaves every page 15px narrower than its board. A 1935-wide window gives exactly the board.
+- **Focus:** closing a dialog or side panel returns keyboard focus to the ⋮ that opened it (`ui/useReturnFocus.ts`), instead of dropping it to `<body>`.
+- **Toasts** show above open dialogs.
+- **Admin buttons:** the board padding (14px, inside a 1px border or the 2px rim) and the inset bottom shade (`shadow-button-xs`).
+- **Figures and tables:**
+  - Big figures use proportional digits.
+  - The sort arrow sits 12px after its label and isn't dimmed.
+  - The selected row is solid brand-50.
+  - The pager is 38px tall.
+- **Dialogs:**
+  - The title is 18/28.
+  - The close glyph is 24px (a new `xl` icon size).
+  - Dialogs and side panels use the board's modal shadow (`shadow-modal`).
+  - The confirm button can carry an icon ("Open read-only" has the Eye).
+- **Icons:**
+  - BookOpen01 is an open book.
+  - ClipboardCheck shows its tick at rest; the vendoring script patches lucide-animated's copy.
+- **Badges:** neutral and brand badge dots use the board's 700 ink.
+- **Charts:**
+  - The histogram axis reads "0.5k" once it reaches 1,000.
+  - Segment meters grow by share, so the last segment is no longer clipped.
+- **Status pill:** it says only what `/health/features` reports. It shows nothing while loading and "Status unavailable" if the check fails; the mock keeps the board's pill.
+- **Signed-out staff:** staff sign-out and an expired staff session land on `/admin/sign-in`.
+- **Breadcrumb:**
+  - The last crumb is tied to its path, so the previous record's name no longer flashes on a new page.
+  - The home crumb has a 44px hit area.
+- **Page titles:** every admin page has its own document title.
+- **`/admin/me` failing:** the sidebar and staff card say so and offer a retry. Before, the rows silently shrank and the card kept pulsing.
+- **Shared content kit:**
+  - Content's underline tabs and alias pills match the boards.
+  - Template thumbnails use `shadow-lg`.
+- **HTTP mapping:**
+  - New signups on the Overview is served as a bare count from `users.last30`.
+  - Revenue that isn't served comes back `null` ("Not connected yet", not "No revenue yet").
+  - The capped audit log reports how many rows it loaded.
+
+**Decisions for the owner.** In each case the boards contradict themselves, so the fixers left the current behaviour in place:
+- **ATS distribution:**
+  - The Overview board prints "6,212 checks", but its bars add up to 5,492. The Analytics builder fitted its own buckets to 6,212, so the two pages now draw different distributions.
+  - The Analytics board's lower bars also contradict its own "Below 60 · 15%".
+  - The options are to refit the Overview, to share the Analytics buckets on both pages, or to keep the honest 5,492.
+- **"Open" captions on Failures and Abuse reports:** "oldest 2 h ago" and "oldest received 3 h ago" contradict the open rows the boards draw. Should the caption be computed from the oldest open row?
+- **Carlos Ruiz's Last active:** the Users board shows "Nov 04" for Carlos and "Yesterday" for Mei Tanaka, from the same one-day gap. Keep "Yesterday" for both, or special-case one row?
+- **The Technology KB dataset control:** at rest it reads "Dataset v2026.11", above rows from v2026.10. It shows "All datasets" until the owner says what the label means.
+
+**Shared asks not done yet:**
+- Load a font face that covers "→" (the rubric's "71.4 → 69.8" falls back to a system font).
+- An audit-log URL filter, so User detail's "Open in audit log" can land on that user's entries.
+- A server test that `services/admin/permissions.ts` matches `ADMIN_ROLE_PERMISSIONS`.
+- The server's `/admin/audit/export` should mask IPs as the page does.
+- A 'template' audit target type on HTTP, to replace the current mapping to 'prompt'.
+- 1–2px ButtonGroup segment widths.
+
+**People:**
+- §171.6 'Process now calls the immediate POST /admin/users/{id}/delete' is false. On HTTP, listDeletions and deletionStats return null (the page shows Not connected yet) and processDeletion refuses with UNAVAILABLE. Only User detail's Delete account calls POST /admin/users/{id}/delete. Process now is also now shown only with users.manage, which is what §171.6's role-gating line claimed but wasn't true before.
+- §171.6 should record that comp keeps a suspension or pending deletion, and that reactivate restores comped or unverified (most pressing first). Mock admin-action notes now use the reason label ('Abuse: …').
+- §171.4: Users on HTTP with the Free or Pro tab now shows 'Not connected yet · the plan on each account' (AdminUsersPage.unserved = 'filter') instead of an error.
+- §171.6: 'nothing is cached' is now true for the resume read (gcTime 0 plus reset on close and unmount).
+- Deletion stats have no reporting window: 'Completed in 30 days' counts every request finished within 30 days of being made, and the average covers every completion (docs corrected; board figures unchanged).
+- Staff invites show Last active 'Never' (the board draws no invited row). Below 100%, the MFA card shows an amber 'N% enrolled' badge with no arrow (judgement call; the board draws only the 100% state).
+- Detail tabs follow board 406:2527 literally: the underline sits about 3px above the strip's rule, as drawn.
+- PU-21 is open for the owner: Carlos 'Nov 04' vs Mei 'Yesterday' on the same board.
+- Deferred PSD-19-server-test: The test comparing the server's PERMISSIONS to ADMIN_ROLE_PERMISSIONS has to live in packages/server, which is read-only for me. The comment is corrected; the parity test is still owed by the server owner.
+- Deferred PSD-17: Badge dot colours (neutral-700/brand-700) are in the shared AdminBadge, which I don't own. Listed under sharedNeeds.
+- Deferred PU-10: The Eye glyph on 'Open read-only' needs an optional confirm icon on the shared AdminDialog. Listed under sharedNeeds.
+- Deferred PU-26: 'Open in audit log' with this user's entries needs the Trust audit screen to read a target filter from the URL, which I don't own. Listed under sharedNeeds; links still go to the bare log.
+
+**Business:**
+- §171.7 (BIZ-25): the Job providers board's quota fills (408:3841, 408:3892) are drawn against a 728px track but clipped at 532px. Adzuna's '62% used' fills 85% of the drawn track, Jooble 52% for 38%, USAJobs 16% for 12%. The page draws the true shares (329.8/202.2/63.8px), which is deliberate: the board overstates usage.
+- §171 (ATS): the Analytics board's ATS histogram lower bars don't match its own 'Below 60 · 15%' legend. The page scales every bar to the fullest band from the real counts, so its bars below 60 are shorter than the board's.
+- §171 (Plans): a price typed with a comma ('19,50') is now refused with 'A price like 19.50.' rather than being read as a decimal mark or as thousands. This was a judgement call; reading a single comma as the decimal mark is the alternative.
+- §171 (Analytics): while a new window loads, the previous window's figures stay up, dimmed and labelled with their own window ('30 days'), while the selector already shows the new one.
+
+**Technology KB and review:**
+- §171.9 KB fixture (invented): technologiesFixture gains a page 2 (Bun, Deno, Vue, Rust, Go, Svelte, Redis, Kafka) so every queued change has its entry. Bun is the import's new entry, In review, updated by Import, dataset v2026.12. Page 1 still matches the board.
+- §171.9 KB fixture (invented): Svelte's queue item is now 'Svelte · latest version' (4.2 → 5.0, cited svelte.dev), no longer a second 'new technology'. That makes the Imports tab list exactly 3 entries (Next.js, Kubernetes, Bun), matching the board's badge. It is still an import, so 9 + 5 holds.
+- §171.9 KB fixture (invented): Deno's alias change carries one user report (rep_4, 'Disputed: alias'). The User reports tab (technologies with an open report or 'reported' status) therefore lists 5, the board's figure.
+- §171.9 judgement: every KB tab badge counts what its tab lists, in entries. Review queue = technologies with a change waiting (14), User reports = technologies with an open report (5), Imports = entries last written by an import (rows, not files). All stays the board's 1,284 over the fixture's 18 rows, as already documented.
+- §171.9 judgement: add, edit and import only propose. The values wait on the queued change. Approve writes them onto the entry, sets its dataset to the change's target (v2026.12) and names the approving staff member as the last updater. Reject restores the entry's earlier status and removes a new entry that was never approved. A rejected or approved fixture entry with no other change waiting settles to Published, or to Needs source when it has a date without a source.
+- §171.9 judgement: a staff edit that changes one field is titled by that field ('React · category') and uses that field's kind. One that changes several is 'React · edit' with the Edit03 (category) glyph, because the model has no 'edit' kind. An edit that changes nothing is refused.
+- §171.9 judgement: adding or importing a name already in the KB (case-insensitive) is refused, and the import lists 'X is already in the KB; edit it instead' against that row.
+- §171.9 judgement: a cited source has to be an http(s) URL in the Add/Edit dialog, the review Edit dialog, the mock and the import. Release dates accept YYYY as well as YYYY-MM-DD, because the backend stores years.
+- §171.9 still open: the dataset control's resting label ('All datasets' vs the board's 'Dataset v2026.11') is deferred to the owner (kb-10).
+- §171.9 long files: adminContentKbMock.ts is 340 lines.
+
+**Skills, Templates, ATS rubric:**
+- §171 (Templates): 'Preview with sample data' is a documented 'coming soon'. Nothing renders a template from a sample resume yet. features/editor/preview/ResumePage covers only jake/modern/elegant, and no sample ResumeDocument fixture exists. Building it would need a fixed sample document plus renders for compact, executive and classic.
+- §171 (Templates): the board labels an archived template 'Unpublished' in the footer (Classic 407:2366). Kept that over the audit's 'Archived'. The usage line now says 'Not in use · archived …' when an archived template has no resumes.
+- §171 (Skills): added five made-up skills (React, Vue, Node.js in Frameworks; PostgreSQL, Microsoft Excel in Data & AI) so every merge suggestion has a target to merge into. Merging into a skill the taxonomy lacks is now refused.
+- §171 (Skills): AliasChips' slate pill is used on the Skills table only. The Technology KB board wasn't checked, so its outlined chip is unchanged.
+- §171 (Rubric): the criteria row ⋮ opens 'Weight in every version' (read-only), a judgement call for a real row action. Editing weights on the draft would need a new repo write (not built).
+- §171 (Rubric): an edited rationale's byline now reads 'Edited by <staff> · review pending'. The checklist's 'Rationale and evidence written' item isn't reset by an edit.
+- Deferred CC-31: The '→' fallback font comes from Plus Jakarta Sans loading with subsets ['latin'] in apps/web/app/layout.tsx, which I don't own. I removed tabular-nums from the '71.4 → 69.8' figure, but it still measures 159.3px against the board's 151 until the font covers U+2192.
+
+**Generation failures and Abuse reports (audited and fixed in one pass):**
+- §171 Failures/Reports: copy I chose: Open caption 'nothing waiting' at 0, 'no failed runs' under Most common '—', Resolved 'none in the last 30 days', the per-tab empty states, and the toast 'Retry queued for run ···x. N ticked runs weren’t open.'
+- §171 Reports: Resolved, 30 days and its breakdown are now counted from the mock reports and match the board at rest. The median time to resolve stays the board's 5 h (null when nothing settled).
+- §171 Reports: on the mock, Disable public link and Suspend user… only settle the report and write the audit entry. No link store exists and report owners are not in the People fixtures, so no user or link state changes anywhere. The server must do both.
+- §171 Failures: Retry selected now skips ticked runs that aren't open (a retrying run already is retrying, a resolved one is closed). Mark resolved stays allowed on a retrying run.
+- FailureStatCards and AbuseReportsScreen import RetryCaption from features/admin/people/components/StatsCaption. It might belong in admin/ui.
+
+**Content on HTTP (contract tests):**
+- §171.9 KB on HTTP: entries that are reviewed but not yet published (staff-added or imported, which land as admin_reviewed) now appear in the review queue as 'X · awaiting publish' with origin staff_edit, so the queue's Approve can publish them. Before this, the HTTP portal had no way to publish them. The server keeps no diff, so their fields are shown as proposed values (from: null). Who added them isn't served.
+- §171.9 KB on HTTP: when the technology list reaches the server's 500-row cap, the All tab shows no count instead of 500. The stat card's total is still a number in the model, so it can still show the capped figure.
+- §171.9 Prompts on HTTP: an eval that passes without a measured score (the golden-set gate, or the reference model) is reported to the UI as an error message saying it passed and has no single score, because PromptEval needs a score. A model decision is needed if the screen should show this as a pass.
+- Still open (medium): PromptEval needs a numeric score, so an eval that passes without a measured score can't be returned. That covers a golden-set gate pass and any reference-model pass. evaluatePrompt therefore throws an Error saying 'vN passed its eval… There's no single score to show', and the UI may show that pass as an error. The version is still marked evaluated and can be published. Fixing this needs a model change that I don't own: a score-less verdict, for example score: number | null or a verdict-text field.
+- Still open (low): KbStats.technologies.total is a plain number. When GET /admin/technologies hits its 500-row cap, the stat card can show 500 when there may be more. tabs.all is now null in that case, but the total card can't be blanked unless the type allows null. listTechnologies' total is limited by the same cap.
+- Still open (low): The file is 464 lines, over the ~250-line guideline (it was 418 before). The CSV/JSON import helpers could move into their own file, but that would mean creating a file the task doesn't name.
+
+**Business and Trust on HTTP (contract tests):**
+- 171.x Business/Trust HTTP repos: contract tests now cover all 14 Business and 20 Trust methods against catalog.ts, users.grantComp, retention.weekFourRetention, audit.searchAudit and POST /auth/admin/login. Every method the server doesn't serve returns null or throws UNAVAILABLE, with no fixture imports.
+- Staff sign-in over HTTP: a credential refusal (401 without mfaRequired) now reads 'That email and password don't match a staff account.' or 'That code didn't work…' instead of the server's generic 'Sign in to continue.'. Owner decision: should the backup-code link show as coming soon when the backend is live, since adminLoginSchema takes six digits only?
+- Price version on HTTP is two separate PUTs and isn't atomic (no price-book route). Analytics on HTTP always covers 30 days whatever range is picked.
+- Still open (medium): Reported, not edited (web file). In submit(), on any failure outside the password step, the screen ignores the error and shows 'That code didn't work. Check your app and try again.' and clears the code. On the backup step under NEXT_PUBLIC_DATA_SOURCE=http, the repo refuses backup codes with UNAVAILABLE ('The backend doesn't serve sign-in with a backup code yet.'), but the screen tells the user their code was wrong. A network error or a 429 on the code step is also shown as a wrong code. Suggested fix: show failure.message when the error isn't a credential refusal (the repo now gives a step-specific message for 401). Alternatively, show 'Use a backup code' as coming soon when backup codes aren't served.
+- Still open (low): createPriceVersion makes two PUT /admin/plans/{id}/prices calls, one per Pro plan, because the API sets one plan's prices at a time. If the annual PUT fails after the monthly one succeeds, monthly holds the new prices and annual the old ones. An atomic price-book route on the server would fix this; documented in a code comment.
+- Still open (low): The audit view asks for the newest 500 rows (the searchAudit cap) and pages through them on the client. Older rows can't be reached because the API's 'before' cursor isn't used, so the total shows as unknown (null) when capped. Actor names are masked 'staff ···xxxx' because no staff directory is served to name them.
+- Still open (low): catalog.analytics also returns users {total,last30}, subscriptions [{plan_id,status,n}] and quotaUseThisMonth [{metric,used}]. The model has no place for raw quota use (its quota block wants at-cap shares) or subscription counts, so they aren't mapped. aiSpendLast30Days carries no provider per tag, so providerUsage rows have provider ''.
+- Still open (low): tsc -p packages/shared shows one error, in another fixer's in-progress file: AdminDeletionStats is missing overdue and completedPastLimit at line 101. It is unrelated to my files.
+
+### 171.13 Staff sign-in of its own, and the admin backend (2026-11-05)
+
+The owner asked for two things:
+- **Staff sign-in:** the previous login, with no connection to Clerk. It uses an authenticator, starts from a default password, and asks for a new password at the first sign-in.
+- **The portal fully functional:** every panel served by the backend.
+
+This section records what was built and the judgement calls made without the owner. Four parallel builders did the People, Content, Business/Overview and Trust backends; staff sign-in, Staff and Settings were built in the main thread.
+
+**State:**
+- `pnpm typecheck`, `pnpm lint` and the unit and contract tests are green.
+- **The integration suites are written and haven't run.**
+  - Docker Desktop was off.
+  - Applying migrations `0051`–`0055` to the shared local database would make the main checkout's runner refuse to start ("applied migration 0051 is missing from disk") until this branch merges.
+  - Owner decision: run them against the local stack, or against a separate database. They are `adminStaffPortal`, `adminPeoplePortal`, `adminContentPortal`, `adminBusinessPortal`, `adminTrustPortal` and the updated `authzMatrix`/`authSessions`/`adminP12`.
+- `db/types.generated.ts` was edited by hand for the new tables. Run `pnpm --filter @nextkin/server db:types` once the stack is up.
+
+**Staff sign-in (`0051_staff_accounts.sql`, `auth/staff/*`, `routes/authStaff.ts`):**
+- **The account:** `app.staff_accounts` holds staff accounts: an argon2id password, the TOTP secret sealed with AES-256-GCM under the new `STAFF_TOTP_KEY`, a must-change flag, and a lockout after 5 failures for 15 minutes. Only the system role reads or writes it.
+- **Not the identity provider:** `/auth/admin/login` no longer goes to the identity provider, so it works the same under `IDENTITY_ADAPTER=clerk`, `local` or Cognito. The admins pool in the local IdP is no longer seeded or used.
+- **The steps:** password → set up the authenticator (QR + key) on a first sign-in or after a reset → save ten backup codes (shown once) → choose a new password (12+ characters, not the temporary one) → session. Each in-between step carries a 10-minute, five-try challenge.
+- **Codes:** a code works once (a replay is refused), and backup codes work once.
+- **Staff sessions:**
+  - a 12-hour absolute lifetime;
+  - the idle timeout from Settings, which applies to new sessions;
+  - logout never reaches Clerk: `staffAware` skips the provider for `staff:` session refs.
+- **Re-authentication:** sensitive actions need the authenticator proven within 15 minutes when "Re-authenticate for sensitive actions" is on: invite, reset, role, policy, backup codes and replacing the authenticator. The portal's `ReauthPrompt` asks for a code; the action then has to be tried again. It isn't replayed.
+- **Allowed networks:** enforced at sign-in and on every `/admin/*` request (cached for 30 seconds). Saving a list that leaves out your own address is refused.
+- **"Default password", interpreted:** one shared default for every admin would be a known credential in production. Instead:
+  - every invite or reset gets its own temporary password, emailed and shown once to the Super Admin;
+  - the seeded `admin@`/`curator@`/`support@nextkin.test` get `NextKin-local-2026` as their temporary password;
+  - the first Super Admin of an environment comes from `pnpm --filter @nextkin/server staff:create --email … --name …`, which prints its temporary password.
+
+  Owner to confirm.
+- **Seeding:** an existing staff account is left as it is, so reseeding never undoes a password or an authenticator someone has set up. The seed no longer replaces the staff users' rows.
+- **Emails:** `users.email` is unique, so a staff account needs an address no NextKin user account uses. An invite to such an address is refused.
+- **Deployment:** `STAFF_TOTP_KEY` must come from Secrets Manager in staging and production; config refuses a placeholder. Infra isn't wired yet. Changing the key voids every enrolled authenticator.
+- **Merging with the Clerk work** (main checkout, uncommitted §169) needs no change to the Clerk `build.ts`: staff sign-in is built in `createApi` from the identity deps, whichever adapter made them. `http/singleton.ts` passes `STAFF_TOTP_KEY` as `staffKey`.
+- **The mock:** an email starting "new" walks the first sign-in.
+- **Design-gated:** the first-sign-in steps reuse the sign-in card's kit; no board draws them yet.
+- **Settings is still Super Admin only in the nav.** The server lets every staff member manage their own authenticator and backup codes; opening Settings to everyone (with the policy read-only) is a one-line nav change if wanted.
+
+**Staff & roles and Settings (`routes/adminStaff.ts`):**
+- **Staff list:** roles, authenticator on or not, and last active. Last active is the later of the last sign-in and the newest session activity.
+- **Invites:** with a temporary password.
+- **Reset sign-in:** a new temporary password, the authenticator and backup codes removed, and sessions ended.
+- **Role changes:** at least one Super Admin is kept, and the member's sessions end.
+- **`/admin/staff/names`:** lets the audit log and the Overview activity name staff instead of `staff ···xxxx`.
+- **The old route:** `PUT /admin/staff/{id}/roles` (local IdP groups) is replaced by `PUT /admin/staff/{id}/role`.
+- **Settings retention rows:** they state what the jobs actually do. "Security events: kept; no purge job yet" replaces the board's "Kept 2 years", which no job enforces.
+
+**People (`0052_admin_people.sql`, `routes/adminPeople.ts`, under `/admin/people/*`):**
+- **Users list:** browse with any filter or search length, with stats and the fuller user detail (plan, billing, resumes, devices, staff actions).
+- **Deletion ledger:** `app.account_deletions` keeps id-only rows that outlive the purge.
+- Open points:
+  - the ledger has no retention limit;
+  - "Process now" queues the normal purge, which purges every account waiting for deletion;
+  - the board's `scheduled` status can't occur;
+  - a user's own sign-in method and MFA stay with the identity provider and are unserved;
+  - Pro counts paid subscriptions only.
+
+**Content (`0053_admin_content.sql`, `routes/adminContent.ts`):**
+- **Skills editor:** categories, aliases, mapping a term, merge or dismiss, and new skills.
+  - It edits the reviewed copy in `app.skills`. **Live scoring still reads the engines' taxonomy until a release imports it; that import step isn't built.**
+  - The reference seed fills `app.skills`, insert-only.
+  - A term is listed only once two or more people use it.
+  - Merge suggestions come from a code rule.
+- **Templates:** a new template is an uncertified draft copy.
+- **Rubric rationale:** editable, with a version check.
+- **KB and prompt figures** come from the server.
+- **Unserved:**
+  - publishing a rubric, which ships with an engines release;
+  - the prompt sandbox, which needs an owner decision on model spend;
+  - template revisions and the editor;
+  - KB import batches;
+  - the dataset label (an open owner decision).
+
+**Business and Overview (`0054_admin_business.sql`, `routes/adminBusiness.ts`):**
+- **`GET /admin/overview?range=`** serves:
+  - signups, activation, reliability and conversion, each with a target and its counted basis;
+  - daily runs, p95 and the SLA;
+  - AI cost by stage, and cost per resume;
+  - Pro count and revenue by currency;
+  - ATS mean;
+  - provider share and error rate.
+
+  The definitions are in `services/admin/overviewMetrics.ts`.
+- **New records:**
+  - `generations.manual_retries`;
+  - `job_provider_calls`, daily counts, recorded only from now on;
+  - `price_book_versions`. A price edit sets both Pro plans in one transaction.
+- **Other routes:** analytics report (the funnel), plan stats, the comps list and ending a comp, and provider stats.
+- **Unserved:**
+  - Pro, plan and quota changes, since no history is kept;
+  - why provider calls fail;
+  - a USD value for EUR and AUD revenue, since no exchange rate is held. The donut then weights by payers.
+- **Open points:**
+  - The old `PUT /admin/plans/{id}/prices` doesn't record a price-book version; retire it?
+  - The seed overwrites plan prices.
+  - Conversion has nothing to measure for the first 30 days.
+  - The chart always shows 14 days.
+
+**Trust (`0055_admin_trust.sql`, `routes/adminTrust.ts`):**
+- **Failure queue:** stats, detail, retry and close, plus a CSV built from the list.
+  - Status is derived from `generation_failure_actions`.
+  - A staff retry is the user's own `retryGeneration`, so it reserves their quota again.
+- **Abuse reports:**
+  - `app.abuse_reports`, with the actions dismiss, take the link down, and suspend the owner (which also takes the link down; owner to confirm).
+  - The public `POST /public/shared-reports/{token}/abuse-reports` is rate-limited; no UI files a report yet.
+  - The 24-hour settle target is a policy constant; owner to confirm.
+- **Unserved:** link views, which aren't counted. The CSV exports write no audit row.
+
+**`openapi.json`:** regenerated, with 73 admin paths.

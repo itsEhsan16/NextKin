@@ -16,6 +16,10 @@ import { trustedOrigins } from './origins';
 import { authRoutes, type AuthRouteDeps } from './routes/auth';
 import type { ClerkIdentityProvider } from '../auth/adapters/clerk/provider';
 import { clerkAuthRoutes } from './routes/authClerk';
+import { staffAuthRoutes } from './routes/authStaff';
+import { staffAware } from '../auth/staff/providerGuard';
+import { createStaffAuth } from '../auth/staff/service';
+import { LOCAL_STAFF_KEY, staffNetworkGuard } from './routes/adminKit';
 import { federatedRoutes, type FederatedDeps } from './routes/authFederated';
 import { healthRoutes } from './routes/health';
 import { NO_SIGNAL, observedEmail, observedPayments, type DegradedSignal } from '../health/degraded';
@@ -30,6 +34,11 @@ import { assistantRoutes } from './routes/assistant';
 import { billingRoutes } from './routes/billing';
 import { privacyRoutes } from './routes/privacy';
 import { adminRoutes } from './routes/admin';
+import { adminBusinessRoutes } from './routes/adminBusiness';
+import { adminContentRoutes } from './routes/adminContent';
+import { adminPeopleRoutes } from './routes/adminPeople';
+import { adminStaffRoutes } from './routes/adminStaff';
+import { adminTrustRoutes } from './routes/adminTrust';
 import { createLocalSecrets, type SecretsPort } from '../secrets/secrets';
 import { supportRoutes } from './routes/support';
 import type { EmailPort } from '../email/email';
@@ -72,6 +81,8 @@ export interface ApiConfig {
   extraOrigins?: readonly string[];
   /** Signs pagination cursors. */
   cursorSecret: string;
+  /** STAFF_TOTP_KEY: seals staff authenticator secrets (toreview §171.13). */
+  staffKey?: string;
   trustedIpHeader?: string;
 }
 
@@ -122,6 +133,12 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
     cursorSecret: 'test-cursor-secret-not-for-real-use-000000',
     ...deps.config,
   };
+  // Staff sessions are the server's own (toreview §171.13): ending one never reaches the provider.
+  const identity = deps.identity ? { ...deps.identity, idp: staffAware(deps.identity.idp) } : undefined;
+  const staffAuth =
+    deps.db && identity
+      ? createStaffAuth({ db: deps.db, valkey: identity.valkey, sessions: identity.sessions, auth: identity.auth, key: config.staffKey ?? LOCAL_STAFF_KEY })
+      : undefined;
   const isProduction = config.appEnv === 'production' || config.appEnv === 'staging';
   setResponseValidation(!isProduction);
   const memory = createMemoryStores();
@@ -160,37 +177,42 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
   );
   app.use(clientVersionFloor(flags));
   // Real sessions whenever identity is wired; tests may inject their own resolver.
-  const resolver = deps.authenticate ?? (deps.identity ? createAuthenticator(deps.identity.idp, deps.identity.sessions) : async () => null);
+  const resolver = deps.authenticate ?? (identity ? createAuthenticator(identity.idp, identity.sessions) : async () => null);
   app.use(authenticate(resolver));
   app.use(csrf(trustedOrigins(config.appOrigin, config.extraOrigins)));
   app.use(rateLimit(deps.rateLimiter ?? memory.rateLimiter));
 
   const signal = deps.degraded ?? NO_SIGNAL;
   app.route('/', healthRoutes(deps.checks, signal));
-  if (deps.db && deps.identity) {
+  // Settings › Access: staff work only from an allowed network, when the list isn't empty.
+  if (deps.db) app.use('/admin/*', staffNetworkGuard(deps.db));
+  if (deps.db && identity) {
     app.route(
       '/',
       authRoutes({
-        ...deps.identity,
+        ...identity,
         db: deps.db,
         appOrigin: config.appOrigin,
         ...(config.extraOrigins ? { extraOrigins: config.extraOrigins } : {}),
       }),
     );
+    if (staffAuth) {
+      app.route('/', staffAuthRoutes({ staff: staffAuth, appOrigin: config.appOrigin, ...(config.extraOrigins ? { extraOrigins: config.extraOrigins } : {}) }));
+    }
     app.route(
       '/',
       federatedRoutes({
-        ...deps.identity,
+        ...identity,
         db: deps.db,
         appOrigin: config.appOrigin,
       }),
     );
-    if (deps.identity.clerk) {
+    if (identity.clerk) {
       app.route(
         '/',
         clerkAuthRoutes({
-          clerk: deps.identity.clerk,
-          auth: deps.identity.auth,
+          clerk: identity.clerk,
+          auth: identity.auth,
           appOrigin: config.appOrigin,
           ...(config.extraOrigins ? { extraOrigins: config.extraOrigins } : {}),
         }),
@@ -207,7 +229,7 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
       accountRoutes({
         db: deps.db,
         cursorSecret: config.cursorSecret,
-        idp: deps.identity?.idp,
+        idp: identity?.idp,
         signAvatar,
       }),
     );
@@ -275,16 +297,19 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
           log,
         }),
       );
-      app.route(
-        '/',
-        adminRoutes({
-          db,
-          log,
-          provider,
-          secrets: deps.secrets ?? createLocalSecrets(createMemoryKv()),
-          ...(deps.identity ? { idp: deps.identity.idp, sessions: deps.identity.sessions } : {}),
-        }),
-      );
+      const adminDeps = {
+        db,
+        log,
+        provider,
+        secrets: deps.secrets ?? createLocalSecrets(createMemoryKv()),
+        ...(identity ? { idp: identity.idp, sessions: identity.sessions } : {}),
+        ...(staffAuth ? { staff: staffAuth } : {}),
+        email: mailer,
+        appOrigin: config.appOrigin,
+      };
+      app.route('/', adminRoutes(adminDeps));
+      // The admin portal's areas (toreview §171.13), one routes file each.
+      for (const area of [adminPeopleRoutes, adminContentRoutes, adminBusinessRoutes, adminTrustRoutes, adminStaffRoutes]) app.route('/', area(adminDeps));
       app.route(
         '/',
         supportRoutes({
@@ -300,7 +325,7 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
           db,
           log,
           provider,
-          ...(deps.identity ? { idp: deps.identity.idp, sessions: deps.identity.sessions } : {}),
+          ...(identity ? { idp: identity.idp, sessions: identity.sessions } : {}),
           ...(deps.documents
             ? {
                 files: {

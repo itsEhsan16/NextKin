@@ -116,7 +116,7 @@ export async function processDeletion(deps: AdminUserDeps, staff: Staff, userId:
     if (!row || row.status === 'deleted') throw errors.notFound('user');
     await writeAudit(tx, staff, { action: 'user.delete', targetType: 'user', targetId: userId, reason }, meta);
   });
-  await deleteAccount({ db: deps.db, idp: deps.idp, sessions: deps.sessions, provider: deps.provider, log: deps.log }, { userId, role: 'user' });
+  await deleteAccount({ db: deps.db, idp: deps.idp, sessions: deps.sessions, provider: deps.provider, log: deps.log }, { userId, role: 'user' }, staff.identity.userId);
 }
 
 /** One resume's content: exceptional, with a recorded reason; the read is audited (§7.17). */
@@ -145,22 +145,4 @@ export async function grantComp(db: Database, staff: Staff, userId: string, mont
   return { until: until.toISOString() };
 }
 
-/** Role assignment (§7.17: Super Admin only, audited). Staff accounts only. */
-export async function setRoles(deps: AdminUserDeps, staff: Staff, userId: string, groups: string[], meta: RequestMeta) {
-  if (!deps.idp) throw new AppError('UNAVAILABLE', 'Role changes are not available right now.');
-  if (userId === staff.identity.userId) throw errors.conflict('You cannot change your own roles.');
-  const clean = [...new Set(groups)].filter((g): g is (typeof STAFF_GROUPS)[number] => (STAFF_GROUPS as readonly string[]).includes(g));
-  if (clean.length === 0) throw errors.validation({ groups: 'at least one staff role' }, 'Give at least one staff role.');
-  const role = clean.includes('admin') || clean.includes('super_admin') ? 'admin' : clean.includes('curator') ? 'curator' : 'support';
-  const sub = await deps.db.withSystem(`admin ${staff.identity.userId}: assign roles`, async (tx) => {
-    const row = await tx.selectFrom('users').select(['identity_sub', 'role']).where('id', '=', userId).executeTakeFirst();
-    if (!row || row.role === 'user') throw errors.notFound('staff account');
-    await tx.updateTable('users').set({ role }).where('id', '=', userId).execute();
-    await writeAudit(tx, staff, { action: 'staff.roles', targetType: 'user', targetId: userId, before: { role: row.role }, after: { groups: clean } }, meta);
-    return row.identity_sub;
-  });
-  await deps.idp.setGroups(sub, clean);
-  await endSessions(deps, userId);
-  return { groups: clean };
-}
 

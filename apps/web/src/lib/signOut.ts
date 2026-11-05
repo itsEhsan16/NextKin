@@ -10,7 +10,8 @@ import { showToast } from './toast';
  * With Clerk (toreview §169) the browser's Clerk session ends too: otherwise the sign-in screen
  * would see it still live and sign straight back in.
  */
-export async function signOut(): Promise<void> {
+/** `destination` is where a signed-out browser lands: staff go to the staff sign-in. */
+export async function signOut(destination: string = SIGN_IN): Promise<void> {
   if (USES_BACKEND) {
     try {
       await auth.logout();
@@ -20,7 +21,7 @@ export async function signOut(): Promise<void> {
     }
     if (CLERK_ENABLED) await clerkSignOut();
   }
-  window.location.assign(SIGN_IN);
+  window.location.assign(destination);
 }
 
 /** Clerk's browser object, which ClerkProvider puts on `window`; best effort, the server already ended the session. */

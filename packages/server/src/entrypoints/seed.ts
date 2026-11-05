@@ -11,7 +11,10 @@ import { subscriptionFixture, userFixture } from '@nextkin/shared/mock/fixtures/
 import { loadConfig } from '../config';
 import { createDatabase } from '../db/database';
 import { seedAccounts } from '../seed/accounts';
-import { seedIdentities } from '../seed/identities';
+import { SEED_PASSWORD, seedIdentities } from '../seed/identities';
+import { seedStaff } from '../seed/staff';
+import type { StaffLevel } from '../services/admin/permissions';
+import { bootstrapStaff, STAFF_LEVELS } from '../services/admin/staff';
 import { seedPersona } from '../seed/personas';
 import { seedReference } from '../seed/reference';
 import { seedContent } from '../seed/content';
@@ -60,6 +63,32 @@ const db = createDatabase({
   maintenanceUrl: config.DATABASE_MAINTENANCE_URL,
   onPrivilegedAccess: (e) => console.log(`seed: ${e.kind} access — ${e.purpose}`),
 });
+
+// One staff account and nothing else (toreview §171.13): how the AWS demo gets its first Super
+// Admin (`pnpm --filter @nextkin/infra task staff-create -- --email … --name …`). The temporary
+// password is printed once; the first sign-in sets up an authenticator and replaces it.
+if (args.includes('--staff-create')) {
+  const flag = (name: string) => {
+    const index = args.indexOf(name);
+    return index >= 0 ? args[index + 1] : undefined;
+  };
+  const email = flag('--email');
+  const role = (flag('--role') ?? 'super_admin') as StaffLevel;
+  if (!email || !STAFF_LEVELS.includes(role)) {
+    console.error('seed: --staff-create needs --email (and optionally --name, --role)');
+    process.exit(1);
+  }
+  try {
+    const created = await bootstrapStaff(db, { email, name: (flag('--name') ?? email.split('@')[0]!).replace(/_/g, ' '), role });
+    console.log(`seed: staff account ${created.email} (${role}); temporary password, shown once: ${created.temporaryPassword}`);
+  } catch (error) {
+    console.error(`seed: ${(error as Error).message}`);
+    process.exitCode = 1;
+  } finally {
+    await db.destroy();
+  }
+  process.exit();
+}
 
 // Prompts, routing and the other reference rows only: a shared `dev` gets new prompt versions
 // without its accounts being replaced (toreview §160).
@@ -115,6 +144,13 @@ try {
 
   if (config.IDENTITY_ADAPTER === 'local') {
     for (const line of await seedIdentities(config.DATABASE_URL, devCredentials)) console.log(`seed: ${line}`);
+  }
+  // Staff accounts are the server's own, under every identity adapter (toreview §171.13).
+  const staffPassword = devCredentials?.password ?? SEED_PASSWORD;
+  const staffCreated = await seedStaff(db, staffPassword);
+  console.log(`seed: staff accounts admin@ (Super Admin), curator@, support@nextkin.test: ${staffCreated} new, others kept as they are`);
+  if (staffCreated > 0 && !devCredentials) {
+    console.log(`seed: a new staff account's first sign-in at /admin/sign-in uses the temporary password ${SEED_PASSWORD}, sets up an authenticator, then chooses a new password`);
   }
 
   if (volume > 0) {

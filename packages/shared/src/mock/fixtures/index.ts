@@ -33,3 +33,9 @@ export { faqFixture } from './support';
 export { USER_ID, dashboardStatsFixture, subscriptionFixture, userFixture } from './user';
 export { billingFixture } from './billing';
 export { insightsFixture } from './insights';
+export {
+  adminActivityFixture,
+  adminMeFixture,
+  adminOverviewFixture,
+  adminQueuesFixture,
+} from './admin';

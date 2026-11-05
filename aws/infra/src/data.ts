@@ -24,6 +24,8 @@ export class Data extends Construct {
   /** One login password per database role (docker/postgres/init/01-roles.sh). */
   readonly rolePasswords = {} as Record<RoleName, secretsmanager.Secret>;
   readonly cursorSecret: secretsmanager.Secret;
+  /** Seals staff authenticator secrets (admin portal sign-in, toreview §171.13). Never rotate casually: a new key voids every enrolled authenticator. */
+  readonly staffTotpKey: secretsmanager.Secret;
   /** A placeholder until the owner puts the real key in (aws/infra/README.md). */
   readonly openRouterKey: secretsmanager.Secret;
   readonly seedPassword: secretsmanager.Secret;
@@ -58,6 +60,7 @@ export class Data extends Construct {
       });
     }
     this.cursorSecret = secret('cursor-secret', 'Signs pagination cursors', { passwordLength: 48 });
+    this.staffTotpKey = secret('staff-totp-key', 'Seals staff authenticator secrets', { passwordLength: 48 });
     this.openRouterKey = secret('openrouter-api-key', 'OpenRouter key: replace this value', {
       passwordLength: 16,
     });

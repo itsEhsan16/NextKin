@@ -19,6 +19,15 @@ export async function seedAccounts(db: Database): Promise<string[]> {
   const ids: string[] = [];
   for (const account of ACCOUNTS) {
     const userId = account.key === 'admin' ? SEED_ADMIN_ID : stableId(`account:${account.key}`);
+    if (account.role !== 'user') {
+      // Staff rows are kept: replacing them would take the staff account (its password and
+      // authenticator) with them (toreview §171.13).
+      const kept = await db.withSystem(`seed: keep staff account ${account.key}`, (tx) => tx.selectFrom('users').select('id').where('id', '=', userId).executeTakeFirst());
+      if (kept) {
+        ids.push(userId);
+        continue;
+      }
+    }
     await db.withSystem(`seed: replace account ${account.key}`, (tx) => tx.deleteFrom('users').where('id', '=', userId).execute());
     await db.withUser({ userId, role: account.role }, async (tx) => {
       await tx

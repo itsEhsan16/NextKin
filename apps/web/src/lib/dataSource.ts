@@ -33,6 +33,12 @@ const goToSignIn = () => {
   if (typeof window === 'undefined') return;
   // Outside React (the HTTP client's 401 hook), and a full load on purpose: it drops every cached
   // query of the session that just ended.
+  // Staff whose session lapses go back to the staff sign-in (Figma 410:1605), not the user app's.
+  if (window.location.pathname.startsWith('/admin')) {
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    if (window.location.pathname !== '/admin/sign-in') window.location.assign('/admin/sign-in');
+    return;
+  }
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   if (!isAuthPage(window.location.pathname)) window.location.assign(SIGN_IN);
 };
