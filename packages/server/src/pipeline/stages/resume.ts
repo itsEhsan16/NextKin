@@ -12,6 +12,7 @@ import { z } from 'zod';
 import type { VerifiedJd } from './extractJd';
 import { isoOf, periodOf, profileDocument, readRun, type RunInput, type StageJd } from './common';
 import { StageError, type StageDef } from '../stages';
+import { headlineOf, tailorOf } from './tailorMerge';
 import type { Tx } from '../../db/database';
 
 /**
@@ -174,8 +175,14 @@ export const bulletCap = (r: ProfileFacts['roles'][number]): number =>
   Math.min(6, r.responsibilities.length > 0 ? r.responsibilities.length : r.description ? 3 : 0);
 
 /** The generator's input: facts with ids, the plan, the JD's requirements. No contact field (G5). */
-export function generationInput(facts: ProfileFacts, plan: ResumePlan, jd: StageJd | null, instruction?: string, keywordsToPlace: readonly string[] = []) {
+export function generationInput(
+  facts: ProfileFacts,
+  plan: ResumePlan,
+  jd: StageJd | null,
+  extra: { instruction?: string; keywordsToPlace?: readonly string[]; headline?: string } = {},
+) {
   const index = factIndex(facts);
+  const { instruction, keywordsToPlace = [], headline } = extra;
   return {
     // What the user asked for in "AI rewrite" (toreview §113): followed only within every rule.
     ...(instruction ? { instruction } : {}),
@@ -183,6 +190,9 @@ export function generationInput(facts: ProfileFacts, plan: ResumePlan, jd: Stage
       ? {
           title: jd.title,
           company: jd.company,
+          // The headline the resume will print, when a tailored run aims it (toreview §170): the
+          // summary is written to agree with it.
+          ...(headline ? { headline } : {}),
           requirementsBacked: plan.backed,
           requirementsNotBacked: plan.gaps,
           // The job's own duties, in its words (toreview §112): what to mirror where the facts agree.
@@ -295,10 +305,13 @@ export const generateStage: StageDef = {
     if (facts.roles.length === 0) throw new StageError('profile_empty', 'Add at least one role to your profile to build a resume from it.');
     const plan = ctx.outputs.plan as ResumePlan;
     const prompt = ctx.prompts[RESUME_TEMPLATE] ?? ctx.prompt;
+    const jd = (ctx.outputs.jd as StageJd | null) ?? null;
+    const tailor = tailorOf(ctx.run);
+    const headline = tailor?.fixes.includes('headline') && jd?.title ? headlineOf(jd.title) : undefined;
     const { data, meta } = await ctx.gateway.extract({
       stage: 'resume_generate',
       system: prompt.body.system.map((text) => ({ text })),
-      input: generationInput(facts, plan, (ctx.outputs.jd as StageJd | null) ?? null, run.instruction, (ctx.run.tailor as { added?: string[] } | undefined)?.added ?? []),
+      input: generationInput(facts, plan, jd, { ...(run.instruction ? { instruction: run.instruction } : {}), keywordsToPlace: tailor?.added ?? [], ...(headline ? { headline } : {}) }),
       schema: resumeDraftSchema,
       name: 'resume',
       description: 'The resume: a summary, skills and bullets per role, each citing the fact ids it rests on.',

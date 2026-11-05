@@ -15,8 +15,9 @@ import type { Prices, Routing } from './routing';
 // is longer than the fields it read before: 8000 tokens out.
 // Version 5 (toreview §153): the job reader places the whole posting, each fact quoted: 8000 out.
 // Version 6 (toreview §159): it also lists the posting's themes; a long posting reaches ~7.5k: 12000.
+// Version 7 (toreview §170): the review of a whole tailored resume, on the generation tier.
 export const ROUTING_DEFAULT: Routing = {
-  version: 6,
+  version: 7,
   stages: {
     default: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
@@ -27,6 +28,10 @@ export const ROUTING_DEFAULT: Routing = {
       { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 6000, inputBudgetTokens: 24000, temperature: 0.3 },
     ],
     resume_revise: [
+      { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 24000, temperature: 0.2 },
+      { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 24000, temperature: 0.2 },
+    ],
+    resume_review: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 24000, temperature: 0.2 },
       { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 24000, temperature: 0.2 },
     ],

@@ -23,6 +23,7 @@ import type { TailorChoices } from '../useTailorRun';
 import { EXPERIENCE_DEPTH_LABEL, FIX_ROWS } from '../tailorLibrary';
 import { EnhanceHeader } from './EnhanceHeader';
 import { FullPlan } from './FullPlan';
+import { HeaderChecks } from './HeaderChecks';
 import { PlacePicker } from './PlacePicker';
 import { MoreFixes, ShowInRole } from './PlanExtras';
 import { RealResults } from './RealResults';
@@ -220,6 +221,7 @@ export function EnhanceStep({
               </div>
             )}
             {group('Soft skills', null, soft)}
+            <HeaderChecks checks={comparison.headerChecks} choices={choices} />
             <ShowInRole steps={steps} places={places} choices={choices} />
             <MoreFixes steps={steps} resumeId={comparison.resumeId} />
           </div>

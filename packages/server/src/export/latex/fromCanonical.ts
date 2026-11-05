@@ -32,11 +32,10 @@ function skillsSection(doc: CanonicalResumeJson, heading: string): LatexSection 
   if (!doc.skillGroups?.length) return { kind: 'lines', heading, lines: [{ text: doc.skills.map((s) => s.name).join(', ') }] };
   const grouped = new Set(doc.skillGroups.flatMap((g) => g.names.map((n) => n.toLowerCase())));
   const rest = doc.skills.map((s) => s.name).filter((n) => !grouped.has(n.toLowerCase()));
-  return {
-    kind: 'lines',
-    heading,
-    lines: [...doc.skillGroups.map((g) => ({ label: g.label, text: g.names.join(', ') })), ...(rest.length ? [{ label: 'Also', text: rest.join(', ') }] : [])],
-  };
+  // Skills on no line join the file's own "Also" line when it has one, never a second (toreview §170).
+  const also = doc.skillGroups.findIndex((g) => /^\s*also\s*$/i.test(g.label));
+  const lines = doc.skillGroups.map((g, i) => ({ label: g.label, text: [...g.names, ...(i === also ? rest : [])].join(', ') }));
+  return { kind: 'lines', heading, lines: [...lines, ...(rest.length && also < 0 ? [{ label: 'Also', text: rest.join(', ') }] : [])] };
 }
 
 function experienceSection(doc: CanonicalResumeJson, heading: string, market: MarketProfile): LatexSection | null {

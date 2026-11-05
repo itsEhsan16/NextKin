@@ -1,4 +1,5 @@
 import type { FixPlan } from '../scoring/fixPlan';
+import type { HeaderCheck, HeaderChoice } from '../scoring/headerChecks';
 import { atsBandFor, type AtsBand, type Resume } from './resume';
 
 /**
@@ -101,6 +102,8 @@ export type TailorComparison = {
   picks?: Record<string, string[]>;
   /** "Your fix plan" (toreview §115): where the points go, and the steps ranked by worth. */
   plan?: FixPlan;
+  /** Header statements that don't fit this job (toreview §170), asked in Enhance. */
+  headerChecks?: HeaderCheck[];
 };
 
 /**
@@ -187,6 +190,8 @@ export type TailorRun = TailorChoices & {
   confirmed?: TailorConfirmation[];
   /** Bullets the user rewrote with their real result (toreview §129). */
   figures?: TailorFigure[];
+  /** The user's answers to the header checks (toreview §170). */
+  header?: HeaderChoice[];
   /**
    * What the plan promised for these choices, out of 100: the resume with the user's answers and
    * the AI's own steps, re-scored at the start (toreview §129). The ready screen compares `score`.

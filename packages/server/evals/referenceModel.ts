@@ -149,6 +149,10 @@ function answer(request: LlmRequest, mode: Mode): Json | undefined {
       if (!fabricate) return draft;
       return { ...draft, roles: draft.roles.map((r) => ({ ...r, bullets: r.bullets.map((b) => ({ ...b, text: `${b.text}, saving 37 hours a week using Kafka` })) })) };
     }
+    // The review of a tailored resume (toreview §170): a careful reviewer that finds nothing, so the
+    // pipeline suites test the merge as before; `reviewEdits.test.ts` drives the edits themselves.
+    case 'review':
+      return { issues: [], edits: [] };
     case 'revision': {
       const wanted = input.rewrite as { summary: boolean; skills: boolean; roleIds: string[] };
       const draft = groundedResume(input);

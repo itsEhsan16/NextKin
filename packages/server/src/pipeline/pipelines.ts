@@ -6,6 +6,7 @@ import { persistStage, scoreStage } from './stages/persist';
 import { generateStage, jdStage, planStage, RESUME_TEMPLATE, REVISE_TEMPLATE } from './stages/resume';
 import { sectionPersistStage } from './stages/section';
 import { validateStage } from './stages/validate';
+import { REVIEW_TEMPLATE, reviewStage } from './stages/review';
 
 /**
  * Which stages each kind runs (ImBackendImplementationPlan P9-03). Every stage is checkpointed by
@@ -13,7 +14,7 @@ import { validateStage } from './stages/validate';
  *
  * | Kind | Stages | Output |
  * |---|---|---|
- * | resume | jd → plan → generate → validate → score → persist | a resume version with its claim ledger, timeline report and ATS report |
+ * | resume | jd → plan → generate → validate → review → score → persist | a resume version with its claim ledger, timeline report and ATS report |
  * | zero_resume | jd → zero → persist | a version whose every claim is `assumed`; no score (D-15) |
  * | cover_letter | jd → source → letter → persist | a letter version and its `cover_letters` row |
  * | ats_check | source → jd → score → persist | an ATS report on the source version, and the check's result |
@@ -25,8 +26,9 @@ import { validateStage } from './stages/validate';
 export const PIPELINES: Record<RunKind, PipelineDef> = {
   resume: {
     promptTemplate: RESUME_TEMPLATE,
-    prompts: [RESUME_TEMPLATE, REVISE_TEMPLATE],
-    stages: [jdStage, planStage, generateStage, validateStage, scoreStage, persistStage],
+    prompts: [RESUME_TEMPLATE, REVISE_TEMPLATE, REVIEW_TEMPLATE],
+    // `review` passes an untailored run through; a tailored one gets the AI's review (toreview §170).
+    stages: [jdStage, planStage, generateStage, validateStage, reviewStage, scoreStage, persistStage],
   },
   zero_resume: { promptTemplate: ZERO_TEMPLATE, prompts: [ZERO_TEMPLATE], stages: [jdStage, zeroStage, zeroPersistStage] },
   cover_letter: { promptTemplate: COVER_TEMPLATE, prompts: [COVER_TEMPLATE], stages: [jdStage, sourceStage, coverStage, coverPersistStage] },

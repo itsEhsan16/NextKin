@@ -1,6 +1,7 @@
 import type { TailorComparison } from '@nextkin/shared/models/tailor';
 import { TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
 import { documentText, placesOf } from '@nextkin/shared/scoring/documentFacts';
+import { headerChecksFor } from '@nextkin/shared/scoring/headerChecks';
 import { experienceMonths } from '@nextkin/shared/scoring/pageBudget';
 import { fitPlacesOf } from '@nextkin/shared/scoring/placeFit';
 import { comparisonOf, improvementsFor, keywordsFrom } from '@nextkin/shared/scoring/tailorComparison';
@@ -30,7 +31,8 @@ export async function compareResumeToJd(db: Database, identity: Identity, jdId: 
     // With the path to 8.5 (toreview §129): each step re-scored on top of the ones before it.
     const result = measureBase(base, draft, asOf, TAILOR_PATH);
     const topKeywords = keywordsFrom(result, draft.rawText, draft.title).filter((k) => k.top).map((k) => k.label);
-    return comparisonOf({
+    const headerChecks = headerChecksFor(doc.header, { title: draft.title, location: draft.location ?? null });
+    const comparison = comparisonOf({
       resumeId,
       jdId: draft.id,
       ...(draft.jobId ? { jobId: draft.jobId } : {}),
@@ -56,5 +58,6 @@ export async function compareResumeToJd(db: Database, identity: Identity, jdId: 
       fitPlaces: fitPlacesOf(doc),
       asOf,
     });
+    return headerChecks.length ? { ...comparison, headerChecks } : comparison;
   });
 }

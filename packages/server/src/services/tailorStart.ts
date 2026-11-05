@@ -4,6 +4,7 @@ import { resolveSkill } from '@nextkin/engines/normalizer';
 import type { Tailoring } from '@nextkin/shared/schemas/generation';
 import { factsOfDocument, placesOf, withChoices, withFigures } from '@nextkin/shared/scoring/documentFacts';
 import { TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
+import { headerChecksFor } from '@nextkin/shared/scoring/headerChecks';
 import { jobMatchOf, keywordsFrom, scoringJdOf } from '@nextkin/shared/scoring/tailorComparison';
 
 import { redactContact } from '../ai/pii';
@@ -75,6 +76,8 @@ export async function prepareTailor(
   // Ticked keywords with no place go in the skills list only (owner, toreview §159); a bullet names
   // one only where its own lines support it.
   const facts = factsOfDocument(source, { added: ticked, confirmed, redact: redactContact });
+  const checks = new Map(headerChecksFor(base.doc.header, { title: draft.title, location: draft.location ?? null }).map((c) => [c.index, c]));
+  const header = (args.tailoring.header ?? []).filter((c) => checks.has(c.index) && (c.action === 'remove' || c.text));
   const projected = projectionOf({ source, facts, contact: base.contact, draft, ticked, confirmed, fixes: args.tailoring.fixes, asOf: args.asOf });
   await addProfileSkills(tx, userId, ticked);
   return {
@@ -95,6 +98,8 @@ export async function prepareTailor(
       ...(baselineJobMatch ? { baselineJobMatch } : {}),
       sourcePages: base.pages,
       sourceMeasured: base.pagesMeasured,
+      // Only answers to a check this header has (toreview §170); the merge applies them.
+      ...(header.length ? { header } : {}),
     },
   };
 }

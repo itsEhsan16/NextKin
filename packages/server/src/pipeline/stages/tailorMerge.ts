@@ -6,7 +6,8 @@ import { checkProjectBullets } from '@nextkin/engines/projectClaims';
 import { toResumeContent } from '@nextkin/shared/scoring/canonical';
 import { factsOfDocument, undatedRoleIds } from '@nextkin/shared/scoring/documentFacts';
 import { estimatePages } from '@nextkin/shared/scoring/pages';
-import { placeInGroups } from '@nextkin/shared/scoring/skillGroups';
+import { withHeaderChoices } from '@nextkin/shared/scoring/headerChecks';
+import { placeInGroups, tidyGroups } from '@nextkin/shared/scoring/skillGroups';
 import { reconcileStructure } from '@nextkin/shared/scoring/structure';
 import type { CanonicalResumeJson, CanonicalRoleJson } from '@nextkin/shared/schemas/resumeContent';
 import { z } from 'zod';
@@ -47,6 +48,8 @@ export const tailorRunSchema = z.object({
   figures: z.array(z.object({ where: z.string(), line: z.number(), text: z.string() })).optional(),
   /** The score the plan promised for these choices, re-scored at the start (toreview §129). */
   projected: z.number().optional(),
+  /** The user's answers to the header checks (toreview §170). */
+  header: z.array(z.object({ index: z.number(), action: z.enum(['remove', 'replace']), text: z.string().optional() })).optional(),
 });
 export type TailorRunInput = z.infer<typeof tailorRunSchema>;
 
@@ -213,7 +216,23 @@ const standardHeadings = (headings: Record<string, string>): Record<string, stri
  * A bolt-on line (owner, toreview §159): "Used webhooks, NoSQL and WhatsApp Business API in the
  * platform" says no work, only lists ticked keywords. It is dropped; the keywords stay in Skills.
  */
-const isBoltOn = (text: string, named: (text: string) => readonly string[]) => isToolUseLine(text) && named(text).length >= 2;
+export const isBoltOn = (text: string, named: (text: string) => readonly string[]) => isToolUseLine(text) && named(text).length >= 2;
+
+/**
+ * The skills, each once (toreview §170): a skill whose canonical one a line lists under another
+ * name ("postgres" beside "PostgreSQL") goes, so no renderer prints it again under "Also".
+ */
+export function listedOnce(skills: CanonicalResumeJson['skills'], groups: NonNullable<CanonicalResumeJson['skillGroups']>): CanonicalResumeJson['skills'] {
+  const names = new Set(groups.flatMap((g) => g.names.map((n) => n.toLowerCase())));
+  const keys = new Set(groups.flatMap((g) => g.names.map(skillKey)));
+  const seen = new Set<string>();
+  return skills.filter((s) => {
+    const key = skillKey(s.name);
+    if (seen.has(key) || (keys.has(key) && !names.has(s.name.toLowerCase()))) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 export function mergeTailored(args: {
   base: CanonicalResumeJson;
@@ -250,14 +269,20 @@ export function mergeTailored(args: {
   const rest = structuredClone(base);
   delete rest.headline;
   delete rest.summary;
-  const skills = skillsFor(base, request, job, fixes.has('skills')).slice(0, 60);
+  // The header as the user answered its checks in Enhance (toreview §170); otherwise as the file had it.
+  const header = withHeaderChoices(base.header, request.header ?? []);
+  const all = skillsFor(base, request, job, fixes.has('skills')).slice(0, 60);
+  // Lines of the same name become one, and a skill is listed once (toreview §170).
+  const skillGroups = base.skillGroups ? tidyGroups(placeInGroups(groupsFor(base.skillGroups, all, fixes.has('skills')), request.added, TAXONOMY), TAXONOMY) : undefined;
+  const skills = skillGroups ? listedOnce(all, skillGroups) : all;
   const merged: CanonicalResumeJson = {
     ...rest,
     ...(headline ? { headline } : {}),
     ...(summary ? { summary } : {}),
+    ...(header ? { header } : {}),
     skills,
     // A ticked keyword goes on the file's skill line it belongs to, not under "Also" (toreview §113).
-    ...(base.skillGroups ? { skillGroups: placeInGroups(groupsFor(base.skillGroups, skills, fixes.has('skills')), request.added, TAXONOMY) } : {}),
+    ...(skillGroups ? { skillGroups } : {}),
     roles,
     projects: projectsFor(base, generated, request),
     ...(base.layout ? { layout: { ...base.layout, headings: standardHeadings(base.layout.headings) } } : {}),

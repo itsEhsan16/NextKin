@@ -48,13 +48,16 @@ export const scoreAgainst = (args: { document: CanonicalResumeJson; facts: Profi
 
 export const scoringJdOfStage = (jd: StageJd): ScoringJd => ({ requiredSkills: jd.requiredSkills, preferredSkills: jd.preferredSkills, tools: jd.tools, rawText: jd.rawText, completeness: jd.completeness });
 
+/** The written document: the review's when the run has that stage (toreview §170), else the validation's. */
+const finalOf = (outputs: Record<string, unknown>) => (outputs.review ?? outputs.validate) as ValidationOutput;
+
 export const scoreStage: StageDef = {
   name: 'score',
   status: 'scoring',
   async run(ctx) {
     const run = readRun(ctx.run);
     const jd = (ctx.outputs.jd as StageJd | null) ?? null;
-    const doc = (ctx.outputs.validate as ValidationOutput).document;
+    const doc = finalOf(ctx.outputs).document;
     const result = scoreAgainst({ document: doc, facts: run.snapshot.facts, contact: run.snapshot.contact, jd: jd ? scoringJdOfStage(jd) : null, asOf: run.asOf });
     return { output: result };
   },
@@ -128,7 +131,7 @@ export const persistStage: StageDef = {
   name: 'persist',
   status: 'scoring',
   async run(ctx) {
-    const validation = ctx.outputs.validate as ValidationOutput;
+    const validation = finalOf(ctx.outputs);
     const result = (ctx.outputs.score as DocumentScore | undefined) ?? null;
     const jd = (ctx.outputs.jd as StageJd | null) ?? null;
     const doc: CanonicalResumeJson = validation.document;

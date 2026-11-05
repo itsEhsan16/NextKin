@@ -111,6 +111,8 @@ export const tailoringSchema = z
       .optional(),
     /** Bullets the user rewrote with their real result (toreview §129). */
     figures: z.array(z.object({ where: z.string().trim().min(1).max(100), line: z.number().int().min(0).max(60), text: z.string().trim().min(1).max(300) }).strict()).max(40).optional(),
+    /** The user's answers to the header checks (toreview §170): remove a statement, or replace it. */
+    header: z.array(z.object({ index: z.number().int().min(0).max(11), action: z.enum(['remove', 'replace']), text: z.string().trim().min(1).max(200).optional() }).strict()).max(12).optional(),
   })
   .strict();
 export type Tailoring = z.infer<typeof tailoringSchema>;

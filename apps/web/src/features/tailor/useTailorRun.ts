@@ -5,6 +5,7 @@ import {
   initialChoices,
   setFigure,
   setFix,
+  setHeaderChoice,
   setPlace,
   tailorRunInput,
   tickKeyword,
@@ -62,8 +63,15 @@ export function useTailorChoices() {
     figureOf: (roleId: string, line: number) => choices.figures?.[figureKey(roleId, line)],
     setFigure: (roleId: string, line: number, text: string | null) =>
       setChoices((c) => setFigure(c, roleId, line, text)),
+    /** A header check answered (toreview §170): null is Keep. */
+    headerChoiceOf: (index: number) => choices.header?.[index],
+    setHeaderChoice: (
+      index: number,
+      choice: { action: 'remove' | 'replace'; text?: string } | null,
+    ) => setChoices((c) => setHeaderChoice(c, index, choice)),
     /** A new resume picked: its keywords differ, so the taps start again. */
-    resetKeywords: () => setChoices((c) => ({ ...c, added: [], places: {}, figures: {} })),
+    resetKeywords: () =>
+      setChoices((c) => ({ ...c, added: [], places: {}, figures: {}, header: {} })),
   };
 }
 export type TailorChoices = ReturnType<typeof useTailorChoices>;

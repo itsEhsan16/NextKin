@@ -4,6 +4,7 @@ import { isQuantified } from '@nextkin/engines/quantified';
 import type { GenerationInput } from '../models/generation';
 import type { TailorComparison, TailorConfirmation, TailorExperienceDepth, TailorFigure, TailorFix, TailorKeyword } from '../models/tailor';
 import type { FixPlan } from '../scoring/fixPlan';
+import type { HeaderChoice } from '../scoring/headerChecks';
 
 export type { FixPlan, PlanStep } from '../scoring/fixPlan';
 
@@ -31,7 +32,17 @@ export type CustomizeChoices = {
   places: Readonly<Record<string, KeywordPlace>>;
   /** Bullets rewritten with their real result, by `figureKey` (toreview §129). */
   figures?: Readonly<Record<string, string>>;
+  /** The user's answers to the header checks, by item index (toreview §170); absent is "Keep". */
+  header?: Readonly<Record<number, HeaderChoice>>;
 };
+
+/** A header check answered: Keep (null), Remove, or Change to the offered line. */
+export function setHeaderChoice(c: CustomizeChoices, index: number, choice: Omit<HeaderChoice, 'index'> | null): CustomizeChoices {
+  const header = { ...(c.header ?? {}) };
+  if (choice) header[index] = { index, ...choice };
+  else delete header[index];
+  return { ...c, header };
+}
 
 /** A bullet's key in `figures`: its role and its line in the base resume. */
 export const figureKey = (roleId: string, line: number) => `${roleId}#${line}`;
@@ -170,6 +181,9 @@ export function tailorRunInput(comparison: TailorComparison, c: CustomizeChoices
     const line = Number(key.slice(at + 1));
     return at > 0 && Number.isInteger(line) && text.trim() ? [{ where: key.slice(0, at), line, text: text.trim() }] : [];
   });
+  // Only answers to a check this comparison made (toreview §170).
+  const checked = new Set((comparison.headerChecks ?? []).map((h) => h.index));
+  const header = Object.values(c.header ?? {}).filter((h) => checked.has(h.index));
   return {
     kind: 'resume',
     jdId: comparison.jdId,
@@ -185,6 +199,7 @@ export function tailorRunInput(comparison: TailorComparison, c: CustomizeChoices
       experience: c.experience,
       ...(confirmed.length ? { confirmed } : {}),
       ...(figures.length ? { figures } : {}),
+      ...(header.length ? { header } : {}),
     },
   };
 }

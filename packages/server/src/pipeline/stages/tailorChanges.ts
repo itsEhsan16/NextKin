@@ -4,6 +4,7 @@ import type { CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent'
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { leftOutChecker } from '@nextkin/engines/leftOut';
 
+import type { ReviewRecord } from './reviewEdits';
 import { skillKey, type TailorRunInput } from './tailorMerge';
 
 const joinAnd = (items: readonly string[]) =>
@@ -17,7 +18,7 @@ const named = (items: readonly string[], shown = 3) =>
  * "What changed for this job" (734:2033), read off the two versions: only what the run did, then
  * what was left out and why. Nothing here says a change happened that the document does not show.
  */
-export function changesOf(args: { base: CanonicalResumeJson; final: CanonicalResumeJson; request: TailorRunInput; stripped: number; pages: number }): TailorChange[] {
+export function changesOf(args: { base: CanonicalResumeJson; final: CanonicalResumeJson; request: TailorRunInput; stripped: number; pages: number; review?: ReviewRecord }): TailorChange[] {
   const { base, final, request } = args;
   const out: TailorChange[] = [];
   const did = (label: string) => out.push({ label, left: false });
@@ -53,6 +54,7 @@ export function changesOf(args: { base: CanonicalResumeJson; final: CanonicalRes
     if (role.bullets.some((b) => !was.has(b.text))) did(`Rewrote the bullets in ${where}${counts}`);
     else if (role.bullets.length < before.bullets.length) did(`Kept ${role.bullets.length} of ${before.bullets.length} bullets in ${where}`);
   }
+  out.push(...reviewChanges(args.base, args.final, args.review));
   const plural = (n: number) => `${n} page${n === 1 ? '' : 's'}`;
   if (request.sourcePages != null && args.pages < request.sourcePages) did(`${request.sourceMeasured ? '' : 'About '}${plural(request.sourcePages)} → ${plural(args.pages)}`);
 
@@ -60,5 +62,28 @@ export function changesOf(args: { base: CanonicalResumeJson; final: CanonicalRes
   const skipped = request.skipped.filter((s) => !listed.has(skillKey(s)));
   if (skipped.length) out.push({ label: `${named(skipped)} left out, as you chose`, left: true });
   if (args.stripped > 0) out.push({ label: `Left out ${args.stripped} ${args.stripped === 1 ? 'line' : 'lines'} your resume doesn’t back`, left: true });
+  return out;
+}
+
+/**
+ * What the AI's review did (toreview §170), each line naming what moved or went so the user can
+ * check it; a header statement it doubted is a note, never a change. Rewrites of the summary and
+ * bullets are already named above, read off the two versions.
+ */
+function reviewChanges(base: CanonicalResumeJson, final: CanonicalResumeJson, review: ReviewRecord | undefined): TailorChange[] {
+  if (!review) return [];
+  const out: TailorChange[] = [];
+  const applied = (op: ReviewRecord['applied'][number]['op']) => review.applied.filter((a) => a.op === op);
+  const moved = applied('move_skill').map((a) => `${a.target} to ${a.text}`);
+  if (moved.length) out.push({ label: `Moved ${named(moved, 2)}`, left: false });
+  const dropped = applied('drop_skill');
+  if (dropped.length) out.push({ label: `Took ${named(dropped.map((a) => a.target ?? ''))} off the skills list — ${dropped.length === 1 ? 'a duplicate or a phrase from the job, not a skill' : 'duplicates or phrases from the job, not skills'}`, left: false });
+  const renamed = applied('rename_line').map((a) => `${a.target} → ${a.text}`);
+  if (renamed.length) out.push({ label: `Renamed ${named(renamed, 2)}`, left: false });
+  const order = (doc: CanonicalResumeJson) => (doc.layout?.order ?? []).join('|');
+  if (applied('order_sections').length && order(base) !== order(final)) out.push({ label: 'Sections ordered for this job', left: false });
+  if (applied('order_projects').length) out.push({ label: 'Projects ordered by what this job asks for', left: false });
+  if (applied('order_bullets').length) out.push({ label: 'The strongest lines for this job moved up', left: false });
+  for (const flag of review.headerFlags) out.push({ label: `Your header says “${flag.text}”: ${flag.reason}`, left: true });
   return out;
 }

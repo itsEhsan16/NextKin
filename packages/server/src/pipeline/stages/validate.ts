@@ -9,7 +9,6 @@ import type { TimelineReport } from '@nextkin/engines/timeline';
 import { validateTimeline } from '@nextkin/engines/timeline';
 import type { TailorChange } from '@nextkin/shared/models/tailor';
 import { canonicalResumeSchema, type CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
-import { EXPERIENCED_MONTHS, pageBudget } from '@nextkin/shared/scoring/pageBudget';
 import { scoringDocumentOf, toEngineResume } from '@nextkin/shared/scoring/canonical';
 import { withFigures } from '@nextkin/shared/scoring/documentFacts';
 import { z } from 'zod';
@@ -20,12 +19,10 @@ import type { LatexDensity } from '../../export/latex/types';
 import type { PromptVersion } from '../../services/prompts';
 import type { ContactPresence } from '@nextkin/shared/scoring/adapters';
 import { StageError, type StageContext, type StageDef } from '../stages';
-import { userPaper } from '../../services/renders';
-import { readRun, type RunInput, type StageJd } from './common';
+import { readRun, type StageJd } from './common';
 import { generationInput, REVISE_TEMPLATE, type ResumePlan } from './resume';
-import { compiledMeasure, dropOrder, estimateMeasure, fitToPages } from './pageFit';
-import { changesOf } from './tailorChanges';
-import { mergeTailored, recentRoleIds, strippedInUse, tailorOf, type TailorRunInput } from './tailorMerge';
+import type { ReviewRecord } from './reviewEdits';
+import { mergeTailored, strippedInUse, tailorOf, type TailorRunInput } from './tailorMerge';
 
 /**
  * Validation (ImBackendImplementationPlan P9-03, P9-04; V2 §7.6–§7.7; G13). The claim ledger and the
@@ -53,14 +50,14 @@ export interface ValidationOutput {
   /** Lines the check took out of the draft: the line itself for the Versions page (§146.5). */
   stripped: { claimId: string; reason: string; text?: string }[];
   /** A tailored run's merge (toreview §110.3): what changed against the base, and its length. */
-  tailor?: { baseVersionId: string; changes: TailorChange[]; pages: number; density?: LatexDensity; pagesCompiled?: boolean; pageBasis?: string };
+  tailor?: { baseVersionId: string; changes: TailorChange[]; pages: number; density?: LatexDensity; pagesCompiled?: boolean; pageBasis?: string; review?: ReviewRecord };
 }
 
 /** `leftOut`: a tailored run's unticked keywords, which no generated claim may name. */
 export const ledgerOf = (doc: CanonicalResumeJson, facts: ProfileFacts, asOf: { year: number; month?: number }, leftOut?: readonly string[]) =>
   buildClaimLedger({ document: toEngineResume(doc), facts, taxonomy: TAXONOMY, kb: KB, asOf, ...(leftOut?.length ? { leftOut } : {}) });
 
-const marketOf = (jd: StageJd | null) => MARKETS.profiles[marketForLocation(jd?.location ?? undefined) ?? 'us'];
+export const marketOf = (jd: StageJd | null) => MARKETS.profiles[marketForLocation(jd?.location ?? undefined) ?? 'us'];
 
 /** The timeline post-check (§7.7): each profile role's dates against what the document says it used. */
 export const timelineOf = (doc: CanonicalResumeJson, facts: ProfileFacts, asOf: { year: number; month?: number }): TimelineReport =>
@@ -182,54 +179,23 @@ export async function validateDocument(args: ValidateArgs): Promise<ValidationOu
 
 /**
  * A tailored run (toreview §110.3): what the model wrote, validated, merged into the base version
- * by code (`tailorMerge.ts`); then the merged document's own ledger, timeline and lint, so the
- * record describes the document that is written. The base version is immutable (G12), so a
- * redelivered run merges into exactly the same lines.
+ * by code (`tailorMerge.ts`). The AI's review of the whole page, the page fit and the record of the
+ * document that is written follow in the `review` stage (toreview §170). The base version is
+ * immutable (G12), so a redelivered run merges into exactly the same lines.
  */
-async function tailored(ctx: StageContext, run: RunInput, tailor: TailorRunInput, jd: StageJd | null, validated: ValidationOutput): Promise<ValidationOutput> {
+async function tailored(ctx: StageContext, tailor: TailorRunInput, jd: StageJd | null, validated: ValidationOutput): Promise<ValidationOutput> {
+  const base = await readTailorBase(ctx, tailor);
+  const job = jd ? { title: jd.title, skills: [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools] } : null;
+  const merged = mergeTailored({ base, generated: validated.document, request: tailor, job });
+  return { ...validated, document: merged, stripped: strippedInUse(validated.stripped, base, tailor) };
+}
+
+/** The version a tailored run starts from, with the user's rewritten bullets in (toreview §129). */
+export async function readTailorBase(ctx: StageContext, tailor: TailorRunInput): Promise<CanonicalResumeJson> {
   const row = await ctx.db.withUser({ userId: ctx.userId, role: 'user' }, (tx) => tx.selectFrom('resume_versions').select('content').where('id', '=', tailor.baseVersionId).executeTakeFirst());
   const parsed = canonicalResumeSchema.safeParse(row?.content);
   if (!parsed.success) throw new StageError('base_missing', 'The resume this was being tailored from is gone.');
-  // The user's rewritten bullets are part of the base this run tailors (toreview §129).
-  const base = withFigures(parsed.data, tailor.figures);
-  const job = jd ? { title: jd.title, skills: [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools] } : null;
-  const merged = mergeTailored({ base, generated: validated.document, request: tailor, job });
-  const fit = await fitTailored(ctx, run, tailor, jd, base, merged);
-  const document = fit.doc;
-  const { facts, contact } = run.snapshot;
-  const stripped = strippedInUse(validated.stripped, base, tailor);
-  return {
-    ...validated,
-    document,
-    ledger: ledgerOf(document, facts, run.asOf),
-    timeline: timelineOf(document, facts, run.asOf),
-    lint: lint({ document: scoringDocumentOf(document, contact), market: marketOf(jd) }),
-    stripped,
-    tailor: { baseVersionId: tailor.baseVersionId, pages: fit.pages, density: fit.density, pagesCompiled: fit.compiled, pageBasis: fit.basis, changes: changesOf({ base, final: document, request: tailor, stripped: stripped.length, pages: fit.pages }) },
-  };
-}
-
-/**
- * The page budget (toreview §111.1): one page under five years of experience, else the uploaded
- * file's own count, at most two. Trimming is allowed with the length fix, and for a fresher, whose
- * resume is one page by the owner's rule; a compile outage falls back to the estimate.
- */
-async function fitTailored(ctx: StageContext, run: RunInput, tailor: TailorRunInput, jd: StageJd | null, base: CanonicalResumeJson, merged: CanonicalResumeJson) {
-  const budget = pageBudget(merged, { year: run.asOf.year, month: run.asOf.month ?? 12 }, tailor.sourceMeasured ? tailor.sourcePages : null);
-  const fresher = budget.months < EXPERIENCED_MONTHS;
-  const order = dropOrder(merged, recentRoleIds(base), jd ? [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools] : []);
-  const args = { doc: merged, budget: budget.pages, order };
-  if (ctx.latex) {
-    try {
-      const paper = await ctx.db.withUser({ userId: ctx.userId, role: 'user' }, (tx) => userPaper(tx, ctx.userId));
-      const fit = await fitToPages({ ...args, mayTrim: fresher || tailor.fixes.includes('length'), measure: compiledMeasure(ctx.latex, jd?.location ?? null, paper), compiled: true });
-      return { ...fit, basis: budget.basis };
-    } catch {
-      // The service is down or busy: the estimate below, which trims only with the length fix.
-    }
-  }
-  const fit = await fitToPages({ ...args, mayTrim: tailor.fixes.includes('length'), measure: estimateMeasure, compiled: false });
-  return { ...fit, basis: `${budget.basis} (estimated)` };
+  return withFigures(parsed.data, tailor.figures);
 }
 
 export const validateStage: StageDef = {
@@ -254,6 +220,6 @@ export const validateStage: StageDef = {
     });
     await queueForReview(ctx.db, result.timeline.reviewQueue);
     const output: ValidationOutput = { document: result.document, ledger: result.ledger, timeline: result.timeline, lint: result.lint, revisions: result.revisions, stripped: result.stripped };
-    return { output: tailor ? await tailored(ctx, run, tailor, jd, output) : output };
+    return { output: tailor ? await tailored(ctx, tailor, jd, output) : output };
   },
 };

@@ -58,6 +58,7 @@ export const toTailoring = (run: TailorRun): Tailoring => ({
   keywords: run.added,
   ...(run.confirmed?.length ? { confirmed: run.confirmed } : {}),
   ...(run.figures?.length ? { figures: run.figures } : {}),
+  ...(run.header?.length ? { header: run.header } : {}),
 });
 
 const uuid = () =>
