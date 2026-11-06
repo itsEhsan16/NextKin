@@ -99,7 +99,7 @@ export function PlanFigureEditor({
       >
         {counts
           ? 'Counts as a measured result'
-          : 'Only the real number: a count, a %, time or money saved. Nothing is made up.'}
+          : 'A real number only: a count, %, time or money.'}
       </Text>
 
       <View style={{ gap: spacing[2] }}>

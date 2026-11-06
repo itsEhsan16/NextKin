@@ -101,7 +101,7 @@ export function UploadReviewScreen() {
         title="We couldn't find anything to add"
         // The action opens the DOCUMENT, not the profile, so the manual route has to be named:
         // without it this state is a profile dead end that offers no way to a profile at all.
-        message="Your resume is in your library. You can add your roles and skills by hand instead."
+        message="It’s saved in your library. Add roles and skills by hand instead."
         actionLabel="Open the document"
         onAction={leave}
       />,

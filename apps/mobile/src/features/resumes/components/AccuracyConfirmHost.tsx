@@ -4,7 +4,7 @@ import { useAccuracyStore } from '../accuracyStore';
 
 export const ACCURACY_TITLE = 'Is everything here true?';
 export const ACCURACY_MESSAGE =
-  'Before your first download of this version, confirm every role, date, skill and number in it is yours to claim. You can edit it first.';
+  'Check every role, date, skill and number before you download.';
 export const ACCURACY_CONFIRM = 'Yes, it’s accurate';
 export const ACCURACY_CANCEL = 'Not yet';
 

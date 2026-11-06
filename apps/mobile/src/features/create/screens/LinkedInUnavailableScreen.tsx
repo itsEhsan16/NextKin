@@ -12,9 +12,8 @@ import { useCreateActions } from '../hooks/useCreateActions';
  * the workaround is real.
  */
 const WHY =
-  'LinkedIn has no public API that lets another app pull your profile, so there is no honest ' +
-  'way for us to offer it. Export your profile from LinkedIn as a PDF and upload that file — ' +
-  'it gets you the same result today.';
+  'LinkedIn doesn’t let apps import profiles. Save yours as a PDF from LinkedIn and upload it ' +
+  'instead.';
 
 /**
  * CREATE 02's "Import from LinkedIn" row (V2 §6.2 — out of scope, no supported API).

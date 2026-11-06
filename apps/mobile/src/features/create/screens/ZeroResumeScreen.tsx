@@ -42,7 +42,7 @@ const SPARKLE_W = 18 / 0.75; // 613:283
 const SPARKLE_H = 17.6315 / 0.75;
 
 const TITLE = 'Let’s write your first resume';
-const LEDE = 'Tell us three things. We draft the rest and mark every guess for you to check.';
+const LEDE = 'Three answers. We draft the rest and flag every guess.';
 
 /**
  * ZERO 01 (613:206) — "Let's write your first resume": the name, a years band and the role you

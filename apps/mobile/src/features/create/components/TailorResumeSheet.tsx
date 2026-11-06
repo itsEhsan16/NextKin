@@ -189,7 +189,7 @@ export function TailorResumeSheetBody({
               style={{ marginTop: s(FILE_TO_NOTE), paddingHorizontal: s(HELPER_PAD_X) }}
             >
               {upload.status === 'unreadable'
-                ? 'It may be a scan or a photo. Use a PDF or DOCX with text you can select, or pick a resume below.'
+                ? 'It may be a scan. Use a text PDF or DOCX, or pick a resume below.'
                 : 'Check your connection and try again, or pick a resume below.'}
             </Text>
           ) : null}

@@ -99,7 +99,7 @@ export const EMAIL_SEND_FAILED =
 
 /** §8.4, in the reader's words: the app proxies the change, it never verifies the password. */
 export const PASSWORD_NOTE =
-  'Your password is held by the sign-in service, not by NextKin. We pass the change on and show you what it says.';
+  'Your password is kept by our sign-in service, never by NextKin.';
 
 export const PASSWORD_CHANGED = 'Password changed. Use the new one the next time you sign in.';
 

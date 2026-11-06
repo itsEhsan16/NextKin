@@ -240,7 +240,7 @@ describe('CustomizePlan (your plan to fit this job)', () => {
     });
 
     expect(screen.getByText('Best possible for this job: 7.5/10')).toBeOnTheScreen();
-    expect(screen.getByText(/^Short of 8\.5 only because the job asks/)).toBeOnTheScreen();
+    expect(screen.getByText(/^Below 8\.5 only because the job wants/)).toBeOnTheScreen();
     expect(screen.queryByLabelText('8.5 is reached here')).toBeNull();
   });
 

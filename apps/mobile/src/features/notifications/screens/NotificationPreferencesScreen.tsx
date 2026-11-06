@@ -67,9 +67,9 @@ function PrefRow({ title, caption, ai, value, divider, onChange }: PrefRowProps)
 
 /** What the system-permission footer says in each state (Figma 1:2764 draws "on"). */
 const PERMISSION_COPY = {
-  granted: 'System permission is on. You can revoke it at any time in your device settings.',
+  granted: 'On. You can turn it off in device settings.',
   denied:
-    'System permission is off. Turn it on in your device settings for anything to reach your lock screen.',
+    'Off. Turn it on in device settings to get alerts.',
   undetermined: "You haven't allowed notifications yet.",
 } as const;
 

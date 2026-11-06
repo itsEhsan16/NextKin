@@ -132,7 +132,7 @@ describe('TailorResumeSheet (TAILOR 01 / 01b / 01c — 606:2, 606:229, 608:510)'
     expect(screen.getByText("We couldn't read this file", shown)).toBeOnTheScreen();
     expect(
       screen.getByText(
-        'It may be a scan or a photo. Use a PDF or DOCX with text you can select, or pick a resume below.',
+        'It may be a scan. Use a text PDF or DOCX, or pick a resume below.',
         shown,
       ),
     ).toBeOnTheScreen();

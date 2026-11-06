@@ -136,8 +136,7 @@ export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenPr
               ))}
             </View>
             <Text variant="rowDescription" color="textSecondary">
-              Text-based files. A scan or a photo of a page has no text in it to read, so it comes
-              back empty.
+              Text-based files only. Scans and photos can’t be read.
             </Text>
           </View>
         </Card>

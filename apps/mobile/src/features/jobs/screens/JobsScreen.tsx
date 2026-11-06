@@ -517,7 +517,7 @@ const EMPTY_COPY: Record<JobsSegment, EmptyCopy> = {
   saved: {
     title: 'Nothing saved yet',
     message:
-      'Bookmark jobs to compare them here — salary, match criteria and requirements side by side.',
+      'Save jobs to compare them side by side.',
     actionLabel: "Browse today's picks",
   },
   applied: {

@@ -56,7 +56,7 @@ export const JD_MIN = 80;
 
 /** The tip under the pasted description (645:89). */
 export const PASTE_TIP =
-  'Paste the whole description. The more of it we read, the truer the result.';
+  'Paste the whole description for the truest result.';
 
 export const NEED_FILE = 'Upload your resume to check it.';
 export const NEED_JOB = 'Pick a saved job, or paste a job description.';

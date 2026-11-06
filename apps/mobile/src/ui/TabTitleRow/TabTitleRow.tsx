@@ -21,7 +21,7 @@ export type TabTitleRowProps = {
 export function TabTitleRow({ title, hasUnread, onPressNotifications }: TabTitleRowProps) {
   return (
     <View style={styles.row}>
-      <Text {...a11yHeader()} variant="screenTitle">
+      <Text {...a11yHeader()} variant="title1">
         {title}
       </Text>
       <IconButton

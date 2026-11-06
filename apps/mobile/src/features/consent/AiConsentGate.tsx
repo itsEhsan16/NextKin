@@ -35,7 +35,9 @@ export function AiConsentGate() {
       open={open}
       tone="neutral"
       title="Before NextKin uses AI"
-      message={`To read your documents and write new ones, NextKin sends their content to:\n${providers}\nYour name, email, phone and address are never sent.`}
+      message={`AI reads and writes your documents through:
+${providers}
+Your name and contact details are never sent.`}
       confirmLabel="Agree and continue"
       cancelLabel="Not now"
       busy={grant.isPending || !list}

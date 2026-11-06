@@ -81,7 +81,7 @@ describe('Jobs empty states (JOBS 06 / 07 / 08)', () => {
     fireEvent.press(screen.getByRole('tab', { name: 'Saved' }));
     expect(await screen.findByText('Nothing saved yet')).toBeOnTheScreen();
     expectMessage(
-      'Bookmark jobs to compare them here — salary, match criteria and requirements side by side.',
+      'Save jobs to compare them side by side.',
     );
     expect(screen.getByLabelText("Browse today's picks")).toBeOnTheScreen();
 

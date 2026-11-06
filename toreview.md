@@ -16027,3 +16027,23 @@ This section records what was built and the judgement calls made without the own
 - **Unserved:** link views, which aren't counted. The CSV exports write no audit row.
 
 **`openapi.json`:** regenerated, with 73 admin paths.
+
+## 172. Mobile redesign: first run, Build Resume, type and copy (owner, 2026-11-06)
+
+The owner asked for a full UX redesign of the mobile first run and Build Resume, shorter copy, and a cleaner type system, following Mobbin-style patterns and their Pinterest references (soft gradient wash, big two-line titles, pill buttons, chip answers, AI insight cards). Mobile first; web later. Branch `claude/app-ui-ux-redesign-1a1793`. Boards are reference only for these screens now.
+
+**Judgement calls to confirm:**
+- **Primary CTA is an ink pill** (54 tall, fully rounded). Indigo stays for AI, progress, selection and links.
+- **Carousel and Get Started removed.** One Welcome screen: portrait collage, "Resumes that get you hired." / "Made for each job. Never made up.", Get started, Continue with Google (mock only, hidden on the backend where it was a dead end), Sign in. No Apple button: nothing implements Apple sign-in.
+- **Portraits and illustrations are AI-generated** (GPT Image 2.6 medium via Weave, 27 credits): six portrait tiles in `assets/onboarding/people/`, three 3D spots in `assets/illustrations/redesign/`. They are not real users; swap for licensed photos before launch if wanted.
+- **Sign-up keeps Full name** (the backend's sign-up takes it) and now checks email shape and an 8-character password up front. A terms line is shown; the Terms/Privacy text is not linked yet.
+- **Forgot password** no longer shows spec references; it says reset in the app is coming soon. The server has a reset route; the mobile flow for it is not built.
+- **Quick setup after sign-up** (role chips + experience chips, skippable) is new. Answers are kept on the device (`onboarding.setupAnswers`) and prefill Zero Resume; they are not saved to the server profile yet.
+- **Mock sign-up starts an empty account** (`startNewMockAccount` in shared repos): listings stay, nothing saved, blank profile, quotas unspent. Sign-in on the mock is still George.
+- **Build Resume is three steps.** Step 1 merges BUILD 01/02/03/05b; step 2 merges 04/04b/04c with the keyword choices inline; step 3 keeps the run. Old routes redirect.
+- **Missing keywords now default to left out.** The 04c sheet defaulted "preferred" skills to Add; inline chips start off for all missing skills, so nothing is claimed without a tap.
+- **A resume source still diverts to Customize** (§139 unchanged): only a profile build uses the new Match step.
+- **Type:** twelve new roles (`largeTitle`, `title1–3`, `bodyLg`, `bodyLgStrong`, `callout`, `footnote`, `buttonLabel`, `eyebrow`, `numberLg`) and a `u()` length helper measured at 390. The onboarding-board roles are gone. Tab and page titles moved to `title1`, empty-state titles to `title2`/`title3`. Other screens still use their board roles until redesigned.
+- **Copy:** 25 long strings shortened (consent, LinkedIn, accuracy, delete confirms, push primer, password note, notification permission, upload hints, Zero lede, run ledes and more).
+
+**Not verified on a device yet.** Jest (218 suites), tsc and lint pass; the Android bundle builds.

@@ -20,7 +20,7 @@ import {
 export type ExperienceFormScreenProps = { id: string };
 
 const DELETE_MESSAGE =
-  'This role and the skills on it come off your profile. Documents you have already generated keep the text they were built with.';
+  'It comes off your profile. Documents you already made stay as they are.';
 
 /**
  * Add or edit one role (V2 §7.3, PROFILE 05 573:144 / 06 577:5925): `ProfileFormShell` is the

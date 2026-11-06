@@ -87,7 +87,7 @@ describe('Create sheet (CREATE 01 / CREATE 02)', () => {
     expect(screen.getByText('Import from LinkedIn')).toBeOnTheScreen();
     expect(
       screen.getByText(
-        'Content first — you pick a template after your resume has something in it.',
+        'Pick a template once your resume has content.',
       ),
     ).toBeOnTheScreen();
     // The push is internal to the sheet — it must not fire a navigation action.

@@ -38,7 +38,7 @@ export const scoreOutOfTen = (score: number): string => (Math.round(score) / 10)
 
 const UNSCORED = {
   title: 'Let’s aim it\nat this job',
-  lede: 'This job description gave us too little to score against. You can still tailor to it.',
+  lede: 'Too little to score, but you can still tailor to it.',
 };
 
 const RING_LABEL = {

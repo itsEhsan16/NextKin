@@ -130,7 +130,7 @@ describe('GenerationScreen — cover letter run (COVER 02–03, 644:84 / 644:148
     expect(screen.getByRole('header', { name: 'Writing your cover letter' })).toBeOnTheScreen();
     expect(
       screen.getByText(
-        'Our AI is writing a personalised cover letter from your resume and the job details.',
+        'Writing from your resume and the job.',
       ),
     ).toBeOnTheScreen();
     // The five steps, whichever one the run is on (coverProgressRows pins the mapping below).

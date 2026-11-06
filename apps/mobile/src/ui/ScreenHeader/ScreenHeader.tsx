@@ -88,7 +88,7 @@ export function ScreenHeader({
   return (
     <View style={style}>
       {row}
-      <Text {...a11yHeader()} variant="pageTitle" style={{ marginTop: spacing[5] }}>
+      <Text {...a11yHeader()} variant="title1" style={{ marginTop: spacing[5] }}>
         {title}
       </Text>
     </View>

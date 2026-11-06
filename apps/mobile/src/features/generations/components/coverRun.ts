@@ -21,8 +21,8 @@ export const COVER_HONESTY_NOTE = 'Nothing goes in the letter that isn’t on yo
 /** COVER 02's lede (644:113). Without a job there are no job details to read. */
 export const coverWritingLede = (hasJob: boolean) =>
   hasJob
-    ? 'Our AI is writing a personalised cover letter from your resume and the job details.'
-    : 'Our AI is writing a personalised cover letter from your resume.';
+    ? 'Writing from your resume and the job.'
+    : 'Writing from your resume.';
 
 /**
  * Where the five rows split the pipeline's four working statuses. `generating` covers reading

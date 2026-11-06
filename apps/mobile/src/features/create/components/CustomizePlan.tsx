@@ -106,7 +106,7 @@ export function CustomizePlan({ comparison, choices, onChange }: CustomizePlanPr
         ) : null}
         {target && shortOnYears(plan) ? (
           <Text variant="micro" color="textSecondary">
-            {`Short of ${target.goal.toFixed(1)} only because the job asks for more years than your roles show. Nothing honest can add those.`}
+            {`Below ${target.goal.toFixed(1)} only because the job wants more years than you have.`}
           </Text>
         ) : null}
       </View>

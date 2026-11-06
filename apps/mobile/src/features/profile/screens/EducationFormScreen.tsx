@@ -14,7 +14,7 @@ import { blankEducation, educationDraft, educationEntry, validateEducation } fro
 export type EducationFormScreenProps = { id: string };
 
 const DELETE_MESSAGE =
-  'This qualification comes off your profile. Documents you have already generated keep the text they were built with.';
+  'It comes off your profile. Documents you already made stay as they are.';
 
 /** Add or edit one qualification (V2 §7.3). The role form's page, with the education fields. */
 export function EducationFormScreen({ id }: EducationFormScreenProps) {

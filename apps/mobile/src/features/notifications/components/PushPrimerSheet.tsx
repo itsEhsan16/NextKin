@@ -14,7 +14,7 @@ import { Icon } from '@/ui/Icon';
 const BELL_TILE = 64;
 
 export const PRIMER_LEDE =
-  'We’ll tell you when a resume is ready or a saved job is closing, and remind you to check in on applications. Nothing else.';
+  'Only when a resume is ready, a saved job is closing, or an application needs you.';
 export const primerTitleForApplication = (company: string): string =>
   `Get a reminder to check on ${company}`;
 export const PRIMER_TITLE_FOR_RUN = 'Get told when it’s ready';

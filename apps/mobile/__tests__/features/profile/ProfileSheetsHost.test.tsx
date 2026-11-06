@@ -140,7 +140,7 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     // — A refused delete keeps the sheet up for the retry and says why (§85: it was silent) —
     await act(async () => useProfileStore.getState().openSheet('delete-account'));
     expect(await screen.findByRole('header', { name: 'Delete your account?' })).toBeOnTheScreen();
-    expect(screen.getByText(/permanently removed/)).toBeOnTheScreen();
+    expect(screen.getByText(/deleted for good/)).toBeOnTheScreen();
     useMockModeStore.setState({ mode: 'error' });
     fireEvent.press(screen.getByLabelText('Delete account'));
     await waitFor(

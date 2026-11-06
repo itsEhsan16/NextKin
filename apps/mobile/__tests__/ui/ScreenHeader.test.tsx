@@ -65,12 +65,12 @@ describe('ScreenHeader', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it('sets the page variant title in the pageTitle role', async () => {
+  it('sets the page variant title in the title1 role (§172)', async () => {
     await render(
       <ScreenHeader variant="page" title="Notification preferences" onBack={jest.fn()} />,
     );
 
     const title = screen.getByRole('header', { name: 'Notification preferences' });
-    expect(flat(title.props.style).fontSize).toBe(theme.typography.pageTitle.fontSize);
+    expect(flat(title.props.style).fontSize).toBe(theme.typography.title1.fontSize);
   });
 });

@@ -97,4 +97,4 @@ export const CREATE_RESUME_ROWS: readonly CreateRow[] = [
 
 /** Footnote under the CREATE 02 rows (Figma 1:1351). */
 export const CREATE_RESUME_FOOTNOTE =
-  'Content first — you pick a template after your resume has something in it.';
+  'Pick a template once your resume has content.';

@@ -224,7 +224,7 @@ export function ProfileSheetsHost() {
         <ConfirmSheet
           open={open}
           title="Delete your account?"
-          message="Your profile, resumes and application history will be permanently removed. This cannot be undone."
+          message="Your profile, resumes and applications are deleted for good."
           confirmLabel="Delete account"
           art={<Art art={PROFILE_DANGER_ART.deleteAccount} width={72 / 0.75} />}
           busy={deleteAccount.isPending}

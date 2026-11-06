@@ -56,7 +56,7 @@ describe('LinkedInUnavailableScreen (V2 §6.2 — no supported API)', () => {
     expect(screen.getByRole('header', { name: 'Import from LinkedIn' })).toBeOnTheScreen();
     expect(screen.getByText("LinkedIn import isn't available yet")).toBeOnTheScreen();
     // StateView hides the message from the a11y tree (the title carries it), so it is hidden here.
-    expect(screen.getByText(/no public API/, { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.getByText(/doesn’t let apps import profiles/, { includeHiddenElements: true })).toBeOnTheScreen();
     expect(screen.getByLabelText('Upload a PDF instead')).toBeOnTheScreen();
     expect(screen.getByLabelText('Not now')).toBeOnTheScreen();
   });

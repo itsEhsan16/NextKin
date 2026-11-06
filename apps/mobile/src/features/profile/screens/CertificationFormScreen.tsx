@@ -27,7 +27,7 @@ export type CertificationFormScreenProps = { id: string };
 const EXPIRY_YEARS_AHEAD = 20;
 
 const DELETE_MESSAGE =
-  'This credential comes off your profile. Documents you have already generated keep the text they were built with.';
+  'It comes off your profile. Documents you already made stay as they are.';
 
 /**
  * Add or edit one credential (V2 §7.3, PROFILE 11 577:8527). The role form's page, with the

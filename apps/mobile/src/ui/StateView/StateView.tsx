@@ -141,7 +141,7 @@ export function StateView({
         </Animated.View>
       ) : null}
       <Text
-        variant={compact ? 'title' : 'headline'}
+        variant={compact ? 'title3' : 'title2'}
         align="center"
         accessibilityRole="summary"
         accessibilityLabel={message ? `${title}. ${message}` : title}
