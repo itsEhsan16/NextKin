@@ -26,6 +26,11 @@ import { readBase } from './tailorBase';
  * - most of the line's own words kept, so it still says what the user did.
  * A draft that fails, or no model at all, falls back to the line as written with "improving" and the
  * gap after it. Only the line and its role's title reach the model, never contact details (G5).
+ *
+ * The suggestion (toreview §173, owner 2026-11-07 "Enable on the server"): the model may also offer
+ * one typical figure, kept apart from the line. It is never written into before/after (G13 still
+ * holds for the sentence); the app shows it as "AI guess" and only a tap puts it in the gap. A
+ * suggestion that isn't a short figure is dropped, the draft kept.
  */
 
 export const FIGURE_TEMPLATE = 'figure.draft';
@@ -36,7 +41,19 @@ export const figureDraftSchema = z.object({
   before: z.string().trim().min(1).max(MAX_LENGTH),
   after: z.string().max(120),
   hint: z.string().trim().min(1).max(80),
+  // Nullable, not optional: the gateway's strict JSON schema needs every key present.
+  suggestion: z.string().trim().max(60).nullable(),
 });
+
+const MAX_SUGGESTION = 24;
+
+/** A suggestion is a short figure: "about 20%", "5,000 users". No technology, no claim. */
+export function fitsSuggestion(suggestion: string | null | undefined): suggestion is string {
+  const text = suggestion?.trim() ?? '';
+  if (!text || text.length > MAX_SUGGESTION || text.split(/\s+/).length > 4) return false;
+  if (!/\d/.test(text)) return false;
+  return mentionsIn(TAXONOMY, text).length === 0;
+}
 
 /** The line as written, the gap after "improving": what is shown when the model can't help. */
 export const fallbackDraft = fallbackFigureDraft;
@@ -92,7 +109,11 @@ export async function draftFigure(deps: FigureDraftDeps, identity: Identity, req
       }));
       await deps.ai.cache.set(key, data, CACHE_SECONDS);
     }
-    if (keepsToLine(found.line, data)) return { before: data.before, after: data.after, hint: data.hint, by: 'model' };
+    if (keepsToLine(found.line, data)) {
+      const draft: FigureDraft = { before: data.before, after: data.after, hint: data.hint, by: 'model' };
+      if (fitsSuggestion(data.suggestion)) draft.suggestion = data.suggestion.trim();
+      return draft;
+    }
     deps.log.info({ event: 'figure.draft_rejected' }, 'figure draft strayed from the line; using the rules');
   } catch (error) {
     deps.log.warn({ event: 'figure.draft_failed', err: error instanceof Error ? error.message : String(error) }, 'figure draft failed; using the rules');

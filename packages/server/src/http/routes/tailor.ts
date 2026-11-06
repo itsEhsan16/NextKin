@@ -18,7 +18,7 @@ export function tailorRoutes(deps: FigureDraftDeps): OpenAPIHono<ApiEnv> {
       method: 'post',
       path: '/tailor/figure-draft',
       tags: ['tailor'],
-      summary: 'A bullet rewritten around a gap where the user writes its real result. The AI never writes the figure.',
+      summary: 'A bullet rewritten around a gap where the user writes its real result. The AI never writes a figure into the line; it may offer one guess apart, which the user must choose.',
       request: { body: { required: true, content: { 'application/json': { schema: figureDraftRequestSchema } } } },
       responses: {
         200: { description: 'The draft.', content: { 'application/json': { schema: figureDraftSchema } } },

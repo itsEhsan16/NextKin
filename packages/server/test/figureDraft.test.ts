@@ -1,7 +1,7 @@
 import { figureLine } from '@nextkin/shared/models/tailor';
 import { describe, expect, it } from 'vitest';
 
-import { fallbackDraft, keepsToLine } from '../src/services/figureDraft';
+import { fallbackDraft, fitsSuggestion, keepsToLine } from '../src/services/figureDraft';
 
 /** "Add the result", drafted (toreview §129): the AI may only make room for the user's figure. */
 
@@ -23,5 +23,14 @@ describe('figure drafts', () => {
     expect(draft).toMatchObject({ before: 'Built the checkout in Next.js and TypeScript for the customer and admin apps, improving', after: '.', by: 'rules' });
     expect(figureLine(draft, 'page load time by 30%')).toBe('Built the checkout in Next.js and TypeScript for the customer and admin apps, improving page load time by 30%.');
     expect(figureLine({ before: 'Served', after: ' shops a month.' }, ' 12,000 ')).toBe('Served 12,000 shops a month.');
+  });
+
+  it('keeps a suggestion only when it is a short figure (toreview §173)', () => {
+    expect(fitsSuggestion('about 20%')).toBe(true);
+    expect(fitsSuggestion('5,000 users')).toBe(true);
+    expect(fitsSuggestion(null)).toBe(false);
+    expect(fitsSuggestion('faster')).toBe(false);
+    expect(fitsSuggestion('20% by moving the checkout to GraphQL')).toBe(false);
+    expect(fitsSuggestion('40% with Kubernetes')).toBe(false);
   });
 });

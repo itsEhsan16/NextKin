@@ -49673,7 +49673,7 @@
         "tags": [
           "tailor"
         ],
-        "summary": "A bullet rewritten around a gap where the user writes its real result. The AI never writes the figure.",
+        "summary": "A bullet rewritten around a gap where the user writes its real result. The AI never writes a figure into the line; it may offer one guess apart, which the user must choose.",
         "requestBody": {
           "required": true,
           "content": {
@@ -49728,6 +49728,9 @@
                         "model",
                         "rules"
                       ]
+                    },
+                    "suggestion": {
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -50291,6 +50294,37 @@
                           "additionalProperties": false
                         },
                         "maxItems": 40
+                      },
+                      "header": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "index": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 11
+                            },
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "remove",
+                                "replace"
+                              ]
+                            },
+                            "text": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200
+                            }
+                          },
+                          "required": [
+                            "index",
+                            "action"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 12
                       }
                     },
                     "required": [

@@ -167,6 +167,13 @@ export const comparisonQuerySchema = z.object({ resumeId: z.string().max(100) })
 
 /** "Add the result", drafted (toreview §129): which bullet of which resume. */
 export const figureDraftRequestSchema = z.object({ resumeId: z.string().max(100), roleId: z.string().max(200), line: z.number().int().min(0).max(60) }).strict();
-export const figureDraftSchema = z.object({ before: z.string(), after: z.string(), hint: z.string(), by: z.enum(['model', 'rules']) });
+export const figureDraftSchema = z.object({
+  before: z.string(),
+  after: z.string(),
+  hint: z.string(),
+  by: z.enum(['model', 'rules']),
+  /** The model's guess at a typical figure (toreview §173): shown as "AI guess", used only on a tap. */
+  suggestion: z.string().optional(),
+});
 export type JdCreate = z.infer<typeof jdCreateSchema>;
 export type JdPatchBody = z.infer<typeof jdPatchSchema>;
