@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { SCORE_LABEL, SCORE_LABEL_CAPS, type ResumeContent } from '@/data/models';
+import { SCORE_LABEL, type ResumeContent } from '@/data/models';
 import { atsScoreColor } from '@/features/resumes';
 import { scaledSheet, useTheme } from '@/theme';
 import { ScoreRing } from '@/ui/Progress';
@@ -150,16 +150,19 @@ export function ResumePagePreview({ content, name, score }: ResumePagePreviewPro
         </View>
         {score != null ? (
           <View style={[styles.badge, shadows.docFloat, { backgroundColor: colors.surfaceCard }]}>
+            {/* Plain text, not the counting TextInput, and a mixed-case caption: on Android the
+                counting digits and "ATS SCORE" ran into each other and the arc (owner, §174). */}
             <ScoreRing
               score={score}
-              label={SCORE_LABEL_CAPS}
+              valueText={String(Math.round(score))}
+              label="ATS score"
               size={s(RING)}
               strokeWidth={s(RING_STROKE)}
               ringColor={atsScoreColor(score)}
               trackColor="borderDefault"
               numberVariant="homeRingValue"
               numberColor="textPrimary"
-              labelVariant="microOverline"
+              labelVariant="tiny"
               labelColor="textSecondary"
               accessibilityLabel={`${SCORE_LABEL} ${score}`}
             />
