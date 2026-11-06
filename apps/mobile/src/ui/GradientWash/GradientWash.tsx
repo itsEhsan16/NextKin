@@ -19,7 +19,7 @@ export function GradientWash({ depth = 0.6 }: GradientWashProps) {
       pointerEvents="none"
       style={[styles.wash, { height: `${Math.round(depth * 100)}%` }]}
     >
-      <Svg style={StyleSheet.absoluteFill}>
+      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="washFade" x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={colors.surfaceWash} stopOpacity="1" />

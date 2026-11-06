@@ -28,6 +28,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (!context.dev && moduleName.endsWith('figmaRefs.generated')) {
     return { type: 'sourceFile', filePath: figmaRefsStub };
   }
+  // Dev-only web preview of the phone app (toreview §173): packages/shared keeps the web app's own
+  // fixtures beside the phone's as `*.web.ts`, which Metro would pick for platform "web". The
+  // preview must show the phone's data, so shared code resolves without a platform extension.
+  if (platform === 'web' && /[\\/]packages[\\/]shared[\\/]/.test(context.originModulePath)) {
+    return resolve(context, moduleName, null);
+  }
   return resolve(context, moduleName, platform);
 };
 

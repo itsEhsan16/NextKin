@@ -2,10 +2,10 @@ import { render } from '@testing-library/react-native';
 
 import { lightTheme } from '@/theme';
 import { Icon, dataGlyph, lineBox } from '@/ui/Icon';
-import { LINE_ICON_PATHS } from '@/ui/Icon/lineIcons.generated';
+import { HUGE_ICONS } from '@/ui/Icon/hugeIcons.generated';
 
 /**
- * The line icons the phone shares with the web (`apps/web/src/ui/lineIcons.ts`), redrawn from the
+ * The app's icons, Hugeicons stroke-rounded (§173), drawn from generated data. Pinned here:
  * same Untitled UI path data. Pinned here: sizes come off the ramp in `sizes`, never a stray
  * number, the stroke and fill follow the caller, and the generated table holds only real paths.
  */
@@ -58,10 +58,13 @@ describe('Icon', () => {
     expect(lineBox(16)).toBe(20);
   });
 
-  it('only holds real path data', () => {
-    for (const [name, paths] of Object.entries(LINE_ICON_PATHS)) {
-      expect(paths.length).toBeGreaterThan(0);
-      for (const d of paths) expect(d).toMatch(/^[Mm]/);
+  it('only holds real shapes (Hugeicons stroke-rounded, §173)', () => {
+    for (const [name, elements] of Object.entries(HUGE_ICONS)) {
+      expect(elements.length).toBeGreaterThan(0);
+      for (const [tag, attrs] of elements) {
+        expect(['path', 'circle']).toContain(tag);
+        if (tag === 'path') expect(String(attrs.d)).toMatch(/^[Mm]/);
+      }
       expect(name).toMatch(/^[A-Z]/);
     }
   });

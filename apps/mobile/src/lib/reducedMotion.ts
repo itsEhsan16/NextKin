@@ -1,7 +1,16 @@
-import { useReducedMotion } from 'react-native-reanimated';
+import { Platform } from 'react-native';
+import { useReducedMotion as useOsReducedMotion } from 'react-native-reanimated';
 import type { WithSpringConfig, WithTimingConfig } from 'react-native-reanimated';
 
-export { useReducedMotion };
+/**
+ * The OS "Reduce Motion" setting. On web — only the dev preview of this phone app (toreview §173),
+ * never a shipped target — it is always on: Reanimated's entering animations do not run there, so
+ * anything that fades in would stay invisible.
+ */
+export function useReducedMotion(): boolean {
+  const reduced = useOsReducedMotion();
+  return Platform.OS === 'web' || reduced;
+}
 
 /**
  * Returns a config that collapses to an instant transition when the OS
