@@ -6,10 +6,11 @@ import {
   type DocumentContent,
   type Resume,
 } from '@/data/models';
-import { ProfileCard } from '@/features/profile/components/cards';
-import { a11yButton, a11yHeader, hitSlopFor } from '@/lib';
+import { a11yButton, a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Chip } from '@/ui/Chip';
+import { Icon, type LineIconName } from '@/ui/Icon';
+import { FlowCard } from '@/ui/kit';
 import { NoteBar } from '@/ui/NoteBar';
 import { Pressable } from '@/ui/Pressable';
 import { ScoreRing } from '@/ui/Progress';
@@ -18,8 +19,6 @@ import { Text } from '@/ui/Text';
 import { atsScoreColor } from '../docMeta';
 import { versionLine } from '../editorSections';
 import { DocTypePill, UpdateAvailablePill } from './DocPills';
-import { ResumeThumbnail } from './ResumeThumbnail';
-import { Icon } from '@/ui/Icon';
 
 export type EditorHeroProps = {
   resume: Resume;
@@ -32,20 +31,9 @@ export type EditorHeroProps = {
 };
 
 // RESUMES 06 hero at 390 (577:6939), in artboard units.
-const GAP = 14 / 0.75;
-const THUMB_W = 64 / 0.75;
-const THUMB_H = 62.745 / 0.75;
-const THUMB_RADIUS = 3.137 / 0.75;
-const TEXT_GAP = 3 / 0.75;
-const PILL_TOP = 5 / 0.75;
-const PILL_PAD_LEFT = 9 / 0.75;
-const PILL_PAD_RIGHT = 10 / 0.75;
-const PILL_PAD_Y = 4 / 0.75;
-const RING = 64 / 0.75;
-const RING_STROKE = 4.8 / 0.75;
-const LINK_GAP = 4.5 / 0.75;
-/** The rubric link is one 16pt line, padded out to the 44pt floor. */
-const LINK_HEIGHT = 16 / 0.75;
+/** The ring beside the title, at 390. */
+const RING = 92;
+const RING_STROKE = 8;
 
 /** A score is always against a job (D-15), and the page says so (WhyNextKin.md §4.2). */
 const NO_SCORE_WHY = 'Add a job to see a score. We don’t guess.';
@@ -59,6 +47,43 @@ const NO_SCORE_WHY = 'Add a job to see a score. We don’t guess.';
  * a zero, and says what a score needs (D-15). A cover letter's tone is shown read-only: rewriting
  * it spends a generation (§13.5).
  */
+/** A soft action pill under the card: "See what changed", "How it's scored". */
+function HeroAction({
+  icon,
+  label,
+  a11y,
+  hint,
+  onPress,
+}: {
+  icon: LineIconName;
+  label: string;
+  a11y: string;
+  hint: string;
+  onPress: () => void;
+}) {
+  const { colors, u } = useTheme();
+  const styles = useStyles();
+  return (
+    <Pressable
+      {...a11yButton(a11y, hint)}
+      feedback="subtle"
+      haptic="selection"
+      onPress={onPress}
+      style={[styles.action, { backgroundColor: colors.brandSurface }]}
+    >
+      <Icon name={icon} size={u(16)} color={colors.brand} />
+      <Text variant="footnote" color="brand">
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * The top of the editor (RESUMES 06, redesigned §177): one card with the document's name, its
+ * version and type, and its ATS score as a ring that opens the breakdown; the AI's note under it.
+ * Two pills below the card: the versions, and the rubric whenever there is a score (§7.8).
+ */
 export function EditorHero({
   resume,
   content,
@@ -67,136 +92,110 @@ export function EditorHero({
   onOpenRubric,
   onOpenVersions,
 }: EditorHeroProps) {
-  const { colors, radii, sizes, spacing, s } = useTheme();
+  const { u } = useTheme();
   const styles = useStyles();
   const score = resume.atsScore;
 
   return (
-    <ProfileCard style={[styles.card, { padding: spacing[5] }]}>
-      <View style={styles.document}>
-        <View
-          style={[styles.thumb, { borderWidth: sizes.border, borderColor: colors.borderDefault }]}
-        >
-          <ResumeThumbnail style={styles.fill} />
-        </View>
-
-        <View style={styles.text}>
-          <Text {...a11yHeader()} variant="cardTitle" numberOfLines={2}>
-            {resume.title}
-          </Text>
-          <Text variant="micro" color="textSecondary">
-            {versionLine(resume)}
-          </Text>
-          <View style={styles.pills}>
-            <DocTypePill resume={resume} style={styles.pill} />
-            {resume.updateAvailable ? <UpdateAvailablePill announce /> : null}
-            {content?.kind === 'cover_letter' ? (
-              <Chip label={COVER_LETTER_TONE_LABEL[content.tone]} />
-            ) : null}
-          </View>
-        </View>
-
-        {score != null ? (
-          <Pressable
-            {...a11yButton(`${SCORE_LABEL} ${score}`, 'Opens the score breakdown')}
-            feedback="scale"
-            haptic="light"
-            onPress={onOpenScore}
-          >
-            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <ScoreRing
-                score={score}
-                label="ATS Score"
-                size={s(RING)}
-                strokeWidth={s(RING_STROKE)}
-                ringColor={atsScoreColor(score)}
-                trackColor="borderDefault"
-                numberVariant="editorRingValue"
-                numberColor="textPrimary"
-                labelVariant="ringCaption"
-                labelColor="textSecondary"
-              />
-            </View>
-          </Pressable>
-        ) : (
-          // An unscored draft is normal, so its absence is stated quietly, never drawn as a zero.
-          <Text variant="micro" color="textTertiary">
-            Not scored yet
-          </Text>
-        )}
-      </View>
-
-      {score == null && content?.kind !== 'cover_letter' ? (
-        <Text variant="micro" color="textSecondary">
-          {NO_SCORE_WHY}
-        </Text>
-      ) : null}
-
-      {note ? <NoteBar text={note} /> : null}
-
-      <View style={[styles.rule, { backgroundColor: colors.divider }]} />
-      <Pressable
-        {...a11yButton('See what changed', 'Opens this resume’s versions')}
-        feedback="subtle"
-        haptic="selection"
-        hitSlop={hitSlopFor(s(LINK_HEIGHT))}
-        onPress={onOpenVersions}
-        style={[styles.link, { borderRadius: radii.xs }]}
-      >
-        <Text variant="captionSemiBold" color="brand">
-          See what changed
-        </Text>
-        <Icon name="ChevronRight" size="sm" color={colors.brand} />
-      </Pressable>
-
-      {score != null ? (
-        <>
-          <View style={[styles.rule, { backgroundColor: colors.divider }]} />
-          <Pressable
-            {...a11yButton(
-              'What this score measures',
-              `Opens the rubric behind the ${SCORE_LABEL}`,
-            )}
-            feedback="subtle"
-            haptic="selection"
-            hitSlop={hitSlopFor(s(LINK_HEIGHT))}
-            onPress={onOpenRubric}
-            style={[styles.link, { borderRadius: radii.xs }]}
-          >
-            <Text variant="captionSemiBold" color="brand">
-              What this score measures
+    <View style={styles.wrap}>
+      <FlowCard style={styles.card}>
+        <View style={styles.document}>
+          <View style={styles.text}>
+            <Text {...a11yHeader()} variant="title2" color="ink" numberOfLines={2}>
+              {resume.title}
             </Text>
-            <Icon name="ChevronRight" size="sm" color={colors.brand} />
-          </Pressable>
-        </>
-      ) : null}
-    </ProfileCard>
+            <Text variant="footnote" color="textSecondary">
+              {versionLine(resume)}
+            </Text>
+            <View style={styles.pills}>
+              <DocTypePill resume={resume} />
+              {resume.updateAvailable ? <UpdateAvailablePill announce /> : null}
+              {content?.kind === 'cover_letter' ? (
+                <Chip label={COVER_LETTER_TONE_LABEL[content.tone]} />
+              ) : null}
+            </View>
+          </View>
+
+          {score != null ? (
+            <Pressable
+              {...a11yButton(`${SCORE_LABEL} ${score}`, 'Opens the score breakdown')}
+              feedback="scale"
+              haptic="light"
+              onPress={onOpenScore}
+            >
+              <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                <ScoreRing
+                  score={score}
+                  valueText={String(Math.round(score))}
+                  label="ATS score"
+                  size={u(RING)}
+                  strokeWidth={u(RING_STROKE)}
+                  ringColor={atsScoreColor(score)}
+                  trackColor="surfaceSubtle"
+                  numberVariant="title1"
+                  numberColor="textPrimary"
+                  labelVariant="tiny"
+                  labelColor="textSecondary"
+                />
+              </View>
+            </Pressable>
+          ) : (
+            <Text variant="footnote" color="textTertiary">
+              Not scored yet
+            </Text>
+          )}
+        </View>
+
+        {score == null && content?.kind !== 'cover_letter' ? (
+          <Text variant="footnote" color="textSecondary">
+            {NO_SCORE_WHY}
+          </Text>
+        ) : null}
+
+        {note ? <NoteBar text={note} /> : null}
+      </FlowCard>
+
+      <View style={styles.actions}>
+        <HeroAction
+          icon="ClockRewind"
+          label="See what changed"
+          a11y="See what changed"
+          hint="Opens this resume’s versions"
+          onPress={onOpenVersions}
+        />
+        {score != null ? (
+          <HeroAction
+            icon="BookOpen01"
+            label="How it’s scored"
+            a11y="What this score measures"
+            hint={`Opens the rubric behind the ${SCORE_LABEL}`}
+            onPress={onOpenRubric}
+          />
+        ) : null}
+      </View>
+    </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  card: { gap: s(GAP) },
-  document: { flexDirection: 'row', alignItems: 'center', gap: s(GAP) },
-  thumb: {
-    width: s(THUMB_W),
-    height: s(THUMB_H),
-    borderRadius: s(THUMB_RADIUS),
-    overflow: 'hidden',
-  },
-  fill: { flex: 1 },
-  text: { flex: 1, gap: s(TEXT_GAP) },
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(12) },
+  card: { gap: u(14), padding: u(20) },
+  document: { flexDirection: 'row', alignItems: 'center', gap: u(14) },
+  text: { flex: 1, gap: u(4) },
   pills: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: s(6 / 0.75),
-    marginTop: s(PILL_TOP),
+    gap: u(6),
+    marginTop: u(4),
   },
-  pill: {
-    paddingLeft: s(PILL_PAD_LEFT),
-    paddingRight: s(PILL_PAD_RIGHT),
-    paddingVertical: s(PILL_PAD_Y),
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: u(10) },
+  action: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(6),
+    height: u(40),
+    paddingHorizontal: u(14),
+    borderRadius: u(999),
   },
-  rule: { height: s(1 / 0.75) },
-  link: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: s(LINK_GAP) },
 }));

@@ -52,7 +52,9 @@ export async function materialize(
   result: ResumeExport,
   fileName: string,
 ): Promise<{ file: WrittenFile | null; asText: boolean }> {
-  if (result.delivery === 'file') return { file: await downloadFile(result.url, fileName), asText: false };
-  if (result.format === 'pdf') return { file: await renderPdf(result.html, fileName), asText: false };
+  if (result.delivery === 'file')
+    return { file: await downloadFile(result.url, fileName), asText: false };
+  if (result.format === 'pdf')
+    return { file: await renderPdf(result.html, fileName), asText: false };
   return { file: await writeTextFile(fileName, result.text), asText: true };
 }

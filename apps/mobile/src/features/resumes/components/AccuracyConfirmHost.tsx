@@ -3,8 +3,7 @@ import { ConfirmSheet } from '@/ui/ConfirmSheet';
 import { useAccuracyStore } from '../accuracyStore';
 
 export const ACCURACY_TITLE = 'Is everything here true?';
-export const ACCURACY_MESSAGE =
-  'Check every role, date, skill and number before you download.';
+export const ACCURACY_MESSAGE = 'Check every role, date, skill and number before you download.';
 export const ACCURACY_CONFIRM = 'Yes, it’s accurate';
 export const ACCURACY_CANCEL = 'Not yet';
 

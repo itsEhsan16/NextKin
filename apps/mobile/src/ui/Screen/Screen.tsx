@@ -51,7 +51,7 @@ export function Screen({
   followEnd = false,
   children,
 }: ScreenProps) {
-  const { colors, spacing, sizes, s } = useTheme();
+  const { colors, spacing, sizes, s, u } = useTheme();
   const insets = useSafeAreaInsets();
   const tabBar = useTabBarLayout();
 
@@ -207,7 +207,7 @@ export function Screen({
     <LayoutAnimationConfig skipEntering>
       {wash ? (
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <GradientWash height={s(WASH_HEIGHT) + insets.top} />
+          <GradientWash height={u(WASH_HEIGHT) + insets.top} />
         </View>
       ) : null}
       {content}

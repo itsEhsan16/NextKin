@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -16,6 +17,11 @@ export type GradientWashProps = {
  */
 export function GradientWash({ depth = 0.6, height }: GradientWashProps) {
   const { colors } = useTheme();
+  // Ids unique per wash: on web every SVG shares one document, and a shared id resolved to a
+  // hidden screen's gradient, which paints nothing (§177).
+  const id = useId().replace(/:/g, '');
+  const fade = `washFade${id}`;
+  const glow = `washGlow${id}`;
   return (
     <View
       pointerEvents="none"
@@ -23,17 +29,17 @@ export function GradientWash({ depth = 0.6, height }: GradientWashProps) {
     >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
-          <LinearGradient id="washFade" x1="0" y1="0" x2="0" y2="1">
+          <LinearGradient id={fade} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={colors.surfaceWash} stopOpacity="1" />
             <Stop offset="1" stopColor={colors.surfacePage} stopOpacity="1" />
           </LinearGradient>
-          <RadialGradient id="washGlow" cx="0.9" cy="0.05" r="0.75">
+          <RadialGradient id={glow} cx="0.9" cy="0.05" r="0.75">
             <Stop offset="0" stopColor={colors.brand} stopOpacity="0.18" />
             <Stop offset="1" stopColor={colors.brand} stopOpacity="0" />
           </RadialGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#washFade)" />
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#washGlow)" />
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${fade})`} />
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${glow})`} />
       </Svg>
     </View>
   );

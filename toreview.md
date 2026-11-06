@@ -16137,3 +16137,22 @@ The owner asked to redesign every remaining screen and to generate any assets ne
   - Jest: 1880 tests pass, with typecheck and lint clean.
   - The Android bundle builds from Metro.
   - Not checked on a phone.
+
+## §177 — Resume editor and score rebuilt (owner, 2026-11-07: "Resume editor & score")
+
+- **Editor top (`EditorHero`).** One kit card holds the title (title2, no longer squeezed by the thumbnail), the version line, the type pills, and a 92 ring labelled "ATS score" that opens the breakdown. The AI note sits inside the card.
+  - "See what changed" and "How it's scored" are now soft pills under the card, not two divider rows.
+  - The tiny document thumbnail was dropped. Judgement call: it repeated the Resumes grid and cost the title a line.
+  - The editor page has the wash, and section headings are title3.
+- **Score page (`ResumeScoreScreen`).** Rebuilt on the standard `Screen` with the wash, `ScreenHeader` and a `FlowFooter` "Fix N quick wins" (Stars02) in place of the hand-built sticky bar. The order is now:
+  1. The hero card: a 108 ring "out of 100", band pill, required-skills count and its line, the summary, and the document line.
+  2. Pills: "How it's scored" (the rubric, §7.8) and "Ask about it".
+  3. "Where your points go", with brand bars.
+  4. Each check section in its own card, with brand Fix pills.
+  5. "What this doesn't measure", as a quiet flat card at the end. It moved from right after the points so the actionable checks come first.
+
+  Accessibility labels are unchanged. Every number is still the engine's.
+- **Wash fixes.**
+  - `Screen`'s wash used the old `s()` scale (225 instead of 300). It now uses `u()`.
+  - Washes shared one SVG gradient id, so on web the page resolved it to a hidden screen's copy and painted nothing. Ids are now unique per wash.
+- **Verified:** web preview of the editor and the score page at 390×844. Jest: 1880 tests pass, and lint is clean. Not checked on a phone.

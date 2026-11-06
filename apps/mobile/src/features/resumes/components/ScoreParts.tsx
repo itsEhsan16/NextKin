@@ -12,7 +12,7 @@ export type ScorePartsProps = { parts: readonly AtsComponent[] };
 
 // In the TAILOR 02 card's measures ("What to improve" 607:100), in artboard units.
 const PAD_X = 15 / 0.75;
-const PAD_Y = 12 / 0.75;
+const PAD_Y = 14 / 0.75;
 const RULE = 1 / 0.75;
 
 const points = (value: number) => (Number.isInteger(value) ? String(value) : value.toFixed(1));
@@ -28,7 +28,7 @@ export function ScoreParts({ parts }: ScorePartsProps) {
 
   return (
     <View style={{ gap: spacing[3] }}>
-      <Text {...a11yHeader()} variant="title">
+      <Text {...a11yHeader()} variant="title3" color="ink">
         Where your points go
       </Text>
       <ProfileCard>
@@ -46,13 +46,19 @@ export function ScoreParts({ parts }: ScorePartsProps) {
                 style={[styles.row, { gap: spacing[1] }]}
               >
                 <View style={styles.head}>
-                  <Text variant="menuRow">{part.label}</Text>
-                  <Text variant="captionSemiBold" color="textSecondary">
+                  <Text variant="bodyLgStrong" color="ink">
+                    {part.label}
+                  </Text>
+                  <Text variant="footnote" color="brand">
                     {earned}
                   </Text>
                 </View>
-                <ProgressBar value={(part.points ?? 0) / part.weight} />
-                <Text variant="micro" color="textSecondary">
+                <ProgressBar
+                  value={(part.points ?? 0) / part.weight}
+                  fillColor="brand"
+                  trackColor="progressTrack"
+                />
+                <Text variant="footnote" color="textSecondary">
                   {part.basis}
                 </Text>
               </View>

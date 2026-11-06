@@ -4,6 +4,8 @@ import Animated from 'react-native-reanimated';
 import { atsSectionPassed, type AtsCheckItem, type AtsSection } from '@/data/models';
 import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
+import { Icon } from '@/ui/Icon';
+import { FlowCard } from '@/ui/kit';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
@@ -49,12 +51,13 @@ export function ScoreSection({ section, staggerBase, enter, onFix }: ScoreSectio
   const complete = passed === total;
 
   return (
-    <View>
+    // A kit card per section since §177.
+    <FlowCard style={styles.card}>
       <View style={[styles.headerRow, { marginBottom: s(METER_TOP) }]}>
-        <Text variant="scoreSection" accessibilityRole="header">
+        <Text variant="title3" color="ink" accessibilityRole="header">
           {section.label}
         </Text>
-        <Text variant="scoreCount" color={complete ? 'success' : 'textSecondary'}>
+        <Text variant="footnote" color={complete ? 'success' : 'brand'}>
           {`${passed} of ${total}`}
         </Text>
       </View>
@@ -63,7 +66,7 @@ export function ScoreSection({ section, staggerBase, enter, onFix }: ScoreSectio
         value={total > 0 ? passed / total : 0}
         height={s(4)}
         trackColor="surfaceSubtle"
-        fillColor={complete ? 'success' : 'surfaceInverse'}
+        fillColor={complete ? 'success' : 'brand'}
         accessibilityLabel={`${section.label}: ${passed} of ${total} checks passed`}
       />
 
@@ -89,8 +92,8 @@ export function ScoreSection({ section, staggerBase, enter, onFix }: ScoreSectio
                 />
               </View>
               <Text
-                variant="scoreCheck"
-                color={item.passed ? 'textBody' : 'textPrimary'}
+                variant="callout"
+                color={item.passed ? 'textSecondary' : 'ink'}
                 style={styles.itemLabel}
               >
                 {item.label}
@@ -104,16 +107,19 @@ export function ScoreSection({ section, staggerBase, enter, onFix }: ScoreSectio
                 onPress={() => onFix(item)}
                 style={[
                   styles.fixPill,
-                  { borderRadius: radii.full, backgroundColor: colors.surfaceSubtle },
+                  { borderRadius: radii.full, backgroundColor: colors.brandSurface },
                 ]}
               >
-                <Text variant="scoreFix">Fix</Text>
+                <Icon name="Stars02" size={s(14)} color={colors.brand} />
+                <Text variant="footnote" color="brand">
+                  Fix
+                </Text>
               </Pressable>
             ) : null}
           </Animated.View>
         ))}
       </View>
-    </View>
+    </FlowCard>
   );
 }
 
@@ -124,5 +130,12 @@ const useStyles = scaledSheet((s) => ({
   itemLabel: { flex: 1 },
   // The open circle is drawn a point narrower than the check; one slot keeps every label on 44.
   glyph: { width: s(CHECK), alignItems: 'center' },
-  fixPill: { paddingHorizontal: s(14), paddingVertical: s(5) },
+  fixPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(4),
+    paddingHorizontal: s(12),
+    paddingVertical: s(6),
+  },
+  card: { padding: s(20) },
 }));

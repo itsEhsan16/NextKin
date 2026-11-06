@@ -8,8 +8,10 @@ import {
   type AtsScore,
   type Resume,
 } from '@/data/models';
-import { a11yButton, hitSlopFor } from '@/lib';
+import { a11yButton, a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
+import { FlowCard } from '@/ui/kit';
 import { Pressable } from '@/ui/Pressable';
 import { ScoreRing } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
@@ -25,105 +27,133 @@ export type ScoreHeroProps = {
   onAsk: () => void;
 };
 
-// The ring beside the count (toreview §146.1), at TAILOR 02's size (607:25).
-export const SCORE_HERO_RING = 86 / 0.75;
-const RING_STROKE = 6.45 / 0.75;
-/** RESUMES 04's rhythm at 390 (95:2310), in artboard units: lead → summary, summary → context. */
-const SUMMARY_TOP = 25;
-const CONTEXT_TOP = 11;
-/** The rubric link is one `captionSemiBold` line; `hitSlopFor` pads it out to the 44pt floor. */
-export const SCORE_HERO_LINK = 20;
+/** The ring's size and stroke at 390. */
+export const SCORE_HERO_RING = 108;
+const RING_STROKE = 9;
+/** The height of one action pill, for the loading shape. */
+export const SCORE_HERO_LINK = 40;
+
+/** A soft pill under the hero: "How it's scored", "Ask about it". */
+function ActionPill({
+  icon,
+  label,
+  a11y,
+  hint,
+  onPress,
+}: {
+  icon: LineIconName;
+  label: string;
+  a11y: string;
+  hint: string;
+  onPress: () => void;
+}) {
+  const { colors, u } = useTheme();
+  const styles = useStyles();
+  return (
+    <Pressable
+      {...a11yButton(a11y, hint)}
+      feedback="subtle"
+      haptic="selection"
+      onPress={onPress}
+      style={[styles.action, { backgroundColor: colors.brandSurface }]}
+    >
+      <Icon name={icon} size={u(16)} color={colors.brand} />
+      <Text variant="footnote" color="brand">
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
 
 /**
- * The top of the score panel (owner, 2026-11-01, toreview §146.1): the count of required skills
- * leads, with a smaller ring beside it, then what's left of the summary, where the number applies,
- * and the two links every score carries. A score with no job to count against keeps the band and
- * its summary.
+ * The top of the score page (toreview §146.1, redesigned §177): one card with the ring, the band,
+ * the count of required skills and what it means, then the document it scores. Two pills under
+ * it: the rubric (V2 §7.8, every score links it) and the assistant about this score (§7.16).
  */
 export function ScoreHero({ id, score, resume, onRubric, onAsk }: ScoreHeroProps) {
-  const { spacing, s } = useTheme();
+  const { u } = useTheme();
   const styles = useStyles();
   const { report } = score;
   const lead = scoreLead(report);
   const note = lead && report ? summaryAfterLead(report) : score.summary;
 
   return (
-    <View>
-      <View style={[styles.lead, { gap: spacing[4] }]}>
-        <View style={[styles.text, { gap: spacing[2] }]}>
-          {lead ? (
-            <View>
-              <Text variant="headlineLg">{lead.headline}</Text>
-              <Text variant="captionSemiBold" color="textSecondary">
-                {lead.detail}
-              </Text>
-            </View>
-          ) : null}
-          <ScoreBandPill band={score.band} style={styles.pill} />
+    <View style={styles.wrap}>
+      <FlowCard style={styles.card}>
+        <View style={styles.lead}>
+          <ScoreRing
+            score={score.total}
+            valueText={String(Math.round(score.total))}
+            label="out of 100"
+            size={u(SCORE_HERO_RING)}
+            strokeWidth={u(RING_STROKE)}
+            ringColor={atsBandColor(score.band)}
+            trackColor="surfaceSubtle"
+            numberVariant="numberLg"
+            numberColor="textPrimary"
+            labelVariant="footnote"
+            labelColor="textSecondary"
+            accessibilityLabel={`ATS score ${score.total}, ${ATS_BAND_LABEL[score.band]}`}
+            memoryKey={`ats:${id}`}
+          />
+          <View style={styles.text}>
+            <ScoreBandPill band={score.band} style={styles.pill} />
+            {lead ? (
+              <View>
+                <Text variant="title2" color="ink" {...a11yHeader(lead.headline)}>
+                  {lead.headline}
+                </Text>
+                <Text variant="footnote" color="textSecondary">
+                  {lead.detail}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
-        <ScoreRing
-          score={score.total}
-          label="ATS SCORE"
-          size={s(SCORE_HERO_RING)}
-          strokeWidth={s(RING_STROKE)}
-          ringColor={atsBandColor(score.band)}
-          trackColor="surfaceSubtle"
-          numberVariant="tailorRingValue"
-          numberColor="textPrimary"
-          labelVariant="microOverline"
-          labelColor="textSecondary"
-          accessibilityLabel={`ATS score ${score.total}, ${ATS_BAND_LABEL[score.band]}`}
-          // The library card's memory: opened from it, the ring carries on from the score the
-          // card showed instead of sweeping up from 0 on every visit; a fix sweeps old → new.
-          memoryKey={`ats:${id}`}
+        {note ? (
+          <Text variant="callout" color="textSecondary">
+            {note}
+          </Text>
+        ) : null}
+        <Text variant="footnote" color="textTertiary">
+          {scoreContextLine(resume)}
+        </Text>
+      </FlowCard>
+
+      <View style={styles.actions}>
+        <ActionPill
+          icon="BookOpen01"
+          label="How it’s scored"
+          a11y="What this score measures"
+          hint={`Opens the rubric behind the ${SCORE_LABEL}`}
+          onPress={onRubric}
+        />
+        {/* V2 §7.16 — the assistant opens with this document as its context. */}
+        <ActionPill
+          icon="Stars02"
+          label="Ask about it"
+          a11y="Ask about this score"
+          hint="Opens the AI assistant about this document"
+          onPress={onAsk}
         />
       </View>
-
-      {note ? (
-        <Text variant="scoreSummary" color="textSecondary" style={{ marginTop: s(SUMMARY_TOP) }}>
-          {note}
-        </Text>
-      ) : null}
-      <Text
-        variant="scoreContext"
-        color="textTertiary"
-        style={{ marginTop: s(note ? CONTEXT_TOP : SUMMARY_TOP) }}
-      >
-        {scoreContextLine(resume)}
-      </Text>
-
-      {/* V2 §7.8 — every score display carries a link to the published rubric. */}
-      <Pressable
-        {...a11yButton('What this score measures', `Opens the rubric behind the ${SCORE_LABEL}`)}
-        feedback="subtle"
-        haptic="selection"
-        hitSlop={hitSlopFor(s(SCORE_HERO_LINK))}
-        onPress={onRubric}
-        style={{ marginTop: spacing[4] }}
-      >
-        <Text variant="captionSemiBold" color="link">
-          What this score measures
-        </Text>
-      </Pressable>
-      {/* V2 §7.16 — the assistant opens with this document as its context. */}
-      <Pressable
-        {...a11yButton('Ask about this score', 'Opens the AI assistant about this document')}
-        feedback="subtle"
-        haptic="selection"
-        hitSlop={hitSlopFor(s(SCORE_HERO_LINK))}
-        onPress={onAsk}
-        style={{ marginTop: spacing[4] }}
-      >
-        <Text variant="captionSemiBold" color="link">
-          Ask about this score
-        </Text>
-      </Pressable>
     </View>
   );
 }
 
-const useStyles = scaledSheet(() => ({
-  lead: { flexDirection: 'row', alignItems: 'center' },
-  text: { flex: 1 },
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(14) },
+  card: { gap: u(14), padding: u(20) },
+  lead: { flexDirection: 'row', alignItems: 'center', gap: u(18) },
+  text: { flex: 1, gap: u(8) },
   pill: { alignSelf: 'flex-start' },
+  actions: { flexDirection: 'row', gap: u(10), flexWrap: 'wrap' },
+  action: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(6),
+    height: u(SCORE_HERO_LINK),
+    paddingHorizontal: u(14),
+    borderRadius: u(999),
+  },
 }));

@@ -26,7 +26,10 @@ export {
 } from './resumesStore';
 export { AtsFixScreen } from './screens/AtsFixScreen';
 export { NewResumeScreen } from './screens/NewResumeScreen';
-export { ResumeVersionsScreen, type ResumeVersionsScreenProps } from './screens/ResumeVersionsScreen';
+export {
+  ResumeVersionsScreen,
+  type ResumeVersionsScreenProps,
+} from './screens/ResumeVersionsScreen';
 export { ResumeEditorScreen } from './screens/ResumeEditorScreen';
 export { ResumeScoreScreen } from './screens/ResumeScoreScreen';
 export { ResumesScreen } from './screens/ResumesScreen';

@@ -125,7 +125,13 @@ export function ResumeSectionCard({
           <View style={{ width: s(ICON_SLOT_W), height: s(ICON_SLOT_H), ...styles.centre }}>
             <Art art={RESUME_SECTION_ART[section]} width={SECTION_ART_WIDTH} />
           </View>
-          <Text variant="title" accessibilityRole="header" style={styles.fill} numberOfLines={1}>
+          <Text
+            variant="title3"
+            color="ink"
+            accessibilityRole="header"
+            style={styles.fill}
+            numberOfLines={1}
+          >
             {label}
           </Text>
           <View style={[styles.header, { gap: s(ACTIONS_GAP) }]}>
