@@ -32,6 +32,8 @@ export { LinkedInUnavailableScreen } from './screens/LinkedInUnavailableScreen';
 export { JdPageScreen, type JdPageScreenProps } from './screens/JdPageScreen';
 export { JdReviewScreen, type JdReviewScreenProps } from './screens/JdReviewScreen';
 export { FirstResumeScreen } from './screens/FirstResumeScreen';
+export { QuickSetupScreen } from './screens/QuickSetupScreen';
+export { useSetupAnswers } from './setupAnswers';
 export { TailorCompareScreen, type TailorCompareScreenProps } from './screens/TailorCompareScreen';
 export { UploadResumeScreen } from './screens/UploadResumeScreen';
 export { UploadReviewScreen } from './screens/UploadReviewScreen';

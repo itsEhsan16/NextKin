@@ -16,6 +16,7 @@ import { FlowStepper, ZERO_STEPS } from '../components/TailorStepper';
 import { ZeroAboutForm, ZeroAboutFormSkeleton } from '../components/ZeroAboutForm';
 import { generationsLeftNote, spentNote } from '../generationQuota';
 import { useCreateActions } from '../hooks/useCreateActions';
+import { useSetupAnswers } from '../setupAnswers';
 import {
   emptyZeroAbout,
   fullNameOf,
@@ -62,7 +63,11 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
   const subscription = useSubscription();
   const start = useStartGeneration();
 
-  const [about, setAbout] = useState<ZeroAbout>(emptyZeroAbout);
+  // The experience band answered at sign-up starts picked, so it is never asked twice (§172).
+  const [about, setAbout] = useState<ZeroAbout>(() => ({
+    ...emptyZeroAbout,
+    years: useSetupAnswers.getState().years,
+  }));
   /** Fields the reader has left. An error on the first keystroke reads as a telling-off. */
   const [touched, setTouched] = useState<Partial<Record<keyof ZeroAbout, true>>>({});
   const [refused, setRefused] = useState(false);
@@ -72,7 +77,8 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
   const seededName = useRef(false);
   const seededRole = useRef(false);
   const currentUser = user.data;
-  const jobTitle = job.data?.title ?? role;
+  const setup = useSetupAnswers();
+  const jobTitle = job.data?.title ?? role ?? (setup.role || undefined);
   useEffect(() => {
     if (seededName.current || !currentUser) return;
     seededName.current = true;

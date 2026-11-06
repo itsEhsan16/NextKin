@@ -9,9 +9,9 @@ import type { FirstResumeStage } from '../firstResume';
 type StepState = 'done' | 'current' | 'todo';
 
 const STEPS: readonly { stage: FirstResumeStage; label: string; caption: string }[] = [
-  { stage: 'add-resume', label: 'Add your resume', caption: 'Upload it, or start from nothing' },
-  { stage: 'pick-job', label: 'Pick a job', caption: 'A saved job, a link or the description' },
-  { stage: 'done', label: 'Get your resume', caption: 'Made for that job, with only what’s true' },
+  { stage: 'add-resume', label: 'Add your resume', caption: 'Upload or start fresh' },
+  { stage: 'pick-job', label: 'Pick a job', caption: 'Saved job or a link' },
+  { stage: 'done', label: 'Get your resume', caption: 'Tailored, nothing made up' },
 ];
 
 /** The same words a screen reader gets for the run's own steps. */
@@ -54,12 +54,12 @@ export function FirstResumeSteps({ stage }: { stage: FirstResumeStage }) {
             </View>
             <View style={styles.copy}>
               <Text
-                variant={state === 'current' ? 'bodySemiBold' : 'body'}
+                variant={state === 'current' ? 'bodyLgStrong' : 'bodyLg'}
                 color={state === 'todo' ? 'textTertiary' : 'textPrimary'}
               >
                 {step.label}
               </Text>
-              <Text variant="caption" color="textSecondary">
+              <Text variant="footnote" color="textSecondary">
                 {step.caption}
               </Text>
             </View>

@@ -136,6 +136,14 @@ export const colorsByScheme = {
     ctaPrimary: palette.violet400,
     ctaPrimaryLabel: palette.ink950,
     jobCardBar: palette.gray300,
+
+    // 2026-11 redesign (toreview.md §172)
+    /** Near-black ink for primary pills and big titles. */
+    ink: palette.ink950,
+    /** The soft lavender the hero wash fades from. */
+    surfaceWash: palette.brandGradient1,
+    /** The page behind white cards on redesigned screens. */
+    surfaceCanvas: palette.offWhite,
   },
   // Dormant: the app is light only (owner, 2026-10-25) and `useTheme()` never resolves 'dark'.
   // These values were never drawn and need a design before Dark is offered. For one thing,
@@ -242,6 +250,9 @@ export const colorsByScheme = {
     ctaPrimary: palette.violet400,
     ctaPrimaryLabel: palette.ink950,
     jobCardBar: palette.dark500,
+    ink: '#F5F6F8',
+    surfaceWash: palette.dark800,
+    surfaceCanvas: palette.dark900,
   },
 } as const satisfies Record<ColorScheme, Record<string, string>>;
 
@@ -426,6 +437,8 @@ export const shadowSpecs = {
   composer: { x: 0, y: 5.333, blur: 18.667, alpha: 0.06, elevation: 3, rgb: '71, 51, 250' },
   /** Its round send button (675:5): 0 3 8 #4733FA at 25%, drawn on 390. */
   composerSend: { x: 0, y: 4, blur: 10.667, alpha: 0.25, elevation: 4, rgb: '71, 51, 250' },
+  /** Redesign cards (§172): a wide, faint lift — 0 6 24 at 6% at 390. */
+  soft: { x: 0, y: 8, blur: 32, alpha: 0.06, elevation: 2, rgb: '17, 24, 39' },
 } as const satisfies Record<string, ShadowSpec>;
 
 export type ShadowToken = keyof typeof shadowSpecs | 'none';

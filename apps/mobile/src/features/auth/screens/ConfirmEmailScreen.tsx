@@ -1,38 +1,30 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { AccessibilityInfo, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AccessibilityInfo } from 'react-native';
 
 import { useConfirmSignUp, useResendSignUpCode } from '@/data/queries';
-import { a11yHeader } from '@/lib/a11y';
-import { useTheme } from '@/theme';
+import { scaledSheet } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
-import { Screen } from '@/ui/Screen';
-import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Text } from '@/ui/Text';
-import { TextField } from '@/ui/TextField';
 
 import { CODE_LENGTH, codeComplete, confirmErrorMessage } from '../authForms';
+import { AuthShell } from '../components/AuthShell';
+import { CodeBoxes } from '../components/CodeBoxes';
+import { useFirstRunStore } from '../firstRunStore';
 import { useOnboardingStore } from '../onboardingStore';
 import { usePendingSignUp } from '../pendingSignUp';
-import { useFirstRunStore } from '../firstRunStore';
 import { useSessionStore } from '../sessionStore';
 
-const RESENT = 'We sent a new code.';
+const RESEND_AFTER_S = 30;
 
 /**
- * Confirm the emailed code (V2 §7.1; ImBackendImplementationPlan P5-08). Spec-derived: no
- * artboard exists, so it is built only from existing primitives and tokens, and is replaced
- * wholesale when one arrives (CLAUDE.md rule 7; toreview §105.12). Reached only when the app runs on
- * the backend: on the mock, sign-up signs straight in, as it always did.
- *
- * Nothing is fetched until the reader acts, so the house states are the form's own: untouched,
- * checking (the button's spinner), refused (the message under it) and accepted (signed in). With no
- * sign-up waiting — the app was closed in between — it says so and offers sign-in instead.
+ * Confirm the emailed code (§172). Six boxes that submit themselves when full, and a resend link
+ * that unlocks after a short wait. Reached only on the backend; the mock signs straight in.
  */
 export function ConfirmEmailScreen() {
   const router = useRouter();
-  const { spacing, sizes } = useTheme();
+  const styles = useStyles();
   const { email, password, clear } = usePendingSignUp();
   const signIn = useSessionStore((state) => state.signIn);
   const markFirstRun = useFirstRunStore((state) => state.mark);
@@ -41,102 +33,102 @@ export function ConfirmEmailScreen() {
   const resend = useResendSignUpCode();
 
   const [code, setCode] = useState('');
-  const [message, setMessage] = useState<{ text: string; tone: 'danger' | 'textSecondary' } | null>(
-    null,
-  );
+  const [error, setError] = useState<string | null>(null);
+  const [wait, setWait] = useState(RESEND_AFTER_S);
 
-  const say = (text: string, tone: 'danger' | 'textSecondary') => {
-    setMessage({ text, tone });
-    AccessibilityInfo.announceForAccessibility(text);
-  };
+  useEffect(() => {
+    if (wait <= 0) return undefined;
+    const timer = setTimeout(() => setWait((left) => left - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [wait]);
 
-  const submit = () => {
-    if (confirm.isPending || !codeComplete(code)) return;
+  const submit = (value = code) => {
+    if (confirm.isPending || !codeComplete(value)) return;
     confirm.mutate(
-      { email, password, code },
+      { email, password, code: value },
       {
         onSuccess: () => {
           clear();
           markSeen();
           markFirstRun();
-          // Flipping the session unmounts this group and lands on the tabs, as sign-in does.
           signIn();
         },
-        onError: (error) => say(confirmErrorMessage(error), 'danger'),
+        onError: (failure) => {
+          const text = confirmErrorMessage(failure);
+          setError(text);
+          AccessibilityInfo.announceForAccessibility(text);
+        },
       },
     );
   };
 
   if (!email) {
     return (
-      <Screen edges={['top', 'bottom']}>
-        <ScreenHeader title="Confirm your email" onBack={() => router.back()} />
-        <View style={{ gap: spacing[4], paddingTop: spacing[6] }}>
-          <Text {...a11yHeader()} variant="headlineLg">
-            Sign in to continue
-          </Text>
-          <Text variant="body" color="textSecondary">
-            If you already entered your code, your account is ready. Sign in with your email and
-            password.
-          </Text>
-          <Button label="Go to sign in" block onPress={() => router.replace('/sign-in')} />
-        </View>
-      </Screen>
+      <AuthShell title="Sign in to continue" subtitle="Your account may already be ready.">
+        <Button
+          label="Go to sign in"
+          size="xl"
+          block
+          onPress={() => router.replace('/sign-in')}
+        />
+      </AuthShell>
     );
   }
 
   return (
-    <Screen keyboard scroll edges={['top', 'bottom']}>
-      <ScreenHeader title="Confirm your email" onBack={() => router.back()} />
-      <View style={{ gap: spacing[4], paddingTop: spacing[6] }}>
-        <Text {...a11yHeader()} variant="headlineLg">
-          Check your email
+    <AuthShell title="Check your email" subtitle={`Enter the ${CODE_LENGTH}-digit code sent to ${email}.`}>
+      <CodeBoxes
+        length={CODE_LENGTH}
+        value={code}
+        error={error != null}
+        onChange={(value) => {
+          setCode(value);
+          if (error) setError(null);
+        }}
+        onComplete={submit}
+      />
+
+      {error ? (
+        <Text variant="footnote" color="danger" accessibilityLiveRegion="polite" style={styles.note}>
+          {error}
         </Text>
-        <Text variant="body" color="textSecondary">
-          {`We sent a ${CODE_LENGTH}-digit code to ${email}. Enter it to finish creating your account.`}
+      ) : null}
+
+      <Button
+        label="Confirm"
+        size="xl"
+        block
+        loading={confirm.isPending}
+        disabled={!codeComplete(code)}
+        onPress={() => submit()}
+        style={styles.cta}
+      />
+
+      <Pressable
+        feedback="subtle"
+        accessibilityRole="button"
+        accessibilityLabel={wait > 0 ? `Resend code in ${wait} seconds` : 'Resend code'}
+        disabled={wait > 0 || resend.isPending}
+        onPress={() =>
+          resend.mutate(email, {
+            onSuccess: () => {
+              setWait(RESEND_AFTER_S);
+              AccessibilityInfo.announceForAccessibility('We sent a new code.');
+            },
+          })
+        }
+        style={styles.resend}
+      >
+        <Text variant="footnote" color={wait > 0 ? 'textTertiary' : 'brand'}>
+          {wait > 0 ? `Resend code in ${wait}s` : 'Resend code'}
         </Text>
-        <TextField
-          label="Verification code"
-          value={code}
-          onChangeText={(value) => {
-            setCode(value.replace(/\D/g, '').slice(0, CODE_LENGTH));
-            if (message?.tone === 'danger') setMessage(null);
-          }}
-          keyboardType="number-pad"
-          autoComplete="one-time-code"
-          maxLength={CODE_LENGTH}
-          returnKeyType="done"
-          onSubmit={submit}
-        />
-        <Button
-          label="Confirm"
-          block
-          loading={confirm.isPending}
-          disabled={!codeComplete(code)}
-          onPress={submit}
-        />
-        {message ? (
-          <Text variant="caption" color={message.tone} accessibilityLiveRegion="polite">
-            {message.text}
-          </Text>
-        ) : null}
-        <Pressable
-          feedback="subtle"
-          accessibilityRole="button"
-          accessibilityLabel="Send a new code"
-          disabled={resend.isPending}
-          onPress={() => resend.mutate(email, { onSuccess: () => say(RESENT, 'textSecondary') })}
-          style={{
-            alignSelf: 'flex-start',
-            minHeight: sizes.minHitTarget,
-            justifyContent: 'center',
-          }}
-        >
-          <Text variant="label" color="brand">
-            Send a new code
-          </Text>
-        </Pressable>
-      </View>
-    </Screen>
+      </Pressable>
+    </AuthShell>
   );
 }
+
+const useStyles = scaledSheet((_s, u) => ({
+  note: { marginTop: u(12) },
+  cta: { marginTop: u(28) },
+  resend: { alignSelf: 'center', marginTop: u(16), padding: u(8) },
+}));

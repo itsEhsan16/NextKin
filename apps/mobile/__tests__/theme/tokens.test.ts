@@ -127,7 +127,7 @@ describe('typography', () => {
    * 296:3144). Everything else is Plus Jakarta Sans — including the roles standing in for the
    * board's DM Sans and Montserrat, which are deliberately not loaded (see toreview.md).
    */
-  const interRoles = ['wordmark', 'authHero', 'authTitle'];
+  const interRoles = ['wordmark'];
 
   it.each(roles)('role "%s" uses a registered font family', (name, role) => {
     expect(typeof role.fontFamily).toBe('string');

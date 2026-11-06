@@ -15,7 +15,7 @@ import { createMockJobsRepo } from './jobsRepo';
 import { createMockNotificationsRepo } from './notificationsRepo';
 import { createMockProfileRepo } from './profileRepo';
 import { createMockResumesRepo } from './resumesRepo';
-import { clearSampleData, createMockStore, type MockStore } from './state';
+import { clearSampleData, createMockStore, startFreshMockAccount, type MockStore } from './state';
 import { createMockSupportRepo } from './supportRepo';
 import type { Repos } from './types';
 import { createRepos, isFullBackend, type RepoConfig } from './create';
@@ -107,6 +107,11 @@ export function configureRepos(config: RepoConfig): void {
   // Sample data must not reach anyone on the real backend, even as a fallback.
   sampleData = !isFullBackend(config.sources);
   if (!sampleData) clearSampleData(mockStore);
+}
+
+/** Turns the mock into a brand-new, empty account for this person (§172). */
+export function startNewMockAccount(who: { firstName: string; lastName: string; email: string }): void {
+  startFreshMockAccount(mockStore, who);
 }
 
 /** Restores every fixture to its initial state (session mutations are discarded). */

@@ -260,6 +260,43 @@ export function clearSampleData(store: MockStore): void {
   } satisfies Partial<MockState>);
 }
 
+/**
+ * A brand-new account on the mock (toreview.md §172): the listings stay so there are jobs to
+ * browse, but nothing is saved, applied to or written yet, the profile is blank, and the quotas
+ * are unspent. Mock sign-up uses this so the new-user flow can be walked without a backend.
+ */
+export function startFreshMockAccount(
+  store: MockStore,
+  who: { firstName: string; lastName: string; email: string },
+): void {
+  store.reset();
+  clearSampleData(store);
+  const state = store.state;
+  const listings = freshState().jobs.map((job) => ({ ...job, isSaved: false, savedAt: undefined }));
+  state.jobs = listings;
+  state.user = { ...state.user, ...who, avatarUrl: undefined };
+  state.profile = {
+    ...state.profile,
+    headline: undefined,
+    bio: undefined,
+    tagline: undefined,
+    yearsExperience: undefined,
+    skills: [],
+    skillsToConfirm: undefined,
+    experiences: [],
+    education: [],
+    certifications: [],
+    links: [],
+    stats: {},
+    completeness: 0,
+  };
+  const usage = { ...state.subscription.usage };
+  for (const key of Object.keys(usage) as (keyof typeof usage)[]) {
+    if (key.endsWith('Used')) (usage as unknown as Record<string, number>)[key] = 0;
+  }
+  state.subscription = { ...state.subscription, usage };
+}
+
 export function createMockStore(): MockStore {
   let state: MockState | undefined;
   return {

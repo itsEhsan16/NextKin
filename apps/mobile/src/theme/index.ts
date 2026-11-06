@@ -17,7 +17,7 @@ import {
   type Typography,
 } from './scaleTheme';
 import { colorsByScheme, opacity, sizes, zIndex, type ColorScheme, type Colors } from './tokens';
-import { fontFamily } from './typography';
+import { BOARD_RATIO, fontFamily } from './typography';
 
 export * from './tokens';
 export * from './typography';
@@ -49,6 +49,11 @@ export type Theme = {
   scale: number;
   /** Scales a raw Figma px value. Never pass it a value taken off this theme. */
   s: (px: number) => number;
+  /**
+   * A length measured at 390 — the redesign's unit (§172). `u(16)` is 16dp on a 390 phone and
+   * scales with the frame like every other length. Never pass it a value taken off this theme.
+   */
+  u: (px: number) => number;
   /** The width the design lays out in: the screen width, capped at the 520px artboard. */
   width: number;
   /** Width available to content inside the (scaled) horizontal gutters. */
@@ -82,6 +87,7 @@ function buildTheme(scheme: ColorScheme, frameWidth: number): Theme {
     motion,
     scale,
     s: layout.s,
+    u: (px: number) => layout.s(px / BOARD_RATIO),
     width: layout.width,
     contentWidth: layout.contentWidth,
   };
@@ -141,16 +147,16 @@ type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle };
  * were measured on the artboard.
  */
 export function scaledSheet<T extends NamedStyles<T>>(
-  factory: (s: (px: number) => number) => T & NamedStyles<T>,
+  factory: (s: (px: number) => number, u: (px: number) => number) => T & NamedStyles<T>,
 ): () => T {
   const cache = new Map<number, T>();
 
   return function useScaledStyles(): T {
-    const { scale, s } = useTheme();
+    const { scale, s, u } = useTheme();
     const cached = cache.get(scale);
     if (cached) return cached;
 
-    const created = StyleSheet.create(factory(s));
+    const created = StyleSheet.create(factory(s, u));
     cache.set(scale, created);
     return created;
   };

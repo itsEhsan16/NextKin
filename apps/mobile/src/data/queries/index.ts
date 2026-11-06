@@ -8,6 +8,7 @@ export { useBackendServiceStatus } from './useBackendServiceStatus';
 export { useIsOnline } from './useIsOnline';
 export {
   backendAuth,
+  beginMockAccount,
   useConfirmSignUp,
   usePasswordSignIn,
   useResendSignUpCode,

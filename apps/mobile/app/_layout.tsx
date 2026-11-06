@@ -72,6 +72,7 @@ export default function RootLayout() {
           <Stack.Screen name="create/cover-letter" />
           <Stack.Screen name="create/ats-check" />
           <Stack.Screen name="create/zero-resume" />
+          <Stack.Screen name="create/setup" />
           <Stack.Screen name="create/start" />
           <Stack.Screen name="share" />
           <Stack.Screen name="create/upload" />

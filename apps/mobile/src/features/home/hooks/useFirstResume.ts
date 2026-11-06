@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useProfile, useResumes } from '@/data/queries';
 import { useFirstRunStore } from '@/features/auth';
 import { firstResumeCard, firstResumeStage } from '@/features/create/firstResume';
+import { useSetupAnswers } from '@/features/create/setupAnswers';
 
 /**
  * Home's part in a new account's first resume (toreview §145.2). Straight after sign-up it opens
@@ -29,7 +30,9 @@ export function useFirstResume() {
   useEffect(() => {
     if (!justSignedUp || !stage) return;
     consume();
-    if (stage === 'add-resume') router.push('/create/start');
+    // A new account answers the two quick questions first, then adds a resume (§172).
+    if (stage === 'add-resume')
+      router.push(useSetupAnswers.getState().done ? '/create/start' : '/create/setup');
   }, [consume, justSignedUp, router, stage]);
 
   const dismiss = useCallback(() => {

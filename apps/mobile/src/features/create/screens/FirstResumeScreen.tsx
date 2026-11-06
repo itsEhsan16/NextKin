@@ -1,57 +1,131 @@
+import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { View } from 'react-native';
 
-import { useTheme } from '@/theme';
-import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
-import { Screen } from '@/ui/Screen';
-import { ScreenHeader } from '@/ui/ScreenHeader';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { scaledSheet, useTheme } from '@/theme';
+import { Icon } from '@/ui/Icon';
+import { Pressable } from '@/ui/Pressable';
+import { Text } from '@/ui/Text';
 
-import { FirstResumeSteps } from '../components/FirstResumeSteps';
-import { FLOW_ART, FlowHero } from '../components/FlowHero';
+import { OnboardingFrame } from '../components/OnboardingFrame';
 
-export const FIRST_RESUME_TITLE = 'Let’s make your first resume';
-export const FIRST_RESUME_LEDE = 'Three steps, and it’s made for the job you want.';
+export const FIRST_RESUME_TITLE = 'Add your resume';
+export const FIRST_RESUME_LEDE = 'Start from yours, or let AI draft one.';
 export const FIRST_RESUME_UPLOAD = 'Upload my resume';
-export const FIRST_RESUME_NONE = 'I don’t have one';
-export const FIRST_RESUME_SKIP = 'Skip for now';
+export const FIRST_RESUME_NONE = 'Start from scratch';
 
-/**
- * What a new account sees right after sign-up (owner, 2026-11-01; toreview §145.2): upload a resume
- * or start from nothing, then on to the job. Spec-derived (V2 §7.2), from the flows' hero and the
- * run's step list. Skipping lands on Home, where the same steps wait on a card. Both ways forward
- * replace this screen: once they have chosen, Back should not ask them again.
- */
-export function FirstResumeScreen() {
-  const { spacing } = useTheme();
-  const router = useRouter();
-  const skip = () => router.back();
+const ART = {
+  upload: require('../../../../assets/illustrations/redesign/job-match.webp') as ImageSource,
+  scratch: require('../../../../assets/illustrations/redesign/empty-resume.webp') as ImageSource,
+};
 
+function OptionCard({
+  title,
+  body,
+  art,
+  badge,
+  onPress,
+}: {
+  title: string;
+  body: string;
+  art: ImageSource;
+  badge?: string;
+  onPress: () => void;
+}) {
+  const { colors, shadows } = useTheme();
+  const styles = useStyles();
   return (
-    <Screen
-      scroll
-      edges={['top', 'bottom']}
-      header={<ScreenHeader title={FIRST_RESUME_TITLE} showTitle={false} onBack={skip} />}
-      contentContainerStyle={{ paddingBottom: spacing[8], gap: spacing[6] }}
-      footer={
-        <StickyActionBar
-          secondary={{
-            label: FIRST_RESUME_NONE,
-            onPress: () => router.replace('/create/zero-resume'),
-          }}
-          primary={{
-            label: FIRST_RESUME_UPLOAD,
-            icon: 'UploadCloud02',
-            onPress: () => router.replace({ pathname: '/create/upload', params: { next: 'job' } }),
-          }}
-        />
-      }
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={body}
+      onPress={onPress}
+      style={[styles.card, { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft }, shadows.soft]}
     >
-      <FlowHero title={FIRST_RESUME_TITLE} lede={FIRST_RESUME_LEDE} art={FLOW_ART.buildJob} />
-      <Card radius="card">
-        <FirstResumeSteps stage="add-resume" />
-      </Card>
-      <Button label={FIRST_RESUME_SKIP} variant="ghost" onPress={skip} block />
-    </Screen>
+      <View style={[styles.art, { backgroundColor: colors.brandSurface }]}>
+        <Image source={art} style={styles.artImage} contentFit="contain" />
+      </View>
+      <View style={styles.text}>
+        {badge ? (
+          <View style={[styles.badge, { backgroundColor: colors.brandSurface }]}>
+            <Text variant="eyebrow" color="brand">
+              {badge}
+            </Text>
+          </View>
+        ) : null}
+        <Text variant="title3" color="ink">
+          {title}
+        </Text>
+        <Text variant="callout" color="textSecondary">
+          {body}
+        </Text>
+      </View>
+      <Icon name="ChevronRight" size="sm" color={colors.iconMuted} />
+    </Pressable>
   );
 }
+
+/**
+ * Step 2 of 2 after sign-up (toreview.md §172): upload a resume, or start from scratch. Two big
+ * choices and a Skip; Home keeps the same step on a card for anyone who skips.
+ */
+export function FirstResumeScreen() {
+  const router = useRouter();
+  const styles = useStyles();
+  const leave = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
+
+  return (
+    <OnboardingFrame
+      step={2}
+      total={2}
+      title={FIRST_RESUME_TITLE}
+      subtitle={FIRST_RESUME_LEDE}
+      onBack={() => router.replace('/create/setup')}
+      onSkip={leave}
+    >
+      <View style={styles.options}>
+        <OptionCard
+          title={FIRST_RESUME_UPLOAD}
+          body="PDF or DOCX. We’ll read it for you."
+          art={ART.upload}
+          badge="FASTEST"
+          onPress={() => router.replace({ pathname: '/create/upload', params: { next: 'job' } })}
+        />
+        <OptionCard
+          title={FIRST_RESUME_NONE}
+          body="Answer 3 questions, get a draft."
+          art={ART.scratch}
+          onPress={() => router.replace('/create/zero-resume')}
+        />
+      </View>
+    </OnboardingFrame>
+  );
+}
+
+const useStyles = scaledSheet((_s, u) => ({
+  options: { gap: u(14) },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(14),
+    padding: u(14),
+    borderRadius: u(24),
+    borderWidth: 1,
+  },
+  art: {
+    width: u(76),
+    height: u(76),
+    borderRadius: u(18),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  artImage: { width: u(68), height: u(68) },
+  text: { flex: 1, gap: u(4) },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: u(8),
+    paddingVertical: u(2),
+    borderRadius: u(999),
+    marginBottom: u(2),
+  },
+}));

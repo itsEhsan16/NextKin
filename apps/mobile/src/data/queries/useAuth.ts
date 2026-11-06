@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 
 import { track } from '@nextkin/shared/queries';
 
+import { startNewMockAccount } from '@nextkin/shared/repos';
+
 import { auth, USES_BACKEND } from '../dataSource';
 
 /**
@@ -17,6 +19,16 @@ import { auth, USES_BACKEND } from '../dataSource';
  */
 
 export const backendAuth = USES_BACKEND;
+
+/**
+ * On the mock, a sign-up becomes a brand-new empty account in that person's name (§172), so the
+ * new-user flow is what you see. A no-op on the backend, where the server owns the account.
+ */
+export function beginMockAccount(name: string, email: string): void {
+  if (USES_BACKEND) return;
+  const [firstName = 'there', ...rest] = name.trim().split(/\s+/);
+  startNewMockAccount({ firstName, lastName: rest.join(' '), email: email.trim() });
+}
 
 export type Credentials = { email: string; password: string };
 

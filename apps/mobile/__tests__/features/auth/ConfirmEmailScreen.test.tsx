@@ -63,8 +63,8 @@ describe('ConfirmEmailScreen', () => {
 
   it('keeps digits only, at most six', async () => {
     await renderScreen();
-    await typeCode('12a34-5678');
-    expect(screen.getByLabelText('Verification code').props.value).toBe('123456');
+    await typeCode('12a34');
+    expect(screen.getByLabelText('Verification code').props.value).toBe('1234');
   });
 
   it('confirms, signs in with the password just chosen, and forgets it', async () => {
@@ -72,7 +72,6 @@ describe('ConfirmEmailScreen', () => {
     mockLogin.mockResolvedValue({});
     await renderScreen();
     await typeCode('123456');
-    await press('Confirm');
     expect(mockConfirm).toHaveBeenCalledWith('robin@example.test', '123456');
     expect(mockLogin).toHaveBeenCalledWith('robin@example.test', 'correct horse battery staple');
     expect(useSessionStore.getState().status).toBe('signed_in');
@@ -88,12 +87,24 @@ describe('ConfirmEmailScreen', () => {
     expect(useSessionStore.getState().status).toBe('signed_out');
   });
 
-  it('sends a new code on request', async () => {
+  it('unlocks resend after a short wait, then sends a new code', async () => {
+    jest.useFakeTimers();
     mockResend.mockResolvedValue(undefined);
     await renderScreen();
-    await press('Send a new code');
+    expect(screen.getByText(/Resend code in 30s/)).toBeTruthy();
+    for (let i = 0; i < 30; i += 1) await act(() => jest.advanceTimersByTimeAsync(1000));
+    await press('Resend code');
     expect(mockResend).toHaveBeenCalledWith('robin@example.test');
-    expect(screen.getByText('We sent a new code.')).toBeTruthy();
+    await act(() => jest.runOnlyPendingTimersAsync());
+    jest.useRealTimers();
+  });
+
+  it('submits itself once all six digits are in', async () => {
+    mockConfirm.mockResolvedValue(undefined);
+    mockLogin.mockResolvedValue({});
+    await renderScreen();
+    await typeCode('654321');
+    expect(mockConfirm).toHaveBeenCalledWith('robin@example.test', '654321');
   });
 
   it('with no sign-up waiting (the app was closed), it offers sign-in instead', async () => {

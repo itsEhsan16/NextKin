@@ -3,7 +3,7 @@ import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { SignInScreen, useSessionStore } from '@/features/auth';
-import { GOOGLE_NOT_CONNECTED, SIGN_IN_FAILED } from '@/features/auth/authForms';
+import { SIGN_IN_FAILED } from '@/features/auth/authForms';
 
 const mockLogin = jest.fn();
 
@@ -31,7 +31,7 @@ const renderScreen = () =>
 
 const fill = async () => {
   await act(async () =>
-    fireEvent.changeText(screen.getByLabelText('Email address'), ' robin@example.test '),
+    fireEvent.changeText(screen.getByLabelText('Email'), ' robin@example.test '),
   );
   await act(async () =>
     fireEvent.changeText(screen.getByLabelText('Password'), 'secret passphrase'),
@@ -50,7 +50,7 @@ describe('SignInScreen on the backend', () => {
     mockLogin.mockResolvedValue({});
     await renderScreen();
     await fill();
-    await act(async () => fireEvent.press(screen.getByLabelText('Sign In')));
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Sign in' })));
     expect(mockLogin).toHaveBeenCalledWith('robin@example.test', 'secret passphrase');
     expect(useSessionStore.getState().status).toBe('signed_in');
   });
@@ -59,15 +59,13 @@ describe('SignInScreen on the backend', () => {
     mockLogin.mockRejectedValue({ code: 'UNAUTHENTICATED' });
     await renderScreen();
     await fill();
-    await act(async () => fireEvent.press(screen.getByLabelText('Sign In')));
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Sign in' })));
     expect(screen.getByText(SIGN_IN_FAILED)).toBeTruthy();
     expect(useSessionStore.getState().status).toBe('signed_out');
   });
 
-  it('Google says it is not connected yet rather than signing into the mock', async () => {
+  it('drops the demo hint on the backend', async () => {
     await renderScreen();
-    await act(async () => fireEvent.press(screen.getByLabelText('Continue with Google')));
-    expect(screen.getByText(GOOGLE_NOT_CONNECTED)).toBeTruthy();
-    expect(useSessionStore.getState().status).toBe('signed_out');
+    expect(screen.queryByText(/Demo build/)).not.toBeOnTheScreen();
   });
 });

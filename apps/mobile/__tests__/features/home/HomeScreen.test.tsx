@@ -1,3 +1,4 @@
+import { useSetupAnswers } from '@/features/create/setupAnswers';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
@@ -175,14 +176,15 @@ describe('HomeScreen (DESIGN 2)', () => {
     firstResumeCard.restore();
   });
 
-  it('opens the first-resume screen once, right after sign-up', async () => {
+  it('opens the quick setup once, right after sign-up', async () => {
+    useSetupAnswers.getState().reset();
     useFirstRunStore.getState().mark();
     mockStore.state.resumes = [];
     mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
     await renderHome();
     await settle(NORMAL_MS);
 
-    expect(mockPush).toHaveBeenCalledWith('/create/start');
+    expect(mockPush).toHaveBeenCalledWith('/create/setup');
     expect(mockPush).toHaveBeenCalledTimes(1);
     expect(useFirstRunStore.getState().justSignedUp).toBe(false);
     expect(screen.getByLabelText('Add my resume')).toBeOnTheScreen();

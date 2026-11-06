@@ -6,13 +6,8 @@
  * tested without rendering a page. No react-hook-form and no zod — three fields, and the rules
  * are the product's rather than a schema library's.
  *
- * **This checks presence and nothing else, on purpose.** The milestone has no backend and no
- * identity provider, so there is no account to create and nothing to be right or wrong about:
- * any name, any address and any password sign you into the pre-seeded mock account. An email
- * *shape* rule is deliberately not applied — it would refuse the throwaway values the flow is
- * meant to be driven with while proving nothing, since the real test of an address is whether
- * the verification mail arrives. `looksLikeEmail` in `accountForms.ts` is waiting for §7.1 to
- * gain a server. See toreview.md.
+ * Since the 2026-11 redesign (toreview.md §172) sign-up also checks the email's shape and a
+ * minimum password length, so a typo is caught on the field rather than after a server round trip.
  */
 
 export type Validation = { ok: true } | { ok: false; errors: Record<string, string> };
@@ -38,13 +33,22 @@ const verdict = (errors: Record<string, string>): Validation =>
   Object.keys(errors).length === 0 ? { ok: true } : { ok: false, errors };
 
 /** Shown under the primary button when a refused submit left something to fix. */
-export const FIX_FIRST = 'Fill in every field to continue.';
+export const FIX_FIRST = 'Fix the highlighted fields.';
+
+/** The password rule, shown under the field before anyone gets it wrong. */
+export const MIN_PASSWORD = 8;
+export const PASSWORD_HINT = `At least ${MIN_PASSWORD} characters.`;
+
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const looksLikeEmail = (value: string): boolean => EMAIL_SHAPE.test(value.trim());
 
 export function validateSignUp(draft: SignUpDraft): Validation {
   const errors: Record<string, string> = {};
   if (blank(draft.fullName)) errors.fullName = 'Add your name.';
   if (blank(draft.email)) errors.email = 'Add an email address.';
+  else if (!looksLikeEmail(draft.email)) errors.email = 'Check the email address.';
   if (blank(draft.password)) errors.password = 'Choose a password.';
+  else if (draft.password.length < MIN_PASSWORD) errors.password = PASSWORD_HINT;
   return verdict(errors);
 }
 
@@ -72,7 +76,7 @@ export const SIGN_IN_FAILED = 'That email and password don’t match.';
 export const CONFIRM_FIRST = 'Confirm your email first: we sent you a code.';
 export const TOO_MANY_TRIES = 'Too many tries. Wait a minute, then try again.';
 export const CODE_WRONG = 'That code is wrong or has expired.';
-export const GOOGLE_NOT_CONNECTED = 'Google sign-in isn’t connected in this build yet.';
+export const GOOGLE_NOT_CONNECTED = 'Google sign-in is coming soon.';
 
 type ServerError = { code?: unknown; message?: unknown; details?: unknown };
 

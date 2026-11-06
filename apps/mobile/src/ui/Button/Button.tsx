@@ -15,8 +15,16 @@ import { Pressable, type PressHaptic } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { Spinner } from '@/ui/motion';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerOutline';
-export type ButtonSize = 'md' | 'lg';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'danger'
+  | 'dangerOutline'
+  | 'brand'
+  | 'outline';
+/** `xl` is the redesign's full pill (§172): 54 tall at 390, fully rounded, 16pt label. */
+export type ButtonSize = 'md' | 'lg' | 'xl';
 
 export type ButtonProps = {
   label: string;
@@ -59,7 +67,7 @@ export function Button({
   block = false,
   style,
 }: ButtonProps) {
-  const { colors, motion, radii, sizes, spacing } = useTheme();
+  const { colors, motion, radii, sizes, spacing, u } = useTheme();
   const reduced = useReducedMotion();
   const busy = useSharedValue(loading ? 1 : 0);
   useEffect(() => {
@@ -75,7 +83,13 @@ export function Button({
     danger: { bg: colors.dangerSurface, fg: 'danger' },
     /** The profile editors' Delete: white, a soft red border, red label (Figma 573:285). */
     dangerOutline: { bg: colors.surfaceCard, fg: 'danger', border: colors.dangerBorder },
+    /** The AI action on a redesigned screen: brand fill, white label. */
+    brand: { bg: colors.brand, fg: 'textOnBrand' },
+    /** White pill with a hairline — social sign-in and quiet secondary actions. */
+    outline: { bg: colors.surfaceCard, fg: 'textPrimary', border: colors.borderDefault },
   };
+  const pill = size === 'xl';
+  const height = pill ? u(54) : size === 'lg' ? sizes.buttonLg : sizes.buttonMd;
   const look = palette[variant];
   const isDisabled = disabled || loading;
 
@@ -91,9 +105,9 @@ export function Button({
       dimDisabled={!loading}
       style={[
         {
-          height: size === 'lg' ? sizes.buttonLg : sizes.buttonMd,
-          borderRadius: radii.xl,
-          paddingHorizontal: spacing[5],
+          height,
+          borderRadius: pill ? radii.full : radii.xl,
+          paddingHorizontal: pill ? u(24) : spacing[5],
           backgroundColor: look.bg,
           borderWidth: look.border ? sizes.border : 0,
           borderColor: look.border ?? 'transparent',
@@ -112,7 +126,7 @@ export function Button({
         importantForAccessibility={loading ? 'no-hide-descendants' : 'auto'}
       >
         {leading ?? (icon ? <Icon name={icon} size="sm" color={colors[look.fg]} /> : null)}
-        <Text variant="bodySemiBold" color={look.fg}>
+        <Text variant={pill ? 'buttonLabel' : 'bodySemiBold'} color={look.fg}>
           {label}
         </Text>
       </Animated.View>

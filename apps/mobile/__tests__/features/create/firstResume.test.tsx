@@ -2,20 +2,20 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react-nativ
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import type { Resume } from '@/data/models';
-import { FirstResumeScreen } from '@/features/create';
 import { firstResumeStage } from '@/features/create/firstResume';
+import { FirstResumeScreen, QuickSetupScreen } from '@/features/create';
 import {
   FIRST_RESUME_NONE,
-  FIRST_RESUME_SKIP,
   FIRST_RESUME_TITLE,
   FIRST_RESUME_UPLOAD,
 } from '@/features/create/screens/FirstResumeScreen';
+import { useSetupAnswers } from '@/features/create/setupAnswers';
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: mockReplace, back: mockBack, push: jest.fn() }),
+  useRouter: () => ({ replace: mockReplace, back: mockBack, push: jest.fn(), canGoBack: () => true }),
 }));
 
 const metrics: Metrics = {
@@ -63,12 +63,12 @@ describe('the first-resume screen', () => {
       </SafeAreaProvider>,
     );
 
-  it('shows the three steps, with adding a resume next', async () => {
+  it('offers two choices as step 2 of 2', async () => {
     await open();
     expect(screen.getByRole('header', { name: FIRST_RESUME_TITLE })).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Add your resume, next/)).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Pick a job, after that/)).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Get your resume, after that/)).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 2 of 2')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: FIRST_RESUME_UPLOAD })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: FIRST_RESUME_NONE })).toBeOnTheScreen();
   });
 
   it('uploading leads on to the job', async () => {
@@ -85,7 +85,46 @@ describe('the first-resume screen', () => {
 
   it('skipping goes back to Home', async () => {
     await open();
-    await fireEvent.press(screen.getByLabelText(FIRST_RESUME_SKIP));
+    await fireEvent.press(screen.getByLabelText('Skip'));
     expect(mockBack).toHaveBeenCalled();
+  });
+});
+
+describe('the quick setup screen', () => {
+  beforeEach(() => {
+    mockReplace.mockClear();
+    useSetupAnswers.getState().reset();
+  });
+  afterEach(() => {
+    cleanup();
+    useSetupAnswers.getState().reset();
+  });
+
+  const open = () =>
+    render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <QuickSetupScreen />
+      </SafeAreaProvider>,
+    );
+
+  it('saves a one-tap role and band, then moves to step 2', async () => {
+    await open();
+    expect(screen.getByLabelText('Step 1 of 2')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByLabelText('Product Designer'));
+    await fireEvent.press(screen.getByLabelText('3–5 yrs'));
+    await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+    expect(useSetupAnswers.getState()).toMatchObject({
+      role: 'Product Designer',
+      years: '3-5',
+      done: true,
+    });
+    expect(mockReplace).toHaveBeenCalledWith('/create/start');
+  });
+
+  it('can be skipped', async () => {
+    await open();
+    await fireEvent.press(screen.getByLabelText('Skip'));
+    expect(useSetupAnswers.getState().done).toBe(true);
+    expect(mockReplace).toHaveBeenCalledWith('/create/start');
   });
 });

@@ -1,5 +1,3 @@
-export { GetStartedScreen } from './screens/GetStartedScreen';
-export { OnboardingScreen } from './screens/OnboardingScreen';
 export { ConfirmEmailScreen } from './screens/ConfirmEmailScreen';
 export { SignInScreen } from './screens/SignInScreen';
 export { SignUpScreen } from './screens/SignUpScreen';
@@ -17,6 +15,3 @@ export {
   type SignInDraft,
   type SignUpDraft,
 } from './authForms';
-export { AUTH_BOARD, AUTH_FRAME_HEIGHT, board } from './board';
-export { SIGN_UP, dividerMargin, signUpBudget, signUpDrift } from './signUpLayout';
-export { SIGN_IN, signInDividerMargin, signInBudget, signInDrift } from './signInLayout';
