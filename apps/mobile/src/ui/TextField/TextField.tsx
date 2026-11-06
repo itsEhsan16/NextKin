@@ -163,13 +163,17 @@ export function TextField({
             paddingHorizontal: s(INSET),
             gap: spacing[3],
           },
-          multiline ? { minHeight, paddingVertical: spacing[3] } : { height: sizes.searchField },
+          multiline ? { minHeight } : { height: sizes.searchField },
           editable ? null : { opacity: opacity.disabled },
           // Owns borderColor outright, error included — see useFieldChrome.
           chrome.borderStyle,
         ]}
       >
-        {icon ? <Icon name={icon} size="sm" color={colors.textSecondary} /> : null}
+        {icon ? (
+          <View style={multiline ? { marginTop: spacing[3] } : null}>
+            <Icon name={icon} size="sm" color={colors.textSecondary} />
+          </View>
+        ) : null}
         <TextInput
           ref={ref}
           testID={testID}
@@ -215,7 +219,19 @@ export function TextField({
           maxFontSizeMultiplier={maxFontScale.body}
           style={[
             styles.input,
-            multiline ? [styles.inputMultiline, { maxHeight: maxInputHeight }] : null,
+            // A textarea's input fills the whole box, its vertical padding included, so a tap
+            // anywhere in it starts typing — not only on the lines already written (owner, §174).
+            multiline
+              ? [
+                  styles.inputMultiline,
+                  {
+                    alignSelf: 'stretch',
+                    paddingVertical: spacing[3],
+                    minHeight: minHeight - 2 * sizes.border,
+                    maxHeight: maxInputHeight + 2 * spacing[3],
+                  },
+                ]
+              : null,
             typography.body,
             { color: colors.textPrimary },
           ]}
