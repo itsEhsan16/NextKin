@@ -21,6 +21,8 @@ export type OnboardingFrameProps = {
   onClose?: () => void;
   /** Something between the title and the step, e.g. the "Building from" pill. */
   aside?: ReactNode;
+  /** An illustration above the title (Zero's empty page, §173). */
+  art?: ReactNode;
   /** Pinned at the bottom: the step's primary button. */
   footer?: ReactNode;
   children: ReactNode;
@@ -39,6 +41,7 @@ export function OnboardingFrame({
   onSkip,
   onClose,
   aside,
+  art,
   footer,
   children,
 }: OnboardingFrameProps) {
@@ -80,7 +83,12 @@ export function OnboardingFrame({
             <View style={styles.backSpace} />
           )}
         </View>
-        <View accessible {...a11yHeader(title)} style={styles.heading}>
+        {art ? <View style={styles.art}>{art}</View> : null}
+        <View
+          accessible
+          {...a11yHeader(title)}
+          style={[styles.heading, art ? styles.headingAfterArt : null]}
+        >
           <Text variant="title1" color="ink">
             {title}
           </Text>
@@ -105,5 +113,7 @@ const useStyles = scaledSheet((_s, u) => ({
   skip: { minWidth: u(44), height: u(44), alignItems: 'flex-end', justifyContent: 'center' },
   heading: { marginTop: u(28), marginBottom: u(24), gap: u(8) },
   aside: { marginTop: -u(8), marginBottom: u(20) },
+  art: { marginTop: u(16) },
+  headingAfterArt: { marginTop: u(12) },
   footer: { paddingHorizontal: u(24), paddingTop: u(12), paddingBottom: u(8) },
 }));

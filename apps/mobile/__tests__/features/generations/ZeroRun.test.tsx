@@ -113,60 +113,48 @@ describe('GenerationScreen — Zero Resume run (ZERO 02–05)', () => {
     await settle(GENERATION_TICK_MS * 9);
     await settle(NORMAL_MS);
 
-    // ZERO 03: the marked draft and the four kinds of guess.
+    // One screen: how many are checked, the current guess open inline, what is left (§173).
     expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
-    expect(
-      screen.getByRole('header', { name: 'Your draft is ready. Check 9 things' }),
-    ).toBeOnTheScreen();
-    expect(screen.getByLabelText('Checked 0 of 9')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Check 9 guesses' })).toBeOnTheScreen();
+    expect(screen.getByLabelText('0 of 9 checked')).toBeOnTheScreen();
     expect(
       screen.getByLabelText('Roles and dates · 3, The titles and years are our guesses'),
     ).toBeOnTheScreen();
-    expect(screen.getByText('Download unlocks when all 9 are checked')).toBeOnTheScreen();
+    expect(screen.getByText('Download unlocks at 9 of 9')).toBeOnTheScreen();
     expect(screen.getByLabelText('Download')).toBeDisabled();
 
-    // ZERO 04: the first role, its company blank and already in error.
-    await press('Start checking');
-    expect(screen.getByText('Is this role right?', hidden)).toBeOnTheScreen();
-    expect(screen.getByText('1 of 9 · Roles and dates', hidden)).toBeOnTheScreen();
-    expect(screen.getByText('Add the real company — a blank can’t stay', hidden)).toBeOnTheScreen();
+    // The first role, inline, its company blank and already in error.
+    expect(screen.getByText('Is this role right?')).toBeOnTheScreen();
+    expect(screen.getByText('Add the real company — a blank can’t stay')).toBeOnTheScreen();
     await press('Save and next');
-    expect(screen.getByText('1 of 9 · Roles and dates', hidden)).toBeOnTheScreen();
+    expect(screen.getByLabelText('0 of 9 checked')).toBeOnTheScreen();
 
-    await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Company', hidden), 'Flipkart'),
-    );
+    await act(async () => fireEvent.changeText(screen.getByLabelText('Company'), 'Flipkart'));
     await press('Save and next');
     await settle(NORMAL_MS);
-    expect(screen.getByText('3 of 9 · Roles and dates', hidden)).toBeOnTheScreen();
+    expect(screen.getByLabelText('2 of 9 checked')).toBeOnTheScreen();
 
-    // The other two roles go; both skills are kept; the school is filled in.
+    // The other two roles go; both skills are kept at once; the school is filled in.
     await press('Delete this role');
     await settle(NORMAL_MS);
     await press('Delete this role');
     await settle(NORMAL_MS);
-    expect(screen.getByText('Do you have this skill?', hidden)).toBeOnTheScreen();
-    await press('Save and next');
+    expect(screen.getByText('Do you have these skills?')).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getAllByRole('button', { name: 'Keep' })[0]!));
     await settle(NORMAL_MS);
-    await press('Save and next');
+    await act(async () => fireEvent.press(screen.getAllByRole('button', { name: 'Keep' })[0]!));
     await settle(NORMAL_MS);
-    expect(screen.getByText('Where did you study?', hidden)).toBeOnTheScreen();
-    await act(async () => fireEvent.changeText(screen.getByLabelText('Degree', hidden), 'B.Des'));
-    await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('School', hidden), 'NID Ahmedabad'),
-    );
+    expect(screen.getByText('Where did you study?')).toBeOnTheScreen();
+    await act(async () => fireEvent.changeText(screen.getByLabelText('Degree'), 'B.Des'));
+    await act(async () => fireEvent.changeText(screen.getByLabelText('School'), 'NID Ahmedabad'));
     await press('Save and next');
     await settle(NORMAL_MS);
 
-    // ZERO 05: every step ticked, what was checked, and the download open.
-    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
+    // Ready: every guess checked, next steps as real actions, the download open.
     expect(screen.getByRole('header', { name: 'Your first resume is ready' })).toBeOnTheScreen();
-    expect(screen.getByText('All 9 checked')).toBeOnTheScreen();
-    expect(screen.getByText('Saved to your profile too')).toBeOnTheScreen();
-    expect(screen.getByLabelText('1 role: titles and dates confirmed, done')).toBeOnTheScreen();
-    expect(screen.getByLabelText('2 roles removed, done')).toBeOnTheScreen();
-    expect(screen.getByLabelText('2 skills confirmed, done')).toBeOnTheScreen();
-    expect(screen.getByText('Next: tailor it to a job you want to apply for')).toBeOnTheScreen();
+    expect(screen.getByText('ALL 9 CHECKED')).toBeOnTheScreen();
+    expect(screen.getByText('Saved to Resumes and your profile.')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Tailor it to a job')).toBeOnTheScreen();
     expect(screen.getByLabelText('Download PDF')).toBeEnabled();
 
     const resumeId = mockStore.state.generations.find((g) => g.id === id)?.resumeId ?? '';

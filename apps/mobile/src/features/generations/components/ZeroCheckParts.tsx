@@ -1,7 +1,8 @@
 import { View } from 'react-native';
 
 import { formatZeroDate, zeroDateIso, type ZeroDate } from '@/data/models';
-import { scaledSheet } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
+import { Icon } from '@/ui/Icon';
 import { Button } from '@/ui/Button';
 import { MonthYearSheetBody } from '@/ui/MonthYearSheet';
 import { OptionSheetHeader } from '@/ui/OptionSheet';
@@ -33,7 +34,10 @@ const order = (date: ZeroDate): number => date.year * 12 + (date.month ?? 1);
 export const datesError = (start: ZeroDate, end: ZeroEnd): string | undefined =>
   end !== 'present' && order(end) < order(start) ? 'The end can’t be before the start.' : undefined;
 
-/** The sheet's title block (613:574): the question, "1 of 9 · Roles and dates", and the ✕. */
+/**
+ * The question above a check form: in the sheet, "1 of 9 · Roles and dates" and the ✕; inline on
+ * the review screen (§173, no `onClose`), a warning line "Our guess — check it" and the question.
+ */
 export function CheckHeader({
   title,
   subtitle,
@@ -41,9 +45,25 @@ export function CheckHeader({
 }: {
   title: string;
   subtitle: string;
-  onClose: () => void;
+  onClose?: () => void;
 }) {
-  return <OptionSheetHeader variant="card" title={title} subtitle={subtitle} onClose={onClose} />;
+  const { colors, u } = useTheme();
+  if (onClose) {
+    return <OptionSheetHeader variant="card" title={title} subtitle={subtitle} onClose={onClose} />;
+  }
+  return (
+    <View style={{ gap: u(6) }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: u(6) }}>
+        <Icon name="AlertCircle" size={u(16)} color={colors.warningStrong} />
+        <Text variant="footnote" color="warningStrong">
+          Our guess — check it
+        </Text>
+      </View>
+      <Text variant="title3" color="ink">
+        {title}
+      </Text>
+    </View>
+  );
 }
 
 /** From and To side by side (613:600); a year-only guess reads as the year alone, "2021". */

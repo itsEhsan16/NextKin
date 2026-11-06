@@ -1,112 +1,67 @@
+import { Image } from 'expo-image';
 import { View } from 'react-native';
 
-import { zeroSummary, type ResumeContent } from '@/data/models';
+import type { ResumeContent } from '@/data/models';
+import { FlowCard, FlowDivider, FlowRow, StatusPill } from '@/features/create/flow/FlowKit';
 import { a11yHeader } from '@/lib';
-import { scaledSheet, useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
+import { scaledSheet } from '@/theme';
 import { Text } from '@/ui/Text';
 
-import { NextStepNote } from './NextStepNote';
-import { ResumePagePreview } from './ResumePagePreview';
-import { TailorCheckRow } from './TailorCheckRow';
-import { Icon } from '@/ui/Icon';
+const ILLUSTRATION = require('../../../../assets/illustrations/redesign/resume-ready.webp');
 
 export type ZeroReadyProps = {
   content: ResumeContent;
   name: string;
-  /** The job "Start from nothing" was picked on (ZERO 00b); the next step names it. */
+  /** The job "Start from nothing" was picked on; the next step names it. */
   company?: string;
+  /** Opens Build Resume from this resume. */
+  onTailor: () => void;
+  /** Opens the editor. */
+  onEdit: () => void;
 };
 
-// ZERO 05 at 390 (613:622), in artboard units.
-const STAGE_TO_TEXT = 16 / 0.75; // 613:670
-const TITLE_TO_LINE = 6 / 0.75; // 613:671
-const LINE_GAP = 8 / 0.75; // 613:673
-const PILL_PAD_L = 9 / 0.75; // 613:674
-const PILL_PAD_R = 10 / 0.75;
-const PILL_PAD_Y = 4 / 0.75;
-const PILL_GAP = 5 / 0.75;
-const TEXT_TO_CARD = 18 / 0.75; // 613:678
-const CARD_PAD = 14 / 0.75;
-const HEADER_PAD_B = 4 / 0.75; // 613:680
-const CARD_TO_NEXT = 14 / 0.75; // 613:701
-
 /**
- * ZERO 05 (613:622) under the stepper: the finished resume, "Your first resume is ready" with how
- * many guesses were checked and where else it went, what was checked, and what to do next. No
- * score: a first resume written for no job carries none (D-15), as the board shows.
+ * Zero Resume's finish (toreview §173, Figma "Zero · 3 Ready"): every guess checked, the resume
+ * saved, and the next things to do as real actions — tailoring it to a job was a static note.
  */
-export function ZeroReady({ content, name, company }: ZeroReadyProps) {
-  const { colors, radii } = useTheme();
+export function ZeroReady({ content, company, onTailor, onEdit }: ZeroReadyProps) {
   const styles = useStyles();
   const total = content.review?.total ?? 0;
 
   return (
-    <View>
-      <ResumePagePreview content={content} name={name} />
-
-      <View style={styles.text}>
-        <Text variant="headlineLg" align="center" {...a11yHeader()}>
+    <View style={styles.wrap}>
+      <StatusPill label={total > 0 ? `All ${total} checked` : 'All checked'} icon="Check" />
+      <Image source={ILLUSTRATION} style={styles.art} contentFit="contain" accessible={false} />
+      <View style={styles.titleBlock}>
+        <Text variant="title1" color="ink" {...a11yHeader()}>
           Your first resume is ready
         </Text>
-        <View style={styles.line}>
-          <View
-            style={[
-              styles.pill,
-              { borderRadius: radii.full, backgroundColor: colors.successSurface },
-            ]}
-          >
-            <Icon name="Check" size="sm" color={colors.success} />
-            <Text variant="captionSemiBold" color="success">
-              {total > 0 ? `All ${total} checked` : 'All checked'}
-            </Text>
-          </View>
-          <Text variant="caption" color="textSecondary">
-            Saved to your profile too
-          </Text>
-        </View>
-      </View>
-
-      <Card radius="cardLg" style={styles.card}>
-        <Text variant="titleSm" {...a11yHeader()} style={styles.header}>
-          What you checked
+        <Text variant="bodyLg" color="textSecondary">
+          Saved to Resumes and your profile.
         </Text>
-        {zeroSummary(content).map((line) => (
-          <TailorCheckRow key={line} label={line} state="done" />
-        ))}
-      </Card>
-
-      <NextStepNote
-        icon="Stars02"
-        text={
-          company
-            ? `Next: tailor it to the ${company} job`
-            : 'Next: tailor it to a job you want to apply for'
-        }
-        style={styles.next}
-      />
+      </View>
+      <FlowCard style={styles.next}>
+        <FlowRow
+          icon="Target"
+          title={company ? `Tailor it to the ${company} job` : 'Tailor it to a job'}
+          body="Get a higher match for one role"
+          onPress={onTailor}
+        />
+        <FlowDivider />
+        <FlowRow
+          icon="Edit03"
+          title="Review it in the editor"
+          body="Fonts, order, sections"
+          onPress={onEdit}
+        />
+      </FlowCard>
     </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  text: { marginTop: s(STAGE_TO_TEXT), alignItems: 'center', gap: s(TITLE_TO_LINE) },
-  line: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: s(LINE_GAP),
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(PILL_GAP),
-    paddingLeft: s(PILL_PAD_L),
-    paddingRight: s(PILL_PAD_R),
-    paddingVertical: s(PILL_PAD_Y),
-  },
-  card: { marginTop: s(TEXT_TO_CARD), padding: s(CARD_PAD) },
-  header: { paddingBottom: s(HEADER_PAD_B) },
-  next: { marginTop: s(CARD_TO_NEXT) },
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(16), paddingTop: u(8) },
+  art: { width: u(150), height: u(150) },
+  titleBlock: { gap: u(6) },
+  next: { paddingVertical: u(4) },
 }));

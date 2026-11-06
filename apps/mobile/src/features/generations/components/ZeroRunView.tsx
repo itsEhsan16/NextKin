@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import {
@@ -14,7 +15,8 @@ import { FlowStepper, ZERO_STEPS } from '@/features/create/components/TailorStep
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { StateView } from '@/ui/StateView';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { FlowFooter } from '@/features/create/flow/FlowKit';
+import { EXPORT_BLOCK_MESSAGE } from '@/data/models';
 import { Toast } from '@/ui/Toast';
 import { Reveal } from '@/ui/motion';
 
@@ -22,8 +24,7 @@ import { useGenerationsActions } from '../hooks/useGenerationsActions';
 import { useTailorDownload } from '../hooks/useTailorDownload';
 import { TailorChrome } from './TailorChrome';
 import { TailorProgress } from './TailorProgress';
-import { ZeroCheckSheet } from './ZeroCheckSheet';
-import { ZeroDraftCheck } from './ZeroDraftCheck';
+import { ZeroReview } from './ZeroReview';
 import { ZeroDraftPreview } from './ZeroDraftPreview';
 import { ZeroReady } from './ZeroReady';
 import {
@@ -40,9 +41,7 @@ const STEPS_TO_ART = 38 / 0.75;
 const STEPS_TO_DRAFT = 18 / 0.75;
 const STEPS_TO_RESUME = 4 / 0.75;
 /** ZERO 03's locked Download is 110 wide at 390 (613:461); Start checking takes the rest. */
-const DOWNLOAD_W = 110 / 0.75;
 /** ZERO 05's Edit is 100 wide (613:708). */
-const EDIT_W = 100 / 0.75;
 
 export const ZERO_SAVED_NOTICE = 'Resume saved as PDF';
 const SAVE_FAILED = "We couldn't save that. Check your connection and try again.";
@@ -62,6 +61,7 @@ const messageOf = (error: unknown): string =>
 export function ZeroRunView({ generation }: { generation: Generation }) {
   const { spacing, s } = useTheme();
   const actions = useGenerationsActions();
+  const router = useRouter();
   const resumeId = generation.resumeId ?? '';
   const ready = generation.status === 'ready';
 
@@ -70,7 +70,6 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
   const content = useResumeContent(ready ? resumeId : '');
   const resolve = useResolveZeroCheck(resumeId);
 
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetError, setSheetError] = useState<string | undefined>();
   const [notice, setNotice] = useState<string | null>(null);
   const onSaved = useCallback(() => setNotice(ZERO_SAVED_NOTICE), []);
@@ -91,9 +90,7 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     setSheetError(undefined);
     resolve.mutate(resolution, {
       // The next guess follows from the saved document; the last one closes the sheet on ZERO 05.
-      onSuccess: (result) => {
-        if (result.finished) setSheetOpen(false);
-      },
+      onSuccess: () => undefined,
       onError: (error) => setSheetError(messageOf(error)),
     });
   };
@@ -127,9 +124,14 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
       />
     );
     footer = (
-      <StickyActionBar
-        floating
-        primary={{ label: 'Leave and notify me', icon: 'Bell01', variant: 'ghost', onPress: close }}
+      <FlowFooter
+        inset
+        primary={{
+          label: 'Leave and notify me',
+          icon: 'Bell01',
+          variant: 'outline',
+          onPress: close,
+        }}
       />
     );
   } else if (content.isError) {
@@ -149,19 +151,23 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     page = <ZeroDraftPreview content={null} name={name} />;
   } else if (phase === 'done') {
     view = 'done';
-    page = <ZeroReady content={body} name={name} company={job.data?.company} />;
+    page = (
+      <ZeroReady
+        content={body}
+        name={name}
+        company={job.data?.company}
+        onTailor={() => router.push({ pathname: '/create/build', params: { resumeId } })}
+        onEdit={() => actions.openDocument(resumeId)}
+      />
+    );
     footer = (
-      <StickyActionBar
-        floating
-        secondary={{
-          label: 'Edit',
-          onPress: () => actions.openDocument(resumeId),
-          style: { flexBasis: s(EDIT_W) },
-        }}
+      <FlowFooter
+        inset
+        note={download.emailBlocked ? EXPORT_BLOCK_MESSAGE.email : undefined}
+        secondary={{ label: 'Edit', onPress: () => actions.openDocument(resumeId) }}
         primary={{
-          label: 'Download PDF',
+          label: download.emailBlocked ? 'Try again' : 'Download PDF',
           icon: 'Download01',
-          haptic: 'medium',
           loading: download.busy,
           onPress: download.download,
         }}
@@ -169,23 +175,27 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     );
   } else {
     view = 'check';
-    page = <ZeroDraftCheck content={body} name={name} />;
+    page = (
+      <ZeroReview
+        content={body}
+        item={item}
+        checked={progress.checked}
+        total={progress.total}
+        busy={resolve.isPending}
+        error={sheetError}
+        onResolve={answer}
+      />
+    );
     footer = (
-      <StickyActionBar
-        floating
-        note={`Download unlocks when all ${progress.total} are checked`}
-        secondary={{
+      <FlowFooter
+        inset
+        note={`Download unlocks at ${progress.total} of ${progress.total}`}
+        primary={{
           label: 'Download',
           icon: 'Lock01',
+          variant: 'outline',
           disabled: true,
-          style: { flexBasis: s(DOWNLOAD_W) },
-        }}
-        primary={{
-          label: progress.checked === 0 ? 'Start checking' : 'Continue checking',
-          onPress: () => {
-            setSheetError(undefined);
-            setSheetOpen(true);
-          },
+          onPress: () => {},
         }}
       />
     );
@@ -205,19 +215,6 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
         <Reveal stateKey={view}>{page}</Reveal>
       </Screen>
 
-      {/* Mounted for as long as there is a draft, so the last answer lets it slide away. */}
-      {ready && progress ? (
-        <ZeroCheckSheet
-          open={sheetOpen && phase === 'check'}
-          item={item}
-          at={Math.min(progress.total, progress.checked + 1)}
-          total={progress.total}
-          busy={resolve.isPending}
-          error={sheetError}
-          onResolve={answer}
-          onClose={() => setSheetOpen(false)}
-        />
-      ) : null}
       <Toast
         visible={notice != null}
         message={notice ?? ''}

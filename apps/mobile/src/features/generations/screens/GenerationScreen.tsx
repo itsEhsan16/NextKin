@@ -219,10 +219,10 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
     // draft when the run came from one, else the job the run was tailored to — §7.5's intake,
     // which is the only other place that description can be changed.
     const { jdId, jobId } = run;
-    // A tailoring run's input is the comparison, and a letter's is a resume and a tone — neither
-    // is a description the intake can edit.
+    // A tailoring run's input is the comparison, a letter's is a resume and a tone, and a Zero
+    // Resume's is "About you" — none is a description the intake can edit (§173).
     const fixInput =
-      run.tailor || run.kind === 'cover_letter'
+      run.tailor || run.kind === 'cover_letter' || run.kind === 'zero_resume'
         ? undefined
         : jdId
           ? () => actions.editJd(jdId)

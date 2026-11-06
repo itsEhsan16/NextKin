@@ -1,3 +1,4 @@
+import { useSetupAnswers } from '@/features/create/setupAnswers';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
@@ -84,12 +85,24 @@ describe('ZeroResumeScreen (ZERO 01, 613:206)', () => {
     expect(screen.getByLabelText('Write my draft')).toBeDisabled();
     await settle(NORMAL_MS);
 
-    expect(screen.getByLabelText('Step 1 of 3, About you')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 1 of 3')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Let’s write your first resume' })).toBeOnTheScreen();
     // The fixture user is George Smith; the field stays editable, it is just filled in.
     expect(screen.getByLabelText('Full name', shown).props.value).toBe('George Smith');
     expect(screen.getByRole('radio', { name: 'None yet' })).toBeOnTheScreen();
     expect(screen.getByText('1 of 3 generations left this month')).toBeOnTheScreen();
+  });
+
+  it('shows prefilled answers as a summary, with a tap to change them (§173)', async () => {
+    useSetupAnswers.getState().save({ role: 'Product Designer', years: '3-5' });
+    await renderZero(undefined, fresh);
+    await settle(NORMAL_MS);
+
+    expect(screen.getByLabelText('Name, George Smith. Edit')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Role you want, Product Designer. Edit')).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByLabelText('Experience. Edit')));
+    expect(screen.getByLabelText('Full name', shown).props.value).toBe('George Smith');
+    useSetupAnswers.getState().reset();
   });
 
   it('says what is missing on a press, then starts the run with the seed', async () => {

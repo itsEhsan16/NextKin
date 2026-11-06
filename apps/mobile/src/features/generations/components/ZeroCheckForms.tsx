@@ -35,7 +35,8 @@ export type CheckFormProps = {
   /** The repo's refusal, said under the fields. */
   error?: string;
   onResolve: (resolution: ZeroResolution) => void;
-  onClose: () => void;
+  /** The sheet's ✕; absent when the form sits inline on the review screen (§173). */
+  onClose?: () => void;
 };
 
 /** The guessed span, or this year to now when the text cannot be read back. */

@@ -2,18 +2,19 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
+import { Image } from 'expo-image';
+
+import { ZERO_YEARS_LABEL } from '@/data/models';
 import { useCurrentUser, useJob, useStartGeneration, useSubscription } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
-import { Screen } from '@/ui/Screen';
-import { ScreenHeader } from '@/ui/ScreenHeader';
+import { Icon } from '@/ui/Icon';
 import { StateView } from '@/ui/StateView';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
-import { FLOW_ART, FlowHero } from '../components/FlowHero';
-import { FlowStepper, ZERO_STEPS } from '../components/TailorStepper';
+import { OnboardingFrame } from '../components/OnboardingFrame';
 import { ZeroAboutForm, ZeroAboutFormSkeleton } from '../components/ZeroAboutForm';
+import { FlowCard, FlowDivider, FlowFooter, FlowRow } from '../flow/FlowKit';
 import { generationsLeftNote, spentNote } from '../generationQuota';
 import { useCreateActions } from '../hooks/useCreateActions';
 import { useSetupAnswers } from '../setupAnswers';
@@ -34,15 +35,10 @@ export type ZeroResumeScreenProps = {
   role?: string;
 };
 
-// ZERO 01 at 390 (613:206), in artboard units.
-const HEADER_TO_STEPS = 12 / 0.75; // 613:212
-const STEPS_TO_ART = 50 / 0.75; // 613:213 → 661:25
-const HERO_TO_FORM = 22 / 0.75; // 613:249
-const SPARKLE_W = 18 / 0.75; // 613:283
-const SPARKLE_H = 17.6315 / 0.75;
+const ART = require('../../../../assets/illustrations/redesign/empty-resume.webp');
 
 const TITLE = 'Let’s write your first resume';
-const LEDE = 'Three answers. We draft the rest and flag every guess.';
+const LEDE = 'We draft it. You check every guess.';
 
 /**
  * ZERO 01 (613:206) — "Let's write your first resume": the name, a years band and the role you
@@ -54,8 +50,10 @@ const LEDE = 'Three answers. We draft the rest and flag every guess.';
  * spent the upgrade prompt replaces the button rather than interrupting the page.
  */
 export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
-  const { spacing, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
+  /** Prefilled answers show as a summary first; a tap on any row opens the form (§173). */
+  const [editing, setEditing] = useState(false);
   const actions = useCreateActions();
 
   const user = useCurrentUser();
@@ -110,37 +108,27 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
   const enter = useRevealStagger(!subscription.isPending && !user.isPending);
 
   const page = (children: ReactNode, footer?: ReactNode) => (
-    <Screen
-      keyboard
-      scroll
-      edges={['top', 'bottom']}
-      header={<ScreenHeader title="Zero Resume" showTitle={false} onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: s(HEADER_TO_STEPS) }}
-      contentContainerStyle={{ paddingBottom: spacing[8] }}
+    <OnboardingFrame
+      step={1}
+      total={3}
+      title={TITLE}
+      subtitle={LEDE}
+      onBack={actions.goBack}
+      art={<Image source={ART} style={styles.art} contentFit="contain" accessible={false} />}
       footer={footer}
     >
-      <FlowStepper steps={ZERO_STEPS} current="about" />
-      <View style={{ marginTop: s(STEPS_TO_ART) }}>{children}</View>
-    </Screen>
-  );
-
-  const hero = (
-    <Animated.View entering={enter(0)}>
-      <FlowHero title={TITLE} lede={LEDE} art={FLOW_ART.zeroAbout} />
-    </Animated.View>
+      {children}
+    </OnboardingFrame>
   );
 
   // The inert bar is part of the loading state: it owns the bottom safe-area inset, so a page
   // without one would grow a footer out of nothing the moment the queries land.
   if (subscription.isPending || user.isPending) {
     return page(
-      <>
-        {hero}
-        <View style={styles.form} accessible accessibilityLabel="Loading your details">
-          <ZeroAboutFormSkeleton />
-        </View>
-      </>,
-      <StickyActionBar floating primary={{ label: ZERO_CTA, disabled: true }} />,
+      <View accessible accessibilityLabel="Loading your details">
+        <ZeroAboutFormSkeleton />
+      </View>,
+      <FlowFooter primary={{ label: ZERO_CTA, onPress: () => {}, disabled: true }} />,
     );
   }
 
@@ -175,22 +163,63 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
     );
   };
 
+  const complete = Object.keys(allErrors).length === 0;
+  const edit = <Icon name="Edit03" size="sm" color={colors.textSecondary} />;
+  const summary = (
+    <FlowCard style={styles.summary}>
+      <FlowRow
+        icon="User01"
+        title={about.fullName}
+        body="Name"
+        trailing={edit}
+        onPress={() => setEditing(true)}
+        accessibilityLabel={`Name, ${about.fullName}. Edit`}
+      />
+      <FlowDivider />
+      <FlowRow
+        icon="Briefcase01"
+        title={about.role}
+        body="Role you want"
+        trailing={edit}
+        onPress={() => setEditing(true)}
+        accessibilityLabel={`Role you want, ${about.role}. Edit`}
+      />
+      <FlowDivider />
+      <FlowRow
+        icon="Clock"
+        title={
+          about.years === 'none'
+            ? 'Just starting'
+            : `${about.years ? ZERO_YEARS_LABEL[about.years] : ''} years`
+        }
+        body="Experience"
+        trailing={edit}
+        onPress={() => setEditing(true)}
+        accessibilityLabel="Experience. Edit"
+      />
+    </FlowCard>
+  );
+
   return page(
-    <>
-      {hero}
-      <Animated.View entering={enter(1)} style={styles.form}>
+    <Animated.View entering={enter(0)}>
+      {complete && !editing ? (
+        <>
+          {summary}
+          <Text variant="footnote" color="textTertiary" style={styles.hint}>
+            From your answers so far. Tap a row to change it.
+          </Text>
+        </>
+      ) : (
         <ZeroAboutForm
           about={about}
           errors={errors}
           onChange={setAbout}
           onBlurField={(key) => setTouched((current) => ({ ...current, [key]: true }))}
         />
-      </Animated.View>
-    </>,
-    // The button stays live while the form is incomplete: pressing it is how the reader finds out
-    // what is missing, which is kinder than a dead control with no stated reason.
-    <StickyActionBar
-      floating
+      )}
+    </Animated.View>,
+    // The button stays live while the form is incomplete: pressing it says what is missing.
+    <FlowFooter
       note={
         failed ? ZERO_START_FAILED : spent ? spentNote(limit) : generationsLeftNote(used, limit)
       }
@@ -198,17 +227,14 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
       primary={
         spent
           ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('generations') }
-          : {
-              label: ZERO_CTA,
-              leading: <SparkleIcon width={s(SPARKLE_W)} height={s(SPARKLE_H)} />,
-              loading: start.isPending,
-              onPress: write,
-            }
+          : { label: ZERO_CTA, icon: 'Stars02', loading: start.isPending, onPress: write }
       }
     />,
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  form: { marginTop: s(HERO_TO_FORM) },
+const useStyles = scaledSheet((_s, u) => ({
+  art: { width: u(120), height: u(120) },
+  summary: { paddingVertical: u(4) },
+  hint: { marginTop: u(12) },
 }));

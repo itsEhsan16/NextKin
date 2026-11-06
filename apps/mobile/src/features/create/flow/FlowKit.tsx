@@ -150,7 +150,8 @@ export function FlowRow({
           </Text>
         ) : null}
       </View>
-      {trailing ?? (onPress ? <Icon name="ChevronRight" size="sm" color={colors.iconMuted} /> : null)}
+      {trailing ??
+        (onPress ? <Icon name="ChevronRight" size="sm" color={colors.iconMuted} /> : null)}
     </>
   );
   return onPress ? (
@@ -164,7 +165,13 @@ export function FlowRow({
       {content}
     </Pressable>
   ) : (
-    <View style={styles.row}>{content}</View>
+    <View
+      accessible
+      accessibilityLabel={accessibilityLabel ?? (body ? `${title}, ${body}` : title)}
+      style={styles.row}
+    >
+      {content}
+    </View>
   );
 }
 
