@@ -59,7 +59,7 @@ export function CheckHeader({
           Our guess — check it
         </Text>
       </View>
-      <Text variant="title3" color="ink">
+      <Text variant="title1" color="ink" accessibilityRole="header">
         {title}
       </Text>
     </View>

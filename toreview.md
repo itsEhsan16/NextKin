@@ -16091,3 +16091,21 @@ Owner reported four broken spots on device plus one design change. All fixed on 
   Unticking removes the result; "Change" reopens the sheet. The draft fetched with the plan is reused, so the sheet opens ready.
 - **ATS score ring on the Ready preview: digits overlapped "ATS SCORE".** `AnimatedNumber` is a TextInput, and Android ignores a line height shorter than the font's own height; Plus Jakarta Sans is tall. Its line box is now at least 1.3× the font size, for every animated number.
 - **Verified:** web preview at 390×844 (sheet positions measured with the page scrolled; tick → sheet → AI guess → added). Jest: 217 suites and 1879 tests pass; typecheck and lint are clean. **Not verified on a phone**, including the Android ring and the inner scroll of the capped field (web textareas don't grow).
+
+## §175 — Zero Resume, one thing at a time (owner, 2026-11-07)
+
+The owner asked for Zero Resume to go step by step instead of asking everything on one screen.
+
+- **About you is now three screens:**
+  1. "What's your name?"
+  2. "How long have you worked?" A tapped band moves on by itself after 280 ms.
+  3. "What role do you want?" A text field plus suggested-role chips.
+
+  Known answers come prefilled: the account name, the sign-up answers and the job's title. A known answer is one tap. Back steps back one question.
+  - Replaces the three-field card and the §173 summary card. `ZeroAboutForm` is deleted.
+  - The quota note sits on the last step's bar only. A spent allowance shows the plans from the first step.
+- **The check shows one guess per screen.** A progress line ("Guess 3 of 9") sits above the single guess: a role, one skill, or a school.
+  - Each skill is now its own question ("Do you have this skill?"). §173 listed every skill at once with Keep/Remove.
+  - The status list and the locked Download bar are gone during the check. A footnote says Download unlocks after the last guess.
+- **Judgement call:** a role is still one question, with its title, company and dates together, because they describe one job. Splitting each role into three screens would triple the taps. I can split it if the owner wants.
+- **Verified:** web preview, all three steps plus the first guess. Jest: 1879 tests pass, and lint is clean. Not checked on a phone.

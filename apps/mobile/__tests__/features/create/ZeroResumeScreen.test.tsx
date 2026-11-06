@@ -79,49 +79,46 @@ describe('ZeroResumeScreen (ZERO 01, 613:206)', () => {
     jest.useRealTimers();
   });
 
-  it('asks three things under the About you step, with the quota on the bar', async () => {
+  const press = (label: string) =>
+    act(async () => fireEvent.press(screen.getByLabelText(label)));
+
+  it('asks one thing at a time, starting with the name (§175)', async () => {
     await renderZero(undefined, fresh);
     // The bar is pinned while loading too — it owns the bottom safe-area inset.
-    expect(screen.getByLabelText('Write my draft')).toBeDisabled();
+    expect(screen.getByLabelText('Continue')).toBeDisabled();
     await settle(NORMAL_MS);
 
     expect(screen.getByLabelText('Step 1 of 3')).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'Let’s write your first resume' })).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: /What’s your name\?/ })).toBeOnTheScreen();
     // The fixture user is George Smith; the field stays editable, it is just filled in.
     expect(screen.getByLabelText('Full name', shown).props.value).toBe('George Smith');
-    expect(screen.getByRole('radio', { name: 'None yet' })).toBeOnTheScreen();
-    expect(screen.getByText('1 of 3 generations left this month')).toBeOnTheScreen();
+    // The other questions wait for their own screens.
+    expect(screen.queryByRole('radio', { name: 'None yet' })).toBeNull();
+    expect(screen.queryByLabelText('Role you want', shown)).toBeNull();
   });
 
-  it('shows prefilled answers as a summary, with a tap to change them (§173)', async () => {
-    useSetupAnswers.getState().save({ role: 'Product Designer', years: '3-5' });
-    await renderZero(undefined, fresh);
-    await settle(NORMAL_MS);
-
-    expect(screen.getByLabelText('Name, George Smith. Edit')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Role you want, Product Designer. Edit')).toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByLabelText('Experience. Edit')));
-    expect(screen.getByLabelText('Full name', shown).props.value).toBe('George Smith');
-    useSetupAnswers.getState().reset();
-  });
-
-  it('says what is missing on a press, then starts the run with the seed', async () => {
+  it('walks name → experience → role, then starts the run with the seed', async () => {
     const client = await renderZero(undefined, fresh);
     await settle(NORMAL_MS);
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Write my draft')));
+    await press('Continue');
+    expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
+    // Continue with no band picked says what is missing.
+    await press('Continue');
     expect(
       screen.getByText('Pick how long you have worked. None is a fine answer.', shown),
     ).toBeOnTheScreen();
+    // A tapped band moves on by itself.
+    await act(async () => fireEvent.press(screen.getByRole('radio', { name: '6–10 years' })));
+    await settle(400);
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
+    expect(screen.getByText('1 of 3 generations left this month')).toBeOnTheScreen();
+
+    await press('Write my draft');
     expect(screen.getByText('Add the role you want, like Product Designer.', shown)).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
-
-    await act(async () => fireEvent.press(screen.getByRole('radio', { name: '6–10 years' })));
-    expect(screen.getByRole('radio', { name: '6–10 years' })).toBeSelected();
-    await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Role you want', shown), 'Product Designer'),
-    );
-    await act(async () => fireEvent.press(screen.getByLabelText('Write my draft')));
+    await act(async () => fireEvent.press(screen.getByText('Product Designer', shown)));
+    await press('Write my draft');
     await settle(START_MS);
 
     const started = client.getQueryData<Generation>(qk.generations.active());
@@ -138,16 +135,32 @@ describe('ZeroResumeScreen (ZERO 01, 613:206)', () => {
     });
   });
 
+  it('keeps sign-up answers, so a known answer is one tap, and Back steps back', async () => {
+    useSetupAnswers.getState().save({ role: 'Product Designer', years: '3-5' });
+    await renderZero(undefined, fresh);
+    await settle(NORMAL_MS);
+
+    await press('Continue');
+    expect(screen.getByRole('radio', { name: '3–5 years' })).toBeSelected();
+    await press('Continue');
+    expect(screen.getByLabelText('Role you want', shown).props.value).toBe('Product Designer');
+    await press('Go back');
+    expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
+    useSetupAnswers.getState().reset();
+  });
+
   it('starts from the job when opened from one (ZERO 00b)', async () => {
     const client = await renderZero('job_stripe', fresh);
     await settle(NORMAL_MS);
     await settle(NORMAL_MS);
 
+    await press('Continue');
+    await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'None yet' })));
+    await settle(400);
     expect(screen.getByLabelText('Role you want', shown).props.value).toBe(
       'Senior Product Designer',
     );
-    await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'None yet' })));
-    await act(async () => fireEvent.press(screen.getByLabelText('Write my draft')));
+    await press('Write my draft');
     await settle(START_MS);
 
     expect(client.getQueryData<Generation>(qk.generations.active())?.jobId).toBe('job_stripe');

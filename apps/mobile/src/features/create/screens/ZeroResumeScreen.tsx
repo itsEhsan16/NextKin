@@ -4,23 +4,26 @@ import Animated from 'react-native-reanimated';
 
 import { Image } from 'expo-image';
 
-import { ZERO_YEARS_LABEL } from '@/data/models';
+import { ZERO_YEARS, ZERO_YEARS_LABEL, type ZeroYears } from '@/data/models';
 import { useCurrentUser, useJob, useStartGeneration, useSubscription } from '@/data/queries';
-import { scaledSheet, useTheme } from '@/theme';
-import { Icon } from '@/ui/Icon';
+import { scaledSheet } from '@/theme';
+import { ChoiceChip } from '@/ui/ChoiceChip';
+import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
-import { useRevealStagger } from '@/ui/motion';
+import { TextField } from '@/ui/TextField';
+import { Reveal, useRevealStagger } from '@/ui/motion';
 
 import { OnboardingFrame } from '../components/OnboardingFrame';
-import { ZeroAboutForm, ZeroAboutFormSkeleton } from '../components/ZeroAboutForm';
-import { FlowCard, FlowDivider, FlowFooter, FlowRow } from '../flow/FlowKit';
+import { FlowFooter } from '../flow/FlowKit';
 import { generationsLeftNote, spentNote } from '../generationQuota';
 import { useCreateActions } from '../hooks/useCreateActions';
-import { useSetupAnswers } from '../setupAnswers';
+import { SUGGESTED_ROLES, useSetupAnswers } from '../setupAnswers';
 import {
   emptyZeroAbout,
   fullNameOf,
+  NAME_MAX,
+  ROLE_MAX,
   validateZeroAbout,
   ZERO_CTA,
   ZERO_START_FAILED,
@@ -37,23 +40,34 @@ export type ZeroResumeScreenProps = {
 
 const ART = require('../../../../assets/illustrations/redesign/empty-resume.webp');
 
-const TITLE = 'Let’s write your first resume';
-const LEDE = 'We draft it. You check every guess.';
+/** The three questions, one per screen (owner, 2026-11-07: "one thing at a time", §175). */
+const STEPS = ['fullName', 'years', 'role'] as const;
+type Step = (typeof STEPS)[number];
+
+const COPY: Record<Step, { title: string; subtitle: string }> = {
+  fullName: { title: 'What’s your name?', subtitle: 'As it should read on your resume.' },
+  years: { title: 'How long have you worked?', subtitle: 'None is a fine answer.' },
+  role: { title: 'What role do you want?', subtitle: 'We’ll write your draft toward it.' },
+};
+
+const yearsLabel = (band: ZeroYears): string =>
+  band === 'none' ? 'None yet' : `${ZERO_YEARS_LABEL[band]} years`;
+
+/** A tapped experience band moves on by itself, after the chip has shown it picked. */
+const ADVANCE_MS = 280;
 
 /**
- * ZERO 01 (613:206) — "Let's write your first resume": the name, a years band and the role you
- * want, then Write my draft (V2 §7.9). No job description is asked for: the owner chose the role
- * over a JD so someone with no resume and no job in mind can start (toreview §57.4). Opened from a
- * job (ZERO 00b), the role starts as that job's title and the run remembers the job.
+ * Zero Resume's start, one question per screen (§175, replacing ZERO 01's three-field card): the
+ * name to print, how long you have worked, and the role you want. Each answer that is already
+ * known (the account's name, the sign-up answers, the job's title) is filled in, so a known answer
+ * is one tap. No job description is asked for (toreview §57.4). Opened from a job (ZERO 00b), the
+ * run remembers the job.
  *
- * The quota line sits on the bar over the button that spends it (§13.5); once the allowance is
- * spent the upgrade prompt replaces the button rather than interrupting the page.
+ * The quota line sits on the last step's bar, over the button that spends it (§13.5). Once the
+ * allowance is spent, the plans replace the button from the first step, before anything is asked.
  */
 export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
-  const { colors } = useTheme();
   const styles = useStyles();
-  /** Prefilled answers show as a summary first; a tap on any row opens the form (§173). */
-  const [editing, setEditing] = useState(false);
   const actions = useCreateActions();
 
   const user = useCurrentUser();
@@ -61,16 +75,18 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
   const subscription = useSubscription();
   const start = useStartGeneration();
 
+  const [step, setStep] = useState(0);
   // The experience band answered at sign-up starts picked, so it is never asked twice (§172).
   const [about, setAbout] = useState<ZeroAbout>(() => ({
     ...emptyZeroAbout,
     years: useSetupAnswers.getState().years,
   }));
-  /** Fields the reader has left. An error on the first keystroke reads as a telling-off. */
-  const [touched, setTouched] = useState<Partial<Record<keyof ZeroAbout, true>>>({});
+  /** The current step's Continue was pressed with nothing valid: say what is missing. */
   const [refused, setRefused] = useState(false);
+  const advance = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (advance.current && clearTimeout(advance.current)), []);
 
-  // Each prefill lands once, when its query settles, and never again: the field is the reader's
+  // Each prefill lands once, when its query settles, and never again: the answer is the reader's
   // from that moment, so a refetch must not type over a name or role they changed.
   const seededName = useRef(false);
   const seededRole = useRef(false);
@@ -98,23 +114,28 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
     if (failed && !was) AccessibilityInfo.announceForAccessibility(ZERO_START_FAILED);
   }, [failed]);
 
-  const allErrors = validateZeroAbout(about);
-  const errors = Object.fromEntries(
-    Object.entries(allErrors).filter(([key]) => refused || touched[key as keyof ZeroAbout]),
-  );
-
-  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
-  // with its data already here slides in whole with the push.
   const enter = useRevealStagger(!subscription.isPending && !user.isPending);
+  const current = STEPS[step]!;
+  const error = refused ? validateZeroAbout(about)[current] : undefined;
+
+  const back = () => {
+    setRefused(false);
+    if (step === 0) actions.goBack();
+    else setStep(step - 1);
+  };
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <OnboardingFrame
-      step={1}
-      total={3}
-      title={TITLE}
-      subtitle={LEDE}
-      onBack={actions.goBack}
-      art={<Image source={ART} style={styles.art} contentFit="contain" accessible={false} />}
+      step={step + 1}
+      total={STEPS.length}
+      title={COPY[current].title}
+      subtitle={COPY[current].subtitle}
+      onBack={back}
+      art={
+        step === 0 ? (
+          <Image source={ART} style={styles.art} contentFit="contain" accessible={false} />
+        ) : undefined
+      }
       footer={footer}
     >
       {children}
@@ -126,9 +147,9 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
   if (subscription.isPending || user.isPending) {
     return page(
       <View accessible accessibilityLabel="Loading your details">
-        <ZeroAboutFormSkeleton />
+        <Skeleton height={56} radius="xl" />
       </View>,
-      <FlowFooter primary={{ label: ZERO_CTA, onPress: () => {}, disabled: true }} />,
+      <FlowFooter primary={{ label: 'Continue', onPress: () => {}, disabled: true }} />,
     );
   }
 
@@ -149,10 +170,16 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
 
   const { generationsUsed: used, generationsLimit: limit } = subscription.data.usage;
   const spent = used >= limit;
+  const last = step === STEPS.length - 1;
 
-  const write = () => {
-    if (Object.keys(validateZeroAbout(about)).length > 0) {
+  const next = () => {
+    if (validateZeroAbout(about)[current]) {
       setRefused(true);
+      return;
+    }
+    setRefused(false);
+    if (!last) {
+      setStep(step + 1);
       return;
     }
     start.mutate(
@@ -163,78 +190,101 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
     );
   };
 
-  const complete = Object.keys(allErrors).length === 0;
-  const edit = <Icon name="Edit03" size="sm" color={colors.textSecondary} />;
-  const summary = (
-    <FlowCard style={styles.summary}>
-      <FlowRow
+  const pickYears = (band: ZeroYears) => {
+    setAbout((now) => ({ ...now, years: band }));
+    setRefused(false);
+    if (advance.current) clearTimeout(advance.current);
+    advance.current = setTimeout(() => setStep(STEPS.indexOf('role')), ADVANCE_MS);
+  };
+
+  const question =
+    current === 'fullName' ? (
+      <TextField
+        label="Full name"
         icon="User01"
-        title={about.fullName}
-        body="Name"
-        trailing={edit}
-        onPress={() => setEditing(true)}
-        accessibilityLabel={`Name, ${about.fullName}. Edit`}
+        value={about.fullName}
+        onChangeText={(fullName) => setAbout((now) => ({ ...now, fullName }))}
+        error={error}
+        maxLength={NAME_MAX}
+        autoCapitalize="words"
+        autoComplete="name"
+        returnKeyType="next"
+        onSubmit={next}
       />
-      <FlowDivider />
-      <FlowRow
-        icon="Briefcase01"
-        title={about.role}
-        body="Role you want"
-        trailing={edit}
-        onPress={() => setEditing(true)}
-        accessibilityLabel={`Role you want, ${about.role}. Edit`}
-      />
-      <FlowDivider />
-      <FlowRow
-        icon="Clock"
-        title={
-          about.years === 'none'
-            ? 'Just starting'
-            : `${about.years ? ZERO_YEARS_LABEL[about.years] : ''} years`
-        }
-        body="Experience"
-        trailing={edit}
-        onPress={() => setEditing(true)}
-        accessibilityLabel="Experience. Edit"
-      />
-    </FlowCard>
-  );
+    ) : current === 'years' ? (
+      <View>
+        <View accessibilityRole="radiogroup" style={styles.chips}>
+          {ZERO_YEARS.map((band) => (
+            <ChoiceChip
+              radio
+              key={band}
+              label={yearsLabel(band)}
+              selected={about.years === band}
+              onPress={() => pickYears(band)}
+            />
+          ))}
+        </View>
+        {error ? (
+          <Text
+            variant="footnote"
+            color="danger"
+            accessibilityLiveRegion="polite"
+            style={styles.error}
+          >
+            {error}
+          </Text>
+        ) : null}
+      </View>
+    ) : (
+      <View>
+        <TextField
+          label="Role you want"
+          icon="Briefcase01"
+          value={about.role}
+          onChangeText={(text) => setAbout((now) => ({ ...now, role: text }))}
+          error={error}
+          maxLength={ROLE_MAX}
+          autoCapitalize="words"
+          placeholder="Product Designer"
+          returnKeyType="done"
+        />
+        <View style={styles.chips}>
+          {SUGGESTED_ROLES.map((suggestion) => (
+            <ChoiceChip
+              key={suggestion}
+              label={suggestion}
+              selected={about.role === suggestion}
+              onPress={() => setAbout((now) => ({ ...now, role: suggestion }))}
+            />
+          ))}
+        </View>
+      </View>
+    );
 
   return page(
     <Animated.View entering={enter(0)}>
-      {complete && !editing ? (
-        <>
-          {summary}
-          <Text variant="footnote" color="textTertiary" style={styles.hint}>
-            From your answers so far. Tap a row to change it.
-          </Text>
-        </>
-      ) : (
-        <ZeroAboutForm
-          about={about}
-          errors={errors}
-          onChange={setAbout}
-          onBlurField={(key) => setTouched((current) => ({ ...current, [key]: true }))}
-        />
-      )}
+      {/* Each question cross-fades in as the last one goes. */}
+      <Reveal stateKey={current}>{question}</Reveal>
     </Animated.View>,
-    // The button stays live while the form is incomplete: pressing it says what is missing.
-    <FlowFooter
-      note={
-        failed ? ZERO_START_FAILED : spent ? spentNote(limit) : generationsLeftNote(used, limit)
-      }
-      noteTone={failed ? 'danger' : 'neutral'}
-      primary={
-        spent
-          ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('generations') }
-          : { label: ZERO_CTA, icon: 'Stars02', loading: start.isPending, onPress: write }
-      }
-    />,
+    spent ? (
+      <FlowFooter
+        note={spentNote(limit)}
+        primary={{ label: 'See Pro plans', onPress: () => actions.openUpgrade('generations') }}
+      />
+    ) : last ? (
+      <FlowFooter
+        note={failed ? ZERO_START_FAILED : generationsLeftNote(used, limit)}
+        noteTone={failed ? 'danger' : 'neutral'}
+        primary={{ label: ZERO_CTA, icon: 'Stars02', loading: start.isPending, onPress: next }}
+      />
+    ) : (
+      <FlowFooter primary={{ label: 'Continue', onPress: next }} />
+    ),
   );
 }
 
 const useStyles = scaledSheet((_s, u) => ({
   art: { width: u(120), height: u(120) },
-  summary: { paddingVertical: u(4) },
-  hint: { marginTop: u(12) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8), marginTop: u(14) },
+  error: { marginTop: u(10) },
 }));

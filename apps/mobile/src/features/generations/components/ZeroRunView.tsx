@@ -177,7 +177,6 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     view = 'check';
     page = (
       <ZeroReview
-        content={body}
         item={item}
         checked={progress.checked}
         total={progress.total}
@@ -186,19 +185,8 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
         onResolve={answer}
       />
     );
-    footer = (
-      <FlowFooter
-        inset
-        note={`Download unlocks at ${progress.total} of ${progress.total}`}
-        primary={{
-          label: 'Download',
-          icon: 'Lock01',
-          variant: 'outline',
-          disabled: true,
-          onPress: () => {},
-        }}
-      />
-    );
+    // No bar while checking: each guess carries its own Save and Delete (§175).
+    footer = undefined;
   }
 
   return (

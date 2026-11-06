@@ -113,36 +113,32 @@ describe('GenerationScreen — Zero Resume run (ZERO 02–05)', () => {
     await settle(GENERATION_TICK_MS * 9);
     await settle(NORMAL_MS);
 
-    // One screen: how many are checked, the current guess open inline, what is left (§173).
+    // One guess per screen (§175): where you are, then only the guess being answered.
     expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'Check 9 guesses' })).toBeOnTheScreen();
-    expect(screen.getByLabelText('0 of 9 checked')).toBeOnTheScreen();
-    expect(
-      screen.getByLabelText('Roles and dates · 3, The titles and years are our guesses'),
-    ).toBeOnTheScreen();
-    expect(screen.getByText('Download unlocks at 9 of 9')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Download')).toBeDisabled();
+    expect(screen.getByLabelText('Guess 1 of 9')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Download')).toBeNull();
 
-    // The first role, inline, its company blank and already in error.
-    expect(screen.getByText('Is this role right?')).toBeOnTheScreen();
+    // The first role, its company blank and already in error.
+    expect(screen.getByRole('header', { name: 'Is this role right?' })).toBeOnTheScreen();
     expect(screen.getByText('Add the real company — a blank can’t stay')).toBeOnTheScreen();
     await press('Save and next');
-    expect(screen.getByLabelText('0 of 9 checked')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Guess 1 of 9')).toBeOnTheScreen();
 
     await act(async () => fireEvent.changeText(screen.getByLabelText('Company'), 'Flipkart'));
     await press('Save and next');
     await settle(NORMAL_MS);
-    expect(screen.getByLabelText('2 of 9 checked')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Guess 3 of 9')).toBeOnTheScreen();
 
-    // The other two roles go; both skills are kept at once; the school is filled in.
+    // The other two roles go; each skill is its own question; the school is filled in.
     await press('Delete this role');
     await settle(NORMAL_MS);
     await press('Delete this role');
     await settle(NORMAL_MS);
-    expect(screen.getByText('Do you have these skills?')).toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getAllByRole('button', { name: 'Keep' })[0]!));
+    expect(screen.getByText('Do you have this skill?')).toBeOnTheScreen();
+    await press('Save and next');
     await settle(NORMAL_MS);
-    await act(async () => fireEvent.press(screen.getAllByRole('button', { name: 'Keep' })[0]!));
+    expect(screen.getByText('Do you have this skill?')).toBeOnTheScreen();
+    await press('Save and next');
     await settle(NORMAL_MS);
     expect(screen.getByText('Where did you study?')).toBeOnTheScreen();
     await act(async () => fireEvent.changeText(screen.getByLabelText('Degree'), 'B.Des'));
