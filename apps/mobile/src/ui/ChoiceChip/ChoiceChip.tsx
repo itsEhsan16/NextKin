@@ -9,6 +9,8 @@ export type ChoiceChipProps = {
   onPress?: () => void;
   /** Shown on but not changeable — a skill already on the profile. */
   locked?: boolean;
+  /** One answer of a set (tone, experience): read out as a radio rather than a checkbox. */
+  radio?: boolean;
   testID?: string;
 };
 
@@ -16,15 +18,24 @@ export type ChoiceChipProps = {
  * A toggle chip (§172): white with a hairline when off, brand-tinted with a check when on.
  * Used for quick answers and for ticking keywords.
  */
-export function ChoiceChip({ label, selected, onPress, locked = false, testID }: ChoiceChipProps) {
+export function ChoiceChip({
+  label,
+  selected,
+  onPress,
+  locked = false,
+  radio = false,
+  testID,
+}: ChoiceChipProps) {
   const { colors, radii, sizes, u } = useTheme();
   const on = selected || locked;
   return (
     <Pressable
       testID={testID}
-      accessibilityRole="checkbox"
+      accessibilityRole={radio ? 'radio' : 'checkbox'}
       accessibilityLabel={label}
-      accessibilityState={{ checked: on, disabled: locked }}
+      accessibilityState={
+        radio ? { selected: on, disabled: locked } : { checked: on, disabled: locked }
+      }
       feedback="scale"
       haptic="selection"
       disabled={locked}

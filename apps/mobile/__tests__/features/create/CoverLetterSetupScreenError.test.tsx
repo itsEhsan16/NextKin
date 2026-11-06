@@ -46,7 +46,7 @@ describe('CoverLetterSetupScreen error state', () => {
     );
 
     expect(
-      await screen.findByText("Couldn't load your resume", {}, { timeout: 15000 }),
+      await screen.findByText('Couldn’t load your resume', {}, { timeout: 15000 }),
     ).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
   }, 30000);

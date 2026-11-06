@@ -2,19 +2,26 @@ import { useCallback, useState } from 'react';
 
 import type { CoverLetterContent, DocumentContent, Generation } from '@/data/models';
 import { useJob, useResume, useResumeContent } from '@/data/queries';
-import { COVER_STEPS, FlowStepper } from '@/features/create/components/TailorStepper';
+import { EXPORT_BLOCK_MESSAGE } from '@/data/models';
+import { FlowFooter } from '@/features/create/flow/FlowKit';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
-import { StickyActionBar } from '@/ui/StickyActionBar';
 import { Toast } from '@/ui/Toast';
 import { Reveal } from '@/ui/motion';
 
 import { useCoverTone } from '../hooks/useCoverTone';
 import { useGenerationsActions } from '../hooks/useGenerationsActions';
 import { useTailorDownload } from '../hooks/useTailorDownload';
-import { CoverProgress } from './CoverProgress';
 import { CoverReady } from './CoverReady';
 import { TailorChrome } from './TailorChrome';
+import { TailorProgress } from './TailorProgress';
+import {
+  COVER_CARD_TITLE,
+  COVER_HONESTY_NOTE,
+  COVER_WRITING_TITLE,
+  coverProgressRows,
+  coverWritingLede,
+} from './coverRun';
 
 export type CoverRunViewProps = { generation: Generation };
 
@@ -56,32 +63,42 @@ export function CoverRunView({ generation }: CoverRunViewProps) {
     if (letterId) actions.openDocument(letterId);
   };
 
-  const stepper = <FlowStepper steps={COVER_STEPS} current={ready ? 'download' : 'write'} />;
-
   return (
     <>
       <Screen
         scroll
         edges={['top', 'bottom']}
-        header={<TailorChrome stepper={stepper} onClose={close} />}
+        header={<TailorChrome onClose={close} />}
         headerStyle={{ paddingBottom: s(ready ? STEPS_TO_HERO : STEPS_TO_ART) }}
         contentContainerStyle={{ paddingBottom: spacing[8] }}
         footer={
-          ready ? (
-            // Arrives with the letter, fading in rather than appearing under it (§85).
-            <Reveal stateKey="ready">
-              <StickyActionBar
-                floating
+          <Reveal stateKey={ready ? 'ready' : 'writing'}>
+            {ready ? (
+              <FlowFooter
+                inset
+                note={download.emailBlocked ? EXPORT_BLOCK_MESSAGE.email : undefined}
+                secondary={{ label: 'Edit', onPress: edit }}
                 primary={{
-                  label: 'Download PDF',
+                  label: download.emailBlocked ? 'Try again' : 'Download PDF',
                   icon: 'Download01',
-                  haptic: 'medium',
                   loading: download.busy,
                   onPress: download.download,
                 }}
               />
-            </Reveal>
-          ) : undefined
+            ) : (
+              // The run keeps going without this screen; the notification says when it lands.
+              <FlowFooter
+                inset
+                note={COVER_HONESTY_NOTE}
+                primary={{
+                  label: 'Leave and notify me',
+                  icon: 'Bell01',
+                  variant: 'outline',
+                  onPress: close,
+                }}
+              />
+            )}
+          </Reveal>
         }
       >
         {/* The letter fades in over the progress card instead of cutting to it. */}
@@ -100,7 +117,14 @@ export function CoverRunView({ generation }: CoverRunViewProps) {
               quotaSpent={tone.spent}
             />
           ) : (
-            <CoverProgress generation={generation} />
+            <TailorProgress
+              generation={generation}
+              title={COVER_WRITING_TITLE}
+              lede={coverWritingLede(generation.jobId != null)}
+              cardTitle={COVER_CARD_TITLE}
+              rows={coverProgressRows(generation)}
+              footnote={null}
+            />
           )}
         </Reveal>
       </Screen>

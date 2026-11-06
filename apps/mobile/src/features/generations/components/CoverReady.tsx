@@ -1,13 +1,19 @@
 import { View } from 'react-native';
 
-import type { CoverLetterContent, CoverLetterTone } from '@/data/models';
-import { FlowHero } from '@/features/create/components/FlowHero';
-import { scaledSheet } from '@/theme';
+import {
+  COVER_LETTER_TONE_LABEL,
+  type CoverLetterContent,
+  type CoverLetterTone,
+} from '@/data/models';
+import { FlowCard, StatusPill } from '@/features/create/flow/FlowKit';
+import { a11yHeader } from '@/lib';
+import { scaledSheet, useTheme } from '@/theme';
+import { ChoiceChip } from '@/ui/ChoiceChip';
+import { Icon } from '@/ui/Icon';
+import { Pressable } from '@/ui/Pressable';
+import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
-
-import { CoverLetterCard } from './CoverLetterCard';
-import { CoverToneChips } from './CoverToneChips';
-import { coverReadyLede } from './coverRun';
+import { Text } from '@/ui/Text';
 
 export type CoverReadyProps = {
   letter?: CoverLetterContent;
@@ -19,17 +25,22 @@ export type CoverReadyProps = {
   job?: { title: string; company: string };
   /** The source resume's title — "Stripe — Senior PD". */
   resumeTitle?: string;
+  /** The tones this draft is not in. */
   tones: readonly CoverLetterTone[];
   onPickTone: (tone: CoverLetterTone) => void;
   tonesDisabled?: boolean;
   quotaSpent?: boolean;
 };
 
-// COVER 03 at 390 (644:148), in artboard units.
-const HERO_TO_LETTER = 20 / 0.75; // 644:175 → 644:179
-const LETTER_TO_TONES = 22 / 0.75; // 644:179 → 644:194
+const wordsIn = (letter: CoverLetterContent): number =>
+  [letter.greeting, ...letter.paragraphs, letter.signoff].join(' ').split(/\s+/).filter(Boolean)
+    .length;
 
-/** COVER 03 (644:148) under the stepper: the hero, the letter, and the other tones. */
+/**
+ * A finished cover letter (toreview §173, Figma "Cover · 2 Ready"): Saved to Resumes, the title,
+ * the tone and length, the letter itself up front, and the other tones to rewrite it in. Edit and
+ * Download sit in the footer like every other result.
+ */
 export function CoverReady({
   letter,
   letterError,
@@ -42,40 +53,102 @@ export function CoverReady({
   tonesDisabled,
   quotaSpent,
 }: CoverReadyProps) {
+  const { colors, u } = useTheme();
   const styles = useStyles();
+  const title = job ? `Your letter for ${job.company}` : 'Your cover letter is ready';
+  const meta = letter
+    ? `${COVER_LETTER_TONE_LABEL[letter.tone]} tone · ${wordsIn(letter)} words`
+    : resumeTitle
+      ? `Written from ${resumeTitle}`
+      : undefined;
 
   return (
-    <View>
-      <FlowHero title="Your cover letter is ready!" lede={coverReadyLede(job, resumeTitle)} />
-
-      <View style={styles.letter}>
-        {letterError ? (
-          <StateView
-            tone="danger"
-            icon="AlertTriangle"
-            title="Couldn't load the letter"
-            message="It is saved in Resumes. Check your connection and try again."
-            actionLabel="Try again"
-            onAction={onRetryLetter}
-          />
-        ) : (
-          <CoverLetterCard letter={letter} job={job} resumeTitle={resumeTitle} onEdit={onEdit} />
-        )}
+    <View style={styles.wrap}>
+      <StatusPill label="Saved to Resumes" icon="Check" />
+      <View style={styles.titleBlock}>
+        <Text variant="title1" color="ink" {...a11yHeader()}>
+          {title}
+        </Text>
+        {meta ? (
+          <Text variant="bodyLg" color="textSecondary">
+            {meta}
+          </Text>
+        ) : null}
       </View>
 
-      <View style={styles.tones}>
-        <CoverToneChips
-          tones={tones}
-          onPick={onPickTone}
-          disabled={tonesDisabled}
-          spent={quotaSpent}
+      {letterError ? (
+        <StateView
+          tone="danger"
+          icon="AlertTriangle"
+          title="Couldn’t load the letter"
+          message="It’s saved in Resumes. Check your connection and try again."
+          actionLabel="Try again"
+          onAction={onRetryLetter}
         />
-      </View>
+      ) : (
+        <FlowCard style={styles.letter}>
+          {letter ? (
+            <>
+              <Text variant="callout" color="ink">
+                {letter.greeting}
+              </Text>
+              {letter.paragraphs.slice(0, 2).map((paragraph) => (
+                <Text key={paragraph} variant="callout" color="ink">
+                  {paragraph}
+                </Text>
+              ))}
+              <Pressable
+                feedback="subtle"
+                accessibilityRole="button"
+                accessibilityLabel="Read the full letter"
+                onPress={onEdit}
+                style={styles.link}
+              >
+                <Text variant="footnote" color="brand">
+                  Read full letter
+                </Text>
+                <Icon name="ChevronRight" size={u(14)} color={colors.brand} />
+              </Pressable>
+            </>
+          ) : (
+            <View style={styles.skeleton} accessible accessibilityLabel="Loading the letter">
+              <Skeleton height={u(14)} width="40%" />
+              <Skeleton height={u(14)} />
+              <Skeleton height={u(14)} />
+              <Skeleton height={u(14)} width="70%" />
+            </View>
+          )}
+        </FlowCard>
+      )}
+
+      {tones.length > 0 ? (
+        <View style={styles.tones}>
+          <Text variant="footnote" color="textSecondary">
+            {quotaSpent ? 'Try another tone · needs Pro' : 'Try another tone'}
+          </Text>
+          <View style={styles.chips}>
+            {tones.map((tone) => (
+              <ChoiceChip
+                key={tone}
+                label={COVER_LETTER_TONE_LABEL[tone]}
+                selected={false}
+                locked={tonesDisabled}
+                onPress={() => onPickTone(tone)}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  letter: { marginTop: s(HERO_TO_LETTER) },
-  tones: { marginTop: s(LETTER_TO_TONES) },
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(18), paddingTop: u(4), width: '100%' },
+  titleBlock: { gap: u(6) },
+  letter: { gap: u(12), paddingHorizontal: u(20), paddingVertical: u(20) },
+  link: { flexDirection: 'row', alignItems: 'center', gap: u(2), alignSelf: 'flex-start' },
+  skeleton: { gap: u(10) },
+  tones: { gap: u(10) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
 }));

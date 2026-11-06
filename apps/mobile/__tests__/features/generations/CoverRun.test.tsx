@@ -128,11 +128,7 @@ describe('GenerationScreen — cover letter run (COVER 02–03, 644:84 / 644:148
 
     expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Writing your cover letter' })).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        'Writing from your resume and the job.',
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Writing from your resume and the job.')).toBeOnTheScreen();
     // The five steps, whichever one the run is on (coverProgressRows pins the mapping below).
     for (const step of [
       'Read your resume and the job details',
@@ -146,8 +142,8 @@ describe('GenerationScreen — cover letter run (COVER 02–03, 644:84 / 644:148
     expect(
       screen.getByText('Nothing goes in the letter that isn’t on your resume.'),
     ).toBeOnTheScreen();
-    // COVER 02 draws no bar: the ✕ leaves, and the run carries on without the screen.
-    expect(screen.queryByLabelText('Leave and notify me')).toBeNull();
+    // Like every run (§173): leave, and the run carries on without the screen.
+    expect(screen.getByLabelText('Leave and notify me')).toBeOnTheScreen();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Close')));
     expect(mockDismissTo).toHaveBeenCalledWith({
@@ -162,26 +158,23 @@ describe('GenerationScreen — cover letter run (COVER 02–03, 644:84 / 644:148
     await renderReady(id);
 
     expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
-    expect(screen.getByRole('header', { name: 'Your cover letter is ready!' })).toBeOnTheScreen();
-    expect(
-      screen.getByText('A tailored cover letter for the Senior Product Designer role at Stripe.'),
-    ).toBeOnTheScreen();
-    expect(screen.getByText('Cover letter for Stripe')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Your letter for Stripe' })).toBeOnTheScreen();
+    expect(screen.getByText(/^Professional tone · \d+ words$/)).toBeOnTheScreen();
     const letterId = mockStore.state.generations.find((g) => g.id === id)?.resumeId ?? '';
     const letter = mockStore.state.contents[letterId];
     if (letter?.kind !== 'cover_letter') throw new Error('expected a letter body');
     expect(screen.getByText(letter.greeting)).toBeOnTheScreen();
     expect(screen.getByText(letter.paragraphs[0] ?? '')).toBeOnTheScreen();
     // An excerpt, not the document: the rest of the letter lives in the editor and the PDF.
-    const second = letter.paragraphs[1];
-    if (second) expect(screen.queryByText(second)).toBeNull();
+    const third = letter.paragraphs[2];
+    if (third) expect(screen.queryByText(third)).toBeNull();
     expect(screen.queryByText('Professional')).toBeNull();
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Edit letter')));
+    await act(async () => fireEvent.press(screen.getByLabelText('Read the full letter')));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/resumes/[id]', params: { id: letterId } });
 
     // A new tone is a new run in place of this screen; the first letter stays in Resumes.
-    await act(async () => fireEvent.press(screen.getByLabelText('Write it in a confident tone')));
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Confident' })));
     await settle(NORMAL_MS);
     const next = mockStore.state.generations.find((g) => g.id !== id && g.tone === 'confident');
     expect(next?.kind).toBe('cover_letter');
@@ -200,7 +193,7 @@ describe('GenerationScreen — cover letter run (COVER 02–03, 644:84 / 644:148
     await renderReady(id);
     const runs = mockStore.state.generations.length;
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Write it in a concise tone')));
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Concise' })));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/upgrade',
       params: { reason: 'cover_letters' },

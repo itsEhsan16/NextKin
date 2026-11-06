@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import type { SvgProps } from 'react-native-svg';
 
 import AtsCheckIcon from '../../../assets/icons/create/ats-check.svg';
+import CoverLetterIcon from '../../../assets/icons/create/cover-letter.svg';
 import LinkedInIcon from '../../../assets/icons/create/linkedin.svg';
 import NewResumeIcon from '../../../assets/icons/create/new-resume.svg';
 import ScratchIcon from '../../../assets/icons/create/scratch.svg';
@@ -47,9 +48,8 @@ export type CreateRow = {
 };
 
 /**
- * CREATE 01 — the "+" sheet. Three rows since the owner's one-flow decision (toreview §114): a
- * resume for a job, a check of the one you have, a new one. Cover letters stay on Home's quick
- * start and after a run.
+ * CREATE 01 — the "+" sheet: a resume for a job, a cover letter, a check of the resume you have,
+ * a new one. Cover letters joined the sheet with the 2026-11 redesign (toreview §173).
  */
 export const CREATE_ROOT_ROWS: readonly CreateRow[] = [
   {
@@ -57,6 +57,13 @@ export const CREATE_ROOT_ROWS: readonly CreateRow[] = [
     art: { Icon: TailorIcon, w: 52, h: 51.9935 },
     label: 'Make a resume for a job',
     description: 'Pick a job and get your resume made for it',
+    ai: true,
+  },
+  {
+    key: 'cover-letter',
+    art: { Icon: CoverLetterIcon, w: 52, h: 51.2817 },
+    label: 'Write a cover letter',
+    description: 'From the resume you tailored for a job',
     ai: true,
   },
   {
@@ -96,5 +103,4 @@ export const CREATE_RESUME_ROWS: readonly CreateRow[] = [
 ];
 
 /** Footnote under the CREATE 02 rows (Figma 1:1351). */
-export const CREATE_RESUME_FOOTNOTE =
-  'Pick a template once your resume has content.';
+export const CREATE_RESUME_FOOTNOTE = 'Pick a template once your resume has content.';

@@ -77,6 +77,7 @@ export function QuickSetupScreen() {
       <View style={styles.chips} accessibilityRole="radiogroup">
         {ZERO_YEARS.map((band) => (
           <ChoiceChip
+            radio
             key={band}
             label={YEARS_LABEL(band)}
             selected={years === band}

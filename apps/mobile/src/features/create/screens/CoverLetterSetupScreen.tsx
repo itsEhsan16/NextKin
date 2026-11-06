@@ -1,57 +1,116 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import type { CoverLetterTone } from '@/data/models';
+import {
+  COVER_LETTER_TONE_HINT,
+  COVER_LETTER_TONE_LABEL,
+  type CoverLetterTone,
+  type Job,
+  type Resume,
+} from '@/data/models';
 import { useJob, useResume, useResumes, useStartGeneration, useSubscription } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
-import { Screen } from '@/ui/Screen';
-import { ScreenHeader } from '@/ui/ScreenHeader';
+import { ChoiceChip } from '@/ui/ChoiceChip';
+import { Icon } from '@/ui/Icon';
+import { Pressable } from '@/ui/Pressable';
 import { StateView } from '@/ui/StateView';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
 import { CoverJobSheet } from '../components/CoverJobSheet';
 import { CoverLetterSkeleton } from '../components/CoverLetterSkeleton';
-import { CoverSetupSections } from '../components/CoverSetupRows';
-import { COVER_STEPS, FlowStepper } from '../components/TailorStepper';
+import { OnboardingFrame } from '../components/OnboardingFrame';
+import { jobMetaLine } from '../components/TailorVsCard';
 import {
   COVER_LETTER_CTA,
   COVER_LETTER_START_FAILED,
+  COVER_LETTER_TONES,
   coverLetterQuotaNote,
   coverLetterSources,
   coverLetterSpentNote,
   DEFAULT_COVER_LETTER_TONE,
   pickCoverLetterSource,
 } from '../coverLetterSetup';
+import { FlowCard, FlowDivider, FlowFooter, FlowSection, StatusPill } from '../flow/FlowKit';
 import { useCreateActions } from '../hooks/useCreateActions';
 
 export type CoverLetterSetupScreenProps = { resumeId?: string };
 
-// COVER 01 at 390 (644:2), in artboard units.
-const HEADER_TO_STEPS = 12 / 0.75; // 644:6
-const STEPS_TO_ART = 37 / 0.75; // 644:7 → 656:60
-
 const isNotFound = (error: unknown): boolean =>
   typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'NOT_FOUND';
 
+/** The job the letter is for and the resume it is written from, in one card (§173). */
+function CoverSourceCard({
+  job,
+  resume,
+  onChange,
+}: {
+  job?: Job;
+  resume: Resume;
+  onChange: () => void;
+}) {
+  const { colors } = useTheme();
+  const styles = useStyles();
+  const title = job?.title ?? resume.targetRole ?? resume.title;
+  const meta = job ? jobMetaLine(job) : 'Written from this resume alone';
+  const initial = (job?.company ?? resume.targetCompany ?? title).trim().charAt(0).toUpperCase();
+  return (
+    <FlowCard style={styles.sourceCard}>
+      <View style={styles.sourceRow}>
+        <View style={[styles.logo, { backgroundColor: colors.surfaceSubtle }]}>
+          <Text variant="title3" color="ink">
+            {initial}
+          </Text>
+        </View>
+        <View style={styles.flex}>
+          <Text variant="bodyLgStrong" color="ink">
+            {title}
+          </Text>
+          <Text variant="footnote" color="textSecondary">
+            {meta}
+          </Text>
+        </View>
+        <Pressable
+          feedback="subtle"
+          accessibilityRole="button"
+          accessibilityLabel={`Job: ${title}, ${meta}. Change`}
+          onPress={onChange}
+          style={[styles.change, { backgroundColor: colors.surfaceSubtle }]}
+        >
+          <Text variant="footnote" color="ink">
+            Change
+          </Text>
+        </Pressable>
+      </View>
+      <FlowDivider />
+      <View style={styles.usingRow}>
+        <Icon name="File04" size="sm" color={colors.textSecondary} />
+        <Text variant="footnote" color="textSecondary">
+          Using
+        </Text>
+        <Text variant="footnote" color="ink" numberOfLines={1} style={styles.shrink}>
+          {resume.title}
+        </Text>
+        {resume.atsScore != null ? (
+          <StatusPill label={`ATS ${(Math.round(resume.atsScore) / 10).toFixed(1)}`} />
+        ) : null}
+      </View>
+    </FlowCard>
+  );
+}
+
 /**
- * COVER 01 (644:2) — "Cover letter for this job": the job, the resume tailored for it, and the
- * tone (V2 §7.10). Either row reopens the job sheet, which lists each job with the resume
- * tailored for it, so job and resume always change together. The quota line sits on the bar,
- * over the button that spends it, so the cap is said before the work (§13.5); once it is spent
- * the upgrade prompt REPLACES the CTA rather than interrupting the page, as the same section asks.
- *
- * Opened with no resume (Home's tile, the + sheet), the page starts on the most recently edited
- * tailored resume; with none, it says so and points to Jobs, where tailoring starts. Opened from
- * the resume menu on a resume tailored for no job, the page drops the Job section and the letter
- * is written without a job, as before.
+ * Cover Letter, step 1 of 2 (toreview §173, Figma "Cover · 1 Set up"): the job and the resume it
+ * is written from in one card (they used to be two rows opening the same sheet), the tone as one
+ * row of chips with its one-line meaning, and Write my cover letter. Only the resume is required:
+ * the job comes from the resume it was tailored for, and the tone defaults to Professional.
  */
 export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps) {
-  const { spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useCreateActions();
 
-  // Without a resume named, the library's own order picks one (COVER 00's sheet is gone, §71).
+  // Without a resume named, the library's own order picks one (§71).
   const resumes = useResumes();
   const sources = useMemo(() => coverLetterSources(resumes.data ?? []), [resumes.data]);
   const sourceId = resumeId ?? pickCoverLetterSource(sources)?.id;
@@ -64,8 +123,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
   const [tone, setTone] = useState<CoverLetterTone>(DEFAULT_COVER_LETTER_TONE);
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
-  // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
+  // `accessibilityLiveRegion` on the note is Android-only, so the failure is announced as well.
   const failed = start.isError;
   const announced = useRef(false);
   useEffect(() => {
@@ -74,27 +132,22 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     if (failed && !was) AccessibilityInfo.announceForAccessibility(COVER_LETTER_START_FAILED);
   }, [failed]);
 
-  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
-  // with its data already here slides in whole with the push.
   const enter = useRevealStagger(
     !!resume.data && !!subscription.data && !(jobId != null && job.isPending),
   );
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
-      <Screen
-        scroll
-        edges={['top', 'bottom']}
-        header={
-          <ScreenHeader title="Write a cover letter" showTitle={false} onBack={actions.goBack} />
-        }
-        headerStyle={{ paddingBottom: s(HEADER_TO_STEPS) }}
-        contentContainerStyle={{ paddingBottom: spacing[8] }}
+      <OnboardingFrame
+        step={1}
+        total={2}
+        title="Write a cover letter"
+        subtitle={job.data ? 'From the resume you tailored for this job.' : 'From your resume.'}
+        onBack={actions.goBack}
         footer={footer}
       >
-        <FlowStepper steps={COVER_STEPS} current="setup" />
-        <View style={{ marginTop: s(STEPS_TO_ART) }}>{children}</View>
-      </Screen>
+        {children}
+      </OnboardingFrame>
 
       {/* Sibling of the page, never a child of its scroller: its root is an absolute fill. */}
       <CoverJobSheet
@@ -110,9 +163,9 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     </View>
   );
 
-  // The inert bar is part of the loading state: it owns the bottom safe-area inset, so a page
-  // without one would grow a footer out of nothing the moment the queries land.
-  const inert = <StickyActionBar floating primary={{ label: COVER_LETTER_CTA, disabled: true }} />;
+  const inert = (
+    <FlowFooter primary={{ label: COVER_LETTER_CTA, onPress: () => {}, disabled: true }} />
+  );
 
   const retryState = (title: string, onAction: () => void) => (
     <StateView
@@ -126,7 +179,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
   );
 
   if (resumeId == null && resumes.isError) {
-    return page(retryState("Couldn't load your resumes", () => void resumes.refetch()));
+    return page(retryState('Couldn’t load your resumes', () => void resumes.refetch()));
   }
 
   if (resumeId == null && resumes.data && sources.length === 0) {
@@ -134,7 +187,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
       <StateView
         icon="Stars02"
         title="No tailored resumes yet"
-        message="A letter is written from a resume you tailored for the job. Tailor one first."
+        message="Tailor a resume for a job first."
         actionLabel="Find a job to tailor for"
         onAction={actions.openJobs}
       />,
@@ -147,23 +200,22 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
       ? page(
           <StateView
             icon="File06"
-            title="This resume isn't available"
+            title="This resume isn’t available"
             message="It may have been deleted. Pick the job the letter is for."
             actionLabel="Choose a job"
             onAction={() => setPickerOpen(true)}
           />,
         )
-      : page(retryState("Couldn't load your resume", () => void resume.refetch()));
+      : page(retryState('Couldn’t load your resume', () => void resume.refetch()));
   }
 
-  // An allowance that could not be read is unknown, not unlimited: §13.5 wants the cap in front
-  // of the user before the work, so nothing is spent against a cap the page never showed.
+  // An allowance that could not be read is unknown, not unlimited (§13.5).
   if (subscription.isError) {
-    return page(retryState("Couldn't load your plan", () => void subscription.refetch()));
+    return page(retryState('Couldn’t load your plan', () => void subscription.refetch()));
   }
 
   if (jobId != null && job.isError && !isNotFound(job.error)) {
-    return page(retryState("Couldn't load this job", () => void job.refetch()));
+    return page(retryState('Couldn’t load this job', () => void job.refetch()));
   }
 
   if (!resume.data || !subscription.data || (jobId != null && job.isPending)) {
@@ -171,10 +223,10 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
   }
 
   const source = resume.data;
-  // A job that has since closed leaves the letter to the resume alone, as for an untailored one.
+  // A job that has since closed leaves the letter to the resume alone.
   const target = job.data;
   const { coverLettersUsed: used, coverLettersLimit: limit } = subscription.data.usage;
-  // A plan that grants none is spent rather than unlimited — 0 of 0 leaves nothing to write.
+  // A plan that grants none is spent rather than unlimited.
   const spent = used >= limit;
 
   const write = () =>
@@ -185,23 +237,37 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
         ...(source.linkedJobId ? { jobId: source.linkedJobId } : {}),
         tone,
       },
-      // Navigate from the callback, not beside the call: the mock ticker only advances while the
-      // progress screen is subscribed, and pushing first races the destination's own fetch.
+      // Navigate from the callback: the mock ticker only advances while the progress screen is
+      // subscribed, and pushing first races the destination's own fetch.
       { onSuccess: (generation) => actions.openGeneration(generation.id) },
     );
 
   return page(
-    <CoverSetupSections
-      job={target}
-      resume={source}
-      tone={tone}
-      onTone={setTone}
-      onPick={() => setPickerOpen(true)}
-      enter={enter}
-    />,
+    <View style={styles.stack}>
+      <Animated.View entering={enter(0)}>
+        <CoverSourceCard job={target} resume={source} onChange={() => setPickerOpen(true)} />
+      </Animated.View>
+      <Animated.View entering={enter(1)}>
+        <FlowSection title="Tone">
+          <View style={styles.chips} accessibilityRole="radiogroup">
+            {COVER_LETTER_TONES.map((option) => (
+              <ChoiceChip
+                key={option}
+                radio
+                label={COVER_LETTER_TONE_LABEL[option]}
+                selected={option === tone}
+                onPress={() => setTone(option)}
+              />
+            ))}
+          </View>
+          <Text variant="callout" color="textSecondary" style={styles.hint}>
+            {COVER_LETTER_TONE_HINT[tone]}
+          </Text>
+        </FlowSection>
+      </Animated.View>
+    </View>,
     // A failure leaves the button live, so a second press is the retry.
-    <StickyActionBar
-      floating
+    <FlowFooter
       note={
         failed
           ? COVER_LETTER_START_FAILED
@@ -213,12 +279,28 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
       primary={
         spent
           ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('cover_letters') }
-          : { label: COVER_LETTER_CTA, loading: start.isPending, onPress: write }
+          : { label: COVER_LETTER_CTA, icon: 'Stars02', loading: start.isPending, onPress: write }
       }
     />,
   );
 }
 
-const useStyles = scaledSheet(() => ({
+const useStyles = scaledSheet((_s, u) => ({
   root: { flex: 1 },
+  stack: { gap: u(24) },
+  flex: { flex: 1, gap: u(2) },
+  shrink: { flexShrink: 1 },
+  sourceCard: { gap: u(14) },
+  sourceRow: { flexDirection: 'row', alignItems: 'center', gap: u(12) },
+  logo: {
+    width: u(44),
+    height: u(44),
+    borderRadius: u(14),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  change: { paddingHorizontal: u(14), paddingVertical: u(7), borderRadius: u(999) },
+  usingRow: { flexDirection: 'row', alignItems: 'center', gap: u(8) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
+  hint: { marginTop: u(10) },
 }));

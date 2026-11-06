@@ -138,8 +138,8 @@ describe('CoverLetterSetupScreen (COVER 01, 644:2)', () => {
 
     await settleChained();
 
-    expect(screen.getByRole('header', { name: 'Cover letter for this job' })).toBeOnTheScreen();
-    expect(screen.getByLabelText('Step 1 of 3, Set up')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Write a cover letter' })).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 1 of 2')).toBeOnTheScreen();
     expect(
       screen.getByText("You've used this month's 1 cover letter. Pro raises the monthly cap."),
     ).toBeOnTheScreen();
@@ -158,21 +158,17 @@ describe('CoverLetterSetupScreen (COVER 01, 644:2)', () => {
     await settleChained();
 
     expect(
-      screen.getByLabelText('Job: Senior Product Designer, Stripe · Bengaluru · Remote'),
+      screen.getByLabelText('Job: Senior Product Designer, Stripe · Bengaluru · Remote. Change'),
     ).toBeOnTheScreen();
-    expect(
-      screen.getByLabelText(
-        `Resume: Stripe — Senior PD, Tailored for this job · ATS score ${mockStore.state.atsScores.res_2?.total}`,
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Stripe — Senior PD')).toBeOnTheScreen();
     expect(screen.getByText('1 of 1 cover letter left this month')).toBeOnTheScreen();
 
-    // Professional is the default; every tone card says what it sounds like.
+    // Professional is the default; the line under the chips says what the chosen tone sounds like.
     expect(screen.getByRole('radio', { name: 'Professional' })).toBeSelected();
     expect(screen.getByText('Measured and formal — the safe default')).toBeOnTheScreen();
-    expect(screen.getByText('Leads with results and claims them')).toBeOnTheScreen();
     await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'Confident' })));
     expect(screen.getByRole('radio', { name: 'Confident' })).toBeSelected();
+    expect(screen.getByText('Leads with results and claims them')).toBeOnTheScreen();
     expect(screen.getByRole('radio', { name: 'Professional' })).not.toBeSelected();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Write my cover letter')));
@@ -195,9 +191,8 @@ describe('CoverLetterSetupScreen (COVER 01, 644:2)', () => {
     const client = await renderSetup('res_base', fresh);
     await settle(NORMAL_MS);
 
-    expect(screen.getByRole('header', { name: 'Cover letter' })).toBeOnTheScreen();
-    expect(screen.queryByLabelText(/^Job: /)).toBeNull();
-    expect(screen.getByLabelText(/^Resume: Product Designer, Base resume/)).toBeOnTheScreen();
+    expect(screen.getByText('From your resume.')).toBeOnTheScreen();
+    expect(screen.getByLabelText(/Written from this resume alone\. Change$/)).toBeOnTheScreen();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Write my cover letter')));
     await settle(START_MS);
@@ -214,9 +209,9 @@ describe('CoverLetterSetupScreen (COVER 01, 644:2)', () => {
     await settle(NORMAL_MS);
 
     // No sheet first (toreview §71): the most recently updated tailored resume is the pick.
-    expect(screen.getByRole('header', { name: 'Cover letter for this job' })).toBeOnTheScreen();
+    expect(screen.getByText('From the resume you tailored for this job.')).toBeOnTheScreen();
     expect(screen.getByLabelText(/^Job: Lead UX Designer, Google/)).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Resume: UX Designer Resume/)).toBeOnTheScreen();
+    expect(screen.getByText('UX Designer Resume')).toBeOnTheScreen();
 
     await act(async () => void fireEvent.press(screen.getByLabelText(/^Job: /)));
     await settle(NORMAL_MS);
