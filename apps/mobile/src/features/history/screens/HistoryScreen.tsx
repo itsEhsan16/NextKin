@@ -177,6 +177,7 @@ export function HistoryScreen() {
 
   return (
     <Screen
+      wash
       padded={false}
       edges={['top']}
       header={<ScreenHeader title="History" showTitle={false} onBack={actions.goBack} />}
@@ -202,6 +203,7 @@ export function HistoryScreen() {
         />
       ) : nothingYet ? (
         <StateView
+          art="noHistory"
           icon="ClockRewind"
           title="Nothing here yet"
           message="Resumes, saved jobs and exports are recorded here."
@@ -211,6 +213,7 @@ export function HistoryScreen() {
         />
       ) : filteredOut ? (
         <StateView
+          art="noHistory"
           icon="FilterLines"
           title="Nothing under this filter"
           actionLabel="Show all"

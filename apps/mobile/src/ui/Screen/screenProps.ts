@@ -10,6 +10,11 @@ export type ScreenBaseProps = {
   /** Apply the 24pt horizontal gutter. Defaults to true. */
   padded?: boolean;
   /**
+   * The redesign's lavender wash behind the top of the page, header and status bar included
+   * (§176). It stays put while the content scrolls over it.
+   */
+  wash?: boolean;
+  /**
    * Lifts the page for the keyboard, frame by frame on both platforms (see `KeyboardFrame`).
    *
    * The padding lands on a wrapper *outside* the safe-area box, so the page keeps whatever

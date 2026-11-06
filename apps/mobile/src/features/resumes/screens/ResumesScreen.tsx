@@ -120,6 +120,7 @@ export function ResumesScreen() {
       // The first-run block centres in the space under the title row, a little above the middle
       // as RESUMES 05 draws it (toreview.md 38.1); the header keeps its own top padding.
       <Screen
+        wash
         scroll
         tabBarInset
         scrollRef={scrollRef}
@@ -144,6 +145,7 @@ export function ResumesScreen() {
 
   return (
     <Screen
+      wash
       scroll
       tabBarInset
       scrollRef={scrollRef}
@@ -198,6 +200,7 @@ export function ResumesScreen() {
       ) : docs.length === 0 ? (
         // The library has documents but the search / type pills matched none of them.
         <StateView
+          art="noResumes"
           icon="SearchLg"
           title="No documents match"
           actionLabel="Clear search"

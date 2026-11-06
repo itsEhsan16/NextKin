@@ -4,6 +4,7 @@ import PlanMarkIcon from '../../../../assets/icons/profile/plan-mark.svg';
 import { Art } from '@/features/profile/components/cards';
 import { a11yHeader } from '@/lib';
 import { scaledSheet } from '@/theme';
+import { Illustration } from '@/ui/kit';
 import type { ListRowArt } from '@/ui/ListRow';
 import { Text } from '@/ui/Text';
 
@@ -17,13 +18,16 @@ const SPARKLE_MARK: ListRowArt = { Icon: PlanMarkIcon, w: 39, h: 40.5294 };
 
 /**
  * The page's own title: the sparkle mark, "NextKin Pro" and one line on what the page is for.
- * The board's IL-B1 illustration slot (577:9172) has no drawing yet, so the title leads alone.
+ * The board's IL-B1 illustration slot (577:9172) now holds the redesign's Pro illustration (§176).
  */
 export function UpgradeHero({ title, caption }: { title: string; caption: string }) {
   const styles = useStyles();
 
   return (
     <View>
+      <View style={styles.art}>
+        <Illustration name="pro" size={150} />
+      </View>
       <View style={styles.wordmark}>
         <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <Art art={SPARKLE_MARK} width={MARK_W} />
@@ -32,7 +36,7 @@ export function UpgradeHero({ title, caption }: { title: string; caption: string
           {title}
         </Text>
       </View>
-      <Text variant="captionRegular" color="textSecondary" style={styles.caption}>
+      <Text variant="bodyLg" color="textSecondary" style={styles.caption}>
         {caption}
       </Text>
     </View>
@@ -40,6 +44,7 @@ export function UpgradeHero({ title, caption }: { title: string; caption: string
 }
 
 const useStyles = scaledSheet((s) => ({
+  art: { alignItems: 'center', marginBottom: s(12) },
   wordmark: { flexDirection: 'row', alignItems: 'center', gap: s(MARK_GAP) },
   title: { flexShrink: 1 },
   caption: { marginTop: s(TITLE_TO_CAPTION) },

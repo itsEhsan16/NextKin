@@ -73,6 +73,7 @@ export function ResumeVersionsScreen({ id }: ResumeVersionsScreenProps) {
   if (!versions.data?.length) {
     return page(
       <StateView
+        art="noHistory"
         icon="ClockRewind"
         title="No versions yet"
         message="Each change to this resume is kept here."

@@ -107,6 +107,7 @@ export function HelpScreen() {
   // the only thing on the page that says where the reader is.
   const page = (children: ReactNode) => (
     <Screen
+      wash
       scroll
       keyboard
       edges={['top', 'bottom']}

@@ -58,10 +58,10 @@ describe('artboard fidelity — type', () => {
     expect(narrow.body.fontSize).toBeCloseTo(14, 9);
     expect(wide.body.fontSize).toBeCloseTo(14 / (NARROW / DESIGN), 9);
 
-    // Measured on both artboards. The layout between them is a flat ×0.75; this one is not.
-
-    expect(wide.screenTitle.fontSize).toBeCloseTo(28, 9);
-    expect(narrow.screenTitle.fontSize).toBeCloseTo(22, 9);
+    // Page titles follow the redesign's title1 since §176 (owner overrode the boards): 24 at 390,
+    // the wide anchor derived from it like `body` above.
+    expect(narrow.screenTitle.fontSize).toBeCloseTo(24, 9);
+    expect(wide.screenTitle.fontSize).toBeCloseTo(24 / (NARROW / DESIGN), 9);
 
     // Hero inverts the pair: 210:262 draws it at 390, so 32 is the measurement and the wide
     // anchor is derived from it. State it as that division rather than as a second number,

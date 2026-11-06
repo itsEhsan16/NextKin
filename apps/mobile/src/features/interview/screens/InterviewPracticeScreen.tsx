@@ -133,6 +133,7 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
     return page(
       (set.isError && isMissing(set.error)) || (!set.isError && !set.data) ? (
         <StateView
+          art="interview"
           icon="MessageChatSquare"
           title="That practice set is gone"
           message="It may have been deleted."
@@ -206,6 +207,7 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
           // A filter with nothing under it, not a broken set: the way out is the filter itself.
           <StateView
             compact
+            art="allDone"
             icon="CheckCircle"
             title={filter === 'needs_work' ? 'Nothing needs work' : 'Everything is marked'}
             actionLabel="Show all questions"

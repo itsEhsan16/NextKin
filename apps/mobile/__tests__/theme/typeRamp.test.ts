@@ -55,8 +55,9 @@ const offCurve = projected.filter(([name]) => OFF_CURVE.includes(name));
 describe('the Mobile 2 type ramp', () => {
   it('measured enough roles to be worth checking', () => {
     // Since the reading roles moved onto the newer boards (toreview.md 54) the curve judges the
-    // display sizes and the small box-bound chrome — still well over a dozen measured roles.
-    expect(onCurve.length).toBeGreaterThanOrEqual(15);
+    // display sizes and the small box-bound chrome. §176 moved four page-title roles onto the
+    // redesign's title1/title2, leaving the rest — still over ten measured roles.
+    expect(onCurve.length).toBeGreaterThanOrEqual(11);
   });
 
   it.each(drawn390)('role "%s" carries the 390 its board draws', (_name, role) => {

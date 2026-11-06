@@ -175,6 +175,7 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   if (documentIsEmpty(body)) {
     return page(
       <StateView
+        art="noResumes"
         icon="File06"
         title="Nothing here yet"
         actionLabel={isLetter ? 'Write the letter' : 'Add summary'}

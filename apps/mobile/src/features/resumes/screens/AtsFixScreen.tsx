@@ -227,6 +227,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
   if (!scored) {
     return page(
       <StateView
+        art="allDone"
         icon="CheckCircle"
         title="Nothing to fix yet"
         message={`This document has no ${SCORE_LABEL} yet.`}
@@ -239,6 +240,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
   if (rows.length === 0) {
     return page(
       <StateView
+        art="allDone"
         icon="CheckCircle"
         title="Nothing left to fix"
         actionLabel="Back to the score"

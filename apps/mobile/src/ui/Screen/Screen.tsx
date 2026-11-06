@@ -16,6 +16,7 @@ import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 
 import { useTabBarLayout, useTheme } from '@/theme';
 import { EDGE_FADE_DEPTH, EdgeFade } from '@/ui/EdgeFade';
+import { GradientWash } from '@/ui/GradientWash';
 import { SheetLayerHost } from '@/ui/Sheet/SheetLayer';
 
 import { keyboardBottomReserve } from './keyboardReserve';
@@ -25,6 +26,8 @@ import type { ScreenProps } from './screenProps';
 import { isAtEnd } from './scrollMath';
 
 const DEFAULT_EDGES: readonly Edge[] = ['top'];
+/** How far the `wash` reaches below the safe area, at 390. */
+const WASH_HEIGHT = 300;
 
 /**
  * Safe-area aware page container. Every route renders exactly one `Screen` at its root so
@@ -34,6 +37,7 @@ export function Screen({
   edges = DEFAULT_EDGES,
   scroll = false,
   padded = true,
+  wash = false,
   keyboard = false,
   tabBarInset = false,
   header,
@@ -199,7 +203,16 @@ export function Screen({
   // Whatever is on the page when it first mounts arrives with the push (or the tab fade), so its
   // entrance animations are skipped; content that mounts later — loaded data replacing a skeleton,
   // a sheet's rows, a toast — still animates in (owner, 2026-10-05).
-  const page = <LayoutAnimationConfig skipEntering>{content}</LayoutAnimationConfig>;
+  const page = (
+    <LayoutAnimationConfig skipEntering>
+      {wash ? (
+        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          <GradientWash height={s(WASH_HEIGHT) + insets.top} />
+        </View>
+      ) : null}
+      {content}
+    </LayoutAnimationConfig>
+  );
 
   // Every sheet on the page is drawn over the window from here, outside the scroller (§174).
   if (!keyboard)

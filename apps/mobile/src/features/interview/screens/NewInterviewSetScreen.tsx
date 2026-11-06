@@ -59,7 +59,10 @@ const SHEET_THUMB_RADIUS = 8;
  * rather than off a flat counter — see `interviewQuota.ts`. Either mode starts the same async
  * run; the progress screen is shared with every other kind of AI work.
  */
-export function NewInterviewSetScreen({ resumeId, roleTitle: givenRole }: NewInterviewSetScreenProps) {
+export function NewInterviewSetScreen({
+  resumeId,
+  roleTitle: givenRole,
+}: NewInterviewSetScreenProps) {
   const { colors, sizes, spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useInterviewActions();
