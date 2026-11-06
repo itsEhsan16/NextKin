@@ -16107,5 +16107,5 @@ The owner asked for Zero Resume to go step by step instead of asking everything 
 - **The check shows one guess per screen.** A progress line ("Guess 3 of 9") sits above the single guess: a role, one skill, or a school.
   - Each skill is now its own question ("Do you have this skill?"). §173 listed every skill at once with Keep/Remove.
   - The status list and the locked Download bar are gone during the check. A footnote says Download unlocks after the last guess.
-- **Judgement call:** a role is still one question, with its title, company and dates together, because they describe one job. Splitting each role into three screens would triple the taps. I can split it if the owner wants.
+- **Judgement call:** a role is still one question, with its title, company and dates together, because they describe one job. Splitting each role into three screens would triple the taps. **Owner, 2026-11-07: "Keep one screen" — settled.**
 - **Verified:** web preview, all three steps plus the first guess. Jest: 1879 tests pass, and lint is clean. Not checked on a phone.
