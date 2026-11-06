@@ -101,6 +101,7 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <Screen
+      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title={set.data?.title ?? 'Practice'} onBack={actions.goBack} />}

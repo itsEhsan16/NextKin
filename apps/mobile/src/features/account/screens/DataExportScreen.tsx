@@ -150,6 +150,7 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <Screen
+      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title={DATA_EXPORT_TITLE} onBack={actions.goBack} />}

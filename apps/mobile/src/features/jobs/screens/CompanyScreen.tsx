@@ -84,6 +84,7 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
   // (loading, error) the row names the page instead, so it is never a header-less screen.
   const page = (children: ReactNode, named = false) => (
     <Screen
+      wash
       scroll
       edges={['top', 'bottom']}
       header={

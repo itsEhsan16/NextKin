@@ -16156,3 +16156,25 @@ The owner asked to redesign every remaining screen and to generate any assets ne
   - `Screen`'s wash used the old `s()` scale (225 instead of 300). It now uses `u()`.
   - Washes shared one SVG gradient id, so on web the page resolved it to a hidden screen's copy and painted nothing. Ids are now unique per wash.
 - **Verified:** web preview of the editor and the score page at 390×844. Jest: 1880 tests pass, and lint is clean. Not checked on a phone.
+
+## §178 — The remaining screens (owner, 2026-11-07: "Lets do the screens that are left")
+
+- **Links are brand indigo.** The `link` token was a second, bright blue (blue600). It now points at brand600, so every text link app-wide (View all, rubric links, legal links) matches the brand.
+- **Wash on every remaining pushed page.** This covers 28 files:
+  - Account: email/password, data export.
+  - Assistant.
+  - Create leftovers: JD page, JD review, LinkedIn, share, upload, upload review.
+  - Interview: new set, practice.
+  - Jobs: application, company, criteria.
+  - Notification preferences.
+  - Profile: list and form shells, edit profile, gap interview, chip editors.
+  - Resumes: ATS fix, new, versions, rubric, section editor.
+  - Support: contact, legal.
+  - Not found.
+
+  The run screens keep their approved progress and result designs.
+- **Upload a resume** got a hero: the no-resumes illustration, "Bring the resume you have" and one line about what happens next. Before, the page was a small formats card on an empty page.
+- `Illustration` now sits in a sized box, so the image can never collapse on web.
+- **Checked in the web preview:** experience list and form, Upgrade (Pro art), Interview list, Upload.
+- **Judgement call:** these screens were not rebuilt one by one. The profile forms, job extras, account screens and support pages already group their fields in cards with a pinned Save, and the old type roles there (`title`, `label`, `cardTitle`) sit at the new ramp's sizes. With the restyled shared parts, the wash and indigo links, they now match the redesigned flows. A screen the owner still finds old gets its own rebuild on request.
+- **Verified:** Jest, 1880 tests pass; typecheck and lint are clean. Not checked on a phone.

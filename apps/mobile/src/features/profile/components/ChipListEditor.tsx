@@ -118,6 +118,7 @@ export function ChipListEditor({
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
       <Screen
+        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

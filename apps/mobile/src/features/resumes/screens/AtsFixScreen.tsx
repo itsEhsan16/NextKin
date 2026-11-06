@@ -180,6 +180,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <Screen
+      wash
       scroll
       edges={['top', 'bottom']}
       header={

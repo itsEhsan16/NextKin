@@ -37,6 +37,7 @@ export function ResumeVersionsScreen({ id }: ResumeVersionsScreenProps) {
 
   const page = (children: ReactNode) => (
     <Screen
+      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Versions" onBack={actions.goBack} />}

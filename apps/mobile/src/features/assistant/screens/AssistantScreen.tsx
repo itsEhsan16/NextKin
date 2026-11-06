@@ -151,6 +151,7 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
   const page = (children: ReactNode, footer?: ReactNode, toContent = HEADER_TO_USAGE) => (
     <>
       <Screen
+        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

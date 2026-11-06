@@ -134,6 +134,7 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
       <Screen
+        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

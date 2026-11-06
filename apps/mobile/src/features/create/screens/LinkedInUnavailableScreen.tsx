@@ -31,6 +31,7 @@ export function LinkedInUnavailableScreen() {
 
   return (
     <Screen
+      wash
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Import from LinkedIn" onBack={goBack} />}
       headerStyle={{ paddingBottom: spacing[4] }}

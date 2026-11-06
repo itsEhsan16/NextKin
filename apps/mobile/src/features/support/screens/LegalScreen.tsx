@@ -76,6 +76,7 @@ function MissingDocument() {
 
   return (
     <Screen
+      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Legal" onBack={actions.goBack} />}
@@ -129,6 +130,7 @@ function LegalDocument({ doc }: { doc: LegalDocKey }) {
   // title is what still names the document when it failed to load.
   const page = (children: ReactNode) => (
     <Screen
+      wash
       scroll
       scrollRef={scrollRef}
       edges={['top', 'bottom']}

@@ -7,6 +7,7 @@ import { pickDocument, useReducedMotion, type PickedDocument } from '@/lib';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Chip } from '@/ui/Chip';
+import { Illustration } from '@/ui/kit';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StickyActionBar } from '@/ui/StickyActionBar';
@@ -94,6 +95,7 @@ export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenPr
 
   const page = (children: ReactNode) => (
     <Screen
+      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Upload a resume" onBack={actions.goBack} />}
@@ -126,10 +128,22 @@ export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenPr
   // picked, and the formats card is what belongs on the page either way.
   return page(
     <>
+      {/* A hero over the formats card (§178): the page used to be one small card and white. */}
+      <View style={[styles.hero, { gap: spacing[2], paddingTop: spacing[2] }]}>
+        <Illustration name="noResumes" size={150} />
+        <Text variant="title2" color="ink" align="center">
+          Bring the resume you have
+        </Text>
+        <Text variant="callout" color="textSecondary" align="center">
+          We read it, you check what we read, then it’s yours to tailor.
+        </Text>
+      </View>
       <Animated.View>
-        <Card radius="card">
+        <Card>
           <View style={{ gap: spacing[3] }}>
-            <Text variant="title">What we can read</Text>
+            <Text variant="title3" color="ink">
+              What we can read
+            </Text>
             <View style={[styles.formats, { gap: spacing[2] }]}>
               {FORMATS.map((format) => (
                 <Chip key={format} label={format} />
@@ -160,4 +174,5 @@ export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenPr
 
 const styles = StyleSheet.create({
   formats: { flexDirection: 'row', flexWrap: 'wrap' },
+  hero: { alignItems: 'center' },
 });

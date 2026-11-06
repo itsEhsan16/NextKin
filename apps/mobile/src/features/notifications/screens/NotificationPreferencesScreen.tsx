@@ -68,8 +68,7 @@ function PrefRow({ title, caption, ai, value, divider, onChange }: PrefRowProps)
 /** What the system-permission footer says in each state (Figma 1:2764 draws "on"). */
 const PERMISSION_COPY = {
   granted: 'On. You can turn it off in device settings.',
-  denied:
-    'Off. Turn it on in device settings to get alerts.',
+  denied: 'Off. Turn it on in device settings to get alerts.',
   undetermined: "You haven't allowed notifications yet.",
 } as const;
 
@@ -96,7 +95,12 @@ export function NotificationPreferencesScreen() {
   };
 
   return (
-    <Screen scroll edges={['top', 'bottom']} contentContainerStyle={{ paddingBottom: spacing[8] }}>
+    <Screen
+      wash
+      scroll
+      edges={['top', 'bottom']}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
+    >
       <View style={[styles.headerRow, { paddingTop: spacing[2] }]}>
         <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
       </View>

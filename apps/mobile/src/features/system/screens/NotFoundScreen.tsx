@@ -30,7 +30,7 @@ export function NotFoundScreen() {
   const styles = useStyles();
 
   return (
-    <Screen edges={['top', 'bottom']}>
+    <Screen wash edges={['top', 'bottom']}>
       <View style={styles.root}>
         <FlowHero
           title="Page not found"

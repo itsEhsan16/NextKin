@@ -87,6 +87,7 @@ export function EntryListScreen({
   const page = (children: ReactNode) => (
     <View style={rootStyle.root}>
       <Screen
+        wash
         scroll
         edges={['top', 'bottom']}
         header={<ScreenHeader title={title} onBack={actions.goBack} />}

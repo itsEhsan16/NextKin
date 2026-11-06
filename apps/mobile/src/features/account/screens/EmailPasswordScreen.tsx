@@ -170,6 +170,7 @@ export function EmailPasswordScreen() {
   const page = (children: ReactNode) => (
     <View style={styles.root}>
       <Screen
+        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

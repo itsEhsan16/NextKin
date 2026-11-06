@@ -157,13 +157,16 @@ export function StatTile({
 /** A redesign illustration by name, decorative, at a square size (390 units). */
 export function Illustration({ name, size = 140 }: { name: IllustrationName; size?: number }) {
   const { u } = useTheme();
+  // A sized box around the image: on web expo-image's own wrapper collapsed to no height (§178).
   return (
-    <Image
-      source={ILLUSTRATIONS[name]}
-      style={{ width: u(size), height: u(size) }}
-      contentFit="contain"
-      accessible={false}
-    />
+    <View style={{ width: u(size), height: u(size) }}>
+      <Image
+        source={ILLUSTRATIONS[name]}
+        style={{ width: '100%', height: '100%' }}
+        contentFit="contain"
+        accessible={false}
+      />
+    </View>
   );
 }
 

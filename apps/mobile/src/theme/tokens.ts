@@ -78,8 +78,8 @@ export const colorsByScheme = {
     borderBrandDashed: palette.brand250,
     /** Hairline inside the match-reason panel on a job card (Figma 498:24). */
     matchReasonRule: palette.brand150,
-    /** Inline text links ("View all"). */
-    link: palette.blue600,
+    /** Inline text links ("View all"): brand indigo since §178, not a second blue. */
+    link: palette.brand600,
 
     // Status
     success: palette.green650,

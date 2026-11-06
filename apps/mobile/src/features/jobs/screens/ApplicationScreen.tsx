@@ -1,11 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 
-import {
-  APPLICATION_STATUS_CHOICES,
-  followUpDue,
-  type ApplicationStatus,
-} from '@/data/models';
+import { APPLICATION_STATUS_CHOICES, followUpDue, type ApplicationStatus } from '@/data/models';
 import {
   queryPhase,
   useApplications,
@@ -61,6 +57,7 @@ export function ApplicationScreen({ id }: ApplicationScreenProps) {
   const page = (children: ReactNode, sheets?: ReactNode) => (
     <>
       <Screen
+        wash
         scroll
         edges={['top', 'bottom']}
         header={<ScreenHeader title={APPLICATION_TITLE} onBack={actions.goBack} />}
