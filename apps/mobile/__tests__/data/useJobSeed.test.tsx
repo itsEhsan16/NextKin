@@ -44,6 +44,14 @@ describe('useJob seedFromLists', () => {
     expect(result.current?.data?.id).toBe(JOB_ID);
   });
 
+  it('skips the hidden-picks count that shares the picks key prefix (§176 crash)', async () => {
+    // Home caches { count, ... } under ['jobs','picks','hidden']; it is not a list.
+    queryClient.setQueryData(qk.jobs.hiddenPicks(), { count: 2, reasons: [] });
+    const { result } = await setup(queryClient, true);
+
+    expect(result.current?.data?.id).toBe(JOB_ID);
+  });
+
   it('leaves screens that did not opt in on their own load', async () => {
     const { result } = await setup(queryClient, false);
 

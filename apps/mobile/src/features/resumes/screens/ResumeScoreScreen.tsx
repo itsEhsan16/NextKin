@@ -65,7 +65,7 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
           { paddingHorizontal: spacing.gutter, paddingTop: spacing.headerTopPushed },
         ]}
       >
-        <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
+        <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
         <Text {...a11yHeader()} variant="scoreTitle" style={styles.headerTitle} align="center">
           ATS score
         </Text>

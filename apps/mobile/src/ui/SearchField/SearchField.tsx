@@ -34,7 +34,7 @@ export function SearchField({
 }: SearchFieldProps) {
   const { colors, radii, sizes, spacing, typography, s } = useTheme();
   const reduced = useReducedMotion();
-  const chrome = useFieldChrome(undefined, { rest: colors.borderDefault });
+  const chrome = useFieldChrome(undefined, { rest: colors.borderSoft });
   const clearBox = sizes.iconSm;
 
   return (
@@ -43,9 +43,10 @@ export function SearchField({
         styles.field,
         {
           height: sizes.searchField,
-          borderRadius: radii.xl,
+          // The redesign's white search pill (§176).
+          borderRadius: radii.full,
           borderWidth: sizes.border,
-          backgroundColor: colors.surfaceSubtle,
+          backgroundColor: colors.surfaceCard,
           paddingHorizontal: s(18),
           gap: spacing[3],
         },

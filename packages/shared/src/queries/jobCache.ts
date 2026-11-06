@@ -16,8 +16,11 @@ export function findCachedJob(queryClient: QueryClient, id: string): Job | undef
   const detail = queryClient.getQueryData<Job>(qk.jobs.detail(id));
   if (detail) return detail;
   for (const key of [qk.jobs.picks(), qk.jobs.todaysPicks()]) {
-    for (const [, list] of queryClient.getQueriesData<Job[]>({ queryKey: key })) {
-      const hit = list?.find((job) => job.id === id);
+    // A prefix match: `picks()` also matches the hidden-picks count (['jobs','picks','hidden']),
+    // which is not a list. Opening a job crashed on it once Home had loaded that count.
+    for (const [, list] of queryClient.getQueriesData<unknown>({ queryKey: key })) {
+      if (!Array.isArray(list)) continue;
+      const hit = (list as Job[]).find((job) => job.id === id);
       if (hit) return hit;
     }
   }

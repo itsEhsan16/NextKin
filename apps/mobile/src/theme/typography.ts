@@ -133,7 +133,8 @@ export const typography = {
   /** "NextKin" logotype — Figma 1:28 / 115:28. */
   wordmark: boardRole('brand', [38.038, 46.189]), // 210:270
   displayLg: role('bold', [28, 36, -0.4], 22), // hero numbers / greeting name
-  screenTitle: role('bold', [28, 34], 22), // "Jobs" (Figma 1:264 / 118:3)
+  // Page titles follow the redesign's title1 (§176): 24/30 bold at 390.
+  screenTitle: boardRole('bold', [24, 30, -0.4]), // "Jobs" (Figma 1:264 / 118:3)
   display: role('bold', [22, 30, -0.3], 17.5), // screen titles, stat values
   headline: role('bold', [20, 28, -0.2], 16.5), // sheet / section titles
   greetingLabel: boardRole('regular', [13, 16]), // header "Hi" line (210:277)
@@ -200,9 +201,9 @@ export const typography = {
   micro: boardRole('medium', [12, 16]),
   microRegular: boardRole('regular', [12, 16]),
   microBadge: boardRole('semiBold', [12, 16]), // doc-type pills on resume cards (Figma 1:1423)
-  headlineLg: role('bold', [24, 32], 19), // first-run title (Figma 1:2082 / 95:2283)
-  pageTitle: role('bold', [26, 34], 20.5), // "Notification preferences" (1:2714 / 95:2915)
-  displaySemiBold: role('semiBold', [22, 30], 17.5), // profile name (Figma 1:2201)
+  headlineLg: boardRole('bold', [24, 30, -0.4]), // first-run title (Figma 1:2082 / 95:2283)
+  pageTitle: boardRole('bold', [24, 30, -0.4]), // "Notification preferences" (1:2714 / 95:2915)
+  displaySemiBold: boardRole('bold', [20, 26, -0.2]), // profile name (Figma 1:2201)
   overline: boardRole('semiBold', [12.5, 17, 0.3]), // group labels "CAREER PROFILE" (1:2237)
   microOverline: role('bold', [10, 14, 0.6], 9.5), // "ATS SCORE" ring caption (1:2117 / 95:2318)
   scoreHero: role('bold', [42, 48], 31.5), // score-panel ring value (1:2116 / 95:2317)

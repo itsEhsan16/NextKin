@@ -98,7 +98,7 @@ export function NotificationPreferencesScreen() {
   return (
     <Screen scroll edges={['top', 'bottom']} contentContainerStyle={{ paddingBottom: spacing[8] }}>
       <View style={[styles.headerRow, { paddingTop: spacing[2] }]}>
-        <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
+        <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
       </View>
 
       <Text {...a11yHeader()} variant="pageTitle" style={{ marginTop: spacing[5] }}>

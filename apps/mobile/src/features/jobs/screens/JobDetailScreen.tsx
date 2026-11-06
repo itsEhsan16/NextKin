@@ -6,6 +6,7 @@ import type { Job } from '@/data/models';
 import { useJob, useJobFit, useSimilarJobs } from '@/data/queries';
 import { TailorResumeSheet } from '@/features/create/components/TailorResumeSheet';
 import { useTheme } from '@/theme';
+import { GradientWash } from '@/ui/GradientWash';
 import { IconButton } from '@/ui/IconButton';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
@@ -35,7 +36,7 @@ export type JobDetailScreenProps = { id: string };
  * reachable through the platform gesture and the Android hardware button once it scrolls away.
  */
 export function JobDetailScreen({ id }: JobDetailScreenProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, spacing, s, u } = useTheme();
   const insets = useSafeAreaInsets();
   const actions = useJobsActions();
 
@@ -64,7 +65,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         { paddingHorizontal: spacing.gutter, paddingTop: spacing.headerTopPushed },
       ]}
     >
-      <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
+      <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
     </View>
   );
 
@@ -114,8 +115,10 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         }}
         showsVerticalScrollIndicator={false}
       >
+        {/* The lavender wash behind the job's top (§176). */}
+        <GradientWash height={u(360)} />
         <View style={styles.headerRow}>
-          <IconButton icon="ChevronLeft" label="Back" onPress={actions.goBack} />
+          <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
           <View style={[styles.headerRight, { gap: spacing[3] }]}>
             <IconButton
               icon="Share07"

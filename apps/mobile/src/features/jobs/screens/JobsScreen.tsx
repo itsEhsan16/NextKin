@@ -17,6 +17,7 @@ import { a11yButton, hitSlop8, pluralize, useDebouncedValue } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
 import { useTabBarLayout, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
+import { GradientWash } from '@/ui/GradientWash';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
@@ -345,15 +346,27 @@ export function JobsScreen() {
       headerFade
       headerStyle={{ paddingTop: spacing.headerTop, paddingHorizontal: spacing.gutter }}
       header={
-        <JobsHeader
-          query={query}
-          onChangeQuery={(value) => setQuery(segment, value)}
-          placeholder={PLACEHOLDER[segment]}
-          filterCount={segment === 'discover' ? chips.length : 0}
-          hasUnread={(unread.data ?? 0) > 0}
-          onPressNotifications={actions.openNotifications}
-          onPressFilters={actions.openFilters}
-        />
+        // The lavender wash behind the pinned header (§176), full bleed past the gutter.
+        <View>
+          <View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              { top: -spacing.headerTop, left: -spacing.gutter, right: -spacing.gutter },
+            ]}
+          >
+            <GradientWash depth={1} />
+          </View>
+          <JobsHeader
+            query={query}
+            onChangeQuery={(value) => setQuery(segment, value)}
+            placeholder={PLACEHOLDER[segment]}
+            filterCount={segment === 'discover' ? chips.length : 0}
+            hasUnread={(unread.data ?? 0) > 0}
+            onPressNotifications={actions.openNotifications}
+            onPressFilters={actions.openFilters}
+          />
+        </View>
       }
     >
       <FlashList
@@ -516,8 +529,7 @@ const EMPTY_COPY: Record<JobsSegment, EmptyCopy> = {
   },
   saved: {
     title: 'Nothing saved yet',
-    message:
-      'Save jobs to compare them side by side.',
+    message: 'Save jobs to compare them side by side.',
     actionLabel: "Browse today's picks",
   },
   applied: {

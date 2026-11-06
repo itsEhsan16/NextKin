@@ -93,7 +93,7 @@ export function CreateSheetStep({
       >
         {onBack ? (
           <IconButton
-            icon="ChevronLeft"
+            icon="ArrowLeft"
             iconColor="textPrimary"
             label="Back"
             size={s(BACK_BUTTON)}

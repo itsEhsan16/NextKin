@@ -92,7 +92,8 @@ export function SegmentedControl<K extends string = string>({
         styles.track,
         {
           height: trackHeight,
-          borderRadius: compact ? s(SM_TRACK_RADIUS) : radii.xl,
+          // Pill track and pill thumb (§176).
+          borderRadius: compact ? s(SM_TRACK_RADIUS) : radii.full,
           backgroundColor: colors.surfaceSubtle,
           padding: inset,
         },
@@ -108,7 +109,7 @@ export function SegmentedControl<K extends string = string>({
               top: inset,
               width: slot,
               height: pillHeight,
-              borderRadius: compact ? s(SM_PILL_RADIUS) : radii.md,
+              borderRadius: compact ? s(SM_PILL_RADIUS) : radii.full,
               backgroundColor: colors.surfaceCard,
             },
             pillStyle,
