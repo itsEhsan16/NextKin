@@ -4,6 +4,7 @@ import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Icon } from '@/ui/Icon';
+import { IconTile } from '@/ui/kit';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -30,11 +31,14 @@ export function ApplicationsCard({ line, onPress }: ApplicationsCardProps) {
       haptic="light"
       onPress={onPress}
     >
-      <Card radius="card">
-        <View style={styles.row}>
+      <Card>
+        <View style={[styles.row, { gap: spacing[3] }]}>
+          <IconTile name="Briefcase01" size={44} />
           <View style={[styles.text, { gap: spacing[1] }]}>
-            <Text variant="title">{APPLICATIONS_CARD_TITLE}</Text>
-            <Text variant="body" color="textBody">
+            <Text variant="bodyLgStrong" color="ink">
+              {APPLICATIONS_CARD_TITLE}
+            </Text>
+            <Text variant="footnote" color="textSecondary">
               {line}
             </Text>
           </View>

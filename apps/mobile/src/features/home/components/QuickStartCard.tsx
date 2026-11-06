@@ -8,7 +8,7 @@ import ZeroResumeIcon from '../../../../assets/icons/quick-start/zero-resume.svg
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { IconTileGrid, type IconTile } from '@/ui/IconTileGrid';
-import { Text } from '@/ui/Text';
+import { KitSection } from '@/ui/kit';
 
 export type QuickStartAction = 'build-resume' | 'zero-resume' | 'cover-letter' | 'ats-check';
 
@@ -31,7 +31,7 @@ type Spec = {
  * The illustrations are the exported Figma vectors and `w`/`h` are their intrinsic boxes, so
  * scaling them with `s()` keeps the artwork at the designed proportions. That board is drawn at
  * 390 and `s()` projects from 520, so each drawn box is divided by the 0.75 between them before
- * it is written here — the same conversion `HeroBlock`'s 130 tile makes.
+ * it is written here.
  */
 const SPECS: readonly Spec[] = [
   {
@@ -98,18 +98,19 @@ export function QuickStartCard({ onAction }: QuickStartCardProps) {
   );
 
   return (
-    <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
-      <Text accessibilityRole="header" variant="homeSection">
-        Quick Start
-      </Text>
-      <IconTileGrid
-        items={items}
-        onPress={onAction}
-        iconBoxHeight={s(ICON_ROW_HEIGHT)}
-        iconAlign="flex-end"
-        labelVariant="tileLabel"
-        labelGap={s(LABEL_GAP)}
-      />
-    </Card>
+    // The illustrated icons stay exactly as they are (owner, 2026-11-07); the card and its heading
+    // take the redesign's section style (§176).
+    <KitSection title="Quick Start">
+      <Card style={{ paddingVertical: s(20), paddingHorizontal: s(16), gap: spacing[4] }}>
+        <IconTileGrid
+          items={items}
+          onPress={onAction}
+          iconBoxHeight={s(ICON_ROW_HEIGHT)}
+          iconAlign="flex-end"
+          labelVariant="tileLabel"
+          labelGap={s(LABEL_GAP)}
+        />
+      </Card>
+    </KitSection>
   );
 }

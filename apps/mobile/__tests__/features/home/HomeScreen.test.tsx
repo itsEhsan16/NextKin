@@ -84,7 +84,7 @@ describe('HomeScreen (DESIGN 2)', () => {
     await settle(NORMAL_MS);
 
     expect(screen.getByText('George')).toBeOnTheScreen();
-    expect(screen.getByText('Build better.\nLand faster.')).toBeOnTheScreen();
+    expect(screen.getByText('Let’s land your next role.')).toBeOnTheScreen();
     expect(screen.getByText('Quick Start')).toBeOnTheScreen();
     expect(screen.getByText('Build Resume')).toBeOnTheScreen();
     expect(screen.getByText('Top Job Matches')).toBeOnTheScreen();
@@ -216,21 +216,19 @@ describe('HomeScreen (DESIGN 2)', () => {
     expect(screen.queryByLabelText('View progress')).toBeNull();
   });
 
-  it('pins the greeting row above the scroller', async () => {
+  it('scrolls the greeting with the page, on the wash (§176)', async () => {
     await renderHome();
     await settle(NORMAL_MS);
 
-    // Both halves are needed. On its own the first would also pass if the whole page stopped
-    // scrolling, which is why the cards below are asserted to still be inside the scroller.
+    // Since §176 the greeting, bell and menu are the top of the page and scroll with it.
     for (const node of [
-      screen.getByRole('header', { name: 'Hi George' }),
+      screen.getByRole('header', { name: /^Good (morning|afternoon|evening), George$/ }),
       screen.getByLabelText('Notifications, unread'),
       screen.getByLabelText('Menu'),
+      screen.getByText('Quick Start'),
+      screen.getByText('Top Job Matches'),
     ]) {
-      expect(insideScroller(node)).toBe(false);
+      expect(insideScroller(node)).toBe(true);
     }
-
-    expect(insideScroller(screen.getByText('Quick Start'))).toBe(true);
-    expect(insideScroller(screen.getByText('Top Job Matches'))).toBe(true);
   });
 });

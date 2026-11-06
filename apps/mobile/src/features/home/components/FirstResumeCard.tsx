@@ -19,7 +19,12 @@ export type FirstResumeCardProps = {
  * Home's getting-started checklist (toreview.md §172): three steps to a first tailored resume and
  * one button for the next one. It leaves once a resume is made for a job; the ✕ hides it sooner.
  */
-export function FirstResumeCard({ stage, onAddResume, onPickJob, onDismiss }: FirstResumeCardProps) {
+export function FirstResumeCard({
+  stage,
+  onAddResume,
+  onPickJob,
+  onDismiss,
+}: FirstResumeCardProps) {
   const styles = useStyles();
   const left = stage === 'add-resume' ? 3 : 2;
   return (

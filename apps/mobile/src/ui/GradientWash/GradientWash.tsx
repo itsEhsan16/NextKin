@@ -6,18 +6,20 @@ import { useTheme } from '@/theme';
 export type GradientWashProps = {
   /** How far down the screen the wash reaches, as a fraction. Defaults to 0.6. */
   depth?: number;
+  /** A fixed height instead, for a long scrolling page whose wash covers only its top (§176). */
+  height?: number;
 };
 
 /**
  * The redesign's hero backdrop (toreview.md §172): a soft lavender wash fading into the page,
  * with a faint brand glow in the top corner. Absolute, behind content, never interactive.
  */
-export function GradientWash({ depth = 0.6 }: GradientWashProps) {
+export function GradientWash({ depth = 0.6, height }: GradientWashProps) {
   const { colors } = useTheme();
   return (
     <View
       pointerEvents="none"
-      style={[styles.wash, { height: `${Math.round(depth * 100)}%` }]}
+      style={[styles.wash, { height: height ?? `${Math.round(depth * 100)}%` }]}
     >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>

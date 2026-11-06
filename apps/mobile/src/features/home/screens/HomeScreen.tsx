@@ -21,12 +21,11 @@ import { useReducedMotion } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
+import { GradientWash } from '@/ui/GradientWash';
 import { StateView } from '@/ui/StateView';
 import { layoutTransition } from '@/ui/motion';
 
 import { ApplicationsCard } from '../components/ApplicationsCard';
-import { BrandBlock } from '../components/BrandBlock';
-import { HeroBlock } from '../components/HeroBlock';
 import { HiddenPicksNote } from '../components/HiddenPicksNote';
 import { HomeHeader } from '../components/HomeHeader';
 import { FirstResumeCard } from '../components/FirstResumeCard';
@@ -39,7 +38,9 @@ import { useCopiedJobLink } from '../hooks/useCopiedJobLink';
 import { useFirstResume } from '../hooks/useFirstResume';
 import { useHomeActions } from '../hooks/useHomeActions';
 
-const SECTION_GAP = 16;
+const SECTION_GAP = 20;
+/** How far the lavender wash reaches down Home, behind the greeting and the search (§176). */
+const WASH = 340;
 
 type SectionProps = { index: number; animate: boolean; children: ReactNode };
 
@@ -67,7 +68,7 @@ function Section({ index, animate, children }: SectionProps) {
 
 /** DESIGN 2 — Spacing Fixed (Figma 1:2). */
 export function HomeScreen() {
-  const { spacing, s } = useTheme();
+  const { spacing, s, u } = useTheme();
   const actions = useHomeActions();
   const firstResume = useFirstResume();
   // TAILOR 00c: a job link on the clipboard is asked about while Home is in view.
@@ -139,6 +140,7 @@ export function HomeScreen() {
       hasUnread={(unread.data ?? 0) > 0}
       onPressNotifications={actions.openNotifications}
       onPressMenu={actions.openMenu}
+      onSearch={user.isPending ? undefined : actions.findJobs}
     />
   );
 
@@ -160,27 +162,25 @@ export function HomeScreen() {
   }
 
   return (
+    // Home's header scrolls with the page, on the wash (§176): the greeting and search are its top.
     <Screen
       scroll
       tabBarInset
+      padded={false}
       scrollRef={scrollRef}
-      // The header's own top padding moved to `headerStyle`; `paddingTop` here replaces the
-      // first `gap` instance, which left with it. Not both — that would double to 24.
-      contentContainerStyle={{ paddingTop: s(SECTION_GAP), gap: s(SECTION_GAP) }}
+      contentContainerStyle={{
+        paddingTop: spacing.headerTop,
+        paddingHorizontal: spacing.gutter,
+        gap: s(SECTION_GAP),
+      }}
       refreshControl={refreshControl}
-      headerStyle={{ paddingTop: spacing.headerTop }}
-      header={header}
     >
+      <GradientWash height={u(WASH)} />
+      {header}
       {user.isPending ? (
         <HomeSkeleton />
       ) : (
         <>
-          <Section index={0} animate={animate}>
-            <BrandBlock />
-          </Section>
-          <Section index={1} animate={animate}>
-            <HeroBlock onFindJobs={actions.findJobs} />
-          </Section>
           {firstResume.cardStage ? (
             <Section index={2} animate={animate}>
               <FirstResumeCard

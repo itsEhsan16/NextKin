@@ -66,7 +66,7 @@ export function ResumeProgressCard({
 
   return (
     <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
-      <SectionHeader title="Your Resume Progress" variant="homeSection" onAction={onViewAll} />
+      <SectionHeader title="Your Resume Progress" onAction={onViewAll} />
 
       {status === 'pending' ? (
         <View style={[styles.row, { gap: spacing[4] }]}>
@@ -129,10 +129,10 @@ export function ResumeProgressCard({
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text variant="homeResumeTitle" numberOfLines={1}>
+              <Text variant="bodyLgStrong" color="ink" numberOfLines={1}>
                 {resume.title}
               </Text>
-              <Text variant="homeResumeMeta" color="textSecondary" numberOfLines={1}>
+              <Text variant="footnote" color="textSecondary" numberOfLines={1}>
                 Last updated {formatRelativeTimeLong(resume.updatedAt)}
               </Text>
               <ProgressBar
@@ -171,7 +171,7 @@ export function ResumeProgressCard({
                       size="xs"
                       color={ok ? colors.successIcon : colors.iconMuted}
                     />
-                    <Text variant="homeCheckLabel" color="textBody">
+                    <Text variant="footnote" color="textSecondary">
                       {label}
                     </Text>
                   </View>

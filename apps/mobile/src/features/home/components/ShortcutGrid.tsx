@@ -31,7 +31,7 @@ type Spec = {
  *
  * `w`/`h` are each glyph's intrinsic box. The board is drawn at 390 and `s()` projects from 520,
  * so every drawn box is divided by the 0.75 between them before it is written here — the same
- * conversion `HeroBlock`'s 130 tile makes.
+ * conversion the old Home hero tile made.
  */
 const SPECS: readonly Spec[] = [
   // 44 x 44.8684 drawn.
@@ -90,7 +90,10 @@ function spokenValue(key: Shortcut, stats: DashboardStats | undefined): string |
     case 'my-resumes':
       return counted(stats.resumesCount, pluralize(stats.resumesCount, 'Resume'));
     case 'history':
-      return counted(stats.activitiesCount, pluralize(stats.activitiesCount, 'Activity', 'Activities'));
+      return counted(
+        stats.activitiesCount,
+        pluralize(stats.activitiesCount, 'Activity', 'Activities'),
+      );
     case 'saved-jobs':
       return counted(stats.savedJobsCount, `${stats.savedJobsCount} Saved`);
     case 'interview-prep':
