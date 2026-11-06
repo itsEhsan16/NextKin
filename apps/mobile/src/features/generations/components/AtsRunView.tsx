@@ -4,7 +4,7 @@ import { FLOW_ART } from '@/features/create/components/FlowHero';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { StateView } from '@/ui/StateView';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { FlowFooter } from '@/features/create/flow/FlowKit';
 import { Reveal, useBecameTrue } from '@/ui/motion';
 
 import { useGenerationsActions } from '../hooks/useGenerationsActions';
@@ -22,7 +22,7 @@ import { TailorProgress } from './TailorProgress';
 const BAR_TO_ART = 16 / 0.75;
 const BAR_TO_RESULT = 18 / 0.75;
 
-export const ATS_FIX_NOTE = 'Saves a copy to your Resumes first';
+export const ATS_FIX_NOTE = 'Saves a tailored copy first';
 
 /**
  * ATS 02–03 (646:2 / 646:51, toreview §73): a check of an outside resume against one job, watched
@@ -66,11 +66,11 @@ export function AtsRunView({ generation }: { generation: Generation }) {
       />
     );
     footer = (
-      <StickyActionBar
-        floating
+      <FlowFooter
+        inset
         primary={{
           label: 'Cancel',
-          variant: 'ghost',
+          variant: 'outline',
           loading: cancel.isPending,
           onPress: () => cancel.mutate(generation.id, { onSuccess: actions.goBack }),
         }}
@@ -81,10 +81,10 @@ export function AtsRunView({ generation }: { generation: Generation }) {
       <AtsResult result={result} arrived={arrived} onRubric={() => actions.openRubric(resumeId)} />
     );
     footer = (
-      <StickyActionBar
-        floating
+      <FlowFooter
+        inset
         note={ATS_FIX_NOTE}
-        primary={{ label: 'Fix it for this job', haptic: 'medium', onPress: fix }}
+        primary={{ label: 'Fix it for this job', icon: 'AiMagic', onPress: fix }}
       />
     );
   } else {

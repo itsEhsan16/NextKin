@@ -1,43 +1,43 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import type { JdInput, Resume } from '@/data/models';
+import { defaultTailorPick, tailorableResumes, type JdInput } from '@/data/models';
 import {
-  isUnreadableFileError,
   useExtractJd,
-  useImportResume,
+  useResumes,
   useSavedJobs,
   useStartGeneration,
   useSubscription,
 } from '@/data/queries';
-import { pickDocument, type PickedDocument } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
-import { Screen } from '@/ui/Screen';
-import { ScreenHeader } from '@/ui/ScreenHeader';
+import { Icon } from '@/ui/Icon';
+import { Pressable } from '@/ui/Pressable';
+import { SegmentedControl } from '@/ui/SegmentedControl';
 import { StateView } from '@/ui/StateView';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { Text } from '@/ui/Text';
+import { TextField } from '@/ui/TextField';
 import { useRevealStagger } from '@/ui/motion';
 
 import {
   ATS_CTA,
-  ATS_LEDE,
   ATS_TITLE,
   atsBlocker,
   atsCheckAllowance,
   atsChecksLeftNote,
   atsChecksSpentNote,
   CHECK_FAILED,
+  JD_MAX,
+  PASTE_TIP,
   UPGRADE_CTA,
   type AtsJobMode,
 } from '../atsCheckSetup';
 import { AtsCheckSkeleton } from '../components/AtsCheckSkeleton';
 import { AtsJobSheet } from '../components/AtsJobSheet';
-import { AtsJobPart } from '../components/AtsJobPart';
-import { AtsFileRow, type AtsFileState } from '../components/AtsCheckRows';
-import { FLOW_ART, FlowHero } from '../components/FlowHero';
-import { UploadPromptRow } from '../components/TailorResumeRows';
-import { uploadedMeta } from '../components/tailorResumeMeta';
+import { OnboardingFrame } from '../components/OnboardingFrame';
+import { TailorResumeSheet } from '../components/TailorResumeSheet';
+import { tailorResumeMeta } from '../components/tailorResumeMeta';
+import { FlowCard, FlowFooter, IconTile } from '../flow/FlowKit';
 import { useCreateActions } from '../hooks/useCreateActions';
 
 export type AtsCheckScreenProps = {
@@ -45,93 +45,95 @@ export type AtsCheckScreenProps = {
   jobId?: string;
 };
 
-// ATS 01 / 01b at 390 (645:3 / 645:49), in artboard units.
-const HEADER_TO_ART = 14 / 0.75; // 645:7
-const HERO_TO_FILE: Record<AtsJobMode, number> = { job: 22 / 0.75, paste: 16 / 0.75 };
+const LEDE = 'See how it reads for one job.';
 
-type Upload =
-  | { file: PickedDocument; status: Exclude<AtsFileState, 'ready'> }
-  | { file: PickedDocument; status: 'ready'; resume: Resume };
+/** An eyebrow over a part of the form. */
+function Label({ children }: { children: string }) {
+  return (
+    <Text variant="eyebrow" color="textTertiary">
+      {children.toUpperCase()}
+    </Text>
+  );
+}
 
 /**
- * ATS 01 / 01b (645:3, 645:49) — "Check your resume": a resume made outside NextKin, read on
- * upload, checked against a saved job (the most recent one, with Change) or a pasted description
- * (V2 §7.8, toreview §73). A job is always set, so every result can carry a score (D-15).
- *
- * The file is read the moment it is picked, so the row can say what was read and a scan is
- * refused before anything is spent. The quota sits on the bar, over the button that spends it.
+ * ATS Check, step 1 of 2 (toreview §173, Figma "ATS · 1 Set up"): the resume — any you already
+ * have (it used to take only an upload), with upload one tap away — and the job, a saved one or a
+ * pasted description. One button reads the job and starts the check.
  */
 export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
-  const { spacing, s } = useTheme();
+  const { colors, u } = useTheme();
   const styles = useStyles();
   const actions = useCreateActions();
 
+  const resumes = useResumes();
   const savedJobs = useSavedJobs();
   const subscription = useSubscription();
-  const importResume = useImportResume();
   const extract = useExtractJd();
   const start = useStartGeneration();
 
-  const [upload, setUpload] = useState<Upload | null>(null);
+  const [pickedResumeId, setPickedResumeId] = useState<string>();
   const [mode, setMode] = useState<AtsJobMode>('job');
   const [pickedJobId, setPickedJobId] = useState(jobId);
   const [pasted, setPasted] = useState('');
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [jobSheet, setJobSheet] = useState(false);
+  const [resumeSheet, setResumeSheet] = useState(false);
   const [refused, setRefused] = useState(false);
   const [failed, setFailed] = useState(false);
 
+  const offered = useMemo(() => tailorableResumes(resumes.data ?? []), [resumes.data]);
+  const resume =
+    offered.find((r) => r.id === pickedResumeId) ??
+    (resumes.data ?? []).find((r) => r.id === pickedResumeId) ??
+    offered.find((r) => r.id === defaultTailorPick(offered));
   const jobs = savedJobs.data ?? [];
   const job = jobs.find((item) => item.id === pickedJobId) ?? jobs[0];
 
-  const chooseFile = async () => {
-    const file = await pickDocument(['pdf', 'docx']);
-    if (!file) return;
-    setFailed(false);
-    setUpload({ file, status: 'reading' });
-    try {
-      const { resume } = await importResume.mutateAsync(file);
-      setUpload({ file, status: 'ready', resume });
-    } catch (error) {
-      setUpload({ file, status: isUnreadableFileError(error) ? 'unreadable' : 'failed' });
-    }
-  };
-
-  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
-  // with its data already here slides in whole with the push.
-  const enter = useRevealStagger(!savedJobs.isPending && !subscription.isPending);
+  const enter = useRevealStagger(
+    !savedJobs.isPending && !subscription.isPending && !resumes.isPending,
+  );
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
-      <Screen
-        keyboard
-        scroll
-        edges={['top', 'bottom']}
-        header={<ScreenHeader title="ATS check" showTitle={false} onBack={actions.goBack} />}
-        headerStyle={{ paddingBottom: s(HEADER_TO_ART) }}
-        contentContainerStyle={{ paddingBottom: spacing[8] }}
+      <OnboardingFrame
+        step={1}
+        total={2}
+        title={ATS_TITLE}
+        subtitle={LEDE}
+        onBack={actions.goBack}
         footer={footer}
       >
         {children}
-      </Screen>
-      {/* Sibling of the page, never a child of its scroller: its root is an absolute fill. */}
+      </OnboardingFrame>
+      {/* Siblings of the page, never children of its scroller. */}
       <AtsJobSheet
-        open={sheetOpen}
+        open={jobSheet}
         jobs={jobs}
         selectedId={job?.id}
         onPick={(id) => {
           setPickedJobId(id);
-          setSheetOpen(false);
+          setJobSheet(false);
         }}
-        onClose={() => setSheetOpen(false)}
+        onClose={() => setJobSheet(false)}
+      />
+      <TailorResumeSheet
+        open={resumeSheet}
+        job={{ title: job?.title ?? 'this job', ...(job?.company ? { company: job.company } : {}) }}
+        selectedResumeId={resume?.id}
+        onClose={() => setResumeSheet(false)}
+        onCompare={(id) => {
+          setPickedResumeId(id);
+          setResumeSheet(false);
+          setFailed(false);
+        }}
       />
     </View>
   );
 
-  // The inert bar is part of the loading state: it owns the bottom safe-area inset.
-  if (savedJobs.isPending || subscription.isPending) {
+  if (savedJobs.isPending || subscription.isPending || resumes.isPending) {
     return page(
       <AtsCheckSkeleton />,
-      <StickyActionBar floating primary={{ label: ATS_CTA, disabled: true }} />,
+      <FlowFooter primary={{ label: ATS_CTA, onPress: () => {}, disabled: true }} />,
     );
   }
 
@@ -148,12 +150,12 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
     );
   // An allowance that could not be read is unknown, not unlimited (§13.5).
   if (subscription.isError)
-    return retry("Couldn't load your plan", () => void subscription.refetch());
+    return retry('Couldn’t load your plan', () => void subscription.refetch());
   if (savedJobs.isError)
-    return retry("Couldn't load your saved jobs", () => void savedJobs.refetch());
+    return retry('Couldn’t load your saved jobs', () => void savedJobs.refetch());
+  if (resumes.isError) return retry('Couldn’t load your resumes', () => void resumes.refetch());
 
   const allowance = atsCheckAllowance(subscription.data.usage);
-  const resume = upload?.status === 'ready' ? upload.resume : undefined;
   const blocker = atsBlocker({ hasFile: resume != null, mode, hasJob: job != null, pasted });
   const busy = extract.isPending || start.isPending;
 
@@ -194,52 +196,146 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
           : undefined;
 
   return page(
-    <>
-      <Animated.View entering={enter(0)}>
-        <FlowHero
-          title={ATS_TITLE}
-          lede={ATS_LEDE[mode]}
-          art={mode === 'job' ? FLOW_ART.atsUpload : FLOW_ART.atsPaste}
-        />
+    <View style={styles.stack}>
+      <Animated.View entering={enter(0)} style={styles.part}>
+        <Label>Resume</Label>
+        <Pressable
+          feedback="subtle"
+          accessibilityRole="button"
+          accessibilityLabel={
+            resume ? `Resume: ${resume.title}. Change` : 'Pick or upload a resume'
+          }
+          onPress={() => setResumeSheet(true)}
+        >
+          <FlowCard style={styles.row}>
+            <View style={[styles.pageTile, { backgroundColor: colors.surfaceSubtle }]}>
+              <Icon name="File04" size="md" color={colors.textSecondary} />
+            </View>
+            <View style={styles.flex}>
+              <Text variant="bodyLgStrong" color="ink">
+                {resume?.title ?? 'Pick a resume'}
+              </Text>
+              <Text variant="footnote" color="textSecondary">
+                {resume ? tailorResumeMeta(resume) : 'Or upload a PDF or DOCX'}
+              </Text>
+            </View>
+            <Icon name="ChevronDown" size="sm" color={colors.textSecondary} />
+          </FlowCard>
+        </Pressable>
+        <Pressable
+          feedback="subtle"
+          accessibilityRole="button"
+          accessibilityLabel="Upload a resume instead"
+          onPress={() => setResumeSheet(true)}
+          style={styles.inline}
+        >
+          <Icon name="UploadCloud02" size={u(16)} color={colors.brand} />
+          <Text variant="footnote" color="brand">
+            Or upload a PDF
+          </Text>
+        </Pressable>
       </Animated.View>
-      <Animated.View entering={enter(1)} style={{ marginTop: s(HERO_TO_FILE[mode]) }}>
-        {upload ? (
-          <AtsFileRow
-            fileName={upload.file.name}
-            state={upload.status}
-            meta={upload.status === 'ready' ? uploadedMeta(upload.resume) : undefined}
-            onChange={() => void chooseFile()}
-          />
+
+      <Animated.View entering={enter(1)} style={styles.part}>
+        <Label>Job</Label>
+        <SegmentedControl
+          segments={[
+            { key: 'job', label: 'Saved job' },
+            { key: 'paste', label: 'Paste' },
+          ]}
+          value={mode}
+          onChange={setMode}
+        />
+        {mode === 'job' ? (
+          job ? (
+            <Pressable
+              feedback="subtle"
+              accessibilityRole="button"
+              accessibilityLabel={`Job: ${job.title}, ${job.company}. Change`}
+              onPress={() => setJobSheet(true)}
+            >
+              <FlowCard highlight style={styles.row}>
+                <View style={[styles.logo, { backgroundColor: colors.surfaceSubtle }]}>
+                  <Text variant="title3" color="ink">
+                    {job.company.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <View style={styles.flex}>
+                  <Text variant="bodyLgStrong" color="ink">
+                    {job.title}
+                  </Text>
+                  <Text variant="footnote" color="textSecondary">
+                    {[job.company, job.location].filter(Boolean).join(' · ')}
+                  </Text>
+                </View>
+                <IconTile name="Check" size={24} tone="solid" />
+              </FlowCard>
+            </Pressable>
+          ) : (
+            <Text variant="callout" color="textSecondary">
+              No saved jobs yet. Paste a description instead.
+            </Text>
+          )
         ) : (
-          <UploadPromptRow onPress={() => void chooseFile()} />
+          <TextField
+            accessibilityLabel="Job description"
+            placeholder="Paste the whole job description"
+            value={pasted}
+            onChangeText={setPasted}
+            multiline
+            minLines={5}
+            maxLength={JD_MAX}
+            helper={PASTE_TIP}
+            error={refused && mode === 'paste' ? (blocker ?? undefined) : undefined}
+          />
         )}
+        {mode === 'job' && jobs.length > 1 ? (
+          <Pressable
+            feedback="subtle"
+            accessibilityRole="button"
+            accessibilityLabel={`See all ${jobs.length} saved jobs`}
+            onPress={() => setJobSheet(true)}
+            style={styles.inline}
+          >
+            <Text variant="footnote" color="brand">
+              {`See all ${jobs.length} saved jobs`}
+            </Text>
+            <Icon name="ChevronRight" size={u(14)} color={colors.brand} />
+          </Pressable>
+        ) : null}
       </Animated.View>
-      <Animated.View entering={enter(2)}>
-        <AtsJobPart
-          mode={mode}
-          job={job}
-          pasted={pasted}
-          onPaste={setPasted}
-          onChangeJob={() => setSheetOpen(true)}
-          onPasteMode={() => setMode('paste')}
-          onJobMode={() => setMode('job')}
-          pasteError={refused && mode === 'paste' ? blocker : undefined}
-        />
-      </Animated.View>
-    </>,
-    <StickyActionBar
-      floating
+    </View>,
+    <FlowFooter
       note={note}
       noteTone={failed || (refused && blocker) ? 'danger' : 'neutral'}
       primary={
         allowance.spent
           ? { label: UPGRADE_CTA, onPress: () => actions.openUpgrade('ats_checks') }
-          : { label: ATS_CTA, loading: busy, onPress: check }
+          : { label: ATS_CTA, icon: 'SearchLg', loading: busy, onPress: check }
       }
     />,
   );
 }
 
-const useStyles = scaledSheet(() => ({
+const useStyles = scaledSheet((_s, u) => ({
   root: { flex: 1 },
+  stack: { gap: u(24) },
+  part: { gap: u(10) },
+  flex: { flex: 1, gap: u(2) },
+  row: { flexDirection: 'row', alignItems: 'center', gap: u(12), paddingVertical: u(12) },
+  pageTile: {
+    width: u(36),
+    height: u(44),
+    borderRadius: u(8),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: u(44),
+    height: u(44),
+    borderRadius: u(14),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inline: { flexDirection: 'row', alignItems: 'center', gap: u(6), alignSelf: 'flex-start' },
 }));

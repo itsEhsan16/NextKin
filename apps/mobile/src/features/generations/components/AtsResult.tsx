@@ -1,317 +1,267 @@
+import { useState } from 'react';
 import { View } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
+  ATS_BAND_LABEL,
   ATS_CHECK_LEDE,
   atsCheckTitle,
   SCORE_LABEL,
-  SCORE_LABEL_CAPS,
   scoreLead,
   type AtsCheckResult,
 } from '@/data/models';
+import { FlowCard, FlowDivider, IconTile, StatusPill } from '@/features/create/flow/FlowKit';
 // Deep imports on purpose: the resumes barrel drags its screens in.
-import { ScoreBandPill } from '@/features/resumes/components/ScoreBandPill';
 import { ScoreNotMeasured } from '@/features/resumes/components/ScoreNotMeasured';
 import { ScoreParts } from '@/features/resumes/components/ScoreParts';
-import { atsScoreColor } from '@/features/resumes/docMeta';
-import { a11yButton, a11yHeader, useReducedMotion } from '@/lib';
+import { a11yHeader, useReducedMotion } from '@/lib';
 import { motion, scaledSheet, useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
-import { ScoreRing } from '@/ui/Progress';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
+import { ScoreRing } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
-import { Icon } from '@/ui/Icon';
-
-// ATS 03 at 390 (646:51), in artboard units.
-const HERO_GAP = 14 / 0.75; // 646:56
-const TEXT_GAP = 8 / 0.75; // 646:57
-const LINK_TOP = 4 / 0.75; // 646:60
-const LINK_PAD_X = 12 / 0.75; // 646:61
-const LINK_PAD_Y = 7 / 0.75;
-const LINK_GAP = 6 / 0.75;
-const RING = 96 / 0.75; // 646:65
-const RING_STROKE = 7.2 / 0.75; // TAILOR 02's ring in proportion (86 / 6.45)
-const RING_TO_PILL = 8 / 0.75;
-const HERO_TO_CARD = 20 / 0.75; // 646:72
-const CARD_PAD = 15 / 0.75;
-const HEAD_TO_SUB = 4 / 0.75; // 646:78
-const SUB_TO_BODY = 12 / 0.75; // 646:80
-const COUNT_PAD_X = 10 / 0.75; // 646:76
-const COUNT_PAD_Y = 3 / 0.75;
-const CHIP_GAP_X = 7 / 0.75; // 646:81
-const CHIP_GAP_Y = 8 / 0.75;
-const CHIP_PAD_X = 11 / 0.75; // 646:82
-const CHIP_PAD_Y = 5 / 0.75;
-const CARD_GAP = 14 / 0.75; // 646:90
-const FIX_GAP = 8 / 0.75; // 646:105
-const FIX_PAD_X = 12 / 0.75; // 646:98
-const FIX_PAD_Y = 11 / 0.75;
-const FIX_ROW_GAP = 12 / 0.75;
-const FIX_RADIUS = 13 / 0.75;
-const FIX_TILE = 32 / 0.75; // 646:100
-const FIX_TILE_RADIUS = 9 / 0.75;
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
-/**
- * How a verdict that landed while the user watched arrives (§85): the blocks rise in turn, and
- * the missing keywords appear one by one as if the check were still turning them up. `null` is a
- * result opened later, which simply shows.
- */
-type Arrival = {
-  block: (index: number) => FadeInDown | undefined;
-  chip: (index: number) => FadeIn | undefined;
-} | null;
 
 const blockIn = (index: number) =>
   FadeInDown.delay(index * motion.stagger.card * 3).duration(motion.durations.base);
-const chipIn = (index: number) =>
-  FadeIn.delay(
-    motion.stagger.card * 3 + Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
-  ).duration(motion.durations.fast);
 
-/**
- * The verdict beside the ring (646:56): the count of required skills (toreview §146.1), band and
- * job, what that means, and how it is scored. A check from before §146 keeps the board's headline.
- */
-function ResultHero({ result, onRubric }: { result: AtsCheckResult; onRubric: () => void }) {
-  const { colors, radii, s } = useTheme();
+const BAND_TONE = { strong: 'success', good: 'success', fair: 'warning', weak: 'warning' } as const;
+
+function Stat({ icon, value, label }: { icon: LineIconName; value: string; label: string }) {
+  const { colors } = useTheme();
   const styles = useStyles();
-  const lead = scoreLead(result.report);
   return (
-    <View style={styles.hero}>
-      <View style={styles.heroText}>
-        <Text variant="headlineLg" {...a11yHeader()}>
-          {lead?.headline ?? atsCheckTitle(result)}
-        </Text>
-        {lead ? (
-          <Text variant="captionSemiBold" color="textSecondary">
-            {`${lead.detail}. ${atsCheckTitle(result)}.`}
-          </Text>
-        ) : null}
-        <Text variant="captionRegular" color="textSecondary">
-          {ATS_CHECK_LEDE[result.band]}
-        </Text>
-        {/* §7.8: every score display links its rubric. */}
-        <Pressable
-          {...a11yButton(`How the ${SCORE_LABEL} works`)}
-          feedback="scale"
-          haptic="light"
-          onPress={onRubric}
-          style={[styles.link, { borderRadius: radii.full, backgroundColor: colors.brandSurface }]}
-        >
-          <Text variant="captionSemiBold" color="brand">
-            {`How the ${SCORE_LABEL} works`}
-          </Text>
-          <Icon name="ChevronRight" size="sm" color={colors.brand} />
-        </Pressable>
-      </View>
-      <View
-        accessible
-        accessibilityLabel={`${SCORE_LABEL} ${result.score} for this job`}
-        style={styles.score}
-      >
-        <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          <ScoreRing
-            score={result.score}
-            label={SCORE_LABEL_CAPS}
-            size={s(RING)}
-            strokeWidth={s(RING_STROKE)}
-            ringColor={atsScoreColor(result.score)}
-            trackColor="borderDefault"
-            numberVariant="scoreHero"
-            numberColor="textPrimary"
-            labelVariant="microOverline"
-            labelColor="textSecondary"
-          />
-        </View>
-        <ScoreBandPill band={result.band} />
-      </View>
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+      style={[styles.stat, { backgroundColor: colors.surfaceSubtle }]}
+    >
+      <Icon name={icon} size="sm" color={colors.brand} />
+      <Text variant="title3" color="ink">
+        {value}
+      </Text>
+      <Text variant="footnote" color="textSecondary">
+        {label}
+      </Text>
     </View>
   );
 }
 
-/** "Missing keywords" (646:73): what the job asks for that the resume does not show. */
-function MissingCard({ missing, arrival }: { missing: readonly string[]; arrival: Arrival }) {
-  const { colors, radii, sizes } = useTheme();
+/** A card whose body opens on a tap: "4 fixes", "Score details". */
+function Fold({
+  icon,
+  title,
+  body,
+  children,
+}: {
+  icon: LineIconName;
+  title: string;
+  body: string;
+  children: React.ReactNode;
+}) {
+  const { colors } = useTheme();
   const styles = useStyles();
+  const [open, setOpen] = useState(false);
   return (
-    <Card radius="cardLg" style={styles.card}>
-      <View style={styles.head}>
-        <Text variant="title" style={styles.grow} {...a11yHeader()}>
-          Missing keywords
-        </Text>
-        {missing.length > 0 ? (
-          <View
-            style={[
-              styles.count,
-              { borderRadius: radii.full, backgroundColor: colors.dangerSurface },
-            ]}
-          >
-            <Text variant="microBadge" color="danger">
-              {`${missing.length} missing`}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-      {/* §7.8 / D-14: a missing keyword is a gap to fill truthfully, never text to paste in. */}
-      <Text variant="caption" color="textSecondary" style={styles.sub}>
-        {missing.length > 0
-          ? 'The job asks for these. Add only the ones you really have.'
-          : 'Your resume already shows every keyword the job asks for.'}
-      </Text>
-      {missing.length > 0 ? (
-        <View style={styles.chips}>
-          {missing.map((keyword, index) => (
-            <Animated.View
-              key={keyword}
-              entering={arrival?.chip(index)}
-              style={[
-                styles.chip,
-                {
-                  borderRadius: radii.full,
-                  borderWidth: sizes.border,
-                  backgroundColor: colors.warningSurface,
-                  borderColor: colors.warningAccent,
-                },
-              ]}
-            >
-              <Text variant="microBadge" color="warningStrong">
-                {keyword}
-              </Text>
-            </Animated.View>
-          ))}
+    <FlowCard style={styles.fold}>
+      <Pressable
+        feedback="subtle"
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={`${title}, ${body}`}
+        onPress={() => setOpen((v) => !v)}
+        style={styles.foldHead}
+      >
+        <IconTile name={icon} size={36} />
+        <View style={styles.flex}>
+          <Text variant="bodyLgStrong" color="ink">
+            {title}
+          </Text>
+          <Text variant="footnote" color="textSecondary">
+            {body}
+          </Text>
         </View>
-      ) : null}
-    </Card>
-  );
-}
-
-/** "Fix these" (646:91): the most useful changes, numbered in the order to make them. */
-function FixCard({ fixes }: { fixes: AtsCheckResult['fixes'] }) {
-  const { colors, sizes } = useTheme();
-  const styles = useStyles();
-  return (
-    <Card radius="cardLg" style={styles.card}>
-      <View style={styles.head}>
-        <Text variant="title" style={styles.grow} {...a11yHeader()}>
-          Fix these
-        </Text>
-        <Text variant="caption" color="textSecondary">
-          {plural(fixes.length, 'fix', 'fixes')}
-        </Text>
-      </View>
-      <Text variant="caption" color="textSecondary" style={styles.sub}>
-        {fixes.length > 0
-          ? 'Changes that make it read better for this job.'
-          : 'Nothing in the layout or the bullets needs changing.'}
-      </Text>
-      <View style={styles.fixes}>
-        {fixes.map((fix, index) => (
-          <View
-            key={fix.key}
-            accessible
-            accessibilityLabel={`${index + 1}. ${fix.title}. ${fix.detail}`}
-            style={[styles.fix, { borderWidth: sizes.border, borderColor: colors.borderHairline }]}
-          >
-            <View style={[styles.tile, { backgroundColor: colors.brandSurface }]}>
-              <Text variant="titleSm" color="brand">
-                {String(index + 1)}
-              </Text>
-            </View>
-            <View style={styles.grow}>
-              <Text variant="label">{fix.title}</Text>
-              <Text variant="caption" color="textSecondary">
-                {fix.detail}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </Card>
+        <Icon name={open ? 'ChevronUp' : 'ChevronDown'} size="sm" color={colors.iconMuted} />
+      </Pressable>
+      {open ? <View style={styles.foldBody}>{children}</View> : null}
+    </FlowCard>
   );
 }
 
 export type AtsResultProps = {
   result: AtsCheckResult;
   onRubric: () => void;
-  /** The check finished while the user watched: play its arrival (see `Arrival`). */
+  /** The check finished while the user watched: the blocks rise in turn. */
   arrived?: boolean;
 };
 
-/** ATS 03 (646:51) under the ✕: the verdict and score, the missing keywords, the fixes. */
+/**
+ * An ATS check's result (toreview §173, Figma "ATS · 2 Result"): the score card with its band, the
+ * required-skills line and three stat tiles; the missing keywords; the fixes and the score's
+ * parts folded until asked. Every score still links its rubric (§7.8).
+ */
 export function AtsResult({ result, onRubric, arrived = false }: AtsResultProps) {
+  const { colors, u } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
-  const arrival: Arrival = arrived && !reduced ? { block: blockIn, chip: chipIn } : null;
+  const enter = (index: number) => (arrived && !reduced ? blockIn(index) : undefined);
+  const lead = scoreLead(result.report);
+  const formatting = result.report?.components.find((c) => c.key === 'formatting');
+  const formatPass = formatting?.score != null ? formatting.score >= 80 : undefined;
+  const outOfTen = (Math.round(result.score) / 10).toFixed(1);
+
   return (
-    <View>
-      <Animated.View entering={arrival?.block(0)}>
-        <ResultHero result={result} onRubric={onRubric} />
+    <View style={styles.wrap}>
+      <Text variant="footnote" color="textSecondary">
+        {result.company ? `ATS check · ${result.company}` : 'ATS check'}
+      </Text>
+
+      <Animated.View entering={enter(0)}>
+        <FlowCard style={styles.hero}>
+          <View style={styles.heroRow}>
+            <ScoreRing
+              score={result.score}
+              valueText={outOfTen}
+              label="out of 10"
+              size={u(104)}
+              strokeWidth={u(9)}
+              ringColor={
+                result.band === 'strong' || result.band === 'good' ? 'success' : 'warningAccent'
+              }
+              numberVariant="numberLg"
+              labelVariant="footnote"
+              labelColor="textSecondary"
+              accessibilityLabel={`${SCORE_LABEL} ${outOfTen} out of 10, ${ATS_BAND_LABEL[result.band]}`}
+            />
+            <View style={styles.heroText}>
+              <StatusPill
+                label={`${ATS_BAND_LABEL[result.band]} match`}
+                tone={BAND_TONE[result.band]}
+              />
+              <Text variant="title3" color="ink" {...a11yHeader()}>
+                {lead?.headline ? `${lead.headline} skills` : atsCheckTitle(result)}
+              </Text>
+              <Pressable
+                feedback="subtle"
+                accessibilityRole="button"
+                accessibilityLabel={`How the ${SCORE_LABEL} works`}
+                onPress={onRubric}
+                style={styles.link}
+              >
+                <Text variant="footnote" color="brand">
+                  How the score works
+                </Text>
+                <Icon name="ChevronRight" size={u(14)} color={colors.brand} />
+              </Pressable>
+            </View>
+          </View>
+          <View style={styles.stats}>
+            <Stat icon="Key01" value={String(result.missing.length)} label="Missing" />
+            <Stat icon="Tool02" value={String(result.fixes.length)} label="Fixes" />
+            <Stat
+              icon="LayoutTop"
+              value={formatPass == null ? '—' : formatPass ? 'Pass' : 'Check'}
+              label="Format"
+            />
+          </View>
+        </FlowCard>
       </Animated.View>
-      <View style={styles.cards}>
+
+      <Animated.View entering={enter(1)} style={styles.section}>
+        <Text variant="title3" color="ink" {...a11yHeader()}>
+          Missing keywords
+        </Text>
+        {/* §7.8 / D-14: a missing keyword is a gap to fill truthfully, never text to paste in. */}
+        <Text variant="callout" color="textSecondary">
+          {result.missing.length > 0
+            ? 'Add only the ones you really have.'
+            : 'Your resume already shows every keyword the job asks for.'}
+        </Text>
+        {result.missing.length > 0 ? (
+          <View style={styles.chips}>
+            {result.missing.map((keyword) => (
+              <View
+                key={keyword}
+                style={[
+                  styles.chip,
+                  { borderColor: colors.borderDefault, backgroundColor: colors.surfaceCard },
+                ]}
+              >
+                <Text variant="footnote" color="ink">
+                  {keyword}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </Animated.View>
+
+      <Animated.View entering={enter(2)} style={styles.section}>
+        <Fold
+          icon="Tool02"
+          title={`${result.fixes.length} ${result.fixes.length === 1 ? 'fix' : 'fixes'}`}
+          body={
+            result.fixes.length > 0
+              ? result.fixes
+                  .map((f) => f.title)
+                  .slice(0, 3)
+                  .join(', ')
+              : 'Nothing needs changing'
+          }
+        >
+          {result.fixes.map((fix, index) => (
+            <View key={fix.key}>
+              {index > 0 ? <FlowDivider /> : null}
+              <View
+                accessible
+                accessibilityLabel={`${index + 1}. ${fix.title}. ${fix.detail}`}
+                style={styles.fixRow}
+              >
+                <Text variant="bodyLgStrong" color="brand">
+                  {String(index + 1)}
+                </Text>
+                <View style={styles.flex}>
+                  <Text variant="bodyLgStrong" color="ink">
+                    {fix.title}
+                  </Text>
+                  <Text variant="footnote" color="textSecondary">
+                    {fix.detail}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </Fold>
         {result.report ? (
-          <Animated.View entering={arrival?.block(1)}>
+          <Fold icon="LineChartUp01" title="Score details" body={ATS_CHECK_LEDE[result.band]}>
             <ScoreParts parts={result.report.components} />
-          </Animated.View>
-        ) : null}
-        <Animated.View entering={arrival?.block(2)}>
-          <MissingCard missing={result.missing} arrival={arrival} />
-        </Animated.View>
-        <Animated.View entering={arrival?.block(3)}>
-          <FixCard fixes={result.fixes} />
-        </Animated.View>
-        {result.report ? (
-          <Animated.View entering={arrival?.block(4)}>
             <ScoreNotMeasured lines={result.report.notMeasured} />
-          </Animated.View>
+          </Fold>
         ) : null}
-      </View>
+      </Animated.View>
     </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  hero: { flexDirection: 'row', alignItems: 'flex-start', gap: s(HERO_GAP) },
-  heroText: { flex: 1, gap: s(TEXT_GAP) },
-  link: {
-    marginTop: s(LINK_TOP),
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(LINK_GAP),
-    paddingHorizontal: s(LINK_PAD_X),
-    paddingVertical: s(LINK_PAD_Y),
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(20), paddingTop: u(4), width: '100%' },
+  flex: { flex: 1, gap: u(2) },
+  hero: { gap: u(16) },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: u(18) },
+  heroText: { flex: 1, gap: u(6) },
+  link: { flexDirection: 'row', alignItems: 'center', gap: u(2), alignSelf: 'flex-start' },
+  stats: { flexDirection: 'row', gap: u(8) },
+  stat: {
+    flex: 1,
+    gap: u(2),
+    paddingHorizontal: u(12),
+    paddingVertical: u(10),
+    borderRadius: u(16),
   },
-  score: { alignItems: 'center', gap: s(RING_TO_PILL) },
-  cards: { marginTop: s(HERO_TO_CARD), gap: s(CARD_GAP) },
-  card: { padding: s(CARD_PAD) },
-  head: { flexDirection: 'row', alignItems: 'center' },
-  grow: { flex: 1 },
-  count: { paddingHorizontal: s(COUNT_PAD_X), paddingVertical: s(COUNT_PAD_Y) },
-  sub: { marginTop: s(HEAD_TO_SUB) },
-  chips: {
-    marginTop: s(SUB_TO_BODY),
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: s(CHIP_GAP_X),
-    rowGap: s(CHIP_GAP_Y),
-  },
-  chip: { paddingHorizontal: s(CHIP_PAD_X), paddingVertical: s(CHIP_PAD_Y), borderStyle: 'dashed' },
-  fixes: { marginTop: s(SUB_TO_BODY), gap: s(FIX_GAP) },
-  fix: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(FIX_ROW_GAP),
-    paddingHorizontal: s(FIX_PAD_X),
-    paddingVertical: s(FIX_PAD_Y),
-    borderRadius: s(FIX_RADIUS),
-  },
-  tile: {
-    width: s(FIX_TILE),
-    height: s(FIX_TILE),
-    borderRadius: s(FIX_TILE_RADIUS),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  section: { gap: u(10) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8), marginTop: u(4) },
+  chip: { paddingHorizontal: u(14), paddingVertical: u(9), borderRadius: u(999), borderWidth: 1 },
+  fold: { paddingVertical: u(4) },
+  foldHead: { flexDirection: 'row', alignItems: 'center', gap: u(12), paddingVertical: u(12) },
+  foldBody: { gap: u(4), paddingBottom: u(12) },
+  fixRow: { flexDirection: 'row', gap: u(12), paddingVertical: u(10) },
 }));

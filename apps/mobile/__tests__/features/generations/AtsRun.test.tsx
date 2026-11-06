@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore } from '@/data/mock';
-import { atsCheckTitle, scoreLead } from '@/data/models';
+import { ATS_CHECK_LEDE, scoreLead } from '@/data/models';
 import { createQueryClient } from '@/data/queries';
 import { GENERATION_TICK_MS, mockStore, repos, resetMockRepos } from '@/data/repos';
 import { GenerationScreen } from '@/features/generations';
@@ -117,19 +117,28 @@ describe('GenerationScreen — ATS check run (ATS 02–03)', () => {
     // The count leads, with the verdict beside it, then the parts and what isn't measured.
     const lead = scoreLead(check.report);
     if (!lead) throw new Error('a check against a job counts its required skills');
-    expect(screen.getByRole('header', { name: lead.headline })).toBeOnTheScreen();
-    expect(screen.getByText(`${lead.detail}. ${atsCheckTitle(check)}.`)).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: `${lead.headline} skills` })).toBeOnTheScreen();
+    expect(screen.getByLabelText(`Missing: ${check.missing.length}`)).toBeOnTheScreen();
+    expect(screen.getByLabelText(`Fixes: ${check.fixes.length}`)).toBeOnTheScreen();
+    // The score's parts and what it doesn't measure sit folded until asked (§173).
+    expect(screen.queryByRole('header', { name: 'Where your points go' })).toBeNull();
+    await press(`Score details, ${ATS_CHECK_LEDE[check.band]}`);
     expect(screen.getByRole('header', { name: 'Where your points go' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'What this doesn’t measure' })).toBeOnTheScreen();
-    expect(screen.getByLabelText(`ATS score ${check.score} for this job`)).toBeOnTheScreen();
     // The uploaded CV shows Fintech in a dated role, and a check reads the document on its own
     // terms, so Stripe's listing has nothing left missing.
     expect(check.missing).toEqual([]);
     expect(screen.queryByText(/^d+ missing$/)).toBeNull();
     const [first] = check.fixes;
     expect(first).toBeDefined();
+    await press(
+      `${check.fixes.length} ${check.fixes.length === 1 ? 'fix' : 'fixes'}, ${check.fixes
+        .map((f) => f.title)
+        .slice(0, 3)
+        .join(', ')}`,
+    );
     expect(screen.getByLabelText(`1. ${first?.title}. ${first?.detail}`)).toBeOnTheScreen();
-    expect(screen.getByText('Saves a copy to your Resumes first')).toBeOnTheScreen();
+    expect(screen.getByText('Saves a tailored copy first')).toBeOnTheScreen();
 
     await press('How the ATS score works');
     expect(mockPush).toHaveBeenCalledWith({

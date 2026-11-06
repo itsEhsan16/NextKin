@@ -46,7 +46,7 @@ describe('AtsCheckScreen error state', () => {
     );
 
     expect(
-      await screen.findByText("Couldn't load your plan", {}, { timeout: 15000 }),
+      await screen.findByText('Couldn’t load your plan', {}, { timeout: 15000 }),
     ).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
     // Nothing is offered that would spend a check against an allowance the page never read.

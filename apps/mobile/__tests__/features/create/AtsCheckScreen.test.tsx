@@ -9,7 +9,6 @@ import { createQueryClient, qk } from '@/data/queries';
 import { resetMockRepos } from '@/data/repos';
 import { AtsCheckScreen } from '@/features/create';
 import { atsBlocker, JD_MIN } from '@/features/create/atsCheckSetup';
-import { pickDocument } from '@/lib';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -24,13 +23,6 @@ jest.mock('expo-router', () => ({
   }),
   Link: ({ children }: PropsWithChildren) => children,
 }));
-
-jest.mock('@/lib', () => ({
-  ...jest.requireActual('@/lib'),
-  pickDocument: jest.fn(),
-}));
-
-const pick = pickDocument as jest.MockedFunction<typeof pickDocument>;
 
 const metrics: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -65,12 +57,6 @@ async function renderAts(seed?: (client: QueryClient) => void) {
 const press = (label: string) =>
   act(async () => void fireEvent.press(screen.getByLabelText(label, shown)));
 
-async function uploadCv() {
-  pick.mockResolvedValueOnce({ name: 'George_Smith_CV.pdf', uri: 'file:///cv.pdf' });
-  await press('Upload a resume');
-  await settle(PARSE_MS);
-}
-
 describe('atsBlocker (ATS 01)', () => {
   it('asks for the file first, then the job or enough of a description', () => {
     const base = { hasFile: true, mode: 'job' as const, hasJob: true, pasted: '' };
@@ -88,7 +74,6 @@ describe('AtsCheckScreen (ATS 01 / 01b, 645:3 / 645:49)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
-    pick.mockReset();
     mockPush.mockClear();
     mockReplace.mockClear();
   });
@@ -101,29 +86,18 @@ describe('AtsCheckScreen (ATS 01 / 01b, 645:3 / 645:49)', () => {
     jest.useRealTimers();
   });
 
-  it('starts on the most recent saved job, with the checks left on the bar', async () => {
+  it('starts on your base resume and the most recent saved job (§173)', async () => {
     await renderAts();
 
     expect(screen.getByRole('header', { name: 'Check your resume' })).toBeOnTheScreen();
-    expect(
-      screen.getByText('See how a resume made outside NextKin reads for a job.'),
-    ).toBeOnTheScreen();
-    expect(screen.getByText('Against this job', shown)).toBeOnTheScreen();
-    expect(screen.getByText('Stripe · Bengaluru', shown)).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 1 of 2')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Resume: Product Designer. Change', shown)).toBeOnTheScreen();
+    expect(screen.getByLabelText(/^Job: .+, Stripe\. Change$/, shown)).toBeOnTheScreen();
     expect(screen.getByText('2 of 3 checks left this month')).toBeOnTheScreen();
-
-    // Nothing to check yet: the press says what is missing and spends nothing.
-    await press('Check my resume');
-    expect(screen.getByText('Upload your resume to check it.')).toBeOnTheScreen();
-    expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  it('reads the file on upload, then checks it against the saved job', async () => {
+  it('checks a resume you already have against the saved job in one tap', async () => {
     const client = await renderAts();
-    await uploadCv();
-
-    expect(screen.getByText('George_Smith_CV.pdf', shown)).toBeOnTheScreen();
-    expect(screen.getByText(/^Uploaded /, shown)).toBeOnTheScreen();
 
     await press('Check my resume');
     await settle(PARSE_MS);
@@ -133,37 +107,26 @@ describe('AtsCheckScreen (ATS 01 / 01b, 645:3 / 645:49)', () => {
     expect(started?.kind).toBe('ats_check');
     expect(started?.jobId).toBe('job_stripe');
     expect(started?.jdId).toBeDefined();
-    expect(started?.sourceResumeId).toBeDefined();
+    expect(started?.sourceResumeId).toBe('res_base');
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/generations/[id]',
       params: { id: started?.id },
     });
   });
 
-  it('refuses a scan in the row, before anything is spent', async () => {
+  it('opens the resume sheet, with upload, from Or upload a PDF', async () => {
     await renderAts();
-    pick.mockResolvedValueOnce({ name: 'CV_scan.pdf', uri: 'file:///scan.pdf' });
-    await press('Upload a resume');
-    await settle(PARSE_MS);
-
-    expect(
-      screen.getByText('We couldn’t read this file. It may be a scan or a photo.', shown),
-    ).toBeOnTheScreen();
-    expect(screen.getByLabelText('Try another', shown)).toBeOnTheScreen();
+    await press('Upload a resume instead');
+    await settle(NORMAL_MS);
+    expect(screen.getByLabelText('Upload a resume', shown)).toBeOnTheScreen();
   });
 
-  it('checks against a pasted description, and comes back to the saved job', async () => {
+  it('checks against a pasted description', async () => {
     const client = await renderAts();
-    await uploadCv();
 
-    await press('Or paste a job description');
-    expect(
-      screen.getByText('We’ll check your resume against this job description.'),
-    ).toBeOnTheScreen();
-    expect(screen.queryByText('Against this job', shown)).toBeNull();
-
+    await act(async () => void fireEvent.press(screen.getAllByText('Paste', shown)[0]!));
     await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Paste the job description', shown), 'Too short'),
+      fireEvent.changeText(screen.getByLabelText('Job description', shown), 'Too short'),
     );
     await press('Check my resume');
     expect(
@@ -172,7 +135,7 @@ describe('AtsCheckScreen (ATS 01 / 01b, 645:3 / 645:49)', () => {
     ).toBeGreaterThan(0);
 
     await act(async () =>
-      fireEvent.changeText(screen.getByLabelText('Paste the job description', shown), PASTED),
+      fireEvent.changeText(screen.getByLabelText('Job description', shown), PASTED),
     );
     await press('Check my resume');
     await settle(PARSE_MS);
