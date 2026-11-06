@@ -17,6 +17,10 @@ export type OnboardingFrameProps = {
   subtitle?: string;
   onBack?: () => void;
   onSkip?: () => void;
+  /** Shows a close ✕ in Skip's place — for flows the user can leave at any step. */
+  onClose?: () => void;
+  /** Something between the title and the step, e.g. the "Building from" pill. */
+  aside?: ReactNode;
   /** Pinned at the bottom: the step's primary button. */
   footer?: ReactNode;
   children: ReactNode;
@@ -33,6 +37,8 @@ export function OnboardingFrame({
   subtitle,
   onBack,
   onSkip,
+  onClose,
+  aside,
   footer,
   children,
 }: OnboardingFrameProps) {
@@ -56,7 +62,9 @@ export function OnboardingFrame({
           <View style={styles.progress}>
             <StepProgress step={step} total={total} />
           </View>
-          {onSkip ? (
+          {onClose ? (
+            <IconButton icon="XClose" label="Close" variant="outline" onPress={onClose} />
+          ) : onSkip ? (
             <Pressable
               feedback="subtle"
               accessibilityRole="button"
@@ -82,6 +90,7 @@ export function OnboardingFrame({
             </Text>
           ) : null}
         </View>
+        {aside ? <View style={styles.aside}>{aside}</View> : null}
         {children}
       </View>
     </Screen>
@@ -95,5 +104,6 @@ const useStyles = scaledSheet((_s, u) => ({
   progress: { flex: 1 },
   skip: { minWidth: u(44), height: u(44), alignItems: 'flex-end', justifyContent: 'center' },
   heading: { marginTop: u(28), marginBottom: u(24), gap: u(8) },
+  aside: { marginTop: -u(8), marginBottom: u(20) },
   footer: { paddingHorizontal: u(24), paddingTop: u(12), paddingBottom: u(8) },
 }));

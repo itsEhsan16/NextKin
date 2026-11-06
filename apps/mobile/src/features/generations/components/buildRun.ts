@@ -3,11 +3,11 @@ import { ATS_BAND_LABEL, atsBandFor, type AtsBand, type Generation } from '@/dat
 import type { TailorProgressRow } from './TailorProgress';
 
 // BUILD 05 (653:124) copy. The wait itself is said once, in the "Almost there" card.
-export const BUILD_LEDE = 'Our AI is building your resume to match what the job asks for.';
+export const BUILD_LEDE = 'Matching your experience to the job.';
 export const BUILD_CARD_TITLE = 'Writing your resume';
 
 export const buildProgressTitle = (company?: string) =>
-  company ? `Building your resume for ${company}` : 'Building your resume';
+  company ? `Building for ${company}` : 'Building your resume';
 
 const LABELS = [
   'Read the job description',

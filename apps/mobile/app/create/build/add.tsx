@@ -1,13 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { BuildAddJobScreen } from '@/features/create';
+import { BuildJobScreen } from '@/features/create';
 
-/** BUILD 03: a job from anywhere. `mode=paste` (with a fresh `at`) arrives from BUILD 05b. */
+/** Kept for shares and old links: the one job step, opened with a note (toreview.md §172). */
 export default function BuildAddRoute() {
-  const { mode, at, notice } = useLocalSearchParams<{
-    mode?: string;
-    at?: string;
-    notice?: string;
-  }>();
-  return <BuildAddJobScreen mode={mode} at={at} notice={notice} />;
+  const { notice } = useLocalSearchParams<{ notice?: string }>();
+  return <BuildJobScreen notice={notice} />;
 }

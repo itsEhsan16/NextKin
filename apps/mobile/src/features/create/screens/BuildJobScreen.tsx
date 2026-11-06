@@ -1,59 +1,78 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { View } from 'react-native';
-import Animated from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AccessibilityInfo, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { useCurrentUser, useProfile, useResumes, useSavedJobs } from '@/data/queries';
+import type { Job, JdFile } from '@/data/models';
+import {
+  isUnreadableLinkError,
+  useCurrentUser,
+  useExtractJd,
+  useJobPicks,
+  useProfile,
+  useResumes,
+  useSavedJobs,
+} from '@/data/queries';
+import { pickDocument, useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
-import { Screen } from '@/ui/Screen';
-import { ScreenHeader } from '@/ui/ScreenHeader';
+import { Icon } from '@/ui/Icon';
+import { Pressable } from '@/ui/Pressable';
+import { SearchField } from '@/ui/SearchField';
+import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
-import { useRevealStagger } from '@/ui/motion';
+import { TextField } from '@/ui/TextField';
 
-import { BuildJobCard, BuildJobRow, BuildJobRowSkeleton } from '../components/BuildJobRows';
-import { OrDivider } from '../components/BuildNotes';
-import {
-  BUILD_LEDE,
-  BUILD_TITLE,
-  BuildAnywhereTile,
-  BuildFromRow,
-  BuildSectionTitle,
-} from '../components/BuildSourceRows';
-import { BuildSourceSheet } from '../components/BuildSourceSheet';
 import { useBuildSource, useBuildSourceStore } from '../buildSourceStore';
-import { FLOW_ART, FlowHero } from '../components/FlowHero';
+import { BuildJobCard, BuildJobRow, BuildJobRowSkeleton } from '../components/BuildJobRows';
+import { BuildSourcePill } from '../components/BuildSourcePill';
+import { BuildSourceSheet } from '../components/BuildSourceSheet';
+import { OnboardingFrame } from '../components/OnboardingFrame';
 import { useBuildSourceUpload } from '../hooks/useBuildSourceUpload';
 import { useBuildActions } from '../hooks/useStartBuild';
+import { buildAddInput } from '../buildInput';
 
-// BUILD 01 at 390 (652:2), in artboard units.
-const HEADER_TO_ART = 22 / 0.75; // 652:6 → 661:26
-const HERO_TO_SECTION = 22 / 0.75; // 652:16
-const TITLE_TO_CARD = 10 / 0.75; // 652:21
-const CARD_TO_OR = 16 / 0.75; // 652:57 / 652:62
-const EMPTY_GAP = 12 / 0.75;
-const TOP_JOBS = 1; // the owner's cut (2026-10-27): one saved job, the rest behind See all
+export const BUILD_STEPS = 3;
+export const BUILD_JOB_TITLE = 'Which job is it for?';
+const LEDE = 'Paste a job, or pick one you saved.';
+const READ_FAILED = 'We couldn’t read that job. Try again.';
+const BLOCKED = 'That site blocks reading. Paste the job description instead.';
+const TOO_BIG = 'That file is over 5 MB.';
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const SEARCH_FROM = 5;
+
+type Tab = 'saved' | 'top';
+
+const matches = (job: Job, query: string): boolean => {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return job.title.toLowerCase().includes(needle) || job.company.toLowerCase().includes(needle);
+};
 
 export type BuildJobScreenProps = {
   /** The resume to start from, when the flow was opened from one. */
   resumeId?: string;
+  /** Pre-filled paste text (a share, or a return from elsewhere). */
+  paste?: string;
+  /** Why they've landed here: a shared link whose site won't be read. */
+  notice?: string;
 };
 
 /**
- * BUILD 01 (652:2) — "Which job is this resume for?", the one start for a resume for a job
- * (toreview §74, §145.1): the latest saved job, a job from anywhere under the OR, and what the
- * resume is built from, pinned at the foot. A job opens Customize against that resume, or BUILD
- * 04b, the profile against the job, when there is none or the foot was changed to the profile.
- * Nothing is spent until the run starts there.
+ * Build Resume, step 1 of 3 (toreview.md §172): one screen for the job. Paste a link or the
+ * description (a link is told apart by itself), or upload a file, or tap a saved job / top match.
+ * Replaces BUILD 01, 02, 03 and 05b. Tapping a job, or Continue on a pasted one, goes straight to
+ * the match; nothing is spent until the build itself.
  */
-export function BuildJobScreen({ resumeId: requested }: BuildJobScreenProps) {
-  const { spacing, s } = useTheme();
+export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobScreenProps) {
+  const reduced = useReducedMotion();
+  const { colors } = useTheme();
   const styles = useStyles();
-  const insets = useSafeAreaInsets();
   const actions = useBuildActions();
+  const extract = useExtractJd();
 
   const saved = useSavedJobs();
+  const picks = useJobPicks();
   const profile = useProfile();
   const user = useCurrentUser();
   const resumes = useResumes();
@@ -63,53 +82,91 @@ export function BuildJobScreen({ resumeId: requested }: BuildJobScreenProps) {
   const [sourceOpen, setSourceOpen] = useState(false);
   const sourceUpload = useBuildSourceUpload();
 
-  // The source belongs to this visit of the flow: leaving BUILD 01 starts the choice over. A resume's
-  // own "Tailor to a job" arrives with that resume already picked.
+  const [text, setText] = useState(paste ?? '');
+  const [file, setFile] = useState<JdFile | null>(null);
+  const [failure, setFailure] = useState<string | undefined>(notice);
+  const [tab, setTab] = useState<Tab>('saved');
+  const [query, setQuery] = useState('');
+  const busy = useRef(false);
+
   useEffect(() => {
     if (requested) pick(requested);
     return reset;
   }, [pick, requested, reset]);
 
-  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
-  // with its data already here slides in whole with the push.
-  const enter = useRevealStagger(!!saved.data);
+  const input = buildAddInput(text, file);
+  const reading = extract.isPending;
 
-  const jobs = saved.data ?? [];
-  const top = jobs.slice(0, TOP_JOBS);
+  const fail = (message: string) => {
+    setFailure(message);
+    AccessibilityInfo.announceForAccessibility(message);
+  };
 
-  let savedBlock: ReactNode;
-  if (saved.isError) {
-    savedBlock = (
+  const upload = async () => {
+    const picked = await pickDocument(['pdf', 'docx', 'doc', 'txt']);
+    if (!picked) return;
+    if (picked.size != null && picked.size > MAX_FILE_BYTES) return fail(TOO_BIG);
+    setFailure(undefined);
+    setFile(picked);
+    setText('');
+  };
+
+  const readPasted = async () => {
+    if (!input || busy.current) return;
+    busy.current = true;
+    setFailure(undefined);
+    try {
+      const draft = await extract.mutateAsync(input);
+      actions.openCompare({ jdId: draft.id });
+    } catch (error) {
+      fail(input.source === 'link' && isUnreadableLinkError(error) ? BLOCKED : READ_FAILED);
+    } finally {
+      busy.current = false;
+    }
+  };
+
+  const source = tab === 'saved' ? saved : picks;
+  const all = useMemo(() => source.data ?? [], [source.data]);
+  const list = useMemo(() => all.filter((job) => matches(job, query)), [all, query]);
+
+  let jobs: ReactNode;
+  if (source.isError) {
+    jobs = (
       <StateView
         tone="danger"
         icon="AlertTriangle"
-        title="Couldn't load your saved jobs"
-        message="Check your connection and try again."
+        title="Couldn’t load jobs"
         actionLabel="Try again"
-        onAction={() => void saved.refetch()}
+        onAction={() => void source.refetch()}
       />
     );
-  } else if (!saved.data) {
-    savedBlock = (
+  } else if (!source.data) {
+    jobs = (
       <BuildJobCard>
-        {Array.from({ length: TOP_JOBS }, (_, index) => (
+        {[0, 1, 2].map((index) => (
           <BuildJobRowSkeleton key={index} />
         ))}
       </BuildJobCard>
     );
-  } else if (top.length === 0) {
-    savedBlock = (
-      <View style={styles.empty}>
-        <Text variant="body" color="textSecondary">
-          No saved jobs yet. Save one from Jobs, or add a job from anywhere below.
+  } else if (all.length === 0) {
+    jobs = (
+      <View style={[styles.empty, { backgroundColor: colors.surfaceFaint }]}>
+        <Text variant="callout" color="textSecondary" align="center">
+          {tab === 'saved' ? 'No saved jobs yet.' : 'No matches yet.'}
         </Text>
-        <Button label="Browse jobs" variant="secondary" onPress={actions.browseJobs} />
+        <Button label="Browse jobs" variant="outline" onPress={actions.browseJobs} />
       </View>
     );
+  } else if (list.length === 0) {
+    jobs = (
+      <Text variant="callout" color="textSecondary" align="center" style={styles.none}>
+        No jobs match “{query.trim()}”.
+      </Text>
+    );
   } else {
-    savedBlock = (
+    jobs = (
       <BuildJobCard>
-        {top.map((job) => (
+        {list.map((job) => (
           <BuildJobRow
             key={job.id}
             job={job}
@@ -128,53 +185,110 @@ export function BuildJobScreen({ resumeId: requested }: BuildJobScreenProps) {
     roles != null && skills != null
       ? { name: user.data?.firstName ?? '', avatarUrl: user.data?.avatarUrl, roles, skills }
       : undefined;
-  const footer = profileSource ? (
-    <View
-      style={{
-        paddingHorizontal: spacing.gutter,
-        paddingTop: spacing[4],
-        paddingBottom: spacing[4] + insets.bottom,
-      }}
-    >
-      <BuildFromRow
-        source={
-          sourceUpload.reading
-            ? { kind: 'reading', fileName: sourceUpload.reading }
-            : picked
-              ? { kind: 'resume', resume: picked }
-              : { kind: 'profile', ...profileSource }
-        }
-        onChange={() => setSourceOpen(true)}
-      />
-    </View>
-  ) : undefined;
+
+  const segments: readonly Segment<Tab>[] = [
+    { key: 'saved', label: saved.data ? `Saved (${saved.data.length})` : 'Saved' },
+    { key: 'top', label: 'Top matches' },
+  ];
 
   return (
-    <Screen
-      scroll
-      edges={['top', 'bottom']}
-      header={<ScreenHeader title={BUILD_TITLE} showTitle={false} onBack={actions.goBack} />}
-      headerStyle={{ paddingBottom: s(HEADER_TO_ART) }}
-      contentContainerStyle={{ paddingBottom: spacing[8] }}
-      footer={footer}
+    <OnboardingFrame
+      step={1}
+      total={BUILD_STEPS}
+      title={BUILD_JOB_TITLE}
+      subtitle={LEDE}
+      onBack={actions.goBack}
+      aside={
+        profileSource ? (
+          <BuildSourcePill
+            source={
+              sourceUpload.reading
+                ? { kind: 'reading', fileName: sourceUpload.reading }
+                : picked
+                  ? { kind: 'resume', resume: picked }
+                  : { kind: 'profile', ...profileSource }
+            }
+            onPress={() => setSourceOpen(true)}
+          />
+        ) : undefined
+      }
+      footer={
+        input ? (
+          <Animated.View entering={reduced ? undefined : FadeIn}>
+            <Button
+              label={reading ? 'Reading the job…' : 'Continue'}
+              size="xl"
+              block
+              loading={reading}
+              onPress={() => void readPasted()}
+            />
+          </Animated.View>
+        ) : undefined
+      }
     >
-      <Animated.View entering={enter(0)}>
-        <FlowHero title={BUILD_TITLE} lede={BUILD_LEDE} art={FLOW_ART.buildJob} />
-      </Animated.View>
-
-      <Animated.View entering={enter(1)} style={{ marginTop: s(HERO_TO_SECTION) }}>
-        <BuildSectionTitle
-          title="Your saved jobs"
-          linkLabel={jobs.length > 0 ? `See all (${jobs.length})` : undefined}
-          onLink={actions.openChooseJob}
+      {file ? (
+        <View style={[styles.file, { backgroundColor: colors.brandSurface }]}>
+          <Icon name="File04" size="md" color={colors.brand} />
+          <Text variant="bodyLgStrong" color="ink" numberOfLines={1} style={styles.fill}>
+            {file.name}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Remove file"
+            feedback="subtle"
+            onPress={() => setFile(null)}
+          >
+            <Icon name="XClose" size="sm" color={colors.iconDefault} />
+          </Pressable>
+        </View>
+      ) : (
+        <TextField
+          accessibilityLabel="Job link or description"
+          placeholder="Paste a job link or description"
+          icon="Link01"
+          value={text}
+          multiline
+          minLines={2}
+          onChangeText={(next) => {
+            setText(next);
+            setFailure(undefined);
+          }}
+          error={failure}
         />
-        <View style={{ marginTop: s(TITLE_TO_CARD) }}>{savedBlock}</View>
-      </Animated.View>
+      )}
+      {!file ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Upload a job file"
+          feedback="subtle"
+          onPress={() => void upload()}
+          style={styles.upload}
+        >
+          <Icon name="UploadCloud02" size="sm" color={colors.brand} />
+          <Text variant="footnote" color="brand">
+            Upload a file instead
+          </Text>
+        </Pressable>
+      ) : null}
 
-      <Animated.View entering={enter(2)} style={[styles.anywhere, { marginTop: s(CARD_TO_OR) }]}>
-        <OrDivider />
-        <BuildAnywhereTile onPress={actions.openAddJob} />
-      </Animated.View>
+      <View style={styles.divider}>
+        <View style={[styles.rule, { backgroundColor: colors.divider }]} />
+        <Text variant="eyebrow" color="textTertiary">
+          OR PICK A JOB
+        </Text>
+        <View style={[styles.rule, { backgroundColor: colors.divider }]} />
+      </View>
+
+      <SegmentedControl segments={segments} value={tab} onChange={setTab} />
+      {all.length >= SEARCH_FROM ? (
+        <SearchField
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search jobs"
+          style={styles.search}
+        />
+      ) : null}
+      <View style={styles.list}>{jobs}</View>
 
       {profileSource ? (
         <BuildSourceSheet
@@ -187,11 +301,30 @@ export function BuildJobScreen({ resumeId: requested }: BuildJobScreenProps) {
           onUpload={() => void sourceUpload.upload()}
         />
       ) : null}
-    </Screen>
+    </OnboardingFrame>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  empty: { gap: s(EMPTY_GAP), alignItems: 'flex-start' },
-  anywhere: { gap: s(CARD_TO_OR) },
+const useStyles = scaledSheet((_s, u) => ({
+  fill: { flex: 1 },
+  file: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(12),
+    padding: u(16),
+    borderRadius: u(16),
+  },
+  upload: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(6),
+    alignSelf: 'flex-start',
+    paddingVertical: u(10),
+  },
+  divider: { flexDirection: 'row', alignItems: 'center', gap: u(10), marginVertical: u(20) },
+  rule: { flex: 1, height: 1 },
+  search: { marginTop: u(12) },
+  list: { marginTop: u(12) },
+  empty: { alignItems: 'center', gap: u(12), padding: u(20), borderRadius: u(20) },
+  none: { paddingVertical: u(16) },
 }));

@@ -25,7 +25,7 @@ export function GapInterviewCard({ onOpen, style }: GapInterviewCardProps) {
       <View style={{ gap: spacing[1] }}>
         <Text variant="title">{`${pluralize(count, 'quick question')} for you`}</Text>
         <Text variant="caption" color="textSecondary">
-          Short answers fill the gaps in your profile, and your next resume is written from them.
+          Short answers make your next resume stronger.
         </Text>
       </View>
       <Button label="Answer them" variant="secondary" onPress={onOpen} block />

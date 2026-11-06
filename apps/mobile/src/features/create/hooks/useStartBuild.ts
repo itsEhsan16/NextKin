@@ -126,22 +126,22 @@ export function useBuildActions() {
     () => ({
       goBack,
       openUpgrade,
-      openChooseJob: () => router.push('/create/build/jobs'),
-      openAddJob: () => router.push('/create/build/add'),
       /**
        * BUILD 04b, the profile against the job. From a resume (toreview §139), the resume against
        * the job on Customize, which owns that run. With neither to compare, Customize again: its
        * no-resume card is what offers an upload or a start from nothing.
        */
-      openCompare: ({ jobId, jdId }: BuildCompareTarget) => {
+      openCompare: ({ jobId, jdId }: BuildCompareTarget, options: { replace?: boolean } = {}) => {
         if (resumeId || profileIsEmpty) {
-          openCustomize({ jobId, jdId, ...(resumeId ? { resumeId } : {}) });
+          openCustomize({ jobId, jdId, ...(resumeId ? { resumeId } : {}) }, options);
           return;
         }
-        router.push({
-          pathname: '/create/build/compare',
+        const href = {
+          pathname: '/create/build/compare' as const,
           params: { ...(jobId ? { jobId } : {}), ...(jdId ? { jdId } : {}) },
-        });
+        };
+        if (options.replace) router.replace(href);
+        else router.push(href);
       },
       openProfileEditor: () => router.push('/profile/edit'),
       browseJobs: () => router.navigate('/(tabs)/jobs'),

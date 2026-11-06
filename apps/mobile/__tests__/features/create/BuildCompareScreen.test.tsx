@@ -72,7 +72,7 @@ async function renderCompare(
   );
 }
 
-describe('BuildCompareScreen (BUILD 04b / 04c)', () => {
+describe('Build Resume step 2: the match (§172)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -88,57 +88,32 @@ describe('BuildCompareScreen (BUILD 04b / 04c)', () => {
     jest.useRealTimers();
   });
 
-  it('measures the profile against the read job, as job match rather than an ATS score', async () => {
+  it('shows the match, the skills as chips and one build button (step 2 of 3)', async () => {
     const jdId = await seedDraft(BOARD_SKILLS);
     await renderCompare({ jdId });
     expect(screen.getByLabelText('Comparing your profile with this job')).toBeOnTheScreen();
     await settle();
 
-    expect(screen.getByLabelText('Job match 80 for this job')).toBeOnTheScreen();
-    expect(screen.getByText(/Your profile covers .*CRED asks for/)).toBeOnTheScreen();
-    expect(
-      screen.getByLabelText('This job: Senior Product Designer, CRED · Bengaluru'),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByLabelText(/^Built from: Your profile, \d+ roles · 12 skills$/),
-    ).toBeOnTheScreen();
-    expect(screen.getByText('4 of 5 on your profile')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Figma, on your profile')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Fintech, missing')).toBeOnTheScreen();
-    expect(
-      screen.getByText('Missing ones are only added if you say you have them.'),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByText('Says Senior UX Designer. This job is Senior Product Designer.'),
-    ).toBeOnTheScreen();
-    expect(screen.getByText('We’ll lead with what CRED asks for.')).toBeOnTheScreen();
-    expect(screen.getByText('We’ll ask before adding anything new.')).toBeOnTheScreen();
-
-    await act(async () => fireEvent.press(screen.getByLabelText('Edit your profile')));
-    expect(mockPush).toHaveBeenCalledWith('/profile/edit');
+    expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
+    expect(screen.getByText('Senior Product Designer · CRED')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Match 80 out of 100')).toBeOnTheScreen();
+    expect(screen.getByText('Good start. A few gaps to close.')).toBeOnTheScreen();
+    // On the profile: ticked and locked. Missing: off until the user says they have it.
+    expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
+    expect(screen.getByText('Uses 1 of your 3 resume builds this month')).toBeOnTheScreen();
   });
 
-  it('asks about the missing keyword, then builds with the answer (BUILD 04c)', async () => {
+  it('builds with the skills the user ticked, and nothing they did not', async () => {
     const startSpy = jest.spyOn(repos.generations, 'start');
     const jdId = await seedDraft(BOARD_SKILLS);
     await renderCompare({ jdId });
     await settle();
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Fix and build my resume')));
-    expect(startSpy).not.toHaveBeenCalled();
-    expect(screen.getByText('Add this to your resume?')).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        'CRED asks for it, but it isn’t on your profile. Only add it if you really have it.',
-      ),
-    ).toBeOnTheScreen();
-    expect(screen.getByText('Required by CRED')).toBeOnTheScreen();
-    expect(screen.getByText('Anything you add is saved to your profile too.')).toBeOnTheScreen();
-    expect(screen.getByText('Uses 1 of your 3 resume builds this month')).toBeOnTheScreen();
-
-    // A required skill starts as Skip: nothing is claimed without the user's yes (V2 §7.8).
-    await act(async () => fireEvent.press(screen.getByLabelText('Add Fintech')));
-    await act(async () => fireEvent.press(screen.getByLabelText('Build my resume')));
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
+    expect(screen.getByText('Added skills go on your profile too.')).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Build resume' })));
     await settle();
 
     expect(startSpy).toHaveBeenCalledWith({
@@ -152,19 +127,31 @@ describe('BuildCompareScreen (BUILD 04b / 04c)', () => {
     );
   });
 
-  it('builds at once when the profile already has everything the job asks for', async () => {
+  it('leaves untouched missing skills out of the resume', async () => {
     const startSpy = jest.spyOn(repos.generations, 'start');
-    const jdId = await seedDraft(['Figma', 'Design systems']);
+    const jdId = await seedDraft(BOARD_SKILLS);
     await renderCompare({ jdId });
     await settle();
 
-    expect(screen.getByText('Uses 1 of your 3 resume builds this month')).toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByLabelText('Fix and build my resume')));
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Build resume' })));
     await settle();
-    expect(screen.queryByText(/to your resume\?$/)).not.toBeOnTheScreen();
     expect(startSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ jdId, origin: 'build', build: { added: [], skipped: [] } }),
+      expect.objectContaining({ build: { added: [], skipped: ['Fintech'] } }),
     );
+  });
+
+  it('folds what the build will improve until asked', async () => {
+    const jdId = await seedDraft(BOARD_SKILLS);
+    await renderCompare({ jdId });
+    await settle();
+
+    expect(
+      screen.queryByText('Says Senior UX Designer. This job is Senior Product Designer.'),
+    ).not.toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByLabelText(/^What we’ll improve, \d+$/)));
+    expect(
+      screen.getByText('Says Senior UX Designer. This job is Senior Product Designer.'),
+    ).toBeOnTheScreen();
   });
 
   it('routes a spent allowance to the Pro plans when nothing is left to ask', async () => {
@@ -189,7 +176,7 @@ describe('BuildCompareScreen (BUILD 04b / 04c)', () => {
     await settle();
 
     expect(forJob).toHaveBeenCalledWith('job_stripe');
-    expect(screen.getByLabelText(/^This job: .+, Stripe · Bengaluru · Remote$/)).toBeOnTheScreen();
+    expect(screen.getByText(/ · Stripe$/)).toBeOnTheScreen();
   });
 
   it('offers a retry when the job cannot be read', async () => {
@@ -197,7 +184,7 @@ describe('BuildCompareScreen (BUILD 04b / 04c)', () => {
     await renderCompare({ jobId: 'job_stripe' });
     await settle();
 
-    expect(screen.getByText("Couldn't compare your profile")).toBeOnTheScreen();
+    expect(screen.getByText('Couldn’t compare')).toBeOnTheScreen();
     expect(screen.getByLabelText('Try again')).toBeOnTheScreen();
   });
 });

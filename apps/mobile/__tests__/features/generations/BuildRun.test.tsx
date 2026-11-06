@@ -124,11 +124,11 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     await settle(GENERATION_TICK_MS);
 
     expect(screen.queryByLabelText(/^Step \d of \d/)).toBeNull();
-    expect(screen.getByText('Building your resume for CRED')).toBeOnTheScreen();
+    expect(screen.getByText('Building for CRED')).toBeOnTheScreen();
     expect(
-      screen.getByText('Our AI is building your resume to match what the job asks for.'),
+      screen.getByText('Matching your experience to the job.'),
     ).toBeOnTheScreen();
-    expect(screen.getByText('Almost there!')).toBeOnTheScreen();
+    expect(screen.getByText('Almost there')).toBeOnTheScreen();
     expect(screen.getByLabelText('Read the job description, done')).toBeOnTheScreen();
     // The matching is a step of its own, seen working before the writing starts.
     expect(screen.getByLabelText('Matched your experience, in progress')).toBeOnTheScreen();

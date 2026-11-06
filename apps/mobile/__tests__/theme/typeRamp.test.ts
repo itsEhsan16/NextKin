@@ -48,7 +48,6 @@ const drawn390 = roles.filter(([, role]) => role.drawnAt390);
 // Drawn once at 422.66 (Figma 307:4152) and projected onto both anchors. Like `drawn390` these
 // sit on the geometry line rather than the Mobile 2 curve, but they are counted separately so
 // the Home re-measure guard below still counts only Home.
-const singleBoard = roles.filter(([, role]) => role.singleBoard);
 const projected = roles.filter(([, role]) => !role.drawnAt390 && !role.singleBoard);
 const onCurve = projected.filter(([name]) => !OFF_CURVE.includes(name));
 const offCurve = projected.filter(([name]) => OFF_CURVE.includes(name));

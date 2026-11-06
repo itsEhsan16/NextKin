@@ -1,66 +1,55 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { compareProfileToJob, type TailorKeyword } from '@/data/models';
-import {
-  useCurrentUser,
-  useJdDraft,
-  useJob,
-  useJobJd,
-  useProfile,
-  useSubscription,
-} from '@/data/queries';
+import { atsBandFor, compareProfileToJob } from '@/data/models';
+import { useJdDraft, useJob, useJobJd, useProfile, useSubscription } from '@/data/queries';
 import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
-
 import { scaledSheet, useTheme } from '@/theme';
-import { Screen } from '@/ui/Screen';
-import { ScreenHeader } from '@/ui/ScreenHeader';
+import { Button } from '@/ui/Button';
+import { ChoiceChip } from '@/ui/ChoiceChip';
+import { Icon } from '@/ui/Icon';
+import { Pressable } from '@/ui/Pressable';
+import { ScoreRing } from '@/ui/Progress';
+import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
-import { AddKeywordsSheet, collectChoices, defaultChoice } from '../components/AddKeywordsSheet';
-import type { TailorChoice } from '../components/AddSkipToggle';
-import { draftMetaLine } from '../components/BuildReviewCard';
-import { BuildVsCard } from '../components/BuildVsCard';
-import { TailorCompareSkeleton } from '../components/TailorCompareSkeleton';
-import { TailorHero } from '../components/TailorHero';
-import { TailorImproveCard } from '../components/TailorImproveCard';
-import { TailorKeywords } from '../components/TailorKeywords';
-import { jobMetaLine } from '../components/TailorVsCard';
+import { OnboardingFrame } from '../components/OnboardingFrame';
+import { useCreateActions } from '../hooks/useCreateActions';
 import { useBuildActions, useStartBuild } from '../hooks/useStartBuild';
+import { BUILD_STEPS } from './BuildJobScreen';
 
 export type BuildCompareScreenProps = {
-  /** A saved job (BUILD 01/02): read the way a build reads it. */
+  /** A saved job: read the way a build reads it. */
   jobId?: string;
-  /** A job read on BUILD 03/04; wins over `jobId` when both are set. */
+  /** A job that was pasted or shared and already read; wins over `jobId`. */
   jdId?: string;
 };
 
-const TITLE = 'Your profile vs this job';
-const CTA = 'Fix and build my resume';
-/** V2 §7.8: nothing new goes on the resume without the user's yes in BUILD 04c. */
-const BAR_NOTE = 'We’ll ask before adding anything new.';
+export const BUILD_MATCH_TITLE = 'How you match';
+export const BUILD_CTA = 'Build resume';
 
-// BUILD 04b at 390 (663:2), in artboard units.
-const HEADER_TO_HERO = 22 / 0.75; // 663:24
-const HERO_TO_CARD = 20 / 0.75; // 663:34
-const SECTION_GAP = 24 / 0.75; // 663:62 / 663:95
-const SPARKLE_W = 18 / 0.75; // 663:135
-const SPARKLE_H = 17.6315 / 0.75;
+/** One line per band, said plainly (§172). */
+const VERDICT: Record<ReturnType<typeof atsBandFor>, string> = {
+  strong: 'Strong match. A few touches left.',
+  good: 'Good start. A few gaps to close.',
+  fair: 'Fair match. Some gaps to close.',
+  weak: 'Big gaps. Worth a careful look.',
+};
 
 /**
- * BUILD 04b (663:2) — the profile against the job before anything is built (toreview §74): how
- * much of the job the profile covers as the JOB MATCH ring, the job beside the profile, the job's
- * keywords on and off the profile, and what the build will improve. "Fix and build my resume"
- * asks about each missing keyword first (BUILD 04c) and goes straight to the run when nothing is
- * missing — TAILOR 02's shape, with the profile in the resume's place.
+ * Build Resume, step 2 of 3 (toreview.md §172): the match ring and one verdict, the job's skills
+ * as chips — the ones on your profile ticked, the missing ones off until you tap the ones you
+ * really have — and what the build will improve, folded. Replaces BUILD 04, 04b and the 04c
+ * sheet: the choices are made inline and "Build resume" is the first and only build button.
  */
 export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
-  const { spacing, s } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const actions = useBuildActions();
+  const { openJobDetails } = useCreateActions();
   const build = useStartBuild();
 
   const read = useJdDraft(jdId ?? '');
@@ -68,41 +57,33 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
   const draft = jdId ? read : forJob;
   const job = useJob(jobId ?? '');
   const profile = useProfile();
-  const user = useCurrentUser();
   const subscription = useSubscription();
 
-  const [askOpen, setAskOpen] = useState(false);
-  const [choices, setChoices] = useState<Record<string, TailorChoice>>({});
-  const choiceFor = (keyword: TailorKeyword) => choices[keyword.label] ?? defaultChoice(keyword);
-
-  // Sections fade up in turn only when loaded data replaces the skeleton; a screen that opens
-  // with its data already here slides in whole with the push.
+  const [added, setAdded] = useState<ReadonlySet<string>>(new Set());
+  const [improveOpen, setImproveOpen] = useState(false);
   const enter = useRevealStagger(!!draft.data && !!profile.data && !!subscription.data);
 
-  const page = (children: ReactNode, footer?: ReactNode, sheet?: ReactNode) => (
-    <View style={styles.root}>
-      <Screen
-        scroll
-        edges={['top', 'bottom']}
-        header={<ScreenHeader title={TITLE} showTitle={false} onBack={actions.goBack} />}
-        headerStyle={{ paddingBottom: s(HEADER_TO_HERO) }}
-        contentContainerStyle={{ paddingBottom: spacing[8] }}
-        footer={footer}
-      >
-        {children}
-      </Screen>
-      {/* A sibling of the page, never a child of its scroller. */}
-      {sheet}
-    </View>
+  const frame = (subtitle: string | undefined, body: React.ReactNode, footer?: React.ReactNode) => (
+    <OnboardingFrame
+      step={2}
+      total={BUILD_STEPS}
+      title={BUILD_MATCH_TITLE}
+      subtitle={subtitle}
+      onBack={actions.goBack}
+      footer={footer}
+    >
+      {body}
+    </OnboardingFrame>
   );
 
   const failed = draft.isError || profile.isError || subscription.isError;
   if (failed || (jdId == null && jobId == null)) {
-    return page(
+    return frame(
+      undefined,
       <StateView
         tone="danger"
         icon="AlertTriangle"
-        title="Couldn't compare your profile"
+        title="Couldn’t compare"
         message="Check your connection and try again."
         actionLabel="Try again"
         onAction={() => {
@@ -115,95 +96,194 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
   }
 
   if (!draft.data || !profile.data || !subscription.data) {
-    return page(
-      <TailorCompareSkeleton label="Comparing your profile with this job" />,
-      <StickyActionBar floating primary={{ label: CTA, disabled: true }} />,
+    return frame(
+      'Comparing your profile with the job…',
+      <View
+        style={styles.stack}
+        accessible
+        accessibilityLabel="Comparing your profile with this job"
+      >
+        <Skeleton height={120} radius="cardLg" />
+        <Skeleton height={160} radius="cardLg" />
+      </View>,
+      <Button label={BUILD_CTA} size="xl" block disabled />,
     );
   }
 
   const jd = draft.data;
   const result = compareProfileToJob(jd, profile.data);
   const company = jd.company ?? job.data?.company ?? 'this company';
+  const have = result.keywords.filter((keyword) => keyword.onResume);
   const missing = result.keywords.filter((keyword) => !keyword.onResume);
-  const { generationsUsed: used, generationsLimit: limit } = subscription.data.usage;
+  const toFix = result.improvements.filter((item) => !item.ok);
   const linkedJobId = jd.jobId ?? jobId;
   const target = { jdId: jd.id, ...(linkedJobId ? { jobId: linkedJobId } : {}) };
-  // With nothing to ask, Fix IS the run, so the bar carries the cost the sheet would have shown.
-  const direct = missing.length === 0;
 
-  const bar = (
-    <StickyActionBar
-      floating
-      note={direct ? (build.error ?? (build.quotaNote || BAR_NOTE)) : BAR_NOTE}
-      noteTone={direct && build.error ? 'danger' : 'neutral'}
-      primary={
-        direct && build.quotaSpent
-          ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('generations') }
-          : {
-              label: CTA,
-              leading: <SparkleIcon width={s(SPARKLE_W)} height={s(SPARKLE_H)} />,
-              loading: direct && build.pending,
-              onPress: () =>
-                direct
-                  ? build.start({ ...target, build: { added: [], skipped: [] } })
-                  : setAskOpen(true),
-            }
-      }
-    />
+  const toggle = (label: string) =>
+    setAdded((current) => {
+      const next = new Set(current);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+
+  const start = () =>
+    build.start({
+      ...target,
+      build: {
+        added: missing.filter((k) => added.has(k.label)).map((k) => k.label),
+        skipped: missing.filter((k) => !added.has(k.label)).map((k) => k.label),
+      },
+    });
+
+  const footer = (
+    <View style={styles.footer}>
+      {build.quotaSpent ? (
+        <Button
+          label="See Pro plans"
+          size="xl"
+          block
+          onPress={() => actions.openUpgrade('generations')}
+        />
+      ) : (
+        <Button
+          label={BUILD_CTA}
+          size="xl"
+          block
+          loading={build.pending}
+          leading={<SparkleIcon width={18} height={18} />}
+          onPress={start}
+        />
+      )}
+      {build.error || build.quotaNote ? (
+        <Text
+          variant="footnote"
+          color={build.error ? 'danger' : 'textTertiary'}
+          align="center"
+          accessibilityLiveRegion="polite"
+        >
+          {build.error ?? build.quotaNote}
+        </Text>
+      ) : null}
+    </View>
   );
 
-  return page(
-    <>
-      <Animated.View entering={enter(0)}>
-        <TailorHero variant="build" score={result.score} company={company} />
-      </Animated.View>
-      <Animated.View entering={enter(1)} style={{ marginTop: s(HERO_TO_CARD) }}>
-        <BuildVsCard
-          job={{
-            title: jd.title,
-            company,
-            meta: job.data ? jobMetaLine(job.data) : draftMetaLine(jd),
-          }}
-          profile={{
-            name: user.data?.firstName ?? '',
-            avatarUrl: user.data?.avatarUrl,
-            roles: profile.data.experiences.length,
-            skills: profile.data.skills.length,
-          }}
-          onEdit={actions.openProfileEditor}
+  return frame(
+    `${jd.title} · ${company}`,
+    <View style={styles.stack}>
+      <Animated.View
+        entering={enter(0)}
+        style={[styles.card, styles.summary, { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft }]}
+      >
+        <ScoreRing
+          score={result.score}
+          size={72}
+          strokeWidth={7}
+          label="match"
+          numberVariant="title2"
+          accessibilityLabel={`Match ${Math.round(result.score)} out of 100`}
         />
+        <View style={styles.fill}>
+          <Text variant="title3" color="ink">
+            {VERDICT[atsBandFor(result.score)]}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="View the job"
+            feedback="subtle"
+            onPress={() => openJobDetails(jd.id)}
+            style={styles.link}
+          >
+            <Text variant="footnote" color="brand">
+              View the job
+            </Text>
+            <Icon name="ChevronRight" size="xs" color={colors.brand} />
+          </Pressable>
+        </View>
       </Animated.View>
+
       {result.keywords.length > 0 ? (
-        <Animated.View entering={enter(2)} style={{ marginTop: s(SECTION_GAP) }}>
-          <TailorKeywords keywords={result.keywords} subject="profile" />
+        <Animated.View entering={enter(1)}>
+          <Text variant="title3" color="ink">
+            Skills it asks for
+          </Text>
+          <Text variant="callout" color="textSecondary" style={styles.hint}>
+            {missing.length > 0
+              ? 'Tap the missing ones you really have.'
+              : 'Your profile has every one.'}
+          </Text>
+          <View style={styles.chips}>
+            {missing.map((keyword) => (
+              <ChoiceChip
+                key={keyword.label}
+                label={keyword.label}
+                selected={added.has(keyword.label)}
+                onPress={() => toggle(keyword.label)}
+              />
+            ))}
+            {have.map((keyword) => (
+              <ChoiceChip key={keyword.label} label={keyword.label} selected locked />
+            ))}
+          </View>
+          {added.size > 0 ? (
+            <Text variant="footnote" color="textTertiary" style={styles.hint}>
+              Added skills go on your profile too.
+            </Text>
+          ) : null}
         </Animated.View>
       ) : null}
-      <Animated.View entering={enter(3)} style={{ marginTop: s(SECTION_GAP) }}>
-        <TailorImproveCard improvements={result.improvements} />
-      </Animated.View>
-    </>,
-    bar,
-    <AddKeywordsSheet
-      variant="build"
-      open={askOpen}
-      company={company}
-      keywords={missing}
-      choiceFor={choiceFor}
-      onChoose={(keyword, choice) => setChoices((prev) => ({ ...prev, [keyword.label]: choice }))}
-      used={used}
-      limit={limit}
-      busy={build.pending}
-      failure={build.error}
-      onCreate={() => build.start({ ...target, build: collectChoices(missing, choiceFor) })}
-      onUpgrade={() => {
-        setAskOpen(false);
-        actions.openUpgrade('generations');
-      }}
-      onClose={() => setAskOpen(false)}
-    />,
+
+      {toFix.length > 0 ? (
+        <Animated.View entering={enter(2)}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: improveOpen }}
+            accessibilityLabel={`What we’ll improve, ${toFix.length}`}
+            feedback="subtle"
+            onPress={() => setImproveOpen((open) => !open)}
+            style={[styles.card, styles.improveHead, { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft }]}
+          >
+            <Icon name="Stars02" size="md" color={colors.brand} />
+            <Text variant="bodyLgStrong" color="ink" style={styles.fill}>
+              What we’ll improve ({toFix.length})
+            </Text>
+            <Icon name={improveOpen ? 'ChevronUp' : 'ChevronDown'} size="sm" color={colors.iconDefault} />
+          </Pressable>
+          {improveOpen ? (
+            <View style={styles.improveList}>
+              {toFix.map((item) => (
+                <View key={item.key} style={styles.improveRow}>
+                  <View style={[styles.dot, { backgroundColor: colors.brand }]} />
+                  <View style={styles.fill}>
+                    <Text variant="bodyLgStrong" color="ink">
+                      {item.label}
+                    </Text>
+                    <Text variant="callout" color="textSecondary">
+                      {item.detail}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </Animated.View>
+      ) : null}
+    </View>,
+    footer,
   );
 }
 
-const useStyles = scaledSheet(() => ({
-  root: { flex: 1 },
+const useStyles = scaledSheet((_s, u) => ({
+  stack: { gap: u(24) },
+  fill: { flex: 1 },
+  card: { borderRadius: u(24), borderWidth: 1 },
+  summary: { flexDirection: 'row', alignItems: 'center', gap: u(16), padding: u(16) },
+  link: { flexDirection: 'row', alignItems: 'center', gap: u(2), marginTop: u(6) },
+  hint: { marginTop: u(4) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8), marginTop: u(14) },
+  improveHead: { flexDirection: 'row', alignItems: 'center', gap: u(12), padding: u(16) },
+  improveList: { gap: u(14), paddingHorizontal: u(8), paddingTop: u(14) },
+  improveRow: { flexDirection: 'row', gap: u(12) },
+  dot: { width: u(6), height: u(6), borderRadius: u(3), marginTop: u(8) },
+  footer: { gap: u(8) },
 }));

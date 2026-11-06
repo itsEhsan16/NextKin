@@ -3,11 +3,10 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 import type { PropsWithChildren, ReactElement } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { subscriptionFixture, useMockModeStore } from '@/data/mock';
-import type { Subscription } from '@/data/models';
-import { createQueryClient, qk } from '@/data/queries';
+import { useMockModeStore } from '@/data/mock';
+import { createQueryClient } from '@/data/queries';
 import { mockStore, repos, resetMockRepos } from '@/data/repos';
-import { BuildChooseJobScreen, BuildJobScreen } from '@/features/create';
+import { BuildJobScreen } from '@/features/create';
 import { useBuildSourceStore } from '@/features/create/buildSourceStore';
 import { pickDocument } from '@/lib';
 
@@ -40,10 +39,6 @@ const metrics: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-const spentSubscription: Subscription = {
-  ...subscriptionFixture,
-  usage: { ...subscriptionFixture.usage, generationsUsed: 3, generationsLimit: 3 },
-};
 
 async function renderScreen(ui: ReactElement, seed?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
@@ -57,10 +52,8 @@ async function renderScreen(ui: ReactElement, seed?: (client: QueryClient) => vo
 }
 
 const settle = (ms = 3000) => act(() => jest.advanceTimersByTimeAsync(ms));
-const spend = (client: QueryClient) =>
-  client.setQueryData(qk.user.subscription(), spentSubscription);
 
-describe('Build Resume: BUILD 01 / 02', () => {
+describe('Build Resume step 1: the job (§172)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -83,16 +76,13 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await renderScreen(<BuildJobScreen />);
     await settle();
 
-    expect(screen.getByText('Which job is this resume for?')).toBeOnTheScreen();
-    expect(screen.getByText('Pick a job and we’ll build your resume for it.')).toBeOnTheScreen();
-    // One saved job (the owner's cut, toreview §139); the rest are behind See all.
+    expect(screen.getByRole('header', { name: 'Which job is it for?' })).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 1 of 3')).toBeOnTheScreen();
+    // Every saved job is listed on the one screen now, searchable.
     expect(screen.getByText('Senior Product Designer')).toBeOnTheScreen();
-    expect(screen.queryByText('Product Designer')).not.toBeOnTheScreen();
-    expect(screen.queryByText('Senior UX Designer')).not.toBeOnTheScreen();
-    expect(screen.queryByText('Design Systems Lead')).not.toBeOnTheScreen();
-    expect(screen.getByText('See all (12)')).toBeOnTheScreen();
-    expect(screen.getByText('Stripe · Bengaluru · Remote')).toBeOnTheScreen();
-    expect(screen.getByText('Built from Product Designer')).toBeOnTheScreen();
+    expect(screen.getAllByText('Design Systems Lead').length).toBeGreaterThan(0);
+    expect(screen.getByText('Saved (12)')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Built from Product Designer. Change')).toBeOnTheScreen();
     // Nothing is spent here, so nothing says what it costs.
     expect(screen.queryByText(/resume builds this month/)).not.toBeOnTheScreen();
 
@@ -114,9 +104,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await renderScreen(<BuildJobScreen />);
     await settle();
 
-    expect(
-      screen.getByText(/^Built from your profile · \d+ roles?, \d+ skills?$/),
-    ).toBeOnTheScreen();
+    expect(screen.getByLabelText('Built from Your profile. Change')).toBeOnTheScreen();
     await act(async () =>
       fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
     );
@@ -146,12 +134,12 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await settle();
 
     await act(async () =>
-      fireEvent.press(screen.getByLabelText('Change what the resume is built from')),
+      fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)),
     );
     await settle();
     await act(async () => fireEvent.press(screen.getByText('Your profile')));
     await settle();
-    expect(screen.getByText(/^Built from your profile/)).toBeOnTheScreen();
+    expect(screen.getByLabelText('Built from Your profile. Change')).toBeOnTheScreen();
 
     await act(async () =>
       fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
@@ -169,17 +157,29 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await renderScreen(<BuildJobScreen resumeId="res_1" />);
     await settle();
 
-    expect(screen.getByText('Built from UX Designer Resume')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Built from UX Designer Resume. Change')).toBeOnTheScreen();
   });
 
-  it('BUILD 01 routes See all and the anywhere tile', async () => {
+  it('reads a pasted link and goes straight to the match', async () => {
+    useBuildSourceStore.setState({ picked: null });
     await renderScreen(<BuildJobScreen />);
     await settle();
 
-    await act(async () => fireEvent.press(screen.getByLabelText('See all (12)')));
-    expect(mockPush).toHaveBeenCalledWith('/create/build/jobs');
-    await act(async () => fireEvent.press(screen.getByLabelText('Add a job from anywhere')));
-    expect(mockPush).toHaveBeenCalledWith('/create/build/add');
+    expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeOnTheScreen();
+    await act(async () =>
+      fireEvent.changeText(
+        screen.getByLabelText('Job link or description'),
+        'Senior designer at CRED. We want Figma, prototyping and design systems.',
+      ),
+    );
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Continue' })));
+    await settle();
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: '/create/build/compare',
+        params: { jdId: expect.any(String) },
+      }),
+    );
   });
 
   it('BUILD 01 builds from a resume instead, through Customize (toreview §139)', async () => {
@@ -187,7 +187,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await settle();
 
     await act(async () =>
-      fireEvent.press(screen.getByLabelText('Change what the resume is built from')),
+      fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)),
     );
     await settle();
     expect(screen.getByText('Build from')).toBeOnTheScreen();
@@ -201,7 +201,7 @@ describe('Build Resume: BUILD 01 / 02', () => {
 
     await act(async () => fireEvent.press(screen.getByText('UX Designer Resume')));
     await settle();
-    expect(screen.getByText('Built from UX Designer Resume')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Built from UX Designer Resume. Change')).toBeOnTheScreen();
 
     await act(async () =>
       fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
@@ -221,15 +221,14 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await settle();
 
     await act(async () =>
-      fireEvent.press(screen.getByLabelText('Change what the resume is built from')),
+      fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)),
     );
     await settle();
     await act(async () => fireEvent.press(screen.getByText('Upload from your device')));
-    expect(screen.getByText('Reading George_Smith_Resume.pdf…')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Built from Reading George_Smith_Resume.pdf…. Change')).toBeOnTheScreen();
     await settle();
 
-    expect(screen.getByText(/^Built from /)).toBeOnTheScreen();
-    expect(screen.queryByText(/^Built from your profile/)).not.toBeOnTheScreen();
+    expect(screen.queryByLabelText('Built from Your profile. Change')).not.toBeOnTheScreen();
     await act(async () =>
       fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
     );
@@ -246,62 +245,8 @@ describe('Build Resume: BUILD 01 / 02', () => {
     await renderScreen(<BuildJobScreen />);
     await settle();
 
-    expect(screen.queryByText(/^See all/)).not.toBeOnTheScreen();
     await act(async () => fireEvent.press(screen.getByLabelText('Browse jobs')));
     expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/jobs');
-    expect(screen.getByLabelText('Add a job from anywhere')).toBeOnTheScreen();
-  });
-
-  it('BUILD 02 preselects the first job, searches, switches tabs and compares the pick', async () => {
-    useBuildSourceStore.setState({ picked: null });
-    const startSpy = jest.spyOn(repos.generations, 'start');
-    await renderScreen(<BuildChooseJobScreen />);
-    await settle();
-
-    expect(screen.getByText('Choose a job')).toBeOnTheScreen();
-    expect(screen.getByText('Pick the job you want this resume built for.')).toBeOnTheScreen();
-    expect(screen.getByText('Saved jobs (12)')).toBeOnTheScreen();
-    expect(screen.getByText('Uses 1 of your 3 resume builds this month')).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Senior Product Designer, Stripe/)).toBeSelected();
-    expect(screen.getByLabelText('Build resume for Stripe')).toBeOnTheScreen();
-
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText(/^Design Systems Lead, Freshworks/)),
-    );
-    expect(screen.getByLabelText(/^Design Systems Lead, Freshworks/)).toBeSelected();
-    expect(screen.getByLabelText('Build resume for Freshworks')).toBeOnTheScreen();
-
-    await act(async () => fireEvent.changeText(screen.getByLabelText('Search your jobs'), 'razor'));
-    expect(screen.queryByText('Design Systems Lead')).not.toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Senior UX Designer, Razorpay/)).toBeSelected();
-
-    await act(async () => fireEvent.changeText(screen.getByLabelText('Search your jobs'), 'zzz'));
-    expect(screen.getByText('No jobs match your search')).toBeOnTheScreen();
-    await act(async () => fireEvent.changeText(screen.getByLabelText('Search your jobs'), ''));
-
-    await act(async () => fireEvent.press(screen.getByText('Top matches')));
-    await settle();
-    expect(screen.getByText('Lead UX Designer')).toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByText('Saved jobs (12)')));
-    await settle();
-
-    await act(async () => fireEvent.press(screen.getByLabelText('Build resume for Freshworks')));
-    await settle();
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/create/build/compare',
-      params: { jobId: 'job_freshworks' },
-    });
-    expect(startSpy).not.toHaveBeenCalled();
-  });
-
-  it('BUILD 02 swaps the CTA for the Pro plans when the builds are spent', async () => {
-    await renderScreen(<BuildChooseJobScreen />, spend);
-    await settle();
-
-    await act(async () => fireEvent.press(screen.getByLabelText('See Pro plans')));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/upgrade',
-      params: { reason: 'generations' },
-    });
+    expect(screen.getByLabelText('Job link or description')).toBeOnTheScreen();
   });
 });

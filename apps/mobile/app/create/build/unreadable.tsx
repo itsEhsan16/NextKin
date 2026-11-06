@@ -1,9 +1,13 @@
-import { useLocalSearchParams } from 'expo-router';
+import { Redirect } from 'expo-router';
 
-import { BuildUnreadableScreen } from '@/features/create';
-
-/** BUILD 05b: the job page refused to be read. */
+/** Merged into the job step, which says a blocked link inline (toreview.md §172). */
 export default function BuildUnreadableRoute() {
-  const { url } = useLocalSearchParams<{ url: string }>();
-  return <BuildUnreadableScreen url={url ?? ''} />;
+  return (
+    <Redirect
+      href={{
+        pathname: '/create/build/add',
+        params: { notice: 'That site blocks reading. Paste the job description instead.' },
+      }}
+    />
+  );
 }

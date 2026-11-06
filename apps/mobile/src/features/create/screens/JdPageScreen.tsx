@@ -20,7 +20,7 @@ import { JdDoubleCheck } from '../components/JdDoubleCheck';
 import { JdReadingSections } from '../components/JdReadingSections';
 import { JdFactsCard, JdWorthKnowing } from '../components/jd/JdFactsCard';
 import { JdStructuredSections } from '../components/jd/JdStructuredSections';
-import { isNotFound } from './BuildReviewScreen';
+import { isNotFound } from '../buildInput';
 
 export type JdPageScreenProps = { draftId: string };
 

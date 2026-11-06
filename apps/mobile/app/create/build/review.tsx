@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { BuildReviewScreen } from '@/features/create';
+import { BuildOpenMatch } from '@/features/create';
 
-/** BUILD 04: the job as read, before the build. */
+/** A job that was already read (a share) goes straight to the match (toreview.md §172). */
 export default function BuildReviewRoute() {
-  const { jdId, fileName } = useLocalSearchParams<{ jdId: string; fileName?: string }>();
-  return <BuildReviewScreen jdId={jdId ?? ''} fileName={fileName} />;
+  const { jdId } = useLocalSearchParams<{ jdId: string }>();
+  return <BuildOpenMatch jdId={jdId ?? ''} />;
 }
