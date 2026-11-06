@@ -61,14 +61,15 @@ export function ScreenHeader({
       ]}
     >
       {onBack ? (
-        <IconButton icon="ChevronLeft" label={backLabel} onPress={onBack} />
+        // The redesign's round outline back button (§176), as the create flows draw it.
+        <IconButton icon="ArrowLeft" label={backLabel} variant="outline" onPress={onBack} />
       ) : (
         <View style={slot} />
       )}
       {variant === 'title' && showTitle ? (
         <Text
           {...a11yHeader()}
-          variant="headline"
+          variant="title3"
           align="center"
           numberOfLines={1}
           style={styles.centre}

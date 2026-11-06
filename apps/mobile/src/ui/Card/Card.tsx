@@ -21,7 +21,8 @@ export function Card({
   radius = 'cardLg',
   padding,
   elevated = true,
-  shadow = 'card',
+  // The redesign's soft lift (§176); `card` and `jobCard` stay available by name.
+  shadow = 'soft',
   style,
   children,
 }: CardProps) {
@@ -33,7 +34,7 @@ export function Card({
           backgroundColor: colors.surfaceCard,
           borderRadius: r[radius],
           borderWidth: s(1),
-          borderColor: colors.borderHairline,
+          borderColor: colors.borderSoft,
           padding: padding ?? spacing[4],
         },
         elevated ? shadowTokens[shadow] : null,

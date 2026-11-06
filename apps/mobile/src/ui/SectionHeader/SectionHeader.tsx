@@ -2,6 +2,7 @@ import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { a11yButton, a11yHeader, hitSlopFor } from '@/lib';
 import { useTheme, type TypographyRole } from '@/theme';
+import { Icon } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -23,7 +24,7 @@ export function SectionHeader({
   onAction,
   style,
 }: SectionHeaderProps) {
-  const { spacing, s } = useTheme();
+  const { colors, spacing, s } = useTheme();
   return (
     <View
       style={[
@@ -36,7 +37,8 @@ export function SectionHeader({
         style,
       ]}
     >
-      <Text {...a11yHeader(title)} variant={variant} numberOfLines={1} style={{ flexShrink: 1 }}>
+      {/* Every section reads as the redesign's title3 (§176); `variant` is kept for callers. */}
+      <Text {...a11yHeader(title)} variant="title3" numberOfLines={1} style={{ flexShrink: 1 }}>
         {title}
       </Text>
       {onAction ? (
@@ -48,9 +50,12 @@ export function SectionHeader({
           hitSlop={hitSlopFor(s(22))}
           onPress={onAction}
         >
-          <Text variant="viewAllLink" color="link">
-            {actionLabel}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: s(2) }}>
+            <Text variant="footnote" color="brand">
+              {actionLabel}
+            </Text>
+            <Icon name="ChevronRight" size={s(14)} color={colors.brand} />
+          </View>
         </Pressable>
       ) : null}
     </View>

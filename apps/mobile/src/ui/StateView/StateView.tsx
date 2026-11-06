@@ -10,6 +10,8 @@ import Animated, {
 import { a11yButton, hitSlop8, useReducedMotion } from '@/lib';
 import { motion, useTheme } from '@/theme';
 import { Icon, type LineIconName } from '@/ui/Icon';
+import { type IllustrationName } from '@/ui/illustrations';
+import { Illustration } from '@/ui/kit/PageParts';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -24,6 +26,11 @@ export type StateViewProps = {
    * says everything it shows.
    */
   illustration?: ReactNode;
+  /**
+   * One of the redesign's illustrations by name (§176). A full-page danger state with neither
+   * this nor `illustration` gets the connection-problem art.
+   */
+  art?: IllustrationName;
   title: string;
   message?: string;
   actionLabel?: string;
@@ -72,7 +79,8 @@ const settle: EntryExitAnimationFunction = () => {
  */
 export function StateView({
   icon,
-  illustration,
+  illustration: given,
+  art,
   title,
   message,
   actionLabel,
@@ -88,6 +96,8 @@ export function StateView({
   const tile = compact ? s(48) : sizes.emptyStateTile;
   const reduced = useReducedMotion();
   const nudge = useShake(tone === 'danger' ? title : null);
+  const named = art ?? (!compact && tone === 'danger' && !given ? 'offline' : undefined);
+  const illustration = given ?? (named ? <Illustration name={named} size={150} /> : null);
 
   return (
     <Animated.View
@@ -150,7 +160,7 @@ export function StateView({
       </Text>
       {message ? (
         <Text
-          variant="body"
+          variant="callout"
           color="textSecondary"
           align="center"
           accessibilityElementsHidden
