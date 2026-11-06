@@ -15,11 +15,10 @@ import {
   useResume,
   useResumeContent,
 } from '@/data/queries';
-import { FLOW_ART } from '@/features/create/components/FlowHero';
 import { openExternalUrl } from '@/lib';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { FlowFooter } from '@/features/create/flow/FlowKit';
 import { Toast } from '@/ui/Toast';
 import { Reveal } from '@/ui/motion';
 
@@ -40,8 +39,6 @@ export type TailorRunViewProps = {
 // Stepper → first block: 43 to TAILOR 04's art (608:251 → 661:40), 4 on TAILOR 05 (608:273), at 390.
 const STEPS_TO_ART = 43 / 0.75;
 const STEPS_TO_PREVIEW = 4 / 0.75;
-/** TAILOR 05's Edit button is 100 wide at 390 (608:373); Download PDF takes the rest. */
-const EDIT_W = 100 / 0.75;
 
 /** "https://www.stripe.com/jobs" or "stripe.com" → "stripe.com", the host the copy names. */
 export function siteHost(website: string): string {
@@ -120,30 +117,24 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
           // The run's two bars cross-fade, like the page above them.
           <Reveal stateKey={ready ? 'ready' : 'writing'}>
             {ready ? (
-              <StickyActionBar
-                floating
+              // No resend here: sign-in already needs a verified email (toreview §114).
+              <FlowFooter
+                inset
                 note={emailBlocked ? EXPORT_BLOCK_MESSAGE.email : undefined}
-                // No resend here: sign-in already needs a verified email, and a signed-in user has
-                // no screen to enter a sign-up code (toreview §114).
-                secondary={{ label: 'Edit', onPress: edit, style: { flexBasis: s(EDIT_W) } }}
+                secondary={{ label: 'Edit', onPress: edit }}
                 primary={{
                   label: emailBlocked ? 'Try again' : 'Download PDF',
                   icon: 'Download01',
-                  haptic: 'medium',
                   loading: busy,
                   onPress: download,
                 }}
               />
             ) : (
-              <StickyActionBar
-                floating
-                // The run keeps going without this screen; the notification says when it lands.
-                primary={{
-                  label: 'Leave and notify me',
-                  icon: 'Bell01',
-                  variant: 'ghost',
-                  onPress: close,
-                }}
+              // The run keeps going without this screen; the notification says when it lands.
+              <FlowFooter
+                inset
+                note="Nothing is invented — only your resume and answers."
+                primary={{ label: 'Leave and notify me', icon: 'Bell01', variant: 'outline', onPress: close }}
               />
             )}
           </Reveal>
@@ -153,8 +144,8 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
         <Reveal stateKey={ready ? 'ready' : 'writing'}>
           {ready ? (
             <>
-              <ResumePagePreview content={doc} name={name} score={resume.data?.atsScore} />
               <TailorReady
+                preview={<ResumePagePreview content={doc} name={name} score={resume.data?.atsScore} />}
                 run={run}
                 company={company}
                 domain={domain}
@@ -164,11 +155,7 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
               />
             </>
           ) : (
-            <TailorProgress
-              generation={generation}
-              company={company}
-              art={FLOW_ART.tailorWriting}
-            />
+            <TailorProgress generation={generation} company={company} footnote={null} />
           )}
         </Reveal>
       </Screen>

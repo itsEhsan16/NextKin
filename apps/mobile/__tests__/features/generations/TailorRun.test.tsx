@@ -124,8 +124,8 @@ describe('GenerationScreen — job-first tailoring run (TAILOR 04–06)', () => 
     // The job loads after the run, and one tick moves the run off the queue.
     await settle(GENERATION_TICK_MS);
 
-    expect(screen.getByLabelText('Step 2 of 3, Fix')).toBeOnTheScreen();
-    expect(screen.getByText('Tailoring your resume for Stripe')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
+    expect(screen.getByText('Tailoring for Stripe')).toBeOnTheScreen();
     expect(screen.getByLabelText('Added the 2 skills you chose, done')).toBeOnTheScreen();
     expect(
       screen.getByLabelText('Rewriting your headline and summary, in progress'),
@@ -147,13 +147,13 @@ describe('GenerationScreen — job-first tailoring run (TAILOR 04–06)', () => 
     await settle(GENERATION_TICK_MS * 9);
     await settle(NORMAL_MS);
 
-    expect(screen.getByLabelText('Step 3 of 3, Download')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByText('Your resume for Stripe is ready')).toBeOnTheScreen();
     const generation = mockStore.state.generations.find((g) => g.id === id);
     const score = mockStore.state.resumes.find((r) => r.id === generation?.resumeId)?.atsScore;
     expect(score).toBeGreaterThan(72);
-    expect(screen.getByText('Up from 72')).toBeOnTheScreen();
-    expect(screen.getByText('Saved to Resumes')).toBeOnTheScreen();
+    expect(screen.getByText(/^7.2 → /)).toBeOnTheScreen();
+    expect(screen.getByText('SAVED TO RESUMES')).toBeOnTheScreen();
     expect(screen.getByLabelText('See what changed')).toBeOnTheScreen();
     expect(screen.getByText('Next: download it, then apply on stripe.com')).toBeOnTheScreen();
 

@@ -94,7 +94,7 @@ describe('GenerationScreen — Zero Resume run (ZERO 02–05)', () => {
     const id = await startZeroRun();
     await renderGeneration(id);
 
-    expect(screen.getByLabelText('Step 2 of 3, Draft')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Writing your first draft' })).toBeOnTheScreen();
     expect(screen.getByLabelText(/^Looked at Product Designer roles, /)).toBeOnTheScreen();
     expect(screen.getByLabelText(/^Planned sections for 6–10 years, /)).toBeOnTheScreen();
@@ -114,7 +114,7 @@ describe('GenerationScreen — Zero Resume run (ZERO 02–05)', () => {
     await settle(NORMAL_MS);
 
     // ZERO 03: the marked draft and the four kinds of guess.
-    expect(screen.getByLabelText('Step 3 of 3, Check')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(
       screen.getByRole('header', { name: 'Your draft is ready. Check 9 things' }),
     ).toBeOnTheScreen();
@@ -159,7 +159,7 @@ describe('GenerationScreen — Zero Resume run (ZERO 02–05)', () => {
     await settle(NORMAL_MS);
 
     // ZERO 05: every step ticked, what was checked, and the download open.
-    expect(screen.getByLabelText('All 3 steps done')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Your first resume is ready' })).toBeOnTheScreen();
     expect(screen.getByText('All 9 checked')).toBeOnTheScreen();
     expect(screen.getByText('Saved to your profile too')).toBeOnTheScreen();

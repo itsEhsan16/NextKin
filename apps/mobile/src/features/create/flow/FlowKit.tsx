@@ -188,18 +188,21 @@ export function FlowFooter({
   secondary,
   note,
   noteTone = 'neutral',
+  inset = false,
 }: {
   primary: FlowAction;
   secondary?: FlowAction;
   note?: string;
   noteTone?: 'neutral' | 'danger';
+  /** Pad itself, for a screen whose footer slot has no padding of its own (the run views). */
+  inset?: boolean;
 }) {
   const { colors, u } = useTheme();
   const styles = useStyles();
   const leading = (action: FlowAction, color: string) =>
     action.icon ? <Icon name={action.icon} size={u(20)} color={color} /> : undefined;
   return (
-    <View style={styles.footer}>
+    <View style={[styles.footer, inset ? styles.inset : null]}>
       <View style={styles.footerRow}>
         {secondary ? (
           <Button
@@ -275,6 +278,7 @@ const useStyles = scaledSheet((_s, u) => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: u(12), paddingVertical: u(12) },
   rowText: { flex: 1, gap: u(2) },
   footer: { gap: u(10) },
+  inset: { paddingHorizontal: u(24), paddingTop: u(12), paddingBottom: u(8) },
   footerRow: { flexDirection: 'row', gap: u(12) },
   secondary: { minWidth: u(120) },
   primary: { flex: 1 },

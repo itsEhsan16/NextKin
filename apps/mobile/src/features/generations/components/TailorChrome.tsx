@@ -1,41 +1,32 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
-import { TailorStepper, type TailorStep } from '@/features/create/components/TailorStepper';
-import { scaledSheet, useTheme } from '@/theme';
+import type { TailorStep } from '@/features/create/components/TailorStepper';
+import { scaledSheet } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
+import { StepProgress } from '@/ui/StepProgress';
 
-/**
- * Either Tailor's own stepper at `step`, or any other flow's stepper as a node — the cover
- * letter's Set up · Write · Download (COVER 02–04) passes `<FlowStepper steps={COVER_STEPS} />`.
- * Neither draws the ✕ alone: Home's Build Resume run has no stepper (BUILD 05/06 598:117).
- */
 export type TailorChromeProps = { onClose: () => void } & (
   { step: TailorStep; stepper?: never } | { stepper?: ReactNode; step?: never }
 );
 
-/** Close bar → stepper on TAILOR 04/05 (608:197 → 608:251), in artboard units. */
-const BAR_TO_STEPS = 12 / 0.75;
-
 /**
- * The top of a job-first tailoring run (TAILOR 04–06): a ✕ that leaves the flow, then the
- * Compare · Fix · Download stepper. No title — the hero under it names the screen.
+ * The run screens' header (toreview §173): the flow's progress, now on its last step, and the ✕.
+ * The older per-flow steppers (`step` / `stepper`) are accepted and drawn as that same bar.
  */
-export function TailorChrome({ step, stepper, onClose }: TailorChromeProps) {
-  const { spacing } = useTheme();
+export function TailorChrome({ onClose }: TailorChromeProps) {
   const styles = useStyles();
-
   return (
-    <View style={[styles.wrap, { paddingTop: spacing.headerTopPushed }]}>
-      <View style={styles.bar}>
-        <IconButton icon="XClose" label="Close" onPress={onClose} />
+    <View style={styles.bar}>
+      <View style={styles.progress}>
+        <StepProgress step={3} total={3} />
       </View>
-      {step ? <TailorStepper current={step} /> : stepper}
+      <IconButton icon="XClose" label="Close" variant="outline" onPress={onClose} />
     </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  wrap: { gap: s(BAR_TO_STEPS) },
-  bar: { flexDirection: 'row' },
+const useStyles = scaledSheet((_s, u) => ({
+  bar: { flexDirection: 'row', alignItems: 'center', gap: u(16), paddingTop: u(8) },
+  progress: { flex: 1, paddingLeft: u(60) },
 }));

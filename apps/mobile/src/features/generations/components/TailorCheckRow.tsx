@@ -45,7 +45,11 @@ export function TailorCheckRow({ label, state }: TailorCheckRowProps) {
       <View style={styles.slot}>
         <StepGlyph state={state} size={s(GLYPH)} ringSize={s(SPINNER)} />
       </View>
-      <Text variant={state === 'current' ? 'label' : 'bulletBody'} style={styles.copy}>
+      <Text
+        variant={state === 'current' ? 'bodyLgStrong' : 'bodyLg'}
+        color={state === 'todo' ? 'textTertiary' : 'ink'}
+        style={styles.copy}
+      >
         {label}
       </Text>
     </View>

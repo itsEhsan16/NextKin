@@ -126,7 +126,7 @@ describe('GenerationScreen — cover letter run (COVER 02–03, 644:84 / 644:148
     await renderGeneration(id);
     await settle(GENERATION_TICK_MS);
 
-    expect(screen.getByLabelText('Step 2 of 3, Write')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Writing your cover letter' })).toBeOnTheScreen();
     expect(
       screen.getByText(
@@ -161,7 +161,7 @@ describe('GenerationScreen — cover letter run (COVER 02–03, 644:84 / 644:148
     const id = await startCoverRun();
     await renderReady(id);
 
-    expect(screen.getByLabelText('Step 3 of 3, Download')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Your cover letter is ready!' })).toBeOnTheScreen();
     expect(
       screen.getByText('A tailored cover letter for the Senior Product Designer role at Stripe.'),

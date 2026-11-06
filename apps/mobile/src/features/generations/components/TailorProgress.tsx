@@ -1,16 +1,20 @@
 import { View } from 'react-native';
 
-import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
+import { Image } from 'expo-image';
+
 import { generationStepIndex, type Generation } from '@/data/models';
-import { FlowHero, type FlowArt } from '@/features/create/components/FlowHero';
+import type { FlowArt } from '@/features/create/components/FlowHero';
 import type { LiveMotif } from '@/features/create/components/LiveArt';
+import { FlowCard } from '@/features/create/flow/FlowKit';
 import { formatPercent } from '@/lib';
-import { scaledSheet, useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
+import { scaledSheet } from '@/theme';
 import { AnimatedNumber, ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
+
 import { TailorCheckRow, type TailorCheckState } from './TailorCheckRow';
+
+const ILLUSTRATION = require('../../../../assets/illustrations/redesign/job-match.webp');
 
 export type TailorProgressProps = {
   generation: Generation;
@@ -39,16 +43,7 @@ export type TailorProgressProps = {
 
 export type TailorProgressRow = { label: string; state: TailorCheckState };
 
-// TAILOR 04 at 390 (608:204 / 608:214), in artboard units.
-const HERO_TO_CARD = 22 / 0.75;
-const CARD_PAD = 16 / 0.75;
-const HEADER_GAP = 8 / 0.75;
-const HEADER_TO_BAR = 10 / 0.75;
-const SPARKLE_W = 18 / 0.75;
-const SPARKLE_H = 17.6315 / 0.75;
-const CARD_TO_NOTE = 14 / 0.75;
-
-const LEDE = 'About a minute. Leave anytime — we will let you know when it is ready.';
+const LEDE = 'About a minute. Leave anytime.';
 const FOOTNOTE = 'Only from your resume and your answers. Nothing is invented.';
 
 const percentLabel = (n: number) => {
@@ -84,42 +79,50 @@ export function tailorProgressRows(generation: Generation): TailorProgressRow[] 
 }
 
 /** TAILOR 04 (608:196) below the stepper: the hero copy, the live checklist card, the footnote. */
+/**
+ * Every run's progress screen (toreview §173, Figma "Build · 3 Building"): the illustration, a
+ * centred title and one line, then a card with the live percent, a bar and the steps. Tailor,
+ * Build, Zero and ATS all draw it; each passes its own words and rows.
+ */
 export function TailorProgress({
   generation,
   company,
-  title = company ? `Tailoring your resume for ${company}` : 'Tailoring your resume',
+  title = company ? `Tailoring for ${company}` : 'Tailoring your resume',
   lede = LEDE,
-  cardTitle = 'Tailoring your resume',
+  cardTitle = 'Writing your resume',
   rows,
   footnote = FOOTNOTE,
-  art,
-  sparkle = true,
-  motif = 'write',
 }: TailorProgressProps) {
-  const { s } = useTheme();
   const styles = useStyles();
   const percent = formatPercent(generation.progress);
   const working = generation.status !== 'ready';
 
   return (
-    <View>
-      <FlowHero title={title} lede={lede} art={art} motif={motif} active={working} />
+    <View style={styles.wrap}>
+      <Image source={ILLUSTRATION} style={styles.art} contentFit="contain" accessible={false} />
+      <View style={styles.titleBlock}>
+        <Text variant="title1" color="ink" align="center" accessibilityRole="header">
+          {title}
+        </Text>
+        <Text variant="bodyLg" color="textSecondary" align="center">
+          {lede}
+        </Text>
+      </View>
 
-      <Card radius="cardLg" style={styles.card}>
+      <FlowCard style={styles.card}>
         <View
           accessible
           accessibilityLabel={`${cardTitle}, ${percent} complete`}
           style={styles.header}
         >
-          {sparkle ? <SparkleIcon width={s(SPARKLE_W)} height={s(SPARKLE_H)} /> : null}
-          <Text variant="titleSm" style={styles.headerTitle} numberOfLines={1}>
+          <Text variant="title3" color="ink" style={styles.headerTitle}>
             {cardTitle}
           </Text>
           <AnimatedNumber
             value={generation.progress * 100}
             timing="follow"
             memoryKey={`gen:${generation.id}:pct`}
-            variant="title"
+            variant="bodyLgStrong"
             color="brand"
             format={percentLabel}
           />
@@ -132,7 +135,7 @@ export function TailorProgress({
           <ProgressBar
             value={generation.progress}
             fillColor="brand"
-            trackColor="surfaceSubtle"
+            trackColor="progressTrack"
             timing="follow"
             memoryKey={`gen:${generation.id}:bar`}
             live={working}
@@ -141,10 +144,10 @@ export function TailorProgress({
         {(rows ?? tailorProgressRows(generation)).map((row) => (
           <TailorCheckRow key={row.label} label={row.label} state={row.state} />
         ))}
-      </Card>
+      </FlowCard>
 
       {footnote ? (
-        <Text variant="caption" color="textTertiary" align="center" style={styles.note}>
+        <Text variant="footnote" color="textTertiary" align="center">
           {footnote}
         </Text>
       ) : null}
@@ -152,10 +155,12 @@ export function TailorProgress({
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  card: { marginTop: s(HERO_TO_CARD), padding: s(CARD_PAD) },
-  header: { flexDirection: 'row', alignItems: 'center', gap: s(HEADER_GAP) },
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(20), paddingTop: u(12) },
+  art: { width: u(170), height: u(170), alignSelf: 'center' },
+  titleBlock: { gap: u(6) },
+  card: { gap: u(2) },
+  header: { flexDirection: 'row', alignItems: 'center', gap: u(8) },
   headerTitle: { flex: 1 },
-  bar: { marginVertical: s(HEADER_TO_BAR) },
-  note: { marginTop: s(CARD_TO_NOTE) },
+  bar: { marginTop: u(8), marginBottom: u(8) },
 }));

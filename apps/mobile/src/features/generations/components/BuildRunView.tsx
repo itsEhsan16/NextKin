@@ -1,4 +1,3 @@
-import { View } from 'react-native';
 
 import type { Generation } from '@/data/models';
 import {
@@ -8,17 +7,15 @@ import {
   useResume,
   useResumeContent,
 } from '@/data/queries';
-import { FLOW_ART } from '@/features/create/components/FlowHero';
 // Deep imports on purpose: the resumes barrel drags its screens in.
 import { ResumeExportHost } from '@/features/resumes/ResumeExportHost';
 import { useResumesStore } from '@/features/resumes/resumesStore';
-import { scaledSheet, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
-import { StickyActionBar } from '@/ui/StickyActionBar';
+import { FlowFooter } from '@/features/create/flow/FlowKit';
 import { Reveal } from '@/ui/motion';
 
 import { useGenerationsActions } from '../hooks/useGenerationsActions';
-import { BuildAlmostThere } from './BuildAlmostThere';
 import { BuildBandPill, BuildNextTiles } from './BuildReadyParts';
 import { BUILD_CARD_TITLE, BUILD_LEDE, buildProgressRows, buildProgressTitle } from './buildRun';
 import { ResumePagePreview } from './ResumePagePreview';
@@ -32,9 +29,6 @@ export type BuildRunViewProps = { generation: Generation };
 // Close bar → first block: 29 on BUILD 05 (653:128 → 661:34), 4 on BUILD 06 (653:229), at 390.
 const BAR_TO_ART = 29 / 0.75;
 const BAR_TO_PREVIEW = 4 / 0.75;
-const CARD_TO_NOTE = 12 / 0.75; // 653:172
-/** BUILD 06's Edit button is 100 wide at 390 (653:329); Download PDF takes the rest. */
-const EDIT_W = 100 / 0.75;
 
 /**
  * BUILD 05–07: Home's Build Resume run — a resume built from the profile for one job — watched
@@ -43,7 +37,6 @@ const EDIT_W = 100 / 0.75;
  */
 export function BuildRunView({ generation }: BuildRunViewProps) {
   const { spacing, s } = useTheme();
-  const styles = useStyles();
   const actions = useGenerationsActions();
   const openExport = useResumesStore((state) => state.openExport);
   const resumeId = generation.resumeId ?? '';
@@ -84,27 +77,22 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
           // The run's two bars cross-fade, like the page above them (§85).
           <Reveal stateKey={ready ? 'ready' : 'writing'}>
             {ready ? (
-              <StickyActionBar
-                floating
-                secondary={{ label: 'Edit', onPress: edit, style: { flexBasis: s(EDIT_W) } }}
+              <FlowFooter
+                inset
+                secondary={{ label: 'Edit', onPress: edit }}
                 primary={{
                   label: 'Download PDF',
                   icon: 'Download01',
-                  haptic: 'medium',
                   disabled: !resume.data,
                   onPress: download,
                 }}
               />
             ) : (
-              <StickyActionBar
-                floating
-                // The run keeps going without this screen; the notification says when it lands.
-                primary={{
-                  label: 'Leave and notify me',
-                  icon: 'Bell01',
-                  variant: 'ghost',
-                  onPress: close,
-                }}
+              // The run keeps going without this screen; the notification says when it lands.
+              <FlowFooter
+                inset
+                note="Nothing is invented — only your profile and answers."
+                primary={{ label: 'Leave and notify me', icon: 'Bell01', variant: 'outline', onPress: close }}
               />
             )}
           </Reveal>
@@ -114,8 +102,8 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
         <Reveal stateKey={ready ? 'ready' : 'writing'}>
           {ready ? (
             <>
-              <ResumePagePreview content={resumeBody(content.data)} name={name} score={score} />
               <TailorReady
+                preview={<ResumePagePreview content={resumeBody(content.data)} name={name} score={score} />}
                 company={company}
                 domain={domain}
                 score={score}
@@ -139,16 +127,12 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
             <>
               <TailorProgress
                 generation={generation}
-                art={FLOW_ART.buildWriting}
                 title={buildProgressTitle(company)}
                 lede={BUILD_LEDE}
                 cardTitle={BUILD_CARD_TITLE}
                 rows={buildProgressRows(generation)}
                 footnote={null}
               />
-              <View style={styles.note}>
-                <BuildAlmostThere />
-              </View>
             </>
           )}
         </Reveal>
@@ -159,7 +143,3 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
     </>
   );
 }
-
-const useStyles = scaledSheet((s) => ({
-  note: { marginTop: s(CARD_TO_NOTE) },
-}));

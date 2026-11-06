@@ -123,12 +123,12 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     await renderGeneration(id);
     await settle(GENERATION_TICK_MS);
 
-    expect(screen.queryByLabelText(/^Step \d of \d/)).toBeNull();
+    expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByText('Building for CRED')).toBeOnTheScreen();
     expect(
       screen.getByText('Matching your experience to the job.'),
     ).toBeOnTheScreen();
-    expect(screen.getByText('Almost there')).toBeOnTheScreen();
+    expect(screen.getByText('Nothing is invented — only your profile and answers.')).toBeOnTheScreen();
     expect(screen.getByLabelText('Read the job description, done')).toBeOnTheScreen();
     // The matching is a step of its own, seen working before the writing starts.
     expect(screen.getByLabelText('Matched your experience, in progress')).toBeOnTheScreen();
@@ -157,7 +157,7 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     expect(screen.getByText('Your resume for CRED is ready')).toBeOnTheScreen();
     expect(screen.getByText(buildBandLabel(buildBand(score)))).toBeOnTheScreen();
     expect(screen.queryByText(/^Up from/)).toBeNull();
-    expect(screen.getByText('Saved to Resumes')).toBeOnTheScreen();
+    expect(screen.getByText('SAVED TO RESUMES')).toBeOnTheScreen();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Cover letter for this job')));
     expect(mockPush).toHaveBeenCalledWith({
