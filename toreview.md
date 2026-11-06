@@ -16109,3 +16109,31 @@ The owner asked for Zero Resume to go step by step instead of asking everything 
   - The status list and the locked Download bar are gone during the check. A footnote says Download unlocks after the last guess.
 - **Judgement call:** a role is still one question, with its title, company and dates together, because they describe one job. Splitting each role into three screens would triple the taps. **Owner, 2026-11-07: "Keep one screen" — settled.**
 - **Verified:** web preview, all three steps plus the first guess. Jest: 1879 tests pass, and lint is clean. Not checked on a phone.
+
+## §176 — Redesign carried to every other screen (owner, 2026-11-07)
+
+The owner asked to redesign every remaining screen and to generate any assets needed. They chose to code directly, most-used areas first. Commits: 7163f7a (kit), aadfdf7 (Home), d29e3ac (Jobs plus a crash fix), b317e32 (the rest).
+
+- **Kit (Phase 0).** The create-flow kit moved to `src/ui/kit`, adding `PageHero`, `KitSection`, `StatTile` and `Illustration`. The old `features/create/flow/FlowKit` path re-exports it.
+  - Shared primitives were restyled, so every screen changed at once:
+    - `Card` takes the soft lift and the soft border.
+    - `ScreenHeader` gets a round outline arrow back button and a title3 heading.
+    - `SectionHeader` uses title3 with a brand "See all ›" link.
+    - `StateView` gains named `art`; a full-page error shows the connection illustration.
+    - `SearchField` and `SegmentedControl` are pills.
+  - `Screen` has a new `wash` prop.
+  - Page-title roles (`screenTitle`, `headlineLg`, `pageTitle`) now map to title1, and `displaySemiBold` to title2. Two type tests that pinned the old board sizes were updated.
+- **Illustrations.** Ten new GPT Image 2.6 illustrations at medium, 30 credits, approved: no jobs, no resumes, no notifications, no history, interview, assistant, Pro, help, offline and all done. They are 640px WebP in `assets/illustrations/redesign/`, referenced by name through `src/ui/illustrations.ts`.
+- **Home.** The greeting, bell and menu scroll with the page on the wash, followed by "Let's land your next role." and a search pill into Jobs. The logo block, the "Build better. Land faster." slogan and the black Find Jobs tile are removed. Applications and resume progress use kit cards. Quick Start and the shortcuts keep their illustrated icons (owner's rule).
+- **Jobs.** The tab and job detail get the wash, with arrow back buttons.
+  - **Bug fixed:** `findCachedJob` read the hidden-picks count, which shares the `['jobs','picks']` key prefix, as a list and crashed opening a job once Home had loaded it. It now skips anything that isn't a list, and a regression test covers it.
+- **Everything else.** The wash is on Resumes, Profile, Notifications, History, Interview, Upgrade and Help. Empty and all-done states in Resumes, History and Interview use the new illustrations. The Upgrade hero fills its empty IL-B1 slot with the Pro illustration.
+- **Judgement calls:**
+  - Screens that already had owner-approved art keep it: the Notifications empty states, the Assistant first run and the Help hero.
+  - Jobs list and detail, the Resumes grid and Profile kept their layouts from the earlier airy pass; they read well in the new kit, so they were restyled rather than rebuilt.
+  - Deeper per-screen rebuilds can follow the owner's comments: the profile forms, the resume editor and the score screens.
+- **Verified:**
+  - Web preview at 390×844: Home, Jobs, job detail, Resumes and Profile.
+  - Jest: 1880 tests pass, with typecheck and lint clean.
+  - The Android bundle builds from Metro.
+  - Not checked on a phone.
