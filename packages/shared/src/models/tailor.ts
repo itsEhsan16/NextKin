@@ -146,7 +146,18 @@ export type TailorFigure = { where: string; line: number; text: string };
  * `after`. The AI never writes the figure; `hint` says what kind of figure goes there. `by: 'rules'`
  * is the plain fallback ("…, improving ___").
  */
-export type FigureDraft = { before: string; after: string; hint: string; by: 'model' | 'rules' };
+export type FigureDraft = {
+  before: string;
+  after: string;
+  hint: string;
+  by: 'model' | 'rules';
+  /**
+   * An AI guess at the figure (owner, 2026-11-06; toreview §173), shown as a dashed "AI guess" the
+   * user must accept or edit — never written without that tap. The live server does not send one
+   * yet: its guard G13 still forbids the model writing a figure, pending the owner's decision.
+   */
+  suggestion?: string;
+};
 
 /** The plain draft: the line as written, with the gap after "improving". */
 export function fallbackFigureDraft(line: string): FigureDraft {

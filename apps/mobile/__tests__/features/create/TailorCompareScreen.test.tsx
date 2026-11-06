@@ -81,14 +81,16 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     expect(screen.getByLabelText('Comparing your resume with this job')).toBeOnTheScreen();
     await settle();
 
-    expect(
-      screen.getByLabelText('ATS score 9.0 out of 10, Strong, for this job'),
-    ).toBeOnTheScreen();
-    expect(screen.getByText('Stripe · Bengaluru · Remote')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Figma, on your resume')).toBeOnTheScreen();
-    // Missing keywords start unticked (D-14): the user adds, never the default.
+    expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Match 9.0 out of 10')).toBeOnTheScreen();
+    expect(screen.getByText('Senior Product Designer · Stripe')).toBeOnTheScreen();
+    // The AI's plan is already picked (§173).
+    expect(screen.getByText('Summary aimed at Stripe')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Summary aimed at Stripe, on')).toBeOnTheScreen();
+    // On the resume: ticked and locked. Missing: unticked until the user adds it (D-14).
+    expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
-    expect(screen.getByText('Tap the ones you have')).toBeOnTheScreen();
+    expect(screen.getByText('Tap the missing ones you really have.')).toBeOnTheScreen();
   });
 
   it('starts the run tailorRunInput builds from a tapped chip and the default options', async () => {
@@ -125,25 +127,44 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     );
   });
 
-  it('selects all shown keywords, then clears them', async () => {
-    await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
-    await settle();
-
-    await press('Select all');
-    expect(screen.getByRole('checkbox', { name: 'Fintech' })).toBeChecked();
-    await press('Clear all');
-    expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
-  });
-
-  it('keeps Options folded, and a part switched off leaves the run', async () => {
+  it('turns a plan step off with a tap, and it leaves the run', async () => {
     const startSpy = jest.spyOn(repos.generations, 'start');
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
 
-    expect(screen.queryByLabelText('Improve projects')).toBeNull();
-    await press('Options');
+    await press('Skills ordered for this job, on');
+    expect(screen.getByLabelText('Skills ordered for this job, off')).toBeOnTheScreen();
+    await press('Create my resume');
+    await settle();
+    expect(startSpy.mock.calls[0]?.[0]?.tailor?.fixes).not.toContain('skills');
+  });
+
+  it('accepts the AI’s guess for a missing number with one tap', async () => {
+    const startSpy = jest.spyOn(repos.generations, 'start');
+    await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
+    await settle();
+    await settle();
+
+    expect(screen.getAllByText('about 20%').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('AI guess — use it only if it’s close to true.').length).toBeGreaterThan(0);
+    await act(async () => fireEvent.press(screen.getAllByRole('button', { name: 'Use' })[0]!));
+    await press('Create my resume');
+    await settle();
+    const figures = startSpy.mock.calls[0]?.[0]?.tailor?.figures;
+    expect(figures?.[0]?.text).toMatch(/about 20%/);
+  });
+
+  it('keeps the rare options in a sheet, and one switched off leaves the run', async () => {
+    const startSpy = jest.spyOn(repos.generations, 'start');
+    await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
+    await settle();
+
+    expect(screen.queryByLabelText('Projects')).toBeNull();
+    await press('More options');
     await settle(500);
-    await act(async () => fireEvent.press(screen.getByLabelText('Improve projects')));
+    await act(async () => fireEvent.press(screen.getByLabelText('Projects')));
+    await press('Done');
+    await settle(500);
     await press('Create my resume');
     await settle();
 
@@ -176,8 +197,8 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await renderCustomize({ jdId: draft.id, resumeId: 'res_base' });
     await settle();
 
-    expect(screen.getByLabelText(/^This job: /)).toBeOnTheScreen();
-    await press('Job details');
+    expect(screen.getByText(/^Senior Product Designer/)).toBeOnTheScreen();
+    await press('View the job');
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/create/jd',
       params: { draftId: draft.id },
@@ -196,7 +217,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await settle();
     await settle();
     await settle();
-    expect(screen.getByText('Base resume · 3 pages')).toBeOnTheScreen();
+    expect(screen.getByText('Product Designer')).toBeOnTheScreen();
     expect(screen.queryByText('Which resume should we tailor?')).toBeNull();
   });
 
@@ -242,7 +263,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
   it('says so when the job no longer exists', async () => {
     await renderCustomize({ jobId: 'job_missing', resumeId: 'res_base' });
     await settle(10000);
-    expect(screen.getByText("This job isn't available")).toBeOnTheScreen();
+    expect(screen.getByText('This job isn’t available')).toBeOnTheScreen();
   });
 
   it('offers a retry when loading fails', async () => {

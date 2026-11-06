@@ -2,21 +2,20 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { atsBandFor, compareProfileToJob } from '@/data/models';
+import { compareProfileToJob } from '@/data/models';
 import { useJdDraft, useJob, useJobJd, useProfile, useSubscription } from '@/data/queries';
-import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
 import { scaledSheet, useTheme } from '@/theme';
-import { Button } from '@/ui/Button';
 import { ChoiceChip } from '@/ui/ChoiceChip';
 import { Icon } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
-import { ScoreRing } from '@/ui/Progress';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
 import { OnboardingFrame } from '../components/OnboardingFrame';
+import { FlowFooter } from '../flow/FlowKit';
+import { ReviewHero } from '../flow/ReviewParts';
 import { useCreateActions } from '../hooks/useCreateActions';
 import { useBuildActions, useStartBuild } from '../hooks/useStartBuild';
 import { BUILD_STEPS } from './BuildJobScreen';
@@ -28,16 +27,9 @@ export type BuildCompareScreenProps = {
   jdId?: string;
 };
 
-export const BUILD_MATCH_TITLE = 'How you match';
+export const BUILD_MATCH_TITLE = 'Ready to build';
 export const BUILD_CTA = 'Build resume';
 
-/** One line per band, said plainly (§172). */
-const VERDICT: Record<ReturnType<typeof atsBandFor>, string> = {
-  strong: 'Strong match. A few touches left.',
-  good: 'Good start. A few gaps to close.',
-  fair: 'Fair match. Some gaps to close.',
-  weak: 'Big gaps. Worth a careful look.',
-};
 
 /**
  * Build Resume, step 2 of 3 (toreview.md §172): the match ring and one verdict, the job's skills
@@ -106,7 +98,7 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
         <Skeleton height={120} radius="cardLg" />
         <Skeleton height={160} radius="cardLg" />
       </View>,
-      <Button label={BUILD_CTA} size="xl" block disabled />,
+      <FlowFooter primary={{ label: BUILD_CTA, onPress: () => {}, disabled: true }} />,
     );
   }
 
@@ -137,69 +129,28 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
     });
 
   const footer = (
-    <View style={styles.footer}>
-      {build.quotaSpent ? (
-        <Button
-          label="See Pro plans"
-          size="xl"
-          block
-          onPress={() => actions.openUpgrade('generations')}
-        />
-      ) : (
-        <Button
-          label={BUILD_CTA}
-          size="xl"
-          block
-          loading={build.pending}
-          leading={<SparkleIcon width={18} height={18} />}
-          onPress={start}
-        />
-      )}
-      {build.error || build.quotaNote ? (
-        <Text
-          variant="footnote"
-          color={build.error ? 'danger' : 'textTertiary'}
-          align="center"
-          accessibilityLiveRegion="polite"
-        >
-          {build.error ?? build.quotaNote}
-        </Text>
-      ) : null}
-    </View>
+    <FlowFooter
+      note={build.error ?? (build.quotaNote || undefined)}
+      noteTone={build.error ? 'danger' : 'neutral'}
+      primary={
+        build.quotaSpent
+          ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('generations') }
+          : { label: BUILD_CTA, icon: 'Stars02', loading: build.pending, onPress: start }
+      }
+    />
   );
 
   return frame(
     `${jd.title} · ${company}`,
     <View style={styles.stack}>
-      <Animated.View
-        entering={enter(0)}
-        style={[styles.card, styles.summary, { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft }]}
-      >
-        <ScoreRing
+      <Animated.View entering={enter(0)}>
+        <ReviewHero
           score={result.score}
-          size={72}
-          strokeWidth={7}
-          label="match"
-          numberVariant="title2"
-          accessibilityLabel={`Match ${Math.round(result.score)} out of 100`}
+          scored
+          sourceLabel="Building from"
+          sourceTitle="Your profile"
+          onViewJob={() => openJobDetails(jd.id)}
         />
-        <View style={styles.fill}>
-          <Text variant="title3" color="ink">
-            {VERDICT[atsBandFor(result.score)]}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="View the job"
-            feedback="subtle"
-            onPress={() => openJobDetails(jd.id)}
-            style={styles.link}
-          >
-            <Text variant="footnote" color="brand">
-              View the job
-            </Text>
-            <Icon name="ChevronRight" size="xs" color={colors.brand} />
-          </Pressable>
-        </View>
       </Animated.View>
 
       {result.keywords.length > 0 ? (

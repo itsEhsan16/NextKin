@@ -103,7 +103,9 @@ export function createMockJdRepo(store: MockStore): JdRepo {
     forJob: (jobId) => simulate(() => clone(draftForJob(jobId)), EXTRACT_LATENCY),
 
     // The mock has no model: the plain draft, the line with its gap after "improving".
-    draftFigure: (_resumeId, _roleId, _line, text) => simulate(() => fallbackFigureDraft(text)),
+    // The mock shows the owner's "AI guess" chip (§173); the live server sends none yet.
+    draftFigure: (_resumeId, _roleId, _line, text) =>
+      simulate(() => ({ ...fallbackFigureDraft(text), suggestion: 'about 20%' })),
 
     compareToJd: (resumeId, jdId) =>
       simulate(() => {

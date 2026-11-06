@@ -22,7 +22,8 @@ export type ButtonVariant =
   | 'danger'
   | 'dangerOutline'
   | 'brand'
-  | 'outline';
+  | 'outline'
+  | 'soft';
 /** `xl` is the redesign's full pill (§172): 54 tall at 390, fully rounded, 16pt label. */
 export type ButtonSize = 'md' | 'lg' | 'xl';
 
@@ -87,6 +88,8 @@ export function Button({
     brand: { bg: colors.brand, fg: 'textOnBrand' },
     /** White pill with a hairline — social sign-in and quiet secondary actions. */
     outline: { bg: colors.surfaceCard, fg: 'textPrimary', border: colors.borderDefault },
+    /** A light brand-tinted action inside a card (§173): Confirm, Add the real number. */
+    soft: { bg: colors.brandSurface, fg: 'brand' },
   };
   const pill = size === 'xl';
   const height = pill ? u(54) : size === 'lg' ? sizes.buttonLg : sizes.buttonMd;

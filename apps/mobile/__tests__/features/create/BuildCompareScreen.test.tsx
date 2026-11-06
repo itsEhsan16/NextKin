@@ -96,8 +96,9 @@ describe('Build Resume step 2: the match (§172)', () => {
 
     expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
     expect(screen.getByText('Senior Product Designer · CRED')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Match 80 out of 100')).toBeOnTheScreen();
-    expect(screen.getByText('Good start. A few gaps to close.')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Match 8.0 out of 10')).toBeOnTheScreen();
+    expect(screen.getByText('Good match'.toUpperCase())).toBeOnTheScreen();
+    expect(screen.getByText('Your profile')).toBeOnTheScreen();
     // On the profile: ticked and locked. Missing: off until the user says they have it.
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
