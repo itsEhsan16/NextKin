@@ -139,15 +139,22 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     expect(startSpy.mock.calls[0]?.[0]?.tailor?.fixes).not.toContain('skills');
   });
 
-  it('accepts the AI’s guess for a missing number with one tap', async () => {
+  it('ticks a result on: a sheet offers the AI’s guess, and a tap adds it (§174)', async () => {
     const startSpy = jest.spyOn(repos.generations, 'start');
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
     await settle();
 
-    expect(screen.getAllByText('about 20%').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('AI guess — use it only if it’s close to true.').length).toBeGreaterThan(0);
-    await act(async () => fireEvent.press(screen.getAllByRole('button', { name: 'Use' })[0]!));
+    expect(screen.getAllByText(/AI suggests about 20%/).length).toBeGreaterThan(0);
+    await act(async () =>
+      fireEvent.press(screen.getAllByLabelText('Add a result to a bullet, off')[0]!),
+    );
+    await settle();
+    expect(screen.getByText('A guess. Use it only if it’s close to true.')).toBeOnTheScreen();
+    await press("Use the AI's guess: about 20%");
+    await press('Add to bullet');
+    await settle();
+    expect(screen.getAllByLabelText('Add a result to a bullet, on').length).toBe(1);
     await press('Create my resume');
     await settle();
     const figures = startSpy.mock.calls[0]?.[0]?.tailor?.figures;

@@ -35,6 +35,8 @@ export type AnimatedNumberProps = {
   style?: StyleProp<TextStyle>;
 };
 
+const GLYPH_HEIGHT = 1.3;
+
 const defaultFormat = (n: number) => {
   'worklet';
   return String(Math.round(n));
@@ -71,6 +73,12 @@ export function AnimatedNumber({
     return { text: format(current), defaultValue: format(current) };
   });
 
+  // Android draws a TextInput's line at the font's own height whatever lineHeight says, and Plus
+  // Jakarta Sans is tall (~1.26 em): a tighter role let the digits spill onto the ring's "ATS
+  // SCORE" under them (owner's device, 2026-11-07). The box is never shorter than the glyphs.
+  const role = typography[variant];
+  const lineHeight = Math.max(role.lineHeight ?? 0, Math.ceil((role.fontSize ?? 0) * GLYPH_HEIGHT));
+
   return (
     <AnimatedTextInput
       accessible={false}
@@ -82,7 +90,7 @@ export function AnimatedNumber({
       underlineColorAndroid="transparent"
       animatedProps={animatedProps}
       defaultValue={format(0)}
-      style={[styles.input, typography[variant], { color: colors[color] }, style]}
+      style={[styles.input, role, { lineHeight, color: colors[color] }, style]}
     />
   );
 }

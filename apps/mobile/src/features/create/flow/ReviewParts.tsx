@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
-import { atsBandFor, figureLine, type FigureDraft, type TailorComparison } from '@/data/models';
+import { atsBandFor, type FigureDraft, type TailorComparison } from '@/data/models';
 import {
   figureKey,
   keywordGroups,
@@ -22,14 +22,18 @@ import { Pressable } from '@/ui/Pressable';
 import { ScoreRing } from '@/ui/Progress';
 import { SegmentedControl } from '@/ui/SegmentedControl';
 import { Sheet } from '@/ui/Sheet';
-import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 import { Toggle } from '@/ui/Toggle';
 
 import { PlanFigureEditor } from '../components/PlanFigureEditor';
 import { FlowCard, FlowDivider, FlowRow, IconTile, StatusPill } from './FlowKit';
 
-const BAND_LABEL = { strong: 'Strong match', good: 'Good match', fair: 'Fair match', weak: 'Weak match' } as const;
+const BAND_LABEL = {
+  strong: 'Strong match',
+  good: 'Good match',
+  fair: 'Fair match',
+  weak: 'Weak match',
+} as const;
 const BAND_TONE = { strong: 'success', good: 'success', fair: 'warning', weak: 'warning' } as const;
 
 /** The score card at the top of Review: ring, band, where the AI's plan takes it, the source. */
@@ -145,9 +149,24 @@ function PlanTick({ on }: { on: boolean }) {
 }
 
 const FIX_ROWS = [
-  { fixes: ['headline', 'summary'], icon: 'Edit03', title: (c: string) => `Summary aimed at ${c}`, body: 'Headline and summary for this job' },
-  { fixes: ['skills'], icon: 'FilterLines', title: () => 'Skills ordered for this job', body: 'What it asks for comes first' },
-  { fixes: ['experience'], icon: 'Briefcase01', title: () => 'Bullets reworded for this job', body: 'Your own facts, its words' },
+  {
+    fixes: ['headline', 'summary'],
+    icon: 'Edit03',
+    title: (c: string) => `Summary aimed at ${c}`,
+    body: 'Headline and summary for this job',
+  },
+  {
+    fixes: ['skills'],
+    icon: 'FilterLines',
+    title: () => 'Skills ordered for this job',
+    body: 'What it asks for comes first',
+  },
+  {
+    fixes: ['experience'],
+    icon: 'Briefcase01',
+    title: () => 'Bullets reworded for this job',
+    body: 'Your own facts, its words',
+  },
 ] as const;
 
 /**
@@ -198,7 +217,11 @@ export function AiPlanCard({
   );
 }
 
-/** One "add a real result" step: the AI's guess (accept or edit), or the figure already added. */
+/**
+ * One "add a real result" step (owner, 2026-11-07): a tick like every other plan row. Ticking it
+ * opens a sheet with the AI's suggested figure and a field for the real one; unticking drops it.
+ * The draft is fetched with the plan, so the sheet opens ready.
+ */
 function NumberStep({
   step,
   resumeId,
@@ -210,7 +233,7 @@ function NumberStep({
   choices: CustomizeChoices;
   onChange: (next: CustomizeChoices) => void;
 }) {
-  const { colors, sizes, u } = useTheme();
+  const { u } = useTheme();
   const styles = useStyles();
   const bullet = step.bullet!;
   const saved = choices.figures?.[figureKey(bullet.roleId, bullet.index)];
@@ -227,78 +250,58 @@ function NumberStep({
     );
   }, [bullet, isIdle, mutate, resumeId, saved]);
 
-  const save = (text: string | null) => onChange(setFigure(choices, bullet.roleId, bullet.index, text));
+  const save = (text: string | null) =>
+    onChange(setFigure(choices, bullet.roleId, bullet.index, text));
+  const quoted = `“${bullet.text.length > 60 ? `${bullet.text.slice(0, 58).trim()}…` : bullet.text}”`;
+  const body =
+    saved ?? (draft?.suggestion ? `${quoted} · AI suggests ${draft.suggestion}` : quoted);
 
   return (
-    <View style={styles.numberStep}>
+    <>
       <FlowRow
         icon="Target"
-        title="Add a result to a bullet"
-        body={`“${bullet.text.length > 60 ? `${bullet.text.slice(0, 58).trim()}…` : bullet.text}”`}
+        title={saved ? 'Result added' : 'Add a result to a bullet'}
+        body={body}
         trailing={<PlanTick on={!!saved} />}
+        accessibilityLabel={`Add a result to a bullet, ${saved ? 'on' : 'off'}`}
+        onPress={() => (saved ? save(null) : setEditing(true))}
       />
-      <View style={styles.numberBody}>
-        {saved ? (
-          <View style={styles.savedRow}>
-            <Text variant="footnote" color="success" style={styles.flex} numberOfLines={2}>
-              {saved}
-            </Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Edit the result" onPress={() => setEditing(true)}>
-              <Text variant="footnote" color="brand">
-                Edit
-              </Text>
-            </Pressable>
-          </View>
-        ) : draft?.suggestion ? (
-          <>
-            <View style={styles.suggestRow}>
-              <View
-                style={[
-                  styles.guess,
-                  { backgroundColor: colors.brandSurface, borderColor: colors.brand, borderWidth: sizes.border },
-                ]}
-              >
-                <Icon name="Stars02" size={u(14)} color={colors.brand} />
-                <Text variant="bodyLgStrong" color="brand">
-                  {draft.suggestion}
-                </Text>
-              </View>
-              <Button
-                label="Use"
-                size="md"
-                onPress={() => save(figureLine(draft, draft.suggestion!))}
-                style={styles.smallBtn}
-              />
-              <Button label="Edit" variant="secondary" size="md" onPress={() => setEditing(true)} style={styles.smallBtn} />
-            </View>
-            <View style={styles.warnRow}>
-              <Icon name="AlertCircle" size={u(14)} color={colors.warningStrong} />
-              <Text variant="footnote" color="warningStrong" style={styles.flex}>
-                AI guess — use it only if it’s close to true.
-              </Text>
-            </View>
-          </>
-        ) : draftFigure.isPending ? (
-          <Skeleton height={u(36)} radius="full" width="60%" />
-        ) : (
-          <Button label="Add the real number" variant="soft" size="md" onPress={() => setEditing(true)} />
-        )}
-      </View>
-      <Sheet open={editing} onClose={() => setEditing(false)} height={u(420)} avoidKeyboard accessibilityLabel="Add the result">
-        <OptionSheetHeader title="Add the result" onClose={() => setEditing(false)} />
+      {saved ? (
+        <Pressable
+          feedback="subtle"
+          accessibilityRole="button"
+          accessibilityLabel="Change the result"
+          onPress={() => setEditing(true)}
+          style={styles.changeResult}
+        >
+          <Text variant="footnote" color="brand">
+            Change
+          </Text>
+        </Pressable>
+      ) : null}
+      <Sheet
+        open={editing}
+        onClose={() => setEditing(false)}
+        height={u(460)}
+        avoidKeyboard
+        accessibilityLabel="Add a result"
+        contentStyle={styles.sheetPad}
+      >
+        <OptionSheetHeader variant="card" title="Add a result" onClose={() => setEditing(false)} />
         <View style={styles.sheetBody}>
           {editing ? (
             <PlanFigureEditor
               resumeId={resumeId}
               bullet={bullet}
               saved={saved}
+              draft={draft}
               onSave={save}
               onDone={() => setEditing(false)}
             />
           ) : null}
         </View>
       </Sheet>
-    </View>
+    </>
   );
 }
 
@@ -339,7 +342,12 @@ export function SkillChips({
             selected={chip.locked || choices.added.includes(chip.label)}
             onPress={() =>
               onChange(
-                tickKeyword(choices, chip.label, !choices.added.includes(chip.label), comparison.picks),
+                tickKeyword(
+                  choices,
+                  chip.label,
+                  !choices.added.includes(chip.label),
+                  comparison.picks,
+                ),
               )
             }
           />
@@ -371,8 +379,18 @@ export function MoreOptionsSheet({
   const { u } = useTheme();
   const styles = useStyles();
   return (
-    <Sheet open={open} onClose={onClose} height={u(460)} accessibilityLabel="More options">
-      <OptionSheetHeader title="More options" subtitle="Already set for this job." onClose={onClose} />
+    <Sheet
+      open={open}
+      onClose={onClose}
+      height={u(460)}
+      accessibilityLabel="More options"
+      contentStyle={styles.sheetPad}
+    >
+      <OptionSheetHeader
+        title="More options"
+        subtitle="Already set for this job."
+        onClose={onClose}
+      />
       <View style={styles.sheetBody}>
         <Text variant="bodyLgStrong" color="ink">
           Experience
@@ -428,25 +446,23 @@ const useStyles = scaledSheet((_s, u) => ({
   heroText: { flex: 1, gap: u(6) },
   link: { flexDirection: 'row', alignItems: 'center', gap: u(2), alignSelf: 'flex-start' },
   sourceRow: { flexDirection: 'row', alignItems: 'center', gap: u(10) },
-  pageTile: { width: u(32), height: u(40), borderRadius: u(6), alignItems: 'center', justifyContent: 'center' },
-  changePill: { paddingHorizontal: u(14), paddingVertical: u(7), borderRadius: u(999) },
-  numberStep: { paddingBottom: u(12) },
-  numberBody: { paddingLeft: u(48), gap: u(8) },
-  suggestRow: { flexDirection: 'row', alignItems: 'center', gap: u(8), flexWrap: 'wrap' },
-  guess: {
-    flexDirection: 'row',
+  pageTile: {
+    width: u(32),
+    height: u(40),
+    borderRadius: u(6),
     alignItems: 'center',
-    gap: u(6),
-    paddingHorizontal: u(12),
-    paddingVertical: u(8),
-    borderRadius: u(12),
-    borderStyle: 'dashed',
+    justifyContent: 'center',
   },
-  smallBtn: { height: u(38), paddingHorizontal: u(14), borderRadius: u(999) },
-  warnRow: { flexDirection: 'row', alignItems: 'flex-start', gap: u(6) },
-  savedRow: { flexDirection: 'row', alignItems: 'center', gap: u(10) },
+  changePill: { paddingHorizontal: u(14), paddingVertical: u(7), borderRadius: u(999) },
+  changeResult: {
+    alignSelf: 'flex-start',
+    marginLeft: u(56),
+    marginTop: -u(6),
+    paddingBottom: u(12),
+  },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
   more: { alignSelf: 'flex-start', paddingVertical: u(10) },
-  sheetBody: { paddingHorizontal: u(24), paddingTop: u(8), paddingBottom: u(24), gap: u(16) },
+  sheetPad: { paddingHorizontal: u(24), paddingBottom: u(12) },
+  sheetBody: { paddingTop: u(8), paddingBottom: u(12), gap: u(16) },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: u(12) },
 }));

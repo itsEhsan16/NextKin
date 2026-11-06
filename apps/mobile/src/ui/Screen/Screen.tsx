@@ -16,6 +16,7 @@ import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 
 import { useTabBarLayout, useTheme } from '@/theme';
 import { EDGE_FADE_DEPTH, EdgeFade } from '@/ui/EdgeFade';
+import { SheetLayerHost } from '@/ui/Sheet/SheetLayer';
 
 import { keyboardBottomReserve } from './keyboardReserve';
 import { KeyboardFrame } from './KeyboardFrame';
@@ -200,30 +201,38 @@ export function Screen({
   // a sheet's rows, a toast — still animates in (owner, 2026-10-05).
   const page = <LayoutAnimationConfig skipEntering>{content}</LayoutAnimationConfig>;
 
-  if (!keyboard) return <View style={rootStyle}>{page}</View>;
+  // Every sheet on the page is drawn over the window from here, outside the scroller (§174).
+  if (!keyboard)
+    return (
+      <SheetLayerHost>
+        <View style={rootStyle}>{page}</View>
+      </SheetLayerHost>
+    );
 
   return (
-    <RevealProvider
-      scrollRef={activeScrollRef}
-      getOffset={getOffset}
-      footerRef={footerHeight}
-      viewportTopRef={viewportTop}
-      revealAgainRef={revealAgain}
-      // Only a scrolling page can reveal anything. On a static one the provider hands fields a
-      // `null` and they leave the keyboard alone.
-      enabled={scroll}
-    >
-      <KeyboardFrame
-        reserve={keyboardBottomReserve({
-          hasFooter,
-          edges,
-          tabBarInset,
-          insetBottom: insets.bottom,
-        })}
+    <SheetLayerHost>
+      <RevealProvider
+        scrollRef={activeScrollRef}
+        getOffset={getOffset}
+        footerRef={footerHeight}
+        viewportTopRef={viewportTop}
+        revealAgainRef={revealAgain}
+        // Only a scrolling page can reveal anything. On a static one the provider hands fields a
+        // `null` and they leave the keyboard alone.
+        enabled={scroll}
       >
-        <View style={rootStyle}>{page}</View>
-      </KeyboardFrame>
-    </RevealProvider>
+        <KeyboardFrame
+          reserve={keyboardBottomReserve({
+            hasFooter,
+            edges,
+            tabBarInset,
+            insetBottom: insets.bottom,
+          })}
+        >
+          <View style={rootStyle}>{page}</View>
+        </KeyboardFrame>
+      </RevealProvider>
+    </SheetLayerHost>
   );
 }
 

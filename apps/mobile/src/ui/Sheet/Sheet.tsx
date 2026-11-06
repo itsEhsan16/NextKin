@@ -22,6 +22,7 @@ import { useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 
 import { SheetKeyboardLift } from './SheetKeyboardLift';
+import { InSheetLayer } from './SheetLayer';
 import { resolveSheetHeight } from './sheetLayout';
 import { useSheetDismissPan } from './useSheetDismissPan';
 import { useSheetProgress } from './useSheetProgress';
@@ -186,7 +187,7 @@ export function Sheet({
     transform: [{ translateY: (1 - progress.value) * animatedHeight.value }],
   }));
 
-  if (!mounted) return null;
+  if (!mounted) return <InSheetLayer node={null} />;
 
   // Only this subtree lifts; the transform is outer, so sheetStyle and the drag maths are untouched.
   const sheet = (
@@ -235,33 +236,42 @@ export function Sheet({
   // The keyboard controller reports the keyboard on both, and the lift subtracts the bottom inset.
   const lifted = avoidKeyboard;
 
+  // Drawn in the page's sheet layer, over the whole window, wherever the sheet is written (§174).
   return (
-    // The modal flag sits on the overlay root rather than the sheet surface: on the surface it
-    // hides its own sibling — the scrim's "Close sheet" target — from VoiceOver while leaving
-    // the page behind it fully reachable, which is exactly backwards.
-    // `zIndex.sheet` is load-bearing, not decoration. The token existed and was never applied, so
-    // the overlay sat at an implicit 0 while `StickyActionBar` declares 10 — and an explicit
-    // z-index beats document order. Every sheet raised over a page with a pinned bar was therefore
-    // painted *under* that bar: on the profile forms the page's "Save" covered the bottom of the
-    // date picker's own "Done", and the scrim never dimmed it.
-    <View
-      accessibilityViewIsModal
-      style={[StyleSheet.absoluteFill, { zIndex: zIndex.sheet }]}
-      pointerEvents="box-none"
-    >
-      <Animated.View
-        style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrimStyle]}
-      >
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close sheet"
-          onPress={onClose}
-          style={StyleSheet.absoluteFill}
-        />
-      </Animated.View>
+    <InSheetLayer
+      node={
+        // The modal flag sits on the overlay root rather than the sheet surface: on the surface it
+        // hides its own sibling — the scrim's "Close sheet" target — from VoiceOver while leaving
+        // the page behind it fully reachable, which is exactly backwards.
+        // `zIndex.sheet` is load-bearing, not decoration. The token existed and was never applied, so
+        // the overlay sat at an implicit 0 while `StickyActionBar` declares 10 — and an explicit
+        // z-index beats document order. Every sheet raised over a page with a pinned bar was therefore
+        // painted *under* that bar: on the profile forms the page's "Save" covered the bottom of the
+        // date picker's own "Done", and the scrim never dimmed it.
+        <View
+          accessibilityViewIsModal
+          style={[StyleSheet.absoluteFill, { zIndex: zIndex.sheet }]}
+          pointerEvents="box-none"
+        >
+          <Animated.View
+            style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrimStyle]}
+          >
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close sheet"
+              onPress={onClose}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
 
-      {lifted ? <SheetKeyboardLift sheetHeight={animatedHeight}>{sheet}</SheetKeyboardLift> : sheet}
-    </View>
+          {lifted ? (
+            <SheetKeyboardLift sheetHeight={animatedHeight}>{sheet}</SheetKeyboardLift>
+          ) : (
+            sheet
+          )}
+        </View>
+      }
+    />
   );
 }
 

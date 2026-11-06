@@ -194,7 +194,8 @@ describe('Build Resume step 1: the job (§172)', () => {
     expect(screen.getByText('Your profile')).toBeOnTheScreen();
     // The two latest resumes, then an upload; older ones and cover letters are not offered.
     expect(screen.getByText('UX Designer Resume')).toBeOnTheScreen();
-    expect(screen.getByText('Product Designer')).toBeOnTheScreen();
+    // Twice since §174: the "From" pill on the page and the row in the sheet drawn over it.
+    expect(screen.getAllByText('Product Designer').length).toBeGreaterThan(0);
     expect(screen.queryByText('Stripe — Senior PD')).not.toBeOnTheScreen();
     expect(screen.queryByText('Stripe cover letter')).not.toBeOnTheScreen();
     expect(screen.getByText('Upload from your device')).toBeOnTheScreen();

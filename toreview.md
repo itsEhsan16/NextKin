@@ -16072,3 +16072,22 @@ The owner found round 1 invisible: Build sends anyone with a resume to the old T
 - **Dev web preview:** `react-native-web` + `react-dom` dev dependencies; Metro resolves `packages/shared` without `.web` fixtures for platform web; `useReducedMotion` is always on for web (entering animations never run there). Web is a preview only, not a shipped target.
 
 **Not verified on a device yet.** Jest 217 suites / 1879 tests, tsc and lint pass; screens were compared against the boards in the web preview (screenshots go stale while the browser pane is hidden, so some checks were by DOM measurement).
+
+## §174 — Owner's phone pass on the redesign (2026-11-07)
+
+Owner reported four broken spots on device plus one design change. All fixed on `claude/app-ui-ux-redesign-1a1793`:
+
+- **Sheets drawn inside a scrolling page (root cause of two reports).** React Native has no `position: fixed`, so a `Sheet` written inside a page's scroll content filled that content, not the window. The Build "From" sheet opened below the fold, and the "Add the result" editor opened inside the plan card.
+  - Fixed once for every screen: `Screen` now wraps the page in `SheetLayerHost` (`ui/Sheet/SheetLayer.tsx`), and every `Sheet` draws through it over the whole window, wherever it is written.
+  - Judgement call: a moved sheet keeps app-wide providers but not any provider between `Screen` and the sheet. None is used by a sheet today. The page's field reveal no longer reaches sheets, which matches how sibling sheets already worked.
+  - Sheets on screens without `Screen`, and in tests without one, draw in place as before.
+- **Pasted job description grew the box down the page.** `TextField` multiline now has `maxLines` (default 8; Build's job field 6). Past that, the text scrolls inside the box.
+- **"Add a result" redesigned to the owner's suggestion.** It is a tick row like the other plan rows. Ticking it opens a bottom sheet with:
+  - the line previewed live, with the gap filled as you type;
+  - the AI's suggested figure as a dashed chip, labelled a guess, which one tap fills in;
+  - a field for the real figure;
+  - "Add to bullet" and "Write the line myself".
+  
+  Unticking removes the result; "Change" reopens the sheet. The draft fetched with the plan is reused, so the sheet opens ready.
+- **ATS score ring on the Ready preview: digits overlapped "ATS SCORE".** `AnimatedNumber` is a TextInput, and Android ignores a line height shorter than the font's own height; Plus Jakarta Sans is tall. Its line box is now at least 1.3× the font size, for every animated number.
+- **Verified:** web preview at 390×844 (sheet positions measured with the page scrolled; tick → sheet → AI guess → added). Jest: 217 suites and 1879 tests pass; typecheck and lint are clean. **Not verified on a phone**, including the Android ring and the inner scroll of the capped field (web textareas don't grow).

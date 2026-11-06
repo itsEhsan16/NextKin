@@ -125,12 +125,7 @@ export function ScoreRing({
       )}
       {/* One line, always: a second would break out of the ring on the narrowest phones. */}
       {label ? (
-        <Text
-          variant={labelVariant}
-          color={labelColor}
-          numberOfLines={1}
-          style={{ marginTop: -s(2) }}
-        >
+        <Text variant={labelVariant} color={labelColor} numberOfLines={1} style={{ marginTop: 0 }}>
           {label}
         </Text>
       ) : null}

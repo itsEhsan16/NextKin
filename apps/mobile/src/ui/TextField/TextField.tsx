@@ -41,6 +41,12 @@ export type TextFieldProps = {
   multiline?: boolean;
   /** Multiline only: the floor in text lines; the box never shrinks below sizes.textArea. */
   minLines?: number;
+  /**
+   * Multiline only: the ceiling in text lines (default 8). Past it the text scrolls inside the box
+   * instead of the box growing down the page — a pasted job description used to push everything
+   * below it off screen (owner, 2026-11-07).
+   */
+  maxLines?: number;
   maxLength?: number;
   /** Live "12/200" counter; needs maxLength. */
   showCount?: boolean;
@@ -67,6 +73,7 @@ export type TextFieldProps = {
 const INSET = 18;
 /** Three lines of body copy is the shortest textarea any Phase 9 form asks for. */
 const DEFAULT_MIN_LINES = 3;
+const DEFAULT_MAX_LINES = 8;
 
 /**
  * The app's text input (plan §Phase 9A). Figma never drew a form field, so the chrome is
@@ -90,6 +97,7 @@ export function TextField({
   icon,
   multiline = false,
   minLines,
+  maxLines = DEFAULT_MAX_LINES,
   maxLength,
   showCount = false,
   keyboardType,
@@ -122,6 +130,8 @@ export function TextField({
     sizes.textArea,
     (minLines ?? DEFAULT_MIN_LINES) * bodyLine + 2 * spacing[3],
   );
+
+  const maxInputHeight = Math.max(minHeight - 2 * spacing[3], maxLines * bodyLine);
 
   const message = error ?? helper;
   const showsHelperRow = Boolean(message) || (showCount && maxLength != null);
@@ -176,6 +186,7 @@ export function TextField({
           selectionColor={colors.textPrimary}
           cursorColor={colors.textPrimary}
           multiline={multiline}
+          scrollEnabled={multiline ? true : undefined}
           maxLength={maxLength}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
@@ -204,7 +215,7 @@ export function TextField({
           maxFontSizeMultiplier={maxFontScale.body}
           style={[
             styles.input,
-            multiline ? styles.inputMultiline : null,
+            multiline ? [styles.inputMultiline, { maxHeight: maxInputHeight }] : null,
             typography.body,
             { color: colors.textPrimary },
           ]}
