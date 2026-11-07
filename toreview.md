@@ -16352,3 +16352,17 @@ The owner: "Ai Assistant window is still old one with no proper logic, completel
 - **The only line under the bar is "AI-generated guidance"**, with the info mark (`ASSISTANT_LABEL`).
   - §7.16's full wording ("…not professional or legal advice") stays in the shared `ASSISTANT_DISCLAIMER`, which the web still shows. On mobile, the owner's shorter line replaces it; the spec text is the owner's to waive.
 - **Verified:** Jest passes all 1932 tests, and tsc and eslint are clean. Checked in the web preview at 390. Not checked on a phone.
+
+## §190 — Toasts: small, bottom-right, in the app's look, no green tick (owner, 2026-11-08)
+- The shared `ui/Toast` changed, so every toast in the app changes with it: the app toast host, Jobs, Profile, export, the copied link, the run screens and Upgrade.
+- **Before:** a full-width ink bar under the status bar, with a green check.
+- **Now:**
+  - a small white pill (r999, the soft card shadow, a hairline edge), at most 300 wide and up to two lines;
+  - in the bottom-right corner, rising in and dropping away;
+  - lifted 104 above the bottom inset, to clear the floating tab bar and pinned footers such as the chat bar.
+- **Glyphs:** success and info show only a small brand dot. An error keeps a red "!" (and its buzz), so a failure never reads as done.
+- Judgement call: the 104 lift is one value for every screen. On a screen with no footer the toast sits a little higher than it needs to.
+- **Verified:**
+  - Jest: 1932 tests pass. tsc and eslint are clean.
+  - Web preview at 390 ("Answer copied" sits bottom-right above the chat bar).
+  - Not checked on a phone.

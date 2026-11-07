@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { haptics, useReducedMotion } from '@/lib';
@@ -15,8 +15,7 @@ export type ToastProps = {
   visible: boolean;
   message: string;
   /**
-   * Picks the leading glyph and its colour. `success` is the artboard's green check (Figma
-   * 1:2926); `error` is a red "!" and buzzes, so a failure never wears the success check.
+   * `error` leads with a red "!" and buzzes; `success` and `info` show the brand dot only.
    */
   tone?: ToastTone;
   /** Overrides the tone's glyph. */
@@ -26,24 +25,21 @@ export type ToastProps = {
   onHide: () => void;
 };
 
-// Drawn at 390 by PROFILE 25 (577:3798), in artboard units. A single line stays the older
-// board's 56 tall (1:2924); a longer message wraps to a second line instead of being cut off.
-const MIN_HEIGHT = 56;
-const PAD_X = 15 / 0.75;
-const PAD_Y = 11 / 0.75;
-const GAP = 9 / 0.75;
-const RADIUS = 13 / 0.75;
-
-const TONE_GLYPH: Record<ToastTone, { icon: LineIconName; color: ColorToken }> = {
-  success: { icon: 'Check', color: 'successRing' },
-  error: { icon: 'AlertCircle', color: 'dangerDot' },
-  info: { icon: 'InfoCircle', color: 'textOnDark' },
+/**
+ * Only a failure carries a glyph: "done" and "news" are said in words alone (owner, 2026-11-08,
+ * §190: no green tick). A failure keeps its red mark so it never reads as done.
+ */
+const TONE_GLYPH: Partial<Record<ToastTone, { icon: LineIconName; color: ColorToken }>> = {
+  error: { icon: 'AlertCircle', color: 'danger' },
 };
 
+/** Lifted clear of the floating tab bar and of a screen's pinned footer (the chat bar). */
+const BOTTOM_LIFT = 104;
+
 /**
- * Transient confirmation bar (Figma 1:2924 — "Application sent to Stripe", redrawn as PROFILE 25
- * 577:3798): ink surface, floating below the status bar, up to two lines. Announced politely to
- * screen readers; it dismisses itself, so it never traps focus.
+ * Transient confirmation (redrawn 2026-11-08, §190): a small white pill in the bottom-right corner,
+ * the app's card look (soft lift, hairline edge) with a brand dot, up to two lines. It rises in and
+ * drops away; announced politely to screen readers; it dismisses itself, so it never traps focus.
  */
 export function Toast({
   visible,
@@ -53,9 +49,12 @@ export function Toast({
   durationMs = 3000,
   onHide,
 }: ToastProps) {
-  const { colors, motion, shadows, spacing, zIndex, s } = useTheme();
+  const { colors, motion, shadows, sizes, zIndex, u } = useTheme();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
+  const glyph = icon
+    ? { icon, color: (tone === 'error' ? 'danger' : 'brand') as ColorToken }
+    : TONE_GLYPH[tone];
 
   // The latest `onHide`, read when the timer fires. Hosts pass it inline, so as a dependency it
   // restarted the timer on every parent render — and a host re-rendering every progress tick
@@ -83,7 +82,7 @@ export function Toast({
       pointerEvents="none"
       style={[
         styles.overlay,
-        { top: insets.top + spacing[3], paddingHorizontal: spacing.gutter, zIndex: zIndex.toast },
+        { bottom: insets.bottom + u(BOTTOM_LIFT), paddingHorizontal: u(16), zIndex: zIndex.toast },
       ]}
     >
       {visible ? (
@@ -93,27 +92,38 @@ export function Toast({
           key={message}
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
-          entering={reduced ? undefined : FadeInDown.duration(motion.durations.base)}
-          exiting={reduced ? undefined : FadeOutUp.duration(motion.durations.fast)}
+          entering={reduced ? undefined : FadeInUp.duration(motion.durations.base)}
+          exiting={reduced ? undefined : FadeOutDown.duration(motion.durations.fast)}
           style={[
             styles.bar,
-            shadows.toast,
+            shadows.soft,
             {
-              minHeight: s(MIN_HEIGHT),
-              gap: s(GAP),
-              borderRadius: s(RADIUS),
-              backgroundColor: colors.surfaceInverse,
-              paddingHorizontal: s(PAD_X),
-              paddingVertical: s(PAD_Y),
+              maxWidth: u(300),
+              minHeight: u(40),
+              gap: u(8),
+              borderRadius: u(999),
+              borderWidth: sizes.border,
+              borderColor: colors.borderSoft,
+              backgroundColor: colors.surfaceCard,
+              paddingLeft: u(14),
+              paddingRight: u(16),
+              paddingVertical: u(9),
             },
           ]}
         >
-          <Icon
-            name={icon ?? TONE_GLYPH[tone].icon}
-            size="sm"
-            color={colors[TONE_GLYPH[tone].color]}
-          />
-          <Text variant="captionSemiBold" color="textOnDark" numberOfLines={2} style={styles.label}>
+          {glyph ? (
+            <Icon name={icon ?? glyph.icon} size="xs" color={colors[glyph.color]} />
+          ) : (
+            <View
+              style={{
+                width: u(8),
+                height: u(8),
+                borderRadius: u(4),
+                backgroundColor: colors.brand,
+              }}
+            />
+          )}
+          <Text variant="footnote" color="ink" numberOfLines={2} style={styles.label}>
             {message}
           </Text>
         </Animated.View>
@@ -123,7 +133,7 @@ export function Toast({
 }
 
 const styles = StyleSheet.create({
-  overlay: { position: 'absolute', left: 0, right: 0, alignItems: 'stretch' },
+  overlay: { position: 'absolute', left: 0, right: 0, alignItems: 'flex-end' },
   bar: { flexDirection: 'row', alignItems: 'center' },
   label: { flexShrink: 1 },
 });
