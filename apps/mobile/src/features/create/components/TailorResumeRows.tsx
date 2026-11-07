@@ -38,8 +38,6 @@ const UPLOAD_ICON_H = 37.3472 / 0.75;
 const LINK_PAD_LEFT = 12 / 0.75; // 606:390
 const LINK_GAP = 6 / 0.75;
 const LINK_H = 16 / 0.75;
-const SKELETON_TITLE_H = 14 / 0.75; // the 15/20 title's cap height, roughly
-const SKELETON_META_H = 11 / 0.75;
 
 /** The brand check disc a picked row ends on (606:166). */
 export function CheckDisc() {
@@ -287,7 +285,7 @@ export function UploadDifferentLink({ onPress }: { onPress: () => void }) {
   );
 }
 
-/** A NextKin row while the library loads: the thumbnail's box and two lines. */
+/** A NextKin row while the library loads: one block, the row's own height (§191). */
 export function ResumeRowSkeleton() {
   const { s } = useTheme();
   const styles = useStyles();
@@ -297,11 +295,7 @@ export function ResumeRowSkeleton() {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Skeleton width={s(THUMB_W)} height={s(THUMB_H)} radius="xs" />
-      <View style={styles.text}>
-        <Skeleton width="55%" height={s(SKELETON_TITLE_H)} />
-        <Skeleton width="80%" height={s(SKELETON_META_H)} />
-      </View>
+      <Skeleton height={s(THUMB_H)} radius="md" style={styles.text} />
     </View>
   );
 }

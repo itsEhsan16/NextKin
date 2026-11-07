@@ -23,7 +23,6 @@ const COLUMN_GAP = 7 / 0.75;
 const ADD_GAP = 9 / 0.75;
 const ADD_WIDTH = 76 / 0.75;
 /** Loading placeholders: five chips of a plausible spread. */
-const SKELETON_CHIPS = [92, 128, 74, 110, 86];
 
 /**
  * One chip in a profile editor. A chosen entry is brand-tinted with a ✕ (573:254); a suggestion is
@@ -88,14 +87,10 @@ export function ChipWrap({ children }: { children: ReactNode }) {
 /** The chip editor while the profile is still in flight. */
 export function ChipListSkeleton() {
   const { sizes, spacing, s } = useTheme();
-  const styles = useStyles();
   return (
     <View style={{ gap: spacing[4] }}>
-      <View style={styles.wrap}>
-        {SKELETON_CHIPS.map((width) => (
-          <Skeleton key={width} width={s(width)} height={s(CHIP_HEIGHT)} radius="full" />
-        ))}
-      </View>
+      {/* One strip for the chips (§191): two rows of them, as five usually wrap. */}
+      <Skeleton height={s(CHIP_HEIGHT) * 2 + s(ROW_GAP)} radius="lg" />
       {/* The add field's real height, so nothing jumps on load. */}
       <Skeleton height={sizes.searchField} radius="xl" />
     </View>

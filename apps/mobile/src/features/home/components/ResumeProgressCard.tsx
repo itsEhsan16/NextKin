@@ -69,15 +69,8 @@ export function ResumeProgressCard({
       <SectionHeader title="Your Resume Progress" onAction={onViewAll} />
 
       {status === 'pending' ? (
-        <View style={[styles.row, { gap: spacing[4] }]}>
-          <Skeleton width={thumb.width} height={thumb.height} radius="xs" />
-          <View style={{ flex: 1, gap: spacing[2] }}>
-            <Skeleton width="70%" height={s(20)} />
-            <Skeleton width="50%" height={s(14)} />
-            <Skeleton height={s(8)} radius="full" style={{ marginTop: spacing[2] }} />
-          </View>
-          <Skeleton width={ring} height={ring} radius="full" />
-        </View>
+        // One block in the row's own height (§191).
+        <Skeleton height={Math.max(thumb.height, ring)} radius="lg" />
       ) : status === 'error' ? (
         <StateView
           compact

@@ -112,10 +112,8 @@ export function CoverReady({
             </>
           ) : (
             <View style={styles.skeleton} accessible accessibilityLabel="Loading the letter">
-              <Skeleton height={u(14)} width="40%" />
-              <Skeleton height={u(14)} />
-              <Skeleton height={u(14)} />
-              <Skeleton height={u(14)} width="70%" />
+              {/* One block, the four lines' height (§191). */}
+              <Skeleton height={u(14) * 4 + u(10) * 3} radius="md" />
             </View>
           )}
         </FlowCard>

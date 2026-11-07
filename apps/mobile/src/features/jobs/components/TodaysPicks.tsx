@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import type { Job } from '@/data/models';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonBlock } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
@@ -21,6 +21,8 @@ export type TodaysPicksProps = {
 
 const CARD_WIDTH = 373.3333; // 280 drawn (519:2)
 const GAP = 16;
+/** A pick card's height at 390, measured from the loaded row (§191). */
+const PICK_CARD_H = 153;
 
 /** Figma 1:299–1:324 — the "Today's picks" heading and its horizontal carousel. */
 export function TodaysPicks({
@@ -30,7 +32,7 @@ export function TodaysPicks({
   onToggleSave,
   onRetry,
 }: TodaysPicksProps) {
-  const { spacing, s } = useTheme();
+  const { spacing, s, u } = useTheme();
   const cardWidth = s(CARD_WIDTH);
 
   const renderItem = useCallback(
@@ -54,13 +56,9 @@ export function TodaysPicks({
 
       {status === 'pending' ? (
         <View style={{ flexDirection: 'row', gap: s(GAP) }}>
+          {/* One block per card, the card's own size (§191). */}
           {[0, 1].map((index) => (
-            <Card key={index} style={{ width: cardWidth, gap: spacing[3] }}>
-              <Skeleton width={s(40)} height={s(40)} radius="md" />
-              <Skeleton width="70%" height={s(20)} />
-              <Skeleton width="90%" height={s(16)} />
-              <Skeleton width="45%" height={s(22)} radius="full" />
-            </Card>
+            <SkeletonBlock key={index} width={cardWidth} height={u(PICK_CARD_H)} />
           ))}
         </View>
       ) : status === 'error' ? (

@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import type { EditableSectionKey } from '@/data/models';
 import { useTheme } from '@/theme';
@@ -9,7 +9,6 @@ const LABEL = 16;
 const TEXTAREA = 160;
 const CHIP = 32;
 const CARD = 240;
-const CHIP_WIDTHS = [96, 132, 78, 110, 88];
 
 /**
  * The shape of the body that is coming (V2 §7.11). Keyed off the route's section rather than the
@@ -32,11 +31,8 @@ export function SectionSkeleton({ section }: { section: EditableSectionKey }) {
     return (
       <View style={{ gap: spacing[3] }}>
         <Skeleton width="30%" height={s(LABEL)} />
-        <View style={[styles.chips, { gap: spacing[2] }]}>
-          {CHIP_WIDTHS.map((width) => (
-            <Skeleton key={width} width={s(width)} height={s(CHIP)} radius="full" />
-          ))}
-        </View>
+        {/* One strip for the chips (§191). */}
+        <Skeleton height={s(CHIP) * 2 + spacing[2]} radius="lg" />
         {/* The real field's height, so nothing jumps on load. */}
         <Skeleton height={sizes.searchField} radius="xl" />
       </View>
@@ -50,7 +46,3 @@ export function SectionSkeleton({ section }: { section: EditableSectionKey }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  chips: { flexDirection: 'row', flexWrap: 'wrap' },
-});

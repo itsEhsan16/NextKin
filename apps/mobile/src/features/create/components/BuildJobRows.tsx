@@ -23,8 +23,6 @@ const PICK_RADIUS = 16 / 0.75;
 const PICK_BORDER = 1 / 0.75;
 const RADIO = 22 / 0.75; // 652:101's check tile
 const TILE = 40 / 0.75; // EntryTile's md
-const SKELETON_TITLE_H = 14 / 0.75;
-const SKELETON_META_H = 11 / 0.75;
 
 export type BuildJobRowProps = {
   job: Job;
@@ -126,7 +124,7 @@ export function BuildJobCard({
   );
 }
 
-/** A job row while the list loads: the tile's box and two lines. */
+/** A job row while the list loads: one block, the row's own height (§191). */
 export function BuildJobRowSkeleton() {
   const { s } = useTheme();
   const styles = useStyles();
@@ -136,11 +134,7 @@ export function BuildJobRowSkeleton() {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Skeleton width={s(TILE)} height={s(TILE)} radius="sm" />
-      <View style={styles.text}>
-        <Skeleton width="60%" height={s(SKELETON_TITLE_H)} />
-        <Skeleton width="85%" height={s(SKELETON_META_H)} />
-      </View>
+      <Skeleton height={s(TILE)} radius="md" style={styles.text} />
     </View>
   );
 }

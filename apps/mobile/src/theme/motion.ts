@@ -18,8 +18,12 @@ export const durations = {
   slow: 400,
   /** Cross-fade for images decoding in (expo-image transition). */
   imageFade: 150,
-  /** One half-cycle of the skeleton pulse. */
+  /** One half-cycle of the skeleton pulse (kept for anything still breathing). */
   pulse: 900,
+  /** One pass of the skeleton shimmer's light band, left to right (§191). Slow on purpose. */
+  shimmer: 1400,
+  /** A skeleton waits this long before it shows: a quicker load never flashes one (§191). */
+  skeletonDelay: 150,
   meter: 800,
   /**
    * One beat of a live progress feed (the generation ticker). A value that arrives every beat and

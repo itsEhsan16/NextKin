@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
@@ -9,14 +9,8 @@ export function ProfileSkeleton() {
 
   return (
     <View style={{ gap: spacing[5] }}>
-      <View style={[styles.identity, { gap: spacing[4] }]}>
-        <Skeleton width={s(104)} height={s(104)} radius="full" />
-        <View style={[styles.lines, { gap: spacing[2] }]}>
-          <Skeleton width="70%" height={s(26)} />
-          <Skeleton width="55%" height={s(18)} />
-          <Skeleton width={s(110)} height={s(26)} radius="full" />
-        </View>
-      </View>
+      {/* The identity row as one block, the avatar's height (§191). */}
+      <Skeleton height={s(104)} radius="card" />
       <Skeleton height={s(84)} radius="card" />
       <Skeleton height={s(154)} radius="card" />
       <Skeleton height={s(72)} radius="card" />
@@ -24,8 +18,3 @@ export function ProfileSkeleton() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  identity: { flexDirection: 'row', alignItems: 'center' },
-  lines: { flex: 1 },
-});

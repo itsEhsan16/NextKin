@@ -6,7 +6,7 @@ import type { Job } from '@/data/models';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { SectionHeader } from '@/ui/SectionHeader';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonBlock } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
 import { JobMatchCard } from './JobMatchCard';
@@ -21,6 +21,8 @@ export type TopJobMatchesProps = {
 
 const CARD_WIDTH = 288;
 const CARD_GAP = 16;
+/** A match card's height at 390, measured from the loaded carousel (§191). */
+const MATCH_CARD_H = 191;
 
 /** Figma 1:95 + 1:100 — header row and the horizontally scrolling match cards. */
 export function TopJobMatches({
@@ -30,7 +32,7 @@ export function TopJobMatches({
   onPressJob,
   onRetry,
 }: TopJobMatchesProps) {
-  const { spacing, s } = useTheme();
+  const { spacing, s, u } = useTheme();
   const cardWidth = s(CARD_WIDTH);
 
   const renderItem = useCallback<ListRenderItem<Job>>(
@@ -50,13 +52,9 @@ export function TopJobMatches({
 
       {status === 'pending' ? (
         <View style={{ flexDirection: 'row', gap: s(CARD_GAP) }}>
+          {/* One block per card, the card's own size (§191). */}
           {[0, 1].map((i) => (
-            <Card key={i} style={{ width: cardWidth, gap: spacing[3] }}>
-              <Skeleton width={s(44)} height={s(44)} radius="lg" />
-              <Skeleton width="60%" height={s(20)} />
-              <Skeleton width="80%" height={s(16)} />
-              <Skeleton width="50%" height={s(24)} radius="sm" />
-            </Card>
+            <SkeletonBlock key={i} width={cardWidth} height={u(MATCH_CARD_H)} />
           ))}
         </View>
       ) : status === 'error' ? (

@@ -142,9 +142,8 @@ export function ResumePagePreview({ content, name, score }: ResumePagePreviewPro
             {content ? (
               <PageBody content={content} name={name} />
             ) : (
-              [0, 1, 2, 3, 4, 5].map((row) => (
-                <Skeleton key={row} width={row === 0 ? '60%' : '100%'} height={s(INNER_GAP * 3)} />
-              ))
+              // One block for the page's text (§191), not a line per row.
+              <Skeleton height={s(INNER_GAP * 3) * 6 + s(INNER_GAP) * 5} radius="sm" />
             )}
           </View>
         </View>

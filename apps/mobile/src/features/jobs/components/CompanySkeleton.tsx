@@ -5,12 +5,9 @@ import { Skeleton } from '@/ui/Skeleton';
 
 // JOBS 09 at 390 (580:1648), in artboard units — each block the height of what replaces it.
 const LOGO = 68 / 0.75;
-const LOGO_RADIUS = 20 / 0.75;
 const LOGO_TO_NAME = 14 / 0.75;
 const NAME = 27 / 0.75;
-const NAME_W = 120 / 0.75;
 const META = 16 / 0.75;
-const META_W = 260 / 0.75;
 const HERO_TO_WEBSITE = 18 / 0.75;
 const WEBSITE = 57.5 / 0.75;
 const WEBSITE_TO_ABOUT = 14 / 0.75;
@@ -31,11 +28,11 @@ export function CompanySkeleton() {
 
   return (
     <View accessible accessibilityLabel="Loading company">
-      <View style={styles.hero}>
-        <Skeleton width={s(LOGO)} height={s(LOGO)} style={{ borderRadius: s(LOGO_RADIUS) }} />
-        <Skeleton width={s(NAME_W)} height={s(NAME)} style={styles.name} />
-        <Skeleton width={s(META_W)} height={s(META)} style={{ marginTop: spacing[1] }} />
-      </View>
+      {/* The logo, name and meta as one block (§191). */}
+      <Skeleton
+        height={s(LOGO) + s(LOGO_TO_NAME) + s(NAME) + spacing[1] + s(META)}
+        radius="cardLg"
+      />
       <Skeleton height={s(WEBSITE)} radius="cardLg" style={styles.website} />
       <Skeleton height={s(ABOUT)} radius="cardLg" style={styles.about} />
       <Skeleton width={s(HEADING_W)} height={s(HEADING)} style={styles.heading} />

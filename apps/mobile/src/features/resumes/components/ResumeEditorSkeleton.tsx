@@ -24,20 +24,12 @@ const SKILLS = 138;
  * so a loading page without one would resize the viewport the moment the queries settle.
  */
 export function ResumeEditorSkeleton() {
-  const { radii, spacing, s } = useTheme();
+  const { spacing, s } = useTheme();
 
   return (
     <View accessible accessibilityLabel="Loading document" style={{ gap: spacing[5] }}>
-      <View style={{ gap: spacing[3] }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[4] }}>
-          <Skeleton width={s(BADGE)} height={s(BADGE)} radius="full" />
-          <View style={{ flex: 1, gap: spacing[2] }}>
-            <Skeleton width="55%" height={s(LINE)} />
-            <Skeleton width="35%" height={s(LINE)} style={{ borderRadius: radii.sm }} />
-          </View>
-        </View>
-        <Skeleton width="45%" height={s(LINE)} />
-      </View>
+      {/* The score header as one block (§191). */}
+      <Skeleton height={s(BADGE) + spacing[3] + s(LINE)} radius="card" />
 
       <Skeleton height={s(SUMMARY)} radius="card" />
       <Skeleton height={s(SKILLS)} radius="card" />

@@ -183,7 +183,7 @@ export function HomeScreen() {
           <Section index={4} animate={animate}>
             <ShortcutGrid stats={stats.data} onShortcut={actions.shortcut} />
           </Section>
-          {/* With no resume yet the pop-up asks for one; an empty progress card would repeat it. */}
+          {/* With no resume yet there is no progress to show: the card stays away (§185–§187). */}
           {!latestResume && queryPhase(resumes) === 'success' ? null : (
             <Section index={5} animate={animate}>
               <ResumeProgressCard

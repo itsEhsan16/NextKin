@@ -9,7 +9,8 @@ import {
 import { motion } from '@/theme';
 
 /**
- * The one pulse every skeleton block breathes with (0 → 1 → 0, a `durations.pulse` half-cycle).
+ * The one shimmer every skeleton block sweeps with: 0 → 1 over `durations.shimmer`, then again
+ * (§191). Linear, so the light band crosses at an even pace and restarts off-screen.
  *
  * Each block used to run its own loop, started whenever it mounted, so blocks that mounted a few
  * frames apart pulsed out of step and a page of them shimmered unevenly — and a page ran dozens of
@@ -30,7 +31,13 @@ export function skeletonClock(): SharedValue<number> {
 export function acquireSkeletonClock(): void {
   holders += 1;
   if (holders === 1) {
-    skeletonClock().set(withRepeat(withTiming(1, { duration: motion.durations.pulse }), -1, true));
+    skeletonClock().set(
+      withRepeat(
+        withTiming(1, { duration: motion.durations.shimmer, easing: motion.easings.linear }),
+        -1,
+        false,
+      ),
+    );
   }
 }
 

@@ -52,42 +52,33 @@ const SHIMMER: Record<ResumeSectionKey, 'prose' | 'chips' | 'entries'> = {
  * is a different wait from the page loading (§85).
  */
 function SectionShimmer({ section }: { section: ResumeSectionKey }) {
-  const { radii, spacing, s } = useTheme();
+  const { spacing, s } = useTheme();
   const shape = SHIMMER[section];
 
   if (shape === 'chips') {
     return (
-      <View style={[styles.wrap, { gap: spacing[2] }]}>
-        {[0, 1, 2, 3, 4].map((key) => (
-          <Skeleton key={key} width={s(88)} height={s(28)} radius="sm" tone="ai" />
-        ))}
-      </View>
+      // One strip, the chips' two rows (§191).
+      <Skeleton height={s(28) * 2 + spacing[2]} radius="lg" tone="ai" />
     );
   }
 
   if (shape === 'prose') {
     return (
-      <View style={{ gap: spacing[2] }}>
-        <Skeleton height={s(18)} tone="ai" />
-        <Skeleton height={s(18)} tone="ai" />
-        <Skeleton width="70%" height={s(18)} tone="ai" />
-      </View>
+      // One block, the three lines' height (§191).
+      <Skeleton height={s(18) * 3 + spacing[2] * 2} radius="md" tone="ai" />
     );
   }
 
   return (
     <View style={{ gap: spacing[4] }}>
+      {/* One block per entry, the entry's own height (§191). */}
       {[0, 1].map((key) => (
-        <View key={key} style={{ gap: spacing[2] }}>
-          <Skeleton width={s(180)} height={s(20)} radius="xs" tone="ai" />
-          <Skeleton width={s(120)} height={s(16)} radius="xs" tone="ai" />
-          <Skeleton
-            height={s(16)}
-            tone="ai"
-            style={{ marginTop: spacing[1], borderRadius: radii.xs }}
-          />
-          <Skeleton width="85%" height={s(16)} tone="ai" />
-        </View>
+        <Skeleton
+          key={key}
+          height={s(20) + s(16) * 3 + spacing[2] * 3 + spacing[1]}
+          radius="md"
+          tone="ai"
+        />
       ))}
     </View>
   );

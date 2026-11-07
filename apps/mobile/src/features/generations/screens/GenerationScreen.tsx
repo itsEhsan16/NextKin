@@ -131,12 +131,8 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
         <Skeleton height={s(132)} radius="cardLg" />
         {/* Step-row metrics, so the list does not jump when the run lands: GenerationSteps draws
             rows at minHeight s(28) in a spacing[3] stack, with the footnote under them. */}
-        <View style={{ gap: spacing[3] }}>
-          {[0, 1, 2, 3, 4].map((row) => (
-            <Skeleton key={row} width="70%" height={s(28)} />
-          ))}
-        </View>
-        <Skeleton width="80%" height={s(16)} style={{ alignSelf: 'center' }} />
+        {/* One block for the five steps and the footnote (§191). */}
+        <Skeleton height={s(28) * 5 + spacing[3] * 4 + spacing[6] + s(16)} radius="cardLg" />
       </View>,
     );
   }

@@ -1,39 +1,25 @@
 import { View } from 'react-native';
 
 import { useTheme } from '@/theme';
-import { Card } from '@/ui/Card';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonBlock } from '@/ui/Skeleton';
 
-/** Whole-page loading state while the user record is fetched (first paint only). */
+/**
+ * Home's sections at 390, measured from the loaded page (§191): Quick Start, Top Job Matches,
+ * the shortcut grid and Your Resume Progress. One block each, the section's own height, so the
+ * dashboard lands without anything moving.
+ */
+const SECTIONS = [149, 228, 102, 175] as const;
+/** HomeScreen's SECTION_GAP: the blocks stand where the sections will. */
+const SECTION_GAP = 20;
+
+/** Home's loading state while the user record is fetched (first paint only). */
 export function HomeSkeleton() {
-  const { spacing, s } = useTheme();
-
+  const { s, u } = useTheme();
   return (
-    <View accessibilityLabel="Loading home" accessible style={{ gap: spacing[4] }}>
-      <Skeleton width="45%" height={s(53)} radius="sm" />
-      <Skeleton width="70%" height={s(14)} />
-      <View style={{ flexDirection: 'row', gap: spacing[4], alignItems: 'center' }}>
-        <View style={{ flex: 1, gap: spacing[2] }}>
-          <Skeleton height={s(46)} radius="sm" />
-          <Skeleton height={s(46)} radius="sm" />
-        </View>
-        <Skeleton width={s(130)} height={s(130)} radius="cardLg" />
-      </View>
-      <Card style={{ gap: spacing[4] }}>
-        <Skeleton width="35%" height={s(22)} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} width={s(60)} height={s(88)} radius="md" />
-          ))}
-        </View>
-      </Card>
-      <Skeleton width="45%" height={s(22)} />
-      <View style={{ flexDirection: 'row', gap: spacing[4] }}>
-        <Skeleton width={s(288)} height={s(220)} radius="cardLg" />
-        <Skeleton width={s(288)} height={s(220)} radius="cardLg" />
-      </View>
-      <Skeleton height={s(147)} radius="cardLg" />
-      <Skeleton height={s(200)} radius="cardLg" />
+    <View accessibilityLabel="Loading home" accessible style={{ gap: s(SECTION_GAP) }}>
+      {SECTIONS.map((height, index) => (
+        <SkeletonBlock key={index} height={u(height)} />
+      ))}
     </View>
   );
 }
