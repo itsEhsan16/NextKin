@@ -159,7 +159,6 @@ export function NewInterviewSetScreen({
   const page = (children: ReactNode, footer?: ReactNode) => (
     <>
       <Screen
-        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

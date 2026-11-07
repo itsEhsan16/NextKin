@@ -1,163 +1,162 @@
 import { View } from 'react-native';
 
 import type { JdDraft } from '@/data/models';
-import { ProfileCard } from '@/features/profile/components/cards';
-import { a11yButton, hitSlopFor, initialOf, pluralize } from '@/lib';
+import { a11yButton, initialOf, pluralize } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
+import { FlowCard } from '@/ui/kit';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
-import { Icon } from '@/ui/Icon';
+
+/** One fact chip at the top of the job: "₹30–40 LPA", "Hybrid", "Bengaluru". */
+export type JdHeroFact = { icon: LineIconName; label: string };
 
 export type BuildReviewCardProps = {
   draft: JdDraft;
-  /** Every skill the job asks for, once: `profileKeywordFit(draft, [])` order. */
   asks: readonly string[];
-  /**
-   * The pencil: opens the full JD review to correct what was read. Absent on a job read into its
-   * structure, which NextKin owns (owner, toreview §153–§154).
-   */
+  /** The job's key facts as chips under the title, in the order the page should read them. */
+  facts?: readonly JdHeroFact[];
   onEdit?: () => void;
 };
 
-// "Job card" at 390 (653:76), in artboard units.
-const HEAD_PAD_X = 15 / 0.75;
-const HEAD_PAD_Y = 14 / 0.75;
-const HEAD_GAP = 12 / 0.75;
-const TILE = 42 / 0.75; // 653:79
-const TILE_RADIUS = 13 / 0.75;
-const TEXT_GAP = 2 / 0.75;
-const PENCIL = 13 / 0.75;
-const RULE = 1 / 0.75;
-const ASKS_PAD_TOP = 14 / 0.75; // 653:85
-const ASKS_PAD_BOTTOM = 15 / 0.75;
-const ASKS_GAP = 10 / 0.75;
-const CHIP_PAD_LEFT = 11 / 0.75; // 653:92
-const CHIP_PAD_RIGHT = 12 / 0.75;
-const CHIP_PAD_Y = 6 / 0.75;
-const CHIP_GAP_X = 7 / 0.75;
-const CHIP_GAP_Y = 8 / 0.75;
-
-/** "CRED · Bengaluru" — only the parts the extraction found (a JD draft keeps no workplace). */
 export const draftMetaLine = (draft: JdDraft): string =>
   [draft.company, draft.location].filter(Boolean).join(' · ');
 
 /**
- * BUILD 04's card (653:76): the job as read — the dark letter tile, title, where — with a pencil to
- * correct it, then "What the job asks for" as plain grey chips. Nothing is measured against the
- * profile yet: that is BUILD 04b's job, after "Compare with my profile".
+ * The top of the job description page (owner, 2026-11-08: "make the job description better",
+ * §180): the company's tile and line, the role as the page's title, its key facts as chips, then
+ * what the job asks for as brand chips in their own card. The pencil corrects what was read, as
+ * before (it opens the review form); a structured job, read whole, has none.
  */
-export function BuildReviewCard({ draft, asks, onEdit }: BuildReviewCardProps) {
-  const { colors, radii, s } = useTheme();
+export function BuildReviewCard({ draft, asks, facts = [], onEdit }: BuildReviewCardProps) {
+  const { colors, u } = useTheme();
   const styles = useStyles();
   const meta = draftMetaLine(draft);
   const name = draft.company ?? draft.title;
 
   return (
-    <ProfileCard style={styles.card}>
-      <View style={styles.head}>
+    <View style={styles.wrap}>
+      <View style={styles.top}>
         <View
           importantForAccessibility="no-hide-descendants"
           accessibilityElementsHidden
-          style={[styles.tile, { backgroundColor: colors.surfaceInverse }]}
+          style={[
+            styles.tile,
+            { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft },
+          ]}
         >
-          <Text variant="logoInitial" color="textOnDark">
+          <Text variant="title2" color="brand">
             {initialOf(name)}
           </Text>
         </View>
-        <View
-          accessible
-          accessibilityLabel={meta ? `${draft.title}, ${meta}` : draft.title}
-          style={styles.text}
-        >
-          <Text variant="title" numberOfLines={2}>
-            {draft.title}
-          </Text>
-          {meta ? (
-            <Text variant="caption" color="textSecondary" numberOfLines={1}>
-              {meta}
-            </Text>
-          ) : null}
-        </View>
+        <Text variant="callout" color="textSecondary" numberOfLines={1} style={styles.flex}>
+          {meta || 'Job you added'}
+        </Text>
         {onEdit ? (
           <Pressable
             {...a11yButton('Edit the job details', 'Correct what we read from the job')}
-            feedback="scale"
+            feedback="subtle"
             haptic="light"
-            hitSlop={hitSlopFor(s(PENCIL))}
             onPress={onEdit}
+            style={[
+              styles.edit,
+              { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft },
+            ]}
           >
-            <Icon name="Edit03" size="sm" color={colors.iconDefault} />
+            <Icon name="Edit03" size={u(16)} color={colors.ink} />
+            <Text variant="footnote" color="ink">
+              Edit
+            </Text>
           </Pressable>
         ) : null}
       </View>
 
-      <View style={[styles.rule, { backgroundColor: colors.divider }]} />
+      <Text
+        variant="title1"
+        color="ink"
+        accessibilityRole="header"
+        accessibilityLabel={meta ? `${draft.title}, ${meta}` : draft.title}
+      >
+        {draft.title}
+      </Text>
 
-      <View style={styles.asks}>
-        <Text variant="bodyMedium">
+      {facts.length > 0 ? (
+        <View style={styles.facts}>
+          {facts.map((fact) => (
+            <View
+              key={`${fact.icon}:${fact.label}`}
+              style={[
+                styles.fact,
+                { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft },
+              ]}
+            >
+              <Icon name={fact.icon} size={u(15)} color={colors.brand} />
+              <Text variant="footnote" color="ink" numberOfLines={1}>
+                {fact.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
+      <FlowCard style={styles.asks}>
+        <Text variant="title3" color="ink">
           {asks.length > 0
-            ? `What the job asks for · ${pluralize(asks.length, 'thing')}`
-            : 'What the job asks for'}
+            ? `Skills it asks for · ${pluralize(asks.length, 'skill')}`
+            : 'Skills it asks for'}
         </Text>
         {asks.length > 0 ? (
           <View style={styles.chips}>
             {asks.map((label) => (
-              <View
-                key={label}
-                style={[
-                  styles.chip,
-                  { borderRadius: radii.full, backgroundColor: colors.surfaceSubtle },
-                ]}
-              >
-                <Text variant="caption" color="textBody" numberOfLines={1}>
+              <View key={label} style={[styles.chip, { backgroundColor: colors.brandSurface }]}>
+                <Text variant="footnote" color="brand" numberOfLines={1}>
                   {label}
                 </Text>
               </View>
             ))}
           </View>
         ) : (
-          <Text variant="micro" color="textSecondary">
+          <Text variant="callout" color="textSecondary">
             We didn&apos;t find any skills in this job. Your resume will follow its description.
           </Text>
         )}
-      </View>
-    </ProfileCard>
+      </FlowCard>
+    </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  card: { padding: 0, overflow: 'hidden' },
-  head: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(HEAD_GAP),
-    paddingHorizontal: s(HEAD_PAD_X),
-    paddingVertical: s(HEAD_PAD_Y),
-  },
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(14) },
+  top: { flexDirection: 'row', alignItems: 'center', gap: u(12) },
   tile: {
-    width: s(TILE),
-    height: s(TILE),
-    borderRadius: s(TILE_RADIUS),
+    width: u(52),
+    height: u(52),
+    borderRadius: u(16),
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  text: { flex: 1, gap: s(TEXT_GAP) },
-  rule: { height: s(RULE) },
-  asks: {
-    paddingHorizontal: s(HEAD_PAD_X),
-    paddingTop: s(ASKS_PAD_TOP),
-    paddingBottom: s(ASKS_PAD_BOTTOM),
-    gap: s(ASKS_GAP),
-  },
-  chips: {
+  flex: { flex: 1 },
+  edit: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: s(CHIP_GAP_X),
-    rowGap: s(CHIP_GAP_Y),
+    alignItems: 'center',
+    gap: u(6),
+    height: u(36),
+    paddingHorizontal: u(14),
+    borderRadius: u(999),
+    borderWidth: 1,
   },
-  chip: {
-    paddingLeft: s(CHIP_PAD_LEFT),
-    paddingRight: s(CHIP_PAD_RIGHT),
-    paddingVertical: s(CHIP_PAD_Y),
+  facts: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
+  fact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(6),
+    paddingHorizontal: u(12),
+    paddingVertical: u(7),
+    borderRadius: u(999),
+    borderWidth: 1,
   },
+  asks: { gap: u(12), marginTop: u(6), padding: u(18) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
+  chip: { paddingHorizontal: u(12), paddingVertical: u(7), borderRadius: u(999) },
 }));

@@ -337,7 +337,6 @@ export function JobsScreen() {
     // out of it — so the header box has to ask for the gutter back explicitly. The centring and
     // maxWidth still come from the root.
     <Screen
-      wash
       padded={false}
       // The search field is in the header: the list shrinks above the keyboard rather than
       // running under it, and cards dissolve under the pinned header (the list's top padding is

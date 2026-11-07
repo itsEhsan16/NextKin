@@ -63,7 +63,6 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <Screen
-      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Why you match" onBack={actions.goBack} />}

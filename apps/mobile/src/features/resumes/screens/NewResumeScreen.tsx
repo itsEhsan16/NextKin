@@ -61,7 +61,6 @@ export function NewResumeScreen() {
 
   return (
     <Screen
-      wash
       keyboard
       scroll
       edges={['top', 'bottom']}

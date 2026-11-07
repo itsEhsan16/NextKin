@@ -92,7 +92,7 @@ export function ProfileScreen() {
 
   if (user.isPending || profile.isPending) {
     return (
-      <Screen wash header={titleRow} headerStyle={pendingHeaderStyle}>
+      <Screen header={titleRow} headerStyle={pendingHeaderStyle}>
         <ProfileSkeleton />
       </Screen>
     );
@@ -102,7 +102,7 @@ export function ProfileScreen() {
   // nothing to show is an error.
   if (!user.data || !profile.data) {
     return (
-      <Screen wash header={titleRow} headerStyle={{ paddingTop: spacing.headerTop }}>
+      <Screen header={titleRow} headerStyle={{ paddingTop: spacing.headerTop }}>
         <StateView
           tone="danger"
           icon="AlertTriangle"
@@ -122,7 +122,6 @@ export function ProfileScreen() {
 
   return (
     <Screen
-      wash
       scroll
       tabBarInset
       scrollRef={scrollRef}

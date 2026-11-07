@@ -162,7 +162,6 @@ export function NotificationsScreen() {
 
   return (
     <Screen
-      wash
       padded={false}
       headerStyle={{ paddingHorizontal: spacing.gutter }}
       header={

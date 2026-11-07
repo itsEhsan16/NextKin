@@ -57,7 +57,6 @@ export function ApplicationScreen({ id }: ApplicationScreenProps) {
   const page = (children: ReactNode, sheets?: ReactNode) => (
     <>
       <Screen
-        wash
         scroll
         edges={['top', 'bottom']}
         header={<ScreenHeader title={APPLICATION_TITLE} onBack={actions.goBack} />}

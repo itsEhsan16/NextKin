@@ -201,7 +201,8 @@ describe('JdPageScreen (the whole job as read)', () => {
     await settle();
 
     expect(screen.getByRole('header', { name: 'Key facts' })).toBeOnTheScreen();
-    expect(screen.getByText('₹45,000–₹80,000 a month')).toBeOnTheScreen();
+    // Twice since §180: a chip at the top of the page, and Key facts with its source quote.
+    expect(screen.getAllByText('₹45,000–₹80,000 a month')).toHaveLength(2);
     expect(screen.getByText('Unclear in the job')).toBeOnTheScreen();
     expect(screen.getByText('5 days a week')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'Worth knowing' })).toBeOnTheScreen();

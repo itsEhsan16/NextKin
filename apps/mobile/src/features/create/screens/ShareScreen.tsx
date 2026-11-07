@@ -65,7 +65,6 @@ export function ShareScreen() {
 
   const page = (children: React.ReactNode) => (
     <Screen
-      wash
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Add the job" onBack={() => router.back()} />}
     >

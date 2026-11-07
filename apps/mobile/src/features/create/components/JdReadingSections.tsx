@@ -1,12 +1,11 @@
-import { View } from 'react-native';
-
 import { REMOTE_TYPE_LABEL } from '@/data/models';
 import type { JdReading, JdSectionKind } from '@/data/models/jd';
 import { JobBullet } from '@/features/jobs/components/JobAboutSection';
-import { a11yHeader } from '@/lib';
-import { scaledSheet, useTheme } from '@/theme';
+import { scaledSheet } from '@/theme';
 import { Pill } from '@/ui/Pill';
 import { Text } from '@/ui/Text';
+
+import { JdSectionCard } from './jd/JdSectionCard';
 
 const TITLE: Partial<Record<JdSectionKind, string>> = {
   responsibilities: 'Responsibilities',
@@ -20,6 +19,8 @@ const TITLE: Partial<Record<JdSectionKind, string>> = {
 };
 
 /** The order the page shows them in, after what the job asks for and the role itself. */
+// Pay and work mode open the page as hero chips since §180; a section of their own only when the
+// posting says more than the one fact.
 const ORDER: readonly JdSectionKind[] = [
   'preferred',
   'benefits',
@@ -43,7 +44,6 @@ export type JdReadingSectionsProps = {
  * guessed, so each shows only when it was found.
  */
 export function JdReadingSections({ reading, withResponsibilities }: JdReadingSectionsProps) {
-  const { spacing } = useTheme();
   const styles = useStyles();
   const kinds = withResponsibilities ? ['responsibilities' as const, ...ORDER] : ORDER;
 
@@ -59,13 +59,10 @@ export function JdReadingSections({ reading, withResponsibilities }: JdReadingSe
         : arrangement
           ? REMOTE_TYPE_LABEL[arrangement]
           : undefined;
-    if (!title || (paragraphs.length === 0 && items.length === 0 && !fact)) return null;
+    if (!title || (paragraphs.length === 0 && items.length === 0)) return null;
 
     return (
-      <View key={kind} style={{ gap: spacing[3] }}>
-        <Text {...a11yHeader()} variant="section">
-          {title}
-        </Text>
+      <JdSectionCard key={kind} title={title}>
         {fact ? <Pill label={fact} style={styles.fact} /> : null}
         {paragraphs.map((text, index) => (
           <Text key={`${index}:${text}`} variant="prose" color="textBody">
@@ -75,7 +72,7 @@ export function JdReadingSections({ reading, withResponsibilities }: JdReadingSe
         {items.map((text, index) => (
           <JobBullet key={`${index}:${text}`} label={text} />
         ))}
-      </View>
+      </JdSectionCard>
     );
   });
 }

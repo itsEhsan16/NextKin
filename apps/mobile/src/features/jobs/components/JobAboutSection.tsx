@@ -13,6 +13,8 @@ export type JobAboutSectionProps = {
   description: string;
   responsibilities: string[];
   requirements: string[];
+  /** Leave out the "About the role" heading: the JD page's card carries it (§180). */
+  bare?: boolean;
 };
 
 /** Bullets shown before "Show more" (Figma 1:878–1:884 lists four). */
@@ -50,6 +52,7 @@ export function JobAboutSection({
   description,
   responsibilities,
   requirements,
+  bare = false,
 }: JobAboutSectionProps) {
   const { colors, spacing, motion } = useTheme();
   const reduced = useReducedMotion();
@@ -76,9 +79,11 @@ export function JobAboutSection({
 
   return (
     <Animated.View layout={layoutTransition(reduced)} style={{ gap: spacing[4] }}>
-      <Text variant="section" accessibilityRole="header">
-        About the role
-      </Text>
+      {bare ? null : (
+        <Text variant="section" accessibilityRole="header">
+          About the role
+        </Text>
+      )}
       <Text variant="prose" color="textBody">
         {description}
       </Text>

@@ -39,7 +39,6 @@ export function ResumeScoreScreen({ id }: ResumeScoreScreenProps) {
   const quickWins = score.data ? atsQuickWins(score.data).length : 0;
   const page = (children: React.ReactNode, footer?: React.ReactNode) => (
     <Screen
-      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="ATS score" onBack={actions.goBack} />}

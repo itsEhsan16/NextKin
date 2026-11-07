@@ -101,7 +101,6 @@ export function ContactScreen({ topic }: ContactScreenProps) {
   const page = (children: ReactNode, footer?: ReactNode, lede = true) => (
     <View style={styles.root}>
       <Screen
-        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

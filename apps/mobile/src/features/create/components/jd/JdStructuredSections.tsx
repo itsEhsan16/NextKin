@@ -10,10 +10,11 @@ import {
   payText,
 } from '@/data/models/jd';
 import { JobBullet } from '@/features/jobs/components/JobAboutSection';
-import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Chip } from '@/ui/Chip';
 import { Text } from '@/ui/Text';
+
+import { JdSectionCard } from './JdSectionCard';
 
 const PAY_PART: Record<string, string> = {
   base: 'Base',
@@ -25,16 +26,9 @@ const PAY_PART: Record<string, string> = {
   unknown: 'Stated as',
 };
 
+/** Every section is a card since §180. */
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  const { spacing } = useTheme();
-  return (
-    <View style={{ gap: spacing[3] }}>
-      <Text {...a11yHeader()} variant="section">
-        {title}
-      </Text>
-      {children}
-    </View>
-  );
+  return <JdSectionCard title={title}>{children}</JdSectionCard>;
 }
 
 function Bullets({ items }: { items: readonly string[] }) {
@@ -45,7 +39,9 @@ function Group({ label, children }: { label: string; children: ReactNode }) {
   const { spacing } = useTheme();
   return (
     <View style={{ gap: spacing[2] }}>
-      <Text variant="captionSemiBold">{label}</Text>
+      <Text variant="footnote" color="textSecondary">
+        {label.toUpperCase()}
+      </Text>
       {children}
     </View>
   );

@@ -177,7 +177,6 @@ export function HistoryScreen() {
 
   return (
     <Screen
-      wash
       padded={false}
       edges={['top']}
       header={<ScreenHeader title="History" showTitle={false} onBack={actions.goBack} />}

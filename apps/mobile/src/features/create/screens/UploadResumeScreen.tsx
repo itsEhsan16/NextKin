@@ -95,7 +95,6 @@ export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenPr
 
   const page = (children: ReactNode) => (
     <Screen
-      wash
       scroll
       edges={['top', 'bottom']}
       header={<ScreenHeader title="Upload a resume" onBack={actions.goBack} />}

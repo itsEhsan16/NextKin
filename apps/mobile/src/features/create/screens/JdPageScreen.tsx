@@ -1,9 +1,15 @@
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { profileKeywordFit } from '@/data/models';
+import { profileKeywordFit, REMOTE_TYPE_LABEL, type JdDraft } from '@/data/models';
+import {
+  WORK_MODE_LABEL,
+  experienceText,
+  locationText,
+  payLabel,
+  type JdReading,
+} from '@/data/models/jd';
 import { useJdJob, useStall } from '@/data/queries';
 import { JobAboutSection } from '@/features/jobs/components/JobAboutSection';
 import { useTheme } from '@/theme';
@@ -11,10 +17,12 @@ import { Disclosure } from '@/ui/Disclosure';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
+import { FlowCard } from '@/ui/kit';
 import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
-import { BuildReviewCard } from '../components/BuildReviewCard';
+import { BuildReviewCard, type JdHeroFact } from '../components/BuildReviewCard';
+import { JdSectionCard } from '../components/jd/JdSectionCard';
 import { BuildReviewSkeleton } from '../components/BuildReviewSkeleton';
 import { JdDoubleCheck } from '../components/JdDoubleCheck';
 import { JdReadingSections } from '../components/JdReadingSections';
@@ -23,6 +31,29 @@ import { JdStructuredSections } from '../components/jd/JdStructuredSections';
 import { isNotFound } from '../buildInput';
 
 export type JdPageScreenProps = { draftId: string };
+
+/** The hero's fact chips (§180): pay, how and where, and the years asked, as the job states them. */
+function heroFacts(draft: JdDraft, posting: JdReading | undefined): JdHeroFact[] {
+  const s = draft.structured;
+  const pay = s ? payLabel(s) : undefined;
+  const place = s ? locationText(s) : undefined;
+  const years = s ? experienceText(s.experience) : undefined;
+  const out: (JdHeroFact | null)[] = s
+    ? [
+        pay ? { icon: 'CreditCard01', label: pay } : null,
+        s.workMode ? { icon: 'Building02', label: WORK_MODE_LABEL[s.workMode.value] } : null,
+        place ? { icon: 'MarkerPin01', label: place } : null,
+        years ? { icon: 'Clock', label: years } : null,
+      ]
+    : [
+        posting?.salary ? { icon: 'CreditCard01', label: posting.salary } : null,
+        posting?.workArrangement
+          ? { icon: 'Building02', label: REMOTE_TYPE_LABEL[posting.workArrangement] }
+          : null,
+        draft.location ? { icon: 'MarkerPin01', label: draft.location } : null,
+      ];
+  return out.filter((fact): fact is JdHeroFact => fact !== null);
+}
 
 /**
  * The whole job as NextKin read it (toreview §129.3, §145.4), mobile's side of the web's JD page.
@@ -100,8 +131,9 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
   const aboutTheRole =
     job.description.length > 0 || job.responsibilities.length > 0 || job.requirements.length > 0;
   const structured = draft.data.structured;
+  const facts = heroFacts(draft.data, posting);
   const fullText = (
-    <View>
+    <FlowCard style={{ paddingVertical: spacing[1] }}>
       <Disclosure
         mode="row"
         title="The full job description"
@@ -112,7 +144,7 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
           {draft.data.rawText}
         </Text>
       </Disclosure>
-    </View>
+    </FlowCard>
   );
 
   if (structured) {
@@ -121,6 +153,7 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
         <Animated.View entering={enter(0)}>
           <BuildReviewCard
             draft={draft.data}
+            facts={facts}
             asks={profileKeywordFit(draft.data, []).map((keyword) => keyword.label)}
           />
         </Animated.View>
@@ -140,6 +173,7 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
       <Animated.View entering={enter(0)}>
         <BuildReviewCard
           draft={draft.data}
+          facts={facts}
           asks={profileKeywordFit(draft.data, []).map((keyword) => keyword.label)}
           onEdit={() => router.push({ pathname: '/create/jd-review', params: { draftId } })}
         />
@@ -147,11 +181,14 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
       <Animated.View entering={enter(1)} style={{ gap: spacing[6] }}>
         <JdDoubleCheck notes={plausibility} />
         {aboutTheRole ? (
-          <JobAboutSection
-            description={job.description}
-            responsibilities={job.responsibilities}
-            requirements={job.requirements}
-          />
+          <JdSectionCard title="About the role">
+            <JobAboutSection
+              bare
+              description={job.description}
+              responsibilities={job.responsibilities}
+              requirements={job.requirements}
+            />
+          </JdSectionCard>
         ) : null}
         <JdReadingSections
           reading={posting}

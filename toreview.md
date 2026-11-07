@@ -16187,3 +16187,18 @@ The owner asked to redesign every remaining screen and to generate any assets ne
   - Jobs moved from its hand-placed header wash to the `wash` prop, so the same rule covers it.
 - The owner's list had a fourth item left blank, so I asked about it.
 - **Verified:** Jest, 1880 tests pass; typecheck and lint are clean. Checked in the web preview (Email & password, Jobs). Not checked on a phone.
+
+## §180 — Wash only on Home and the job description; the job description page rebuilt (owner, 2026-11-08)
+
+- **Wash.** The owner said it is only wanted on Home and the job description and "is disturbing the flow" elsewhere. It is removed from every screen round 3 added it to, and from job detail. Home and the JD page (`/create/jd`) keep it.
+  - **Judgement call:** the sign-in screens and the four create flows keep their soft wash. It came from the owner's own reference shots and was approved in round 2, and the owner's screenshot was of Profile, a round 3 addition. This is offered to them in case they want it gone there too.
+  - Without the wash, those pages get back their usual top fade under the pinned header.
+- **The JD page** (`JdPageScreen`, both the structured and the plain-reading versions):
+  - **Hero** on the wash: a white initial tile, the company and location line, and an "Edit" pill (it still opens the review form; a structured job has none). The role is the page's title1. The job's facts are chips: pay, work mode, location, and the years asked for a structured job. The chips come only from what the job states.
+  - **"Skills it asks for · N"** is its own card with brand chips.
+  - **Every section is a card** with an icon tile and a title3 heading (`JdSectionCard`): About the role, Responsibilities, Skills, Experience, Preferred, Benefits, Pay, Where you'll work, Schedule, How to apply, About the company. "The full job description" is a card at the end.
+  - On the plain-reading page, Pay and Where-you'll-work sections that held only the single fact now show it as a hero chip instead.
+  - On the structured page, "Key facts" stays, because it carries the source quotes. Its pay therefore appears twice (chip and fact), and the test says so.
+  - `JobAboutSection` takes `bare` to drop its own heading inside the card. Job detail is unchanged.
+- **Seen in the mock, not changed:** the plain reader repeats the first description line as a responsibility bullet. That is the mock's parse, not the layout.
+- **Verified:** web preview of the JD page at 390×844. Jest: 1880 tests pass; typecheck and lint are clean. Not checked on a phone.

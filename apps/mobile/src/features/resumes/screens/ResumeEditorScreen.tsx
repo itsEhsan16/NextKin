@@ -86,7 +86,6 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
       <Screen
-        wash
         scroll
         edges={['top', 'bottom']}
         header={

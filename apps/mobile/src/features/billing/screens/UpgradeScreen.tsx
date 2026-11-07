@@ -164,7 +164,6 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
   const page = (children: ReactNode, footer?: ReactNode, showTitle = false) => (
     <View style={styles.root}>
       <Screen
-        wash
         scroll
         edges={['top', 'bottom']}
         header={<ScreenHeader title={SCREEN_TITLE} showTitle={showTitle} onBack={actions.goBack} />}

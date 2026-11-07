@@ -96,7 +96,6 @@ export function NotificationPreferencesScreen() {
 
   return (
     <Screen
-      wash
       scroll
       edges={['top', 'bottom']}
       contentContainerStyle={{ paddingBottom: spacing[8] }}

@@ -55,7 +55,6 @@ export function GapInterviewScreen({ resumeId }: GapInterviewScreenProps) {
   const page = (children: ReactNode) => (
     <View style={styles.root}>
       <Screen
-        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

@@ -85,7 +85,6 @@ export function JdReviewScreen({ draftId }: JdReviewScreenProps) {
 
   const body = (children: ReactNode, footer?: ReactNode) => (
     <Screen
-      wash
       keyboard
       scroll
       edges={['top', 'bottom']}

@@ -181,7 +181,6 @@ export function ProfileFormShell({
   return (
     <View style={styles.root}>
       <Screen
-        wash
         keyboard
         scroll
         edges={['top', 'bottom']}

@@ -95,7 +95,7 @@ export function JdFactsCard({ s }: { s: JdStructured }) {
 
   return (
     <ProfileCard style={{ padding: spacing[4], gap: spacing[4] }}>
-      <Text {...a11yHeader()} variant="section">
+      <Text {...a11yHeader()} variant="title3" color="ink">
         Key facts
       </Text>
       {facts.map((f) => (

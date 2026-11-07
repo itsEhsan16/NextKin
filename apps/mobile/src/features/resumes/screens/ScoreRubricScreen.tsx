@@ -99,7 +99,6 @@ export function ScoreRubricScreen({ id }: ScoreRubricScreenProps) {
 
   return (
     <Screen
-      wash
       scroll
       edges={['top', 'bottom']}
       header={

@@ -100,7 +100,6 @@ export function InterviewListScreen() {
   const page = (children: ReactNode) => (
     <>
       <Screen
-        wash
         scroll
         edges={['top', 'bottom']}
         header={
