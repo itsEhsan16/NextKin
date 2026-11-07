@@ -6,6 +6,7 @@ import { SignInScreen, useSessionStore } from '@/features/auth';
 import { GOOGLE_NOT_CONNECTED, SIGN_IN_FAILED } from '@/features/auth/authForms';
 
 const mockLogin = jest.fn();
+const mockResend = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), navigate: jest.fn(), back: jest.fn(), replace: jest.fn() }),
@@ -14,7 +15,10 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/data/dataSource', () => ({
   USES_BACKEND: true,
-  auth: { login: (...args: unknown[]) => mockLogin(...args) },
+  auth: {
+    login: (...args: unknown[]) => mockLogin(...args),
+    resendCode: (...args: unknown[]) => mockResend(...args),
+  },
 }));
 
 const metrics: Metrics = {
@@ -53,6 +57,19 @@ describe('SignInScreen on the backend', () => {
     await act(async () => fireEvent.press(screen.getByLabelText('Sign In')));
     expect(mockLogin).toHaveBeenCalledWith('robin@example.test', 'secret passphrase');
     expect(useSessionStore.getState().status).toBe('signed_in');
+  });
+
+  it('an unconfirmed account gets a fresh code and the boxes right here (§184)', async () => {
+    mockLogin.mockRejectedValue({ code: 'FORBIDDEN', details: { notConfirmed: true } });
+    mockResend.mockResolvedValue(undefined);
+    await renderScreen();
+    await fill();
+    await act(async () => fireEvent.press(screen.getByLabelText('Sign In')));
+
+    expect(mockResend).toHaveBeenCalledWith('robin@example.test');
+    expect(screen.getByText('Confirm your email')).toBeTruthy();
+    expect(screen.getByLabelText('Verification code')).toBeTruthy();
+    expect(useSessionStore.getState().status).toBe('signed_out');
   });
 
   it('a refusal is said under the button, and nobody is signed in', async () => {

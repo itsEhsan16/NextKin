@@ -16251,3 +16251,20 @@ By "the job description" the owner meant the **job details screen** (`/jobs/[id]
 - Saving stays on the bookmark in the page header. The bar's Save toggle is gone, and its test now covers the bookmark. A new test covers the bar's tailor button.
 - **Judgement call:** the in-page "Tailor your resume to this job" card stays, so the page still explains the step where it sits. It can go if the owner finds the two redundant.
 - **Verified:** Jest; typecheck and lint are clean. Not checked on a phone.
+
+## §184 — The email code on the sign-up / sign-in screen itself, in six animated boxes (owner, 2026-11-08)
+
+- **No separate confirm screen.** `ConfirmEmailScreen`, its route `(auth)/confirm-email`, `AuthShell` and `AuthFooter` are deleted. Each auth screen swaps its form for `CodeStep` in place, cross-faded with `Reveal`:
+  - **Sign-up:** after the account is created and the code sent, the heading becomes "Check your email".
+  - **Sign-in:** when the server answers FORBIDDEN `notConfirmed`, the screen sends a fresh code and shows the boxes under "Confirm your email". This used to be a dead end: "Confirm your email first: we sent you a code" with nowhere to type it.
+- **`CodeStep`:**
+  - The address is shown in bold, with six `CodeBoxes`.
+  - A full code is checked at once. While checking it shows "Checking the code…". A right code reads "Email confirmed" with a check, holds 0.9 s, then signs in.
+  - Resend unlocks after 30 s. "Use a different email" returns to the form.
+- **`CodeBoxes` motion** (all reduced-motion aware):
+  - Each digit pops into its box (scale 1.12, spring back).
+  - A wrong code shakes the row, every time.
+  - A right code turns the boxes green one after another (70 ms apart), each with a bounce.
+  - Paste and the OS one-time-code fill still land whole through the hidden field.
+- **Tests:** `CodeStep.test` replaces the confirm-screen test (address, digits only, check-and-move-on, wrong code, resend, change email). `SignInBackend` covers the unconfirmed account.
+- **Not seen running:** the step only exists with the backend (`USES_BACKEND`), and the web preview runs the mock. It needs a look on the phone against the server. Jest: 1924 tests pass.

@@ -2,10 +2,11 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { AccessibilityInfo, View, type TextInputInstance } from 'react-native';
 
-import { backendAuth, usePasswordSignIn } from '@/data/queries';
+import { backendAuth, usePasswordSignIn, useResendSignUpCode } from '@/data/queries';
 
 import {
   blankSignIn,
+  CONFIRM_FIRST,
   validateSignIn,
   FIX_FIRST,
   GOOGLE_NOT_CONNECTED,
@@ -18,6 +19,7 @@ import { AuthCta } from '../components/AuthCta';
 import { AuthField } from '../components/AuthField';
 import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
+import { CodeStep } from '../components/CodeStep';
 import { GoogleButton } from '../components/GoogleButton';
 import { useOnboardingStore } from '../onboardingStore';
 import { useSessionStore } from '../sessionStore';
@@ -29,6 +31,7 @@ import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { Reveal } from '@/ui/motion';
 import { glyphSpan } from '@/ui/Icon';
 
 /**
@@ -76,6 +79,9 @@ export function SignInScreen() {
   const [resetOpen, setResetOpen] = useState(false);
   const signInRequest = usePasswordSignIn();
   const [serverError, setServerError] = useState<string | null>(null);
+  /** An account whose email was never confirmed gets its code here, on this screen (§184). */
+  const [codeStep, setCodeStep] = useState(false);
+  const resendCode = useResendSignUpCode();
 
   const passwordRef = useRef<TextInputInstance>(null);
 
@@ -120,6 +126,12 @@ export function SignInScreen() {
       onSuccess: enter,
       onError: (error) => {
         const message = signInErrorMessage(error);
+        if (message === CONFIRM_FIRST) {
+          // Send a fresh code and ask for it right here, instead of a dead end.
+          resendCode.mutate(draft.email.trim());
+          setCodeStep(true);
+          return;
+        }
         setServerError(message);
         AccessibilityInfo.announceForAccessibility(message);
       },
@@ -177,107 +189,122 @@ export function SignInScreen() {
           style={[styles.centred, { marginTop: s(board(SIGN_IN.headingTop)) }]}
         >
           <Text variant="title1" color="onboardingInk" align="center">
-            Sign in
+            {codeStep ? 'Confirm your email' : 'Sign in'}
           </Text>
         </View>
 
-        <View style={{ marginTop: s(board(SIGN_IN.fieldsTop)), gap: s(board(SIGN_IN.fieldGap)) }}>
-          <AuthField
-            label="Email address"
-            metrics={SIGN_IN}
-            icon="Mail01"
-            value={draft.email}
-            onChangeText={(email) => patch({ email })}
-            onBlur={() => blur('email')}
-            error={errors.email}
-            keyboardType="email-address"
-            autoComplete="email"
-            returnKeyType="next"
-            onSubmit={() => passwordRef.current?.focus()}
-          />
-          <AuthField
-            ref={passwordRef}
-            label="Password"
-            metrics={SIGN_IN}
-            icon="Lock01"
-            value={draft.password}
-            onChangeText={(password) => patch({ password })}
-            onBlur={() => blur('password')}
-            error={errors.password}
-            secure
-            autoComplete="current-password"
-            returnKeyType="done"
-            onSubmit={submit}
-          />
-        </View>
+        {codeStep ? (
+          <Reveal stateKey="code" style={{ marginTop: s(board(SIGN_IN.fieldsTop)) }}>
+            <CodeStep
+              email={draft.email.trim()}
+              password={draft.password}
+              onDone={enter}
+              onChangeEmail={() => setCodeStep(false)}
+            />
+          </Reveal>
+        ) : (
+          <Reveal stateKey="form">
+            <View
+              style={{ marginTop: s(board(SIGN_IN.fieldsTop)), gap: s(board(SIGN_IN.fieldGap)) }}
+            >
+              <AuthField
+                label="Email address"
+                metrics={SIGN_IN}
+                icon="Mail01"
+                value={draft.email}
+                onChangeText={(email) => patch({ email })}
+                onBlur={() => blur('email')}
+                error={errors.email}
+                keyboardType="email-address"
+                autoComplete="email"
+                returnKeyType="next"
+                onSubmit={() => passwordRef.current?.focus()}
+              />
+              <AuthField
+                ref={passwordRef}
+                label="Password"
+                metrics={SIGN_IN}
+                icon="Lock01"
+                value={draft.password}
+                onChangeText={(password) => patch({ password })}
+                onBlur={() => blur('password')}
+                error={errors.password}
+                secure
+                autoComplete="current-password"
+                returnKeyType="done"
+                onSubmit={submit}
+              />
+            </View>
 
-        <Pressable
-          // The rows' slight press, so the tap is felt before the sheet answers it (§85).
-          feedback="subtle"
-          accessibilityRole="button"
-          accessibilityLabel="Forgot password?"
-          hitSlop={hitSlopFor(s(board(SIGN_IN.forgotHeight)))}
-          onPress={() => setResetOpen(true)}
-          style={[
-            styles.forgot,
-            {
-              marginTop: s(board(SIGN_IN.forgotTop)),
-              marginBottom: s(board(SIGN_IN.forgotFloor)),
-            },
-          ]}
-        >
-          <Text variant="callout" color="textSecondary" style={styles.underline}>
-            Forgot password?
-          </Text>
-        </Pressable>
+            <Pressable
+              // The rows' slight press, so the tap is felt before the sheet answers it (§85).
+              feedback="subtle"
+              accessibilityRole="button"
+              accessibilityLabel="Forgot password?"
+              hitSlop={hitSlopFor(s(board(SIGN_IN.forgotHeight)))}
+              onPress={() => setResetOpen(true)}
+              style={[
+                styles.forgot,
+                {
+                  marginTop: s(board(SIGN_IN.forgotTop)),
+                  marginBottom: s(board(SIGN_IN.forgotFloor)),
+                },
+              ]}
+            >
+              <Text variant="callout" color="textSecondary" style={styles.underline}>
+                Forgot password?
+              </Text>
+            </Pressable>
 
-        <AuthCta
-          label="Sign In"
-          onPress={submit}
-          loading={signInRequest.isPending}
-          height={s(board(SIGN_IN.ctaHeight))}
-          arrow={s(board(SIGN_IN.ctaArrow))}
-          arrowRight={s(board(SIGN_IN.ctaArrowRight))}
-          style={{ marginTop: s(board(SIGN_IN.ctaTop)) }}
-        />
+            <AuthCta
+              label="Sign In"
+              onPress={submit}
+              loading={signInRequest.isPending}
+              height={s(board(SIGN_IN.ctaHeight))}
+              arrow={s(board(SIGN_IN.ctaArrow))}
+              arrowRight={s(board(SIGN_IN.ctaArrowRight))}
+              style={{ marginTop: s(board(SIGN_IN.ctaTop)) }}
+            />
 
-        {(refused && !validation.ok) || serverError ? (
-          <Text
-            variant="callout"
-            color="danger"
-            align="center"
-            accessibilityLiveRegion="polite"
-            style={{ marginTop: s(board(SIGN_IN.fieldErrorGap)) }}
-          >
-            {refused && !validation.ok ? FIX_FIRST : serverError}
-          </Text>
-        ) : null}
+            {(refused && !validation.ok) || serverError ? (
+              <Text
+                variant="callout"
+                color="danger"
+                align="center"
+                accessibilityLiveRegion="polite"
+                style={{ marginTop: s(board(SIGN_IN.fieldErrorGap)) }}
+              >
+                {refused && !validation.ok ? FIX_FIRST : serverError}
+              </Text>
+            ) : null}
 
-        <AuthDivider
-          margin={signInDividerMargin}
-          gap={SIGN_IN.dividerGap}
-          hairline={SIGN_IN.hairline}
-        />
+            <AuthDivider
+              margin={signInDividerMargin}
+              gap={SIGN_IN.dividerGap}
+              hairline={SIGN_IN.hairline}
+            />
 
-        <GoogleButton
-          height={SIGN_IN.googleHeight}
-          logo={SIGN_IN.googleLogo}
-          gap={SIGN_IN.googleGap}
-          hairline={SIGN_IN.hairline}
-          onPress={google}
-        />
+            <GoogleButton
+              height={SIGN_IN.googleHeight}
+              logo={SIGN_IN.googleLogo}
+              gap={SIGN_IN.googleGap}
+              hairline={SIGN_IN.hairline}
+              onPress={google}
+            />
 
-        <AuthFooterLink
-          prompt="Don’t have an account?"
-          action="Create one"
-          top={SIGN_IN.footerTop}
-          height={SIGN_IN.footerHeight}
-          gap={SIGN_IN.footerGap}
-          floor={SIGN_IN.floor}
-          // Replace, not push, and sign-up's footer replaces back (§85): the two forms swap in
-          // place, so however often the reader switches, back leaves for where they came from.
-          onPress={() => router.replace('/(auth)/sign-up')}
-        />
+            <AuthFooterLink
+              prompt="Don’t have an account?"
+              action="Create one"
+              top={SIGN_IN.footerTop}
+              height={SIGN_IN.footerHeight}
+              gap={SIGN_IN.footerGap}
+              floor={SIGN_IN.floor}
+              // Replace, not push, and sign-up's footer replaces back (§85): the two forms swap in
+              // place, so however often the reader switches, back leaves for where they came from.
+              onPress={() => router.replace('/(auth)/sign-up')}
+            />
+          </Reveal>
+        )}
       </Screen>
 
       {/* A sibling of the page, never a child of its scroller: the sheet's root is an absolute fill. */}

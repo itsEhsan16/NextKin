@@ -1,6 +1,5 @@
 export { GetStartedScreen } from './screens/GetStartedScreen';
 export { OnboardingScreen } from './screens/OnboardingScreen';
-export { ConfirmEmailScreen } from './screens/ConfirmEmailScreen';
 export { SignInScreen } from './screens/SignInScreen';
 export { SignUpScreen } from './screens/SignUpScreen';
 export { WelcomeScreen } from './screens/WelcomeScreen';

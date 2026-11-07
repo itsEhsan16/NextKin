@@ -20,6 +20,7 @@ import { AuthCta } from '../components/AuthCta';
 import { AuthField } from '../components/AuthField';
 import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
+import { CodeStep } from '../components/CodeStep';
 import { GoogleButton } from '../components/GoogleButton';
 import { useOnboardingStore } from '../onboardingStore';
 import { useFirstRunStore } from '../firstRunStore';
@@ -29,6 +30,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { Reveal } from '@/ui/motion';
 import { glyphSpan } from '@/ui/Icon';
 
 /**
@@ -63,6 +65,9 @@ export function SignUpScreen() {
   const startSignUp = useStartSignUp();
   const startPending = usePendingSignUp((state) => state.start);
   const [serverError, setServerError] = useState<string | null>(null);
+  /** The code step, on this screen (§184): set once the account exists and a code is sent. */
+  const [codeStep, setCodeStep] = useState(false);
+  const clearPending = usePendingSignUp((state) => state.clear);
 
   const emailRef = useRef<TextInputInstance>(null);
   const passwordRef = useRef<TextInputInstance>(null);
@@ -108,7 +113,7 @@ export function SignUpScreen() {
       {
         onSuccess: () => {
           startPending(draft.email.trim(), draft.password);
-          router.push('/confirm-email');
+          setCodeStep(true);
         },
         onError: (error) => {
           const message = signUpErrorMessage(error);
@@ -169,98 +174,114 @@ export function SignUpScreen() {
         style={[styles.centred, { marginTop: s(board(SIGN_UP.headingTop)) }]}
       >
         <Text variant="title1" color="onboardingInk" align="center">
-          Create an account
+          {codeStep ? 'Check your email' : 'Create an account'}
         </Text>
       </View>
 
-      <View style={{ marginTop: s(board(SIGN_UP.fieldsTop)), gap: s(board(SIGN_UP.fieldGap)) }}>
-        <AuthField
-          label="Full name"
-          metrics={SIGN_UP}
-          icon="User01"
-          value={draft.fullName}
-          onChangeText={(fullName) => patch({ fullName })}
-          onBlur={() => blur('fullName')}
-          error={errors.fullName}
-          autoCapitalize="words"
-          autoComplete="name"
-          returnKeyType="next"
-          onSubmit={() => emailRef.current?.focus()}
-        />
-        <AuthField
-          ref={emailRef}
-          label="Email address"
-          metrics={SIGN_UP}
-          icon="Mail01"
-          value={draft.email}
-          onChangeText={(email) => patch({ email })}
-          onBlur={() => blur('email')}
-          error={errors.email}
-          keyboardType="email-address"
-          autoComplete="email"
-          returnKeyType="next"
-          onSubmit={() => passwordRef.current?.focus()}
-        />
-        <AuthField
-          ref={passwordRef}
-          label="Password"
-          metrics={SIGN_UP}
-          icon="Lock01"
-          value={draft.password}
-          onChangeText={(password) => patch({ password })}
-          onBlur={() => blur('password')}
-          error={errors.password}
-          secure
-          autoComplete="new-password"
-          returnKeyType="done"
-          onSubmit={submit}
-        />
-      </View>
+      {codeStep ? (
+        <Reveal stateKey="code" style={{ marginTop: s(board(SIGN_UP.fieldsTop)) }}>
+          <CodeStep
+            email={draft.email.trim()}
+            password={draft.password}
+            onDone={() => {
+              clearPending();
+              enter();
+            }}
+            onChangeEmail={() => setCodeStep(false)}
+          />
+        </Reveal>
+      ) : (
+        <Reveal stateKey="form">
+          <View style={{ marginTop: s(board(SIGN_UP.fieldsTop)), gap: s(board(SIGN_UP.fieldGap)) }}>
+            <AuthField
+              label="Full name"
+              metrics={SIGN_UP}
+              icon="User01"
+              value={draft.fullName}
+              onChangeText={(fullName) => patch({ fullName })}
+              onBlur={() => blur('fullName')}
+              error={errors.fullName}
+              autoCapitalize="words"
+              autoComplete="name"
+              returnKeyType="next"
+              onSubmit={() => emailRef.current?.focus()}
+            />
+            <AuthField
+              ref={emailRef}
+              label="Email address"
+              metrics={SIGN_UP}
+              icon="Mail01"
+              value={draft.email}
+              onChangeText={(email) => patch({ email })}
+              onBlur={() => blur('email')}
+              error={errors.email}
+              keyboardType="email-address"
+              autoComplete="email"
+              returnKeyType="next"
+              onSubmit={() => passwordRef.current?.focus()}
+            />
+            <AuthField
+              ref={passwordRef}
+              label="Password"
+              metrics={SIGN_UP}
+              icon="Lock01"
+              value={draft.password}
+              onChangeText={(password) => patch({ password })}
+              onBlur={() => blur('password')}
+              error={errors.password}
+              secure
+              autoComplete="new-password"
+              returnKeyType="done"
+              onSubmit={submit}
+            />
+          </View>
 
-      <AuthCta
-        label="Create account"
-        onPress={submit}
-        loading={startSignUp.isPending}
-        height={s(board(SIGN_UP.ctaHeight))}
-        arrow={s(board(SIGN_UP.ctaArrow))}
-        arrowRight={s(board(SIGN_UP.ctaArrowRight))}
-        style={{ marginTop: s(board(SIGN_UP.ctaTop)) }}
-      />
+          <AuthCta
+            label="Create account"
+            onPress={submit}
+            loading={startSignUp.isPending}
+            height={s(board(SIGN_UP.ctaHeight))}
+            arrow={s(board(SIGN_UP.ctaArrow))}
+            arrowRight={s(board(SIGN_UP.ctaArrowRight))}
+            style={{ marginTop: s(board(SIGN_UP.ctaTop)) }}
+          />
 
-      {(refused && !validation.ok) || serverError ? (
-        <Text
-          variant="callout"
-          color="danger"
-          align="center"
-          accessibilityLiveRegion="polite"
-          style={{ marginTop: s(board(8)) }}
-        >
-          {refused && !validation.ok ? FIX_FIRST : serverError}
-        </Text>
-      ) : null}
+          {(refused && !validation.ok) || serverError ? (
+            <Text
+              variant="callout"
+              color="danger"
+              align="center"
+              accessibilityLiveRegion="polite"
+              style={{ marginTop: s(board(8)) }}
+            >
+              {refused && !validation.ok ? FIX_FIRST : serverError}
+            </Text>
+          ) : null}
 
-      <AuthDivider margin={dividerMargin} gap={SIGN_UP.fieldGap} hairline={SIGN_UP.hairline} />
+          <AuthDivider margin={dividerMargin} gap={SIGN_UP.fieldGap} hairline={SIGN_UP.hairline} />
 
-      <GoogleButton
-        height={SIGN_UP.googleHeight}
-        logo={SIGN_UP.googleLogo}
-        gap={SIGN_UP.googleGap}
-        hairline={SIGN_UP.hairline}
-        onPress={google}
-      />
+          <GoogleButton
+            height={SIGN_UP.googleHeight}
+            logo={SIGN_UP.googleLogo}
+            gap={SIGN_UP.googleGap}
+            hairline={SIGN_UP.hairline}
+            onPress={google}
+          />
 
-      <AuthFooterLink
-        prompt="Already have an account?"
-        action="Sign in"
-        top={SIGN_UP.footerTop}
-        height={SIGN_UP.footerHeight}
-        gap={4.3}
-        floor={SIGN_UP.floor}
-        // Replace, as sign-in's own footer does: one form swaps for the other in place. This one
-        // pushed, so a round trip left two sign-up screens on the stack, and back from the second
-        // landed on the first rather than where the reader came from (§85).
-        onPress={() => router.replace('/(auth)/sign-in')}
-      />
+          <AuthFooterLink
+            prompt="Already have an account?"
+            action="Sign in"
+            top={SIGN_UP.footerTop}
+            height={SIGN_UP.footerHeight}
+            gap={4.3}
+            floor={SIGN_UP.floor}
+            // Replace, as sign-in's own footer does: one form swaps for the other in place. This one
+            // pushed, so a round trip left two sign-up screens on the stack, and back from the second
+            // landed on the first rather than where the reader came from (§85).
+            onPress={() => router.replace('/(auth)/sign-in')}
+          />
+        </Reveal>
+      )}
     </Screen>
   );
 }
