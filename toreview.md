@@ -16178,3 +16178,12 @@ The owner asked to redesign every remaining screen and to generate any assets ne
 - **Checked in the web preview:** experience list and form, Upgrade (Pro art), Interview list, Upload.
 - **Judgement call:** these screens were not rebuilt one by one. The profile forms, job extras, account screens and support pages already group their fields in cards with a pinned Save, and the old type roles there (`title`, `label`, `cardTitle`) sit at the new ramp's sizes. With the restyled shared parts, the wash and indigo links, they now match the redesigned flows. A screen the owner still finds old gets its own rebuild on request.
 - **Verified:** Jest, 1880 tests pass; typecheck and lint are clean. Not checked on a phone.
+
+## §179 — Owner's phone pass on round 3 (2026-11-07)
+
+- **Round outline buttons** (back, bell, menu, share, save) are now a white disc with a gray300 edge. The old transparent fill with a gray200 edge nearly vanished on the wash. This is `IconButton`'s `outline` variant, so it applies app-wide.
+- **Home no longer shows "Your applications".** The card and its component are deleted. Applications stay on the Jobs tab's Applied segment.
+- **No border under pinned headers on washed pages.** The top `EdgeFade` faded page-white over content scrolling under the header; on the wash that white band read as a border. `Screen` now skips the fade when `wash` is on, in both the scroll and the `headerFade` branches. The header stays pinned and content slides under its edge.
+  - Jobs moved from its hand-placed header wash to the `wash` prop, so the same rule covers it.
+- The owner's list had a fourth item left blank, so I asked about it.
+- **Verified:** Jest, 1880 tests pass; typecheck and lint are clean. Checked in the web preview (Email & password, Jobs). Not checked on a phone.

@@ -17,7 +17,6 @@ import { a11yButton, hitSlop8, pluralize, useDebouncedValue } from '@/lib';
 import { useTabScrollToTop } from '@/navigation';
 import { useTabBarLayout, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
-import { GradientWash } from '@/ui/GradientWash';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
@@ -338,6 +337,7 @@ export function JobsScreen() {
     // out of it — so the header box has to ask for the gutter back explicitly. The centring and
     // maxWidth still come from the root.
     <Screen
+      wash
       padded={false}
       // The search field is in the header: the list shrinks above the keyboard rather than
       // running under it, and cards dissolve under the pinned header (the list's top padding is
@@ -346,27 +346,15 @@ export function JobsScreen() {
       headerFade
       headerStyle={{ paddingTop: spacing.headerTop, paddingHorizontal: spacing.gutter }}
       header={
-        // The lavender wash behind the pinned header (§176), full bleed past the gutter.
-        <View>
-          <View
-            pointerEvents="none"
-            style={[
-              StyleSheet.absoluteFill,
-              { top: -spacing.headerTop, left: -spacing.gutter, right: -spacing.gutter },
-            ]}
-          >
-            <GradientWash depth={1} />
-          </View>
-          <JobsHeader
-            query={query}
-            onChangeQuery={(value) => setQuery(segment, value)}
-            placeholder={PLACEHOLDER[segment]}
-            filterCount={segment === 'discover' ? chips.length : 0}
-            hasUnread={(unread.data ?? 0) > 0}
-            onPressNotifications={actions.openNotifications}
-            onPressFilters={actions.openFilters}
-          />
-        </View>
+        <JobsHeader
+          query={query}
+          onChangeQuery={(value) => setQuery(segment, value)}
+          placeholder={PLACEHOLDER[segment]}
+          filterCount={segment === 'discover' ? chips.length : 0}
+          hasUnread={(unread.data ?? 0) > 0}
+          onPressNotifications={actions.openNotifications}
+          onPressFilters={actions.openFilters}
+        />
       }
     >
       <FlashList

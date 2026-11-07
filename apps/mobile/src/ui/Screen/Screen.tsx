@@ -165,7 +165,9 @@ export function Screen({
         >
           {children}
         </Animated.ScrollView>
-        {header != null ? <EdgeFade edge="top" progress={scrollOffset} /> : null}
+        {/* No top fade over a wash (owner, 2026-11-07): its page-white band read as a border under
+            the pinned header once the page scrolled. The header stays put either way. */}
+        {header != null && !wash ? <EdgeFade edge="top" progress={scrollOffset} /> : null}
         {footer != null ? <EdgeFade edge="bottom" /> : null}
       </View>
       {/*
@@ -192,7 +194,7 @@ export function Screen({
       {headerFade ? (
         <View style={styles.root}>
           {children}
-          <EdgeFade edge="top" />
+          {wash ? null : <EdgeFade edge="top" />}
         </View>
       ) : (
         children

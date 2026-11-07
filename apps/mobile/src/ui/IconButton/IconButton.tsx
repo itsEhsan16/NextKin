@@ -46,10 +46,12 @@ export function IconButton({
   const box = size ?? sizes.iconButton;
 
   const surface = {
+    // A white disc with a firmer edge (owner, 2026-11-07): on the lavender wash a transparent
+    // button with a gray200 edge all but disappeared.
     outline: {
-      backgroundColor: 'transparent',
+      backgroundColor: colors.surfaceCard,
       borderWidth: sizes.border,
-      borderColor: colors.borderDefault,
+      borderColor: colors.borderDashed,
     },
     filled: { backgroundColor: colors.surfaceSubtle, borderWidth: 0, borderColor: 'transparent' },
     ghost: { backgroundColor: 'transparent', borderWidth: 0, borderColor: 'transparent' },
