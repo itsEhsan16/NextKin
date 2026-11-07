@@ -16229,3 +16229,17 @@ The owner asked to bring back the pre-redesign first run: the gradient splash ("
   - Web preview: the splash advanced to the slides; "A brighter you ahead" and sign-up both render with ink buttons.
   - Jest: 1923 tests pass; typecheck and lint are clean.
   - Not checked on a phone.
+
+## §182 — Job details redesigned; the match illustration removed (owner, 2026-11-08)
+
+By "the job description" the owner meant the **job details screen** (`/jobs/[id]`), not the tailor flow's JD page, which §180 rebuilt. Both now share one look.
+
+- **Hero (`JobDetailHero`):**
+  - A 52 logo tile, the company (with the verified mark) and its industry/size line.
+  - The role at title1, the salary at title3 with "· Estimated".
+  - White fact chips with brand icons: location, workplace, employment type, posted, size. These replace the grey MetaPills.
+  - Every tested string is kept.
+- **The lavender wash is back on job details.** The owner allows it on Home and the job description; §180 had removed it there by mistake.
+- **"Why you match"** no longer has its illustration, at the owner's request. `MatchIllustration` is deleted. Headings in it and in "Against your preferences" are title3, on the soft card.
+- **"About the role" and "About {company}"** are `JdSectionCard`s, the same cards as the JD page. `JdSectionCard` takes an `icon` override, and `JobAboutSection` uses `bare`.
+- **Verified:** web preview of job details at 390×844. Jest: all suites pass; typecheck and lint are clean. Not checked on a phone.

@@ -3,143 +3,128 @@ import { View } from 'react-native';
 import { EMPLOYMENT_TYPE_LABEL, REMOTE_TYPE_LABEL, type Job } from '@/data/models';
 import { formatJobMeta, formatRelativeTime, formatSalaryLong } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { LogoTile } from '@/ui/LogoTile';
 import { Text } from '@/ui/Text';
 
-import { MetaPill } from './JobPills';
-import { Icon, type LineIconName } from '@/ui/Icon';
-
 export type JobDetailHeroProps = { job: Job };
 
-/**
- * Drawn values over 0.75 (Figma 443:2 is the 390 board). A 48 logo with the company beside it
- * 12 away; then 14 to the title, 8 to the location line, 10 to the salary and 15 to the chips.
- */
-const HERO = {
-  logo: 64,
-  logoGap: 16,
-  titleGap: 18.6667,
-  locationGap: 10.6667,
-  salaryGap: 13.3333,
-  chipsGap: 20,
-  verified: 17.3333,
-  verifiedTick: 7.3333,
-  nameGap: 6.6667,
-  rowIcon: 14.6667,
-  rowGap: 9.3333,
-  rule: 17.3333,
-  salaryInfo: 14.6667,
-  salaryGapX: 8,
-  chipGap: 8,
-};
-
-/** The board draws Remote with wifi. The other two are not drawn; a building reads as an office. */
 const WORKPLACE_ICON: Record<Job['remote'], LineIconName> = {
   remote: 'Wifi',
   hybrid: 'Building02',
   onsite: 'Building02',
 };
 
+/** A white fact chip with a brand icon, as the job description page draws them (§180). */
+function Fact({ icon, label }: { icon: LineIconName; label: string }) {
+  const { colors, u } = useTheme();
+  const styles = useStyles();
+  return (
+    <View
+      style={[styles.fact, { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft }]}
+    >
+      <Icon name={icon} size={u(15)} color={colors.brand} />
+      <Text variant="footnote" color="ink" numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
 /**
- * Title block of JOBS 05, redrawn (Figma 443:9–443:22): the company beside its logo, the role, a
- * location line, the salary and three meta chips — each now led by a glyph.
- *
- * The employee-count chip reads the same `companySize` as the subtitle above it and the company
- * card below — the board puts "51–200 employees" here and "8,000+" there for the same company.
+ * The top of a job (owner, 2026-11-08: "redesign the job description", §182), matching the job
+ * description page: the company's tile, name and line, the role as the title, the salary under
+ * it, then the job's facts as chips — where, how, what kind, when posted, how big.
  */
 export function JobDetailHero({ job }: JobDetailHeroProps) {
-  const { colors, radii, s } = useTheme();
+  const { colors, u } = useTheme();
   const styles = useStyles();
   const workplace = REMOTE_TYPE_LABEL[job.remote];
+  // Linear's location already says "Remote (India)"; a second "Remote" would repeat it.
+  const showWorkplace = !job.location.toLowerCase().includes(workplace.toLowerCase());
 
   return (
-    <View>
+    <View style={styles.wrap}>
       <View style={styles.company}>
         <LogoTile
           name={job.company}
           logoUrl={job.companyLogoUrl}
-          size={s(HERO.logo)}
-          style={{ borderRadius: radii.xxl }}
+          size={u(52)}
+          style={{ borderRadius: u(16) }}
         />
         <View style={styles.companyCopy}>
           <View style={styles.nameRow}>
-            <Text variant="title" numberOfLines={1} style={styles.shrink}>
+            <Text variant="bodyLgStrong" color="ink" numberOfLines={1} style={styles.shrink}>
               {job.company}
             </Text>
             {job.companyVerified ? (
-              // A brand certificate with a white tick laid over it, as 443:105 stacks the two.
               <View
                 accessible
                 accessibilityRole="image"
                 accessibilityLabel="Verified company"
-                style={[styles.verified, { width: s(HERO.verified), height: s(HERO.verified) }]}
+                style={[styles.verified, { width: u(18), height: u(18) }]}
               >
                 <Icon name="Award01" size="sm" color={colors.brand} />
                 <Icon name="Check" size="xs" color={colors.textOnBrand} style={styles.tick} />
               </View>
             ) : null}
           </View>
-          <Text variant="caption" color="textSecondary" numberOfLines={1}>
+          <Text variant="footnote" color="textSecondary" numberOfLines={1}>
             {formatJobMeta([job.companyIndustry, job.companySize])}
           </Text>
         </View>
       </View>
 
-      <Text variant="displayLg" accessibilityRole="header" style={{ marginTop: s(HERO.titleGap) }}>
+      <Text variant="title1" color="ink" accessibilityRole="header">
         {job.title}
       </Text>
 
-      <View style={[styles.row, { marginTop: s(HERO.locationGap) }]}>
-        <Icon name="MarkerPin01" size="xs" color={colors.textSecondary} />
-        <Text variant="bodyMedium" color="textSecondary" numberOfLines={1} style={styles.shrink}>
-          {job.location}
-        </Text>
-        {/* Linear's location already says "Remote (India)"; a second "Remote" would repeat it. */}
-        {job.location.toLowerCase().includes(workplace.toLowerCase()) ? null : (
-          <>
-            <View style={[styles.rule, { backgroundColor: colors.borderDashed }]} />
-            <Icon name={WORKPLACE_ICON[job.remote]} size="xs" color={colors.textSecondary} />
-            <Text variant="bodyMedium" color="textSecondary">
-              {workplace}
-            </Text>
-          </>
-        )}
-      </View>
-
       {job.salary ? (
-        <View style={[styles.salary, { marginTop: s(HERO.salaryGap) }]}>
+        <View style={styles.salary}>
           {/* The redraw spaces the range out: "₹28 – 38 LPA" (443:14). */}
-          <Text variant="jobDetailSalary">{formatSalaryLong(job.salary).replace('–', ' – ')}</Text>
+          <Text variant="title3" color="ink">
+            {formatSalaryLong(job.salary).replace('–', ' – ')}
+          </Text>
           {job.salary.estimated ? (
             <>
-              <Text variant="caption" color="textSecondary">
+              <Text variant="footnote" color="textSecondary">
                 · Estimated
               </Text>
-              <Icon name="InfoCircle" size="xs" color={colors.iconMuted} />
+              <Icon name="InfoCircle" size={u(14)} color={colors.iconMuted} />
             </>
           ) : null}
         </View>
       ) : null}
 
-      <View style={[styles.chips, { marginTop: s(HERO.chipsGap) }]}>
-        <MetaPill label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} icon="Briefcase01" />
-        <MetaPill label={`Posted ${formatRelativeTime(job.postedAt)}`} icon="Clock" />
+      <View style={styles.facts}>
+        <Fact icon="MarkerPin01" label={job.location} />
+        {showWorkplace ? <Fact icon={WORKPLACE_ICON[job.remote]} label={workplace} /> : null}
+        <Fact icon="Briefcase01" label={EMPLOYMENT_TYPE_LABEL[job.employmentType]} />
+        <Fact icon="Clock" label={`Posted ${formatRelativeTime(job.postedAt)}`} />
         {/* A job added from a copied link (TAILOR 00c) knows no head count. */}
-        {job.companySize ? <MetaPill label={job.companySize} icon="Users01" /> : null}
+        {job.companySize ? <Fact icon="Users01" label={job.companySize} /> : null}
       </View>
     </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  company: { flexDirection: 'row', alignItems: 'center', gap: s(HERO.logoGap) },
-  companyCopy: { flex: 1 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: s(HERO.nameGap) },
+const useStyles = scaledSheet((_s, u) => ({
+  wrap: { gap: u(14) },
+  company: { flexDirection: 'row', alignItems: 'center', gap: u(12) },
+  companyCopy: { flex: 1, gap: u(2) },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: u(6) },
   shrink: { flexShrink: 1 },
   verified: { alignItems: 'center', justifyContent: 'center' },
   tick: { position: 'absolute' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: s(HERO.rowGap) },
-  rule: { width: s(1), height: s(HERO.rule) },
-  salary: { flexDirection: 'row', alignItems: 'center', gap: s(HERO.salaryGapX) },
-  chips: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: s(HERO.chipGap) },
+  salary: { flexDirection: 'row', alignItems: 'center', gap: u(6), marginTop: -u(4) },
+  facts: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
+  fact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(6),
+    paddingHorizontal: u(12),
+    paddingVertical: u(7),
+    borderRadius: u(999),
+    borderWidth: 1,
+  },
 }));

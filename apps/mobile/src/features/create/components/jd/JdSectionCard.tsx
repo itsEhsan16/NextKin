@@ -27,12 +27,21 @@ const ICON_FOR: Record<string, LineIconName> = {
  * §180): an icon tile and the section's heading, then its lines. Used by every section of the JD
  * page, whether the posting was read into structured fields or into its own headings.
  */
-export function JdSectionCard({ title, children }: { title: string; children: ReactNode }) {
+export function JdSectionCard({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  /** Overrides the icon chosen by heading: "About Stripe" on job detail (§182). */
+  icon?: LineIconName;
+  children: ReactNode;
+}) {
   const styles = useStyles();
   return (
     <FlowCard style={styles.card}>
       <View style={styles.head}>
-        <IconTile name={ICON_FOR[title] ?? 'InfoCircle'} size={36} />
+        <IconTile name={icon ?? ICON_FOR[title] ?? 'InfoCircle'} size={36} />
         <Text {...a11yHeader()} variant="title3" color="ink" style={styles.flex}>
           {title}
         </Text>

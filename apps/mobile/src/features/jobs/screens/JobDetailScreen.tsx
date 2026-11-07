@@ -6,11 +6,12 @@ import type { Job } from '@/data/models';
 import { useJob, useJobFit, useSimilarJobs } from '@/data/queries';
 import { TailorResumeSheet } from '@/features/create/components/TailorResumeSheet';
 import { useTheme } from '@/theme';
+import { JdSectionCard } from '@/features/create/components/jd/JdSectionCard';
+import { GradientWash } from '@/ui/GradientWash';
 import { IconButton } from '@/ui/IconButton';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
-import { Text } from '@/ui/Text';
 
 import { JobAboutSection } from '../components/JobAboutSection';
 import { JobCompanyCard } from '../components/JobCompanyCard';
@@ -35,7 +36,7 @@ export type JobDetailScreenProps = { id: string };
  * reachable through the platform gesture and the Android hardware button once it scrolls away.
  */
 export function JobDetailScreen({ id }: JobDetailScreenProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, spacing, s, u } = useTheme();
   const insets = useSafeAreaInsets();
   const actions = useJobsActions();
 
@@ -114,6 +115,8 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         }}
         showsVerticalScrollIndicator={false}
       >
+        {/* The lavender wash behind the job's top (owner, 2026-11-08: Home and the job only). */}
+        <GradientWash height={u(360)} />
         <View style={styles.headerRow}>
           <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
           <View style={[styles.headerRight, { gap: spacing[3] }]}>
@@ -146,18 +149,18 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
 
         <TailorResumeCta onPress={() => setTailorOpen(true)} />
 
-        <JobAboutSection
-          description={current.description}
-          responsibilities={current.responsibilities}
-          requirements={current.requirements}
-        />
+        <JdSectionCard title="About the role">
+          <JobAboutSection
+            bare
+            description={current.description}
+            responsibilities={current.responsibilities}
+            requirements={current.requirements}
+          />
+        </JdSectionCard>
 
-        <View style={{ gap: spacing[4] }}>
-          <Text variant="section" accessibilityRole="header">
-            {`About ${current.company}`}
-          </Text>
+        <JdSectionCard title={`About ${current.company}`} icon="Building02">
           <JobCompanyCard job={current} onPress={actions.openCompany} />
-        </View>
+        </JdSectionCard>
 
         <View style={{ gap: spacing[4] }}>
           <SectionHeader

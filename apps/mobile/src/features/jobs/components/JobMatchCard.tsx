@@ -15,7 +15,6 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { MatchPill } from './JobPills';
-import { MatchIllustration } from './MatchIllustration';
 import { Icon, type LineIconName } from '@/ui/Icon';
 
 export type JobMatchCardProps = {
@@ -26,12 +25,7 @@ export type JobMatchCardProps = {
   onSeeFullCriteria: () => void;
 };
 
-/**
- * The drawing sits to the right of the criteria (Figma 443:120), level with the first row. Drawn
- * as a 93 × 102 export box whose right edge runs 19.85 past the card's content edge, into the
- * padding — the blur needs the room — so it is placed against the list rather than in flow.
- */
-const ART = { width: 124, height: 136, right: -26.4667 };
+// The drawing beside the criteria (Figma 443:120) was removed at the owner's request (§182).
 
 /** Each state gets its own glyph and colour, so the row is legible without relying on colour. */
 const CRITERION_ICON: Record<MatchCriterionState, { name: LineIconName; color: ColorToken }> = {
@@ -58,9 +52,9 @@ export function JobMatchCard({ band, criteria, basis, onSeeFullCriteria }: JobMa
   const reduced = useReducedMotion();
 
   return (
-    <Card shadow="jobCard" padding={s(19)} style={{ gap: spacing[3] }}>
+    <Card padding={s(19)} style={{ gap: spacing[3] }}>
       <View style={styles.headerRow}>
-        <Text variant="title" accessibilityRole="header">
+        <Text variant="title3" color="ink" accessibilityRole="header">
           Why you match
         </Text>
         <MatchPill band={band} icon="BarChart07" />
@@ -75,9 +69,6 @@ export function JobMatchCard({ band, criteria, basis, onSeeFullCriteria }: JobMa
       ) : null}
 
       <View style={{ gap: spacing[3] }}>
-        <View style={[styles.art, { right: s(ART.right) }]} pointerEvents="none">
-          <MatchIllustration width={s(ART.width)} height={s(ART.height)} />
-        </View>
         {criteria.map((criterion, index) => {
           const icon = CRITERION_ICON[criterion.state];
           const row = (

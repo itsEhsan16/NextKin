@@ -24,9 +24,9 @@ export function FitLabels({ labels }: { labels: FitLabel[] }) {
   const styles = useStyles();
   if (labels.length === 0) return null;
   return (
-    <Card radius="card">
+    <Card>
       <View style={{ gap: spacing[3] }}>
-        <Text variant="title" accessibilityRole="header">
+        <Text variant="title3" color="ink" accessibilityRole="header">
           {FIT_TITLE}
         </Text>
         {labels.map((label) => {
