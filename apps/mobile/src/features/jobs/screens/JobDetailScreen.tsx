@@ -192,11 +192,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
         </View>
       </ScrollView>
 
-      <JobDetailActions
-        saved={current.isSaved}
-        onToggleSave={() => save.toggle(current)}
-        onApply={applyFlow.apply}
-      />
+      <JobDetailActions onTailor={() => setTailorOpen(true)} onApply={applyFlow.apply} />
 
       <TailorResumeSheet
         open={tailorOpen}

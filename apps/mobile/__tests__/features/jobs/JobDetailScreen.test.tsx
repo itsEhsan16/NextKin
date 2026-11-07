@@ -123,14 +123,20 @@ describe('JobDetailScreen (JOBS 05 — 1:830)', () => {
     expect(screen.queryByRole('header', { name: "What we're looking for" })).toBeNull();
   });
 
-  it('toggles the save state from the sticky bar', async () => {
+  it('toggles the save state from the header bookmark (§183)', async () => {
     await renderDetail();
-    // job_stripe ships saved, so the bar opens on "Saved".
-    const saved = await screen.findByLabelText('Saved');
-    expect(saved).toBeSelected();
+    // job_stripe ships saved, so the bookmark opens filled.
+    fireEvent.press(await screen.findByLabelText('Remove from saved'));
+    expect(await screen.findByLabelText('Save job')).toBeOnTheScreen();
+  });
 
-    fireEvent.press(saved);
-    expect(await screen.findByLabelText('Save')).toBeOnTheScreen();
+  it('tailors a resume from the sticky bar, with Apply beside it (§183)', async () => {
+    await renderDetail();
+    expect(await screen.findByLabelText('Apply now')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Save')).toBeNull();
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Tailor resume')));
+    expect(await screen.findByText('Which resume should we tailor?')).toBeOnTheScreen();
   });
 
   it('opens a similar job instead of dead-ending', async () => {

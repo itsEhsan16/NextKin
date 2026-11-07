@@ -16243,3 +16243,11 @@ By "the job description" the owner meant the **job details screen** (`/jobs/[id]
 - **"Why you match"** no longer has its illustration, at the owner's request. `MatchIllustration` is deleted. Headings in it and in "Against your preferences" are title3, on the soft card.
 - **"About the role" and "About {company}"** are `JdSectionCard`s, the same cards as the JD page. `JdSectionCard` takes an `icon` override, and `JobAboutSection` uses `bare`.
 - **Verified:** web preview of job details at 390×844. Jest: all suites pass; typecheck and lint are clean. Not checked on a phone.
+
+## §183 — Job details bar: "Tailor resume" replaces "Save" (owner, 2026-11-08)
+
+- The pinned bar is now **"Tailor resume"** with the AI sparkle (Stars02) in brand indigo on the brand surface, beside **"Apply now"**. Both are pills.
+- "Tailor resume" opens the same resume picker as the "Tailor your resume to this job" card ("Which resume should we tailor?").
+- Saving stays on the bookmark in the page header. The bar's Save toggle is gone, and its test now covers the bookmark. A new test covers the bar's tailor button.
+- **Judgement call:** the in-page "Tailor your resume to this job" card stays, so the page still explains the step where it sits. It can go if the owner finds the two redundant.
+- **Verified:** Jest; typecheck and lint are clean. Not checked on a phone.
