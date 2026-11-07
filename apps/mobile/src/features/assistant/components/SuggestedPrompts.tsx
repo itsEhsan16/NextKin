@@ -1,96 +1,136 @@
 import { View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
-import { ASSISTANT_SUGGESTIONS } from '@/data/models';
-import { a11yButton, hitSlopFor } from '@/lib';
-import { scaledSheet, useTheme } from '@/theme';
+import { a11yButton, useReducedMotion } from '@/lib';
+import { motion, scaledSheet, useTheme } from '@/theme';
+import { Icon } from '@/ui/Icon';
+import { IconTile } from '@/ui/kit';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
-export type SuggestedPromptsProps = {
-  /** Fills the composer — the reader still presses send, so a mis-tap costs nothing. */
-  onPick: (prompt: string) => void;
-  /** The first-run layout (ASSISTANT 02 577:7828): the label and the prompts centred. */
-  centred?: boolean;
-};
-
-// ASSISTANT 01 / 02 at 390 (577:6542 → 577:6544, a prompt 577:6545), in artboard units.
-const LABEL_TO_PROMPTS = 10;
-const GAP_X = 7;
-const GAP_Y = 8;
-const PAD_LEFT = 12;
-const PAD_RIGHT = 14;
-const PAD_Y = 8;
-const PROMPT_GAP = 7;
-const SPARKLE_W = 13;
-const SPARKLE_H = 12.734;
-/** One line of prompt: 8 + 17 + 8. Its target reaches 44 through slop. */
-const PROMPT_H = 33;
+import type { StarterPrompt } from '../assistantPrompts';
+import { AssistantAvatar } from './MessageBubble';
 
 /**
- * §7.16's suggested prompts, offered whenever the composer is empty. Picking one fills the field
- * rather than sending: the cap is per message, and the reader should see what they are about to
- * spend one on.
+ * An empty chat (§188): the assistant's mark, a greeting by name, what it can help with, and four
+ * questions made from what this person has. A card asks its question at once: the composer shows
+ * what is left today, so nothing is spent unseen.
  */
-export function SuggestedPrompts({ onPick, centred = false }: SuggestedPromptsProps) {
-  const { colors, radii, s } = useTheme();
+export function AssistantWelcome({
+  firstName,
+  prompts,
+  onAsk,
+  disabled,
+}: {
+  firstName?: string;
+  prompts: readonly StarterPrompt[];
+  onAsk: (prompt: string) => void;
+  disabled: boolean;
+}) {
+  const { colors, shadows } = useTheme();
   const styles = useStyles();
+  const reduced = useReducedMotion();
 
   return (
-    <View>
-      <Text
-        variant="captionSemiBold"
-        accessibilityRole="header"
-        align={centred ? 'center' : 'left'}
-      >
-        Try asking
-      </Text>
-      <View style={[styles.prompts, centred ? styles.centred : null]}>
-        {ASSISTANT_SUGGESTIONS.map((prompt) => (
-          <Pressable
-            key={prompt}
-            {...a11yButton(`Ask: ${prompt}`, 'Puts the question in the message field')}
-            feedback="subtle"
-            haptic="selection"
-            hitSlop={hitSlopFor(s(PROMPT_H / 0.75))}
-            onPress={() => onPick(prompt)}
-            style={[
-              styles.prompt,
-              {
-                borderRadius: radii.full,
-                borderWidth: s(1 / 0.75),
-                borderColor: colors.borderDefault,
-                backgroundColor: colors.surfaceCard,
-              },
-            ]}
+    <View style={styles.root}>
+      <View style={styles.head}>
+        <AssistantAvatar size={56} />
+        <Text variant="title1" color="ink" align="center" accessibilityRole="header">
+          {firstName ? `Hi ${firstName}, how can I help?` : 'How can I help?'}
+        </Text>
+        <Text variant="callout" color="textSecondary" align="center" style={styles.lede}>
+          Ask about your resume, ATS score, job search or interviews. I advise; I never change your
+          documents.
+        </Text>
+      </View>
+      <View style={styles.list}>
+        {prompts.map((item, index) => (
+          <Animated.View
+            key={item.prompt}
+            entering={
+              reduced ? undefined : FadeInDown.delay(index * 60).duration(motion.durations.base)
+            }
           >
-            <SparkleIcon width={s(SPARKLE_W / 0.75)} height={s(SPARKLE_H / 0.75)} />
-            <Text variant="caption" color="textBody" style={styles.label}>
-              {prompt}
-            </Text>
-          </Pressable>
+            <Pressable
+              {...a11yButton(`Ask: ${item.prompt}`)}
+              feedback="scale"
+              haptic="selection"
+              disabled={disabled}
+              onPress={() => onAsk(item.prompt)}
+              style={[
+                styles.card,
+                shadows.soft,
+                { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft },
+              ]}
+            >
+              <IconTile name={item.icon} size={36} />
+              <Text variant="bodyLgStrong" color="ink" style={styles.grow}>
+                {item.prompt}
+              </Text>
+              <Icon name="ArrowUp" size="xs" color={colors.iconMuted} />
+            </Pressable>
+          </Animated.View>
         ))}
       </View>
     </View>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  prompts: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: s(GAP_X / 0.75),
-    rowGap: s(GAP_Y / 0.75),
-    marginTop: s(LABEL_TO_PROMPTS / 0.75),
-  },
-  centred: { justifyContent: 'center' },
-  prompt: {
+/** The next questions under a finished answer: one tap asks. */
+export function FollowUpChips({
+  prompts,
+  onAsk,
+}: {
+  prompts: readonly string[];
+  onAsk: (prompt: string) => void;
+}) {
+  const { colors } = useTheme();
+  const styles = useStyles();
+  if (prompts.length === 0) return null;
+  return (
+    <View style={styles.follow}>
+      {prompts.map((prompt) => (
+        <Pressable
+          key={prompt}
+          {...a11yButton(`Ask: ${prompt}`)}
+          feedback="subtle"
+          haptic="selection"
+          onPress={() => onAsk(prompt)}
+          style={[styles.chip, { borderColor: colors.brandBorder }]}
+        >
+          <Icon name="Stars02" size="xs" color={colors.brand} />
+          <Text variant="footnote" color="ink" style={styles.grow}>
+            {prompt}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+const useStyles = scaledSheet((_s, u) => ({
+  root: { gap: u(24), paddingTop: u(16) },
+  head: { alignItems: 'center', gap: u(10) },
+  lede: { maxWidth: u(320) },
+  list: { gap: u(10) },
+  card: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(PROMPT_GAP / 0.75),
-    paddingLeft: s(PAD_LEFT / 0.75),
-    paddingRight: s(PAD_RIGHT / 0.75),
-    paddingVertical: s(PAD_Y / 0.75),
+    gap: u(12),
+    padding: u(14),
+    borderRadius: u(20),
+    borderWidth: 1,
   },
-  label: { flexShrink: 1 },
+  grow: { flex: 1 },
+  follow: { gap: u(8), paddingLeft: u(42), alignItems: 'flex-start' },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: u(8),
+    paddingHorizontal: u(12),
+    paddingVertical: u(8),
+    borderRadius: u(999),
+    borderWidth: 1,
+    maxWidth: '100%',
+  },
 }));

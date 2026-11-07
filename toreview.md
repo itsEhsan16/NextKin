@@ -16315,3 +16315,28 @@ The owner, on §186's once-only pop-up: "Why do we even need this, when we have 
   - Home shows nothing about it.
 - **What this costs:** an account made on the web with no resume, signing in on the phone, is never asked on Home. It meets the question at the first flow that needs a resume.
 - **Verified:** Jest passes all 1924 tests, and tsc and eslint are clean. Not checked on a phone.
+
+## §188 — AI Assistant redesigned, with real logic (owner, 2026-11-08)
+The owner: "Ai Assistant window is still old one with no proper logic, completely redesign." The data layer was already capable: a topic check, answers written against a resume's real score, and chat history. The mobile screen used very little of it.
+- **Logic:**
+  - **Answers use your resume by default.** That is the one the screen was opened from, otherwise the latest finished resume. A chip over the field ("Using UX Designer Resume") switches it or turns it off, which gives general answers. Before this change the paperclip was opt-in, so "Why is my ATS score…" answered "I don't have a scored document open".
+  - **Empty chat:** a greeting by first name and four questions built from what the person has: the resume's real score ("Why does my resume score 94?"), quick wins only when the score lists some, and the role from set-up. One tap asks.
+    - Judgement call: before this, a tap only filled the field. It now sends, because the allowance is shown under the field.
+  - **Under each answer:** the resume it used ("Used …"), Copy (plain text), and two follow-ups on the same topic.
+    - Follow-ups skip questions already asked, never mention quick wins when there are none, and are not shown under a refusal or a failed answer.
+  - **Chats are kept:** the header has New chat, and Chats, a sheet of earlier chats with the open one marked. It uses the same `startNew` / `openThread` / `listThreads` as the web.
+  - **Answers render properly:** `**bold**` is drawn bold, never as asterisks, and list lines become bullets (`RichText`). The mock's score answer now starts "Your…" instead of "your…" (`packages/shared/src/assistant/answers.ts`).
+  - Every prompt the app offers passes the topic check, and a unit test pins this, so a tap is never refused.
+- **Look:**
+  - Kit header with Chats and New chat buttons.
+  - Your turns on the brand fill. Answers as text beside a sparkle disc, with no bubble.
+  - A rounded composer with "+" (pick the resume) and a round send button.
+  - One quiet line under the composer: "7 of 20 left today" (once any are spent) and the AI label.
+  - At zero allowance the composer becomes a brand card plus "See Pro plans".
+  - No wash and no illustration.
+- **Removed:** `AssistantUsage` (the meter card).
+- **Verified:**
+  - Jest: 1932 tests pass, including new `assistantPrompts` tests. tsc and eslint are clean.
+  - Web preview: welcome, a scored answer with bold text, follow-ups, New chat and the Chats sheet.
+  - Web's jest can't start in this worktree (`@nextkin/shared/mock` doesn't resolve, unrelated to this change). Its assistant test doesn't assert the changed sentence.
+  - Not checked on a phone.

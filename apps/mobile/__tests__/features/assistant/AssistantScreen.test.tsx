@@ -32,7 +32,7 @@ const NORMAL_MS = 1000;
 /** A long answer is ~120 tokens at two a tick; this is more than any canned reply needs. */
 const STREAM_MS = ASSISTANT_TICK_MS * 200;
 
-/** Free plan with nothing sent today: ASSISTANT 02's first run draws no meter. */
+/** Free plan with nothing sent today: the welcome draws no allowance. */
 const freshSubscription: Subscription = {
   ...subscriptionFixture,
   usage: { ...subscriptionFixture.usage, assistantMessagesUsed: 0, assistantMessagesLimit: 20 },
@@ -45,6 +45,13 @@ const spentSubscription: Subscription = {
 };
 
 const lastMessage = () => mockStore.state.assistant.messages.at(-1);
+
+/** The resume the screen uses unless told otherwise: the latest finished one. */
+const usable = () =>
+  mockStore.state.resumes
+    .filter((item) => item.docType === 'resume' && item.status === 'ready' && !item.archived)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+const latestResume = () => usable()[0]!;
 
 async function renderAssistant(resumeId?: string, seed?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
@@ -65,7 +72,7 @@ async function send(text: string) {
   await settle(NORMAL_MS);
 }
 
-describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
+describe('AssistantScreen (V2 §7.16, redesigned §188)', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     resetMockRepos();
@@ -83,7 +90,7 @@ describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
     jest.useRealTimers();
   });
 
-  it('shows the thread, the daily meter, the label, and no control that could act', async () => {
+  it('shows the thread, the allowance, the label, the resume in use, and nothing that acts', async () => {
     await renderAssistant();
     // The composer is pinned while loading too, inert.
     expect(screen.getByLabelText('Message')).toBeOnTheScreen();
@@ -91,55 +98,73 @@ describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
 
     await settle(NORMAL_MS);
 
-    expect(screen.getByRole('header', { name: 'AI assistant' })).toBeOnTheScreen();
-    // §13.5: the cap is on screen before it is hit — and it is a DAILY cap, said as one.
-    expect(screen.getByText('Messages', shown)).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'AI Assistant' })).toBeOnTheScreen();
+    // §13.5: the daily cap is on screen before it is hit, said as a daily one.
     expect(screen.getByText('8 of 20 left today', shown)).toBeOnTheScreen();
     expect(screen.queryByText(/this month/, shown)).toBeNull();
-    // §7.16: the label is on the composer, so it is visible whatever the transcript shows.
     expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
+    // Answers use your latest resume unless you say otherwise, and the chip says which.
+    expect(screen.getByText(`Using ${latestResume().title}`, shown)).toBeOnTheScreen();
 
-    // The seeded thread: one answer, one refusal — the refusal restates the scope.
+    // The seeded thread: one answer, one refusal; the refusal restates the scope.
     expect(screen.getByText(/two-year gap/, shown)).toBeOnTheScreen();
     expect(screen.getByText(REFUSAL_LINE, shown)).toBeOnTheScreen();
-    expect(screen.getAllByText('Out of scope', shown)).toHaveLength(1);
-    // The suggested prompts are offered whenever the composer is empty.
-    expect(screen.getByLabelText('Ask: How do I explain a career gap?', shown)).toBeOnTheScreen();
+    expect(screen.getAllByText(/^out of scope$/i, shown)).toHaveLength(1);
 
-    // §7.16: read-and-advise only. Nothing on this screen may mutate anything but the thread.
+    // §7.16: read-and-advise only. Questions aside, no control may change anything but the chat.
     const buttons = screen
       .getAllByRole('button', shown)
-      .map((node) => String(node.props.accessibilityLabel ?? ''));
+      .map((node) => String(node.props.accessibilityLabel ?? ''))
+      .filter((label) => !label.startsWith('Ask: '));
     expect(
       buttons.filter((label) => /apply|fix|save|delete|edit|regenerate|tailor/i.test(label)),
     ).toEqual([]);
   });
 
-  it('streams an on-topic reply into one bubble and moves the meter', async () => {
+  it('streams an answer, draws its bold as bold, names the resume, and offers follow-ups', async () => {
     await renderAssistant();
     await settle(NORMAL_MS);
 
     const before = mockStore.state.assistant.messages.length;
-    await send('How do I explain a career gap?');
+    await send('Why is my ATS score what it is?');
 
     expect(mockStore.state.assistant.messages).toHaveLength(before + 2);
-    expect(screen.getAllByText('How do I explain a career gap?', shown).length).toBeGreaterThan(0);
-    // The reply's shell is on screen for the stream to fill; the composer waits for it.
-    expect(screen.getByText(/Thinking…|Writing…/, shown)).toBeOnTheScreen();
+    // While it is written the composer waits.
     expect(screen.getByLabelText('Sending', shown)).toBeDisabled();
 
     await settle(STREAM_MS);
     await settle(NORMAL_MS);
 
     const reply = lastMessage();
-    expect(reply?.role).toBe('assistant');
     expect(reply?.status).toBe('complete');
-    expect(reply?.refusal).toBeUndefined();
-    expect(screen.getByText(reply?.text ?? '§', shown)).toBeOnTheScreen();
-    expect(screen.queryByText(/Thinking…|Writing…/, shown)).toBeNull();
-    // §13.3: a message costs a message, and the meter says so without a reload.
+    expect(reply?.contextResumeId).toBe(latestResume().id);
+    expect(reply?.text).toContain('**');
+    expect(screen.queryByText(/Writing…/, shown)).toBeNull();
+    // The answer marks names and numbers in **bold**; none of the asterisks reach the screen.
+    expect(screen.queryByText(/\*\*/, shown)).toBeNull();
+    expect(screen.getAllByText(latestResume().title, shown).length).toBeGreaterThan(0);
+    expect(screen.getByText(`Used ${latestResume().title}`, shown)).toBeOnTheScreen();
+    expect(screen.getAllByLabelText('Copy answer', shown).length).toBeGreaterThan(0);
+    // The meter moves without a reload.
     expect(screen.getByText('7 of 20 left today', shown)).toBeOnTheScreen();
-    expect(screen.getByLabelText('Send', shown)).toBeOnTheScreen();
+    // The next questions on the same topic, one tap each.
+    expect(screen.getAllByLabelText(/^Ask: /, shown).length).toBeGreaterThan(0);
+  });
+
+  it('asks a follow-up with one tap', async () => {
+    await renderAssistant();
+    await settle(NORMAL_MS);
+    await send('How do I explain a career gap?');
+    await settle(STREAM_MS);
+    await settle(NORMAL_MS);
+
+    const chip = screen.getAllByLabelText(/^Ask: /, shown)[0]!;
+    const prompt = String(chip.props.accessibilityLabel).replace(/^Ask: /, '');
+    const before = mockStore.state.assistant.messages.length;
+    await act(async () => fireEvent.press(chip));
+    await settle(NORMAL_MS);
+    expect(mockStore.state.assistant.messages).toHaveLength(before + 2);
+    expect(mockStore.state.assistant.messages[before]?.text).toBe(prompt);
   });
 
   it('refuses an off-topic question whole, in the assistant’s own voice', async () => {
@@ -151,83 +176,82 @@ describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
 
     const reply = lastMessage();
     expect(reply?.refusal).toBe('off_topic');
-    // A refusal arrives complete: it never "thinks about" a question it declined.
     expect(reply?.status).toBe('complete');
     expect(screen.getAllByText(REFUSAL_LINE, shown)).toHaveLength(2);
-    expect(screen.getAllByText('Out of scope', shown)).toHaveLength(2);
-    // Not a red error state: the retry state is for a broken answer, not a declined one.
+    expect(screen.getAllByText(/^out of scope$/i, shown)).toHaveLength(2);
     expect(screen.queryByText('Try again', shown)).toBeNull();
+    // No follow-ups under a refusal.
+    expect(screen.queryAllByLabelText(/^Ask: /, shown)).toHaveLength(0);
   });
 
-  it('fills the composer from a suggested prompt rather than sending it', async () => {
-    await renderAssistant();
-    await settle(NORMAL_MS);
-
-    const before = mockStore.state.assistant.messages.length;
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText('Ask: Why is my ATS score what it is?', shown)),
-    );
-    expect(screen.getByLabelText('Message', shown)).toHaveProp(
-      'value',
-      'Why is my ATS score what it is?',
-    );
-    expect(mockStore.state.assistant.messages).toHaveLength(before);
-    // With a draft in the field the prompts step aside.
-    expect(screen.queryByLabelText('Ask: How do I explain a career gap?', shown)).toBeNull();
-  });
-
-  it('greets a blank thread with the first-run hero and centred prompts, and no meter', async () => {
+  it('greets an empty chat by name with questions from what you have, asked in one tap', async () => {
     mockStore.state.assistant.messages = [];
     await renderAssistant(undefined, (client) =>
       client.setQueryData(qk.user.subscription(), freshSubscription),
     );
     await settle(NORMAL_MS);
+    await settle(NORMAL_MS);
 
-    // ASSISTANT 02 (577:7805): what to ask about, then the prompts.
-    expect(
-      screen.getByRole('header', { name: 'Ask about your resume, your score or the search' }),
-    ).toBeOnTheScreen();
-    expect(screen.getByLabelText('Ask: How do I explain a career gap?', shown)).toBeOnTheScreen();
-    // A fresh allowance has nothing to warn about yet.
+    expect(screen.getByRole('header', { name: /how can I help\?$/ })).toBeOnTheScreen();
+    // The first question is about this resume's real score.
+    const scorePrompt = screen.getByLabelText(/^Ask: Why does my resume score \d+\?$/, shown);
+    // A fresh allowance has nothing to warn about yet; the label is always there.
     expect(screen.queryByText(/left today/, shown)).toBeNull();
-    // §7.16's label is on the composer in every state.
     expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
+
+    await act(async () => fireEvent.press(scorePrompt));
+    await settle(NORMAL_MS);
+    expect(mockStore.state.assistant.messages).toHaveLength(2);
+    expect(mockStore.state.assistant.messages[0]?.text).toMatch(/^Why does my resume score \d+\?$/);
   });
 
-  it('attaches a resume from the paperclip, and detaches it from the chip', async () => {
+  it('switches the resume from the chip, and can answer with none', async () => {
     await renderAssistant();
     await settle(NORMAL_MS);
-    expect(screen.queryByText(/^About: /, shown)).toBeNull();
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Attach a resume', shown)));
-    expect(screen.getByLabelText('Close ask about a resume', shown)).toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByLabelText('UX Designer Resume', shown)));
-    expect(screen.getByText('About: UX Designer Resume', shown)).toBeOnTheScreen();
+    const other = usable()[1]!;
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(`Using ${latestResume().title}`, shown)),
+    );
+    await act(async () => fireEvent.press(screen.getByLabelText(other.title, shown)));
+    expect(screen.getByText(`Using ${other.title}`, shown)).toBeOnTheScreen();
 
     await send('Why is my ATS score what it is?');
     await settle(STREAM_MS);
-    // §7.16's context awareness: the answer was written against the attached document.
-    const ux = mockStore.state.resumes.find((item) => item.title === 'UX Designer Resume');
-    expect(lastMessage()?.contextResumeId).toBe(ux?.id);
+    expect(lastMessage()?.contextResumeId).toBe(other.id);
+    await settle(NORMAL_MS);
 
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText('Asking about UX Designer Resume', shown)),
-    );
-    expect(screen.queryByText(/^About: /, shown)).toBeNull();
+    await act(async () => fireEvent.press(screen.getByLabelText('Stop using this resume', shown)));
+    expect(screen.queryByText(/^Using /, shown)).toBeNull();
+    await send('How do I explain a career gap?');
+    await settle(STREAM_MS);
+    expect(lastMessage()?.contextResumeId).toBeUndefined();
   });
 
-  it('opens about a document and answers with it as context', async () => {
+  it('opens about a document and answers with it', async () => {
     await renderAssistant('res_base');
     await settle(NORMAL_MS);
 
-    expect(screen.getByText('About: Product Designer', shown)).toBeOnTheScreen();
-
+    expect(screen.getByText('Using Product Designer', shown)).toBeOnTheScreen();
     await send('Why is my ATS score what it is?');
     await settle(STREAM_MS);
+    expect(lastMessage()?.contextResumeId).toBe('res_base');
+  });
 
-    const reply = lastMessage();
-    expect(reply?.contextResumeId).toBe('res_base');
-    expect(reply?.refusal).toBeUndefined();
+  it('starts a new chat and keeps the old one in Chats', async () => {
+    await renderAssistant();
+    await settle(NORMAL_MS);
+    const earlier = mockStore.state.assistantHistory.length;
+
+    await act(async () => fireEvent.press(screen.getByLabelText('New chat', shown)));
+    await settle(NORMAL_MS);
+    expect(mockStore.state.assistant.messages).toHaveLength(0);
+    expect(screen.getByRole('header', { name: /how can I help\?$/ })).toBeOnTheScreen();
+    expect(mockStore.state.assistantHistory.length).toBe(earlier + 1);
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Chats', shown)));
+    await settle(NORMAL_MS);
+    expect(screen.getByText('Pick up where you left off.', shown)).toBeOnTheScreen();
   });
 
   it('replaces the composer with the upsell at zero, and keeps the label', async () => {
@@ -236,12 +260,13 @@ describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
     );
     await settle(NORMAL_MS);
 
-    expect(screen.getByText('0 of 20 left today', shown)).toBeOnTheScreen();
-    // §13.5: the upsell REPLACES the action rather than sitting over it.
+    expect(
+      screen.getByText('0 of 20 left today. Pro gives you many more each day.', shown),
+    ).toBeOnTheScreen();
     expect(screen.queryByLabelText('Message', shown)).toBeNull();
     expect(screen.queryByLabelText('Send', shown)).toBeNull();
     expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
-    // C1 in toreview.md: no reset time is known for the daily cap, so none is claimed.
+    // No reset time is known for the daily cap, so none is claimed.
     expect(screen.queryByText(/resets|tomorrow|midnight/i, shown)).toBeNull();
 
     await act(async () => fireEvent.press(screen.getByLabelText('See Pro plans', shown)));
@@ -251,7 +276,7 @@ describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
     });
   });
 
-  it('shows a reply that stopped part-way and re-asks the question on retry', async () => {
+  it('shows an answer that stopped part-way and re-asks the question on retry', async () => {
     await renderAssistant();
     await settle(NORMAL_MS);
 
@@ -269,7 +294,6 @@ describe('AssistantScreen (V2 §7.16, ASSISTANT 01 / 02)', () => {
     await settle(NORMAL_MS);
     await settle(STREAM_MS);
 
-    // The retry is a fresh turn — the same question, asked again — not an edit of the old one.
     expect(mockStore.state.assistant.messages).toHaveLength(before + 2);
     expect(lastMessage()?.status).toBe('complete');
   });

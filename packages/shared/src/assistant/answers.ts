@@ -35,8 +35,8 @@ function scoreAnswer(context: AssistantContext | undefined): string {
     return `I don't have a scored document open. Ask me from a resume's ${SCORE_LABEL} panel and I'll answer about that one — the score there is measured against NextKin's own published rubric, so I can tell you exactly which check is holding it down.`;
   }
   const where = context.targetRole
-    ? `your **${context.documentTitle}** (for ${context.targetRole}${context.targetCompany ? ` at ${context.targetCompany}` : ''})`
-    : `your **${context.documentTitle}**`;
+    ? `Your **${context.documentTitle}** (for ${context.targetRole}${context.targetCompany ? ` at ${context.targetCompany}` : ''})`
+    : `Your **${context.documentTitle}**`;
   return [
     `${where} scores **${context.score}**, which is ${ATS_BAND_LABEL[context.band].toLowerCase()} against NextKin's rubric.`,
     quickWinLine(context),
