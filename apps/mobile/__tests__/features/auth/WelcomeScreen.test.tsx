@@ -2,13 +2,19 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { useOnboardingStore, useSessionStore, WelcomeScreen } from '@/features/auth';
+import { useOnboardingStore, WelcomeScreen } from '@/features/auth';
 import { storage } from '@/lib';
 
-const mockPush = jest.fn();
+const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), navigate: jest.fn(), back: jest.fn(), replace: mockReplace }),
+  // Rendered rather than swallowed, so a redirect is visible to the assertions below.
+  Redirect: ({ href }: { href: string }) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock is hoisted above imports.
+    const { Text } = require('react-native') as typeof import('react-native');
+    return <Text testID="redirect">{href}</Text>;
+  },
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
@@ -18,7 +24,6 @@ const metrics: Metrics = {
 };
 
 const ONBOARDING = useOnboardingStore.getState();
-const SESSION = useSessionStore.getState();
 
 const renderScreen = () =>
   render(
@@ -27,52 +32,68 @@ const renderScreen = () =>
     </SafeAreaProvider>,
   );
 
-/** The signed-out landing (toreview.md §172). */
+/** The first frame of a first run (Figma 307:4153). */
 describe('WelcomeScreen', () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     storage.remove('prefs.onboardingSeen');
     useOnboardingStore.setState({ seen: false });
-    mockPush.mockClear();
+    mockReplace.mockClear();
   });
 
   afterEach(async () => {
+    await act(() => jest.runOnlyPendingTimersAsync());
     await cleanup();
     storage.remove('prefs.onboardingSeen');
     useOnboardingStore.setState(ONBOARDING, true);
-    useSessionStore.setState(SESSION, true);
+    jest.useRealTimers();
   });
 
-  it('shows the brand, one promise and the way in', async () => {
+  it('draws the wordmark and both taglines', async () => {
     await renderScreen();
 
     expect(screen.getByRole('header', { name: 'NextKin' })).toBeOnTheScreen();
-    expect(screen.getByText(/Resumes that get/)).toBeOnTheScreen();
-    expect(screen.getByText('Made for each job. Never made up.')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Get started' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Sign in' })).toBeOnTheScreen();
+    expect(screen.getByText('JOBS   RESUMES   GROWTH')).toBeOnTheScreen();
+    expect(screen.getByText(/WITH AI THAT WON’T LIE/)).toBeOnTheScreen();
+    expect(screen.queryByTestId('redirect')).not.toBeOnTheScreen();
   });
 
-  it('opens sign-up from Get started', async () => {
+  it('advances itself, because the artboard draws no control', async () => {
     await renderScreen();
-    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Get started' })));
 
-    expect(mockPush).toHaveBeenCalledWith('/(auth)/sign-up');
-    expect(useOnboardingStore.getState().seen).toBe(true);
+    expect(mockReplace).not.toHaveBeenCalled();
+    await act(() => jest.advanceTimersByTimeAsync(2000));
+
+    expect(mockReplace).toHaveBeenCalledWith('/(auth)/onboarding');
   });
 
-  it('opens sign-in from the footer', async () => {
+  it('lets a tap take it early rather than waiting out the hold', async () => {
     await renderScreen();
-    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Sign in' })));
 
-    expect(mockPush).toHaveBeenCalledWith('/(auth)/sign-in');
+    await act(async () => fireEvent.press(screen.getByLabelText('Continue')));
+
+    expect(mockReplace).toHaveBeenCalledWith('/(auth)/onboarding');
   });
 
-  it('signs straight in with Google on the mock', async () => {
+  it('sends a returning reader past it, with no flash of the wash', async () => {
+    useOnboardingStore.setState({ seen: true });
     await renderScreen();
-    await act(async () =>
-      fireEvent.press(screen.getByRole('button', { name: 'Continue with Google' })),
-    );
 
-    expect(useSessionStore.getState().status).toBe('signed_in');
+    // The flag is read synchronously, so the redirect is the first frame — not something an
+    // effect gets to after the welcome screen has already been painted.
+    expect(screen.getByTestId('redirect')).toHaveTextContent('/(auth)/get-started');
+    expect(screen.queryByRole('header', { name: 'NextKin' })).not.toBeOnTheScreen();
+
+    await act(() => jest.advanceTimersByTimeAsync(2000));
+    // And it does not also run the hold: nothing should be replacing the route behind a redirect.
+    expect(mockReplace).not.toHaveBeenCalled();
   });
+
+  it('does not leave its timer running after it unmounts', async () => {
+    const view = await renderScreen();
+    await view.unmount();
+
+    await act(() => jest.advanceTimersByTimeAsync(2000));
+    expect(mockReplace).not.toHaveBeenCalled();
+  }, 60000);
 });

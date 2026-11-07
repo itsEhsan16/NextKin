@@ -16202,3 +16202,30 @@ The owner asked to redesign every remaining screen and to generate any assets ne
   - `JobAboutSection` takes `bare` to drop its own heading inside the card. Job detail is unchanged.
 - **Seen in the mock, not changed:** the plain reader repeats the first description line as a responsibility bullet. That is the mock's parse, not the layout.
 - **Verified:** web preview of the JD page at 390×844. Jest: 1880 tests pass; typecheck and lint are clean. Not checked on a phone.
+
+## §181 — The original sign-in flow is back, in the new design (owner, 2026-11-08)
+
+The owner asked to bring back the pre-redesign first run: the gradient splash ("NextKin · JOBS RESUMES GROWTH · With AI that won't lie on your resume"), the three onboarding slides, "A brighter you ahead", and the original sign-up and sign-in screens, "just make sure the consistency with new design". This reverses the §172 simplification for these screens.
+
+- **Restored from before 0ff10eb:**
+  - Screens: `WelcomeScreen` (the splash), `OnboardingScreen`, `GetStartedScreen`, `SignUpScreen`, `SignInScreen`.
+  - Their components and board helpers.
+  - The `(auth)/onboarding` and `(auth)/get-started` routes.
+  - Their tests.
+- **Kept from the redesign:**
+  - Email confirmation (`ConfirmEmailScreen` with `AuthShell` and `CodeBoxes`).
+  - The quick setup after sign-up, and the first-resume steps.
+  - The sign-up rules: email shape and at least 8 characters, with "Fix the highlighted fields."
+  - On the mock, sign-up starts a fresh account in that name (`beginMockAccount`).
+  - Tests were updated to these rules.
+- **Made consistent with the new design:**
+  - The old screen-only type roles now map to the new ramp: largeTitle for slide titles and the hero, title1 for "Create an account" / "Sign in", bodyLg for leads and fields, buttonLabel for buttons, callout for footers, footnote for captions.
+  - The splash keeps three display roles of its own (wordmark, eyebrow, tagline), re-added to `typography.ts`.
+  - Primary buttons are the ink pill instead of the lavender gradient ("Create an account", "Create account", "Sign In"). `GradientPill` is deleted.
+  - Icons are Hugeicons through `ui/Icon`.
+  - The splash gradient and slide art are unchanged.
+- `authLeading.test.ts` was removed; it checked the old screen-only roles, which no longer exist.
+- **Verified:**
+  - Web preview: the splash advanced to the slides; "A brighter you ahead" and sign-up both render with ink buttons.
+  - Jest: 1923 tests pass; typecheck and lint are clean.
+  - Not checked on a phone.

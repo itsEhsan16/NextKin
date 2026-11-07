@@ -359,6 +359,11 @@ export const typography = {
   buttonLabel: boardRole('semiBold', [16, 20]),
   eyebrow: boardRole('semiBold', [12, 16, 0.6]),
   numberLg: boardRole('bold', [28, 32, -0.5]),
+  // The brand splash, brought back by the owner on 2026-11-08 (§181): its lock-up is display type
+  // the reading ramp has no place for, so these three stay its own.
+  welcomeWordmark: boardRole('bold', [62, 62, -2.7]),
+  welcomeEyebrow: boardRole('medium', [11.5, 20.7, 4.4]),
+  welcomeTagline: boardRole('medium', [11.5, 20.7, 3.5]),
 } as const satisfies Record<string, TypeAnchors>;
 
 export type TypographyRole = keyof typeof typography;
