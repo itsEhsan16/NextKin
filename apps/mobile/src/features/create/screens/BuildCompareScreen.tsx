@@ -30,7 +30,6 @@ export type BuildCompareScreenProps = {
 export const BUILD_MATCH_TITLE = 'Ready to build';
 export const BUILD_CTA = 'Build resume';
 
-
 /**
  * Build Resume, step 2 of 3 (toreview.md §172): the match ring and one verdict, the job's skills
  * as chips — the ones on your profile ticked, the missing ones off until you tap the ones you
@@ -38,7 +37,7 @@ export const BUILD_CTA = 'Build resume';
  * sheet: the choices are made inline and "Build resume" is the first and only build button.
  */
 export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
-  const { colors } = useTheme();
+  const { colors, u } = useTheme();
   const styles = useStyles();
   const actions = useBuildActions();
   const { openJobDetails } = useCreateActions();
@@ -95,8 +94,8 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
         accessible
         accessibilityLabel="Comparing your profile with this job"
       >
-        <Skeleton height={120} radius="cardLg" />
-        <Skeleton height={160} radius="cardLg" />
+        <Skeleton height={u(120)} radius="cardLg" />
+        <Skeleton height={u(160)} radius="cardLg" />
       </View>,
       <FlowFooter primary={{ label: BUILD_CTA, onPress: () => {}, disabled: true }} />,
     );
@@ -192,13 +191,21 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
             accessibilityLabel={`What we’ll improve, ${toFix.length}`}
             feedback="subtle"
             onPress={() => setImproveOpen((open) => !open)}
-            style={[styles.card, styles.improveHead, { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft }]}
+            style={[
+              styles.card,
+              styles.improveHead,
+              { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft },
+            ]}
           >
             <Icon name="Stars02" size="md" color={colors.brand} />
             <Text variant="bodyLgStrong" color="ink" style={styles.fill}>
               What we’ll improve ({toFix.length})
             </Text>
-            <Icon name={improveOpen ? 'ChevronUp' : 'ChevronDown'} size="sm" color={colors.iconDefault} />
+            <Icon
+              name={improveOpen ? 'ChevronUp' : 'ChevronDown'}
+              size="sm"
+              color={colors.iconDefault}
+            />
           </Pressable>
           {improveOpen ? (
             <View style={styles.improveList}>

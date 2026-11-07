@@ -78,6 +78,16 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   const isScored = doc?.atsScore != null;
   const score = useResumeScore(isScored ? id : '');
 
+  // What was last on screen (§191). A background change can flip the flags above for a moment
+  // (a section being rewritten, a re-score): the page keeps showing the last body and score
+  // instead of dropping back to the loading skeleton. Kept in state, adjusted during render.
+  const [keptBody, setKeptBody] = useState(content.data);
+  if (content.data && content.data !== keptBody) setKeptBody(content.data);
+  const [keptScore, setKeptScore] = useState(score.data);
+  if (score.data && score.data !== keptScore) setKeptScore(score.data);
+  const shownBody = content.data ?? keptBody;
+  const shownScore = score.data ?? (isScored ? keptScore : undefined);
+
   // Not optimistic by design (`useRegenerateSection`), so the section it is running over holds a
   // shimmer until the model's copy lands rather than showing a guess.
   const regenerate = useRegenerateSection(id);
@@ -162,11 +172,13 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
     );
   }
 
-  if (content.isPending || (isScored && score.isPending)) return loading;
+  // Only the first load waits on a skeleton; after that the last body stands in.
+  if (!shownBody && (content.isPending || (isScored && score.isPending && !keptScore)))
+    return loading;
 
-  if (!content.data) return couldNotLoad(() => void content.refetch());
+  if (!shownBody) return couldNotLoad(() => void content.refetch());
 
-  const body = content.data;
+  const body = shownBody;
   const isLetter = body.kind === 'cover_letter';
 
   // A document created and never written. Six empty cards would read as six broken ones, so the
@@ -188,10 +200,10 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
   // role in its body with nothing on the document, and a skill claim can only be flagged on the
   // document, so either half alone lets the library card and this page disagree.
   const blocked = downloadBlocked(doc, body);
-  const total = score.data?.total;
+  const total = shownScore?.total;
   const note =
-    score.data != null
-      ? quickWinsNote(atsQuickWins(score.data).length, atsBandFor(score.data.total) === 'strong')
+    shownScore != null
+      ? quickWinsNote(atsQuickWins(shownScore).length, atsBandFor(shownScore.total) === 'strong')
       : undefined;
 
   return page(

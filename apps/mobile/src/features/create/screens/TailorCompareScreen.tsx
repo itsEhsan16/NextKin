@@ -2,13 +2,9 @@ import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {
-  nothingChosen,
-  projectedScore,
-  tailorRunInput,
-} from '@/data/models/customize';
+import { nothingChosen, projectedScore, tailorRunInput } from '@/data/models/customize';
 import { isConsentRequired, useStartGeneration } from '@/data/queries';
-import { scaledSheet } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { useRevealStagger } from '@/ui/motion';
@@ -39,6 +35,7 @@ const NOTHING_CHOSEN = 'Turn on something in the plan, or tap a skill.';
  */
 export function TailorCompareScreen(props: TailorCompareScreenProps) {
   const styles = useStyles();
+  const { u } = useTheme();
   const actions = useCreateActions();
   const data = useCustomizeData(props);
   const start = useStartGeneration();
@@ -122,11 +119,13 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
 
   const loading = (
     <View style={styles.stack} accessible accessibilityLabel="Comparing your resume with this job">
-      <Skeleton height={170} radius="cardLg" />
-      <Skeleton height={220} radius="cardLg" />
+      <Skeleton height={u(170)} radius="cardLg" />
+      <Skeleton height={u(220)} radius="cardLg" />
     </View>
   );
-  const inertFooter = <FlowFooter primary={{ label: CUSTOMIZE_CTA, onPress: () => {}, disabled: true }} />;
+  const inertFooter = (
+    <FlowFooter primary={{ label: CUSTOMIZE_CTA, onPress: () => {}, disabled: true }} />
+  );
   if (!target || !resumes.data || !subscription.data) return page(loading, inertFooter);
 
   if (data.noResume) {

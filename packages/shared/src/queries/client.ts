@@ -35,7 +35,9 @@ export function createQueryClient(): QueryClient {
     defaultOptions: {
       queries: {
         staleTime: 60 * SECOND,
-        gcTime: 5 * MINUTE,
+        // Long enough that a screen opened again later in the session draws from memory instead
+        // of a skeleton (§191). Stale data still refetches in the background as before.
+        gcTime: 30 * MINUTE,
         retry: 1,
         refetchOnWindowFocus: false,
       },

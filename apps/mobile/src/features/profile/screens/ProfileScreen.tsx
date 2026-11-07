@@ -19,7 +19,7 @@ import { CompletenessCard } from '../components/CompletenessCard';
 import { GapInterviewCard } from '../components/GapInterviewCard';
 import { PlanCard } from '../components/PlanCard';
 import { ProfileIdentity } from '../components/ProfileIdentity';
-import { ProfileSkeleton } from '../components/ProfileSkeleton';
+import { ProfileIdentitySkeleton, ProfileSkeleton } from '../components/ProfileSkeleton';
 import { ProfileStatsCard } from '../components/ProfileStatsCard';
 import { useProfileActions } from '../hooks/useProfileActions';
 import { PROFILE_ROW_ART as ART } from '../profileRowArt';
@@ -85,14 +85,28 @@ export function ProfileScreen() {
     />
   );
 
-  // The header box, not `contentContainerStyle`, carries the top padding here: on a static
-  // `Screen` the content style lands on the root after the safe-area padding and would replace
-  // it, sliding the title under the status bar.
-  const pendingHeaderStyle = { paddingTop: spacing.headerTop, paddingBottom: sizes.titleRowGap };
+  // The loaded page's header box and spacing (§191): the identity row stands in the header as a
+  // block and the cards below it, so nothing moves when the profile lands.
+  const headerStyle = {
+    paddingTop: spacing.headerTop,
+    gap: sizes.titleRowGap,
+    paddingBottom: spacing[5] + s(HEADER_EXTRA),
+  };
 
   if (user.isPending || profile.isPending) {
     return (
-      <Screen header={titleRow} headerStyle={pendingHeaderStyle}>
+      <Screen
+        scroll
+        tabBarInset
+        header={
+          <>
+            {titleRow}
+            <ProfileIdentitySkeleton />
+          </>
+        }
+        headerStyle={headerStyle}
+        contentContainerStyle={{ gap: s(CARD_GAP) }}
+      >
         <ProfileSkeleton />
       </Screen>
     );
@@ -137,11 +151,7 @@ export function ProfileScreen() {
       // the completeness badge is absolutely positioned 7.5 *below* ProfileIdentity's own box, and
       // as content padding that ink would fall over the scroller — a later sibling, so it paints
       // on top, and Android clips it outright. Keeping it here also means no `overflow: 'hidden'`.
-      headerStyle={{
-        paddingTop: spacing.headerTop,
-        gap: sizes.titleRowGap,
-        paddingBottom: spacing[5] + s(HEADER_EXTRA),
-      }}
+      headerStyle={headerStyle}
       // The device pass that once widened this to 28 (groups read as one wall) is now answered by
       // the board itself: 31 between cards, 37 before each group.
       contentContainerStyle={{ gap: s(CARD_GAP) }}

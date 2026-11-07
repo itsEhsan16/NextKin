@@ -102,6 +102,11 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
   // is gated on the metadata the way the editor gates its body read.
   const scored = resume.data?.atsScore != null;
   const score = useResumeScore(scored ? id : '');
+  // The last score shown (§191): a re-score that briefly clears the flag above keeps the list on
+  // screen instead of dropping the page back to its skeleton.
+  const [keptScore, setKeptScore] = useState(score.data);
+  if (score.data && score.data !== keptScore) setKeptScore(score.data);
+  const shownScore = score.data ?? keptScore;
   const { mutate: applyFix } = useApplyAtsFix(id);
 
   const [applied, setApplied] = useState<Record<string, AtsCheckItem>>({});
@@ -117,10 +122,10 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
    * a `passed` flag re-renders nothing extra.
    */
   const [seenOrder, setSeenOrder] = useState<readonly string[]>([]);
-  const order = mergeOrder(seenOrder, fixRowIds(score.data));
+  const order = mergeOrder(seenOrder, fixRowIds(shownScore));
   if (order !== seenOrder) setSeenOrder(order);
 
-  const rows = fixRows({ score: score.data, applied, applyingId, order });
+  const rows = fixRows({ score: shownScore, applied, applyingId, order });
   const todo = todoItems(rows);
 
   const start = useCallback(
@@ -199,7 +204,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
     </Screen>
   );
 
-  if (resume.isPending || (scored && score.isPending)) {
+  if (!shownScore && (resume.isPending || (scored && score.isPending))) {
     // The bar is pinned while loading for the reason Tailor pins one: it owns the bottom inset,
     // so a loading page without it would resize the viewport when the queries land.
     return page(
@@ -208,7 +213,10 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
     );
   }
 
-  if (!resume.data || resume.isError || (scored && (score.isError || !score.data))) {
+  if (
+    !resume.data ||
+    (!shownScore && (resume.isError || (scored && (score.isError || !score.data))))
+  ) {
     return page(
       <StateView
         tone="danger"
@@ -224,7 +232,7 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
     );
   }
 
-  if (!scored) {
+  if (!scored && !shownScore) {
     return page(
       <StateView
         art="allDone"

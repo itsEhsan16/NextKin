@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 
 import { Screen } from '@/ui/Screen';
-import { Spinner } from '@/ui/motion';
 
 import { useBuildActions } from '../hooks/useStartBuild';
 
-/** Forwards a read job to the match step, replacing itself, once the source is known. */
+/**
+ * Forwards a read job to the match step, replacing itself, once the source is known. It is gone
+ * within a frame, so it draws an empty page rather than a spinner that would only flash (§191).
+ */
 export function BuildOpenMatch({ jdId }: { jdId: string }) {
   const actions = useBuildActions();
   const sent = useRef(false);
@@ -14,9 +16,5 @@ export function BuildOpenMatch({ jdId }: { jdId: string }) {
     sent.current = true;
     actions.openCompare({ jdId }, { replace: true });
   }, [actions, jdId]);
-  return (
-    <Screen edges={['top', 'bottom']}>
-      <Spinner size={32} />
-    </Screen>
-  );
+  return <Screen edges={['top', 'bottom']}>{null}</Screen>;
 }
