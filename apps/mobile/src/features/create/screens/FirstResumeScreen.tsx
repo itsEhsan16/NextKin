@@ -1,6 +1,5 @@
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { scaledSheet, useTheme } from '@/theme';
@@ -9,20 +8,18 @@ import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { OnboardingFrame } from '../components/OnboardingFrame';
-import { firstResumeAsked } from '../firstResume';
 
 export const FIRST_RESUME_TITLE = 'Add your resume';
 export const FIRST_RESUME_LEDE = 'Start from yours, or let AI draft one.';
 export const FIRST_RESUME_UPLOAD = 'Upload my resume';
 export const FIRST_RESUME_NONE = 'Start from scratch';
 
-/** Shared with Home's first-resume pop-up (§185), so both ask the same way. */
-export const FIRST_RESUME_ART = {
+const FIRST_RESUME_ART = {
   upload: require('../../../../assets/illustrations/redesign/job-match.webp') as ImageSource,
   scratch: require('../../../../assets/illustrations/redesign/empty-resume.webp') as ImageSource,
 };
 
-export function FirstResumeOption({
+function FirstResumeOption({
   title,
   body,
   art,
@@ -74,14 +71,13 @@ export function FirstResumeOption({
 
 /**
  * Step 2 of 2 after sign-up (toreview.md §172): upload a resume, or start from scratch. Two big
- * choices and a Skip. Reaching this screen IS the question (§186): whatever they choose, Skip
- * included, Home never asks it again; the flows that need a resume ask at that point instead.
+ * choices and a Skip. This is the only place the app asks (§187): after a Skip, Home stays quiet
+ * and the flows that need a resume ask at that point instead.
  */
 export function FirstResumeScreen() {
   const router = useRouter();
   const styles = useStyles();
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
-  useEffect(() => firstResumeAsked.markAsked(), []);
 
   return (
     <OnboardingFrame

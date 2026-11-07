@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 
-import { firstResumeAsked } from '@/features/create/firstResume';
-
 type FirstRunState = {
   justSignedUp: boolean;
   mark: () => void;
@@ -16,7 +14,6 @@ type FirstRunState = {
 export const useFirstRunStore = create<FirstRunState>((set) => ({
   justSignedUp: false,
   mark: () => {
-    firstResumeAsked.reset();
     set({ justSignedUp: true });
   },
   consume: () => set({ justSignedUp: false }),

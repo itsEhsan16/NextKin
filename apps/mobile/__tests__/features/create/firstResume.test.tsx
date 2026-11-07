@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react-nativ
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import type { Resume } from '@/data/models';
-import { firstResumeAsked, firstResumeStage } from '@/features/create/firstResume';
+import { firstResumeStage } from '@/features/create/firstResume';
 import { FirstResumeScreen, QuickSetupScreen } from '@/features/create';
 import {
   FIRST_RESUME_NONE,
@@ -87,13 +87,6 @@ describe('the first-resume screen', () => {
     await open();
     await fireEvent.press(screen.getByLabelText('Skip'));
     expect(mockBack).toHaveBeenCalled();
-  });
-
-  it('counts as the question asked, so Home never asks it again (§186)', async () => {
-    firstResumeAsked.reset();
-    await open();
-    expect(firstResumeAsked.wasAsked()).toBe(true);
-    firstResumeAsked.reset();
   });
 });
 

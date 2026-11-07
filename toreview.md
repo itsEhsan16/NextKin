@@ -16305,3 +16305,13 @@ The owner's phone pass: after sign-up they tapped **Skip** on "Add your resume",
   - Jest: 1927 tests pass, including new cases for "skip, then Home stays quiet", "Not now survives a relaunch" and "the start screen marks it asked".
   - tsc and eslint are clean.
   - Not checked in the web preview or on a phone.
+
+## §187 — No first-resume pop-up on Home at all (owner, 2026-11-08)
+The owner, on §186's once-only pop-up: "Why do we even need this, when we have already asked once!" Home's pop-up is removed entirely.
+- **Removed:** `FirstResumePrompt` and the `firstResumeAsked` flag. `FirstResumeHost` now only runs the after-sign-up redirect and draws nothing.
+- **Where the app now asks:**
+  - Only "Add your resume", step 2 after sign-up.
+  - After a Skip, a resume comes up only in the flows that need one: Tailor's `NoResumeCard`, and the create actions that route to Build or Zero.
+  - Home shows nothing about it.
+- **What this costs:** an account made on the web with no resume, signing in on the phone, is never asked on Home. It meets the question at the first flow that needs a resume.
+- **Verified:** Jest passes all 1924 tests, and tsc and eslint are clean. Not checked on a phone.
