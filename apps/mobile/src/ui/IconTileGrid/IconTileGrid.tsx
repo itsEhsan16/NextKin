@@ -62,7 +62,6 @@ export function IconTileGrid<K extends string = string>({
             key={item.key}
             {...a11yButton(spoken ? `${item.label}, ${spoken}` : item.label, item.a11yHint)}
             feedback="scale"
-            haptic="light"
             onPress={() => onPress(item.key)}
             style={styles.item}
           >

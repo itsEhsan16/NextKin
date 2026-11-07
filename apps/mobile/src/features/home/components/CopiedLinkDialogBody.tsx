@@ -145,7 +145,6 @@ export function CopiedLinkDialogBody({
       <Pressable
         {...a11yButton('Not now', 'Close without adding the job')}
         feedback="subtle"
-        haptic="light"
         hitSlop={hitSlopFor(s(NOT_NOW_H))}
         onPress={onDismiss}
         style={styles.notNow}

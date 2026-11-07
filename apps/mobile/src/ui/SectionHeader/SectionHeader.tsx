@@ -45,7 +45,6 @@ export function SectionHeader({
         <Pressable
           {...a11yButton(`${actionLabel} ${title}`)}
           feedback="subtle"
-          haptic="selection"
           // The link is ~38pt tall on its own; 22 lifts the target to the 44pt minimum.
           hitSlop={hitSlopFor(s(22))}
           onPress={onAction}

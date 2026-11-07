@@ -87,7 +87,6 @@ function MenuRow({ icon, label, detail, tone = 'default', ai, hint, onPress }: M
     <Pressable
       {...a11yButton(ai ? `${label}, AI powered` : label, hint)}
       feedback="subtle"
-      haptic="light"
       onPress={onPress}
       // The token, not the drawn 56: a local constant takes the flat factor and landed at 42dp.
       style={[

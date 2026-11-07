@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { GENERATION_KIND_LABEL, type Generation, type GenerationKind } from '@/data/models';
@@ -11,7 +11,6 @@ import {
 import { COVER_STEPS, FlowStepper, ZERO_STEPS } from '@/features/create/components/TailorStepper';
 // Deep import on purpose: the notifications barrel drags its screens in. This is plain.
 import { offerPushForRun } from '@/features/notifications/components/PushPrimerSheet';
-import { haptics } from '@/lib';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -79,26 +78,6 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
   const interviewSet = useInterviewSetForGeneration(
     generation.data?.kind === 'interview' && generation.data.status === 'ready' ? id : '',
   );
-
-  // One buzz per finished run: the ticker keeps writing into the cache after 'ready' lands, and
-  // a re-render must not buzz again.
-  const celebrated = useRef(false);
-  useEffect(() => {
-    if (status !== 'ready' || celebrated.current) return;
-    celebrated.current = true;
-    haptics.success();
-  }, [status]);
-
-  // And one error buzz for a run that fails while the user watches it — not for opening a run
-  // that had already failed, which is news, not a moment.
-  const sawWorking = useRef(false);
-  useEffect(() => {
-    if (status && status !== 'failed' && status !== 'ready') sawWorking.current = true;
-    if (status === 'failed' && sawWorking.current) {
-      sawWorking.current = false;
-      haptics.error();
-    }
-  }, [status]);
 
   // The first wait anyone has on us is the moment to offer a tap when it's done.
   const waiting = status === 'queued' || status === 'generating';

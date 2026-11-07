@@ -25,7 +25,6 @@ export const SimilarJobCard = memo(function SimilarJobCard({ job, onPress }: Sim
     <Pressable
       {...a11yButton(formatJobMeta([job.title, meta, salary]), 'Opens this job')}
       feedback="scale"
-      haptic="light"
       onPress={() => onPress(job)}
     >
       <Card radius="card" shadow="jobCard" padding={s(15)}>

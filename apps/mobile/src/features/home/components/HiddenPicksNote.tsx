@@ -12,12 +12,7 @@ export type HiddenPicksNoteProps = { hidden: HiddenPicks; onPress: () => void };
 export function HiddenPicksNote({ hidden, onPress }: HiddenPicksNoteProps) {
   const line = hiddenPicksLine(hidden);
   return (
-    <Pressable
-      {...a11yButton(line, 'Opens all jobs')}
-      feedback="subtle"
-      haptic="selection"
-      onPress={onPress}
-    >
+    <Pressable {...a11yButton(line, 'Opens all jobs')} feedback="subtle" onPress={onPress}>
       <NoteBar icon="InfoCircle" text={line} />
     </Pressable>
   );

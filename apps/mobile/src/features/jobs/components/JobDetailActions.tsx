@@ -43,7 +43,6 @@ export function JobDetailActions({ onTailor, onApply }: JobDetailActionsProps) {
       <Pressable
         {...a11yButton('Tailor resume', 'Pick a resume to tailor to this job')}
         feedback="scale"
-        haptic="light"
         onPress={onTailor}
         style={[
           styles.tailor,
@@ -64,7 +63,6 @@ export function JobDetailActions({ onTailor, onApply }: JobDetailActionsProps) {
       <Button
         size="lg"
         label="Apply now"
-        haptic="medium"
         onPress={onApply}
         style={[styles.apply, { borderRadius: radii.full }]}
       />

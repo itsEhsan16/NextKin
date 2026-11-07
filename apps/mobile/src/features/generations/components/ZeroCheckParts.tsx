@@ -165,14 +165,7 @@ export function CheckButtons({
   const styles = useStyles();
   return (
     <View style={styles.buttons}>
-      <Button
-        label="Save and next"
-        block
-        haptic="medium"
-        loading={busy}
-        onPress={onSave}
-        style={styles.button}
-      />
+      <Button label="Save and next" block loading={busy} onPress={onSave} style={styles.button} />
       <Button
         label={deleteLabel}
         variant="dangerOutline"

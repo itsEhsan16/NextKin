@@ -189,7 +189,6 @@ export function NotificationsScreen() {
           <Pressable
             {...a11yButton('Mark all read')}
             feedback="subtle"
-            haptic="selection"
             hitSlop={hitSlop8}
             onPress={() => markAllRead.mutate(undefined)}
           >

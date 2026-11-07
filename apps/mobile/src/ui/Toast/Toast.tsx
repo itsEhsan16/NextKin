@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { haptics, useReducedMotion } from '@/lib';
+import { useReducedMotion } from '@/lib';
 import { useTheme, type ColorToken } from '@/theme';
 import { Icon, type LineIconName } from '@/ui/Icon';
 import { Text } from '@/ui/Text';
@@ -15,7 +15,7 @@ export type ToastProps = {
   visible: boolean;
   message: string;
   /**
-   * `error` leads with a red "!" and buzzes; `success` and `info` show the brand dot only.
+   * `error` leads with a red "!"; `success` and `info` show the brand dot only.
    */
   tone?: ToastTone;
   /** Overrides the tone's glyph. */
@@ -63,11 +63,6 @@ export function Toast({
   useEffect(() => {
     onHideRef.current = onHide;
   });
-
-  // A failure is felt as well as read: one error buzz per failure shown.
-  useEffect(() => {
-    if (visible && tone === 'error') haptics.error();
-  }, [message, tone, visible]);
 
   // A new message restarts the clock, so it gets its full time on screen.
   useEffect(() => {

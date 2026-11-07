@@ -50,7 +50,6 @@ export function SourceLine({ text, children }: SourceLineProps) {
         added ? 'Written by the AI. Shows where it came from' : 'Shows where this came from',
       )}
       feedback="subtle"
-      haptic="selection"
       hitSlop={hitSlop8}
       onPress={() => value.open(text)}
     >

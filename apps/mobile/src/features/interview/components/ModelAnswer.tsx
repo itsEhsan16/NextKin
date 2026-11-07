@@ -64,7 +64,6 @@ export function ModelAnswer({ question, revealed, onToggle }: ModelAnswerProps) 
         {...a11yButton(label)}
         accessibilityState={{ expanded: revealed }}
         feedback="subtle"
-        haptic="selection"
         hitSlop={revealed ? hitSlopFor(s(HEAD_LINE / 0.75)) : undefined}
         onPress={onToggle}
         style={[styles.head, revealed ? null : styles.closedHead]}

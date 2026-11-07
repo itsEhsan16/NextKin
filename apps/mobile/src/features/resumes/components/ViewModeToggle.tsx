@@ -1,7 +1,7 @@
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { a11yButton, haptics } from '@/lib';
+import { a11yButton } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { useSlidingPill } from '@/ui/motion';
@@ -82,10 +82,8 @@ export function ViewModeToggle({ value, onChange, style }: ViewModeToggleProps) 
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             feedback="subtle"
-            haptic="none"
             onPress={() => {
               if (selected) return;
-              haptics.selection();
               onChange(mode.key);
             }}
             style={styles.cell}

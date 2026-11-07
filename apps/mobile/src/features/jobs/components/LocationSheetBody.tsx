@@ -140,7 +140,6 @@ function LocationRow({
       accessibilityLabel={option.value}
       accessibilityState={{ selected }}
       feedback="subtle"
-      haptic="selection"
       onPress={() => onSelect(option.value)}
       style={[
         styles.row,

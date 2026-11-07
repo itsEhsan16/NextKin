@@ -63,7 +63,6 @@ export function AssistantHistorySheet({
               {...a11yButton(`${row.title}${row.current ? ', open now' : ''}`)}
               accessibilityState={{ selected: row.current }}
               feedback="subtle"
-              haptic="selection"
               onPress={() => onOpen(row.id)}
               style={[
                 styles.row,

@@ -53,7 +53,6 @@ export function EditorChip({
     <Pressable
       {...a11yButton(name, hint)}
       feedback="subtle"
-      haptic="selection"
       hitSlop={hitSlopFor(s(CHIP_HEIGHT))}
       onPress={onPress}
       style={[

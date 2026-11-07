@@ -144,7 +144,6 @@ export function FilterChip({
     <Pressable
       {...a11y}
       feedback="subtle"
-      haptic="selection"
       hitSlop={hitSlop8}
       onPress={onPress}
       // A ✓ arriving (or the label's weight changing) resizes the chip; it, and the chips after it

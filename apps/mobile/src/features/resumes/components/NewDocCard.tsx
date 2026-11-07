@@ -23,7 +23,6 @@ export function NewDocTile({ onPress, style }: NewDocProps) {
     <Pressable
       {...a11yButton('New', 'Create a resume or cover letter')}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.tile,
@@ -69,7 +68,6 @@ export function NewDocRow({ onPress, style }: NewDocProps) {
     <Pressable
       {...a11yButton('New resume or cover letter')}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.row,

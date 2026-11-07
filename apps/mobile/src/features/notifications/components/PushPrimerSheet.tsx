@@ -1,7 +1,14 @@
 import { View } from 'react-native';
 
 import { registerPushDevice } from '@/data/pushDevice';
-import { a11yButton, a11yHeader, getPushPermission, hitSlop8, requestPushPermission, storage } from '@/lib';
+import {
+  a11yButton,
+  a11yHeader,
+  getPushPermission,
+  hitSlop8,
+  requestPushPermission,
+  storage,
+} from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Pressable } from '@/ui/Pressable';
@@ -98,7 +105,6 @@ export function PushPrimerHost() {
           label="Turn on notifications"
           size="lg"
           block
-          haptic="medium"
           onPress={() => {
             // The OS dialog owns the interaction from here; a yes registers the phone.
             void requestPushPermission().then((answer) => {
@@ -111,7 +117,6 @@ export function PushPrimerHost() {
         <Pressable
           {...a11yButton('Not now')}
           feedback="subtle"
-          haptic="selection"
           hitSlop={hitSlop8}
           onPress={closePrimer}
           style={[styles.notNow, { marginTop: spacing[5] }]}

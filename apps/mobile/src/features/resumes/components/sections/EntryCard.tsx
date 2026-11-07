@@ -96,7 +96,7 @@ export function EntryCard({
             {confirmMessage}
           </Text>
           <View style={[styles.actions, { gap: spacing[3] }]}>
-            <Button label="Delete" variant="danger" haptic="medium" onPress={onDelete} />
+            <Button label="Delete" variant="danger" onPress={onDelete} />
             <Button label="Keep" variant="ghost" onPress={() => setConfirming(false)} />
           </View>
         </View>

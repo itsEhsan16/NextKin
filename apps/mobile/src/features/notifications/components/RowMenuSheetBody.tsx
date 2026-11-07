@@ -75,7 +75,6 @@ function MenuRow({ icon, label, caption, tone = 'default', onPress }: MenuRowPro
     <Pressable
       {...a11yButton(label, caption)}
       feedback="subtle"
-      haptic="light"
       onPress={onPress}
       // `sizes.listRow`, not the drawn 56. A local constant is scaled by the flat factor and so
       // landed at 42dp on a phone — under the 44pt floor, and read as cramped on a device. The

@@ -71,7 +71,6 @@ export function AiPill({ actionLabel, onPress, disabled = false, working = false
       {...a11yButton(actionLabel ?? 'AI')}
       accessibilityState={{ disabled, busy: working }}
       feedback="scale"
-      haptic="light"
       hitSlop={hitSlopFor(s(HEIGHT))}
       disabled={disabled}
       onPress={onPress}

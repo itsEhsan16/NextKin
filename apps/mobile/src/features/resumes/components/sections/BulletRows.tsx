@@ -50,7 +50,6 @@ function AddBullet({ entryName, onPress }: { entryName: string; onPress: () => v
     <Pressable
       {...a11yButton('Add bullet', `Adds a bullet to ${entryName}`)}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.add,

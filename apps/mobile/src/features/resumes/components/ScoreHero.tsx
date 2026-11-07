@@ -53,7 +53,6 @@ function ActionPill({
     <Pressable
       {...a11yButton(a11y, hint)}
       feedback="subtle"
-      haptic="selection"
       onPress={onPress}
       style={[styles.action, { backgroundColor: colors.brandSurface }]}
     >

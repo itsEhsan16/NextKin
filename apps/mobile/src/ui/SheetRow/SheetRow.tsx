@@ -67,7 +67,6 @@ export function SheetRow({
     <Pressable
       {...a11yButton(a11yLabel, description)}
       feedback="subtle"
-      haptic="light"
       onPress={onPress}
       style={[styles.row, { gap: s(GUTTER) }, style]}
     >

@@ -102,7 +102,6 @@ export function InterviewSourcePicker({
             <Pressable
               {...a11yButton(`Resume, ${resume.title}`, 'Choose a different resume')}
               feedback="subtle"
-              haptic="light"
               onPress={onChooseResume}
               style={[styles.row, { backgroundColor: colors.surfaceSubtle }]}
             >

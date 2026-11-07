@@ -11,19 +11,12 @@ import Animated, {
 import { a11yButton, useReducedMotion } from '@/lib';
 import { useTheme, type ColorToken } from '@/theme';
 import { Icon, type LineIconName } from '@/ui/Icon';
-import { Pressable, type PressHaptic } from '@/ui/Pressable';
+import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { Spinner } from '@/ui/motion';
 
 export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'ghost'
-  | 'danger'
-  | 'dangerOutline'
-  | 'brand'
-  | 'outline'
-  | 'soft';
+  'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerOutline' | 'brand' | 'outline' | 'soft';
 /** `xl` is the redesign's full pill (§172): 54 tall at 390, fully rounded, 16pt label. */
 export type ButtonSize = 'md' | 'lg' | 'xl';
 
@@ -38,7 +31,6 @@ export type ButtonProps = {
   leading?: ReactNode;
   loading?: boolean;
   disabled?: boolean;
-  haptic?: PressHaptic;
   /** Stretch to the container width. */
   block?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -64,7 +56,6 @@ export function Button({
   leading,
   loading = false,
   disabled = false,
-  haptic = 'light',
   block = false,
   style,
 }: ButtonProps) {
@@ -102,7 +93,6 @@ export function Button({
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       feedback="scale"
       pressDim
-      haptic={haptic}
       onPress={onPress}
       disabled={isDisabled}
       dimDisabled={!loading}

@@ -110,7 +110,6 @@ export function JobAboutSection({
           {...a11yButton(expanded ? 'Show less' : 'Show more')}
           accessibilityState={{ expanded }}
           feedback="subtle"
-          haptic="selection"
           hitSlop={hitSlop8}
           onPress={() => setExpanded((current) => !current)}
           style={[styles.toggle, { gap: spacing[2] - 2 }]}

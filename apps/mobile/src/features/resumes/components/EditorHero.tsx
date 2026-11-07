@@ -67,7 +67,6 @@ function HeroAction({
     <Pressable
       {...a11yButton(a11y, hint)}
       feedback="subtle"
-      haptic="selection"
       onPress={onPress}
       style={[styles.action, { backgroundColor: colors.brandSurface }]}
     >
@@ -120,7 +119,6 @@ export function EditorHero({
             <Pressable
               {...a11yButton(`${SCORE_LABEL} ${score}`, 'Opens the score breakdown')}
               feedback="scale"
-              haptic="light"
               onPress={onOpenScore}
             >
               <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">

@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import * as Haptics from 'expo-haptics';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
@@ -85,6 +86,15 @@ describe('FloatingTabBar', () => {
 
     // One frame later, so the highlight paints before the navigation's render.
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/resumes'));
+  });
+
+  it('is the one place that vibrates: one selection tick per tab press (§191)', async () => {
+    jest.mocked(Haptics.selectionAsync).mockClear();
+    await renderBar(['(tabs)']);
+
+    fireEvent.press(screen.getByRole('tab', { name: 'Jobs' }));
+    await waitFor(() => expect(Haptics.selectionAsync).toHaveBeenCalledTimes(1));
+    expect(Haptics.impactAsync).not.toHaveBeenCalled();
   });
 
   it('selects the pressed tab before the route catches up', async () => {

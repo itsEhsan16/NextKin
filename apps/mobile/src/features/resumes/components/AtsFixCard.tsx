@@ -1,9 +1,8 @@
-import { useEffect, useRef } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { ProfileCard } from '@/features/profile/components/cards';
-import { a11yButton, haptics, hitSlopFor, useReducedMotion } from '@/lib';
+import { a11yButton, hitSlopFor, useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -51,15 +50,6 @@ export function AtsFixCard({ row, onApply, onLayout }: AtsFixCardProps) {
   const applying = state === 'applying';
   // A fix applied while the user watched draws its tick in; one already applied rests drawn.
   const justDone = useBecameTrue(done);
-
-  // Once per item, tied to the tick appearing rather than to the request returning: the ref is
-  // per card, and a card is keyed by its check id, so a re-render can never sound it twice.
-  const celebrated = useRef(false);
-  useEffect(() => {
-    if (!done || celebrated.current) return;
-    celebrated.current = true;
-    haptics.success();
-  }, [done]);
 
   // Reduced motion drops both, rather than shortening them: a card resizing under the reader is
   // the movement the setting is asking us not to make.
@@ -148,7 +138,6 @@ export function AtsFixCard({ row, onApply, onLayout }: AtsFixCardProps) {
                 {...a11yButton('Apply', item.label)}
                 accessibilityState={{ disabled: applying, busy: applying }}
                 feedback="scale"
-                haptic="light"
                 hitSlop={hitSlopFor(s(APPLY_H))}
                 disabled={applying}
                 onPress={() => onApply(item)}

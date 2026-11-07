@@ -43,7 +43,6 @@ export function UsageMeter({ subscription, onUpgrade, style }: UsageMeterProps) 
         <Pressable
           {...a11yButton('Upgrade', 'Opens the plans page')}
           feedback="subtle"
-          haptic="selection"
           hitSlop={hitSlop8}
           onPress={onUpgrade}
           style={[styles.upgrade, { gap: s(UPGRADE_GAP) }]}

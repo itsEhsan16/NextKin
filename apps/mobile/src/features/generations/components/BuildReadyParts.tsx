@@ -78,7 +78,6 @@ function NextTile({ label, hint, icon, onPress }: TileProps) {
     <Pressable
       {...a11yButton(label, hint)}
       feedback="subtle"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.tile,

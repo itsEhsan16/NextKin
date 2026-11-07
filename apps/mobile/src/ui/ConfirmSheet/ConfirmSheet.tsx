@@ -73,7 +73,6 @@ export function ConfirmSheetBody({
           label={confirmLabel}
           variant={tone === 'danger' ? 'danger' : 'primary'}
           size="lg"
-          haptic="medium"
           loading={busy}
           onPress={onConfirm}
           block

@@ -82,7 +82,6 @@ export function SelectField({
         accessibilityState={{ disabled, expanded: open }}
         disabled={disabled}
         feedback="subtle"
-        haptic="selection"
         onPress={onPress}
       >
         {/* The box is a child so its animated edge can own borderColor; the Pressable scales it. */}

@@ -29,7 +29,6 @@ export function SortControl({ label, hint, onPress, style }: SortControlProps) {
     <Pressable
       {...a11yButton(`Sort by ${label}`, hint)}
       feedback="subtle"
-      haptic="selection"
       hitSlop={hitSlopFor(s(ROW_HEIGHT))}
       onPress={onPress}
       style={[styles.row, { gap: spacing[1] + 2 }, style]}

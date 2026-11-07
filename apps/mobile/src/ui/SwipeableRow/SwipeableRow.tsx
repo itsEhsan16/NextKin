@@ -16,7 +16,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-import { a11yButton, haptics, useReducedMotion, withReducedMotion } from '@/lib';
+import { a11yButton, useReducedMotion, withReducedMotion } from '@/lib';
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
@@ -173,7 +173,6 @@ export function SwipeableRow({
           if (past !== pastCommit.value) {
             pastCommit.set(past);
             armed.set(withTiming(past ? 1 : 0, fast));
-            if (past) runOnJS(haptics.light)();
           }
         })
         .onEnd((event) => {
@@ -305,7 +304,6 @@ function ActionPanel({ action, first, width, gap, radius, armed, onPress }: Acti
       <Pressable
         {...a11yButton(action.label)}
         feedback="subtle"
-        haptic="light"
         onPress={onPress}
         // The label keeps its own width and hugs the row's edge as the panel stretches.
         style={[styles.action, { width }]}

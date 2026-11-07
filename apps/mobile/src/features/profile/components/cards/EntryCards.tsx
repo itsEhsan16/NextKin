@@ -113,7 +113,6 @@ export function EntryCard({
         <Pressable
           {...a11yButton(summary, 'Opens this entry')}
           feedback="subtle"
-          haptic="light"
           onPress={onPress}
           style={styles.grow}
         >
@@ -122,7 +121,6 @@ export function EntryCard({
         <Pressable
           {...a11yButton(action.label)}
           feedback="scale"
-          haptic="light"
           hitSlop={hitSlopFor(s(ACTION))}
           onPress={action.onPress}
           style={[
@@ -144,7 +142,6 @@ export function EntryCard({
         <Pressable
           {...a11yButton(label, 'Opens this entry')}
           feedback="subtle"
-          haptic="light"
           onPress={onPress}
           style={{ gap: s(CARD_GAP) }}
         >
@@ -157,12 +154,7 @@ export function EntryCard({
   }
 
   return (
-    <Pressable
-      {...a11yButton(label, 'Opens this entry')}
-      feedback="subtle"
-      haptic="light"
-      onPress={onPress}
-    >
+    <Pressable {...a11yButton(label, 'Opens this entry')} feedback="subtle" onPress={onPress}>
       <ProfileCard style={{ padding: spacing[5], gap: s(CARD_GAP) }}>
         {header}
         {chipRow}
@@ -218,7 +210,6 @@ export function AddCard({
     <Pressable
       {...a11yButton(title, caption)}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.add,

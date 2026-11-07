@@ -38,7 +38,6 @@ export function FactSource({ provenance, what, label, onConfirm }: FactSourcePro
       <Pressable
         {...a11yButton(`Confirm ${what}`, 'Marks this as true, in your own word')}
         feedback="subtle"
-        haptic="light"
         hitSlop={hitSlop8}
         onPress={onConfirm}
       >

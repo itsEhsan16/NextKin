@@ -79,7 +79,6 @@ export function FaqRow({ item, expanded, onToggle }: FaqRowProps) {
           {...a11yButton(item.question)}
           accessibilityState={{ expanded }}
           feedback="subtle"
-          haptic="selection"
           hitSlop={expanded ? undefined : hitSlopFor(s(ROW_MIN))}
           onPress={onToggle}
           style={[styles.question, expanded ? null : styles.closed]}

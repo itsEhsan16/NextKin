@@ -74,7 +74,6 @@ export function AssistantComposer({
           <Pressable
             {...a11yButton(`Using ${contextTitle}`, 'Choose which resume the answers use')}
             feedback="subtle"
-            haptic="selection"
             disabled={!onPickContext}
             onPress={onPickContext}
             style={styles.chipLabel}
@@ -87,7 +86,6 @@ export function AssistantComposer({
             <Pressable
               {...a11yButton('Stop using this resume', 'Answers will be general')}
               feedback="scale"
-              haptic="selection"
               hitSlop={hitSlopFor(u(20))}
               onPress={onClearContext}
             >
@@ -111,7 +109,6 @@ export function AssistantComposer({
         <Pressable
           {...a11yButton('Choose a resume', 'Answers will use the resume you pick')}
           feedback="scale"
-          haptic="light"
           hitSlop={hitSlopFor(s(17 / 0.75))}
           disabled={disabled || !onPickContext}
           onPress={onPickContext}
@@ -143,7 +140,6 @@ export function AssistantComposer({
           {...a11yButton(busy ? 'Sending' : 'Send')}
           accessibilityState={{ disabled: !ready, busy }}
           feedback="scale"
-          haptic="light"
           disabled={!ready}
           onPress={onSend}
           style={[

@@ -132,7 +132,6 @@ function ExportSheetRow({ row, busy, inert, onPress }: RowProps) {
       )}
       accessibilityState={{ disabled: dimmed, busy }}
       feedback="subtle"
-      haptic="light"
       disabled={dimmed}
       onPress={onPress}
       style={[styles.row, dimmed ? { opacity: opacity.disabled } : null]}

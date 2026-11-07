@@ -4,7 +4,6 @@ import Animated from 'react-native-reanimated';
 
 import type { PlanId } from '@/data/models';
 import { track, usePlans, useSubscription, useUpgradePlan } from '@/data/queries';
-import { haptics } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 
 import { Screen } from '@/ui/Screen';
@@ -98,7 +97,6 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
           clearInterval(timer);
           setAwaitingCheckout(false);
           setPurchased(true);
-          haptics.success();
         }
       });
       if (tries >= CHECKOUT_POLLS) {
@@ -132,9 +130,6 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
           return;
         }
         setPurchased(true);
-        // Felt as well as read, alongside the toast (§85). Once: a mutate call's own callbacks
-        // run for the call that landed, and the sheet is busy while it is in flight.
-        haptics.success();
       },
     });
   }, [actions, pro, upgrade]);

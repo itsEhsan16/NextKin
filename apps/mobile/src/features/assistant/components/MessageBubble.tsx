@@ -131,7 +131,6 @@ export const MessageBubble = memo(function MessageBubble({
             <Pressable
               {...a11yButton('Copy answer')}
               feedback="subtle"
-              haptic="selection"
               onPress={() => void copy()}
               style={[styles.copy, { borderColor: colors.borderSoft }]}
             >

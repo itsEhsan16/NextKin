@@ -63,6 +63,19 @@ const rawTokenSelectors = ['@/theme', '@/theme/tokens', '@/theme/typography'].ma
   message: RAW_TOKEN_MESSAGE,
 }));
 
+// The app vibrates only on the bottom bar (owner, 2026-11-08, §191): nothing else may import the
+// haptics helper. `src/navigation` (the tab bar and the centre button) and the dev screens are
+// exempt below.
+const HAPTICS_ONLY_IN_NAV = {
+  name: '@/lib',
+  importNames: ['haptics'],
+  message: 'Only the bottom bar vibrates (§191). Do not add haptics here.',
+};
+const MOCK_IMPORTS = {
+  group: ['@/data/mock/*', '**/data/mock/*', '@nextkin/shared/mock', '@nextkin/shared/mock/*'],
+  message: 'Import data through @/data/queries hooks, not mock fixtures.',
+};
+
 module.exports = defineConfig([
   expoConfig,
   prettierConfig,
@@ -76,9 +89,15 @@ module.exports = defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: [HAPTICS_ONLY_IN_NAV],
           patterns: [
             {
-              group: ['@/data/mock/*', '**/data/mock/*', '@nextkin/shared/mock', '@nextkin/shared/mock/*'],
+              group: [
+                '@/data/mock/*',
+                '**/data/mock/*',
+                '@nextkin/shared/mock',
+                '@nextkin/shared/mock/*',
+              ],
               message: 'Import data through @/data/queries hooks, not mock fixtures.',
             },
           ],
@@ -109,6 +128,10 @@ module.exports = defineConfig([
   {
     files: ['src/data/**', '**/__tests__/**', '**/*.test.*', 'app/dev/**'],
     rules: { 'no-restricted-imports': 'off' },
+  },
+  {
+    files: ['src/navigation/**', 'src/ui/dev/**'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [MOCK_IMPORTS] }] },
   },
   {
     // Plain Node tooling: the TypeScript parser's scope never reaches these .js/.cjs files.

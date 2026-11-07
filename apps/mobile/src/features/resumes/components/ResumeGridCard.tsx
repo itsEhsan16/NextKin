@@ -51,7 +51,6 @@ export const ResumeGridCard = memo(function ResumeGridCard({
       <Pressable
         {...a11yButton(summarize(resume))}
         feedback="subtle"
-        haptic="light"
         onPress={() => onPress(resume)}
         onLongPress={() => onOpenMenu(resume)}
         style={{ gap: spacing[2] }}
@@ -89,7 +88,6 @@ export const ResumeGridCard = memo(function ResumeGridCard({
           <Pressable
             {...a11yButton(`More actions for ${resume.title}`)}
             feedback="subtle"
-            haptic="light"
             hitSlop={hitSlopFor(s(MENU_ICON))}
             onPress={() => onOpenMenu(resume)}
           >

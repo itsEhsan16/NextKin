@@ -186,7 +186,6 @@ export function NotificationsFirstUse({ onPreferences }: { onPreferences: () => 
       <Pressable
         {...a11yButton('Choose what you get notified about')}
         feedback="scale"
-        haptic="light"
         onPress={onPreferences}
         style={[
           styles.prefsCta,

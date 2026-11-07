@@ -36,7 +36,6 @@ export function AddSectionTile({ label, onPress, style }: AddSectionTileProps) {
     <Pressable
       {...a11yButton(copy)}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.tile,

@@ -71,7 +71,6 @@ export function EntryRow({
       {...a11yButton(spoken)}
       {...(accessibilityHint ? { accessibilityHint } : {})}
       feedback="subtle"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.row,

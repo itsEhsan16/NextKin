@@ -139,7 +139,6 @@ export function OnboardingScreen() {
 
         {last ? (
           <Pressable
-            haptic="medium"
             accessibilityRole="button"
             accessibilityLabel="Get Started"
             onPress={finish}

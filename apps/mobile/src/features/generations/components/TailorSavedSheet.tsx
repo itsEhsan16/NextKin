@@ -92,7 +92,6 @@ function FileRow({ file }: { file: TailorSavedFile }) {
           accessibilityState={{ disabled: !!file.saveDisabled, busy: !!file.saving }}
           disabled={file.saveDisabled || file.saving}
           feedback="subtle"
-          haptic="light"
           hitSlop={hitSlopFor(s(SAVE_H))}
           onPress={onSave}
         >
@@ -162,7 +161,6 @@ export function TailorSavedSheetBody({
             label={`Apply on ${domain}`}
             icon="LinkExternal01"
             size="lg"
-            haptic="medium"
             onPress={onApply}
             block
           />

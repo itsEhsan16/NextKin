@@ -230,7 +230,6 @@ export function FlowFooter({
           loading={primary.loading}
           disabled={primary.disabled}
           leading={leading(primary, colors.textOnDark)}
-          haptic="medium"
           onPress={primary.onPress}
           style={styles.primary}
         />

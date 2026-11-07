@@ -64,7 +64,6 @@ export const QuestionCard = memo(function QuestionCard({
           label={INTERVIEW_MARK_LABEL[mark]}
           icon={MARK_ICON[mark]}
           variant={selected ? 'primary' : 'ghost'}
-          haptic="selection"
           onPress={() => onMark(mark)}
           block
           style={{ height: s(MARK_H / 0.75), borderRadius: radii.full }}

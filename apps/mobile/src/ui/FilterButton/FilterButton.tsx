@@ -24,7 +24,6 @@ export function FilterButton({ count, onPress, style }: FilterButtonProps) {
         'Opens the filter sheet',
       )}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         {

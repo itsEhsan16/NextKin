@@ -51,7 +51,6 @@ export function AuthCta({
       accessibilityState={{ busy: loading, disabled: loading }}
       feedback="scale"
       pressDim
-      haptic="medium"
       disabled={loading}
       dimDisabled={false}
       onPress={onPress}

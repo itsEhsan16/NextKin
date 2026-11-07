@@ -53,7 +53,6 @@ export function CoverJobRow({
       accessibilityLabel={`${title}, ${meta}`}
       accessibilityState={{ selected }}
       feedback="subtle"
-      haptic="selection"
       onPress={onPress}
       style={[styles.row, look]}
     >
@@ -83,7 +82,6 @@ export function TailorFirstLink({ onPress }: { onPress: () => void }) {
       <Pressable
         {...a11yButton('Tailor a resume for it first', 'Opens Jobs to pick the job')}
         feedback="subtle"
-        haptic="light"
         hitSlop={hitSlopFor(s(LINK_H))}
         onPress={onPress}
         style={styles.link}

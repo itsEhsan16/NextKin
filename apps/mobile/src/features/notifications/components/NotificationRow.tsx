@@ -116,7 +116,6 @@ export const NotificationRow = memo(function NotificationRow({
         ]}
         onAccessibilityAction={onAccessibilityAction}
         feedback="subtle"
-        haptic="light"
         onPress={() => onOpen(notification)}
         onLongPress={() => onMore(notification)}
         style={[

@@ -65,7 +65,6 @@ export function GetStartedScreen() {
         }}
       >
         <Pressable
-          haptic="medium"
           accessibilityRole="button"
           accessibilityLabel="Create an account"
           onPress={() => router.push('/(auth)/sign-up')}
@@ -91,7 +90,6 @@ export function GetStartedScreen() {
         </Pressable>
 
         <Pressable
-          haptic="light"
           accessibilityRole="button"
           accessibilityLabel="Sign in"
           onPress={() => router.push('/(auth)/sign-in')}

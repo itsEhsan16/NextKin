@@ -38,7 +38,6 @@ export function AtsBadge({ score, onPress, size = 'md', memoryKey, style }: AtsB
     <Pressable
       {...a11yButton(`ATS score ${score}`, 'Opens the score breakdown')}
       feedback="scale"
-      haptic="light"
       hitSlop={hitSlopFor(s(metrics.badge))}
       onPress={onPress}
       disabled={!onPress}

@@ -72,7 +72,6 @@ export function OnboardingSlide({
       <View style={[styles.skipRow, { height: s(board(LAYOUT.skipHeight)) }]}>
         {onSkip ? (
           <Pressable
-            haptic="light"
             accessibilityRole="button"
             accessibilityLabel="Skip"
             accessibilityHint="Goes straight to creating an account"

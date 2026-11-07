@@ -56,7 +56,6 @@ export function BuildReviewCard({ draft, asks, facts = [], onEdit }: BuildReview
           <Pressable
             {...a11yButton('Edit the job details', 'Correct what we read from the job')}
             feedback="subtle"
-            haptic="light"
             onPress={onEdit}
             style={[
               styles.edit,

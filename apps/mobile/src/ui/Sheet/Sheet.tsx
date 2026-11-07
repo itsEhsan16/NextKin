@@ -64,8 +64,6 @@ export type SheetProps = {
    */
   progress?: SharedValue<number>;
   showHandle?: boolean;
-  /** Haptic on open. Figma motion note: "light haptic on open". */
-  hapticOnOpen?: boolean;
   accessibilityLabel?: string;
   contentStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
@@ -88,7 +86,6 @@ export function Sheet({
   avoidKeyboard = false,
   progress: externalProgress,
   showHandle = true,
-  hapticOnOpen = true,
   accessibilityLabel = 'Sheet',
   contentStyle,
   children,
@@ -135,7 +132,6 @@ export function Sheet({
     open,
     progress,
     reduced,
-    hapticOnOpen,
     avoidKeyboard,
     motion,
     onClosed: unmount,

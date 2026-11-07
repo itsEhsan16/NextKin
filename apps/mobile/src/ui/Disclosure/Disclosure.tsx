@@ -97,7 +97,6 @@ export function Disclosure(props: DisclosureProps) {
           {...a11yButton(props.title)}
           accessibilityState={{ expanded }}
           feedback="subtle"
-          haptic="selection"
           onPress={onToggle}
           style={[styles.row, { minHeight: sizes.listRow, gap: spacing[3] }]}
         >
@@ -129,7 +128,6 @@ export function Disclosure(props: DisclosureProps) {
         {...a11yButton(label)}
         accessibilityState={{ expanded }}
         feedback="subtle"
-        haptic="selection"
         hitSlop={hitSlop8}
         onPress={onToggle}
         style={[styles.toggle, { gap: s(TOGGLE_GAP) }]}

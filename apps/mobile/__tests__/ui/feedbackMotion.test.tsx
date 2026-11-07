@@ -37,23 +37,21 @@ describe('§85 feedback primitives', () => {
   });
 
   describe('Toast tones', () => {
-    it('buzzes once for a failure and not for a success', async () => {
+    it('never vibrates, for a failure or a success (§191)', async () => {
       const hide = jest.fn();
       await render(
         <SafeAreaProvider initialMetrics={metrics}>
           <Toast visible message="Saved" onHide={hide} />
         </SafeAreaProvider>,
       );
-      expect(Haptics.notificationAsync).not.toHaveBeenCalled();
-
       await screen.rerender(
         <SafeAreaProvider initialMetrics={metrics}>
           <Toast visible tone="error" message="The download failed." onHide={hide} />
         </SafeAreaProvider>,
       );
       expect(screen.getByText('The download failed.')).toBeOnTheScreen();
-      expect(Haptics.notificationAsync).toHaveBeenCalledTimes(1);
-      expect(Haptics.notificationAsync).toHaveBeenCalledWith('error');
+      expect(Haptics.notificationAsync).not.toHaveBeenCalled();
+      expect(Haptics.impactAsync).not.toHaveBeenCalled();
     });
 
     it('raises the app-wide toast from anywhere', async () => {

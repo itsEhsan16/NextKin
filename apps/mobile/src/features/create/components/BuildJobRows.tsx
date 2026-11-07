@@ -67,7 +67,6 @@ export function BuildJobRow({ job, variant, selected = false, onPress }: BuildJo
       accessibilityHint={radio ? undefined : 'Compares your profile with this job'}
       accessibilityState={radio ? { selected } : undefined}
       feedback="subtle"
-      haptic={radio ? 'selection' : 'light'}
       onPress={onPress}
       style={[
         styles.row,

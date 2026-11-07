@@ -26,7 +26,6 @@ export function GoogleButton({ height, logo, gap, hairline, onPress }: GoogleBut
 
   return (
     <Pressable
-      haptic="light"
       accessibilityRole="button"
       accessibilityLabel="Continue with Google"
       onPress={onPress}

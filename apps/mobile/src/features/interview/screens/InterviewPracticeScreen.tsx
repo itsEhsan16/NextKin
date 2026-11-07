@@ -7,7 +7,6 @@ import {
   type InterviewMark,
 } from '@/data/models';
 import { useInterviewSet, useMarkInterviewQuestion } from '@/data/queries';
-import { haptics } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { FilterChip } from '@/ui/Chip';
@@ -95,7 +94,6 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
   const applyMark = (pressed: Exclude<InterviewMark, 'unmarked'>) => {
     if (!current) return;
     const next = nextMark(current.mark, pressed);
-    if (next === 'confident') void haptics.success();
     mark.mutate({ questionId: current.id, mark: next });
   };
 

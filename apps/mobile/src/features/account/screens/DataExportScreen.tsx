@@ -10,7 +10,7 @@ import {
   useResumes,
   useSavedJobs,
 } from '@/data/queries';
-import { haptics, shareFile, writeTextFile } from '@/lib';
+import { shareFile, writeTextFile } from '@/lib';
 import type { FlowArt } from '@/features/create/components/FlowHero';
 import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
 import { useTheme } from '@/theme';
@@ -142,10 +142,7 @@ export function DataExportScreen(_props: DataExportScreenProps = {}) {
   const sawPreparing = useRef(false);
   useEffect(() => {
     if (exportStatus === 'preparing') sawPreparing.current = true;
-    if (exportStatus === 'ready' && sawPreparing.current) {
-      sawPreparing.current = false;
-      haptics.success();
-    }
+    if (exportStatus === 'ready' && sawPreparing.current) sawPreparing.current = false;
   }, [exportStatus]);
 
   const page = (children: ReactNode, footer?: ReactNode) => (

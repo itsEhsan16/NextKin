@@ -50,7 +50,6 @@ export function ProfileIdentity({ user, profile, onEdit }: ProfileIdentityProps)
           <Pressable
             {...a11yButton('Edit profile')}
             feedback="scale"
-            haptic="light"
             onPress={onEdit}
             style={{
               borderRadius: radii.full,

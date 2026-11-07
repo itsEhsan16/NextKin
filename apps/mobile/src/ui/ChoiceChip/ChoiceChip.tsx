@@ -37,7 +37,6 @@ export function ChoiceChip({
         radio ? { selected: on, disabled: locked } : { checked: on, disabled: locked }
       }
       feedback="scale"
-      haptic="selection"
       disabled={locked}
       dimDisabled={false}
       onPress={onPress}

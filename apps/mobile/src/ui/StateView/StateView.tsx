@@ -182,7 +182,6 @@ export function StateView({
         <Pressable
           {...a11yButton(secondaryLabel)}
           feedback="subtle"
-          haptic="selection"
           hitSlop={hitSlop8}
           onPress={onSecondary}
           style={{ marginTop: spacing[2] }}

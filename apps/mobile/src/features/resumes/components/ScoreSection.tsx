@@ -103,7 +103,6 @@ export function ScoreSection({ section, staggerBase, enter, onFix }: ScoreSectio
               <Pressable
                 {...a11yButton(`Fix: ${item.label}`, 'Opens the AI fix flow')}
                 feedback="subtle"
-                haptic="selection"
                 onPress={() => onFix(item)}
                 style={[
                   styles.fixPill,

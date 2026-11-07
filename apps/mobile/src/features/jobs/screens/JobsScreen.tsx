@@ -252,7 +252,6 @@ export function JobsScreen() {
                 <Pressable
                   {...a11yButton('Clear all filters')}
                   feedback="subtle"
-                  haptic="selection"
                   hitSlop={hitSlop8}
                   onPress={clearFilters}
                 >

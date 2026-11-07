@@ -175,7 +175,6 @@ export function OptionSheetBody<K extends string = string>({
               accessibilityState={{ selected, disabled: option.disabled === true }}
               disabled={option.disabled}
               feedback="subtle"
-              haptic="selection"
               hitSlop={card ? undefined : hitSlop8}
               onPress={() => onSelect(option.key)}
               style={[

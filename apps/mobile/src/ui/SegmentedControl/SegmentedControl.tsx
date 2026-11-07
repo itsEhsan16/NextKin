@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
-import { a11yButton, a11yHiddenWhen, haptics, hitSlopFor } from '@/lib';
+import { a11yButton, a11yHiddenWhen, hitSlopFor } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -78,7 +78,6 @@ export function SegmentedControl<K extends string = string>({
   const select = useCallback(
     (key: K) => {
       if (key === value) return;
-      haptics.selection();
       onChange(key);
     },
     [onChange, value],
@@ -126,7 +125,6 @@ export function SegmentedControl<K extends string = string>({
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             feedback="subtle"
-            haptic="none"
             hitSlop={compact ? verticalSlop : undefined}
             onPress={() => select(segment.key)}
             style={styles.segment}

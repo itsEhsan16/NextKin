@@ -36,7 +36,6 @@ export function JobCompanyCard({ job, onPress }: JobCompanyCardProps) {
         'Opens the company profile',
       )}
       feedback="subtle"
-      haptic="light"
       onPress={() => onPress(job)}
     >
       <Card shadow="jobCard" padding={s(19)}>

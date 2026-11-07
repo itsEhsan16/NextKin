@@ -39,7 +39,6 @@ export function TailorResumeCta({ onPress }: TailorResumeCtaProps) {
         'Creates a linked variant; match updates live',
       )}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.row,

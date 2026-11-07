@@ -41,7 +41,6 @@ export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
       <Pressable
         {...a11yButton(`${plan}, ${summary}`, 'Opens the plans page')}
         feedback="subtle"
-        haptic="light"
         // Wrapped, so the press event is never handed on as an argument.
         onPress={() => onUpgrade()}
         style={[

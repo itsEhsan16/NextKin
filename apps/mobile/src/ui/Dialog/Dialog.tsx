@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { haptics, useReducedMotion, withReducedMotion } from '@/lib';
+import { useReducedMotion, withReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 
 export type DialogProps = {
@@ -45,7 +45,6 @@ export function Dialog({ open, onClose, accessibilityLabel, children }: DialogPr
 
   useEffect(() => {
     if (open) {
-      haptics.light();
       progress.set(withSpring(1, withReducedMotion(reduced, motion.springs.sheetIn)));
       return;
     }

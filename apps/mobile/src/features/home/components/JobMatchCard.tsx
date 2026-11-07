@@ -44,7 +44,6 @@ export const JobMatchCard = memo(function JobMatchCard({ job, width, onPress }: 
     <Pressable
       {...a11yButton(jobSummary(job))}
       feedback="scale"
-      haptic="light"
       onPress={() => onPress(job)}
       style={{ width }}
     >

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { haptics, hitSlopFor, useReducedMotion, withReducedMotion } from '@/lib';
+import { hitSlopFor, useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 
@@ -56,13 +56,9 @@ export function Toggle({ value, onChange, label, disabled = false, style }: Togg
       accessibilityLabel={label}
       accessibilityState={{ checked: value, disabled }}
       feedback="none"
-      haptic="none"
       hitSlop={hitSlopFor(s(TRACK.height))}
       disabled={disabled}
-      onPress={() => {
-        haptics.selection();
-        onChange(!value);
-      }}
+      onPress={() => onChange(!value)}
       style={[
         {
           width: s(TRACK.width),

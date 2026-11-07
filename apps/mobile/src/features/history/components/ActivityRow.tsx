@@ -93,7 +93,6 @@ export const ActivityRow = memo(function ActivityRow({ entry, onOpen }: Activity
       accessibilityLabel={summary}
       accessibilityHint="Opens what this was about"
       feedback="scale"
-      haptic="light"
       onPress={() => onOpen(entry)}
     >
       {body}

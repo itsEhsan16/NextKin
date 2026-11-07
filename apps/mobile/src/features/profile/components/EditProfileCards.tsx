@@ -74,7 +74,6 @@ export function EditIdentityCard({
           accessibilityState={{ busy, disabled: busy }}
           disabled={busy}
           feedback="scale"
-          haptic="light"
           hitSlop={hitSlopFor(s(PHOTO_BUTTON_H))}
           onPress={onPick}
           style={[
@@ -114,7 +113,6 @@ export function AccountCard({ email, onPress }: { email: string; onPress: () => 
       <Pressable
         {...a11yButton(`Email, ${email}`, 'Opens email and password settings')}
         feedback="subtle"
-        haptic="light"
         onPress={onPress}
         style={[styles.row, { borderRadius: radii.xl, backgroundColor: colors.surfaceSubtle }]}
       >

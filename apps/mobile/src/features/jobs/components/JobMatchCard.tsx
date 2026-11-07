@@ -102,7 +102,6 @@ export function JobMatchCard({ band, criteria, basis, onSeeFullCriteria }: JobMa
       <Pressable
         {...a11yButton('See full criteria', 'Opens the complete match breakdown')}
         feedback="subtle"
-        haptic="selection"
         hitSlop={hitSlop8}
         onPress={onSeeFullCriteria}
         style={[styles.link, { gap: spacing[2] - 2 }]}

@@ -14,19 +14,16 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-import { haptics, useReducedMotion } from '@/lib';
+import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 
 const AnimatedRNPressable = Animated.createAnimatedComponent(RNPressable);
 
 export type PressFeedback = 'scale' | 'subtle' | 'fab' | 'none';
-export type PressHaptic = 'light' | 'medium' | 'selection' | 'none';
 
 export type PressableProps = Omit<RNPressableProps, 'style'> & {
   /** Visual press feedback. `scale` = 0.97 (cards, tiles), `subtle` = 0.985 (rows). */
   feedback?: PressFeedback;
-  /** Haptic fired on press (before `onPress`). Defaults to none. */
-  haptic?: PressHaptic;
   /**
    * Dim to `opacity.disabled` while disabled (default). A control that is disabled only because
    * it is busy — a Button showing its spinner — keeps full strength instead.
@@ -48,8 +45,8 @@ export type PressableProps = Omit<RNPressableProps, 'style'> & {
 };
 
 /**
- * The app's only tappable surface. Runs the press scale on the UI thread and fires the
- * semantic haptic so every interactive element feels identical.
+ * The app's only tappable surface. Runs the press scale on the UI thread so every interactive
+ * element feels identical. It never vibrates: only the bottom bar does (owner, §191).
  *
  * Opacity is animated too: whatever opacity the surface should show — the caller's own, or the
  * disabled dim, which wins — is eased to rather than set, so enabling or disabling a control
@@ -57,7 +54,6 @@ export type PressableProps = Omit<RNPressableProps, 'style'> & {
  */
 export function Pressable({
   feedback = 'scale',
-  haptic = 'none',
   dimDisabled = true,
   pressDim = false,
   pressProgress,
@@ -119,20 +115,12 @@ export function Pressable({
     [motion.timings.press, onPressOut, pressed],
   );
 
-  const handlePress = useCallback(
-    (event: GestureResponderEvent) => {
-      if (haptic !== 'none') haptics[haptic]();
-      onPress?.(event);
-    },
-    [haptic, onPress],
-  );
-
   return (
     <AnimatedRNPressable
       accessibilityRole="button"
       {...rest}
       disabled={disabled}
-      onPress={handlePress}
+      onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[style, animatedStyle]}

@@ -77,7 +77,6 @@ export function ListRow({
       {...a11yButton(accessibilityLabel ?? (value ? `${label}, ${value}` : label))}
       {...(accessibilityHint ? { accessibilityHint } : {})}
       feedback="subtle"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.row,

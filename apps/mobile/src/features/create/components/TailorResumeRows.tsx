@@ -84,7 +84,6 @@ export function ResumeOptionRow({
       accessibilityLabel={`${resume.title}, ${meta}`}
       accessibilityState={{ selected }}
       feedback="subtle"
-      haptic="selection"
       onPress={onPress}
       style={[styles.row, look]}
     >
@@ -185,7 +184,6 @@ export function PhoneFileRow({
         <Pressable
           {...a11yButton('Try another', 'Pick a different file from your phone')}
           feedback="scale"
-          haptic="light"
           hitSlop={hitSlopFor(s(RETRY_H))}
           onPress={onRetry}
           style={[
@@ -213,7 +211,6 @@ export function PhoneFileRow({
       accessibilityLabel={`${fileName}, ${subtitle}`}
       accessibilityState={{ selected, busy: reading }}
       feedback="subtle"
-      haptic="selection"
       // Not `disabled`: that dims the row, and a file being read is what the sheet is busy with.
       onPress={reading ? undefined : onPress}
       style={[styles.row, pickedLook]}
@@ -246,7 +243,6 @@ export function UploadPromptRow({ onPress }: { onPress: () => void }) {
     <Pressable
       {...a11yButton('Upload a resume', 'PDF or DOCX from your phone')}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.upload,
@@ -279,7 +275,6 @@ export function UploadDifferentLink({ onPress }: { onPress: () => void }) {
     <Pressable
       {...a11yButton('Upload a different file')}
       feedback="subtle"
-      haptic="light"
       hitSlop={hitSlopFor(s(LINK_H))}
       onPress={onPress}
       style={styles.link}

@@ -101,7 +101,6 @@ export function ResumeProgressCard({
           <Pressable
             {...a11yButton(resumeSummary(resume))}
             feedback="subtle"
-            haptic="light"
             onPress={() => onPressResume(resume)}
             style={[styles.row, { gap: spacing[4] }]}
           >

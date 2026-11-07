@@ -61,7 +61,6 @@ export const TabBarItem = memo(function TabBarItem({
       accessibilityLabel={label}
       accessibilityState={{ selected: focused }}
       feedback="subtle"
-      haptic="none"
       onPress={handlePress}
       style={[styles.tab, slot]}
     >

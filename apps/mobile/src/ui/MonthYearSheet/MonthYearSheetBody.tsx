@@ -169,7 +169,6 @@ export function MonthYearSheetBody({
         label="Done"
         size="lg"
         block
-        haptic="medium"
         onPress={() => onSelect(resolveSelection(sel, allowPresent))}
       />
     </View>

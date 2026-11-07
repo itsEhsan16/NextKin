@@ -118,7 +118,6 @@ export function VsPill({
     <Pressable
       {...a11yButton(spoken, hint)}
       feedback="scale"
-      haptic="light"
       hitSlop={hitSlopFor(s(CHANGE_H))}
       onPress={onPress}
       style={[styles.change, { borderRadius: radii.full, backgroundColor: colors.surfaceSubtle }]}

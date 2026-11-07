@@ -50,7 +50,6 @@ export function StillStuckCard({ label, onPress }: StillStuckCardProps) {
       <Pressable
         {...a11yButton(label)}
         feedback="scale"
-        haptic="light"
         hitSlop={hitSlopFor(s(BUTTON_H))}
         onPress={onPress}
         style={[

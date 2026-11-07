@@ -71,7 +71,6 @@ export const JobPickCard = memo(function JobPickCard({
       accessibilityActions={actions}
       onAccessibilityAction={handleAction}
       feedback="scale"
-      haptic="light"
       onPress={() => onPress(job)}
       style={{ width }}
     >
@@ -96,7 +95,6 @@ export const JobPickCard = memo(function JobPickCard({
               {...a11yButton(saveLabel)}
               accessibilityState={{ selected: job.isSaved }}
               feedback="scale"
-              haptic="light"
               hitSlop={hitSlopFor(s(PICK.bookmark))}
               onPress={() => onToggleSave(job)}
             >

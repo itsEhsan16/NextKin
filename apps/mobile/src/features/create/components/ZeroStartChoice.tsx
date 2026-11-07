@@ -34,7 +34,6 @@ function StartFromNothingRow({ onPress }: { onPress: () => void }) {
         'We write a first draft for this job from your name and years of work',
       )}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.row,

@@ -108,7 +108,6 @@ export const JobCard = memo(function JobCard({
       accessibilityActions={actions}
       onAccessibilityAction={handleAction}
       feedback="subtle"
-      haptic="light"
       onPress={() => onPress(job)}
       style={style}
     >

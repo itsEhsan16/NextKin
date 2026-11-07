@@ -59,7 +59,6 @@ export function LegalContents({ sections, onJump }: LegalContentsProps) {
           <Pressable
             {...a11yButton(`${index + 1}. ${section.heading}`, 'Scrolls to this section')}
             feedback="subtle"
-            haptic="selection"
             hitSlop={hitSlopFor(s(ROW_MIN))}
             onPress={() => onJump(index)}
             style={styles.row}

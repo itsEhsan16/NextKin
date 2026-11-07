@@ -58,7 +58,6 @@ export function JobCardFooter({
           <Pressable
             {...a11yButton(tailorLabel ?? 'Tailor with AI')}
             feedback="scale"
-            haptic="light"
             hitSlop={hitSlopFor(s(FOOTER.box))}
             onPress={onTailor}
             style={styles.action}
@@ -70,7 +69,6 @@ export function JobCardFooter({
             {...a11yButton(saveLabel ?? 'Save')}
             accessibilityState={{ selected: saved }}
             feedback="scale"
-            haptic="light"
             hitSlop={hitSlopFor(s(FOOTER.box))}
             onPress={onToggleSave}
             style={styles.action}

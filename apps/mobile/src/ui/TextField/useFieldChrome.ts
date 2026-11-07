@@ -7,7 +7,7 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-import { haptics, useReducedMotion, withReducedMotion } from '@/lib';
+import { useReducedMotion, withReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 import { useSelectionProgress } from '@/ui/motion';
 
@@ -22,7 +22,7 @@ export type FieldChromeColors = {
 
 /**
  * What every text box in the app owes its user, whatever it looks like: an edge that answers
- * focus, an error that fades in and is said out loud once, and a warning haptic with it.
+ * focus, and an error that fades in and is said out loud once (no vibration, §191).
  * `TextField`, `SearchField` and the auth boxes share it, so none of them can ship without a
  * visible focus again — the auth and search boxes had none.
  *
@@ -59,7 +59,6 @@ export function useFieldChrome(error: string | undefined, colors: FieldChromeCol
     previousError.current = error;
     if (!error || wasShowing) return;
     AccessibilityInfo.announceForAccessibility(error);
-    haptics.warning();
   }, [error]);
 
   return {

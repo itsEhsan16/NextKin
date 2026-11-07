@@ -25,7 +25,6 @@ export function NextFab({ onPress, label }: NextFabProps) {
 
   return (
     <Pressable
-      haptic="medium"
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}

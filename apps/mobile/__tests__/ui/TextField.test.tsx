@@ -1,11 +1,12 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
+import { AccessibilityInfo } from 'react-native';
 
 import { TextField } from '@/ui/TextField';
 
-const notificationAsync = jest.mocked(Haptics.notificationAsync);
+const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
 
-/** `haptics.warning()` hops a microtask before it reaches expo-haptics — see src/lib/haptics.ts. */
+/** Lets the error effect run. */
 const flush = async () => {
   await act(async () => {});
 };
@@ -31,7 +32,9 @@ describe('TextField', () => {
     await flush();
 
     expect(screen.getByText('Enter a valid email').props.accessibilityLiveRegion).toBe('polite');
-    expect(notificationAsync).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledTimes(1);
+    // Said, never felt: only the bottom bar vibrates (§191).
+    expect(Haptics.notificationAsync).not.toHaveBeenCalled();
 
     // The user keeps typing towards the fix; the same error is still showing, so re-announcing
     // it would talk over them.
@@ -39,7 +42,7 @@ describe('TextField', () => {
       <TextField label="Email" value="ada@" onChangeText={jest.fn()} error="Enter a valid email" />,
     );
     await flush();
-    expect(notificationAsync).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledTimes(1);
 
     // And the message itself sharpens while the field stays in error — the ref, not the effect's
     // dependency array, is what keeps this one quiet.
@@ -47,7 +50,7 @@ describe('TextField', () => {
       <TextField label="Email" value="ada@" onChangeText={jest.fn()} error="Enter a work email" />,
     );
     await flush();
-    expect(notificationAsync).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledTimes(1);
   });
 
   it('counts the value against the limit', async () => {

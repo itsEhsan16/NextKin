@@ -79,7 +79,6 @@ export function SearchField({
           <Pressable
             {...a11yButton('Clear search text')}
             feedback="subtle"
-            haptic="selection"
             hitSlop={hitSlopFor(clearBox)}
             onPress={() => onChangeText('')}
           >

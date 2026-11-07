@@ -60,7 +60,6 @@ function Cta({
     <Pressable
       {...a11yButton(label)}
       feedback="scale"
-      haptic="light"
       onPress={onPress}
       style={[
         styles.cta,

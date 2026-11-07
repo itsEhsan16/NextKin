@@ -32,15 +32,13 @@ export function BuildSourcePill({
     <Pressable
       {...a11yButton(`Built from ${shortLabel(source)}. Change`)}
       feedback="subtle"
-      haptic="light"
       onPress={onPress}
-      style={[styles.pill, { backgroundColor: colors.surfaceCard, borderColor: colors.borderDefault }]}
+      style={[
+        styles.pill,
+        { backgroundColor: colors.surfaceCard, borderColor: colors.borderDefault },
+      ]}
     >
-      <Icon
-        name={source.kind === 'profile' ? 'User01' : 'File04'}
-        size="sm"
-        color={colors.brand}
-      />
+      <Icon name={source.kind === 'profile' ? 'User01' : 'File04'} size="sm" color={colors.brand} />
       <Text variant="footnote" color="textSecondary">
         From
       </Text>

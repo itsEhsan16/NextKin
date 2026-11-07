@@ -60,7 +60,6 @@ export function CompletenessCard({ profile, onOpenStep }: CompletenessCardProps)
               <Pressable
                 {...a11yButton(step.label, nextStepHint(step.id))}
                 feedback="scale"
-                haptic="light"
                 onPress={() => onOpenStep(step.id)}
                 style={[
                   styles.chip,

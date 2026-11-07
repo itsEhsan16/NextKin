@@ -226,7 +226,6 @@ export function ProfileScreen() {
         <Pressable
           {...a11yButton('Sign out', 'Asks to confirm')}
           feedback="subtle"
-          haptic="light"
           onPress={actions.signOut}
           style={[styles.signOut, { minHeight: sizes.listRow, gap: spacing[2] + 2 }]}
         >

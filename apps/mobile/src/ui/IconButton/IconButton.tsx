@@ -3,7 +3,7 @@ import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { a11yButton, hitSlopFor } from '@/lib';
 import { useTheme, type ColorToken } from '@/theme';
 import { Icon, type IconSize, type LineIconName } from '@/ui/Icon';
-import { Pressable, type PressHaptic } from '@/ui/Pressable';
+import { Pressable } from '@/ui/Pressable';
 
 export type IconButtonProps = {
   /** Untitled UI line icon, the set the web app uses. */
@@ -21,7 +21,6 @@ export type IconButtonProps = {
   size?: number;
   /** Bordered circle (header) or flat (inline). */
   variant?: 'outline' | 'filled' | 'ghost';
-  haptic?: PressHaptic;
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -37,7 +36,6 @@ export function IconButton({
   dot = false,
   size,
   variant = 'outline',
-  haptic = 'light',
   onPress,
   disabled,
   style,
@@ -62,7 +60,6 @@ export function IconButton({
       {...a11yButton(label)}
       accessibilityState={{ disabled: !!disabled }}
       feedback="scale"
-      haptic={haptic}
       hitSlop={hitSlopFor(box)}
       onPress={onPress}
       disabled={disabled}

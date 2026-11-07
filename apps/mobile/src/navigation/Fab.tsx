@@ -8,7 +8,7 @@ import Animated, {
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import FabSparkleIcon from '../../assets/icons/nav/fab-sparkle.svg';
-import { a11yButton, useReducedMotion } from '@/lib';
+import { haptics, a11yButton, useReducedMotion } from '@/lib';
 import { useTabBarLayout, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 
@@ -118,8 +118,11 @@ export function Fab() {
         // The deeper FAB press (0.92), shared with the glow so the two move as one.
         feedback="fab"
         pressProgress={pressed}
-        haptic="light"
-        onPress={() => router.push('/assistant')}
+        onPress={() => {
+          // Part of the bottom bar: one of the only places the app vibrates (owner, §191).
+          haptics.light();
+          router.push('/assistant');
+        }}
         style={[
           styles.fab,
           {

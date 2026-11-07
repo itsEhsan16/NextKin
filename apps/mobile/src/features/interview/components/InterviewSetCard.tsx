@@ -61,7 +61,6 @@ export const InterviewSetCard = memo(function InterviewSetCard({
         'Opens practice. Long press to delete.',
       )}
       feedback="scale"
-      haptic="light"
       onPress={() => onOpen(set)}
       onLongPress={() => onLongPress(set)}
     >

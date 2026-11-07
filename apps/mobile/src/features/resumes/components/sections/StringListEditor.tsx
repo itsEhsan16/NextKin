@@ -41,7 +41,6 @@ function EntryChip({
     <Pressable
       {...a11yButton(`${label}, ${noun}`, `Removes ${label}`)}
       feedback="subtle"
-      haptic="selection"
       hitSlop={hitSlopFor(s(CHIP_HEIGHT))}
       onPress={onRemove}
       style={[

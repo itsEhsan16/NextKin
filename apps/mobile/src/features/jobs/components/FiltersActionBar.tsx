@@ -57,7 +57,6 @@ export function FiltersActionBar({ count, loading, onReset, onApply }: FiltersAc
         label={label}
         loading={loading}
         disabled={empty}
-        haptic="medium"
         onPress={onApply}
         style={styles.apply}
       />

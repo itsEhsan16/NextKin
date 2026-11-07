@@ -64,7 +64,6 @@ export function JdSkillMenuSheet<K extends string = string>({
             key={command.key}
             {...a11yButton(command.label)}
             feedback="subtle"
-            haptic="light"
             hitSlop={hitSlop8}
             onPress={() => onSelect(command.key)}
             style={[styles.row, { minHeight: sizes.listRow }]}

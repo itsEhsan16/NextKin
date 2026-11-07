@@ -63,7 +63,6 @@ export function RubricCard({ component, art, expanded, onToggle }: RubricCardPro
           {...a11yButton(`${component.label}, ${component.weight}% of the score`)}
           accessibilityState={{ expanded }}
           feedback="subtle"
-          haptic="selection"
           hitSlop={hitSlopFor(s(ICON_SLOT_H))}
           onPress={onToggle}
           style={styles.row}

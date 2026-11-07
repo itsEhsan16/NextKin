@@ -126,7 +126,6 @@ export function IdentityFields({ draft, errors, onChange, onBlurField }: Identit
                 key={city}
                 {...a11yButton(`Use ${city}`)}
                 feedback="scale"
-                haptic="selection"
                 hitSlop={hitSlop8}
                 onPress={() => onChange('location', city)}
               >

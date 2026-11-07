@@ -54,7 +54,6 @@ export function AssistantWelcome({
             <Pressable
               {...a11yButton(`Ask: ${item.prompt}`)}
               feedback="scale"
-              haptic="selection"
               disabled={disabled}
               onPress={() => onAsk(item.prompt)}
               style={[
@@ -94,7 +93,6 @@ export function FollowUpChips({
           key={prompt}
           {...a11yButton(`Ask: ${prompt}`)}
           feedback="subtle"
-          haptic="selection"
           onPress={() => onAsk(prompt)}
           style={[styles.chip, { borderColor: colors.brandBorder }]}
         >

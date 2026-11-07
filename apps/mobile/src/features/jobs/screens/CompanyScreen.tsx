@@ -133,7 +133,6 @@ export function CompanyScreen({ jobId }: CompanyScreenProps) {
           <Pressable
             {...a11yButton(`Website, ${website}`, 'Opens in your browser')}
             feedback="subtle"
-            haptic="light"
             onPress={() => openWebsite(current.companyWebsite)}
             style={styles.row}
           >
