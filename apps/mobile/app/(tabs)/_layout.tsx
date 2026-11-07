@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router/js-tabs';
 import { memo, type ComponentProps, type PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { CopiedLinkHost, HomeMenuHost, useHomeStore } from '@/features/home';
+import { CopiedLinkHost, FirstResumeHost, HomeMenuHost, useHomeStore } from '@/features/home';
 import {
   FiltersSheetHost,
   JobSortSheetHost,
@@ -185,6 +185,8 @@ export default function TabsLayout() {
       <ResumeMenuHost />
       <ResumeSortSheetHost />
       <HomeMenuHost />
+      {/* Home's first-resume pop-up (§185): over the bar, like the menu. */}
+      <FirstResumeHost />
       {/* TAILOR 00c's dialog dims the chrome too, as its board draws the nav under the scrim. */}
       <CopiedLinkHost />
       {/* Raised from the same menu, so it shares that z-order; it also owns the library's

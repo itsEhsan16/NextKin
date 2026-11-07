@@ -1,5 +1,4 @@
 import type { Resume } from '@/data/models';
-import { storage } from '@/lib/storage';
 
 /**
  * Where a new account stands on the way to its first resume made for a job (V2 §7.2's guided
@@ -9,7 +8,10 @@ import { storage } from '@/lib/storage';
 export type FirstResumeStage = 'add-resume' | 'pick-job' | 'done';
 
 const isFinishedResume = (resume: Resume): boolean =>
-  resume.docType !== 'cover_letter' && resume.status === 'ready' && !resume.draft && !resume.archived;
+  resume.docType !== 'cover_letter' &&
+  resume.status === 'ready' &&
+  !resume.draft &&
+  !resume.archived;
 
 export function firstResumeStage(resumes: readonly Resume[], roles: number): FirstResumeStage {
   const finished = resumes.filter(isFinishedResume);
@@ -17,11 +19,19 @@ export function firstResumeStage(resumes: readonly Resume[], roles: number): Fir
   return finished.length > 0 || roles > 0 ? 'pick-job' : 'add-resume';
 }
 
-const DISMISSED_KEY = 'home.firstResumeDismissed';
+/**
+ * Home's first-resume pop-up (§185) is put off for the rest of this launch by "Not now", and asks
+ * again on the next one; a new sign-up starts it fresh. In memory on purpose: it never nags twice
+ * in a sitting, and never goes quiet for good while there is still no resume.
+ */
+let snoozed = false;
 
-/** The card on Home can be closed for good on this device, and a new sign-up brings it back. */
-export const firstResumeCard = {
-  isDismissed: (): boolean => storage.get<boolean>(DISMISSED_KEY) === true,
-  dismiss: (): void => storage.set(DISMISSED_KEY, true),
-  restore: (): void => storage.remove(DISMISSED_KEY),
+export const firstResumePrompt = {
+  isSnoozed: (): boolean => snoozed,
+  snooze: (): void => {
+    snoozed = true;
+  },
+  reset: (): void => {
+    snoozed = false;
+  },
 };

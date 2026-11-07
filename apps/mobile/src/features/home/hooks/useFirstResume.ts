@@ -1,15 +1,19 @@
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useProfile, useResumes } from '@/data/queries';
 import { useFirstRunStore } from '@/features/auth';
-import { firstResumeCard, firstResumeStage } from '@/features/create/firstResume';
+import { firstResumePrompt, firstResumeStage } from '@/features/create/firstResume';
 import { useSetupAnswers } from '@/features/create/setupAnswers';
 
+/** Home settles first, then the question rises: never on top of the page arriving. */
+const PROMPT_DELAY_MS = 700;
+
 /**
- * Home's part in a new account's first resume (toreview §145.2). Straight after sign-up it opens
- * the first-resume screen, once. Whoever skips that, or came back later, gets the card until a
- * resume has been made for a job. An account that already has what it needs is left alone.
+ * The first-resume nudge on Home (owner, 2026-11-08, §185). A brand-new account is taken to
+ * set-up or the start screen right after sign-up, as before. Someone who skips that and still has
+ * no resume is asked on Home with a pop-up: upload, or fill in their details one question at a
+ * time. "Not now" puts it off until the next launch. The old "Your first resume" card is gone.
  */
 export function useFirstResume() {
   const router = useRouter();
@@ -17,7 +21,8 @@ export function useFirstResume() {
   const profile = useProfile();
   const justSignedUp = useFirstRunStore((state) => state.justSignedUp);
   const consume = useFirstRunStore((state) => state.consume);
-  const [dismissed, setDismissed] = useState(firstResumeCard.isDismissed);
+  const [snoozed, setSnoozed] = useState(firstResumePrompt.isSnoozed);
+  const [ripe, setRipe] = useState(false);
 
   const stage = useMemo(
     () =>
@@ -30,21 +35,37 @@ export function useFirstResume() {
   useEffect(() => {
     if (!justSignedUp || !stage) return;
     consume();
-    // A new account answers the two quick questions first, then adds a resume (§172).
     if (stage === 'add-resume')
       router.push(useSetupAnswers.getState().done ? '/create/start' : '/create/setup');
   }, [consume, justSignedUp, router, stage]);
 
-  const dismiss = useCallback(() => {
-    firstResumeCard.dismiss();
-    setDismissed(true);
+  // Only while Home is the screen in front: never over a pushed screen or another tab.
+  const focused = usePathname() === '/';
+
+  const wants = stage === 'add-resume' && !snoozed && !justSignedUp;
+  useEffect(() => {
+    if (!wants || !focused) return undefined;
+    const timer = setTimeout(() => setRipe(true), PROMPT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [focused, wants]);
+
+  // Any answer, or "Not now", puts the question away for this launch: it never re-asks on the
+  // way back from the screen it just opened.
+  const snooze = useCallback(() => {
+    firstResumePrompt.snooze();
+    setSnoozed(true);
   }, []);
 
   return {
-    /** The card's stage, or undefined when there is no card to show. */
-    cardStage: stage && stage !== 'done' && !dismissed ? stage : undefined,
-    dismiss,
-    addResume: () => router.push('/create/start'),
-    pickJob: () => router.push('/create/build'),
+    promptOpen: wants && focused && ripe,
+    later: snooze,
+    upload: () => {
+      snooze();
+      router.push({ pathname: '/create/upload', params: { next: 'job' } });
+    },
+    fillDetails: () => {
+      snooze();
+      router.push('/create/zero-resume');
+    },
   };
 }

@@ -25,14 +25,12 @@ import { layoutTransition } from '@/ui/motion';
 
 import { HiddenPicksNote } from '../components/HiddenPicksNote';
 import { HomeHeader } from '../components/HomeHeader';
-import { FirstResumeCard } from '../components/FirstResumeCard';
 import { HomeSkeleton } from '../components/HomeSkeleton';
 import { QuickStartCard } from '../components/QuickStartCard';
 import { ResumeProgressCard } from '../components/ResumeProgressCard';
 import { ShortcutGrid } from '../components/ShortcutGrid';
 import { TopJobMatches } from '../components/TopJobMatches';
 import { useCopiedJobLink } from '../hooks/useCopiedJobLink';
-import { useFirstResume } from '../hooks/useFirstResume';
 import { useHomeActions } from '../hooks/useHomeActions';
 
 const SECTION_GAP = 20;
@@ -67,7 +65,6 @@ function Section({ index, animate, children }: SectionProps) {
 export function HomeScreen() {
   const { spacing, s, u } = useTheme();
   const actions = useHomeActions();
-  const firstResume = useFirstResume();
   // TAILOR 00c: a job link on the clipboard is asked about while Home is in view.
   useCopiedJobLink();
   // A run finished last time, or yesterday's "not yet": asked once a visit.
@@ -168,16 +165,6 @@ export function HomeScreen() {
         <HomeSkeleton />
       ) : (
         <>
-          {firstResume.cardStage ? (
-            <Section index={2} animate={animate}>
-              <FirstResumeCard
-                stage={firstResume.cardStage}
-                onAddResume={firstResume.addResume}
-                onPickJob={firstResume.pickJob}
-                onDismiss={firstResume.dismiss}
-              />
-            </Section>
-          ) : null}
           <Section index={2} animate={animate}>
             <QuickStartCard onAction={actions.quickStart} />
           </Section>
@@ -196,8 +183,8 @@ export function HomeScreen() {
           <Section index={4} animate={animate}>
             <ShortcutGrid stats={stats.data} onShortcut={actions.shortcut} />
           </Section>
-          {/* With the first-resume card up, an empty progress card would only say it again. */}
-          {firstResume.cardStage && !latestResume ? null : (
+          {/* With no resume yet the pop-up asks for one; an empty progress card would repeat it. */}
+          {!latestResume && queryPhase(resumes) === 'success' ? null : (
             <Section index={5} animate={animate}>
               <ResumeProgressCard
                 resume={latestResume}

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { firstResumeCard } from '@/features/create/firstResume';
+import { firstResumePrompt } from '@/features/create/firstResume';
 
 type FirstRunState = {
   justSignedUp: boolean;
@@ -16,7 +16,7 @@ type FirstRunState = {
 export const useFirstRunStore = create<FirstRunState>((set) => ({
   justSignedUp: false,
   mark: () => {
-    firstResumeCard.restore();
+    firstResumePrompt.reset();
     set({ justSignedUp: true });
   },
   consume: () => set({ justSignedUp: false }),

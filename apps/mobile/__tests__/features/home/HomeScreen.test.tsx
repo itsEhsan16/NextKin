@@ -8,8 +8,8 @@ import { useMockModeStore, type MockMode } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
 import { mockStore, resetMockRepos } from '@/data/repos';
 import { useFirstRunStore } from '@/features/auth';
-import { firstResumeCard } from '@/features/create/firstResume';
-import { HomeScreen, useHomeStore } from '@/features/home';
+import { firstResumePrompt } from '@/features/create/firstResume';
+import { FirstResumeHost, HomeScreen, useHomeStore } from '@/features/home';
 import { CreateSheetProvider } from '@/navigation';
 
 import { insideScroller } from '../../../testSupport/scroller';
@@ -28,6 +28,7 @@ jest.mock('expo-router', () => ({
   // Home is in view for the whole test; its clipboard check (TAILOR 00c) runs on mount.
   useFocusEffect: (effect: () => void | (() => void)) =>
     jest.requireActual<typeof import('react')>('react').useEffect(effect, [effect]),
+  usePathname: () => '/',
   Link: ({ children }: PropsWithChildren) => children,
 }));
 
@@ -45,6 +46,8 @@ async function renderHome(mode: MockMode = 'normal') {
       <QueryClientProvider client={queryClient}>
         <CreateSheetProvider>
           <HomeScreen />
+          {/* Mounted beside Home by the tabs layout (§185). */}
+          <FirstResumeHost />
         </CreateSheetProvider>
       </QueryClientProvider>
     </SafeAreaProvider>,
@@ -161,19 +164,44 @@ describe('HomeScreen (DESIGN 2)', () => {
     await settle(EMPTY_MS);
 
     expect(screen.getByText('No matches yet')).toBeOnTheScreen();
-    // The first-resume card takes the place of an empty progress card.
-    expect(screen.getByText('Your first resume')).toBeOnTheScreen();
+    // No resume yet: the pop-up asks for one, so there is no card and no empty progress card.
+    expect(screen.queryByText('Your first resume')).toBeNull();
     expect(screen.queryByText('No resume yet')).toBeNull();
+    firstResumePrompt.reset();
   });
 
-  it('puts the first-resume card away for good when it is closed', async () => {
-    await renderHome('empty');
-    await settle(EMPTY_MS);
+  it('asks for a first resume with a pop-up, and Not now puts it off (§185)', async () => {
+    firstResumePrompt.reset();
+    // A brand-new account: no resume and no roles on the profile.
+    mockStore.state.resumes = [];
+    mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
+    await renderHome();
+    await settle(NORMAL_MS);
+    await settle(NORMAL_MS);
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Hide this card')));
-    expect(screen.queryByText('Your first resume')).toBeNull();
-    expect(screen.getByText('No resume yet')).toBeOnTheScreen();
-    firstResumeCard.restore();
+    expect(screen.getByText('Add your resume')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Upload my resume')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Fill in my details')).toBeOnTheScreen();
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Not now')));
+    await settle(NORMAL_MS);
+    expect(firstResumePrompt.isSnoozed()).toBe(true);
+    expect(screen.queryByLabelText('Fill in my details')).toBeNull();
+    firstResumePrompt.reset();
+  });
+
+  it('fills in details one question at a time from the pop-up (§185)', async () => {
+    firstResumePrompt.reset();
+    // A brand-new account: no resume and no roles on the profile.
+    mockStore.state.resumes = [];
+    mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
+    await renderHome();
+    await settle(NORMAL_MS);
+    await settle(NORMAL_MS);
+
+    await act(async () => fireEvent.press(screen.getByLabelText('Fill in my details')));
+    expect(mockPush).toHaveBeenCalledWith('/create/zero-resume');
+    firstResumePrompt.reset();
   });
 
   it('opens the quick setup once, right after sign-up', async () => {
@@ -187,7 +215,7 @@ describe('HomeScreen (DESIGN 2)', () => {
     expect(mockPush).toHaveBeenCalledWith('/create/setup');
     expect(mockPush).toHaveBeenCalledTimes(1);
     expect(useFirstRunStore.getState().justSignedUp).toBe(false);
-    expect(screen.getByLabelText('Add my resume')).toBeOnTheScreen();
+    firstResumePrompt.reset();
   });
 
   it('leaves an account that has its first resume alone', async () => {
@@ -196,7 +224,7 @@ describe('HomeScreen (DESIGN 2)', () => {
     await settle(NORMAL_MS);
 
     expect(mockPush).not.toHaveBeenCalled();
-    expect(screen.queryByText('Your first resume')).toBeNull();
+    expect(screen.queryByText('Add your resume')).toBeNull();
   });
 
   it('renders the page-level error state with retry in "error" mock mode', async () => {

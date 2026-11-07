@@ -14,12 +14,13 @@ export const FIRST_RESUME_LEDE = 'Start from yours, or let AI draft one.';
 export const FIRST_RESUME_UPLOAD = 'Upload my resume';
 export const FIRST_RESUME_NONE = 'Start from scratch';
 
-const ART = {
+/** Shared with Home's first-resume pop-up (§185), so both ask the same way. */
+export const FIRST_RESUME_ART = {
   upload: require('../../../../assets/illustrations/redesign/job-match.webp') as ImageSource,
   scratch: require('../../../../assets/illustrations/redesign/empty-resume.webp') as ImageSource,
 };
 
-function OptionCard({
+export function FirstResumeOption({
   title,
   body,
   art,
@@ -40,7 +41,11 @@ function OptionCard({
       accessibilityLabel={title}
       accessibilityHint={body}
       onPress={onPress}
-      style={[styles.card, { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft }, shadows.soft]}
+      style={[
+        styles.card,
+        { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft },
+        shadows.soft,
+      ]}
     >
       <View style={[styles.art, { backgroundColor: colors.brandSurface }]}>
         <Image source={art} style={styles.artImage} contentFit="contain" />
@@ -67,7 +72,7 @@ function OptionCard({
 
 /**
  * Step 2 of 2 after sign-up (toreview.md §172): upload a resume, or start from scratch. Two big
- * choices and a Skip; Home keeps the same step on a card for anyone who skips.
+ * choices and a Skip; anyone who skips is asked again by a pop-up on Home (§185).
  */
 export function FirstResumeScreen() {
   const router = useRouter();
@@ -84,17 +89,17 @@ export function FirstResumeScreen() {
       onSkip={leave}
     >
       <View style={styles.options}>
-        <OptionCard
+        <FirstResumeOption
           title={FIRST_RESUME_UPLOAD}
           body="PDF or DOCX. We’ll read it for you."
-          art={ART.upload}
+          art={FIRST_RESUME_ART.upload}
           badge="FASTEST"
           onPress={() => router.replace({ pathname: '/create/upload', params: { next: 'job' } })}
         />
-        <OptionCard
+        <FirstResumeOption
           title={FIRST_RESUME_NONE}
           body="Answer 3 questions, get a draft."
-          art={ART.scratch}
+          art={FIRST_RESUME_ART.scratch}
           onPress={() => router.replace('/create/zero-resume')}
         />
       </View>

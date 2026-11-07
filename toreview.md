@@ -16268,3 +16268,21 @@ By "the job description" the owner meant the **job details screen** (`/jobs/[id]
   - Paste and the OS one-time-code fill still land whole through the hidden field.
 - **Tests:** `CodeStep.test` replaces the confirm-screen test (address, digits only, check-and-move-on, wrong code, resend, change email). `SignInBackend` covers the unconfirmed account.
 - **Not seen running:** the step only exists with the backend (`USES_BACKEND`), and the web preview runs the mock. It needs a look on the phone against the server. Jest: 1924 tests pass.
+
+## §185 — First resume: a pop-up on Home instead of the card (owner, 2026-11-08)
+
+The owner asked to remove the "Your first resume · 3 quick steps left" card entirely. Someone who doesn't upload a resume at the start should instead be asked in a pop-up, then fill in their details screen by screen, smoothly.
+
+- **Removed:** `FirstResumeCard`, `FirstResumeSteps`, and the device-wide "dismissed for good" flag (`firstResumeCard`).
+- **New `FirstResumePrompt`:** a bottom sheet with "Add your resume" and two choices, drawn with the start screen's own option cards (`FirstResumeOption`, now exported):
+  - "Upload my resume" (FASTEST) → `/create/upload`.
+  - "Fill in my details" → Zero Resume, which asks one question per screen (§175).
+  - "Not now", plus the ✕ and the scrim.
+- **When it shows:**
+  - The account has no resume and no roles (stage `add-resume`), and the after-sign-up redirect has already run.
+  - Home is the route in front (`usePathname() === '/'`).
+  - Only after 0.7 s, so it rises after Home settles, never on top of the page arriving.
+- **"Not now"** and either choice put it off for the rest of the launch: an in-memory `firstResumePrompt` snooze, reset by a new sign-up. It asks again on the next launch while there is still no resume. Judgement call: the owner didn't say how often it should ask.
+- **Mounting:** `FirstResumeHost` lives in the tabs layout beside `HomeMenuHost`, so the sheet covers the floating tab bar. Inside the Home screen it sat under the bar. The host also owns the after-sign-up redirect, which moved out of `HomeScreen`.
+- An account with an uploaded resume or profile roles is never prompted, and Home shows its resume progress card as before. The old card's "Pick a job" stage has no replacement, because the owner asked for the method removed entirely.
+- **Verified:** web preview with a fresh mock sign-up (pop-up over the bar, both choices, Not now). Jest: 1925 tests pass; lint is clean. Not checked on a phone.
