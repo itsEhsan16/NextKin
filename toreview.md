@@ -16340,3 +16340,15 @@ The owner: "Ai Assistant window is still old one with no proper logic, completel
   - Web preview: welcome, a scored answer with bold text, follow-ups, New chat and the Chats sheet.
   - Web's jest can't start in this worktree (`@nextkin/shared/mock` doesn't resolve, unrelated to this change). Its assistant test doesn't assert the changed sentence.
   - Not checked on a phone.
+
+## §189 — Assistant: the old chat bar back, no meter, a shorter label (owner, 2026-11-08)
+- **The chat bar is the earlier one again:**
+  - a white pill with the paperclip, "Ask a question…" and the round brand send (Send01);
+  - the composer shadow, with no bar behind it.
+  - The paperclip picks the resume the answers use. The resume in use is a chip above ("Using …" opens the picker, × turns it off).
+- **No message count before the cap.** The "N of 20 left today" line is gone. Messages are still counted.
+  - At zero, the bar is replaced by the card ("You've used today's 20 messages" / "Pro gives you many more each day.") and "See Pro plans".
+  - Judgement call: this drops §7.16/§13.5's "meter visible before the cap" at the owner's word.
+- **The only line under the bar is "AI-generated guidance"**, with the info mark (`ASSISTANT_LABEL`).
+  - §7.16's full wording ("…not professional or legal advice") stays in the shared `ASSISTANT_DISCLAIMER`, which the web still shows. On mobile, the owner's shorter line replaces it; the spec text is the owner's to waive.
+- **Verified:** Jest passes all 1932 tests, and tsc and eslint are clean. Checked in the web preview at 390. Not checked on a phone.

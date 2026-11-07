@@ -1,7 +1,6 @@
 import { TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ASSISTANT_DISCLAIMER } from '@/data/models';
 import { a11yButton, hitSlopFor, maxFontScale } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Icon } from '@/ui/Icon';
@@ -17,25 +16,25 @@ export type AssistantComposerProps = {
   /** The last send did not reach the assistant at all (distinct from a reply that stopped). */
   failed: boolean;
   disabled?: boolean;
-  /** Opens the "which resume should I use" picker. Absent when there is none to pick. */
+  /** The paperclip: picks which resume the answers use. Absent when there is none to pick. */
   onPickContext?: () => void;
-  /** The resume the answers will use, shown as a chip over the field. */
+  /** The resume the answers will use, shown as a chip over the pill. */
   contextTitle?: string;
   /** Stops using it: answers become general. */
   onClearContext?: () => void;
-  /** Messages left today, said quietly under the field once any are spent (§13.5). */
-  left?: number;
-  limit?: number;
 };
 
 export const ASSISTANT_MESSAGE_MAX = 500;
+/** The one line under the bar (owner, 2026-11-08, §189). */
+export const ASSISTANT_LABEL = 'AI-generated guidance';
 const SEND_FAILED = "That didn't send. Check your connection and try again.";
-const PLACEHOLDER = 'Ask about your resume, jobs, interviews…';
+const PLACEHOLDER = 'Ask a question…';
 
 /**
- * The pinned composer (§188): the resume in use as a chip, then one rounded field with a "+"
- * (pick the resume) and a round send, then one quiet line: today's allowance and §7.16's label.
- * The `Screen` footer, so it rides the keyboard frame by frame.
+ * The pinned chat bar (ASSISTANT 01 / 02, kept by the owner on 2026-11-08, §189): one white pill
+ * — the paperclip, the field and the round brand send — floating with no bar behind it, the
+ * resume in use as a chip over it, and "AI-generated guidance" under it. The `Screen` footer, so
+ * it rides the keyboard frame by frame.
  */
 export function AssistantComposer({
   value,
@@ -47,42 +46,52 @@ export function AssistantComposer({
   onPickContext,
   contextTitle,
   onClearContext,
-  left,
-  limit,
 }: AssistantComposerProps) {
-  const { colors, opacity, shadows, sizes, typography, u } = useTheme();
+  const { colors, opacity, radii, shadows, sizes, spacing, typography, s, u } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const ready = value.trim().length > 0 && !busy && !disabled;
 
   return (
-    <View style={[styles.root, { paddingBottom: u(10) + insets.bottom }]}>
+    <View
+      style={[
+        styles.root,
+        { paddingHorizontal: spacing.gutter, paddingBottom: spacing[4] + insets.bottom },
+      ]}
+    >
       {contextTitle ? (
-        <View style={styles.chipRow}>
+        <View
+          style={[
+            styles.chip,
+            {
+              borderRadius: radii.full,
+              borderWidth: sizes.border,
+              borderColor: colors.borderDefault,
+              backgroundColor: colors.surfaceCard,
+            },
+          ]}
+        >
           <Pressable
             {...a11yButton(`Using ${contextTitle}`, 'Choose which resume the answers use')}
             feedback="subtle"
             haptic="selection"
             disabled={!onPickContext}
             onPress={onPickContext}
-            style={[styles.chip, { backgroundColor: colors.brandSurface }]}
+            style={styles.chipLabel}
           >
-            <Icon name="File04" size="xs" color={colors.brand} />
-            <Text variant="footnote" color="brand" numberOfLines={1} style={styles.chipText}>
+            <Text variant="caption" color="textBody" numberOfLines={1} style={styles.chipText}>
               {`Using ${contextTitle}`}
             </Text>
-            <Icon name="ChevronDown" size="xs" color={colors.brand} />
           </Pressable>
           {onClearContext ? (
             <Pressable
               {...a11yButton('Stop using this resume', 'Answers will be general')}
               feedback="scale"
               haptic="selection"
-              hitSlop={hitSlopFor(u(28))}
+              hitSlop={hitSlopFor(u(20))}
               onPress={onClearContext}
-              style={[styles.chipClose, { backgroundColor: colors.surfaceSubtle }]}
             >
-              <Icon name="XClose" size="xs" color={colors.textSecondary} />
+              <Icon name="XClose" size="xs" color={colors.iconMuted} />
             </Pressable>
           ) : null}
         </View>
@@ -91,11 +100,11 @@ export function AssistantComposer({
       <View
         style={[
           styles.pill,
-          shadows.soft,
+          shadows.composer,
           {
             backgroundColor: colors.surfaceCard,
-            borderWidth: sizes.border,
-            borderColor: colors.borderDashed,
+            borderWidth: s(1 / 0.75),
+            borderColor: colors.borderDefault,
           },
         ]}
       >
@@ -103,23 +112,20 @@ export function AssistantComposer({
           {...a11yButton('Choose a resume', 'Answers will use the resume you pick')}
           feedback="scale"
           haptic="light"
+          hitSlop={hitSlopFor(s(17 / 0.75))}
           disabled={disabled || !onPickContext}
           onPress={onPickContext}
-          style={[
-            styles.round,
-            { backgroundColor: colors.surfaceSubtle },
-            disabled || !onPickContext ? { opacity: opacity.disabled } : null,
-          ]}
+          style={[styles.clip, disabled || !onPickContext ? { opacity: opacity.disabled } : null]}
         >
-          <Icon name="Plus" size="sm" color={colors.ink} />
+          <Icon name="Paperclip" size="md" color={colors.textSecondary} />
         </Pressable>
         <TextInput
           value={value}
           onChangeText={onChange}
           placeholder={PLACEHOLDER}
           placeholderTextColor={colors.textTertiary}
-          selectionColor={colors.brand}
-          cursorColor={colors.brand}
+          selectionColor={colors.textPrimary}
+          cursorColor={colors.textPrimary}
           accessibilityLabel="Message"
           accessibilityState={{ disabled }}
           multiline
@@ -129,8 +135,8 @@ export function AssistantComposer({
           maxFontSizeMultiplier={maxFontScale.body}
           style={[
             styles.input,
-            typography.bodyLg,
-            { color: colors.textPrimary, maxHeight: u(22 * 5) },
+            typography.menuRow,
+            { color: colors.textPrimary, maxHeight: s((4 * 20) / 0.75) },
           ]}
         />
         <Pressable
@@ -140,74 +146,79 @@ export function AssistantComposer({
           haptic="light"
           disabled={!ready}
           onPress={onSend}
-          style={[styles.round, { backgroundColor: ready ? colors.brand : colors.surfaceSubtle }]}
+          style={[
+            styles.send,
+            ready ? shadows.composerSend : null,
+            { backgroundColor: colors.brand, opacity: ready ? 1 : opacity.disabled },
+          ]}
         >
-          <Icon name="ArrowUp" size="sm" color={ready ? colors.textOnBrand : colors.iconMuted} />
+          <Icon name="Send01" size="sm" color={colors.textOnBrand} />
         </Pressable>
       </View>
 
       {failed ? (
-        <Text variant="footnote" color="danger" align="center" accessibilityLiveRegion="polite">
+        <Text variant="caption" color="danger" align="center" accessibilityLiveRegion="polite">
           {SEND_FAILED}
         </Text>
       ) : null}
-      <View style={styles.note}>
-        {left != null && limit != null ? (
-          <Text variant="footnote" color={left <= 3 ? 'warning' : 'textSecondary'}>
-            {`${left} of ${limit} left today`}
-          </Text>
-        ) : null}
-        <Text variant="footnote" color="textTertiary" align="center" style={styles.noteText}>
-          {ASSISTANT_DISCLAIMER}
-        </Text>
-      </View>
+      <AssistantLabel />
     </View>
   );
 }
 
-const useStyles = scaledSheet((_s, u) => ({
-  root: { paddingHorizontal: u(16), paddingTop: u(8), gap: u(8) },
-  chipRow: { flexDirection: 'row', alignItems: 'center', gap: u(6) },
+/** "AI-generated guidance" with its info mark: under the bar, and under the upsell at zero. */
+export function AssistantLabel() {
+  const { colors } = useTheme();
+  const styles = useStyles();
+  return (
+    <View style={styles.label}>
+      <Icon name="InfoCircle" size="sm" color={colors.iconMuted} />
+      <Text variant="micro" color="textSecondary">
+        {ASSISTANT_LABEL}
+      </Text>
+    </View>
+  );
+}
+
+// ASSISTANT 01 / 02 at 390 (577:6569 / 577:7855, the pill 675:2), in artboard units.
+const useStyles = scaledSheet((s) => ({
+  root: { paddingTop: s(10 / 0.75), gap: s(12 / 0.75) },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(12 / 0.75),
+    minHeight: s(56 / 0.75),
+    borderRadius: s(28 / 0.75),
+    paddingLeft: s(18 / 0.75),
+    paddingRight: s(6 / 0.75),
+    paddingVertical: s(6 / 0.75),
+  },
+  // Both ends sit on the last line's 44 band, so a wrapped question grows the pill upwards only.
+  clip: { height: s(44 / 0.75), justifyContent: 'center', alignSelf: 'flex-end' },
+  input: { flex: 1, padding: 0, margin: 0, includeFontPadding: false },
+  send: {
+    width: s(44 / 0.75),
+    height: s(44 / 0.75),
+    borderRadius: s(44 / 0.75) / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+  },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexShrink: 1,
-    gap: u(6),
-    paddingHorizontal: u(12),
-    paddingVertical: u(6),
-    borderRadius: u(999),
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    minHeight: s(27 / 0.75),
+    gap: s(6 / 0.75),
+    paddingHorizontal: s(10 / 0.75),
   },
+  chipLabel: { flexShrink: 1 },
   chipText: { flexShrink: 1 },
-  chipClose: {
-    width: u(26),
-    height: u(26),
-    borderRadius: u(13),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pill: {
+  label: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: u(8),
-    minHeight: u(56),
-    borderRadius: u(28),
-    padding: u(7),
-  },
-  round: {
-    width: u(40),
-    height: u(40),
-    borderRadius: u(20),
     alignItems: 'center',
     justifyContent: 'center',
+    gap: s(7 / 0.75),
   },
-  input: {
-    flex: 1,
-    alignSelf: 'center',
-    paddingHorizontal: u(4),
-    paddingVertical: u(8),
-    margin: 0,
-    includeFontPadding: false,
-  },
-  note: { alignItems: 'center', gap: u(2) },
-  noteText: { flexShrink: 1 },
 }));

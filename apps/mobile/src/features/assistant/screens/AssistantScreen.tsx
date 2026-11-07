@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View, type ScrollViewInstance } from 'react-native';
 
-import {
-  ASSISTANT_DISCLAIMER,
-  atsQuickWins,
-  type AssistantMessage,
-  type Resume,
-} from '@/data/models';
+import { atsQuickWins, type AssistantMessage, type Resume } from '@/data/models';
 import {
   useAssistantConversation,
   useCurrentUser,
@@ -34,7 +29,7 @@ import { Text } from '@/ui/Text';
 
 import { useAssistantDraftStore } from '../assistantDraftStore';
 import { followUps, starterPrompts } from '../assistantPrompts';
-import { AssistantComposer } from '../components/AssistantComposer';
+import { AssistantComposer, AssistantLabel } from '../components/AssistantComposer';
 import { AssistantHistorySheet } from '../components/AssistantHistorySheet';
 import { DraftComposer } from '../components/DraftComposer';
 import { MessageBubble, StreamingBubble } from '../components/MessageBubble';
@@ -265,20 +260,19 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
   }
 
   const footer = spent ? (
-    // §13.5: at zero the composer is REPLACED by the upsell, not overlaid. The label stays.
+    // §13.5: at zero the composer is REPLACED by the upsell, not overlaid. The count is said only
+    // here: before the cap the screen shows no meter (owner, 2026-11-08, §189).
     <View style={styles.spent}>
       <View style={[styles.spentCard, { backgroundColor: colors.brandSurface }]}>
         <Text variant="bodyLgStrong" color="ink" align="center">
           {`You’ve used today’s ${limit} messages`}
         </Text>
         <Text variant="callout" color="textSecondary" align="center">
-          {`0 of ${limit} left today. Pro gives you many more each day.`}
+          Pro gives you many more each day.
         </Text>
       </View>
       <Button label="See Pro plans" size="xl" block onPress={actions.openUpgrade} />
-      <Text variant="footnote" color="textTertiary" align="center">
-        {ASSISTANT_DISCLAIMER}
-      </Text>
+      <AssistantLabel />
     </View>
   ) : (
     <DraftComposer
@@ -288,9 +282,6 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
       onPickContext={documents.length > 0 ? () => setPickerOpen(true) : undefined}
       contextTitle={attached?.title}
       onClearContext={() => setChoice(null)}
-      // §13.5: the allowance is on screen once any is spent, before the cap is hit.
-      left={used > 0 && limit > 0 ? Math.max(0, limit - used) : undefined}
-      limit={used > 0 && limit > 0 ? limit : undefined}
     />
   );
 

@@ -4,10 +4,11 @@ import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { REFUSAL_LINE, subscriptionFixture, useMockModeStore } from '@/data/mock';
-import { ASSISTANT_DISCLAIMER, type Subscription } from '@/data/models';
+import type { Subscription } from '@/data/models';
 import { createQueryClient, qk } from '@/data/queries';
 import { ASSISTANT_TICK_MS, mockStore, resetMockRepos } from '@/data/repos';
 import { AssistantScreen } from '@/features/assistant';
+import { ASSISTANT_LABEL } from '@/features/assistant/components/AssistantComposer';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -99,10 +100,9 @@ describe('AssistantScreen (V2 §7.16, redesigned §188)', () => {
     await settle(NORMAL_MS);
 
     expect(screen.getByRole('header', { name: 'AI Assistant' })).toBeOnTheScreen();
-    // §13.5: the daily cap is on screen before it is hit, said as a daily one.
-    expect(screen.getByText('8 of 20 left today', shown)).toBeOnTheScreen();
-    expect(screen.queryByText(/this month/, shown)).toBeNull();
-    expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
+    // No meter before the cap (owner, §189): the count is said only once it is spent.
+    expect(screen.queryByText(/left today|this month/, shown)).toBeNull();
+    expect(screen.getByText(ASSISTANT_LABEL, shown)).toBeOnTheScreen();
     // Answers use your latest resume unless you say otherwise, and the chip says which.
     expect(screen.getByText(`Using ${latestResume().title}`, shown)).toBeOnTheScreen();
 
@@ -145,8 +145,9 @@ describe('AssistantScreen (V2 §7.16, redesigned §188)', () => {
     expect(screen.getAllByText(latestResume().title, shown).length).toBeGreaterThan(0);
     expect(screen.getByText(`Used ${latestResume().title}`, shown)).toBeOnTheScreen();
     expect(screen.getAllByLabelText('Copy answer', shown).length).toBeGreaterThan(0);
-    // The meter moves without a reload.
-    expect(screen.getByText('7 of 20 left today', shown)).toBeOnTheScreen();
+    // A message is still counted, but nothing on screen says so before the cap.
+    expect(mockStore.state.subscription.usage.assistantMessagesUsed).toBe(13);
+    expect(screen.queryByText(/left today/, shown)).toBeNull();
     // The next questions on the same topic, one tap each.
     expect(screen.getAllByLabelText(/^Ask: /, shown).length).toBeGreaterThan(0);
   });
@@ -195,9 +196,8 @@ describe('AssistantScreen (V2 §7.16, redesigned §188)', () => {
     expect(screen.getByRole('header', { name: /how can I help\?$/ })).toBeOnTheScreen();
     // The first question is about this resume's real score.
     const scorePrompt = screen.getByLabelText(/^Ask: Why does my resume score \d+\?$/, shown);
-    // A fresh allowance has nothing to warn about yet; the label is always there.
-    expect(screen.queryByText(/left today/, shown)).toBeNull();
-    expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
+    // The label is always there.
+    expect(screen.getByText(ASSISTANT_LABEL, shown)).toBeOnTheScreen();
 
     await act(async () => fireEvent.press(scorePrompt));
     await settle(NORMAL_MS);
@@ -260,12 +260,10 @@ describe('AssistantScreen (V2 §7.16, redesigned §188)', () => {
     );
     await settle(NORMAL_MS);
 
-    expect(
-      screen.getByText('0 of 20 left today. Pro gives you many more each day.', shown),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('You’ve used today’s 20 messages', shown)).toBeOnTheScreen();
     expect(screen.queryByLabelText('Message', shown)).toBeNull();
     expect(screen.queryByLabelText('Send', shown)).toBeNull();
-    expect(screen.getByText(ASSISTANT_DISCLAIMER, shown)).toBeOnTheScreen();
+    expect(screen.getByText(ASSISTANT_LABEL, shown)).toBeOnTheScreen();
     // No reset time is known for the daily cap, so none is claimed.
     expect(screen.queryByText(/resets|tomorrow|midnight/i, shown)).toBeNull();
 
