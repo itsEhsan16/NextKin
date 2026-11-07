@@ -8,7 +8,7 @@ import { useMockModeStore, type MockMode } from '@/data/mock';
 import { createQueryClient } from '@/data/queries';
 import { mockStore, resetMockRepos } from '@/data/repos';
 import { useFirstRunStore } from '@/features/auth';
-import { firstResumePrompt } from '@/features/create/firstResume';
+import { firstResumeAsked } from '@/features/create/firstResume';
 import { FirstResumeHost, HomeScreen, useHomeStore } from '@/features/home';
 import { CreateSheetProvider } from '@/navigation';
 
@@ -167,11 +167,11 @@ describe('HomeScreen (DESIGN 2)', () => {
     // No resume yet: the pop-up asks for one, so there is no card and no empty progress card.
     expect(screen.queryByText('Your first resume')).toBeNull();
     expect(screen.queryByText('No resume yet')).toBeNull();
-    firstResumePrompt.reset();
+    firstResumeAsked.reset();
   });
 
-  it('asks for a first resume with a pop-up, and Not now puts it off (§185)', async () => {
-    firstResumePrompt.reset();
+  it('asks a never-asked account once, and Not now is final (§185–§186)', async () => {
+    firstResumeAsked.reset();
     // A brand-new account: no resume and no roles on the profile.
     mockStore.state.resumes = [];
     mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
@@ -185,13 +185,33 @@ describe('HomeScreen (DESIGN 2)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText('Not now')));
     await settle(NORMAL_MS);
-    expect(firstResumePrompt.isSnoozed()).toBe(true);
+    expect(firstResumeAsked.wasAsked()).toBe(true);
     expect(screen.queryByLabelText('Fill in my details')).toBeNull();
-    firstResumePrompt.reset();
+
+    // The next launch: still no resume, and still not asked again.
+    await cleanup();
+    await renderHome();
+    await settle(NORMAL_MS);
+    await settle(NORMAL_MS);
+    expect(screen.queryByText('Add your resume')).toBeNull();
+    firstResumeAsked.reset();
+  });
+
+  it('never asks on Home after the start screen was skipped (§186)', async () => {
+    // Sign-up showed "Add your resume" and they tapped Skip.
+    firstResumeAsked.markAsked();
+    mockStore.state.resumes = [];
+    mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
+    await renderHome();
+    await settle(NORMAL_MS);
+    await settle(NORMAL_MS);
+
+    expect(screen.queryByText('Add your resume')).toBeNull();
+    firstResumeAsked.reset();
   });
 
   it('fills in details one question at a time from the pop-up (§185)', async () => {
-    firstResumePrompt.reset();
+    firstResumeAsked.reset();
     // A brand-new account: no resume and no roles on the profile.
     mockStore.state.resumes = [];
     mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
@@ -201,7 +221,7 @@ describe('HomeScreen (DESIGN 2)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText('Fill in my details')));
     expect(mockPush).toHaveBeenCalledWith('/create/zero-resume');
-    firstResumePrompt.reset();
+    firstResumeAsked.reset();
   });
 
   it('opens the quick setup once, right after sign-up', async () => {
@@ -215,7 +235,7 @@ describe('HomeScreen (DESIGN 2)', () => {
     expect(mockPush).toHaveBeenCalledWith('/create/setup');
     expect(mockPush).toHaveBeenCalledTimes(1);
     expect(useFirstRunStore.getState().justSignedUp).toBe(false);
-    firstResumePrompt.reset();
+    firstResumeAsked.reset();
   });
 
   it('leaves an account that has its first resume alone', async () => {

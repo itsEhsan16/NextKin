@@ -18,14 +18,14 @@ export type FirstResumePromptProps = {
   onUpload: () => void;
   /** The one-question-per-screen details flow (Zero Resume). */
   onFillDetails: () => void;
-  /** "Not now": asked again on the next app launch, never on this one. */
+  /** "Not now": final, like either answer; the flows that need a resume ask later (§186). */
   onLater: () => void;
 };
 
 /**
- * Home's first-resume pop-up (owner, 2026-11-08, §185), replacing the "Your first resume" card:
- * someone with no resume yet is asked, once per launch, to upload one or to fill in their details
- * one question per screen. The same two choices, drawn the same way, as the start screen.
+ * Home's first-resume pop-up (owner, 2026-11-08, §185–§186), replacing the "Your first resume"
+ * card: only for someone who never saw the start screen after sign-up, and only once. Upload, or
+ * fill in their details one question per screen; the same two choices, drawn the same way.
  */
 export function FirstResumePrompt({
   open,

@@ -16286,3 +16286,22 @@ The owner asked to remove the "Your first resume · 3 quick steps left" card ent
 - **Mounting:** `FirstResumeHost` lives in the tabs layout beside `HomeMenuHost`, so the sheet covers the floating tab bar. Inside the Home screen it sat under the bar. The host also owns the after-sign-up redirect, which moved out of `HomeScreen`.
 - An account with an uploaded resume or profile roles is never prompted, and Home shows its resume progress card as before. The old card's "Pick a job" stage has no replacement, because the owner asked for the method removed entirely.
 - **Verified:** web preview with a fresh mock sign-up (pop-up over the bar, both choices, Not now). Jest: 1925 tests pass; lint is clean. Not checked on a phone.
+
+## §186 — First resume: ask once, then only where a resume is needed (owner, 2026-11-08)
+The owner's phone pass: after sign-up they tapped **Skip** on "Add your resume", and Home at once popped up the same question. §185's pop-up only checked "no resume + not snoozed this launch", so it never knew they had already answered, and the in-memory snooze asked again on every launch. Owner: make it intelligent.
+- **The rule:** the question is asked **once**. Any answer is final, including Skip, "Not now", ✕ or tapping outside.
+  - The answer is kept on the device: `firstResumeAsked` in `features/create/firstResume.ts`, stored under the key `onboarding.firstResumeAsked`.
+  - A new sign-up on the phone resets it, through `useFirstRunStore.mark`.
+- **Where it is asked:**
+  - The start screen after sign-up marks the question asked as soon as it is shown. Reaching it is the question.
+  - Home's pop-up is only for someone who never met that screen, such as an account made on the web, a sign-in on a new phone, or someone who quit before step 2. It asks once.
+- **After that, the app asks only at the point of need.**
+  - Tailor shows `NoResumeCard`, offering upload, build or start from nothing.
+  - Create actions with no resume route to Build 04b, or Zero with the job's role (`useCreateActions`).
+  - Nothing was changed in those flows.
+  - Judgement call: no reminder on a timer. A repeat nudge on Home is what the owner objected to.
+- **Not handled:** two different accounts signing in on one phone share the flag. A sign-in that is not a sign-up keeps the previous account's answer.
+- **Verified:**
+  - Jest: 1927 tests pass, including new cases for "skip, then Home stays quiet", "Not now survives a relaunch" and "the start screen marks it asked".
+  - tsc and eslint are clean.
+  - Not checked in the web preview or on a phone.
