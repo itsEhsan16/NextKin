@@ -3,7 +3,7 @@ import { Skeleton } from './Skeleton';
 export type DetailCardSkeletonProps = {
   /** The row of tag pills under the actions (the job card has one; the application card doesn't). */
   tags?: boolean;
-  /** Lines of placeholder prose under the tabs. */
+  /** How many lines of prose the block under the tabs stands for (one block, their height). */
   lines?: number;
 };
 
@@ -39,11 +39,8 @@ export function DetailCardSkeleton({ tags = false, lines = 9 }: DetailCardSkelet
         </div>
       )}
       <Skeleton className="mt-4 h-9 w-full" />
-      <div className="flex flex-col gap-2.5 pt-4">
-        {Array.from({ length: lines }, (_, index) => (
-          <Skeleton key={index} className={index % 4 === 3 ? 'h-3.5 w-2/3' : 'h-3.5 w-full'} />
-        ))}
-      </div>
+      {/* The description as one block in its lines' height (§196), not a bar per line. */}
+      <Skeleton className="mt-4 w-full rounded-lg" style={{ height: `${lines * 1.5}rem` }} />
     </div>
   );
 }

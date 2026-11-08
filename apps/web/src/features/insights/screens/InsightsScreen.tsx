@@ -33,6 +33,7 @@ import {
   insightPanel,
   SharesCard,
   StatCard,
+  InsightsSweep,
 } from '../components/InsightsCards';
 import { RecommendationCard } from '../components/RecommendationCard';
 import { PREVIOUS_LABEL, RANGES, TOTAL_CAPTION } from '../insightsLibrary';
@@ -201,7 +202,9 @@ export function InsightsScreen() {
 
       {insights.data ? (
         <div className={cn('flex flex-col gap-6', loaded && 'animate-reveal')}>
-          <Dashboard data={insights.data} range={range} />
+          <InsightsSweep.Provider value={loaded}>
+            <Dashboard data={insights.data} range={range} />
+          </InsightsSweep.Provider>
         </div>
       ) : (
         // The dashboard's three rows at their loaded shapes, stacking below `xl` as it does.

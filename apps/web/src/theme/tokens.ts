@@ -181,11 +181,19 @@ export const motion = {
     float: 2800,
     think: 1400,
     sweep: 2000,
+    /** One pass of the skeletons' diagonal light across the window (§196). */
+    shimmer: 1600,
   },
+  /**
+   * After a click opens a page, further opens are ignored this long (§196): about one route
+   * change, so a double click never pushes the same page twice. Not a CSS duration.
+   */
+  navGuard: 450,
   easings: {
     standard: 'cubic-bezier(0.2, 0, 0, 1)',
     decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
-    spring: 'cubic-bezier(0.34, 1.3, 0.64, 1)',
+    // A quick settle with no overshoot (§196); it used to pass its target and swing back.
+    spring: 'cubic-bezier(0.22, 1, 0.36, 1)',
   },
   /** What a held button or card settles to, and what menus and tooltips grow from. */
   pressedScale: 0.98,

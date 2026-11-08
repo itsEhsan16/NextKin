@@ -9,6 +9,12 @@ import { cn } from '@/lib/cn';
  */
 export const cardSurface = 'rounded-lg border border-border-subtle bg-surface-card shadow-card';
 
+/**
+ * The same card while it holds a skeleton (§196): its size and radius, but no border, fill or
+ * shadow, so the placeholder never sits in a framed box. Swap it for `cardSurface` while loading.
+ */
+export const cardSurfaceLoading = 'rounded-lg border border-transparent';
+
 /** The one padding a card's content takes (toreview §132): every card breathes the same. */
 export const cardPad = 'p-6';
 
@@ -24,6 +30,8 @@ export type CardProps = {
   className?: string;
   /** The lavender wash the AI promo card uses (surface/brand). */
   tone?: 'card' | 'brand';
+  /** Holds a skeleton (§196): keeps its size but draws no frame (`cardSurfaceLoading`). */
+  loading?: boolean;
 };
 
 /**
@@ -33,14 +41,16 @@ export type CardProps = {
  * 286:640, which are the two cards that state their own values. The brand tone swaps the border
  * to `border/brand` and takes the wider shadow the AI card carries.
  */
-export function Card({ children, className, tone = 'card' }: CardProps) {
+export function Card({ children, className, tone = 'card', loading = false }: CardProps) {
   return (
     <div
       className={cn(
         'rounded-lg border',
-        tone === 'brand'
-          ? 'border-border-brand bg-surface-brand'
-          : 'border-border-subtle bg-surface-card shadow-card',
+        loading
+          ? 'border-transparent'
+          : tone === 'brand'
+            ? 'border-border-brand bg-surface-brand'
+            : 'border-border-subtle bg-surface-card shadow-card',
         className,
       )}
     >

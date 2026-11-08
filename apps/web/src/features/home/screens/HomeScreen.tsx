@@ -40,6 +40,13 @@ export function HomeScreen() {
     [resumes.data],
   );
 
+  // The dashboard lands once (§196): every card holds its skeleton until the page's first loads
+  // are all in, instead of arriving one by one. `isLoading` is only true while a first fetch is
+  // actually running, so a query that is switched off never holds the page.
+  const landing = user.isPending || picks.isLoading || resumes.isLoading || activity.isLoading;
+  const phase = (query: Parameters<typeof queryPhase>[0]) =>
+    landing ? ('pending' as const) : queryPhase(query);
+
   // The page gates on the user: without it there is no greeting and no per-user anything.
   if (queryPhase(user) === 'error') {
     return (
@@ -58,9 +65,7 @@ export function HomeScreen() {
   return (
     <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-10')}>
       <PageHeader
-        eyebrow={
-          user.isPending ? <Skeleton className="h-5 w-24" /> : `Hi ${user.data?.firstName ?? ''},`
-        }
+        eyebrow={landing ? <Skeleton className="h-5 w-24" /> : `Hi ${user.data?.firstName ?? ''},`}
         title="Build better. Land faster."
         subtitle="Everything you need to build your career, in one place."
       />
@@ -73,12 +78,12 @@ export function HomeScreen() {
       <div className="flex flex-col gap-6 lg:flex-row">
         <TopJobMatches
           jobs={picks.data}
-          status={queryPhase(picks)}
+          status={phase(picks)}
           onRetry={() => void picks.refetch()}
         />
         <ResumeProgressCard
           resume={latestResume}
-          status={queryPhase(resumes)}
+          status={phase(resumes)}
           onRetry={() => void resumes.refetch()}
         />
       </div>
@@ -87,7 +92,7 @@ export function HomeScreen() {
         <AiPromoCard />
         <RecentActivityCard
           entries={activity.data}
-          status={queryPhase(activity)}
+          status={phase(activity)}
           onRetry={() => void activity.refetch()}
         />
       </div>

@@ -37,6 +37,13 @@
 
   /* Neutrals */
   --color-neutral-0: #ffffff;
+  /*
+   * Loading placeholders (§196, after mobile): ink at 5%, so a block is a soft cool grey on white
+   * and a slightly deeper tint on a tinted surface, never a grey patch pasted onto it. The band of
+   * light that crosses them is white.
+   */
+  --color-skeleton: color-mix(in srgb, #0f172a 5%, transparent);
+  --color-skeleton-light: rgb(255 255 255 / 0.75);
   --color-neutral-100: #f1f5f9;
   --color-neutral-200: #e2e8f0;
   /*
@@ -324,8 +331,11 @@
 @theme {
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
-  /* A little overshoot for things that slide into place: segment thumbs, toggles (§132). */
-  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+  /*
+   * Things that slide into place: segment thumbs, toggles (§132). A quick settle with no
+   * overshoot (§196): it used to pass its target and swing back.
+   */
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
 
   --transition-duration-press: 120ms;
   --transition-duration-fast: 180ms;
@@ -340,6 +350,10 @@
   --transition-duration-think: 1400ms;
   /* The loading line's light crossing the track once. */
   --transition-duration-sweep: 2000ms;
+  /* One pass of the skeletons' diagonal light across the whole window (§196). Slow on purpose. */
+  --transition-duration-shimmer: 1600ms;
+  /* A skeleton waits this long before it shows (§196): a quicker load never flashes one. */
+  --transition-duration-skeleton-delay: 150ms;
   /* The gap between one chart column's arrival and the next (the admin Overview's bars). */
   --stagger-step: 24ms;
 
@@ -359,6 +373,8 @@
   --animate-reveal: reveal var(--transition-duration-fast) var(--ease-decelerate) both;
   --animate-pop-in: pop-in var(--transition-duration-fast) var(--ease-decelerate);
   --animate-pop-out: pop-out var(--transition-duration-press) var(--ease-standard) forwards;
+  /* A dialog's dimmed backdrop leaving with its dialog (§196), instead of vanishing first. */
+  --animate-fade-out: fade-out var(--transition-duration-press) var(--ease-standard) forwards;
   /*
    * A meter arriving with its data (`toreview.md` §85): a score ring sweeps up from empty and a
    * progress bar grows from nothing, over `meter`, when they replace a skeleton. `backwards`, not
@@ -440,6 +456,25 @@
       translate: 0 6px;
     }
   }
+  /* The skeletons' band: from off the window's left edge to off its right one (§196). */
+  @keyframes skeleton-sweep {
+    from {
+      background-position: -200vw 0;
+    }
+    to {
+      background-position: 100vw 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes skeleton-in {
+    from {
+      opacity: 0;
+    }
+  }
   @keyframes shimmer {
     from {
       background-position: 100% 0;
@@ -514,6 +549,37 @@
 @theme {
   --cursor-arrow: url('/cursors/arrow.svg') 4 4, default;
   --cursor-hand: url('/cursors/pointer.svg') 8 2, pointer;
+}
+
+/*
+ * A loading placeholder (§196). The light is ONE diagonal band in window space: the gradient is
+ * `background-attachment: fixed`, so it is laid out against the viewport rather than each block,
+ * and every block on the page shows its own slice of the same stripe. Blocks side by side or
+ * stacked light up in step, as one surface, however big each is.
+ *
+ * - The band is 60% of the window wide and leans 20 degrees (110deg).
+ * - It fades in after `skeleton-delay`, so a quick load goes from nothing to content.
+ * - Under reduced motion the global rule runs both animations once: a still block.
+ */
+@utility skeleton {
+  display: block;
+  background-color: var(--color-skeleton);
+  background-image: linear-gradient(
+    110deg,
+    transparent 35%,
+    color-mix(in srgb, var(--color-skeleton-light) 35%, transparent) 42%,
+    var(--color-skeleton-light) 50%,
+    color-mix(in srgb, var(--color-skeleton-light) 35%, transparent) 58%,
+    transparent 65%
+  );
+  background-size: 200vw 100vh;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-position: -200vw 0;
+  animation:
+    skeleton-in var(--transition-duration-fast) var(--ease-decelerate)
+      var(--transition-duration-skeleton-delay) both,
+    skeleton-sweep var(--transition-duration-shimmer) linear infinite;
 }
 
 @utility cursor-pointer {

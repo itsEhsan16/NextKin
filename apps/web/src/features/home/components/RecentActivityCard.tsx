@@ -8,7 +8,7 @@ import { useReveal } from '@/lib/useReveal';
 import { formatRelativeTime } from '@/lib/format';
 import { Card } from '@/ui/Card';
 import { SectionHeader } from '@/ui/SectionHeader';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonListRow } from '@/ui/SkeletonShapes';
 import { StateView } from '@/ui/StateView';
 import {
   ActivityAppliedIllustration,
@@ -101,17 +101,18 @@ export function RecentActivityCard({ entries, status, onRetry }: RecentActivityC
   const hasActivity = (entries?.length ?? 0) > 0;
 
   return (
-    <Card className="w-full p-6 lg:w-[380px] lg:shrink-0">
+    <Card loading={status === 'pending'} className="w-full p-6 lg:w-[380px] lg:shrink-0">
       <SectionHeader
         title="Recent Activity"
         actionHref={hasActivity ? ('/insights' as Route) : undefined}
       />
 
       {status === 'pending' && (
-        <div className="mt-4 flex flex-col gap-3">
-          <Skeleton className="h-[38px]" />
-          <Skeleton className="h-[38px]" />
-          <Skeleton className="h-[38px]" />
+        // The three rows traced as art + two lines, on the loaded list's spacing (§196).
+        <div className="mt-5 flex flex-col gap-4">
+          <SkeletonListRow tile="size-9" className="h-11" />
+          <SkeletonListRow tile="size-9" className="h-11" />
+          <SkeletonListRow tile="size-9" className="h-11" />
         </div>
       )}
 

@@ -10,8 +10,8 @@ import {
 } from '@nextkin/shared/queries';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { cn } from '@/lib/cn';
 import { formatRelativeTime } from '@/lib/format';
 import { parseBold } from '@/lib/richText';
@@ -19,7 +19,7 @@ import { PageHeader } from '@/navigation/PageHeader';
 import { outlineButton } from '@/ui/outlineButton';
 import { pageFrame } from '@/ui/pageFrame';
 import { pressable } from '@/ui/pressable';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonListRow } from '@/ui/SkeletonShapes';
 import { StateView } from '@/ui/StateView';
 import { textLink } from '@/ui/textLink';
 
@@ -37,7 +37,7 @@ export function NotificationsScreen() {
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
   const remove = useRemoveNotification();
-  const router = useRouter();
+  const router = useGuardedRouter();
   const status = queryPhase(feed);
   const rows = feed.data ?? [];
   const unread = rows.some((row) => !row.read);
@@ -74,8 +74,9 @@ export function NotificationsScreen() {
       <div className="mt-6 max-w-3xl">
         {status === 'pending' ? (
           <div aria-label="Loading your notifications" aria-busy className="flex flex-col gap-3">
+            {/* Each row traced as its text and time, at the row's height and padding (§196). */}
             {[0, 1, 2].map((key) => (
-              <Skeleton key={key} className="h-20 rounded-xl" />
+              <SkeletonListRow key={key} tile={null} trailing className="h-20 p-4" />
             ))}
           </div>
         ) : status === 'error' && rows.length === 0 ? (

@@ -23,7 +23,7 @@ import { documentMeta } from '../documentLibrary';
 import { DocumentPreview } from './DocumentPreview';
 import { FileTypeTile } from './FileTypeTile';
 import { useLetterJob } from '../useLetterJob';
-import { cardSurface } from '@/ui/Card';
+import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Soon, soonControl } from '@/ui/Soon';
 
 export type DocumentDetailPanelProps = {
@@ -75,7 +75,7 @@ export function DocumentDetailPanel({
       {/* As tall as the card and callout that replace it (`toreview.md` §84). */}
       {status === 'pending' && (
         <>
-          <div className={cn(CARD, 'flex flex-col gap-4 p-6')}>
+          <div className={cn(cardSurfaceLoading, 'flex flex-col gap-4 p-6')}>
             <div className="flex items-center gap-3">
               <Skeleton className="size-12 rounded-md" />
               <div className="flex flex-1 flex-col gap-2">

@@ -4,7 +4,7 @@ import type { Resume } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
-import { cardPad, cardSurface } from '@/ui/Card';
+import { cardPad, cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
@@ -40,7 +40,8 @@ export function ResumeDetailPanel({
   return (
     <div
       className={cn(
-        cardSurface,
+        // No frame while it loads (§196): the placeholder is never a boxed patch.
+        status === 'pending' ? cardSurfaceLoading : cardSurface,
         cardPad,
         'min-h-0 overflow-y-auto [scrollbar-width:thin]',
         className,

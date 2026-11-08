@@ -1,7 +1,13 @@
 import type { CareerInsights, InsightsShare, InsightsStat } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
-import type { ComponentType, ReactNode, SVGProps } from 'react';
+import {
+  createContext,
+  useContext,
+  type ComponentType,
+  type ReactNode,
+  type SVGProps,
+} from 'react';
 
 import { cn } from '@/lib/cn';
 import { NavAiAssistantIllustration } from '@/ui/illustrations';
@@ -106,13 +112,20 @@ export function StatCard({
   );
 }
 
+/**
+ * Whether the dashboard's bars sweep up as they appear (§196): only when the dashboard has just
+ * replaced its skeleton. Opened again from the cache, the bars are simply there.
+ */
+export const InsightsSweep = createContext(false);
+
 /** A labelled bar out of 100: the funnel's stages and the skill and role shares. */
 function Bar({ pct, label, strong }: { pct: number; label: string; strong?: boolean }) {
+  const sweep = useContext(InsightsSweep);
   return (
     <ProgressBar
       value={pct / 100}
       label={label}
-      sweep
+      sweep={sweep}
       className="h-3 flex-1 rounded-sm bg-brand-50"
       fillClassName={cn('rounded-sm', strong ? 'bg-brand-600' : 'bg-border-selected')}
     />

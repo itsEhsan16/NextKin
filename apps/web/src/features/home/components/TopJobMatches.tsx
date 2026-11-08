@@ -61,7 +61,7 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
   const carousel = useJobCarousel(picks.length);
 
   return (
-    <Card className="min-w-0 flex-1 p-6">
+    <Card loading={status === 'pending'} className="min-w-0 flex-1 p-6">
       <SectionHeader
         title="Top Job Matches"
         actionHref={picks.length ? ('/jobs' as Route) : undefined}
@@ -97,8 +97,9 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
 
       {status === 'pending' && (
         <div className="mt-5 grid gap-4 xl:grid-cols-2">
-          <Skeleton className="h-[164px] rounded-md" />
-          <Skeleton className="h-[164px] rounded-md" />
+          {/* One block per card, at the cards' own minimum height (§196). */}
+          <Skeleton className="h-[172px] rounded-lg" />
+          <Skeleton className="hidden h-[172px] rounded-lg xl:block" />
         </div>
       )}
 

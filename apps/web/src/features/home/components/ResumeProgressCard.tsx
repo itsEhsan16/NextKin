@@ -10,6 +10,7 @@ import { ProgressBar } from '@/ui/ProgressBar';
 import { ScoreRing } from '@/ui/ScoreRing';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonCircle, SkeletonLines } from '@/ui/SkeletonShapes';
 import { StateView } from '@/ui/StateView';
 import { CheckIcon } from '@/ui/icons';
 
@@ -24,17 +25,24 @@ export function ResumeProgressCard({ resume, status, onRetry }: ResumeProgressCa
   // What replaces the skeleton fades in; content already cached on arrival shows at once.
   const reveal = useReveal(status !== 'pending');
   return (
-    <Card className="w-full p-6 lg:w-[380px] lg:shrink-0">
+    <Card loading={status === 'pending'} className="w-full p-6 lg:w-[380px] lg:shrink-0">
       <SectionHeader
         title="Your Resume Progress"
         actionHref={resume ? resumeHref(resume.id) : undefined}
       />
 
-      {/* The row and the validation pills under it, so the card doesn't grow when they land. */}
+      {/* The row traced as thumbnail, lines and ring, then the pills, at their loaded sizes (§196). */}
       {status === 'pending' && (
         <>
-          <Skeleton className="mt-4 h-[70px] rounded-lg" />
-          <Skeleton className="mt-4 h-control-sm w-4/5 rounded-md" />
+          <div className="mt-4 flex items-center gap-3">
+            <Skeleton className="h-[76px] w-16 shrink-0" />
+            <div className="flex min-w-0 flex-1 flex-col gap-3">
+              <SkeletonLines widths={['w-4/5', 'w-1/2']} />
+              <Skeleton className="h-2 rounded-full" />
+            </div>
+            <SkeletonCircle className="size-[78px]" />
+          </div>
+          <Skeleton className="mt-5 h-8 w-4/5 rounded-full" />
         </>
       )}
 
@@ -60,10 +68,7 @@ export function ResumeProgressCard({ resume, status, onRetry }: ResumeProgressCa
       {status === 'success' && resume && (
         <>
           <div className={cn('mt-4 flex items-center gap-3', reveal && 'animate-reveal')}>
-            <div
-              aria-hidden
-              className="h-[76px] w-16 shrink-0 rounded-md bg-surface-muted"
-            />
+            <div aria-hidden className="h-[76px] w-16 shrink-0 rounded-md bg-surface-muted" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-title-l text-text-primary">{resume.title}</p>
               <p className="mt-0.5 text-body-s text-text-tertiary">

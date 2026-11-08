@@ -22,7 +22,7 @@ import { ApplicationOverviewTab } from './ApplicationOverviewTab';
 import { ApplicationStatusBadge } from './ApplicationStatusBadge';
 import { ApplicationSubmissionTab } from './ApplicationSubmissionTab';
 import { UpdateStatusMenu } from './UpdateStatusMenu';
-import { cardSurface } from '@/ui/Card';
+import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Soon, soonControl } from '@/ui/Soon';
 
 type ApplicationDetailTab = 'overview' | 'application' | 'follow-ups' | 'notes';
@@ -75,7 +75,7 @@ export function ApplicationDetailPanel({
   if (status === 'pending') {
     return (
       // Shrinks to the column and clips, as the loaded card does on a short window.
-      <div className={cn(CARD, 'min-h-0 overflow-hidden p-6')}>
+      <div className={cn(cardSurfaceLoading, 'min-h-0 overflow-hidden p-6')}>
         <DetailCardSkeleton lines={11} />
       </div>
     );

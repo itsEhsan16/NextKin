@@ -26,7 +26,7 @@ import { MatchBadge } from './MatchBadge';
 import Link from 'next/link';
 
 import { jobPageHref, tailorHref } from '../jobPageLibrary';
-import { cardSurface } from '@/ui/Card';
+import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Soon, soonControl } from '@/ui/Soon';
 
 export type JobDetailPanelProps = {
@@ -67,7 +67,7 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
   if (status === 'pending') {
     return (
       // Shrinks to the column and clips, as the loaded card does on a short window.
-      <div className={cn(CARD, 'min-h-0 overflow-hidden p-6')}>
+      <div className={cn(cardSurfaceLoading, 'min-h-0 overflow-hidden p-6')}>
         <DetailCardSkeleton tags />
       </div>
     );
@@ -102,13 +102,7 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
  * and squeezing the description between them (`toreview.md` §16). `min-h-0` is what lets it
  * shrink to the column and scroll.
  */
-function JobDetailBody({
-  job,
-  reveal,
-  onApply,
-  applied,
-  applicationHref,
-}: JobDetailBodyProps) {
+function JobDetailBody({ job, reveal, onApply, applied, applicationHref }: JobDetailBodyProps) {
   const [tab, setTab] = useState<JobDetailTab>('overview');
   const switched = useReveal(true, tab);
 

@@ -9,6 +9,7 @@ import {
 import { useResumeScore } from '@nextkin/shared/queries';
 
 import { ATS_DISCLAIMER } from '@/features/create/createLibrary';
+import { useReveal } from '@/lib/useReveal';
 import { ScoreRing } from '@/ui/ScoreRing';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -34,6 +35,8 @@ export function ResumeScoreTab({ resume }: { resume: Resume }) {
   // A document that has never been scored has nothing to fetch: the repo misses until it is.
   const scored = resume.atsScore != null;
   const score = useResumeScore(scored ? resume.id : '');
+  // The ring sweeps only when the score replaces its skeleton (§196), not each time the tab opens.
+  const reveal = useReveal(score.data !== undefined, resume.id);
 
   if (!scored) {
     return (
@@ -76,7 +79,7 @@ export function ResumeScoreTab({ resume }: { resume: Resume }) {
   return (
     <>
       <div className="flex items-center gap-4">
-        <ScoreRing score={total} label="ATS Score" sweep />
+        <ScoreRing score={total} label="ATS Score" sweep={reveal} />
         <div className="min-w-0">
           <Tag tone={BAND_TONE[band]}>{ATS_BAND_LABEL[band]}</Tag>
           <p className="mt-1.5 text-body-m text-text-secondary">{summary}</p>

@@ -92,6 +92,7 @@ describe('theme tokens', () => {
       'reveal',
       'pop-in',
       'pop-out',
+      'fade-out',
       'ring-sweep',
       'meter-grow',
       'bar-grow',
