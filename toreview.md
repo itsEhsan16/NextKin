@@ -16435,3 +16435,20 @@ The owner asked for a premium, smooth and quiet app: vibration only on the botto
 - The Android bundle from Metro on 8090 builds (HTTP 200).
 - Web preview at 390: Home, Profile, Jobs and the Assistant load.
 - Not checked: the shimmer sweep and the 150 ms delay can't be seen on web, where reduced motion is always on. Feel, the vibration and the Jobs scroll memory need the owner's phone pass.
+
+## §192 — Animated bottom bar: a gliding light and a lifting icon (owner, 2026-11-08)
+The owner asked for an animated bottom bar "inspired by 60fps design".
+- **`TabBarIndicator`** (new, `src/navigation`): a soft lavender pill (`brandSurface`, 66 × pill height − 12 at 390) under the selected tab.
+  - It glides between tabs on the UI thread. The position uses a critically damped spring (dampingRatio 1, about 380 ms), so it arrives with no bounce.
+  - It stretches horizontally (up to +45%) and thins slightly (−12%) on a sine of the move's progress, so the move reads as one liquid drop rather than a jump.
+  - It passes behind the centre AI button on its way across.
+  - It moves on the tap itself, through the bar's existing `pressed` state, not when the route catches up.
+  - Reduced motion: it moves at once.
+- **`TabBarItem`:** the selected icon rises 2 units and gives one small pop (1.14 on `timings.press`, then `springs.gentle`) when you switch to it, never on app launch. The colour and cut cross-fade are unchanged. Reduced motion: no lift, no pop.
+- **Vibration:** still one selection tick per tab press (§191), nothing added.
+- **Judgement call:** a gentle spring rather than a bouncy one, in keeping with §191's "restrained" motion.
+- **Verified:**
+  - Jest: 1934 tests pass, including a new test that the light follows the pressed tab. tsc and eslint are clean.
+  - Web preview: the light sits under Jobs, then Profile.
+  - The Android bundle builds; Expo was restarted on 8090.
+  - The glide itself is phone-only: the web preview always reports reduced motion.

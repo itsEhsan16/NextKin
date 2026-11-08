@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { haptics } from '@/lib';
 import { NAV_BOOST, scaledSheet, useTabBarLayout, useTheme } from '@/theme';
 
+import { TabBarIndicator } from './TabBarIndicator';
 import { TabBarItem } from './TabBarItem';
 import { TabBarShape } from './TabBarShape';
 import { activeTabFor, ICON_BOOST, TABS } from './tabBarTabs';
@@ -23,7 +24,7 @@ import { scrollTabToTop, type TabName } from './tabScroll';
  * remains the single source of bottom padding for scrolling content.
  */
 export function FloatingTabBar() {
-  const { colors, s } = useTheme();
+  const { colors, s, u } = useTheme();
   const styles = useStyles();
   const layout = useTabBarLayout();
   const router = useRouter();
@@ -84,6 +85,12 @@ export function FloatingTabBar() {
         style={[styles.pill, { width: layout.pillWidth, height: layout.pillHeight }]}
       >
         <TabBarShape pillWidth={layout.pillWidth} color={colors.tabBarBackground} />
+        {/* The light under the selected tab, gliding between them (§192). */}
+        <TabBarIndicator
+          centre={(TABS.find((tab) => tab.name === active)?.centre ?? 0) * layout.pillWidth}
+          width={u(INDICATOR_W)}
+          height={layout.pillHeight - u(INDICATOR_INSET)}
+        />
         {TABS.map((tab, index) => (
           <TabBarItem
             key={tab.name}
@@ -105,6 +112,10 @@ export function FloatingTabBar() {
 
 /** Unreachable (`slots` maps `TABS` one to one); satisfies `noUncheckedIndexedAccess`. */
 const EMPTY_SLOT = {};
+
+/** The selected tab's light at 390: wide enough for the longest label, inset from the pill. */
+const INDICATOR_W = 66;
+const INDICATOR_INSET = 12;
 
 const useStyles = scaledSheet(() => ({
   host: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },

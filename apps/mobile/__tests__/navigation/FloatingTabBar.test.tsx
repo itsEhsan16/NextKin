@@ -97,6 +97,19 @@ describe('FloatingTabBar', () => {
     expect(Haptics.impactAsync).not.toHaveBeenCalled();
   });
 
+  it('glides its light under the tab you pick, before the route catches up (§192)', async () => {
+    await renderBar(['(tabs)']);
+    const light = screen.getByTestId('tab-light', { includeHiddenElements: true });
+    const shift = () =>
+      (StyleSheet.flatten(light.props.style).transform as { translateX?: number }[]).find(
+        (step) => step.translateX != null,
+      )?.translateX ?? NaN;
+    const atHome = shift();
+
+    fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
+    await waitFor(() => expect(shift()).toBeGreaterThan(atHome));
+  });
+
   it('selects the pressed tab before the route catches up', async () => {
     await renderBar(['(tabs)']);
 
