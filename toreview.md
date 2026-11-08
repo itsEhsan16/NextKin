@@ -16475,3 +16475,28 @@ The owner sent a reference bar and asked for it "exactly same, but match our the
   - Web preview at 390: Home, then Resumes, as the reference.
   - The Android bundle builds; Expo was restarted on 8090.
   - Not checked on a phone. The glide is phone-only: the web preview always reports reduced motion.
+
+## §194 — Bottom bar re-engineered: no clipping, liquid motion (owner, 2026-11-08)
+On the phone, §193 showed three faults.
+- **The gradient pill's right end came out square:** Android did not clip the SVG to the animated view's rounded corners.
+- **Labels were cut short ("Resum"):** they were measured inside the clipped tab, so they took its width.
+- **The Profile icon showed as a white blob:** the custom nav icons are filled shapes with white cut-outs.
+
+The owner asked for it re-engineered, with smooth liquid motion.
+
+**What changed (`FloatingTabBar.tsx` rewritten):**
+- **No clipping anywhere:**
+  - The gradient pill is one rounded `Rect` (rx = half its height) inside an SVG spanning the whole track. Its `x`/`width` are Reanimated animated props on the UI thread, so its ends are always round.
+  - Tabs only translate and fade.
+  - Label widths come from invisible, unconstrained copies far off screen.
+- **Liquid motion:** the pill's two ends ride different springs.
+  - The leading end (in the direction of travel) springs at 340 ms, the trailing end at 560 ms, both with no overshoot. The pill stretches towards the new tab and draws itself in behind.
+  - Tabs and icons move on a middle spring (440 ms).
+  - The selected label fades in as the pill arrives, and the old one fades out in 120 ms so no word hangs over a neighbour.
+- **Icons:** the bar uses the app's line icons (Home02, Briefcase01, Folder, User01) in ink, and white on the pill. The custom nav SVGs are no longer used by the bar.
+- **Unchanged:** geometry (§193), the AI circle, the glow, one selection tick per press, re-tap to top, and the press showing before the route catches up.
+- **Verified:**
+  - Jest: 1933 tests pass. The bar tests were rewritten for translate and the measuring copy. tsc and eslint are clean.
+  - Web preview: Home, Jobs, Resumes and Profile each show a round-ended pill fitted to its label, with clean icons.
+  - The Android bundle builds.
+  - Not checked on a phone. The motion is phone-only: the web preview runs with reduced motion.

@@ -1,58 +1,77 @@
 import { useRouter, useSegments } from 'expo-router';
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState, type FC } from 'react';
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
-import type { SvgProps } from 'react-native-svg';
 
 import { a11yHiddenWhen, haptics, useReducedMotion } from '@/lib';
 import { useTabBarLayout, useTheme } from '@/theme';
+import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import { activeTabFor, TABS } from './tabBarTabs';
 import { scrollTabToTop, type TabName } from './tabScroll';
 
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
+
+/**
+ * The bar's line icons (§194). The custom nav cuts were filled shapes with white cut-outs, which
+ * read as outlines on white but turned into solid blobs on the gradient; stroke icons stay true
+ * in white and in ink alike, as the reference draws them.
+ */
+const GLYPH: Record<TabName, LineIconName> = {
+  index: 'Home02',
+  jobs: 'Briefcase01',
+  resumes: 'Folder',
+  profile: 'User01',
+};
+
 /** At 390: the pill's inner padding, the icon's box, and the gap between icon and label. */
 const PAD = 6;
 const ICON = 22;
 const ICON_GAP = 8;
-/** Extra room after the label, so the text never touches the gradient's round end. */
-const LABEL_TAIL = 6;
+/** Room after the label so it never touches the gradient's round end. */
+const LABEL_TAIL = 8;
 
 /**
- * The bar's own spring (§193): quick and without a bounce, so the gradient pill lands where it is
- * going. Every tab and the pill run the same one from the same frame, so they stay locked together.
+ * The liquid move (§194): the pill's two ends travel on different springs. The end in front
+ * leaps ahead, the end behind follows a beat later, so the pill stretches towards the new tab and
+ * then draws itself in, like a drop running along the bar. Neither spring overshoots.
  */
-const GLIDE = { duration: 420, dampingRatio: 0.88 } as const;
+const LEAD = { duration: 340, dampingRatio: 0.92 } as const;
+const TRAIL = { duration: 560, dampingRatio: 0.95 } as const;
+/** The tabs and their icons move on one middle spring, between the two ends. */
+const SLIDE = { duration: 440, dampingRatio: 0.92 } as const;
 
-type Geometry = { left: number; width: number };
+type Box = { left: number; width: number };
 
 /**
- * Where every tab sits for a given selection. The selected tab is widened to fit its label; the
- * others are a square around their icon, unless the bar has room for every label (a tablet), when
- * every tab shows its label as the reference draws it. Spaced evenly across the pill.
+ * Where every tab sits for a given selection. The selected tab is as wide as its icon and label;
+ * the others are a square around the icon, unless the pill has room for every label (a tablet),
+ * when all of them show it. Spaced evenly across the pill.
  */
 function layoutTabs(
   inner: number,
-  tabHeight: number,
+  side: number,
   expanded: Record<TabName, number>,
   active: TabName,
-): { boxes: Record<TabName, Geometry>; roomy: boolean } {
-  const all = TABS.reduce((sum, tab) => sum + expanded[tab.name], 0);
-  const roomy = all <= inner;
-  const widths = TABS.map((tab) => (roomy || tab.name === active ? expanded[tab.name] : tabHeight));
+): { boxes: Record<TabName, Box>; roomy: boolean } {
+  const total = TABS.reduce((sum, tab) => sum + expanded[tab.name], 0);
+  const roomy = total <= inner;
+  const widths = TABS.map((tab) => (roomy || tab.name === active ? expanded[tab.name] : side));
   const used = widths.reduce((sum, width) => sum + width, 0);
   const gap = Math.max(0, (inner - used) / (TABS.length - 1));
-  const boxes = {} as Record<TabName, Geometry>;
+  const boxes = {} as Record<TabName, Box>;
   let left = 0;
   TABS.forEach((tab, index) => {
-    const width = widths[index] ?? tabHeight;
+    const width = widths[index] ?? side;
     boxes[tab.name] = { left, width };
     left += width + gap;
   });
@@ -60,15 +79,19 @@ function layoutTabs(
 }
 
 /**
- * The bottom bar (redrawn to the owner's reference, 2026-11-08, §193): a white pill of four tabs
- * with a soft violet glow, the selected tab a gradient pill with its icon and label in white. On a
- * tap the gradient glides and resizes to the new tab on the UI thread while the tabs make room, so
- * the whole bar moves as one. The AI button is its own circle beside it (`Fab`).
+ * The bottom bar (owner's reference, §193; re-engineered §194): a white pill of four tabs on a soft
+ * violet glow, the selected tab a gradient pill with its icon and label in white, and the AI
+ * button its own circle beside it (`Fab`).
  *
- * Rendered as a sibling of the tab navigator rather than through the navigator's `tabBar` prop,
- * so the tabs layout can order it against the hosted sheets. That puts it outside the navigator,
- * so it drives itself: active tab from `useSegments()`, navigation through the typed hrefs.
- * It reserves no layout space: `Screen`'s `tabBarInset` is the single source of bottom padding.
+ * Nothing here relies on clipping, which Android did not honour for the drawn gradient (its end
+ * came out square) and which made labels measure as cut short:
+ * - the gradient pill is one rounded rect inside an SVG that spans the whole track, its two ends
+ *   animated as SVG props on the UI thread;
+ * - each tab only moves (translate) and fades its label; it is never clipped;
+ * - label widths come from an unconstrained, invisible copy, so they are the words' real width.
+ *
+ * Rendered as a sibling of the tab navigator, so it drives itself from `useSegments()`. It
+ * reserves no layout space: `Screen`'s `tabBarInset` is the single source of bottom padding.
  */
 export function FloatingTabBar() {
   const { colors, u } = useTheme();
@@ -102,30 +125,30 @@ export function FloatingTabBar() {
     if (!target) return;
     haptics.selection();
     setPressed(name);
-    // One frame later, so the glide starts before the navigation's own render claims the thread.
+    // One frame later, so the move starts before the navigation's own render claims the thread.
     requestAnimationFrame(() => nav.navigate(target.href));
   }, []);
 
-  // Each label's measured width, so the selected tab is exactly as wide as its words need.
+  // Each label's real width, from the invisible measuring copies below.
   const [labels, setLabels] = useState<Partial<Record<TabName, number>>>({});
   const measure = useCallback((name: TabName, width: number) => {
     setLabels((seen) => (seen[name] === width ? seen : { ...seen, [name]: width }));
   }, []);
 
   const pad = u(PAD);
-  const tabHeight = layout.pillHeight - pad * 2;
+  const height = layout.pillHeight - pad * 2;
   const inner = layout.pillWidth - pad * 2;
-  const iconSide = (tabHeight - u(ICON)) / 2;
+  const icon = u(ICON);
+  const inset = (height - icon) / 2;
   const expanded = useMemo(() => {
     const out = {} as Record<TabName, number>;
     for (const tab of TABS) {
-      const label = labels[tab.name] ?? tab.label.length * u(8);
-      out[tab.name] = iconSide + u(ICON) + u(ICON_GAP) + label + iconSide + u(LABEL_TAIL);
+      const label = labels[tab.name] ?? tab.label.length * u(9);
+      out[tab.name] = inset + icon + u(ICON_GAP) + label + inset + u(LABEL_TAIL);
     }
     return out;
-  }, [iconSide, labels, u]);
-  const { boxes, roomy } = layoutTabs(inner, tabHeight, expanded, active);
-  const current = boxes[active];
+  }, [icon, inset, labels, u]);
+  const { boxes, roomy } = layoutTabs(inner, height, expanded, active);
 
   return (
     <View
@@ -154,56 +177,81 @@ export function FloatingTabBar() {
         ]}
       >
         <View style={styles.track}>
-          <ActivePill left={current.left} width={current.width} height={tabHeight} />
+          <LiquidPill track={inner} height={height} box={boxes[active]} />
           {TABS.map((tab) => (
             <BarTab
               key={tab.name}
               name={tab.name}
               label={tab.label}
-              Icon={tab.Icon}
-              IconActive={tab.IconActive}
+              glyph={GLYPH[tab.name]}
               focused={tab.name === active}
               showLabel={roomy || tab.name === active}
               left={boxes[tab.name].left}
               width={boxes[tab.name].width}
-              height={tabHeight}
-              iconSide={iconSide}
+              height={height}
+              inset={inset}
               onPress={handlePress}
-              onMeasure={measure}
             />
           ))}
         </View>
+      </View>
+      {/* The labels at their natural width, invisible and out of the way, for measuring only. */}
+      <View pointerEvents="none" style={styles.measure} {...a11yHiddenWhen(true)}>
+        {TABS.map((tab) => (
+          <Text
+            key={tab.name}
+            variant="bodyLgStrong"
+            numberOfLines={1}
+            onLayout={(event: LayoutChangeEvent) =>
+              measure(tab.name, Math.ceil(event.nativeEvent.layout.width))
+            }
+          >
+            {tab.label}
+          </Text>
+        ))}
       </View>
     </View>
   );
 }
 
-/** Animates a box's left and width to where the layout says, on the shared glide. */
-function useGlide(left: number, width: number) {
-  const reduced = useReducedMotion();
-  const x = useSharedValue(left);
-  const w = useSharedValue(width);
-  useEffect(() => {
-    x.set(reduced ? left : withSpring(left, GLIDE));
-    w.set(reduced ? width : withSpring(width, GLIDE));
-  }, [left, reduced, w, width, x]);
-  return useAnimatedStyle(() => ({ left: x.value, width: w.value }));
-}
-
-/** The selected tab's gradient pill, gliding and resizing under the tabs. */
-function ActivePill({ left, width, height }: { left: number; width: number; height: number }) {
+/**
+ * The selected tab's gradient pill: one rounded rect in an SVG the size of the whole track. Its
+ * left and right ends are separate springs (lead and trail), set as SVG props on the UI thread.
+ */
+function LiquidPill({ track, height, box }: { track: number; height: number; box: Box }) {
   const { colors } = useTheme();
+  const reduced = useReducedMotion();
   const id = `navPill${useId().replace(/:/g, '')}`;
-  const glide = useGlide(left, width);
+  const leftEdge = useSharedValue(box.left);
+  const rightEdge = useSharedValue(box.left + box.width);
+
+  useEffect(() => {
+    const right = box.left + box.width;
+    if (reduced) {
+      leftEdge.set(box.left);
+      rightEdge.set(right);
+      return;
+    }
+    // Moving right, the right end leads; moving left, the left end does.
+    const goingRight = box.left > leftEdge.get();
+    leftEdge.set(withSpring(box.left, goingRight ? TRAIL : LEAD));
+    rightEdge.set(withSpring(right, goingRight ? LEAD : TRAIL));
+  }, [box.left, box.width, leftEdge, reduced, rightEdge]);
+
+  const shape = useAnimatedProps(() => ({
+    x: leftEdge.value,
+    width: Math.max(height, rightEdge.value - leftEdge.value),
+  }));
+
   return (
-    <Animated.View
+    <View
       testID="tab-light"
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[styles.active, { height, borderRadius: height / 2 }, glide]}
+      style={[styles.pillLayer, { width: track, height }]}
     >
-      <Svg width="100%" height="100%" preserveAspectRatio="none">
+      <Svg width={track} height={height}>
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0" stopColor={colors.navGradientStart} />
@@ -211,13 +259,20 @@ function ActivePill({ left, width, height }: { left: number; width: number; heig
             <Stop offset="1" stopColor={colors.navGradientEnd} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+        <AnimatedRect
+          y={0}
+          height={height}
+          rx={height / 2}
+          ry={height / 2}
+          fill={`url(#${id})`}
+          animatedProps={shape}
+        />
       </Svg>
-    </Animated.View>
+    </View>
   );
 }
 
-/** The soft violet glow the bar floats on: an ellipse under it, drawn the same on every platform. */
+/** The soft violet glow the bar floats on: an ellipse under it, drawn the same everywhere. */
 function BarGlow({ width, height, color }: { width: number; height: number; color: string }) {
   const id = `navGlow${useId().replace(/:/g, '')}`;
   const w = width * 1.16;
@@ -225,10 +280,7 @@ function BarGlow({ width, height, color }: { width: number; height: number; colo
   return (
     <View
       pointerEvents="none"
-      style={[
-        styles.glow,
-        { width: w, height: h, left: (width - w) / 2, top: height * 0.05 - h * 0.3 },
-      ]}
+      style={[styles.glow, { width: w, height: h, left: (width - w) / 2, top: -h * 0.3 }]}
     >
       <Svg width={w} height={h}>
         <Defs>
@@ -247,89 +299,102 @@ function BarGlow({ width, height, color }: { width: number; height: number; colo
 type BarTabProps = {
   name: TabName;
   label: string;
-  Icon: FC<SvgProps>;
-  IconActive: FC<SvgProps>;
+  glyph: LineIconName;
   focused: boolean;
   showLabel: boolean;
   left: number;
   width: number;
   height: number;
-  iconSide: number;
+  inset: number;
   onPress: (name: TabName) => void;
-  onMeasure: (name: TabName, width: number) => void;
 };
 
 /**
- * One tab: its icon at a fixed inset from the tab's left edge (so it never slides inside its
- * tab), and its label beside it, clipped by the tab's width as the tab grows and shrinks. White on
- * the gradient when selected, ink when not; the two cuts and colours cross-fade on the UI thread.
- * Memoised: only the tabs whose state or place changed re-render on a switch.
+ * One tab. It slides to its place (translate only) and its touch area follows; the icon sits a
+ * fixed inset from the tab's left, so it rides with the tab and never shifts inside it. The icon
+ * is the same line icon in both states, ink or white, cross-faded; the label fades in on the
+ * selected tab once the pill is under it, and out at once when the tab is left, so a word never
+ * hangs over a neighbour. Memoised: only tabs whose place or state changed re-render.
  */
 const BarTab = memo(function BarTab({
   name,
   label,
-  Icon,
-  IconActive,
+  glyph,
   focused,
   showLabel,
   left,
   width,
   height,
-  iconSide,
+  inset,
   onPress,
-  onMeasure,
 }: BarTabProps) {
   const { colors, motion, u } = useTheme();
   const reduced = useReducedMotion();
-  const glide = useGlide(left, width);
+  const x = useSharedValue(left);
+  const w = useSharedValue(width);
   const on = useSharedValue(focused ? 1 : 0);
-  const shown = useSharedValue(showLabel ? 1 : 0);
+  const words = useSharedValue(showLabel ? 1 : 0);
+
+  useEffect(() => {
+    if (reduced) {
+      x.set(left);
+      w.set(width);
+      return;
+    }
+    x.set(withSpring(left, SLIDE));
+    w.set(withSpring(width, SLIDE));
+  }, [left, reduced, w, width, x]);
+
   useEffect(() => {
     on.set(reduced ? (focused ? 1 : 0) : withTiming(focused ? 1 : 0, motion.timings.base));
-    shown.set(reduced ? (showLabel ? 1 : 0) : withTiming(showLabel ? 1 : 0, motion.timings.base));
-  }, [focused, motion.timings.base, on, reduced, showLabel, shown]);
+    words.set(
+      reduced
+        ? showLabel
+          ? 1
+          : 0
+        : showLabel
+          ? // In after the pill has mostly arrived; out straight away.
+            withTiming(1, { ...motion.timings.base, duration: motion.durations.base })
+          : withTiming(0, { ...motion.timings.fast, duration: 120 }),
+    );
+  }, [focused, motion, on, reduced, showLabel, words]);
 
-  const whiteStyle = useAnimatedStyle(() => ({ opacity: on.value }));
-  const inkStyle = useAnimatedStyle(() => ({ opacity: 1 - on.value }));
-  const labelStyle = useAnimatedStyle(() => ({ opacity: shown.value }));
+  const place = useAnimatedStyle(() => ({ width: w.value, transform: [{ translateX: x.value }] }));
+  const white = useAnimatedStyle(() => ({ opacity: on.value }));
+  const ink = useAnimatedStyle(() => ({ opacity: 1 - on.value }));
+  const labelStyle = useAnimatedStyle(() => ({ opacity: words.value }));
   const handlePress = useCallback(() => onPress(name), [name, onPress]);
-  const icon = u(ICON);
+  const size = u(ICON);
 
   return (
-    <Animated.View style={[styles.tab, { height }, glide]}>
+    <Animated.View style={[styles.tab, { height }, place]}>
       <Pressable
         accessibilityRole="tab"
         accessibilityLabel={label}
         accessibilityState={{ selected: focused }}
         feedback="subtle"
         onPress={handlePress}
-        style={[styles.press, { paddingLeft: iconSide, gap: u(ICON_GAP) }]}
+        style={[styles.press, { paddingLeft: inset, gap: u(ICON_GAP) }]}
       >
-        <View style={{ width: icon, height: icon }}>
-          <Animated.View style={[StyleSheet.absoluteFill, inkStyle]}>
-            <Icon width={icon} height={icon} color={colors.navInactive} />
+        <View style={{ width: size, height: size }}>
+          <Animated.View style={[StyleSheet.absoluteFill, ink]}>
+            <Icon name={glyph} size={size} color={colors.navInactive} />
           </Animated.View>
-          <Animated.View style={[StyleSheet.absoluteFill, whiteStyle]}>
-            <IconActive width={icon} height={icon} color={colors.textOnBrand} />
+          <Animated.View style={[StyleSheet.absoluteFill, white]}>
+            <Icon name={glyph} size={size} color={colors.textOnBrand} />
           </Animated.View>
         </View>
-        <Animated.View style={labelStyle} {...a11yHiddenWhen(true)}>
-          <View
-            onLayout={(event: LayoutChangeEvent) =>
-              onMeasure(name, Math.ceil(event.nativeEvent.layout.width))
-            }
-          >
-            <Animated.View style={inkStyle}>
-              <Text variant="bodyLgStrong" color="navInactive" numberOfLines={1}>
-                {label}
-              </Text>
-            </Animated.View>
-            <Animated.View style={[StyleSheet.absoluteFill, whiteStyle]}>
-              <Text variant="bodyLgStrong" color="textOnBrand" numberOfLines={1}>
-                {label}
-              </Text>
-            </Animated.View>
-          </View>
+        <Animated.View style={[styles.label, labelStyle]} {...a11yHiddenWhen(true)}>
+          <Animated.View style={ink}>
+            <Text variant="bodyLgStrong" color="navInactive" numberOfLines={1}>
+              {label}
+            </Text>
+          </Animated.View>
+          <Animated.View style={[StyleSheet.absoluteFill, white]}>
+            <Text variant="bodyLgStrong" color="textOnBrand" numberOfLines={1}>
+              {label}
+            </Text>
+          </Animated.View>
         </Animated.View>
       </Pressable>
     </Animated.View>
@@ -341,7 +406,11 @@ const styles = StyleSheet.create({
   glow: { position: 'absolute' },
   pill: { flex: 1, borderWidth: StyleSheet.hairlineWidth },
   track: { flex: 1 },
-  active: { position: 'absolute', top: 0, overflow: 'hidden' },
-  tab: { position: 'absolute', top: 0, overflow: 'hidden' },
+  pillLayer: { position: 'absolute', top: 0, left: 0 },
+  tab: { position: 'absolute', top: 0, left: 0 },
   press: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  // The label keeps its natural width even when its tab is narrower than it (no shrinking).
+  label: { flexShrink: 0 },
+  // Far off screen and never drawn: only its children's widths are read.
+  measure: { position: 'absolute', left: '-500%', top: 0, opacity: 0, alignItems: 'flex-start' },
 });

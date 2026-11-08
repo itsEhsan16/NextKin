@@ -97,14 +97,23 @@ describe('FloatingTabBar', () => {
     expect(Haptics.impactAsync).not.toHaveBeenCalled();
   });
 
-  it('glides the gradient pill to the tab you pick, before the route catches up (§193)', async () => {
+  it('moves the selected tab over to the one you pick, before the route catches up (§194)', async () => {
     await renderBar(['(tabs)']);
-    const pill = screen.getByTestId('tab-light', { includeHiddenElements: true });
-    const left = () => Number(StyleSheet.flatten(pill.props.style).left);
-    const atHome = left();
+    // A tab slides by translateX; Profile, the last, moves left as it widens to hold its label.
+    const shift = (name: string) => {
+      let node = screen.getByRole('tab', { name }).parent;
+      while (node && StyleSheet.flatten(node.props.style)?.transform === undefined)
+        node = node.parent;
+      const steps = StyleSheet.flatten(node?.props.style)?.transform as { translateX?: number }[];
+      return steps.find((step) => step.translateX != null)?.translateX ?? NaN;
+    };
+    const before = shift('Profile');
 
     fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
-    await waitFor(() => expect(left()).toBeGreaterThan(atHome));
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: 'Profile', selected: true })).toBeOnTheScreen(),
+    );
+    await waitFor(() => expect(shift('Profile')).toBeLessThan(before));
   });
 
   it('selects the pressed tab before the route catches up', async () => {
@@ -186,9 +195,9 @@ describe('FloatingTabBar', () => {
   it('names each tab once for assistive tech; the label copies are drawing only', async () => {
     await renderBar(['(tabs)', 'jobs']);
 
-    // Two drawn copies per label (white and ink) for the cross-fade, both hidden: the tab itself
-    // carries the name.
-    expect(screen.getAllByText('Jobs', { includeHiddenElements: true })).toHaveLength(2);
+    // Two drawn copies per label (white and ink) for the cross-fade and one measuring copy, all
+    // hidden: the tab itself carries the name.
+    expect(screen.getAllByText('Jobs', { includeHiddenElements: true })).toHaveLength(3);
     expect(screen.queryAllByText('Jobs')).toHaveLength(0);
     expect(screen.getByRole('tab', { name: 'Jobs', selected: true })).toBeOnTheScreen();
   });
