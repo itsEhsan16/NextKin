@@ -89,9 +89,9 @@ export function JobMatchCard({ band, criteria, basis, onSeeFullCriteria }: JobMa
           ) : (
             <Animated.View
               key={criterion.id}
-              entering={FadeInDown.delay(index * motion.stagger.row).duration(
-                motion.durations.base,
-              )}
+              entering={FadeInDown.delay(
+                Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
+              ).duration(motion.durations.base)}
             >
               {row}
             </Animated.View>

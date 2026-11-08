@@ -217,9 +217,9 @@ export function ExportSheetBody({
           ) : (
             <Animated.View
               key={row.format}
-              entering={FadeInDown.delay(index * motion.stagger.row).duration(
-                motion.durations.base,
-              )}
+              entering={FadeInDown.delay(
+                Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
+              ).duration(motion.durations.base)}
             >
               {content}
             </Animated.View>

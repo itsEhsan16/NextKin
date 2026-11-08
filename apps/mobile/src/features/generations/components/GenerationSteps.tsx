@@ -49,7 +49,9 @@ function StepRow({ step, state, hint, index }: StepRowProps) {
       entering={
         reduced
           ? undefined
-          : FadeInDown.delay(index * motion.stagger.row).duration(motion.durations.base)
+          : FadeInDown.delay(
+              Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
+            ).duration(motion.durations.base)
       }
       style={[styles.row, { gap: spacing[3], minHeight: s(28) }]}
     >

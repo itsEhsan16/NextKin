@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import type { FactKind, Profile } from '@/data/models';
 import { useConfirmFacts, useProfile } from '@/data/queries';
-import { useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import type { ListRowArt } from '@/ui/ListRow';
 import { NoteBar } from '@/ui/NoteBar';
@@ -77,9 +76,8 @@ export function EntryListScreen({
   note,
   overlay,
 }: EntryListScreenProps) {
-  const { motion, spacing, s } = useTheme();
+  const { spacing, s } = useTheme();
   const styles = useStyles();
-  const reduced = useReducedMotion();
   const actions = useProfileActions();
   const profile = useProfile();
   const confirm = useConfirmFacts();
@@ -150,16 +148,7 @@ export function EntryListScreen({
       </View>
       <View style={{ gap: s(CARD_STEP) }}>
         {rows.map((row, index) => (
-          <Animated.View
-            key={row.id}
-            entering={
-              reduced
-                ? undefined
-                : FadeInDown.delay(
-                    Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
-                  ).duration(motion.durations.base)
-            }
-          >
+          <Animated.View key={row.id}>
             <EntryCard
               tile={tileFor(row.tile)}
               title={row.title}

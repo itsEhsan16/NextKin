@@ -1,9 +1,8 @@
 import { View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import type { MatchCriterion } from '@/data/models';
 import { ProfileCard } from '@/features/profile/components/cards';
-import { a11yHeader, useReducedMotion } from '@/lib';
+import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
@@ -35,9 +34,8 @@ type CriterionRowProps = { criterion: MatchCriterion; order: number };
  * element that speaks its state rather than a button that leads nowhere.
  */
 function CriterionRow({ criterion, order }: CriterionRowProps) {
-  const { colors, motion } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
-  const reduced = useReducedMotion();
   const icon = CRITERION_ICON[criterion.state];
 
   const row = (
@@ -56,17 +54,8 @@ function CriterionRow({ criterion, order }: CriterionRowProps) {
     </View>
   );
 
-  if (reduced) return row;
-
-  return (
-    <Animated.View
-      entering={FadeInDown.delay(
-        Math.min(order, motion.stagger.maxItems) * motion.stagger.row,
-      ).duration(motion.durations.base)}
-    >
-      {row}
-    </Animated.View>
-  );
+  // No entrance: the criteria are on screen when it opens, not arriving (§191).
+  return row;
 }
 
 export type CriteriaGroupsProps = { groups: readonly CriteriaGroup[] };

@@ -1,9 +1,8 @@
 import { View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { FAQ_TOPIC_LABEL, FAQ_TOPIC_ORDER, type FaqItem } from '@/data/models';
 import { ProfileCard, SectionHeading } from '@/features/profile/components/cards';
-import { useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 
 import { faqAnswersLabel } from '../faqSearch';
@@ -31,9 +30,8 @@ const DIVIDER_INSET = 15 / 0.75;
  * than drawn as an empty card.
  */
 export function FaqList({ items, openId, onToggle }: FaqListProps) {
-  const { colors, motion, sizes } = useTheme();
+  const { colors, sizes } = useTheme();
   const styles = useStyles();
-  const reduced = useReducedMotion();
 
   const groups = FAQ_TOPIC_ORDER.map((topic) => ({
     topic,
@@ -43,17 +41,7 @@ export function FaqList({ items, openId, onToggle }: FaqListProps) {
   return (
     <View style={styles.groups}>
       {groups.map((group, index) => (
-        <Animated.View
-          key={group.topic}
-          entering={
-            reduced
-              ? undefined
-              : FadeInDown.delay(
-                  Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
-                ).duration(motion.durations.base)
-          }
-          style={styles.group}
-        >
+        <Animated.View key={group.topic} style={styles.group}>
           <SectionHeading
             title={FAQ_TOPIC_LABEL[group.topic]}
             note={faqAnswersLabel(group.rows.length)}

@@ -51,7 +51,9 @@ function Section({ index, animate, children }: SectionProps) {
     <Animated.View
       entering={
         animate
-          ? FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base)
+          ? FadeInDown.delay(
+              Math.min(index, motion.stagger.maxItems) * motion.stagger.card,
+            ).duration(motion.durations.base)
           : undefined
       }
       layout={layoutTransition(reduced)}

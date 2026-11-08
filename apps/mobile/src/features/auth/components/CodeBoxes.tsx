@@ -6,12 +6,11 @@ import Animated, {
   useSharedValue,
   withDelay,
   withSequence,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 
 import { useReducedMotion } from '@/lib';
-import { useTheme } from '@/theme';
+import { motion, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 import { useShake } from '@/ui/motion';
@@ -48,7 +47,10 @@ function CodeBox({
 
   useEffect(() => {
     if (!digit || reduced) return;
-    pop.set(withSequence(withTiming(1.12, { duration: 90 }), withSpring(1, { damping: 12 })));
+    // A small, calm pop on the app's press timing; no bounce (§191).
+    pop.set(
+      withSequence(withTiming(1.06, motion.timings.press), withTiming(1, motion.timings.fast)),
+    );
   }, [digit, pop, reduced]);
 
   useEffect(() => {
@@ -60,9 +62,13 @@ function CodeBox({
       done.set(1);
       return;
     }
-    done.set(withDelay(index * 70, withTiming(1, { duration: 220 })));
+    const wait = index * motion.stagger.row;
+    done.set(withDelay(wait, withTiming(1, motion.timings.base)));
     pop.set(
-      withDelay(index * 70, withSequence(withTiming(1.14, { duration: 120 }), withSpring(1))),
+      withDelay(
+        wait,
+        withSequence(withTiming(1.06, motion.timings.press), withTiming(1, motion.timings.fast)),
+      ),
     );
   }, [done, index, pop, reduced, success]);
 

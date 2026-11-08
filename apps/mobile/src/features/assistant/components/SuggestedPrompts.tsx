@@ -48,7 +48,11 @@ export function AssistantWelcome({
           <Animated.View
             key={item.prompt}
             entering={
-              reduced ? undefined : FadeInDown.delay(index * 60).duration(motion.durations.base)
+              reduced
+                ? undefined
+                : FadeInDown.delay(
+                    Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
+                  ).duration(motion.durations.base)
             }
           >
             <Pressable

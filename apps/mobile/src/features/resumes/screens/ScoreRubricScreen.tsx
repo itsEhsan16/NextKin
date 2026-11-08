@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import AtsCheckArt from '../../../../assets/icons/create/ats-check.svg';
 import FormattingIcon from '../../../../assets/icons/score/formatting.svg';
@@ -9,7 +9,7 @@ import QuantifiedIcon from '../../../../assets/icons/score/quantified.svg';
 import { SCORE_HONESTY_NOTE, SCORE_LABEL, SCORE_RUBRIC } from '@/data/models';
 import { useResume } from '@/data/queries';
 import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
-import { a11yHeader, useReducedMotion } from '@/lib';
+import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import type { ListRowArt } from '@/ui/ListRow';
 import { Screen } from '@/ui/Screen';
@@ -59,9 +59,8 @@ function splitLead(note: string): [string, string] {
  * reachable from every score display, so each "What this score measures" link lands here.
  */
 export function ScoreRubricScreen({ id }: ScoreRubricScreenProps) {
-  const { colors, motion, sizes, spacing, s } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const styles = useStyles();
-  const reduced = useReducedMotion();
   const actions = useResumesActions();
 
   const resume = useResume(id);
@@ -143,16 +142,7 @@ export function ScoreRubricScreen({ id }: ScoreRubricScreenProps) {
 
       <View style={styles.cards}>
         {SCORE_RUBRIC.map((component, index) => (
-          <Animated.View
-            key={component.key}
-            entering={
-              reduced
-                ? undefined
-                : FadeInDown.delay(
-                    Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
-                  ).duration(motion.durations.base)
-            }
-          >
+          <Animated.View key={component.key}>
             <RubricCard
               component={component}
               art={RUBRIC_ART[component.key] ?? PROFILE_ROW_ART.terms}

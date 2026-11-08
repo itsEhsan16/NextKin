@@ -131,9 +131,9 @@ export function CreateSheetStep({
           return visible && !reduced ? (
             <Animated.View
               key={row.key}
-              entering={FadeInDown.delay(index * motion.stagger.row).duration(
-                motion.durations.base,
-              )}
+              entering={FadeInDown.delay(
+                Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
+              ).duration(motion.durations.base)}
             >
               {content}
             </Animated.View>

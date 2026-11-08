@@ -22,7 +22,9 @@ import { ScoreRing } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
 const blockIn = (index: number) =>
-  FadeInDown.delay(index * motion.stagger.card * 3).duration(motion.durations.base);
+  FadeInDown.delay(Math.min(index, motion.stagger.maxItems) * motion.stagger.card * 3).duration(
+    motion.durations.base,
+  );
 
 const BAND_TONE = { strong: 'success', good: 'success', fair: 'warning', weak: 'warning' } as const;
 

@@ -44,7 +44,12 @@ const CHOICES = [
     label: 'Paste the description',
     description: 'Copy the posting and drop the text in',
   },
-  { key: 'file', icon: 'UploadCloud02', label: 'Upload a file', description: 'PDF, DOC, DOCX or TXT' },
+  {
+    key: 'file',
+    icon: 'UploadCloud02',
+    label: 'Upload a file',
+    description: 'PDF, DOC, DOCX or TXT',
+  },
   {
     key: 'job',
     icon: 'Bookmark',
@@ -178,7 +183,9 @@ export function JdIntakeSection({ value, onChange, jobId, pasteError }: JdIntake
               entering={
                 reduced
                   ? undefined
-                  : FadeInDown.delay(index * motion.stagger.row).duration(motion.durations.base)
+                  : FadeInDown.delay(
+                      Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
+                    ).duration(motion.durations.base)
               }
             >
               <SheetRow

@@ -242,7 +242,9 @@ function Section({ index, children }: { index: number; children: ReactNode }) {
   if (reduced) return <View>{children}</View>;
   return (
     <Animated.View
-      entering={FadeInDown.delay(index * motion.stagger.card).duration(motion.durations.base)}
+      entering={FadeInDown.delay(
+        Math.min(index, motion.stagger.maxItems) * motion.stagger.card,
+      ).duration(motion.durations.base)}
     >
       {children}
     </Animated.View>

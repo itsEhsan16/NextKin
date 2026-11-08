@@ -1,9 +1,9 @@
 import { View, type LayoutChangeEvent } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import type { LegalSection } from '@/data/models';
 import { ProfileCard } from '@/features/profile/components/cards';
-import { a11yHeader, useReducedMotion } from '@/lib';
+import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 
@@ -59,22 +59,14 @@ export function SectionNumber({ value }: { value: number }) {
  * The contents card above is the shortcut instead: it scrolls, it never hides.
  */
 export function LegalSections({ sections, onSectionLayout }: LegalSectionsProps) {
-  const { motion, spacing } = useTheme();
+  const { spacing } = useTheme();
   const styles = useStyles();
-  const reduced = useReducedMotion();
 
   return (
     <View style={styles.list}>
       {sections.map((section, index) => (
         <Animated.View
           key={section.id}
-          entering={
-            reduced
-              ? undefined
-              : FadeInDown.delay(
-                  Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
-                ).duration(motion.durations.base)
-          }
           onLayout={(event: LayoutChangeEvent) =>
             onSectionLayout?.(index, event.nativeEvent.layout.y)
           }

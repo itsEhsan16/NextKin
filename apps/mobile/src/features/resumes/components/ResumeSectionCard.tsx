@@ -1,9 +1,8 @@
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { RESUME_SECTION_LABEL, type ResumeContent, type ResumeSectionKey } from '@/data/models';
 import { Art, ProfileCard } from '@/features/profile/components/cards';
-import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Skeleton } from '@/ui/Skeleton';
@@ -98,19 +97,13 @@ export function ResumeSectionCard({
   onEdit,
   onRegenerate,
 }: ResumeSectionCardProps) {
-  const { colors, motion, spacing, s } = useTheme();
-  const reduced = useReducedMotion();
+  const { colors, spacing, s } = useTheme();
   const label = RESUME_SECTION_LABEL[section];
   const empty = resumeSectionIsEmpty(content, section);
 
-  const entering = reduced
-    ? undefined
-    : FadeInDown.delay(Math.min(index, motion.stagger.maxItems) * motion.stagger.card).duration(
-        motion.durations.base,
-      );
-
+  // No entrance: the cards replayed it on every visit to the editor (§191).
   return (
-    <Animated.View entering={entering}>
+    <Animated.View>
       <ProfileCard style={{ padding: spacing[5], gap: s(CARD_INNER_GAP) }}>
         <View style={[styles.header, { gap: s(HEADER_GAP) }]}>
           <View style={{ width: s(ICON_SLOT_W), height: s(ICON_SLOT_H), ...styles.centre }}>
