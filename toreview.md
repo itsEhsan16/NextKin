@@ -16602,3 +16602,92 @@ refuses `/auth/login` ("handled by Clerk"), and the app still used the server's 
     default "Built from" source is the base resume. The profile comparison (J7–J8) appears only
     after switching the source to "Your profile".
   - J1 shows only the first saved job. Everything else is behind "See all".
+
+<!-- 169b was numbered 169 on the admin design branch (2026-11-05); main's 169 is the Clerk web sign-up. Renamed when it merged on 2026-11-08. -->
+
+## 169b. Admin overview: three design directions in Figma (owner, 2026-11-05)
+
+- **Where:** For-Next-Kin, new page "🛠 Admin". Direction A · Light ops `394:536`, B · Dark glass `397:551`, C · Light bento `398:566`. They were rebuilt the same day after the owner said the finish was poor (Untitled UI rules: icon strokes at 1.67, bordered badges, featured icons, smooth sparklines, stacked bars with axes, donut, table). Each board has a label above it, and a notes card sits below. The icons are 43 Untitled UI line icons made into local components ("Admin icons (components)"). Built from the file's NextKin Tokens and text styles; B is A restyled, so its colours are raw values, not tokens.
+- **Decided 2026-11-05:** the owner picked **A · Light ops**. The other admin screens follow A's sidebar, tray cards and table style. B and C stay on the page for reference.
+- **Untitled UI file not used:** the PRO preview link is view-only, and the Figma tools need edit access to read it. The icons are Untitled UI's own paths (from the `@untitledui/icons` package the web app uses), made into local components. Duplicate the kit into your drafts if you want its real badge, chart and table components swapped in.
+- **Scope I chose from the docs** (V2 §7.17, §2.2–2.3, §8.5; P12 permissions):
+  - Sidebar: Overview; People (Users, Staff & roles, Deletion requests); Content (AI prompts, Technology KB, Skills & aliases, Templates, ATS rubric); Business (Plans & pricing, Analytics, Job providers); Trust & safety (Generation failures, Abuse reports, Audit log).
+  - The Overview shows aggregates only:
+    - KPIs measured against the §2.2 targets (activation 55%, reliability 98%, conversion 3%).
+    - Generations by day, a needs-attention queue, AI cost by stage, Pro subscriptions by currency, the ATS histogram, job providers and recent audit rows.
+  - Users appear only as masked IDs.
+- **No backend for yet** (`GET /admin/analytics` doesn't return these):
+  - failure-queue counts, abuse reports, provider consumption and error rates
+  - activation and conversion funnels, cost per resume per stage
+  - queue depth, p95 and SLA, deletion-request due dates
+  - revenue per currency
+- **Not done:** the other admin screens, and any code. P12 still says the admin UI needs its own plan.
+
+### 169b.1 Every admin screen in Direction A (owner, 2026-11-05)
+
+- **Where:** the same "🛠 Admin" page, one row per sidebar group, each with a label.
+  - The screen shell (template) is `401:1431` at x −2400. Every board is a clone of it, so change the sidebar and top bar there first.
+  - Builders worked from a shared kit (buttons, badges, tables, fields, dialogs, drawer) that follows Untitled UI's rules.
+- **People** (y 2800):
+
+  | Board | Node |
+  |---|---|
+  | Users | `404:614` |
+  | User detail | `406:2360` |
+  | Suspend user (dialog) | `407:2388` |
+  | View resume content (dialog, reason required) | `407:2782` |
+  | Staff & roles (with a permissions matrix) | `408:2050` |
+  | Deletion requests | `408:2745` |
+
+- **Content** (y 5400):
+
+  | Board | Node |
+  |---|---|
+  | AI prompts | `406:662` |
+  | Prompt detail (versions, editor, sandbox, eval) | `407:3141` |
+  | Technology KB | `409:1872` |
+  | KB review (diff, cited source, anonymous reports) | `410:1771` |
+  | Skills & aliases | `406:1829` |
+  | Templates | `407:1841` |
+  | ATS rubric | `408:3123` |
+
+- **Business** (y 8000):
+
+  | Board | Node |
+  |---|---|
+  | Plans & pricing | `406:2873` |
+  | Analytics (funnel, week-4 cohorts, cost by stage) | `407:1430` |
+  | Job providers (write-only keys) | `408:3596` |
+
+- **Trust & safety, settings and sign-in** (y 10600):
+
+  | Board | Node |
+  |---|---|
+  | Generation failures (run drawer) | `406:1195` |
+  | Abuse reports | `407:946` |
+  | Audit log (append-only, no row menu) | `408:1531` |
+  | Settings | `409:1500` |
+  | MFA sign-in | `410:1605` |
+
+- **Content I made up** (it only shows the format, so check it):
+  - Staff beyond the four named people.
+  - Earlier price-book versions (v2 $17/$99, v1 $15/$89).
+  - ATS rubric v3 weights, plus its rationale and evidence sources.
+  - Data-retention values: security events 2 years, generation logs 90 days.
+  - Error codes, including PARSE_EMPTY.
+  - Model provider shown as "Anthropic / claude-sonnet".
+  - Template revisions and usage counts.
+- **Choices to confirm:**
+  - A draft template shows "ATS check pending" rather than ATS-safe.
+  - The prompt list counts cover.write and zero.build as drafts awaiting eval. tailor.rewrite v15 has passed and is ready to publish.
+  - The Settings right column is 440 wide.
+- **Spec only (no backend yet):**
+  - abuse reports
+  - the failure queue
+  - provider consumption and error rates
+  - the skills and alias editor
+  - template create and preview
+  - the prompt sandbox
+  - the funnels
+  - MFA-enforcement settings
+  - the IP allowlist
