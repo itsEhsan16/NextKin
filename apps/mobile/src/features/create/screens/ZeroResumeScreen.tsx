@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 
 import { ZERO_YEARS, ZERO_YEARS_LABEL, type ZeroYears } from '@/data/models';
 import { useCurrentUser, useJob, useStartGeneration, useSubscription } from '@/data/queries';
-import { scaledSheet } from '@/theme';
+import { motion, scaledSheet } from '@/theme';
 import { ChoiceChip } from '@/ui/ChoiceChip';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -133,7 +133,14 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
       onBack={back}
       art={
         step === 0 ? (
-          <Image source={ART} style={styles.art} contentFit="contain" accessible={false} />
+          <Image
+            source={ART}
+            style={styles.art}
+            contentFit="contain"
+            accessible={false}
+            cachePolicy="memory"
+            transition={motion.durations.imageFade}
+          />
         ) : undefined
       }
       footer={footer}

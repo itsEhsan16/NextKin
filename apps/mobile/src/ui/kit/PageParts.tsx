@@ -156,7 +156,7 @@ export function StatTile({
 
 /** A redesign illustration by name, decorative, at a square size (390 units). */
 export function Illustration({ name, size = 140 }: { name: IllustrationName; size?: number }) {
-  const { u } = useTheme();
+  const { motion, u } = useTheme();
   // A sized box around the image: on web expo-image's own wrapper collapsed to no height (§178).
   return (
     <View style={{ width: u(size), height: u(size) }}>
@@ -165,6 +165,9 @@ export function Illustration({ name, size = 140 }: { name: IllustrationName; siz
         style={{ width: '100%', height: '100%' }}
         contentFit="contain"
         accessible={false}
+        // Decoded once and kept; a short fade instead of a pop when it first draws (§191).
+        cachePolicy="memory"
+        transition={motion.durations.imageFade}
       />
     </View>
   );

@@ -1,6 +1,12 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  RefreshControl,
+  StyleSheet,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 
 import { jobClashes, type Application, type Job, type ProfilePreferences } from '@/data/models';
 import { JOB_SORT_LABEL, SAVED_JOBS_SORT_LABEL } from '@/data/models';
@@ -95,13 +101,31 @@ export function JobsScreen() {
 
   const handleToggleSave = useCallback((job: Job) => toggleSaveJob(job), [toggleSaveJob]);
 
+  // Where each segment was left (§191). The three share one list: switching back to one returns
+  // to its own place instead of its top, and a first visit still starts at the top. Recorded when
+  // a scroll settles, so nothing runs while the list is moving.
+  const offsets = useRef<Partial<Record<JobsSegment, number>>>({});
+  const offset = useRef(0);
+  const noteOffset = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    offset.current = event.nativeEvent.contentOffset.y;
+  }, []);
+
   const selectSegment = useCallback(
     (next: JobsSegment) => {
+      if (next === segment) return;
+      offsets.current[segment] = offset.current;
       setSegment(next);
-      // The three segments share one list; without this you land mid-scroll in unrelated data.
+      const back = offsets.current[next] ?? 0;
+      offset.current = back;
       listRef.current?.scrollToOffset({ offset: 0, animated: false });
+      // The other segment's rows render on the next frame; its place is restored once they have.
+      if (back > 0) {
+        requestAnimationFrame(() =>
+          listRef.current?.scrollToOffset({ offset: back, animated: false }),
+        );
+      }
     },
-    [setSegment],
+    [segment, setSegment],
   );
 
   // Each segment feeds the same list with its own rows.
@@ -331,6 +355,38 @@ export function JobsScreen() {
     ],
   );
 
+  // Stable props for the list (§191): built inline they were new every render, so the list
+  // re-checked its empty state, end handler and content style on each keystroke and tick.
+  const changeQuery = useCallback((value: string) => setQuery(segment, value), [segment, setQuery]);
+  const loadMore = useCallback(() => {
+    if (segment === 'discover' && discover.hasNextPage && !discover.isFetchingNextPage) {
+      void discover.fetchNextPage();
+    }
+  }, [discover, segment]);
+  const listContentStyle = useMemo(
+    () => ({
+      paddingHorizontal: spacing.gutter,
+      // Search → first block, the same seam Resumes has under its search row (toreview.md 54).
+      paddingTop: sizes.headerContentGap,
+      paddingBottom: tabBar.contentInset,
+    }),
+    [sizes.headerContentGap, spacing.gutter, tabBar.contentInset],
+  );
+  const emptyList = (
+    <ListPlaceholder
+      status={status}
+      segment={segment}
+      onRetry={() => {
+        if (segment === 'discover') void discover.refetch();
+        else if (segment === 'saved') void saved.refetch();
+        else void applications.refetch();
+      }}
+      onBrowse={() => selectSegment('discover')}
+      onWidenFilters={actions.openFilters}
+      onClearFilters={clearFilters}
+    />
+  );
+
   return (
     // `padded={false}` is the FlashList's doing — it owns the gutter so TodaysPicks can break
     // out of it — so the header box has to ask for the gutter back explicitly. The centring and
@@ -346,7 +402,7 @@ export function JobsScreen() {
       header={
         <JobsHeader
           query={query}
-          onChangeQuery={(value) => setQuery(segment, value)}
+          onChangeQuery={changeQuery}
           placeholder={PLACEHOLDER[segment]}
           filterCount={segment === 'discover' ? chips.length : 0}
           hasUnread={(unread.data ?? 0) > 0}
@@ -365,37 +421,17 @@ export function JobsScreen() {
         // The header is state-driven (segment, chips, sort, query). Virtualised lists only
         // re-render their header when something they track changes, so declare it here.
         extraData={headerState}
-        ListEmptyComponent={
-          <ListPlaceholder
-            status={status}
-            segment={segment}
-            onRetry={() => {
-              if (segment === 'discover') void discover.refetch();
-              else if (segment === 'saved') void saved.refetch();
-              else void applications.refetch();
-            }}
-            onBrowse={() => selectSegment('discover')}
-            onWidenFilters={actions.openFilters}
-            onClearFilters={clearFilters}
-          />
-        }
+        ListEmptyComponent={emptyList}
         ItemSeparatorComponent={RowSeparator}
-        onEndReached={() => {
-          if (segment === 'discover' && discover.hasNextPage && !discover.isFetchingNextPage) {
-            void discover.fetchNextPage();
-          }
-        }}
+        onEndReached={loadMore}
+        onScrollEndDrag={noteOffset}
+        onMomentumScrollEnd={noteOffset}
         onEndReachedThreshold={0.6}
         showsVerticalScrollIndicator={false}
         // The list is the scroller here, so the tab-bar inset belongs on its content. Put it
         // on the Screen instead and the page box shrinks, leaving the background painted under
         // the floating pill and the last card cut off above it.
-        contentContainerStyle={{
-          paddingHorizontal: spacing.gutter,
-          // Search → first block, the same seam Resumes has under its search row (toreview.md 54).
-          paddingTop: sizes.headerContentGap,
-          paddingBottom: tabBar.contentInset,
-        }}
+        contentContainerStyle={listContentStyle}
         refreshControl={
           // Only a pull shows the spinner. Tied to `isRefetching` it also span after every
           // bookmark (the save invalidates the job lists) and every Discover filter change.

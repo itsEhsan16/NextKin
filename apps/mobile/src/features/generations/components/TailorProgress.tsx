@@ -7,10 +7,9 @@ import type { FlowArt } from '@/features/create/components/FlowHero';
 import type { LiveMotif } from '@/features/create/components/LiveArt';
 import { FlowCard } from '@/features/create/flow/FlowKit';
 import { formatPercent } from '@/lib';
-import { scaledSheet } from '@/theme';
+import { motion, scaledSheet } from '@/theme';
 import { AnimatedNumber, ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
-
 
 import { TailorCheckRow, type TailorCheckState } from './TailorCheckRow';
 
@@ -99,7 +98,14 @@ export function TailorProgress({
 
   return (
     <View style={styles.wrap}>
-      <Image source={ILLUSTRATION} style={styles.art} contentFit="contain" accessible={false} />
+      <Image
+        source={ILLUSTRATION}
+        style={styles.art}
+        contentFit="contain"
+        accessible={false}
+        cachePolicy="memory"
+        transition={motion.durations.imageFade}
+      />
       <View style={styles.titleBlock}>
         <Text variant="title1" color="ink" align="center" accessibilityRole="header">
           {title}

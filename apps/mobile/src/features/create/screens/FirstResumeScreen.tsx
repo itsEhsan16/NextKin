@@ -2,7 +2,7 @@ import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
-import { scaledSheet, useTheme } from '@/theme';
+import { motion, scaledSheet, useTheme } from '@/theme';
 import { Icon } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -47,7 +47,13 @@ function FirstResumeOption({
       ]}
     >
       <View style={[styles.art, { backgroundColor: colors.brandSurface }]}>
-        <Image source={art} style={styles.artImage} contentFit="contain" />
+        <Image
+          source={art}
+          style={styles.artImage}
+          contentFit="contain"
+          cachePolicy="memory"
+          transition={motion.durations.imageFade}
+        />
       </View>
       <View style={styles.text}>
         {badge ? (

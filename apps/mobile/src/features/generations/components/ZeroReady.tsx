@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import type { ResumeContent } from '@/data/models';
 import { FlowCard, FlowDivider, FlowRow, StatusPill } from '@/features/create/flow/FlowKit';
 import { a11yHeader } from '@/lib';
-import { scaledSheet } from '@/theme';
+import { motion, scaledSheet } from '@/theme';
 import { Text } from '@/ui/Text';
 
 const ILLUSTRATION = require('../../../../assets/illustrations/redesign/resume-ready.webp');
@@ -31,7 +31,14 @@ export function ZeroReady({ content, company, onTailor, onEdit }: ZeroReadyProps
   return (
     <View style={styles.wrap}>
       <StatusPill label={total > 0 ? `All ${total} checked` : 'All checked'} icon="Check" />
-      <Image source={ILLUSTRATION} style={styles.art} contentFit="contain" accessible={false} />
+      <Image
+        source={ILLUSTRATION}
+        style={styles.art}
+        contentFit="contain"
+        accessible={false}
+        cachePolicy="memory"
+        transition={motion.durations.imageFade}
+      />
       <View style={styles.titleBlock}>
         <Text variant="title1" color="ink" {...a11yHeader()}>
           Your first resume is ready
