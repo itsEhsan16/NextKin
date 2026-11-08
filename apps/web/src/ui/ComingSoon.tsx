@@ -2,10 +2,8 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { cn } from '@/lib/cn';
-
 import { ArrowRightIcon, ClockIcon } from './icons';
-import { outlineButton } from './outlineButton';
+import { buttonClass } from './Button';
 import { StatusPage } from './StatusPage';
 
 export type ComingSoonLink = { label: string; href: Route };
@@ -44,7 +42,7 @@ export function ComingSoon({
       backHref={back.href}
       art={art}
       pill={
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-0.5 text-caption-m font-semibold text-text-brand">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-caption-m font-semibold text-text-brand">
           <ClockIcon aria-hidden className="size-3" />
           Coming soon
         </span>
@@ -52,13 +50,7 @@ export function ComingSoon({
       heading={`${title} is coming soon`}
       message={description}
       action={
-        <Link
-          href={next.href}
-          className={cn(
-            outlineButton,
-            'h-control-lg gap-2 rounded-md px-5 text-body-l font-semibold',
-          )}
-        >
+        <Link href={next.href} className={buttonClass({ variant: 'secondary', size: 'lg' })}>
           {next.label}
           <ArrowRightIcon aria-hidden className="size-3.5" />
         </Link>

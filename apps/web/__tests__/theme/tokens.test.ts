@@ -95,6 +95,11 @@ describe('theme tokens', () => {
       'ring-sweep',
       'meter-grow',
       'float',
+      'rise',
+      'shimmer',
+      'think',
+      'sweep',
+      'ring-draw',
     ]);
     for (const [, , value] of animations) {
       expect(value).toMatch(/var\(--transition-duration-[a-z]+\)/);

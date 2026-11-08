@@ -8,7 +8,7 @@ import type { ComponentType, SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
 import { formatSalaryBand } from '@/lib/format';
-import { cardSurface } from '@/ui/Card';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { ChevronRightIcon } from '@/ui/icons';
 import {
@@ -26,7 +26,7 @@ import { jobPageHref, tailorHref } from '../../jobPageLibrary';
 type Art = ComponentType<SVGProps<SVGSVGElement>>;
 
 const TOOL =
-  'flex w-full items-center gap-3 rounded-lg border px-3.5 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
+  'flex w-full items-center gap-3 rounded-md px-4 py-3.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
 
 function ToolBody({ title, line, Art }: { title: string; line: string; Art: Art }) {
   return (
@@ -58,7 +58,7 @@ export function AiToolsCard({
   const tailorClass = cn(
     pressable,
     TOOL,
-    'border-border-brand-strong bg-brand-50 text-text-brand hover:bg-surface-brand-strong',
+    'bg-brand-50 text-text-brand hover:bg-surface-brand-strong',
   );
   const tailorBody = (
     <ToolBody
@@ -68,12 +68,15 @@ export function AiToolsCard({
     />
   );
   return (
-    <section aria-labelledby="job-ai-tools" className={cn(cardSurface, 'p-3.5')}>
-      <h2 id="job-ai-tools" className="flex items-center gap-2 px-1 text-title-l text-text-primary">
+    <section aria-labelledby="job-ai-tools" className={cn(cardSurface, cardPad)}>
+      <h2
+        id="job-ai-tools"
+        className="flex items-center gap-2 text-title-l font-semibold text-text-primary"
+      >
         <NavAiAssistantIllustration aria-hidden className="h-auto w-6" />
         AI tools for this job
       </h2>
-      <ul className="mt-3 flex flex-col gap-2">
+      <ul className="mt-4 flex flex-col gap-2.5">
         <li>
           {onTailor ? (
             <button type="button" aria-haspopup="dialog" onClick={onTailor} className={tailorClass}>
@@ -90,7 +93,7 @@ export function AiToolsCard({
             <button
               type="button"
               aria-disabled="true"
-              className={cn(TOOL, 'border-border-default text-text-primary', soonControl)}
+              className={cn(TOOL, 'bg-neutral-50 text-text-primary', soonControl)}
             >
               <ToolBody
                 title="Write a cover letter"
@@ -103,11 +106,7 @@ export function AiToolsCard({
         <li>
           <Link
             href={'/interview' as Route}
-            className={cn(
-              pressable,
-              TOOL,
-              'border-border-default text-text-primary hover:bg-neutral-50',
-            )}
+            className={cn(pressable, TOOL, 'bg-neutral-50 text-text-primary hover:bg-neutral-100')}
           >
             <ToolBody
               title="Practise the interview"
@@ -127,9 +126,9 @@ export function SimilarJobsCard({ job }: { job: Job }) {
   const rows = similar.data?.slice(0, 3) ?? [];
   if (similar.isSuccess && rows.length === 0) return null;
   return (
-    <section aria-labelledby="job-similar" className={cn(cardSurface, 'p-4')}>
+    <section aria-labelledby="job-similar" className={cn(cardSurface, cardPad)}>
       <div className="flex items-center justify-between">
-        <h2 id="job-similar" className="text-title-l text-text-primary">
+        <h2 id="job-similar" className="text-title-l font-semibold text-text-primary">
           Similar jobs
         </h2>
         <Link
@@ -146,14 +145,14 @@ export function SimilarJobsCard({ job }: { job: Job }) {
           ))}
         </div>
       ) : (
-        <ul className="mt-2 divide-y divide-border-faint">
+        <ul className="mt-3 flex flex-col gap-1">
           {rows.map((other) => (
             <li key={other.id}>
               <Link
                 href={jobPageHref(other.id)}
                 className={cn(
                   pressable,
-                  '-mx-2 flex items-center gap-3 rounded-md px-2 py-2.5 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                  '-mx-3 flex items-center gap-3 rounded-md px-3 py-2.5 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                 )}
               >
                 <CompanyLogo

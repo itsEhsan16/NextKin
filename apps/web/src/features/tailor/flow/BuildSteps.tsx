@@ -46,7 +46,7 @@ export function BuildCompareStep({
   const tone = comparison.score >= 70 ? 'success' : comparison.score >= 40 ? 'warning' : 'danger';
   const missing = comparison.keywords.filter((k) => !k.onResume);
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="build-compare" className={stepCard}>
         <div className="flex flex-wrap items-center gap-7 px-8 py-6">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -93,7 +93,7 @@ export function BuildCompareStep({
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-3 border-t border-border-default px-8 pb-6 pt-5">
+        <div className="flex flex-col gap-3 px-8 pb-8 pt-2">
           <h2 className="text-title-l font-bold text-text-primary">What the job asks for</h2>
           <div className="flex flex-wrap gap-2.5">
             {comparison.keywords.map((k) => (
@@ -119,13 +119,13 @@ export function BuildCompareStep({
             Green is on your profile. Amber is missing — you choose next.
           </p>
         </div>
-        <div className="flex flex-col gap-3 border-t border-border-default px-8 pb-6 pt-5">
+        <div className="flex flex-col gap-3 px-8 pb-8 pt-2">
           <h2 className="text-title-l font-bold text-text-primary">What the build improves</h2>
           <ul className="flex flex-col gap-2.5">
             {comparison.improvements.map((row) => (
               <li
                 key={row.key}
-                className="flex items-start gap-3 rounded-lg border border-border-default bg-surface-card px-4 py-3"
+                className="flex items-start gap-3 rounded-md bg-neutral-50 px-4 py-3"
               >
                 {row.ok ? (
                   <CheckCircle aria-hidden className="mt-0.5 size-4 shrink-0 text-success-600" />
@@ -178,9 +178,9 @@ export function BuildEnhanceStep({
   const toggle = (label: string) =>
     onAdded(added.includes(label) ? added.filter((l) => l !== label) : [...added, label]);
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="build-enhance" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="build-enhance"
             step={4}
@@ -189,8 +189,8 @@ export function BuildEnhanceStep({
             lede="Tick only the keywords you really have. They go on the resume and on your profile."
           />
         </div>
-        <div className="grid divide-y divide-border-default lg:grid-cols-8 lg:divide-x lg:divide-y-0">
-          <div className="flex min-w-0 flex-col gap-4 px-7 pb-7 pt-6 lg:col-span-5 lg:pl-8">
+        <div className="grid divide-y divide-border-subtle lg:grid-cols-8 lg:divide-x lg:divide-y-0">
+          <div className="flex min-w-0 flex-col gap-4 px-8 pb-8 pt-6 lg:col-span-5 lg:pl-8">
             <ColumnHead
               art={<ProfileSkillsIllustration className="h-auto w-11" />}
               title="Every keyword from this job"
@@ -229,18 +229,15 @@ export function BuildEnhanceStep({
               </div>
             )}
           </div>
-          <div className="flex min-w-0 flex-col gap-3.5 px-7 pb-7 pt-6 lg:col-span-3 lg:pr-8">
+          <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-3 lg:pr-8">
             <ColumnHead
               art={<NavAiAssistantIllustration className="h-auto w-11" />}
               title="What the AI will write"
               subtitle="From your profile, aimed at this job"
             />
-            <ul className="overflow-hidden rounded-lg border border-border-default bg-surface-card">
+            <ul className="flex flex-col gap-0.5 rounded-md bg-neutral-50 p-1.5">
               {comparison.improvements.map((row) => (
-                <li
-                  key={row.key}
-                  className="flex items-start gap-3 border-t border-border-default px-3.5 py-2.5 first:border-t-0"
-                >
+                <li key={row.key} className="flex items-start gap-3 rounded-sm px-3.5 py-2.5">
                   <span
                     aria-hidden
                     className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm bg-brand-600 text-text-inverse"

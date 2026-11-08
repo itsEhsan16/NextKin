@@ -7,7 +7,7 @@ import { brandButton } from '@/ui/brandButton';
 import { ArrowRightIcon } from '@/ui/icons';
 import { InsightsStarIllustration } from '@/ui/illustrations';
 
-import { insightCard } from './InsightsCards';
+import { insightPanel } from './InsightsCards';
 
 /**
  * "Next Recommendation" (463:48): the role the account fits best, why, and the way to those jobs,
@@ -22,8 +22,8 @@ export function RecommendationCard({
     <section
       aria-labelledby="insights-next"
       className={cn(
-        insightCard,
-        'relative flex flex-col overflow-hidden border-border-brand bg-surface-brand p-5',
+        insightPanel,
+        'relative flex flex-col overflow-hidden border-border-brand bg-surface-brand',
       )}
     >
       <div className="flex items-center gap-2.5">
@@ -40,7 +40,7 @@ export function RecommendationCard({
         href="/jobs"
         className={cn(
           brandButton,
-          'relative z-10 mt-auto h-control-lg w-fit gap-2 rounded-md px-5 text-body-l font-semibold',
+          'relative z-10 mt-auto h-control-lg w-fit gap-2 rounded-md px-5 text-body-m font-semibold',
         )}
       >
         View Matched Jobs

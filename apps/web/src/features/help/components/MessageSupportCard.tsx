@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useId, useState, type FormEvent } from 'react';
 
 import { cn } from '@/lib/cn';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { showToast } from '@/lib/toast';
 import { brandButton } from '@/ui/brandButton';
 import { fieldBox } from '@/ui/fieldBox';
@@ -63,20 +64,20 @@ export function MessageSupportCard() {
       onSubmit={send}
       noValidate
       aria-labelledby="message-support"
-      className="flex flex-col rounded-lg border border-border-card bg-surface-card p-5 shadow-card"
+      className={cn(cardSurface, cardPad, 'flex flex-col')}
     >
-      <div className="flex items-center gap-3.5 rounded-md border border-border-card bg-neutral-50 px-4 py-3.5">
+      <div className="flex items-center gap-4 rounded-md bg-neutral-50 px-4 py-4">
         <SettingsEmailIllustration aria-hidden className="h-auto w-13 shrink-0" />
         <div className="min-w-0">
           <p className="text-body-s font-medium text-text-brand">Still stuck?</p>
-          <h2 id="message-support" className="text-h2 text-text-primary">
+          <h2 id="message-support" className="text-title-l text-text-primary">
             Message support
           </h2>
           <p className="text-body-s text-text-secondary">{SUPPORT_REPLY_WINDOW}</p>
         </div>
       </div>
 
-      <p className={cn(LABEL, 'mt-5')}>Topic</p>
+      <p className={cn(LABEL, 'mt-6')}>Topic</p>
       <SelectField
         label="Topic"
         describedBy={topicHint}
@@ -90,7 +91,7 @@ export function MessageSupportCard() {
         Choose what your message is about
       </p>
 
-      <p className={cn(LABEL, 'mt-4')}>Reply goes to</p>
+      <p className={cn(LABEL, 'mt-5')}>Reply goes to</p>
       <div
         aria-describedby={replyHint}
         className={cn(fieldBox, 'mt-2 h-control-lg gap-2.5 bg-neutral-50 px-3 text-text-secondary')}
@@ -109,7 +110,7 @@ export function MessageSupportCard() {
         .
       </p>
 
-      <label htmlFor={messageId} className={cn(LABEL, 'mt-4')}>
+      <label htmlFor={messageId} className={cn(LABEL, 'mt-5')}>
         Your message
       </label>
       <textarea
@@ -123,7 +124,7 @@ export function MessageSupportCard() {
         rows={6}
         className={cn(
           fieldBox,
-          'mt-2 h-auto min-h-40 resize-none items-start px-3 py-2.5 placeholder:text-text-tertiary',
+          'mt-2 h-auto min-h-40 resize-none items-start px-3.5 py-3 placeholder:text-text-tertiary',
         )}
       />
       <div className="mt-1.5 flex items-start gap-3">
@@ -140,7 +141,7 @@ export function MessageSupportCard() {
         aria-disabled={submit.isPending}
         className={cn(
           brandButton,
-          'mt-4 h-control-lg w-full gap-2 rounded-md text-body-l font-semibold aria-disabled:cursor-default aria-disabled:opacity-60',
+          'mt-5 h-control-lg w-full gap-2 rounded-md text-body-m font-semibold aria-disabled:cursor-default aria-disabled:opacity-60',
         )}
       >
         <SendIcon aria-hidden className="size-4" />

@@ -36,7 +36,7 @@ export function UpgradeCard({ collapsed }: { collapsed: boolean }) {
       {/* Expanded: the informational card, with its own separate CTA link. `inert` while the
           rail is collapsed for the same reason as above. */}
       <CollapseFade axis="vertical" open="panel" inert={collapsed ? true : undefined}>
-        <div className="flex w-[200px] flex-col gap-2 rounded-md border border-border-default p-2.5">
+        <div className="flex w-[200px] flex-col gap-2.5 rounded-lg bg-surface-brand p-3">
           <div className="flex gap-2">
             {/* 711:2 draws the crown 22 wide against the rows' 24, so it sits a step under them. */}
             <span className="mt-0.5 shrink-0">
@@ -54,7 +54,7 @@ export function UpgradeCard({ collapsed }: { collapsed: boolean }) {
           <Link
             href={'/upgrade' as never}
             tabIndex={collapsed ? -1 : undefined}
-            className={cn(primaryButton, 'h-7 w-full text-caption-m')}
+            className={cn(primaryButton, 'h-8 w-full rounded-md text-body-s')}
           >
             Upgrade Now
           </Link>

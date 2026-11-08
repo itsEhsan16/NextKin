@@ -20,7 +20,7 @@ export type ResumeListProps = {
   onCreate?: () => void;
 };
 
-/** The list, 12px between rows; `ResumesScreen` puts it in the page's one scroll container. */
+/** The list, 16px between rows; `ResumesScreen` puts it in the page's one scroll container. */
 export function ResumeList({
   resumes,
   status,
@@ -36,7 +36,7 @@ export function ResumeList({
 
   if (status === 'pending') {
     return (
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-4">
         {Array.from({ length: 5 }, (_, index) => (
           <li key={index}>
             <Skeleton className="h-24 rounded-lg" />
@@ -83,7 +83,7 @@ export function ResumeList({
   }
 
   return (
-    <ul aria-label="Resumes" className={cn('flex flex-col gap-3', reveal && 'animate-reveal')}>
+    <ul aria-label="Resumes" className={cn('flex flex-col gap-4', reveal && 'animate-reveal')}>
       {resumes.map((resume) => (
         <li key={resume.id}>
           <ResumeRow

@@ -9,9 +9,14 @@ import { cn } from '@/lib/cn';
 import { onReveal } from '../reveal';
 import { removeButton, toolButton, toolIcon } from './controls';
 
+/** Faded until the tile is under the pointer or holds focus: still visible, still reachable. */
+const quiet =
+  'opacity-60 group-focus-within/entry:opacity-100 group-hover/entry:opacity-100 transition-[color,background-color,opacity,scale]';
+
 /**
- * One entry of a section — a role, a school, a project (EDIT 01, 866:276). Closed, a white row
- * with the line the page prints; open, a tinted card holding the form. It can move within its section or go (Undo brings
+ * One entry of a section — a role, a school, a project (EDIT 01, 866:276): a muted tile inside the
+ * section's card (one card level), with the line the page prints; open, it holds the form. Its
+ * move and remove tools stay faint until the tile is hovered or focused. It can move within its section or go (Undo brings
  * it back).
  */
 export function EntryCard({
@@ -50,17 +55,17 @@ export function EntryCard({
   return (
     <div
       className={cn(
-        'rounded-xl border border-border-default transition-colors duration-press ease-standard',
-        open ? 'bg-neutral-50' : 'bg-surface-card hover:border-neutral-400',
+        'group/entry rounded-lg bg-neutral-50 transition-colors duration-fast ease-standard',
+        !open && 'hover:bg-neutral-100',
       )}
     >
-      <div className="flex items-center gap-1 py-1.5 pl-3.5 pr-2">
+      <div className="flex items-center gap-0.5 py-2 pl-4 pr-2">
         <button
           type="button"
           aria-expanded={open}
           aria-controls={bodyId}
           onClick={() => setOpen((v) => !v)}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          className="mr-1 flex min-w-0 flex-1 items-center gap-2.5 rounded-md py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
         >
           <ChevronDownIcon
             aria-hidden
@@ -73,14 +78,16 @@ export function EntryCard({
             <span
               className={cn(
                 'block truncate text-body-l',
-                open ? 'font-bold' : 'font-semibold',
+                'font-semibold',
                 title.trim() ? 'text-text-primary' : 'text-text-tertiary',
               )}
             >
               {name}
             </span>
             {subtitle?.trim() && (
-              <span className="block truncate text-caption-m text-text-tertiary">{subtitle}</span>
+              <span className="mt-0.5 block truncate text-body-s text-text-tertiary">
+                {subtitle}
+              </span>
             )}
           </span>
           {flagged && (
@@ -94,7 +101,7 @@ export function EntryCard({
           aria-label={`Move ${name} up`}
           disabled={index === 0}
           onClick={() => onMove(-1)}
-          className={toolButton}
+          className={cn(toolButton, quiet)}
         >
           <ArrowUp aria-hidden className={toolIcon} />
         </button>
@@ -103,7 +110,7 @@ export function EntryCard({
           aria-label={`Move ${name} down`}
           disabled={index === count - 1}
           onClick={() => onMove(1)}
-          className={toolButton}
+          className={cn(toolButton, quiet)}
         >
           <ArrowUp aria-hidden className={cn(toolIcon, 'rotate-180')} />
         </button>
@@ -111,13 +118,13 @@ export function EntryCard({
           type="button"
           aria-label={`Remove ${name}`}
           onClick={onRemove}
-          className={removeButton}
+          className={cn(removeButton, quiet)}
         >
           <TrashIcon aria-hidden className={toolIcon} />
         </button>
       </div>
       <CollapseFade open={open} axis="vertical" inert={!open}>
-        <div id={bodyId} className="flex flex-col gap-3 px-3.5 pb-3.5 pt-1">
+        <div id={bodyId} className="flex flex-col gap-4 px-4 pb-4 pt-1">
           {children}
         </div>
       </CollapseFade>

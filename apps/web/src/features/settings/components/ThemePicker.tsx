@@ -52,7 +52,7 @@ export function ThemePicker({ value, onChange }: ThemePickerProps) {
             className={cn(
               'flex h-control-lg min-w-0 items-center justify-center gap-2 rounded-md border bg-surface-card px-2 text-body-m transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50',
               selected
-                ? 'border-brand-600 text-brand-600'
+                ? 'border-brand-600 bg-surface-brand text-brand-600'
                 : 'border-border-default text-text-primary enabled:hover:bg-surface-muted',
             )}
           >

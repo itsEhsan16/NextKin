@@ -61,7 +61,7 @@ function BuiltFromRow({
   change: Route;
 }) {
   return (
-    <div className="flex items-center gap-3.5 rounded-lg border border-border-default bg-surface-card py-3 pl-4 pr-3.5">
+    <div className="flex items-center gap-3.5 rounded-md bg-neutral-50 py-3 pl-4 pr-3.5">
       {lead}
       <div className="min-w-0 flex-1">
         <p className="text-caption-m text-text-tertiary">{label}</p>
@@ -69,7 +69,7 @@ function BuiltFromRow({
       </div>
       <Link
         href={change}
-        className="flex h-8 items-center rounded-md border border-border-default px-3.5 text-body-m font-semibold text-text-primary hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className="flex h-8 items-center rounded-full border border-border-default bg-surface-card px-3.5 text-body-s font-semibold text-text-primary transition-colors duration-fast ease-standard hover:border-border-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       >
         Change
       </Link>
@@ -108,9 +108,9 @@ export function CoverToneStep({
 }) {
   const company = job.company ? `${job.company}’s` : 'the';
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="cover-tone" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="cover-tone"
             step={3}
@@ -119,7 +119,7 @@ export function CoverToneStep({
             lede={`We write it from your tailored resume and ${company} job — no new claims.`}
           />
         </div>
-        <div className="grid gap-7 px-8 pb-7 pt-6 lg:grid-cols-5">
+        <div className="grid gap-7 px-8 pb-8 pt-6 lg:grid-cols-5">
           <div className="flex min-w-0 flex-col gap-3 lg:col-span-2">
             <h2 className="text-body-l font-bold text-text-primary">Built from</h2>
             <BuiltFromRow
@@ -223,9 +223,9 @@ export function CoverTailorFirst({
   backHref: Route;
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="cover-first" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="cover-first"
             step={2}
@@ -234,7 +234,7 @@ export function CoverTailorFirst({
             lede={`A cover letter repeats what your resume shows for this job. You don’t have one tailored${job.company ? ` for ${job.company}` : ''} yet.`}
           />
         </div>
-        <div className="flex flex-wrap items-center gap-10 px-8 pb-7 pt-6">
+        <div className="flex flex-wrap items-center gap-10 px-8 pb-8 pt-6">
           <Image
             src="/illustrations/flow/build.png"
             alt=""

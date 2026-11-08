@@ -65,9 +65,9 @@ export function JobStep({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="job-step" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="job-step"
             step={stepNo}
@@ -76,8 +76,8 @@ export function JobStep({
             lede={copy.jobLede}
           />
         </div>
-        <div className="grid divide-y divide-border-default lg:grid-cols-5 lg:divide-x lg:divide-y-0">
-          <div className="min-w-0 px-7 pb-7 pt-6 lg:col-span-3 lg:pl-8">
+        <div className="grid divide-y divide-border-subtle lg:grid-cols-5 lg:divide-x lg:divide-y-0">
+          <div className="min-w-0 px-8 pb-8 pt-6 lg:col-span-3 lg:pl-8">
             <SavedJobList
               jobs={jobs}
               loading={saved.isPending}
@@ -91,7 +91,7 @@ export function JobStep({
               }}
             />
           </div>
-          <div className="flex min-w-0 px-7 pb-7 pt-6 lg:col-span-2 lg:pr-8">
+          <div className="flex min-w-0 px-8 pb-8 pt-6 lg:col-span-2 lg:pr-8">
             <OtherJobBox
               value={other}
               selected={using === 'other'}

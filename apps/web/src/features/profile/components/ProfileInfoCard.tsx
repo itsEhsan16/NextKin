@@ -47,7 +47,7 @@ export function ProfileInfoCard({ user, profile }: { user: User; profile: Profil
       description="This information is used across your applications, resumes, and AI suggestions."
       action={{ kind: 'edit' }}
     >
-      <div className="mt-5 flex flex-wrap items-start gap-x-6 gap-y-4">
+      <div className="mt-6 flex flex-wrap items-start gap-x-8 gap-y-4">
         <div className="relative shrink-0">
           <UserAvatar
             name={name}
@@ -61,7 +61,7 @@ export function ProfileInfoCard({ user, profile }: { user: User; profile: Profil
               type="button"
               aria-label="Change profile photo"
               className={cn(
-                'absolute bottom-1 right-0 flex size-7 items-center justify-center rounded-full border border-border-faint bg-surface-card text-text-secondary shadow-card transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                'absolute bottom-1 right-0 flex size-8 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary shadow-card transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                 soonControl,
               )}
             >
@@ -82,12 +82,12 @@ export function ProfileInfoCard({ user, profile }: { user: User; profile: Profil
 
           <ul
             aria-label="Contact details"
-            className="mt-4 grid grid-cols-[minmax(0,max-content)_minmax(0,max-content)] gap-x-7 gap-y-2.5"
+            className="mt-5 grid grid-cols-[minmax(0,max-content)_minmax(0,max-content)] gap-x-8 gap-y-3"
           >
             {contact.map(({ key, Icon, label }) => (
               <li
                 key={key}
-                className="flex min-w-0 items-center gap-2.5 text-body-l text-text-secondary"
+                className="flex min-w-0 items-center gap-2.5 text-body-m text-text-secondary"
               >
                 <Icon className="size-4 shrink-0 text-brand-600" />
                 <span className="truncate">{label}</span>

@@ -7,11 +7,11 @@ import { cn } from '@/lib/cn';
 import { NavAiAssistantIllustration } from '@/ui/illustrations';
 
 import { INSIGHT_ART } from '../insightsLibrary';
-import { cardSurface } from '@/ui/Card';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { ProgressBar } from '@/ui/ProgressBar';
 
-/** Every card's surface (461:88): white, a faint rim and the soft lift the board gives them. */
-export const insightCard = `${cardSurface} shadow-card`;
+/** An Insights card with the one padding every card takes (toreview §132). */
+export const insightPanel = cn(cardSurface, cardPad);
 
 /** A card's heading and the line under it (462:3, 462:4). */
 export function CardHead({
@@ -26,12 +26,12 @@ export function CardHead({
   aside?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
         <h2 id={id} className="text-title-l text-text-primary">
           {title}
         </h2>
-        <p className="mt-0.5 text-body-m text-text-secondary">{subtitle}</p>
+        <p className="mt-1 text-body-s text-text-tertiary">{subtitle}</p>
       </div>
       {aside}
     </div>
@@ -61,7 +61,7 @@ function Change({ pct }: { pct: number }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-body-s font-semibold',
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-caption-m font-semibold',
         tone,
       )}
     >
@@ -87,10 +87,10 @@ export function StatCard({
   footnote: string;
 }) {
   return (
-    <section aria-label={label} className={cn(insightCard, 'flex items-center gap-4 px-5 py-4')}>
-      <Art aria-hidden className="h-auto w-14 shrink-0" />
+    <section aria-label={label} className={cn(insightPanel, 'flex items-center gap-4')}>
+      <Art aria-hidden className="h-auto w-13 shrink-0" />
       <div className="min-w-0">
-        <p className="text-body-l font-medium text-text-primary">{label}</p>
+        <p className="text-body-m font-medium text-text-secondary">{label}</p>
         <p className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <span className="text-display-l text-text-primary">
             {stat.value}
@@ -129,7 +129,7 @@ export function FunnelCard({ funnel }: { funnel: CareerInsights['funnel'] }) {
     ['Offers', funnel.offers],
   ];
   return (
-    <section aria-labelledby="insights-funnel" className={cn(insightCard, 'p-5')}>
+    <section aria-labelledby="insights-funnel" className={insightPanel}>
       <CardHead
         id="insights-funnel"
         title="Application Funnel"
@@ -163,13 +163,13 @@ export function FunnelCard({ funnel }: { funnel: CareerInsights['funnel'] }) {
 /** "AI Insights" (462:52): four observations, each under the board's glyph for its subject. */
 export function AiInsightsCard({ insights }: { insights: CareerInsights['aiInsights'] }) {
   return (
-    <section aria-labelledby="insights-ai" className={cn(insightCard, 'p-5')}>
-      <div className="flex items-center gap-2.5">
+    <section aria-labelledby="insights-ai" className={insightPanel}>
+      <div className="flex items-center gap-3">
         <NavAiAssistantIllustration aria-hidden className="h-auto w-[30px] shrink-0" />
         <h2 id="insights-ai" className="flex-1 text-title-l text-text-primary">
           AI Insights
         </h2>
-        <span className="rounded-full bg-surface-brand-strong px-2 py-[3px] text-micro font-semibold text-text-brand">
+        <span className="rounded-full bg-surface-brand-strong px-2.5 py-1 text-micro font-semibold text-text-brand">
           Powered by AI
         </span>
       </div>
@@ -206,7 +206,7 @@ export function SharesCard({
   link?: { href: Route; label: string };
 }) {
   return (
-    <section aria-labelledby={id} className={cn(insightCard, 'p-5')}>
+    <section aria-labelledby={id} className={insightPanel}>
       <CardHead
         id={id}
         title={title}

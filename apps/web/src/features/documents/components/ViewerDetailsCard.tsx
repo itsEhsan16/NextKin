@@ -17,6 +17,7 @@ import {
   EllipsisIcon,
   LinkIcon,
 } from '@/ui/icons';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { outlineButton } from '@/ui/outlineButton';
 import { Tag } from '@/ui/Tag';
 
@@ -37,7 +38,7 @@ function Fact({
   value: string;
 }) {
   return (
-    <div className="rounded-md bg-neutral-50 px-3 py-2.5">
+    <div className="rounded-md bg-neutral-50 px-4 py-3">
       <dt className="flex items-center gap-1.5 text-body-s text-text-tertiary">
         <Icon aria-hidden className="size-3.5 shrink-0" />
         {label}
@@ -99,11 +100,8 @@ export function ViewerDetailsCard({
   const renderLogo = resolveLogo(letter?.companyLogoUrl);
 
   return (
-    <section
-      aria-label={`${document.title} details`}
-      className="rounded-lg border border-border-card bg-surface-card p-5 shadow-card"
-    >
-      <div className="rounded-md bg-neutral-50 p-4">
+    <section aria-label={`${document.title} details`} className={cn(cardSurface, cardPad)}>
+      <div className="rounded-md bg-neutral-50 p-5">
         <div className="flex items-center gap-3.5">
           <FileTypeTile format={document.format} size="preview" />
           <div className="min-w-0">
@@ -134,7 +132,7 @@ export function ViewerDetailsCard({
         </ul>
       </div>
 
-      <div className="mt-4 flex gap-2.5">
+      <div className="mt-5 flex gap-2.5">
         <Soon>
           <button aria-disabled="true" type="button" className={cn(brandButton, ACTION, 'flex-1')}>
             <DownloadIcon aria-hidden className="size-4 shrink-0" />
@@ -156,16 +154,15 @@ export function ViewerDetailsCard({
             aria-disabled="true"
             type="button"
             aria-label="More actions"
-            className={cn(soonControl, outlineButton, 'h-control-lg w-12 shrink-0 rounded-md')}
+            className={cn(soonControl, outlineButton, 'size-control-lg shrink-0 rounded-full')}
           >
             <EllipsisIcon aria-hidden className="size-4 text-text-secondary" />
           </button>
         </Soon>
       </div>
 
-      <hr className="my-4 border-border-faint" />
-      <h3 className="text-title-l font-medium text-text-primary">Details</h3>
-      <dl className="mt-3 grid grid-cols-2 gap-2.5">
+      <h3 className="mt-6 text-title-l font-semibold text-text-primary">Details</h3>
+      <dl className="mt-3 grid grid-cols-2 gap-3">
         <Fact Icon={DocumentIcon} label="Format" value={FORMAT_LABEL[document.format]} />
         <Fact Icon={DatabaseIcon} label="Size" value={formatFileSize(document.sizeBytes)} />
         <Fact Icon={CalendarIcon} label="Created" value={formatCoarseAge(document.createdAt)} />

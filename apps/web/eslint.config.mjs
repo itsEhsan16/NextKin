@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier';
  * web half of the conventions `apps/mobile/eslint.config.js` enforces on the native side.
  */
 const config = [
-  { ignores: ['.next/**', 'out/**', 'coverage/**', 'next-env.d.ts'] },
+  { ignores: ['.next/**', '.next-*/**', 'out/**', 'coverage/**', 'next-env.d.ts'] },
 
   ...nextCoreWebVitals,
   ...nextTypescript,

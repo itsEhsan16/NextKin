@@ -14,6 +14,7 @@ import type { ComponentType, SVGProps } from 'react';
 
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { cn } from '@/lib/cn';
+import { iconButton } from '@/ui/iconButton';
 import { ChevronDownIcon, InfoCircleIcon, RefreshIcon } from '@/ui/icons';
 import {
   ProfileExperienceIllustration,
@@ -114,7 +115,7 @@ export function NotificationPreferences() {
           onClick={() => reset.mutate()}
           className={cn(
             outlineButton,
-            'h-control-sm shrink-0 gap-1.5 rounded-sm px-3 text-body-s font-semibold',
+            'h-control-sm shrink-0 gap-1.5 rounded-md px-3.5 text-body-s font-semibold',
           )}
         >
           <RefreshIcon aria-hidden className="size-4" />
@@ -124,13 +125,10 @@ export function NotificationPreferences() {
     >
       <ul
         aria-label="Channels"
-        className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(12.5rem,1fr))] gap-3"
+        className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(12.5rem,1fr))] gap-4"
       >
         {NOTIFICATION_CHANNELS.map(({ id, label, description }) => (
-          <li
-            key={id}
-            className="flex items-center gap-3 rounded-md border border-border-card px-3 py-3"
-          >
+          <li key={id} className="flex items-center gap-3 rounded-md bg-neutral-50 px-4 py-3.5">
             <GlyphTile Icon={CHANNEL_ICON[id]} />
             <div className="min-w-0 flex-1">
               <p className="text-body-m font-semibold text-text-primary">{label}</p>
@@ -148,10 +146,10 @@ export function NotificationPreferences() {
 
       <ul
         aria-label="Topics"
-        className="mt-3 divide-y divide-border-faint rounded-md border border-border-card"
+        className="-mx-6 mt-6 divide-y divide-border-subtle border-y border-border-subtle"
       >
         {NOTIFICATION_TOPICS.map(({ id, label, description }) => (
-          <li key={id} className="flex items-center gap-3 px-3 py-2.5">
+          <li key={id} className="flex min-h-16 items-center gap-4 px-6 py-3">
             <GlyphTile Icon={TOPIC_ICON[id]} />
             <div className="min-w-0 flex-1">
               <p className="text-body-m font-semibold text-text-primary">{label}</p>
@@ -176,10 +174,7 @@ export function NotificationPreferences() {
                 aria-disabled="true"
                 type="button"
                 aria-label={`More about ${label.toLowerCase()}`}
-                className={cn(
-                  'flex size-control-sm shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-                  soonControl,
-                )}
+                className={cn(iconButton, 'text-text-tertiary', soonControl)}
               >
                 <ChevronDownIcon aria-hidden className="size-4" />
               </button>
@@ -188,7 +183,7 @@ export function NotificationPreferences() {
         ))}
       </ul>
 
-      <p className="mt-4 flex items-center gap-3 rounded-sm bg-surface-brand-strong px-4 py-2.5 text-body-s text-text-secondary">
+      <p className="mt-6 flex items-center gap-3 rounded-md bg-surface-brand px-4 py-3 text-body-s text-text-secondary">
         <InfoCircleIcon aria-hidden className="size-5 shrink-0 text-brand-600" />
         You&apos;ll always receive critical account and security notifications, even if they&apos;re
         turned off.

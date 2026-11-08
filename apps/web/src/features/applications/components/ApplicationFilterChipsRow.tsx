@@ -42,7 +42,7 @@ export function ApplicationFilterChipsRow({
     // Holds one line down to a ~600px list column (a 1396px window) and wraps below that, like
     // the Jobs row, with Reset staying level with the first line.
     <div className="flex items-start gap-3">
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         <FilterDropdown
           trigger={<FilterChip label="Time period" active={filters.appliedWithin != null} />}
         >

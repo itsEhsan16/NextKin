@@ -17,6 +17,7 @@ import { ResumeRow } from '@/features/create/jobFlow/FlowRows';
 import { useResumeUpload } from '@/features/create/jobFlow/useResumeUpload';
 import { RESUME_INPUT_ACCEPT } from '@/features/onboarding/resumeUpload';
 import { cn } from '@/lib/cn';
+import { AiLoader } from '@/ui/AiLoader';
 import { Button } from '@/ui/Button';
 import { Callout } from '@/ui/Callout';
 import { ArrowRight, UploadCloud02, iconSize } from '@/ui/lineIcons';
@@ -56,9 +57,9 @@ export function ResumeStep({
 }) {
   const company = job.company.trim();
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="resume-step" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="resume-step"
             step={2}
@@ -70,8 +71,8 @@ export function ResumeStep({
             }
           />
         </div>
-        <div className="grid divide-y divide-border-default lg:grid-cols-5 lg:divide-x lg:divide-y-0">
-          <div className="flex min-w-0 flex-col gap-3 px-7 pb-7 pt-6 lg:col-span-3 lg:pl-8">
+        <div className="grid divide-y divide-border-subtle lg:grid-cols-5 lg:divide-x lg:divide-y-0">
+          <div className="flex min-w-0 flex-col gap-3 px-8 pb-8 pt-6 lg:col-span-3 lg:pl-8">
             <ColumnHead
               art={<NavDocumentsIllustration className="h-auto w-11" />}
               title="Your resumes"
@@ -104,7 +105,7 @@ export function ResumeStep({
               </div>
             )}
           </div>
-          <div className="flex min-w-0 flex-col gap-3.5 px-7 pb-7 pt-6 lg:col-span-2 lg:pr-8">
+          <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-2 lg:pr-8">
             <ColumnHead
               art={<JdArtUploadFileIllustration className="h-auto w-11" />}
               title="Use another resume"
@@ -150,7 +151,7 @@ export function DropZone({ onRead }: { onRead: (resumeId: string) => void }) {
       onDrop={drop}
       aria-busy={upload.reading || undefined}
       className={cn(
-        'flex min-h-56 flex-1 flex-col items-center justify-center gap-2.5 rounded-lg border border-dashed px-5 py-6 text-center transition-colors duration-press ease-standard',
+        'flex min-h-56 min-w-0 flex-1 flex-col items-center justify-center gap-2.5 rounded-lg border border-dashed px-5 py-6 text-center transition-colors duration-press ease-standard',
         dragging ? 'border-brand-600 bg-brand-50' : 'border-border-brand-strong bg-surface-brand',
       )}
     >
@@ -164,13 +165,21 @@ export function DropZone({ onRead }: { onRead: (resumeId: string) => void }) {
           <UploadCloud02 className={iconSize.md} />
         )}
       </span>
-      <p className="text-body-l font-semibold text-text-primary">
-        {upload.reading
-          ? `Reading ${upload.name}…`
-          : upload.name && !upload.error
-            ? `${upload.name} is in Resumes and picked`
-            : 'Drag and drop your resume here'}
-      </p>
+      <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
+        <p className="text-body-l font-semibold text-text-primary">
+          {upload.reading
+            ? 'Reading your resume…'
+            : upload.name && !upload.error
+              ? 'Saved to Resumes and picked'
+              : 'Drag and drop your resume here'}
+        </p>
+        {upload.name && (upload.reading || !upload.error) && (
+          <p title={upload.name} className="max-w-full truncate text-body-m text-text-secondary">
+            {upload.name}
+          </p>
+        )}
+        {upload.reading && <AiLoader variant="loading-line" silent className="mt-1.5 w-40" />}
+      </div>
       <Button
         variant="secondary"
         disabled={upload.reading}
@@ -222,7 +231,10 @@ export function UploadRow({ onRead }: { onRead: (resumeId: string) => void }) {
       >
         <JdArtUploadFileIllustration aria-hidden className="h-auto w-7 shrink-0" />
         <span className="min-w-0">
-          <span className="block text-title-l font-bold text-text-primary">
+          <span
+            title={upload.reading ? (upload.name ?? undefined) : undefined}
+            className="block truncate text-title-l font-bold text-text-primary"
+          >
             {upload.reading ? `Reading ${upload.name}…` : 'Upload another resume'}
           </span>
           <span className="block text-body-m text-text-tertiary">

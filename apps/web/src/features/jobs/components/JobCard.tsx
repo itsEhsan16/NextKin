@@ -54,16 +54,16 @@ export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: 
         // title and employer (two different "Senior Product Designer" roles at Stripe), which
         // would otherwise give two distinct cards the same accessible name.
         aria-label={`${job.title} at ${job.company}, ${job.location}`}
-        className="peer absolute inset-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className="peer absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       />
 
       <div
         className={cn(
-          'pointer-events-none relative flex flex-col gap-3 rounded-xl border bg-surface-card px-4 pb-3.5 pt-4',
+          'pointer-events-none relative flex flex-col gap-3.5 rounded-lg border bg-surface-card p-5 shadow-card',
           cardFaceMotion,
           selected
             ? 'border-border-selected outline-1 -outline-offset-2 outline-border-selected'
-            : cn('border-border-card', cardFaceHover),
+            : cn('border-border-subtle', cardFaceHover),
         )}
       >
         <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: 
           </p>
         )}
 
-        <div className="flex items-center gap-3 border-t border-border-subtle pt-3">
+        <div className="flex items-center gap-2 pt-0.5">
           <span className="min-w-0 flex-1 text-caption-m text-text-tertiary">
             Posted {age === 'Just now' ? 'just now' : age}
           </span>

@@ -38,15 +38,12 @@ export function BillingInfoCard({ billing }: { billing: Billing }) {
       title="Billing information"
       description="Manage your payment methods and billing details."
     >
-      <ul aria-label="Payment methods" className="mt-3 flex flex-col gap-2">
+      <ul aria-label="Payment methods" className="mt-5 flex flex-col gap-2">
         {billing.paymentMethods.map((card) => (
-          <li
-            key={card.id}
-            className="flex items-center gap-3 rounded-md border border-border-card px-3 py-2.5"
-          >
+          <li key={card.id} className="flex items-center gap-3 rounded-md bg-neutral-50 px-4 py-3">
             <span
               aria-hidden
-              className="flex h-7.5 w-11 shrink-0 items-center justify-center rounded-sm border border-border-card text-caption-m font-extrabold italic text-text-primary"
+              className="flex h-7.5 w-11 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-caption-m font-extrabold italic text-text-primary"
             >
               {card.brand.toUpperCase()}
             </span>
@@ -110,7 +107,7 @@ export function SubscriptionSettingsCard({ billing }: { billing: Billing }) {
       title="Subscription settings"
       description="Manage how your subscription renews."
     >
-      <div className="mt-3 flex items-center gap-4">
+      <div className="mt-5 flex min-h-14 items-center gap-4">
         <div className="min-w-0 flex-1">
           <p className="text-body-m text-text-primary">Auto-renewal</p>
           <p id={renewLine} className="text-body-s text-text-tertiary">
@@ -124,7 +121,7 @@ export function SubscriptionSettingsCard({ billing }: { billing: Billing }) {
           onChange={(on) => update.mutate({ autoRenew: on })}
         />
       </div>
-      <div className="mt-3 flex items-center gap-4">
+      <div className="mt-2 flex min-h-14 items-center gap-4 border-t border-border-subtle pt-2">
         <div className="min-w-0 flex-1">
           <p className="text-body-m text-text-primary">Billing cycle</p>
           <p id={cycleLine} className="text-body-s text-text-tertiary">
@@ -145,8 +142,8 @@ export function SubscriptionSettingsCard({ billing }: { billing: Billing }) {
   );
 }
 
-const HEAD = 'px-3.5 py-2 text-left text-body-s font-normal text-text-tertiary';
-const CELL = 'px-3.5 py-2.5 text-body-m text-text-primary';
+const HEAD = 'px-6 py-2.5 text-left text-caption-m font-medium text-text-tertiary';
+const CELL = 'px-6 py-3.5 text-body-m text-text-primary';
 
 /**
  * "Billing history" (471:56): each invoice's date, what it was for, the amount and whether it's
@@ -176,11 +173,11 @@ export function BillingHistoryCard({ billing }: { billing: Billing }) {
       }
     >
       {billing.invoices.length === 0 ? (
-        <p className="mt-3 rounded-sm border border-border-card px-3.5 py-4 text-body-m text-text-tertiary">
+        <p className="mt-5 rounded-md bg-neutral-50 px-4 py-4 text-body-m text-text-tertiary">
           No invoices yet. Each one appears here, and in your email, after a payment.
         </p>
       ) : (
-        <div className="mt-3 overflow-hidden rounded-sm border border-border-card">
+        <div className="-mx-6 -mb-6 mt-5 overflow-hidden rounded-b-lg border-t border-border-subtle">
           <table className="w-full table-fixed border-collapse">
             <colgroup>
               <col className="w-[18%]" />
@@ -189,7 +186,7 @@ export function BillingHistoryCard({ billing }: { billing: Billing }) {
               <col className="w-[21%]" />
               <col className="w-[12%]" />
             </colgroup>
-            <thead className="border-b border-border-faint">
+            <thead className="border-b border-border-subtle bg-neutral-50">
               <tr>
                 <th scope="col" className={HEAD}>
                   Date
@@ -208,7 +205,7 @@ export function BillingHistoryCard({ billing }: { billing: Billing }) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-faint">
+            <tbody className="divide-y divide-border-subtle">
               {billing.invoices.map((invoice) => (
                 <tr key={invoice.id}>
                   <td className={CELL}>{invoiceDate(invoice.issuedOn)}</td>

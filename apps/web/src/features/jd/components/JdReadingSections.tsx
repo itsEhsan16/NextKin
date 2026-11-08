@@ -109,11 +109,11 @@ export function JdPlausibilityCallout({ notes }: { notes: readonly PlausibilityN
   return (
     <section
       aria-labelledby="jd-plausibility"
-      className="mx-6 mb-2 mt-1 rounded-lg border border-warning-text/30 bg-warning-50 px-4 py-3.5"
+      className="mx-8 mb-2 mt-1 rounded-md bg-warning-50 px-5 py-4"
     >
       <h2
         id="jd-plausibility"
-        className="flex items-center gap-2 text-body-l font-bold text-warning-text"
+        className="flex items-center gap-2 text-body-m font-bold text-warning-text"
       >
         <AlertTriangle aria-hidden className="size-4" />
         Requirements to double-check

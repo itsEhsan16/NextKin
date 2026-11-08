@@ -107,7 +107,7 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
         aria-label="Your first draft"
         className={cn(stepCard, 'flex min-w-0 flex-col lg:col-span-3')}
       >
-        <div className="flex items-center gap-2.5 border-b border-border-default py-3 pl-4.5 pr-4">
+        <div className="flex items-center gap-2.5 px-6 pb-3 pt-5">
           <h2 className="text-title-l font-bold text-text-primary">Your first draft</h2>
           {left > 0 && (
             <span className="rounded-full bg-warning-50 px-2.5 py-0.5 text-caption-m font-semibold text-warning-text">

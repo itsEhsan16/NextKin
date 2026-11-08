@@ -56,7 +56,7 @@ export function HomeScreen() {
   }
 
   return (
-    <div className={cn(pageFrameInBar, 'flex flex-col gap-4 pb-5')}>
+    <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-10')}>
       <PageHeader
         eyebrow={
           user.isPending ? <Skeleton className="h-5 w-24" /> : `Hi ${user.data?.firstName ?? ''},`
@@ -65,12 +65,12 @@ export function HomeScreen() {
         subtitle="Everything you need to build your career, in one place."
       />
 
-      <div className="flex flex-col gap-4 xl:flex-row">
+      <div className="flex flex-col gap-6 xl:flex-row">
         <QuickStartCard />
         <FindJobsCard />
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <TopJobMatches
           jobs={picks.data}
           status={queryPhase(picks)}
@@ -83,7 +83,7 @@ export function HomeScreen() {
         />
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <AiPromoCard />
         <RecentActivityCard
           entries={activity.data}

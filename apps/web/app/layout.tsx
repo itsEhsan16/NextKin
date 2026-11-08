@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // `suppressHydrationWarning`: the boot script below may add `data-sidebar` to this element
     // before React hydrates it, which is the point of it.
     <html lang="en" className={cn(plusJakarta.variable, caveat.variable)} suppressHydrationWarning>
-      <body className="bg-neutral-0 font-sans text-text-primary antialiased">
+      <body className="bg-neutral-100 font-sans text-text-primary antialiased">
         {/* First in the body, so it runs before anything paints: the remembered sidebar state,
             for the CSS to draw from (`toreview.md` §84). */}
         <script dangerouslySetInnerHTML={{ __html: sidebarBootScript }} />

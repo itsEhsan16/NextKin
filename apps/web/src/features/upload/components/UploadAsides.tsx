@@ -1,6 +1,7 @@
 import { useId } from 'react';
 
 import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 import { brandOutlineButton } from '@/ui/brandOutlineButton';
 import { PlusIcon } from '@/ui/icons';
 import { ArrowRight } from '@/ui/lineIcons';
@@ -15,7 +16,7 @@ import { FILE_BENEFITS, LINK_REASONS, PASTE_BENEFITS, POPULAR_SOURCES } from '..
 import { BenefitList } from './BenefitList';
 import { SourceLogo } from './SourceLogo';
 
-const column = 'flex min-w-0 flex-col rounded-lg border border-border-card bg-surface-card p-5';
+const column = cn(cardSurface, 'flex min-w-0 flex-col p-6');
 
 /**
  * Paste text's column (247:172): the character at her laptop with the board's handwritten line,
@@ -34,7 +35,7 @@ export function PasteAside() {
         Paste the job description and NextKin will:
       </p>
       <BenefitList items={PASTE_BENEFITS} className="mb-4 mt-4" />
-      <figure className="mt-auto flex items-center gap-3 rounded-md bg-surface-brand-strong p-3">
+      <figure className="mt-auto flex items-center gap-3 rounded-md bg-surface-brand-strong p-4">
         <JdRobotIllustration className="h-16 w-auto shrink-0" />
         <blockquote className="text-body-m text-text-primary">
           “From job description to career insights — in seconds.”
@@ -49,26 +50,26 @@ export function LinkAside() {
   const headingId = useId();
   const sourcesId = useId();
   return (
-    <aside aria-labelledby={headingId} className={cn(column, 'px-7 py-8')}>
+    <aside aria-labelledby={headingId} className={column}>
       <h2 id={headingId} className="text-h1 text-text-primary">
         Why use a job link?
       </h2>
       <BenefitList items={LINK_REASONS} roomy className="mt-6 gap-6" />
-      <section aria-labelledby={sourcesId} className="mt-6 border-t border-border-faint pt-8">
+      <section aria-labelledby={sourcesId} className="mt-8">
         <h3 id={sourcesId} className="text-h2 font-medium text-text-primary">
           Popular sources
         </h3>
         <ul className="mt-4 grid grid-cols-4 gap-x-1 gap-y-6">
           {POPULAR_SOURCES.map((source) => (
             <li key={source.name} className="flex flex-col items-center gap-1.5 text-center">
-              <span className="flex h-12 w-13 items-center justify-center rounded-lg border border-border-card bg-surface-card">
+              <span className="flex h-12 w-13 items-center justify-center rounded-md bg-neutral-50">
                 <SourceLogo name={source.name} className="h-7 w-auto max-w-7" />
               </span>
               <span className="text-body-s text-text-secondary">{source.label}</span>
             </li>
           ))}
           <li className="flex flex-col items-center gap-1.5 text-center">
-            <span className="flex h-12 w-13 items-center justify-center rounded-lg border border-border-card bg-surface-card">
+            <span className="flex h-12 w-13 items-center justify-center rounded-md bg-neutral-50">
               <PlusIcon aria-hidden className="size-6 text-text-tertiary" />
             </span>
             <span className="text-body-s text-text-secondary">And more</span>
@@ -106,7 +107,7 @@ export function FileAside({ onUseSample }: { onUseSample: () => void }) {
 
       <section
         aria-labelledby={sampleId}
-        className="flex items-center gap-4 rounded-lg bg-surface-brand-strong p-4"
+        className="flex items-center gap-4 rounded-lg bg-surface-brand-strong p-6"
       >
         <JdSamplePageIllustration className="h-[79px] w-auto shrink-0" />
         <div className="min-w-0">

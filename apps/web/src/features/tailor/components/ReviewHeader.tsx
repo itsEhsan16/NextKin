@@ -20,7 +20,7 @@ import type { Job } from '@nextkin/shared/models';
 import { JobLogoTile } from '../flow/CompareStep';
 import { fitMessage } from './FitToPage';
 
-const BUTTON = 'h-control-lg gap-2 rounded-md px-5 text-body-l font-semibold';
+const BUTTON = 'h-control-md gap-2 rounded-md px-4 text-body-m font-semibold';
 
 /**
  * "Resume review" (toreview §121, from the owner's mockup): back, the title, the file with its
@@ -52,14 +52,14 @@ export function ReviewHeader({
   const router = useRouter();
   const fit = useFitToOnePage(resumeId);
   return (
-    <header className="flex flex-wrap items-center gap-3">
+    <header className="flex flex-wrap items-center gap-x-3.5 gap-y-3">
       {backHref && (
         <Link
           href={backHref}
           aria-label="Back to the job"
           className={cn(
             iconButton,
-            'size-9 shrink-0 rounded-full border border-border-default bg-surface-card',
+            'size-10 shrink-0 rounded-full border border-border-subtle bg-surface-card shadow-card',
           )}
         >
           <ChevronRight aria-hidden className="size-4.5 rotate-180 text-text-primary" />
@@ -67,10 +67,10 @@ export function ReviewHeader({
       )}
       {job && <JobLogoTile job={job} />}
       <div className="min-w-0">
-        <p className="truncate text-caption-m text-text-tertiary">
+        <p className="truncate text-caption-m font-medium text-text-tertiary">
           {job ? (job.company ? `${job.title} · ${job.company}` : job.title) : file}
         </p>
-        <h1 className="text-title-l font-bold text-text-primary">Resume review</h1>
+        <h1 className="text-h1 font-bold tracking-tight text-text-primary">Resume review</h1>
       </div>
       <Link
         href={resumeHref(resumeId)}
@@ -83,9 +83,16 @@ export function ReviewHeader({
       <FilterDropdown
         align="end"
         trigger={
-          <button type="button" className={cn(outlineButton, BUTTON)}>
-            <DotsVertical aria-hidden className="size-4" />
-            More actions
+          <button
+            type="button"
+            aria-label="More actions"
+            title="More actions"
+            className={cn(
+              iconButton,
+              'size-control-md border border-border-default bg-surface-card text-text-secondary hover:text-text-primary',
+            )}
+          >
+            <DotsVertical aria-hidden className="size-4.5" />
           </button>
         }
       >

@@ -1,3 +1,5 @@
+import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 import { StateView } from '@/ui/StateView';
 
 import { SETTINGS_SECTIONS, type SettingsSection } from '../settingsLibrary';
@@ -16,7 +18,7 @@ export function ComingSoonPanel({ section }: { section: SettingsSection }) {
   return (
     <section
       aria-label={`${SETTINGS_SECTIONS[section].label}, coming soon`}
-      className="flex flex-col items-center rounded-lg border border-border-card bg-surface-card pt-10"
+      className={cn(cardSurface, 'flex flex-col items-center pt-12 pb-4')}
     >
       <Icon aria-hidden className="h-auto max-h-10 w-12" />
       <StateView

@@ -22,9 +22,9 @@ export function SparkleTile() {
   return (
     <span
       aria-hidden
-      className="flex size-8 shrink-0 items-center justify-center rounded-md bg-brand-50"
+      className="flex size-10 shrink-0 items-center justify-center rounded-md bg-brand-50"
     >
-      <SparkleIllustration className="h-auto w-4" />
+      <SparkleIllustration className="h-auto w-5" />
     </span>
   );
 }
@@ -51,22 +51,22 @@ export function FlowHeader({
   step: number;
 }) {
   return (
-    <header className="flex flex-wrap items-center gap-x-6 gap-y-3">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+    <header className="flex flex-wrap items-center gap-x-8 gap-y-4">
+      <div className="flex min-w-0 flex-1 items-center gap-3.5">
         <Link
           href={backHref}
           aria-label={backLabel}
           className={cn(
             iconButton,
-            'size-9 rounded-full border border-border-default bg-surface-card',
+            'size-10 rounded-full border border-border-subtle bg-surface-card shadow-card',
           )}
         >
           <ChevronRight aria-hidden className="size-4.5 rotate-180 text-text-primary" />
         </Link>
         {leading}
         <div className="min-w-0">
-          <p className="text-caption-m text-text-tertiary">{eyebrow}</p>
-          <p className="truncate text-title-l font-bold text-text-primary">{title}</p>
+          <p className="text-caption-m font-medium text-text-tertiary">{eyebrow}</p>
+          <p className="truncate text-h2 font-bold tracking-tight text-text-primary">{title}</p>
         </div>
       </div>
       <FlowSteps steps={steps} step={step} />
@@ -89,14 +89,14 @@ export function StepHeading({
   id?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2.5">
-      <p className="text-micro font-bold uppercase tracking-wider text-text-brand">
+    <div className="flex flex-col gap-2">
+      <p className="text-caption-m font-semibold uppercase tracking-wide text-text-brand">
         Step {step} of {of}
       </p>
-      <h1 id={id} className="text-h1 font-bold text-text-primary">
+      <h1 id={id} className="text-h1 font-bold tracking-tight text-text-primary">
         {title}
       </h1>
-      <p className="text-body-l text-text-secondary">{lede}</p>
+      <p className="max-w-prose text-body-l text-text-secondary">{lede}</p>
     </div>
   );
 }
@@ -128,7 +128,7 @@ export function ColumnHead({
 }
 
 /** A step's card (849:193): the app's card, with the board's soft shadow. */
-export const stepCard = cn(cardSurface, 'overflow-hidden rounded-xl shadow-card');
+export const stepCard = cn(cardSurface, 'overflow-hidden rounded-xl');
 
 /**
  * The bar under a step (849:138): what the press costs or needs on the left, Back and the step's
@@ -146,8 +146,7 @@ export function FlowFooter({
   return (
     <div
       className={cn(
-        cardSurface,
-        'flex flex-wrap items-center gap-x-6 gap-y-3 rounded-xl py-3 pl-5 pr-3.5',
+        'sticky bottom-4 z-10 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-border-subtle bg-surface-card/90 px-5 py-3 shadow-popover backdrop-blur-md',
       )}
     >
       <p

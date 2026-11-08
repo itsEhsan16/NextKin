@@ -19,8 +19,8 @@ export type PreferencesSectionProps = {
  */
 export function PreferencesSection({ preferences, settings }: PreferencesSectionProps) {
   return (
-    <div className="grid items-start gap-3 @min-[50rem]:grid-cols-[minmax(0,1fr)_16rem]">
-      <div className="flex min-w-0 flex-col gap-3">
+    <div className="grid items-start gap-6 @min-[50rem]:grid-cols-[minmax(0,1fr)_16rem]">
+      <div className="flex min-w-0 flex-col gap-6">
         <JobPreferencesCard preferences={preferences} />
         <AppSettingsCard settings={settings} language={preferences.language} />
         <ContentAiCard settings={settings} />

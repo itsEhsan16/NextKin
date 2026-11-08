@@ -59,7 +59,7 @@ export function TwoFactorCard({
       }
     >
       {!on && (
-        <p className="mt-3 flex items-center gap-3 rounded-sm bg-surface-brand-strong px-3 py-2.5 text-body-m text-text-secondary">
+        <p className="mt-5 flex items-center gap-3 rounded-md bg-surface-brand px-4 py-3 text-body-m text-text-secondary">
           <InfoCircleIcon className="size-5 shrink-0 text-brand-600" />
           Protect your account with 2FA to keep your data safe, even if your password is
           compromised.

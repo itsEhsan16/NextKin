@@ -76,7 +76,7 @@ function ToastBar({
       data-state={leaving ? 'closed' : 'open'}
       onAnimationEnd={leaving ? onLeft : undefined}
       className={cn(
-        'pointer-events-auto flex origin-bottom-right items-center gap-3 rounded-lg bg-surface-inverse py-3 pr-2 pl-4 text-body-s text-text-inverse shadow-popover',
+        'pointer-events-auto flex origin-bottom-right items-center gap-3 rounded-xl bg-surface-inverse py-3.5 pr-2.5 pl-4 text-body-m text-text-inverse shadow-dialog',
         leaving ? 'animate-pop-out' : 'animate-pop-in',
       )}
     >

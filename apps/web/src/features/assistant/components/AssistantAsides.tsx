@@ -2,6 +2,8 @@ import type { SubscriptionPlan } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
 
+import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 import { ProgressBar } from '@/ui/ProgressBar';
 import { ProfilePaperPlaneIllustration, SettingsPrivacyIllustration } from '@/ui/illustrations';
 
@@ -27,7 +29,7 @@ export function DailyMessagesCard({
   return (
     <section
       aria-labelledby="daily-messages"
-      className="flex flex-col gap-2 rounded-lg border border-border-card bg-surface-card px-[18px] py-4"
+      className={cn(cardSurface, 'flex flex-col gap-3 p-5')}
     >
       <div className="flex items-center gap-2.5">
         <ProfilePaperPlaneIllustration aria-hidden className="h-auto w-[26px] shrink-0" />
@@ -64,7 +66,7 @@ export function DailyMessagesCard({
 /** "Read and advise only" (768:174): what the assistant will never do, on a lavender note. */
 export function ReadOnlyNote() {
   return (
-    <aside className="flex items-center gap-3 rounded-lg bg-surface-brand-strong py-3 pl-3.5 pr-4">
+    <aside className="flex items-center gap-3 rounded-lg bg-surface-brand px-5 py-4">
       <SettingsPrivacyIllustration aria-hidden className="h-auto w-[30px] shrink-0" />
       <div className="min-w-0">
         <p className="text-body-m font-semibold text-text-primary">Read and advise only</p>

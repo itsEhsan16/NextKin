@@ -8,7 +8,7 @@ export function FindJobsCard() {
   return (
     <Link
       href="/jobs"
-      className="relative flex min-h-[186px] w-[200px] shrink-0 flex-col justify-end overflow-hidden rounded-xl bg-brand-600 p-4 transition-opacity duration-press ease-standard hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+      className="relative flex min-h-[186px] w-[220px] shrink-0 flex-col justify-end overflow-hidden rounded-lg bg-brand-600 p-6 shadow-card transition-[box-shadow,translate] duration-base ease-standard hover:-translate-y-0.5 hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- static SVG art, no optimisation to do */}
       <img
@@ -23,7 +23,7 @@ export function FindJobsCard() {
       </span>
       <span
         aria-hidden
-        className="absolute bottom-4 right-4 flex size-7 items-center justify-center rounded-full bg-neutral-0 text-body-m text-text-brand"
+        className="absolute bottom-5 right-5 flex size-9 items-center justify-center rounded-full bg-neutral-0 text-body-l text-text-brand shadow-raised"
       >
         ›
       </span>

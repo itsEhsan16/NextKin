@@ -30,7 +30,7 @@ import {
   AiInsightsCard,
   CardHead,
   FunnelCard,
-  insightCard,
+  insightPanel,
   SharesCard,
   StatCard,
 } from '../components/InsightsCards';
@@ -46,7 +46,7 @@ function ProgressCard({ pageRange }: { pageRange: InsightsRange }) {
   const insights = useInsights(shown);
   const chartLoaded = useReveal(Boolean(insights.data));
   return (
-    <section aria-labelledby="insights-progress" className={cn(insightCard, 'p-5')}>
+    <section aria-labelledby="insights-progress" className={insightPanel}>
       <CardHead
         id="insights-progress"
         title="Career Progress"
@@ -90,7 +90,7 @@ function Dashboard({ data, range }: { data: CareerInsights; range: InsightsRange
   const previous = PREVIOUS_LABEL[data.range];
   return (
     <>
-      <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-6 xl:grid-cols-4">
         <StatCard
           Art={ProfileTermsIllustration}
           label="Jobs Analyzed"
@@ -118,13 +118,13 @@ function Dashboard({ data, range }: { data: CareerInsights; range: InsightsRange
         />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,560fr)_minmax(0,290fr)_minmax(0,298fr)]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,560fr)_minmax(0,290fr)_minmax(0,298fr)]">
         <ProgressCard pageRange={range} />
         <FunnelCard funnel={data.funnel} />
         <AiInsightsCard insights={data.aiInsights} />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,350fr)_minmax(0,340fr)_minmax(0,458fr)]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,350fr)_minmax(0,340fr)_minmax(0,458fr)]">
         <SharesCard
           id="insights-skills"
           title="Top Skills in Demand"
@@ -169,7 +169,7 @@ export function InsightsScreen() {
   }
 
   return (
-    <div className={cn(pageFrameInBar, 'flex flex-col gap-4 pb-8')}>
+    <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-10')}>
       <PageHeader
         eyebrow="Insights"
         title="Your Career Insights"
@@ -200,23 +200,23 @@ export function InsightsScreen() {
       />
 
       {insights.data ? (
-        <div className={cn('flex flex-col gap-5', loaded && 'animate-reveal')}>
+        <div className={cn('flex flex-col gap-6', loaded && 'animate-reveal')}>
           <Dashboard data={insights.data} range={range} />
         </div>
       ) : (
         // The dashboard's three rows at their loaded shapes, stacking below `xl` as it does.
-        <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-2 gap-6 xl:grid-cols-4">
             {[0, 1, 2, 3].map((card) => (
               <Skeleton key={card} className="h-28 rounded-lg" />
             ))}
           </div>
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,560fr)_minmax(0,290fr)_minmax(0,298fr)]">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,560fr)_minmax(0,290fr)_minmax(0,298fr)]">
             {[0, 1, 2].map((card) => (
               <Skeleton key={card} className="h-[310px] rounded-lg" />
             ))}
           </div>
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,350fr)_minmax(0,340fr)_minmax(0,458fr)]">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,350fr)_minmax(0,340fr)_minmax(0,458fr)]">
             {[0, 1, 2].map((card) => (
               <Skeleton key={card} className="h-[320px] rounded-lg" />
             ))}

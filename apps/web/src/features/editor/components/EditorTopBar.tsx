@@ -2,14 +2,13 @@
 
 import type { ResumeTemplateId } from '@nextkin/shared/models';
 
-import { primaryButton } from '@/features/create/jobFlow/FlowChrome';
 import { cn } from '@/lib/cn';
+import { buttonClass } from '@/ui/Button';
 import { RedoIcon, UndoIcon } from '@/ui/icons';
 import { Download01 } from '@/ui/lineIcons';
 import { StableLabel } from '@/ui/StableLabel';
 
 import type { SaveStatus } from '../useAutosave';
-import { toolButton } from './controls';
 import { EditorIdentity } from './EditorIdentity';
 
 /**
@@ -18,7 +17,11 @@ import { EditorIdentity } from './EditorIdentity';
  * duplicating and deleting are on the resume's menu in Resumes.
  */
 
-const control = cn(toolButton, 'border border-border-default bg-surface-card');
+/** Undo and redo: 40 px round outline buttons, quiet ink until hovered. */
+const control = cn(
+  buttonClass({ variant: 'secondary', size: 'md', pill: true }),
+  'w-control-md shrink-0 px-0 text-text-secondary hover:text-text-primary',
+);
 
 export function EditorTopBar(props: {
   resumeId: string;
@@ -37,7 +40,7 @@ export function EditorTopBar(props: {
   downloading: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
       <EditorIdentity
         resumeId={props.resumeId}
         title={props.title}
@@ -49,7 +52,7 @@ export function EditorTopBar(props: {
         template={props.template}
       />
 
-      <div className="ml-auto flex items-center gap-2.5">
+      <div className="ml-auto flex items-center gap-2">
         <button
           type="button"
           aria-label="Undo (Ctrl+Z)"
@@ -74,7 +77,7 @@ export function EditorTopBar(props: {
           type="button"
           onClick={props.onDownload}
           disabled={props.downloading}
-          className={primaryButton}
+          className={cn(buttonClass({ size: 'md' }), 'ml-2')}
         >
           <Download01 aria-hidden className="size-4" />
           <StableLabel label="Download PDF" busyLabel="Preparing PDF…" busy={props.downloading} />

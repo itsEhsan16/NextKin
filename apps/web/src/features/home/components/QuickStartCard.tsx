@@ -72,18 +72,18 @@ const TILES: readonly Tile[] = [
  */
 export function QuickStartCard() {
   return (
-    <Card className="flex-1 p-4">
+    <Card className="flex-1 p-6">
       <SectionHeader title="Quick Start" />
-      <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+      <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
         {TILES.map(({ key, label, hint, href, Art }) => (
           <li key={key}>
             <Link
               href={href}
-              className="flex h-[120px] flex-col items-center justify-end rounded-md border border-border-default px-2 pb-3 transition-colors duration-press ease-standard hover:border-border-brand hover:bg-surface-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+              className="flex h-[140px] flex-col items-center justify-end rounded-lg bg-neutral-50 px-2 pb-4 transition-[background-color,box-shadow,translate,scale] duration-base ease-standard hover:-translate-y-0.5 hover:bg-surface-card hover:shadow-card-hover active:scale-(--scale-pressed) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
             >
-              <Art className="mb-auto mt-3 h-[56px] w-[52px]" />
+              <Art className="mb-auto mt-4 h-[56px] w-[52px]" />
               <span className="text-body-m font-semibold text-text-primary">{label}</span>
-              <span className="mt-0.5 text-caption-m text-text-tertiary">{hint}</span>
+              <span className="mt-1 text-caption-m text-text-tertiary">{hint}</span>
             </Link>
           </li>
         ))}

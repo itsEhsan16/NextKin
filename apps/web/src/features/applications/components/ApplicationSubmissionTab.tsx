@@ -27,7 +27,7 @@ export function ApplicationSubmissionTab({ row, stage }: ApplicationSubmissionTa
     : undefined;
 
   return (
-    <dl className="flex flex-col gap-2">
+    <dl className="flex flex-col gap-3">
       <DetailRow icon={<CalendarIcon className="size-4" />} label="Applied on">
         {formatShortDate(application.appliedAt)}
       </DetailRow>

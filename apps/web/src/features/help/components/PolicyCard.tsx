@@ -7,7 +7,7 @@ import { ChevronRightIcon } from '@/ui/icons';
 import { ProfileTermsIllustration, SettingsSecurityIllustration } from '@/ui/illustrations';
 import { Skeleton } from '@/ui/Skeleton';
 import { useReveal } from '@/lib/useReveal';
-import { pressable } from '@/ui/pressable';
+import { cardInteractive, cardPad, cardSurface } from '@/ui/Card';
 import { cn } from '@/lib/cn';
 
 const ART: Record<LegalDocKey, ComponentType<SVGProps<SVGSVGElement>>> = {
@@ -35,8 +35,10 @@ export function PolicyCard({ doc }: { doc: LegalDocKey }) {
       target="_blank"
       rel="noreferrer"
       className={cn(
-        pressable,
-        'group block rounded-lg border border-border-card bg-surface-card p-5 shadow-card hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+        cardSurface,
+        cardPad,
+        cardInteractive,
+        'group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
         reveal && 'animate-reveal',
       )}
     >
@@ -45,7 +47,7 @@ export function PolicyCard({ doc }: { doc: LegalDocKey }) {
           <Art className="h-auto max-h-9 w-10" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-title-l font-medium text-text-primary">{title}</span>
+          <span className="block text-title-l text-text-primary">{title}</span>
           <span className="block text-body-s text-text-tertiary">
             Last updated {formatShortDate(updatedAt)}
           </span>
@@ -55,7 +57,7 @@ export function PolicyCard({ doc }: { doc: LegalDocKey }) {
           className="size-4 shrink-0 text-text-secondary transition-transform duration-press ease-standard group-hover:translate-x-0.5"
         />
       </span>
-      <span className="mt-3 block text-body-m text-text-secondary">{intro}</span>
+      <span className="mt-4 block text-body-m text-text-secondary">{intro}</span>
       <span className="sr-only">(opens in a new tab)</span>
     </a>
   );

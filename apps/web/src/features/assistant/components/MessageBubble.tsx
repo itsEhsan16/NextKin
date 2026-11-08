@@ -5,6 +5,7 @@ import { useAssistantReply } from '@nextkin/shared/queries';
 import { memo, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
+import { AiLoader } from '@/ui/AiLoader';
 import { InfoCircleIcon } from '@/ui/icons';
 import { JobAiSparkleIllustration } from '@/ui/illustrations';
 
@@ -28,7 +29,7 @@ function AiAvatar() {
   return (
     <span
       aria-hidden
-      className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border-brand bg-surface-brand-strong"
+      className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border-brand bg-surface-brand-strong"
     >
       <JobAiSparkleIllustration className="h-auto w-5" />
     </span>
@@ -50,14 +51,14 @@ function UserTurn({ message, fresh }: { message: AssistantMessage; fresh: boolea
           ))}
         </ul>
       )}
-      <p className="max-w-[85%] whitespace-pre-wrap rounded-xl rounded-br-[4px] bg-brand-600 px-4 py-2.5 text-prose text-text-inverse">
+      <p className="max-w-[85%] whitespace-pre-wrap rounded-xl rounded-br-sm bg-brand-600 px-4 py-2.5 text-prose text-text-inverse">
         {message.text}
       </p>
     </li>
   );
 }
 
-const ANSWER = 'max-w-[85%] whitespace-pre-wrap rounded-xl rounded-tl-[4px] px-4 py-3 text-prose';
+const ANSWER = 'max-w-[85%] whitespace-pre-wrap rounded-xl rounded-tl-sm px-4 py-3 text-prose';
 
 /** The text of an answer: the finished one, or the one still arriving. */
 function AnswerBody({ message }: { message: AssistantMessage }) {
@@ -78,7 +79,7 @@ function AnswerBody({ message }: { message: AssistantMessage }) {
       {message.text.length > 0 ? (
         <p>{withBold(message.text)}</p>
       ) : (
-        <p className="animate-pulse text-text-tertiary">Thinking…</p>
+        <AiLoader variant="dots" text="Thinking…" />
       )}
       {message.status === 'failed' && (
         <p role="alert" className="mt-1.5 animate-reveal text-body-s text-danger-text">

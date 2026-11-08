@@ -228,6 +228,9 @@ importers:
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.6.0
+      thinking-orbs:
+        specifier: 0.3.2
+        version: 0.3.2(react@19.2.3)
       zustand:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.3)
@@ -7057,6 +7060,11 @@ packages:
     resolution: {integrity: sha512-JYiEGbgBGtmHAWX8Kf99gGRL1HtjcRVHLrmJNTZL4vFs9XrnWcuL45Iszw/pO4094+JR7havSrN+ds6YTOpSQA==}
     peerDependencies:
       react: ^19.0.0
+
+  thinking-orbs@0.3.2:
+    resolution: {integrity: sha512-QZFeBaPEzqhjiZoXy961EvDgaXk2WgXacF3Rbz+Sj5IfzDzBvTC86vdREUHniBffYibJFKSwbfllxLUdI/Xv6g==}
+    peerDependencies:
+      react: '>=18.0.0'
 
   thread-stream@4.2.0:
     resolution: {integrity: sha512-e2zZ96wSChazBsbENf/Pcm/4swHt2cEKQ92rhUjkL9GCKiTDJIaTBenjE/m9DXi0QBmTMDkFDdOomUy20A1tDQ==}
@@ -15133,6 +15141,10 @@ snapshots:
       react-reconciler: 0.33.0(react@19.2.3)
     transitivePeerDependencies:
       - '@types/react'
+
+  thinking-orbs@0.3.2(react@19.2.3):
+    dependencies:
+      react: 19.2.3
 
   thread-stream@4.2.0:
     dependencies:

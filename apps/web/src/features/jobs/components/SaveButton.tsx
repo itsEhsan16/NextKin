@@ -1,5 +1,6 @@
 import { cn } from '@/lib/cn';
 import { BookmarkIcon } from '@/ui/icons';
+import { iconButton } from '@/ui/iconButton';
 import { outlineButton } from '@/ui/outlineButton';
 
 export type SaveButtonProps = {
@@ -46,8 +47,8 @@ export function SaveButton({
         // and needs its own opt back in to stay clickable. A no-op wherever it isn't nested that
         // way (the detail card's `labeled` variant below).
         className={cn(
-          'pointer-events-auto flex items-center justify-center rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:text-text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60',
-          variant === 'card' ? 'size-8' : 'size-6',
+          iconButton,
+          'pointer-events-auto text-text-tertiary hover:text-text-brand disabled:opacity-60',
         )}
       >
         {icon}

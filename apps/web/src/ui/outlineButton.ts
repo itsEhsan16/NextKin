@@ -7,7 +7,7 @@ import { pressable } from './pressable';
  * stay with each caller.
  */
 export const outlineButton =
-  'inline-flex items-center justify-center border border-border-divider bg-surface-card ' +
+  'inline-flex items-center justify-center border border-border-default bg-surface-card shadow-card ' +
   `text-neutral-800 ${pressable} not-disabled:not-aria-disabled:hover:bg-surface-muted ` +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ' +
   'disabled:opacity-60';

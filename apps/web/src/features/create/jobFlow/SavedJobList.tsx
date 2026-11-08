@@ -154,10 +154,10 @@ export function SavedJobList({
                 aria-checked={on}
                 onClick={() => onChange(job.id)}
                 className={cn(
-                  'flex items-center gap-3.5 rounded-lg border px-4 py-3 text-left transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                  'flex items-center gap-3.5 rounded-lg border px-4 py-3 text-left transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                   on
-                    ? 'border-brand-600 bg-surface-brand-strong ring-1 ring-brand-600'
-                    : 'border-border-default bg-surface-card hover:border-neutral-400',
+                    ? 'border-brand-600 bg-surface-brand-strong shadow-card ring-1 ring-brand-600'
+                    : 'border-border-default bg-surface-card hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
                 )}
               >
                 <Radio on={on} />

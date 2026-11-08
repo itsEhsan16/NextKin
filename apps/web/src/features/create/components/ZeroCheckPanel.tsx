@@ -191,13 +191,13 @@ export function ZeroCheckPanel({
       ) : (
         <ul
           aria-label="Every guess"
-          className="flex flex-col divide-y divide-border-default overflow-hidden rounded-lg border border-border-default bg-surface-card"
+          className="flex flex-col gap-0.5 rounded-md bg-neutral-50 p-1.5"
         >
           {rows.map((row) => (
             <li
               key={row.key}
               className={cn(
-                'flex items-center gap-2.5 px-3.5 py-2.5',
+                'flex items-center gap-2.5 rounded-sm px-3.5 py-2.5',
                 row.state === 'current' && 'bg-surface-brand-strong',
               )}
             >

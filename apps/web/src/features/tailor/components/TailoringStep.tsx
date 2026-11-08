@@ -1,10 +1,10 @@
 'use client';
 
 import type { Generation, Job, Resume } from '@nextkin/shared/models';
-import Image from 'next/image';
 
 import { LeaveButton } from '@/features/create/components/LeaveButton';
 import { RunProgress } from '@/features/create/components/RunProgress';
+import { AiOrb } from '@/ui/AiOrb';
 import type { RunLine } from '@/features/create/runLines';
 
 import { tailoringLines } from '../tailorLibrary';
@@ -35,16 +35,7 @@ export function TailoringStep({
 
   return (
     <RunProgress
-      art={
-        <Image
-          src="/illustrations/tailor-robot.png"
-          alt=""
-          width={280}
-          height={200}
-          loading="eager"
-          className="h-50 w-70 object-contain"
-        />
-      }
+      art={<AiOrb size="xl" state="writing" className="my-4" />}
       title={`Tailoring your resume for ${job.company}`}
       subtitle={`${job.title}${source ? ` · from ${source.title}` : ''}`}
       meter="Writing your resume"

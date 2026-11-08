@@ -24,7 +24,7 @@ export function PointsBar({ parts }: { parts: readonly ScorePart[] }) {
   );
   const worst = [...parts].sort((a, b) => b.lost - a.lost)[0];
   return (
-    <div className="flex flex-col gap-3.5 border-t border-border-default px-8 pb-6 pt-5">
+    <div className="flex flex-col gap-3.5 px-8 pb-8 pt-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-title-l font-bold text-text-primary">Where your points go</h2>
         {worst && worst.lost > 0 && (
@@ -113,7 +113,7 @@ export function PlanTable({
   const shownCount = all ? steps.length : Math.max(SHOWN, reachAt ?? 0);
   const shown = steps.slice(0, shownCount);
   return (
-    <div className="flex flex-col gap-3 border-t border-border-default px-8 pb-6 pt-5">
+    <div className="flex flex-col gap-3 px-8 pb-8 pt-2">
       <div className="flex flex-wrap items-baseline gap-2.5">
         <h2 className="text-title-l font-bold text-text-primary">Your fix plan</h2>
         <p className="text-body-m font-medium text-text-tertiary">

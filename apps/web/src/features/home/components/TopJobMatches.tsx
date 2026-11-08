@@ -61,28 +61,28 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
   const carousel = useJobCarousel(picks.length);
 
   return (
-    <Card className="min-w-0 flex-1 p-4">
+    <Card className="min-w-0 flex-1 p-6">
       <SectionHeader
         title="Top Job Matches"
         actionHref={picks.length ? ('/jobs' as Route) : undefined}
         controls={
           carousel.moves && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-2">
               <button
                 type="button"
                 aria-label="Previous matches"
                 onClick={carousel.previous}
-                className={cn(iconButton, 'rounded-full text-text-tertiary')}
+                className={cn(iconButton, 'border border-border-subtle bg-surface-card text-text-secondary shadow-card')}
               >
-                <ChevronRightIcon aria-hidden className="size-3.5 rotate-180" />
+                <ChevronRightIcon aria-hidden className="size-4 rotate-180" />
               </button>
               <button
                 type="button"
                 aria-label="Next matches"
                 onClick={carousel.next}
-                className={cn(iconButton, 'rounded-full text-text-tertiary')}
+                className={cn(iconButton, 'border border-border-subtle bg-surface-card text-text-secondary shadow-card')}
               >
-                <ChevronRightIcon aria-hidden className="size-3.5" />
+                <ChevronRightIcon aria-hidden className="size-4" />
               </button>
             </span>
           )
@@ -90,7 +90,7 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
       />
 
       {status === 'pending' && (
-        <div className="mt-3 grid gap-3 xl:grid-cols-2">
+        <div className="mt-5 grid gap-4 xl:grid-cols-2">
           <Skeleton className="h-[164px] rounded-md" />
           <Skeleton className="h-[164px] rounded-md" />
         </div>
@@ -120,7 +120,7 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
           role="region"
           aria-roledescription="carousel"
           aria-label="Top job matches"
-          className={cn('mt-3 overflow-hidden', reveal && 'animate-reveal')}
+          className={cn('mt-5 overflow-hidden', reveal && 'animate-reveal')}
           {...carousel.holdProps}
         >
           <ul
@@ -179,7 +179,7 @@ function JobMatchCard({ job, slot }: { job: Job; slot: number }) {
       href={jobPageHref(job.id)}
       className={cn(
         pressable,
-        'relative flex h-[164px] flex-col overflow-hidden rounded-md border border-border-subtle px-3.5 hover:border-border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+        'relative flex h-[172px] flex-col overflow-hidden rounded-lg bg-neutral-50 px-4 transition-[background-color,box-shadow] duration-base ease-standard hover:bg-surface-card hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
       )}
     >
       {/* Behind the copy and clipped by the card, exactly as the board stacks it. */}
@@ -251,7 +251,7 @@ function ApplicantStack() {
 function Chip({ children }: { children: React.ReactNode }) {
   return (
     /* 22px — the board's 25px chip (286:343) at the compact density. */
-    <span className="rounded-sm bg-neutral-100 px-2.5 py-[3px] text-caption-m font-medium text-text-secondary">
+    <span className="rounded-full bg-surface-card px-2.5 py-1 text-caption-m font-medium text-text-secondary">
       {children}
     </span>
   );

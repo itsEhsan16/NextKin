@@ -2,6 +2,7 @@ import { FAQ_TOPIC_LABEL, type FaqItem, type FaqTopic } from '@nextkin/shared/mo
 import { useId, type ComponentType, type SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 import { ChevronDownIcon } from '@/ui/icons';
 import {
   HelpGettingStartedIllustration,
@@ -37,7 +38,7 @@ function FaqRow({ item, open, onToggle }: { item: FaqItem; open: boolean; onTogg
   return (
     <li
       className={cn(
-        'border-t border-border-faint transition-colors duration-base ease-standard',
+        'border-t border-border-subtle transition-colors duration-base ease-standard',
         open && 'bg-neutral-50',
       )}
     >
@@ -48,12 +49,12 @@ function FaqRow({ item, open, onToggle }: { item: FaqItem; open: boolean; onTogg
         onClick={onToggle}
         className={cn(
           pressable,
-          'flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600',
+          'flex min-h-14 w-full items-center gap-3 px-6 py-3.5 text-left hover:bg-neutral-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600',
         )}
       >
         <span
           className={cn(
-            'min-w-0 flex-1 text-body-l font-semibold transition-colors duration-base ease-standard',
+            'min-w-0 flex-1 text-body-m font-semibold transition-colors duration-base ease-standard',
             open ? 'text-text-brand' : 'text-text-primary',
           )}
         >
@@ -75,7 +76,7 @@ function FaqRow({ item, open, onToggle }: { item: FaqItem; open: boolean; onTogg
           role="region"
           aria-label={item.question}
           aria-hidden={!open || undefined}
-          className="px-4 pb-4 text-prose text-text-secondary"
+          className="px-6 pb-5 text-prose text-text-secondary"
         >
           {webAnswer(item)}
         </div>
@@ -93,16 +94,13 @@ export function FaqTopicCard({ topic, items, openId, onToggle }: FaqTopicCardPro
   const Art = TOPIC_ART[topic];
 
   return (
-    <section
-      aria-labelledby={titleId}
-      className="overflow-hidden rounded-lg border border-border-card bg-surface-card shadow-card"
-    >
-      <div className="flex items-center gap-3 px-4 pb-3 pt-4">
+    <section aria-labelledby={titleId} className={cn(cardSurface, 'overflow-hidden')}>
+      <div className="flex items-center gap-4 px-6 pb-5 pt-6">
         <span aria-hidden className="flex w-10 shrink-0 justify-center">
           <Art className="h-auto max-h-9 w-10" />
         </span>
         <div className="min-w-0">
-          <h2 id={titleId} className="text-title-l font-medium text-text-primary">
+          <h2 id={titleId} className="text-title-l text-text-primary">
             {FAQ_TOPIC_LABEL[topic]}
           </h2>
           <p className="text-body-s text-text-tertiary">{answerCount(items.length)}</p>

@@ -10,6 +10,7 @@ import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { fieldBox } from '@/ui/fieldBox';
+import { iconButton } from '@/ui/iconButton';
 import { CopyIcon, RenameIcon, TrashIcon } from '@/ui/icons';
 import { DotsVertical, Download01, Edit03 } from '@/ui/lineIcons';
 import { menuSurfaceMotion } from '@/ui/menuMotion';
@@ -56,7 +57,10 @@ export function ResumeRowMenu({
           <button
             type="button"
             aria-label={`More options for ${resume.title}`}
-            className="pointer-events-auto -mr-1 -mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            className={cn(
+              iconButton,
+              'pointer-events-auto -my-1.5 -mr-2 text-text-tertiary hover:text-text-primary',
+            )}
           >
             <DotsVertical className="size-4" />
           </button>

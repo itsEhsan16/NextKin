@@ -37,7 +37,7 @@ export function ApplicationOverviewTab({ row, stage }: ApplicationOverviewTabPro
 
   return (
     <>
-      <dl className="flex flex-col gap-2">
+      <dl className="flex flex-col gap-3">
         <DetailRow icon={<CalendarIcon className="size-4" />} label="Applied on">
           {`${formatShortDate(application.appliedAt)} (${formatCoarseAge(application.appliedAt)})`}
         </DetailRow>
@@ -62,8 +62,8 @@ export function ApplicationOverviewTab({ row, stage }: ApplicationOverviewTabPro
         </DetailRow>
       </dl>
 
-      <h3 className="mt-5 text-title-l text-neutral-800">Job description</h3>
-      <p className="mt-1.5 text-prose text-text-secondary">{job.description}</p>
+      <h3 className="mt-6 text-title-l font-semibold text-neutral-800">Job description</h3>
+      <p className="mt-2 text-prose text-text-secondary">{job.description}</p>
       <Link
         href={jobHref(job.id)}
         className="mt-2 inline-flex items-center gap-2 rounded-sm text-body-l font-semibold text-brand-600 transition-colors duration-press ease-standard hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"

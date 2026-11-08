@@ -111,7 +111,7 @@ function MatchCard({
   return (
     <section
       aria-label="How well you match"
-      className="w-full shrink-0 rounded-lg border border-border-card bg-surface-card p-4 shadow-card md:w-[210px]"
+      className="w-full shrink-0 rounded-md bg-neutral-50 p-5 md:w-[220px]"
     >
       <div className="flex items-baseline gap-1">
         <span className="text-display-l text-text-primary">{Math.round(job.matchScore * 100)}</span>
@@ -162,7 +162,7 @@ export function JobSummary({
   const hq = shortPlace(job.companyHeadquarters);
   const company = job.company.trim();
   return (
-    <div className="px-6 pb-6 pt-5">
+    <div className="px-8 pb-5 pt-6">
       <div className="flex flex-col gap-5 md:flex-row md:items-start">
         <div className="min-w-0 flex-1">
           {/* A div: the logo's letter tile (a JD has no logo) is itself a block. */}

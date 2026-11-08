@@ -52,14 +52,14 @@ export function JobPageScreen({ id }: { id: string }) {
 
   return (
     <div className={cn(pageFrame, 'pb-8')}>
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         {!job.data ? (
           <Skeleton className="h-[60rem] rounded-lg" />
         ) : (
           <article
             key={id}
             aria-label={`${job.data.title} at ${job.data.company}`}
-            className={cn(cardSurface, 'overflow-hidden shadow-card', reveal && 'animate-reveal')}
+            className={cn(cardSurface, 'overflow-hidden', reveal && 'animate-rise')}
           >
             <JobPageTop
               job={job.data}
@@ -68,7 +68,7 @@ export function JobPageScreen({ id }: { id: string }) {
               onToggleSave={() => save.toggle(job.data!)}
               savePending={save.isPending}
             />
-            <div key={tab} className={cn(switched && 'animate-reveal')}>
+            <div key={tab} className={cn('pb-4', switched && 'animate-reveal')}>
               {tab === 'overview' ? (
                 <>
                   <JobSummary job={job.data} profile={profile.data} />
@@ -84,7 +84,7 @@ export function JobPageScreen({ id }: { id: string }) {
           </article>
         )}
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-[5.25rem]">
+        <div className="flex flex-col gap-6 lg:sticky lg:top-[5.25rem]">
           {job.data ? (
             <>
               <AiToolsCard job={job.data} onTailor={tailorDialog.openDialog} />

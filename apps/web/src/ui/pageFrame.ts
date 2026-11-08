@@ -3,13 +3,13 @@
  * 1440, with 24px gutters. The layout's `TopBar` sits in the same column, so its buttons end where
  * a page's content does.
  */
-export const pageColumn = 'mx-auto w-full max-w-[1440px] px-6';
+export const pageColumn = 'mx-auto w-full max-w-[1440px] px-8';
 
 /**
  * A page's frame: the column, starting 24px under the top bar's band, which puts every title 32px
  * under the bar's buttons (`toreview.md` §28). One constant, so the pages cannot drift apart.
  */
-export const pageFrame = `${pageColumn} pt-6`;
+export const pageFrame = `${pageColumn} pt-8`;
 
 /**
  * The top bar's band: 20px above its 36px controls and 8px under them. It stays pinned while a
@@ -32,7 +32,7 @@ export const stickyBelowTopBar = 'top-[5.25rem]';
  * `BY_PATH` lists them. The bar draws no background on such a page (`TopBar`'s `inBar`) until the page scrolls
  * under it.
  */
-export const pageFrameInBar = `${pageColumn} -mt-16 pt-5`;
+export const pageFrameInBar = `${pageColumn} -mt-16 pt-6`;
 
 /** The whole window, for a list page that starts inside the top bar's band. */
 export const pageFillInBar = 'h-dvh';

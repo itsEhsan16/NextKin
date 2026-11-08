@@ -96,7 +96,7 @@ export function DocumentsScreen() {
       />
 
       <div className="mt-4 grid min-h-0 flex-1 grid-cols-[55fr_45fr] gap-6">
-        <div className="flex min-h-0 min-w-0 flex-col gap-3">
+        <div className="flex min-h-0 min-w-0 flex-col gap-4">
           <DocumentsToolbar
             search={search}
             onSearchChange={setSearch}

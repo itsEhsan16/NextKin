@@ -18,7 +18,7 @@ function InitialTile({ company, index }: { company: string; index: number }) {
     <span
       aria-hidden
       className={cn(
-        'flex size-9 shrink-0 items-center justify-center rounded-md text-body-l font-semibold',
+        'flex size-10 shrink-0 items-center justify-center rounded-md text-body-l font-semibold',
         index % 2 === 0 ? 'bg-neutral-100 text-text-primary' : 'bg-neutral-900 text-neutral-0',
       )}
     >
@@ -49,7 +49,7 @@ export function ExperienceCard({ roles, onViewAll }: ExperienceCardProps) {
           Add the roles you&apos;ve held. Job matches and tailored resumes draw on them.
         </p>
       ) : (
-        <ul className="mt-4 flex flex-col gap-4">
+        <ul className="mt-5 flex flex-col gap-5">
           {roles.map((role, index) => (
             <li key={role.id} className="flex items-start gap-3.5">
               <InitialTile company={role.company} index={index} />
@@ -73,7 +73,7 @@ export function ExperienceCard({ roles, onViewAll }: ExperienceCardProps) {
                   className={cn(
                     soonControl,
                     iconButton,
-                    '-mr-2 -mt-1 size-8 shrink-0 text-text-secondary',
+                    '-mr-2 -mt-1 shrink-0 text-text-secondary',
                   )}
                 >
                   <MoreVerticalIcon className="size-4" />

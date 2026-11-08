@@ -1,6 +1,7 @@
 import type { ContentRole, ResumeContent } from '@nextkin/shared/models';
 import type { ComponentType, ReactNode, SVGProps } from 'react';
 
+import { cn } from '@/lib/cn';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { LinkIcon, LocationOutlineIcon, PhoneIcon } from '@/ui/icons';
 import { Mail01 } from '@/ui/lineIcons';
@@ -12,7 +13,16 @@ type ContactItem = { key: string; Icon: ComponentType<SVGProps<SVGSVGElement>>; 
  * contact details, then each section the body has, in the order the export prints them. The board
  * shows a summary and two roles; the other sections appear only when a body has them.
  */
-export function ResumeSheet({ name, body }: { name: string; body: ResumeContent }) {
+export function ResumeSheet({
+  name,
+  body,
+  className,
+}: {
+  name: string;
+  body: ResumeContent;
+  /** Replaces the bordered frame: the Resumes card draws the sheet as a page on a muted tile. */
+  className?: string;
+}) {
   const { email, phone, location } = body.contact ?? {};
   const contact: ContactItem[] = [
     ...(email ? [{ key: 'email', Icon: Mail01, label: email }] : []),
@@ -22,7 +32,7 @@ export function ResumeSheet({ name, body }: { name: string; body: ResumeContent 
   ];
 
   return (
-    <div className="rounded-md border border-border-card px-4 pb-4 pt-5">
+    <div className={cn('rounded-md border border-border-card px-4 pb-4 pt-5', className)}>
       <h3 className="text-h2 text-text-primary">{name}</h3>
       {body.headline && (
         <p className="mt-0.5 text-body-m font-semibold text-neutral-700">{body.headline}</p>

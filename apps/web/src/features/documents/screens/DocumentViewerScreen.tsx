@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { PageHeader } from '@/navigation/PageHeader';
 import { AiCallout } from '@/ui/AiCallout';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { ChevronRightIcon } from '@/ui/icons';
 import { ProfilePaperPlaneIllustration } from '@/ui/illustrations';
 import { pageFillMin, pageFrameInBar } from '@/ui/pageFrame';
@@ -58,11 +59,8 @@ function Stage({ document }: { document: CareerDocument }) {
   }
 
   return (
-    <section
-      aria-label="Preview"
-      className="rounded-lg border border-border-card bg-surface-card p-5 shadow-card"
-    >
-      <div className="rounded-md border border-border-faint bg-neutral-50 px-6 py-7">{page}</div>
+    <section aria-label="Preview" className={cn(cardSurface, cardPad)}>
+      <div className="rounded-md bg-neutral-50 px-6 py-8">{page}</div>
     </section>
   );
 }
@@ -134,10 +132,10 @@ export function DocumentViewerScreen({ id }: { id: string }) {
       />
 
       {!document ? (
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
           <Skeleton className="h-[52rem] rounded-lg" />
           {/* The details card, the callout and Other cover letters. */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             <Skeleton className="h-[34rem] rounded-lg" />
             <Skeleton className="h-20 rounded-lg" />
             <Skeleton className="h-60 rounded-lg" />
@@ -147,12 +145,12 @@ export function DocumentViewerScreen({ id }: { id: string }) {
         <div
           key={document.id}
           className={cn(
-            'grid items-start gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]',
-            reveal && 'animate-reveal',
+            'grid items-start gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]',
+            reveal && 'animate-rise',
           )}
         >
           <Stage document={document} />
-          <div className="flex min-w-0 flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-6">
             <ViewerDetailsCard document={document} roleHref={applyHref} />
             {/* 580:230. Attaching happens where you apply: the letter's own job, or the jobs. */}
             <AiCallout

@@ -144,26 +144,26 @@ export function JdEditPanel({
         ? 'Uploaded job description'
         : 'Pasted job description';
   return (
-    <div className="flex flex-col gap-5">
-      <header className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-wrap items-center gap-3.5">
         <Link
           href={backHref}
           aria-label="Back to the job description"
           className={cn(
             iconButton,
-            'size-9 rounded-full border border-border-default bg-surface-card',
+            'size-10 rounded-full border border-border-subtle bg-surface-card shadow-card',
           )}
         >
           <ChevronRight aria-hidden className="size-4.5 rotate-180 text-text-primary" />
         </Link>
         {draft.company && (
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border-faint bg-surface-card">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card">
             <CompanyLogo company={draft.company} variant="inline" />
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-caption-m text-text-tertiary">{source}</p>
-          <h1 className="text-title-l font-bold text-text-primary">Edit details</h1>
+          <p className="text-caption-m font-medium text-text-tertiary">{source}</p>
+          <h1 className="text-h1 font-bold tracking-tight text-text-primary">Edit details</h1>
         </div>
         {!failed && (
           <button type="button" onClick={onDone} className={backButton}>
@@ -181,7 +181,7 @@ export function JdEditPanel({
         </button>
       </header>
 
-      <div className="grid items-start gap-5 lg:grid-cols-3">
+      <div className="grid items-start gap-6 lg:grid-cols-3">
         <form
           id={formId}
           aria-label="Edit the job’s details"
@@ -189,7 +189,7 @@ export function JdEditPanel({
             e.preventDefault();
             save();
           }}
-          className={cn(stepCard, 'flex flex-col gap-5 px-7 py-6 lg:col-span-2')}
+          className={cn(stepCard, 'flex flex-col gap-6 p-8 lg:col-span-2')}
         >
           <div className="flex items-center gap-3.5">
             <JdArtDocumentSearchIllustration aria-hidden className="h-auto w-11 shrink-0" />
@@ -333,17 +333,17 @@ export function JdEditPanel({
 
         <aside
           aria-label="The text as it was given"
-          className={cn(stepCard, 'flex flex-col gap-3 px-6 py-6 lg:sticky lg:top-6')}
+          className={cn(stepCard, 'flex flex-col gap-4 p-6 lg:sticky lg:top-6')}
         >
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-title-l font-bold text-text-primary">
               {draft.source === 'paste' ? 'The text you pasted' : 'The text we read'}
             </h2>
-            <span className="rounded-full border border-border-default px-2.5 py-0.5 text-caption-m text-text-secondary">
+            <span className="rounded-full bg-surface-muted px-2.5 py-0.5 text-caption-m font-medium text-text-secondary">
               Read {formatRelativeTime(draft.createdAt).toLowerCase()}
             </span>
           </div>
-          <p className="max-h-120 overflow-y-auto whitespace-pre-line text-body-l text-text-secondary">
+          <p className="max-h-120 overflow-y-auto whitespace-pre-line rounded-md bg-neutral-50 p-4 text-body-m text-text-secondary">
             {draft.rawText}
           </p>
           <Callout>Changes here update the comparison. They don’t change the posting.</Callout>

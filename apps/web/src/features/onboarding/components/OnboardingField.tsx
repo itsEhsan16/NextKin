@@ -55,10 +55,10 @@ export function OnboardingField({
       {loading ?? (
         <div
           className={cn(
-            'flex h-control-lg items-center gap-2.5 rounded-lg border border-border-default bg-surface-card pl-3.5 pr-1.5',
+            'flex h-control-lg items-center gap-2.5 rounded-md border border-border-default bg-surface-card pl-3.5 pr-1.5',
             'transition-colors duration-press ease-standard hover:border-neutral-400',
-            'focus-within:border-brand-600 focus-within:bg-surface-brand-strong focus-within:hover:border-brand-600',
-            emphasis && 'h-12',
+            'focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100 focus-within:hover:border-border-selected',
+            emphasis && 'h-control-xl',
           )}
         >
           <Icon className="size-3.5 shrink-0 text-text-tertiary" />

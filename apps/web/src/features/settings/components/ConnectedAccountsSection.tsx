@@ -12,6 +12,7 @@ import { useEffect, useRef, type ComponentType, type ReactNode, type SVGProps } 
 
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { cn } from '@/lib/cn';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { brandButton } from '@/ui/brandButton';
 import { FilterDropdown, MenuItem } from '@/ui/FilterDropdown';
 import { iconButton } from '@/ui/iconButton';
@@ -70,11 +71,11 @@ function AccountRow({ account }: { account: ConnectedAccount }) {
   };
 
   return (
-    <li className="rounded-md border border-border-card px-4 py-3.5">
+    <li className="rounded-md bg-neutral-50 px-5 py-4">
       <div className="flex flex-wrap items-center gap-4">
         <span
           aria-hidden
-          className="flex size-12 shrink-0 items-center justify-center rounded-md border border-border-card bg-surface-card"
+          className="flex size-12 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card shadow-card"
         >
           <Logo className="size-7" />
         </span>
@@ -145,7 +146,7 @@ function AccountRow({ account }: { account: ConnectedAccount }) {
       </div>
 
       {/* "Sign in with Google" (577:2388): what linking it changes about signing in. */}
-      <div className="mt-3 flex items-center gap-4 border-t border-border-faint pt-3">
+      <div className="mt-4 flex items-center gap-4 border-t border-border-subtle pt-4">
         <span aria-hidden className="flex w-12 shrink-0 justify-center">
           <SettingsPasswordIllustration className="h-auto w-9" />
         </span>
@@ -210,7 +211,7 @@ function HowItWorksCard() {
   return (
     <section
       aria-labelledby="how-connecting-works"
-      className="flex flex-wrap items-center gap-x-7 gap-y-4 rounded-lg border border-border-card bg-surface-card p-5"
+      className={cn(cardSurface, cardPad, 'flex flex-wrap items-center gap-x-8 gap-y-4')}
     >
       <div aria-hidden className="flex h-44 w-64 shrink-0 items-center justify-center">
         <Image
@@ -289,7 +290,7 @@ export function ConnectedAccountsSection() {
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', reveal && 'animate-reveal')}>
+    <div className={cn('flex flex-col gap-6', reveal && 'animate-reveal')}>
       <AccountCard
         Art={SettingsConnectedIllustration}
         title="Connected accounts"
@@ -302,7 +303,7 @@ export function ConnectedAccountsSection() {
             className="py-6"
           />
         ) : (
-          <ul aria-label="Sign-in accounts" className="mt-4 flex flex-col gap-3">
+          <ul aria-label="Sign-in accounts" className="mt-5 flex flex-col gap-3">
             {accounts.data.map((account) => (
               <AccountRow key={account.provider} account={account} />
             ))}

@@ -4,7 +4,7 @@ import type { ComponentType, SVGProps } from 'react';
 
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { cn } from '@/lib/cn';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
+import { buttonClass } from '@/ui/Button';
 import { iconButton } from '@/ui/iconButton';
 import { LogoutIcon, MoreVerticalIcon } from '@/ui/icons';
 import {
@@ -17,6 +17,7 @@ import { Tag } from '@/ui/Tag';
 
 import { sessionActivity, sessionName } from '../settingsLibrary';
 import { CardAction } from './CardAction';
+import { settingsList } from './InfoList';
 import { StableLabel } from '@/ui/StableLabel';
 import { Soon, soonControl } from '@/ui/Soon';
 
@@ -71,14 +72,17 @@ export function SessionsCard({
           id={SESSIONS_LIST_ID}
           tabIndex={-1}
           aria-label="Signed-in devices"
-          className="mt-3 divide-y divide-border-faint rounded-sm border border-border-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          className={cn(
+            settingsList,
+            'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600',
+          )}
         >
           {sessions.map((session) => {
             const Icon = DEVICE_ICON[session.device];
             return (
               <li
                 key={session.id}
-                className="grid min-h-9 grid-cols-[28px_minmax(0,9rem)_minmax(0,1fr)_auto_30px] items-center gap-3 px-3"
+                className="grid min-h-14 grid-cols-[28px_minmax(0,10rem)_minmax(0,1fr)_auto_36px] items-center gap-4 px-6 py-2"
               >
                 <span aria-hidden className="flex justify-center">
                   <Icon className="h-auto max-h-5 w-7" />
@@ -130,7 +134,7 @@ export function SessionsCard({
         </ul>
       )}
       {inSecurity && others && (
-        <div className="mt-3 flex flex-wrap items-center gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-4">
           <button
             type="button"
             aria-disabled={signOut.isPending}
@@ -138,8 +142,8 @@ export function SessionsCard({
               if (!signOut.isPending) signOut.mutate();
             }}
             className={cn(
-              brandOutlineButton,
-              'h-control-md gap-2 rounded-md px-4 text-body-m aria-disabled:cursor-default aria-disabled:opacity-60',
+              buttonClass({ variant: 'secondary', size: 'md' }),
+              'aria-disabled:cursor-default aria-disabled:opacity-60',
             )}
           >
             <LogoutIcon aria-hidden className="size-4" />

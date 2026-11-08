@@ -10,7 +10,7 @@ import { Spinner } from './Spinner';
 import { StableLabel } from './StableLabel';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const VARIANT: Record<ButtonVariant, string> = {
   primary: brandButton,
@@ -20,9 +20,10 @@ const VARIANT: Record<ButtonVariant, string> = {
 };
 
 const SIZE: Record<ButtonSize, string> = {
-  sm: 'h-control-sm gap-1.5 rounded-md px-3 text-body-m font-medium',
-  md: 'h-control-md gap-2 rounded-md px-3.5 text-body-m font-semibold',
+  sm: 'h-control-sm gap-1.5 rounded-md px-3.5 text-body-m font-semibold',
+  md: 'h-control-md gap-2 rounded-md px-4 text-body-m font-semibold',
   lg: 'h-control-lg gap-2 rounded-md px-5 text-body-l font-semibold',
+  xl: 'h-control-xl gap-2.5 rounded-lg px-6 text-body-l font-semibold',
 };
 
 /**
@@ -33,8 +34,9 @@ const SIZE: Record<ButtonSize, string> = {
 export function buttonClass({
   variant = 'primary',
   size = 'md',
-}: { variant?: ButtonVariant; size?: ButtonSize } = {}): string {
-  return cn(VARIANT[variant], SIZE[size]);
+  pill = false,
+}: { variant?: ButtonVariant; size?: ButtonSize; pill?: boolean } = {}): string {
+  return cn(VARIANT[variant], SIZE[size], pill && 'rounded-full');
 }
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -49,6 +51,8 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
   /** What a text label says while `loading`: "Saving…". */
   busyLabel?: string;
+  /** Fully round ends: the reference shots' pill CTAs (toreview §132). */
+  pill?: boolean;
 };
 
 /** The flows' button (toreview §131): variants, sizes, and a loading state that guards itself. */
@@ -59,6 +63,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     icon,
     loading = false,
     busyLabel,
+    pill = false,
     disabled,
     className,
     children,
@@ -79,7 +84,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={cn(buttonClass({ variant, size }), className)}
+      className={cn(buttonClass({ variant, size, pill }), className)}
       {...rest}
     >
       {loading ? <Spinner /> : icon}

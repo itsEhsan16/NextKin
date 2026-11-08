@@ -2,6 +2,7 @@ import { useDeleteAccount } from '@nextkin/shared/queries';
 import { useId, useState, type ComponentType, type SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { showToast } from '@/lib/toast';
 import { brandOutlineButton } from '@/ui/brandOutlineButton';
 import { fieldBox } from '@/ui/fieldBox';
@@ -93,10 +94,7 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
   const confirmed = typed.trim() === CONFIRM_WORD;
 
   return (
-    <section
-      aria-label="Delete account"
-      className="flex flex-col rounded-lg border border-border-card bg-surface-card p-5"
-    >
+    <section aria-label="Delete account" className={cn(cardSurface, cardPad, 'flex flex-col')}>
       <div role="note" className="flex items-center gap-4 rounded-md bg-danger-50 px-4 py-3">
         <WarningGlyph className="h-auto w-6 shrink-0 text-danger-600" />
         <div className="min-w-0">
@@ -108,15 +106,15 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
         </div>
       </div>
 
-      <h2 className="mt-4 text-title-l text-text-primary">What will be deleted?</h2>
+      <h2 className="mt-6 text-title-l text-text-primary">What will be deleted?</h2>
       <p className="mt-0.5 text-body-s text-text-tertiary">
         The following data will be permanently removed from our systems:
       </p>
-      <ul className="mt-3 grid grid-cols-2 gap-3">
+      <ul className="mt-4 grid grid-cols-2 gap-3">
         {LOSSES.map(({ title, line, Art }) => (
           <li
             key={title}
-            className="flex min-w-0 items-center gap-3 rounded-md border border-border-card px-3 py-2.5"
+            className="flex min-w-0 items-center gap-3 rounded-md bg-neutral-50 px-4 py-3"
           >
             <span aria-hidden className="flex w-8 shrink-0 justify-center">
               <Art className="h-auto max-h-7 w-8" />
@@ -129,7 +127,7 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
         ))}
       </ul>
 
-      <div className="mt-3 flex flex-wrap items-center gap-4 rounded-md bg-surface-brand px-4 py-3">
+      <div className="mt-5 flex flex-wrap items-center gap-4 rounded-md bg-surface-brand px-4 py-3.5">
         <InfoCircleIcon aria-hidden className="size-6 shrink-0 text-brand-600" />
         <div className="min-w-0 flex-1 basis-80">
           <p className="text-body-m font-semibold text-brand-700">Want to take a break instead?</p>
@@ -153,7 +151,7 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
         </Soon>
       </div>
 
-      <label htmlFor={inputId} className="mt-4 text-title-l text-text-primary">
+      <label htmlFor={inputId} className="mt-6 text-title-l text-text-primary">
         Confirm deletion
       </label>
       <p id={hintId} className="mt-0.5 text-body-s text-text-tertiary">
@@ -170,7 +168,7 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
         className={cn(fieldBox, 'mt-3 h-control-lg px-3 placeholder:text-text-tertiary')}
       />
 
-      <div className="mt-4 flex justify-end gap-3">
+      <div className="mt-6 flex justify-end gap-3 border-t border-border-subtle pt-5">
         <button
           type="button"
           onClick={() => {

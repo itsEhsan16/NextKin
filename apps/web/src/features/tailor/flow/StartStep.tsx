@@ -97,9 +97,9 @@ export function BuildStep({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="build-step" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="build-step"
             step={2}
@@ -112,7 +112,7 @@ export function BuildStep({
             }
           />
         </div>
-        <div className="flex flex-col gap-6 px-8 pb-7 pt-6 lg:flex-row">
+        <div className="flex flex-col gap-6 px-8 pb-8 pt-6 lg:flex-row">
           <div role="radiogroup" aria-label="How to build it" className="flex min-w-0 flex-1 gap-4">
             {hasRoles && profile ? (
               <OptionCard
@@ -233,9 +233,9 @@ export function NoResumeStep({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="start-step" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="start-step"
             step={2}
@@ -247,7 +247,7 @@ export function NoResumeStep({
         <div
           role="radiogroup"
           aria-label="How to start"
-          className="flex flex-col gap-4 px-8 pb-7 pt-6 lg:flex-row"
+          className="flex flex-col gap-4 px-8 pb-8 pt-6 lg:flex-row"
         >
           <OptionCard
             art={ART.upload}
@@ -273,8 +273,13 @@ export function NoResumeStep({
               }}
               className="relative flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border-brand-strong bg-surface-brand py-2 pl-3 pr-3.5 text-body-m font-semibold text-text-brand transition-colors duration-press ease-standard hover:border-brand-600 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
             >
-              <UploadCloud02 aria-hidden className="size-4.5" />
-              {upload.reading ? `Reading ${upload.name}…` : 'Drop a file here, or browse'}
+              <UploadCloud02 aria-hidden className="size-4.5 shrink-0" />
+              <span
+                title={upload.reading ? (upload.name ?? undefined) : undefined}
+                className="min-w-0 truncate"
+              >
+                {upload.reading ? `Reading ${upload.name}…` : 'Drop a file here, or browse'}
+              </span>
             </button>
             {upload.error && (
               <p role="alert" className="relative text-body-m text-danger-600">

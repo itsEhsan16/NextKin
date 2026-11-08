@@ -5,7 +5,7 @@
  * like `outlineButton`, so each caller keeps its own padding and width.
  */
 export const fieldBox =
-  'flex h-control-md w-full min-w-0 items-center rounded-md border border-border-default ' +
-  'bg-surface-card text-body-m text-text-primary transition-colors duration-press ease-standard ' +
-  'enabled:hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 ' +
-  'focus-visible:outline-brand-600 disabled:cursor-default';
+  'flex h-control-lg w-full min-w-0 items-center rounded-md border border-border-default ' +
+  'bg-surface-card text-body-m text-text-primary transition-[border-color,box-shadow] duration-fast ease-standard ' +
+  'enabled:hover:border-neutral-400 focus-visible:border-border-selected focus-visible:outline-none ' +
+  'focus-visible:ring-4 focus-visible:ring-brand-100 disabled:cursor-default';

@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 import {
   SettingsAccountIllustration,
   SettingsBillingIllustration,
@@ -61,7 +62,7 @@ export function SettingsNav({ active, onChange, className }: SettingsNavProps) {
       role="tablist"
       aria-orientation="vertical"
       aria-label="Settings sections"
-      className={cn('rounded-lg border border-border-card bg-surface-card p-2', className)}
+      className={cn(cardSurface, 'p-2', className)}
     >
       {/* Only the rows in here, so the wash's arithmetic starts at this box's top. A row is Body/L's
           line (20), Body/S's (18) and 10px above and below: 58, as the rows measured before. */}
@@ -70,7 +71,7 @@ export function SettingsNav({ active, onChange, className }: SettingsNavProps) {
           index={SETTINGS_SECTION_ORDER.indexOf(active)}
           row="var(--settings-row)"
           gap="var(--spacing-token-2)"
-          className="rounded-md bg-surface-brand-strong"
+          className="rounded-md bg-surface-brand-strong shadow-button"
         />
 
         {SETTINGS_SECTION_ORDER.map((id) => {
@@ -90,7 +91,7 @@ export function SettingsNav({ active, onChange, className }: SettingsNavProps) {
               aria-controls={SETTINGS_PANEL_ID}
               onClick={() => onChange(id)}
               className={cn(
-                'relative flex h-(--settings-row) w-full items-center gap-3 rounded-md px-3 text-left transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                'relative flex h-(--settings-row) w-full items-center gap-3 rounded-md px-3 text-left transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                 // Hover stays a shade lighter than the selected wash, so pointing isn't selecting.
                 // The selected row takes no fill of its own: the wash behind it is the fill.
                 !selected && 'hover:bg-neutral-50',

@@ -1,7 +1,9 @@
+'use client';
+
 import { cn } from '@/lib/cn';
 
 import { Skeleton } from './Skeleton';
-import { pressable } from '@/ui/pressable';
+import { useThumb } from './useThumb';
 
 export type PillTab<T extends string> = { id: T; label: string };
 
@@ -31,12 +33,26 @@ export function PillTabs<T extends string>({
   label,
   className,
 }: PillTabsProps<T>) {
+  const [track, thumb] = useThumb(tabs.findIndex((t) => t.id === active));
   return (
     <div
+      ref={track}
       role="tablist"
       aria-label={label}
-      className={cn('flex flex-wrap items-center gap-1.5', className)}
+      className={cn(
+        'relative inline-flex max-w-full items-center gap-0.5 self-start overflow-x-auto rounded-full bg-surface-muted p-1 [scrollbar-width:none]',
+        className,
+      )}
     >
+      <span
+        aria-hidden
+        style={thumb.style}
+        className={cn(
+          'pointer-events-none absolute left-0 top-0 rounded-full bg-surface-card shadow-raised',
+          thumb.placed && 'transition-[translate,width,height] duration-base ease-spring',
+          !thumb.visible && 'hidden',
+        )}
+      />
       {tabs.map((tab) => {
         const selected = tab.id === active;
         return (
@@ -44,14 +60,12 @@ export function PillTabs<T extends string>({
             key={tab.id}
             type="button"
             role="tab"
+            data-thumb-item
             aria-selected={selected}
             onClick={() => onChange(tab.id)}
             className={cn(
-              pressable,
-              'h-control-sm whitespace-nowrap rounded-full border px-2.5 text-body-m font-semibold tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-              selected
-                ? 'border-brand-600 bg-brand-600 text-text-inverse'
-                : 'border-border-default bg-surface-card text-neutral-700 hover:bg-surface-muted',
+              'relative h-8 whitespace-nowrap rounded-full px-4 text-body-m font-semibold tabular-nums transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              selected ? 'text-text-primary' : 'text-text-tertiary hover:text-text-primary',
             )}
           >
             {/* The count's place is held while it loads, so the pills don't widen and rewrap

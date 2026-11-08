@@ -1,5 +1,5 @@
 import { cn } from '@/lib/cn';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
+import { buttonClass } from '@/ui/Button';
 import { Soon, soonControl } from '@/ui/Soon';
 
 export type CardActionProps = {
@@ -24,8 +24,8 @@ export function CardAction({ label, accessibleName, onClick }: CardActionProps) 
       aria-disabled={onClick ? undefined : true}
       onClick={onClick}
       className={cn(
-        brandOutlineButton,
-        'h-control-sm min-w-19 shrink-0 rounded-sm px-3 text-body-s font-semibold',
+        buttonClass({ variant: 'secondary', size: 'sm' }),
+        'min-w-19 shrink-0',
         soonControl,
       )}
     >

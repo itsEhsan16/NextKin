@@ -23,7 +23,10 @@ export function Skeleton({ className, as: Tag = 'div' }: SkeletonProps) {
   return (
     <Tag
       ref={syncPulse}
-      className={cn('block animate-pulse rounded-sm bg-surface-muted', className)}
+      className={cn(
+        'block animate-shimmer rounded-md bg-neutral-200/70 bg-linear-to-r from-transparent via-neutral-0/70 to-transparent bg-size-[200%_100%] bg-no-repeat',
+        className,
+      )}
     />
   );
 }

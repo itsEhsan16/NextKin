@@ -48,9 +48,9 @@ export function ContentAiCard({ settings }: { settings: AppSettings }) {
       title="Content & AI preferences"
       description="Personalize the type of content and AI suggestions you receive."
     >
-      <ul className="mt-2 flex flex-col">
+      <ul className="mt-4 flex flex-col">
         {TOGGLES.map(({ key, label, description }) => (
-          <li key={key} className="flex min-h-11 items-center justify-between gap-4 py-1.5">
+          <li key={key} className="flex min-h-14 items-center justify-between gap-4 py-2">
             <p className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <span className="text-body-m text-text-primary">{label}</span>
               <span className="text-body-s text-text-tertiary">{description}</span>

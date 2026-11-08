@@ -66,7 +66,7 @@ export function UserChip({ name, plan, loading, collapsed }: UserChipProps) {
         <CollapseFade axis="vertical" open="panel">
           {/* The card keeps the expanded panel's width while the sidebar narrows, and the panel
               clips it, so the name doesn't re-truncate frame by frame mid-collapse. */}
-          <div className="flex h-11 w-[200px] items-center gap-2.5 rounded-md border border-border-default px-2 transition-colors duration-press ease-standard group-hover:bg-surface-muted">
+          <div className="flex h-12 w-[200px] items-center gap-2.5 rounded-lg bg-surface-muted px-2.5 transition-colors duration-press ease-standard group-hover:bg-neutral-200/60">
             <span
               aria-hidden
               className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-brand text-caption-m font-semibold text-text-brand"

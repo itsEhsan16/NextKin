@@ -136,7 +136,7 @@ export function EditorForm({
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <SectionCard
         anchor={anchorOf('header')}
         heading="Header"
@@ -200,7 +200,7 @@ export function EditorForm({
           <Dropdown.Trigger asChild>
             <button
               type="button"
-              className="flex h-control-lg items-center justify-center gap-2 rounded-xl border border-dashed border-border-default text-body-l font-semibold text-text-primary transition-colors duration-press ease-standard hover:border-neutral-400 hover:bg-surface-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+              className="flex h-control-lg items-center justify-center gap-2 rounded-lg border border-dashed border-border-default text-body-m font-semibold text-text-secondary transition-colors duration-fast ease-standard hover:border-neutral-400 hover:bg-surface-card hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
             >
               <PlusIcon aria-hidden className="size-4" />
               Add a section

@@ -66,7 +66,7 @@ export function CoverLetterCard({
     <div className="flex flex-col gap-3">
       <section
         aria-labelledby="cover-letter"
-        className="flex flex-col gap-3 rounded-lg border border-border-brand-strong bg-surface-brand p-4"
+        className="flex flex-col gap-4 rounded-lg bg-surface-brand-strong p-5"
       >
         <div className="flex items-start gap-3">
           <span
@@ -138,7 +138,7 @@ export function CoverLetterCard({
           <p className="text-body-s font-medium text-text-tertiary">After writing</p>
           <section
             aria-label="Your letter"
-            className="flex flex-col gap-2.5 rounded-lg border border-border-default bg-surface-card p-4"
+            className="flex flex-col gap-2.5 rounded-md bg-neutral-50 p-4"
           >
             <div className="flex items-center gap-3">
               <span
@@ -150,7 +150,7 @@ export function CoverLetterCard({
               <p className="flex-1 text-body-l font-bold text-text-primary">Your letter is ready</p>
               <Link
                 href={resumeHref(letterId)}
-                className="flex h-8 items-center gap-1.5 rounded-md border border-border-default px-3 text-body-m font-semibold text-text-primary hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                className="flex h-8 items-center gap-1.5 rounded-full border border-border-default bg-surface-card px-3 text-body-s font-semibold text-text-primary transition-colors duration-fast ease-standard hover:border-border-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
               >
                 Open it
                 <ArrowRight aria-hidden className="size-4" />

@@ -32,10 +32,10 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(functio
   ref,
 ) {
   const face = cn(
-    'flex h-control-sm shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm border px-2 text-caption-m font-semibold',
+    'flex h-control-sm shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-body-m font-medium',
     active
-      ? 'border-brand-600 bg-surface-brand text-brand-600'
-      : 'border-border-divider bg-surface-card text-neutral-700',
+      ? 'border-border-brand-strong bg-surface-brand text-brand-600'
+      : 'border-border-default bg-surface-card text-neutral-700',
   );
 
   if (chevron === 'outside') {
@@ -45,7 +45,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(functio
         type="button"
         // The whole trigger presses as one; the pill inside only recolours.
         className={cn(
-          'group flex items-center gap-1 rounded-sm',
+          'group flex items-center gap-1 rounded-full',
           pressable,
           menuTrigger,
           FOCUS,

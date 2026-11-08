@@ -45,7 +45,7 @@ const copyEdits = (doc: ResumeDocument) =>
       showToast('We couldn’t copy them. Select the text and copy it.', { tone: 'error' }),
     );
 
-const WORKSPACE = 'lg:h-[calc(100dvh-4rem-7.25rem)]';
+const WORKSPACE = 'lg:h-[calc(100dvh-4rem-8.75rem)]';
 
 export function ResumeEditorScreen({ id }: { id: string }) {
   const editor = useResumeEditor(id);
@@ -104,7 +104,7 @@ export function ResumeEditorScreen({ id }: { id: string }) {
   };
 
   return (
-    <div className={cn(pageColumn, 'flex flex-col gap-3 py-4')}>
+    <div className={cn(pageColumn, 'flex flex-col gap-5 py-6')}>
       <EditorTopBar
         resumeId={id}
         title={resume.data?.title ?? 'Resume'}
@@ -153,15 +153,15 @@ export function ResumeEditorScreen({ id }: { id: string }) {
         ]}
       />
 
-      <div className={cn('grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]', WORKSPACE)}>
+      <div className={cn('grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]', WORKSPACE)}>
         <div
           className={cn(
-            'min-h-0 lg:overflow-y-auto lg:pr-1 [scrollbar-width:thin]',
+            '-m-1 min-h-0 p-1 lg:overflow-y-auto [scrollbar-width:thin]',
             pane === 'edit' ? 'block' : 'hidden lg:block',
           )}
         >
           <EditorForm doc={doc} change={editor.change} problems={actions.problems} />
-          <p className="px-1 pb-2 pt-4 text-caption-m text-text-tertiary">
+          <p className="px-1 pb-2 pt-5 text-caption-m text-text-tertiary">
             Saves as you type. Ctrl+Z undoes, Ctrl+S saves now.
           </p>
         </div>

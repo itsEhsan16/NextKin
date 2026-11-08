@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { AiLoader } from '@/ui/AiLoader';
 import { useReveal } from '@/lib/useReveal';
 import { Button } from '@/ui/Button';
 import { cardSurface } from '@/ui/Card';
@@ -85,14 +86,14 @@ export function JdPageScreen({ id }: { id: string }) {
 
   return (
     <div className={cn(pageFrame, 'pb-8')}>
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         {!view || !draft.data ? (
           <Skeleton className="h-192 rounded-lg" />
         ) : (
           <article
             key={id}
             aria-label={`${view.job.title}${view.job.company ? ` at ${view.job.company}` : ''}`}
-            className={cn(cardSurface, 'overflow-hidden shadow-card', reveal && 'animate-reveal')}
+            className={cn(cardSurface, 'overflow-hidden', reveal && 'animate-reveal')}
           >
             <JobPageTop
               job={view.job}
@@ -145,9 +146,7 @@ export function JdPageScreen({ id }: { id: string }) {
                   </>
                 ) : (
                   <>
-                    <p className="text-body-l font-semibold text-text-primary">
-                      Reading the job description…
-                    </p>
+                    <AiLoader text="Reading the job description…" className="text-body-l" />
                     <p className="text-body-m text-text-secondary">
                       {stall === 'slow'
                         ? 'Taking longer than usual.'
@@ -161,7 +160,7 @@ export function JdPageScreen({ id }: { id: string }) {
                 {draft.data.title === UNTITLED_JD && (
                   <p
                     role="status"
-                    className="mx-6 mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-warning-50 px-4 py-3 text-body-s text-warning-text"
+                    className="mx-8 mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-warning-50 px-4 py-3 text-body-s text-warning-text"
                   >
                     We couldn’t find the job title in this text.
                     <button
@@ -197,7 +196,7 @@ export function JdPageScreen({ id }: { id: string }) {
         )}
 
         {/* The job page's own column: sticky under the top bar (`stickyBelowTopBar`). */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-21">
+        <div className="flex flex-col gap-6 lg:sticky lg:top-21">
           {!view ? (
             <Skeleton className="h-60 rounded-lg" />
           ) : failed ? null : (

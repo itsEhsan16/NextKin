@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn';
 import { PageHeader } from '@/navigation/PageHeader';
+import { cardSurface } from '@/ui/Card';
 import { pageFrameInBar } from '@/ui/pageFrame';
 
 import { JobInput } from '../components/JobInput';
@@ -15,7 +16,7 @@ import type { AnalyzeIntent } from '../useAnalyzeAndOpen';
  */
 export function UploadJdScreen({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
   return (
-    <div className={cn(pageFrameInBar, 'flex flex-col gap-4 pb-8')}>
+    <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-8')}>
       {/* The way back to Jobs is on the top bar's left (`toreview.md` §26, §28). */}
       {intent === 'build' ? (
         <PageHeader
@@ -29,10 +30,10 @@ export function UploadJdScreen({ intent = 'tailor' }: { intent?: AnalyzeIntent }
         />
       )}
       <div className="@container">
-        <div className="grid gap-4 @min-[56rem]:grid-cols-[minmax(0,13fr)_minmax(0,7fr)]">
+        <div className="grid gap-6 @min-[56rem]:grid-cols-[minmax(0,13fr)_minmax(0,7fr)]">
           <section
             aria-label="Add a job description"
-            className="flex min-w-0 flex-col rounded-lg border border-border-card bg-surface-card p-5"
+            className={cn(cardSurface, 'flex min-w-0 flex-col p-8')}
           >
             <JobInput intent={intent} />
           </section>

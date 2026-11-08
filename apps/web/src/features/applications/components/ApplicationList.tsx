@@ -36,10 +36,10 @@ export function ApplicationList({
 
   if (status === 'pending') {
     return (
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-4">
         {Array.from({ length: 5 }, (_, index) => (
           <li key={index}>
-            <Skeleton className="h-[92px] rounded-lg" />
+            <Skeleton className="h-[104px] rounded-lg" />
           </li>
         ))}
       </ul>
@@ -82,7 +82,7 @@ export function ApplicationList({
   }
 
   return (
-    <ul className={cn('flex flex-col gap-3', reveal && 'animate-reveal')}>
+    <ul className={cn('flex flex-col gap-4', reveal && 'animate-rise')}>
       {rows.map((row) => (
         <li key={row.application.id}>
           <ApplicationRow

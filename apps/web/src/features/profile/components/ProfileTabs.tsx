@@ -38,7 +38,7 @@ export function ProfileTabs({
   onChange: (tab: ProfileTab) => void;
 }) {
   return (
-    <div role="tablist" aria-label="Profile sections" className="flex flex-wrap gap-2.5">
+    <div role="tablist" aria-label="Profile sections" className="flex flex-wrap gap-2">
       {PROFILE_TABS.map(({ id, label }) => {
         const Art = TAB_ART[id];
         const selected = id === active;
@@ -53,10 +53,10 @@ export function ProfileTabs({
             onClick={() => onChange(id)}
             className={cn(
               pressable,
-              'flex h-control-md items-center gap-2 rounded-lg border pl-3 pr-3.5 text-body-l font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              'flex h-control-md items-center gap-2 rounded-full border pl-3 pr-4 text-body-m font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
               selected
                 ? 'border-border-brand-strong bg-surface-brand text-brand-700'
-                : 'border-border-faint bg-surface-card text-text-secondary hover:bg-surface-muted',
+                : 'border-border-subtle bg-surface-card text-text-secondary shadow-card hover:bg-surface-muted',
             )}
           >
             <Art aria-hidden className="h-auto max-h-5.5 w-7 shrink-0" />

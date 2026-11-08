@@ -5,6 +5,6 @@ import { pressable } from './pressable';
  * caller adds the ink. A constant rather than a component, like `outlineButton`.
  */
 export const iconButton =
-  `flex size-control-sm items-center justify-center rounded-sm ${pressable} ` +
+  `flex size-control-sm shrink-0 items-center justify-center rounded-full ${pressable} ` +
   'not-disabled:not-aria-disabled:hover:bg-surface-muted ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';

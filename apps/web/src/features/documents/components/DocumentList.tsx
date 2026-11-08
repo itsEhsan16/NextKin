@@ -36,10 +36,10 @@ export function DocumentList({
 
   if (status === 'pending') {
     return (
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-4">
         {Array.from({ length: 5 }, (_, index) => (
           <li key={index}>
-            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-[106px] rounded-lg" />
           </li>
         ))}
       </ul>
@@ -85,8 +85,8 @@ export function DocumentList({
     <ul
       aria-label="Documents"
       className={cn(
-        view === 'grid' ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-3',
-        reveal && 'animate-reveal',
+        view === 'grid' ? 'grid grid-cols-2 gap-4' : 'flex flex-col gap-4',
+        reveal && 'animate-rise',
       )}
     >
       {documents.map((document) => (

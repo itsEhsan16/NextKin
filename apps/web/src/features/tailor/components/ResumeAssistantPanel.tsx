@@ -163,13 +163,13 @@ export function ResumeAssistantPanel({
     return local(
       `${turn.id}-r`,
       'assistant',
-      turn.id === last?.id && stall === 'slow' ? 'Still thinking…' : 'Thinking…',
+      turn.id === last?.id && stall === 'slow' ? 'Still thinking…' : '',
     );
   };
 
   const chip = cn(
     pressable,
-    'flex min-h-8 items-center gap-1.5 rounded-full py-1 text-left border border-border-default bg-surface-card pl-3 pr-3.5 text-body-m font-medium text-text-primary not-disabled:hover:border-border-brand-strong not-disabled:hover:bg-surface-brand disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+    'flex min-h-8 items-center gap-1.5 rounded-full py-1.5 text-left border border-transparent bg-surface-muted pl-3 pr-3.5 text-body-s font-medium text-text-primary transition-colors duration-fast ease-standard not-disabled:hover:border-border-brand-strong not-disabled:hover:bg-surface-brand disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
   );
 
   // Laid out to fit the window (owner, toreview §122): the header with Cover letter and the box
@@ -179,10 +179,10 @@ export function ResumeAssistantPanel({
       aria-labelledby="resume-assistant"
       className={cn(cardSurface, 'flex flex-col lg:min-h-0 lg:flex-1')}
     >
-      <div className="flex shrink-0 items-center gap-3 border-b border-border-faint px-4 py-3">
-        <NavAiAssistantIllustration aria-hidden className="h-auto w-10 shrink-0" />
+      <div className="flex shrink-0 items-center gap-2.5 px-5 pb-2 pt-5">
+        <NavAiAssistantIllustration aria-hidden className="h-auto w-8 shrink-0" />
         <div className="min-w-0 flex-1">
-          <h2 id="resume-assistant" className="text-title-l text-text-primary">
+          <h2 id="resume-assistant" className="truncate text-body-l font-bold text-text-primary">
             AI Resume Assistant
           </h2>
           <p className="truncate text-caption-m text-text-tertiary">
@@ -195,20 +195,20 @@ export function ResumeAssistantPanel({
           onClick={() => setLetterOpen((v) => !v)}
           className={cn(
             pressable,
-            'flex h-control-md shrink-0 items-center gap-1.5 rounded-md border px-3.5 text-body-m font-semibold transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+            'flex h-control-sm shrink-0 items-center gap-1.5 rounded-full border px-3 text-body-s font-semibold transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
             letterOpen
               ? 'border-brand-600 bg-brand-600 text-text-inverse hover:bg-brand-700'
               : 'border-border-brand-strong bg-brand-50 text-text-brand hover:bg-surface-brand-strong',
           )}
         >
-          <Mail01 aria-hidden className="size-4.5 shrink-0" />
+          <Mail01 aria-hidden className="size-4 shrink-0" />
           Create cover letter
         </button>
       </div>
 
       <div
         ref={scroller}
-        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3 [scrollbar-width:thin]"
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4 [scrollbar-width:thin]"
       >
         {letterOpen && (
           <CoverLetterCard
@@ -230,7 +230,7 @@ export function ResumeAssistantPanel({
         <section aria-labelledby="review-try-asking" className="flex flex-col gap-2">
           <h3
             id="review-try-asking"
-            className="flex items-center gap-2 text-body-l font-bold text-text-primary"
+            className="flex items-center gap-2 text-caption-m font-semibold uppercase tracking-wide text-text-tertiary"
           >
             <SparkleTipIllustration aria-hidden className="h-auto w-4" />
             Try asking
@@ -253,13 +253,13 @@ export function ResumeAssistantPanel({
         </section>
       </div>
 
-      <div className="flex shrink-0 flex-col gap-2 border-t border-border-faint px-4 pb-4 pt-3">
+      <div className="flex shrink-0 flex-col gap-2 px-5 pb-5 pt-1">
         <form
           onSubmit={(event) => {
             event.preventDefault();
             submit(draft);
           }}
-          className="flex items-end gap-2 rounded-lg border border-border-default bg-surface-card p-1.5 transition-colors duration-press ease-standard focus-within:border-border-brand-strong"
+          className="flex items-end gap-2 rounded-full border border-border-default bg-neutral-50/60 py-1.5 pl-3 pr-1.5 transition-[background-color,border-color,box-shadow] duration-base ease-standard focus-within:border-border-selected focus-within:bg-surface-card focus-within:ring-4 focus-within:ring-brand-100"
         >
           <label htmlFor={inputId} className="sr-only">
             Ask anything about your resume

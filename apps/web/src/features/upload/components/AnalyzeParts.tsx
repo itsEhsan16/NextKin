@@ -2,6 +2,7 @@ import { unreadableJdId } from '@nextkin/shared/queries';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { AiLoader } from '@/ui/AiLoader';
 import { brandButton } from '@/ui/brandButton';
 import { CollapseFade } from '@/ui/CollapseFade';
 import { ArrowRight, Stars02, iconSize } from '@/ui/lineIcons';
@@ -37,7 +38,7 @@ export function AnalyzeButton({
       aria-busy={pending}
       className={cn(
         brandButton,
-        'h-control-lg shrink-0 gap-2 rounded-md px-5 text-body-l font-semibold',
+        'h-control-xl shrink-0 gap-2 rounded-full px-6 text-body-l font-semibold',
         className,
       )}
     >
@@ -88,13 +89,9 @@ function AnalyzeStatusBody({
 }) {
   if (status === 'pending') {
     return (
-      <p
-        role="status"
-        className={cn('flex items-center gap-2 py-3 text-body-m text-text-secondary', className)}
-      >
-        <Spinner className="text-brand-600" />
-        Reading the job description…
-      </p>
+      <div className={cn('py-3 text-body-m', className)}>
+        <AiLoader text="Reading the job description…" />
+      </div>
     );
   }
   const manual = unreadableJdId(error);

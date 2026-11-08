@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
+import { buttonClass } from '@/ui/Button';
 import { Spinner } from '@/ui/Spinner';
 import { showToast } from '@/lib/toast';
 import { LayersIcon } from '@/ui/icons';
@@ -52,12 +53,12 @@ function Name({ id, title, noun }: { id: string; title: string; noun: string }) 
           if (event.key === 'Enter') (event.target as HTMLInputElement).blur();
           if (event.key === 'Escape') setEditing(false);
         }}
-        className="h-9 w-full min-w-0 max-w-[420px] rounded-md border border-border-brand-strong bg-surface-card px-2 text-h2 font-bold text-text-primary outline-none ring-4 ring-brand-100"
+        className="h-control-md w-full min-w-0 max-w-[420px] rounded-md border border-border-brand-strong bg-surface-card px-2.5 text-h1 font-semibold text-text-primary outline-none ring-4 ring-brand-100"
       />
     );
   return (
     <div className="group/name flex min-w-0 items-center gap-1">
-      <h1 className="min-w-0 truncate text-h2 font-bold text-text-primary">
+      <h1 className="min-w-0 truncate text-h1 font-semibold text-text-primary">
         <button
           type="button"
           onClick={() => setEditing(true)}
@@ -73,7 +74,7 @@ function Name({ id, title, noun }: { id: string; title: string; noun: string }) 
         aria-label={`Rename ${noun.toLowerCase()}`}
         title="Rename"
         onClick={() => setEditing(true)}
-        className={cn(toolButton, 'size-8')}
+        className={toolButton}
       >
         <Edit03 aria-hidden className={cn(toolIcon, 'size-4')} />
       </button>
@@ -112,12 +113,12 @@ export function EditorIdentity({
   const templateName = RESUME_TEMPLATES.find((t) => t.id === template)?.name ?? 'Classic';
   const last = tag ?? (template ? `${templateName} template` : null);
   return (
-    <div className="flex min-w-[16rem] flex-1 items-center gap-3.5">
+    <div className="flex min-w-[16rem] flex-1 items-center gap-4">
       <Link
         href={back.href}
-        className="flex h-9 shrink-0 items-center gap-2 rounded-md border border-border-default bg-surface-card px-3 text-body-m font-semibold text-text-primary shadow-sm transition-colors duration-press ease-standard hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className={cn(buttonClass({ variant: 'secondary', size: 'md' }), 'shrink-0 px-3.5')}
       >
-        <ArrowRight aria-hidden className="size-4.5 rotate-180" />
+        <ArrowRight aria-hidden className="size-4 rotate-180 text-text-secondary" />
         {back.label}
       </Link>
       <span
@@ -126,7 +127,7 @@ export function EditorIdentity({
       >
         {icon}
       </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <Name id={resumeId} title={title} noun={noun} />
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <SaveIndicator status={status} savedAt={savedAt} onRetry={onRetry} />

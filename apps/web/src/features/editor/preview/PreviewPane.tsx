@@ -25,7 +25,7 @@ function useFitScale() {
   useEffect(() => {
     const node = box.current;
     if (!node) return;
-    const fit = () => setScale(Math.min(1.1, Math.max(0.3, (node.clientWidth - 32) / PAGE_WIDTH)));
+    const fit = () => setScale(Math.min(1.1, Math.max(0.3, (node.clientWidth - 40) / PAGE_WIDTH)));
     fit();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(fit);
@@ -52,7 +52,7 @@ function LivePage({ doc }: { doc: ResumeDocument }) {
   return (
     <div
       ref={box}
-      className="flex min-h-0 flex-1 justify-center overflow-y-auto overflow-x-hidden px-4 py-4 [scrollbar-width:thin]"
+      className="flex min-h-0 flex-1 justify-center overflow-y-auto overflow-x-hidden px-5 py-5 [scrollbar-width:thin]"
     >
       <div
         style={{ width: PAGE_WIDTH * scale, height: sheet * scale }}
@@ -95,7 +95,7 @@ function PdfPages({
   const preview = useResumePreview(resumeId, versionId);
   const data = preview.data;
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 [scrollbar-width:thin]">
+    <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]">
       {(saving || data?.status === 'pending') && (
         <p className="mb-3 rounded-md bg-surface-brand px-3 py-2 text-body-s text-text-brand">
           {saving
@@ -148,11 +148,11 @@ export function PreviewPane({
     <section
       aria-label="Preview"
       className={cn(
-        'flex min-h-0 flex-col overflow-hidden rounded-xl border border-border-default bg-neutral-100 shadow-card',
+        'flex min-h-0 flex-col overflow-hidden rounded-xl border border-border-subtle bg-neutral-100 shadow-card',
         className,
       )}
     >
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border-default bg-surface-card px-3.5 py-3">
+      <div className="flex shrink-0 flex-wrap items-center gap-3 px-5 pb-1 pt-4">
         <SegmentedControl
           label="Preview mode"
           value={tab}

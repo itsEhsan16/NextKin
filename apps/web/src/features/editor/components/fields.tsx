@@ -55,7 +55,7 @@ export function TextField({
         onChange={(event) => onChange(event.target.value)}
         className={cn(
           fieldBox,
-          'h-control-lg rounded-lg px-3.5 text-body-l placeholder:text-text-tertiary',
+          'h-control-lg rounded-md px-3.5 text-body-m placeholder:text-text-tertiary',
           invalid && 'border-danger-600',
         )}
       />
@@ -97,7 +97,7 @@ export function TextArea({
         placeholder={placeholder}
         aria-describedby={hint ? `${id}-hint` : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full min-w-0 resize-y rounded-lg border border-border-default bg-surface-card px-3.5 py-3 text-body-l leading-relaxed text-text-primary transition-colors duration-press ease-standard placeholder:text-text-tertiary hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className="w-full min-w-0 resize-y rounded-md border border-border-default bg-surface-card px-3.5 py-3 text-body-m leading-relaxed text-text-primary transition-[border-color,box-shadow] duration-fast ease-standard placeholder:text-text-tertiary hover:border-neutral-400 focus-visible:border-border-selected focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100"
       />
       {hint && (
         <p id={`${id}-hint`} className={hintText}>
@@ -110,5 +110,5 @@ export function TextArea({
 
 /** Two or three fields side by side on a wide panel, stacked on a narrow one. */
 export function FieldRow({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn('grid gap-3 sm:grid-cols-2', className)}>{children}</div>;
+  return <div className={cn('grid gap-4 sm:grid-cols-2', className)}>{children}</div>;
 }

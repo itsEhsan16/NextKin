@@ -152,7 +152,7 @@ export function JobsScreen({ initialJobId }: JobsScreenProps) {
       />
 
       <div className="mt-4 grid min-h-0 flex-1 grid-cols-[56fr_44fr] gap-6">
-        <div className="relative flex min-h-0 min-w-0 flex-col gap-3">
+        <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
           {/* The board's character at three quarters: its skyline behind the search bar's right
               end, the figure in the gap before the detail card, the caption just above that
               card. Painted first, so the search bar and the detail card cover what they cover

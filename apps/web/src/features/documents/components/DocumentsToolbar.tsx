@@ -35,7 +35,7 @@ export function DocumentsToolbar({
 }: DocumentsToolbarProps) {
   return (
     <div className="flex items-center gap-3">
-      <label className="flex h-control-lg w-64 min-w-0 items-center gap-2 rounded-md border border-border-divider bg-surface-card px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-600">
+      <label className="flex h-control-lg min-w-0 max-w-sm flex-1 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard hover:border-neutral-400 focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
         <SearchIcon className="size-4 shrink-0 text-neutral-400" />
         <input
           type="search"
@@ -54,7 +54,7 @@ export function DocumentsToolbar({
             aria-label={`Sort documents: ${DOCUMENT_SORT_OPTIONS[sort]}`}
             className={cn(
               outlineButton,
-              'h-control-lg shrink-0 gap-6 rounded-md px-3.5 text-body-l font-semibold text-neutral-700',
+              'h-control-lg shrink-0 gap-3 rounded-full px-4 text-body-m font-semibold text-neutral-700',
               menuTrigger,
             )}
           >
@@ -76,7 +76,11 @@ export function DocumentsToolbar({
         )}
       </FilterDropdown>
 
-      <div role="group" aria-label="Layout" className="flex shrink-0 gap-1.5">
+      <div
+        role="group"
+        aria-label="Layout"
+        className="ml-auto flex shrink-0 gap-0.5 rounded-full bg-surface-muted p-1"
+      >
         {VIEWS.map(({ id, label, Icon }) => {
           const active = view === id;
           return (
@@ -88,10 +92,10 @@ export function DocumentsToolbar({
               onClick={() => onViewChange(id)}
               className={cn(
                 pressable,
-                'flex size-control-md items-center justify-center rounded-sm border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                'flex h-control-sm w-11 items-center justify-center rounded-full transition-[color,background-color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                 active
-                  ? 'border-brand-600 bg-brand-600 text-text-inverse'
-                  : 'border-border-subtle bg-surface-card text-text-tertiary hover:bg-surface-muted',
+                  ? 'bg-surface-card text-text-primary shadow-raised'
+                  : 'text-text-tertiary hover:text-text-primary',
               )}
             >
               <Icon className="size-4" />

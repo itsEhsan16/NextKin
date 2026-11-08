@@ -7,6 +7,7 @@ import { BillingHistoryCard, BillingInfoCard, SubscriptionSettingsCard } from '.
 import { PlanCards } from './PlanCards';
 import { useReveal } from '@/lib/useReveal';
 import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 
 /**
  * Settings → Billing & plan (470:3), which replaced its coming-soon panel: the current plan beside
@@ -22,10 +23,7 @@ export function BillingSection() {
 
   if ([subscription, billing].some((query) => queryPhase(query) === 'error')) {
     return (
-      <section
-        aria-label="Billing & plan"
-        className="rounded-lg border border-border-card bg-surface-card py-10"
-      >
+      <section aria-label="Billing & plan" className={cn(cardSurface, 'py-12')}>
         <StateView
           tone="danger"
           title="Something went wrong"
@@ -44,11 +42,11 @@ export function BillingSection() {
     return (
       <>
         {/* The three rows at their loaded heights (`toreview.md` §84). */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-6">
           <Skeleton className="h-75 rounded-lg" />
           <Skeleton className="h-75 rounded-lg" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-6">
           <Skeleton className="h-50 rounded-lg" />
           <Skeleton className="h-50 rounded-lg" />
         </div>
@@ -58,12 +56,12 @@ export function BillingSection() {
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', reveal && 'animate-reveal')}>
+    <div className={cn('flex flex-col gap-6', reveal && 'animate-reveal')}>
       <PlanCards
         subscription={subscription.data}
         pro={plans.data?.find((plan) => plan.id === 'pro_monthly')}
       />
-      <div className="grid grid-cols-2 items-start gap-3">
+      <div className="grid grid-cols-2 items-start gap-6">
         <BillingInfoCard billing={billing.data} />
         <SubscriptionSettingsCard billing={billing.data} />
       </div>

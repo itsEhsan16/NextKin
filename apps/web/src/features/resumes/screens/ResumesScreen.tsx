@@ -17,6 +17,7 @@ import { CreateResumeDialog } from '../components/CreateResumeDialog';
 import { ResumeDetailPanel } from '../components/ResumeDetailPanel';
 import { ResumeFilterChipsRow } from '../components/ResumeFilterChipsRow';
 import { ResumeList } from '../components/ResumeList';
+import { ResumeSearchBar } from '../components/ResumeSearchBar';
 import { ResumesIllustration } from '../components/ResumesIllustration';
 import {
   EMPTY_RESUME_FILTERS,
@@ -40,8 +41,8 @@ const NONE: Resume[] = [];
  * than Jobs and Applications give their cards.
  *
  * The pills, chips and count sit over a list that is the page's one scroller. The right column
- * opens with "Create New Resume" and the character, then the panel: the library's search and sort,
- * and the selected document's card. The pills count what the chips and the search leave, so a
+ * opens with "Create New Resume" and the character, then the selected document's card. The
+ * library's search and sort head the list they narrow. The pills count what the chips and the search leave, so a
  * pill and the count under it always agree. Selection works as on the other lists: an explicit
  * pick while it is in view, otherwise the list's first row, derived during render.
  */
@@ -106,8 +107,14 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
         subtitle="Create, customize, and manage your resumes for every opportunity."
       />
 
-      <div className="mt-4 grid min-h-0 flex-1 grid-cols-[53fr_47fr] gap-6">
-        <div className="flex min-h-0 min-w-0 flex-col gap-3">
+      <div className="mt-6 grid min-h-0 flex-1 grid-cols-[53fr_47fr] gap-6">
+        <div className="flex min-h-0 min-w-0 flex-col gap-4">
+          <ResumeSearchBar
+            search={search}
+            onSearchChange={setSearch}
+            sort={sort}
+            onSortChange={setSort}
+          />
           <PillTabs
             tabs={RESUME_TABS}
             active={tab}
@@ -171,14 +178,10 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
           </div>
 
           <ResumeDetailPanel
-            className="relative mt-3"
+            className="relative mt-4"
             resume={selected}
             status={detailStatus}
             hasAny={all.length > 0}
-            search={search}
-            onSearchChange={setSearch}
-            sort={sort}
-            onSortChange={setSort}
             onRetry={() => void resumes.refetch()}
             onCreate={create}
           />

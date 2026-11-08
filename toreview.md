@@ -13884,3 +13884,132 @@ The owner made these choices in plan mode:
   - It now reports what it dropped: "Only the first 12 of its 15 bullets are kept."
 - **Checked on the real file:** both roles are kept. Server unit tests pass, with a new long-role test.
 - **Open:** the same file's summary was left out as "not in your file word for word". It wraps across PDF lines, so the matching around line breaks may need a look.
+
+## 132. SaaS-level visual overhaul of the web app (owner, 2026-10-22), worktree `ui-overhaul`
+
+The owner saw no visual difference after §131, which changed behaviour, not the look. They asked for a "top-notch SaaS" UI: smoothness, buttons, placement, spacing and interactions. Unlimited changes are allowed. Colours stay. The work happens in a separate, revertible worktree.
+
+### 132.1 Where it lives and how to revert
+
+- **Baseline:** branch `snapshot/pre-ui-overhaul` is a snapshot commit of the whole working tree as it was. It was built with a temporary index, so the main checkout's branch, index and files were not touched. `doc/` and `.env` are ignored and were not included.
+- **The work:** worktree `../NextKin-ui` on branch `ui-overhaul`.
+  - Revert: `git worktree remove ../NextKin-ui` and `git branch -D ui-overhaul`.
+  - Keep: merge `ui-overhaul` when the owner says so.
+  - Nothing has been merged into `main`.
+
+### 132.2 Owner decisions
+
+- **Density:** airy, like the reference shots. This overrides the compact density of §16 and §32 for the web app.
+- **Scope:** every web page. Mobile is untouched.
+
+### 132.3 Token changes (old → new)
+
+| Token | Before | After |
+|---|---|---|
+| Canvas | white | `neutral-50` |
+| Cards | white, 1px border, no shadow | white, `border-subtle`, layered `shadow-card`; clickable ones lift (`shadow-card-hover`, -2px) |
+| Radius | sm 6 / md 8 / lg 12 / xl 16 / panel 31 | sm 8 / md 12 / lg 16 / xl 20 / 2xl 24 / panel 24 |
+| Controls | 30 / 36 / 40 | 36 / 40 / 44, plus xl 48 |
+| Type | display-l 24, h1 20, title-l 15, body-l 14, body-m 13, body-s 12 | display-l 30, h1 22, title-l 16, body-l 15, body-m 14, body-s 13 (line heights looser) |
+| New shadows | — | `card-hover`, `dialog`, `button` (the primary's lit edge) |
+| New motion | — | `ease-spring`, `animate-rise`, `animate-shimmer`; the page enter now rises 6px |
+| Page gutter | 24px | 32px, `pt-8` |
+
+### 132.4 Shared components
+
+- **Segmented controls and PillTabs:** pill tracks with a sliding raised thumb (`useThumb`).
+- **Round controls:** `iconButton` is round. `FilterChip` is a pill.
+- **Inputs:** 44px with a soft focus ring.
+- **Overlays:**
+  - Menus: `rounded-lg`, 36px items.
+  - Dialog: `rounded-2xl`, blurred backdrop.
+  - Toast: `rounded-xl`.
+- **Skeleton:** shimmers.
+- **StateView:** its action is a real button.
+- **Buttons:** `Button` has `xl` and `pill`.
+- **Shell:**
+  - The sidebar floats with a shadow; its geometry is kept.
+  - The top bar is translucent with a blur, a pill search and pill Upload New JD.
+
+### 132.5 Pages
+
+- **Home:** done first.
+- **The rest:** refined by page group using one recipe: one card level, `p-6`, spacing instead of hairlines, round icon buttons, hover lift.
+- **Notes:** each page group's notes follow below, as they land.
+
+### 132.6 Judgement calls made during the pass (owner to confirm)
+
+- **Canvas:** `neutral-100` (#f1f5f9), not `neutral-50`. On screen, `neutral-50` was indistinguishable from the white cards. Because `surface-muted` is the same grey, skeletons now use `neutral-200/70` so they still show on the canvas.
+- **Editor tools:**
+  - Section-header tools stay fully visible, because the owner said on 2026-10-19 that they were "too small and faint to see".
+  - Entry-level tools rest at 60% opacity until hover or focus. They are never hidden and stay keyboard reachable.
+- **Resumes:**
+  - Search and sort moved to the list column header (`ResumeSearchBar.tsx`).
+  - Actions: Download is the primary, Edit Resume the secondary, and Use for Job a quieter link. All three are kept.
+- **Review:**
+  - "More actions" is a round kebab, with the aria-label kept.
+  - The assistant title drops to body-l, to fit the 420px column.
+- **Settings:**
+  - Card actions moved from the lavender outline to the neutral secondary button.
+  - Nav rows stay two lines (their description is the tab's `aria-describedby`).
+- **Shared job components:** `JobSections`, `JobPageTop` and `JobAside` are shared by the job and JD pages, so both pages changed together.
+- **Lint ignores:** `eslint.config.mjs` now also ignores `.next-*/**`, the build folder of a second dev server.
+- **Not done:**
+  - A shared `Stagger` list helper (lists use one `animate-rise` instead).
+  - Splitting `ConnectedAccountsSection.tsx`, which was over 250 lines before this pass.
+- **Verification:**
+  - Root `pnpm typecheck`, `pnpm lint` and `pnpm test` pass in the worktree (web 393/393).
+  - Screenshots at 1440×900: Home, Jobs, Resumes, Upload JD, Settings, the JD page, the editor, and the review (the review's resume and score are still loading in the mock).
+  - **Not checked:** the backend stack, 1280-wide windows, and reduced motion.
+
+### 132.7 The assistant's AI-guidance label (owner, 2026-10-22)
+
+- **Change:** "AI-generated guidance, not professional or legal advice." now sits above the input box instead of below it. It folds away once the conversation has a message (`Composer` `showDisclaimer`, from `AssistantScreen`).
+- **Spec:** V2 §7.16 asks for "clear labeling" of AI guidance. The label still shows on every new chat. Out-of-scope replies still carry their own tag.
+- **Owner to confirm:** that a label on the empty chat only is enough for §7.16, or whether each reply should carry a small "AI" mark instead.
+
+### 132.8 AI processing loaders (owner, 2026-10-23)
+
+- **What it is:** `ui/AiLoader.tsx` rebuilds the owner's sample on this app's conventions:
+  - our tokens and our Untitled UI icon
+  - keyframes in `theme.css` (`think`, `sweep`, `ring-draw`, plus the existing `shimmer`) with new duration tokens `think` 1400 and `sweep` 2000, so reduced motion stills them
+  - every variant announces itself; `silent` is for loaders that sit beside their own status text
+- **Not adopted from the sample:**
+  - shadcn's `components/ui` folder and `lucide-react`: the app has `src/ui` and the Untitled UI icons (README §6)
+  - the per-render `<style>` tag and the `RevealAnimation` / `AiSkeleton` extras: the app already has `animate-rise` and `Skeleton`
+- **Where it is used (only where the AI itself is working):**
+
+  | Variant | Places |
+  |---|---|
+  | Shimmer text | "Reading the job description…" on Upload JD (`AnalyzeParts`) and on the JD page |
+  | Thinking dots | A reply on its way in the Assistant (`MessageBubble`) and in the review's Resume Assistant. "Still thinking…" stays as words. |
+  | Loading line | Under a resume being read: the tailor flow's drop zone and onboarding's `ReadFileRow` |
+  | Pulse ring | Available but not used; no spot needed it |
+
+  Buttons keep `Spinner`; page loading keeps `Skeleton`.
+- **Not checked:** the animations were not seen live; that needs a real reading or reply on :3001 with the backend. Tests pass: `__tests__/ui/AiLoader.test.tsx` plus the affected screen suites (102).
+
+### 132.9 The AI orb on the run screen (owner, 2026-10-23)
+
+- **What it is:** `ui/AiOrb.tsx` wraps `thinking-orbs@0.3.2`.
+  - MIT, no dependencies, 0.3.2 published 2026-09-22. Pinned exactly in `apps/web`.
+  - It is tinted with the app's `colors.brand600`, read straight from `tokens.ts`; the sample's CSS-probe-and-canvas colour reading isn't needed.
+  - The theme is pinned to `light`.
+  - It renders on the client only and holds a still frame under reduced motion.
+- **Not adopted from the sample:**
+  - `motion` (framer-motion), which the sample used only for a 0.2s crossfade. A keyed `animate-reveal` does that.
+  - The sample's ten agent states. The app's runs only need working / writing / searching / connecting / shaping / resting.
+- **Used in `RunProgress`, the screen of every tailor, cover, ATS and zero run:**
+  - a 20px "writing" orb beside the meter while the run works (hidden once stalled);
+  - a "working" orb in place of the spinner on the step in progress.
+
+  The robot art is kept, because it is the board's.
+- **Tests:** jsdom has no canvas, so Jest maps `thinking-orbs` to `__mocks__/thinkingOrbs.tsx` (a stub).
+- **Checks:**
+  - Seen drawing in indigo on `/jobs/job_4/tailor?run=gen_active` at :3001.
+  - The step-list orb was not seen live, because the mock run has no step list.
+  - Create and tailor tests pass (30).
+- **Update 2026-10-23 (owner):** the orb *replaces* the tailoring run's robot illustration (`TailoringStep`), not just the spinner.
+  - `thinking-orbs` throws for any size but 20/32/64, so the `xl` hero is the 64px orb scaled 2.5× with CSS. It is a little soft on a 1× screen.
+  - The other run screens (cover, ATS, zero) keep their own illustrations for now.
+  - `public/illustrations/tailor-robot.png` is now unused and is kept.

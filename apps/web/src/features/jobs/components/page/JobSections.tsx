@@ -26,7 +26,7 @@ import { hasSkill, siteLabel } from '../../jobPageLibrary';
 
 type Art = ComponentType<SVGProps<SVGSVGElement>>;
 
-/** One of the page's sections (730:…): a rule above, the board's art and the heading, then it. */
+/** One of the page's sections (730:…): the board's art and the heading, then it, set apart by space. */
 export function JobSection({
   id,
   Art,
@@ -41,7 +41,7 @@ export function JobSection({
   children: ReactNode;
 }) {
   return (
-    <section aria-labelledby={id} className="border-t border-border-faint px-6 py-6">
+    <section aria-labelledby={id} className="px-8 py-5">
       <div className="flex items-center gap-3">
         <Art aria-hidden className="h-auto w-9 shrink-0" />
         <h2 id={id} className="flex-1 text-title-l text-text-primary">
@@ -189,12 +189,12 @@ export function CompanySection({ job }: { job: Job }) {
   ];
   return (
     <JobSection id="job-company" Art={ProfileCompanyIllustration} title="Company">
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
-        <div className="rounded-md bg-neutral-50 p-4">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+        <div className="rounded-md bg-neutral-50 p-5">
           <p className="text-body-l font-semibold text-text-primary">{job.company}</p>
           <p className="mt-1.5 text-body-s text-text-secondary">{job.companyAbout}</p>
         </div>
-        <ul className="flex flex-col gap-2 rounded-md bg-neutral-50 p-4">
+        <ul className="flex flex-col gap-2.5 rounded-md bg-neutral-50 p-5">
           {facts.map(({ key, Icon, label }) => (
             <li key={key} className="flex items-center gap-2 text-body-s text-text-secondary">
               <Icon aria-hidden className="size-3.5 shrink-0 text-text-tertiary" />

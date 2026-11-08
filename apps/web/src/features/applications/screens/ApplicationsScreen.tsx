@@ -96,7 +96,7 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
       />
 
       <div className="mt-4 grid min-h-0 flex-1 grid-cols-[56fr_44fr] gap-6">
-        <div className="relative flex min-h-0 min-w-0 flex-col gap-3">
+        <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
           {/* Where the board puts the character (304:3093): under the search field, rising out of
               the header band over this column's top-right corner, its right edge running 60px on
               under the detail card and its caption just above that card. Anchored to this column

@@ -75,10 +75,10 @@ export function resumeLine(resume: Resume): string {
 
 export const rowSurface = (on: boolean) =>
   cn(
-    'rounded-lg border transition-colors duration-press ease-standard',
+    'rounded-lg border transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard',
     on
-      ? 'border-brand-600 bg-surface-brand-strong ring-1 ring-brand-600'
-      : 'border-border-default bg-surface-card hover:border-neutral-400',
+      ? 'border-brand-600 bg-surface-brand-strong shadow-card ring-1 ring-brand-600'
+      : 'border-border-default bg-surface-card hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
   );
 
 /** A resume to start from, as a radio row with a way to look at it first (849:524). */
@@ -149,10 +149,10 @@ export function OptionCard({
     <div
       className={cn(
         // Picture cards stay white when chosen (849:819); only the border says so.
-        'relative flex min-w-0 flex-1 gap-5 rounded-xl border bg-surface-card px-5 py-5 transition-colors duration-press ease-standard',
+        'relative flex min-w-0 flex-1 gap-5 rounded-lg border bg-surface-card p-6 transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard',
         on
-          ? 'border-brand-600 ring-1 ring-brand-600'
-          : 'border-border-default hover:border-neutral-400',
+          ? 'border-brand-600 shadow-card ring-1 ring-brand-600'
+          : 'border-border-default hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
         wide ? 'items-center' : 'flex-col gap-3',
       )}
     >
@@ -162,7 +162,7 @@ export function OptionCard({
         aria-checked={on}
         aria-label={title}
         onClick={onPick}
-        className="absolute inset-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className="absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       />
       <Image
         src={art}
@@ -214,7 +214,7 @@ export function OtherWayRow({
     </>
   );
   const className =
-    'flex w-full items-center gap-3 rounded-lg border border-border-default bg-surface-card py-3.5 pl-3.5 pr-4 text-left transition-colors duration-press ease-standard hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
+    'flex w-full items-center gap-3 rounded-lg border border-border-default bg-surface-card py-3.5 pl-3.5 pr-4 text-left transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
   return href ? (
     <Link href={href} className={className}>
       {body}
@@ -237,11 +237,11 @@ export function Capsule({
   onToggle?: () => void;
 }) {
   const className = cn(
-    'flex items-center gap-2 rounded-full border py-2 pl-4 pr-3.5 text-body-l transition-colors duration-press ease-standard',
+    'flex items-center gap-2 rounded-full border py-2 pl-4 pr-3.5 text-body-m transition-[background-color,border-color,color] duration-base ease-standard',
     state === 'on' &&
       'border-brand-600 bg-brand-50 font-semibold text-brand-700 ring-1 ring-brand-600',
     state === 'off' &&
-      'border-border-default bg-surface-card font-medium text-text-secondary hover:border-neutral-400',
+      'border-border-default bg-surface-card font-medium text-text-secondary hover:border-border-brand-strong hover:bg-surface-brand hover:text-text-primary',
     state === 'have' && 'border-success-50 bg-success-surface font-semibold text-success-text',
   );
   const mark =

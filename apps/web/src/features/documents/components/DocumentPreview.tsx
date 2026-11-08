@@ -18,7 +18,7 @@ export function DocumentPreview({ document }: { document: CareerDocument }) {
   const image = resolveImageSrc(document.imageUrl);
   if (image) {
     return (
-      <div className="flex justify-center rounded-md border border-border-card bg-neutral-50 px-6 py-10">
+      <div className="flex justify-center rounded-md bg-neutral-50 px-6 py-10">
         {/* The one photo is George's 49px avatar, so it is shown at its own size, not blown up. */}
         <Image
           src={image}
@@ -32,7 +32,7 @@ export function DocumentPreview({ document }: { document: CareerDocument }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-2 rounded-md border border-border-card bg-neutral-50 px-6 py-10 text-center">
+    <div className="flex flex-col items-center gap-2 rounded-md bg-neutral-50 px-6 py-10 text-center">
       <FileTypeTile format={document.format} size="preview" />
       <p className="mt-1 text-title-l text-text-primary">No preview for this file</p>
       <p className="max-w-xs text-body-s text-text-secondary">
@@ -50,7 +50,7 @@ export function CertificateSheet({ certificate }: { certificate: CertificateDeta
   const renderSignature = resolveDrawing(signer?.signatureUrl);
 
   return (
-    <div className="relative rounded-md border border-brand-50 bg-neutral-50 px-8 pb-7 pt-7 text-center">
+    <div className="relative rounded-md bg-neutral-50 px-8 pb-7 pt-7 text-center">
       {/* The inset rule the board frames the certificate with (286:2293). */}
       <div
         aria-hidden

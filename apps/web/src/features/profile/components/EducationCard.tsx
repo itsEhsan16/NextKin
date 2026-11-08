@@ -17,12 +17,12 @@ export function EducationCard({ education }: { education: Education[] }) {
           Add your degrees and courses. Job matches read them.
         </p>
       ) : (
-        <ul className="mt-4 flex flex-col gap-4">
+        <ul className="mt-5 flex flex-col gap-5">
           {education.map((entry) => (
             <li key={entry.id} className="flex items-start gap-3.5">
               <span
                 aria-hidden
-                className="flex size-9 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-body-l font-semibold text-text-primary"
+                className="flex size-10 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-body-l font-semibold text-text-primary"
               >
                 {entry.institution.charAt(0).toUpperCase()}
               </span>

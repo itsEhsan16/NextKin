@@ -2,6 +2,7 @@ import { useId, type ComponentType, type ReactNode, type SVGProps } from 'react'
 
 import { cn } from '@/lib/cn';
 import { brandOutlineButton } from '@/ui/brandOutlineButton';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { EditIcon } from '@/ui/icons';
 
 export type AccountCardProps = {
@@ -58,21 +59,18 @@ export function AccountCard({
   );
 
   return (
-    <section
-      aria-labelledby={titleId}
-      className={cn('rounded-lg border border-border-card bg-surface-card p-5', className)}
-    >
+    <section aria-labelledby={titleId} className={cn(cardSurface, cardPad, className)}>
       <div className="flex items-start justify-between gap-4">
         {Art ? (
-          <div className="flex min-w-0 items-center gap-3.5">
+          <div className="flex min-w-0 items-center gap-4">
             <span aria-hidden className="flex w-10 shrink-0 justify-center">
               <Art className="h-auto max-h-8 w-10" />
             </span>
             {heading}
           </div>
         ) : Icon && tile ? (
-          <div className="flex min-w-0 items-center gap-3.5">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-sm bg-surface-brand-strong">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-brand-strong">
               <Icon className="size-5 text-brand-600" />
             </span>
             {heading}
@@ -86,7 +84,7 @@ export function AccountCard({
             aria-label={`Edit ${title.toLowerCase()}`}
             className={cn(
               brandOutlineButton,
-              'h-control-sm shrink-0 gap-1.5 rounded-sm px-3 text-body-s font-bold',
+              'h-control-sm shrink-0 gap-1.5 rounded-md px-3.5 text-body-s font-semibold',
             )}
           >
             <EditIcon className="size-3.5" />

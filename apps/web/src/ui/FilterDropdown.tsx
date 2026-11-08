@@ -34,7 +34,7 @@ export function FilterDropdown({ trigger, children, align = 'start' }: FilterDro
           align={align}
           sideOffset={8}
           className={cn(
-            'z-50 min-w-[220px] rounded-md border border-border-default bg-surface-card p-2 shadow-popover outline-none',
+            'z-50 min-w-[220px] rounded-lg border border-border-subtle bg-surface-card p-1.5 shadow-popover outline-none',
             menuSurfaceMotion,
           )}
         >
@@ -69,7 +69,7 @@ export function FilterCheckboxItem({
       onCheckedChange={onCheckedChange}
       onSelect={closeOnSelect ? undefined : (event) => event.preventDefault()}
       className={cn(
-        'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-body-s text-text-primary outline-none',
+        'flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-body-m text-text-primary outline-none transition-colors duration-press ease-standard',
         'data-[highlighted]:bg-surface-muted',
       )}
     >
@@ -99,7 +99,7 @@ export function MenuItem({ onSelect, tone = 'default', disabled, children }: Men
       onSelect={onSelect}
       disabled={disabled}
       className={cn(
-        'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-body-s outline-none data-[disabled]:cursor-default data-[disabled]:opacity-60',
+        'flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-body-m outline-none transition-colors duration-press ease-standard data-[disabled]:cursor-default data-[disabled]:opacity-60',
         'data-[highlighted]:bg-surface-muted',
         // The danger red is under 4.5:1 on the highlight, so it darkens there.
         tone === 'danger'

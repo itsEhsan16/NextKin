@@ -9,7 +9,7 @@ import { Button } from '@/ui/Button';
 import { cardSurface } from '@/ui/Card';
 import { AlertCircle, CheckCircle, InfoCircle, RefreshCw01, iconSize } from '@/ui/lineIcons';
 import { ProgressBar } from '@/ui/ProgressBar';
-import { Spinner } from '@/ui/Spinner';
+import { AiOrb } from '@/ui/AiOrb';
 
 import type { RunLine } from '../runLines';
 
@@ -73,7 +73,11 @@ export function RunProgress({
 
       <div className="mt-6 w-full text-left">
         <div className="flex items-center justify-between text-body-m">
-          <span className="font-medium text-text-primary">{meter}</span>
+          <span className="flex items-center gap-2 font-medium text-text-primary">
+            {/* The AI composing while the run works (owner, toreview §132.9). */}
+            {progress < 1 && stall !== 'stalled' && <AiOrb state="writing" />}
+            {meter}
+          </span>
           <span className="font-semibold tabular-nums text-text-brand">{percent}%</span>
         </div>
         <ProgressBar value={progress} label={meter} className="mt-2 h-2 bg-neutral-100" />
@@ -93,7 +97,7 @@ export function RunProgress({
                   className={cn(iconSize.sm, 'animate-pop-in text-success-600')}
                 />
               ) : state === 'current' ? (
-                <Spinner className="text-brand-600" />
+                <AiOrb className="-m-0.5" />
               ) : (
                 <span
                   aria-hidden

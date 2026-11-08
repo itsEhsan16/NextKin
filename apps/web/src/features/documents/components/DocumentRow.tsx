@@ -1,6 +1,7 @@
 import type { CareerDocument } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
+import { iconButton } from '@/ui/iconButton';
 import { MoreVerticalIcon } from '@/ui/icons';
 import { Tag } from '@/ui/Tag';
 import { cardFaceHover, cardFaceMotion } from '@/ui/pressable';
@@ -32,7 +33,8 @@ export function DocumentRow({ document, selected, onSelect, view }: DocumentRowP
         type="button"
         aria-label="More options"
         className={cn(
-          'pointer-events-auto -mr-1 -mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+          iconButton,
+          'pointer-events-auto -mr-2 -mt-1.5 text-text-tertiary hover:text-text-primary',
           soonControl,
         )}
       >
@@ -53,12 +55,12 @@ export function DocumentRow({ document, selected, onSelect, view }: DocumentRowP
 
       <div
         className={cn(
-          'pointer-events-none relative flex h-full rounded-lg border bg-surface-card px-4 py-3.5',
+          'pointer-events-none relative flex h-full rounded-lg border bg-surface-card px-5 py-4 shadow-card',
           cardFaceMotion,
-          view === 'list' ? 'items-start gap-3' : 'flex-col gap-2.5',
+          view === 'list' ? 'items-start gap-4' : 'flex-col gap-3',
           selected
             ? 'border-border-selected outline-1 -outline-offset-2 outline-border-selected'
-            : cn('border-border-card', cardFaceHover),
+            : cn('border-border-subtle', cardFaceHover),
         )}
       >
         {view === 'grid' ? (
@@ -71,9 +73,9 @@ export function DocumentRow({ document, selected, onSelect, view }: DocumentRowP
         )}
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-title-l text-neutral-800">{document.title}</h3>
-          <p className="truncate text-body-m text-text-tertiary">{documentMeta(document)}</p>
-          <Tag tone={KIND_TONE[document.kind]} className="mt-2">
+          <h3 className="truncate text-title-l font-semibold text-neutral-800">{document.title}</h3>
+          <p className="mt-0.5 truncate text-body-m text-text-tertiary">{documentMeta(document)}</p>
+          <Tag tone={KIND_TONE[document.kind]} className="mt-2.5">
             {KIND_LABEL[document.kind]}
           </Tag>
         </div>

@@ -4,6 +4,7 @@ import { JobMetaRow } from '@/features/jobs/components/JobMetaRow';
 import { cn } from '@/lib/cn';
 import { formatCoarseAge } from '@/lib/format';
 import { CompanyLogo } from '@/ui/CompanyLogo';
+import { iconButton } from '@/ui/iconButton';
 import { MoreVerticalIcon } from '@/ui/icons';
 import { cardFaceHover, cardFaceMotion } from '@/ui/pressable';
 
@@ -40,22 +41,22 @@ export function ApplicationRow({ row, selected, onSelect }: ApplicationRowProps)
 
       <div
         className={cn(
-          'pointer-events-none relative flex items-center gap-3 rounded-lg border bg-surface-card px-4 py-3.5',
+          'pointer-events-none relative flex items-center gap-4 rounded-lg border bg-surface-card py-4 pl-5 pr-3 shadow-card',
           cardFaceMotion,
           selected
             ? 'border-border-selected outline-1 -outline-offset-2 outline-border-selected'
-            : cn('border-border-card', cardFaceHover),
+            : cn('border-border-subtle', cardFaceHover),
         )}
       >
         <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="tile" />
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h3 className="truncate text-title-l font-bold text-neutral-800">{job.title}</h3>
+          <h3 className="truncate text-title-l font-semibold text-neutral-800">{job.title}</h3>
           <p className="truncate text-body-m text-text-company">{job.company}</p>
           <JobMetaRow job={job} fields={['location', 'type']} className="pt-1" />
         </div>
 
-        <p className="shrink-0 text-body-s text-neutral-400">
+        <p className="shrink-0 text-right text-body-s text-text-tertiary">
           <span className="block">Applied</span>
           <span className="block">{formatCoarseAge(application.appliedAt)}</span>
         </p>
@@ -68,7 +69,8 @@ export function ApplicationRow({ row, selected, onSelect }: ApplicationRowProps)
             type="button"
             aria-label="More options"
             className={cn(
-              'pointer-events-auto -mr-1 flex size-6 shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              iconButton,
+              'pointer-events-auto text-text-tertiary hover:text-text-primary',
               soonControl,
             )}
           >

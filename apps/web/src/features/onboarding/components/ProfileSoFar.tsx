@@ -17,7 +17,7 @@ export function ProfileSoFar({ rows }: { rows: ProfileSoFarRow[] }) {
   return (
     <section
       aria-label="Your profile so far"
-      className="w-full rounded-2xl border border-border-default bg-surface-card px-4 pb-1.5 pt-3.5 shadow-popover"
+      className="w-full rounded-lg border border-border-subtle bg-surface-card px-5 pb-2 pt-4 shadow-popover"
     >
       <h2 className="flex items-center gap-2 pb-2 text-title-l font-bold text-text-primary">
         <PersonIcon className="size-3 text-text-brand" />

@@ -6,7 +6,7 @@ import { ArrowRightIcon, CheckCircleIcon } from '@/ui/icons';
 import { ScoreRing } from '@/ui/ScoreRing';
 
 import { completionItems } from '@/features/account/accountLibrary';
-import { cardSurface } from '@/ui/Card';
+import { cardPad, cardSurface } from '@/ui/Card';
 
 import type { ProfileTab } from '../profileLibrary';
 
@@ -40,8 +40,8 @@ export function CompletionCard({
   const percent = Math.round(profile.completeness * 100);
 
   return (
-    <section aria-labelledby="profile-completion" className={cn(cardSurface, 'p-5')}>
-      <h2 id="profile-completion" className="text-h2 text-text-primary">
+    <section aria-labelledby="profile-completion" className={cn(cardSurface, cardPad)}>
+      <h2 id="profile-completion" className="text-title-l text-text-primary">
         Profile completion
       </h2>
 
@@ -66,9 +66,9 @@ export function CompletionCard({
         </div>
       </div>
 
-      <ul aria-label="Profile checklist" className="mt-4 flex flex-col gap-2.5">
+      <ul aria-label="Profile checklist" className="mt-5 flex flex-col gap-3">
         {items.map(({ label, done }) => (
-          <li key={label} className="flex items-center gap-3 text-body-l text-text-secondary">
+          <li key={label} className="flex items-center gap-3 text-body-m text-text-secondary">
             {done ? (
               <CheckCircleIcon aria-hidden className="size-4 shrink-0 text-success-600" />
             ) : (
@@ -87,7 +87,7 @@ export function CompletionCard({
         type="button"
         className={cn(
           brandButton,
-          'mt-5 h-control-lg w-full gap-2 rounded-md text-body-l font-bold',
+          'mt-6 h-control-lg w-full gap-2 rounded-md text-body-m font-semibold',
         )}
         onClick={() => {
           const next = items.find((item) => !item.done);

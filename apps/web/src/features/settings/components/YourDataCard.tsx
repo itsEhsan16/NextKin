@@ -17,7 +17,7 @@ import {
 import { RowChevron, SETTING_LIST, SettingRow } from './SettingRow';
 import { Soon, soonControl } from '@/ui/Soon';
 
-const ACTION = 'h-control-sm min-w-32 shrink-0 rounded-sm px-3 text-body-s font-semibold';
+const ACTION = 'h-control-sm min-w-32 shrink-0 rounded-md px-3.5 text-body-s font-semibold';
 
 /** The download row's own line until an archive has been asked for (the mockup's). */
 const EXPORT_IDLE = 'Get a copy of your profile, resumes, and activity data.';

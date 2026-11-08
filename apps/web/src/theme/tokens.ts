@@ -104,20 +104,20 @@ export type ColorToken = keyof typeof colors;
  */
 export const typography = {
   /** The Assistant's welcome greeting only (`toreview.md` §102). */
-  hero: [32, 40, -2, 800],
-  displayL: [24, 30, -1.5, 700],
-  h1: [20, 26, -1, 600],
-  h2: [18, 24, -0.8, 600],
-  titleL: [15, 20, -0.3, 600],
+  hero: [34, 42, -2, 800],
+  displayL: [30, 38, -2, 700],
+  h1: [22, 30, -1.2, 600],
+  h2: [18, 26, -0.8, 600],
+  titleL: [16, 24, -0.4, 600],
   /** Primary UI text — inputs, buttons, tabs, list text, nav labels (`toreview.md` §29). */
-  bodyL: [14, 20, 0, 400],
+  bodyL: [15, 24, 0, 400],
   /** Running copy — the job description and its lists: the primary size on a looser line. */
-  prose: [14, 22, 0, 400],
+  prose: [15, 26, 0, 400],
   /** Secondary text — subtitles, card body. */
-  bodyM: [13, 20, 0, 400],
-  bodyS: [12, 18, 0, 400],
-  captionM: [12, 16, 0, 500],
-  micro: [11, 14, 0.2, 500],
+  bodyM: [14, 22, 0, 400],
+  bodyS: [13, 20, 0, 400],
+  captionM: [12, 18, 0, 500],
+  micro: [11, 16, 0.2, 500],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
 export type TypographyRole = keyof typeof typography;
@@ -125,15 +125,18 @@ export type TypographyRole = keyof typeof typography;
 export const space = [2, 4, 6, 8, 12, 16, 20, 24] as const;
 
 /** The three control heights (`h-control-*`, `size-control-*`) — see theme.css. */
-export const controls = { sm: 30, md: 36, lg: 40 } as const;
+export const controls = { sm: 36, md: 40, lg: 44, xl: 48 } as const;
 
-export const radii = { sm: 6, md: 8, lg: 12, xl: 16, panel: 31, full: 999 } as const;
+export const radii = { sm: 8, md: 12, lg: 16, xl: 20, '2xl': 24, panel: 24, full: 999 } as const;
 
-/** Elevation (`toreview.md` §32): a whisper under cards; real depth only for popovers. */
+/** Elevation (`toreview.md` §132): white cards on a grey canvas, lifting on hover. */
 export const shadows = {
-  card: '0 1px 2px rgba(15, 23, 42, 0.04)',
-  popover: '0 4px 16px rgba(15, 23, 42, 0.08)',
-  raised: '0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06)',
+  card: '0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 8px -2px rgba(15, 23, 42, 0.06)',
+  cardHover: '0 2px 4px rgba(15, 23, 42, 0.05), 0 12px 24px -6px rgba(15, 23, 42, 0.12)',
+  popover: '0 8px 24px -4px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06)',
+  raised: '0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.08)',
+  dialog: '0 24px 48px -12px rgba(15, 23, 42, 0.25)',
+  button: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 2px rgba(15, 23, 42, 0.12)',
 } as const;
 
 /**
@@ -141,10 +144,11 @@ export const shadows = {
  * feels rather than how a phone lays out, so they transfer where the layout tokens do not.
  */
 export const motion = {
-  durations: { press: 120, fast: 180, base: 220, snappy: 250, meter: 800, slide: 600, float: 2800 },
+  durations: { press: 120, fast: 180, base: 220, snappy: 250, meter: 800, slide: 600, float: 2800, think: 1400, sweep: 2000 },
   easings: {
     standard: 'cubic-bezier(0.2, 0, 0, 1)',
     decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
+    spring: 'cubic-bezier(0.34, 1.3, 0.64, 1)',
   },
   /** What a held button or card settles to, and what menus and tooltips grow from. */
   pressedScale: 0.98,

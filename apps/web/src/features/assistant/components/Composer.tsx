@@ -4,6 +4,7 @@ import { ASSISTANT_DISCLAIMER, type AssistantAttachment } from '@nextkin/shared/
 import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 
 import { cn } from '@/lib/cn';
+import { CollapseFade } from '@/ui/CollapseFade';
 import { InfoCircleIcon, SendIcon } from '@/ui/icons';
 import { pressable } from '@/ui/pressable';
 
@@ -22,6 +23,11 @@ export type ComposerProps = {
   onSend: () => void;
   /** A reply is on its way: the user may keep typing, but not send. */
   busy: boolean;
+  /**
+   * The AI-guidance label (V2 §7.16) above the box: shown on a new conversation, folded away once
+   * it has messages (owner, toreview §132.7).
+   */
+  showDisclaimer?: boolean;
   /** Today's messages are used up. */
   spent: boolean;
 };
@@ -50,6 +56,7 @@ export function Composer({
   onSend,
   busy,
   spent,
+  showDisclaimer = true,
 }: ComposerProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -66,12 +73,18 @@ export function Composer({
 
   return (
     <div className="flex flex-col items-center gap-3 px-5 pb-4 pt-4">
+      <CollapseFade axis="vertical" open={showDisclaimer} className="w-full">
+        <p className="flex items-center justify-center gap-1.5 text-body-s text-text-tertiary">
+          <InfoCircleIcon aria-hidden className="size-3 text-neutral-400" />
+          {ASSISTANT_DISCLAIMER}
+        </p>
+      </CollapseFade>
       <div
         className={cn(
-          'flex w-full flex-col gap-2.5 border border-border-default bg-surface-card shadow-[0_6px_18px_rgba(79,69,229,0.07)] transition-[border-color,box-shadow,padding,border-radius] duration-base ease-standard focus-within:border-border-brand-strong',
+          'flex w-full flex-col gap-2.5 border border-border-default bg-surface-card shadow-popover transition-[border-color,box-shadow,padding,border-radius] duration-base ease-standard focus-within:border-border-brand-strong focus-within:ring-4 focus-within:ring-brand-100',
           attachments.length > 0
             ? 'rounded-3xl pb-2 pl-2.5 pr-2 pt-2.5'
-            : 'rounded-[30px] py-[7px] pl-3 pr-[7px]',
+            : 'rounded-full py-1.5 pl-3 pr-1.5',
         )}
       >
         {attachments.length > 0 && (
@@ -120,12 +133,12 @@ export function Composer({
             onClick={press}
             className={cn(
               pressable,
-              'flex size-[46px] shrink-0 items-center justify-center rounded-full bg-brand-600 text-text-inverse shadow-[0_4px_10px_rgba(79,69,229,0.3)]',
+              'flex size-control-lg shrink-0 items-center justify-center rounded-full bg-brand-600 text-text-inverse shadow-button',
               'not-disabled:hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
             )}
           >
-            <SendIcon aria-hidden className="size-[18px]" />
+            <SendIcon aria-hidden className="size-4.5" />
           </button>
         </div>
       </div>
@@ -150,11 +163,6 @@ export function Composer({
           {draft.length} / {MESSAGE_MAX}
         </span>
       </div>
-
-      <p className="flex items-center gap-1.5 text-body-s text-text-tertiary">
-        <InfoCircleIcon aria-hidden className="size-3 text-neutral-400" />
-        {ASSISTANT_DISCLAIMER}
-      </p>
     </div>
   );
 }

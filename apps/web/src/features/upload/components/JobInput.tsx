@@ -85,7 +85,7 @@ export function JobInput({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
 
   return (
     <form onSubmit={submit} aria-labelledby={headingId} className="flex flex-col">
-      <h2 id={headingId} className="text-h2 text-text-primary">
+      <h2 id={headingId} className="text-h2 font-bold text-text-primary">
         Paste the job description or its link
       </h2>
       <p className="mt-1 text-body-m text-text-secondary">
@@ -102,8 +102,8 @@ export function JobInput({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
         onDragLeave={() => setDragging(false)}
         onDrop={drop}
         className={cn(
-          'relative mt-3 rounded-md transition-shadow duration-press ease-standard',
-          dragging && 'ring-2 ring-brand-600',
+          'relative mt-5 rounded-xl transition-shadow duration-base ease-standard',
+          dragging && 'ring-4 ring-brand-100',
         )}
       >
         <textarea
@@ -116,17 +116,17 @@ export function JobInput({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
           maxLength={MAX_JD_CHARS}
           onChange={(event) => setText(event.target.value)}
           placeholder="Paste the complete job description, or a link to the posting…"
-          className="block h-52 w-full resize-none rounded-md border border-border-default bg-surface-card px-3.5 pb-8 pt-3 text-body-m text-text-primary transition-colors duration-press ease-standard placeholder:text-text-tertiary hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-50"
+          className="block min-h-64 w-full resize-none rounded-xl border border-border-default bg-neutral-50/60 p-5 pb-10 text-body-l text-text-primary transition-[background-color,border-color,box-shadow] duration-base ease-standard outline-none placeholder:text-text-tertiary hover:border-border-brand-strong focus-visible:border-border-selected focus-visible:bg-surface-card focus-visible:ring-4 focus-visible:ring-brand-100 disabled:opacity-50"
         />
         <span
           id={countId}
-          className="pointer-events-none absolute bottom-2.5 right-3 text-body-s text-text-tertiary"
+          className="pointer-events-none absolute bottom-3.5 right-4 text-caption-m tabular-nums text-text-tertiary"
         >
           {text.length.toLocaleString('en-US')}/{MAX_JD_CHARS.toLocaleString('en-US')}
         </span>
       </div>
 
-      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-s text-text-tertiary">
+      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-s text-text-tertiary">
         <span>
           Or{' '}
           <button
@@ -193,14 +193,14 @@ export function JobInput({ intent = 'tailor' }: { intent?: AnalyzeIntent }) {
         </Callout>
       )}
       {!isLink && !file && (
-        <Callout className="mt-3">
+        <Callout className="mt-4">
           Paste the whole posting, requirements and nice-to-haves included, for the best match.
         </Callout>
       )}
 
       <AnalyzeStatus status={status} error={extract.error} className="mt-3" />
 
-      <div className="mt-4 flex justify-end">
+      <div className="mt-6 flex justify-end">
         <AnalyzeButton
           label={
             isLink

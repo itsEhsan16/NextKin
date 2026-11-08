@@ -69,7 +69,7 @@ export function UnderlineTabs<T extends string>({
           aria-selected={active === tab.id}
           onClick={() => onChange(tab.id)}
           className={cn(
-            'whitespace-nowrap border-b-2 border-transparent pb-2.5 text-body-l font-semibold transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+            'whitespace-nowrap border-b-2 border-transparent pb-3 text-body-l font-semibold transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
             active === tab.id ? 'text-brand-600' : 'text-text-tertiary hover:text-text-primary',
           )}
         >
@@ -78,7 +78,7 @@ export function UnderlineTabs<T extends string>({
       ))}
       <span
         aria-hidden
-        className="pointer-events-none absolute bottom-0 left-0 h-0.5 w-(--tab-w,0px) translate-x-(--tab-x,0px) bg-brand-600 duration-base ease-standard in-data-placed:transition-[translate,width]"
+        className="pointer-events-none absolute -bottom-px left-0 h-[3px] rounded-full w-(--tab-w,0px) translate-x-(--tab-x,0px) bg-brand-600 duration-base ease-standard in-data-placed:transition-[translate,width]"
       />
     </div>
   );

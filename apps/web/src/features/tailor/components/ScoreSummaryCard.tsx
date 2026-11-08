@@ -40,7 +40,7 @@ export function ScoreSummaryCard({
   if (score == null && loading) return <Skeleton className="h-28 shrink-0 rounded-lg" />;
   if (score == null)
     return (
-      <section className={cn(cardSurface, 'shrink-0 p-5 shadow-card')}>
+      <section className={cn(cardSurface, 'shrink-0 p-6')}>
         <h2 className="text-title-l font-bold text-text-primary">No ATS score yet</h2>
         <p className="mt-1 text-body-m text-text-secondary">
           It shows here once this resume has been measured against the job.
@@ -73,7 +73,7 @@ export function ScoreSummaryCard({
     // Compact: it is the one fixed block above the assistant, which takes the rest (toreview §122).
     <section
       aria-labelledby="review-score"
-      className={cn(cardSurface, 'flex shrink-0 items-center gap-5 p-5 shadow-card')}
+      className={cn(cardSurface, 'flex shrink-0 items-center gap-5 p-6')}
     >
       <ScoreRing
         score={score}
@@ -96,7 +96,7 @@ export function ScoreSummaryCard({
             </span>
           )}
         </div>
-        <p className="mt-1 text-body-l text-text-secondary">
+        <p className="mt-1 text-body-m text-text-secondary">
           {match
             ? `Your resume shows ${match.matched} of this job’s ${match.total} key keywords.`
             : 'Your score for this job.'}
@@ -105,7 +105,7 @@ export function ScoreSummaryCard({
         </p>
         <p
           className={cn(
-            'mt-2.5 flex items-start gap-2 rounded-md px-3 py-2 text-body-m font-medium',
+            'mt-3 flex items-start gap-2 rounded-md px-3 py-2.5 text-body-s font-medium',
             missing.length === 0
               ? 'bg-success-surface text-success-text'
               : 'bg-warning-50 text-warning-text',

@@ -4,6 +4,8 @@ import { cn } from '@/lib/cn';
 import { iconButton } from '@/ui/iconButton';
 import { ChevronRightIcon } from '@/ui/icons';
 
+import { settingsList, settingsRow } from './InfoList';
+
 export type SettingRowProps = {
   Icon: ComponentType<SVGProps<SVGSVGElement>>;
   title: string;
@@ -21,8 +23,7 @@ export type SettingRowProps = {
  * The bordered list a Privacy & data card's rows sit in, a hairline between each (466:530), as
  * the Account cards' fact tables are drawn (`InfoList`).
  */
-export const SETTING_LIST =
-  'mt-3 divide-y divide-border-faint rounded-sm border border-border-card';
+export const SETTING_LIST = settingsList;
 
 /**
  * One row of a Privacy & data card: a duotone glyph (466:532-739), a title with its line, and the
@@ -32,13 +33,13 @@ export function SettingRow({ Icon, title, line, control }: SettingRowProps) {
   const lineId = useId();
 
   return (
-    <li className="flex items-center gap-3 px-3 py-2">
-      <span aria-hidden className="flex w-8 shrink-0 justify-center">
-        <Icon className="h-auto max-h-6 w-8" />
+    <li className={cn('flex items-center gap-4', settingsRow)}>
+      <span aria-hidden className="flex w-9 shrink-0 justify-center">
+        <Icon className="h-auto max-h-7 w-9" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-body-m font-semibold text-text-primary">{title}</p>
-        <p id={lineId} className="text-body-s text-text-tertiary">
+        <p id={lineId} className="mt-0.5 text-body-s text-text-tertiary">
           {line}
         </p>
       </div>

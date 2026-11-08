@@ -101,7 +101,7 @@ export function RecentActivityCard({ entries, status, onRetry }: RecentActivityC
   const hasActivity = (entries?.length ?? 0) > 0;
 
   return (
-    <Card className="w-full p-4 lg:w-[360px] lg:shrink-0">
+    <Card className="w-full p-6 lg:w-[380px] lg:shrink-0">
       <SectionHeader
         title="Recent Activity"
         actionHref={hasActivity ? ('/insights' as Route) : undefined}
@@ -135,12 +135,12 @@ export function RecentActivityCard({ entries, status, onRetry }: RecentActivityC
       )}
 
       {status === 'success' && hasActivity && (
-        <ul className={cn('mt-4 flex flex-col gap-3', reveal && 'animate-reveal')}>
+        <ul className={cn('mt-5 flex flex-col gap-4', reveal && 'animate-reveal')}>
           {BOARD_ROWS.map((row) => {
             const Art = ART_BY_KIND[row.kind];
             return (
-              <li key={row.id} className="flex items-start gap-2.5">
-                <Art className="size-8 shrink-0" />
+              <li key={row.id} className="flex items-start gap-3">
+                <Art className="size-9 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-body-m font-medium text-text-primary">{row.title}</p>
                   <p className="mt-0.5 text-caption-m font-medium text-text-tertiary">

@@ -118,9 +118,9 @@ export function EnhanceStep({
     );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="enhance-step" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="enhance-step"
             step={4}
@@ -129,8 +129,8 @@ export function EnhanceStep({
             lede="Tick only the keywords you really have. The AI places each one where your experience backs it."
           />
         </div>
-        <div className="grid divide-y divide-border-default lg:grid-cols-8 lg:divide-x lg:divide-y-0">
-          <div className="flex min-w-0 flex-col gap-4.5 px-7 pb-7 pt-6 lg:col-span-5 lg:pl-8">
+        <div className="grid divide-y divide-border-subtle lg:grid-cols-8 lg:divide-x lg:divide-y-0">
+          <div className="flex min-w-0 flex-col gap-4.5 px-8 pb-8 pt-6 lg:col-span-5 lg:pl-8">
             <ColumnHead
               art={<ProfileSkillsIllustration className="h-auto w-11" />}
               title="Every keyword from this job"
@@ -241,7 +241,7 @@ export function EnhanceStep({
             )}
           </div>
 
-          <div className="flex min-w-0 flex-col gap-3.5 px-7 pb-7 pt-6 lg:col-span-3 lg:pr-8">
+          <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-3 lg:pr-8">
             <ColumnHead
               art={<NavAiAssistantIllustration className="h-auto w-11" />}
               title="What the AI will change"
@@ -251,17 +251,17 @@ export function EnhanceStep({
                   : `Leaving as it is: ${off.map((r) => r.label.toLowerCase()).join(', ')}`
               }
             />
-            <ul className="overflow-hidden rounded-lg border border-border-default bg-surface-card">
+            <ul className="flex flex-col gap-0.5 rounded-md bg-neutral-50 p-1.5">
               {FIX_ROWS.map((row) => {
                 const on = choices.fixes.has(row.key);
                 return (
-                  <li key={row.key} className="border-t border-border-default first:border-t-0">
+                  <li key={row.key}>
                     <button
                       type="button"
                       role="checkbox"
                       aria-checked={on}
                       onClick={() => choices.toggleFix(row.key, !on)}
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600"
+                      className="flex w-full items-center gap-3 rounded-sm px-3.5 py-2.5 text-left transition-colors duration-fast ease-standard hover:bg-surface-card focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600"
                     >
                       <Check on={on} />
                       <span className="min-w-0">

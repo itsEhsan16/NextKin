@@ -16,7 +16,7 @@ export function NotFoundScreen() {
   return (
     <StatusPage
       name="Not found"
-      art={<JobSeekerBinocularsIllustration className="h-40 w-auto" />}
+      art={<JobSeekerBinocularsIllustration className="h-48 w-auto" />}
       heading="We couldn’t find that page"
       message="The link may be old, or the page may have moved."
       action={

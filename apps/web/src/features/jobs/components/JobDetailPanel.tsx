@@ -11,6 +11,7 @@ import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
 import { StateView } from '@/ui/StateView';
 import { UnderlineTabs } from '@/ui/UnderlineTabs';
+import { iconButton } from '@/ui/iconButton';
 import { MoreHorizontalIcon } from '@/ui/icons';
 
 import { JOB_DETAIL_TABS, type JobDetailTab } from '../jobDetailTabs';
@@ -58,7 +59,7 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
 
   if (status === 'empty') {
     return (
-      <div className={cn(CARD, 'p-5')}>
+      <div className={cn(CARD, 'p-6')}>
         <StateView title="Select a job" message="Choose a job from the list to see its details." />
       </div>
     );
@@ -67,7 +68,7 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
   if (status === 'pending') {
     return (
       // Shrinks to the column and clips, as the loaded card does on a short window.
-      <div className={cn(CARD, 'min-h-0 overflow-hidden p-5')}>
+      <div className={cn(CARD, 'min-h-0 overflow-hidden p-6')}>
         <DetailCardSkeleton tags />
       </div>
     );
@@ -75,7 +76,7 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
 
   if (status === 'error' || !job) {
     return (
-      <div className={cn(CARD, 'p-5')}>
+      <div className={cn(CARD, 'p-6')}>
         <StateView
           tone="danger"
           title="Couldn't load this job"
@@ -119,23 +120,20 @@ function JobDetailBody({
       // The frame stays put; its contents fade in (`toreview.md` §84).
       className={cn(
         CARD,
-        'min-h-0 overflow-y-auto p-5 [scrollbar-width:thin]',
+        'min-h-0 overflow-y-auto p-6 [scrollbar-width:thin]',
         reveal && '*:animate-reveal',
       )}
     >
       <div className="flex items-start justify-between">
         <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="plain" />
-        <div className="flex items-center gap-1.5">
+        <div className="-mr-2 flex items-center gap-1">
           <MatchBadge score={job.matchScore} band={job.matchBand} />
           <Soon>
             <button
               aria-disabled="true"
               type="button"
               aria-label="More options"
-              className={cn(
-                'flex size-6 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-                soonControl,
-              )}
+              className={cn(iconButton, 'text-text-tertiary hover:text-text-primary', soonControl)}
             >
               <MoreHorizontalIcon className="size-5" />
             </button>
@@ -150,7 +148,7 @@ function JobDetailBody({
       )}
 
       {/* The title opens the job's own page (724:2). */}
-      <h2 className="mt-3 text-h1 text-neutral-800">
+      <h2 className="mt-4 text-h1 text-neutral-800">
         <Link
           href={jobPageHref(job.id)}
           className="rounded-sm transition-colors duration-press ease-standard hover:text-text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
@@ -158,10 +156,10 @@ function JobDetailBody({
           {job.title}
         </Link>
       </h2>
-      <p className="mt-0.5 text-body-m text-text-company">{job.company}</p>
-      <JobMetaRow job={job} className="mt-2" />
+      <p className="mt-1 text-body-m text-text-company">{job.company}</p>
+      <JobMetaRow job={job} className="mt-3" />
 
-      <div className="mt-3.5">
+      <div className="mt-5">
         <JobDetailActions
           onApply={onApply}
           applying={applying}
@@ -171,17 +169,17 @@ function JobDetailBody({
         />
       </div>
 
-      <JobTagPills tags={job.tags} max={4} size="md" className="mt-3" />
+      <JobTagPills tags={job.tags} max={4} size="md" className="mt-5" />
       <UnderlineTabs
         tabs={JOB_DETAIL_TABS}
         active={tab}
         onChange={setTab}
         label="Job detail"
-        className="mt-4"
+        className="mt-6"
       />
 
       {/* Keyed by tab: after the first switch, each tab's content fades in (`toreview.md` §84). */}
-      <div key={tab} className={cn('pt-4', switched && 'animate-reveal')}>
+      <div key={tab} className={cn('pt-5', switched && 'animate-reveal')}>
         {tab === 'overview' && <JobOverviewTab job={job} />}
         {tab === 'about' && <JobAboutTab job={job} />}
         {tab === 'skills' && <JobSkillsTab job={job} />}
@@ -201,7 +199,7 @@ function JobDetailBody({
 
       {/* "Tailor your resume for this job" (304:2761): the card's last element since the redraw.
           Opens the three-step tailor flow (734:2, `toreview.md` §103). */}
-      <div className="mt-4">
+      <div className="mt-6">
         <AiCallout
           title="Tailor your resume for this job"
           message="Increase your chances with AI-powered suggestions."

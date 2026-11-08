@@ -29,7 +29,7 @@ export function PageHeader({ eyebrow, title, subtitle, aside, className }: PageH
     <>
       {eyebrow != null && <div className="text-body-m text-text-secondary">{eyebrow}</div>}
       <h1 className="mt-1 text-display-l text-text-primary">{title}</h1>
-      {subtitle != null && <p className="mt-1 text-body-m text-text-secondary">{subtitle}</p>}
+      {subtitle != null && <p className="mt-1.5 text-body-l text-text-secondary">{subtitle}</p>}
     </>
   );
 

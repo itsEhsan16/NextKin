@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
+import { cardSurface } from './Card';
 import { ChevronRightIcon, HelpIcon } from './icons';
 import { iconButton } from './iconButton';
 import { pageFillMin } from './pageFrame';
@@ -41,32 +42,41 @@ export function StatusPage({
           aria-label="Back"
           className={cn(
             iconButton,
-            'size-9 rounded-full border border-border-default bg-surface-card text-text-primary',
+            'border border-border-subtle bg-surface-card text-text-primary shadow-card',
           )}
         >
           <ChevronRightIcon aria-hidden className="size-3.5 rotate-180" />
         </Link>
-        <h1 className="text-h2 font-bold text-text-primary">{name}</h1>
+        <h1 className="text-h2 font-semibold text-text-primary">{name}</h1>
       </div>
-      <div
-        role={alert ? 'alert' : undefined}
-        className="mx-auto flex max-w-xl flex-1 animate-reveal flex-col items-center justify-center gap-3.5 pb-16 text-center"
-      >
-        {art && <div aria-hidden>{art}</div>}
-        {pill}
-        <h2 className="text-h1 font-bold text-text-primary">{heading}</h2>
-        <p className="text-title-l font-medium text-text-secondary">{message}</p>
-        {action}
-        <p className="flex items-center gap-1.5 text-body-m font-medium text-text-tertiary">
-          <HelpIcon aria-hidden className="size-3.5" />
-          Still stuck?
-          <Link
-            href={'/help' as Route}
-            className="rounded-sm font-semibold text-text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-          >
-            Help &amp; support
-          </Link>
-        </p>
+      <div className="flex flex-1 items-center justify-center pb-16">
+        <div
+          role={alert ? 'alert' : undefined}
+          className={cn(
+            cardSurface,
+            'flex w-full max-w-xl animate-reveal flex-col items-center gap-4 px-10 pb-10 pt-12 text-center',
+          )}
+        >
+          {art && (
+            <div aria-hidden className="mb-2 flex justify-center">
+              {art}
+            </div>
+          )}
+          {pill}
+          <h2 className="text-h1 font-bold text-text-primary">{heading}</h2>
+          <p className="max-w-md text-body-m text-text-secondary">{message}</p>
+          {action && <div className="mt-2">{action}</div>}
+          <p className="mt-2 flex w-full items-center justify-center gap-1.5 border-t border-border-subtle pt-5 text-body-s text-text-tertiary">
+            <HelpIcon aria-hidden className="size-3.5" />
+            Still stuck?
+            <Link
+              href={'/help' as Route}
+              className="rounded-sm font-semibold text-text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            >
+              Help &amp; support
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

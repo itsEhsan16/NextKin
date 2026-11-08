@@ -104,7 +104,7 @@ export function OtherJobBox({
         onDragLeave={() => setDragging(false)}
         onDrop={drop}
         className={cn(
-          'flex min-h-60 flex-1 flex-col gap-2.5 rounded-lg border bg-neutral-50 px-4 py-3.5 transition-colors duration-press ease-standard focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-600',
+          'flex min-h-60 flex-1 flex-col gap-3 rounded-xl border bg-neutral-50/60 p-4 transition-[background-color,border-color,box-shadow] duration-base ease-standard focus-within:border-border-selected focus-within:bg-surface-card focus-within:ring-4 focus-within:ring-brand-100',
           selected || dragging ? 'border-border-brand-strong' : 'border-border-default',
           dragging && 'bg-surface-brand',
         )}

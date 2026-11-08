@@ -126,9 +126,9 @@ export function ZeroSetup({
       ? allowanceNote(allowance, 'generation', 'generations')
       : 'Nothing is saved until you’ve checked the draft.';
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="zero-basics" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="zero-basics"
             step={1}
@@ -137,7 +137,7 @@ export function ZeroSetup({
             lede="Three answers are enough for a first draft. We mark every guess so you can check it before anything is saved."
           />
         </div>
-        <div className="flex items-center gap-10 px-8 pb-7 pt-6">
+        <div className="flex items-center gap-10 px-8 pb-8 pt-6">
           <div className="flex min-w-0 flex-1 flex-col gap-5">
             <TextInput
               label="Your name"

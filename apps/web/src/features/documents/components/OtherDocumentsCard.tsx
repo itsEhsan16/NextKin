@@ -8,6 +8,7 @@ import { documentMeta } from '../documentLibrary';
 import { FileTypeTile } from './FileTypeTile';
 import { pressable } from '@/ui/pressable';
 import { cn } from '@/lib/cn';
+import { cardPad, cardSurface } from '@/ui/Card';
 
 /** "Other cover letters" (580:249), in the plural of each kind. */
 const OTHER_TITLE: Record<CareerDocumentKind, string> = {
@@ -39,12 +40,9 @@ export function OtherDocumentsCard({
   if (others.length === 0) return null;
 
   return (
-    <section
-      aria-labelledby="other-documents"
-      className="rounded-lg border border-border-card bg-surface-card p-5 shadow-card"
-    >
+    <section aria-labelledby="other-documents" className={cn(cardSurface, cardPad)}>
       <div className="flex items-center justify-between gap-3">
-        <h2 id="other-documents" className="text-title-l font-medium text-text-primary">
+        <h2 id="other-documents" className="text-title-l font-semibold text-text-primary">
           {OTHER_TITLE[document.kind]}
         </h2>
         <Link
@@ -54,14 +52,14 @@ export function OtherDocumentsCard({
           View all
         </Link>
       </div>
-      <ul className="mt-2 divide-y divide-border-faint">
+      <ul className="mt-3 flex flex-col gap-1">
         {others.map((other) => (
           <li key={other.id}>
             <Link
               href={`/documents/${other.id}` as Route}
               className={cn(
                 pressable,
-                '-mx-2 flex items-center gap-3 rounded-md px-2 py-3 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                '-mx-3 flex items-center gap-3 rounded-md px-3 py-2.5 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
               )}
             >
               <FileTypeTile format={other.format} size="row" />

@@ -6,7 +6,11 @@ const createJestConfig = nextJest({ dir: './' });
 const config = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-  moduleNameMapper: { '^@/(.*)$': '<rootDir>/src/$1' },
+  // The orb draws on a canvas, which jsdom has not got (toreview §132.9).
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^thinking-orbs$': '<rootDir>/__mocks__/thinkingOrbs.tsx',
+  },
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
   // `next build` copies the workspace into .next/standalone, which gives every package.json a
   // twin and trips jest-haste-map's name collision check.

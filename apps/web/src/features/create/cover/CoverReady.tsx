@@ -196,7 +196,7 @@ export function CoverReady({
               This month’s cover letters are used. Pro raises the monthly cap.
             </p>
           )}
-          <div className="flex flex-col gap-2.5 border-t border-border-default pt-3.5">
+          <div className="flex flex-col gap-2.5 pt-2">
             <h3 className="text-body-l font-bold text-text-primary">Built from</h3>
             <p className="flex items-center gap-2.5 text-body-l text-text-secondary">
               <span

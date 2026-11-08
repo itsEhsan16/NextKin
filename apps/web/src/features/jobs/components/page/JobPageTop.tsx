@@ -47,11 +47,14 @@ export function JobPageTop(props: { job: Job } & (ListingBar | JdBar)) {
   const jd = props.variant === 'jd';
   const back = jd ? props.backHref : ('/jobs' as Route);
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-border-faint px-4 py-3">
+    <div className="flex flex-wrap items-center gap-3 px-8 pt-6">
       <Link
         href={back}
         aria-label={jd ? props.backLabel : 'Back to jobs'}
-        className={cn(iconButton, 'rounded-full bg-neutral-50 text-text-secondary')}
+        className={cn(
+          iconButton,
+          '-ml-1 bg-neutral-50 text-text-secondary hover:text-text-primary',
+        )}
       >
         <ChevronRightIcon aria-hidden className="size-3.5 rotate-180" />
       </Link>
@@ -66,7 +69,7 @@ function ApplyLink({ job }: { job: Job }) {
       href={applyUrl(job)}
       target="_blank"
       rel="noreferrer"
-      className={cn(brandButton, 'h-control-md gap-2 rounded-md px-3.5 text-body-m font-semibold')}
+      className={cn(brandButton, 'h-control-md gap-2 rounded-full px-4 text-body-m font-semibold')}
     >
       Apply on company site
       <ExternalLinkIcon aria-hidden className="size-3.5" />
@@ -89,7 +92,7 @@ function JdBarEnd({ job, actions }: { job: Job; actions?: ReactNode }) {
 function ListingBarEnd({ job, tab, onTab, onToggleSave, savePending }: { job: Job } & ListingBar) {
   return (
     <>
-      <div role="tablist" aria-label="Job sections" className="flex items-center gap-4">
+      <div role="tablist" aria-label="Job sections" className="ml-1 flex items-center gap-5">
         {TABS.map(({ id, label }) => (
           <button
             key={id}

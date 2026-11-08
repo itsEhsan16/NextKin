@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
+import { buttonClass } from '@/ui/Button';
 
 export type StateViewProps = {
   title: string;
@@ -21,8 +22,7 @@ export type StateViewProps = {
   className?: string;
 };
 
-const actionClass =
-  'mt-1 rounded-sm px-3 py-1.5 text-body-s font-semibold text-text-brand transition-colors duration-press ease-standard hover:bg-surface-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
+const actionClass = cn(buttonClass({ variant: 'secondary', size: 'md' }), 'mt-3');
 
 /**
  * The empty and error surface, one component so every screen's fourth and third states look the
@@ -45,17 +45,17 @@ export function StateView({
     <div
       role={tone === 'danger' ? 'alert' : undefined}
       className={cn(
-        'flex animate-reveal flex-col items-center justify-center gap-1.5 px-6 py-8 text-center',
+        'flex animate-rise flex-col items-center justify-center gap-2 px-6 py-12 text-center',
         className,
       )}
     >
       {art && (
-        <div aria-hidden className="mb-2.5">
+        <div aria-hidden className="mb-3">
           {art}
         </div>
       )}
       <p className="text-title-l text-text-primary">{title}</p>
-      {message && <p className="max-w-sm text-body-s text-text-secondary">{message}</p>}
+      {message && <p className="max-w-sm text-body-m text-text-secondary">{message}</p>}
       {actionLabel && actionHref ? (
         <Link href={actionHref} className={actionClass}>
           {actionLabel}

@@ -25,7 +25,7 @@ export const pressableLift =
  * settle while the cover is held — not while the card's own bookmark is.
  */
 export const cardFaceMotion =
-  'transition-[color,background-color,border-color,outline-color,scale] duration-press ease-standard peer-active:scale-(--scale-pressed)';
+  'transition-[color,background-color,border-color,outline-color,scale,box-shadow,translate] duration-base ease-standard peer-active:scale-(--scale-pressed)';
 
 /** The tint an unselected card takes under the pointer (your call, §84). */
-export const cardFaceHover = 'group-hover/card:bg-neutral-50';
+export const cardFaceHover = 'group-hover/card:-translate-y-0.5 group-hover/card:shadow-card-hover';

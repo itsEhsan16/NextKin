@@ -2,8 +2,7 @@ import { ProfileSkillsIllustration } from '@/ui/illustrations';
 
 import { ProfileCard } from './ProfileCard';
 
-const CHIP =
-  'rounded-md bg-surface-brand px-3 py-1.5 text-body-m font-semibold text-text-secondary';
+const CHIP = 'rounded-full bg-surface-brand px-3.5 py-1.5 text-body-s font-semibold text-brand-700';
 
 export type SkillsCardProps = {
   skills: string[];
@@ -28,7 +27,7 @@ export function SkillsCard({ skills, limit, onViewAll }: SkillsCardProps) {
           Add your skills. Job matches weigh them against every listing.
         </p>
       ) : (
-        <ul className="mt-4 flex flex-wrap gap-2">
+        <ul className="mt-5 flex flex-wrap gap-2">
           {shown.map((skill) => (
             <li key={skill} className={CHIP}>
               {skill}

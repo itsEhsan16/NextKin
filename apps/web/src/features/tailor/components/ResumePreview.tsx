@@ -20,9 +20,12 @@ import { TextView } from './TextView';
 const ZOOMS = [75, 100, 125] as const;
 type View = 'preview' | 'text';
 
-const control = cn(iconButton, 'size-8 rounded-md disabled:opacity-40');
+const control = cn(
+  iconButton,
+  'size-8 text-text-secondary not-disabled:not-aria-disabled:hover:bg-surface-card not-disabled:not-aria-disabled:hover:text-text-primary not-disabled:not-aria-disabled:hover:shadow-card disabled:opacity-40',
+);
 const box =
-  'flex h-10 items-center gap-1 rounded-lg border border-border-default bg-surface-card px-1.5 text-body-s text-text-secondary';
+  'flex h-10 items-center gap-0.5 rounded-full bg-surface-muted p-1 text-body-s font-medium text-text-secondary';
 
 /**
  * The new resume (toreview §121, from the owner's mockup): Preview, the typeset page the download
@@ -67,7 +70,7 @@ export function ResumePreview({
       aria-label="Your new resume"
       className={cn(
         cardSurface,
-        'flex min-h-120 flex-col gap-4 bg-neutral-50 p-5 lg:h-full lg:min-h-0',
+        'flex min-h-120 flex-col gap-5 bg-neutral-50 p-6 lg:h-full lg:min-h-0',
       )}
     >
       <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -112,7 +115,7 @@ export function ResumePreview({
             >
               <ChevronLeft aria-hidden className={iconSize.sm} />
             </button>
-            <span className="tabular-nums">
+            <span className="px-1 tabular-nums">
               {page} / {pages}
             </span>
             <button
@@ -125,17 +128,11 @@ export function ResumePreview({
               <ChevronLeft aria-hidden className={cn(iconSize.sm, 'rotate-180')} />
             </button>
           </div>
-          <button
-            type="button"
-            aria-label="Full screen"
-            onClick={fullScreen}
-            className={cn(
-              iconButton,
-              'size-10 rounded-lg border border-border-default bg-surface-card text-text-secondary',
-            )}
-          >
-            <Expand01 aria-hidden className={iconSize.sm} />
-          </button>
+          <div className={box}>
+            <button type="button" aria-label="Full screen" onClick={fullScreen} className={control}>
+              <Expand01 aria-hidden className={iconSize.sm} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -148,7 +145,7 @@ export function ResumePreview({
         className="mx-auto min-h-0 w-full max-w-170 flex-1 overflow-y-auto overflow-x-hidden motion-safe:scroll-smooth [scrollbar-width:thin]"
       >
         <div
-          className="origin-top bg-surface-card shadow-popover transition-transform duration-base ease-standard"
+          className="origin-top rounded-sm bg-surface-card shadow-popover transition-transform duration-base ease-standard"
           style={{ transform: `scale(${zoom / 100})` }}
         >
           {view === 'text' && text ? (

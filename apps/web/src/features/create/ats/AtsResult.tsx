@@ -132,7 +132,7 @@ export function AtsResult({
           {plan && (
             <ul
               aria-label="Your score by part"
-              className="flex w-full flex-col gap-3.5 border-t border-border-default pt-4"
+              className="flex w-full flex-col gap-3.5 rounded-md bg-neutral-50 p-4"
             >
               {ORDER.map((key) => plan.parts.find((p) => p.key === key))
                 .filter((p) => p !== undefined)
@@ -208,7 +208,7 @@ export function AtsResult({
                 ? steps.map((s) => (
                     <li
                       key={s.id}
-                      className="flex items-center gap-4 rounded-lg border border-border-default px-4 py-3"
+                      className="flex items-center gap-4 rounded-md bg-neutral-50 px-4 py-3"
                     >
                       <div className="min-w-0 flex-1">
                         <p className="text-body-l font-bold text-text-primary">{s.title}</p>
@@ -237,7 +237,7 @@ export function AtsResult({
                     </li>
                   ))
                 : result.fixes.map((f) => (
-                    <li key={f.key} className="rounded-lg border border-border-default px-4 py-3">
+                    <li key={f.key} className="rounded-md bg-neutral-50 px-4 py-3">
                       <p className="text-body-l font-bold text-text-primary">{f.title}</p>
                       <p className="text-body-m text-text-secondary">{f.detail}</p>
                     </li>

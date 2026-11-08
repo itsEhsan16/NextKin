@@ -76,7 +76,7 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
   const mine = profile.data;
 
   return (
-    <div className={cn(pageFrameInBar, 'flex flex-col gap-4 pb-8')}>
+    <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-10')}>
       <PageHeader
         eyebrow={
           <span className="flex items-center gap-1.5">
@@ -90,20 +90,20 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
 
       <ProfileTabs active={tab} onChange={setTab} />
 
-      <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-6">
         {/* Keyed by tab: after the first switch, each tab fades in (`toreview.md` §84). */}
         <div
           key={tab}
           role="tabpanel"
           id={PROFILE_PANEL_ID}
           aria-labelledby={profileTabId(tab)}
-          className={cn('flex min-w-0 flex-col gap-5', (switched || loaded) && 'animate-reveal')}
+          className={cn('flex min-w-0 flex-col gap-6', (switched || loaded) && 'animate-reveal')}
         >
           {!me || !mine ? (
             <>
               {/* Overview's cards, at their loaded heights (`toreview.md` §84). */}
               <Skeleton className="h-62 rounded-lg" />
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-6">
                 <Skeleton className="h-96 rounded-lg" />
                 <Skeleton className="h-96 rounded-lg" />
               </div>
@@ -113,15 +113,15 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
               {tab === 'overview' && (
                 <>
                   <ProfileInfoCard user={me} profile={mine} />
-                  <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-5">
-                    <div className="flex min-w-0 flex-col gap-5">
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-6">
+                    <div className="flex min-w-0 flex-col gap-6">
                       <AboutCard profile={mine} />
                       <ExperienceCard
                         roles={mine.experiences.slice(0, OVERVIEW_ROLES)}
                         onViewAll={() => setTab('experience')}
                       />
                     </div>
-                    <div className="flex min-w-0 flex-col gap-5">
+                    <div className="flex min-w-0 flex-col gap-6">
                       <KeyInfoCard profile={mine} />
                       <SkillsCard
                         skills={mine.skills}
@@ -143,7 +143,7 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-5">
+        <div className="flex min-w-0 flex-col gap-6">
           {me && mine ? (
             <div className={cn(loaded && 'animate-reveal')}>
               <CompletionCard user={me} profile={mine} sweep={loaded} onOpenTab={setTab} />

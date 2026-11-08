@@ -17,7 +17,7 @@ export function SocialLinksCard({ profile }: { profile: Profile }) {
           Add your LinkedIn, portfolio or site. Recruiters look for them.
         </p>
       ) : (
-        <ul className="mt-4 flex flex-col items-start gap-2.5">
+        <ul className="mt-5 flex flex-col items-start gap-2">
           {profile.links.map((link) => {
             const Art = isSite(link.kind) ? ProfileLanguageIllustration : ProfileLinksIllustration;
             return (
@@ -26,7 +26,7 @@ export function SocialLinksCard({ profile }: { profile: Profile }) {
                   href={link.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex h-control-md items-center gap-2 rounded-md border border-border-faint px-3 text-body-m font-semibold text-text-secondary transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                  className="flex h-control-md items-center gap-2 rounded-full bg-neutral-50 px-4 text-body-m font-semibold text-text-secondary transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                 >
                   <Art aria-hidden className="h-auto max-h-4.5 w-6 shrink-0" />
                   <span className="truncate">{displayUrl(link.url)}</span>

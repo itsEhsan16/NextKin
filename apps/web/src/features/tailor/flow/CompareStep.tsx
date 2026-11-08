@@ -110,7 +110,7 @@ export function CompareStep({
   const scored = comparison.scored !== false;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="compare-step" className={stepCard}>
         <div className="flex flex-wrap items-center gap-7 px-8 py-6">
           <div className="flex min-w-0 flex-1 flex-col gap-3">

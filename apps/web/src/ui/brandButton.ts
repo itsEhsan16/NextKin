@@ -10,6 +10,6 @@ import { pressable } from './pressable';
  * radius and weight stay with each caller.
  */
 export const brandButton =
-  `inline-flex items-center justify-center bg-brand-600 text-text-inverse ${pressable} ` +
+  `inline-flex items-center justify-center bg-brand-600 text-text-inverse shadow-button ${pressable} ` +
   'not-disabled:not-aria-disabled:hover:bg-brand-700 focus-visible:outline-2 ' +
   'focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60';

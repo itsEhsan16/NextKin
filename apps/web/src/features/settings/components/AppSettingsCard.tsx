@@ -39,7 +39,7 @@ export function AppSettingsCard({ settings, language }: AppSettingsCardProps) {
       title="App settings"
       description="Customize how NextKin looks and feels for you."
     >
-      <div className="mt-3">
+      <div className="mt-4">
         <FieldRow label="Theme">
           <ThemePicker value={settings.theme} onChange={(theme) => save({ theme })} />
         </FieldRow>

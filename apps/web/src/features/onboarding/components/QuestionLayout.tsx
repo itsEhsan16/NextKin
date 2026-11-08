@@ -66,7 +66,7 @@ export function QuestionLayout({
       disabled={!canContinue}
       className={cn(
         brandButton,
-        'h-control-lg gap-2 rounded-lg px-5 text-body-l font-semibold',
+        'h-control-lg gap-2 rounded-md px-5 text-body-m font-semibold',
         layout === 'stacked' && 'w-full',
       )}
     >

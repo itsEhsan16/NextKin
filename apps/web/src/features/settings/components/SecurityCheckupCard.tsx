@@ -106,11 +106,11 @@ export function SecurityCheckupCard({
         </Tag>
       }
     >
-      <ul className="mt-3 grid grid-cols-3 gap-3">
+      <ul className="mt-5 grid grid-cols-3 gap-4">
         {items.map(({ key, Art, label, value, line, review }) => (
           <li
             key={key}
-            className="flex min-w-0 items-center gap-3 rounded-md border border-border-card px-3.5 py-3"
+            className="flex min-w-0 items-center gap-3 rounded-md bg-neutral-50 px-4 py-3.5"
           >
             <span aria-hidden className="flex w-9 shrink-0 justify-center">
               <Art className="h-auto max-h-8 w-9" />

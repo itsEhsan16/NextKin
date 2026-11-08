@@ -126,7 +126,7 @@ export function Sidebar() {
           <nav
             aria-label="Main"
             className={cn(
-              'flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-panel border border-border-default bg-surface-card px-3 py-4 transition-[padding,box-shadow] duration-base ease-standard [--nav-row:var(--spacing-control-lg)] shorter:[--nav-row:var(--spacing-control-md)]',
+              'flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-panel border border-border-subtle bg-surface-card shadow-card px-3 py-4 transition-[padding,box-shadow] duration-base ease-standard [--nav-row:var(--spacing-control-lg)] shorter:[--nav-row:var(--spacing-control-md)]',
               // The rail keeps its 40px squares at any height: it is 633px tall, so it never needs
               // the step. Opened over the page, the panel floats on the popover shadow.
               'rail:px-2 rail:py-3 rail:[--nav-row:var(--spacing-control-lg)] in-data-overlay:shadow-popover',

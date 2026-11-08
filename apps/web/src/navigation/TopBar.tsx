@@ -46,7 +46,7 @@ const IN_BAR: { upload?: UploadAction; inBar?: boolean } = { inBar: true };
 
 const uploadAction = cn(
   brandButton,
-  'h-control-md gap-2 rounded-md px-4 text-body-m font-semibold',
+  'h-control-md gap-2 rounded-full px-5 text-body-m font-semibold',
 );
 
 /**
@@ -76,14 +76,16 @@ export function TopBar() {
     <header
       className={cn(
         'sticky top-0 z-20 transition-colors duration-base ease-standard',
-        clear ? 'pointer-events-none bg-transparent' : 'bg-neutral-0',
+        clear
+          ? 'pointer-events-none bg-transparent'
+          : 'bg-neutral-100/80 shadow-[0_1px_0_var(--color-border-default)] backdrop-blur-md',
         topBarHeight,
       )}
       style={{ viewTransitionName: 'app-topbar' }}
     >
       <div className={cn(pageColumn, 'flex h-full items-end gap-6 pb-2')}>
         <div className="pointer-events-auto ml-auto flex shrink-0 items-center gap-3">
-          <label className="flex h-control-md w-[300px] items-center gap-2 rounded-md border border-border-default bg-surface-card px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-600">
+          <label className="flex h-control-md w-[320px] items-center gap-2.5 rounded-full border border-border-subtle bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
             <SearchIcon className="size-4 shrink-0 text-text-tertiary" />
             <input
               type="search"
@@ -116,13 +118,13 @@ export function TopBar() {
               type="button"
               aria-label={hasUnread ? 'Notifications, unread' : 'Notifications'}
               className={cn(
-                'relative flex size-control-md shrink-0 items-center justify-center rounded-md border border-border-default bg-surface-card text-text-secondary hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                'relative flex size-control-md shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary shadow-card hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                 pressable,
               )}
             >
               <BellIcon className="size-[18px]" />
               {hasUnread && (
-                <span className="absolute right-2 top-2 size-1.5 rounded-full bg-danger-dot" />
+                <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-danger-dot ring-2 ring-surface-card" />
               )}
             </button>
           </Soon>

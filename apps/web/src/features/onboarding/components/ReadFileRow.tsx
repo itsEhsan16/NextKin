@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { AiLoader } from '@/ui/AiLoader';
 import { CheckCircleIcon, DocumentIcon, PdfIcon } from '@/ui/icons';
 import { ProgressBar } from '@/ui/ProgressBar';
 
@@ -17,7 +18,7 @@ export type ReadState =
 export function ReadFileRow({ name, state }: { name: string; state: ReadState }) {
   const pdf = isPdfName(name);
   return (
-    <div className="flex items-center gap-3.5 rounded-xl border border-border-default bg-surface-card py-3 pl-3 pr-4 animate-reveal">
+    <div className="flex items-center gap-4 rounded-lg border border-border-subtle bg-surface-card py-4 pl-4 pr-5 shadow-card animate-reveal">
       <span
         aria-hidden
         className={cn(
@@ -31,14 +32,10 @@ export function ReadFileRow({ name, state }: { name: string; state: ReadState })
         <p className="truncate text-body-l font-semibold text-text-primary">{name}</p>
         {state.status === 'read' ? (
           <ProgressBar value={1} label="Resume read" sweep className="h-1.5" />
+        ) : state.status === 'reading' ? (
+          <AiLoader variant="loading-line" silent className="h-1.5" />
         ) : (
-          <div
-            aria-hidden
-            className={cn(
-              'h-1.5 w-full rounded-full',
-              state.status === 'reading' ? 'animate-pulse bg-brand-100' : 'bg-danger-50',
-            )}
-          />
+          <div aria-hidden className="h-1.5 w-full rounded-full bg-danger-50" />
         )}
         <p
           role={state.status === 'failed' ? 'alert' : 'status'}

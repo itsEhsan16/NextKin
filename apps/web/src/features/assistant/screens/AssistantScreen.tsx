@@ -17,6 +17,7 @@ import {
 import { useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 import { useReveal } from '@/lib/useReveal';
 import { showToast } from '@/lib/toast';
 import { PageHeader } from '@/navigation/PageHeader';
@@ -156,7 +157,7 @@ export function AssistantScreen({ jobId, resumeId }: { jobId?: string; resumeId?
       <div className="mt-4 grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_300px] gap-6">
         <section
           aria-label="Chat"
-          className="flex min-h-0 flex-col overflow-hidden rounded-3xl border border-border-default bg-surface-card"
+          className={cn(cardSurface, 'flex min-h-0 flex-col overflow-hidden')}
         >
           <div
             data-chat-scroller
@@ -224,10 +225,11 @@ export function AssistantScreen({ jobId, resumeId }: { jobId?: string; resumeId?
             onSend={() => ask(draft)}
             busy={busy || loading}
             spent={spent}
+            showDisclaimer={messages.length === 0}
           />
         </section>
 
-        <div className="flex min-h-0 flex-col gap-3.5">
+        <div className="flex min-h-0 flex-col gap-5">
           <HistoryCard
             threads={threads.data}
             loading={threads.isPending}

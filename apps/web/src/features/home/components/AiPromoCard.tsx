@@ -17,17 +17,17 @@ export function AiPromoCard() {
   return (
     <Card
       tone="brand"
-      className="relative flex min-h-[190px] flex-1 flex-col justify-center overflow-hidden p-4"
+      className="relative flex min-h-[200px] flex-1 flex-col justify-center overflow-hidden p-6"
     >
       <div className="relative max-w-[320px]">
         <h2 className="text-h2 text-text-primary">Improve your chances with AI</h2>
-        <p className="mt-2 text-body-m text-text-tertiary">
+        <p className="mt-2 text-body-m text-text-secondary">
           Get AI-powered suggestions to enhance your resume, prepare for interviews, and land more
           offers.
         </p>
         <Link
           href="/assistant"
-          className={cn(primaryButton, 'mt-4 h-control-md gap-2 pl-3 pr-5 text-body-m')}
+          className={cn(primaryButton, 'mt-5 h-control-md gap-2 rounded-full pl-4 pr-5 text-body-m')}
         >
           <AiSparkIcon className="h-[18px] w-[17px]" />
           Ask AI Assistant

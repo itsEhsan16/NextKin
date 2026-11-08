@@ -49,7 +49,7 @@ export function JobPreferencesCard({ preferences }: { preferences: ProfilePrefer
         />
       }
     >
-      <div className="mt-3">
+      <div className="mt-4">
         <FieldRow label="Preferred job types">
           <div
             role="group"

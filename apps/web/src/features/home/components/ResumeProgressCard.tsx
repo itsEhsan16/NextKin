@@ -24,7 +24,7 @@ export function ResumeProgressCard({ resume, status, onRetry }: ResumeProgressCa
   // What replaces the skeleton fades in; content already cached on arrival shows at once.
   const reveal = useReveal(status !== 'pending');
   return (
-    <Card className="w-full p-4 lg:w-[360px] lg:shrink-0">
+    <Card className="w-full p-6 lg:w-[380px] lg:shrink-0">
       <SectionHeader
         title="Your Resume Progress"
         actionHref={resume ? resumeHref(resume.id) : undefined}
@@ -62,7 +62,7 @@ export function ResumeProgressCard({ resume, status, onRetry }: ResumeProgressCa
           <div className={cn('mt-4 flex items-center gap-3', reveal && 'animate-reveal')}>
             <div
               aria-hidden
-              className="h-[70px] w-16 shrink-0 rounded-sm border border-border-default bg-surface-muted"
+              className="h-[76px] w-16 shrink-0 rounded-md bg-surface-muted"
             />
             <div className="min-w-0 flex-1">
               <p className="truncate text-title-l text-text-primary">{resume.title}</p>
@@ -86,7 +86,7 @@ export function ResumeProgressCard({ resume, status, onRetry }: ResumeProgressCa
           </div>
 
           {resume.validation && (
-            <ul className={cn('mt-4 flex flex-wrap gap-2', reveal && 'animate-reveal')}>
+            <ul className={cn('mt-5 flex flex-wrap gap-2', reveal && 'animate-reveal')}>
               <ValidationPill ok={resume.validation.timelineValid} label="Timeline Valid" />
               <ValidationPill ok={resume.validation.atsOptimized} label="ATS Optimized" />
               <ValidationPill ok={resume.validation.jdMatched} label="JD Matched" />
@@ -100,7 +100,7 @@ export function ResumeProgressCard({ resume, status, onRetry }: ResumeProgressCa
 
 function ValidationPill({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <li className="flex h-control-sm items-center gap-1.5 rounded-md border border-border-default px-2.5">
+    <li className="flex h-8 items-center gap-1.5 rounded-full bg-neutral-50 px-3">
       <CheckIcon
         className={ok ? 'size-3.5 text-success-text' : 'size-3.5 text-text-tertiary'}
         aria-hidden

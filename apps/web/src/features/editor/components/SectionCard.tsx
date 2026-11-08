@@ -50,9 +50,9 @@ export function SectionCard({
     <section
       id={anchor}
       aria-labelledby={headingId}
-      className={cn(cardSurface, 'scroll-mt-4 overflow-hidden rounded-xl shadow-card')}
+      className={cn(cardSurface, 'scroll-mt-4 overflow-hidden')}
     >
-      <div className="flex items-center gap-2.5 py-2 pl-4.5 pr-2.5">
+      <div className="flex items-center gap-1 py-3 pl-6 pr-4">
         {renaming && onRename ? (
           <input
             autoFocus
@@ -68,7 +68,7 @@ export function SectionCard({
               if (event.key === 'Enter' || event.key === 'Escape')
                 (event.target as HTMLInputElement).blur();
             }}
-            className="h-9 min-w-0 flex-1 rounded-md border border-border-brand px-2 text-title-l text-text-primary outline-none"
+            className="mr-2 h-control-md min-w-0 flex-1 rounded-md border border-border-brand-strong px-3 text-title-l font-semibold text-text-primary outline-none ring-4 ring-brand-100"
           />
         ) : (
           <button
@@ -76,7 +76,7 @@ export function SectionCard({
             aria-expanded={open}
             aria-controls={bodyId}
             onClick={() => setOpen((v) => !v)}
-            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md py-1.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            className="mr-2 flex min-w-0 flex-1 items-center gap-2.5 rounded-md py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
             <ChevronDownIcon
               aria-hidden
@@ -85,13 +85,11 @@ export function SectionCard({
                 open ? 'rotate-0' : '-rotate-90',
               )}
             />
-            <span id={headingId} className="truncate text-title-l font-bold text-text-primary">
+            <span id={headingId} className="truncate text-title-l font-semibold text-text-primary">
               {heading}
             </span>
             {note && (
-              <span className="min-w-0 truncate text-body-m font-medium text-text-tertiary">
-                {note}
-              </span>
+              <span className="min-w-0 truncate text-body-m text-text-tertiary">{note}</span>
             )}
           </button>
         )}
@@ -139,10 +137,7 @@ export function SectionCard({
         )}
       </div>
       <CollapseFade open={open} axis="vertical" inert={!open}>
-        <div
-          id={bodyId}
-          className="flex flex-col gap-3 border-t border-border-default px-4.5 pb-4 pt-3.5"
-        >
+        <div id={bodyId} className="flex flex-col gap-4 px-6 pb-6 pt-1">
           {children}
         </div>
       </CollapseFade>

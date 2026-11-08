@@ -42,7 +42,7 @@ export type SettingsScreenProps = {
 };
 
 /** A section's column of cards, the same gap the panel puts between them. */
-const SECTION = 'flex flex-col gap-3';
+const SECTION = 'flex flex-col gap-6';
 
 /**
  * Settings (254:326 Account, 356:2 Preferences, 247:1094 Notifications): the sections down the
@@ -219,7 +219,7 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
         subtitle={heading.subtitle}
       />
 
-      <div className="mt-4 grid grid-cols-[264px_minmax(0,1fr)] items-start gap-5">
+      <div className="mt-6 grid grid-cols-[272px_minmax(0,1fr)] items-start gap-6">
         <SettingsNav
           active={section}
           onChange={setSection}
@@ -230,7 +230,7 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
           role="tabpanel"
           id={SETTINGS_PANEL_ID}
           aria-labelledby={settingsTabId(section)}
-          className="@container relative flex min-w-0 flex-col gap-3"
+          className="@container relative flex min-w-0 flex-col gap-6"
         >
           {/* Account's character stands on the first card of every redrawn section but
               Preferences and Notifications (466:58, 554:3548, 470:4, 467:4). */}
@@ -246,7 +246,7 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
             <NotificationsIllustration className="absolute bottom-full right-[16%] animate-reveal" />
           )}
           {/* Keyed by section: after the first switch, each section fades in (`toreview.md` §84). */}
-          <div key={section} className={cn('flex flex-col gap-3', switched && 'animate-reveal')}>
+          <div key={section} className={cn('flex flex-col gap-6', switched && 'animate-reveal')}>
             {body}
           </div>
         </div>

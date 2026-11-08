@@ -42,36 +42,38 @@ export function ResumeDetailCard({ resume, reveal = false }: { resume: Resume; r
     <section
       aria-label={resume.title}
       // The frame stays put; its contents fade in when they replace a skeleton or another resume.
-      className={cn('rounded-lg border border-border-card p-4', reveal && '*:animate-reveal')}
+      className={cn(reveal && '*:animate-reveal')}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-4">
         <ResumeTile accent={resume.accent} size="card" />
         <div className="min-w-0 flex-1">
-          <h2 className="text-h2 text-neutral-800">{resume.title}</h2>
-          <p className="mt-0.5 text-body-m text-text-tertiary">{formatUpdated(resume.updatedAt)}</p>
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <h2 className="text-h2 font-semibold text-text-primary">{resume.title}</h2>
+            {resume.variant && (
+              <Tag tone={VARIANT_TONE[resume.variant]} shape="pill">
+                {VARIANT_LABEL[resume.variant]}
+              </Tag>
+            )}
+          </div>
+          <p className="mt-1 text-body-m text-text-tertiary">{formatUpdated(resume.updatedAt)}</p>
         </div>
-        {resume.variant && (
-          <Tag tone={VARIANT_TONE[resume.variant]} shape="pill">
-            {VARIANT_LABEL[resume.variant]}
-          </Tag>
-        )}
         {/* The rows' menu, so the card's kebab does what theirs does (toreview §131). */}
         <ResumeRowMenu resume={resume} />
       </div>
 
-      <ResumeMetaRow resume={resume} className="mt-3" />
-      <ResumeActions resume={resume} className="mt-3.5" />
+      <ResumeMetaRow resume={resume} className="mt-4" />
+      <ResumeActions resume={resume} className="mt-5" />
 
       <UnderlineTabs
         tabs={RESUME_DETAIL_TABS}
         active={tab}
         onChange={setTab}
         label="Resume detail"
-        className="mt-4"
+        className="mt-6"
       />
 
       {/* Keyed by tab: after the first switch, each tab's content fades in (`toreview.md` §84). */}
-      <div key={tab} className={cn('pt-3', switched && 'animate-reveal')}>
+      <div key={tab} className={cn('pt-5', switched && 'animate-reveal')}>
         {tab === 'preview' && <ResumePreviewTab resume={resume} />}
         {tab === 'details' && <ResumeDetailsTab resume={resume} />}
         {tab === 'score' && <ResumeScoreTab resume={resume} />}

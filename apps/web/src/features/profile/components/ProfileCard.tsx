@@ -1,10 +1,10 @@
 import { useId, type ComponentType, type ReactNode, type SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
 import { ArrowRightIcon, EditIcon } from '@/ui/icons';
 import { pressable } from '@/ui/pressable';
-import { cardSurface } from '@/ui/Card';
+import { buttonClass } from '@/ui/Button';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { Soon, soonControl } from '@/ui/Soon';
 
 export type ProfileCardProps = {
@@ -37,14 +37,14 @@ export function ProfileCard({
   const titleId = useId();
 
   return (
-    <section aria-labelledby={titleId} className={cn(cardSurface, 'p-5', className)}>
+    <section aria-labelledby={titleId} className={cn(cardSurface, cardPad, className)}>
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <h2 id={titleId} className="flex items-center gap-2.5 text-h2 text-text-primary">
-            {Art && <Art aria-hidden className="h-auto w-8.5 shrink-0" />}
+          <h2 id={titleId} className="flex items-center gap-3 text-title-l text-text-primary">
+            {Art && <Art aria-hidden className="h-auto w-8 shrink-0" />}
             {title}
           </h2>
-          {description && <p className="mt-1 text-body-m text-text-tertiary">{description}</p>}
+          {description && <p className="mt-1 text-body-s text-text-tertiary">{description}</p>}
         </div>
         {action?.kind === 'edit' && (
           <Soon>
@@ -54,8 +54,8 @@ export function ProfileCard({
               aria-label={`Edit ${title.toLowerCase()}`}
               className={cn(
                 soonControl,
-                brandOutlineButton,
-                'h-control-sm shrink-0 gap-1.5 self-start rounded-md px-3 text-body-m font-bold',
+                buttonClass({ variant: 'secondary', size: 'sm' }),
+                'shrink-0 self-start',
               )}
             >
               <EditIcon className="size-3.5" />
@@ -69,7 +69,7 @@ export function ProfileCard({
             onClick={action.onClick}
             aria-label={`View all ${title.toLowerCase()}`}
             className={cn(
-              'flex h-control-sm shrink-0 items-center gap-1.5 rounded-md bg-surface-brand px-3 text-body-m font-bold text-brand-600 hover:bg-surface-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              'flex h-control-sm shrink-0 items-center gap-1.5 rounded-full bg-surface-brand px-3.5 text-body-s font-semibold text-brand-600 hover:bg-surface-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
               pressable,
             )}
           >
@@ -85,6 +85,6 @@ export function ProfileCard({
 
 /** The full-width lavender-edged action under a list: "Manage experience" (476:712). */
 export const cardFooterAction = cn(
-  brandOutlineButton,
-  'mt-4 h-control-lg w-full gap-2 rounded-md text-body-l font-bold',
+  buttonClass({ variant: 'secondary', size: 'lg' }),
+  'mt-5 w-full',
 );

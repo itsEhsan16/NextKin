@@ -56,9 +56,9 @@ export function AtsUploadStep({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="ats-resume" className={stepCard}>
-        <div className="border-b border-border-default px-8 pb-5 pt-6">
+        <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="ats-resume"
             step={1}
@@ -67,8 +67,8 @@ export function AtsUploadStep({
             lede="Upload one made outside NextKin. Resumes you made here are checked as you build them."
           />
         </div>
-        <div className="grid divide-y divide-border-default lg:grid-cols-5 lg:divide-x lg:divide-y-0">
-          <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-7 pt-6 lg:col-span-3">
+        <div className="grid divide-y divide-border-subtle lg:grid-cols-5 lg:divide-x lg:divide-y-0">
+          <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-3">
             <div
               onDragOver={(e) => {
                 e.preventDefault();
@@ -90,8 +90,11 @@ export function AtsUploadStep({
                 height={168}
                 className="h-auto w-60 shrink-0 rounded-lg object-contain"
               />
-              <div className="flex flex-col items-start gap-2">
-                <p className="text-h2 font-bold text-text-primary">
+              <div className="flex min-w-0 flex-col items-start gap-2">
+                <p
+                  title={upload.reading ? (upload.name ?? undefined) : undefined}
+                  className="max-w-full truncate text-h2 font-bold text-text-primary"
+                >
                   {upload.reading ? `Reading ${upload.name}…` : 'Drag and drop your resume here'}
                 </p>
                 <p className="text-body-l text-text-tertiary">PDF or DOCX</p>
@@ -107,7 +110,7 @@ export function AtsUploadStep({
               </div>
             </div>
             {upload.name && !upload.reading && !upload.error && (
-              <div className="flex items-center gap-3.5 rounded-lg border border-border-default bg-surface-card px-4 py-3">
+              <div className="flex items-center gap-3.5 rounded-md bg-neutral-50 px-4 py-3">
                 <span
                   aria-hidden
                   className="flex size-10 shrink-0 items-center justify-center rounded-md bg-danger-50 text-danger-600"
@@ -149,7 +152,7 @@ export function AtsUploadStep({
               }}
             />
           </div>
-          <div className="flex min-w-0 flex-col gap-3.5 px-7 pb-7 pt-6 lg:col-span-2 lg:pr-8">
+          <div className="flex min-w-0 flex-col gap-3.5 px-8 pb-8 pt-6 lg:col-span-2 lg:pr-8">
             <ColumnHead
               art={<NavInsightsIllustration className="h-auto w-11" />}
               title="What we check"

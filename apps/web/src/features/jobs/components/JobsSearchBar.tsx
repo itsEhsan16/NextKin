@@ -1,5 +1,6 @@
 import { cn } from '@/lib/cn';
-import { brandButton } from '@/ui/brandButton';
+import { buttonClass } from '@/ui/Button';
+import { fieldBox } from '@/ui/fieldBox';
 import { SearchIcon } from '@/ui/icons';
 
 export type JobsSearchBarProps = { value: string; onChange: (value: string) => void };
@@ -20,23 +21,23 @@ export function JobsSearchBar({ value, onChange }: JobsSearchBarProps) {
     <form
       role="search"
       onSubmit={(event) => event.preventDefault()}
-      className="relative flex h-control-lg w-4/5 items-center gap-2 rounded-md border border-border-divider bg-surface-card p-[3px]"
+      className="relative flex w-4/5 items-center gap-3"
     >
-      <div className="flex flex-1 items-center gap-2 px-2.5">
-        <SearchIcon className="size-4 shrink-0 text-neutral-400" />
+      <div className="relative min-w-0 flex-1">
+        <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
         <input
           type="text"
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder="Job title, company, or keyword"
           aria-label="Search jobs"
-          className="w-full bg-transparent text-body-l text-text-primary placeholder:text-neutral-400 focus:outline-none"
+          className={cn(
+            fieldBox,
+            'rounded-full pl-10 pr-4 text-body-l shadow-card placeholder:text-neutral-400',
+          )}
         />
       </div>
-      <button
-        type="submit"
-        className={cn(brandButton, 'h-full rounded-sm px-5 text-body-l font-semibold')}
-      >
+      <button type="submit" className={buttonClass({ size: 'lg', pill: true })}>
         Search
       </button>
     </form>

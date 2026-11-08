@@ -52,7 +52,7 @@ export function JobFilterChipsRow({ filters, onChange, allJobs }: JobFilterChips
   return (
     // Tight enough (8px chip padding, 6px apart) that the six chips hold one line down to a
     // ~600px list column — a 1396px-wide window; below that they wrap rather than clip.
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-2">
       <FilterDropdown
         trigger={<FilterChip label="Location" active={filters.locations.length > 0} />}
       >

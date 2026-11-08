@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
  */
 export function FieldRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex min-h-11 items-center gap-3 py-1">
+    <div className="flex min-h-14 items-center gap-4 py-2">
       <span className="w-40 shrink-0 text-body-m text-text-primary">{label}</span>
       <div className="flex min-w-0 flex-1 items-center">{children}</div>
     </div>

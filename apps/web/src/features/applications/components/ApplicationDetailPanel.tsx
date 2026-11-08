@@ -14,6 +14,7 @@ import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
 import { StateView } from '@/ui/StateView';
 import { UnderlineTabs, type UnderlineTab } from '@/ui/UnderlineTabs';
+import { iconButton } from '@/ui/iconButton';
 import { MoreVerticalIcon, OpenInNewIcon } from '@/ui/icons';
 
 import { stageOf } from '../applicationStage';
@@ -58,7 +59,7 @@ export function ApplicationDetailPanel({
 
   if (status === 'empty') {
     return (
-      <div className={cn(CARD, 'p-5')}>
+      <div className={cn(CARD, 'p-6')}>
         {hasAny ? (
           <StateView
             title="Select an application"
@@ -74,7 +75,7 @@ export function ApplicationDetailPanel({
   if (status === 'pending') {
     return (
       // Shrinks to the column and clips, as the loaded card does on a short window.
-      <div className={cn(CARD, 'min-h-0 overflow-hidden p-5')}>
+      <div className={cn(CARD, 'min-h-0 overflow-hidden p-6')}>
         <DetailCardSkeleton lines={11} />
       </div>
     );
@@ -82,7 +83,7 @@ export function ApplicationDetailPanel({
 
   if (status === 'error' || !row) {
     return (
-      <div className={cn(CARD, 'p-5')}>
+      <div className={cn(CARD, 'p-6')}>
         <StateView
           tone="danger"
           title="Couldn't load this application"
@@ -132,23 +133,20 @@ function ApplicationDetailBody({
       // The frame stays put; its contents fade in (`toreview.md` §84).
       className={cn(
         CARD,
-        'min-h-0 overflow-y-auto p-5 [scrollbar-width:thin]',
+        'min-h-0 overflow-y-auto p-6 [scrollbar-width:thin]',
         reveal && '*:animate-reveal',
       )}
     >
       <div className="flex items-start justify-between">
         <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="plain" />
-        <div className="flex items-center gap-1.5">
+        <div className="-mr-2 flex items-center gap-1">
           <ApplicationStatusBadge stage={stage} />
           <Soon>
             <button
               aria-disabled="true"
               type="button"
               aria-label="More options"
-              className={cn(
-                'flex size-6 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-                soonControl,
-              )}
+              className={cn(iconButton, 'text-text-tertiary hover:text-text-primary', soonControl)}
             >
               <MoreVerticalIcon className="size-4" />
             </button>
@@ -156,11 +154,11 @@ function ApplicationDetailBody({
         </div>
       </div>
 
-      <h2 className="mt-3 text-h1 text-neutral-800">{job.title}</h2>
-      <p className="mt-0.5 text-body-m text-text-company">{job.company}</p>
-      <JobMetaRow job={job} className="mt-2" />
+      <h2 className="mt-4 text-h1 text-neutral-800">{job.title}</h2>
+      <p className="mt-1 text-body-m text-text-company">{job.company}</p>
+      <JobMetaRow job={job} className="mt-3" />
 
-      <div className="mt-3.5 grid grid-cols-2 gap-3">
+      <div className="mt-5 grid grid-cols-2 gap-3">
         <Link
           href={jobHref(job.id)}
           className={cn(brandButton, 'h-control-lg gap-2 rounded-md text-body-l font-semibold')}
@@ -176,11 +174,11 @@ function ApplicationDetailBody({
         active={tab}
         onChange={setTab}
         label="Application detail"
-        className="mt-4"
+        className="mt-6"
       />
 
       {/* Keyed by tab: after the first switch, each tab's content fades in (`toreview.md` §84). */}
-      <div key={tab} className={cn('pt-3', switched && 'animate-reveal')}>
+      <div key={tab} className={cn('pt-5', switched && 'animate-reveal')}>
         {tab === 'overview' && <ApplicationOverviewTab row={row} stage={stage} />}
         {tab === 'application' && <ApplicationSubmissionTab row={row} stage={stage} />}
         {/* Follow-ups and notes have no field in the model yet: application tracking is Release 2
@@ -203,7 +201,7 @@ function ApplicationDetailBody({
 
       {/* "Prepare for your interview" (286:1660) goes to Interview Prep, which is where
           AI-generated questions for a role live. */}
-      <div className="mt-4">
+      <div className="mt-6">
         <AiCallout
           tone="muted"
           title="Prepare for your interview"

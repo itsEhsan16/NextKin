@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 
 import { SettingsIllustration } from '@/features/settings/components/SettingsIllustration';
 import { cn } from '@/lib/cn';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { PageHeader } from '@/navigation/PageHeader';
 import { fieldBox } from '@/ui/fieldBox';
 import { SearchIcon } from '@/ui/icons';
@@ -63,7 +64,7 @@ export function HelpScreen() {
   const byTopic = (topic: FaqTopic) => shown.filter((item) => item.topic === topic);
 
   return (
-    <div className={cn(pageFrameInBar, 'flex flex-col gap-5 pb-8')}>
+    <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-10')}>
       {/* Tall enough that the art, below the bar's controls as the board places it (577:6581),
           ends where the first cards begin. */}
       <div className="relative xl:min-h-[10.5rem]">
@@ -75,16 +76,13 @@ export function HelpScreen() {
         <SettingsIllustration className="absolute bottom-0 right-0 hidden xl:block" />
       </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className="flex min-w-0 flex-col gap-4">
-          <section
-            aria-labelledby="find-an-answer"
-            className="rounded-lg border border-border-brand bg-surface-brand p-5"
-          >
-            <div className="flex items-center gap-3.5">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <section aria-labelledby="find-an-answer" className={cn(cardSurface, cardPad)}>
+            <div className="flex items-center gap-4">
               <HelpFaqIllustration aria-hidden className="h-auto w-12 shrink-0" />
               <div>
-                <h2 id="find-an-answer" className="text-title-l font-medium text-text-primary">
+                <h2 id="find-an-answer" className="text-title-l text-text-primary">
                   Find an answer
                 </h2>
                 <p className="text-body-s text-text-tertiary">{answerCount(items.length)}</p>
@@ -93,7 +91,7 @@ export function HelpScreen() {
             <label
               className={cn(
                 fieldBox,
-                'mt-4 h-control-lg gap-2.5 px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-600',
+                'mt-5 h-control-lg gap-2.5 px-3.5 focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100',
               )}
             >
               <SearchIcon aria-hidden className="size-4 shrink-0 text-text-tertiary" />
@@ -125,12 +123,12 @@ export function HelpScreen() {
               onAction={() => void faq.refetch()}
             />
           ) : !faq.data ? (
-            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-              <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
+              <div className="flex flex-col gap-6">
                 <Skeleton className="h-64 rounded-lg" />
                 <Skeleton className="h-52 rounded-lg" />
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-6">
                 <Skeleton className="h-52 rounded-lg" />
                 <Skeleton className="h-40 rounded-lg" />
                 <Skeleton className="h-40 rounded-lg" />
@@ -140,18 +138,18 @@ export function HelpScreen() {
             <StateView
               title="No answers match"
               message="Try another word, or message support and we'll answer you directly."
-              className="rounded-lg border border-border-card bg-surface-card py-10"
+              className={cn(cardSurface, 'py-12')}
             />
           ) : (
             <div
               key={filter}
               className={cn(
-                'grid grid-cols-1 items-start gap-4 md:grid-cols-2',
+                'grid grid-cols-1 items-start gap-6 md:grid-cols-2',
                 (loaded || switched) && 'animate-reveal',
               )}
             >
               {HELP_COLUMNS.map((column, index) => (
-                <div key={index} className="flex min-w-0 flex-col gap-4">
+                <div key={index} className="flex min-w-0 flex-col gap-6">
                   {column.map((topic) => {
                     const topicItems = byTopic(topic);
                     if (topicItems.length === 0) return null;
@@ -166,10 +164,10 @@ export function HelpScreen() {
                     );
                   })}
                   {index === 0 && (
-                    <div className="flex items-center gap-3.5 rounded-lg border border-border-card bg-surface-brand px-4 py-3.5">
+                    <div className="flex items-center gap-4 rounded-lg bg-surface-brand px-6 py-5">
                       <SettingsLightbulbIllustration aria-hidden className="h-auto w-10 shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-body-l font-medium text-text-primary">
+                        <p className="text-body-m font-semibold text-text-primary">
                           Search reads the answers too
                         </p>
                         <p className="text-body-s text-text-tertiary">
@@ -184,7 +182,7 @@ export function HelpScreen() {
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-6">
           <MessageSupportCard />
           <PolicyCard doc="terms" />
           <PolicyCard doc="privacy" />

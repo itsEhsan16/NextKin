@@ -4,6 +4,8 @@ import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
+import { useThumb } from './useThumb';
+
 export type Segment<T extends string> = { id: T; label: string; icon?: ReactNode; title?: string };
 
 export type SegmentedControlProps<T extends string> = {
@@ -25,9 +27,10 @@ const KEY_STEP: Record<string, (at: number, last: number) => number> = {
 };
 
 /**
- * Two or three views of one thing (toreview §131): Preview | Text view, Live preview | PDF pages,
- * Edit | Preview. A muted track with the chosen segment raised on it in white. A tablist: arrow
- * keys move and choose, Home and End jump, and only the chosen segment is in the tab order.
+ * Two or three views of one thing (toreview §131, §132): Preview | Text view, Live preview | PDF
+ * pages, Edit | Preview. A muted pill track with a raised white thumb that slides to the chosen
+ * segment. A tablist: arrow keys move and choose, Home and End jump, and only the chosen segment
+ * is in the tab order.
  */
 export function SegmentedControl<T extends string>({
   segments,
@@ -39,6 +42,7 @@ export function SegmentedControl<T extends string>({
 }: SegmentedControlProps<T>) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const at = segments.findIndex((s) => s.id === value);
+  const [track, thumb] = useThumb(at);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const step = KEY_STEP[event.key];
@@ -53,15 +57,25 @@ export function SegmentedControl<T extends string>({
 
   return (
     <div
+      ref={track}
       role="tablist"
       aria-label={label}
       onKeyDown={onKeyDown}
       className={cn(
-        'items-center gap-0.5 rounded-md bg-surface-muted p-0.5 text-body-m',
+        'relative items-center gap-0.5 rounded-full bg-surface-muted p-1 text-body-m',
         fill ? 'flex' : 'inline-flex',
         className,
       )}
     >
+      <span
+        aria-hidden
+        style={thumb.style}
+        className={cn(
+          'pointer-events-none absolute left-0 top-0 rounded-full bg-surface-card shadow-raised',
+          thumb.placed && 'transition-[translate,width] duration-base ease-spring',
+          !thumb.visible && 'hidden',
+        )}
+      />
       {segments.map((segment, i) => {
         const selected = segment.id === value;
         return (
@@ -70,6 +84,7 @@ export function SegmentedControl<T extends string>({
             ref={(el) => {
               refs.current[i] = el;
             }}
+            data-thumb-item
             type="button"
             role="tab"
             aria-selected={selected}
@@ -77,11 +92,9 @@ export function SegmentedControl<T extends string>({
             title={segment.title}
             onClick={() => onChange(segment.id)}
             className={cn(
-              'flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-sm px-3 font-medium transition-[color,background-color,box-shadow] duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              'relative flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 font-semibold transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
               fill && 'flex-1',
-              selected
-                ? 'bg-surface-card font-semibold text-text-primary shadow-raised'
-                : 'text-text-secondary hover:text-text-primary',
+              selected ? 'text-text-primary' : 'text-text-tertiary hover:text-text-primary',
             )}
           >
             {segment.icon}

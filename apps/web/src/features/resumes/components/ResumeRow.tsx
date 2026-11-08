@@ -2,6 +2,7 @@ import type { Resume } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { formatUpdated } from '@/lib/format';
+import { cardSurface } from '@/ui/Card';
 import { cardFaceHover, cardFaceMotion } from '@/ui/pressable';
 
 import { ResumeRowMenu } from './ResumeRowMenu';
@@ -34,11 +35,12 @@ export function ResumeRow({ resume, selected, onSelect, onDuplicated }: ResumeRo
 
       <div
         className={cn(
-          'pointer-events-none relative flex items-start gap-3 rounded-lg border bg-surface-card px-4 py-3.5',
+          cardSurface,
+          'pointer-events-none relative flex items-start gap-4 px-5 py-4',
           cardFaceMotion,
           selected
             ? 'border-border-selected outline-1 -outline-offset-2 outline-border-selected'
-            : cn('border-border-card', cardFaceHover),
+            : cardFaceHover,
         )}
       >
         <ResumeTile accent={resume.accent} size="row" />
@@ -46,20 +48,24 @@ export function ResumeRow({ resume, selected, onSelect, onDuplicated }: ResumeRo
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
-              <h3 className="truncate text-title-l font-bold text-neutral-800">{resume.title}</h3>
+              <h3 className="truncate text-title-l font-semibold text-text-primary">
+                {resume.title}
+              </h3>
               {resume.description && (
-                <p className="truncate text-body-m text-text-company">{resume.description}</p>
+                <p className="mt-0.5 truncate text-body-m text-text-secondary">
+                  {resume.description}
+                </p>
               )}
             </div>
-            <p className="shrink-0 text-body-s text-neutral-400">
+            <p className="shrink-0 pt-0.5 text-body-s text-text-tertiary">
               {formatUpdated(resume.updatedAt)}
             </p>
             {/* Drawn on every row (304:3141); its menu is spec-derived (toreview §124). */}
             <ResumeRowMenu resume={resume} {...(onDuplicated ? { onDuplicated } : {})} />
           </div>
-          <ResumeTags resume={resume} className="mt-2" />
+          <ResumeTags resume={resume} className="mt-3" />
           {resume.draft && resume.docType === 'resume' && (
-            <p className="mt-1.5 text-caption-m text-text-tertiary">
+            <p className="mt-2 text-caption-m text-text-tertiary">
               Not ready to download yet: open it to finish.
             </p>
           )}

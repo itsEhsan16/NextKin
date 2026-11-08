@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { EditIcon } from '@/ui/icons';
 import { pressable } from '@/ui/pressable';
 
@@ -28,7 +29,7 @@ export function StartingPointCard({
   return (
     <section
       aria-label="Your starting point"
-      className="flex flex-col gap-3 rounded-xl border border-border-default bg-surface-card px-5 py-4 shadow-card animate-reveal"
+      className={cn(cardSurface, cardPad, 'flex flex-col gap-4 animate-reveal')}
     >
       <div className="flex items-center gap-3">
         <span
@@ -57,11 +58,11 @@ export function StartingPointCard({
       </div>
       {summary && <p className="text-prose text-neutral-700">{summary}</p>}
       {skills.length > 0 && (
-        <ul aria-label="Skills" className="flex flex-wrap gap-1.5">
+        <ul aria-label="Skills" className="flex flex-wrap gap-2">
           {skills.slice(0, SHOWN).map((skill) => (
             <li
               key={skill}
-              className="rounded-md bg-neutral-100 px-2.5 py-0.5 text-body-s font-medium text-neutral-700"
+              className="rounded-full bg-neutral-100 px-3 py-1 text-body-s font-medium text-neutral-700"
             >
               {skill}
             </li>

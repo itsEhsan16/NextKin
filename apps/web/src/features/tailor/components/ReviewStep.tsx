@@ -51,7 +51,7 @@ export function ReviewStep({
   const apply = job.applyUrl || job.sourceUrl || job.companyWebsite ? applyUrl(job) : null;
 
   return (
-    <div className={cn('flex flex-col gap-4', WORKSPACE)}>
+    <div className={cn('flex flex-col gap-6', WORKSPACE)}>
       <ReviewHeader
         job={job}
         {...(backHref ? { backHref } : {})}
@@ -70,8 +70,8 @@ export function ReviewStep({
       )}
       <DownloadPrompts download={download} />
 
-      <div className="grid gap-5 lg:min-h-0 lg:flex-1 lg:grid-cols-[420px_minmax(0,1fr)]">
-        <div className="flex flex-col gap-3 lg:min-h-0">
+      <div className="grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[420px_minmax(0,1fr)]">
+        <div className="flex flex-col gap-4 lg:min-h-0">
           <ScoreSummaryCard
             score={score}
             loading={resume.isPending}

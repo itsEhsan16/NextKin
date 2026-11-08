@@ -14,6 +14,7 @@ import {
   OpenInNewIcon,
   SendIcon,
 } from '@/ui/icons';
+import { iconButton } from '@/ui/iconButton';
 import { outlineButton } from '@/ui/outlineButton';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -56,7 +57,7 @@ export function DocumentDetailPanel({
   return (
     <div className={cn('min-h-0 overflow-y-auto [scrollbar-width:thin]', className)}>
       {status === 'empty' && (
-        <div className={cn(CARD, 'p-5')}>
+        <div className={cn(CARD, 'p-6')}>
           {hasAny ? (
             <StateView
               title="Select a document"
@@ -74,7 +75,7 @@ export function DocumentDetailPanel({
       {/* As tall as the card and callout that replace it (`toreview.md` §84). */}
       {status === 'pending' && (
         <>
-          <div className={cn(CARD, 'flex flex-col gap-3 p-4')}>
+          <div className={cn(CARD, 'flex flex-col gap-4 p-6')}>
             <div className="flex items-center gap-3">
               <Skeleton className="size-12 rounded-md" />
               <div className="flex flex-1 flex-col gap-2">
@@ -83,14 +84,14 @@ export function DocumentDetailPanel({
               </div>
             </div>
             <Skeleton className="mt-1 h-control-lg w-full rounded-md" />
-            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-96 w-full rounded-md" />
           </div>
-          <Skeleton className="mt-3 h-16 rounded-lg" />
+          <Skeleton className="mt-4 h-16 rounded-lg" />
         </>
       )}
 
       {(status === 'error' || (status === 'success' && !document)) && (
-        <div className={cn(CARD, 'p-5')}>
+        <div className={cn(CARD, 'p-6')}>
           <StateView
             tone="danger"
             title="Couldn't load this document"
@@ -105,7 +106,7 @@ export function DocumentDetailPanel({
         <>
           <DocumentDetailCard key={document.id} document={document} reveal={reveal} />
           {/* 286:2294. Attaching happens where you apply: the letter's own job, or the jobs. */}
-          <div className="mt-3">
+          <div className="mt-4">
             <AiCallout
               title="Use this document in your applications"
               message="Attach this document directly when applying to jobs."
@@ -129,13 +130,13 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
     <section
       aria-label={document.title}
       // The frame stays put; its contents fade in (`toreview.md` §84).
-      className={cn(CARD, 'p-4', reveal && '*:animate-reveal')}
+      className={cn(CARD, 'p-6', reveal && '*:animate-reveal')}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <FileTypeTile format={document.format} size="card" />
         <div className="min-w-0 flex-1">
           <h2 className="text-h2 text-neutral-800">{document.title}</h2>
-          <p className="mt-0.5 text-body-m text-text-tertiary">{documentMeta(document)}</p>
+          <p className="mt-1 text-body-m text-text-tertiary">{documentMeta(document)}</p>
         </div>
         <Soon>
           <button
@@ -143,7 +144,8 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
             type="button"
             aria-label="More options"
             className={cn(
-              '-mr-1 flex size-6 shrink-0 items-center justify-center self-start rounded-sm text-text-tertiary transition-colors duration-press ease-standard hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              iconButton,
+              '-mr-2 -mt-1 self-start text-text-tertiary hover:text-text-primary',
               soonControl,
             )}
           >
@@ -152,7 +154,7 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
         </Soon>
       </div>
 
-      <div className="mt-4 flex gap-3">
+      <div className="mt-5 flex gap-2.5">
         <Link href={`/documents/${document.id}` as Route} className={cn(brandButton, ACTION)}>
           Open
           <OpenInNewIcon className="size-4 shrink-0" />
@@ -174,14 +176,14 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
             aria-disabled="true"
             type="button"
             aria-label="More actions"
-            className={cn(soonControl, outlineButton, 'h-control-lg w-12 shrink-0 rounded-md')}
+            className={cn(soonControl, outlineButton, 'size-control-lg shrink-0 rounded-full')}
           >
             <EllipsisIcon className="size-4 text-text-secondary" />
           </button>
         </Soon>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-5">
         <DocumentPreview document={document} />
       </div>
     </section>

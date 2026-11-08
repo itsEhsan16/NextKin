@@ -3,6 +3,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { cardPad, cardSurface } from '@/ui/Card';
 import { brandButton } from '@/ui/brandButton';
 import { ArrowRightIcon, CloseIcon, TickIcon } from '@/ui/icons';
 import { NavUpgradeIllustration } from '@/ui/illustrations';
@@ -16,7 +17,7 @@ const upgradeButton = cn(brandButton, 'h-control-lg rounded-md px-8 text-body-m 
 
 function Lines({ lines, label }: { lines: readonly PlanLine[]; label: string }) {
   return (
-    <ul aria-label={label} className="mt-3 flex flex-col gap-1">
+    <ul aria-label={label} className="mt-4 flex flex-col gap-2">
       {lines.map(({ label: line, included }) => (
         <li
           key={line}
@@ -54,11 +55,8 @@ export function PlanCards({ subscription, pro }: PlanCardsProps) {
   const price = pro ? planPrice(pro) : undefined;
 
   return (
-    <div className="grid grid-cols-2 items-stretch gap-3">
-      <section
-        aria-label="Current plan"
-        className="flex flex-col rounded-lg border border-border-card bg-surface-card p-5"
-      >
+    <div className="grid grid-cols-2 items-stretch gap-6">
+      <section aria-label="Current plan" className={cn(cardSurface, cardPad, 'flex flex-col')}>
         <div className="flex flex-1 items-start gap-4">
           <NavUpgradeIllustration aria-hidden className="h-auto w-10 shrink-0" />
           <div className="min-w-0">
@@ -90,12 +88,16 @@ export function PlanCards({ subscription, pro }: PlanCardsProps) {
 
       <section
         aria-label="NextKin Pro"
-        className="flex flex-col rounded-lg border border-border-brand-strong bg-surface-brand p-5"
+        className={cn(
+          cardSurface,
+          cardPad,
+          'flex flex-col border-border-brand-strong bg-surface-brand',
+        )}
       >
         <div className="flex flex-1 items-start gap-4">
           <NavUpgradeIllustration aria-hidden className="h-auto w-10 shrink-0" />
           <div className="min-w-0">
-            <span className="inline-block rounded-sm bg-surface-brand-strong px-2 py-0.5 text-caption-m text-brand-700">
+            <span className="inline-block rounded-full bg-surface-brand-strong px-2.5 py-0.5 text-caption-m font-semibold text-brand-700">
               Most popular
             </span>
             <h2 className="mt-0.5 text-h2 font-medium text-text-primary">NextKin Pro</h2>

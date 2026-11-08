@@ -7,7 +7,17 @@ import { cn } from '@/lib/cn';
  * the card fill. Detail panels, Profile, Settings, Upload, Help, the viewer, Insights and the
  * Assistant's asides all draw it; add `shadow-card` where a board lifts its cards off the page.
  */
-export const cardSurface = 'rounded-lg border border-border-card bg-surface-card';
+export const cardSurface = 'rounded-lg border border-border-subtle bg-surface-card shadow-card';
+
+/** The one padding a card's content takes (toreview §132): every card breathes the same. */
+export const cardPad = 'p-6';
+
+/**
+ * A card that is itself a link or button: it lifts toward the pointer and settles when pressed
+ * (toreview §132). One whole string, so Tailwind reads it.
+ */
+export const cardInteractive =
+  'transition-[box-shadow,translate,scale,background-color,border-color] duration-base ease-standard hover:-translate-y-0.5 hover:shadow-card-hover active:scale-(--scale-pressed)';
 
 export type CardProps = {
   children: ReactNode;

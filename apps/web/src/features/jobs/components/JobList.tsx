@@ -45,11 +45,11 @@ export function JobList({
 
   if (status === 'pending') {
     return (
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-4">
         {Array.from({ length: 5 }, (_, index) => (
           <li key={index}>
             {/* A card with a match reason, as most are (`JobCard`). */}
-            <Skeleton className="h-[255px] rounded-xl" />
+            <Skeleton className="h-[255px] rounded-lg" />
           </li>
         ))}
       </ul>
@@ -80,8 +80,8 @@ export function JobList({
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', reveal && 'animate-reveal')}>
-      <ul className="flex flex-col gap-3">
+    <div className={cn('flex flex-col gap-4', reveal && 'animate-rise')}>
+      <ul className="flex flex-col gap-4">
         {jobs.map((job) => (
           <li key={job.id}>
             <JobCard
@@ -99,7 +99,7 @@ export function JobList({
           type="button"
           onClick={onLoadMore}
           disabled={isFetchingNextPage}
-          className="h-control-md rounded-md border border-border-divider text-body-s font-semibold text-text-primary transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60"
+          className="h-control-md rounded-full border border-border-default bg-surface-card text-body-m font-semibold text-text-primary transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60"
         >
           <StableLabel label="Load more" busyLabel="Loading…" busy={isFetchingNextPage} />
         </button>

@@ -3,6 +3,7 @@
 import type { AssistantThreadSummary } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
 import { formatHistoryDate } from '@/lib/format';
 import { FilterDropdown, MenuItem } from '@/ui/FilterDropdown';
 import { iconButton } from '@/ui/iconButton';
@@ -26,11 +27,9 @@ function ChatRow({
         onClick={() => onOpen(thread.id)}
         className={cn(
           pressable,
-          'flex w-full flex-col gap-[3px] rounded-lg border px-3.5 py-[11px] text-left',
+          'flex w-full flex-col gap-0.5 rounded-md px-3 py-2.5 text-left transition-colors duration-fast ease-standard',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-          thread.current
-            ? 'border-border-brand-strong bg-brand-50'
-            : 'border-border-default bg-surface-card hover:border-border-brand-strong',
+          thread.current ? 'bg-surface-brand' : 'hover:bg-neutral-50',
         )}
       >
         <span className="flex w-full items-center gap-2">
@@ -80,9 +79,9 @@ export function HistoryCard({
   return (
     <section
       aria-labelledby="assistant-history"
-      className="flex min-h-0 flex-col gap-2 rounded-lg border border-border-card bg-neutral-50 px-3.5 pb-3.5 pt-4"
+      className={cn(cardSurface, 'flex min-h-0 flex-col gap-3 p-4 pt-5')}
     >
-      <div className="flex items-center gap-1 pl-1">
+      <div className="flex items-center gap-1 pl-2">
         <h2 id="assistant-history" className="text-title-l text-text-primary">
           History
         </h2>
@@ -117,7 +116,7 @@ export function HistoryCard({
         onClick={onNew}
         className={cn(
           pressable,
-          'flex items-center justify-center gap-2 rounded-[11px] border border-dashed border-border-brand-strong bg-surface-card py-2 text-body-m font-semibold text-text-brand hover:bg-brand-50',
+          'flex h-control-md items-center justify-center gap-2 rounded-md border border-dashed border-border-brand-strong bg-surface-card text-body-m font-semibold text-text-brand hover:bg-surface-brand',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
         )}
       >
@@ -128,7 +127,7 @@ export function HistoryCard({
       {loading ? (
         <div className="flex flex-col gap-2">
           {[0, 1, 2, 3].map((row) => (
-            <Skeleton key={row} className="h-[62px] rounded-lg" />
+            <Skeleton key={row} className="h-14 rounded-md" />
           ))}
         </div>
       ) : failed ? (
@@ -147,7 +146,7 @@ export function HistoryCard({
           Your chats will show here once you ask something.
         </p>
       ) : (
-        <ul className="-mx-1 flex min-h-0 flex-col gap-2 overflow-y-auto px-1 pb-0.5">
+        <ul className="-mx-1 flex min-h-0 flex-col gap-1 overflow-y-auto px-1 pb-0.5">
           {threads?.map((thread) => (
             <ChatRow key={thread.id} thread={thread} onOpen={onOpen} />
           ))}
