@@ -16593,6 +16593,67 @@ The owner re-sent the §191 brief with two reference screenshots (dark skeletons
   - The web preview always reports reduced motion, so it can't show the band.
   - **The Metro on 8090 serves the `app-ui-ux-redesign-1a1793` worktree (at 67f05ef), not main.** A phone on 8090 will not show §196 until that worktree takes main, or the phone uses the main Metro.
 
+## §197 — The §196 smoothness work on the web (owner, 2026-11-09)
+The owner: "Lets implement the same things in web also". This brings §196 to `apps/web`, on the web's own tokens; no mobile value was ported. There is no vibration on the web, so that part has nothing to carry over. Two read-only audits came first: loading, and motion/navigation/data.
+
+### 1. Shimmer and silhouettes
+- **One diagonal light in window space:** a new `skeleton` utility in `theme.css`.
+  - Its gradient is `background-attachment: fixed`, so every block shows its slice of the same 110° stripe, 60% of the window wide.
+  - `Skeleton` syncs only the sweep to the document clock (`syncSweep`).
+- **Before:** each block swept its own horizontal band, at a speed that depended on its size, over an opaque `neutral-200/70`.
+- **Tokens:**
+  - `--color-skeleton` (ink #0f172a at 5%) and `--color-skeleton-light` (white at 75%).
+  - `--transition-duration-shimmer` 1600, mirrored in `tokens.ts`.
+  - `--transition-duration-skeleton-delay` 150.
+  - Keyframes `skeleton-sweep` and `skeleton-in`.
+- **No flash:** blocks fade in after 150 ms and leave at once. `Reveal`/`useReveal` already never cross-faded.
+- **No frame:** `cardSurfaceLoading` and `Card loading` keep the card's size but drop its border, fill and shadow.
+  - Used on the Job, Application, Resume and Document detail panels and on Home's three cards.
+- **Silhouettes** (`ui/SkeletonShapes.tsx`): `SkeletonLines`, `SkeletonCircle`, `SkeletonListRow`.
+  - Home's resume progress is thumbnail + lines + ring + pills, at the loaded sizes.
+  - Recent activity is three art + two-line rows on the loaded spacing (it used to be 20px short).
+  - Top matches blocks are 172px, the cards' own minimum (was 164).
+  - Notifications are text + time rows.
+  - `DetailCardSkeleton`'s 9–11 prose bars became one block of their height.
+- **Home lands once:** every card holds its skeleton until user, picks, resumes and activity are all in (`isLoading`).
+- **Route boundaries:** `loading.tsx` (a `ui/RouteSkeleton`) on `jobs/[id]`, `jd/[id]`, `documents/[id]` and `resumes/[id]/edit`.
+  - These render on request with no loading boundary, so a click gave no answer and the old page stayed clickable until the server replied.
+  - Now links can prefetch the fallback.
+- **Verified in the browser:** a frozen mid-sweep frame showed one continuous diagonal band across stacked and side-by-side blocks, on the translucent base. Home, Jobs and a job page load with no console errors.
+
+### 2. Navigation and overlays
+- **Double-click guard:** `navigation/guardedRouter.ts` (`useGuardedRouter`, `motion.navGuard` 450) drops a second `push` within one route change.
+  - Used on every onboarding Continue, Notifications, the Tailor, ATS, Cover and job flows, MethodStep/MethodDialogs and CreateResumeDialog.
+  - `replace` and `back` are not guarded.
+  - `jest.setup.ts` sets the window to 0; `__tests__/navigation/guardedRouter.test.ts` covers the real one.
+- **Dialogs, menus and toasts take no clicks while closing** (`data-[state=closed]:pointer-events-none`; a leaving toast is `pointer-events-none`).
+- **Every dialog backdrop now fades out** with its dialog (new `--animate-fade-out`), instead of vanishing first.
+  - AiConsentGate and AdminDialog gained the exit animation they lacked.
+- **`--ease-spring`** (segment thumbs, pill tabs) settles without overshoot: `cubic-bezier(0.22, 1, 0.36, 1)`, in both theme.css and tokens.ts.
+- **Meters:**
+  - The Score tab's ring and the Insights bars sweep only when they replace a skeleton (`useReveal`, and the `InsightsSweep` context), not on every visit.
+  - AtsResult keeps its one-off sweep, as on mobile.
+
+### 3. Data
+- §196's shared changes already apply to the web: one retry for transient errors only, one watch per run, narrower finish invalidation and a stable resume selector.
+- TanStack's default `focusManager` on the web follows tab visibility, so polls and the run and assistant pollers pause in a hidden tab. Nothing overrides it.
+
+### Not done (judgement calls)
+- **Scroll memory** in the Jobs, Applications, Documents and Resumes inner list containers on Back.
+- **Row memo:** none of the list rows are memoised, and they get inline handlers. That needs stable id-taking handlers first.
+- **Virtualisation:** none of the long lists are virtualised.
+- **Remaining waves:** the resume preview's skeleton → sheet → page images, the Tailor/Zero run skeleton hand-offs, and the editor's route vs screen skeleton.
+- **Admin:** its dozens of in-card table skeletons and unconditional chart/KPI mount animations, and the vendored animated icons' own springs.
+- **No PageTransition** on `r/[token]`, `session`, `admin/sign-in` and `dev/sign-in`.
+- **Two Toaster instances:** onboarding and the app each have one.
+
+### Verified
+- Web Jest: 628 tests pass, including the new guard test and the token test, which now lists `fade-out`.
+  - One Assistant test ("starts a new chat…") failed once in a full run under load. It passes on its own and in the full rerun.
+- `tsc` and the web lint are clean.
+- Browser pane (`pnpm web`, mock data): the shimmer band was checked frame by frame. Home, Jobs and a job page load, with no console errors.
+- Not checked by hand: dialogs closing under a fast double click, and the onboarding guard.
+
 <!-- 172b–174b were numbered 172–174 on the Clerk sign-in branch (2026-11-06) and renamed when it merged into main on 2026-11-08, after the redesign's own 172–195. -->
 
 ## 172b. First staging APK for a phone test (owner, 2026-11-06)
