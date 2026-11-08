@@ -16027,3 +16027,85 @@ This section records what was built and the judgement calls made without the own
 - **Unserved:** link views, which aren't counted. The CSV exports write no audit row.
 
 **`openapi.json`:** regenerated, with 73 admin paths.
+
+## 172. First staging APK for a phone test (owner, 2026-11-06)
+
+- **Built `staging`, not `preview`.** The owner asked for "the android preview apk" but wanted the
+  real backend; `preview` runs on the mock, so they chose `staging` (the AWS demo,
+  `https://d3hc44bxjik4qf.cloudfront.net`). EAS build `4592ef64-bd41-47ca-94c1-4a18dd1e8492`,
+  commit `0139bff`, account `nextkin-edu`.
+- **No redeploy was needed.** Another session deployed `main` on 2026-11-05 (17:38 UTC) and ran
+  migrate (0051–0055) and seed-reference; `cdk diff` showed no differences and `/health/deep` was
+  green on all four dependencies.
+- **The upload archive is 1.5 GB** (6.5 minutes to upload). There is no `.easignore`, so worktrees,
+  `cdk.out`, the web app and other packages go up with every build. Worth adding one; not done.
+- **Unverified:** the APK on a phone against the demo (sign-in, a tailoring run, a link read).
+
+## 173. Mobile signs in through Clerk (owner, 2026-11-06)
+
+The staging APK (§172) couldn't sign in: the demo runs `IDENTITY_ADAPTER=clerk` since 2026-11-05, which
+refuses `/auth/login` ("handled by Clerk"), and the app still used the server's password sign-in.
+§169 had listed this as the follow-up. The owner: "if you want you can integrate the clerk login also".
+
+- **Shape:** `@clerk/expo` 4.15 custom flows (Expo Go-safe; its native module is optional and the
+  package ships no native code, so the APK and Expo Go run the same JS). The designed sign-in,
+  sign-up and confirm-email screens are unchanged; their hooks pick the Clerk pair at load when
+  `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` is set with the backend (`useClerkAuth.ts`), else the server's.
+  After Clerk completes, the app posts its Clerk token to `/auth/clerk/exchange` with
+  `client: 'mobile'`; the server opens a session keyed by the Clerk session id and sets no cookie.
+  Every later request carries a fresh Clerk token as the bearer (`clerkSession.ts` token store); the
+  authenticator already verified Clerk bearers. A 401 re-exchanges once instead of
+  `/auth/token/refresh` (which Clerk refuses); only a refusal signs the phone out, an outage never.
+- **Server:** `clerkExchangeSchema` gained `client` (default `web`, so the web is unchanged). `azp`
+  is now checked by us, not `verifyToken`: given `authorizedParties`, `@clerk/backend` refuses a token
+  with no `azp`, and a native token has none. A token naming a foreign origin is still refused.
+- **Also on Clerk:** Google ("Continue with Google", `useSSO`, back through `nextkin://sso-callback`
+  → `SsoCallbackScreen`), a new-device email code (`needs_client_trust`) on the confirm screen, and
+  the account screen's password change (`user.updatePassword`; mobile hook `useChangeSignInPassword`).
+- **Judgement calls:**
+  - "Forgot password?" on the backend opens the website's sign-in page (Clerk's form resets it), with
+    copy saying so; no in-app reset screens (they'd be spec-derived, §7.1 is design-gated).
+  - The confirm screen's line now ends "Enter it to continue." (it also finishes a new-device sign-in).
+  - Each re-exchange records a `sign_in` security event, as a fresh sign-in would.
+  - pnpm `allowBuilds`: `browser-tabs-lock` and `core-js` (Clerk's deps) set to false; neither script
+    is needed.
+- **Not done / unverified:**
+  - Not run on a phone yet: sign-up with a real email (the seeded `pro@nextkin.test` has no Clerk
+    account, §169), the email code, Google, a restart keeping the session, sign-out.
+  - Google's redirect `nextkin://sso-callback` (and Expo Go's `exp://…/--/sso-callback`) may need
+    adding to Clerk's native redirect allowlist (Dashboard → Native applications) if Clerk refuses it.
+  - Changing the email and linking/unlinking sign-in methods still go to the server, which refuses
+    under Clerk (web too).
+- **Deployed 2026-11-06** (`cdk deploy --asset-parallelism=false`, 636 s): `/health/deep` green;
+  `/auth/clerk/exchange` takes `client: 'mobile'` (a bad token answers 401, not 400). No migrations.
+  **APK:** EAS build `85fbc040-bb82-4239-a7ba-bb9aaf58fc71` (staging, with the Clerk key) finished.
+
+## 174. Figma page "📱 Mobile — as built from code" (owner, 2026-11-06)
+- **What the owner asked.** Draw the mobile screens as they are actually implemented, taken from
+  the code and not from Figma: sign in → Home → the Build flow.
+- **The page.** NEXKTKIN-PVT, page `899:2`. It has 27 phone boards in four rows, plus a READ ME
+  panel that maps the routing:
+  - **1 · Signed out:** Welcome, onboarding 1–3, Get Started, Sign in, the Forgot password sheet,
+    Sign up, Confirm email.
+  - **2 · Signed in:** Home (returning user), First resume, Home just signed up, the Home menu
+    sheet, the two Create sheet steps.
+  - **3 · Build:** J1–J12. Which job?, Build from, Choose a job, Add the job, unreadable link, we
+    read it, profile vs job, add keywords?, writing, ready, Customize (the resume path) and
+    Customize with no resume.
+- **Assets.** Art, icons, logos and the brand mark were uploaded from `apps/mobile/assets` (frame
+  "Assets", left of the page). The line icons were rebuilt from `lineIcons.generated.ts`.
+- **How it was done, and its limits:**
+  - The boards come from a code trace, not screenshots. The app can't run on the web (no
+    `react-native-web`) and no device was attached.
+  - Sizes are the theme's 390-wide values. Expect small spacing differences from a real phone.
+  - Scores, percentages, and the ready page's summary and bullets are sample values. The engine
+    computes the real ones.
+- **Findings the owner may want to look at:**
+  - The onboarding slides come **before** sign-in. Nothing follows sign-in except the first-resume
+    screen, and that shows only right after a new account is created.
+  - The centre tab-bar button opens the AI assistant. The Create sheet is reachable only from
+    Home's empty Resume Progress and from the Resumes tab.
+  - **For anyone who already has a resume, Build goes to Customize (the Tailor screen).** The
+    default "Built from" source is the base resume. The profile comparison (J7–J8) appears only
+    after switching the source to "Your profile".
+  - J1 shows only the first saved job. Everything else is behind "See all".

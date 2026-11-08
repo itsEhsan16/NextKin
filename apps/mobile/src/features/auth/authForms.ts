@@ -84,8 +84,13 @@ const detail = (error: ServerError, key: string): unknown =>
     ? (error.details as Record<string, unknown>)[key]
     : undefined;
 
+// A dropped connection says so; so does Clerk (§173), whose sentence names what it wants instead.
 const fallback = (error: ServerError, otherwise: string): string =>
-  error.code === 'NETWORK' && typeof error.message === 'string' ? error.message : otherwise;
+  (error.code === 'NETWORK' || error.code === 'CLERK') &&
+  typeof error.message === 'string' &&
+  error.message
+    ? error.message
+    : otherwise;
 
 export function signInErrorMessage(error: unknown): string {
   const e = asServerError(error);

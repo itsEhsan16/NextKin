@@ -9,11 +9,12 @@ import { assertSameOriginForWeb, requestMeta } from './auth';
 import { authErrors, commonErrors } from './common';
 
 /**
- * Web sign-in through Clerk (owner, 2026-11-04, toreview §169). Clerk's components sign the user
- * up or in inside the browser; the page then posts its Clerk session token here once. The server
- * verifies it with Clerk, creates the user on first sight (users.ts), and answers with the same
- * `__Host-` session cookie a password sign-in gets, so every other route, RLS and logout are
- * unchanged. Same-origin only (login CSRF), like /auth/login.
+ * Sign-in through Clerk (owner, 2026-11-04, toreview §169; mobile §173). Clerk signs the user up
+ * or in (its components in the browser, its hooks in the app); the client then posts its Clerk
+ * session token here once. The server verifies it with Clerk, creates the user on first sight
+ * (users.ts), and opens a server session: web gets the same `__Host-` cookie a password sign-in
+ * gets; mobile's session is keyed by the Clerk session id its later bearer tokens name. Every
+ * other route, RLS and logout are unchanged. Web is same-origin only (login CSRF), like /auth/login.
  */
 export interface ClerkRouteDeps {
   clerk: ClerkIdentityProvider;
@@ -31,7 +32,7 @@ export function clerkAuthRoutes(deps: ClerkRouteDeps): OpenAPIHono<ApiEnv> {
       tags: ['auth'],
       method: 'post',
       path: '/auth/clerk/exchange',
-      summary: 'Exchange a Clerk session token for a web session cookie.',
+      summary: 'Exchange a Clerk session token for a server session (a cookie on web).',
       request: { body: { required: true, content: { 'application/json': { schema: clerkExchangeSchema } } } },
       responses: {
         200: { description: 'Signed in.', content: { 'application/json': { schema: sessionSchema } } },
@@ -40,10 +41,14 @@ export function clerkAuthRoutes(deps: ClerkRouteDeps): OpenAPIHono<ApiEnv> {
       },
     }),
     async (c) => {
-      assertSameOriginForWeb(c, 'web', trusted);
-      const result = await deps.clerk.exchange(c.req.valid('json').token).catch(authErrorToApp);
-      const signedIn = await deps.auth.complete(result, 'web', requestMeta(c)).catch(authErrorToApp);
-      c.header('Set-Cookie', signedIn.cookie!);
+      const { token, client } = c.req.valid('json');
+      assertSameOriginForWeb(c, client, trusted);
+      const result = await deps.clerk.exchange(token).catch(authErrorToApp);
+      // Mobile (toreview §173): the server session is keyed by Clerk's session id, and the phone
+      // proves itself on every request with a fresh Clerk token (the authenticator's bearer path),
+      // so there is no cookie and no token of ours to hand back.
+      const signedIn = await deps.auth.complete(result, client, requestMeta(c)).catch(authErrorToApp);
+      if (signedIn.cookie) c.header('Set-Cookie', signedIn.cookie);
       return c.json(checked(sessionSchema, { user: signedIn.user }), 200);
     },
   );

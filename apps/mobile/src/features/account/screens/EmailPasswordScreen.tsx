@@ -2,7 +2,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
-  useChangePassword,
+  useChangeSignInPassword,
   useCurrentUser,
   useResetSession,
   useSignOutEverywhere,
@@ -60,7 +60,7 @@ export function EmailPasswordScreen() {
 
   const user = useCurrentUser();
   const updateEmail = useUpdateEmail();
-  const changePassword = useChangePassword();
+  const changePassword = useChangeSignInPassword();
   const signOutEverywhere = useSignOutEverywhere();
   const resetSession = useResetSession();
   const signOut = useSessionStore((state) => state.signOut);

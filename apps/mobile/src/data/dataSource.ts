@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import { createAuthClient } from '@nextkin/shared/auth';
 import { configureRepos, createHttpClient, parseDataSources } from '@nextkin/shared/repos';
 
+import { CLERK_PUBLISHABLE_KEY, clerkTokens } from './clerkSession';
 import { secureTokens } from './secureTokens';
 import { expoUploader } from './uploader';
 
@@ -17,6 +18,8 @@ import { expoUploader } from './uploader';
  */
 export const DATA_SOURCES = parseDataSources(process.env.EXPO_PUBLIC_DATA_SOURCE);
 export const USES_BACKEND = Object.keys(DATA_SOURCES).length > 0;
+/** Sign-in through Clerk (toreview §173): the backend with a Clerk key set. */
+export const USES_CLERK = USES_BACKEND && CLERK_PUBLISHABLE_KEY !== '';
 
 let signedOutHandler: () => void = () => {};
 
@@ -29,7 +32,9 @@ export const http = createHttpClient({
   baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? '',
   client: 'mobile',
   platform: Platform.OS,
-  tokens: secureTokens,
+  // On Clerk the bearer is a fresh Clerk token, and a 401 reopens the server session (lazy: `auth`
+  // is made just below).
+  tokens: USES_CLERK ? clerkTokens((token) => auth.clerkExchange(token)) : secureTokens,
   // The store version from app.config: the server's floor answers older builds with 426.
   clientVersion: Constants.expoConfig?.version,
   onSignedOut: () => signedOutHandler(),

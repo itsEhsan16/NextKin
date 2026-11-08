@@ -3,6 +3,7 @@ export { OnboardingScreen } from './screens/OnboardingScreen';
 export { ConfirmEmailScreen } from './screens/ConfirmEmailScreen';
 export { SignInScreen } from './screens/SignInScreen';
 export { SignUpScreen } from './screens/SignUpScreen';
+export { SsoCallbackScreen } from './screens/SsoCallbackScreen';
 export { WelcomeScreen } from './screens/WelcomeScreen';
 export { useFirstRunStore } from './firstRunStore';
 export { useOnboardingStore } from './onboardingStore';

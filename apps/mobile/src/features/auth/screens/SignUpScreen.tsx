@@ -2,13 +2,19 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { AccessibilityInfo, View, type TextInputInstance } from 'react-native';
 
-import { backendAuth, useStartSignUp } from '@/data/queries';
+import {
+  backendAuth,
+  googleSignInAvailable,
+  useGoogleSignIn,
+  useStartSignUp,
+} from '@/data/queries';
 
 import {
   blankSignUp,
   validateSignUp,
   FIX_FIRST,
   GOOGLE_NOT_CONNECTED,
+  signInErrorMessage,
   signUpErrorMessage,
   type SignUpDraft,
 } from '../authForms';
@@ -61,6 +67,7 @@ export function SignUpScreen() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [refused, setRefused] = useState(false);
   const startSignUp = useStartSignUp();
+  const googleRequest = useGoogleSignIn();
   const startPending = usePendingSignUp((state) => state.start);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -103,17 +110,23 @@ export function SignUpScreen() {
     startSignUp.mutate(
       { name: draft.fullName, email: draft.email, password: draft.password },
       {
-        onSuccess: () => {
+        onSuccess: ({ needsCode }) => {
+          // Clerk may finish an account with no code to confirm (§173).
+          if (!needsCode) {
+            enter();
+            return;
+          }
           startPending(draft.email.trim(), draft.password);
           router.push('/confirm-email');
         },
-        onError: (error) => {
-          const message = signUpErrorMessage(error);
-          setServerError(message);
-          AccessibilityInfo.announceForAccessibility(message);
-        },
+        onError: (error) => refuse(signUpErrorMessage(error)),
       },
     );
+  };
+
+  const refuse = (message: string) => {
+    setServerError(message);
+    AccessibilityInfo.announceForAccessibility(message);
   };
 
   const google = () => {
@@ -121,8 +134,24 @@ export function SignUpScreen() {
       enter();
       return;
     }
-    setServerError(GOOGLE_NOT_CONNECTED);
-    AccessibilityInfo.announceForAccessibility(GOOGLE_NOT_CONNECTED);
+    if (!googleSignInAvailable) {
+      refuse(GOOGLE_NOT_CONNECTED);
+      return;
+    }
+    if (googleRequest.isPending) return;
+    setServerError(null);
+    googleRequest.mutate(undefined, {
+      onSuccess: ({ signedIn, newAccount }) => {
+        if (!signedIn) return;
+        // An existing account that chose Google here is signed in, not sent through first run.
+        if (newAccount) enter();
+        else {
+          markSeen();
+          signIn();
+        }
+      },
+      onError: (error) => refuse(signInErrorMessage(error)),
+    });
   };
 
   // The board sets the chevron beside the lock-up rather than above it, so it comes out of the
@@ -258,6 +287,9 @@ export function SignUpScreen() {
         // landed on the first rather than where the reader came from (§85).
         onPress={() => router.replace('/(auth)/sign-in')}
       />
+
+      {/* Where Clerk mounts its bot check, when the instance turns one on (§173). */}
+      <View nativeID="clerk-captcha" />
     </Screen>
   );
 }

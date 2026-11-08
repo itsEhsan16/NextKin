@@ -8,8 +8,12 @@ export { useBackendServiceStatus } from './useBackendServiceStatus';
 export { useIsOnline } from './useIsOnline';
 export {
   backendAuth,
+  googleSignInAvailable,
   useConfirmSignUp,
+  useGoogleSignIn,
   usePasswordSignIn,
   useResendSignUpCode,
   useStartSignUp,
 } from './useAuth';
+// The account screen's password change: on Clerk the password changes there (§173).
+export { useChangeSignInPassword } from './useChangePassword';

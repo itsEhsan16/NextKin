@@ -43,11 +43,21 @@ export interface ClerkIdentityProvider extends IdentityProvider {
 /** Clerk session tokens live 60 s; the server session is what lasts (sessions.ts). */
 const CLERK_TOKEN_SECONDS = 60;
 
+/** A browser token's `azp` must be one of ours; a native app's token has none. */
+export function azpAllowed(azp: unknown, authorizedParties: readonly string[]): boolean {
+  if (azp === undefined || azp === null || azp === '') return true;
+  return typeof azp === 'string' && authorizedParties.includes(azp);
+}
+
 export function createClerkApi(options: { secretKey: string; authorizedParties: string[] }): ClerkApi {
   const client = createClerkClient({ secretKey: options.secretKey });
   return {
     async verify(token) {
-      const claims = await verifyToken(token, { secretKey: options.secretKey, authorizedParties: options.authorizedParties });
+      // `azp` is checked here, not by verifyToken: given authorizedParties, it refuses a token with
+      // no `azp`, and a native app's token carries none (no browser origin to name). A browser's
+      // token must still name one of our origins (toreview §173).
+      const claims = await verifyToken(token, { secretKey: options.secretKey });
+      if (!azpAllowed(claims.azp, options.authorizedParties)) throw new Error('foreign authorized party');
       return { sub: claims.sub, ...(typeof claims.sid === 'string' ? { sid: claims.sid } : {}) };
     },
     getUser: (userId) => client.users.getUser(userId),

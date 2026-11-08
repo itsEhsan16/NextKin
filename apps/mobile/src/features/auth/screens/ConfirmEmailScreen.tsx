@@ -55,10 +55,11 @@ export function ConfirmEmailScreen() {
     confirm.mutate(
       { email, password, code },
       {
-        onSuccess: () => {
+        onSuccess: ({ newAccount }) => {
           clear();
           markSeen();
-          markFirstRun();
+          // A code can also finish a sign-in on a new device (Clerk, §173): no first run then.
+          if (newAccount) markFirstRun();
           // Flipping the session unmounts this group and lands on the tabs, as sign-in does.
           signIn();
         },
@@ -93,7 +94,7 @@ export function ConfirmEmailScreen() {
           Check your email
         </Text>
         <Text variant="body" color="textSecondary">
-          {`We sent a ${CODE_LENGTH}-digit code to ${email}. Enter it to finish creating your account.`}
+          {`We sent a ${CODE_LENGTH}-digit code to ${email}. Enter it to continue.`}
         </Text>
         <TextField
           label="Verification code"

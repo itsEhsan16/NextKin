@@ -2,7 +2,12 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { AccessibilityInfo, View, type TextInputInstance } from 'react-native';
 
-import { backendAuth, usePasswordSignIn } from '@/data/queries';
+import {
+  backendAuth,
+  googleSignInAvailable,
+  useGoogleSignIn,
+  usePasswordSignIn,
+} from '@/data/queries';
 
 import {
   blankSignIn,
@@ -19,10 +24,12 @@ import { AuthField } from '../components/AuthField';
 import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
 import { GoogleButton } from '../components/GoogleButton';
+import { useFirstRunStore } from '../firstRunStore';
 import { useOnboardingStore } from '../onboardingStore';
+import { usePendingSignUp } from '../pendingSignUp';
 import { useSessionStore } from '../sessionStore';
 import { SIGN_IN, signInDividerMargin } from '../signInLayout';
-import { a11yHeader, hitSlopFor } from '@/lib';
+import { a11yHeader, hitSlopFor, openExternalUrl, WEB_URL } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { ConfirmSheet } from '@/ui/ConfirmSheet';
 import { IconButton } from '@/ui/IconButton';
@@ -37,13 +44,29 @@ import { glyphSpan } from '@/ui/Icon';
  * honestly stand in for, and a link that silently did nothing would be worse than one that
  * explains itself.
  */
-const RESET = {
+const RESET_MOCK = {
   title: 'Password reset needs a real account',
   message:
     'Resetting a password means a single-use link emailed by our identity provider (V2 §7.1). ' +
     'This build has no server and no accounts behind it — any email and password sign you into ' +
     'the same pre-seeded demo account, so there is nothing to recover.',
+  confirmLabel: 'Back to sign in',
 };
+
+/**
+ * On the backend the reset runs on the website's sign-in page, whose form (Clerk's) emails the
+ * code; the new password then works here too. A reset inside the app waits for its own screens
+ * (toreview §173).
+ */
+const RESET_WEB = {
+  title: 'Reset your password',
+  message:
+    'Open the NextKin website’s sign-in page and choose “Forgot password?”. We’ll email you a ' +
+    'code; once you’ve set a new password, come back and sign in here with it.',
+  confirmLabel: 'Open the website',
+};
+
+const RESET = backendAuth ? RESET_WEB : RESET_MOCK;
 
 /**
  * Sign in (Figma 309:175).
@@ -69,6 +92,9 @@ export function SignInScreen() {
   const styles = useStyles();
   const signIn = useSessionStore((state) => state.signIn);
   const markSeen = useOnboardingStore((state) => state.markSeen);
+  const markFirstRun = useFirstRunStore((state) => state.mark);
+  const startPending = usePendingSignUp((state) => state.start);
+  const googleRequest = useGoogleSignIn();
 
   const [draft, setDraft] = useState<SignInDraft>(blankSignIn);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -117,13 +143,23 @@ export function SignInScreen() {
     if (signInRequest.isPending) return;
     setServerError(null);
     signInRequest.mutate(draft, {
-      onSuccess: enter,
-      onError: (error) => {
-        const message = signInErrorMessage(error);
-        setServerError(message);
-        AccessibilityInfo.announceForAccessibility(message);
+      onSuccess: ({ needsCode }) => {
+        if (!needsCode) {
+          enter();
+          return;
+        }
+        // Clerk checking a new device: the code screen finishes the sign-in (§173).
+        startPending(draft.email.trim(), draft.password);
+        router.push('/confirm-email');
       },
+      onError: refuse,
     });
+  };
+
+  const refuse = (error: unknown) => {
+    const message = signInErrorMessage(error);
+    setServerError(message);
+    AccessibilityInfo.announceForAccessibility(message);
   };
 
   const google = () => {
@@ -131,8 +167,21 @@ export function SignInScreen() {
       enter();
       return;
     }
-    setServerError(GOOGLE_NOT_CONNECTED);
-    AccessibilityInfo.announceForAccessibility(GOOGLE_NOT_CONNECTED);
+    if (!googleSignInAvailable) {
+      setServerError(GOOGLE_NOT_CONNECTED);
+      AccessibilityInfo.announceForAccessibility(GOOGLE_NOT_CONNECTED);
+      return;
+    }
+    if (googleRequest.isPending) return;
+    setServerError(null);
+    googleRequest.mutate(undefined, {
+      onSuccess: ({ signedIn, newAccount }) => {
+        if (!signedIn) return;
+        if (newAccount) markFirstRun();
+        enter();
+      },
+      onError: refuse,
+    });
   };
 
   // The board sets the chevron beside the lock-up rather than above it, so it comes out of the
@@ -286,9 +335,12 @@ export function SignInScreen() {
         tone="neutral"
         title={RESET.title}
         message={RESET.message}
-        confirmLabel="Back to sign in"
+        confirmLabel={RESET.confirmLabel}
         cancelLabel="Close"
-        onConfirm={() => setResetOpen(false)}
+        onConfirm={() => {
+          setResetOpen(false);
+          if (backendAuth) openExternalUrl(`${WEB_URL}/sign-in`);
+        }}
         onCancel={() => setResetOpen(false)}
       />
     </>

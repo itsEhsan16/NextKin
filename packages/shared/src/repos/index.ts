@@ -42,7 +42,7 @@ export {
 } from './create';
 export type { DataSource, RepoConfig, RepoName } from './create';
 export { ApiError, collectPages, createHttpClient } from './http/client';
-export type { HttpClient, HttpClientOptions, TokenStore } from './http/client';
+export type { HttpClient, HttpClientOptions, RefreshOutcome, TokenStore } from './http/client';
 export { browserUploader } from './http/uploads';
 export type { FileUploader } from './http/uploads';
 

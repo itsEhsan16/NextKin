@@ -22,6 +22,9 @@ allowBuilds:
   '@parcel/watcher': false
   # Its script downloads the CLI; the binary already ships as an optional dependency.
   '@sentry/cli': false
+  # Clerk's (mobile): neither script is needed to run.
+  browser-tabs-lock: false
+  core-js: false
 
 # Security floors from `pnpm scan:deps` (P13-01): a transitive dependency held below its fixed
 # release. Remove an entry once the package that pulls it in requires the fixed version itself.
