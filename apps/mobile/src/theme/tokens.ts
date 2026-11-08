@@ -116,6 +116,16 @@ export const colorsByScheme = {
     avatarStack3: palette.ink500,
     fabFill: palette.brand600,
     fabGlyph: palette.offWhite,
+    /**
+     * The bottom bar's selected tab and AI button (§193): a light violet into the brand into a deep
+     * indigo, the reference's cyan-to-navy in our own colours. The glow under the bar is the brand.
+     */
+    navGradientStart: '#8B7DFF',
+    navGradientMid: palette.brand500,
+    navGradientEnd: '#2A18C9',
+    navGlow: palette.brand500,
+    /** Unselected tabs: the deep ink of the page's titles, not black (§193). */
+    navInactive: palette.ink950,
     scrim: 'rgba(10, 10, 10, 0.5)',
     /** Ink for shadows drawn inside an SVG, where a View shadow cannot follow the shape. */
     shadowInk: palette.black,
@@ -229,6 +239,11 @@ export const colorsByScheme = {
     avatarStack3: '#9AA1AE',
     fabFill: palette.brand500,
     fabGlyph: palette.white,
+    navGradientStart: '#9B8CFF',
+    navGradientMid: palette.brand500,
+    navGradientEnd: '#2A18C9',
+    navGlow: palette.brand500,
+    navInactive: '#9AA1AE',
     scrim: 'rgba(0, 0, 0, 0.6)',
     shadowInk: palette.black,
     skeletonBase: palette.dark700,

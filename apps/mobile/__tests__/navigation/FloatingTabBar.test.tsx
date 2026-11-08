@@ -97,17 +97,14 @@ describe('FloatingTabBar', () => {
     expect(Haptics.impactAsync).not.toHaveBeenCalled();
   });
 
-  it('glides its light under the tab you pick, before the route catches up (§192)', async () => {
+  it('glides the gradient pill to the tab you pick, before the route catches up (§193)', async () => {
     await renderBar(['(tabs)']);
-    const light = screen.getByTestId('tab-light', { includeHiddenElements: true });
-    const shift = () =>
-      (StyleSheet.flatten(light.props.style).transform as { translateX?: number }[]).find(
-        (step) => step.translateX != null,
-      )?.translateX ?? NaN;
-    const atHome = shift();
+    const pill = screen.getByTestId('tab-light', { includeHiddenElements: true });
+    const left = () => Number(StyleSheet.flatten(pill.props.style).left);
+    const atHome = left();
 
     fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
-    await waitFor(() => expect(shift()).toBeGreaterThan(atHome));
+    await waitFor(() => expect(left()).toBeGreaterThan(atHome));
   });
 
   it('selects the pressed tab before the route catches up', async () => {
@@ -168,29 +165,32 @@ describe('FloatingTabBar', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('tints the selected tab brand and the rest grey', async () => {
+  it('draws the selected tab in white on the gradient and the rest in ink (§193)', async () => {
     await renderBar(['(tabs)', 'jobs']);
 
-    // The redrawn bar (429:7518) is the first to colour the selected tab differently from the
-    // others; every earlier board drew all four in the same ink, so nothing here caught a label
-    // that kept the old single colour.
-    const colorOf = (label: string) =>
-      StyleSheet.flatten(screen.getByText(label).props.style).color;
-
-    expect(colorOf('Jobs')).toBe(lightTheme.colors.tabActive);
-    expect(colorOf('Home')).toBe(lightTheme.colors.tabInactive);
-    expect(colorOf('Resumes')).toBe(lightTheme.colors.tabInactive);
-    expect(lightTheme.colors.tabActive).not.toBe(lightTheme.colors.tabInactive);
+    // Each label has a white copy and an ink copy that cross-fade; the selected tab shows white.
+    const shownOpacity = (label: string, color: string) => {
+      const copy = screen
+        .getAllByText(label, { includeHiddenElements: true })
+        .find((node) => StyleSheet.flatten(node.props.style).color === color);
+      let node = copy?.parent;
+      while (node && StyleSheet.flatten(node.props.style)?.opacity === undefined)
+        node = node.parent;
+      return StyleSheet.flatten(node?.props.style)?.opacity;
+    };
+    await waitFor(() => expect(shownOpacity('Jobs', lightTheme.colors.textOnBrand)).toBe(1));
+    expect(shownOpacity('Home', lightTheme.colors.textOnBrand)).toBe(0);
+    expect(lightTheme.colors.navInactive).not.toBe(lightTheme.colors.textOnBrand);
   });
 
-  it('cross-fades each label between two stacked copies, one hidden from assistive tech', async () => {
+  it('names each tab once for assistive tech; the label copies are drawing only', async () => {
     await renderBar(['(tabs)', 'jobs']);
 
-    // Each label exists twice — grey and violet — so its colour can fade with the icon instead of
-    // snapping (§83.1). Only the copy that is showing is exposed.
-    const copies = screen.getAllByText('Jobs', { includeHiddenElements: true });
-    expect(copies).toHaveLength(2);
-    expect(screen.getAllByText('Jobs')).toHaveLength(1);
+    // Two drawn copies per label (white and ink) for the cross-fade, both hidden: the tab itself
+    // carries the name.
+    expect(screen.getAllByText('Jobs', { includeHiddenElements: true })).toHaveLength(2);
+    expect(screen.queryAllByText('Jobs')).toHaveLength(0);
+    expect(screen.getByRole('tab', { name: 'Jobs', selected: true })).toBeOnTheScreen();
   });
 
   it('stays interactive and readable, leaving open sheets to the tabs layout', async () => {

@@ -56,21 +56,17 @@ describe('layoutScaleFor', () => {
 describe('tabBarLayoutFor', () => {
   const insetBottom = 34; // iPhone home indicator
 
-  it('reproduces the Figma pill at the design width', () => {
-    const layout = tabBarLayoutFor(layoutScaleFor(sizes.designWidth), 0);
-    // Home Screen 215:490 draws a 299.9475 x 61.633 pill with a 49.99 FAB overhanging 13.7 on a
-    // 390 board. These are the 520 equivalents, with NAV_BOOST (1.1) on top.
-    expect(layout.pillWidth).toBe(440);
-    expect(layout.pillHeight).toBeCloseTo(90.396, 3);
-    expect(layout.pillRadius).toBeCloseTo(45.198, 3);
-    expect(layout.fabSize).toBeCloseTo(73.321, 3);
-    expect(layout.fabOverhang).toBeCloseTo(20.088, 3);
-  });
-
-  it('keeps the pill at 84.6% of the screen width on a phone', () => {
+  it('puts the pill and the AI button on one line inside the gutters (§193)', () => {
     const layout = tabBarLayoutFor(layoutScaleFor(IPHONE_14), insetBottom);
-    // pillWidth is rounded to whole pixels, so allow sub-pixel drift.
-    expect(layout.pillWidth / IPHONE_14).toBeCloseTo((299.9475 * 1.1) / 390, 2);
+    // Pill, a 10 gap and the round button, 16 in from each side at 390.
+    const u = (value: number) => layoutScaleFor(IPHONE_14).s(value / 0.75);
+    expect(layout.pillLeft).toBeCloseTo(u(16), 3);
+    expect(layout.fabRight).toBeCloseTo(u(16), 3);
+    expect(
+      layout.pillLeft + layout.pillWidth + u(10) + layout.fabSize + layout.fabRight,
+    ).toBeCloseTo(IPHONE_14, 0);
+    expect(layout.fabSize).toBe(layout.pillHeight);
+    expect(layout.pillRadius).toBe(layout.pillHeight / 2);
   });
 
   it('lifts the bar above the safe-area inset', () => {
@@ -78,13 +74,10 @@ describe('tabBarLayoutFor', () => {
     expect(layout.bottomOffset).toBeGreaterThan(insetBottom);
   });
 
-  it('positions the FAB so it overhangs the top of the pill', () => {
+  it('sits the AI button on the bar line, not above it', () => {
     const layout = tabBarLayoutFor(layoutScaleFor(IPHONE_14), insetBottom);
-    const pillTop = layout.bottomOffset + layout.pillHeight;
-    const fabTop = layout.fabBottom + layout.fabSize;
-    expect(fabTop).toBeCloseTo(pillTop + layout.fabOverhang, 5);
-    // The FAB must still overlap the pill rather than float free of it.
-    expect(layout.fabBottom).toBeLessThan(pillTop);
+    expect(layout.fabBottom).toBe(layout.bottomOffset);
+    expect(layout.fabOverhang).toBe(0);
   });
 
   it('reserves enough scroll inset to clear the whole floating chrome', () => {

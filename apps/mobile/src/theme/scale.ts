@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { PixelRatio, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { NAV_BOOST, sizes, spacing } from './tokens';
+import { sizes, spacing } from './tokens';
 
 /**
  * The Figma artboards are 520px wide — wider than any phone (360–430dp). Every *length* measured
@@ -86,55 +86,54 @@ export function useLayoutScale(): LayoutScale {
 }
 
 /**
- * Floating tab bar geometry from Home Screen 215:490: a 299.9475 × 61.633 pill (76.9% of the
- * 390 frame) with a 49.99 FAB whose top pokes 13.7 above it — all quoted here in 390 space, and
- * held in `sizes` as the 520 equivalents. Shared by FloatingTabBar, Fab and Screen so the inset
- * math agrees.
- *
- * Reads the raw `sizes` and applies `s()` itself, so it must never be fed the scaled theme.
+ * Floating tab bar geometry (redrawn 2026-11-08, §193): a rounded pill of four tabs on the left
+ * and the AI button as its own circle on the right, the two on one line inside the gutters.
+ * Shared by FloatingTabBar, Fab, TabBarScrim and Screen so the inset math agrees.
  */
 export type TabBarLayout = {
+  /** The tab pill's left edge, from the screen's left. */
+  pillLeft: number;
   pillWidth: number;
   pillHeight: number;
   pillRadius: number;
   /** Distance from the screen bottom to the pill's bottom edge (includes the safe-area inset). */
   bottomOffset: number;
   fabSize: number;
-  /** How far the FAB extends above the pill's top edge. */
+  /** How far the FAB extends above the pill's top edge: none, it sits on the same line. */
   fabOverhang: number;
   /** Distance from the screen bottom to the FAB's bottom edge. */
   fabBottom: number;
+  /** The FAB's right edge, from the screen's right. */
+  fabRight: number;
   iconSize: number;
   /** Total vertical space scrolling content must reserve. */
   contentInset: number;
 };
 
-/**
- * Pill width as a share of the frame, from Home Screen 215:490: 299.9475 on a 390 board.
- *
- * The older boards draw the same component at 372.675/520 = 71.7%. This one places it at 80.5%
- * of its 520 size on a 390 frame, which works out 7.3% wider relative to the screen — the nav
- * grew, the frame did not.
- */
-const PILL_WIDTH_RATIO = (299.9475 * NAV_BOOST) / 390;
+/** At 390: the pill and the button are 64 tall, 16 in from each side and 10 apart. */
+const BAR = { height: 64, gutter: 16, gap: 10 } as const;
 
 export function tabBarLayoutFor(layout: LayoutScale, insetBottom: number): TabBarLayout {
   const { s, width } = layout;
-  const pillHeight = s(sizes.tabBarHeight);
+  const u = (value: number) => s(value / 0.75);
+  const frame = frameWidth(width);
+  const side = (width - frame) / 2 + u(BAR.gutter);
+  const pillHeight = u(BAR.height);
+  const fabSize = pillHeight;
   // The safe-area inset is physical device space — it is added, never scaled.
   const bottomOffset = s(sizes.tabBarBottomOffset) + insetBottom;
-  const fabSize = s(sizes.fab);
-  const fabOverhang = s(sizes.fabOverhang);
   return {
-    pillWidth: Math.round(frameWidth(width) * PILL_WIDTH_RATIO),
+    pillLeft: side,
+    pillWidth: Math.round(frame - u(BAR.gutter) * 2 - fabSize - u(BAR.gap)),
     pillHeight,
     pillRadius: pillHeight / 2,
     bottomOffset,
     fabSize,
-    fabOverhang,
-    fabBottom: bottomOffset + pillHeight + fabOverhang - fabSize,
-    iconSize: s(21),
-    contentInset: bottomOffset + pillHeight + fabOverhang + s(spacing[2]),
+    fabOverhang: 0,
+    fabBottom: bottomOffset,
+    fabRight: side,
+    iconSize: u(22),
+    contentInset: bottomOffset + pillHeight + s(spacing[2]),
   };
 }
 

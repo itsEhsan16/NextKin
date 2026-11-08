@@ -16452,3 +16452,26 @@ The owner asked for an animated bottom bar "inspired by 60fps design".
   - Web preview: the light sits under Jobs, then Profile.
   - The Android bundle builds; Expo was restarted on 8090.
   - The glide itself is phone-only: the web preview always reports reduced motion.
+
+## §193 — Bottom bar redrawn to the owner's reference, in our violet (owner, 2026-11-08)
+The owner sent a reference bar and asked for it "exactly same, but match our theme colour". It replaces §192's lavender light and the old notched pill.
+- **Layout:**
+  - A white rounded pill (64 tall at 390, hairline edge) holds the four tabs.
+  - The AI button is its own 64 gradient circle on the right, on the same line.
+  - Both sit 16 in from the edges, 10 apart.
+  - `tabBarLayoutFor` gained `pillLeft` / `fabRight`. `fabOverhang` is now 0. `contentInset` is the pill's height plus the usual spacing.
+- **Selected tab:** a gradient pill (`navGradientStart #8B7DFF` → brand500 → `navGradientEnd #2A18C9`, diagonal) with the filled icon and the label in white (`bodyLgStrong`).
+  - Its width is the icon plus the measured label.
+  - On a tap it glides and resizes to the new tab, while the other tabs make room, all on one spring (420 ms, dampingRatio 0.88, no bounce) on the UI thread.
+  - The icon stays at a fixed inset inside its tab, so it never slides. The label fades in or out and is clipped by the tab as the tab grows.
+- **Unselected tabs:** an outline icon in ink (`navInactive` ink950).
+  - Judgement call: at phone width the four labels plus the button don't fit on one line (about 356 needed against 276 available), so unselected tabs show their icon only.
+  - When the pill has room for every label (a tablet), every tab shows its label, exactly as the reference draws it. `layoutTabs` decides this from the measured label widths.
+- **Glow:** a soft violet ellipse under the pill (an SVG radial gradient, the same on iOS and Android). The AI button keeps its Gaussian glow, now violet (`navGlow`), and its own gradient disc with a light rim.
+- **Unchanged:** one selection tick per tab press (§191), the re-tap scroll-to-top, and the pressed tab showing before the route catches up.
+- **Removed:** `TabBarItem`, `TabBarShape` (the notch) and `TabBarIndicator` (§192).
+- **Verified:**
+  - Jest: 1933 tests pass. The tab-bar and layout tests were rewritten for the new geometry and colours. tsc and eslint are clean.
+  - Web preview at 390: Home, then Resumes, as the reference.
+  - The Android bundle builds; Expo was restarted on 8090.
+  - Not checked on a phone. The glide is phone-only: the web preview always reports reduced motion.

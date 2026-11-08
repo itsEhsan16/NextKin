@@ -5,7 +5,8 @@ import Animated, {
   useSharedValue,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
+import { useId } from 'react';
+import Svg, { Circle, Defs, LinearGradient, RadialGradient, Stop } from 'react-native-svg';
 
 import FabSparkleIcon from '../../assets/icons/nav/fab-sparkle.svg';
 import { haptics, a11yButton, useReducedMotion } from '@/lib';
@@ -47,10 +48,12 @@ const GLOW_STOPS: readonly (readonly [number, number])[] = [
 function FabGlow({
   size,
   bottom,
+  right,
   pressed,
 }: {
   size: number;
   bottom: number;
+  right: number;
   /** The button's own press (0 → 1), so the glow shrinks with the disc instead of staying put. */
   pressed: SharedValue<number>;
 }) {
@@ -76,7 +79,7 @@ function FabGlow({
       pointerEvents="none"
       style={[
         styles.glow,
-        { width: box, height: box, bottom: bottom - reach - GLOW.dy * k },
+        { width: box, height: box, bottom: bottom - reach - GLOW.dy * k, right: right - reach },
         pressStyle,
       ]}
     >
@@ -87,7 +90,7 @@ function FabGlow({
               <Stop
                 key={stop.offset}
                 offset={stop.offset}
-                stopColor={colors.fabFill}
+                stopColor={colors.navGlow}
                 stopOpacity={stop.alpha}
               />
             ))}
@@ -100,19 +103,27 @@ function FabGlow({
 }
 
 /**
- * The centre button: the AI assistant's chat (owner, 2026-10-04 — it was the create "+"). One tap
+ * The AI button (redrawn 2026-11-08, §193): its own glowing gradient circle at the right end of
+ * the bar, the reference's look in our violet. Before, it sat in a notch in the bar's middle.
+ * The AI assistant's chat (owner, 2026-10-04 — it was the create "+"). One tap
  * opens the assistant. Creating lives where it is asked for, on Home's create tile and Resumes'
  * "+ New", which still raise the create sheet.
  */
 export function Fab() {
   const { colors, radii } = useTheme();
   const layout = useTabBarLayout();
+  const fill = `fabFill${useId().replace(/:/g, '')}`;
   const router = useRouter();
   const pressed = useSharedValue(0);
 
   return (
     <>
-      <FabGlow size={layout.fabSize} bottom={layout.fabBottom} pressed={pressed} />
+      <FabGlow
+        size={layout.fabSize}
+        bottom={layout.fabBottom}
+        right={layout.fabRight}
+        pressed={pressed}
+      />
       <Pressable
         {...a11yButton('AI assistant', 'Opens the assistant chat')}
         // The deeper FAB press (0.92), shared with the glow so the two move as one.
@@ -130,14 +141,34 @@ export function Fab() {
             height: layout.fabSize,
             borderRadius: radii.full,
             bottom: layout.fabBottom,
+            right: layout.fabRight,
             backgroundColor: colors.fabFill,
           },
         ]}
       >
+        {/* The gradient disc: light violet at the top left into a deep indigo, with a soft rim. */}
+        <Svg width={layout.fabSize} height={layout.fabSize} style={StyleSheet.absoluteFill}>
+          <Defs>
+            <LinearGradient id={fill} x1="0.1" y1="0" x2="0.9" y2="1">
+              <Stop offset="0" stopColor={colors.navGradientStart} />
+              <Stop offset="0.5" stopColor={colors.navGradientMid} />
+              <Stop offset="1" stopColor={colors.navGradientEnd} />
+            </LinearGradient>
+          </Defs>
+          <Circle
+            cx={layout.fabSize / 2}
+            cy={layout.fabSize / 2}
+            r={layout.fabSize / 2 - 1}
+            fill={`url(#${fill})`}
+            stroke={colors.navGradientStart}
+            strokeOpacity={0.5}
+            strokeWidth={2}
+          />
+        </Svg>
         <FabSparkleIcon
           width={layout.fabSize * SPARKLE.w}
           height={layout.fabSize * SPARKLE.h}
-          color={colors.fabGlyph}
+          color={colors.textOnBrand}
           style={{ transform: [{ translateY: layout.fabSize * SPARKLE.dy }] }}
         />
       </Pressable>
@@ -148,9 +179,9 @@ export function Fab() {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  glow: { position: 'absolute', alignSelf: 'center' },
+  glow: { position: 'absolute' },
 });
