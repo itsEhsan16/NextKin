@@ -16519,6 +16519,80 @@ The owner: "Remove the profile button, and make this as profile button", pointin
   - The Android bundle builds.
   - Not checked on a phone.
 
+## §196 — Smoothness re-audit: one diagonal shimmer, silhouettes, navigation and data fixes (owner, 2026-11-08)
+The owner re-sent the §191 brief with two reference screenshots (dark skeletons with a diagonal light band) and chose "re-audit everything", **mobile only**. They said loading showed "a very bad dark boundary-like effect" and asked for something similar to the references, in light colours, with a diagonal band. Three read-only audits came first: skeletons, navigation and overlays, data and lists.
+
+### 1. The dark edge, and the new shimmer (2adc7d0)
+- **Cause** (no dark colour was involved): crisp grey blocks inside Android-elevated or bordered cards. Android's elevation draws a hard dark lower edge. On top of that:
+  - the skeleton's `FadeOut` sat over freshly mounted content;
+  - each block clipped its own narrow horizontal band;
+  - cool grey sat on the lavender wash.
+- **`Skeleton` redrawn:** one diagonal band (20°, 60% of the screen wide) in **screen space**. Each block measures its window position once and draws its slice, so every block lights up as one surface.
+  - New tokens: `motion.shimmer` (bandShare, tiltDeg, peak), `durations.shimmer` 1600.
+  - `skeletonBase` is ink at 5% (`palette.skeleton`), so it reads on white and on the wash alike.
+  - `skeletonHighlight` is white.
+  - There is no `exiting` any more, and the 150 ms delay stays.
+- **`Card loading`:** keeps the card's size, with no border and no shadow. Used on ResumeProgressCard and JdIntakeSection. BuildJob's pending rows sit outside the bordered `ProfileCard`.
+- **Silhouette kit** (`SkeletonShapes.tsx`): `SkeletonBlock`, `SkeletonRow`, `SkeletonCircle`, `SkeletonLines`, `SkeletonListRow`.
+  - Home: header bars, two match cards, shortcut block, and the progress row as thumbnail + lines + ring.
+  - Notifications, History, Versions and Assistant chats: list rows.
+  - Tailor/Cover resume rows and Build job rows: thumbnail or tile + lines + disc.
+  - Profile identity, the job hero and the company hero: tile or bars at the old heights.
+- **Home lands once:** first paint waits for user, picks and resumes (`isLoading`, so a switched-off query never holds it). There is no second wave of section skeletons.
+  - Sections fade without the slide.
+  - The progress card mounting later no longer replays its entrance.
+- **Judgement calls:**
+  - Cards stay plain blocks, as the references draw them. Silhouettes are a few shapes per section, never a bar per word.
+  - The page-preview skeletons (ResumePagePreview, ZeroDraftPreview, CoverReady) keep one text block inside the floating paper page: there the page is the design, not a frame.
+  - The other flow skeletons (Tailor/ATS/Cover setup, editor, score, legal, help, upgrade) keep their §191 blocks, which now carry the new shimmer.
+- **Checked and left alone:** TailorCompare and JdPage already show an error on a failed query; they only wait while data is genuinely missing.
+
+### 2. Navigation and overlays
+- **Grey flash on every tab switch:** no navigation theme was mounted, so tab scenes sat on React Navigation's `#F2F2F2`, and the fade showed it. Now `sceneStyle: surfacePage`.
+- **Double fade at launch:** the first tab scene now starts visible (module flag `launched`). Tabs opened later still fade.
+- **Redirect-only build routes** (`create/build/jobs|review|unreadable`): `animation: 'none'`, so arriving plays one transition.
+- **Double-tap guard:** `useGuardedRouter` (`src/navigation/guardedRouter.ts`) drops a second `push`/`navigate` within `durations.navGuard` (450).
+  - Used by the Home, Jobs and Generations actions, HomeMenuHost, CopiedLinkHost, CreateSheetHost and the Fab.
+  - `replace`, `back` and `dismiss` are not guarded, because flows replace themselves programmatically.
+  - Jest sets `navigationGate.windowMs = 0` (jest.setup.ts); `__tests__/navigation/guardedRouter.test.ts` covers the real window.
+- **Sheet and Dialog** take no taps while closing (`pointerEvents` none once `open` is false).
+- **Dialog** grows from 0.96 on the new `springs.dialogIn` (critically damped) instead of overshooting on `sheetIn`.
+- **Motion tokens:**
+  - BookmarkGlyph, StepGlyph and SuccessMark move from `springs.bouncy` to `springs.gentle`.
+  - The bar's LEAD/TRAIL/SLIDE springs are now `springs.barLead/barTrail/barSlide`, with the same values, so the bar looks the same.
+  - The label fade uses `timings.press`.
+  - BuildJob's bare `FadeIn` gets a token duration.
+- **Meters no longer sweep from 0 on every visit** (`memoryKey`): the Home progress bar and ring, profile completeness and stats, the plan and usage meters, the match ring and the generation score ring.
+  - Judgement call: AtsResult, ReviewParts, ZeroReview, ScoreParts/Section, CriteriaGroups, MarkSummary and CompletenessRing keep their arrival sweep. They are one-off results, or have no stable id.
+- **"Did you apply?"** (`useDueApplicationAsk`) is asked and refetched once per app foreground, not on every focus. It used to pop up the moment Back landed on Home.
+- **Not done:**
+  - `animationTypeForReplace` was not reviewed across the ~50 `replace` sites; most are forward steps in a flow.
+  - There is still no navigation `ThemeProvider` (`sceneStyle` + the stack's `contentStyle` cover the backgrounds).
+
+### 3. Data, lists, re-renders
+- **Polling pauses in the background:** `focusManager` follows `AppState` (`src/data/connection.ts`). The run and assistant pollers in `packages/shared/src/repos/http` wait while unfocused (`whileAway`).
+- **One watch per run:** `watchGeneration` (useGenerations.ts) is reference-counted per query client and run id. It is shared by `useGeneration` and `useActiveGeneration`, so Home, the run screen and History no longer poll the same run twice or sweep twice.
+- **A finished run** refreshes the library list and its own documents' queries (`resumeId`, `sourceResumeId`), not every `resumes` query.
+- **`retryOnce`:** one retry for network, 5xx, 408 and 429 errors, none for other 4xx, so an error state shows at once.
+- **`useResumes`:** one stable selector per sort order.
+- **Memo fixes:**
+  - Jobs' applied cards share one `openApplied` handler.
+  - The Interview list shares one `openCard`.
+  - `JobCard`'s `sameCard` now compares `clash` (a bug: a stale clash pill could stay).
+  - `Avatar` memoises its source.
+- **Not done (judgement calls, regression risk without a phone):**
+  - The Assistant transcript stays a ScrollView `.map`; moving it to FlashList needs a device check of scroll-to-end and the keyboard.
+  - The unbounded sheet and list `.map`s, `useLoop` pausing on blur, the TabWarmup re-render throttle and `RichText` memo were also left.
+  - Billing's `qk.user.all` and profile's `qk.profile.all` invalidations stay (rare, and only active queries refetch).
+
+### Verified
+- Jest (mobile): 1952 tests pass, including the new guard test. `pnpm typecheck` and `pnpm lint` are clean.
+- Shared Vitest: 446 of 447 pass. The one failure, `adminContent.test.ts` "technology KB › keeps an edit off the entry…", is a 5 s timeout that also fails on main without these changes.
+- The Android bundle from a Metro for main on 8092 builds (HTTP 200).
+- **Not checked on a phone:** the diagonal sweep, the absence of dark edges, Home landing once, the tab background, the guard's feel, and the background poll pause.
+  - The web preview always reports reduced motion, so it can't show the band.
+  - **The Metro on 8090 serves the `app-ui-ux-redesign-1a1793` worktree (at 67f05ef), not main.** A phone on 8090 will not show §196 until that worktree takes main, or the phone uses the main Metro.
+
 <!-- 172b–174b were numbered 172–174 on the Clerk sign-in branch (2026-11-06) and renamed when it merged into main on 2026-11-08, after the redesign's own 172–195. -->
 
 ## 172b. First staging APK for a phone test (owner, 2026-11-06)
