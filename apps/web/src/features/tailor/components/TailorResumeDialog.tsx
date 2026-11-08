@@ -64,8 +64,8 @@ export function TailorResumeDialog({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[min(640px,calc(100dvh-2rem))] w-[min(600px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[min(640px,calc(100dvh-2rem))] w-[min(600px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
           <div className="px-7 pb-4 pt-7">
             <Dialog.Title className="text-h2 font-bold text-text-primary">
               Which resume should we tailor?

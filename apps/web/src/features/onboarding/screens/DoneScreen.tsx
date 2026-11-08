@@ -1,7 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { Skeleton } from '@/ui/Skeleton';
 
 import { NextSteps } from '../components/NextSteps';
@@ -16,7 +15,7 @@ import { useStartingPoint } from '../useStartingPoint';
  * uses no generation quota: it is a profile summary, not a generated resume (`toreview.md` §106).
  */
 export function DoneScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const point = useStartingPoint();
 
   return (

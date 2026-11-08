@@ -1,9 +1,9 @@
 'use client';
 
 import { useProfile, useUpsertEducation } from '@nextkin/shared/queries';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
 import { ApartmentIcon, ChevronRightIcon, SchoolIcon } from '@/ui/icons';
@@ -33,7 +33,7 @@ const NEXT = '/onboarding/done';
  * question", nothing is saved.
  */
 export function EducationStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const profile = useProfile();
   const upsert = useUpsertEducation();
   const { education, answer } = useOnboardingStore();

@@ -8,8 +8,8 @@ import {
   useSubscription,
 } from '@nextkin/shared/queries';
 import type { Route } from 'next';
-import { useRouter } from 'next/navigation';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { tailorPath, useTailorTarget } from '@/features/tailor/tailorTarget';
 import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { cn } from '@/lib/cn';
@@ -45,7 +45,7 @@ export function atsHref(q: { resumeId?: string; step?: 'job'; run?: string } = {
  * (saved or from anywhere, step 1's own picker), then the check and the score.
  */
 export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const subscription = useSubscription();
   const extract = useExtractJd();
   const start = useStartGeneration();

@@ -3,7 +3,6 @@
 import type { Job, Profile } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import {
@@ -14,6 +13,7 @@ import {
   stepCard,
   TrustNote,
 } from '@/features/create/jobFlow/FlowChrome';
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { ArrowRight, File06, Folder, Stars02 } from '@/ui/lineIcons';
 
 import { MethodCard, Selection } from './MethodCard';
@@ -56,7 +56,7 @@ export function MethodStep({
   onProfile: () => void;
   onUploaded: (resumeId: string) => void;
 }) {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const [method, setMethod] = useState<Method | null>(null);
   const [open, setOpen] = useState<Method | null>(null);
   const [uploaded, setUploaded] = useState<{ resumeId: string; name: string } | null>(null);

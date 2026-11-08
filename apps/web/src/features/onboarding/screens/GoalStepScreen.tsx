@@ -2,9 +2,9 @@
 
 import { MAX_DESIRED_ROLES, type ProfilePreferences } from '@nextkin/shared/models';
 import { useProfile, useUpdatePreferences } from '@nextkin/shared/queries';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { showToast } from '@/lib/toast';
 import { BriefcaseIcon } from '@/ui/icons';
 
@@ -20,7 +20,7 @@ import { useOnboardingStore } from '../onboardingStore';
  * which is what the job matcher reads.
  */
 export function GoalStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const profile = useProfile();
   const updatePreferences = useUpdatePreferences();
   const { name, goal, targetRole = '', answer } = useOnboardingStore();

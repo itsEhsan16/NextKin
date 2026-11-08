@@ -1,9 +1,9 @@
 'use client';
 
 import { useProfile, useUpsertExperience } from '@nextkin/shared/queries';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
 import { Checkbox } from '@/ui/Checkbox';
@@ -30,7 +30,7 @@ import {
  * worked yet" skips the roles without saving anything.
  */
 export function WorkStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const profile = useProfile();
   const upsert = useUpsertExperience();
   const { roles, noWork = false, answer } = useOnboardingStore();

@@ -1,9 +1,9 @@
 'use client';
 
 import { isUnreadableFileError, useImportResume } from '@nextkin/shared/queries';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { CollapseFade } from '@/ui/CollapseFade';
 
 import { QuestionLayout } from '../components/QuestionLayout';
@@ -23,7 +23,7 @@ const FAILED = 'Something went wrong reading your resume. Try again, or choose a
  * it on a review, which is not drawn yet. Continue goes on to ONB 08, the starting point.
  */
 export function UploadStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const importResume = useImportResume();
   const { resumeFile, resumeSummary, answer } = useOnboardingStore();
   const [picked, setPicked] = useState<string | null>(null);

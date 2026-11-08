@@ -1,9 +1,9 @@
 'use client';
 
 import { useProfile, useUpdatePreferences, useUpdateProfile } from '@nextkin/shared/queries';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { showToast } from '@/lib/toast';
 import { BriefcaseIcon } from '@/ui/icons';
 import { Skeleton } from '@/ui/Skeleton';
@@ -21,7 +21,7 @@ import { useOnboardingStore } from '../onboardingStore';
  * number of years: a band is not a count, and the profile would claim a precision nobody gave.
  */
 export function ExperienceStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const profile = useProfile();
   const updateProfile = useUpdateProfile();
   const updatePreferences = useUpdatePreferences();

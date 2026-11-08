@@ -44,8 +44,8 @@ export function AiConsentGate() {
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(520px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=open]:animate-pop-in">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(520px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
           <div className="flex flex-col gap-3.5 px-6.5 pb-5 pt-5.5">
             <Image
               src="/illustrations/flow/ai-consent.png"

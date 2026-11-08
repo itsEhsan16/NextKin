@@ -40,3 +40,13 @@ Object.defineProperty(URL, 'createObjectURL', {
   value: (blob: Blob) => `blob:test/${blob.size}`,
 });
 Object.defineProperty(URL, 'revokeObjectURL', { writable: true, value: () => {} });
+
+// The double-click guard (§196) holds further navigation for one route change. A test clicks one
+// control after another in the same millisecond, each meaning a separate visit, so it is off here;
+// __tests__/navigation/guardedRouter.test.ts runs it with its real window.
+beforeEach(() => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- loaded lazily, per test.
+  const { navigationGate, resetNavigationGuard } = require('@/navigation/guardedRouter');
+  navigationGate.windowMs = 0;
+  resetNavigationGuard();
+});

@@ -6,10 +6,10 @@
 
 /**
  * The menu surface: grows in from the trigger's side and fades, and leaves the same way. Radix
- * keeps a closing menu mounted until its exit animation ends.
+ * keeps a closing menu mounted until its exit animation ends; it takes no clicks meanwhile (§196).
  */
 export const menuSurfaceMotion =
-  'origin-(--radix-dropdown-menu-content-transform-origin) data-[state=open]:animate-pop-in data-[state=closed]:animate-pop-out';
+  'origin-(--radix-dropdown-menu-content-transform-origin) data-[state=open]:animate-pop-in data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out';
 
 /** On a menu's trigger: names the group its chevron watches. */
 export const menuTrigger = 'group/trigger';

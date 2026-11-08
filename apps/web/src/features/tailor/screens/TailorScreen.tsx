@@ -9,9 +9,9 @@ import {
   useSubscription,
 } from '@nextkin/shared/queries';
 import type { Route } from 'next';
-import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { createHref } from '@/features/create/createLibrary';
 import { FlowHeader } from '@/features/create/jobFlow/FlowChrome';
 import { jobFlowHref } from '@/features/create/jobFlow/jobFlow';
@@ -66,7 +66,7 @@ export function TailorScreen({
   build = false,
   step: asked,
 }: TailorScreenProps) {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const user = useCurrentUser();
   const resumes = useResumes();
   const subscription = useSubscription();

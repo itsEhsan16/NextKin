@@ -1,9 +1,9 @@
 'use client';
 
 import { useCurrentUser, useUpdateName } from '@nextkin/shared/queries';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { showToast } from '@/lib/toast';
 import { PersonIcon } from '@/ui/icons';
 import { Skeleton } from '@/ui/Skeleton';
@@ -23,7 +23,7 @@ export function splitName(full: string): { firstName: string; lastName: string }
  * with one only has to confirm it. Continue saves it to the account, as Settings' name field does.
  */
 export function NameStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const user = useCurrentUser();
   const updateName = useUpdateName();
   const name = useOnboardingStore((state) => state.name);

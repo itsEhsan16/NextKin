@@ -1,8 +1,8 @@
 'use client';
 
 import type { Route } from 'next';
-import { useRouter } from 'next/navigation';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { cn } from '@/lib/cn';
 import { pageFrame } from '@/ui/pageFrame';
 
@@ -15,7 +15,7 @@ import { JobStep } from './JobStep';
  * the choices for it. The page sits in the app's frame, full width, as the tailor boards do.
  */
 export function JobFlowScreen({ flow }: { flow: 'build' | 'tailor' }) {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const copy = JOB_FLOWS[flow];
   return (
     <div className={cn(pageFrame, 'flex flex-col gap-5 pb-8')}>

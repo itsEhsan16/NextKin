@@ -2,9 +2,9 @@
 
 import { skillSuggestionsForTitle } from '@nextkin/shared/models';
 import { useProfile, useUpdateSkills } from '@nextkin/shared/queries';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState, type KeyboardEvent } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
 import { PlusIcon, TickIcon } from '@/ui/icons';
@@ -25,7 +25,7 @@ const has = (list: readonly string[], skill: string) => list.some((s) => same(s,
  * the picked set as the profile's skills and goes on to ONB 07, education.
  */
 export function SkillsStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const profile = useProfile();
   const updateSkills = useUpdateSkills();
   const { roles, noWork, jobTitle, skills, answer } = useOnboardingStore();

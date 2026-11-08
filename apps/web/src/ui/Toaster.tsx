@@ -76,8 +76,9 @@ function ToastBar({
       data-state={leaving ? 'closed' : 'open'}
       onAnimationEnd={leaving ? onLeft : undefined}
       className={cn(
-        'pointer-events-auto flex origin-bottom-right items-center gap-3 rounded-xl bg-surface-inverse py-3.5 pr-2.5 pl-4 text-body-m text-text-inverse shadow-dialog',
-        leaving ? 'animate-pop-out' : 'animate-pop-in',
+        'flex origin-bottom-right items-center gap-3 rounded-xl bg-surface-inverse py-3.5 pr-2.5 pl-4 text-body-m text-text-inverse shadow-dialog',
+        // A leaving toast takes no clicks (§196): its action can't fire again on the way out.
+        leaving ? 'pointer-events-none animate-pop-out' : 'pointer-events-auto animate-pop-in',
       )}
     >
       <Icon className={cn('size-4 shrink-0', className)} />

@@ -8,9 +8,9 @@ import {
   useSubscription,
 } from '@nextkin/shared/queries';
 import type { Route } from 'next';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { ResumeStep } from '@/features/tailor/flow/ResumeStep';
 import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { tailorPath, useTailorTarget, type TailorTargetRef } from '@/features/tailor/tailorTarget';
@@ -61,7 +61,7 @@ export function CoverLetterScreen({
   step = 'resume',
   runId,
 }: CoverLetterScreenProps) {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const { job, jobError, refetch } = useTailorTarget(target ?? { kind: 'jd', id: '' }, '');
   const resumes = useResumes();
   const subscription = useSubscription();

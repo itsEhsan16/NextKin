@@ -42,8 +42,8 @@ export function ConfirmDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !next && !busy && onCancel()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/30 backdrop-blur-xs data-[state=open]:animate-reveal" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(480px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-surface-card shadow-dialog data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/30 backdrop-blur-xs data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(480px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-surface-card shadow-dialog data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
           <div className="flex flex-col gap-3 px-7 pb-4 pt-7">
             {tone === 'danger' && (
               <span

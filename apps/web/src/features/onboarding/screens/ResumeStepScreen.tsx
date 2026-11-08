@@ -1,7 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { ChoiceCard } from '../components/ChoiceCard';
 import { QuestionLayout } from '../components/QuestionLayout';
 import { RESUME_CHOICES } from '../onboardingOptions';
@@ -12,7 +11,7 @@ import { useOnboardingStore } from '../onboardingStore';
  * three quick questions, starting with ONB 05, your recent work.
  */
 export function ResumeStepScreen() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const { resume, answer } = useOnboardingStore();
 
   return (

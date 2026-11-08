@@ -4,9 +4,9 @@ import { useCreateResume, useCurrentUser, useProfile } from '@nextkin/shared/que
 import * as Dialog from '@radix-ui/react-dialog';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { backButton, primaryButton } from '@/features/create/jobFlow/FlowChrome';
 import { Radio, rowSurface } from '@/features/create/jobFlow/FlowRows';
 import { DropZone } from '@/features/tailor/flow/ResumeStep';
@@ -92,7 +92,7 @@ export function CreateResumeDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const create = useCreateResume();
   const profile = useProfile();
   const user = useCurrentUser();
@@ -128,8 +128,8 @@ export function CreateResumeDialog({
   return (
     <Dialog.Root open={open} onOpenChange={close}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(720px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(720px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
           <div className="flex items-start gap-3 px-7 pb-2 pt-6">
             <div className="min-w-0 flex-1">
               {step !== 'choose' && (

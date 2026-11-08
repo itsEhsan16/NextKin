@@ -3,9 +3,9 @@
 import type { Profile } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useRef, useState, type DragEvent } from 'react';
 
+import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { useResumeUpload } from '@/features/create/jobFlow/useResumeUpload';
 import { RESUME_INPUT_ACCEPT } from '@/features/onboarding/resumeUpload';
 import { cn } from '@/lib/cn';
@@ -50,7 +50,7 @@ export function MethodDialogs({
   /** The way, chosen; an upload brings the resume it read. */
   onChoose: (method: Method, upload?: { resumeId: string; name: string }) => void;
 }) {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const roles = profile?.experiences.length ?? 0;
   return (
     <>

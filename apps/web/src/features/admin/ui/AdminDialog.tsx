@@ -59,12 +59,12 @@ export function AdminDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-neutral-900/40 backdrop-blur-[2px] data-[state=open]:animate-reveal" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-neutral-900/40 backdrop-blur-[2px] data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
         <Dialog.Content
           {...(description == null ? { 'aria-describedby': undefined } : {})}
           onCloseAutoFocus={returnFocus}
           className={cn(
-            'fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh/var(--admin-zoom,1)-48px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-lg bg-surface-card p-6 shadow-modal outline-none data-[state=open]:animate-pop-in',
+            'fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh/var(--admin-zoom,1)-48px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-lg bg-surface-card p-6 shadow-modal outline-none data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in',
             width === 'md' ? 'max-w-[520px]' : 'max-w-[720px]',
           )}
         >

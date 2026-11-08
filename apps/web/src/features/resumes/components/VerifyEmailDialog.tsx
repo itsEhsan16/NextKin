@@ -31,7 +31,7 @@ export function VerifyEmailDialog({ open, onClose }: { open: boolean; onClose: (
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !next && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
         <Dialog.Content className={promptDialog}>
           <div className="flex flex-col gap-3 px-5 pb-4 pt-5">
             <span

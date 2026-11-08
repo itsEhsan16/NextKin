@@ -50,7 +50,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-neutral-900/30 data-[state=open]:animate-reveal lg:hidden" />
+          <Dialog.Overlay className="fixed inset-0 z-40 bg-neutral-900/30 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out lg:hidden" />
           <Dialog.Content
             aria-describedby={undefined}
             // Focus lands on the current page's row, not the first focusable item: that is the

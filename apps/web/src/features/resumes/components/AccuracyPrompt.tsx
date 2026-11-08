@@ -11,7 +11,7 @@ export const ACCURACY_MESSAGE =
 
 /** The download dialogs' card (SYS 02, SYS 03). */
 export const promptDialog =
-  'fixed left-1/2 top-1/2 z-50 w-[min(480px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in';
+  'fixed left-1/2 top-1/2 z-50 w-[min(480px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in';
 
 /**
  * SYS 02 (868:245): V2 §15 risk 2's accuracy confirmation, once per version, before its first
@@ -37,7 +37,7 @@ export function AccuracyPrompt({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
         <Dialog.Content className={promptDialog}>
           <div className="flex flex-col gap-3 px-5 pb-4 pt-5">
             <span
