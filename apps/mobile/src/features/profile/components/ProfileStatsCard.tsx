@@ -52,7 +52,12 @@ export function ProfileStatsCard({ stats }: ProfileStatsCardProps) {
                 {NO_VALUE}
               </Text>
             ) : (
-              <AnimatedNumber value={cell.value} variant="statLg" color="textPrimary" />
+              <AnimatedNumber
+                value={cell.value}
+                memoryKey={`profile:stat:${cell.label}`}
+                variant="statLg"
+                color="textPrimary"
+              />
             )}
             <Text variant="captionSm" color="textSecondary">
               {cell.label}

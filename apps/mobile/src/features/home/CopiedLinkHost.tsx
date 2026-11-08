@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
+import { useGuardedRouter } from '@/navigation';
 import { unreadableLinkMessage, useImportJobLink, useJobLinkPreview } from '@/data/queries';
 import { Dialog } from '@/ui/Dialog';
 import { Toast } from '@/ui/Toast';
@@ -20,7 +20,7 @@ export const SAVED_NOTICE = 'Saved to your jobs';
  * opens TAILOR 01 — the compare screen with its resume picker up — exactly as for any NextKin job.
  */
 export function CopiedLinkHost() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const url = useHomeStore((state) => state.copiedLink);
   const phase = useHomeStore((state) => state.copiedLinkPhase);
   const openDialog = useHomeStore((state) => state.openCopiedLink);

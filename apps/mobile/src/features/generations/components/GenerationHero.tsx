@@ -66,6 +66,7 @@ function HeroBody({
       <Card shadow="card" style={[styles.centre, { gap: spacing[4], paddingVertical: spacing[6] }]}>
         <ScoreRing
           score={score}
+          memoryKey={`gen:${generation.id}:score`}
           label={SCORE_LABEL_CAPS}
           size={s(RING)}
           strokeWidth={s(RING_STROKE)}

@@ -1,12 +1,12 @@
-import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
+import { useGuardedRouter } from '@/navigation';
 import type { UpgradeReason } from '@/features/billing';
 import { customizeParams } from '@/features/create/hooks/useCreateActions';
 
 /** Every tap target on the generation progress screen resolves here (V2 §7.6). */
 export function useGenerationsActions() {
-  const router = useRouter();
+  const router = useGuardedRouter();
 
   return useMemo(
     () => ({

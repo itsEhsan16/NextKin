@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
+import { useGuardedRouter } from '@/navigation';
 import { REMOTE_TYPE_LABEL, type Job } from '@/data/models';
 import { copyToClipboard, shareText } from '@/lib';
 
@@ -13,7 +13,7 @@ export const JOB_SHARE_UNAVAILABLE = "This device can't share right now";
 
 /** Every tap target on the Jobs screens resolves here, keeping routing out of the components. */
 export function useJobsActions() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   // The three pickers are hosted above the tab bar in the tabs layout, so opening one is a store
   // write rather than a navigation (Figma JOBS 04 for filters; sort and location match it).
   const openFilters = useJobsStore((state) => state.openFilters);

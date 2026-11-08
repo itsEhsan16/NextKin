@@ -84,6 +84,7 @@ const renderTabScene: NonNullable<ComponentProps<typeof Tabs>['screenLayout']> =
  * re-renders the navigator itself.
  */
 const TabsNavigator = memo(function TabsNavigator() {
+  const { colors } = useTheme();
   return (
     <Tabs
       tabBar={renderNoTabBar}
@@ -91,6 +92,9 @@ const TabsNavigator = memo(function TabsNavigator() {
       screenOptions={{
         headerShown: false,
         lazy: true,
+        // The page colour behind every tab (§196). Without it the scene falls back to the
+        // navigator's default grey (#F2F2F2), which showed through each tab's fade-in.
+        sceneStyle: { backgroundColor: colors.surfacePage },
         // No `freezeOnBlur`: Expo Router 58 ignores it. Its replacement, the navigator's
         // `activityEnabled`, unmounts a hidden tab's effects, so it waits for its own pass
         // (toreview §138).

@@ -84,10 +84,22 @@ export const springs = {
   sheetIn: { duration: durations.sheetIn, dampingRatio: 0.8 } satisfies WithSpringConfig,
   /** Critically damped, quick — segmented pill, toggle thumbs. */
   snappy: { duration: durations.snappy, dampingRatio: 1 } satisfies WithSpringConfig,
+  /** A dialog's card arriving (§196): the sheet's timing, critically damped — no overshoot. */
+  dialogIn: { duration: durations.sheetIn, dampingRatio: 1 } satisfies WithSpringConfig,
   /** Gentle settle for layout transitions and chips. */
   gentle: { duration: 350, dampingRatio: 0.9 } satisfies WithSpringConfig,
-  /** Bouncy micro-interactions (bookmark fill, badge pop). */
+  /**
+   * Bouncy micro-interactions. Nothing in the app uses it since §196, which settled the bookmark,
+   * step and success pops on `gentle`; kept for the dev gallery's demos.
+   */
   bouncy: { duration: 320, dampingRatio: 0.6 } satisfies WithSpringConfig,
+  /**
+   * The bottom bar's liquid move (§194): the pill's leading end, its trailing end a beat later,
+   * and the tabs and icons between them. None overshoots.
+   */
+  barLead: { duration: 340, dampingRatio: 0.92 } satisfies WithSpringConfig,
+  barTrail: { duration: 560, dampingRatio: 0.95 } satisfies WithSpringConfig,
+  barSlide: { duration: 440, dampingRatio: 0.92 } satisfies WithSpringConfig,
 } as const;
 
 export const timings = {
@@ -115,6 +127,8 @@ export const scales = {
   pressed: 0.97,
   pressedSubtle: 0.985,
   exit: 0.9,
+  /** Where a dialog's card grows from and shrinks back to (§196): close to full size, calm. */
+  dialogFrom: 0.96,
   fabPressed: 0.92,
   /** Where a bookmark's fill pops from when a job is saved. */
   popFrom: 0.7,

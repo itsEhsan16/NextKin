@@ -129,6 +129,7 @@ export function MatchCriteriaScreen({ jobId }: MatchCriteriaScreenProps) {
         {percent !== null ? (
           <ScoreRing
             score={percent}
+            memoryKey={`match:${jobId}`}
             label={MATCH_RING_LABEL}
             size={s(RING)}
             strokeWidth={s(RING_STROKE)}

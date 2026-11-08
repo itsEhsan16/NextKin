@@ -51,6 +51,7 @@ export function UsageBanner({ used, limit, noun, period = 'month', style }: Usag
         <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <ProgressBar
             value={used / limit}
+            memoryKey="usage:generations"
             height={s(BAR_HEIGHT)}
             trackColor="progressTrack"
             fillColor="warningAccent"

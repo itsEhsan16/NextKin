@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
+import { useGuardedRouter } from '@/navigation';
 import { useTheme } from '@/theme';
 import { Sheet } from '@/ui/Sheet';
 
@@ -14,7 +14,7 @@ import { useHomeStore } from './homeStore';
  */
 export function HomeMenuHost() {
   const { sizes } = useTheme();
-  const router = useRouter();
+  const router = useGuardedRouter();
   const open = useHomeStore((state) => state.menuOpen);
   const closeMenu = useHomeStore((state) => state.closeMenu);
 

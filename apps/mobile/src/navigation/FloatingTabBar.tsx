@@ -11,7 +11,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { a11yHiddenWhen, haptics, useReducedMotion } from '@/lib';
-import { useTabBarLayout, useTheme } from '@/theme';
+import { motion, useTabBarLayout, useTheme } from '@/theme';
 import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
@@ -44,10 +44,10 @@ const LABEL_TAIL = 8;
  * leaps ahead, the end behind follows a beat later, so the pill stretches towards the new tab and
  * then draws itself in, like a drop running along the bar. Neither spring overshoots.
  */
-const LEAD = { duration: 340, dampingRatio: 0.92 } as const;
-const TRAIL = { duration: 560, dampingRatio: 0.95 } as const;
+const LEAD = motion.springs.barLead;
+const TRAIL = motion.springs.barTrail;
 /** The tabs and their icons move on one middle spring, between the two ends. */
-const SLIDE = { duration: 440, dampingRatio: 0.92 } as const;
+const SLIDE = motion.springs.barSlide;
 
 type Box = { left: number; width: number };
 
@@ -354,7 +354,7 @@ const BarTab = memo(function BarTab({
         : showLabel
           ? // In after the pill has mostly arrived; out straight away.
             withTiming(1, { ...motion.timings.base, duration: motion.durations.base })
-          : withTiming(0, { ...motion.timings.fast, duration: 120 }),
+          : withTiming(0, motion.timings.press),
     );
   }, [focused, motion, on, reduced, showLabel, words]);
 

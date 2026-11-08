@@ -54,6 +54,7 @@ export function UsageMeter({ subscription, onUpgrade, style }: UsageMeterProps) 
       </View>
       <ProgressBar
         value={resumesLimit > 0 ? resumesUsed / resumesLimit : 0}
+        memoryKey="usage:resumes"
         height={s(4)}
         trackColor="progressTrack"
         fillColor="warningAccent"

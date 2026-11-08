@@ -60,7 +60,7 @@ export function SuccessMark({
 
   useEffect(() => {
     if (!play) return;
-    pop.set(withSpring(1, motion.springs.bouncy));
+    pop.set(withSpring(1, motion.springs.gentle));
     draw.set(
       withDelay(
         motion.durations.press,

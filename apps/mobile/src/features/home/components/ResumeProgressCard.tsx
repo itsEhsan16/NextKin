@@ -133,6 +133,7 @@ export function ResumeProgressCard({
               </Text>
               <ProgressBar
                 value={resume.completeness ?? 0}
+                memoryKey={`completeness:${resume.id}`}
                 accessibilityLabel="Resume completeness"
                 style={{ marginTop: s(13) }}
               />
@@ -143,6 +144,7 @@ export function ResumeProgressCard({
               // small roles run right up against it. See src/theme/typography.ts.
               <ScoreRing
                 score={resume.atsScore}
+                memoryKey={`ats:${resume.id}`}
                 label="ATS Score"
                 size={ring}
                 labelVariant="ringCaption"

@@ -247,7 +247,9 @@ export function Sheet({
         <View
           accessibilityViewIsModal
           style={[StyleSheet.absoluteFill, { zIndex: zIndex.sheet }]}
-          pointerEvents="box-none"
+          // Closing, it takes no taps (§196): a row or the scrim tapped during the exit used to
+          // fire again — a second close, or a second push from a menu row.
+          pointerEvents={open ? 'box-none' : 'none'}
         >
           <Animated.View
             style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrimStyle]}

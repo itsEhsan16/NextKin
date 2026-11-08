@@ -66,7 +66,7 @@ export type BuildJobScreenProps = {
  */
 export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobScreenProps) {
   const reduced = useReducedMotion();
-  const { colors } = useTheme();
+  const { colors, motion } = useTheme();
   const styles = useStyles();
   const actions = useBuildActions();
   const extract = useExtractJd();
@@ -208,7 +208,7 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
       }
       footer={
         input ? (
-          <Animated.View entering={reduced ? undefined : FadeIn}>
+          <Animated.View entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}>
             <Button
               label={reading ? 'Reading the job…' : 'Continue'}
               size="xl"

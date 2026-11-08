@@ -80,6 +80,7 @@ function MeterTile({ row, lit }: { row: UsageMeter; lit: boolean }) {
       >
         <ProgressBar
           value={row.fraction}
+          memoryKey={`plan:${row.key}`}
           height={s(BAR_HEIGHT)}
           trackColor={lit ? 'surfaceCard' : 'surfaceSubtle'}
           fillColor="warningAccent"

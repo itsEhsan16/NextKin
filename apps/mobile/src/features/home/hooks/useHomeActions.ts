@@ -1,8 +1,7 @@
-import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
 import type { Job, Resume } from '@/data/models';
-import { useCreateSheet } from '@/navigation';
+import { useCreateSheet, useGuardedRouter } from '@/navigation';
 
 import type { QuickStartAction } from '../components/QuickStartCard';
 import type { Shortcut } from '../components/ShortcutGrid';
@@ -28,7 +27,7 @@ const QUICK_START_ROUTES: Record<
 
 /** Every tap target on Home resolves here, so routing stays out of the presentational tree. */
 export function useHomeActions() {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const { open: openCreateSheet } = useCreateSheet();
   const openMenuSheet = useHomeStore((state) => state.openMenu);
 

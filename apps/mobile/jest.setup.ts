@@ -153,3 +153,13 @@ jest.mock('@shopify/flash-list', () => {
   const { FlatList } = require('react-native');
   return { ...actual, FlashList: FlatList, AnimatedFlashList: FlatList };
 });
+
+// The double-tap guard (§196) holds further navigation for one transition. A test taps one
+// control after another in the same millisecond, each meaning a separate visit, so it is off here;
+// __tests__/navigation/guardedRouter.test.ts runs it with its real window.
+beforeEach(() => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- loaded lazily, after the mocks above.
+  const { navigationGate, resetNavigationGuard } = require('@/navigation/guardedRouter');
+  navigationGate.windowMs = 0;
+  resetNavigationGuard();
+});

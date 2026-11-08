@@ -1,9 +1,15 @@
-import { useEffect, type ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { useReducedMotion } from '@/lib';
 import { useTheme } from '@/theme';
+
+/**
+ * Whether the app's first tab scene has mounted. The tab navigator is mounted once per sign-in,
+ * so only the very first scene counts as the launch.
+ */
+let launched = false;
 
 /** The slice of a tab route's navigation object the fade needs. */
 type TabSceneNavigation = {
@@ -34,7 +40,15 @@ export type TabSceneFadeProps = {
 export function TabSceneFade({ navigation, routeKey, children }: TabSceneFadeProps) {
   const { motion } = useTheme();
   const reduced = useReducedMotion();
-  const opacity = useSharedValue(reduced ? 1 : 0);
+  // The tab on screen at launch starts visible (§196): the splash has just faded out, and a
+  // second fade of the same page from blank would read as a flicker. A tab first opened later
+  // (lazily mounted, already focused) still fades in like every other switch.
+  const [launchScene] = useState(() => {
+    const first = !launched && navigation.isFocused();
+    launched = true;
+    return first;
+  });
+  const opacity = useSharedValue(reduced || launchScene ? 1 : 0);
 
   useEffect(() => {
     if (reduced) {

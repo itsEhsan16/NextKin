@@ -45,7 +45,8 @@ export function Dialog({ open, onClose, accessibilityLabel, children }: DialogPr
 
   useEffect(() => {
     if (open) {
-      progress.set(withSpring(1, withReducedMotion(reduced, motion.springs.sheetIn)));
+      // Critically damped (§196): the card settles at full size instead of overshooting it.
+      progress.set(withSpring(1, withReducedMotion(reduced, motion.springs.dialogIn)));
       return;
     }
     progress.set(
@@ -53,7 +54,7 @@ export function Dialog({ open, onClose, accessibilityLabel, children }: DialogPr
         if (finished) runOnJS(unmount)();
       }),
     );
-  }, [motion.springs.sheetIn, motion.timings.sheetOut, open, progress, reduced, unmount]);
+  }, [motion.springs.dialogIn, motion.timings.sheetOut, open, progress, reduced, unmount]);
 
   useEffect(() => {
     if (!open) return;
@@ -64,7 +65,7 @@ export function Dialog({ open, onClose, accessibilityLabel, children }: DialogPr
     return () => sub.remove();
   }, [onClose, open]);
 
-  const exitScale = motion.scales.exit;
+  const exitScale = motion.scales.dialogFrom;
   const scrimStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
   const cardStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
@@ -77,7 +78,8 @@ export function Dialog({ open, onClose, accessibilityLabel, children }: DialogPr
     <View
       accessibilityViewIsModal
       style={[StyleSheet.absoluteFill, styles.center, { zIndex: zIndex.sheet }]}
-      pointerEvents="box-none"
+      // Closing, it takes no taps (§196), so a button tapped during the exit can't fire twice.
+      pointerEvents={open ? 'box-none' : 'none'}
     >
       <Animated.View
         style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrimStyle]}

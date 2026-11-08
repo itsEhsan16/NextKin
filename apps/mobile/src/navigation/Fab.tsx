@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -8,6 +7,7 @@ import Animated, {
 import { useId } from 'react';
 import Svg, { Circle, Defs, LinearGradient, RadialGradient, Stop } from 'react-native-svg';
 
+import { useGuardedRouter } from './guardedRouter';
 import FabSparkleIcon from '../../assets/icons/nav/fab-sparkle.svg';
 import { haptics, a11yButton, useReducedMotion } from '@/lib';
 import { useTabBarLayout, useTheme } from '@/theme';
@@ -113,7 +113,7 @@ export function Fab() {
   const { colors, radii } = useTheme();
   const layout = useTabBarLayout();
   const fill = `fabFill${useId().replace(/:/g, '')}`;
-  const router = useRouter();
+  const router = useGuardedRouter();
   const pressed = useSharedValue(0);
 
   return (

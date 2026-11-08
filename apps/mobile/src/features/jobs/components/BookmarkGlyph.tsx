@@ -33,12 +33,12 @@ export function BookmarkGlyph({ saved, size, color }: BookmarkGlyphProps) {
       scale.set(
         withSequence(
           withTiming(motion.scales.popFrom, { duration: 0 }),
-          withSpring(1, motion.springs.bouncy),
+          withSpring(1, motion.springs.gentle),
         ),
       );
     }
     wasSaved.current = saved;
-  }, [motion.scales.popFrom, motion.springs.bouncy, reduced, saved, scale]);
+  }, [motion.scales.popFrom, motion.springs.gentle, reduced, saved, scale]);
 
   const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 

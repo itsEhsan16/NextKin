@@ -2,7 +2,6 @@ import { useCallback, useEffect, useId, useRef } from 'react';
 import {
   StyleSheet,
   useWindowDimensions,
-  View,
   type DimensionValue,
   type StyleProp,
   type ViewInstance,

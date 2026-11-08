@@ -37,6 +37,7 @@ export function CompletenessCard({ profile, onOpenStep }: CompletenessCardProps)
 
       <ProgressBar
         value={profile.completeness}
+        memoryKey="profile:completeness"
         trackColor="surfaceSubtle"
         fillColor="surfaceInverse"
         accessibilityLabel="Profile completeness"

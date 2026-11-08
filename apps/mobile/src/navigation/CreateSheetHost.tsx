@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useGuardedRouter } from './guardedRouter';
 import { CreateSheetBody, type CreateAction, type CreateStep } from '@/features/create';
 import { useTheme } from '@/theme';
 import { Sheet } from '@/ui/Sheet';
@@ -47,7 +47,7 @@ const STEP_HEIGHT: Record<CreateStep, 'sheetStep1Height' | 'sheetStep2Height'> =
 export function CreateSheetHost() {
   const { isOpen, close, progress } = useCreateSheet();
   const { sizes, motion, s } = useTheme();
-  const router = useRouter();
+  const router = useGuardedRouter();
 
   const [step, setStep] = useState<CreateStep>('root');
 

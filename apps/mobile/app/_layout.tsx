@@ -62,11 +62,12 @@ export default function RootLayout() {
           <Stack.Screen name="resumes/[id]/versions" />
           <Stack.Screen name="create/tailor" />
           <Stack.Screen name="create/build/index" />
-          <Stack.Screen name="create/build/jobs" />
+          {/* Redirect-only routes: no transition of their own, so arriving plays one, not two (§196). */}
+          <Stack.Screen name="create/build/jobs" options={{ animation: 'none' }} />
           <Stack.Screen name="create/build/add" />
-          <Stack.Screen name="create/build/review" />
+          <Stack.Screen name="create/build/review" options={{ animation: 'none' }} />
           <Stack.Screen name="create/build/compare" />
-          <Stack.Screen name="create/build/unreadable" />
+          <Stack.Screen name="create/build/unreadable" options={{ animation: 'none' }} />
           <Stack.Screen name="create/jd" />
           <Stack.Screen name="create/jd-review" />
           <Stack.Screen name="create/cover-letter" />

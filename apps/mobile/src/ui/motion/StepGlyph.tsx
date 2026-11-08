@@ -42,7 +42,7 @@ const tickIn: EntryExitAnimationFunction = () => {
     initialValues: { opacity: 0, transform: [{ scale: motion.scales.popFrom }] },
     animations: {
       opacity: withTiming(1, motion.timings.fast),
-      transform: [{ scale: withSpring(1, motion.springs.bouncy) }],
+      transform: [{ scale: withSpring(1, motion.springs.gentle) }],
     },
   };
 };

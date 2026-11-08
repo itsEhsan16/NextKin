@@ -6,6 +6,12 @@ export {
   type CreateSheetApi,
 } from './createSheet';
 export { Fab } from './Fab';
+export {
+  allowNavigation,
+  navigationGate,
+  resetNavigationGuard,
+  useGuardedRouter,
+} from './guardedRouter';
 export { FloatingTabBar } from './FloatingTabBar';
 export { useStackAnimation } from './stackAnimation';
 export { scrollTabToTop, useTabScrollToTop, type TabName } from './tabScroll';
