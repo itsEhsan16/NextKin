@@ -16366,3 +16366,72 @@ The owner: "Ai Assistant window is still old one with no proper logic, completel
   - Jest: 1932 tests pass. tsc and eslint are clean.
   - Web preview at 390 ("Answer copied" sits bottom-right above the chat bar).
   - Not checked on a phone.
+
+## §191 — App-wide smoothness pass: vibration, shimmer, stability, motion (owner, 2026-11-08)
+The owner asked for a premium, smooth and quiet app: vibration only on the bottom bar, block shimmer, no jumps or replays. Three read-only audits came first (haptics, loading, navigation/motion/lists). Six commits followed: 10c15b6, 349acad, e878f3b, d845bff, 22a8ca8, and the records.
+
+### 1. Vibration only on the bottom bar (10c15b6)
+- **Removed the `haptic` prop** from `Pressable`, `Button` and `IconButton`. Button and IconButton used to default to `'light'`. A codemod stripped 104 files of `haptic=` props.
+- **Removed vibration on open:** `Sheet`'s `hapticOnOpen` and the buzz in `useSheetProgress`, plus the one in `Dialog`.
+- **Removed automatic buzzes:** a Toast error, a field error (`useFieldChrome`), Toggle, SegmentedControl, SwipeableRow's threshold and ViewModeToggle.
+- **Removed buzzes on events:** generation done or failed, Upgrade success ×2, data export ready, an ATS fix applied, interview "confident".
+- **What remains:** `FloatingTabBar` (selection on a tab press or re-tap) and the centre `Fab` (light). Judgement call: the Fab counts as part of the bar. Dev screens keep their demos.
+- **ESLint guard:** `no-restricted-imports` bans importing `haptics` from `@/lib` outside `src/navigation` and the dev UI.
+- **Tests:**
+  - The Toast and TextField tests now assert no vibration. TextField's announcement is checked with `AccessibilityInfo`.
+  - A new tab-bar test asserts one selection tick per press.
+
+### 2. Block shimmer (349acad)
+- **`Skeleton` redrawn:** a flat block with one soft light band (an SVG gradient, 55% of the screen wide) sweeping left to right on the shared `skeletonClock`.
+  - The clock is now linear over `durations.shimmer`, 1.4 s.
+  - Blocks side by side sweep in step.
+  - Reduced motion: a still block, no band.
+- **No flash:** every skeleton waits `durations.skeletonDelay` (150 ms) before fading in, so a quick load goes straight to content. The block still holds the space.
+  - Judgement call: this lives in `Skeleton` itself rather than in the planned `useShowSkeleton(pending)` hook. It covers every screen without touching each one.
+  - The planned "minimum 300 ms on screen" was not built: it would delay content the user could already see.
+- **New `SkeletonBlock`** (the card radius, a section's height) and `SkeletonRow`.
+- **Sections as single blocks:**
+  - Home: 4 blocks at the sections' measured 390 heights (149/228/102/175).
+  - Top matches and Today's picks: one block per card (191 / 153).
+  - Resume progress: one row block.
+  - JD review: 39 → 7 blocks, same total height.
+  - Build/Tailor/Cover job and resume rows: one block per row.
+  - Generation steps; resume, zero-draft and cover pages.
+  - Chip strips: profile chips, section editor, help, AI rewrite chips, prose and entries.
+  - The identity / score-header / company-hero / job-hero rows.
+
+### 3. No fallbacks, no shifts (e878f3b)
+- **ResumeEditor and AtsFix** keep the last body and score on screen when a background change briefly disables their queries; only the first load shows the skeleton. This uses the adjust-during-render state pattern.
+- **`gcTime` 5 → 30 min** (`packages/shared/src/queries/client.ts`). This affects web too: reopened screens draw from cache.
+- **Profile** loads in its final layout: scrolling, with the tab-bar inset, the identity block in the header slot and the loaded card gap.
+- **Build/Tailor compare skeletons** use `u()` heights.
+- **`BuildOpenMatch`** (a one-frame redirect) draws an empty page instead of a flashing spinner.
+- **Checked and left alone:**
+  - JdPage's extracting skeleton is first-load only.
+  - The Assistant's `removeQueries` keys don't touch the conversation.
+  - History deliberately waits for runs so the feed doesn't jump.
+  - ShareScreen's "Reading the link…" is a real, labelled wait.
+
+### 4. Motion (d845bff)
+- **CodeBoxes:** a 1.06 pop on `timings.press` / `fast`, and the success sequence on `stagger.row` / `timings.base`. No default bouncy springs.
+- **Staggers:** every `index * stagger` delay is capped at `stagger.maxItems`. The Assistant prompts moved from a raw 60 to `stagger.row`.
+- **Entrances that replayed on content already there were removed:** editor section cards, score rubric, FAQ, legal sections, profile entry lists, match criteria. The skeleton's fade-out still gives a soft arrival.
+- **Kept:** sheet-row staggers on open (the create, export, cover and tailor sheets).
+- Navigation is unchanged: `ios_from_right` and the tab fade were already consistent.
+
+### 5. Lists and images (22a8ca8)
+- **JobsScreen:**
+  - stable `onEndReached`, `onChangeQuery` and `contentContainerStyle`;
+  - each segment remembers its scroll place, recorded on scroll-end/momentum-end with no per-frame JS, and restored on the next frame.
+  - Not verifiable on web, where those events don't fire. Needs the phone.
+- **Illustrations** (`Illustration`, FirstResume, ZeroResume, TailorProgress, ZeroReady): `cachePolicy="memory"` and an `imageFade` transition.
+- **Not done (judgement call, low value):**
+  - `Pressable` flatten memo: its styles are mostly inline arrays, so a memo would miss.
+  - Avatar / LogoTile style objects, Assistant/Interview inline handlers: their rows are memoised where it counts.
+  - Hidden-tab freezing: Expo Router 58 ignores it (§138.6).
+
+### Verified
+- Jest: 1933 tests pass. tsc and eslint (with the new rule) are clean.
+- The Android bundle from Metro on 8090 builds (HTTP 200).
+- Web preview at 390: Home, Profile, Jobs and the Assistant load.
+- Not checked: the shimmer sweep and the 150 ms delay can't be seen on web, where reduced motion is always on. Feel, the vibration and the Jobs scroll memory need the owner's phone pass.
