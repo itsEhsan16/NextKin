@@ -27,6 +27,12 @@ export const palette = {
   /** A read notification card's border (Figma 619:89). */
   gray120: '#EEF0F3',
   gray200: '#E5E7EB',
+  /**
+   * Loading placeholders (§196): ink at 5%, so a block is a soft cool grey (about #F2F3F5) on
+   * white and a slightly deeper lavender on the wash (Home, Job detail) — never a grey patch
+   * pasted on a tinted page, and never an outlined one.
+   */
+  skeleton: 'rgba(16, 24, 40, 0.05)',
   gray300: '#D1D5DB',
 
   slate600: '#545974',

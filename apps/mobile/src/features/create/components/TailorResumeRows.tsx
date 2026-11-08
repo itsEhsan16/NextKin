@@ -5,7 +5,7 @@ import type { Resume } from '@/data/models';
 import { a11yButton, hitSlopFor } from '@/lib';
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
-import { Skeleton } from '@/ui/Skeleton';
+import { Skeleton, SkeletonCircle, SkeletonLines } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 import { Spinner } from '@/ui/motion';
 
@@ -285,7 +285,10 @@ export function UploadDifferentLink({ onPress }: { onPress: () => void }) {
   );
 }
 
-/** A NextKin row while the library loads: one block, the row's own height (§191). */
+/**
+ * A NextKin row while the library loads (§196): its silhouette — the page thumbnail, the title
+ * and meta lines, and the check disc — at the row's own size.
+ */
 export function ResumeRowSkeleton() {
   const { s } = useTheme();
   const styles = useStyles();
@@ -295,7 +298,9 @@ export function ResumeRowSkeleton() {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Skeleton height={s(THUMB_H)} radius="md" style={styles.text} />
+      <Skeleton width={s(THUMB_W)} height={s(THUMB_H)} radius="xs" />
+      <SkeletonLines widths={['62%', '38%']} style={styles.text} />
+      <SkeletonCircle size={s(CHECK_DISC)} />
     </View>
   );
 }

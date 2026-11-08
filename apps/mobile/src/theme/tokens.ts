@@ -129,8 +129,9 @@ export const colorsByScheme = {
     scrim: 'rgba(10, 10, 10, 0.5)',
     /** Ink for shadows drawn inside an SVG, where a View shadow cannot follow the shape. */
     shadowInk: palette.black,
-    skeletonBase: palette.gray150,
-    skeletonHighlight: palette.gray50,
+    skeletonBase: palette.skeleton,
+    /** The diagonal band's light: white, faded in and out along its width (§196). */
+    skeletonHighlight: palette.white,
 
     // Onboarding & auth (Figma 307:4152)
     onboardingGradientFrom: palette.brandGradient1,

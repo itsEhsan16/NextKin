@@ -20,8 +20,11 @@ export const durations = {
   imageFade: 150,
   /** One half-cycle of the skeleton pulse (kept for anything still breathing). */
   pulse: 900,
-  /** One pass of the skeleton shimmer's light band, left to right (§191). Slow on purpose. */
-  shimmer: 1400,
+  /**
+   * One pass of the skeleton shimmer's diagonal light band across the whole screen (§191, §196).
+   * Slow on purpose: it should read as light moving over the page, not as activity.
+   */
+  shimmer: 1600,
   /** A skeleton waits this long before it shows: a quicker load never flashes one (§191). */
   skeletonDelay: 150,
   meter: 800,
@@ -37,6 +40,11 @@ export const durations = {
    * on its review). Long enough to read as "done", short enough not to be a wait.
    */
   successHold: 450,
+  /**
+   * After a tap opens a screen, further opens are ignored for this long (§196): about one push
+   * transition, so a double tap never stacks the same screen twice.
+   */
+  navGuard: 450,
 } as const;
 
 /**
@@ -127,6 +135,19 @@ export const sheet = {
   overshootBleed: 48,
 } as const;
 
+/**
+ * The skeleton shimmer's band (§196): one diagonal stripe of light in screen space, so every
+ * block on the page lights up as part of one surface, like the light across a sheet of glass.
+ */
+export const shimmer = {
+  /** The band's width as a share of the screen's width. Wide, so the falloff stays soft. */
+  bandShare: 0.6,
+  /** How far the band leans from upright, in degrees. */
+  tiltDeg: 20,
+  /** The band's brightest point, as an opacity of `skeletonHighlight`. */
+  peak: 0.75,
+} as const;
+
 export const motion = {
   durations,
   easings,
@@ -137,4 +158,5 @@ export const motion = {
   sheet,
   loops,
   shake,
+  shimmer,
 } as const;

@@ -8,7 +8,7 @@ import { useTheme } from '@/theme';
 import { Disclosure } from '@/ui/Disclosure';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonListRow } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
@@ -51,7 +51,7 @@ export function ResumeVersionsScreen({ id }: ResumeVersionsScreenProps) {
     return page(
       <View accessible accessibilityLabel="Loading versions" style={{ gap: spacing[3] }}>
         {[0, 1, 2].map((key) => (
-          <Skeleton key={key} height={s(64)} radius="card" />
+          <SkeletonListRow key={key} height={s(64)} thumb={0} trailing divider />
         ))}
       </View>,
     );

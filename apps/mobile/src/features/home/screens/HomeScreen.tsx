@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { RefreshControl, type ScrollViewInstance } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import {
   qk,
@@ -40,7 +40,8 @@ const WASH = 340;
 type SectionProps = { index: number; animate: boolean; children: ReactNode };
 
 /**
- * Sections fade-slide in on first paint, 40ms apart (motion.stagger.card). Each also glides when
+ * Sections fade in on first paint, 40ms apart (motion.stagger.card); a fade only, no slide, so
+ * nothing travels as the page lands (§196). Each also glides when
  * something above it changes size — the live run card arriving or retiring, a section's skeleton
  * giving way to its content — instead of jumping (§85).
  */
@@ -51,9 +52,9 @@ function Section({ index, animate, children }: SectionProps) {
     <Animated.View
       entering={
         animate
-          ? FadeInDown.delay(
-              Math.min(index, motion.stagger.maxItems) * motion.stagger.card,
-            ).duration(motion.durations.base)
+          ? FadeIn.delay(Math.min(index, motion.stagger.maxItems) * motion.stagger.card).duration(
+              motion.durations.base,
+            )
           : undefined
       }
       layout={layoutTransition(reduced)}
@@ -115,19 +116,28 @@ export function HomeScreen() {
     [resumes.data],
   );
 
-  const animate = !reduced && !user.isPending;
+  // First paint waits for the dashboard's own first loads too (§196), so the page lands once,
+  // whole, instead of a second wave of section skeletons after the first. `isLoading` is only
+  // true while a first fetch is actually running, so a query that is switched off never holds it.
+  const firstPaint = user.isPending || picks.isLoading || resumes.isLoading;
+  const showProgress = !(!latestResume && queryPhase(resumes) === 'success');
+  // What was on the page when it landed. Only those sections arrive with the landing; one that
+  // mounts later (the progress card after a first resume) just appears in place.
+  const [landing, setLanding] = useState<{ progress: boolean } | null>(null);
+  if (!firstPaint && landing === null) setLanding({ progress: showProgress });
+  const animate = !reduced && !firstPaint;
   const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />;
 
   const header = (
     <HomeHeader
       firstName={user.data?.firstName}
       avatarUrl={user.data?.avatarUrl}
-      loading={user.isPending}
+      loading={firstPaint}
       hasUnread={(unread.data ?? 0) > 0}
       onPressNotifications={actions.openNotifications}
       onPressMenu={actions.openMenu}
       onPressProfile={actions.openProfile}
-      onSearch={user.isPending ? undefined : actions.findJobs}
+      onSearch={firstPaint ? undefined : actions.findJobs}
     />
   );
 
@@ -164,7 +174,7 @@ export function HomeScreen() {
     >
       <GradientWash height={u(WASH)} />
       {header}
-      {user.isPending ? (
+      {firstPaint ? (
         <HomeSkeleton />
       ) : (
         <>
@@ -187,8 +197,8 @@ export function HomeScreen() {
             <ShortcutGrid stats={stats.data} onShortcut={actions.shortcut} />
           </Section>
           {/* With no resume yet there is no progress to show: the card stays away (§185–§187). */}
-          {!latestResume && queryPhase(resumes) === 'success' ? null : (
-            <Section index={5} animate={animate}>
+          {showProgress ? (
+            <Section index={5} animate={animate && landing?.progress !== false}>
               <ResumeProgressCard
                 resume={latestResume}
                 status={queryPhase(resumes)}
@@ -198,7 +208,7 @@ export function HomeScreen() {
                 onRetry={() => void resumes.refetch()}
               />
             </Section>
-          )}
+          ) : null}
         </>
       )}
     </Screen>

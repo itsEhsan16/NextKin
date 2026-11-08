@@ -9,7 +9,7 @@ import { IconTile } from '@/ui/kit';
 import { OptionSheetHeader } from '@/ui/OptionSheet';
 import { Pressable } from '@/ui/Pressable';
 import { Sheet } from '@/ui/Sheet';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonListRow } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 
 /**
@@ -49,8 +49,8 @@ export function AssistantHistorySheet({
       <ScrollView style={styles.scroll} contentContainerStyle={styles.list}>
         {threads.isPending ? (
           <>
-            <Skeleton height={u(64)} radius="card" />
-            <Skeleton height={u(64)} radius="card" />
+            <SkeletonListRow height={u(64)} thumb={0} trailing divider />
+            <SkeletonListRow height={u(64)} thumb={0} trailing divider />
           </>
         ) : rows.length === 0 ? (
           <Text variant="callout" color="textSecondary" align="center" style={styles.empty}>

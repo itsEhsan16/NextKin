@@ -10,7 +10,7 @@ import { JdSectionCard } from '@/features/create/components/jd/JdSectionCard';
 import { GradientWash } from '@/ui/GradientWash';
 import { IconButton } from '@/ui/IconButton';
 import { SectionHeader } from '@/ui/SectionHeader';
-import { Skeleton } from '@/ui/Skeleton';
+import { Skeleton, SkeletonLines } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
 import { JobAboutSection } from '../components/JobAboutSection';
@@ -74,8 +74,11 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
       <>
         {backRow}
         <View style={{ padding: spacing.gutter, gap: spacing[4] }}>
-          {/* The hero (logo, title, pay) as one block, then the match card (§191). */}
-          <Skeleton height={s(64) + s(34) + s(22) + spacing[4] * 2} radius="cardLg" />
+          {/* The hero traced as its logo, title and pay, in the hero's height (§196). */}
+          <View style={{ height: s(64) + s(34) + s(22) + spacing[4] * 2, gap: spacing[4] }}>
+            <Skeleton width={s(64)} height={s(64)} radius="xxl" />
+            <SkeletonLines widths={['78%', '40%']} title={s(26)} line={s(16)} />
+          </View>
           <Skeleton height={s(294)} radius="cardLg" style={{ marginTop: spacing[4] }} />
           <Skeleton height={s(84)} radius="card" />
         </View>

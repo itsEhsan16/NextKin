@@ -28,11 +28,22 @@ export function CompanySkeleton() {
 
   return (
     <View accessible accessibilityLabel="Loading company">
-      {/* The logo, name and meta as one block (§191). */}
-      <Skeleton
-        height={s(LOGO) + s(LOGO_TO_NAME) + s(NAME) + spacing[1] + s(META)}
-        radius="cardLg"
-      />
+      {/* The centred logo, name and meta, in the hero's height (§196). */}
+      <View
+        style={[
+          styles.hero,
+          { height: s(LOGO) + s(LOGO_TO_NAME) + s(NAME) + spacing[1] + s(META) },
+        ]}
+      >
+        <Skeleton width={s(LOGO)} height={s(LOGO)} radius="xxl" />
+        <Skeleton
+          width="55%"
+          height={s(NAME) * 0.8}
+          radius="full"
+          style={{ marginTop: s(LOGO_TO_NAME) }}
+        />
+        <Skeleton width="35%" height={s(META)} radius="full" style={{ marginTop: spacing[1] }} />
+      </View>
       <Skeleton height={s(WEBSITE)} radius="cardLg" style={styles.website} />
       <Skeleton height={s(ABOUT)} radius="cardLg" style={styles.about} />
       <Skeleton width={s(HEADING_W)} height={s(HEADING)} style={styles.heading} />

@@ -120,7 +120,7 @@ export function JdIntakeSection({ value, onChange, jobId, pasteError }: JdIntake
   );
 
   const jobSummary = (
-    <Card radius="card">
+    <Card radius="card" loading={job.isPending}>
       {job.isPending ? (
         <View style={{ gap: spacing[2] }}>
           <Skeleton width="70%" height={s(TITLE_SKELETON)} />

@@ -1,13 +1,19 @@
-import { useEffect, useId, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef } from 'react';
 import {
   StyleSheet,
   useWindowDimensions,
   View,
   type DimensionValue,
   type StyleProp,
+  type ViewInstance,
   type ViewStyle,
 } from 'react-native';
-import Animated, { FadeIn, FadeOut, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  type SharedValue,
+} from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useReducedMotion } from '@/lib';
@@ -27,22 +33,21 @@ export type SkeletonProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** The light band's width, as a share of the screen. Wide and soft, so it reads as light. */
-const BAND = 0.55;
-
 /**
- * Loading placeholder (redrawn §191): a flat block with one soft band of light sweeping across
- * it. Every block on screen sweeps on the same clock (`skeletonClock`), and the band travels the
- * screen's width, so blocks side by side and stacked light up in step, as one surface.
+ * Loading placeholder (§191, redrawn §196): a soft shape with one diagonal band of light sweeping
+ * over it.
  *
+ * - **One surface:** the band lives in screen space. Each block measures where it sits on the
+ *   window and draws only its own slice of the one stripe, so every block on the page lights up
+ *   in step as the same light crosses them — side by side, stacked or nested.
+ * - **Soft, never outlined:** the base is ink at 5% (`skeletonBase`), so it reads on white and on
+ *   the lavender wash alike. Never put a skeleton inside an elevated or bordered card: Android's
+ *   elevation draws a hard dark edge around it (use `Card loading`).
  * - **No flash:** it waits `durations.skeletonDelay` before fading in. A load quicker than that
- *   goes straight from nothing to content, while the block still holds the space.
- * - **Cross-fade out:** Reanimated keeps a leaving view on screen out of layout, so the content
- *   takes its place at once while the grey fades over it.
- * - **Reduced motion:** a still block that appears at once, with no band.
- *
- * Use few, large blocks: one per section, sized like the section (`SkeletonBlock`), not one per
- * line of text.
+ *   goes straight from nothing to content, while the shape still holds the space.
+ * - **No overlap:** it leaves at once. The content that replaces it does its own arrival, so grey
+ *   never sits over the new content.
+ * - **Reduced motion:** a still shape that appears at once, with no band.
  */
 export function Skeleton({
   width = '100%',
@@ -53,10 +58,10 @@ export function Skeleton({
 }: SkeletonProps) {
   const { colors, radii: r, motion } = useTheme();
   const reduced = useReducedMotion();
-  const sweep = skeletonClock();
-  const { width: screen } = useWindowDimensions();
-  const band = screen * BAND;
-  const id = `shimmer${useId().replace(/:/g, '')}`;
+  const ref = useRef<ViewInstance>(null);
+  // Where this block sits on the window, so it can draw its own slice of the screen's band.
+  const left = useSharedValue(0);
+  const top = useSharedValue(0);
 
   useEffect(() => {
     if (reduced) return;
@@ -64,21 +69,24 @@ export function Skeleton({
     return releaseSkeletonClock;
   }, [reduced]);
 
-  const bandStyle = useAnimatedStyle(() => ({
-    // From just off the left edge to just off the right one, on the shared clock.
-    transform: [{ translateX: -band + sweep.value * (screen + band) }],
-  }));
+  const onLayout = useCallback(() => {
+    ref.current?.measureInWindow((x, y) => {
+      left.set(x);
+      top.set(y);
+    });
+  }, [left, top]);
 
   const base = tone === 'ai' ? colors.brandSurface : colors.skeletonBase;
 
   return (
     <Animated.View
+      ref={ref}
+      onLayout={reduced ? undefined : onLayout}
       entering={
         reduced
           ? undefined
           : FadeIn.delay(motion.durations.skeletonDelay).duration(motion.durations.fast)
       }
-      exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       style={[
@@ -87,52 +95,59 @@ export function Skeleton({
         style,
       ]}
     >
-      {reduced ? null : (
-        <Animated.View pointerEvents="none" style={[styles.band, { width: band }, bandStyle]}>
-          <Svg width="100%" height="100%">
-            <Defs>
-              <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
-                <Stop offset="0" stopColor={colors.skeletonHighlight} stopOpacity="0" />
-                <Stop offset="0.5" stopColor={colors.skeletonHighlight} stopOpacity="0.9" />
-                <Stop offset="1" stopColor={colors.skeletonHighlight} stopOpacity="0" />
-              </LinearGradient>
-            </Defs>
-            <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
-          </Svg>
-        </Animated.View>
-      )}
+      {reduced ? null : <Band left={left} top={top} />}
     </Animated.View>
   );
 }
 
-/**
- * One section's placeholder (§191): a single block in the section's own shape and height, with
- * the card radius. Prefer one of these per section over a stack of line skeletons.
- */
-export function SkeletonBlock({
-  height,
-  width = '100%',
-  tone,
-  style,
-}: {
-  height: number;
-  width?: DimensionValue;
-  tone?: SkeletonProps['tone'];
-  style?: StyleProp<ViewStyle>;
-}) {
-  const { u } = useTheme();
-  return (
-    <Skeleton width={width} height={height} tone={tone} style={[{ borderRadius: u(24) }, style]} />
-  );
-}
+/** This block's slice of the one diagonal stripe of light crossing the screen. */
+function Band({ left, top }: { left: SharedValue<number>; top: SharedValue<number> }) {
+  const { colors, motion } = useTheme();
+  const { width: screenW, height: screenH } = useWindowDimensions();
+  const sweep = skeletonClock();
+  const id = `shimmer${useId().replace(/:/g, '')}`;
 
-/** A row of blocks that sit side by side (a carousel's cards, a stat strip). */
-export function SkeletonRow({ children, gap }: { children: ReactNode; gap: number }) {
-  return <View style={[styles.row, { gap }]}>{children}</View>;
+  const { bandShare, tiltDeg, peak } = motion.shimmer;
+  const tilt = (tiltDeg * Math.PI) / 180;
+  const bandW = screenW * bandShare;
+  // Tall enough that, leaning, the stripe still spans the screen top to bottom.
+  const bandH = screenH / Math.cos(tilt) + bandW * Math.tan(tilt);
+  // How far past either edge the stripe's centre starts and ends, so it enters and leaves whole.
+  const margin = bandW / (2 * Math.cos(tilt)) + (screenH / 2) * Math.tan(tilt);
+
+  const style = useAnimatedStyle(() => {
+    const centreX = -margin + sweep.value * (screenW + 2 * margin);
+    return {
+      transform: [
+        { translateX: centreX - bandW / 2 - left.value },
+        { translateY: screenH / 2 - bandH / 2 - top.value },
+        { rotate: `${tiltDeg}deg` },
+      ],
+    };
+  });
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[styles.band, { width: bandW, height: bandH }, style]}
+    >
+      <Svg width="100%" height="100%">
+        <Defs>
+          <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor={colors.skeletonHighlight} stopOpacity="0" />
+            <Stop offset="0.3" stopColor={colors.skeletonHighlight} stopOpacity={peak * 0.35} />
+            <Stop offset="0.5" stopColor={colors.skeletonHighlight} stopOpacity={peak} />
+            <Stop offset="0.7" stopColor={colors.skeletonHighlight} stopOpacity={peak * 0.35} />
+            <Stop offset="1" stopColor={colors.skeletonHighlight} stopOpacity="0" />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+      </Svg>
+    </Animated.View>
+  );
 }
 
 const styles = StyleSheet.create({
   block: { overflow: 'hidden' },
-  band: { position: 'absolute', top: 0, bottom: 0, left: 0 },
-  row: { flexDirection: 'row' },
+  band: { position: 'absolute', top: 0, left: 0 },
 });

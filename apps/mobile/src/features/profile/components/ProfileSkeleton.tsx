@@ -1,5 +1,7 @@
+import { View } from 'react-native';
+
 import { useTheme } from '@/theme';
-import { Skeleton } from '@/ui/Skeleton';
+import { Skeleton, SkeletonLines } from '@/ui/Skeleton';
 
 /** Loading shape of PROFILE 01: identity row, stats bar, completeness card, plan row, a group. */
 export function ProfileSkeleton() {
@@ -16,8 +18,16 @@ export function ProfileSkeleton() {
   );
 }
 
-/** The identity row (avatar, name, headline) as one block, in the header where it lands (§191). */
+/**
+ * The identity (name, headline, plan pill) traced in the header where it lands (§196): a title
+ * bar, a meta bar and the pill, in the identity's own height.
+ */
 export function ProfileIdentitySkeleton() {
-  const { s } = useTheme();
-  return <Skeleton height={s(104)} radius="card" />;
+  const { s, spacing } = useTheme();
+  return (
+    <View style={{ height: s(104), gap: spacing[3] }}>
+      <SkeletonLines widths={['55%', '75%']} title={s(24)} line={s(14)} />
+      <Skeleton width={s(110)} height={s(26)} radius="full" />
+    </View>
+  );
 }

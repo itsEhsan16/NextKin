@@ -12,6 +12,11 @@ export type CardProps = {
   elevated?: boolean;
   /** Which shadow `elevated` draws. Defaults to `card` (0 1 2); the Jobs cards use `jobCard` (0 1 1). */
   shadow?: keyof typeof shadows;
+  /**
+   * The card holds a skeleton (§196): it keeps its size but draws no border and no shadow, so the
+   * placeholder never sits in a framed box — Android's elevation gives it a hard dark edge.
+   */
+  loading?: boolean;
   style?: StyleProp<ViewStyle>;
   children: ReactNode;
 };
@@ -23,6 +28,7 @@ export function Card({
   elevated = true,
   // The redesign's soft lift (§176); `card` and `jobCard` stay available by name.
   shadow = 'soft',
+  loading = false,
   style,
   children,
 }: CardProps) {
@@ -34,10 +40,10 @@ export function Card({
           backgroundColor: colors.surfaceCard,
           borderRadius: r[radius],
           borderWidth: s(1),
-          borderColor: colors.borderSoft,
+          borderColor: loading ? 'transparent' : colors.borderSoft,
           padding: padding ?? spacing[4],
         },
-        elevated ? shadowTokens[shadow] : null,
+        elevated && !loading ? shadowTokens[shadow] : null,
         style,
       ]}
     >

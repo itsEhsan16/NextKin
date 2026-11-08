@@ -10,10 +10,11 @@ import { Card } from '@/ui/Card';
 import { Pressable } from '@/ui/Pressable';
 import { ProgressBar, ScoreRing } from '@/ui/Progress';
 import { SectionHeader } from '@/ui/SectionHeader';
-import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 import { Icon } from '@/ui/Icon';
+
+import { ResumeProgressSkeleton } from './ResumeProgressSkeleton';
 
 export type ResumeProgressCardProps = {
   resume: Resume | undefined;
@@ -65,12 +66,15 @@ export function ResumeProgressCard({
   );
 
   return (
-    <Card style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}>
+    <Card
+      loading={status === 'pending'}
+      style={{ paddingVertical: s(25), paddingHorizontal: s(21), gap: spacing[4] }}
+    >
       <SectionHeader title="Your Resume Progress" onAction={onViewAll} />
 
       {status === 'pending' ? (
-        // One block in the row's own height (§191).
-        <Skeleton height={Math.max(thumb.height, ring)} radius="lg" />
+        // The row's silhouette: thumbnail, lines, ring (§196).
+        <ResumeProgressSkeleton />
       ) : status === 'error' ? (
         <StateView
           compact

@@ -24,7 +24,7 @@ import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
 
 import { useBuildSource, useBuildSourceStore } from '../buildSourceStore';
-import { BuildJobCard, BuildJobRow, BuildJobRowSkeleton } from '../components/BuildJobRows';
+import { BuildJobCard, BuildJobRow, BuildJobRowsSkeleton } from '../components/BuildJobRows';
 import { BuildSourcePill } from '../components/BuildSourcePill';
 import { BuildSourceSheet } from '../components/BuildSourceSheet';
 import { OnboardingFrame } from '../components/OnboardingFrame';
@@ -141,13 +141,7 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
       />
     );
   } else if (!source.data) {
-    jobs = (
-      <BuildJobCard>
-        {[0, 1, 2].map((index) => (
-          <BuildJobRowSkeleton key={index} />
-        ))}
-      </BuildJobCard>
-    );
+    jobs = <BuildJobRowsSkeleton count={3} />;
   } else if (all.length === 0) {
     jobs = (
       <View style={[styles.empty, { backgroundColor: colors.surfaceFaint }]}>

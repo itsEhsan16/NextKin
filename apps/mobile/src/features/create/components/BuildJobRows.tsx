@@ -6,7 +6,7 @@ import { MatchBadge } from '@/features/jobs/components/JobPills';
 import { EntryTile, ProfileCard } from '@/features/profile/components/cards';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
-import { Skeleton } from '@/ui/Skeleton';
+import { Skeleton, SkeletonCircle, SkeletonLines } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 
 import { CheckDisc } from './TailorResumeRows';
@@ -124,8 +124,24 @@ export function BuildJobCard({
   );
 }
 
-/** A job row while the list loads: one block, the row's own height (§191). */
-export function BuildJobRowSkeleton() {
+/**
+ * The saved-jobs list while it loads (§196): each row's silhouette — logo tile, title and company
+ * lines, radio — inside the card's padding but without the card's frame, so no hairline or
+ * elevation edge boxes the placeholder.
+ */
+export function BuildJobRowsSkeleton({ count }: { count: number }) {
+  const styles = useStyles();
+  return (
+    <View style={styles.listCard}>
+      {Array.from({ length: count }, (_, index) => (
+        <BuildJobRowSkeleton key={index} />
+      ))}
+    </View>
+  );
+}
+
+/** A job row while the list loads (§196). */
+function BuildJobRowSkeleton() {
   const { s } = useTheme();
   const styles = useStyles();
   return (
@@ -134,7 +150,9 @@ export function BuildJobRowSkeleton() {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Skeleton height={s(TILE)} radius="md" style={styles.text} />
+      <Skeleton width={s(TILE)} height={s(TILE)} radius="md" />
+      <SkeletonLines widths={['66%', '42%']} style={styles.text} />
+      <SkeletonCircle size={s(RADIO)} />
     </View>
   );
 }

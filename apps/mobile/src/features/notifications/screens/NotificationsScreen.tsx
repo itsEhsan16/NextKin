@@ -29,7 +29,7 @@ import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { Sheet } from '@/ui/Sheet';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonListRow } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { EdgeFade } from '@/ui/EdgeFade';
 import { closeOpenSwipeRow } from '@/ui/SwipeableRow';
@@ -58,6 +58,9 @@ const LABEL_BOTTOM = 10 / 0.75;
 const LABEL_TOP = 10 / 0.75;
 /** Skeleton card height — the board's two-line card (619:99 is 89.5 at 390). */
 const SKELETON_CARD = 90 / 0.75;
+/** A row's icon tile and side padding (NotificationRow), for the loading rows. */
+const SKELETON_TILE = 40 / 0.75;
+const SKELETON_PAD = 14 / 0.75;
 
 /**
  * NOTIF 01–03 + 05/06 — the feed, as NOTIF 01's redesign draws it (Figma 619:2): cards on the
@@ -228,8 +231,16 @@ export function NotificationsScreen() {
       <Animated.View layout={layout} style={styles.root}>
         {status === 'pending' ? (
           <View style={{ padding: spacing.gutter, gap: s(CARD_SPACING) }}>
+            {/* Each row traced as its icon tile, title, body and time (§196). */}
             {[0, 1, 2, 3, 4].map((index) => (
-              <Skeleton key={index} height={s(SKELETON_CARD)} radius="card" />
+              <SkeletonListRow
+                key={index}
+                height={s(SKELETON_CARD)}
+                thumb={s(SKELETON_TILE)}
+                lines={3}
+                trailing
+                style={{ paddingHorizontal: s(SKELETON_PAD) }}
+              />
             ))}
           </View>
         ) : status === 'error' ? (

@@ -21,7 +21,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
-import { Skeleton } from '@/ui/Skeleton';
+import { SkeletonListRow } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 
@@ -41,6 +41,9 @@ const feedKey = (item: FeedItem) => {
 
 /** Cards are about 90pt tall at 390; the skeleton holds that so the list does not jump on load. */
 const SKELETON_ROW = 90 / 0.75;
+/** ActivityRow's tile and padding, for the loading rows. */
+const SKELETON_TILE = 40 / 0.75;
+const SKELETON_PAD = 14 / 0.75;
 
 // HISTORY 01 at 390 (580:2928), in artboard units.
 const HEADER_TO_HERO = 6 / 0.75;
@@ -186,8 +189,15 @@ export function HistoryScreen() {
 
       {status === 'pending' ? (
         <View style={{ padding: spacing.gutter, gap: spacing[3] }}>
+          {/* Each row traced as its tile, title and meta (ActivityRow, §196). */}
           {[0, 1, 2, 3, 4].map((index) => (
-            <Skeleton key={index} height={s(SKELETON_ROW)} radius="card" />
+            <SkeletonListRow
+              key={index}
+              height={s(SKELETON_ROW)}
+              thumb={s(SKELETON_TILE)}
+              trailing
+              style={{ paddingHorizontal: s(SKELETON_PAD) }}
+            />
           ))}
         </View>
       ) : status === 'error' ? (
