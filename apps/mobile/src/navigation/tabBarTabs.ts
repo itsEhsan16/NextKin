@@ -5,15 +5,13 @@ import HomeFilled from '../../assets/icons/nav/home-filled.svg';
 import HomeOutline from '../../assets/icons/nav/home-outline.svg';
 import JobsFilled from '../../assets/icons/nav/jobs-filled.svg';
 import JobsOutline from '../../assets/icons/nav/jobs-outline.svg';
-import ProfileFilled from '../../assets/icons/nav/profile-filled.svg';
-import ProfileOutline from '../../assets/icons/nav/profile-outline.svg';
 import ResumesFilled from '../../assets/icons/nav/resumes-filled.svg';
 import ResumesOutline from '../../assets/icons/nav/resumes-outline.svg';
 
 import type { TabName } from './tabScroll';
 
 /** The typed hrefs for the four tab routes. */
-export type TabHref = '/(tabs)' | '/(tabs)/jobs' | '/(tabs)/resumes' | '/(tabs)/profile';
+export type TabHref = '/(tabs)' | '/(tabs)/jobs' | '/(tabs)/resumes';
 
 /**
  * Every number here is read off Home Screen 215:490 and divided by 0.75, because that board is
@@ -92,17 +90,6 @@ export const TABS: readonly TabMeta[] = [
     centre: 0.6972,
     slot: 0.19,
   },
-  {
-    name: 'profile',
-    label: 'Profile',
-    href: '/(tabs)/profile',
-    Icon: ProfileOutline,
-    IconActive: ProfileFilled,
-    w: 22.6444,
-    h: 22.6444,
-    centre: 0.8808,
-    slot: 0.14,
-  },
 ];
 
 /**
@@ -112,7 +99,6 @@ export const TABS: readonly TabMeta[] = [
 const TAB_BY_SEGMENT: Record<string, TabName> = {
   jobs: 'jobs',
   resumes: 'resumes',
-  profile: 'profile',
 };
 
 /**

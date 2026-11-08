@@ -124,6 +124,10 @@ describe('HomeScreen (DESIGN 2)', () => {
     await act(async () => fireEvent.press(screen.getByLabelText('Notifications, unread')));
     expect(mockPush).toHaveBeenCalledWith('/notifications');
 
+    // Profile left the bottom bar (§195): the avatar and greeting are the way in.
+    await act(async () => fireEvent.press(screen.getByLabelText(/Your profile$/)));
+    expect(mockPush).toHaveBeenCalledWith('/profile');
+
     // Phase 9I: the hamburger opens a sheet hosted over the tab bar, and the shortcuts that
     // stood on placeholders are real screens.
     await act(async () => fireEvent.press(screen.getByLabelText('Menu')));

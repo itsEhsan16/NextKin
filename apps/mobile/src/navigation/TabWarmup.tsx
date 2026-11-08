@@ -4,10 +4,10 @@ import { useEffect, useRef } from 'react';
 import { useQueriesSettled } from '@/data/queries';
 
 /**
- * Heaviest first: Profile mounts ~22 drawn row icons, Jobs a FlashList and a carousel, Resumes
- * its card grid.
+ * Heaviest first: Jobs mounts a FlashList and a carousel, Resumes its card grid. Profile is no
+ * longer a tab (§195): it opens from Home's greeting.
  */
-const WARM_ORDER: readonly Href[] = ['/profile', '/jobs', '/resumes'];
+const WARM_ORDER: readonly Href[] = ['/jobs', '/resumes'];
 
 /**
  * Mounts the other tabs ahead of the first visit, one per idle slot, once the launch screen has

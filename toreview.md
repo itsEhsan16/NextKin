@@ -16500,3 +16500,21 @@ The owner asked for it re-engineered, with smooth liquid motion.
   - Web preview: Home, Jobs, Resumes and Profile each show a round-ended pill fitted to its label, with clean icons.
   - The Android bundle builds.
   - Not checked on a phone. The motion is phone-only: the web preview runs with reduced motion.
+
+## §195 — Profile leaves the bottom bar; Home's greeting opens it (owner, 2026-11-08)
+The owner: "Remove the profile button, and make this as profile button", pointing at Home's avatar and greeting.
+- **The bar:** three tabs now (Home, Jobs, Resumes).
+  - `tabBarTabs`, `TabName` and `TabHref` drop `profile`.
+  - `(tabs)/_layout` drops the screen.
+  - `TabWarmup` no longer preloads `/profile`.
+- **Profile route:** a pushed screen (`app/(tabs)/profile.tsx` → `app/profile/index.tsx`, registered in the root stack).
+  - Judgement call: a page opened on top with Back, rather than a hidden tab, so the bar never shows a tab-less state.
+  - `TabTitleRow` gained an optional `onBack` (a back pill before the title).
+  - `ProfileScreen` uses `leaveProfile`: back, or Home when it was the first screen.
+  - It drops `tabBarInset` / tab scroll-to-top and takes the bottom safe edge.
+- **Home:** `HomeHeader`'s avatar and greeting are one pressable ("Good evening, Ehsan. Your profile") that pushes `/profile`, disabled while loading.
+- **Verified:**
+  - Jest: 1933 tests pass. The tab-bar tests now cover three tabs, and Home tests that a greeting tap opens `/profile`. tsc and eslint are clean.
+  - Web preview: Home shows the three-tab bar, and tapping the greeting opens Profile with Back.
+  - The Android bundle builds.
+  - Not checked on a phone.

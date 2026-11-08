@@ -91,6 +91,7 @@ export default function RootLayout() {
           <Stack.Screen name="legal/[doc]" />
           <Stack.Screen name="account/email" />
           <Stack.Screen name="account/export" />
+          <Stack.Screen name="profile/index" />
           <Stack.Screen name="profile/edit" />
           <Stack.Screen name="profile/skills" />
           <Stack.Screen name="profile/questions" />

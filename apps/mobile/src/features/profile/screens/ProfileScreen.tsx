@@ -5,7 +5,6 @@ import { RefreshControl, View, type ScrollViewInstance } from 'react-native';
 
 import { qk, useCurrentUser, useProfile, useSubscription, useUnreadCount } from '@/data/queries';
 import { a11yButton } from '@/lib';
-import { useTabScrollToTop } from '@/navigation';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { ListRow, RowGroup } from '@/ui/ListRow';
@@ -59,10 +58,6 @@ export function ProfileScreen() {
   const unread = useUnreadCount();
 
   const scrollRef = useRef<ScrollViewInstance>(null);
-  useTabScrollToTop(
-    'profile',
-    useCallback(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), []),
-  );
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -82,6 +77,8 @@ export function ProfileScreen() {
       title="Profile"
       hasUnread={(unread.data ?? 0) > 0}
       onPressNotifications={actions.openNotifications}
+      // Opened from Home's greeting since §195, not a tab: Back returns there.
+      onBack={actions.leaveProfile}
     />
   );
 
@@ -97,7 +94,7 @@ export function ProfileScreen() {
     return (
       <Screen
         scroll
-        tabBarInset
+        edges={['top', 'bottom']}
         header={
           <>
             {titleRow}
@@ -137,7 +134,7 @@ export function ProfileScreen() {
   return (
     <Screen
       scroll
-      tabBarInset
+      edges={['top', 'bottom']}
       scrollRef={scrollRef}
       // A fragment, not a View: fragments are not host nodes, so both rows become direct flex
       // children of the header box and its `gap` spaces them the way the container's did.

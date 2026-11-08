@@ -75,6 +75,8 @@ export function useProfileActions() {
         else router.push('/profile/edit');
       },
       goBack: () => router.back(),
+      /** Leaves Profile for where it was opened; Home when it was the first screen (§195). */
+      leaveProfile: () => (router.canGoBack() ? router.back() : router.replace('/(tabs)')),
       /**
        * Back to where the editor was opened from, then say what happened there. A save used to
        * pop the form in silence, so a change looked the same as a cancel (§85).

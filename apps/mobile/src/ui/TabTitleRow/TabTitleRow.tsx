@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { a11yHeader } from '@/lib';
+import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Text } from '@/ui/Text';
 
@@ -8,6 +9,8 @@ export type TabTitleRowProps = {
   title: string;
   hasUnread: boolean;
   onPressNotifications: () => void;
+  /** A back button before the title, for a page opened on top of a tab (Profile, §195). */
+  onBack?: () => void;
 };
 
 /**
@@ -18,12 +21,16 @@ export type TabTitleRowProps = {
  * belongs to the screen's header box (`spacing.headerTop`) and the seam under it to the row
  * that follows (`sizes.titleRowGap`).
  */
-export function TabTitleRow({ title, hasUnread, onPressNotifications }: TabTitleRowProps) {
+export function TabTitleRow({ title, hasUnread, onPressNotifications, onBack }: TabTitleRowProps) {
+  const { u } = useTheme();
   return (
     <View style={styles.row}>
-      <Text {...a11yHeader()} variant="title1">
-        {title}
-      </Text>
+      <View style={[styles.lead, { gap: u(12) }]}>
+        {onBack ? <IconButton icon="ArrowLeft" label="Back" onPress={onBack} /> : null}
+        <Text {...a11yHeader()} variant="title1">
+          {title}
+        </Text>
+      </View>
       <IconButton
         icon="Bell01"
         label={hasUnread ? 'Notifications, unread' : 'Notifications'}
@@ -36,4 +43,5 @@ export function TabTitleRow({ title, hasUnread, onPressNotifications }: TabTitle
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  lead: { flexDirection: 'row', alignItems: 'center' },
 });

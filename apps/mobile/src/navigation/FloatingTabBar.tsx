@@ -30,7 +30,6 @@ const GLYPH: Record<TabName, LineIconName> = {
   index: 'Home02',
   jobs: 'Briefcase01',
   resumes: 'Folder',
-  profile: 'User01',
 };
 
 /** At 390: the pill's inner padding, the icon's box, and the gap between icon and label. */

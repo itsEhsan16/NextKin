@@ -35,6 +35,8 @@ export function useHomeActions() {
   return useMemo(
     () => ({
       openNotifications: () => router.push('/notifications'),
+      /** Profile left the bottom bar (§195): Home's avatar and greeting open it. */
+      openProfile: () => router.push('/profile'),
       /** The hamburger sheet is hosted over the tab bar (HomeMenuHost), not pushed. */
       openMenu: openMenuSheet,
       findJobs: () => router.navigate('/(tabs)/jobs'),

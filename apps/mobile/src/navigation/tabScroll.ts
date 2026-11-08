@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 /** Matches the tab route names in `app/(tabs)`. */
-export type TabName = 'index' | 'jobs' | 'resumes' | 'profile';
+export type TabName = 'index' | 'jobs' | 'resumes';
 
 type ScrollToTop = () => void;
 

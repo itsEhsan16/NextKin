@@ -15,6 +15,8 @@ export type HomeHeaderProps = {
   hasUnread: boolean;
   onPressNotifications: () => void;
   onPressMenu: () => void;
+  /** The avatar and greeting: the way into Profile since it left the bottom bar (§195). */
+  onPressProfile?: () => void;
   /** The search pill: opens the Jobs tab. Absent while the page is loading. */
   onSearch?: () => void;
   /** For tests: the hour the greeting is chosen by. */
@@ -39,6 +41,7 @@ export function HomeHeader({
   hasUnread,
   onPressNotifications,
   onPressMenu,
+  onPressProfile,
   onSearch,
   now = new Date(),
 }: HomeHeaderProps) {
@@ -50,7 +53,16 @@ export function HomeHeader({
   return (
     <View style={styles.wrap}>
       <View style={styles.row}>
-        <View style={[styles.row, styles.who]}>
+        <Pressable
+          feedback="subtle"
+          accessibilityRole="button"
+          accessibilityLabel={`${greeting}, ${firstName ?? ''}. Your profile`}
+          accessibilityHint="Opens your profile"
+          disabled={!onPressProfile || loading}
+          dimDisabled={false}
+          onPress={onPressProfile}
+          style={[styles.row, styles.who]}
+        >
           {loading ? (
             <Skeleton width={avatarSize} height={avatarSize} radius="full" />
           ) : (
@@ -73,7 +85,7 @@ export function HomeHeader({
               </Text>
             )}
           </View>
-        </View>
+        </Pressable>
         <View style={[styles.row, styles.actions]}>
           <IconButton
             icon="Bell01"

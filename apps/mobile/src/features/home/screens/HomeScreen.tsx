@@ -126,6 +126,7 @@ export function HomeScreen() {
       hasUnread={(unread.data ?? 0) > 0}
       onPressNotifications={actions.openNotifications}
       onPressMenu={actions.openMenu}
+      onPressProfile={actions.openProfile}
       onSearch={user.isPending ? undefined : actions.findJobs}
     />
   );

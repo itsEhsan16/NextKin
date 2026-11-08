@@ -64,10 +64,11 @@ describe('FloatingTabBar', () => {
     await cleanup();
   });
 
-  it('renders the four tabs with the active one selected', async () => {
+  it('renders the three tabs with the active one selected (Profile left the bar, §195)', async () => {
     await renderBar(['(tabs)']);
 
-    expect(screen.getAllByRole('tab')).toHaveLength(4);
+    expect(screen.getAllByRole('tab')).toHaveLength(3);
+    expect(screen.queryByRole('tab', { name: 'Profile' })).toBeNull();
     expect(screen.getByRole('tab', { name: 'Home' })).toBeSelected();
     expect(screen.getByRole('tab', { name: 'Jobs' })).not.toBeSelected();
   });
@@ -99,7 +100,7 @@ describe('FloatingTabBar', () => {
 
   it('moves the selected tab over to the one you pick, before the route catches up (§194)', async () => {
     await renderBar(['(tabs)']);
-    // A tab slides by translateX; Profile, the last, moves left as it widens to hold its label.
+    // A tab slides by translateX; Resumes, the last, moves left as it widens to hold its label.
     const shift = (name: string) => {
       let node = screen.getByRole('tab', { name }).parent;
       while (node && StyleSheet.flatten(node.props.style)?.transform === undefined)
@@ -107,29 +108,29 @@ describe('FloatingTabBar', () => {
       const steps = StyleSheet.flatten(node?.props.style)?.transform as { translateX?: number }[];
       return steps.find((step) => step.translateX != null)?.translateX ?? NaN;
     };
-    const before = shift('Profile');
+    const before = shift('Resumes');
 
-    fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
+    fireEvent.press(screen.getByRole('tab', { name: 'Resumes' }));
     await waitFor(() =>
-      expect(screen.getByRole('tab', { name: 'Profile', selected: true })).toBeOnTheScreen(),
+      expect(screen.getByRole('tab', { name: 'Resumes', selected: true })).toBeOnTheScreen(),
     );
-    await waitFor(() => expect(shift('Profile')).toBeLessThan(before));
+    await waitFor(() => expect(shift('Resumes')).toBeLessThan(before));
   });
 
   it('selects the pressed tab before the route catches up', async () => {
     await renderBar(['(tabs)']);
 
-    await fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
+    await fireEvent.press(screen.getByRole('tab', { name: 'Resumes' }));
 
     // The segments still say Home: the highlight no longer waits for the screen to mount.
-    expect(screen.getByRole('tab', { name: 'Profile' })).toBeSelected();
+    expect(screen.getByRole('tab', { name: 'Resumes' })).toBeSelected();
     expect(screen.getByRole('tab', { name: 'Home' })).not.toBeSelected();
-    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/profile'));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/resumes'));
   });
 
   it('drops the pressed highlight once the route moves', async () => {
     await renderBar(['(tabs)']);
-    await fireEvent.press(screen.getByRole('tab', { name: 'Profile' }));
+    await fireEvent.press(screen.getByRole('tab', { name: 'Resumes' }));
     await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
 
     // The route lands somewhere else entirely (a link elsewhere won the race): the route wins.
@@ -143,7 +144,7 @@ describe('FloatingTabBar', () => {
     );
 
     expect(screen.getByRole('tab', { name: 'Jobs' })).toBeSelected();
-    expect(screen.getByRole('tab', { name: 'Profile' })).not.toBeSelected();
+    expect(screen.getByRole('tab', { name: 'Resumes' })).not.toBeSelected();
   });
 
   it('scrolls the focused tab to the top instead of re-navigating to itself', async () => {
