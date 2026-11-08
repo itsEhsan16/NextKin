@@ -7,7 +7,16 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { watchConnection } from '@/data/connection';
-import { auth, configureDataSource, onSignedOut, USES_BACKEND } from '@/data/dataSource';
+import { clerkSignedOut } from '@/data/clerkSession';
+import {
+  auth,
+  configureDataSource,
+  onSignedOut,
+  USES_BACKEND,
+  USES_CLERK,
+} from '@/data/dataSource';
+
+import { ClerkGate } from './ClerkGate';
 import { forgetPushDevice } from '@/data/pushDevice';
 import { configureMockMode } from '@/data/mock';
 import { flushEvents } from '@/data/queries';
@@ -46,8 +55,12 @@ if (USES_BACKEND) {
       void forgetPushDevice().finally(() => auth.logout());
     }
   });
-  void auth.http.tokens?.get().then((tokens) => {
-    if (!tokens && useSessionStore.getState().status === 'signed_in')
+  // On Clerk only a loaded Clerk with no session means signed out: offline at launch is not.
+  const signedOutHere = USES_CLERK
+    ? clerkSignedOut()
+    : (auth.http.tokens?.get().then((tokens) => !tokens) ?? Promise.resolve(false));
+  void signedOutHere.then((gone) => {
+    if (gone && useSessionStore.getState().status === 'signed_in')
       useSessionStore.getState().signOut();
   });
 }
@@ -77,29 +90,32 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      {/* The keyboard's frame-by-frame position, for every page's `KeyboardFrame` and every sheet
+      {/* Clerk's context for the sign-in hooks, when the app signs in through Clerk (§173). */}
+      <ClerkGate>
+        {/* The keyboard's frame-by-frame position, for every page's `KeyboardFrame` and every sheet
           that lifts over the keyboard. It detects the edge-to-edge window itself. */}
-      <KeyboardProvider>
-        {/* Seeded with the launch insets, so the first frame lays out at its final size instead of
+        <KeyboardProvider>
+          {/* Seeded with the launch insets, so the first frame lays out at its final size instead of
           rendering nothing (or at zero insets) until the native measurement arrives. */}
-        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <QueryClientProvider client={queryClient}>
-            {/* Inside the providers, so a crashed screen's fallback keeps every context. */}
-            <AppErrorBoundary>
-              <ArtboardMode>{children}</ArtboardMode>
-            </AppErrorBoundary>
-            {/* After the navigator, so a confirmation paints above whichever screen it lands on. */}
-            <AppToastHost />
-            {/* P12-12: opens when an AI action is refused for want of consent. */}
-            <AiConsentGate />
-            {/* P13-02, R-09: what is degraded right now, when the app runs on the backend. */}
-            <ServiceBanner />
-            <FigmaOverlay />
-            {/* Dark icons always: "auto" follows the OS and would go white over the light app. */}
-            <StatusBar style="dark" />
-          </QueryClientProvider>
-        </SafeAreaProvider>
-      </KeyboardProvider>
+          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+            <QueryClientProvider client={queryClient}>
+              {/* Inside the providers, so a crashed screen's fallback keeps every context. */}
+              <AppErrorBoundary>
+                <ArtboardMode>{children}</ArtboardMode>
+              </AppErrorBoundary>
+              {/* After the navigator, so a confirmation paints above whichever screen it lands on. */}
+              <AppToastHost />
+              {/* P12-12: opens when an AI action is refused for want of consent. */}
+              <AiConsentGate />
+              {/* P13-02, R-09: what is degraded right now, when the app runs on the backend. */}
+              <ServiceBanner />
+              <FigmaOverlay />
+              {/* Dark icons always: "auto" follows the OS and would go white over the light app. */}
+              <StatusBar style="dark" />
+            </QueryClientProvider>
+          </SafeAreaProvider>
+        </KeyboardProvider>
+      </ClerkGate>
     </GestureHandlerRootView>
   );
 }

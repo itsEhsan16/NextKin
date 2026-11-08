@@ -1,10 +1,15 @@
-import { useCallback, useRef, useState } from 'react';
-
 import { track } from '@nextkin/shared/queries';
-
 import { startNewMockAccount } from '@nextkin/shared/repos';
 
-import { auth, USES_BACKEND } from '../dataSource';
+import { auth, USES_BACKEND, USES_CLERK } from '../dataSource';
+import { useAction } from './useAction';
+import {
+  useClerkConfirmCode,
+  useClerkGoogleSignIn,
+  useClerkPasswordSignIn,
+  useClerkResendCode,
+  useClerkStartSignUp,
+} from './useClerkAuth';
 
 /**
  * Sign-in and sign-up against the backend (ImBackendImplementationPlan P5-08), as hooks so screens
@@ -12,6 +17,9 @@ import { auth, USES_BACKEND } from '../dataSource';
  *
  * On the mock (`EXPO_PUBLIC_DATA_SOURCE` unset) every call resolves at once and sign-up needs no
  * code, which is exactly what the screens did before: any details sign you into the seeded account.
+ * On the backend the server's own identity provider checks them, or Clerk does when its key is set
+ * (`useClerkAuth.ts`, toreview §173); the pair is chosen once, at load, so the hooks a screen calls
+ * never change between renders.
  *
  * Not React Query mutations: nothing here is cached data, and the signed-out screens render above
  * any query client. `useAction` gives the same `mutate(input, { onSuccess, onError })` and
@@ -30,41 +38,18 @@ export function beginMockAccount(name: string, email: string): void {
   startNewMockAccount({ firstName, lastName: rest.join(' '), email: email.trim() });
 }
 
+/** Whether "Continue with Google" works in this build: on the mock, and on the backend with Clerk. */
+export const googleSignInAvailable = !USES_BACKEND || USES_CLERK;
+
 export type Credentials = { email: string; password: string };
 
-type Callbacks<R> = { onSuccess?: (result: R) => void; onError?: (error: unknown) => void };
-
-function useAction<I, R>(run: (input: I) => Promise<R>) {
-  const [isPending, setPending] = useState(false);
-  const inFlight = useRef(false);
-  const mutate = useCallback(
-    (input: I, callbacks: Callbacks<R> = {}) => {
-      if (inFlight.current) return;
-      inFlight.current = true;
-      setPending(true);
-      run(input).then(
-        (result) => {
-          inFlight.current = false;
-          setPending(false);
-          callbacks.onSuccess?.(result);
-        },
-        (error: unknown) => {
-          inFlight.current = false;
-          setPending(false);
-          callbacks.onError?.(error);
-        },
-      );
-    },
-    [run],
-  );
-  return { mutate, isPending };
-}
-
+/** `needsCode`: a code was emailed (a new account, or Clerk checking a new device). */
 const signInWithPassword = async ({ email, password }: Credentials) => {
   if (USES_BACKEND) await auth.login(email.trim(), password);
+  return { needsCode: false };
 };
 
-export const usePasswordSignIn = () => useAction(signInWithPassword);
+const usePasswordSignInLocal = () => useAction(signInWithPassword);
 
 /** Resolves `needsCode: true` when the backend has emailed a confirmation code. */
 const startSignUp = async ({ name, email, password }: Credentials & { name: string }) => {
@@ -73,17 +58,34 @@ const startSignUp = async ({ name, email, password }: Credentials & { name: stri
   return { needsCode: true };
 };
 
-export const useStartSignUp = () => useAction(startSignUp);
+const useStartSignUpLocal = () => useAction(startSignUp);
 
 /** Confirms the emailed code, then signs in with the password the reader just chose. */
 const confirmSignUp = async ({ email, password, code }: Credentials & { code: string }) => {
   await auth.confirm(email.trim(), code.trim());
   await auth.login(email.trim(), password);
   track('sign_up_completed');
+  return { newAccount: true };
 };
 
-export const useConfirmSignUp = () => useAction(confirmSignUp);
+const useConfirmSignUpLocal = () => useAction(confirmSignUp);
 
 const resendCode = (email: string) => auth.resendCode(email.trim());
 
-export const useResendSignUpCode = () => useAction(resendCode);
+const useResendSignUpCodeLocal = () => useAction(resendCode);
+
+// Only Clerk runs Google here: the mock's button signs straight in, and the server's own provider
+// has no Google client on the demo.
+const googleUnavailable = async (_input: void) => {
+  throw { code: 'CLERK', message: 'Google sign-in isn’t connected in this build yet.' };
+};
+
+const useGoogleSignInLocal = () => useAction(googleUnavailable);
+
+export const usePasswordSignIn = USES_CLERK ? useClerkPasswordSignIn : usePasswordSignInLocal;
+export const useStartSignUp = USES_CLERK ? useClerkStartSignUp : useStartSignUpLocal;
+export const useConfirmSignUp = USES_CLERK ? useClerkConfirmCode : useConfirmSignUpLocal;
+export const useResendSignUpCode = USES_CLERK ? useClerkResendCode : useResendSignUpCodeLocal;
+export const useGoogleSignIn = USES_CLERK
+  ? useClerkGoogleSignIn
+  : (useGoogleSignInLocal as typeof useClerkGoogleSignIn);

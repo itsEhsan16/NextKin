@@ -25,6 +25,11 @@ import type { Page } from '../types';
 export interface TokenStore {
   get(): Promise<TokenSetWire | null>;
   set(tokens: TokenSetWire | null): Promise<void>;
+  /**
+   * A store whose tokens come from elsewhere (mobile on Clerk, toreview §173) renews them itself,
+   * in place of `/auth/token/refresh`. Same outcomes: only 'refused' signs the device out.
+   */
+  refresh?(): Promise<RefreshOutcome>;
 }
 
 export interface HttpClientOptions {
@@ -69,7 +74,7 @@ export interface HttpResult<T> {
 /** An API failure in the shared envelope. `code` is what screens branch on. */
 const UNREACHABLE = 'Could not reach NextKin. Check your connection.';
 
-type RefreshOutcome = 'refreshed' | 'refused' | 'unreachable';
+export type RefreshOutcome = 'refreshed' | 'refused' | 'unreachable';
 
 export class ApiError extends Error {
   constructor(
@@ -197,6 +202,7 @@ export function createHttpClient(options: HttpClientOptions) {
   function refresh(): Promise<RefreshOutcome> {
     refreshing ??= (async () => {
       try {
+        if (options.tokens!.refresh) return await options.tokens!.refresh();
         const current = await options.tokens!.get();
         if (!current) return 'refused';
         const res = await sendOnce('/auth/token/refresh', { body: { refreshToken: current.refreshToken } });

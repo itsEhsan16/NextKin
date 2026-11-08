@@ -25,8 +25,11 @@ export const resetPasswordSchema = z.object({ email, code: z.string().regex(/^\d
 export const changePasswordSchema = z.object({ current: password, next: password }).strict();
 export const refreshSchema = z.object({ refreshToken: z.string().min(16).max(512) }).strict();
 export const exchangeSchema = z.object({ code: z.string().min(16).max(128) }).strict();
-/** Web sign-in through Clerk (toreview §169): the browser's Clerk session token, exchanged once. */
-export const clerkExchangeSchema = z.object({ token: z.string().min(20).max(8192) }).strict();
+/**
+ * Sign-in through Clerk (toreview §169, §173): a Clerk session token, exchanged once. Web gets the
+ * session cookie; mobile keeps its Clerk session and sends a fresh Clerk token as its bearer.
+ */
+export const clerkExchangeSchema = z.object({ token: z.string().min(20).max(8192), client: clientKindSchema.default('web') }).strict();
 
 export const sessionUserSchema = z.object({
   id: z.string(),

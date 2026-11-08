@@ -16,6 +16,7 @@
     "routes:types": "expo customize tsconfig.json"
   },
   "dependencies": {
+    "@clerk/expo": "^4.15.0",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo/dom-webview": "~58.0.2",
@@ -28,6 +29,7 @@
     "@shopify/flash-list": "2.3.2",
     "@tanstack/react-query": "^5.101.4",
     "expo": "~58.0.19",
+    "expo-auth-session": "~58.0.17",
     "expo-clipboard": "~58.0.4",
     "expo-constants": "~58.0.13",
     "expo-device": "~58.0.5",

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createClerkIdentityProvider, profileFromClerk, type ClerkApi, type ClerkUserLike } from '../src/auth/adapters/clerk/provider';
+import { azpAllowed, createClerkIdentityProvider, profileFromClerk, type ClerkApi, type ClerkUserLike } from '../src/auth/adapters/clerk/provider';
 import { AuthError } from '../src/auth/ports/identity';
 import { ConfigError, loadConfig } from '../src/config';
 
@@ -77,6 +77,14 @@ describe('Clerk identity adapter', () => {
 
   it('refuses the flows Clerk owns in the browser', async () => {
     await expect(createClerkIdentityProvider(fakeApi()).signUp({ email: 'a@b.co', password: 'x' })).rejects.toBeInstanceOf(AuthError);
+  });
+
+  it('takes a native token with no azp, and a browser token only from our origins (§173)', () => {
+    const ours = ['https://app.nextkin.ai'];
+    expect(azpAllowed(undefined, ours)).toBe(true);
+    expect(azpAllowed('https://app.nextkin.ai', ours)).toBe(true);
+    expect(azpAllowed('https://evil.example', ours)).toBe(false);
+    expect(azpAllowed(42, ours)).toBe(false);
   });
 });
 

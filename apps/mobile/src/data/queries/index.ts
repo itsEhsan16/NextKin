@@ -9,8 +9,12 @@ export { useIsOnline } from './useIsOnline';
 export {
   backendAuth,
   beginMockAccount,
+  googleSignInAvailable,
   useConfirmSignUp,
+  useGoogleSignIn,
   usePasswordSignIn,
   useResendSignUpCode,
   useStartSignUp,
 } from './useAuth';
+// The account screen's password change: on Clerk the password changes there (§173).
+export { useChangeSignInPassword } from './useChangePassword';

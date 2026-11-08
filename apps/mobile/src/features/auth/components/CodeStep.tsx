@@ -17,8 +17,11 @@ const SUCCESS_HOLD_MS = 900;
 export type CodeStepProps = {
   email: string;
   password: string;
-  /** The code was right and the account is confirmed: sign in. */
-  onDone: () => void;
+  /**
+   * The code was right: sign in. `newAccount` is false when the code only finished a sign-in on a
+   * new device (Clerk, §173), so the caller skips the first run then.
+   */
+  onDone: (newAccount: boolean) => void;
   /** Back to the form, to fix the address. */
   onChangeEmail: () => void;
 };
@@ -52,10 +55,11 @@ export function CodeStep({ email, password, onDone, onChangeEmail }: CodeStepPro
     confirm.mutate(
       { email, password, code: value },
       {
-        onSuccess: () => {
+        onSuccess: (result) => {
           setSuccess(true);
           AccessibilityInfo.announceForAccessibility('Email confirmed.');
-          done.current = setTimeout(onDone, SUCCESS_HOLD_MS);
+          const newAccount = result?.newAccount ?? true;
+          done.current = setTimeout(() => onDone(newAccount), SUCCESS_HOLD_MS);
         },
         onError: (failure) => {
           const text = confirmErrorMessage(failure);
