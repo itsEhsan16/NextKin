@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { resolveImageSource } from '@/assets';
@@ -21,7 +22,9 @@ const DEFAULT_SIZE = 56;
 export function Avatar({ source, name, size, style }: AvatarProps) {
   const { colors, radii, motion, s } = useTheme();
   const box = size ?? s(DEFAULT_SIZE);
-  const resolved = resolveImageSource(source);
+  // Once per source (§196): a remote URL resolves to a new `{ uri }` each call, which made
+  // expo-image re-run its source change on every render of the header.
+  const resolved = useMemo(() => resolveImageSource(source), [source]);
 
   return (
     <View

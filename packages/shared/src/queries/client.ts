@@ -22,6 +22,18 @@ export function onConsentRequired(listener: ConsentListener): () => void {
 /** A refusal the consent dialog is already handling: screens show no error of their own for it. */
 export const isConsentRequired = (error: unknown): boolean => error instanceof ConsentRequiredError;
 
+/**
+ * One retry for a request that might succeed a second time (a dropped connection, a 5xx, a 408 or
+ * 429) and none for one that can't (§196): a 404 or a validation refusal answers the same again,
+ * so retrying only held the error state back by a second.
+ */
+export function retryOnce(failureCount: number, error: unknown): boolean {
+  if (failureCount >= 1) return false;
+  const status = (error as { status?: unknown } | null)?.status;
+  if (typeof status !== 'number') return true;
+  return status >= 500 || status === 408 || status === 429;
+}
+
 /** One client per app (or per test); defaults tuned for a mobile, mostly-offline-tolerant app. */
 export function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -38,7 +50,7 @@ export function createQueryClient(): QueryClient {
         // Long enough that a screen opened again later in the session draws from memory instead
         // of a skeleton (§191). Stale data still refetches in the background as before.
         gcTime: 30 * MINUTE,
-        retry: 1,
+        retry: retryOnce,
         refetchOnWindowFocus: false,
       },
       mutations: {

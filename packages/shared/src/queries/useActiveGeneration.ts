@@ -5,11 +5,12 @@ import { isGenerationTerminal } from '../models';
 import { repos } from '../repos';
 
 import { qk } from './keys';
+import { watchGeneration } from './useGenerations';
 
 /**
  * The in-flight generation (or null). While one is active this subscribes to
  * live progress ticks and pushes them straight into the cache, so a progress
- * card re-renders without polling. When it completes, resumes are refetched.
+ * card re-renders without polling. When it completes, what it changed is refetched.
  */
 export function useActiveGeneration() {
   const queryClient = useQueryClient();
@@ -22,15 +23,8 @@ export function useActiveGeneration() {
 
   useEffect(() => {
     if (!activeId) return undefined;
-    return repos.generations.subscribe(activeId, (generation) => {
-      queryClient.setQueryData(qk.generations.active(), generation);
-      if (isGenerationTerminal(generation.status)) {
-        void queryClient.invalidateQueries({ queryKey: qk.resumes.all });
-        void queryClient.invalidateQueries({
-          queryKey: qk.user.subscription(),
-        });
-      }
-    });
+    // The same shared watch as the run's own screen (§196): one poll, one sweep when it ends.
+    return watchGeneration(queryClient, activeId);
   }, [activeId, queryClient]);
 
   return query;

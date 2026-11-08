@@ -1,3 +1,5 @@
+import { focusManager } from '@tanstack/react-query';
+
 import type { Generation, GenerationInput } from '../../models/generation';
 import type { TailorFix, TailorRun } from '../../models/tailor';
 import { generationResultSchema, generationSchema, type GenerationRequest, type Tailoring } from '../../schemas/generation';
@@ -120,6 +122,8 @@ export function createHttpGenerationsRepo(
       let stopped = false;
       const tick = async () => {
         while (!stopped) {
+          await whileAway(() => stopped, options.everyMs ?? 1000);
+          if (stopped) return;
           try {
             const generation = parse(await http.request(`/generations/${id}`));
             if (generation.status === 'ready') await finish(generation);
@@ -138,4 +142,15 @@ export function createHttpGenerationsRepo(
       };
     },
   };
+}
+
+/**
+ * Waits while the app is in the background (§196): a poll there spends battery and data on an
+ * answer nobody is looking at. `focusManager` follows the app's state on the phone and the tab's
+ * visibility on the web; when it comes back the poll resumes at once.
+ */
+async function whileAway(stopped: () => boolean, everyMs: number): Promise<void> {
+  while (!stopped() && !focusManager.isFocused()) {
+    await new Promise((resolve) => setTimeout(resolve, everyMs));
+  }
 }

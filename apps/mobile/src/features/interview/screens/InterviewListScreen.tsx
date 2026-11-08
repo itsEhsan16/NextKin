@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useCallback, useMemo, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -59,6 +59,9 @@ export function InterviewListScreen() {
   const { spacing, s } = useTheme();
   const styles = useStyles();
   const actions = useInterviewActions();
+  const { openSet } = actions;
+  // One handler for every card (§196): an arrow per card defeated InterviewSetCard's memo.
+  const openCard = useCallback((set: InterviewSet) => openSet(set.id), [openSet]);
 
   const sets = useInterviewSets();
   const applications = useApplications();
@@ -229,7 +232,7 @@ export function InterviewListScreen() {
               set={set}
               superseded={superseded.has(set.id)}
               interviewDay={interviewDays.get(set.id)}
-              onOpen={(item) => actions.openSet(item.id)}
+              onOpen={openCard}
               onLongPress={requestDelete}
             />
           </Animated.View>

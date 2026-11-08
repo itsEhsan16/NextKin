@@ -12,11 +12,23 @@ import { qk } from './keys';
  * fetch, one cache, and TanStack memoises the selection per observer. `RESUME_SORT_COMPARATORS`
  * lives beside the model so the repo's `list()` can adopt them verbatim when paging arrives.
  */
+/**
+ * One selector per order, made once (§196). An inline `select` is a new function every render,
+ * and TanStack re-runs a selector whose identity changed — so every render of every screen
+ * reading the library sorted it again.
+ */
+const sortedBy = Object.fromEntries(
+  (['edited', 'created', 'name', 'score'] as const).map((sort) => [
+    sort,
+    (resumes: Resume[]) => sortResumes(resumes, sort),
+  ]),
+) as Record<ResumeSort, (resumes: Resume[]) => Resume[]>;
+
 export function useResumes(sort: ResumeSort = 'edited') {
   return useQuery({
     queryKey: qk.resumes.list(),
     queryFn: () => repos.resumes.list(),
-    select: (resumes) => sortResumes(resumes, sort),
+    select: sortedBy[sort],
   });
 }
 

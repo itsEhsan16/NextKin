@@ -184,6 +184,24 @@ export function JobsScreen() {
   }, [activeQuery, picks, segment]);
 
   const { openApplication } = actions;
+  // One stable handler for every applied card (§196): an arrow per row defeated JobCard's memo,
+  // so each visible card re-rendered with the list.
+  const applicationOf = useMemo(
+    () =>
+      new Map(
+        rows.flatMap((row): [string, string][] =>
+          row.kind === 'applied' ? [[row.job.id, row.application.id]] : [],
+        ),
+      ),
+    [rows],
+  );
+  const openApplied = useCallback(
+    (job: Job) => {
+      const id = applicationOf.get(job.id);
+      if (id) openApplication(id);
+    },
+    [applicationOf, openApplication],
+  );
   const renderItem = useCallback(
     ({ item }: { item: JobRow }) => {
       if (item.kind === 'applied') {
@@ -193,7 +211,7 @@ export function JobsScreen() {
             variant="applied"
             application={item.application}
             footer={appliedNote(item.application)}
-            onPress={() => openApplication(item.application.id)}
+            onPress={openApplied}
           />
         );
       }
@@ -210,7 +228,7 @@ export function JobsScreen() {
         />
       );
     },
-    [actions.openJob, actions.tailorResume, handleToggleSave, openApplication, preferences],
+    [actions.openJob, actions.tailorResume, handleToggleSave, openApplied, preferences],
   );
 
   // Everything the list header renders from; changing any of it must repaint the header.

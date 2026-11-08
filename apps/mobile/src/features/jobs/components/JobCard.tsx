@@ -167,6 +167,8 @@ function sameCard(prev: JobCardProps, next: JobCardProps): boolean {
     prev.job === next.job &&
     prev.variant === next.variant &&
     prev.application === next.application &&
+    // A changed preference clash must redraw its pill (§196); it used to keep the old one.
+    prev.clash === next.clash &&
     prev.footer.note === next.footer.note &&
     prev.footer.noteColor === next.footer.noteColor &&
     prev.onPress === next.onPress &&

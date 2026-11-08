@@ -1,3 +1,5 @@
+import { focusManager } from '@tanstack/react-query';
+
 import type { AssistantConversation, AssistantMessage } from '../../models/assistant';
 import { assistantConversationSchema, assistantMessageSchema, assistantSendResultSchema, assistantThreadListSchema } from '../../schemas/assistant';
 import type { AssistantRepo } from '../types';
@@ -24,6 +26,8 @@ export function createHttpAssistantRepo(http: HttpClient, options: { everyMs?: n
       let last = '';
       const tick = async () => {
         while (!stopped) {
+          await whileAway(() => stopped, options.everyMs ?? 400);
+          if (stopped) return;
           try {
             const next = message(await http.request(`/assistant/messages/${messageId}`));
             if (stopped) return;
@@ -49,4 +53,15 @@ export function createHttpAssistantRepo(http: HttpClient, options: { everyMs?: n
     openThread: async (id) => conversation(await http.request(`/assistant/sessions/${id}/open`, { method: 'POST' })),
     startNew: async () => conversation(await http.request('/assistant/sessions', { method: 'POST' })),
   };
+}
+
+/**
+ * Waits while the app is in the background (§196): a poll there spends battery and data on an
+ * answer nobody is looking at. `focusManager` follows the app's state on the phone and the tab's
+ * visibility on the web; when it comes back the poll resumes at once.
+ */
+async function whileAway(stopped: () => boolean, everyMs: number): Promise<void> {
+  while (!stopped() && !focusManager.isFocused()) {
+    await new Promise((resolve) => setTimeout(resolve, everyMs));
+  }
 }

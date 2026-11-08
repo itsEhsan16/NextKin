@@ -61,29 +61,77 @@ export function useGeneration(id: string) {
 
   useEffect(() => {
     if (!liveId) return undefined;
-    return repos.generations.subscribe(liveId, (generation) => {
-      queryClient.setQueryData(qk.generations.detail(liveId), generation);
-      queryClient.setQueryData(qk.generations.active(), generation);
-      if (isGenerationTerminal(generation.status)) {
-        // The document is now filled and scored, the quota is spent, and History has a row.
-        void queryClient.invalidateQueries({ queryKey: qk.resumes.all });
-        void queryClient.invalidateQueries({
-          queryKey: qk.user.subscription(),
-        });
-        void queryClient.invalidateQueries({ queryKey: qk.user.activity() });
-        void queryClient.invalidateQueries({
-          queryKey: qk.user.dashboardStats(),
-        });
-        // The whole aggregate, not just `active`: the tick that landed rewrote the row in the
-        // store, so anything holding the list still shows a run as generating.
-        void queryClient.invalidateQueries({ queryKey: qk.generations.all });
-        // An interview run writes a practice set on completion (§7.15).
-        void queryClient.invalidateQueries({ queryKey: qk.interview.all });
-      }
-    });
+    return watchGeneration(queryClient, liveId);
   }, [liveId, queryClient]);
 
   return query;
+}
+
+/**
+ * One live watch per run, however many screens show it (§196). Home's progress card, the run's
+ * own screen and History's row each used to start their own poll of the same run, and each swept
+ * the caches again when it ended. Reference-counted: the poll starts with the first watcher and
+ * stops with the last.
+ */
+const watches = new WeakMap<QueryClient, Map<string, { holders: number; stop: () => void }>>();
+
+export function watchGeneration(queryClient: QueryClient, id: string): () => void {
+  let byId = watches.get(queryClient);
+  if (!byId) {
+    byId = new Map();
+    watches.set(queryClient, byId);
+  }
+  const existing = byId.get(id);
+  if (existing) {
+    existing.holders += 1;
+  } else {
+    const stop = repos.generations.subscribe(id, (generation) => {
+      queryClient.setQueryData(qk.generations.detail(id), generation);
+      queryClient.setQueryData(qk.generations.active(), generation);
+      if (isGenerationTerminal(generation.status)) sweepFinishEffects(queryClient, generation);
+    });
+    byId.set(id, { holders: 1, stop });
+  }
+  const map = byId;
+  return () => {
+    const watch = map.get(id);
+    if (!watch) return;
+    watch.holders -= 1;
+    if (watch.holders > 0) return;
+    watch.stop();
+    map.delete(id);
+  };
+}
+
+/**
+ * What a finished run changed: its document is filled and scored, the quota is spent, History
+ * has a row. Only the run's own documents and the library list are refreshed, not every resume
+ * query (§196) — an editor open on another resume has nothing to reload.
+ */
+function sweepFinishEffects(queryClient: QueryClient, generation: Generation): void {
+  invalidateRunResumes(queryClient, generation);
+  void queryClient.invalidateQueries({ queryKey: qk.user.subscription() });
+  void queryClient.invalidateQueries({ queryKey: qk.user.activity() });
+  void queryClient.invalidateQueries({ queryKey: qk.user.dashboardStats() });
+  // The whole aggregate, not just `active`: the tick that landed rewrote the row in the store, so
+  // anything holding the list still shows a run as generating.
+  void queryClient.invalidateQueries({ queryKey: qk.generations.all });
+  // An interview run writes a practice set on completion (§7.15).
+  void queryClient.invalidateQueries({ queryKey: qk.interview.all });
+}
+
+/** The library list, plus every query about the documents this run wrote or read. */
+function invalidateRunResumes(queryClient: QueryClient, generation: Generation): void {
+  const ids = [generation.resumeId, generation.sourceResumeId].filter(
+    (id): id is string => typeof id === 'string' && id.length > 0,
+  );
+  void queryClient.invalidateQueries({ queryKey: qk.resumes.list() });
+  if (ids.length === 0) return;
+  void queryClient.invalidateQueries({
+    predicate: (query) =>
+      query.queryKey[0] === qk.resumes.all[0] &&
+      query.queryKey.some((part) => typeof part === 'string' && ids.includes(part)),
+  });
 }
 
 /**
