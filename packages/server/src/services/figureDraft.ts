@@ -45,12 +45,13 @@ export const figureDraftSchema = z.object({
   suggestion: z.string().trim().max(60).nullable(),
 });
 
-const MAX_SUGGESTION = 24;
+/** Room for 'about 2 hours a week' (section 202: 24 dropped real figures). */
+const MAX_SUGGESTION = 32;
 
 /** A suggestion is a short figure: "about 20%", "5,000 users". No technology, no claim. */
 export function fitsSuggestion(suggestion: string | null | undefined): suggestion is string {
   const text = suggestion?.trim() ?? '';
-  if (!text || text.length > MAX_SUGGESTION || text.split(/\s+/).length > 4) return false;
+  if (!text || text.length > MAX_SUGGESTION || text.split(/\s+/).length > 5) return false;
   if (!/\d/.test(text)) return false;
   return mentionsIn(TAXONOMY, text).length === 0;
 }
@@ -92,7 +93,11 @@ export async function draftFigure(deps: FigureDraftDeps, identity: Identity, req
     return { line: bullet.text, title: role.title, prompt };
   });
   const fallback = fallbackDraft(found.line);
-  if (!deps.ai || !found.prompt) return fallback;
+  if (!deps.ai || !found.prompt) {
+    // Said in the log so a missing chip is traceable to its cause (section 202).
+    deps.log.info({ event: 'figure.draft_rules', reason: !deps.ai ? 'no_model_route' : 'no_prompt_or_consent' }, 'figure draft by the rules');
+    return fallback;
+  }
 
   const key = `fig:${found.prompt.id}:${createHash('sha256').update(`${found.title}\n${found.line}`).digest('hex')}`;
   try {
@@ -115,6 +120,9 @@ export async function draftFigure(deps: FigureDraftDeps, identity: Identity, req
       return draft;
     }
     deps.log.info({ event: 'figure.draft_rejected' }, 'figure draft strayed from the line; using the rules');
+    // The sentence is the rules', but the model's figure is still a fair guess to offer (section
+    // 202): a long line naming six technologies is often rewritten too freely while its figure is fine.
+    if (fitsSuggestion(data.suggestion)) return { ...fallback, suggestion: data.suggestion.trim() };
   } catch (error) {
     deps.log.warn({ event: 'figure.draft_failed', err: error instanceof Error ? error.message : String(error) }, 'figure draft failed; using the rules');
   }

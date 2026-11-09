@@ -28,6 +28,8 @@ describe('figure drafts', () => {
   it('keeps a suggestion only when it is a short figure (toreview §173)', () => {
     expect(fitsSuggestion('about 20%')).toBe(true);
     expect(fitsSuggestion('5,000 users')).toBe(true);
+    // Section 202: room for a figure with its unit of time.
+    expect(fitsSuggestion('about 2 hours a week')).toBe(true);
     expect(fitsSuggestion(null)).toBe(false);
     expect(fitsSuggestion('faster')).toBe(false);
     expect(fitsSuggestion('20% by moving the checkout to GraphQL')).toBe(false);
