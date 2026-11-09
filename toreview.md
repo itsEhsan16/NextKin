@@ -16971,3 +16971,14 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - `PlanQuestions.test.tsx`: the two kinds of question, a role answering one, "No" unticking, and the projected line at 9.6;
   - the existing Tailor and Build compare tests (21 in all).
 - **Not seen yet:** the section has not been viewed on a device or in the preview.
+
+## §203 — Bare, larger icons on notifications; a larger sparkle on "Try asking" (owner, 2026-11-09)
+- **Notifications (`VisualTile`):**
+  - The coloured tile behind a line icon and behind the AI sparkle is gone.
+  - The glyph is 28 of the 46 slot (was 18), and the sparkle is drawn 1.35× larger.
+  - The slot keeps its size, so rows don't shift.
+  - A company logo's initial keeps its filled tile, because a bare letter would read as text.
+  - The row menu's header uses the same component, so it follows.
+- **Assistant "Try asking" chips:** the sparkle goes from `xs` (12) to `sm` (16) at 390.
+- **Verified:** notifications and assistant Jest suites (37 pass).
+- **Not checked:** the result hasn't been seen on a device; the web preview was signed out.

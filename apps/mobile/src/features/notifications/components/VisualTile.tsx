@@ -9,10 +9,12 @@ import { Text } from '@/ui/Text';
 import { companyMark } from './companyMark';
 import { Icon, dataGlyph, lineBox } from '@/ui/Icon';
 
-/** Feed card tile, drawn at 390: 46 square, r12, an 18pt glyph (Figma 619:43 / 619:65). */
+/** Feed card tile, drawn at 390: a 46 square slot (Figma 619:43 / 619:65); only a logo is filled. */
 const TILE_AT390 = 46;
 const RADIUS_AT390 = 12;
-const GLYPH_AT390 = 18;
+/** Owner, 2026-11-09: the line icons and the sparkle stand bare, no tile, and larger (§203). */
+const GLYPH_AT390 = 28;
+const SPARKLE_SCALE = 1.35;
 /** The sparkle export's own box (619:39). */
 const SPARKLE_W_AT390 = 22;
 const SPARKLE_H_AT390 = 21.5496;
@@ -21,13 +23,13 @@ const COMPACT = 40;
 
 const GLYPH_TONE: Record<
   Extract<NotificationVisual, { kind: 'glyph' }>['tone'],
-  { bg: ColorToken; fg: ColorToken }
+  { fg: ColorToken }
 > = {
-  brand: { bg: 'tileBrand', fg: 'brand' },
-  success: { bg: 'tileSuccess', fg: 'glyphSuccess' },
-  warning: { bg: 'tileWarm', fg: 'glyphWarm' },
-  info: { bg: 'tileInfo', fg: 'glyphInfo' },
-  neutral: { bg: 'surfaceSubtle', fg: 'iconDefault' },
+  brand: { fg: 'brand' },
+  success: { fg: 'glyphSuccess' },
+  warning: { fg: 'glyphWarm' },
+  info: { fg: 'glyphInfo' },
+  neutral: { fg: 'iconDefault' },
 };
 
 export type VisualTileProps = {
@@ -42,11 +44,11 @@ export function VisualTile({ visual, compact = false }: VisualTileProps) {
   const box = compact ? s(COMPACT) : s(TILE_AT390 / 0.75);
   const glyph = box * (GLYPH_AT390 / TILE_AT390);
 
-  const frame = (bg: ColorToken) => ({
+  const frame = (bg: ColorToken | null) => ({
     width: box,
     height: box,
     borderRadius: compact ? radii.md : s(RADIUS_AT390 / 0.75),
-    backgroundColor: colors[bg],
+    ...(bg ? { backgroundColor: colors[bg] } : {}),
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   });
@@ -67,9 +69,9 @@ export function VisualTile({ visual, compact = false }: VisualTileProps) {
   }
 
   if (visual.kind === 'sparkle') {
-    const ratio = box / TILE_AT390;
+    const ratio = (box / TILE_AT390) * SPARKLE_SCALE;
     return (
-      <View style={frame('tileBrand')}>
+      <View style={frame(null)}>
         <SparkleIcon width={SPARKLE_W_AT390 * ratio} height={SPARKLE_H_AT390 * ratio} />
       </View>
     );
@@ -77,7 +79,7 @@ export function VisualTile({ visual, compact = false }: VisualTileProps) {
 
   const tone = GLYPH_TONE[visual.tone];
   return (
-    <View style={frame(tone.bg)}>
+    <View style={frame(null)}>
       <Icon name={dataGlyph(visual.icon)} size={lineBox(glyph)} color={colors[tone.fg]} />
     </View>
   );

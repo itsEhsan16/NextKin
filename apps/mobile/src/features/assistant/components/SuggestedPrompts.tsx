@@ -70,7 +70,7 @@ export function AssistantWelcome({
                   { backgroundColor: colors.surfaceCard, borderColor: colors.borderDefault },
                 ]}
               >
-                <Icon name="Stars02" size="xs" color={colors.brand} />
+                <Icon name="Stars02" size="sm" color={colors.brand} />
                 <Text variant="callout" color="textBody" style={styles.chipText}>
                   {item.prompt}
                 </Text>
@@ -104,7 +104,7 @@ export function FollowUpChips({
           onPress={() => onAsk(prompt)}
           style={[styles.chip, { borderColor: colors.brandBorder }]}
         >
-          <Icon name="Stars02" size="xs" color={colors.brand} />
+          <Icon name="Stars02" size="sm" color={colors.brand} />
           <Text variant="footnote" color="ink" style={styles.grow}>
             {prompt}
           </Text>
