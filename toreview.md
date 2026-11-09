@@ -16943,3 +16943,13 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - shared (452), including `lineRestore.test.ts`;
   - a mobile Restore test in `ResumeVersionsScreen.test.tsx`.
 - **Not run yet:** a live AI run.
+
+### §202.4 Aiming at 10: the target, and writers that see what scores
+- **`TARGET_SCORE` 8.5 → 10** (`fixPlan.ts`).
+  - The path engine already applied every step that adds points. The target changes only "reaches" and the plan's headline: "N steps to reach 10.0/10", "Best possible for this job: X/10", or "Already 10/10".
+  - The fixPlan test's fixture now reaches 10 by real steps alone.
+- **`scoreTargets`** (`scoreTargetsOf` in `resume.ts`): each backed requirement, with the roles whose `allowedSkills` back it.
+  - Sent to the writer (`target.scoreTargets`) and to the reviewer.
+  - `resume.generate` v9 and `resume.review` v2 each gained one rule: name each one in a bullet of a listed role, about the work, because a skill only listed scores half (D-14). Never in another role, and never as a tool list.
+  - This is how half credit becomes full credit without inventing anything. The claim ledger still checks every line.
+- **Not verified:** whether the live model actually lifts the score. That needs a live run, and none has been made.

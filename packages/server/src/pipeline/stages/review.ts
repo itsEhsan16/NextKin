@@ -11,7 +11,7 @@ import { userPaper } from '../../services/renders';
 import { StageError, type StageContext, type StageDef } from '../stages';
 import { periodOf, readRun, type RunInput, type StageJd } from './common';
 import { compiledMeasure, dropOrder, estimateMeasure, fitToPages } from './pageFit';
-import { generationInput, type ResumePlan } from './resume';
+import { generationInput, scoreTargetsOf, type ResumePlan } from './resume';
 import { applyReview, emptyReview, reviewSchema, type ReviewRecord } from './reviewEdits';
 import { changesOf } from './tailorChanges';
 import { recentRoleIds, rewrittenRoles, skillKey, tailorOf, type TailorRunInput } from './tailorMerge';
@@ -41,6 +41,8 @@ export function reviewInput(doc: CanonicalResumeJson, args: { run: RunInput; pla
     // What this run may change (the user switched the rest off): edits elsewhere are refused.
     parts: { summary: tailor.fixes.includes('summary'), skills: tailor.fixes.includes('skills'), projects: tailor.fixes.includes('projects'), rolesToRewrite: [...rewrittenRoles(base, tailor)] },
     leftOut: tailor.skipped,
+    // Where each skill the job asks for scores in full (§202): a bullet of one of these roles.
+    scoreTargets: scoreTargetsOf(plan),
     resume: {
       headline: doc.headline ?? null,
       headerStatements: headerStatements(doc.header),

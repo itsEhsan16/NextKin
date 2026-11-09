@@ -12,7 +12,7 @@ import { z } from 'zod';
 import type { VerifiedJd } from './extractJd';
 import { isoOf, periodOf, profileDocument, readRun, type RunInput, type StageJd } from './common';
 import { StageError, type StageDef } from '../stages';
-import { headlineOf, tailorOf } from './tailorMerge';
+import { headlineOf, skillKey, tailorOf } from './tailorMerge';
 import type { Tx } from '../../db/database';
 
 /**
@@ -175,6 +175,20 @@ export const bulletCap = (r: ProfileFacts['roles'][number]): number =>
   Math.min(6, r.responsibilities.length > 0 ? r.responsibilities.length : r.description ? 3 : 0);
 
 /** The generator's input: facts with ids, the plan, the JD's requirements. No contact field (G5). */
+/**
+ * Where each backed requirement earns full credit (§202, D-14): the roles whose facts back it. The
+ * keyword checker gives a skill named in a dated role's bullet full credit, one only listed half,
+ * so the writer and the reviewer are told which role can show each one. Never a role whose facts
+ * don't back it: that is the plan's own `allowedSkills`. Pure.
+ */
+export function scoreTargetsOf(plan: ResumePlan): { skill: string; roles: string[] }[] {
+  return plan.backed.flatMap((skill) => {
+    const key = skillKey(skill);
+    const roles = plan.roles.filter((r) => r.allowedSkills.some((a) => skillKey(a) === key)).map((r) => r.roleId);
+    return roles.length ? [{ skill, roles }] : [];
+  });
+}
+
 export function generationInput(
   facts: ProfileFacts,
   plan: ResumePlan,
@@ -195,6 +209,8 @@ export function generationInput(
           ...(headline ? { headline } : {}),
           requirementsBacked: plan.backed,
           requirementsNotBacked: plan.gaps,
+          // Where each backed requirement scores in full (§202): a bullet of one of these roles.
+          scoreTargets: scoreTargetsOf(plan),
           // The job's own duties, in its words (toreview §112): what to mirror where the facts agree.
           responsibilities: jd.responsibilities.slice(0, 30),
           // Ticked by the user as skills they have (toreview §116): the model places each one.
