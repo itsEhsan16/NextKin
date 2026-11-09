@@ -110,6 +110,13 @@ export const versionChangeListSchema = z.object({
       text: z.string(),
       before: z.string().optional(),
       why: z.string(),
+      restore: z
+        .discriminatedUnion('at', [
+          z.object({ at: z.literal('header'), index: z.number().int().min(0), text: z.string() }),
+          z.object({ at: z.literal('summary'), index: z.number().int().min(0), text: z.string() }),
+          z.object({ at: z.literal('bullet'), owner: z.string(), index: z.number().int().min(0), text: z.string() }),
+        ])
+        .optional(),
     }),
   ),
 });

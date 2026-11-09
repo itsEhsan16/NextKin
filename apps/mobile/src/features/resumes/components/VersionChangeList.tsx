@@ -8,11 +8,44 @@ import { Button } from '@/ui/Button';
 import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 
+import { useRestoreLine, type RestoreState } from '../hooks/useRestoreLine';
+
 export type VersionChangeListProps = { resumeId: string; versionId: string };
 
 const RULE = 1 / 0.75;
 
-function ChangeRow({ change }: { change: VersionChange }) {
+const keyOf = (change: VersionChange) => `${change.where}:${change.text}`;
+
+type RowProps = { change: VersionChange; restoring?: RestoreState; onRestore?: () => void };
+
+function ChangeRow({ change, restoring, onRestore }: RowProps) {
+  const { spacing } = useTheme();
+  const styles = useStyles();
+  return (
+    <View style={{ gap: spacing[2] }}>
+      <ChangeCopy change={change} />
+      {change.restore && onRestore ? (
+        restoring === 'done' ? (
+          <Text variant="micro" color="success">
+            Back on your resume
+          </Text>
+        ) : (
+          <Button
+            label="Restore"
+            icon="ClockRewind"
+            variant="soft"
+            size="md"
+            loading={restoring === 'saving'}
+            onPress={onRestore}
+            style={styles.restore}
+          />
+        )
+      ) : null}
+    </View>
+  );
+}
+
+function ChangeCopy({ change }: { change: VersionChange }) {
   const { spacing } = useTheme();
   return (
     <View
@@ -45,7 +78,14 @@ function ChangeRow({ change }: { change: VersionChange }) {
   );
 }
 
-function Group({ title, changes }: { title: string; changes: readonly VersionChange[] }) {
+type GroupProps = {
+  title: string;
+  changes: readonly VersionChange[];
+  states?: Record<string, RestoreState>;
+  onRestore?: (change: VersionChange) => void;
+};
+
+function Group({ title, changes, states, onRestore }: GroupProps) {
   const { colors, spacing } = useTheme();
   const styles = useStyles();
   if (changes.length === 0) return null;
@@ -53,9 +93,13 @@ function Group({ title, changes }: { title: string; changes: readonly VersionCha
     <View style={{ gap: spacing[3] }}>
       <Text variant="captionSemiBold">{title}</Text>
       {changes.map((change, index) => (
-        <Fragment key={`${change.where}:${change.text}`}>
+        <Fragment key={keyOf(change)}>
           {index > 0 ? <View style={[styles.rule, { backgroundColor: colors.divider }]} /> : null}
-          <ChangeRow change={change} />
+          <ChangeRow
+            change={change}
+            restoring={states?.[keyOf(change)]}
+            onRestore={onRestore ? () => onRestore(change) : undefined}
+          />
         </Fragment>
       ))}
     </View>
@@ -64,11 +108,13 @@ function Group({ title, changes }: { title: string; changes: readonly VersionCha
 
 /**
  * What one version changed and why (toreview §146.5), loaded when its row opens: what went in or
- * was reworded, then what came out. Spec-derived from the app's text styles and rules.
+ * was reworded, then what came out. A line the tailor's review took out because it doesn't serve
+ * the job carries Restore, which puts it back on the resume as an ordinary edit (§202). Spec-derived from the app's text styles and rules.
  */
 export function VersionChangeList({ resumeId, versionId }: VersionChangeListProps) {
   const { spacing, s } = useTheme();
   const changes = useVersionChanges(resumeId, versionId);
+  const { states, restore } = useRestoreLine(resumeId);
 
   if (!changes.data && changes.isPending) {
     return (
@@ -101,11 +147,19 @@ export function VersionChangeList({ resumeId, versionId }: VersionChangeListProp
   return (
     <View style={{ gap: spacing[5] }}>
       <Group title="Added or changed" changes={changes.data.filter((c) => c.kind !== 'removed')} />
-      <Group title="Left out" changes={changes.data.filter((c) => c.kind === 'removed')} />
+      <Group
+        title="Left out"
+        changes={changes.data.filter((c) => c.kind === 'removed')}
+        states={states}
+        onRestore={(change) => {
+          if (change.restore) void restore(keyOf(change), change.restore);
+        }}
+      />
     </View>
   );
 }
 
 const useStyles = scaledSheet((s) => ({
   rule: { height: s(RULE) },
+  restore: { alignSelf: 'flex-start' },
 }));

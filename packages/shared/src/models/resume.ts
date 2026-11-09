@@ -1,4 +1,5 @@
 import type { GenerationStatus } from './generation';
+import type { LineRestore } from '../scoring/lineRestore';
 import type { ResumeSectionKey } from './resumeContent';
 import type { PlausibilityNote } from '../scoring/plausibility';
 
@@ -116,6 +117,8 @@ export type VersionChange = {
   /** A rewording's old line. */
   before?: string;
   why: string;
+  /** A line the tailor's review took out (§202): where it sat, so Restore can put it back. */
+  restore?: LineRestore;
 };
 
 export type AtsBand = 'strong' | 'good' | 'fair' | 'weak';

@@ -61,6 +61,19 @@ export function headerChecksFor(header: Header | undefined, job: { title: string
   });
 }
 
+/**
+ * True when a header statement plainly serves this job, so the review may not take it out (§202):
+ * relocating to a place the job's location names, or seeking a role that shares a word with the
+ * job's title. Anything else ("Open to relocating to Lucknow" for a job that names no place) is the
+ * review's call, shown in "What changed" with Restore. Pure.
+ */
+export function statementFitsJob(text: string, job: { title: string; location?: string | null }): boolean {
+  const relocation = RELOCATION.exec(text)?.[1]?.replace(/[.;]+$/, '').trim();
+  if (relocation) return Boolean(job.location?.trim()) && overlaps(relocation, job.location ?? '');
+  const role = TARGET_ROLE.exec(text)?.[1]?.trim();
+  return role ? overlaps(role, job.title) : false;
+}
+
 /** The user's answer to one check: remove the line, or replace it with text they accepted. */
 export type HeaderChoice = { index: number; action: 'remove' | 'replace'; text?: string };
 

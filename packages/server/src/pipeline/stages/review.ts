@@ -4,6 +4,7 @@ import { lint } from '@nextkin/engines/lint';
 import type { CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
 import { scoringDocumentOf } from '@nextkin/shared/scoring/canonical';
 import { headerStatements } from '@nextkin/shared/scoring/headerChecks';
+import { summarySentences } from '@nextkin/shared/scoring/lineRestore';
 import { EXPERIENCED_MONTHS, pageBudget } from '@nextkin/shared/scoring/pageBudget';
 
 import { userPaper } from '../../services/renders';
@@ -44,6 +45,8 @@ export function reviewInput(doc: CanonicalResumeJson, args: { run: RunInput; pla
       headline: doc.headline ?? null,
       headerStatements: headerStatements(doc.header),
       summary: doc.summary?.text ?? null,
+      // "summary:<index>" names one of these for remove_line (§202).
+      summarySentences: summarySentences(doc.summary?.text).map((text, index) => ({ index, text })),
       skillLines: (doc.skillGroups ?? []).map((g) => ({ label: g.label, skills: g.names.map(skill) })),
       otherSkills: doc.skills.filter((s) => !grouped.has(s.name.toLowerCase())).map((s) => skill(s.name)),
       sections: (doc.layout?.order ?? []).map((key) => ({ key, heading: doc.layout?.headings[key] ?? key })),
@@ -82,7 +85,7 @@ export const reviewStage: StageDef = {
           context: { userId: ctx.userId, generationId: ctx.generationId, correlationId: ctx.correlationId, promptVersionId: prompt.id },
         });
         meta = answer.meta;
-        ({ doc, record } = applyReview(doc, answer.data, { base, facts: run.snapshot.facts, tailor, asOf: run.asOf }));
+        ({ doc, record } = applyReview(doc, answer.data, { base, facts: run.snapshot.facts, tailor, asOf: run.asOf, job: { title: jd.title, location: jd.location, skills: [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools] } }));
       } catch (error) {
         if (error instanceof StageError) throw error;
         record = emptyReview('model_error');

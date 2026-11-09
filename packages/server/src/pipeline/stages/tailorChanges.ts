@@ -67,7 +67,8 @@ export function changesOf(args: { base: CanonicalResumeJson; final: CanonicalRes
 
 /**
  * What the AI's review did (toreview §170), each line naming what moved or went so the user can
- * check it; a header statement it doubted is a note, never a change. Rewrites of the summary and
+ * check it; a line it took out because it doesn't serve the job is named with its reason (§202), and
+ * "See what changed" offers Restore beside it. Rewrites of the summary and
  * bullets are already named above, read off the two versions.
  */
 function reviewChanges(base: CanonicalResumeJson, final: CanonicalResumeJson, review: ReviewRecord | undefined): TailorChange[] {
@@ -84,6 +85,6 @@ function reviewChanges(base: CanonicalResumeJson, final: CanonicalResumeJson, re
   if (applied('order_sections').length && order(base) !== order(final)) out.push({ label: 'Sections ordered for this job', left: false });
   if (applied('order_projects').length) out.push({ label: 'Projects ordered by what this job asks for', left: false });
   if (applied('order_bullets').length) out.push({ label: 'The strongest lines for this job moved up', left: false });
-  for (const flag of review.headerFlags) out.push({ label: `Your header says “${flag.text}”: ${flag.reason}`, left: true });
+  for (const line of review.removed ?? []) out.push({ label: `Took out “${line.text}” — ${line.reason}`, left: true });
   return out;
 }

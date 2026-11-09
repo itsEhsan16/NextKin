@@ -5,8 +5,10 @@ import { resolveSkill } from '@nextkin/engines/normalizer';
 import { checkProjectBullets } from '@nextkin/engines/projectClaims';
 import { phraseKey } from '@nextkin/engines/text';
 import type { CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
-import { headerStatements } from '@nextkin/shared/scoring/headerChecks';
+import { headerStatements, statementFitsJob } from '@nextkin/shared/scoring/headerChecks';
+import { summarySentences } from '@nextkin/shared/scoring/lineRestore';
 import { reconcileStructure } from '@nextkin/shared/scoring/structure';
+import type { ReviewedOut } from '@nextkin/shared/scoring/versionChanges';
 import { z } from 'zod';
 
 import { isBoltOn, rewrittenRoles, skillKey, type TailorRunInput } from './tailorMerge';
@@ -20,15 +22,19 @@ import { ledgerOf } from './validate';
  * - a skill never vanishes unless it is a duplicate of one kept, or a ticked job phrase that is not
  *   a skill ("Java fundamentals"); every real skill the user ticked stays listed;
  * - orders must be permutations of what is there: text is never changed by an order;
- * - a header statement is only flagged; the user answers in Enhance. Contact is never sent.
+ * - a line that doesn't serve the job (relocating to a city the job never names, a summary
+ *   sentence about another kind of work, an unrelated bullet) is taken out, never just flagged
+ *   (owner, 2026-11-09, §202, reversing §170.1), and each one is listed in "What changed" with
+ *   Restore. Contact is never sent and never removed; a line that is the only proof of a skill the
+ *   user ticked or the job asks for stays; a role keeps at least one bullet.
  */
 
-const OPS = ['summary', 'bullet', 'move_skill', 'drop_skill', 'rename_line', 'order_sections', 'order_projects', 'order_bullets', 'flag_header'] as const;
+const OPS = ['summary', 'bullet', 'move_skill', 'drop_skill', 'rename_line', 'order_sections', 'order_projects', 'order_bullets', 'remove_line'] as const;
 export type ReviewOp = (typeof OPS)[number];
 
 export const reviewEditSchema = z.object({
   op: z.enum(OPS),
-  /** A bullet id, a skill, a line's label, a role or project id, or a header statement's index. */
+  /** A bullet id, a skill, a line's label, a role or project id, "header:<index>" or "summary:<index>". */
   target: z.string().trim().max(200).nullable(),
   /** The new summary or bullet; the line a skill moves to; a line's new label. */
   text: z.string().trim().max(400).nullable(),
@@ -48,13 +54,13 @@ export interface ReviewRecord {
   applied: { op: ReviewOp; target: string | null; text?: string; reason: string }[];
   refused: { op: ReviewOp; target: string | null; why: string }[];
   issues: string[];
-  /** Header statements the review thought don't fit the job: shown, never changed. */
-  headerFlags: { index: number; text: string; reason: string }[];
+  /** Lines the review took out because they don't serve this job, each with its Restore. */
+  removed: ReviewedOut[];
   /** Set when the review could not run; the document is then the merge's. */
   unavailable?: string;
 }
 
-export const emptyReview = (unavailable?: string): ReviewRecord => ({ applied: [], refused: [], issues: [], headerFlags: [], ...(unavailable ? { unavailable } : {}) });
+export const emptyReview = (unavailable?: string): ReviewRecord => ({ applied: [], refused: [], issues: [], removed: [], ...(unavailable ? { unavailable } : {}) });
 
 type Doc = CanonicalResumeJson;
 type Groups = NonNullable<Doc['skillGroups']>;
@@ -82,9 +88,16 @@ interface Ctx {
   facts: ProfileFacts;
   tailor: TailorRunInput;
   asOf: { year: number; month?: number };
+  /** The job, for what a removal may not take: its skills' only proof, a statement that fits it. */
+  job?: { title: string; location?: string | null; skills: readonly string[] };
+  /** The page as the review read it: its "header:<n>" and "summary:<n>" targets count from it. */
+  original?: Doc;
 }
 
-type Outcome = { doc: Doc } | { why: string };
+type Outcome = { doc: Doc; removed?: ReviewedOut } | { why: string };
+
+/** At most this many lines out in one review: it trims what doesn't fit, it never guts a page. */
+export const MAX_REMOVALS = 6;
 
 /** One edit, checked; the document it leaves, or why it was refused. */
 function applyOne(doc: Doc, edit: ReviewEdit, ctx: Ctx): Outcome {
@@ -149,9 +162,71 @@ function applyOne(doc: Doc, edit: ReviewEdit, ctx: Ctx): Outcome {
     }
     case 'order_bullets':
       return orderBullets(doc, target, edit.order);
-    case 'flag_header':
-      return { why: 'flag_only' };
+    case 'remove_line':
+      return removeLine(doc, target, ctx, fixes);
   }
+}
+
+/** The summary and every line of work, for "does anything else still show this skill?". */
+const pageText = (doc: Doc) => [doc.summary?.text ?? '', ...doc.roles.flatMap((r) => r.bullets.map((b) => b.text)), ...doc.projects.flatMap((p) => p.bullets.map((b) => b.text))].join('\n');
+
+/** The skills (ticked, or asked for by the job) this line names that nothing left on the page does. */
+function onlyProof(after: Doc, text: string, ctx: Ctx): string[] {
+  const check = leftOutChecker(TAXONOMY, [...ctx.tailor.added, ...(ctx.job?.skills ?? [])]);
+  const still = new Set(check(pageText(after)).map(skillKey));
+  return check(text).filter((k) => !still.has(skillKey(k)));
+}
+
+/**
+ * Takes out one line that doesn't serve the job (§202): a header statement ("header:<index>"), a
+ * summary sentence ("summary:<index>") or a bullet (its id). Refused for contact, a statement that
+ * fits the job, the summary's last sentences, a role's last bullet and a skill's only proof.
+ */
+function removeLine(doc: Doc, target: string, ctx: Ctx, fixes: Set<string>): Outcome {
+  const header = /^header:(\d+)$/.exec(target);
+  if (header) {
+    // The index is the original page's: the statement is found again by its text.
+    const statement = headerStatements((ctx.original ?? doc).header).find((s) => s.index === Number(header[1]));
+    if (!statement) return { why: 'not_a_statement' };
+    if (ctx.job && statementFitsJob(statement.text, ctx.job)) return { why: 'fits_job' };
+    const at = (doc.header?.items ?? []).findIndex((i) => i.text === statement.text);
+    if (at < 0 || !doc.header) return { why: 'no_such_line' };
+    const next = { ...doc, header: { ...doc.header, items: doc.header.items.filter((_, i) => i !== at) } };
+    return { doc: next, removed: { where: 'Header', text: statement.text, reason: '', restore: { at: 'header', index: at, text: statement.text } } };
+  }
+  const summary = /^summary:(\d+)$/.exec(target);
+  if (summary) {
+    if (!fixes.has('summary')) return { why: 'part_off' };
+    const text = summarySentences((ctx.original ?? doc).summary?.text)[Number(summary[1])];
+    const sentences = summarySentences(doc.summary?.text);
+    const at = text === undefined ? -1 : sentences.indexOf(text);
+    if (text === undefined || at < 0 || !doc.summary) return { why: 'no_such_line' };
+    const rest = sentences.filter((_, i) => i !== at).join(' ');
+    if (rest.split(/\s+/).filter(Boolean).length < 12) return { why: 'summary_too_short' };
+    const next = { ...doc, summary: { ...doc.summary, text: rest } };
+    if (onlyProof(next, text, ctx).length) return { why: 'only_proof' };
+    return { doc: next, removed: { where: 'Summary', text, reason: '', restore: { at: 'summary', index: at, text } } };
+  }
+  const role = doc.roles.find((r) => r.bullets.some((b) => b.id === target));
+  if (role) {
+    if (!rewrittenRoles(ctx.base, ctx.tailor).has(role.roleId)) return { why: 'part_off' };
+    if (role.entries?.length) return { why: 'grouped' };
+    if (role.bullets.length <= 1) return { why: 'last_bullet' };
+    const at = role.bullets.findIndex((b) => b.id === target);
+    const text = role.bullets[at]!.text;
+    const next = { ...doc, roles: doc.roles.map((r) => (r === role ? { ...r, bullets: r.bullets.filter((b) => b.id !== target) } : r)) };
+    if (onlyProof(next, text, ctx).length) return { why: 'only_proof' };
+    return { doc: next, removed: { where: `${role.title} at ${role.company}`, text, reason: '', restore: { at: 'bullet', owner: role.roleId, index: at, text } } };
+  }
+  const project = doc.projects.find((p) => p.bullets.some((b) => b.id === target));
+  if (!project) return { why: 'no_such_line' };
+  if (!fixes.has('projects')) return { why: 'part_off' };
+  if (project.bullets.length <= 1) return { why: 'last_bullet' };
+  const at = project.bullets.findIndex((b) => b.id === target);
+  const text = project.bullets[at]!.text;
+  const next = { ...doc, projects: doc.projects.map((p) => (p === project ? { ...p, bullets: p.bullets.filter((b) => b.id !== target) } : p)) };
+  if (onlyProof(next, text, ctx).length) return { why: 'only_proof' };
+  return { doc: next, removed: { where: project.name, text, reason: '', restore: { at: 'bullet', owner: project.factId, index: at, text } } };
 }
 
 function rewriteBullet(doc: Doc, edit: ReviewEdit, ctx: Ctx, fixes: Set<string>): Outcome {
@@ -209,21 +284,20 @@ const withoutSkill = (doc: Doc, name: string): Doc => ({
 export function applyReview(doc: Doc, review: z.infer<typeof reviewSchema>, ctx: Ctx): { doc: Doc; record: ReviewRecord } {
   const record = emptyReview();
   record.issues = review.issues;
-  const statements = new Map(headerStatements(doc.header).map((s) => [String(s.index), s.text]));
+  const withOriginal = { ...ctx, original: doc };
   let current = doc;
   for (const edit of review.edits) {
-    if (edit.op === 'flag_header') {
-      const text = statements.get(edit.target ?? '');
-      if (text !== undefined) record.headerFlags.push({ index: Number(edit.target), text, reason: edit.reason });
-      else record.refused.push({ op: edit.op, target: edit.target, why: 'not_a_statement' });
+    if (edit.op === 'remove_line' && record.removed.length >= MAX_REMOVALS) {
+      record.refused.push({ op: edit.op, target: edit.target, why: 'too_many_removals' });
       continue;
     }
-    const outcome = applyOne(current, edit, ctx);
+    const outcome = applyOne(current, edit, withOriginal);
     if ('why' in outcome) {
       record.refused.push({ op: edit.op, target: edit.target, why: outcome.why });
       continue;
     }
     current = outcome.doc;
+    if (outcome.removed) record.removed.push({ ...outcome.removed, reason: edit.reason });
     record.applied.push({ op: edit.op, target: edit.target, ...(edit.text ? { text: edit.text } : {}), reason: edit.reason });
   }
   return { doc: reconcileStructure(current), record };

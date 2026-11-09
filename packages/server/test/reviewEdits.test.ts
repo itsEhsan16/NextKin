@@ -130,7 +130,7 @@ describe('the review: skills', () => {
   });
 });
 
-describe('the review: orders and the header', () => {
+describe('the review: orders, and lines that don’t serve the job', () => {
   it('reorders sections only by a permutation of what is there', () => {
     const { doc, ctx } = setup();
     const order = ['summary', 'skills', 'experience', 'projects', 'education', 'certifications'];
@@ -139,11 +139,42 @@ describe('the review: orders and the header', () => {
     expect(out.record.refused.map((r) => r.why)).toEqual(['not_a_permutation']);
   });
 
-  it('flags a header statement without changing it, and never a contact item', () => {
+  const job = (location: string | null) => ({ title: 'Java Full Stack Engineer', location, skills: ['Java', 'Spring Boot'] });
+
+  it('takes out a relocation line for a job that names no place, with where it sat for Restore (§202)', () => {
     const { doc, ctx } = setup();
-    const out = applyReview(doc, review(edit({ op: 'flag_header', target: '2', reason: 'the job is in Pune' }), edit({ op: 'flag_header', target: '1', reason: 'x' })), ctx);
-    expect(out.doc.header).toEqual(BASE.header);
-    expect(out.record.headerFlags).toEqual([{ index: 2, text: 'Open to relocating to Lucknow', reason: 'the job is in Pune' }]);
+    const out = applyReview(doc, review(edit({ op: 'remove_line', target: 'header:2', reason: 'the job says nothing about relocating' }), edit({ op: 'remove_line', target: 'header:1', reason: 'x' })), { ...ctx, job: job(null) });
+    expect(out.doc.header?.items.map((i) => i.text)).toEqual(['Patna, India', 'sam@example.com']);
+    expect(out.record.removed).toEqual([
+      { where: 'Header', text: 'Open to relocating to Lucknow', reason: 'the job says nothing about relocating', restore: { at: 'header', index: 2, text: 'Open to relocating to Lucknow' } },
+    ]);
+    // An email is contact: never a statement, never removed.
     expect(out.record.refused.map((r) => r.why)).toEqual(['not_a_statement']);
+  });
+
+  it('keeps the relocation line when the job is in that city', () => {
+    const { doc, ctx } = setup();
+    const out = applyReview(doc, review(edit({ op: 'remove_line', target: 'header:2', reason: 'x' })), { ...ctx, job: job('Lucknow, Uttar Pradesh') });
+    expect(out.doc.header).toEqual(BASE.header);
+    expect(out.record.removed).toEqual([]);
+    expect(out.record.refused.map((r) => r.why)).toEqual(['fits_job']);
+  });
+
+  it('takes out a bullet that does not serve the job, never the only proof of a skill it asks for', () => {
+    const { doc, ctx } = setup();
+    const out = applyReview(doc, review(edit({ op: 'remove_line', target: 'a', reason: 'x' }), edit({ op: 'remove_line', target: 'b', reason: 'not about this job' })), { ...ctx, job: job(null) });
+    // "a" is the page's only Spring Boot work, which the job asks for.
+    expect(out.record.refused.map((r) => r.why)).toEqual(['only_proof']);
+    expect(out.doc.roles[0]!.bullets.map((b) => b.id)).toEqual(['a']);
+    expect(out.record.removed[0]!.restore).toEqual({ at: 'bullet', owner: 'intern', index: 1, text: 'Built the order screens in React' });
+    // And a role's last bullet always stays.
+    const again = applyReview(out.doc, review(edit({ op: 'remove_line', target: 'a', reason: 'x' })), { ...ctx, job: { ...job(null), skills: [] } });
+    expect(again.record.refused.map((r) => r.why)).toEqual(['last_bullet']);
+  });
+
+  it('never takes the summary down to a stub', () => {
+    const { doc, ctx } = setup();
+    const out = applyReview(doc, review(edit({ op: 'remove_line', target: 'summary:0', reason: 'x' })), { ...ctx, job: job(null) });
+    expect(out.record.refused.map((r) => r.why)).toEqual(['summary_too_short']);
   });
 });

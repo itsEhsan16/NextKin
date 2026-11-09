@@ -3,7 +3,7 @@ import { contentNeedsReview, type DocumentContent, type LineSource } from '@next
 import { toLetterContent, toResumeContent } from '@nextkin/shared/scoring/canonical';
 import { lineSourcesOf } from '@nextkin/shared/scoring/lineSources';
 import { exportProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
-import { versionChanges, type VersionActor } from '@nextkin/shared/scoring/versionChanges';
+import { versionChanges, type ReviewedOut, type VersionActor } from '@nextkin/shared/scoring/versionChanges';
 import { canonicalLetterSchema, canonicalResumeSchema } from '@nextkin/shared/schemas/resumeContent';
 
 import type { Database, Identity, Tx } from '../db/database';
@@ -231,6 +231,10 @@ export async function getVersionChanges(db: Database, identity: Identity, id: st
       : undefined;
     const validated = run ? (readCheckpoint(run).outputs.validate as { stripped?: { text?: string; reason: string }[] } | undefined) : undefined;
     const dropped = (validated?.stripped ?? []).flatMap((line) => (line.text ? [{ text: line.text, reason: line.reason }] : []));
+    // The lines a tailored run's review took out because they don't serve the job (§202), each
+    // with where it sat so the app can offer Restore.
+    const reviewed = run ? (readCheckpoint(run).outputs.review as { tailor?: { review?: { removed?: ReviewedOut[] } } } | undefined) : undefined;
+    const reviewedOut = reviewed?.tailor?.review?.removed ?? [];
 
     const ids = { resumeId: id, versionId };
     const rewordedFrom = new Map(before ? lineSourcesOf(after.data, before).flatMap((line) => (line.before ? [[line.text, line.before] as const] : [])) : []);
@@ -240,6 +244,7 @@ export async function getVersionChanges(db: Database, identity: Identity, id: st
       actor: version.created_by as VersionActor,
       rewordedFrom,
       dropped,
+      reviewedOut,
     });
   });
 }

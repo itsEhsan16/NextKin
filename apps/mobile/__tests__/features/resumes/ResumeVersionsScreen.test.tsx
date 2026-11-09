@@ -5,8 +5,9 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore } from '@/data/mock';
 import type { ResumeContent } from '@/data/models';
-import { createQueryClient } from '@/data/queries';
-import { mockStore, resetMockRepos } from '@/data/repos';
+import { createQueryClient, qk } from '@/data/queries';
+import { mockStore, repos, resetMockRepos } from '@/data/repos';
+import { AppToastHost } from '@/ui/Toast';
 import { ResumeVersionsScreen } from '@/features/resumes';
 
 jest.mock('expo-router', () => ({
@@ -23,13 +24,15 @@ const ID = 'res_base';
 const clients: QueryClient[] = [];
 const settle = (ms = 3000) => act(() => jest.advanceTimersByTimeAsync(ms));
 
-async function renderScreen(id = ID) {
+async function renderScreen(id = ID, prime?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
   clients.push(queryClient);
+  prime?.(queryClient);
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
       <QueryClientProvider client={queryClient}>
         <ResumeVersionsScreen id={id} />
+        <AppToastHost />
       </QueryClientProvider>
     </SafeAreaProvider>,
   );
@@ -96,6 +99,37 @@ describe('ResumeVersionsScreen (what changed and why)', () => {
     await settle();
     expect(screen.getByText('No lines changed in this version.')).toBeOnTheScreen();
     expect(screen.queryByText('You changed this.')).toBeNull();
+  });
+
+  it('puts a line the tailor review took out back on the resume with Restore (§202)', async () => {
+    seedTwoVersions();
+    // The mock repo answers after its latency, which these fake timers have to run.
+    const read = async () => {
+      const doc = repos.resumes.getDocument(ID);
+      await settle();
+      return doc;
+    };
+    const role = (await read()).experience[0]!;
+    const line = 'Open to relocating to Lucknow';
+    await renderScreen(ID, (client) =>
+      client.setQueryData(qk.resumes.versionChanges(ID, 'v_new'), [
+        {
+          kind: 'removed',
+          where: `${role.title} at ${role.company}`,
+          text: line,
+          why: 'The job says nothing about relocating',
+          restore: { at: 'bullet', owner: role.id, index: 0, text: line },
+        },
+      ]),
+    );
+    await settle();
+    expect(screen.getByText('The job says nothing about relocating')).toBeOnTheScreen();
+
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Restore' })));
+    await settle();
+    expect(screen.getAllByText('Back on your resume').length).toBeGreaterThan(0);
+    const after = await read();
+    expect(after.experience[0]!.bullets[0]!.text).toBe(line);
   });
 
   it('says so when there are no versions, and offers a retry when it can’t load', async () => {

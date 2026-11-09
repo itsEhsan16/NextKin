@@ -1,5 +1,6 @@
 import type { ResumeVersion, VersionChange } from '../models/resume';
 import type { ResumeContent } from '../models/resumeContent';
+import type { LineRestore } from './lineRestore';
 
 /**
  * What a version changed against the one before it, and why (toreview §146.5). The diff reads the
@@ -49,6 +50,9 @@ const DRAFT = 'The AI’s draft';
 /** A line the validator took out of a draft: what it said, and the issue that stopped it. */
 export type DroppedLine = { text: string; reason: string };
 
+/** A line the tailor's review took out because it doesn't serve the job (§202), and its reason. */
+export type ReviewedOut = { where: string; text: string; reason: string; restore: LineRestore };
+
 /** One list of lines: what stayed is silent, a cited or same-place line is a rewording. */
 function lineChanges(
   where: string,
@@ -90,8 +94,10 @@ export function versionChanges(args: {
   /** The line each rewritten line came from, when the version's citations say. */
   rewordedFrom?: ReadonlyMap<string, string>;
   dropped?: readonly DroppedLine[];
+  /** Lines the review took out, each with Restore: they replace the diff's plain "removed". */
+  reviewedOut?: readonly ReviewedOut[];
 }): VersionChange[] {
-  const { before, after, actor, rewordedFrom = new Map<string, string>(), dropped = [] } = args;
+  const { before, after, actor, rewordedFrom = new Map<string, string>(), dropped = [], reviewedOut = [] } = args;
   const why = WHY[actor];
   const lines = (where: string, was: readonly string[], now: readonly string[], reason = why) =>
     lineChanges(where, was, now, reason, rewordedFrom);
@@ -103,12 +109,15 @@ export function versionChanges(args: {
     text,
     why: DROPPED_WHY[reason] ?? 'Our check took this out.',
   }));
-  if (!before) return left;
+  const reviewed = reviewedOut.map(({ where, text, reason, restore }): VersionChange => ({ kind: 'removed', where, text, why: reason, restore }));
+  if (!before) return [...reviewed, ...left];
+  const takenOut = new Set(reviewedOut.map((r) => r.text.trim().toLowerCase()));
+  const plain = (change: VersionChange) => !(change.kind === 'removed' && takenOut.has(change.text.trim().toLowerCase()));
 
   const roles = [...after.experience, ...before.experience.filter((r) => !after.experience.some((n) => n.id === r.id))];
   const projects = [...after.projects, ...before.projects.filter((p) => !after.projects.some((n) => n.id === p.id))];
 
-  return [
+  const diff = [
     ...lines('Summary', present(before.summary), present(after.summary)),
     ...lines('Skills', before.skills, after.skills, actor === 'generation' ? { ...why, added: 'You said you have this.' } : why),
     ...roles.flatMap((role) =>
@@ -127,6 +136,6 @@ export function versionChanges(args: {
     ),
     ...lines('Education', before.education.map((e) => e.degree), after.education.map((e) => e.degree)),
     ...lines('Certifications', before.certifications, after.certifications),
-    ...left,
   ];
+  return [...diff.filter(plain), ...reviewed, ...left];
 }

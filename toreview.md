@@ -16901,3 +16901,45 @@ The owner found the plan screen cluttered. Four directions were drawn on the For
   - Jest: two `PeriodSwitch` tests (the selection, and the two label copies). The glide runs on the UI thread, which the Reanimated mock doesn't redraw.
   - Web preview at 375, measured: the pill sits exactly on Yearly (175–293), then on Monthly (82–170).
   - Not checked on a phone: the web preview always reduces motion, so the glide itself is phone-only.
+
+## §202 — A tailor run that aims at 10, removes what doesn't fit, and asks before it writes (owner, 2026-11-09)
+The owner's phone run had five problems: small section icons; no AI figure pill; Quick questions after the build; 6.5/10 after accepting everything; "Open to relocating to Lucknow" left in for a job that never names a place. The owner chose: aim at 10 honestly and ask for the rest; remove lines that don't fit and show them with Restore; ask the questions before the build. The plan is in `~/.claude/plans/lazy-meandering-metcalfe.md`. Steps land one commit each.
+
+### §202.1 Bigger section icons; no questions card on the ready screen (3ca451c)
+- `SECTION_ART_WIDTH` 30 → 40, and the section card's icon slot grew to match.
+- `GapInterviewCard` is gone from `TailorReady` (Tailor and Build). Profile keeps it. `openGapInterview` is still defined in `useGenerationsActions` and is unused for now; §202.4 uses it before the build.
+
+### §202.2 The AI figure suggestion survives a rejected rewrite (0efd1e7)
+- `figureDraft.ts`: when `keepsToLine` refuses the model's sentence (likely for a line naming six technologies), the rules sentence is used, but the model's suggestion is kept if `fitsSuggestion` passes. `MAX_SUGGESTION` 24 → 32 characters, up to 5 words.
+- A rules-only draft now logs `figure.draft_rules` with why (`no_model_route`, `no_prompt_or_consent`).
+- **To check on staging:** `figure.draft` v2 must be the active prompt there (a reference-only seed as SEED_ADMIN, never a full reseed). The phone hits staging, so none of §202.2–.3 shows on the phone until staging is deployed.
+
+### §202.3 The review takes out what doesn't serve the job, with Restore
+- **New review edit `remove_line`** (`reviewEdits.ts`), which replaces `flag_header`. That edit was always refused, so this reverses §170.1 by the owner's choice. Targets:
+  - `header:<n>`: a header statement, never contact;
+  - `summary:<n>`: one of the summary's sentences, sent to the model as `summarySentences`;
+  - a bullet id.
+- **Code refuses:**
+  - contact (`not_a_statement`);
+  - a statement that fits the job (`statementFitsJob`: relocating to the job's own city, or seeking a role that shares a word with its title);
+  - a summary left under 12 words;
+  - a role's or project's last bullet, and a role grouped into client projects;
+  - a line that is the only one on the page naming a skill the user ticked or the job asks for (`only_proof`);
+  - any of the above in a part the user switched off;
+  - more than 6 removals.
+- **Records:** each removal is kept as `ReviewRecord.removed` (where, text, reason, and a `LineRestore` naming its place).
+  - The run's change list says `Took out “…” — <reason>`.
+  - `getVersionChanges` reads the removals from the run's checkpoint. "See what changed" lists each one under Left out, with the model's reason and a **Restore** button. That replaces the diff's generic "Left out of this version" line for the same text.
+- **Restore** (`useRestoreLine`, shared `restoreLine`/`isRestored`) reads the newest document, puts the line back where it sat (its index clamped) and saves it as an ordinary edit, which makes a new version. A line already back counts as done; a line whose role is gone says it can't go back.
+- **Prompts:**
+  - `resume.review` v2 describes `remove_line` and when to use it. Relocation to a city the job doesn't name goes; so does relocation when the job names no place at all.
+  - `resume.generate` v9: no place, relocation, notice or availability in the summary unless the job names it.
+  - Both need the reference-only seed on staging.
+- **Judgement calls:**
+  - A statement like "Available to join immediately" is not protected by `statementFitsJob`, so the model may take it out. Restore covers that.
+  - Removing a bullet is allowed in any rewritten role, not only when the page is over budget. The prompt asks for that only "when the page is long", and code doesn't enforce it.
+- **Verified:**
+  - server unit (342), including four new `reviewEdits` tests: the Lucknow line goes for a job naming no place and stays for a Lucknow job; only-proof; last bullet; a stub summary;
+  - shared (452), including `lineRestore.test.ts`;
+  - a mobile Restore test in `ResumeVersionsScreen.test.tsx`.
+- **Not run yet:** a live AI run.
