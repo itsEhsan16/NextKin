@@ -17047,3 +17047,18 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - The header has 8 more above it, and 16 separates the parts.
 - **Verified:** assistant Jest, 18 pass.
 - **Not seen yet:** on the phone.
+
+## §209 — No grey slabs behind cards while a screen fades in (owner, 2026-11-09)
+- **What the owner saw:** after switching apps, the Jobs, Home and Resumes cards briefly showed thick grey frames around a pale inset. Home had just come back from its skeleton, so Android/Expo Go had most likely reloaded the app in the background, which runs the reveal fade.
+- **Cause:** Android's `elevation` shadow is painted outside the view's own alpha. When a card fades in (`useRevealStagger`'s FadeInDown, `TabSceneFade` on a tab switch), the card was half clear but its shadow solid, which reads as a grey slab.
+- **Fix:**
+  - Card-surface shadows (`card`, `jobCard`, `soft`, `docFloat`, `onboardingFeatureCard`) now use the drawn CSS `boxShadow` on Android too. It is part of the view, so it fades with the card, and it also matches the artboard's offset and blur.
+  - Floating chrome keeps `elevation` and its sibling z-ordering: fab, sheet, dialog, bar, knobs, segment pill, composer, sticky bar.
+  - `TabSceneFade` composites offscreen while fading (`needsOffscreenAlphaCompositing`), so the whole scene's alpha is applied once.
+- **Tests:**
+  - `AtsBadgeShadow.test` pinned "Android card = elevation 1"; it now pins the new contract (chrome elevation, cards CSS).
+  - theme, navigation, ui, home, jobs and resumes Jest: 1,123 pass.
+- **Watch on the phone:**
+  - CSS shadows on long lists (Jobs) on lower-end Android;
+  - whether a card now sits under a sibling that used to rely on its elevation. None is known.
+- **Shimmer question:** the shimmer skeleton (§191 `SkeletonBlock`) is used across 13 feature areas (82 files: create, resumes, jobs, profile, home, support…), not only Home.

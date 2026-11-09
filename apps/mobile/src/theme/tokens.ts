@@ -503,11 +503,29 @@ export function buildArtboardShadows(scale: number): Record<ShadowToken, ShadowS
   return built;
 }
 
+/**
+ * Card surfaces whose shadow is CSS on Android too (owner, 2026-11-09, §209). Android draws an
+ * `elevation` shadow outside the view's own alpha, so while a card fades in (a reveal, a tab
+ * switch, the app coming back) its shadow stayed solid behind the half-clear card and read as a
+ * thick grey frame. A `boxShadow` is part of the view and fades with it. Cards never relied on
+ * elevation's sibling z-ordering; the floating chrome (sheet, dialog, FAB, bar, toast's own lift,
+ * knobs) keeps `elevation`.
+ */
+const SURFACE_SHADOWS: ReadonlySet<string> = new Set([
+  'card',
+  'jobCard',
+  'soft',
+  'docFloat',
+  'onboardingFeatureCard',
+]);
+
 /** Builds the shadow style map at a given scale. Offsets and blur scale; alpha and elevation do not. */
 export function buildShadows(scale: number): Record<ShadowToken, ShadowStyle> {
   const built = { none: {} } as Record<ShadowToken, ShadowStyle>;
   for (const [key, spec] of Object.entries(shadowSpecs)) {
-    built[key as keyof typeof shadowSpecs] = toShadowStyle(spec, scale);
+    built[key as keyof typeof shadowSpecs] = SURFACE_SHADOWS.has(key)
+      ? toBoxShadow(spec, scale)
+      : toShadowStyle(spec, scale);
   }
   return built;
 }

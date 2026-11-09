@@ -70,12 +70,14 @@ describe('AtsBadge — the disc keeps an edge on Android', () => {
     );
   });
 
-  it('leaves the shared shadow map alone for everything else', async () => {
-    // `shadows` still hands Android `{ elevation }` — cheap, and it owns sibling z-ordering for
-    // the chrome. Only a surface painted on its own colour needs the artboard geometry, so this
-    // must stay an opt-in rather than becoming the default.
+  it('keeps elevation for chrome, and draws card shadows as CSS (§209)', async () => {
+    // `shadows` still hands Android `{ elevation }` for floating chrome — cheap, and it owns
+    // sibling z-ordering. Card surfaces take the drawn shadow since §209: an elevation shadow is
+    // painted outside the view's alpha, so a fading card showed a solid grey frame.
     const theme = themeFor('light', 411);
     expect(theme.shadows.fab).toEqual({ elevation: 10 });
-    expect(theme.shadows.card).toEqual({ elevation: 1 });
+    expect(theme.shadows.card.elevation).toBeUndefined();
+    expect(theme.shadows.card.boxShadow).toEqual(expect.stringContaining('rgba(0, 0, 0, 0.05)'));
+    expect(theme.shadows.soft.elevation).toBeUndefined();
   });
 });

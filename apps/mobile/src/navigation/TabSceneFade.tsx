@@ -73,7 +73,9 @@ export function TabSceneFade({ navigation, routeKey, children }: TabSceneFadePro
   const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View testID="tab-scene" style={[styles.scene, style]}>
+    // Composited as one layer while it fades (§209): without it Android applies the alpha to each
+    // child on its own, and an elevated child's shadow shows through as a grey slab.
+    <Animated.View testID="tab-scene" needsOffscreenAlphaCompositing style={[styles.scene, style]}>
       {children}
     </Animated.View>
   );
