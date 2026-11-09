@@ -16982,3 +16982,13 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
 - **Assistant "Try asking" chips:** the sparkle goes from `xs` (12) to `sm` (16) at 390.
 - **Verified:** notifications and assistant Jest suites (37 pass).
 - **Not checked:** the result hasn't been seen on a device; the web preview was signed out.
+
+## §204 — The last empty-state buttons made centred pills (owner, 2026-11-09)
+- **What the owner saw:** an old dark, left-aligned button on Profile's "Your profile has new facts". That screen uses `StateView`, which §198 already fixed (on `main`). Metro wasn't running on 8090, so the phone was on an older bundle.
+- **An audit found four places that skip `StateView`:**
+  - **BuildJobScreen**, "No saved jobs yet" / "No matches yet": "Browse jobs" was left-aligned and `md`. Now `xl`, centred.
+  - **NotFoundScreen**, "Go to Home": `md` block. Now `xl`.
+  - **EntryListEmpty** (the profile list empty states): `lg` block. Now `xl`.
+  - **VersionChangeList**'s load error: "Try again" and its line are now centred.
+- **Left as they are:** sheets' `lg block` buttons (TailorSavedSheet, PushPrimerSheet, CopiedLinkDialogBody). They're full-width sheet actions, not empty states.
+- **Verified:** Jest, 22 tests pass (Build job, profile lists, not-found, versions).

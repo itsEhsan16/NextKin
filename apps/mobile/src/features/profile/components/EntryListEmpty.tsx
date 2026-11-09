@@ -81,7 +81,7 @@ export function EntryListEmpty({
       <Button
         label={addLabel}
         icon="Plus"
-        size="lg"
+        size="xl"
         block
         onPress={onAdd}
         style={styles.emptyButton}

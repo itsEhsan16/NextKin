@@ -148,7 +148,14 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
         <Text variant="callout" color="textSecondary" align="center">
           {tab === 'saved' ? 'No saved jobs yet.' : 'No matches yet.'}
         </Text>
-        <Button label="Browse jobs" variant="outline" onPress={actions.browseJobs} />
+        {/* Centred as a full pill, like every empty state's action (§198, §204). */}
+        <Button
+          label="Browse jobs"
+          variant="outline"
+          size="xl"
+          onPress={actions.browseJobs}
+          style={{ alignSelf: 'center' }}
+        />
       </View>
     );
   } else if (list.length === 0) {

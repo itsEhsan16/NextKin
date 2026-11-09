@@ -128,10 +128,15 @@ export function VersionChangeList({ resumeId, versionId }: VersionChangeListProp
   if (!changes.data) {
     return (
       <View style={{ gap: spacing[2] }}>
-        <Text variant="caption" color="textSecondary">
+        <Text variant="caption" color="textSecondary" align="center">
           We couldn’t load what changed. Check your connection and try again.
         </Text>
-        <Button label="Try again" variant="ghost" onPress={() => void changes.refetch()} />
+        <Button
+          label="Try again"
+          variant="ghost"
+          onPress={() => void changes.refetch()}
+          style={{ alignSelf: 'center' }}
+        />
       </View>
     );
   }
