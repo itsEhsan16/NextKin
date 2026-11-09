@@ -17062,3 +17062,10 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - CSS shadows on long lists (Jobs) on lower-end Android;
   - whether a card now sits under a sibling that used to rely on its elevation. None is known.
 - **Shimmer question:** the shimmer skeleton (§191 `SkeletonBlock`) is used across 13 feature areas (82 files: create, resumes, jobs, profile, home, support…), not only Home.
+
+## §210 — Staging APK with the 2026-11-09 app changes (owner, 2026-11-09)
+- **Build:** EAS build `64679c81-8b0b-46ec-bb31-22c56f32e5bf`, profile `staging`, account `nextkin-edu`, from branch `claude/app-ui-ux-redesign-1a1793` at `a4e981e`.
+  - The backend is the AWS demo `https://d3hc44bxjik4qf.cloudfront.net`, signing in with the Clerk key.
+  - The upload was 69.7 MB, not the 1.5 GB of §172b.
+- **The local eas-cli is 20.1**, below eas.json's `>= 23 < 24`. The build ran through `npx eas-cli@23`; the global install was left alone.
+- **Server not redeployed.** Staging still runs `main` as of 2026-11-06. §202's server work isn't there yet: removals with Restore, the figure suggestion, `scoreTargets`, and the prompts `resume.review` v2 and `resume.generate` v9. The APK's new screens (Restore, the questions before the build) need that deploy plus the reference-only seed. Awaiting the owner.
