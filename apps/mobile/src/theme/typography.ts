@@ -364,6 +364,10 @@ export const typography = {
   welcomeWordmark: boardRole('bold', [62, 62, -2.7]),
   welcomeEyebrow: boardRole('medium', [11.5, 20.7, 4.4]),
   welcomeTagline: boardRole('medium', [11.5, 20.7, 3.5]),
+  // Onboarding slide 3's feature cards (307:4302 / 307:4304): 14 bold over 12 on the 422.66 auth
+  // board, which is 13 / 11 at 390; held a half point up so the caption stays readable (§206).
+  onboardingCardTitle: boardRole('bold', [13.5, 17]),
+  onboardingCardCaption: boardRole('medium', [12, 15.5]),
 } as const satisfies Record<string, TypeAnchors>;
 
 export type TypographyRole = keyof typeof typography;

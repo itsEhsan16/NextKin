@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   ScrollView,
   useWindowDimensions,
@@ -19,6 +19,7 @@ import { NextFab } from '../components/NextFab';
 import { OnboardingSlide } from '../components/OnboardingSlide';
 import { SlideDots } from '../components/SlideDots';
 import { useOnboardingStore } from '../onboardingStore';
+import { a11yHiddenWhen } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
@@ -33,9 +34,14 @@ import { Icon, glyphSpan } from '@/ui/Icon';
  * for a labelled pill that fills the bar's own height.
  */
 const BAR = { bottom: 41, height: 72, dot: 14, dotGap: 17 };
-const GUTTER = { left: 42, right: 35 };
-const LAST_GUTTER = { left: 39, right: 38 };
+/**
+ * One gutter for all three slides (§206): the boards differ by 3 (42/35 and 39/38), which made the
+ * dots jump sideways on the last slide. The copy column's own left edge, 43, rounded to the bar.
+ */
+const GUTTER = { left: 42, right: 36 };
 const CTA = { width: 189, gap: 12.794, arrow: 26 };
+/** The copy column's gutters, as `OnboardingSlide` lays them (307:4290). */
+const COPY_GUTTER = { left: 43, right: 32 };
 const DESK = { width: 375.53, height: 344 };
 
 /** Where slide 3's cards start, measured from the bottom of the copy column (317.66 to 337.65). */
@@ -74,6 +80,18 @@ export function OnboardingScreen() {
   const scroller = useRef<ScrollViewInstance>(null);
   const [index, setIndex] = useState(0);
 
+  // Every title line's natural width, from the invisible copies below (§206): the three titles
+  // share the one size that fits the longest line in the copy column.
+  const [lineWidths, setLineWidths] = useState<Record<string, number>>({});
+  const measureLine = useCallback((line: string, w: number) => {
+    setLineWidths((seen) => (seen[line] === w ? seen : { ...seen, [line]: w }));
+  }, []);
+  const titleLines = SLIDES.flatMap((slide) => slide.title.split('\n'));
+  const measured = titleLines.every((line) => lineWidths[line] !== undefined);
+  const column = width - s(board(COPY_GUTTER.left)) - s(board(COPY_GUTTER.right));
+  const widest = Math.max(0, ...Object.values(lineWidths));
+  const titleFit = measured ? Math.min(1, widest > 0 ? (column - 1) / widest : 1) : undefined;
+
   const finish = () => {
     markSeen();
     router.replace('/(auth)/get-started');
@@ -87,7 +105,7 @@ export function OnboardingScreen() {
   };
 
   const last = index === SLIDES.length - 1;
-  const gutter = last ? LAST_GUTTER : GUTTER;
+  const gutter = GUTTER;
 
   return (
     <Screen edges={[]} padded={false}>
@@ -112,6 +130,7 @@ export function OnboardingScreen() {
             illustrationAlign={slide === 2 ? 'space-between' : 'flex-end'}
             illustrationGap={slide === 2 ? CARDS_TOP : 0}
             leadVariant="bodyLg"
+            titleFit={titleFit}
           >
             {slide === 0 ? (
               <ResumeDesk width={s(board(DESK.width))} height={s(board(DESK.height))} />
@@ -123,6 +142,21 @@ export function OnboardingScreen() {
           </OnboardingSlide>
         ))}
       </ScrollView>
+
+      {/* Each title line at its natural width, invisible and off screen, for measuring only. */}
+      <View pointerEvents="none" style={styles.measure} {...a11yHiddenWhen(true)}>
+        {titleLines.map((line) => (
+          <Text
+            key={line}
+            variant="largeTitle"
+            maxFontSizeMultiplier={1}
+            numberOfLines={1}
+            onLayout={(event) => measureLine(line, event.nativeEvent.layout.width)}
+          >
+            {line}
+          </Text>
+        ))}
+      </View>
 
       <View
         style={[
@@ -154,7 +188,7 @@ export function OnboardingScreen() {
               },
             ]}
           >
-            <Text variant="buttonLabel" color="textOnDark">
+            <Text variant="buttonLabel" color="textOnDark" maxFontSizeMultiplier={1}>
               Get Started
             </Text>
             {/* 309:8 is the same drawn glyph as the round button's — DM Sans Light 41 in a 31
@@ -178,4 +212,5 @@ const useStyles = scaledSheet(() => ({
   fill: { flex: 1 },
   bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  measure: { position: 'absolute', left: -10000, top: 0, opacity: 0, alignItems: 'flex-start' },
 }));

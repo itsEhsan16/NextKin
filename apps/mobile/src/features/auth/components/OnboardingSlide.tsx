@@ -36,6 +36,12 @@ export type OnboardingSlideProps = {
   illustrationGap?: number;
   /** Slide 3 is redrawn on a tighter leading than slides 1 and 2 (25.448 against 27.55). */
   leadVariant?: 'bodyLg';
+  /**
+   * The share of `largeTitle` every slide's title is drawn at (§206): one number for all three,
+   * the one that fits the longest drawn line, so a narrow phone shrinks them together instead of
+   * wrapping one to a third line. Undefined until measured: the title waits, invisible.
+   */
+  titleFit?: number;
   width: number;
   children: ReactNode;
 };
@@ -50,10 +56,22 @@ export function OnboardingSlide({
   illustrationAlign = 'flex-end',
   illustrationGap = 0,
   leadVariant = 'bodyLg',
+  titleFit,
   width,
   children,
 }: OnboardingSlideProps) {
-  const { s } = useTheme();
+  const { s, typography } = useTheme();
+  const role = typography.largeTitle;
+  const fitted =
+    titleFit === undefined
+      ? { opacity: 0 }
+      : titleFit < 1
+        ? {
+            fontSize: (role.fontSize ?? 0) * titleFit,
+            lineHeight: (role.lineHeight ?? 0) * titleFit,
+            letterSpacing: (role.letterSpacing ?? 0) * titleFit,
+          }
+        : undefined;
   const styles = useStyles();
   const insets = useSafeAreaInsets();
 
@@ -96,11 +114,12 @@ export function OnboardingSlide({
           {...a11yHeader(title.replace('\n', ' '))}
           style={{ marginTop: s(board(LAYOUT.headingTop)) }}
         >
-          <Text variant="largeTitle" color="onboardingInk">
+          {/* Every slide's title is its two drawn lines (§206), at one size shared by all three. */}
+          <Text variant="largeTitle" color="onboardingInk" maxFontSizeMultiplier={1} style={fitted}>
             {title}
           </Text>
         </View>
-        <Text variant={leadVariant} color="onboardingBody">
+        <Text variant={leadVariant} color="onboardingBody" maxFontSizeMultiplier={1}>
           {lead}
         </Text>
       </View>

@@ -17003,3 +17003,22 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - When the tabs don't fit, the selected tab gives up the shortfall (never below a square), so its round end stays inside.
 - **Verified:** navigation Jest, 28 tests pass.
 - **Not checked:** the fix hasn't been seen on the phone yet. Metro on 8090 serves it on reload.
+
+## §206 — The three onboarding slides match their boards and each other (owner, 2026-11-09)
+- **The owner's phone against 307:4288:**
+  - slide 3's title wrapped to three lines;
+  - the card text was bigger and lighter than the board's, and "Stay on top of your applications" wrapped;
+  - the grey gear was Expo Go's dev-tools button, not ours.
+- **Causes:**
+  - The board is drawn at 422.66 wide. Its cards are 14 bold over 12, which is about 13 / 11 at 390. The app used 15 semibold over 13 medium.
+  - Android's font-size setting could enlarge body text by up to 10%, which an artboard with fixed card heights can't absorb.
+- **Fix:**
+  - New roles `onboardingCardTitle` (bold 13.5/17) and `onboardingCardCaption` (medium 12/15.5), held half a point above the board conversion for legibility. Each is one line (shrinks to fit on a very narrow phone), and the system font size doesn't enlarge it.
+  - **One title size for all three slides:** `OnboardingScreen` measures every drawn title line off screen and gives every slide the one size that fits the longest line in the copy column. Never larger than `largeTitle`; a title waits invisible until measured.
+    - At 360 wide that's 28.7 for all three, each on its two drawn lines. Before, slide 3 alone went to three lines.
+  - The title, the lead and "Get Started" don't grow with the system font setting on these drawn slides.
+  - **One bottom-bar gutter (42/36) for all three slides.** The boards' 42/35 and 39/38 made the dots jump sideways on the last slide.
+- **Verified:**
+  - theme + auth Jest: 780 pass;
+  - web preview at 360: all three titles at 28.7 on two lines, slide 3's cards one line each, matching the board.
+- **Unchanged (preview only):** the web preview doesn't update the dots after an arrow tap (scroll-end event). This was the case before and is a web-only behaviour.

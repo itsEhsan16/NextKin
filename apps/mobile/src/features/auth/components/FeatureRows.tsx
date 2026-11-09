@@ -96,10 +96,23 @@ export function FeatureRows() {
             {render({ width: s(board(w)), height: s(board(h)) })}
           </View>
           <View style={[styles.copy, { marginLeft: s(board(COPY.left)), gap: s(board(COPY.gap)) }]}>
-            <Text variant="bodyLgStrong" color="onboardingInk">
+            {/* Drawn copy in a fixed-height card: held at the board's size, one line each (§206). */}
+            <Text
+              variant="onboardingCardTitle"
+              color="onboardingInk"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              maxFontSizeMultiplier={1}
+            >
               {title}
             </Text>
-            <Text variant="footnote" color="onboardingBody">
+            <Text
+              variant="onboardingCardCaption"
+              color="onboardingBody"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              maxFontSizeMultiplier={1}
+            >
               {caption}
             </Text>
           </View>
