@@ -28,8 +28,9 @@ export type ResumeSectionCardProps = {
 // The section card at 390 (RESUMES 06 577:6991), in artboard units.
 const CARD_INNER_GAP = 14 / 0.75;
 const HEADER_GAP = 10 / 0.75;
-const ICON_SLOT_W = 34 / 0.75;
-const ICON_SLOT_H = 28 / 0.75;
+// The slot grows with the icon (§202): 40 wide art, up to ~33 tall for the tallest glyph.
+const ICON_SLOT_W = 44 / 0.75;
+const ICON_SLOT_H = 36 / 0.75;
 const ACTIONS_GAP = 8 / 0.75;
 const EDIT = 32 / 0.75;
 

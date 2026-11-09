@@ -4,7 +4,6 @@ import { View } from 'react-native';
 import type { TailorRun } from '@/data/models';
 import { StatusPill } from '@/features/create/flow/FlowKit';
 // Deep import on purpose: the profile barrel drags its screens in.
-import { GapInterviewCard } from '@/features/profile/components/GapInterviewCard';
 import { a11yButton, a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Icon } from '@/ui/Icon';
@@ -23,8 +22,6 @@ export type TailorReadyProps = {
   score?: number;
   /** Opens the Versions page, where every change sits with its reason (toreview §146.5). */
   onSeeChanges: () => void;
-  /** Opens the gap interview, when there's anything to ask (toreview §146.7). */
-  onOpenQuestions: () => void;
   /** Another flow's pill beside "Saved to Resumes" (Build's band). */
   pill?: ReactNode;
   /** What sits at the end in place of the next-step note (Build's next steps). */
@@ -83,7 +80,6 @@ export function TailorReady({
   domain,
   score,
   onSeeChanges,
-  onOpenQuestions,
   pill,
   next,
   preview,
@@ -103,7 +99,6 @@ export function TailorReady({
       </Text>
       {preview}
       <ScoreRow score={score} baseline={run?.baselineScore} onSeeChanges={onSeeChanges} />
-      <GapInterviewCard onOpen={onOpenQuestions} />
       {next ?? <NextStepNote text={`Next: download it, then apply on ${where}`} />}
     </View>
   );

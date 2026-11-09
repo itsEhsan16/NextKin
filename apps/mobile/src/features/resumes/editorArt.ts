@@ -18,5 +18,5 @@ export const RESUME_SECTION_ART: Record<ResumeSectionKey, ListRowArt> = {
   education: PROFILE_ROW_ART.education,
 };
 
-/** Width the section icons are drawn at on the 390 board. */
-export const SECTION_ART_WIDTH = 30;
+/** Width the section icons are drawn at on the 390 board (owner, 2026-11-09: 30 read too small, §202). */
+export const SECTION_ART_WIDTH = 40;
