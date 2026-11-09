@@ -1,12 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Icon } from '@/ui/Icon';
-import { Pressable } from '@/ui/Pressable';
-import { Text } from '@/ui/Text';
 
 export type JobDetailActionsProps = {
   /** Opens the resume picker that tailors one to this job. */
@@ -20,7 +17,7 @@ export type JobDetailActionsProps = {
  * things to do with the job: make a resume for it, then apply.
  */
 export function JobDetailActions({ onTailor, onApply }: JobDetailActionsProps) {
-  const { colors, radii, shadows, sizes, spacing, zIndex, u } = useTheme();
+  const { colors, shadows, spacing, zIndex, u } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
 
@@ -40,43 +37,22 @@ export function JobDetailActions({ onTailor, onApply }: JobDetailActionsProps) {
         },
       ]}
     >
-      <Pressable
-        {...a11yButton('Tailor resume', 'Pick a resume to tailor to this job')}
-        feedback="scale"
-        onPress={onTailor}
-        style={[
-          styles.tailor,
-          {
-            height: sizes.buttonLg,
-            borderRadius: radii.full,
-            backgroundColor: colors.brandSurface,
-            gap: spacing[2],
-          },
-        ]}
-      >
-        <Icon name="Stars02" size={u(18)} color={colors.brand} />
-        <Text variant="bodySemiBold" color="brand">
-          Tailor resume
-        </Text>
-      </Pressable>
-
+      {/* Twins (§198): the same pill, height and bold label, an equal half each. */}
       <Button
-        size="lg"
-        label="Apply now"
-        onPress={onApply}
-        style={[styles.apply, { borderRadius: radii.full }]}
+        size="xl"
+        variant="soft"
+        label="Tailor resume"
+        leading={<Icon name="Stars02" size={u(18)} color={colors.brand} />}
+        onPress={onTailor}
+        style={styles.half}
       />
+      <Button size="xl" label="Apply now" onPress={onApply} style={styles.half} />
     </View>
   );
 }
 
 const useStyles = scaledSheet(() => ({
   bar: { flexDirection: 'row', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth },
-  tailor: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  apply: { flex: 1, justifyContent: 'center' },
+  // An equal share each whatever their labels: no basis from the content, no padding override.
+  half: { flexGrow: 1, flexShrink: 1, flexBasis: 0, paddingHorizontal: 0 },
 }));

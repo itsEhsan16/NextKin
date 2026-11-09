@@ -24,6 +24,7 @@ import {
 import { a11yButton, hitSlop8, pluralize, useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { FilterChip } from '@/ui/Chip';
+import { Icon } from '@/ui/Icon';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
@@ -186,16 +187,19 @@ export function NotificationsScreen() {
           exiting={reduced ? undefined : FadeOut.duration(motion.durations.fast)}
           style={[styles.metaRow, { paddingHorizontal: spacing.gutter, marginTop: spacing[6] }]}
         >
-          <Text variant="caption" color="textSecondary">
+          <Text variant="bodyLgStrong" color="ink">
             {pluralize(unreadCount, 'unread', 'unread')}
           </Text>
+          {/* A soft pill, not an underlined link (§198). */}
           <Pressable
             {...a11yButton('Mark all read')}
-            feedback="subtle"
+            feedback="scale"
             hitSlop={hitSlop8}
             onPress={() => markAllRead.mutate(undefined)}
+            style={[styles.markAll, { backgroundColor: colors.brandSurface }]}
           >
-            <Text variant="captionSemiBold" color="brand" style={styles.link}>
+            <Icon name="CheckCircle" size="xs" color={colors.brand} />
+            <Text variant="footnote" color="brand">
               Mark all read
             </Text>
           </Pressable>
@@ -317,5 +321,12 @@ const useStyles = scaledSheet((s) => ({
   root: { flex: 1 },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   pills: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
-  link: { textDecorationLine: 'underline' },
+  markAll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(6),
+    paddingHorizontal: s(14),
+    paddingVertical: s(8),
+    borderRadius: s(999),
+  },
 }));

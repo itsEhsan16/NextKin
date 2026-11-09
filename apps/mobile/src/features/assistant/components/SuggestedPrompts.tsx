@@ -4,7 +4,6 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { a11yButton, useReducedMotion } from '@/lib';
 import { motion, scaledSheet, useTheme } from '@/theme';
 import { Icon } from '@/ui/Icon';
-import { IconTile } from '@/ui/kit';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
@@ -12,9 +11,8 @@ import type { StarterPrompt } from '../assistantPrompts';
 import { AssistantAvatar } from './MessageBubble';
 
 /**
- * An empty chat (§188): the assistant's mark, a greeting by name, what it can help with, and four
- * questions made from what this person has. A card asks its question at once: the composer shows
- * what is left today, so nothing is spent unseen.
+ * An empty chat (§188, §198): the assistant's mark, a greeting by name, what it helps with, and
+ * "Try asking": four questions made from what this person has, as centred chips. One tap asks.
  */
 export function AssistantWelcome({
   firstName,
@@ -27,7 +25,7 @@ export function AssistantWelcome({
   onAsk: (prompt: string) => void;
   disabled: boolean;
 }) {
-  const { colors, shadows } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const reduced = useReducedMotion();
 
@@ -39,41 +37,47 @@ export function AssistantWelcome({
           {firstName ? `Hi ${firstName}, how can I help?` : 'How can I help?'}
         </Text>
         <Text variant="callout" color="textSecondary" align="center" style={styles.lede}>
-          Ask about your resume, ATS score, job search or interviews. I advise; I never change your
-          documents.
+          Get clear, practical advice on your resume, ATS score, job search, interview prep and
+          more.
         </Text>
       </View>
-      <View style={styles.list}>
-        {prompts.map((item, index) => (
-          <Animated.View
-            key={item.prompt}
-            entering={
-              reduced
-                ? undefined
-                : FadeInDown.delay(
-                    Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
-                  ).duration(motion.durations.base)
-            }
-          >
-            <Pressable
-              {...a11yButton(`Ask: ${item.prompt}`)}
-              feedback="scale"
-              disabled={disabled}
-              onPress={() => onAsk(item.prompt)}
-              style={[
-                styles.card,
-                shadows.soft,
-                { backgroundColor: colors.surfaceCard, borderColor: colors.borderSoft },
-              ]}
+      {/* "Try asking" as centred chips, one tap asks (owner's reference, §198). */}
+      <View style={styles.tryBlock}>
+        <Text variant="bodyLgStrong" color="ink" align="center" accessibilityRole="header">
+          Try asking
+        </Text>
+        <View style={styles.chips}>
+          {prompts.map((item, index) => (
+            <Animated.View
+              key={item.prompt}
+              entering={
+                reduced
+                  ? undefined
+                  : FadeInDown.delay(
+                      Math.min(index, motion.stagger.maxItems) * motion.stagger.row,
+                    ).duration(motion.durations.base)
+              }
+              // The wrapper is what the row wraps, so it too stops at the screen's width.
+              style={styles.chipWrap}
             >
-              <IconTile name={item.icon} size={36} />
-              <Text variant="bodyLgStrong" color="ink" style={styles.grow}>
-                {item.prompt}
-              </Text>
-              <Icon name="ArrowUp" size="xs" color={colors.iconMuted} />
-            </Pressable>
-          </Animated.View>
-        ))}
+              <Pressable
+                {...a11yButton(`Ask: ${item.prompt}`)}
+                feedback="scale"
+                disabled={disabled}
+                onPress={() => onAsk(item.prompt)}
+                style={[
+                  styles.tryChip,
+                  { backgroundColor: colors.surfaceCard, borderColor: colors.borderDefault },
+                ]}
+              >
+                <Icon name="Stars02" size="xs" color={colors.brand} />
+                <Text variant="callout" color="textBody" style={styles.chipText}>
+                  {item.prompt}
+                </Text>
+              </Pressable>
+            </Animated.View>
+          ))}
+        </View>
       </View>
     </View>
   );
@@ -114,16 +118,21 @@ const useStyles = scaledSheet((_s, u) => ({
   root: { gap: u(24), paddingTop: u(16) },
   head: { alignItems: 'center', gap: u(10) },
   lede: { maxWidth: u(320) },
-  list: { gap: u(10) },
-  card: {
+  tryBlock: { gap: u(12) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: u(8) },
+  tryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: u(12),
-    padding: u(14),
-    borderRadius: u(20),
+    gap: u(8),
+    paddingHorizontal: u(14),
+    paddingVertical: u(9),
+    borderRadius: u(999),
     borderWidth: 1,
+    maxWidth: '100%',
   },
-  grow: { flex: 1 },
+  chipWrap: { maxWidth: '100%' },
+  chipText: { flexShrink: 1 },
+  grow: { flexShrink: 1 },
   follow: { gap: u(8), paddingLeft: u(42), alignItems: 'flex-start' },
   chip: {
     flexDirection: 'row',

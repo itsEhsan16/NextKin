@@ -1,4 +1,4 @@
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, View } from 'react-native';
 
 import {
   NOTIFICATION_CATEGORIES,
@@ -7,77 +7,87 @@ import {
 } from '@/data/models';
 import { registerPushDevice } from '@/data/pushDevice';
 import { useNotificationPrefs, useSetNotificationPrefs } from '@/data/queries';
-import { a11yHeader, usePushPermission } from '@/lib';
+import { usePushPermission } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { AiBadge } from '@/ui/AiBadge';
 import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
-import { IconButton } from '@/ui/IconButton';
+import type { LineIconName } from '@/ui/Icon';
+import { FlowCard, FlowDivider, IconTile, KitSection } from '@/ui/kit';
 import { Screen } from '@/ui/Screen';
-import { Skeleton } from '@/ui/Skeleton';
+import { ScreenHeader } from '@/ui/ScreenHeader';
+import { SkeletonBlock } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Text } from '@/ui/Text';
 import { Toggle } from '@/ui/Toggle';
 
 import { useNotificationsActions } from '../hooks/useNotificationsActions';
 
+/** Each category's line icon, so a row reads at a glance (§198). */
+const CATEGORY_ICON: Record<NotificationCategory, LineIconName> = {
+  matches: 'Briefcase01',
+  closing: 'Clock',
+  applications: 'Send01',
+  ai: 'Stars02',
+  billing: 'CreditCard01',
+};
+
 type PrefRowProps = {
+  icon: LineIconName;
   title: string;
   caption: string;
   ai?: boolean;
   value: boolean;
-  divider: boolean;
   onChange: (value: boolean) => void;
 };
 
-function PrefRow({ title, caption, ai, value, divider, onChange }: PrefRowProps) {
-  const { colors, spacing, s } = useTheme();
+/** One switch: its icon tile, the title and what it sends, and the toggle. */
+function PrefRow({ icon, title, caption, ai, value, onChange }: PrefRowProps) {
   const styles = useStyles();
   return (
-    <View>
-      {divider ? (
-        <View
-          style={{
-            height: StyleSheet.hairlineWidth,
-            marginHorizontal: s(19),
-            backgroundColor: colors.divider,
-          }}
-        />
-      ) : null}
-      <View
-        style={[
-          styles.prefRow,
-          { paddingHorizontal: s(19), paddingVertical: spacing[3] + 1, gap: spacing[3] },
-        ]}
-      >
-        <View style={styles.prefText}>
-          <View style={[styles.prefTitle, { gap: spacing[2] }]}>
-            <Text variant="label">{title}</Text>
-            {ai ? <AiBadge /> : null}
-          </View>
-          <Text variant="rowDescription" color="textSecondary">
-            {caption}
+    <View style={styles.row}>
+      <IconTile name={icon} size={40} tone={value ? 'brand' : 'neutral'} />
+      <View style={styles.text}>
+        <View style={styles.titleRow}>
+          <Text variant="bodyLgStrong" color="ink">
+            {title}
           </Text>
+          {ai ? <AiBadge /> : null}
         </View>
-        <Toggle value={value} onChange={onChange} label={title} />
+        <Text variant="footnote" color="textSecondary">
+          {caption}
+        </Text>
       </View>
+      <Toggle value={value} onChange={onChange} label={title} />
     </View>
   );
 }
 
-/** What the system-permission footer says in each state (Figma 1:2764 draws "on"). */
-const PERMISSION_COPY = {
-  granted: 'On. You can turn it off in device settings.',
-  denied: 'Off. Turn it on in device settings to get alerts.',
-  undetermined: "You haven't allowed notifications yet.",
+/** What the phone-notifications card says in each permission state. */
+const PERMISSION = {
+  granted: {
+    title: 'Notifications are on',
+    body: 'You can turn them off any time in your phone’s settings.',
+    icon: 'Bell01',
+  },
+  denied: {
+    title: 'Notifications are off',
+    body: 'Turn them on in your phone’s settings to get alerts.',
+    icon: 'Bell01',
+  },
+  undetermined: {
+    title: 'Get alerts on your phone',
+    body: "You haven't allowed notifications yet.",
+    icon: 'Bell01',
+  },
 } as const;
 
 /**
- * NOTIF 04 (Figma 1:2711) — five category switches, two delivery switches, and the live
- * system-permission line. Everything writes through the prefs repo optimistically.
+ * Notification settings (redesigned 2026-11-09, §198): the phone's permission as a card at the
+ * top with its one action, then what can notify you and how it is delivered, each switch with
+ * its icon. Every change writes through the prefs repo optimistically, as before.
  */
 export function NotificationPreferencesScreen() {
-  const { spacing, s } = useTheme();
+  const { u } = useTheme();
   const styles = useStyles();
   const actions = useNotificationsActions();
   const { status, request } = usePushPermission();
@@ -89,32 +99,66 @@ export function NotificationPreferencesScreen() {
     if (prefs.data) setPrefs.mutate({ ...prefs.data, ...partial });
   };
   const setCategory = (category: NotificationCategory, value: boolean) => {
-    if (prefs.data) {
-      patch({ categories: { ...prefs.data.categories, [category]: value } });
-    }
+    if (prefs.data) patch({ categories: { ...prefs.data.categories, [category]: value } });
   };
+
+  const permission = status === 'unknown' ? null : PERMISSION[status];
 
   return (
     <Screen
       scroll
       edges={['top', 'bottom']}
-      contentContainerStyle={{ paddingBottom: spacing[8] }}
+      header={<ScreenHeader title="Notification preferences" onBack={actions.goBack} />}
+      contentContainerStyle={styles.content}
     >
-      <View style={[styles.headerRow, { paddingTop: spacing[2] }]}>
-        <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
-      </View>
-
-      <Text {...a11yHeader()} variant="pageTitle" style={{ marginTop: spacing[5] }}>
-        Notification preferences
-      </Text>
-      <Text variant="body" color="textSecondary" style={{ marginTop: spacing[2] }}>
+      <Text variant="callout" color="textSecondary">
         Choose what reaches your lock screen. Everything else still appears in the in-app feed.
       </Text>
 
+      {permission ? (
+        <FlowCard highlight={status !== 'granted'} style={styles.permission}>
+          <View style={styles.row}>
+            <IconTile
+              name={permission.icon}
+              size={44}
+              tone={status === 'granted' ? 'success' : 'solid'}
+            />
+            <View style={styles.text}>
+              <Text variant="bodyLgStrong" color="ink">
+                {permission.title}
+              </Text>
+              <Text variant="footnote" color="textSecondary">
+                {permission.body}
+              </Text>
+            </View>
+          </View>
+          {status === 'undetermined' ? (
+            <Button
+              label="Turn on notifications"
+              size="xl"
+              block
+              onPress={() =>
+                void request().then((answer) => {
+                  if (answer === 'granted') void registerPushDevice().catch(() => undefined);
+                })
+              }
+            />
+          ) : status === 'denied' ? (
+            <Button
+              label="Open device settings"
+              variant="outline"
+              size="xl"
+              block
+              onPress={() => void Linking.openSettings()}
+            />
+          ) : null}
+        </FlowCard>
+      ) : null}
+
       {prefs.isPending ? (
-        <View style={{ gap: spacing[3], marginTop: spacing[6] }}>
-          <Skeleton height={s(360)} radius="card" />
-          <Skeleton height={s(144)} radius="card" />
+        <View style={styles.sections}>
+          <SkeletonBlock height={u(380)} />
+          <SkeletonBlock height={u(150)} />
         </View>
       ) : prefs.isError || !prefs.data ? (
         <StateView
@@ -126,92 +170,59 @@ export function NotificationPreferencesScreen() {
           onAction={() => void prefs.refetch()}
         />
       ) : (
-        <>
-          <Text
-            variant="overline"
-            color="textSecondary"
-            accessibilityRole="header"
-            style={{ marginTop: spacing[7] }}
-          >
-            CATEGORIES
-          </Text>
-          <Card radius="card" padding={0} style={{ marginTop: spacing[3] }}>
-            {NOTIFICATION_CATEGORIES.map((meta, index) => (
-              <PrefRow
-                key={meta.key}
-                title={meta.label}
-                caption={meta.description}
-                ai={meta.ai}
-                value={prefs.data.categories[meta.key]}
-                divider={index > 0}
-                onChange={(value) => setCategory(meta.key, value)}
-              />
-            ))}
-          </Card>
-          <Text variant="caption" color="textTertiary" style={{ marginTop: spacing[3] }}>
-            Five categories, deliberately. Nothing else can be turned into a push.
-          </Text>
-
-          <Text
-            variant="overline"
-            color="textSecondary"
-            accessibilityRole="header"
-            style={{ marginTop: spacing[7] }}
-          >
-            DELIVERY
-          </Text>
-          <Card radius="card" padding={0} style={{ marginTop: spacing[3] }}>
-            <PrefRow
-              title="Quiet hours"
-              caption="10pm – 8am, held until morning"
-              value={prefs.data.quietHours}
-              divider={false}
-              onChange={(value) => patch({ quietHours: value })}
-            />
-            <PrefRow
-              title="Weekly digest"
-              caption="Anything you missed, Sunday 9am"
-              value={prefs.data.weeklyDigest}
-              divider
-              onChange={(value) => patch({ weeklyDigest: value })}
-            />
-          </Card>
-
-          {status !== 'unknown' ? (
-            <Text variant="caption" color="textSecondary" style={{ marginTop: spacing[6] }}>
-              {PERMISSION_COPY[status]}
+        <View style={styles.sections}>
+          <KitSection title="What can notify you">
+            <FlowCard style={styles.card}>
+              {NOTIFICATION_CATEGORIES.map((meta, index) => (
+                <View key={meta.key}>
+                  {index > 0 ? <FlowDivider /> : null}
+                  <PrefRow
+                    icon={CATEGORY_ICON[meta.key]}
+                    title={meta.label}
+                    caption={meta.description}
+                    ai={meta.ai}
+                    value={prefs.data.categories[meta.key]}
+                    onChange={(value) => setCategory(meta.key, value)}
+                  />
+                </View>
+              ))}
+            </FlowCard>
+            <Text variant="footnote" color="textTertiary">
+              Five categories, deliberately. Nothing else can be turned into a push.
             </Text>
-          ) : null}
-          {status === 'undetermined' ? (
-            <Button
-              label="Turn on notifications"
-              variant="secondary"
-              block
-              onPress={() =>
-                void request().then((answer) => {
-                  if (answer === 'granted') void registerPushDevice().catch(() => undefined);
-                })
-              }
-              style={{ marginTop: spacing[3] }}
-            />
-          ) : status === 'denied' ? (
-            <Button
-              label="Open device settings"
-              variant="secondary"
-              block
-              onPress={() => void Linking.openSettings()}
-              style={{ marginTop: spacing[3] }}
-            />
-          ) : null}
-        </>
+          </KitSection>
+
+          <KitSection title="Delivery">
+            <FlowCard style={styles.card}>
+              <PrefRow
+                icon="Moon01"
+                title="Quiet hours"
+                caption="10pm – 8am, held until morning"
+                value={prefs.data.quietHours}
+                onChange={(value) => patch({ quietHours: value })}
+              />
+              <FlowDivider />
+              <PrefRow
+                icon="Calendar"
+                title="Weekly digest"
+                caption="Anything you missed, Sunday 9am"
+                value={prefs.data.weeklyDigest}
+                onChange={(value) => patch({ weeklyDigest: value })}
+              />
+            </FlowCard>
+          </KitSection>
+        </View>
       )}
     </Screen>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
-  headerRow: { flexDirection: 'row', alignItems: 'center' },
-  prefRow: { flexDirection: 'row', alignItems: 'center' },
-  prefText: { flex: 1, gap: s(2) },
-  prefTitle: { flexDirection: 'row', alignItems: 'center' },
+const useStyles = scaledSheet((_s, u) => ({
+  content: { paddingTop: u(4), paddingBottom: u(32), gap: u(20) },
+  permission: { gap: u(14) },
+  sections: { gap: u(24) },
+  card: { paddingVertical: u(4) },
+  row: { flexDirection: 'row', alignItems: 'center', gap: u(12), paddingVertical: u(12) },
+  text: { flex: 1, gap: u(2) },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: u(8) },
 }));

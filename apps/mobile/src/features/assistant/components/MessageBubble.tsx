@@ -198,8 +198,9 @@ export function StreamingBubble({ messageId, onRetry, contextTitle }: StreamingB
       <AssistantAvatar />
       <View style={[styles.status, styles.thinking]}>
         <TypingDots size={u(5)} />
-        <Text variant="footnote" color="textTertiary">
-          {contextTitle ? `Reading ${contextTitle}…` : 'Thinking…'}
+        {/* Never the resume's full title: a long one ran off the screen (§198). */}
+        <Text variant="footnote" color="textTertiary" numberOfLines={1} style={styles.statusText}>
+          {contextTitle ? 'Reading your resume…' : 'Thinking…'}
         </Text>
       </View>
     </Animated.View>
@@ -233,6 +234,7 @@ const useStyles = scaledSheet((_s, u) => ({
   source: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: u(6) },
   grow: { flexShrink: 1 },
   status: { flexDirection: 'row', alignItems: 'center', gap: u(8) },
-  thinking: { minHeight: u(30) },
+  thinking: { flex: 1, minHeight: u(30) },
+  statusText: { flexShrink: 1 },
   writing: { marginTop: u(8), marginLeft: u(42) },
 }));

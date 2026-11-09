@@ -16826,3 +16826,30 @@ refuses `/auth/login` ("handled by Clerk"), and the app still used the server's 
   - the funnels
   - MFA-enforcement settings
   - the IP allowlist
+
+## §198 — Centred empty-state buttons, Notifications redesigned, job buttons, Assistant fixes (owner, 2026-11-09)
+1. **Empty-state buttons hugged the left edge** (Notifications "Explore today's matches", and every `StateView` action).
+   - Cause: `Button` defaults to `alignSelf: 'flex-start'`, which overrides a centred column.
+   - `StateView` and `NotificationsCaughtUp` now centre their action, as the `xl` pill (54 tall); compact states keep `md`. The caught-up CTA also has a briefcase icon.
+   - The other `Button`s inside centred columns are `block` (full width), so they were already right.
+   - Judgement call: `Button`'s own default is unchanged, because flipping it would stretch every unconstrained button in plain columns app-wide.
+2. **Notifications redesigned.**
+   - **Settings** (`NotificationPreferencesScreen`):
+     - a `ScreenHeader` with Back;
+     - the phone-permission state as a card at the top (granted / off / not yet asked) with its one action as an `xl` pill;
+     - then "What can notify you" and "Delivery" as kit sections. Each switch has a line icon tile (brand when on, neutral when off), its title and caption, and the toggle.
+     - Copy, behaviour and labels are unchanged.
+   - **Feed:**
+     - The row uses the new type ramp (bold runs in `bodyLgStrong`, description `callout`), a 20 radius and the soft card shadow.
+     - The time moves to the top right beside the unread dot, brand-coloured while unread.
+     - "Mark all read" is a soft brand pill with a check, not an underlined link, and the unread count is `bodyLgStrong`.
+3. **Job detail bar:** "Tailor resume" and "Apply now" are both the `xl` pill with the same bold `buttonLabel`, an equal half each (`flexBasis 0`). Tailor keeps the soft brand fill and the sparkle. Measured at 375: both 166 × 52.
+4. **Assistant overflow:**
+   - The thinking line read "Reading <the resume's full title>…" and ran off the screen. It now says "Reading your resume…" on one line that shrinks.
+   - Every welcome chip's wrapper is held to the screen width: a long one wraps and no longer overflows.
+5. **Assistant welcome:** "Try asking" is a centred heading over centred, wrapping pill chips (a sparkle and the question) instead of four cards. The chips are still made from the person's resume, score and role (§188), and one tap asks. The last prompt is now 'How should I answer "tell me about yourself"?'.
+6. **Assistant lede:** "Get clear, practical advice on your resume, ATS score, job search, interview prep and more."
+- **Verified:**
+  - Jest: 1952 tests pass. tsc and eslint are clean.
+  - In the web preview at 375, measured from the page: settings, the chips (all within 17–358) and the job bar.
+  - Not checked on a phone.

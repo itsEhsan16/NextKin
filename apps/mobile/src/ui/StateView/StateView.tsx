@@ -171,11 +171,14 @@ export function StateView({
         </Text>
       ) : null}
       {actionLabel && onAction ? (
+        // Centred under the message as a full pill (§198): the Button's own default is to hug the
+        // left edge, which put every empty state's action against the side of the screen.
         <Button
           label={actionLabel}
           onPress={onAction}
           variant={tone === 'danger' ? 'secondary' : 'primary'}
-          style={{ marginTop: spacing[2] }}
+          size={compact ? 'md' : 'xl'}
+          style={{ marginTop: spacing[2], alignSelf: 'center' }}
         />
       ) : null}
       {secondaryLabel && onSecondary ? (

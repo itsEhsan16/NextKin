@@ -47,8 +47,11 @@ export function NotificationsCaughtUp({ onExplore }: { onExplore: () => void }) 
       </Text>
       <Button
         label="Explore today's matches"
+        icon="Briefcase01"
+        size="xl"
         onPress={onExplore}
-        style={{ marginTop: s(CAUGHT_UP_CTA_EXTRA) - spacing[3] }}
+        // Centred as a full pill (§198); the Button's default hugs the left edge.
+        style={{ marginTop: s(CAUGHT_UP_CTA_EXTRA) - spacing[3], alignSelf: 'center' }}
       />
     </View>
   );

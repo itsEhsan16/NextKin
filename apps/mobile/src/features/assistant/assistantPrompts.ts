@@ -51,7 +51,7 @@ export function starterPrompts({
   });
   prompts.push({
     icon: 'MessageChatSquare',
-    prompt: 'How should I answer "tell me about yourself" in an interview?',
+    prompt: 'How should I answer "tell me about yourself"?',
   });
   // A role that reads as off-topic (or trips a deny word) falls back rather than being refused.
   return prompts.map((item) =>

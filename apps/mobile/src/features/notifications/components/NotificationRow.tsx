@@ -19,7 +19,6 @@ export type NotificationRowProps = {
 };
 
 // The card as NOTIF 01's redesign draws it at 390 (Figma 619:44), in artboard units.
-const CARD_RADIUS = 16 / 0.75;
 const CARD_PAD = 14 / 0.75;
 /** Tile → text, and text → dot slot. */
 const CARD_GAP = 14 / 0.75;
@@ -31,9 +30,8 @@ const STACK_BELOW = 2 / 0.75;
 const STACK_TILE = 26 / 0.75;
 const STACK_RADIUS = 7 / 0.75;
 const STACK_GAP = 6 / 0.75;
-/** The unread dot sits in an 8 × 14 slot, 6 down (619:51). */
+/** The unread dot, beside the time (§198). */
 const DOT = 8 / 0.75;
-const DOT_TOP = 6 / 0.75;
 /** Card → card (619:53). */
 export const CARD_SPACING = 10 / 0.75;
 
@@ -52,7 +50,7 @@ export const NotificationRow = memo(function NotificationRow({
   onMarkRead,
   onMore,
 }: NotificationRowProps) {
-  const { colors, sizes, spacing, shadows, s } = useTheme();
+  const { colors, sizes, spacing, shadows, s, u } = useTheme();
   const styles = useStyles();
   const unread = !notification.read;
 
@@ -101,7 +99,7 @@ export const NotificationRow = memo(function NotificationRow({
     <SwipeableRow
       actions={actions}
       onFullSwipe={unread ? () => onMarkRead(notification) : undefined}
-      radius={s(CARD_RADIUS)}
+      radius={u(20)}
       resetKey={notification.id}
       style={{ marginHorizontal: spacing.gutter, marginBottom: s(CARD_SPACING) }}
     >
@@ -121,9 +119,9 @@ export const NotificationRow = memo(function NotificationRow({
         style={[
           styles.card,
           // On the card itself, so the shadow travels with it when the row is swiped.
-          shadows.card,
+          shadows.soft,
           {
-            borderRadius: s(CARD_RADIUS),
+            borderRadius: u(20),
             borderWidth: sizes.border,
             borderColor: unread ? colors.unreadBorder : colors.borderSoft,
             backgroundColor: unread ? colors.surfaceUnread : colors.surfaceCard,
@@ -133,23 +131,34 @@ export const NotificationRow = memo(function NotificationRow({
         <VisualTile visual={notification.visual} />
 
         <View style={styles.text}>
-          {mixed ? (
-            <Text variant="notifTitleRun">
-              {runs.map((run, index) =>
-                run.bold ? (
-                  <Text key={index} variant="notifTitle">
-                    {run.text}
-                  </Text>
-                ) : (
-                  run.text
-                ),
-              )}
-            </Text>
-          ) : (
-            <Text variant="notifTitle">{notification.body}</Text>
-          )}
+          {/* The title with the time at its end, as a modern feed sets it (§198). */}
+          <View style={styles.head}>
+            {mixed ? (
+              <Text variant="bodyLg" color="ink" style={styles.title}>
+                {runs.map((run, index) =>
+                  run.bold ? (
+                    <Text key={index} variant="bodyLgStrong" color="ink">
+                      {run.text}
+                    </Text>
+                  ) : (
+                    run.text
+                  ),
+                )}
+              </Text>
+            ) : (
+              <Text variant="bodyLgStrong" color="ink" style={styles.title}>
+                {notification.body}
+              </Text>
+            )}
+            <View style={styles.when}>
+              <Text variant="footnote" color={unread ? 'brand' : 'textTertiary'}>
+                {time}
+              </Text>
+              {unread ? <View style={[styles.dot, { backgroundColor: colors.brand }]} /> : null}
+            </View>
+          </View>
 
-          <Text variant="captionRegular" color="textSecondary">
+          <Text variant="callout" color="textSecondary">
             {notification.description}
           </Text>
 
@@ -205,14 +214,6 @@ export const NotificationRow = memo(function NotificationRow({
               </Text>
             </View>
           ) : null}
-
-          <Text variant="micro" color="textTertiary">
-            {time}
-          </Text>
-        </View>
-
-        <View style={styles.dotSlot}>
-          {unread ? <View style={[styles.dot, { backgroundColor: colors.brand }]} /> : null}
         </View>
       </Pressable>
     </SwipeableRow>
@@ -237,6 +238,8 @@ const useStyles = scaledSheet((s) => ({
   },
   stackMore: { borderRadius: s(STACK_TILE) / 2 },
   showAll: { textDecorationLine: 'underline' },
-  dotSlot: { width: s(DOT) },
-  dot: { marginTop: s(DOT_TOP), width: s(DOT), height: s(DOT), borderRadius: s(DOT) / 2 },
+  head: { flexDirection: 'row', alignItems: 'flex-start', gap: s(8) },
+  title: { flex: 1 },
+  when: { flexDirection: 'row', alignItems: 'center', gap: s(6), marginTop: s(2) },
+  dot: { width: s(DOT), height: s(DOT), borderRadius: s(DOT) / 2 },
 }));
