@@ -15,6 +15,12 @@ export type ScreenBaseProps = {
    */
   wash?: boolean;
   /**
+   * Scroll mode only: the page runs up behind the status bar instead of starting under it, so a
+   * wash drawn in the content reaches the top of the glass (§199). The content keeps the inset
+   * as its first padding, and a strip fades in behind the status bar once the page scrolls.
+   */
+  bleedTop?: boolean;
+  /**
    * Lifts the page for the keyboard, frame by frame on both platforms (see `KeyboardFrame`).
    *
    * The padding lands on a wrapper *outside* the safe-area box, so the page keeps whatever

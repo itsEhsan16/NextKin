@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Job } from '@/data/models';
@@ -8,6 +9,7 @@ import { TailorResumeSheet } from '@/features/create/components/TailorResumeShee
 import { useTheme } from '@/theme';
 import { JdSectionCard } from '@/features/create/components/jd/JdSectionCard';
 import { GradientWash } from '@/ui/GradientWash';
+import { StatusBarScrim } from '@/ui/Screen/StatusBarScrim';
 import { IconButton } from '@/ui/IconButton';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton, SkeletonLines } from '@/ui/Skeleton';
@@ -50,11 +52,22 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
   // TAILOR 01 (606:2): the Tailor row asks which resume first, over the page, then moves on.
   const [tailorOpen, setTailorOpen] = useState(false);
 
-  const body = (children: React.ReactNode) => (
-    <View style={[styles.root, { backgroundColor: colors.surfacePage, paddingTop: insets.top }]}>
+  // The loaded page runs behind the status bar so its wash reaches the top of the glass (§199);
+  // loading and error keep the plain inset.
+  const body = (children: React.ReactNode, bleed = false) => (
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: colors.surfacePage, paddingTop: bleed ? 0 : insets.top },
+      ]}
+    >
       {children}
     </View>
   );
+  const scrolled = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrolled.set(event.contentOffset.y);
+  });
 
   // Loading and error keep the way back: every other pushed screen holds its header in all
   // states, and the gesture alone is not discoverable.
@@ -107,18 +120,20 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
 
   return body(
     <>
-      <ScrollView
+      <Animated.ScrollView
         style={styles.fill}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={{
           paddingHorizontal: spacing.gutter,
-          paddingTop: spacing.headerTopPushed,
+          paddingTop: spacing.headerTopPushed + insets.top,
           paddingBottom: spacing[8],
           gap: spacing[6],
         }}
         showsVerticalScrollIndicator={false}
       >
         {/* The lavender wash behind the job's top (owner, 2026-11-08: Home and the job only). */}
-        <GradientWash height={u(360)} />
+        <GradientWash height={u(360) + insets.top} />
         <View style={styles.headerRow}>
           <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
           <View style={[styles.headerRight, { gap: spacing[3] }]}>
@@ -192,7 +207,8 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
             />
           )}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+      <StatusBarScrim offset={scrolled} />
 
       <JobDetailActions onTailor={() => setTailorOpen(true)} onApply={applyFlow.apply} />
 
@@ -217,6 +233,7 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
       */}
       <JobsToastHost />
     </>,
+    true,
   );
 }
 

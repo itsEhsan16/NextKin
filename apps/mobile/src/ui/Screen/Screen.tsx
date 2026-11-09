@@ -24,6 +24,7 @@ import { KeyboardFrame } from './KeyboardFrame';
 import { isKeyboardSettled, RevealProvider } from './revealOnFocus';
 import type { ScreenProps } from './screenProps';
 import { isAtEnd } from './scrollMath';
+import { StatusBarScrim } from './StatusBarScrim';
 
 const DEFAULT_EDGES: readonly Edge[] = ['top'];
 /** How far the `wash` reaches below the safe area, at 390. */
@@ -38,6 +39,7 @@ export function Screen({
   scroll = false,
   padded = true,
   wash = false,
+  bleedTop = false,
   keyboard = false,
   tabBarInset = false,
   header,
@@ -82,6 +84,7 @@ export function Screen({
   // Only ever non-zero in scroll mode — the types see to that, but state it here too: this
   // lands on the ScrollView's content container, where it lets content pass under the pill.
   const tabBarSpace = scroll && tabBarInset ? tabBar.contentInset : 0;
+  const bleed = scroll && bleedTop && edges.includes('top');
 
   // A ReactNode is a new value on every render; only its presence moves the padding below.
   const hasFooter = footer != null;
@@ -89,7 +92,8 @@ export function Screen({
   const safeAreaStyle = useMemo<ViewStyle>(
     () => ({
       backgroundColor: colors.surfacePage,
-      paddingTop: edges.includes('top') ? insets.top : 0,
+      // A page that bleeds to the top keeps the inset inside its scroll content instead (§199).
+      paddingTop: edges.includes('top') && !(bleedTop && scroll) ? insets.top : 0,
       paddingLeft: edges.includes('left') ? insets.left : 0,
       paddingRight: edges.includes('right') ? insets.right : 0,
       // Two things can claim the bottom inset and neither may share it. When the tab bar
@@ -98,7 +102,7 @@ export function Screen({
       // instead of stopping on a strip of page. The same hand-off in both cases.
       paddingBottom: !tabBarInset && !hasFooter && edges.includes('bottom') ? insets.bottom : 0,
     }),
-    [colors.surfacePage, edges, hasFooter, insets, tabBarInset],
+    [bleedTop, colors.surfacePage, edges, hasFooter, insets, scroll, tabBarInset],
   );
 
   // Everything the pinned header and the scroll content must agree on, so the two columns of
@@ -163,6 +167,7 @@ export function Screen({
           refreshControl={refreshControl}
           onContentSizeChange={followEnd ? followContent : undefined}
         >
+          {bleed ? <View style={{ height: insets.top }} /> : null}
           {children}
         </Animated.ScrollView>
         {/* No top fade over a wash (owner, 2026-11-07): its page-white band read as a border under
@@ -213,6 +218,7 @@ export function Screen({
         </View>
       ) : null}
       {content}
+      {bleed ? <StatusBarScrim offset={scrollOffset} /> : null}
     </LayoutAnimationConfig>
   );
 

@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { RefreshControl, type ScrollViewInstance } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import {
@@ -126,7 +127,11 @@ export function HomeScreen() {
   const [landing, setLanding] = useState<{ progress: boolean } | null>(null);
   if (!firstPaint && landing === null) setLanding({ progress: showProgress });
   const animate = !reduced && !firstPaint;
-  const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />;
+  const insets = useSafeAreaInsets();
+  const refreshControl = (
+    // The page runs behind the status bar (§199): the pull spinner starts below it.
+    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={insets.top} />
+  );
 
   const header = (
     <HomeHeader
@@ -164,6 +169,8 @@ export function HomeScreen() {
       scroll
       tabBarInset
       padded={false}
+      // The wash runs up behind the status bar, with no white band above it (§199).
+      bleedTop
       scrollRef={scrollRef}
       contentContainerStyle={{
         paddingTop: spacing.headerTop,
@@ -172,7 +179,7 @@ export function HomeScreen() {
       }}
       refreshControl={refreshControl}
     >
-      <GradientWash height={u(WASH)} />
+      <GradientWash height={u(WASH) + insets.top} />
       {header}
       {firstPaint ? (
         <HomeSkeleton />

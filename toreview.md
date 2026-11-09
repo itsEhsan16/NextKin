@@ -16853,3 +16853,18 @@ refuses `/auth/login` ("handled by Clerk"), and the app still used the server's 
   - Jest: 1952 tests pass. tsc and eslint are clean.
   - In the web preview at 375, measured from the page: settings, the chips (all within 17–358) and the job bar.
   - Not checked on a phone.
+
+## §199 — The wash runs up behind the status bar (owner, 2026-11-09)
+On the phone, the job page's lavender wash stopped under the status bar, leaving a white band above it. Home had the same band.
+- **Cause:** both pages draw the wash inside their scroll content, and the content started below a safe-area padding on the page root, so nothing painted behind the status bar.
+- **Fix:**
+  - `Screen` has a new `bleedTop` prop (scroll mode). The root drops its top inset, the scroll content starts with an inset-tall spacer, and the wash, which is absolutely positioned at the content's top, now starts at the top of the glass.
+  - Home uses it. The job page (its own scroll view) does the same by hand.
+  - Both washes grow by the inset, so they reach as far down the page as before.
+- **`StatusBarScrim`** (new, `ui/Screen`): a strip behind the status bar that is clear at rest and fades to the page colour over the first 28 of scrolling, on the UI thread. Scrolled text never runs under the clock and icons.
+- Home's pull-to-refresh spinner is offset below the status bar.
+- **Not changed:** `Screen`'s `wash` prop (the JD page). It is an absolute fill on the root, whose padding box already includes the status bar.
+- **Verified:**
+  - Jest: 1954 tests pass, including two new `ScreenBleedTop` tests. tsc and eslint are clean.
+  - The web has no status bar inset, so it was checked by test only.
+  - Not checked on a phone.
