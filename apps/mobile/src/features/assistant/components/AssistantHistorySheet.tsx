@@ -31,12 +31,14 @@ export function AssistantHistorySheet({
   const styles = useStyles();
   const threads = useAssistantThreads();
   const rows = (threads.data ?? []).filter((row) => row.title.length > 0);
+  const empty = !threads.isPending && rows.length === 0;
 
   return (
     <Sheet
       open={open}
       onClose={onClose}
       height={u(520)}
+      fill
       accessibilityLabel="Chats"
       contentStyle={styles.pad}
     >
@@ -46,16 +48,28 @@ export function AssistantHistorySheet({
         subtitle="Pick up where you left off."
         onClose={onClose}
       />
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.list}>
+      {/* The list takes the room between the header and the button, so "New chat" sits at the
+          foot of the sheet and an empty list centres in what is left (§208). */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.list, empty ? styles.listEmpty : null]}
+        showsVerticalScrollIndicator={false}
+      >
         {threads.isPending ? (
           <>
             <SkeletonListRow height={u(64)} thumb={0} trailing divider />
             <SkeletonListRow height={u(64)} thumb={0} trailing divider />
           </>
         ) : rows.length === 0 ? (
-          <Text variant="callout" color="textSecondary" align="center" style={styles.empty}>
-            No earlier chats yet. Each new chat is kept here.
-          </Text>
+          <View style={styles.empty}>
+            <IconTile name="MessageChatSquare" size={48} />
+            <Text variant="title3" color="ink" align="center">
+              No earlier chats yet
+            </Text>
+            <Text variant="callout" color="textSecondary" align="center">
+              Each new chat is kept here.
+            </Text>
+          </View>
         ) : (
           rows.map((row) => (
             <Pressable
@@ -103,10 +117,11 @@ export function AssistantHistorySheet({
 }
 
 const useStyles = scaledSheet((_s, u) => ({
-  pad: { paddingHorizontal: u(20), paddingBottom: u(12), gap: u(12) },
-  scroll: { maxHeight: u(340) },
+  pad: { flex: 1, paddingHorizontal: u(20), paddingTop: u(8), paddingBottom: u(20), gap: u(16) },
+  scroll: { flex: 1 },
   list: { gap: u(8), paddingVertical: u(4) },
-  empty: { paddingVertical: u(24) },
+  listEmpty: { flexGrow: 1, justifyContent: 'center' },
+  empty: { alignItems: 'center', gap: u(8), paddingBottom: u(24) },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

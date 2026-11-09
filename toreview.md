@@ -17035,3 +17035,15 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - The groups scroll inside the fixed-height sheet if a large font needs it.
 - **Verified:** home Jest, 26 pass, including every row's destination.
 - **Not seen yet:** not viewed in the preview, which was signed out with no test account at hand, nor on the phone.
+
+## §208 — The Assistant's Chats sheet spaced properly (owner, 2026-11-09)
+- **Before:**
+  - The sheet was a fixed 520 tall, but its list stopped at 340, so "New chat" floated mid-sheet over dead space.
+  - The header sat tight under the handle.
+  - The empty line was a lone sentence.
+- **Now** (`AssistantHistorySheet`):
+  - The sheet uses `fill`, the same mode as the Jobs filters sheet: the list takes the room between the header and the button, and "New chat" is pinned at the foot.
+  - An empty list centres a small empty state (icon, "No earlier chats yet", "Each new chat is kept here.").
+  - The header has 8 more above it, and 16 separates the parts.
+- **Verified:** assistant Jest, 18 pass.
+- **Not seen yet:** on the phone.
