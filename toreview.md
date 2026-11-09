@@ -16953,3 +16953,21 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - `resume.generate` v9 and `resume.review` v2 each gained one rule: name each one in a bullet of a listed role, about the work, because a skill only listed scores half (D-14). Never in another role, and never as a tool list.
   - This is how half credit becomes full credit without inventing anything. The claim ledger still checks every line.
 - **Not verified:** whether the live model actually lifts the score. That needs a live run, and none has been made.
+
+### §202.5 Questions before the build: "Answer to reach 10"
+- **New `PlanQuestions`** on Tailor's Review screen, between the AI's plan and "Skills it asks for". It shows up to six of the plan's skill steps, the most valuable first:
+  - a listed-only skill: "You list Kafka. Which role used it?" (half credit until a role shows it);
+  - a missing one: "Have you used Redis?"
+- **Answers:**
+  - Each answer is a role chip (from `comparison.places`) or "No" / "Not in a role".
+  - A role is the same confirmation the Skills step already sent (`togglePlace` → `tailor.confirmed`), which the run writes as a fact at that role.
+  - The section's line and the hero's projected score (`projectedScore`) move as the user answers.
+  - Nothing is assumed: an unanswered question changes nothing.
+- **Judgement calls:**
+  - The questions are built from the comparison the screen already loads, not from `services/gaps.ts`. The answers stay part of this run's choices and are not saved to the profile. The plan's text said "saved via the gap-answer mutation". This keeps one source of truth (the run's confirmations), and Start still makes them facts on the new resume. **Owner: say if the answers should also be saved to the Profile.**
+  - Build-from-profile's Review (`BuildCompareScreen`) doesn't get the section yet.
+  - The ready screen's "N left to answer" line (plan D4) is not built. The ready screen shows the real score.
+- **Verified:**
+  - `PlanQuestions.test.tsx`: the two kinds of question, a role answering one, "No" unticking, and the projected line at 9.6;
+  - the existing Tailor and Build compare tests (21 in all).
+- **Not seen yet:** the section has not been viewed on a device or in the preview.

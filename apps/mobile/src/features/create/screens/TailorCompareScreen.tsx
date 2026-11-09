@@ -14,6 +14,7 @@ import { OnboardingFrame } from '../components/OnboardingFrame';
 import { TailorResumeSheet } from '../components/TailorResumeSheet';
 import { customizeKey, useCustomizeChoices } from '../customizeStore';
 import { FlowCard, FlowFooter, FlowRow, FlowSection } from '../flow/FlowKit';
+import { PlanQuestions } from '../flow/PlanQuestions';
 import { AiPlanCard, MoreOptionsSheet, ReviewHero, SkillChips } from '../flow/ReviewParts';
 import { generationsLeftNote, spentNote } from '../generationQuota';
 import { useCreateActions, type CustomizeTarget } from '../hooks/useCreateActions';
@@ -30,8 +31,9 @@ const NOTHING_CHOSEN = 'Turn on something in the plan, or tap a skill.';
  * Build Resume, step 2 of 3 — Review (toreview §173, Figma "Build · 2 Review"). Replaces the old
  * Compare/Fix/Download screen. Nothing has to be answered: the AI's plan is already picked, and
  * one tap creates. The score card says where the plan takes it; the plan rows turn off with a tap;
- * a step that needs a real number shows the AI's guess to accept or edit; missing skills are
- * one-tap chips; the rare settings sit in "More options".
+ * a step that needs a real number shows the AI's guess to accept or edit; "Answer to reach 10"
+ * asks which role used each skill the score still needs, before the build (§202); missing skills
+ * are one-tap chips; the rare settings sit in "More options".
  */
 export function TailorCompareScreen(props: TailorCompareScreenProps) {
   const styles = useStyles();
@@ -206,14 +208,23 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
           />
         </FlowSection>
       </Animated.View>
+      <Animated.View entering={enter(2)}>
+        <PlanQuestions
+          comparison={result}
+          goal={result.plan?.target?.goal ?? 10}
+          projected={projected}
+          choices={choices}
+          onChange={set}
+        />
+      </Animated.View>
       {result.keywords.length > 0 ? (
-        <Animated.View entering={enter(2)}>
+        <Animated.View entering={enter(3)}>
           <FlowSection title="Skills it asks for" body="Tap the missing ones you really have.">
             <SkillChips comparison={result} choices={choices} onChange={set} />
           </FlowSection>
         </Animated.View>
       ) : null}
-      <Animated.View entering={enter(3)}>
+      <Animated.View entering={enter(4)}>
         <FlowCard style={styles.optionsCard}>
           <FlowRow
             icon="Sliders01"
