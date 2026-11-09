@@ -72,7 +72,7 @@ describe('fixPlanOf', () => {
   });
 });
 
-describe('fixPlanOf with the path to 8.5 (toreview §129)', () => {
+describe('fixPlanOf with the path to the target (toreview §129; 10 since §202)', () => {
   const doc: ScoringDocument = {
     summary: 'Backend developer.',
     skills: ['Go'],
@@ -86,12 +86,12 @@ describe('fixPlanOf with the path to 8.5 (toreview §129)', () => {
   const result = scoreDocument({ document: doc, format: PARSE_SAFE_TEMPLATE, asOf: { year: 2026, month: 10 }, jd, profile: doc, path: TAILOR_PATH });
   const plan = fixPlanOf({ result, rawText: jd.rawText, improvements: [] })!;
 
-  it('says how far the plan goes, and it reaches 8.5', () => {
+  it('says how far the plan goes, and real steps reach 10', () => {
     expect(plan.score).toBeLessThan(TARGET_SCORE);
-    expect(plan.target).toMatchObject({ goal: 8.5, reaches: true });
-    expect(plan.target!.ceiling).toBeGreaterThanOrEqual(8.5);
+    expect(plan.target).toMatchObject({ goal: TARGET_SCORE, reaches: true });
+    expect(plan.target!.ceiling).toBe(TARGET_SCORE);
     const at = plan.target!.steps!;
-    expect(plan.steps[at - 1]!.totalAfter).toBeGreaterThanOrEqual(8.5);
+    expect(plan.steps[at - 1]!.totalAfter).toBeGreaterThanOrEqual(TARGET_SCORE);
   });
 
   it('each step carries the running total, which only rises', () => {

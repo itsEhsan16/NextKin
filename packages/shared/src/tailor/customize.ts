@@ -80,7 +80,7 @@ export function planGoalLine(plan: FixPlan): string {
     return steps.length === 0
       ? 'Nothing measured is missing'
       : `${steps.length} ${steps.length === 1 ? 'step' : 'steps'} to improve`;
-  if (target.steps === 0) return `Already above ${target.goal.toFixed(1)}`;
+  if (target.steps === 0) return target.goal >= 10 ? 'Already 10/10' : `Already above ${target.goal.toFixed(1)}`;
   if (target.reaches && target.steps !== null) {
     const after = steps[target.steps - 1]?.totalAfter ?? target.goal;
     return `${target.steps} ${target.steps === 1 ? 'step' : 'steps'} to reach ${after.toFixed(1)}/10`;

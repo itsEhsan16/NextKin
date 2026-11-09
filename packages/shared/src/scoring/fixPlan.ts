@@ -23,8 +23,11 @@ import { SECTION_FIX, type DocumentScore } from './report';
  * sum. The per-step pricing above is only the fallback for a result scored without a path.
  */
 
-/** The owner's bar (2026-10-21): following the plan reaches at least 8.5 out of 10. */
-export const TARGET_SCORE = 8.5;
+/**
+ * The owner's bar: 8.5 (2026-10-21), raised to 10 (2026-11-09, §202): the plan offers every real
+ * step that earns points, and where real steps run out the ceiling says so (never a guess).
+ */
+export const TARGET_SCORE = 10;
 
 const ALL_FORMAT: readonly FormatCheckId[] = ['singleColumn', 'standardHeadings', 'noTablesOrImages', 'standardFonts', 'contactInBody'];
 
