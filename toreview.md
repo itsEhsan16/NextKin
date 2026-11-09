@@ -16889,3 +16889,15 @@ The owner found the plan screen cluttered. Four directions were drawn on the For
   - Jest: 1955 tests pass. The billing tests were rewritten for the new screen. tsc and eslint are clean.
   - Web preview at 375 matches the Figma board.
   - Not checked on a phone.
+
+## §201 — The plan screen's Monthly / Yearly switch moves like liquid (owner, 2026-11-09)
+- **`PeriodSwitch`** (new, `features/billing/components`) replaces `GoProOffer`'s two static buttons.
+  - The violet pill is one view behind the options, and its two ends ride the bottom bar's springs (`motion.springs.barLead` 340 ms and `barTrail` 560 ms, no overshoot).
+  - The end in front leads and the one behind follows, so it stretches towards the new choice and draws itself in: the bar's motion from §194.
+  - Each option's words ("Monthly", "Yearly −55%") are two stacked copies, ink and white, that cross-fade on `timings.base`.
+  - The first placement lands at once, and so does every move under reduced motion.
+- **Position:** the pill reads each option's measured box. The track's 1-unit border is subtracted, because a child's layout counts from the outer edge.
+- **Verified:**
+  - Jest: two `PeriodSwitch` tests (the selection, and the two label copies). The glide runs on the UI thread, which the Reanimated mock doesn't redraw.
+  - Web preview at 375, measured: the pill sits exactly on Yearly (175–293), then on Monthly (82–170).
+  - Not checked on a phone: the web preview always reduces motion, so the glide itself is phone-only.

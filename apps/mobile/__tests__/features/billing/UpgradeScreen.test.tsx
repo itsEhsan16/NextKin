@@ -83,7 +83,8 @@ describe('UpgradeScreen (BILLING 01 577:9155)', () => {
     expect(screen.getByText('NEXTKIN PRO', HIDDEN)).toBeOnTheScreen();
     // Yearly is picked first, and its saving is arithmetic off the two fixture prices.
     expect(screen.getByRole('tab', { name: 'Yearly', selected: true })).toBeOnTheScreen();
-    expect(screen.getByText('−55%', HIDDEN)).toBeOnTheScreen();
+    // Ink and white copies of the badge cross-fade with the pill (§201).
+    expect(screen.getAllByText('−55%', HIDDEN)).toHaveLength(2);
     expect(screen.getByText('Save 55%', HIDDEN)).toBeOnTheScreen();
     expect(screen.getByText('From ₹667 a month, billed yearly', HIDDEN)).toBeOnTheScreen();
 

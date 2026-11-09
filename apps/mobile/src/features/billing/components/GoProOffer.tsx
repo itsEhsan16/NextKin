@@ -24,6 +24,7 @@ import {
 } from '../upgradeCopy';
 import type { Period } from './PlanPeriodRow';
 import { GoProCompare } from './GoProCompare';
+import { PeriodSwitch } from './PeriodSwitch';
 
 export type GoProOfferProps = {
   period: Period;
@@ -77,29 +78,6 @@ export function GoProOffer({
   const insets = useSafeAreaInsets();
   const yearly = period === 'annual';
 
-  const switchButton = (key: Period, label: string, badge?: string) => {
-    const on = period === key;
-    return (
-      <Pressable
-        {...a11yButton(label)}
-        accessibilityRole="tab"
-        accessibilityState={{ selected: on }}
-        feedback="subtle"
-        onPress={() => onPeriod(key)}
-        style={[styles.switchButton, on ? { backgroundColor: colors.brand } : null]}
-      >
-        <Text variant="bodySemiBold" color={on ? 'textOnBrand' : 'ink'}>
-          {label}
-        </Text>
-        {badge ? (
-          <Text variant="footnote" color={on ? 'textOnBrand' : 'success'}>
-            {badge}
-          </Text>
-        ) : null}
-      </Pressable>
-    );
-  };
-
   return (
     <View style={styles.root}>
       <Backdrop />
@@ -131,15 +109,12 @@ export function GoProOffer({
           ) : null}
         </View>
 
-        <View
-          accessibilityRole="tablist"
-          style={[
-            styles.switch,
-            { backgroundColor: colors.surfaceCard, borderColor: colors.borderDefault },
-          ]}
-        >
-          {switchButton('monthly', 'Monthly')}
-          {switchButton('annual', 'Yearly', saving ? `−${saving.percent}%` : undefined)}
+        <View style={styles.switchRow}>
+          <PeriodSwitch
+            value={period}
+            onChange={onPeriod}
+            yearlyBadge={saving ? `−${saving.percent}%` : undefined}
+          />
         </View>
 
         <View style={styles.table}>
@@ -197,23 +172,7 @@ const useStyles = scaledSheet((_s, u) => ({
     borderRadius: u(14),
   },
   reasonText: { flexShrink: 1 },
-  switch: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    gap: u(4),
-    padding: u(4),
-    marginTop: u(18),
-    borderRadius: u(999),
-    borderWidth: 1,
-  },
-  switchButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: u(6),
-    paddingHorizontal: u(18),
-    paddingVertical: u(9),
-    borderRadius: u(999),
-  },
+  switchRow: { marginTop: u(18) },
   table: { marginTop: u(22) },
   footer: { paddingHorizontal: u(20), paddingTop: u(10), gap: u(12) },
   offer: {
