@@ -17069,3 +17069,15 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - The upload was 69.7 MB, not the 1.5 GB of §172b.
 - **The local eas-cli is 20.1**, below eas.json's `>= 23 < 24`. The build ran through `npx eas-cli@23`; the global install was left alone.
 - **Server not redeployed.** Staging still runs `main` as of 2026-11-06. §202's server work isn't there yet: removals with Restore, the figure suggestion, `scoreTargets`, and the prompts `resume.review` v2 and `resume.generate` v9. The APK's new screens (Restore, the questions before the build) need that deploy plus the reference-only seed. Awaiting the owner.
+- **APK finished** (2026-11-10, 00:19 local).
+- **Staging deployed 2026-11-10** on the owner's word ("Yes, deploy staging"), from `claude/app-ui-ux-redesign-1a1793`. `main` held nothing this branch lacks.
+  - `cdk diff` first: only new images for six task definitions (web, worker, latex, links, migrate, seed) and the four services moving to them. Nothing removed; no IAM or network changes.
+  - `cdk deploy --asset-parallelism=false`: 296 s. The services are on web:15, worker:15, latex:12 and links:11, each 1/1 with rollout COMPLETED.
+  - No migrations in this change.
+  - `task seed-reference`: exit 0, and the log reads "reference data only (plans, prompts, routing, settings); accounts untouched". It installs `resume.review` v2, `resume.generate` v9 and the current `figure.draft`, activating each only where the active version is an older seeded one (an admin-activated version is kept).
+  - `/api/v1/health/deep`: 200, with database, valkey, storage and queue all ok.
+- **Prerequisites the deploy needed:**
+  - Docker Desktop was stopped, so it was started from `%LOCALAPPDATA%\Programs\DockerDesktop`.
+  - The AWS session had expired; the owner ran `aws login` (region `us-east-1`).
+- **Note for the next `main` deploy:** this branch isn't merged. A deploy from `main` before it merges would roll staging back to the 2026-11-06 server.
+- **Not yet done:** a tailoring run on staging, checking that the Lucknow line is taken out with Restore, the figure pill shows and the projected score rises with answers.
