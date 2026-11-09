@@ -17022,3 +17022,16 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - theme + auth Jest: 780 pass;
   - web preview at 360: all three titles at 28.7 on two lines, slide 3's cards one line each, matching the board.
 - **Unchanged (preview only):** the web preview doesn't update the dots after an arrow tap (scroll-end event). This was the case before and is a web-only behaviour.
+
+## §207 — Home's menu sheet in three groups (owner, 2026-11-09)
+- **Before:** six loose rows in a mixed order (History, Interview prep, AI assistant, Pro, Help, Contact), each with a different-length, often two-line description.
+- **Now** (`HomeMenuSheetBody`):
+  - Three headed groups, each one card of rows with dividers (`FlowCard` / `FlowRow`, the Settings pattern):
+    - **AI tools:** AI assistant, Interview prep;
+    - **Your work:** History, NextKin Pro;
+    - **Help:** Help & FAQ, Contact support.
+  - Every description is one short line.
+  - The "AI tools" heading replaces the per-row "+ AI" badge. Screen readers still hear "AI powered" on those rows.
+  - The groups scroll inside the fixed-height sheet if a large font needs it.
+- **Verified:** home Jest, 26 pass, including every row's destination.
+- **Not seen yet:** not viewed in the preview, which was signed out with no test account at hand, nor on the phone.
