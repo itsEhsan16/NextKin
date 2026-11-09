@@ -285,3 +285,26 @@ export function renewalLine(renewsAt?: string, now: Date = new Date()): string |
 
 export const PLANS_ERROR_TITLE = "Couldn't load the plans";
 export const PLANS_ERROR_MESSAGE = 'Check your connection and try again.';
+
+// ——— The Go Pro screen (owner's Figma "C · Compare", 2026-11-09, §200) ———
+
+export const GO_PRO_EYEBROW = 'NEXTKIN PRO';
+export const GO_PRO_TITLE = 'Go Pro';
+export const GO_PRO_LEDE = 'More of what gets you hired,\nnone of the waiting.';
+export const GO_PRO_OFFER_TITLE = 'Go Pro now';
+export const GO_PRO_CTA = 'Start Pro';
+export const GO_PRO_STAY_FREE = 'Continue with Free';
+
+/**
+ * The offer card's line for the period picked: a year as its monthly figure (rounded to the whole
+ * unit, as "From ₹667 a month"), a month as its own price. Both honest about how it is billed.
+ */
+export function goProOfferLine(plan: Plan): string {
+  const { amount, currency, period } = plan.price;
+  return period === 'year'
+    ? `From ${formatMoney(Math.round(amount / 12), currency)} a month, billed yearly`
+    : `${formatMoney(amount, currency)} a month, cancel any time`;
+}
+
+/** "Save 55%": the switch's and the card's badge, from the real prices, never a rounded-up claim. */
+export const goProSaveBadge = (saving: AnnualSaving): string => `Save ${saving.percent}%`;

@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { useMockModeStore } from '@/data/mock';
-import { PLAN_FEATURES, type Subscription } from '@/data/models';
+import type { Subscription } from '@/data/models';
 import { createQueryClient, qk } from '@/data/queries';
 import { resetMockRepos } from '@/data/repos';
 import { REASON_LINE, UpgradeScreen, type UpgradeScreenProps } from '@/features/billing';
@@ -71,52 +71,50 @@ describe('UpgradeScreen (BILLING 01 577:9155)', () => {
     jest.useRealTimers();
   });
 
-  it('meters the free account, prices both SKUs and publishes every cap', async () => {
+  it('offers Pro as one promise, Free against Pro, the offer and one button (§200)', async () => {
     await renderUpgrade();
     expect(screen.getByLabelText('Loading plans', HIDDEN)).toBeOnTheScreen();
-    // The bar is pinned while loading too — it owns the bottom safe-area inset, so the viewport
-    // must not change size when the plans land.
+    // The bar is pinned while loading too: it owns the bottom inset, so nothing jumps on load.
     expect(screen.getByLabelText('Upgrade to Pro')).toBeDisabled();
 
     await settle(NORMAL_MS);
 
-    expect(screen.getByRole('header', { name: 'NextKin Pro' })).toBeOnTheScreen();
-    // BILLING 01 leaves the header's title slot blank: the hero names the page, once.
-    expect(screen.getAllByText('NextKin Pro', HIDDEN)).toHaveLength(1);
-    expect(screen.getByRole('header', { name: 'Choose your plan' })).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Go Pro' })).toBeOnTheScreen();
+    expect(screen.getByText('NEXTKIN PRO', HIDDEN)).toBeOnTheScreen();
+    // Yearly is picked first, and its saving is arithmetic off the two fixture prices.
+    expect(screen.getByRole('tab', { name: 'Yearly', selected: true })).toBeOnTheScreen();
+    expect(screen.getByText('−55%', HIDDEN)).toBeOnTheScreen();
+    expect(screen.getByText('Save 55%', HIDDEN)).toBeOnTheScreen();
+    expect(screen.getByText('From ₹667 a month, billed yearly', HIDDEN)).toBeOnTheScreen();
 
-    // §13.5's live meter: the caps are on screen before any argument for raising them, and every
-    // row names its published cap rather than a bare percentage.
-    expect(screen.getByLabelText('Resume generations, 2 of 3 used', HIDDEN)).toBeOnTheScreen();
-    expect(screen.getByLabelText('Cover letters, 1 of 1 used', HIDDEN)).toBeOnTheScreen();
-    expect(screen.getByLabelText('ATS checks, 1 of 3 used', HIDDEN)).toBeOnTheScreen();
-
-    // Both tiles, priced in rupees; the plan this account is on is marked and never sold.
+    // Free against Pro on the five lines that decide it, each read out whole.
     expect(
-      screen.getByLabelText(/^Free, no charge, your current plan\./, HIDDEN),
+      screen.getByLabelText('Tailored resumes, Every month: Free 3, Pro 100', HIDDEN),
     ).toBeOnTheScreen();
-    expect(screen.getByLabelText(/^Pro monthly, ₹1,499\/mo\./, HIDDEN)).toBeOnTheScreen();
-    expect(screen.getByText('Your plan', HIDDEN)).toBeOnTheScreen();
-
-    // The whole §13.3 table, read off PLAN_FEATURES rather than retyped on the page.
-    for (const feature of PLAN_FEATURES) {
-      expect(screen.getAllByText(feature.label, HIDDEN).length).toBeGreaterThan(0);
-    }
-    // A published cap is never swapped for a tick (§13.1).
-    expect(screen.getAllByText('3 / month', HIDDEN).length).toBeGreaterThan(0);
-    expect(screen.getByText('Up to 10', HIDDEN)).toBeOnTheScreen();
-
     expect(
-      screen.getByText('No trials that auto-renew. Cancel any time.', HIDDEN),
+      screen.getByLabelText('Cover letters, Every month: Free 1, Pro unlimited', HIDDEN),
     ).toBeOnTheScreen();
-    // §13.4 / §15 — the web is the purchase surface, said before the press.
     expect(
-      screen.getByText("Billing runs on the web — you'll get a receipt by email"),
+      screen.getByLabelText(
+        'DOCX export, Plus the full template library: Free not included, Pro included',
+        HIDDEN,
+      ),
     ).toBeOnTheScreen();
 
-    // §7.8 — nothing on this page claims a result in a named third-party system.
+    expect(screen.getByLabelText('Start Pro', HIDDEN)).toBeOnTheScreen();
+
+    // §7.8: nothing on this page claims a result in a named third-party system.
     const tree = JSON.stringify(screen.toJSON());
     for (const name of THIRD_PARTY_ATS) expect(tree).not.toContain(name);
+  });
+
+  it('closes, or stays on Free, without selling anything', async () => {
+    await renderUpgrade();
+    await settle(NORMAL_MS);
+    await act(async () => fireEvent.press(screen.getByLabelText('Continue with Free', HIDDEN)));
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    await act(async () => fireEvent.press(screen.getByLabelText('Close', HIDDEN)));
+    expect(mockBack).toHaveBeenCalledTimes(2);
   });
 
   it('leads with the limit that was actually hit (§13.5)', async () => {
@@ -136,30 +134,25 @@ describe('UpgradeScreen (BILLING 01 577:9155)', () => {
       expect(screen.queryByText(line, HIDDEN)).toBeNull();
     }
     // The offer is still there — it just does not open on an invented grievance.
-    expect(screen.getByLabelText('Upgrade to Pro — ₹1,499/mo')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Start Pro', HIDDEN)).toBeOnTheScreen();
   });
 
-  it('re-prices the CTA when the billing period changes', async () => {
+  it('re-prices the offer when the period changes', async () => {
     await renderUpgrade();
     await settle(NORMAL_MS);
 
-    expect(screen.getByLabelText('Upgrade to Pro — ₹1,499/mo')).toBeOnTheScreen();
+    expect(screen.getByText('From ₹667 a month, billed yearly', HIDDEN)).toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByLabelText('Monthly', HIDDEN)));
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Annual')));
-
-    expect(screen.getByLabelText('Upgrade to Pro — ₹7,999/yr')).toBeOnTheScreen();
-    expect(screen.queryByLabelText('Upgrade to Pro — ₹1,499/mo')).toBeNull();
-    // The saving is arithmetic off the two fixture prices, not a hardcoded ribbon.
-    expect(
-      screen.getByText('Save ₹9,989 a year — 55% less than paying monthly.', HIDDEN),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('₹1,499 a month, cancel any time', HIDDEN)).toBeOnTheScreen();
+    expect(screen.queryByText('Save 55%', HIDDEN)).toBeNull();
   });
 
   it('asks before it charges, then moves the plan and pops behind the confirmation', async () => {
     const client = await renderUpgrade({ reason: 'generations' });
     await settle(NORMAL_MS);
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Upgrade to Pro — ₹1,499/mo')));
+    await act(async () => fireEvent.press(screen.getByLabelText('Start Pro', HIDDEN)));
 
     // The press opens the question, and says where the money is actually taken.
     expect(screen.getByText('Continue to checkout?')).toBeOnTheScreen();
@@ -181,7 +174,7 @@ describe('UpgradeScreen (BILLING 01 577:9155)', () => {
     // The page stops selling the moment there is nothing to sell.
     expect(screen.getAllByText("You're on NextKin Pro", HIDDEN).length).toBeGreaterThan(0);
     expect(screen.getByLabelText('Manage on the web', HIDDEN)).toBeOnTheScreen();
-    expect(screen.queryByLabelText('Upgrade to Pro — ₹1,499/mo', HIDDEN)).toBeNull();
+    expect(screen.queryByLabelText('Start Pro', HIDDEN)).toBeNull();
 
     // The confirmation is read before the screen leaves, not with it.
     expect(mockBack).not.toHaveBeenCalled();

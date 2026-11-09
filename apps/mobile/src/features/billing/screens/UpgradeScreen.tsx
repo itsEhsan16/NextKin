@@ -10,15 +10,13 @@ import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
-import { Text } from '@/ui/Text';
 import { Toast } from '@/ui/Toast';
 import { useRevealStagger } from '@/ui/motion';
 
 import { CheckoutConfirm } from '../components/CheckoutConfirm';
+import { GoProOffer } from '../components/GoProOffer';
 import { PlanComparison } from '../components/PlanComparison';
-import { PlanPeriodRow, type Period } from '../components/PlanPeriodRow';
-import { PlanReasonBanner } from '../components/PlanReasonBanner';
-import { PlanTiles } from '../components/PlanTiles';
+import type { Period } from '../components/PlanPeriodRow';
 import { PlanUsageCard } from '../components/PlanUsageCard';
 import { ProStatusCard } from '../components/ProStatusCard';
 import { UpgradeHero } from '../components/UpgradeHero';
@@ -26,9 +24,6 @@ import { UpgradeSkeleton } from '../components/UpgradeSkeleton';
 import { useBillingActions } from '../hooks/useBillingActions';
 import {
   annualSaving,
-  annualSavingLine,
-  BILLING_NOTE,
-  HERO_CAPTION,
   LOADING_CTA,
   MANAGE_CTA,
   MANAGE_NOTE,
@@ -36,10 +31,8 @@ import {
   PLANS_ERROR_MESSAGE,
   PLANS_ERROR_TITLE,
   PRO_HERO_CAPTION,
-  REASON_METER,
+  REASON_LINE,
   renewalLine,
-  TRUST_LINE,
-  upgradeCtaLabel,
   UPGRADED_TOAST,
 } from '../upgradeCopy';
 import type { UpgradeReason } from '../upgradeReasons';
@@ -78,7 +71,8 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
   const subscription = useSubscription();
   const upgrade = useUpgradePlan();
 
-  const [period, setPeriod] = useState<Period>('monthly');
+  // Yearly first, as the owner's design shows it: the better deal is the one already picked (§200).
+  const [period, setPeriod] = useState<Period>('annual');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [purchased, setPurchased] = useState(false);
   const [manageNote, setManageNote] = useState<string | undefined>(undefined);
@@ -241,50 +235,28 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
   // comparison table itself is static and never empty.
   if (!free || !pro) return failed();
 
-  return page(
-    <>
-      <UpgradeHero title={SCREEN_TITLE} caption={HERO_CAPTION} />
-
-      {reason ? (
-        <Animated.View entering={enter(0)} style={styles.gapMd}>
-          <PlanReasonBanner reason={reason} />
-        </Animated.View>
-      ) : null}
-
-      <Animated.View entering={enter(1)} style={styles.gapMd}>
-        <PlanUsageCard
-          usage={sub.usage}
-          plan={sub.plan}
-          emphasis={reason ? REASON_METER[reason] : undefined}
-        />
-      </Animated.View>
-
-      <Animated.View entering={enter(2)} style={styles.gapLg}>
-        <PlanPeriodRow value={period} onChange={setPeriod} />
-      </Animated.View>
-
-      <Animated.View entering={enter(3)} style={styles.gapSm}>
-        <PlanTiles
-          free={free}
-          pro={pro}
-          current={sub.plan}
-          savingLine={period === 'annual' && saving ? annualSavingLine(saving) : undefined}
-        />
-      </Animated.View>
-
-      <Animated.View entering={enter(4)} style={styles.gapLg}>
-        <PlanComparison />
-      </Animated.View>
-
-      <Text variant="micro" color="textSecondary" align="center" style={styles.gapMd}>
-        {TRUST_LINE}
-      </Text>
-    </>,
-    <StickyActionBar
-      floating
-      note={BILLING_NOTE}
-      primary={{ label: upgradeCtaLabel(pro), onPress: () => setConfirmOpen(true) }}
-    />,
+  // Free: the owner's "C · Compare" design (§200). One promise, the period switch, Free against
+  // Pro on five lines, the offer and one button; the confirm and the toast as before.
+  return (
+    <View style={styles.root}>
+      <GoProOffer
+        period={period}
+        onPeriod={setPeriod}
+        plan={pro}
+        saving={saving}
+        reasonLine={reason ? REASON_LINE[reason] : undefined}
+        onStart={() => setConfirmOpen(true)}
+        onClose={actions.goBack}
+      />
+      <CheckoutConfirm
+        open={confirmOpen}
+        busy={upgrade.isPending}
+        failed={upgrade.isError}
+        onConfirm={confirm}
+        onCancel={() => setConfirmOpen(false)}
+      />
+      <Toast visible={purchased} message={UPGRADED_TOAST} onHide={onToastHidden} />
+    </View>
   );
 }
 

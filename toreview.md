@@ -16868,3 +16868,24 @@ On the phone, the job page's lavender wash stopped under the status bar, leaving
   - Jest: 1954 tests pass, including two new `ScreenBleedTop` tests. tsc and eslint are clean.
   - The web has no status bar inset, so it was checked by test only.
   - Not checked on a phone.
+
+## §200 — The upgrade screen rebuilt from the owner's Figma "C · Compare" (owner, 2026-11-09)
+The owner found the plan screen cluttered. Four directions were drawn on the For-Next-Kin page "💳 Upgrade variants 2026-11" (A Aurora, B Lavender, C Compare, D Glow card). The owner edited C (node `442:442`: a Monthly/Yearly switch was added and the header moved up) and asked for it built with Hugeicons.
+- **Free accounts now see `GoProOffer`:**
+  - a lavender → white → violet backdrop and a close button;
+  - "NEXTKIN PRO", "Go Pro", and "More of what gets you hired, / none of the waiting.";
+  - the Monthly / Yearly switch, Yearly first, its badge the real saving;
+  - `GoProCompare`: Free against Pro on five lines (resumes 3 → 100, cover letters 1 → ∞, interview sets 1 → ∞, DOCX ✕ → ✓, priority queue ✕ → ✓). The values are from the §13.3 table. Each row is read out whole ("Free 3, Pro 100").
+  - a pinned footer with the offer card ("Go Pro now", "From ₹667 a month, billed yearly" or "₹1,499 a month, cancel any time", and "Save 55%" on yearly), the black "Start Pro" button that opens the existing checkout confirm, and "Continue with Free".
+- **Icons:** Hugeicons from the app's generated set (File04, Mail01, Mic, Download01, Rocket01, Check, XCircle, XClose, InfoCircle). The 80 MB icon package was not needed.
+- **Real numbers:** the design said −56%. The screen computes the saving from the prices (₹7,999 against 12 × ₹1,499 = 55%, rounded down), so it shows 55%.
+- **Judgement calls:**
+  - **Removed from the Free screen:** the usage meters, the plan tiles, the full feature table, the trust line and the web-billing note. They are no longer above the offer as §13.5 asked; the owner chose a clutter-free screen.
+  - **Billing on the web:** still said in the checkout confirm before anything is charged.
+  - **Why the reader is here (§13.5):** if a gated control sent the reader, its line still appears under the lede as a small white note (for example, "DOCX export is a Pro feature. PDF and TXT stay free on every plan.").
+  - **Unchanged:** the Pro account's page (status, usage, comparison) and the loading and error states.
+- **Removed:** `PlanTiles` and `PlanReasonBanner` (unused).
+- **Verified:**
+  - Jest: 1955 tests pass. The billing tests were rewritten for the new screen. tsc and eslint are clean.
+  - Web preview at 375 matches the Figma board.
+  - Not checked on a phone.
