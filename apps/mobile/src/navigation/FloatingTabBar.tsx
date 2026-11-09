@@ -65,6 +65,13 @@ function layoutTabs(
   const total = TABS.reduce((sum, tab) => sum + expanded[tab.name], 0);
   const roomy = total <= inner;
   const widths = TABS.map((tab) => (roomy || tab.name === active ? expanded[tab.name] : side));
+  // A long label on a narrow phone: the selected tab gives up the room it lacks, so the pill's
+  // round end stays inside the track instead of being cut off at the right (§205).
+  const over = widths.reduce((sum, width) => sum + width, 0) - inner;
+  if (over > 0) {
+    const at = TABS.findIndex((tab) => tab.name === active);
+    widths[at] = Math.max(side, (widths[at] ?? side) - over);
+  }
   const used = widths.reduce((sum, width) => sum + width, 0);
   const gap = Math.max(0, (inner - used) / (TABS.length - 1));
   const boxes = {} as Record<TabName, Box>;
@@ -136,7 +143,10 @@ export function FloatingTabBar() {
 
   const pad = u(PAD);
   const height = layout.pillHeight - pad * 2;
-  const inner = layout.pillWidth - pad * 2;
+  // The track's real width: the bar's border takes its share from inside, so the pill is laid out
+  // in what the track measures, never in the bar's width less padding (§205: the right end was cut).
+  const [measured, setMeasured] = useState<number | null>(null);
+  const inner = measured ?? layout.pillWidth - pad * 2 - StyleSheet.hairlineWidth * 2;
   const icon = u(ICON);
   const inset = (height - icon) / 2;
   const expanded = useMemo(() => {
@@ -175,7 +185,13 @@ export function FloatingTabBar() {
           },
         ]}
       >
-        <View style={styles.track}>
+        <View
+          style={styles.track}
+          onLayout={(event) => {
+            const width = event.nativeEvent.layout.width;
+            setMeasured((now) => (now !== null && Math.abs(now - width) < 0.5 ? now : width));
+          }}
+        >
           <LiquidPill track={inner} height={height} box={boxes[active]} />
           {TABS.map((tab) => (
             <BarTab

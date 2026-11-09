@@ -16992,3 +16992,14 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - **VersionChangeList**'s load error: "Try again" and its line are now centred.
 - **Left as they are:** sheets' `lg block` buttons (TailorSavedSheet, PushPrimerSheet, CopiedLinkDialogBody). They're full-width sheet actions, not empty states.
 - **Verified:** Jest, 22 tests pass (Build job, profile lists, not-found, versions).
+
+## §205 — The bottom bar's pill no longer cut on the right (owner, 2026-11-09)
+- **Symptom:** the owner's phone showed the selected "Resumes" pill with its right round end clipped.
+- **Causes:**
+  - The tabs were laid out across the bar's width less padding, but the bar's hairline border takes its width from inside the track. The last pill ran past the track by the border.
+  - On a narrow phone, the selected label with the other tabs could be wider than the track: the gap went to 0 and the last box overran.
+- **Fix** (`FloatingTabBar.tsx`):
+  - The layout uses the track's measured width (`onLayout`; before that, the width less padding and border).
+  - When the tabs don't fit, the selected tab gives up the shortfall (never below a square), so its round end stays inside.
+- **Verified:** navigation Jest, 28 tests pass.
+- **Not checked:** the fix hasn't been seen on the phone yet. Metro on 8090 serves it on reload.
