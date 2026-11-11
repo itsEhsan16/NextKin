@@ -19,11 +19,11 @@
  */
 @theme {
   /* Text */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #64748b;
-  --color-text-inverse: #ffffff;
-  --color-text-brand: #4f46e5;
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
+  --color-text-inverse: var(--color-neutral-0);
+  --color-text-brand: var(--color-brand-600);
 
   /* Brand */
   --color-brand-600: #4f46e5;
@@ -42,7 +42,7 @@
    * and a slightly deeper tint on a tinted surface, never a grey patch pasted onto it. The band of
    * light that crosses them is white.
    */
-  --color-skeleton: color-mix(in srgb, #0f172a 5%, transparent);
+  --color-skeleton: color-mix(in srgb, var(--color-neutral-900) 5%, transparent);
   --color-skeleton-light: rgb(255 255 255 / 0.75);
   --color-neutral-100: #f1f5f9;
   --color-neutral-200: #e2e8f0;
@@ -58,21 +58,21 @@
   --color-neutral-800: #1e293b;
 
   /* Surfaces */
-  --color-surface-card: #ffffff;
-  --color-surface-muted: #f1f5f9;
+  --color-surface-card: var(--color-neutral-0);
+  --color-surface-muted: var(--color-neutral-100);
   /* The ink primary button (`toreview.md` §32): near-black fill, one step lighter on hover.
      Same values as `text-primary` and `neutral-800`, named for the role they play. */
-  --color-surface-inverse: #0f172a;
-  --color-surface-inverse-hover: #1e293b;
-  --color-surface-brand: #fbfaff;
+  --color-surface-inverse: var(--color-neutral-900);
+  --color-surface-inverse-hover: var(--color-neutral-800);
+  --color-surface-brand: var(--color-brand-25);
   /* The Jobs "Tailor your resume" AI callout (304:2761) — visibly more saturated than
      `surface-brand`, not a rounding difference. */
   --color-surface-brand-strong: #f2f2fd;
 
   /* Borders */
-  --color-border-default: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
-  --color-border-brand: #ede9fe;
+  --color-border-default: var(--color-neutral-200);
+  --color-border-subtle: var(--color-neutral-100);
+  --color-border-brand: var(--color-brand-75);
   /*
    * The Jobs board drew three more greys within a few RGB units of the two above (`#e2e5ee`,
    * `#eef0f5`, `#e8eaf1`, plus a fourth, `#eaecf2`, folded in at transcription time). The
@@ -80,18 +80,18 @@
    * noise, not hierarchy. The names survive as value aliases until the class sweep retires
    * them — `divider` and `card` are `border-default`, `faint` is `border-subtle`.
    */
-  --color-border-divider: #e2e8f0;
-  --color-border-faint: #f1f5f9;
-  --color-border-card: #e2e8f0;
+  --color-border-divider: var(--color-border-default);
+  --color-border-faint: var(--color-border-subtle);
+  --color-border-card: var(--color-border-default);
   /* The selected job card's 2px ring (304:2451) — kept distinct from `border-brand` and the
      sidebar's `button-rim` despite being numerically close, matching this file's own precedent
      of transcribing a board's actual value over merging near-duplicates when the value repeats
      as one specific, deliberate UI state (here: selection) rather than incidental body text. */
-  --color-border-selected: #6366f1;
+  --color-border-selected: var(--color-brand-500);
 
   /* Status */
   --color-danger-dot: #ff4148;
-  --color-success-text: #15803d;
+  --color-success-text: var(--color-success-700);
   --color-success-surface: #ecfdf5;
 
   /*
@@ -104,7 +104,7 @@
   --color-success-50: #dcfce7;
   --color-success-600: #16a34a;
   --color-warning-50: #fef3c7;
-  --color-warning-text: #b7791f;
+  --color-warning-text: var(--color-warning-700);
   --color-danger-50: #fee2e2;
   --color-danger-600: #dc2626;
 
@@ -146,7 +146,7 @@
      danger red at 40% on white, resolved; and a darker red for its ink on the danger tint and on a
      menu's highlight, where `danger-600` falls under 4.5:1. */
   --color-border-danger: #f1a8a8;
-  --color-danger-text: #b91c1c;
+  --color-danger-text: var(--color-danger-700);
 
   /* Admin portal (Figma 382:936): the slate and indigo steps its boards bind that no user-app
      board did, and the amber its warning badges draw (#b45309, darker than the user app's
@@ -162,7 +162,7 @@
   /* Jobs board one-offs: the company-name text on every job card/detail panel (distinct from
      `text-tertiary`, used consistently for this one role), and the handwritten illustration
      caption colour (imported raw, same treatment as `radius-panel`). */
-  --color-text-company: #78839a;
+  --color-text-company: var(--color-neutral-500);
   --color-text-caveat: #3b28f0;
 
   /*
@@ -175,6 +175,159 @@
   --color-button-face: #4039d6;
 
   /* Type — Plus Jakarta Sans throughout, wired up in layout.tsx via next/font */
+
+  /* Redesign R2 (2026-11-12, doc/redesign/02-tokens.md §2–3) ─ foundations: the ramp
+     steps the semantic tier points at, plus the fuchsia `paid-*` ramp (Pro and upgrade
+     surfaces only). No existing step changes value here: see the sequencing rule. */
+  --color-brand-25: #fbfaff;
+  --color-brand-75: #ede9fe;
+  --color-brand-400: #818cf8;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #020617;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-950: #052e16;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-950: #451a03;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-950: #450a0a;
+  --color-info-100: #e0f2fe;
+  --color-info-200: #bae6fd;
+  --color-info-400: #38bdf8;
+  --color-info-700: #0369a1;
+  --color-info-950: #082f49;
+  --color-paid-50: #fdf4ff;
+  --color-paid-100: #fae8ff;
+  --color-paid-200: #f5d0fe;
+  --color-paid-300: #f0abfc;
+  --color-paid-500: #d946ef;
+  --color-paid-600: #c026d3;
+  --color-paid-700: #a21caf;
+  --color-paid-800: #86198f;
+  --color-paid-950: #4a044e;
+
+  /* R2 semantic tier: a purpose, pointing at a foundation. Screens use these, never a
+     ramp step, once their component exists. Dark overrides only this tier. */
+  --color-surface-page: var(--color-neutral-100);
+  --color-surface-subtle: var(--color-neutral-50);
+  --color-surface-raised: var(--color-neutral-0);
+  --color-surface-brand-tint: var(--color-brand-50);
+  --color-surface-selected: var(--color-brand-75);
+  --color-surface-paid: var(--color-paid-50);
+  --color-surface-overlay: color-mix(in srgb, var(--color-neutral-900) 40%, transparent);
+  --color-surface-glass: color-mix(in srgb, var(--color-neutral-100) 80%, transparent);
+  --color-surface-glass-panel: color-mix(in srgb, var(--color-neutral-0) 90%, transparent);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-on-brand: var(--color-neutral-0);
+  --color-text-link: var(--color-brand-600);
+  --color-text-inverse-brand: var(--color-brand-100);
+  --color-text-paid: var(--color-paid-700);
+  --color-border-strong: var(--color-neutral-400);
+  --color-border-control: var(--color-neutral-500);
+  --color-border-focus: var(--color-brand-500);
+  --color-border-paid: var(--color-paid-200);
+  --color-focus-ring: var(--color-brand-600);
+  --color-focus-ring-inverse: var(--color-brand-100);
+  --color-focus-ring-danger: var(--color-danger-600);
+  --color-action-primary: var(--color-brand-600);
+  --color-action-primary-hover: var(--color-brand-700);
+  --color-action-primary-pressed: var(--color-brand-800);
+  --color-action-secondary: var(--color-surface-card);
+  --color-action-secondary-hover: var(--color-surface-muted);
+  --color-action-secondary-pressed: var(--color-neutral-200);
+  --color-action-ghost-hover: var(--color-surface-muted);
+  --color-action-ghost-pressed: var(--color-neutral-200);
+  --color-action-danger: var(--color-danger-600);
+  --color-action-danger-hover: var(--color-danger-700);
+  --color-action-danger-pressed: var(--color-danger-800);
+  --color-action-paid: var(--color-paid-600);
+  --color-action-paid-hover: var(--color-paid-700);
+  --color-action-paid-pressed: var(--color-paid-800);
+  --color-action-inverse: var(--color-surface-inverse);
+  --color-action-inverse-hover: var(--color-surface-inverse-hover);
+  --color-action-inverse-pressed: var(--color-neutral-700);
+  --color-feedback-success-surface: var(--color-success-50);
+  --color-feedback-success-border: var(--color-success-200);
+  --color-feedback-success-text: var(--color-success-700);
+  --color-feedback-success-icon: var(--color-success-600);
+  --color-feedback-warning-surface: var(--color-warning-50);
+  --color-feedback-warning-border: var(--color-warning-200);
+  --color-feedback-warning-text: var(--color-warning-700);
+  --color-feedback-warning-icon: var(--color-warning-500);
+  --color-feedback-danger-surface: var(--color-danger-50);
+  --color-feedback-danger-border: var(--color-danger-200);
+  --color-feedback-danger-text: var(--color-danger-700);
+  --color-feedback-danger-icon: var(--color-danger-600);
+  --color-feedback-info-surface: var(--color-info-50);
+  --color-feedback-info-border: var(--color-info-200);
+  --color-feedback-info-text: var(--color-info-700);
+  --color-feedback-info-icon: var(--color-info-600);
+  --color-feedback-brand-surface: var(--color-surface-brand-tint);
+  --color-feedback-brand-border: var(--color-border-brand);
+  --color-feedback-brand-text: var(--color-text-brand);
+  --color-feedback-brand-icon: var(--color-brand-600);
+  --color-feedback-neutral-surface: var(--color-surface-muted);
+  --color-feedback-neutral-border: var(--color-border-default);
+  --color-feedback-neutral-text: var(--color-text-secondary);
+  --color-feedback-neutral-icon: var(--color-text-tertiary);
+  --color-score-strong-surface: var(--color-success-50);
+  --color-score-strong-text: var(--color-success-700);
+  --color-score-strong-arc: var(--color-success-600);
+  --color-score-good-surface: var(--color-neutral-100);
+  --color-score-good-text: var(--color-neutral-700);
+  --color-score-good-arc: var(--color-brand-500);
+  --color-score-fair-surface: var(--color-warning-50);
+  --color-score-fair-text: var(--color-warning-700);
+  --color-score-fair-arc: var(--color-warning-500);
+  --color-score-weak-surface: var(--color-danger-50);
+  --color-score-weak-text: var(--color-danger-700);
+  --color-score-weak-arc: var(--color-danger-600);
+  --color-score-none-surface: var(--color-surface-subtle);
+  --color-score-none-text: var(--color-text-secondary);
+  --color-score-track: var(--color-neutral-100);
+  --color-selection-bg: var(--color-brand-100);
+  --color-selection-text: var(--color-neutral-900);
+  --color-chart-1: var(--color-brand-600);
+  --color-chart-2: var(--color-info-600);
+  --color-chart-3: var(--color-success-600);
+  --color-chart-4: var(--color-warning-500);
+  --color-chart-5: var(--color-tile-pink-ink);
+
+  /* R2 page widths (`max-w-*`) and fixed widths (`w-*`): 02-tokens §2.11. */
+  --container-page: 1440px;
+  --container-flow: 1064px;
+  --container-reading: 720px;
+  --container-narrow: 560px;
+  --container-sheet: 540px;
+  --container-form: 420px;
+  --spacing-aside-rail: 340px;
+  --spacing-aside-card: 380px;
+  --spacing-search: 320px;
+  --spacing-menu-min: 220px;
+  --spacing-sidebar-expanded: 240px;
+  --spacing-sidebar-rail: 72px;
+  --spacing-sidebar-row: 200px;
+  /* 2xl was Tailwind's 96rem with no users; 90rem matches the 1440 page column. */
+  --breakpoint-2xl: 90rem;
+
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
   /* The Jobs board's one handwritten caption only (304:2335) — also wired in layout.tsx. */
   --font-caveat: var(--font-caveat-raw), cursive;
@@ -830,5 +983,152 @@ body:has([data-admin-signin]) {
 @media (width >= 80rem) {
   :root:not([data-sidebar='collapsed']) {
     --sidebar-gutter: 240px;
+  }
+}
+
+/*
+ * Redesign R2: z-layers (02-tokens §2.14). Tailwind v4 has no z-index namespace, so each layer is
+ * a variable plus a utility. With everything at z-50, stacking used to come down to portal order
+ * (a toast could paint under a dialog's scrim). Migrating the raw z-* uses is R3's job.
+ */
+@layer theme {
+  :root {
+    --z-base: 0;
+    --z-raised: 10;
+    --z-sticky: 20;
+    --z-topbar: 30;
+    --z-sidebar-scrim: 35;
+    --z-sidebar: 40;
+    --z-banner: 45;
+    --z-dropdown: 50;
+    --z-overlay: 60;
+    --z-modal: 70;
+    --z-modal-dropdown: 75;
+    --z-toast: 80;
+    --z-tooltip: 90;
+
+    /* Opacity levels (02-tokens §2.9). */
+    --opacity-disabled: 0.6;
+    --opacity-hover-dim: 0.9;
+    --opacity-muted-on-inverse: 0.7;
+  }
+}
+@utility z-base {
+  z-index: var(--z-base);
+}
+@utility z-raised {
+  z-index: var(--z-raised);
+}
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-topbar {
+  z-index: var(--z-topbar);
+}
+@utility z-sidebar-scrim {
+  z-index: var(--z-sidebar-scrim);
+}
+@utility z-sidebar {
+  z-index: var(--z-sidebar);
+}
+@utility z-banner {
+  z-index: var(--z-banner);
+}
+@utility z-dropdown {
+  z-index: var(--z-dropdown);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+@utility z-modal {
+  z-index: var(--z-modal);
+}
+@utility z-modal-dropdown {
+  z-index: var(--z-modal-dropdown);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+@utility z-tooltip {
+  z-index: var(--z-tooltip);
+}
+@utility opacity-disabled {
+  opacity: var(--opacity-disabled);
+}
+@utility opacity-hover-dim {
+  opacity: var(--opacity-hover-dim);
+}
+@utility opacity-muted-on-inverse {
+  opacity: var(--opacity-muted-on-inverse);
+}
+
+/*
+ * Redesign R2: the dark theme's semantic overrides (02-tokens §1.3). Written, not wired: nothing
+ * sets data-theme="dark" yet, and `color-scheme: only light` above stays until dark ships.
+ */
+@layer theme {
+  :root[data-theme='dark'] {
+    --color-text-primary: var(--color-neutral-50);
+    --color-text-secondary: var(--color-neutral-300);
+    --color-text-tertiary: var(--color-neutral-400);
+    --color-text-disabled: var(--color-neutral-600);
+    --color-text-inverse: var(--color-neutral-900);
+    --color-text-brand: var(--color-brand-400);
+    --color-text-link: var(--color-brand-300);
+    --color-text-inverse-brand: var(--color-brand-700);
+    --color-text-paid: var(--color-paid-300);
+    --color-text-company: var(--color-neutral-400);
+    --color-surface-page: var(--color-neutral-950);
+    --color-surface-card: var(--color-neutral-900);
+    --color-surface-muted: var(--color-neutral-800);
+    --color-surface-subtle: var(--color-neutral-900);
+    --color-surface-raised: var(--color-neutral-800);
+    --color-surface-inverse: var(--color-neutral-50);
+    --color-surface-inverse-hover: var(--color-neutral-200);
+    --color-surface-brand: var(--color-brand-950);
+    --color-surface-brand-tint: var(--color-brand-950);
+    --color-surface-selected: var(--color-brand-900);
+    --color-surface-paid: var(--color-paid-950);
+    --color-border-default: var(--color-neutral-700);
+    --color-border-subtle: var(--color-neutral-800);
+    --color-border-strong: var(--color-neutral-500);
+    --color-border-control: var(--color-neutral-400);
+    --color-border-focus: var(--color-brand-400);
+    --color-border-selected: var(--color-brand-400);
+    --color-border-brand: var(--color-brand-800);
+    --color-border-paid: var(--color-paid-800);
+    --color-action-primary: var(--color-brand-500);
+    --color-action-secondary: var(--color-neutral-900);
+    --color-action-danger: var(--color-danger-500);
+    --color-action-paid: var(--color-paid-500);
+    --color-action-inverse: var(--color-neutral-50);
+    --color-feedback-success-surface: var(--color-success-950);
+    --color-feedback-success-text: var(--color-success-400);
+    --color-feedback-warning-surface: var(--color-warning-950);
+    --color-feedback-warning-text: var(--color-warning-400);
+    --color-feedback-danger-surface: var(--color-danger-950);
+    --color-feedback-danger-text: var(--color-danger-400);
+    --color-feedback-info-surface: var(--color-info-950);
+    --color-feedback-info-text: var(--color-info-400);
+    --color-score-strong-surface: var(--color-success-950);
+    --color-score-strong-text: var(--color-success-400);
+    --color-score-strong-arc: var(--color-success-400);
+    --color-score-good-surface: var(--color-neutral-800);
+    --color-score-good-text: var(--color-neutral-200);
+    --color-score-good-arc: var(--color-brand-400);
+    --color-score-fair-surface: var(--color-warning-950);
+    --color-score-fair-text: var(--color-warning-400);
+    --color-score-fair-arc: var(--color-warning-400);
+    --color-score-weak-surface: var(--color-danger-950);
+    --color-score-weak-text: var(--color-danger-400);
+    --color-score-weak-arc: var(--color-danger-400);
+    --color-score-track: var(--color-neutral-800);
+    --color-selection-bg: var(--color-brand-800);
+    --color-selection-text: var(--color-neutral-0);
+    --color-skeleton: color-mix(in srgb, var(--color-neutral-50) 6%, transparent);
+    --color-skeleton-light: color-mix(in srgb, var(--color-neutral-0) 8%, transparent);
+    --color-surface-overlay: color-mix(in srgb, var(--color-neutral-950) 60%, transparent);
+    --color-surface-glass: color-mix(in srgb, var(--color-neutral-950) 80%, transparent);
+    --color-surface-glass-panel: color-mix(in srgb, var(--color-neutral-900) 90%, transparent);
   }
 }

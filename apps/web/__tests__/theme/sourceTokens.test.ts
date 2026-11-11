@@ -52,8 +52,8 @@ const RULES: Rule[] = [
   {
     name: "Tailwind's default palette (not our tokens)",
     pattern:
-      /\b(?:bg|text|border|ring|fill|stroke|outline|accent|divide|from|via|to)-(?:white|black|(?:gray|zinc|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate)-\d{2,3}|neutral-9\d\d)\b/g,
-    ceiling: 14,
+      /\b(?:bg|text|border|ring|fill|stroke|outline|accent|divide|from|via|to)-(?:white|black|(?:gray|zinc|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate)-\d{2,3})\b/g,
+    ceiling: 4,
     fix: 'use the semantic or ramp token (`text-text-inverse`, `bg-neutral-0`, …)',
   },
   {

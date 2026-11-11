@@ -13,8 +13,19 @@ const css = readFileSync(join(__dirname, '../../src/theme/theme.css'), 'utf8');
 
 // `String.raw`: in a plain template literal `\s` is just `s`, so the pattern used to read
 // `--name:s*(...)` and only passed because `.trim()` cleaned up the space (redesign R1).
-const cssVar = (name: string): string | undefined =>
+// The first declaration wins: later blocks (the admin type scale, the dark theme) override per
+// selector. A semantic token is `var(--color-…)` of a foundation since R2, so the value is
+// resolved through the chain to what the token actually shows in light.
+const raw = (name: string): string | undefined =>
   css.match(new RegExp(String.raw`--${name}:\s*([^;]+);`))?.[1]?.trim();
+const cssVar = (name: string, depth = 0): string | undefined => {
+  const value = raw(name);
+  if (value === undefined || depth > 10) return value;
+  return value.replace(
+    /var\(--([a-z0-9-]+)\)/g,
+    (_, inner: string) => cssVar(inner, depth + 1) ?? '',
+  );
+};
 
 describe('theme tokens', () => {
   it.each(Object.entries(colors))('%s is declared in theme.css with the same value', (key, hex) => {
@@ -144,5 +155,53 @@ describe('theme tokens', () => {
     const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
     expect(reduced).toContain('::view-transition-group(*)');
     expect(reduced).toContain('::view-transition-new(*)');
+  });
+});
+
+/** WCAG 2.1 contrast of two `#rrggbb` colours. */
+function contrast(a: string, b: string): number {
+  const lum = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * bl!;
+  };
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+}
+
+/**
+ * Text tokens on the surfaces they're used on pass WCAG AA, 4.5:1 (V2 §8.7). Redesign R2 fixed
+ * the pairs that failed (02-tokens §3.5); this keeps them fixed.
+ */
+describe('text contrast (AA, 4.5:1)', () => {
+  const pairs: [text: keyof typeof colors, surface: keyof typeof colors][] = [
+    ['textPrimary', 'surfaceCard'],
+    ['textSecondary', 'surfaceCard'],
+    ['textTertiary', 'surfaceCard'],
+    ['textBrand', 'surfaceCard'],
+    ['textLink', 'surfaceCard'],
+    ['textPaid', 'surfaceCard'],
+    ['textCompany', 'surfaceCard'],
+    ['warningText', 'surfaceCard'],
+    ['successText', 'successSurface'],
+    ['textOnBrand', 'actionPrimary'],
+    ['textOnBrand', 'actionDanger'],
+    ['textOnBrand', 'actionPaid'],
+    ['textInverse', 'surfaceInverse'],
+    ['feedbackSuccessText', 'feedbackSuccessSurface'],
+    ['feedbackWarningText', 'feedbackWarningSurface'],
+    ['feedbackDangerText', 'feedbackDangerSurface'],
+    ['feedbackInfoText', 'feedbackInfoSurface'],
+    ['feedbackBrandText', 'feedbackBrandSurface'],
+    ['feedbackNeutralText', 'feedbackNeutralSurface'],
+    ['scoreStrongText', 'scoreStrongSurface'],
+    ['scoreGoodText', 'scoreGoodSurface'],
+    ['scoreFairText', 'scoreFairSurface'],
+    ['scoreWeakText', 'scoreWeakSurface'],
+  ];
+  it.each(pairs)('%s on %s', (text, surface) => {
+    expect(contrast(colors[text], colors[surface])).toBeGreaterThanOrEqual(4.5);
   });
 });
