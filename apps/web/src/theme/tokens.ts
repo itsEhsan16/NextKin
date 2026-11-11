@@ -99,6 +99,11 @@ export const colors = {
   brand300: '#a5b4fc',
   brand500: '#6366f1',
   warning600: '#b45309',
+
+  // Skeletons (§196): the block's fill and the light band that sweeps it. Not hex, so they stay
+  // out of SVG/canvas use; listed so theme.css and this file can't drift (redesign R1).
+  skeleton: 'color-mix(in srgb, #0f172a 5%, transparent)',
+  skeletonLight: 'rgb(255 255 255 / 0.75)',
 } as const;
 
 export type ColorToken = keyof typeof colors;
@@ -113,6 +118,8 @@ export type ColorToken = keyof typeof colors;
  * The compact ramp (`toreview.md` §16) — a LinkedIn-like density, not the boards' raw sizes.
  */
 export const typography = {
+  /** The landing-size display line (`text-display-xl`); was in theme.css only (redesign R1). */
+  displayXl: [52, 56, -3, 800],
   /** The Assistant's welcome greeting only (`toreview.md` §102). */
   hero: [34, 42, -2, 800],
   displayL: [30, 38, -2, 700],
@@ -183,6 +190,8 @@ export const motion = {
     sweep: 2000,
     /** One pass of the skeletons' diagonal light across the window (§196). */
     shimmer: 1600,
+    /** How long a skeleton waits before it shows, so a quick load never flashes one (§196). */
+    'skeleton-delay': 150,
   },
   /**
    * After a click opens a page, further opens are ignored this long (§196): about one route

@@ -11,8 +11,10 @@ import { colors, controls, motion, radii, shadows, typography } from '@/theme/to
  */
 const css = readFileSync(join(__dirname, '../../src/theme/theme.css'), 'utf8');
 
+// `String.raw`: in a plain template literal `\s` is just `s`, so the pattern used to read
+// `--name:s*(...)` and only passed because `.trim()` cleaned up the space (redesign R1).
 const cssVar = (name: string): string | undefined =>
-  css.match(new RegExp(`--${name}:\s*([^;]+);`))?.[1]?.trim();
+  css.match(new RegExp(String.raw`--${name}:\s*([^;]+);`))?.[1]?.trim();
 
 describe('theme tokens', () => {
   it.each(Object.entries(colors))('%s is declared in theme.css with the same value', (key, hex) => {
@@ -30,8 +32,30 @@ describe('theme tokens', () => {
     expect(cssVar(`transition-duration-${key}`)).toBe(`${ms}ms`);
   });
 
-  it('exposes the standard easing curve to both layers', () => {
-    expect(cssVar('ease-standard')).toBe(motion.easings.standard);
+  it.each(Object.entries(motion.easings))('easing %s matches theme.css', (key, curve) => {
+    expect(cssVar(`ease-${key}`)).toBe(curve);
+  });
+
+  /**
+   * The other direction: a token declared in theme.css and never mirrored here escapes every check
+   * above (display-xl, the skeleton colours and skeleton-delay did, until redesign R1).
+   */
+  it('mirrors every colour, duration, easing and type size theme.css declares', () => {
+    const kebab = (key: string) => key.replace(/([a-z])([A-Z0-9])/g, '$1-$2').toLowerCase();
+    const declared = (prefix: string) =>
+      new Set(
+        [...css.matchAll(new RegExp(String.raw`--${prefix}-([a-z0-9-]+):`, 'g'))]
+          .map(([, name]) => name!)
+          .filter((name) => !name.includes('--')),
+      );
+    expect([...declared('color')].sort()).toEqual(Object.keys(colors).map(kebab).sort());
+    expect([...declared('transition-duration')].sort()).toEqual(
+      Object.keys(motion.durations).sort(),
+    );
+    expect([...declared('ease')].sort()).toEqual(Object.keys(motion.easings).sort());
+    // Type roles split on letters only: `h1` stays `h1`, `displayXl` becomes `display-xl`.
+    const role = (key: string) => key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    expect([...declared('text')].sort()).toEqual(Object.keys(typography).map(role).sort());
   });
 
   it.each(Object.entries(radii).filter(([key]) => key !== 'full'))(
