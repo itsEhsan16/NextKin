@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { ScrollView, View } from 'react-native';
 
 import { useAssistantThreads } from '@/data/queries';
@@ -27,7 +28,7 @@ export function AssistantHistorySheet({
   onOpen: (id: string) => void;
   onNewChat: () => void;
 }) {
-  const { colors, u } = useTheme();
+  const { colors, motion, u } = useTheme();
   const styles = useStyles();
   const threads = useAssistantThreads();
   const rows = (threads.data ?? []).filter((row) => row.title.length > 0);
@@ -62,7 +63,17 @@ export function AssistantHistorySheet({
           </>
         ) : rows.length === 0 ? (
           <View style={styles.empty}>
-            <IconTile name="MessageChatSquare" size={48} />
+            {/* The clay "past chats" art (§211). Decorative: the title says it. */}
+            <Image
+              source={require('../../../../assets/illustrations/assistant/no-chats.webp')}
+              contentFit="contain"
+              transition={motion.durations.imageFade}
+              cachePolicy="memory-disk"
+              accessible={false}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={styles.emptyArt}
+            />
             <Text variant="title3" color="ink" align="center">
               No earlier chats yet
             </Text>
@@ -122,6 +133,8 @@ const useStyles = scaledSheet((_s, u) => ({
   list: { gap: u(8), paddingVertical: u(4) },
   listEmpty: { flexGrow: 1, justifyContent: 'center' },
   empty: { alignItems: 'center', gap: u(8), paddingBottom: u(24) },
+  // 1080 × 665 art, about 150 wide at 390.
+  emptyArt: { width: u(150), height: u(150 * (665 / 1080)), marginBottom: u(4) },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

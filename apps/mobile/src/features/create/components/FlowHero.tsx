@@ -10,8 +10,10 @@ import { useLoop } from '@/ui/motion';
 import { LiveArt, type LiveAnchors, type LiveMotif } from './LiveArt';
 
 /**
- * The flow boards' illustrations, each the board's own render of its layer (3× PNG): where it
- * sits, at 390, and how far its title stands below it.
+ * The flow illustrations (owner, 2026-11-11, §211: the clay set made on Seedream 5.5), each fitted
+ * inside the box its board drew, at 390, and how far its title stands below it. The live run art
+ * keeps its float while a run works; the glints, scan and ink were traced on the old drawings, so
+ * they wait for anchors measured on these.
  */
 export type FlowArt = {
   source: ImageProps['source'];
@@ -24,197 +26,128 @@ export type FlowArt = {
   live?: LiveAnchors;
 };
 
-/** The writing robot, shared by TAILOR 04 (661:40) and BUILD 05 (661:34): one render, one page. */
-const ROBOT_PAGE: LiveAnchors = {
-  px: { w: 765, h: 585 },
-  sparkles: [
-    { x: 634, y: 118, size: 80 },
-    { x: 696.5, y: 177, size: 44 },
-    { x: 40, y: 378, size: 58 },
-  ],
-  lines: {
-    angle: 3.8,
-    thickness: 21,
-    rows: [
-      { x: 447, y: 284, length: 161 },
-      { x: 439, y: 343.5, length: 228 },
-      { x: 432, y: 394, length: 158 },
-      { x: 426, y: 440.5, length: 226 },
-      { x: 420, y: 487, length: 169 },
-    ],
-  },
-};
-
 export const FLOW_ART = {
   coverSetup: {
-    source: require('../../../../assets/illustrations/cover/cover-setup.png'),
+    source: require('../../../../assets/illustrations/cover/cover-setup.webp'),
     w: 255,
-    h: 204,
-    shiftX: 17.5,
+    h: 187,
+    shiftX: 0,
     toTitle: 19, // 656:60 → 644:29
   },
   coverWriting: {
-    source: require('../../../../assets/illustrations/cover/cover-writing.png'),
+    source: require('../../../../assets/illustrations/cover/cover-writing.webp'),
     w: 269,
-    h: 207,
+    h: 180.6,
     shiftX: 0,
     toTitle: 16, // 656:51 → 644:111
-    live: {
-      px: { w: 807, h: 621 },
-      sparkles: [
-        { x: 701.5, y: 117.5, size: 70 },
-        { x: 748.5, y: 170, size: 40 },
-        { x: 93.5, y: 379, size: 68 },
-      ],
-      lines: {
-        angle: 3.5,
-        thickness: 19,
-        rows: [
-          { x: 501, y: 305.5, length: 221 },
-          { x: 491, y: 351.5, length: 219 },
-          { x: 481, y: 397.5, length: 216 },
-          { x: 471, y: 443.5, length: 211 },
-          { x: 461, y: 490, length: 156 },
-        ],
-      },
-    },
+    live: { px: { w: 1080, h: 725 }, sparkles: [] },
   },
   zeroAbout: {
-    source: require('../../../../assets/illustrations/zero/zero-about.png'),
+    source: require('../../../../assets/illustrations/zero/zero-about.webp'),
     w: 255,
-    h: 174.33,
+    h: 137.7,
     shiftX: 0,
     toTitle: 14, // 661:25 → 613:246
   },
   zeroWriting: {
-    // The render runs past the layer's 255 × 176 box (661:14), so it is drawn at its own size
-    // around the same centre.
-    source: require('../../../../assets/illustrations/zero/zero-writing.png'),
+    source: require('../../../../assets/illustrations/zero/zero-writing.webp'),
     w: 263,
-    h: 184,
+    h: 158.8,
     shiftX: 0,
     toTitle: 10, // 661:14 → 613:322
-    live: {
-      px: { w: 789, h: 552 },
-      sparkles: [
-        { x: 624, y: 98, size: 52 },
-        { x: 660.5, y: 138.5, size: 35 },
-        { x: 81.5, y: 337, size: 50 },
-      ],
-      lines: {
-        angle: 5,
-        thickness: 19,
-        rows: [
-          { x: 459, y: 214, length: 127 },
-          { x: 453, y: 260.3, length: 188 },
-          { x: 448, y: 302.8, length: 187 },
-          { x: 442, y: 344.3, length: 187 },
-          { x: 436, y: 387.3, length: 142 },
-          { x: 430, y: 431.3, length: 119 },
-        ],
-      },
-    },
+    live: { px: { w: 1080, h: 652 }, sparkles: [] },
   },
   atsUpload: {
-    source: require('../../../../assets/illustrations/ats/ats-upload.png'),
-    w: 200,
+    source: require('../../../../assets/illustrations/ats/ats-upload.webp'),
+    w: 197,
     h: 135,
     shiftX: 0,
     toTitle: 29, // 656:14 → 645:14
   },
   atsPaste: {
-    source: require('../../../../assets/illustrations/ats/ats-paste.png'),
-    w: 222,
+    source: require('../../../../assets/illustrations/ats/ats-paste.webp'),
+    w: 171.5,
     h: 159,
     shiftX: 0,
     toTitle: 28, // 656:18 → 645:60
   },
   atsChecking: {
-    source: require('../../../../assets/illustrations/ats/ats-checking.png'),
+    source: require('../../../../assets/illustrations/ats/ats-checking.webp'),
     w: 270,
-    h: 210,
+    h: 172,
     shiftX: 0,
     toTitle: 36, // 656:22 → 646:13
-    live: {
-      px: { w: 810, h: 630 },
-      sparkles: [
-        { x: 704, y: 102, size: 86 },
-        { x: 759.5, y: 166.5, size: 60 },
-        { x: 49.5, y: 403, size: 78 },
-      ],
-      // The front page, inside its edges; it leans a few degrees back.
-      page: { x: 395, y: 310, w: 400, h: 450, angle: -5 },
-    },
+    live: { px: { w: 1080, h: 688 }, sparkles: [] },
   },
   tailorWriting: {
-    source: require('../../../../assets/illustrations/tailor/tailor-writing.png'),
+    source: require('../../../../assets/illustrations/tailor/tailor-writing.webp'),
     w: 255,
-    h: 195,
-    shiftX: -3.5, // 661:40 sits at x 64
+    h: 165.5,
+    shiftX: 0,
     toTitle: 20, // 661:40 → 608:210 (608:209's spacer)
-    live: ROBOT_PAGE,
+    live: { px: { w: 1080, h: 701 }, sparkles: [] },
   },
   buildJob: {
-    source: require('../../../../assets/illustrations/build/build-job.png'),
-    w: 255,
+    source: require('../../../../assets/illustrations/build/build-job.webp'),
+    w: 248.5,
     h: 150,
     shiftX: 0,
     toTitle: 36, // 661:26 → 652:13
   },
   buildChoose: {
-    source: require('../../../../assets/illustrations/build/build-choose.png'),
+    source: require('../../../../assets/illustrations/build/build-choose.webp'),
     w: 255,
-    h: 162,
+    h: 156.8,
     shiftX: 0,
     toTitle: 13, // 661:28 → 652:87
   },
   buildAdd: {
-    source: require('../../../../assets/illustrations/build/build-add.png'),
+    source: require('../../../../assets/illustrations/build/build-add.webp'),
     w: 255,
-    h: 165,
-    shiftX: 24.5, // 661:30 sits at x 92: the link badge carries the drawing right
+    h: 162.9,
+    shiftX: 0,
     toTitle: 31, // 661:30 → 653:13
   },
   buildRead: {
-    source: require('../../../../assets/illustrations/build/build-read.png'),
-    w: 255,
+    source: require('../../../../assets/illustrations/build/build-read.webp'),
+    w: 253.7,
     h: 175,
-    shiftX: 7.5, // 661:32 at x 75
+    shiftX: 0,
     toTitle: 20, // 661:32 → 653:67
   },
   buildWriting: {
-    source: require('../../../../assets/illustrations/build/build-writing.png'),
-    w: 255,
+    source: require('../../../../assets/illustrations/build/build-writing.webp'),
+    w: 190.1,
     h: 195,
-    shiftX: -6.5, // 661:34 at x 61
+    shiftX: 0,
     toTitle: 34, // 661:34 → 653:135
-    live: ROBOT_PAGE,
+    live: { px: { w: 1080, h: 1108 }, sparkles: [] },
   },
   buildUnreadable: {
-    source: require('../../../../assets/illustrations/build/build-unreadable.png'),
-    w: 255,
+    source: require('../../../../assets/illustrations/build/build-unreadable.webp'),
+    w: 234.8,
     h: 168.3,
     shiftX: 0,
     toTitle: 41.7, // 661:36 → 653:197
   },
   interviewSets: {
-    source: require('../../../../assets/illustrations/interview/interview-sets.png'),
+    source: require('../../../../assets/illustrations/interview/interview-sets.webp'),
     w: 255,
-    h: 165,
+    h: 164.3,
     shiftX: 0,
     toTitle: 7, // 674:17 → 577:955
   },
   interviewNew: {
-    source: require('../../../../assets/illustrations/interview/interview-new.png'),
+    source: require('../../../../assets/illustrations/interview/interview-new.webp'),
     w: 255,
-    h: 160,
+    h: 150.4,
     shiftX: 0,
     toTitle: 14, // 674:18 → 577:1889
   },
   assistantFirstRun: {
-    source: require('../../../../assets/illustrations/assistant/assistant-first-run.png'),
+    source: require('../../../../assets/illustrations/assistant/assistant-first-run.webp'),
     w: 255,
-    h: 216,
+    h: 190.8,
     shiftX: 0,
     toTitle: 32, // 674:85 → 577:7824
   },

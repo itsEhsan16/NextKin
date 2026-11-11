@@ -30,12 +30,12 @@ export const COPIED_LINK_TITLE = 'Found a job link you copied';
  */
 const FOOTNOTE = 'We only check when you open NextKin.';
 
-/** IL-T2 (661:46), the board's 3× render, and where it sits in the dialog. */
+/** IL-T2 (661:46), the clay illustration (§211), fitted inside the board’s box, and where it sits in the dialog. */
 const ART: FlowArt = {
-  source: require('../../../../assets/illustrations/tailor/copied-link.png'),
-  w: 273,
+  source: require('../../../../assets/illustrations/tailor/copied-link.webp'),
+  w: 169.9,
   h: 182,
-  shiftX: -3.5, // 661:46 sits at x 31 in the 342 card
+  shiftX: 0,
   toTitle: 8, // 661:46 → 634:642
 };
 

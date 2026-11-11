@@ -3,18 +3,18 @@ import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 
 /**
- * The confirm sheets' own drawings, each the board's 3× render (PROFILE 21 680:98, PROFILE 23
- * 691:6). One per question, so "Discard changes?" looks the same on every editor that asks it.
+ * The confirm sheets' own drawings (PROFILE 21 680:98, PROFILE 23 691:6): since §211 the clay
+ * set, each fitted inside the board's box. One per question, so "Discard changes?" looks the same on every editor that asks it.
  */
 const ART = {
   signOut: {
-    source: require('../../../assets/illustrations/profile/sign-out.png'),
-    w: 209,
+    source: require('../../../assets/illustrations/profile/sign-out.webp'),
+    w: 127.6,
     h: 121,
   },
   discard: {
-    source: require('../../../assets/illustrations/profile/discard.png'),
-    w: 189,
+    source: require('../../../assets/illustrations/profile/discard.webp'),
+    w: 126,
     h: 121,
   },
 } as const;

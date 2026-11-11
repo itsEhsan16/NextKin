@@ -9,12 +9,12 @@ import { Screen } from '@/ui/Screen';
 // SYSTEM 01 at 390 (580:2883), in artboard units.
 const HERO_TO_BUTTON = 24 / 0.75;
 
-/** IL-B3 (681:156), the board's 3× render: the lost page holding a map. */
+/** IL-B3 (681:156), the clay illustration (§211), fitted inside the board’s box: the folded map and the lost paper plane. */
 const NOT_FOUND_ART: FlowArt = {
-  source: require('../../../../assets/illustrations/system/not-found.png'),
+  source: require('../../../../assets/illustrations/system/not-found.webp'),
   w: 282,
-  h: 251,
-  shiftX: -6, // 681:156 sits at x 48
+  h: 227.2,
+  shiftX: 0,
   toTitle: 3, // 681:156 → 580:2892
 };
 

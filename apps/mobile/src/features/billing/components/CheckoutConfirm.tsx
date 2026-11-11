@@ -30,8 +30,9 @@ export type CheckoutConfirmProps = {
  *
  * BILLING 02 (580:314) opens the sheet on its own drawing: the checkout page behind a padlock.
  */
-// BILLING 02's drawing (680:95) at 390, in artboard units: 223 × 124, 2 above the title.
-const ART_W = 223 / 0.75;
+// BILLING 02's drawing (680:95) at 390, in artboard units: the board's 223 × 124 box, with the clay
+// laptop (§211) fitted inside it, 2 above the title.
+const ART_W = 169.5 / 0.75;
 const ART_H = 124 / 0.75;
 const ART_TO_TITLE = 2 / 0.75;
 
@@ -43,7 +44,7 @@ export function CheckoutConfirm({ open, busy, failed, onConfirm, onCancel }: Che
       tone="neutral"
       art={
         <Image
-          source={require('../../../../assets/illustrations/billing/checkout.png')}
+          source={require('../../../../assets/illustrations/billing/checkout.webp')}
           contentFit="contain"
           transition={motion.durations.imageFade}
           cachePolicy="memory-disk"

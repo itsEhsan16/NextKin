@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { useState } from 'react';
 import { View } from 'react-native';
 
@@ -8,7 +9,7 @@ import {
   type CustomizeChoices,
   type PlanStep,
 } from '@/data/models/customize';
-import { scaledSheet } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { ChoiceChip } from '@/ui/ChoiceChip';
 import { Text } from '@/ui/Text';
 
@@ -53,6 +54,7 @@ export function PlanQuestions({
   onChange: (next: CustomizeChoices) => void;
 }) {
   const styles = useStyles();
+  const { motion } = useTheme();
   const [declined, setDeclined] = useState<readonly string[]>([]);
   const steps = questionSteps(comparison.plan?.steps ?? []);
   const places = comparison.places ?? [];
@@ -68,7 +70,22 @@ export function PlanQuestions({
         : `Projected ${projected?.toFixed(1) ?? '–'}/10 with your answers.`;
 
   return (
-    <FlowSection icon="Target" title={`Answer to reach ${goal}`} body={body}>
+    <FlowSection
+      title={`Answer to reach ${goal}`}
+      body={body}
+      art={
+        <Image
+          source={require('../../../../assets/illustrations/tailor/score-target.webp')}
+          contentFit="contain"
+          transition={motion.durations.imageFade}
+          cachePolicy="memory-disk"
+          accessible={false}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={styles.mark}
+        />
+      }
+    >
       <FlowCard style={styles.card}>
         {steps.map((step, index) => {
           const keyword = step.keyword!;
@@ -134,6 +151,8 @@ const withoutPlace = (c: CustomizeChoices, keyword: string) => {
 
 const useStyles = scaledSheet((_s, u) => ({
   card: { paddingVertical: u(4) },
+  // The clay target (§211), 1080 × 771, beside the title.
+  mark: { width: u(36), height: u(36 * (771 / 1080)) },
   question: { gap: u(6), paddingVertical: u(14) },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8), marginTop: u(4) },
 }));
