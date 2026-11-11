@@ -10,7 +10,7 @@ import { useResumeScore } from '@nextkin/shared/queries';
 
 import { ATS_DISCLAIMER } from '@/features/create/createLibrary';
 import { useReveal } from '@/lib/useReveal';
-import { ScoreRing } from '@/ui/ScoreRing';
+import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Tag, type TagTone } from '@/ui/Tag';
@@ -42,7 +42,7 @@ export function ResumeScoreTab({ resume }: { resume: Resume }) {
     return (
       <StateView
         title="Not scored yet"
-        message="A score comes back once the resume has enough in it to measure."
+        message="A total only means something against a job. Tailor this resume to a job to score it."
         className="py-8"
       />
     );
@@ -79,7 +79,7 @@ export function ResumeScoreTab({ resume }: { resume: Resume }) {
   return (
     <>
       <div className="flex items-center gap-4">
-        <ScoreRing score={total} label="ATS Score" sweep={reveal} />
+        <ScoreRing score={total} label="ATS Score" sweep={reveal} tone={ringToneFor(band)} />
         <div className="min-w-0">
           <Tag tone={BAND_TONE[band]}>{ATS_BAND_LABEL[band]}</Tag>
           <p className="mt-1.5 text-body-m text-text-secondary">{summary}</p>

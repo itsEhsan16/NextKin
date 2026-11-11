@@ -53,6 +53,7 @@ export function CompletionCard({
           showLabel={false}
           size={84}
           sweep={sweep}
+          tone="success"
         />
         <div className="min-w-0">
           <p className="text-body-l font-bold text-text-primary">

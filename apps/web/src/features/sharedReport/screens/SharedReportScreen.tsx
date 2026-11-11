@@ -29,6 +29,15 @@ import { StateView } from '@/ui/StateView';
  */
 
 const BAND_TONE = { strong: 'success', good: 'success', fair: 'warning', weak: 'danger' } as const;
+/**
+ * The band chip in the ring's own tone. It was always green, so a public page called a Fair or
+ * Weak result in the colour of a strong one (audit SR-01).
+ */
+const BAND_CHIP = {
+  success: 'bg-success-surface text-success-text',
+  warning: 'bg-warning-50 text-warning-text',
+  danger: 'bg-danger-50 text-danger-text',
+} as const;
 const STATUS_LABEL: Record<string, string> = {
   met: 'Met',
   partial: 'Partly met',
@@ -118,7 +127,12 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
             {job ? `A resume scored against a ${job} job` : 'A resume’s ATS report'}
           </h1>
           {report.band && (
-            <span className="rounded-full bg-success-surface px-2 py-0.5 text-caption-m font-semibold text-success-text">
+            <span
+              className={cn(
+                'rounded-full px-2 py-0.5 text-caption-m font-semibold',
+                BAND_CHIP[BAND_TONE[report.band]],
+              )}
+            >
               ATS score · {ATS_BAND_LABEL[report.band]} match
             </span>
           )}
@@ -172,21 +186,35 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
       {report.requirements.length > 0 && (
         <section className={card}>
           <h2 className="text-title-l font-bold text-text-primary">What the job asked for</h2>
-          <ul className="mt-3.5 flex flex-wrap gap-2">
+          {/* Three states you can see, not two: "Partly met" (listed, not shown in a dated role,
+              D-14's half credit) used to look exactly like "Met" (audit SR-02). */}
+          <p className="mt-1 text-caption-m text-text-tertiary">
+            Met · Partly met: listed, not shown in a dated role · Not shown
+          </p>
+          <ul className="mt-3 flex flex-wrap gap-2">
             {report.requirements.map((r) => {
-              const shown = r.status !== 'gap';
+              const met = r.status === 'met';
+              const partial = r.status === 'partial';
               return (
                 <li
                   key={r.text}
                   className={cn(
                     'flex h-control-sm items-center gap-1.5 rounded-full border px-3 text-body-m font-medium',
-                    shown
+                    met
                       ? 'border-success-600/30 bg-success-surface text-success-text'
-                      : 'border-border-default bg-surface-card text-text-secondary',
+                      : partial
+                        ? 'border-warning-600/30 bg-warning-50 text-warning-text'
+                        : 'border-border-default bg-surface-card text-text-secondary',
                   )}
                 >
-                  {shown ? (
+                  {met ? (
                     <CheckCircleIcon aria-hidden className="size-3.5" />
+                  ) : partial ? (
+                    // A half-filled ring: some credit, not full.
+                    <span
+                      aria-hidden
+                      className="size-3 rounded-full border-[1.5px] border-current bg-[linear-gradient(90deg,currentColor_50%,transparent_50%)]"
+                    />
                   ) : (
                     <span
                       aria-hidden

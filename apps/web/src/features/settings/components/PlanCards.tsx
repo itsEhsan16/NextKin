@@ -1,18 +1,18 @@
 import type { Plan, Subscription } from '@nextkin/shared/models';
-import type { Route } from 'next';
-import Link from 'next/link';
-
 import { cn } from '@/lib/cn';
 import { cardPad, cardSurface } from '@/ui/Card';
 import { brandButton } from '@/ui/brandButton';
-import { ArrowRightIcon, CloseIcon, TickIcon } from '@/ui/icons';
+import { CloseIcon, TickIcon } from '@/ui/icons';
 import { NavUpgradeIllustration } from '@/ui/illustrations';
+import { Soon, soonControl } from '@/ui/Soon';
 
 import { FREE_LINES, planPrice, PRO_LINES, type PlanLine } from '../billingLibrary';
 
-/** Where Upgrade to Pro and View all plans go: the plan page, coming soon on web (V2 §13). */
-const UPGRADE = '/upgrade' as Route;
-
+/**
+ * Upgrade to Pro waits for checkout (V2 §13). It used to link to `/upgrade`, a coming-soon page
+ * whose only way on was back to this tab: a loop (audit ST-08). Until checkout exists it says so
+ * where the user is pointing, and "View all plans" is gone because both plans are on this page.
+ */
 const upgradeButton = cn(brandButton, 'h-control-lg rounded-md px-8 text-body-m font-semibold');
 
 function Lines({ lines, label }: { lines: readonly PlanLine[]; label: string }) {
@@ -72,16 +72,11 @@ export function PlanCards({ subscription, pro }: PlanCardsProps) {
         </div>
         {!onPro && (
           <div className="mt-5 flex items-center gap-8">
-            <Link href={UPGRADE} className={upgradeButton}>
-              Upgrade to Pro
-            </Link>
-            <Link
-              href={UPGRADE}
-              className="flex items-center gap-2 rounded-sm text-body-m text-brand-600 transition-colors duration-press ease-standard hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-            >
-              View all plans
-              <ArrowRightIcon aria-hidden className="size-4" />
-            </Link>
+            <Soon label="Upgrades open soon">
+              <button type="button" aria-disabled="true" className={cn(upgradeButton, soonControl)}>
+                Upgrade to Pro
+              </button>
+            </Soon>
           </div>
         )}
       </section>
@@ -114,9 +109,11 @@ export function PlanCards({ subscription, pro }: PlanCardsProps) {
           {onPro ? (
             <p className="text-body-m font-semibold text-brand-700">Your plan</p>
           ) : (
-            <Link href={UPGRADE} className={upgradeButton}>
-              Upgrade to Pro
-            </Link>
+            <Soon label="Upgrades open soon">
+              <button type="button" aria-disabled="true" className={cn(upgradeButton, soonControl)}>
+                Upgrade to Pro
+              </button>
+            </Soon>
           )}
         </div>
       </section>

@@ -87,11 +87,17 @@ export function Qualifications({ job, profile }: { job: Job; profile: Profile | 
   const update = useUpdateSkills();
   const add = (skill: string) => {
     if (!profile || update.isPending) return;
-    update.mutate([...profile.skills, skill], {
-      onSuccess: () => showToast(`${skill} added to your profile.`),
+    const before = profile.skills;
+    update.mutate([...before, skill], {
+      // One click writes to the profile, so it can be taken back from the same toast (JB-22).
+      onSuccess: () =>
+        showToast(`${skill} added to your profile.`, {
+          action: { label: 'Undo', onClick: () => update.mutate(before) },
+        }),
       onError: () => showToast(`Couldn't add ${skill}. Try again.`, { tone: 'error' }),
     });
   };
+  const onProfile = job.tags.filter((skill) => hasSkill(profile, skill)).length;
 
   if (job.tags.length === 0 && job.requirements.length === 0) return null;
   return (
@@ -107,8 +113,16 @@ export function Qualifications({ job, profile }: { job: Job; profile: Profile | 
       }
     >
       <p className="text-body-s text-text-secondary">
-        See how your skills line up with this job. Missed one you have?{' '}
-        <span className="font-semibold text-text-primary">Click it</span> to add it to your profile.
+        {job.tags.length > 0 && (
+          <>
+            The skills this listing names, checked against your profile:{' '}
+            <span className="font-semibold text-text-primary">
+              {onProfile} of {job.tags.length} on it
+            </span>
+            . Have one that isn&apos;t? Add it.{' '}
+          </>
+        )}
+        A skill you only list counts half until a role on your resume shows it.
       </p>
       <ul aria-label="Skills this job asks for" className="mt-3 flex flex-wrap gap-2">
         {job.tags.map((skill) =>
@@ -129,8 +143,9 @@ export function Qualifications({ job, profile }: { job: Job; profile: Profile | 
                 aria-label={`Add ${skill} to your profile`}
                 className={cn(
                   pressable,
-                  'flex items-center gap-1.5 rounded-sm border border-dashed border-warning-text/60 bg-warning-50/50 px-2 py-1 text-caption-m font-medium text-warning-text',
-                  'not-disabled:hover:bg-warning-50 disabled:opacity-60',
+                  // Neutral, not amber: a skill you haven't listed isn't an error (JB-22).
+                  'flex items-center gap-1.5 rounded-sm border border-dashed border-border-default bg-surface-card px-2 py-1 text-caption-m font-medium text-text-secondary',
+                  'not-disabled:hover:border-brand-300 not-disabled:hover:text-text-brand disabled:opacity-60',
                   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                 )}
               >

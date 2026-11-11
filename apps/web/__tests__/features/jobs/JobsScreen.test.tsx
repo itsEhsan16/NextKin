@@ -295,7 +295,9 @@ describe('JobsScreen', () => {
 
     // NextKin submits nothing: the job joins the list only once the candidate says they applied.
     // Each mock call carries a simulated latency (up to 900ms), past `findBy`'s default margin.
-    await user.click(await screen.findByRole('button', { name: 'Yes, I applied' }, { timeout: 3000 }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Yes, I applied' }, { timeout: 3000 }),
+    );
     expect(
       await within(panel).findByRole('link', { name: 'View application' }, { timeout: 3000 }),
     ).toHaveAttribute('href', expect.stringMatching(/^\/applications\?application=/));
@@ -329,10 +331,14 @@ describe('JobsScreen', () => {
     await user.click(within(panel).getByRole('tab', { name: 'About' }));
     expect(await within(panel).findByText('google.com')).toBeInTheDocument();
 
+    // The listing's own benefits, not "none listed" for a job that lists four (audit JB-07).
     await user.click(within(panel).getByRole('tab', { name: 'Benefits' }));
     expect(
-      await within(panel).findByText("This company hasn't listed benefits for this role."),
+      await within(panel).findByText('Health insurance for you and your family'),
     ).toBeInTheDocument();
+    expect(
+      within(panel).queryByText("This company hasn't listed benefits for this role."),
+    ).toBeNull();
   });
 
   it("offers the three sorts under the web board's labels", async () => {

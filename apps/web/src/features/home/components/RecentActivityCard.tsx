@@ -4,6 +4,8 @@ import type { ComponentType, SVGProps } from 'react';
 import type { ActivityEntry, ActivityKind } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
+import { DATA_SOURCES } from '@/lib/dataSource';
+import { parseBold } from '@/lib/richText';
 import { useReveal } from '@/lib/useReveal';
 import { formatRelativeTime } from '@/lib/format';
 import { Card } from '@/ui/Card';
@@ -59,7 +61,11 @@ const LOADED_AT = Date.now();
  * drives whether there's anything to show at all: loading, error and a genuinely empty feed all
  * render their real states below unchanged. Only a successful, non-empty feed swaps in these
  * three rows instead of the shared fixture's own most-recent three.
+ *
+ * Mock data only (audit HM-01): when the activity feed comes from the server, these rows are not
+ * the user's, so a real feed renders its own three most recent entries.
  */
+const SHOW_BOARD_ROWS = DATA_SOURCES.user !== 'http';
 const BOARD_ROWS: readonly { id: string; kind: ActivityKind; title: string; createdAt: string }[] =
   [
     {
@@ -92,8 +98,7 @@ const capitalize = (s: string): string => (s.length ? s[0]!.toUpperCase() + s.sl
 
 /**
  * "Recent Activity" (286:729), at the compact density: 38px rows on a 12px gap with 32px art.
- * See `BOARD_ROWS` for why a successful feed renders that fixed set rather than whatever
- * `entries` actually contains.
+ * See `BOARD_ROWS` for why the mock feed renders that fixed set; a server feed renders its own.
  */
 export function RecentActivityCard({ entries, status, onRetry }: RecentActivityCardProps) {
   // What replaces the skeleton fades in; content already cached on arrival shows at once.
@@ -137,13 +142,18 @@ export function RecentActivityCard({ entries, status, onRetry }: RecentActivityC
 
       {status === 'success' && hasActivity && (
         <ul className={cn('mt-5 flex flex-col gap-4', reveal && 'animate-reveal')}>
-          {BOARD_ROWS.map((row) => {
+          {(SHOW_BOARD_ROWS ? BOARD_ROWS : (entries ?? []).slice(0, 3)).map((row) => {
             const Art = ART_BY_KIND[row.kind];
             return (
               <li key={row.id} className="flex items-start gap-3">
                 <Art className="size-9 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-body-m font-medium text-text-primary">{row.title}</p>
+                  <p className="text-body-m font-medium text-text-primary">
+                    {/* Server titles carry `**bold**` runs; plain weight here, as the board draws. */}
+                    {parseBold(row.title)
+                      .map((run) => run.text)
+                      .join('')}
+                  </p>
                   <p className="mt-0.5 text-caption-m font-medium text-text-tertiary">
                     {capitalize(formatRelativeTime(row.createdAt))}
                   </p>

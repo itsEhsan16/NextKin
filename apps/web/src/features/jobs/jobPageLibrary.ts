@@ -85,7 +85,9 @@ function listingMatchRows(job: Job, profile: Profile | undefined): MatchRow[] {
   return [
     { label: 'Experience level', value: experienceValue, met: experienceMet },
     {
-      label: 'Skills',
+      // The engine's basis counts the listing's requirements, not its skill tags. Calling it
+      // "Skills" put "5 of 5" beside a Qualifications list showing 4 of 6 tags (audit JB-02/JB-18).
+      label: basis ? 'Requirements' : 'Skills',
       value: listed > 0 ? `${have} shown · ${listed} listed of ${total}` : `${have} of ${total}`,
       met: have === total,
     },

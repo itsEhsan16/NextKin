@@ -27,18 +27,19 @@ describe('SettingsScreen — Billing & plan (470:3)', () => {
     expect(within(current).getByText('DOCX export').closest('li')).toHaveTextContent(
       'not included',
     );
-    expect(within(current).getByRole('link', { name: 'View all plans' })).toHaveAttribute(
-      'href',
-      '/upgrade',
-    );
+    // Both plans are on this page, so there is no "View all plans" link (audit ST-08).
+    expect(within(current).queryByRole('link', { name: 'View all plans' })).toBeNull();
 
     const pro = region('NextKin Pro');
     // The plan's own price, not the board's $9.99 (toreview.md §92).
     expect(within(pro).getByText('₹1,499')).toBeInTheDocument();
     expect(within(pro).getByText('/ month')).toBeInTheDocument();
-    expect(within(pro).getByRole('link', { name: 'Upgrade to Pro' })).toHaveAttribute(
-      'href',
-      '/upgrade',
+    // No checkout yet: Upgrade says "coming soon" here instead of linking to /upgrade, a page
+    // whose only way on was back to this tab (audit ST-08).
+    expect(within(pro).queryByRole('link', { name: 'Upgrade to Pro' })).toBeNull();
+    expect(within(pro).getByRole('button', { name: 'Upgrade to Pro' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
     );
   });
 

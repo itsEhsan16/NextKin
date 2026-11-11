@@ -42,19 +42,26 @@ function ToolBody({ title, line, Art }: { title: string; line: string; Art: Art 
 
 /**
  * "AI tools for this job" (730:200): tailoring opens the three-step flow (734:2), the interview
- * opens Interview Prep, and the cover letter waits for its web flow, so it says "Coming soon".
+ * opens Interview Prep, and the cover letter opens its flow with this job picked (`coverTo`, else
+ * this job's). It said "Coming soon" while that flow shipped (audit JB-21). A caller that sends
+ * `tailorTo` (the JD page) keeps the old placeholder until it passes its own `coverTo`.
  * `onTailor` opens the "Which resume should we tailor?" dialog over the page (toreview §110); without
  * it, tailoring links to the flow (`tailorTo`, else this job's), which asks the same question.
  */
 export function AiToolsCard({
   job,
   tailorTo,
+  coverTo,
   onTailor,
 }: {
   job: Job;
   tailorTo?: Route;
+  coverTo?: Route;
   onTailor?: () => void;
 }) {
+  const coverHref =
+    coverTo ??
+    (tailorTo ? undefined : (`/create/cover-letter?job=${encodeURIComponent(job.id)}` as Route));
   const tailorClass = cn(
     pressable,
     TOOL,
@@ -89,6 +96,40 @@ export function AiToolsCard({
           )}
         </li>
         <li>
+          {coverHref ? (
+            <Link
+              href={coverHref}
+              className={cn(
+                pressable,
+                TOOL,
+                'bg-neutral-50 text-text-primary hover:bg-neutral-100',
+              )}
+            >
+              <ToolBody
+                title="Write a cover letter"
+                line="From your resume and this job"
+                Art={SettingsEmailIllustration}
+              />
+            </Link>
+          ) : (
+            <Soon>
+              <button
+                type="button"
+                aria-disabled="true"
+                className={cn(TOOL, 'bg-neutral-50 text-text-primary', soonControl)}
+              >
+                <ToolBody
+                  title="Write a cover letter"
+                  line="From your resume and this job"
+                  Art={SettingsEmailIllustration}
+                />
+              </button>
+            </Soon>
+          )}
+        </li>
+        <li>
+          {/* Interview Prep is still a "coming soon" page, so the tool says so here rather than
+              promising "questions written for this role" and landing on a placeholder (JB-21). */}
           <Soon>
             <button
               type="button"
@@ -96,24 +137,12 @@ export function AiToolsCard({
               className={cn(TOOL, 'bg-neutral-50 text-text-primary', soonControl)}
             >
               <ToolBody
-                title="Write a cover letter"
-                line="From your resume and this job"
-                Art={SettingsEmailIllustration}
+                title="Practise the interview"
+                line="Questions written for this role"
+                Art={NavInterviewPrepIllustration}
               />
             </button>
           </Soon>
-        </li>
-        <li>
-          <Link
-            href={'/interview' as Route}
-            className={cn(pressable, TOOL, 'bg-neutral-50 text-text-primary hover:bg-neutral-100')}
-          >
-            <ToolBody
-              title="Practise the interview"
-              line="Questions written for this role"
-              Art={NavInterviewPrepIllustration}
-            />
-          </Link>
         </li>
       </ul>
     </section>

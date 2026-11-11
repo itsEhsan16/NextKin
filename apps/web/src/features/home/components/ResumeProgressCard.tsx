@@ -1,13 +1,13 @@
 import { resumeHref } from '@/features/resumes/resumeHref';
 
-import type { Resume } from '@nextkin/shared/models';
+import { atsBandFor, type Resume } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { formatRelativeTime } from '@/lib/format';
 import { Card } from '@/ui/Card';
 import { ProgressBar } from '@/ui/ProgressBar';
-import { ScoreRing } from '@/ui/ScoreRing';
+import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { SkeletonCircle, SkeletonLines } from '@/ui/SkeletonShapes';
@@ -86,7 +86,12 @@ export function ResumeProgressCard({ resume, status, onRetry }: ResumeProgressCa
             {resume.atsScore != null && (
               /* The board says "ATS Score"; V2 §7.8 says "NextKin Score". Rule 7 keeps the
                  board's word and toreview.md carries the conflict. */
-              <ScoreRing score={resume.atsScore} label="ATS Score" sweep={reveal} />
+              <ScoreRing
+                score={resume.atsScore}
+                label="ATS Score"
+                sweep={reveal}
+                tone={ringToneFor(atsBandFor(resume.atsScore))}
+              />
             )}
           </div>
 

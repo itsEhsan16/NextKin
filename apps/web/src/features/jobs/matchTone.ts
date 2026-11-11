@@ -12,6 +12,7 @@ export const MATCH_TONE: Record<MatchBand, { surface: string; text: string }> = 
   strong: { surface: 'bg-success-surface', text: 'text-success-text' },
   good: { surface: 'bg-surface-muted', text: 'text-text-secondary' },
   fair: { surface: 'bg-surface-muted', text: 'text-text-tertiary' },
-  // `weak` (C-10) is undrawn too, so it wears fair's tone rather than a new colour.
-  weak: { surface: 'bg-surface-muted', text: 'text-text-tertiary' },
+  // `weak` (C-10) is undrawn, but it must not read like fair (audit JB-03), so it takes the
+  // warning tone. Mobile still shows it neutral (`JobPills.tsx`); align it there when mobile is next touched.
+  weak: { surface: 'bg-warning-50', text: 'text-warning-text' },
 };

@@ -15,6 +15,7 @@ import { iconButton } from '@/ui/iconButton';
 import { MoreHorizontalIcon } from '@/ui/icons';
 
 import { JOB_DETAIL_TABS, type JobDetailTab } from '../jobDetailTabs';
+import { BulletList } from './BulletList';
 import { JobAboutTab } from './JobAboutTab';
 import { JobDetailActions } from './JobDetailActions';
 import { JobEmptyTab } from './JobEmptyTab';
@@ -174,12 +175,19 @@ function JobDetailBody({ job, reveal, onApply, applied, applicationHref }: JobDe
         {tab === 'overview' && <JobOverviewTab job={job} />}
         {tab === 'about' && <JobAboutTab job={job} />}
         {tab === 'skills' && <JobSkillsTab job={job} />}
-        {tab === 'benefits' && (
-          <JobEmptyTab
-            title="Nothing here yet"
-            message="This company hasn't listed benefits for this role."
-          />
-        )}
+        {/* The listing's own benefits when it states them; it used to say "none listed" even
+            for a job whose page shows four (audit JB-07). */}
+        {tab === 'benefits' &&
+          (job.benefits?.length || job.perks?.length ? (
+            // Perks are the short tags of the same benefits, so they stand in only when the
+            // listing gives no full list.
+            <BulletList items={job.benefits?.length ? job.benefits : (job.perks ?? [])} />
+          ) : (
+            <JobEmptyTab
+              title="Nothing here yet"
+              message="This company hasn't listed benefits for this role."
+            />
+          ))}
         {tab === 'reviews' && (
           <JobEmptyTab
             title="Nothing here yet"

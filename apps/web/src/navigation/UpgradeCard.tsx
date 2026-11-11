@@ -8,6 +8,12 @@ import { RailTooltip } from '@/ui/RailTooltip';
 
 import { NavGlyph } from './NavGlyph';
 
+/**
+ * Settings → Billing & plan, where both plans are laid out. It pointed at `/upgrade`, a
+ * coming-soon page that sends the user back to Billing (audit ST-08).
+ */
+const UPGRADE_HREF = '/settings?tab=billing' as never;
+
 /** `collapsed` is the rail as React knows it: tab order and the tooltip. The look is `rail:` CSS. */
 export function UpgradeCard({ collapsed }: { collapsed: boolean }) {
   return (
@@ -18,7 +24,7 @@ export function UpgradeCard({ collapsed }: { collapsed: boolean }) {
       <CollapseFade axis="vertical" open="rail" inert={collapsed ? undefined : true}>
         <RailTooltip label="Upgrade to Pro" enabled={collapsed}>
           <Link
-            href={'/upgrade' as never}
+            href={UPGRADE_HREF}
             aria-label="Upgrade to Pro"
             tabIndex={collapsed ? undefined : -1}
             // `mx-auto` unconditionally: this Link is only ever visible while its own CollapseFade
@@ -52,7 +58,7 @@ export function UpgradeCard({ collapsed }: { collapsed: boolean }) {
             </div>
           </div>
           <Link
-            href={'/upgrade' as never}
+            href={UPGRADE_HREF}
             tabIndex={collapsed ? -1 : undefined}
             className={cn(primaryButton, 'h-8 w-full rounded-md text-body-s')}
           >

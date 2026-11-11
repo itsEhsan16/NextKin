@@ -3,14 +3,18 @@
 import {
   RESUME_SECTION_LABEL,
   type AssistantMessage,
+  type DocumentContent,
   type Generation,
+  type ResumeContent,
   type ResumeSectionKey,
 } from '@nextkin/shared/models';
 import {
   useAssistantConversation,
+  useResumeContent,
   useRewriteSection,
   useSendAssistantMessage,
   useStall,
+  useUpdateResumeSection,
 } from '@nextkin/shared/queries';
 import { useEffect, useId, useRef, useState } from 'react';
 
@@ -21,7 +25,7 @@ import { Mail01, Send01 } from '@/ui/lineIcons';
 import { NavAiAssistantIllustration, SparkleTipIllustration } from '@/ui/illustrations';
 import { pressable } from '@/ui/pressable';
 
-import { sectionOf } from '../tailorLibrary';
+import { REWRITE_SECTIONS, sectionLines, sectionOf } from '../tailorLibrary';
 import { CoverLetterCard } from './CoverLetterCard';
 
 /** "Try asking", the assistant's own chip style: edits it makes, and questions it answers. */
@@ -39,9 +43,19 @@ export const isEditRequest = (text: string) =>
     text.trim(),
   );
 
+/**
+ * An edit turn. `choose`: the words named no section, so the assistant asks which (audit TL-42).
+ * `done` carries the section as it was, so the change shows as before/after and can be undone:
+ * the rewrite is saved as a new version at once, and Undo saves the old text back as another.
+ */
+type EditState =
+  | { state: 'choose' }
+  | { state: 'working' }
+  | { state: 'failed' }
+  | { state: 'done'; before: DocumentContent | undefined; decided?: 'kept' | 'undone' | 'undoing' };
+
 type Turn = { id: string; question: string } & (
-  | { kind: 'edit'; section: ResumeSectionKey; state: 'working' | 'done' | 'failed' }
-  | { kind: 'ask'; replyId?: string }
+  ({ kind: 'edit'; section?: ResumeSectionKey } & EditState) | { kind: 'ask'; replyId?: string }
 );
 
 const local = (
@@ -73,6 +87,8 @@ export function ResumeAssistantPanel({
 }) {
   const resumeId = generation.resumeId ?? '';
   const rewrite = useRewriteSection(resumeId);
+  const restore = useUpdateResumeSection(resumeId);
+  const content = useResumeContent(resumeId);
   const send = useSendAssistantMessage();
   const conversation = useAssistantConversation();
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -86,7 +102,7 @@ export function ResumeAssistantPanel({
     const node = scroller.current;
     if (node && turns.length > 0) node.scrollTo?.({ top: node.scrollHeight, behavior: 'smooth' });
   }, [turns.length]);
-  const busy = rewrite.isPending || send.isPending;
+  const busy = rewrite.isPending || send.isPending || restore.isPending;
   // The last question's reply arrives through the conversation; if it never does, say so (§131).
   const last = turns.at(-1);
   const awaiting =
@@ -96,8 +112,37 @@ export function ResumeAssistantPanel({
     !conversation.data?.messages.some((m) => m.id === last.replyId);
   const stall = useStall(awaiting, last?.id, { slowMs: 20_000, failMs: 60_000 });
 
-  const update = (id: string, patch: Partial<Turn>) =>
+  const update = (id: string, patch: Record<string, unknown>) =>
     setTurns((all) => all.map((t) => (t.id === id ? ({ ...t, ...patch } as Turn) : t)));
+  const runRewrite = async (id: string, section: ResumeSectionKey, instruction: string) => {
+    update(id, { section, state: 'working' });
+    // What the section said before, for the before/after and for Undo. Read it first if it
+    // hasn't loaded yet: without it the change could not be undone.
+    const before = content.data ?? (await content.refetch()).data;
+    rewrite.mutate(
+      { section, instruction },
+      {
+        onSuccess: () => update(id, { state: 'done', before }),
+        onError: () => update(id, { state: 'failed' }),
+      },
+    );
+  };
+  const undo = (turn: Turn) => {
+    if (turn.kind !== 'edit' || turn.state !== 'done' || !turn.section) return;
+    const before = turn.before;
+    if (!before || before.kind !== 'resume') return;
+    const section = turn.section;
+    update(turn.id, { decided: 'undoing' });
+    restore.mutate(
+      { section, value: (before as ResumeContent)[section] } as Parameters<
+        typeof restore.mutate
+      >[0],
+      {
+        onSuccess: () => update(turn.id, { decided: 'undone' }),
+        onError: () => update(turn.id, { decided: undefined }),
+      },
+    );
+  };
   const submit = (text: string) => {
     const question = text.trim();
     if (question.length < 3 || busy) return;
@@ -105,14 +150,12 @@ export function ResumeAssistantPanel({
     setDraft('');
     if (isEditRequest(question)) {
       const section = sectionOf(question);
+      if (!section) {
+        setTurns((all) => [...all, { id, question, kind: 'edit', state: 'choose' }]);
+        return;
+      }
       setTurns((all) => [...all, { id, question, kind: 'edit', section, state: 'working' }]);
-      rewrite.mutate(
-        { section, instruction: question },
-        {
-          onSuccess: () => update(id, { state: 'done' }),
-          onError: () => update(id, { state: 'failed' }),
-        },
-      );
+      void runRewrite(id, section, question);
     } else {
       setTurns((all) => [...all, { id, question, kind: 'ask' }]);
       send.mutate(
@@ -127,6 +170,8 @@ export function ResumeAssistantPanel({
 
   const replyOf = (turn: Turn): AssistantMessage => {
     if (turn.kind === 'edit') {
+      if (turn.state === 'choose' || !turn.section)
+        return local(`${turn.id}-r`, 'assistant', 'Which part should I change?');
       const label = RESUME_SECTION_LABEL[turn.section].toLowerCase();
       // Local turns are never 'streaming': that status makes the bubble fetch a reply by its id.
       if (turn.state === 'working')
@@ -138,10 +183,12 @@ export function ResumeAssistantPanel({
           `I couldn’t rewrite your ${label}. Try again, or ask in other words.`,
           'failed',
         );
+      if (turn.decided === 'undone')
+        return local(`${turn.id}-r`, 'assistant', `Undone: your ${label} is back as it was.`);
       return local(
         `${turn.id}-r`,
         'assistant',
-        `Done — your ${label} is updated on the page. It uses only what your resume already says.`,
+        `I changed your ${label}, using only what your resume already says. Keep it, or undo it.`,
       );
     }
     if (turn.replyId === 'failed')
@@ -222,6 +269,40 @@ export function ResumeAssistantPanel({
             {turns.flatMap((turn) => [
               <MessageBubble key={turn.id} message={local(turn.id, 'user', turn.question)} fresh />,
               <MessageBubble key={`${turn.id}-r`} message={replyOf(turn)} fresh />,
+              ...(turn.kind === 'edit' && turn.state === 'choose'
+                ? [
+                    <li key={`${turn.id}-choose`}>
+                      <ul aria-label="Choose a part" className="flex flex-wrap gap-2">
+                        {REWRITE_SECTIONS.map((section) => (
+                          <li key={section}>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => void runRewrite(turn.id, section, turn.question)}
+                              className={chip}
+                            >
+                              {RESUME_SECTION_LABEL[section]}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>,
+                  ]
+                : []),
+              ...(turn.kind === 'edit' && turn.state === 'done' && turn.section
+                ? [
+                    <EditReview
+                      key={`${turn.id}-diff`}
+                      section={turn.section}
+                      before={sectionLines(turn.before, turn.section)}
+                      after={sectionLines(content.data, turn.section)}
+                      decided={turn.decided}
+                      canUndo={turn.before?.kind === 'resume' && turn === last}
+                      onKeep={() => update(turn.id, { decided: 'kept' })}
+                      onUndo={() => undo(turn)}
+                    />,
+                  ]
+                : []),
             ])}
           </ul>
         )}
@@ -293,5 +374,97 @@ export function ResumeAssistantPanel({
         </form>
       </div>
     </section>
+  );
+}
+
+/**
+ * The before/after of one AI rewrite, with Keep and Undo (audit TL-42, V2 §7.6: a change is a
+ * new version, never a silent overwrite). Only the latest change can be undone: an older one
+ * would put back text a later change already built on.
+ */
+function EditReview({
+  section,
+  before,
+  after,
+  decided,
+  canUndo,
+  onKeep,
+  onUndo,
+}: {
+  section: ResumeSectionKey;
+  before: string[];
+  after: string[];
+  decided?: 'kept' | 'undone' | 'undoing';
+  canUndo: boolean;
+  onKeep: () => void;
+  onUndo: () => void;
+}) {
+  const [open, setOpen] = useState(true);
+  if (decided === 'undone') return null;
+  const label = RESUME_SECTION_LABEL[section];
+  return (
+    <li className="rounded-md border border-border-default bg-surface-card p-3">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 rounded-sm text-left text-body-s font-semibold text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+      >
+        What changed in {label}
+        <span className="text-caption-m font-medium text-text-tertiary">
+          {open ? 'Hide' : 'Show'}
+        </span>
+      </button>
+      {open && (
+        <div className="mt-2 grid gap-2 text-body-s">
+          <div>
+            <p className="text-caption-m font-semibold uppercase tracking-wide text-text-tertiary">
+              Before
+            </p>
+            <div className="mt-1 max-h-32 overflow-y-auto rounded-sm bg-danger-50/60 px-2 py-1.5 text-text-secondary line-through decoration-text-tertiary/60">
+              {before.length ? before.map((line, i) => <p key={i}>{line}</p>) : <p>(empty)</p>}
+            </div>
+          </div>
+          <div>
+            <p className="text-caption-m font-semibold uppercase tracking-wide text-text-tertiary">
+              After
+            </p>
+            <div className="mt-1 max-h-32 overflow-y-auto rounded-sm bg-success-surface px-2 py-1.5 text-text-primary">
+              {after.length ? after.map((line, i) => <p key={i}>{line}</p>) : <p>(empty)</p>}
+            </div>
+          </div>
+        </div>
+      )}
+      {decided === 'kept' ? (
+        <p className="mt-2 text-caption-m font-medium text-success-text">Kept.</p>
+      ) : (
+        <div className="mt-2.5 flex gap-2">
+          <button
+            type="button"
+            onClick={onKeep}
+            disabled={decided === 'undoing'}
+            className={cn(
+              pressable,
+              'h-8 rounded-full bg-brand-600 px-3.5 text-body-s font-semibold text-text-inverse hover:bg-brand-700 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+            )}
+          >
+            Keep
+          </button>
+          {canUndo && (
+            <button
+              type="button"
+              onClick={onUndo}
+              disabled={decided === 'undoing'}
+              className={cn(
+                pressable,
+                'h-8 rounded-full border border-border-default bg-surface-card px-3.5 text-body-s font-semibold text-text-primary hover:bg-surface-muted disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              )}
+            >
+              {decided === 'undoing' ? 'Undoing…' : 'Undo'}
+            </button>
+          )}
+        </div>
+      )}
+    </li>
   );
 }

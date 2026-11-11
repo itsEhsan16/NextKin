@@ -2,6 +2,8 @@ import { useDeleteAccount } from '@nextkin/shared/queries';
 import { useId, useState, type ComponentType, type SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { SIGN_IN } from '@/lib/dataSource';
+import { signOut } from '@/lib/signOut';
 import { cardPad, cardSurface } from '@/ui/Card';
 import { showToast } from '@/lib/toast';
 import { brandOutlineButton } from '@/ui/brandOutlineButton';
@@ -82,8 +84,8 @@ function WarningGlyph({ className }: { className?: string }) {
  * what goes with the account, the way to step away instead, and a typed "DELETE" before the red
  * button wakes.
  *
- * The delete runs through the shared layer's `useDeleteAccount`. Signing out after it is sign-in's
- * business, and sign-in waits for its design, so the page says it's done and stays. Deactivating
+ * The delete runs through the shared layer's `useDeleteAccount`, then signs this browser out to the
+ * sign-in screen. Deactivating
  * has no endpoint in the spec or the data layer, so that button is inert (`toreview.md` §92).
  */
 export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
@@ -184,9 +186,12 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
           disabled={!confirmed || remove.isPending}
           onClick={() =>
             remove.mutate(undefined, {
+              // Signed out straight after: the page used to say "deleted" and leave the user
+              // signed in on Settings (audit ST-09).
               onSuccess: () => {
                 setTyped('');
                 showToast('Your account has been deleted.');
+                void signOut(SIGN_IN, { afterDelete: true });
               },
               onError: () =>
                 showToast("We couldn't delete your account. Try again.", { tone: 'error' }),

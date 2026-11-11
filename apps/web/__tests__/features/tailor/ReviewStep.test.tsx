@@ -129,6 +129,50 @@ describe('the tailored resume, ready', () => {
     expect(rewrite).toHaveBeenCalledWith('res_pd', 'summary', 'Shorten my summary');
   }, 20000);
 
+  // Audit TL-42: an AI edit is never silent. It shows what changed, can be undone, and a request
+  // that names no section asks which one instead of rewriting Experience.
+  it('asks which part when an edit names none, then shows the change with Keep and Undo', async () => {
+    const user = userEvent.setup();
+    const rewrite = jest.spyOn(repos.resumes, 'rewriteSection');
+    const restore = jest.spyOn(repos.resumes, 'updateSection');
+    rewrite.mockClear();
+    restore.mockClear();
+    renderWithQuery(<ReviewStep job={job} generation={run()} user={undefined} />);
+    const assistant = await screen.findByRole('region', { name: 'AI Resume Assistant' }, wait);
+    await user.type(
+      within(assistant).getByRole('textbox', { name: 'Ask anything about your resume' }),
+      'Make the dates consistent{Enter}',
+    );
+    expect(rewrite).not.toHaveBeenCalled();
+    expect(await within(assistant).findByText('Which part should I change?')).toBeInTheDocument();
+
+    const parts = within(assistant).getByRole('list', { name: 'Choose a part' });
+    await user.click(within(parts).getByRole('button', { name: 'Professional summary' }));
+    // The rewrite waits for the section's current text, so Undo always has something to restore.
+    await waitFor(
+      () => expect(rewrite).toHaveBeenCalledWith('res_pd', 'summary', 'Make the dates consistent'),
+      wait,
+    );
+
+    expect(
+      await within(assistant).findByText('What changed in Professional summary', {}, wait),
+    ).toBeInTheDocument();
+    expect(within(assistant).getByText('Before')).toBeInTheDocument();
+    expect(within(assistant).getByText('After')).toBeInTheDocument();
+    await user.click(within(assistant).getByRole('button', { name: 'Undo' }));
+    await waitFor(
+      () => expect(restore).toHaveBeenCalledWith('res_pd', 'summary', expect.anything()),
+      wait,
+    );
+    expect(
+      await within(assistant).findByText(
+        'Undone: your professional summary is back as it was.',
+        {},
+        wait,
+      ),
+    ).toBeInTheDocument();
+  }, 20000);
+
   it('writes a cover letter for the same job from this resume, in the tone picked (toreview §118)', async () => {
     const user = userEvent.setup();
     const start = jest.spyOn(repos.generations, 'start');

@@ -1,6 +1,7 @@
 import {
   atsBandFor,
   TAILOR_TARGET_PAGES,
+  type DocumentContent,
   type Job,
   type TailorComparison,
   type TailorExperienceDepth,
@@ -165,10 +166,51 @@ export function changeLines(job: Job, run: TailorRun): ChangeLine[] {
 export const resumeFileName = (first: string, last: string, company: string) =>
   `${[first, last, company].map((part) => part.replace(/\s+/g, '')).join('_')}.pdf`;
 
-/** The section an "AI rewrite" request is about, from its words (toreview §113, §121). */
-export function sectionOf(text: string): ResumeSectionKey {
+/**
+ * The section an "AI rewrite" request is about, from its words (toreview §113, §121), or `null`
+ * when the words don't say. It used to fall back to Experience, so "make the dates consistent"
+ * rewrote a section nobody named (audit TL-42); now the assistant asks.
+ */
+export function sectionOf(text: string): ResumeSectionKey | null {
   if (/\bsummary|profile|intro/i.test(text)) return 'summary';
   if (/\bskills?\b/i.test(text)) return 'skills';
   if (/\bprojects?\b/i.test(text)) return 'projects';
-  return 'experience';
+  if (/\bexperience|roles?\b|jobs?\b|bullets?\b|work\b/i.test(text)) return 'experience';
+  return null;
+}
+
+/** The sections the assistant offers when a request doesn't name one. */
+export const REWRITE_SECTIONS: readonly ResumeSectionKey[] = [
+  'summary',
+  'skills',
+  'experience',
+  'projects',
+];
+
+/** A section as plain lines, for the before/after of an AI rewrite. */
+export function sectionLines(
+  content: DocumentContent | undefined,
+  section: ResumeSectionKey,
+): string[] {
+  if (!content || content.kind !== 'resume') return [];
+  switch (section) {
+    case 'summary':
+      return content.summary ? [content.summary] : [];
+    case 'skills':
+      return content.skills.length ? [content.skills.join(', ')] : [];
+    case 'experience':
+      return content.experience.flatMap((role) => [
+        `${role.title}, ${role.company}`,
+        ...role.bullets.map((b) => `• ${b}`),
+      ]);
+    case 'projects':
+      return content.projects.flatMap((project) => [
+        project.name,
+        ...project.bullets.map((b) => `• ${b}`),
+      ]);
+    case 'certifications':
+      return content.certifications;
+    case 'education':
+      return content.education.map((entry) => `${entry.degree}, ${entry.institution}`);
+  }
 }

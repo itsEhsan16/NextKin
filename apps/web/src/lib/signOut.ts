@@ -11,13 +11,24 @@ import { showToast } from './toast';
  * would see it still live and sign straight back in.
  */
 /** `destination` is where a signed-out browser lands: staff go to the staff sign-in. */
-export async function signOut(destination: string = SIGN_IN): Promise<void> {
+/**
+ * `afterDelete`: the account is already gone, so the server may refuse the logout. Leave anyway:
+ * a deleted account must never be left with a live page (audit ST-09).
+ */
+export async function signOut(
+  destination: string = SIGN_IN,
+  { afterDelete = false }: { afterDelete?: boolean } = {},
+): Promise<void> {
   if (USES_BACKEND) {
     try {
       await auth.logout();
     } catch {
-      showToast("You weren't signed out. Check your connection and try again.", { tone: 'error' });
-      return;
+      if (!afterDelete) {
+        showToast("You weren't signed out. Check your connection and try again.", {
+          tone: 'error',
+        });
+        return;
+      }
     }
     if (CLERK_ENABLED) await clerkSignOut();
   }
