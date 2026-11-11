@@ -138,6 +138,14 @@ describe('Choosing the resume (toreview §110)', () => {
   });
 });
 
+/** A keyword's tick box, in whichever tab holds it. */
+async function findKeyword(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const box = screen.queryByRole('checkbox', { name: label });
+  if (box) return box;
+  await user.click(screen.getByRole('tab', { name: /^Optional keywords/ }));
+  return screen.getByRole('checkbox', { name: label });
+}
+
 describe('Tailor flow (734:2, 734:679)', () => {
   beforeEach(() => {
     resetMockRepos();
@@ -146,33 +154,36 @@ describe('Tailor flow (734:2, 734:679)', () => {
     push.mockImplementation((href: string) => navigate(href));
   });
 
-  it('compares and enhances on one step, then starts a run with only the keywords ticked', async () => {
+  it('lists what the resume lacks to tick, then starts a run with only the keywords ticked', async () => {
     const user = userEvent.setup();
     const start = jest.spyOn(repos.generations, 'start');
     renderWithQuery(<RoutedTailor target={{ kind: 'job', id: 'job_google' }} resumeId="res_pd" />);
 
-    // One step after the resume (owner, toreview §149): the job against the resume, with its score.
-    const enhance = await screen.findByRole('region', { name: 'Choose what to add' }, wait);
+    // Step 2 of 3 (owner's mockup, 2026-11-11): the job → the resume, the keywords, the score.
+    const enhance = await screen.findByRole('region', { name: 'Choose keywords to add' }, wait);
+    expect(within(enhance).getByText('Step 2 of 3')).toBeInTheDocument();
     expect(within(enhance).getByText('Product Designer Resume (base)')).toBeInTheDocument();
     expect(
       within(enhance).getByRole('img', { name: 'ATS score: 5.6 out of 10' }),
     ).toBeInTheDocument();
     expect(within(enhance).getByRole('button', { name: 'Change' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Missing keywords \(\d+\)$/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Optional keywords \(\d+\)$/ })).toBeInTheDocument();
 
-    // The plan lives in the step itself (toreview §161): no old fix-plan table, and only where the
-    // points go is a link away.
-    expect(within(enhance).queryByRole('heading', { name: 'Your fix plan' })).toBeNull();
-    const pointsLink = within(enhance).getByRole('button', { name: 'See where your points go' });
-    await user.click(pointsLink);
-    expect(pointsLink).toHaveAttribute('aria-expanded', 'true');
-    expect(within(enhance).getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
-    await user.click(within(enhance).getByRole('button', { name: 'Figma' }));
-    expect(within(enhance).getByRole('button', { name: 'Figma' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    // Nothing starts ticked (toreview §114).
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+    await user.click(await findKeyword(user, 'Figma'));
+    expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
+    expect(screen.getByText('1 keyword selected')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Create my resume/ }));
+    // The rest of the plan is folded away until opened; where the points go is inside it.
+    const more = screen.getByRole('button', { name: /More ways to raise your score/ });
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    await user.click(more);
+    await user.click(screen.getByRole('button', { name: 'See where your points go' }));
+    expect(screen.getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Add 1 keyword & continue/ }));
     await waitFor(
       () =>
         expect(replace).toHaveBeenCalledWith(
@@ -189,15 +200,14 @@ describe('Tailor flow (734:2, 734:679)', () => {
     const user = userEvent.setup();
     const start = jest.spyOn(repos.generations, 'start');
     renderWithQuery(<RoutedTailor target={{ kind: 'job', id: 'job_google' }} resumeId="res_pd" />);
-    const enhance = await screen.findByRole('region', { name: 'Choose what to add' }, wait);
-    expect(within(enhance).queryByText('Already on your resume')).toBeNull();
+    const enhance = await screen.findByRole('region', { name: 'Choose keywords to add' }, wait);
 
-    // Figma fits no line of this resume: a skills-list tick, with no row to place it.
-    await user.click(within(enhance).getByRole('button', { name: 'Figma' }));
+    // Figma fits no line of this resume: a skills-list tick, with no place to pick.
+    await user.click(await findKeyword(user, 'Figma'));
     expect(within(enhance).queryByRole('button', { name: /AI adds it to|Skills only/ })).toBeNull();
 
     // User Research fits the Google role: the tick shows where the AI adds it.
-    await user.click(within(enhance).getByRole('button', { name: 'User Research' }));
+    await user.click(await findKeyword(user, 'User Research'));
     const picker = within(enhance).getByRole('button', {
       name: 'AI adds it to: Software Engineer · Google',
     });
@@ -212,11 +222,12 @@ describe('Tailor flow (734:2, 734:679)', () => {
       within(enhance).getByRole('button', { name: 'Used in: Software Engineer · Google +1' }),
     ).toBeInTheDocument();
 
-    // Results are their own card, outside the keyword step.
+    // Results sit in "More ways", outside the keyword step.
+    await user.click(screen.getByRole('button', { name: /More ways to raise your score/ }));
     const results = screen.getByRole('region', { name: 'Add real results' });
     expect(enhance).not.toContainElement(results);
 
-    await user.click(screen.getByRole('button', { name: /Create my resume/ }));
+    await user.click(screen.getByRole('button', { name: /Add 2 keywords & continue/ }));
     await waitFor(() => expect(start).toHaveBeenCalledTimes(1), wait);
     expect(start.mock.calls[0]![0].tailor?.confirmed).toEqual([
       { keyword: 'User Research', where: 'role_google', by: 'you' },
@@ -234,7 +245,7 @@ describe('Tailor flow (734:2, 734:679)', () => {
       />,
     );
     expect(
-      await screen.findByRole('region', { name: 'Choose what to add' }, wait),
+      await screen.findByRole('region', { name: 'Choose keywords to add' }, wait),
     ).toBeInTheDocument();
   }, 20000);
 
@@ -242,9 +253,9 @@ describe('Tailor flow (734:2, 734:679)', () => {
     const user = userEvent.setup();
     const draft = await repos.jd.extract({ source: 'paste', text: SAMPLE_JD });
     renderWithQuery(<RoutedTailor target={{ kind: 'jd', id: draft.id }} resumeId="res_pd" />);
-    const enhance = await screen.findByRole('region', { name: 'Choose what to add' }, wait);
+    const enhance = await screen.findByRole('region', { name: 'Choose keywords to add' }, wait);
     expect(within(enhance).getAllByText(new RegExp(draft.title)).length).toBeGreaterThan(0);
-    await user.click(screen.getByRole('button', { name: /Create my resume/ }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
     await waitFor(
       () =>
         expect(replace).toHaveBeenCalledWith(

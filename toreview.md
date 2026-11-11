@@ -16901,3 +16901,117 @@ The owner found the plan screen cluttered. Four directions were drawn on the For
   - Jest: two `PeriodSwitch` tests (the selection, and the two label copies). The glide runs on the UI thread, which the Reanimated mock doesn't redraw.
   - Web preview at 375, measured: the pill sits exactly on Yearly (175–293), then on Monthly (82–170).
   - Not checked on a phone: the web preview always reduces motion, so the glide itself is phone-only.
+
+## 175. Landing page v2 (light, Chattri-style) in Figma (2026-11-11)
+
+New page **🌐 Landing page v2 (light)** in For-Next-Kin, board `452:391` (1440 wide): 01 Hero, 02 Proof
+strip, 03 Story + sample report, 04 Facts + toolkit heading, 05 Feature showcase, 06 Testimonials,
+07 Pricing, 08 Footer. Built from the owner's Chattri reference. Ten images made with GPT Image 2.6
+(2k, medium) and placed with their backgrounds on, as asked; slots are named `IMG · <key>`.
+Originals: scratchpad `landing-v2/`.
+
+- **Look:** Instrument Serif headings + Inter body, off-white `#F6F6F3`, ink `#16181D` buttons,
+  violet `#4733F9` only as accent. Not the v1 page's Plus Jakarta / violet-gradient language.
+- **Reference claims replaced with product facts.** The reference's logo wall (Deloitte, Adobe…),
+  "10 million+ teams", ROI 384% / $3.9M / 92,400 hours became: a proof strip of NextKin rules, and
+  fact cards $0 PDF · 0 made-up skills · $19/mo Pro · 3 free generations/month (V2 §13.2–13.3).
+- **Pricing uses the spec's indicative prices:** Free $0, Pro $19/mo, Pro Annual **$99/yr** (spec
+  says ~$99–119). Confirm the annual number; "save about half with yearly" depends on it.
+- **The 87% / 96% / 95% bars are labelled "Example values from a sample resume".** Keep the label
+  or replace with a real sample report.
+- **Testimonials are placeholders:** "Daniel K." and "Mei L." quotes and the two generated studio
+  portraits are not real users. Must be replaced or removed before launch.
+- **Generated feature phone shows real brand marks** (Slack, GitHub, Figma) in its company row and
+  an "N" mark that isn't the NextKin logo. Retouch or regenerate before shipping.
+- **Not drawn:** a mobile breakpoint; social icons are letter stand-ins.
+- **Hero phone now shows the real Home screen (owner, same day).** The generated phone was dropped
+  (the owner had already deleted it). Phone `458:390` holds a capture of `HomeScreen` as the code
+  renders it today, on mock data: signed in as George through the mobile web preview
+  (`expo start --web`, new `mobile-web-preview` entry in `.claude/launch.json`, port 8091), 390×844
+  at 3x, headless Chrome. Only the top of the scroll is used (header, Quick Start, Top Job Matches);
+  the status bar is drawn in Figma.
+- **What the web preview gets wrong, so it was cropped out:** History and Saved Jobs shortcut art
+  draws half-finished, the tab bar lays out wrongly, and a dev overlay reports
+  "`<button>` cannot contain a nested `<button>`". Web-only as far as known; worth a look if the
+  web preview is to be trusted for captures.
+- **The job cards show the mock's real company marks** (Google, Adobe). On a marketing page that can
+  read as an endorsement. Swap the mock jobs before the capture, or retouch.
+- **Doodles in use (owner removed the backgrounds and cut the doodle sheet apart).** The five cut-outs
+  are scattered round the hero phone as in the reference: green burst on its top-right corner, orange
+  star on its left edge, crosshair, violet twinkle and sparkle beside it. The doodle sheet image is
+  hidden, not deleted. Clones sit beside the "career toolkit" and pricing headings. In the feature
+  showcase, the phone grew to 760 wide, the target sits on its top-left corner, and the hand peeks out
+  behind the right-hand cards.
+- **Section 05 redesigned away from the reference (owner: "do something creative").** New section
+  `461:390`, "How it works": one job travels a dotted route to one honest resume. Start = the tilted
+  jobs phone hit by the target doodle; stop 1 = a JD excerpt with its keywords lit up; stop 2 =
+  the timeline check, where "A/B testing — not in your history" is left out; stop 3 = the NextKin
+  Score ring with the fixes that would raise it; end = the hand fanning the finished resumes. The
+  title is "Six applications. Six tailored resumes. *Zero made-up skills.*" The reference-style
+  glass-card version is hidden (`453:425`), not deleted. The 86 and the +3/+2 fixes are labelled
+  "sample". The other sections still follow the reference; they get the same treatment only if
+  the owner wants it.
+
+## §202 — Web tailor "Choose keywords" step redesigned from the owner's mockup (owner, 2026-11-11)
+
+The web tailor flow's keyword step (`EnhanceStep`) now follows the owner's mockup, built with the
+web tokens only:
+- The job → resume strip.
+- Missing / Optional tabs with a search box.
+- A category rail.
+- A keyword table with a tick, a category tag and an ATS-impact bar on each row.
+- A select-all bar.
+- On the right: the ATS Match Score, "What the AI will change" and the projection.
+- Back and "Add N keywords & continue".
+
+**Owner answers (2026-11-11)**
+- **Extras.** A ticked keyword the comparison picked a place for shows "Goes in" with the
+  `PlacePicker` under its row. Header checks, show-in-role, real results, more fixes, quick/full
+  history and where the points go are folded into one card, "More ways to raise your score",
+  closed by default.
+- **Tabs.** Missing holds required keywords (`source: 'required'`). Optional holds preferred
+  ones (`source: 'description'`) and soft skills. Nothing starts ticked (§114 holds). The mockup
+  draws everything ticked; that was not followed.
+- **Stepper.** It is relabelled "Job & Resume → Choose Keywords → Generate Results". MethodStep is
+  now "Step 1 of 3", this step "Step 2 of 3", and the run is step 3. Routes and `?step=` values
+  are unchanged.
+
+**Judgement calls (to confirm)**
+- **Categories** come from the skill taxonomy's category (`packages/shared/src/tailor/keywordRows.ts`):
+  - *Technical skills*: language, framework, library, database.
+  - *Tools & platforms*: tool, cloud, devops.
+  - *Domains & concepts*: methodology, practice, design, domain.
+  - *Soft skills*: soft keywords.
+  - *Other*: anything the taxonomy doesn't know.
+
+  The tag on each row is the fine category ("Methodology", "Framework"). The starter taxonomy is
+  small, so many real JD terms will land in Other until the licensed seed (P9-07) arrives.
+- **ATS impact** on each row is that keyword's plan step `worth`: points out of 10 once a role
+  shows it, half when only listed (§129).
+  - The bar fills five segments against the highest-worth keyword on the page.
+  - An unpriced keyword (no plan step, or soft skills) shows "—" with no bar, never an invented
+    number.
+  - The ⇅ button cycles through most important first, highest impact and lowest impact.
+- **Honesty note.** `NEVER_ADDS_SKILLS` stays visible under the table as one line rather than a
+  callout.
+- **Labels.** The CTA reads "Continue" with nothing ticked. "Create my resume" is gone from this
+  step.
+- **Layout** follows the step's own width (container queries), not the window:
+  - The right column sits beside the keywords when the step card is at least 64rem wide, which
+    is the 1536 window.
+  - Below that, the score and "What the AI will change" sit side by side under the keywords.
+  - The category rail becomes chips when the keyword column is under 42rem.
+
+**Deferred**
+- `BuildEnhanceStep` (`?mode=build`) only got the new step number. Its body still uses the old
+  chip layout.
+
+**Checked, and what is still open**
+- **Screenshots.** Taken with Playwright on mock data at 1536, 1280 and 1024, with "More ways"
+  opened. They match the mockup's composition. They are not a pixel compare.
+- **Jest.** `KeywordPanel.test.tsx`, `TailorFlow.test.tsx` and
+  `packages/shared/test/keywordRows.test.ts` pass.
+- **Not done.** No keyboard or screen-reader pass.
+- **Unrelated failure.** In the full `pnpm test`, `ResumeEditor.test.tsx` "opens the resume…" hit
+  Jest's 5 s timeout under load. It passes alone with `--testTimeout=30000`, and it doesn't import
+  anything changed here.

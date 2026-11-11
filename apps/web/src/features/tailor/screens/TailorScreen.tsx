@@ -39,8 +39,10 @@ import {
 } from '../tailorTarget';
 import { useTailorChoices, useTailorRun } from '../useTailorRun';
 
-const STEPS = ['Job', 'Resume', 'Enhance'] as const;
-const STEP_INDEX: Record<TailorStep, number> = { resume: 1, enhance: 2 };
+// The owner's mockup (2026-11-11): picking the job and the resume is one step, the keywords the
+// second, and the run the third.
+const STEPS = ['Job & Resume', 'Choose Keywords', 'Generate Results'] as const;
+const STEP_INDEX: Record<TailorStep, number> = { resume: 0, enhance: 1 };
 
 export type TailorScreenProps = {
   target: TailorTargetRef;
@@ -217,7 +219,7 @@ export function TailorScreen({
           title={job.company ? `${job.title} · ${job.company}` : job.title}
           leading={<JobLogoTile job={job} />}
           steps={STEPS}
-          step={runId ? STEPS.length : STEP_INDEX[step]}
+          step={runId ? STEPS.length - 1 : STEP_INDEX[step]}
         />
       ) : (
         <Skeleton className="h-10 w-full rounded-md" />

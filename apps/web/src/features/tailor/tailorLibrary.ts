@@ -10,10 +10,6 @@ import {
   type TailorRun,
 } from '@nextkin/shared/models';
 
-/** The flow's three steps (734:2's stepper), in order. */
-/** The flow's three stages since the one Customize screen (toreview §114). */
-export const TAILOR_STEPS = ['Customize', 'Tailoring', 'Your new resume'] as const;
-
 /** W-TAILOR 02's "Choose what to improve" (734:679): every part, on by default. */
 export const FIX_ROWS: { key: TailorFix; label: string; line: (job: Job) => string }[] = [
   { key: 'headline', label: 'Headline', line: (job) => `Aim it at ${job.title}` },

@@ -82,9 +82,12 @@ export function RealResults({
   resumeId,
   figureOf,
   onFigure,
+  flat = false,
 }: {
   steps: readonly PlanStep[];
   resumeId: string;
+  /** Inside another card ("More ways to raise your score"): no card of its own. */
+  flat?: boolean;
   figureOf: (bullet: Bullet) => string | undefined;
   onFigure: (bullet: Bullet, text: string | null) => void;
 }) {
@@ -95,7 +98,7 @@ export function RealResults({
   return (
     <section
       aria-label="Add real results"
-      className={cn(stepCard, 'flex flex-col gap-3.5 px-8 py-6')}
+      className={cn(!flat && stepCard, 'flex flex-col gap-3.5', !flat && 'px-8 py-6')}
     >
       <ColumnHead
         art={<InsightsStarIllustration className="h-auto w-11" />}

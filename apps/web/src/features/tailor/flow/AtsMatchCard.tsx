@@ -38,7 +38,7 @@ export function AtsMatchCard({
   return (
     <section
       aria-labelledby="ats-match-score"
-      className="flex w-full max-w-[22rem] shrink-0 flex-col gap-3 rounded-xl border border-border-subtle bg-surface-card p-5 shadow-card"
+      className="flex w-full flex-col gap-3 rounded-xl border border-border-subtle bg-surface-card p-5 shadow-card"
     >
       <h2
         id="ats-match-score"

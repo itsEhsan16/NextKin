@@ -82,7 +82,7 @@ export function MethodStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="method-step"
-            step={2}
+            step={1}
             of={3}
             title="How would you like to create your resume?"
             lede={`Choose how to create your resume for the ${job.title} role. You can start from your selected resume, build from your profile, or create a new one.`}
