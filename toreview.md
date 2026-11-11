@@ -17109,3 +17109,4 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
 ## §212 — No mark above the Assistant greeting (owner, 2026-11-11)
 - The round sparkle mark (`AssistantAvatar` at 56) is removed from `AssistantWelcome`, so the empty chat opens on "Hi <name>, how can I help?". Replies keep their small avatar.
 - **Verified:** assistant Jest, 18 pass.
+- **Then (owner, same day):** the clay `assistant` illustration (`Illustration name="assistant"`, 96 at 390) sits above the greeting in place of the mark. It reuses the existing art, so nothing new was generated. It is hidden from screen readers. Assistant Jest: 18 pass.

@@ -4,13 +4,14 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { a11yButton, useReducedMotion } from '@/lib';
 import { motion, scaledSheet, useTheme } from '@/theme';
 import { Icon } from '@/ui/Icon';
+import { Illustration } from '@/ui/kit';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
 
 import type { StarterPrompt } from '../assistantPrompts';
 
 /**
- * An empty chat (§188, §198, §212: no mark above it, owner): a greeting by name, what it helps with, and
+ * An empty chat (§188, §198, §212: the clay assistant art above it, owner): a greeting by name, what it helps with, and
  * "Try asking": four questions made from what this person has, as centred chips. One tap asks.
  */
 export function AssistantWelcome({
@@ -31,6 +32,10 @@ export function AssistantWelcome({
   return (
     <View style={styles.root}>
       <View style={styles.head}>
+        {/* The clay assistant bubble (owner, 2026-11-11, §212), kept modest so the chips sit high. */}
+        <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <Illustration name="assistant" size={96} />
+        </View>
         <Text variant="title1" color="ink" align="center" accessibilityRole="header">
           {firstName ? `Hi ${firstName}, how can I help?` : 'How can I help?'}
         </Text>
