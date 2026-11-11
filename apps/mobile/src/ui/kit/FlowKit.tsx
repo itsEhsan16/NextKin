@@ -248,16 +248,19 @@ export function FlowFooter({
   );
 }
 
-/** A section heading with an optional icon and one line under it. */
+/** A section heading with an optional icon (or a small drawing in its place) and one line under it. */
 export function FlowSection({
   title,
   body,
   icon,
+  art,
   children,
 }: {
   title: string;
   body?: string;
   icon?: LineIconName;
+  /** A small decorative drawing beside the title, in place of `icon` (§211). */
+  art?: ReactNode;
   children?: ReactNode;
 }) {
   const { colors } = useTheme();
@@ -265,7 +268,7 @@ export function FlowSection({
   return (
     <View style={styles.section}>
       <View style={styles.sectionHead}>
-        {icon ? <Icon name={icon} size="md" color={colors.brand} /> : null}
+        {art ?? (icon ? <Icon name={icon} size="md" color={colors.brand} /> : null)}
         <Text variant="title3" color="ink" accessibilityRole="header">
           {title}
         </Text>

@@ -58,10 +58,10 @@ const FILE_TO_LINK = 20 / 0.75;
 /** ACCOUNT 03's drawing sits 40 under the bar (577:3802 → 680:92), 14 lower than the idle hero. */
 const READY_ART_DROP = (40 - 26) / 0.75;
 
-/** IL-A1 (680:92), the board's 3× render: the folder with the file coming out of it. */
+/** IL-A1 (680:92), the clay illustration (§211), fitted inside the board’s box: the box with the file rising out of it. */
 const EXPORT_READY_ART: FlowArt = {
-  source: require('../../../../assets/illustrations/account/export-ready.png'),
-  w: 322,
+  source: require('../../../../assets/illustrations/account/export-ready.webp'),
+  w: 290.7,
   h: 232,
   shiftX: 0,
   toTitle: 16, // 680:92 → 577:3816

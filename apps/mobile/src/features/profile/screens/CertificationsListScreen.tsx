@@ -9,10 +9,10 @@ import { PROFILE_ROW_ART } from '../profileRowArt';
 
 const LEDE = 'Credentials you have earned back up the skills you list.';
 
-/** PROFILE 10's drawing (680:107), the board's 3× render: the certificate with its rosette. */
+/** PROFILE 10's drawing (680:107), the clay illustration (§211), fitted inside the board’s box: the certificate with its rosette. */
 const EMPTY_IMAGE: FlowArt = {
-  source: require('../../../../assets/illustrations/profile/certifications-empty.png'),
-  w: 300,
+  source: require('../../../../assets/illustrations/profile/certifications-empty.webp'),
+  w: 224,
   h: 205,
   shiftX: 0,
   toTitle: 22, // 680:107 → 573:134, the empty state's own title gap

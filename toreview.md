@@ -17753,3 +17753,28 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - seen in the browser at 1366×900 on Free and on Pro (the mock fixture switched to Pro locally, then reverted), including cancel → "Ends <date>" → "Keep my subscription".
 - **Not checked:** dark theme, widths under 1024, and the backend (real `planId`, invoice numbers, paused state) — only the mock.
 - **Noticed, not changed:** on a Pro account the sidebar still shows the "Upgrade to Pro" card.
+
+## §233 — The clay illustrations from Seedream 5.5, in the app (owner, 2026-11-11; ported 2026-11-18)
+- **Ported** from `claude/app-ui-ux-redesign-1a1793` (`12f1ce5`, §211 there) onto `claude/mobile-tailor-flow`. The Assistant Chats sheet keeps main's text-only empty state (its layout commit `473dca0` was not ported), so `assistant/no-chats.webp` is in the tree but unused. PlanQuestions was not ported (see §234).
+- **Source:** 27 images generated on ElevenLabs with `bytedance-seedream-5.5`, from `asset-prompts.md`. The owner picked Seedream over GPT Image 2.6 after a head-to-head.
+  - Five came back on white (applied, build-writing, zero-about, ats-paste, assistant-first-run) and went through `birefnet-v2-bg-removal`, which dropped a few small sparkles on two of them.
+  - `sign-out` was regenerated on 2026-11-11 at the owner's request (the first had a muddy floor haze).
+  - The untouched originals are on For-Next-Kin, page `488:390`.
+- **Processing:** each image is trimmed to its content with a 3% margin, capped at 1080 px wide, and saved as WebP q88 (39–115 KB each), alongside the folders they replace.
+  - The 24 old flat-style PNGs are deleted. Their white or black backgrounds were the original complaint.
+- **Wiring:**
+  - Every site keeps its board box and fits the new art inside it (`contain`, same width or height limit), so screen layouts don't move. Old `shiftX` offsets compensated for the old drawings' whitespace and are now 0.
+  - **`FlowHero.FLOW_ART`:** 17 flow heroes (Build, Tailor, Cover, Zero, ATS, Interview, Assistant first run), rewritten from the measured files.
+  - **Elsewhere:** `ConfirmArt` (sign-out, discard), `CertificationsListScreen`, `DataExportScreen`, `CheckoutConfirm`, `NotFoundScreen`, `CopiedLinkDialogBody`.
+  - **New:**
+    - `no-chats` on the Assistant's empty Chats sheet, about 150 wide at 390;
+    - `applied` fills TAILOR 06's empty IL-T1 slot, 150 × 97 above the title, with the sheet floor grown by the same;
+    - `score-target` beside "Answer to reach 10", through a new optional `art` slot on `FlowSection`.
+- **Judgement calls:**
+  - The five live run heroes (cover-writing, zero-writing, ats-checking, tailor-writing, build-writing) keep their float while a run works. The glint, scan and ink overlays (`LiveArt` anchors) were traced on the old drawings, so they are off (`sparkles: []`, no `page`/`lines`) until anchors are measured on the new art.
+  - An automatic gold-sparkle detector was tried but also caught pen nibs and knobs, so it isn't used.
+- **Verified:**
+  - Jest across create, generations, assistant, account, system, billing, home, ui and profile: 96 suites, 565 tests pass.
+  - Lint is clean.
+- **Typecheck:** fails on `useCreateActions.ts:67` with TS2589 in `router.setParams`. This is **pre-existing**: it fails identically with these edits stashed. It comes from the regenerated `.expo/types/router.d.ts`.
+- **Not seen yet:** in the preview, which redirects to the splash when signed out, or on the phone.
