@@ -17105,3 +17105,7 @@ The owner's phone run had five problems: small section icons; no AI figure pill;
   - Lint is clean.
 - **Typecheck:** fails on `useCreateActions.ts:67` with TS2589 in `router.setParams`. This is **pre-existing**: it fails identically with these edits stashed. It comes from the regenerated `.expo/types/router.d.ts`.
 - **Not seen yet:** in the preview, which redirects to the splash when signed out, or on the phone.
+
+## §212 — No mark above the Assistant greeting (owner, 2026-11-11)
+- The round sparkle mark (`AssistantAvatar` at 56) is removed from `AssistantWelcome`, so the empty chat opens on "Hi <name>, how can I help?". Replies keep their small avatar.
+- **Verified:** assistant Jest, 18 pass.
