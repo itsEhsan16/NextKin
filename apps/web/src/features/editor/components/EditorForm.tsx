@@ -211,7 +211,7 @@ export function EditorForm({
               align="center"
               sideOffset={6}
               className={cn(
-                'z-50 min-w-[240px] rounded-md border border-border-default bg-surface-card p-1.5 shadow-popover',
+                'z-dropdown min-w-[240px] rounded-md border border-border-default bg-surface-card p-1.5 shadow-popover',
                 menuSurfaceMotion,
               )}
             >

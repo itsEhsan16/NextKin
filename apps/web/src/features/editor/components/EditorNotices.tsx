@@ -1,7 +1,7 @@
 'use client';
 
 import type { DocProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
 import type { ReactNode } from 'react';
 
 import { primaryButton } from '@/features/create/jobFlow/FlowChrome';
@@ -150,59 +150,54 @@ export function ProblemsDialog({
     });
   };
   return (
-    <Dialog.Root open={open} onOpenChange={(next) => !next && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
-          <div className="flex flex-col gap-4 px-6 pb-5 pt-6">
-            <div className="flex items-start gap-3.5">
-              <span
-                aria-hidden
-                className="flex size-11 shrink-0 items-center justify-center rounded-md bg-warning-50 text-warning-text"
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()} size="md">
+      <div className="flex flex-col gap-4 px-6 pb-5 pt-6">
+        <div className="flex items-start gap-3.5">
+          <span
+            aria-hidden
+            className="flex size-11 shrink-0 items-center justify-center rounded-md bg-warning-50 text-warning-text"
+          >
+            <AlertTriangle className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <DialogTitle className="text-h2 font-bold text-text-primary">
+              A few things before you download
+            </DialogTitle>
+            <DialogDescription className="mt-1 text-body-l text-text-secondary">
+              We can’t make the PDF until these are filled in. Each one opens its field.
+            </DialogDescription>
+          </div>
+        </div>
+        <ul className="flex max-h-[50vh] flex-col gap-2.5 overflow-y-auto">
+          {problems.map((problem, i) => (
+            <li key={`${problem.section}-${problem.entryId ?? ''}-${i}`}>
+              <button
+                type="button"
+                onClick={() => go(problem)}
+                className="flex w-full items-center gap-3 rounded-lg border border-border-default px-4 py-3 text-left transition-colors duration-press ease-standard hover:border-border-brand hover:bg-surface-brand focus-visible:outline-2 focus-visible:outline-brand-600"
               >
-                <AlertTriangle className="size-5" />
-              </span>
-              <div className="min-w-0">
-                <Dialog.Title className="text-h2 font-bold text-text-primary">
-                  A few things before you download
-                </Dialog.Title>
-                <Dialog.Description className="mt-1 text-body-l text-text-secondary">
-                  We can’t make the PDF until these are filled in. Each one opens its field.
-                </Dialog.Description>
-              </div>
-            </div>
-            <ul className="flex max-h-[50vh] flex-col gap-2.5 overflow-y-auto">
-              {problems.map((problem, i) => (
-                <li key={`${problem.section}-${problem.entryId ?? ''}-${i}`}>
-                  <button
-                    type="button"
-                    onClick={() => go(problem)}
-                    className="flex w-full items-center gap-3 rounded-lg border border-border-default px-4 py-3 text-left transition-colors duration-press ease-standard hover:border-border-brand hover:bg-surface-brand focus-visible:outline-2 focus-visible:outline-brand-600"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-body-m font-medium text-text-tertiary">
-                        {headingOf(problem.section)}
-                      </span>
-                      <span className="block text-body-l font-medium text-text-primary">
-                        {problem.message}
-                      </span>
-                    </span>
-                    <span className="flex shrink-0 items-center gap-1.5 text-body-m font-semibold text-text-brand">
-                      Go to it
-                      <ArrowRight aria-hidden className="size-4.5" />
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex justify-end border-t border-border-default px-5 py-3.5">
-            <button type="button" autoFocus onClick={onClose} className={primaryButton}>
-              Keep editing
-            </button>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-body-m font-medium text-text-tertiary">
+                    {headingOf(problem.section)}
+                  </span>
+                  <span className="block text-body-l font-medium text-text-primary">
+                    {problem.message}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-1.5 text-body-m font-semibold text-text-brand">
+                  Go to it
+                  <ArrowRight aria-hidden className="size-4.5" />
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="flex justify-end border-t border-border-default px-5 py-3.5">
+        <button type="button" autoFocus onClick={onClose} className={primaryButton}>
+          Keep editing
+        </button>
+      </div>
+    </Dialog>
   );
 }

@@ -70,7 +70,7 @@ export function ResumeRowMenu({
             align="end"
             sideOffset={6}
             className={cn(
-              'z-50 min-w-56 rounded-lg border border-border-default bg-surface-card p-1.5 shadow-popover',
+              'z-dropdown min-w-56 rounded-lg border border-border-default bg-surface-card p-1.5 shadow-popover',
               menuSurfaceMotion,
             )}
           >

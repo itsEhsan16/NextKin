@@ -120,7 +120,7 @@ export function Sidebar() {
         {/* Named, so a route change's cross-fade leaves the sidebar perfectly still (`theme.css`). */}
         <div
           ref={panelRef}
-          className="fixed inset-y-0 left-0 z-30 w-[240px] p-[7px] transition-[width] duration-base ease-standard rail:w-[72px]"
+          className="fixed inset-y-0 left-0 z-sidebar w-[240px] p-[7px] transition-[width] duration-base ease-standard rail:w-[72px]"
           style={{ viewTransitionName: 'app-sidebar' }}
         >
           <nav

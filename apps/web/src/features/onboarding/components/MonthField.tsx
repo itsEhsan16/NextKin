@@ -90,7 +90,7 @@ export function MonthField({
             sideOffset={6}
             aria-label={label}
             className={cn(
-              'z-50 w-64 rounded-md border border-border-default bg-surface-card p-2 shadow-popover outline-none',
+              'z-dropdown w-64 rounded-md border border-border-default bg-surface-card p-2 shadow-popover outline-none',
               menuSurfaceMotion,
             )}
           >

@@ -18,7 +18,11 @@ export function useThumb(activeIndex: number) {
     if (!el) return undefined;
     const measure = () => {
       const item = el.querySelectorAll<HTMLElement>('[data-thumb-item]')[activeIndex];
-      setBox(item ? { x: item.offsetLeft, y: item.offsetTop, w: item.offsetWidth, h: item.offsetHeight } : null);
+      setBox(
+        item
+          ? { x: item.offsetLeft, y: item.offsetTop, w: item.offsetWidth, h: item.offsetHeight }
+          : null,
+      );
     };
     measure();
     const frame = requestAnimationFrame(() => setPlaced(true));

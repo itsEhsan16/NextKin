@@ -36,7 +36,7 @@ export function RailTooltip({ label, enabled, children }: RailTooltipProps) {
         <Tooltip.Content
           side="right"
           sideOffset={10}
-          className="z-50 origin-(--radix-tooltip-content-transform-origin) rounded-md border border-border-default bg-surface-card px-2 py-1 text-caption-m text-text-primary shadow-popover data-[state=closed]:animate-pop-out data-[state=delayed-open]:animate-pop-in data-[state=instant-open]:animate-pop-in"
+          className="z-tooltip origin-(--radix-tooltip-content-transform-origin) rounded-md border border-border-default bg-surface-card px-2 py-1 text-caption-m text-text-primary shadow-popover data-[state=closed]:animate-pop-out data-[state=delayed-open]:animate-pop-in data-[state=instant-open]:animate-pop-in"
         >
           {label}
         </Tooltip.Content>

@@ -81,7 +81,7 @@ export function YearField({
             sideOffset={6}
             aria-label={label}
             className={cn(
-              'z-50 w-60 rounded-md border border-border-default bg-surface-card p-2 shadow-popover outline-none',
+              'z-dropdown w-60 rounded-md border border-border-default bg-surface-card p-2 shadow-popover outline-none',
               menuSurfaceMotion,
             )}
           >

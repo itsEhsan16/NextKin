@@ -25,7 +25,7 @@ export function PageImages({
       {stale ? (
         <span
           role="status"
-          className="absolute right-3 top-3 z-10 rounded-full border border-border-default bg-surface-card px-2.5 py-0.5 text-body-s text-text-secondary shadow-popover"
+          className="absolute right-3 top-3 z-raised rounded-full border border-border-default bg-surface-card px-2.5 py-0.5 text-body-s text-text-secondary shadow-popover"
         >
           Updating…
         </span>

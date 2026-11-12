@@ -39,7 +39,7 @@ import { iconButton } from '@/ui/iconButton';
 type Art = ComponentType<SVGProps<SVGSVGElement>>;
 
 const SURFACE = cn(
-  'z-50 flex flex-col gap-0.5 rounded-xl border border-border-default bg-surface-card px-2 pb-2 pt-2.5 shadow-popover outline-none',
+  'z-dropdown flex flex-col gap-0.5 rounded-xl border border-border-default bg-surface-card px-2 pb-2 pt-2.5 shadow-popover outline-none',
   menuSurfaceMotion,
 );
 

@@ -34,7 +34,7 @@ export function FilterDropdown({ trigger, children, align = 'start' }: FilterDro
           align={align}
           sideOffset={8}
           className={cn(
-            'z-50 min-w-[220px] rounded-lg border border-border-subtle bg-surface-card p-1.5 shadow-popover outline-none',
+            'z-dropdown min-w-[220px] rounded-lg border border-border-subtle bg-surface-card p-1.5 shadow-popover outline-none',
             menuSurfaceMotion,
           )}
         >

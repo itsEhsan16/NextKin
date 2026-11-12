@@ -1,6 +1,6 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
@@ -72,66 +72,64 @@ export function MethodDialog({
   busyLabel?: string;
 }) {
   return (
-    <Dialog.Root open={open} onOpenChange={(next) => !next && !busy && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/30 backdrop-blur-xs data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(600px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-2xl bg-surface-card p-7 shadow-dialog data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
-          <div className="flex items-start gap-5 pr-8">
-            <Image
-              src={art}
-              alt=""
-              width={250}
-              height={168}
-              className="h-auto w-30 shrink-0 object-contain"
-            />
-            <div className="flex min-w-0 flex-col gap-1.5 pt-2">
-              <Dialog.Title className="text-h2 font-bold text-text-primary">{title}</Dialog.Title>
-              <Dialog.Description className="text-body-l text-text-secondary">
-                {line}
-              </Dialog.Description>
-            </div>
-          </div>
-          <Dialog.Close
-            aria-label="Close"
-            disabled={busy}
-            className={cn(iconButton, 'absolute right-5 top-5 size-9 rounded-md')}
-          >
-            <XClose aria-hidden className="size-5 text-text-secondary" />
-          </Dialog.Close>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => !next && !busy && onClose()}
+      size="lg"
+      className="gap-5 overflow-y-auto p-7"
+    >
+      <div className="flex items-start gap-5 pr-8">
+        <Image
+          src={art}
+          alt=""
+          width={250}
+          height={168}
+          className="h-auto w-30 shrink-0 object-contain"
+        />
+        <div className="flex min-w-0 flex-col gap-1.5 pt-2">
+          <DialogTitle className="text-h2 font-bold text-text-primary">{title}</DialogTitle>
+          <DialogDescription className="text-body-l text-text-secondary">{line}</DialogDescription>
+        </div>
+      </div>
+      <DialogClose
+        aria-label="Close"
+        disabled={busy}
+        className={cn(iconButton, 'absolute right-5 top-5 size-9 rounded-md')}
+      >
+        <XClose aria-hidden className="size-5 text-text-secondary" />
+      </DialogClose>
 
-          {points && (
-            <ul className="flex flex-col gap-3 rounded-lg bg-surface-brand px-5 py-4">
-              {points.map((point) => (
-                <li key={point} className="flex items-start gap-3 text-body-l text-text-primary">
-                  <Check aria-hidden className="mt-0.5 size-4.5 shrink-0 text-text-brand" />
-                  {point}
-                </li>
-              ))}
-            </ul>
-          )}
-          {children}
+      {points && (
+        <ul className="flex flex-col gap-3 rounded-lg bg-surface-brand px-5 py-4">
+          {points.map((point) => (
+            <li key={point} className="flex items-start gap-3 text-body-l text-text-primary">
+              <Check aria-hidden className="mt-0.5 size-4.5 shrink-0 text-text-brand" />
+              {point}
+            </li>
+          ))}
+        </ul>
+      )}
+      {children}
 
-          <div className="flex flex-wrap justify-end gap-3">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={onClose}
-              className={buttonClass({ variant: 'secondary', size: 'lg' })}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={disabled || busy}
-              onClick={onConfirm}
-              className={primaryButton}
-            >
-              <StableLabel label={confirmLabel} busyLabel={busyLabel ?? confirmLabel} busy={busy} />
-              <ArrowRight aria-hidden className="size-4.5" />
-            </button>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+      <div className="flex flex-wrap justify-end gap-3">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={onClose}
+          className={buttonClass({ variant: 'secondary', size: 'lg' })}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          disabled={disabled || busy}
+          onClick={onConfirm}
+          className={primaryButton}
+        >
+          <StableLabel label={confirmLabel} busyLabel={busyLabel ?? confirmLabel} busy={busy} />
+          <ArrowRight aria-hidden className="size-4.5" />
+        </button>
+      </div>
+    </Dialog>
   );
 }

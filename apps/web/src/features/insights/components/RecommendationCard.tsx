@@ -40,7 +40,7 @@ export function RecommendationCard({
         href="/jobs"
         className={cn(
           brandButton,
-          'relative z-10 mt-auto h-control-lg w-fit gap-2 rounded-md px-5 text-body-m font-semibold',
+          'relative z-raised mt-auto h-control-lg w-fit gap-2 rounded-md px-5 text-body-m font-semibold',
         )}
       >
         View Matched Jobs

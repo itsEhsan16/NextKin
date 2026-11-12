@@ -56,7 +56,11 @@ export function AiOrb({
   label?: string;
   className?: string;
 }) {
-  const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const mounted = useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
   const reduced = useSyncExternalStore(
     subscribeReduced,
     () => window.matchMedia?.(REDUCED).matches ?? false,

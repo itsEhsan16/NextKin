@@ -146,7 +146,7 @@ export function FlowFooter({
   return (
     <div
       className={cn(
-        'sticky bottom-4 z-10 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-border-subtle bg-surface-card/90 px-5 py-3 shadow-popover backdrop-blur-md',
+        'sticky bottom-4 z-sticky flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-border-subtle bg-surface-card/90 px-5 py-3 shadow-popover backdrop-blur-md',
       )}
     >
       <p

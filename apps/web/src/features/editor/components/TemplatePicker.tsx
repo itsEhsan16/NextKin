@@ -74,7 +74,7 @@ export function TemplatePicker({
           align="end"
           sideOffset={8}
           className={cn(
-            'z-50 w-[320px] rounded-lg border border-border-default bg-surface-card p-2 shadow-popover',
+            'z-dropdown w-[320px] rounded-lg border border-border-default bg-surface-card p-2 shadow-popover',
             menuSurfaceMotion,
           )}
         >

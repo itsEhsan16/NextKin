@@ -1,7 +1,7 @@
 'use client';
 
 import { useCreateResume, useCurrentUser, useProfile } from '@nextkin/shared/queries';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
@@ -126,145 +126,133 @@ export function CreateResumeDialog({
   const hasRoles = (profile.data?.experiences.length ?? 0) > 0;
 
   return (
-    <Dialog.Root open={open} onOpenChange={close}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-text-primary/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(720px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-popover data-[state=closed]:pointer-events-none data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in">
-          <div className="flex items-start gap-3 px-7 pb-2 pt-6">
-            <div className="min-w-0 flex-1">
-              {step !== 'choose' && (
-                <button
-                  type="button"
-                  onClick={() => setStep('choose')}
-                  className="mb-1.5 flex items-center gap-1 rounded-sm text-body-m font-medium text-text-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-brand-600"
-                >
-                  <ChevronRight aria-hidden className="size-4 rotate-180" />
-                  All ways to start
-                </button>
-              )}
-              <Dialog.Title className="text-h2 font-bold text-text-primary">
-                {COPY[step].title}
-              </Dialog.Title>
-              <Dialog.Description className="mt-1 text-body-l text-text-secondary">
-                {COPY[step].lede}
-              </Dialog.Description>
-            </div>
-            <Dialog.Close
-              aria-label="Close"
-              className={cn(
-                iconButton,
-                'size-9 rounded-full border border-border-default text-text-primary',
-              )}
+    <Dialog open={open} onOpenChange={close} size="xl">
+      <div className="flex items-start gap-3 px-7 pb-2 pt-6">
+        <div className="min-w-0 flex-1">
+          {step !== 'choose' && (
+            <button
+              type="button"
+              onClick={() => setStep('choose')}
+              className="mb-1.5 flex items-center gap-1 rounded-sm text-body-m font-medium text-text-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-brand-600"
             >
-              <XClose aria-hidden className="size-4" />
-            </Dialog.Close>
-          </div>
+              <ChevronRight aria-hidden className="size-4 rotate-180" />
+              All ways to start
+            </button>
+          )}
+          <DialogTitle className="text-h2 font-bold text-text-primary">
+            {COPY[step].title}
+          </DialogTitle>
+          <DialogDescription className="mt-1 text-body-l text-text-secondary">
+            {COPY[step].lede}
+          </DialogDescription>
+        </div>
+        <DialogClose
+          aria-label="Close"
+          className={cn(
+            iconButton,
+            'size-9 rounded-full border border-border-default text-text-primary',
+          )}
+        >
+          <XClose aria-hidden className="size-4" />
+        </DialogClose>
+      </div>
 
-          {step === 'choose' && (
-            <>
-              <div
-                role="radiogroup"
-                aria-label="How to start"
-                className="grid min-h-0 gap-3.5 overflow-y-auto px-6 py-4 sm:grid-cols-2"
-              >
-                {WAYS.map((w) => {
-                  const on = w.key === way;
-                  return (
-                    <button
-                      key={w.key}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      onClick={() => setWay(w.key)}
-                      onDoubleClick={next}
-                      className={cn(
-                        rowSurface(on),
-                        'relative flex flex-col items-start gap-3 rounded-xl p-4.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-                      )}
-                    >
-                      <span className="absolute right-4 top-4">
-                        <Radio on={on} />
-                      </span>
-                      <span aria-hidden>{w.art}</span>
-                      <span className="text-title-l font-bold text-text-primary">{w.title}</span>
-                      <span className="text-body-l text-text-secondary">
-                        {w.key === 'build' && profile.data && !hasRoles
-                          ? 'Your profile has no roles yet — add them first, or start from scratch.'
-                          : w.detail}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <Footer>
-                <Dialog.Close className={backButton}>Cancel</Dialog.Close>
+      {step === 'choose' && (
+        <>
+          <div
+            role="radiogroup"
+            aria-label="How to start"
+            className="grid min-h-0 gap-3.5 overflow-y-auto px-6 py-4 sm:grid-cols-2"
+          >
+            {WAYS.map((w) => {
+              const on = w.key === way;
+              return (
                 <button
+                  key={w.key}
                   type="button"
-                  onClick={next}
-                  disabled={
-                    create.isPending || (way === 'build' && profile.data != null && !hasRoles)
-                  }
-                  className={primaryButton}
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setWay(w.key)}
+                  onDoubleClick={next}
+                  className={cn(
+                    rowSurface(on),
+                    'relative flex flex-col items-start gap-3 rounded-xl p-4.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                  )}
                 >
-                  <StableLabel
-                    label="Continue"
-                    busyLabel="Opening the editor…"
-                    busy={create.isPending}
-                  />
-                  <ArrowRight aria-hidden className="size-4.5" />
+                  <span className="absolute right-4 top-4">
+                    <Radio on={on} />
+                  </span>
+                  <span aria-hidden>{w.art}</span>
+                  <span className="text-title-l font-bold text-text-primary">{w.title}</span>
+                  <span className="text-body-l text-text-secondary">
+                    {w.key === 'build' && profile.data && !hasRoles
+                      ? 'Your profile has no roles yet — add them first, or start from scratch.'
+                      : w.detail}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <Footer>
+            <DialogClose className={backButton}>Cancel</DialogClose>
+            <button
+              type="button"
+              onClick={next}
+              disabled={create.isPending || (way === 'build' && profile.data != null && !hasRoles)}
+              className={primaryButton}
+            >
+              <StableLabel
+                label="Continue"
+                busyLabel="Opening the editor…"
+                busy={create.isPending}
+              />
+              <ArrowRight aria-hidden className="size-4.5" />
+            </button>
+          </Footer>
+        </>
+      )}
+
+      {step === 'upload' && (
+        <>
+          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-7 py-5">
+            <DropZone onRead={openEditor} />
+          </div>
+          <Footer note="When it’s read, the editor opens on it so you can check it.">
+            <DialogClose className={backButton}>Cancel</DialogClose>
+          </Footer>
+        </>
+      )}
+
+      {step === 'build' &&
+        (profile.data && hasRoles ? (
+          <BuildFromProfile
+            profile={profile.data}
+            user={user.data}
+            onReady={openEditor}
+            footer={({ note, label, busyLabel, busy, onAction }) => (
+              <Footer note={note}>
+                <DialogClose className={backButton}>Cancel</DialogClose>
+                <button type="button" onClick={onAction} disabled={busy} className={primaryButton}>
+                  <SparkleIllustration aria-hidden className="h-auto w-4" />
+                  <StableLabel label={label} busyLabel={busyLabel} busy={busy} />
                 </button>
               </Footer>
-            </>
-          )}
-
-          {step === 'upload' && (
-            <>
-              <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-7 py-5">
-                <DropZone onRead={openEditor} />
-              </div>
-              <Footer note="When it’s read, the editor opens on it so you can check it.">
-                <Dialog.Close className={backButton}>Cancel</Dialog.Close>
-              </Footer>
-            </>
-          )}
-
-          {step === 'build' &&
-            (profile.data && hasRoles ? (
-              <BuildFromProfile
-                profile={profile.data}
-                user={user.data}
-                onReady={openEditor}
-                footer={({ note, label, busyLabel, busy, onAction }) => (
-                  <Footer note={note}>
-                    <Dialog.Close className={backButton}>Cancel</Dialog.Close>
-                    <button
-                      type="button"
-                      onClick={onAction}
-                      disabled={busy}
-                      className={primaryButton}
-                    >
-                      <SparkleIllustration aria-hidden className="h-auto w-4" />
-                      <StableLabel label={label} busyLabel={busyLabel} busy={busy} />
-                    </button>
-                  </Footer>
-                )}
-              />
-            ) : (
-              <div className="px-7 py-5">
-                <p className="rounded-lg bg-surface-muted p-4 text-body-l text-text-primary">
-                  Your profile has no roles yet, so there is nothing true to build from.{' '}
-                  <Link
-                    href={'/profile' as Route}
-                    onClick={() => close(false)}
-                    className="font-semibold text-text-brand hover:underline"
-                  >
-                    Fill in my profile
-                  </Link>
-                </p>
-              </div>
-            ))}
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+            )}
+          />
+        ) : (
+          <div className="px-7 py-5">
+            <p className="rounded-lg bg-surface-muted p-4 text-body-l text-text-primary">
+              Your profile has no roles yet, so there is nothing true to build from.{' '}
+              <Link
+                href={'/profile' as Route}
+                onClick={() => close(false)}
+                className="font-semibold text-text-brand hover:underline"
+              >
+                Fill in my profile
+              </Link>
+            </p>
+          </div>
+        ))}
+    </Dialog>
   );
 }

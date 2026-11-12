@@ -76,7 +76,7 @@ export function TopBar() {
     // (`theme.css`, `toreview.md` §84).
     <header
       className={cn(
-        'sticky top-0 z-20 transition-colors duration-base ease-standard',
+        'sticky top-0 z-topbar transition-colors duration-base ease-standard',
         clear
           ? 'pointer-events-none bg-transparent'
           : 'bg-neutral-100/80 shadow-[0_1px_0_var(--color-border-default)] backdrop-blur-md',

@@ -42,7 +42,7 @@ export function Toaster() {
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed right-6 bottom-6 z-50 flex max-w-sm flex-col items-end"
+      className="pointer-events-none fixed right-6 bottom-6 z-toast flex max-w-sm flex-col items-end"
     >
       {shown && (
         <ToastBar

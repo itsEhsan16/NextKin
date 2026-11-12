@@ -59,7 +59,7 @@ const RULES: Rule[] = [
   {
     name: 'numeric z-index',
     pattern: /\bz-(?:\d+|\[[^\]]+\])/g,
-    ceiling: 44,
+    ceiling: 13,
     fix: 'use a z-layer token once R2 adds them (`02-tokens.md` §2.14)',
   },
   {
@@ -92,7 +92,7 @@ const RULES: Rule[] = [
     // narrower rules above on purpose: this is the total to drive down.
     name: 'other arbitrary values',
     pattern: /\b(?!grid-(?:cols|rows)-)[a-z][a-z0-9-]*-\[(?!var\()[^\]]+\]/g,
-    ceiling: 853,
+    ceiling: 810,
     fix: 'use a spacing, size or container token; add one if the value repeats',
   },
 ];
