@@ -2,41 +2,34 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
-import { brandButton } from './brandButton';
-import { dangerOutlineButton } from './dangerOutlineButton';
-import { outlineButton } from './outlineButton';
-import { pressable } from './pressable';
+import {
+  BUTTON_SIZE,
+  BUTTON_VARIANT,
+  ICON_BUTTON_SIZE,
+  type ButtonSize,
+  type ButtonVariant,
+} from './buttonStyles';
 import { Spinner } from './Spinner';
 import { StableLabel } from './StableLabel';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
-export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
+export type { ButtonSize, ButtonVariant };
 
-const VARIANT: Record<ButtonVariant, string> = {
-  primary: brandButton,
-  secondary: outlineButton,
-  ghost: `inline-flex items-center justify-center text-text-secondary ${pressable} not-disabled:not-aria-disabled:hover:bg-surface-muted not-disabled:not-aria-disabled:hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60`,
-  danger: dangerOutlineButton,
-};
-
-const SIZE: Record<ButtonSize, string> = {
-  sm: 'h-control-sm gap-1.5 rounded-md px-3.5 text-body-m font-semibold',
-  md: 'h-control-md gap-2 rounded-md px-4 text-body-m font-semibold',
-  lg: 'h-control-lg gap-2 rounded-md px-5 text-body-l font-semibold',
-  xl: 'h-control-xl gap-2.5 rounded-lg px-6 text-body-l font-semibold',
-};
-
-/**
- * One button look for the flows (toreview §131), as classes for a `Link` that has to look like a
- * button. `primary` is the flat brand action; the bevelled `primaryButton` stays on the two
- * boards that draw a bevel (the AI card, Upgrade).
- */
 export function buttonClass({
   variant = 'primary',
   size = 'md',
   pill = false,
-}: { variant?: ButtonVariant; size?: ButtonSize; pill?: boolean } = {}): string {
-  return cn(VARIANT[variant], SIZE[size], pill && 'rounded-full');
+  iconOnly = false,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  pill?: boolean;
+  iconOnly?: boolean;
+} = {}): string {
+  return cn(
+    BUTTON_VARIANT[variant],
+    iconOnly ? ICON_BUTTON_SIZE[size] : BUTTON_SIZE[size],
+    pill && 'rounded-full',
+  );
 }
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -53,6 +46,8 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   busyLabel?: string;
   /** Fully round ends: the reference shots' pill CTAs (toreview §132). */
   pill?: boolean;
+  /** A square button holding only `icon`; it must carry an `aria-label`. */
+  iconOnly?: boolean;
 };
 
 /** The flows' button (toreview §131): variants, sizes, and a loading state that guards itself. */
@@ -64,6 +59,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     loading = false,
     busyLabel,
     pill = false,
+    iconOnly = false,
     disabled,
     className,
     children,
@@ -84,7 +80,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={cn(buttonClass({ variant, size, pill }), className)}
+      className={cn(buttonClass({ variant, size, pill, iconOnly }), className)}
       {...rest}
     >
       {loading ? <Spinner /> : icon}

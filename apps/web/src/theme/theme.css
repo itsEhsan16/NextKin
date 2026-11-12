@@ -165,14 +165,8 @@
   --color-text-company: var(--color-neutral-500);
   --color-text-caveat: #3b28f0;
 
-  /*
-   * The primary button is drawn as two stacked shapes, not a flat fill (286:722): a lighter rim
-   * with a deeper face inset ~1px inside it, which reads as a soft bevel. Neither value is
-   * brand/600 — #4f46e5 sits between them — so the pair is imported from the board the way
-   * `danger-dot` and `radius-panel` were.
-   */
-  --color-button-rim: #6461f0;
-  --color-button-face: #4039d6;
+  /* `button-rim` / `button-face` (the bevelled primary) were retired with the bevel (owner,
+     2026-11-12, redesign R3b): every primary is the flat `action-primary`. */
 
   /* Type — Plus Jakarta Sans throughout, wired up in layout.tsx via next/font */
 

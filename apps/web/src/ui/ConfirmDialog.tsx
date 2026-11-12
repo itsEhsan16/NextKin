@@ -3,9 +3,8 @@
 import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
 import type { ReactNode } from 'react';
 
-import { cn } from '@/lib/cn';
 import { TrashIcon } from '@/ui/icons';
-import { outlineButton } from '@/ui/outlineButton';
+import { Button } from '@/ui/Button';
 import { StableLabel } from '@/ui/StableLabel';
 
 /**
@@ -55,28 +54,18 @@ export function ConfirmDialog({
         {children}
       </div>
       <div className="flex flex-wrap justify-end gap-3 px-7 pb-7 pt-3">
-        <button
-          type="button"
-          autoFocus
-          disabled={busy}
-          onClick={onCancel}
-          className={cn(outlineButton, 'h-control-lg rounded-md px-5 text-body-l font-semibold')}
-        >
+        <Button autoFocus variant="secondary" size="lg" disabled={busy} onClick={onCancel}>
           {cancelLabel}
-        </button>
-        <button
-          type="button"
+        </Button>
+        {/* Solid red or brand from the one button map (redesign R3b); it was hand-rolled. */}
+        <Button
+          variant={tone === 'danger' ? 'danger' : 'primary'}
+          size="lg"
           disabled={busy}
           onClick={onConfirm}
-          className={cn(
-            'inline-flex h-control-lg items-center justify-center rounded-md px-5 text-body-l font-semibold text-text-inverse transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60',
-            tone === 'danger'
-              ? 'bg-danger-600 hover:bg-danger-text focus-visible:outline-danger-600'
-              : 'bg-brand-600 hover:bg-brand-700 focus-visible:outline-brand-600',
-          )}
         >
           <StableLabel label={confirmLabel} busyLabel={busyLabel ?? confirmLabel} busy={busy} />
-        </button>
+        </Button>
       </div>
     </Dialog>
   );

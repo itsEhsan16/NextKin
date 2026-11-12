@@ -47,8 +47,6 @@ export const colors = {
   borderSelected: '#6366f1',
 
   dangerDot: '#ff4148',
-  buttonRim: '#6461f0',
-  buttonFace: '#4039d6',
   successText: '#15803d',
   successSurface: '#ecfdf5',
 

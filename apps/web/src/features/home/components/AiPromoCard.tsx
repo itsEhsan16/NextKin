@@ -27,7 +27,10 @@ export function AiPromoCard() {
         </p>
         <Link
           href="/assistant"
-          className={cn(primaryButton, 'mt-5 h-control-md gap-2 rounded-full pl-4 pr-5 text-body-m')}
+          className={cn(
+            primaryButton,
+            'mt-5 h-control-md gap-2 rounded-full pl-4 pr-5 text-body-m',
+          )}
         >
           <AiSparkIcon className="h-[18px] w-[17px]" />
           Ask AI Assistant
