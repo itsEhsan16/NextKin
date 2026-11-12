@@ -41,8 +41,12 @@ describe('DocumentViewerScreen (563:1377)', () => {
     expect(within(details).getByText('Google, Bengaluru')).toBeInTheDocument();
     expect(within(details).getByText('Lead UX Designer (GOO-UX-10234)')).toBeInTheDocument();
 
+    // Honest about where applying happens (redesign R6d, DC-13): this letter's job once the jobs
+    // have loaded, the jobs list until then.
     expect(
-      screen.getByRole('link', { name: /Use this document in your applications/ }),
+      screen.getByRole('link', {
+        name: /Open the job this letter is for|Find a job to send it with/,
+      }),
     ).toHaveAttribute('href', expect.stringMatching(/^\/jobs/));
     const others = screen.getByRole('region', { name: 'Other cover letters' });
     expect(within(others).getByRole('link', { name: /Cover Letter - CRED/ })).toHaveAttribute(
@@ -74,8 +78,13 @@ describe('DocumentViewerScreen (563:1377)', () => {
   it('opens the letter’s own job, and says the file actions are coming', async () => {
     renderWithQuery(<DocumentViewerScreen id="doc_cover_google" />);
     await screen.findByRole('article', { name: 'Google cover letter' }, wait);
-    const callout = screen.getByRole('link', { name: /Use this document in your applications/ });
-    await waitFor(() => expect(callout).toHaveAttribute('href', '/jobs?job=job_google'), wait);
+    await waitFor(
+      () =>
+        expect(
+          screen.getByRole('link', { name: /Open the job this letter is for/ }),
+        ).toHaveAttribute('href', '/jobs?job=job_google'),
+      wait,
+    );
     expect(screen.getByRole('button', { name: 'More actions' })).toHaveAttribute(
       'aria-disabled',
       'true',

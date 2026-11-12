@@ -10,7 +10,6 @@ import { Skeleton } from '@/ui/Skeleton';
 import { CalendarIcon, IdCardIcon } from '@/ui/icons';
 
 import type { ApplicationStage } from '../applicationStage';
-import { ApplicationStatusBadge } from './ApplicationStatusBadge';
 
 export type ApplicationSubmissionTabProps = { row: ApplicationWithJob; stage: ApplicationStage };
 
@@ -50,9 +49,6 @@ export function ApplicationSubmissionTab({ row, stage }: ApplicationSubmissionTa
           {formatShortDate(application.interviewAt)}
         </DetailRow>
       )}
-      <DetailRow icon={<IdCardIcon className="size-4" />} label="Status">
-        <ApplicationStatusBadge stage={stage} />
-      </DetailRow>
     </dl>
   );
 }

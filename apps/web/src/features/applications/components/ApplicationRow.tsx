@@ -51,7 +51,7 @@ export function ApplicationRow({ row, selected, onSelect }: ApplicationRowProps)
         <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="tile" />
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h3 className="truncate text-title-l font-semibold text-neutral-800">{job.title}</h3>
+          <h3 className="truncate text-title-l font-semibold text-text-primary">{job.title}</h3>
           <p className="truncate text-body-m text-text-company">{job.company}</p>
           <JobMetaRow job={job} fields={['location', 'type']} className="pt-1" />
         </div>

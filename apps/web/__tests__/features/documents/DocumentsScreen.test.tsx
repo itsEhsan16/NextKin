@@ -48,9 +48,8 @@ describe('DocumentsScreen', () => {
       screen.getByText('Organize your important career documents and access them anytime.'),
     ).toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: 'Search documents' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Sort documents: Last updated' }),
-    ).toBeInTheDocument();
+    // One sort control, the results bar's (redesign R6d, DC-03).
+    expect(screen.queryByRole('button', { name: /^Sort documents/ })).toBeNull();
     expect(screen.getByRole('button', { name: 'Sort by: Last updated' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'List view' })).toHaveAttribute(
       'aria-pressed',
@@ -80,7 +79,7 @@ describe('DocumentsScreen', () => {
       expect(row(title).getByText(tag)).toBeInTheDocument();
     }
     expect(screen.getByRole('button', { name: BOARD_ROWS[0][0] })).toHaveAttribute(
-      'aria-current',
+      'aria-pressed',
       'true',
     );
 
@@ -125,9 +124,11 @@ describe('DocumentsScreen', () => {
       within(panel).getByText(/^has successfully completed the Google Software Engineering/),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByRole('link', { name: /Use this document in your applications/ }),
-    ).toHaveAttribute('href', '/jobs');
+    // No attach exists: applying is on the employer's site (DC-13).
+    expect(screen.getByRole('link', { name: /Find a job to send it with/ })).toHaveAttribute(
+      'href',
+      '/jobs',
+    );
   });
 
   it('narrows the list to one group, with the résumé under Other', async () => {
@@ -163,13 +164,13 @@ describe('DocumentsScreen', () => {
     expect(screen.getByRole('tab', { name: 'Certificates (0)' })).toBeInTheDocument();
   });
 
-  it('re-sorts from either sort control', async () => {
+  it('re-sorts from the sort control', async () => {
     const user = userEvent.setup();
     renderWithQuery(<DocumentsScreen />);
     await settle();
 
-    await user.click(screen.getByRole('button', { name: 'Sort documents: Last updated' }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Name' }));
+    await user.click(screen.getByRole('button', { name: 'Sort by: Last updated' }));
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Name' }));
     await user.keyboard('{Escape}');
 
     expect(await screen.findByRole('button', { name: 'Sort by: Name' })).toBeInTheDocument();
@@ -216,11 +217,11 @@ describe('DocumentsScreen', () => {
     expect(screen.getByText('Nothing to preview yet')).toBeInTheDocument();
   });
 
-  it('shows the page-level error state when the user query fails', async () => {
+  it('says the list failed once, with one retry', async () => {
     renderWithQuery(<DocumentsScreen />, 'error');
 
     expect(
-      await screen.findByText('Something went wrong', {}, { timeout: SETTLE_MS.error }),
+      await screen.findByText("Couldn't load your documents", {}, { timeout: SETTLE_MS.error }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });

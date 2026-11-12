@@ -1,12 +1,12 @@
 'use client';
 
 import type { CareerDocument } from '@nextkin/shared/models';
-import { queryPhase, useCurrentUser, useDocuments } from '@nextkin/shared/queries';
+import { queryPhase, useDocuments } from '@nextkin/shared/queries';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 import { PageHeader } from '@/navigation/PageHeader';
-import { pageFillInBar, pageFillMin, pageFrameInBar } from '@/ui/pageFrame';
+import { pageFillInBar, pageFrameInBar } from '@/ui/pageFrame';
 import { PillTabs } from '@/ui/PillTabs';
 import { ResultsBar } from '@/ui/ResultsBar';
 import { StateView } from '@/ui/StateView';
@@ -46,7 +46,6 @@ export function DocumentsScreen() {
   const [view, setView] = useState<DocumentView>('list');
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
 
-  const user = useCurrentUser();
   const documents = useDocuments();
 
   const all = documents.data ?? NONE;
@@ -73,20 +72,6 @@ export function DocumentsScreen() {
     setSearch('');
   };
 
-  if (queryPhase(user) === 'error') {
-    return (
-      <div className={cn(pageFillMin, 'flex items-center justify-center')}>
-        <StateView
-          tone="danger"
-          title="Something went wrong"
-          message="We couldn't load your documents. Check your connection and try again."
-          actionLabel="Try again"
-          onAction={() => void user.refetch()}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className={cn(pageFrameInBar, pageFillInBar, 'flex flex-col')}>
       <PageHeader
@@ -95,66 +80,78 @@ export function DocumentsScreen() {
         subtitle="Organize your important career documents and access them anytime."
       />
 
-      <div className="mt-4 grid min-h-0 flex-1 gap-6 md:grid-cols-[55fr_45fr]">
-        <div className="flex min-h-0 min-w-0 flex-col gap-4">
-          <DocumentsToolbar
-            search={search}
-            onSearchChange={setSearch}
-            sort={sort}
-            onSortChange={setSort}
-            view={view}
-            onViewChange={setView}
+      {/* A list that never loaded is one error with one retry, not one per column; the user query
+          no longer gates the page (redesign R6d). */}
+      {listStatus === 'error' && all.length === 0 ? (
+        <div className="mt-6 flex flex-1 items-center justify-center">
+          <StateView
+            tone="danger"
+            title="Couldn't load your documents"
+            message="Check your connection and try again."
+            actionLabel="Try again"
+            onAction={() => void documents.refetch()}
           />
-          <PillTabs
-            tabs={DOCUMENT_TABS}
-            active={tab}
-            counts={listStatus === 'success' ? counts : undefined}
-            onChange={setTab}
-            label="Document types"
-          />
-          <ResultsBar
-            count={listStatus === 'success' ? visible.length : undefined}
-            loading={listStatus === 'pending'}
-            noun={{ one: 'document', other: 'documents' }}
-            sort={sort}
-            sortOptions={DOCUMENT_SORT_OPTIONS}
-            onSortChange={setSort}
-            sortLabel={`Sort by: ${DOCUMENT_SORT_OPTIONS[sort]}`}
-          />
-
-          {/* The page's one scroller, 8px wider than the column either side so the selected
-              row's ring and shadow aren't clipped. */}
-          <div className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto px-2 pb-5 pt-1 [scrollbar-width:thin]">
-            <DocumentList
-              documents={visible}
-              status={listStatus}
-              hasAny={all.length > 0}
-              view={view}
-              selectedId={selected?.id}
-              onSelect={setSelectedId}
-              onRetry={() => void documents.refetch()}
-              onReset={reset}
-            />
-          </div>
         </div>
+      ) : (
+        <div className="mt-4 grid min-h-0 flex-1 gap-6 md:grid-cols-[55fr_45fr]">
+          <div className="flex min-h-0 min-w-0 flex-col gap-4">
+            <DocumentsToolbar
+              search={search}
+              onSearchChange={setSearch}
+              view={view}
+              onViewChange={setView}
+            />
+            <PillTabs
+              tabs={DOCUMENT_TABS}
+              active={tab}
+              counts={listStatus === 'success' ? counts : undefined}
+              onChange={setTab}
+              label="Document types"
+            />
+            <ResultsBar
+              count={listStatus === 'success' ? visible.length : undefined}
+              loading={listStatus === 'pending'}
+              noun={{ one: 'document', other: 'documents' }}
+              sort={sort}
+              sortOptions={DOCUMENT_SORT_OPTIONS}
+              onSortChange={setSort}
+              sortLabel={`Sort by: ${DOCUMENT_SORT_OPTIONS[sort]}`}
+            />
 
-        <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
-          {/* Where the board puts the character (304:683): over the card's top-left corner, rising
+            {/* The page's one scroller, 8px wider than the column either side so the selected
+              row's ring and shadow aren't clipped. */}
+            <div className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto px-2 pb-5 pt-1 scrollbar-thin">
+              <DocumentList
+                documents={visible}
+                status={listStatus}
+                hasAny={all.length > 0}
+                view={view}
+                selectedId={selected?.id}
+                onSelect={setSelectedId}
+                onRetry={() => void documents.refetch()}
+                onReset={reset}
+              />
+            </div>
+          </div>
+
+          <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
+            {/* Where the board puts the character (304:683): over the card's top-left corner, rising
               out of the header band with its feet 8px under the card's top edge, the caption to its
               right. The card starts 36px down this column to give it that room. Anchored to the
               column, like the other pages' art, so it holds at every width with the sidebar open
               or shut. Painted first: the card sits above it. */}
-          <DocumentsIllustration className="absolute -left-1 -top-12" />
+            <DocumentsIllustration className="absolute -left-1 -top-12" />
 
-          <DocumentDetailPanel
-            className="relative mt-9"
-            document={selected}
-            status={detailStatus}
-            hasAny={all.length > 0}
-            onRetry={() => void documents.refetch()}
-          />
+            <DocumentDetailPanel
+              className="relative mt-9"
+              document={selected}
+              status={detailStatus}
+              hasAny={all.length > 0}
+              onRetry={() => void documents.refetch()}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

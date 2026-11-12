@@ -1,5 +1,7 @@
 import type { CareerDocument } from '@nextkin/shared/models';
 
+import { useId } from 'react';
+
 import { cn } from '@/lib/cn';
 import { iconButton } from '@/ui/iconButton';
 import { MoreVerticalIcon } from '@/ui/icons';
@@ -25,6 +27,7 @@ export type DocumentRowProps = {
  * selected row takes the lists' 2px indigo edge.
  */
 export function DocumentRow({ document, selected, onSelect, view }: DocumentRowProps) {
+  const metaId = useId();
   const kebab = (
     // Drawn on every row (286:2130) with no menu behind it; inert, like the other lists' kebabs.
     <Soon>
@@ -48,8 +51,10 @@ export function DocumentRow({ document, selected, onSelect, view }: DocumentRowP
       <button
         type="button"
         onClick={onSelect}
-        aria-current={selected ? 'true' : undefined}
+        aria-pressed={selected}
         aria-label={document.title}
+        // What it is, how big and how old, so similar names stay apart (redesign R6d, DC-08).
+        aria-describedby={metaId}
         className="peer absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       />
 
@@ -73,8 +78,12 @@ export function DocumentRow({ document, selected, onSelect, view }: DocumentRowP
         )}
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-title-l font-semibold text-neutral-800">{document.title}</h3>
-          <p className="mt-0.5 truncate text-body-m text-text-tertiary">{documentMeta(document)}</p>
+          <h3 className="truncate text-title-l font-semibold text-text-primary">
+            {document.title}
+          </h3>
+          <p id={metaId} className="mt-0.5 truncate text-body-m text-text-tertiary">
+            {documentMeta(document)}
+          </p>
           <Tag tone={KIND_TONE[document.kind]} className="mt-2.5">
             {KIND_LABEL[document.kind]}
           </Tag>

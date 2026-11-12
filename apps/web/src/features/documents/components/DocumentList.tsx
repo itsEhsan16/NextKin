@@ -64,7 +64,7 @@ export function DocumentList({
       <StateView
         className={reveal ? 'animate-reveal' : undefined}
         title="No documents yet"
-        message="Certificates, cover letters and ID proofs you upload will show up here."
+        message="Uploading certificates and ID proofs is coming soon. Letters you write are in Resumes."
       />
     );
   }

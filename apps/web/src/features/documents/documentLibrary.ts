@@ -95,13 +95,21 @@ export const documentMeta = (document: CareerDocument): string =>
     formatUpdated(document.updatedAt),
   ].join(' • ');
 
-/** "Search documents..." (286:2069): over the title and the kind. */
+/**
+ * "Search documents…" (286:2069): over the title and the kind, and the company and role a letter
+ * is for, and a certificate's issuer (redesign R6d, audit DC-07), as the resume search covers
+ * companies.
+ */
 export function matchesDocumentSearch(document: CareerDocument, query: string): boolean {
   const needle = query.trim().toLowerCase();
   if (!needle) return true;
-  return [document.title, KIND_LABEL[document.kind]].some((field) =>
-    field.toLowerCase().includes(needle),
-  );
+  return [
+    document.title,
+    KIND_LABEL[document.kind],
+    document.coverLetter?.company,
+    document.coverLetter?.role,
+    document.certificate?.issuer,
+  ].some((field) => field?.toLowerCase().includes(needle));
 }
 
 /** The list's two layouts (286:2080, 286:2084). The board draws the list; the grid is ours. */

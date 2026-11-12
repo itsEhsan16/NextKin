@@ -6,7 +6,6 @@ import type { ComponentType, ReactNode, SVGProps } from 'react';
 import { cn } from '@/lib/cn';
 import { formatCoarseAge, formatFileSize, formatUpdated } from '@/lib/format';
 import { resolveLogo } from '@/ui/assets';
-import { brandButton } from '@/ui/brandButton';
 import {
   BriefcaseIcon,
   CalendarIcon,
@@ -134,8 +133,12 @@ export function ViewerDetailsCard({
 
       <div className="mt-5 flex gap-2.5">
         <Soon>
-          <button aria-disabled="true" type="button" className={cn(brandButton, ACTION, 'flex-1')}>
-            <DownloadIcon aria-hidden className="size-4 shrink-0" />
+          <button
+            aria-disabled="true"
+            type="button"
+            className={cn(outlineButton, ACTION, 'flex-1', soonControl)}
+          >
+            <DownloadIcon aria-hidden className="size-4 shrink-0 text-text-secondary" />
             Download
           </button>
         </Soon>
@@ -143,7 +146,7 @@ export function ViewerDetailsCard({
           <button
             aria-disabled="true"
             type="button"
-            className={cn(outlineButton, ACTION, 'flex-1')}
+            className={cn(outlineButton, ACTION, 'flex-1', soonControl)}
           >
             <LinkIcon aria-hidden className="size-4 shrink-0 text-text-secondary" />
             Share

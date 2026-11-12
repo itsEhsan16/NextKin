@@ -3,8 +3,14 @@
 import { useLayoutEffect, useRef } from 'react';
 
 import { cn } from '@/lib/cn';
+import { SoonTag } from '@/ui/Soon';
 
-export type UnderlineTab<T extends string> = { id: T; label: string };
+export type UnderlineTab<T extends string> = {
+  id: T;
+  label: string;
+  /** What it holds isn't built yet: the tab says "Soon" beside its name (redesign R6d). */
+  soon?: boolean;
+};
 
 export type UnderlineTabsProps<T extends string> = {
   tabs: readonly UnderlineTab<T>[];
@@ -115,6 +121,7 @@ export function UnderlineTabs<T extends string>({
           )}
         >
           {tab.label}
+          {tab.soon && <SoonTag className="ml-1.5 align-middle" />}
         </button>
       ))}
       <span

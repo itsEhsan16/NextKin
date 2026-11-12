@@ -3,17 +3,11 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { ArrowRight } from '@/ui/lineIcons';
 import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
 import { brandButton } from '@/ui/brandButton';
-import {
-  DownloadIcon,
-  EllipsisIcon,
-  LinkIcon,
-  MoreVerticalIcon,
-  OpenInNewIcon,
-  SendIcon,
-} from '@/ui/icons';
+import { DownloadIcon, EllipsisIcon, LinkIcon, MoreVerticalIcon, SendIcon } from '@/ui/icons';
 import { iconButton } from '@/ui/iconButton';
 import { outlineButton } from '@/ui/outlineButton';
 import { Skeleton } from '@/ui/Skeleton';
@@ -22,7 +16,7 @@ import { StateView } from '@/ui/StateView';
 import { documentMeta } from '../documentLibrary';
 import { DocumentPreview } from './DocumentPreview';
 import { FileTypeTile } from './FileTypeTile';
-import { useLetterJob } from '../useLetterJob';
+import { applyCopy, useLetterJob } from '../useLetterJob';
 import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Soon, soonControl } from '@/ui/Soon';
 
@@ -37,7 +31,7 @@ export type DocumentDetailPanelProps = {
 
 const CARD = cardSurface;
 const ACTION =
-  'h-control-lg flex-1 gap-2 whitespace-nowrap rounded-md px-2 text-body-l font-semibold';
+  'h-control-lg flex-1 gap-2 whitespace-nowrap rounded-md px-3 text-body-l font-semibold';
 
 /**
  * The right column (286:2217): the open document's card and, under it, the way into applying with
@@ -53,9 +47,10 @@ export function DocumentDetailPanel({
 }: DocumentDetailPanelProps) {
   const reveal = useReveal(status === 'success', document?.id);
   const applyHref = useLetterJob(document);
+  const apply = document ? applyCopy(document, applyHref) : undefined;
 
   return (
-    <div className={cn('min-h-0 overflow-y-auto [scrollbar-width:thin]', className)}>
+    <div className={cn('min-h-0 overflow-y-auto scrollbar-thin', className)}>
       {status === 'empty' && (
         <div className={cn(CARD, 'p-6')}>
           {hasAny ? (
@@ -66,7 +61,7 @@ export function DocumentDetailPanel({
           ) : (
             <StateView
               title="Nothing to preview yet"
-              message="Upload a document and its preview will show here."
+              message="When a document is here, its preview shows here."
             />
           )}
         </div>
@@ -105,11 +100,13 @@ export function DocumentDetailPanel({
       {status === 'success' && document && (
         <>
           <DocumentDetailCard key={document.id} document={document} reveal={reveal} />
-          {/* 286:2294. Attaching happens where you apply: the letter's own job, or the jobs. */}
+          {/* 286:2294, honest about where applying happens (DC-13): not an AI suggestion, so the
+              muted tone. */}
           <div className="mt-4">
             <AiCallout
-              title="Use this document in your applications"
-              message="Attach this document directly when applying to jobs."
+              tone="muted"
+              title={apply?.title ?? ''}
+              message={apply?.message ?? ''}
               href={applyHref}
               icon={<SendIcon className="size-5 shrink-0 text-brand-600" />}
             />
@@ -135,7 +132,7 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
       <div className="flex items-center gap-4">
         <FileTypeTile format={document.format} size="card" />
         <div className="min-w-0 flex-1">
-          <h2 className="text-h2 text-neutral-800">{document.title}</h2>
+          <h2 className="text-h2 text-text-primary">{document.title}</h2>
           <p className="mt-1 text-body-m text-text-tertiary">{documentMeta(document)}</p>
         </div>
         <Soon>
@@ -154,20 +151,33 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
         </Soon>
       </div>
 
-      <div className="mt-5 flex gap-2.5">
+      {/* One row from 1024: below 1280 Download and Share drop their icons, and a narrower card wraps (DC-16). Open stays in this tab, so its arrow says so
+          (DC-15); Download and Share read as unavailable, not just say it on hover. */}
+      <div className="mt-5 flex flex-wrap gap-2.5">
         <Link href={`/documents/${document.id}` as Route} className={cn(brandButton, ACTION)}>
           Open
-          <OpenInNewIcon className="size-4 shrink-0" />
+          <ArrowRight aria-hidden className="size-4 shrink-0" />
         </Link>
         <Soon>
-          <button aria-disabled="true" type="button" className={cn(outlineButton, ACTION)}>
-            <DownloadIcon className="size-4 shrink-0 text-text-secondary" />
+          <button
+            aria-disabled="true"
+            type="button"
+            className={cn(outlineButton, ACTION, soonControl)}
+          >
+            <DownloadIcon
+              aria-hidden
+              className="size-4 shrink-0 text-text-secondary max-xl:hidden"
+            />
             Download
           </button>
         </Soon>
         <Soon>
-          <button aria-disabled="true" type="button" className={cn(outlineButton, ACTION)}>
-            <LinkIcon className="size-4 shrink-0 text-text-secondary" />
+          <button
+            aria-disabled="true"
+            type="button"
+            className={cn(outlineButton, ACTION, soonControl)}
+          >
+            <LinkIcon aria-hidden className="size-4 shrink-0 text-text-secondary max-xl:hidden" />
             Share
           </button>
         </Soon>

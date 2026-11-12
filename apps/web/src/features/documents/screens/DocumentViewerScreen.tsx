@@ -20,7 +20,7 @@ import { LetterSheet } from '../components/LetterSheet';
 import { OtherDocumentsCard } from '../components/OtherDocumentsCard';
 import { ViewerDetailsCard } from '../components/ViewerDetailsCard';
 import { documentMeta } from '../documentLibrary';
-import { useLetterJob } from '../useLetterJob';
+import { applyCopy, useLetterJob } from '../useLetterJob';
 
 /** The page itself, on the board's grey stage (563:1720). */
 function Stage({ document }: { document: CareerDocument }) {
@@ -154,8 +154,9 @@ export function DocumentViewerScreen({ id }: { id: string }) {
             <ViewerDetailsCard document={document} roleHref={applyHref} />
             {/* 580:230. Attaching happens where you apply: the letter's own job, or the jobs. */}
             <AiCallout
-              title="Use this document in your applications"
-              message="Attach this document directly when applying to jobs."
+              tone="muted"
+              title={applyCopy(document, applyHref).title}
+              message={applyCopy(document, applyHref).message}
               href={applyHref}
               icon={<ProfilePaperPlaneIllustration aria-hidden className="h-auto w-12 shrink-0" />}
             />

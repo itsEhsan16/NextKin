@@ -1,17 +1,13 @@
 'use client';
 
-import type { ApplicationWithJob } from '@nextkin/shared/models';
-import {
-  queryPhase,
-  useApplications,
-  useCurrentUser,
-  useUpdateApplicationStatus,
-} from '@nextkin/shared/queries';
+import type { ApplicationStatus, ApplicationWithJob } from '@nextkin/shared/models';
+import { queryPhase, useApplications, useUpdateApplicationStatus } from '@nextkin/shared/queries';
 import { useMemo, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { showToast } from '@/lib/toast';
 import { PageHeader } from '@/navigation/PageHeader';
-import { pageFillInBar, pageFillMin, pageFrameInBar } from '@/ui/pageFrame';
+import { pageFillInBar, pageFrameInBar } from '@/ui/pageFrame';
 import { PillTabs } from '@/ui/PillTabs';
 import { ResultsBar } from '@/ui/ResultsBar';
 import { StateView } from '@/ui/StateView';
@@ -24,7 +20,14 @@ import {
   type ApplicationFilters,
   type ApplicationSort,
 } from '../applicationFilters';
-import { countByTab, inTab, STAGE_TABS, stageOf, type StageTab } from '../applicationStage';
+import {
+  countByTab,
+  inTab,
+  STAGE_LABEL,
+  STAGE_TABS,
+  stageOf,
+  type StageTab,
+} from '../applicationStage';
 import { ApplicationDetailPanel } from '../components/ApplicationDetailPanel';
 import { ApplicationFilterChipsRow } from '../components/ApplicationFilterChipsRow';
 import { ApplicationList } from '../components/ApplicationList';
@@ -48,7 +51,6 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
   const [sort, setSort] = useState<ApplicationSort>('recent');
   const [selectedId, setSelectedId] = useState<string | undefined>(initialId);
 
-  const user = useCurrentUser();
   const applications = useApplications();
   const updateStatus = useUpdateApplicationStatus();
 
@@ -73,19 +75,24 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
     setTab('all');
   };
 
-  if (queryPhase(user) === 'error') {
-    return (
-      <div className={cn(pageFillMin, 'flex items-center justify-center')}>
-        <StateView
-          tone="danger"
-          title="Something went wrong"
-          message="We couldn't load your applications. Check your connection and try again."
-          actionLabel="Try again"
-          onAction={() => void user.refetch()}
-        />
-      </div>
+  // Where it moved, with the way back; a failure says so and the badge goes back (AP-08).
+  const changeStatus = (row: ApplicationWithJob, status: ApplicationStatus) => {
+    const before = row.application.status;
+    const id = row.application.id;
+    updateStatus.mutate(
+      { id, status },
+      {
+        onSuccess: () =>
+          showToast(`Moved to ${STAGE_LABEL[status]}`, {
+            action: {
+              label: 'Undo',
+              onClick: () => updateStatus.mutate({ id, status: before }),
+            },
+          }),
+        onError: () => showToast('We couldn’t update the status. Try again.', { tone: 'error' }),
+      },
     );
-  }
+  };
 
   return (
     <div className={cn(pageFrameInBar, pageFillInBar, 'flex flex-col')}>
@@ -95,68 +102,81 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
         subtitle="Stay organized, follow up, and never miss an opportunity."
       />
 
-      <div className="mt-4 grid min-h-0 flex-1 grid-cols-[56fr_44fr] gap-6">
-        <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
-          {/* Where the board puts the character (304:3093): under the search field, rising out of
+      {/* A list that never loaded is one error with one retry, not one per column; the user query
+          no longer gates the page (redesign R6d). */}
+      {listStatus === 'error' && all.length === 0 ? (
+        <div className="mt-6 flex flex-1 items-center justify-center">
+          <StateView
+            tone="danger"
+            title="Couldn't load your applications"
+            message="Check your connection and try again."
+            actionLabel="Try again"
+            onAction={() => void applications.refetch()}
+          />
+        </div>
+      ) : (
+        <div className="mt-4 grid min-h-0 flex-1 grid-cols-[56fr_44fr] gap-6">
+          <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
+            {/* Where the board puts the character (304:3093): under the search field, rising out of
               the header band over this column's top-right corner, its right edge running 60px on
               under the detail card and its caption just above that card. Anchored to this column
               like the Jobs character, so it holds its place at every width and with the sidebar
               open or shut. Painted first: the pills and the detail card sit above it. */}
-          <ApplicationsIllustration className="absolute -right-[60px] -top-[50px]" />
+            <ApplicationsIllustration className="absolute -right-[60px] -top-[50px]" />
 
-          {/* The pills wrap short of the drawing's left edge (189 - 60 = 129px in from the right),
+            {/* The pills wrap short of the drawing's left edge (189 - 60 = 129px in from the right),
               which leaves "Withdrawn" on a line of its own at most widths, as drawn. */}
-          <PillTabs
-            tabs={STAGE_TABS}
-            active={tab}
-            counts={listStatus === 'success' ? counts : undefined}
-            onChange={setTab}
-            label="Application status"
-            className="relative pr-[129px]"
-          />
-          <ApplicationFilterChipsRow
-            filters={filters}
-            onChange={(patch) => setFilters((current) => ({ ...current, ...patch }))}
-            onReset={reset}
-            rows={all}
-          />
-          <ResultsBar
-            count={listStatus === 'success' ? visible.length : undefined}
-            loading={listStatus === 'pending'}
-            noun={{ one: 'application', other: 'applications' }}
-            sort={sort}
-            sortOptions={APPLICATION_SORT_LABEL}
-            onSortChange={setSort}
-            sortLabel={`Sort by: ${APPLICATION_SORT_LABEL[sort]}`}
-          />
-
-          {/* The page's one scroller, 8px wider than the column either side so the selected
-              row's ring and shadow aren't clipped. */}
-          <div className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto px-2 pb-5 pt-1 [scrollbar-width:thin]">
-            <ApplicationList
-              rows={visible}
-              status={listStatus}
-              hasAny={all.length > 0}
-              selectedId={selected?.application.id}
-              onSelect={setSelectedId}
-              onRetry={() => void applications.refetch()}
+            <PillTabs
+              tabs={STAGE_TABS}
+              active={tab}
+              counts={listStatus === 'success' ? counts : undefined}
+              onChange={setTab}
+              label="Application status"
+              className="relative pr-[129px]"
+            />
+            <ApplicationFilterChipsRow
+              filters={filters}
+              onChange={(patch) => setFilters((current) => ({ ...current, ...patch }))}
               onReset={reset}
+              rows={all}
+            />
+            <ResultsBar
+              count={listStatus === 'success' ? visible.length : undefined}
+              loading={listStatus === 'pending'}
+              noun={{ one: 'application', other: 'applications' }}
+              sort={sort}
+              sortOptions={APPLICATION_SORT_LABEL}
+              onSortChange={setSort}
+              sortLabel={`Sort by: ${APPLICATION_SORT_LABEL[sort]}`}
+            />
+
+            {/* The page's one scroller, 8px wider than the column either side so the selected
+              row's ring and shadow aren't clipped. */}
+            <div className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto px-2 pb-5 pt-1 scrollbar-thin">
+              <ApplicationList
+                rows={visible}
+                status={listStatus}
+                hasAny={all.length > 0}
+                selectedId={selected?.application.id}
+                onSelect={setSelectedId}
+                onRetry={() => void applications.refetch()}
+                onReset={reset}
+              />
+            </div>
+          </div>
+
+          <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
+            <ApplicationDetailPanel
+              row={selected}
+              status={detailStatus}
+              hasAny={all.length > 0}
+              onRetry={() => void applications.refetch()}
+              saving={updateStatus.isPending}
+              onUpdateStatus={(status) => selected && changeStatus(selected, status)}
             />
           </div>
         </div>
-
-        <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
-          <ApplicationDetailPanel
-            row={selected}
-            status={detailStatus}
-            hasAny={all.length > 0}
-            onRetry={() => void applications.refetch()}
-            onUpdateStatus={(status) =>
-              selected && updateStatus.mutate({ id: selected.application.id, status })
-            }
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 }

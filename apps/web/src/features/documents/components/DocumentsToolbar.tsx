@@ -1,17 +1,12 @@
 import { cn } from '@/lib/cn';
-import { FilterCheckboxItem, FilterDropdown } from '@/ui/FilterDropdown';
-import { ChevronDownIcon, GridViewIcon, ListViewIcon, SearchIcon } from '@/ui/icons';
-import { outlineButton } from '@/ui/outlineButton';
-import { chevronTurn, menuTrigger } from '@/ui/menuMotion';
+import { GridViewIcon, ListViewIcon, SearchIcon } from '@/ui/icons';
 
-import { DOCUMENT_SORT_OPTIONS, type DocumentSort, type DocumentView } from '../documentLibrary';
+import type { DocumentView } from '../documentLibrary';
 import { pressable } from '@/ui/pressable';
 
 export type DocumentsToolbarProps = {
   search: string;
   onSearchChange: (value: string) => void;
-  sort: DocumentSort;
-  onSortChange: (sort: DocumentSort) => void;
   view: DocumentView;
   onViewChange: (view: DocumentView) => void;
 };
@@ -22,59 +17,29 @@ const VIEWS = [
 ] as const;
 
 /**
- * The row over the pills (286:2068-2086): the library's search, its sort, and the list/grid
- * switch. The sort is the same order as "Sort by" under the pills, so either control moves both.
+ * The row over the pills (286:2068-2086): the library's search and the list/grid switch. The
+ * board also draws a sort here; "Sort by" under the pills is the one sort, as on Resumes and the
+ * other lists (redesign R6d, audit DC-03).
  */
 export function DocumentsToolbar({
   search,
   onSearchChange,
-  sort,
-  onSortChange,
   view,
   onViewChange,
 }: DocumentsToolbarProps) {
   return (
     <div className="flex items-center gap-3">
-      <label className="flex h-control-lg min-w-0 max-w-sm flex-1 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard hover:border-neutral-400 focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
-        <SearchIcon className="size-4 shrink-0 text-neutral-400" />
+      <label className="flex h-control-lg min-w-0 max-w-sm flex-1 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard hover:border-border-strong focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
+        <SearchIcon aria-hidden className="size-4 shrink-0 text-text-tertiary" />
         <input
           type="search"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search documents..."
+          placeholder="Search documents…"
           aria-label="Search documents"
-          className="min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-neutral-400"
+          className="min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-text-tertiary"
         />
       </label>
-
-      <FilterDropdown
-        trigger={
-          <button
-            type="button"
-            aria-label={`Sort documents: ${DOCUMENT_SORT_OPTIONS[sort]}`}
-            className={cn(
-              outlineButton,
-              'h-control-lg shrink-0 gap-3 rounded-full px-4 text-body-m font-semibold text-neutral-700',
-              menuTrigger,
-            )}
-          >
-            {DOCUMENT_SORT_OPTIONS[sort]}
-            <ChevronDownIcon className={cn('size-4 shrink-0', chevronTurn)} />
-          </button>
-        }
-      >
-        {(Object.entries(DOCUMENT_SORT_OPTIONS) as [DocumentSort, string][]).map(
-          ([value, label]) => (
-            <FilterCheckboxItem
-              key={value}
-              checked={sort === value}
-              onCheckedChange={() => onSortChange(value)}
-            >
-              {label}
-            </FilterCheckboxItem>
-          ),
-        )}
-      </FilterDropdown>
 
       <div
         role="group"

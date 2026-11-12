@@ -70,13 +70,13 @@ export function CertificateSheet({ certificate }: { certificate: CertificateDeta
           <p className="text-body-m font-semibold text-text-primary">
             {formatShortDate(certificate.completedAt)}
           </p>
-          <p className="mt-0.5 text-micro text-neutral-400">Date of completion</p>
+          <p className="mt-0.5 text-caption-m text-text-tertiary">Date of completion</p>
         </div>
         {signer && (
           <div className="flex flex-col items-end text-right">
             {renderSignature?.({ className: 'h-[29px] w-[88px]' })}
             <p className="mt-1.5 text-body-m font-semibold text-text-primary">{signer.name}</p>
-            <p className="mt-0.5 text-micro text-neutral-400">{signer.role}</p>
+            <p className="mt-0.5 text-caption-m text-text-tertiary">{signer.role}</p>
           </div>
         )}
       </div>

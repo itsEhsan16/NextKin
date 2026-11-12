@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { JobMetaRow } from '@/features/jobs/components/JobMetaRow';
 import { jobHref } from '@/features/jobs/jobHref';
 import { cn } from '@/lib/cn';
+import { ArrowRight } from '@/ui/lineIcons';
 import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
 import { brandButton } from '@/ui/brandButton';
@@ -15,7 +16,7 @@ import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
 import { StateView } from '@/ui/StateView';
 import { UnderlineTabs, type UnderlineTab } from '@/ui/UnderlineTabs';
 import { iconButton } from '@/ui/iconButton';
-import { MoreVerticalIcon, OpenInNewIcon } from '@/ui/icons';
+import { MoreVerticalIcon } from '@/ui/icons';
 
 import { stageOf } from '../applicationStage';
 import { ApplicationOverviewTab } from './ApplicationOverviewTab';
@@ -31,8 +32,9 @@ type ApplicationDetailTab = 'overview' | 'application' | 'follow-ups' | 'notes';
 const APPLICATION_DETAIL_TABS: readonly UnderlineTab<ApplicationDetailTab>[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'application', label: 'Application' },
-  { id: 'follow-ups', label: 'Follow-ups' },
-  { id: 'notes', label: 'Notes' },
+  // Drawn on the board (286:1584) with no model behind them yet: they say so (AP-05).
+  { id: 'follow-ups', label: 'Follow-ups', soon: true },
+  { id: 'notes', label: 'Notes', soon: true },
 ];
 
 export type ApplicationDetailPanelProps = {
@@ -42,6 +44,8 @@ export type ApplicationDetailPanelProps = {
   hasAny: boolean;
   onRetry: () => void;
   onUpdateStatus: (status: ApplicationStatus) => void;
+  /** A status change is being saved. */
+  saving?: boolean;
 };
 
 /** The card surface every state shares — the Jobs detail card's. */
@@ -54,6 +58,7 @@ export function ApplicationDetailPanel({
   hasAny,
   onRetry,
   onUpdateStatus,
+  saving = false,
 }: ApplicationDetailPanelProps) {
   const reveal = useReveal(status === 'success', row?.application.id);
 
@@ -102,6 +107,7 @@ export function ApplicationDetailPanel({
       row={row}
       reveal={reveal}
       onUpdateStatus={onUpdateStatus}
+      saving={saving}
     />
   );
 }
@@ -116,11 +122,13 @@ function ApplicationDetailBody({
   row,
   reveal,
   onUpdateStatus,
+  saving,
 }: {
   row: ApplicationWithJob;
   /** Fade the card's contents in: they replace a skeleton, or another application's details. */
   reveal: boolean;
   onUpdateStatus: (status: ApplicationStatus) => void;
+  saving: boolean;
 }) {
   const [tab, setTab] = useState<ApplicationDetailTab>('overview');
   const switched = useReveal(true, tab);
@@ -154,7 +162,7 @@ function ApplicationDetailBody({
         </div>
       </div>
 
-      <h2 className="mt-4 text-h1 text-neutral-800">{job.title}</h2>
+      <h2 className="mt-4 text-h1 text-text-primary">{job.title}</h2>
       <p className="mt-1 text-body-m text-text-company">{job.company}</p>
       <JobMetaRow job={job} className="mt-3" />
 
@@ -164,9 +172,10 @@ function ApplicationDetailBody({
           className={cn(brandButton, 'h-control-lg gap-2 rounded-md text-body-l font-semibold')}
         >
           View Job
-          <OpenInNewIcon className="size-4" />
+          {/* An app page, not a new tab (AP-12). */}
+          <ArrowRight aria-hidden className="size-4" />
         </Link>
-        <UpdateStatusMenu status={application.status} onChange={onUpdateStatus} />
+        <UpdateStatusMenu status={application.status} onChange={onUpdateStatus} saving={saving} />
       </div>
 
       <UnderlineTabs
@@ -200,15 +209,18 @@ function ApplicationDetailBody({
       </div>
 
       {/* "Prepare for your interview" (286:1660) goes to Interview Prep, which is where
-          AI-generated questions for a role live. */}
-      <div className="mt-6">
-        <AiCallout
-          tone="muted"
-          title="Prepare for your interview"
-          message="Get AI-powered interview questions for this role."
-          href="/interview"
-        />
-      </div>
+          AI-generated questions for a role live. Only while an interview is ahead (AP-09): not
+          on an offer, a rejection or a withdrawn application. */}
+      {(stage === 'in_review' || stage === 'interview') && (
+        <div className="mt-6">
+          <AiCallout
+            tone="muted"
+            title="Prepare for your interview"
+            message="Get AI-powered interview questions for this role."
+            href="/interview"
+          />
+        </div>
+      )}
     </section>
   );
 }

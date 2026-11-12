@@ -114,8 +114,8 @@ describe('ApplicationsScreen', () => {
     expect(within(panel).getByText('Bengaluru, India (On-site)')).toBeInTheDocument();
     // The Jobs board's figures, not this board's Hybrid and ₹35–52 LPA (`toreview.md` §87).
     expect(within(panel).getByText('₹48–62 LPA')).toBeInTheDocument();
-    // Once by the logo, once in the Status row.
-    expect(within(panel).getAllByText('In Review')).toHaveLength(2);
+    // Once, by the logo: the tabs no longer repeat it (redesign R6d, AP-04).
+    expect(within(panel).getAllByText('In Review')).toHaveLength(1);
     expect(
       within(panel).getByText(/This team owns end-to-end design for Search and Workspace/),
     ).toBeInTheDocument();
@@ -179,10 +179,11 @@ describe('ApplicationsScreen', () => {
     const panel = await panelFor('Lead UX Designer at Google');
 
     await user.click(within(panel).getByRole('button', { name: 'Update Status' }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Offer' }));
+    // One status at a time: radio rows (AP-07).
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Offer' }));
     await user.keyboard('{Escape}');
 
-    expect(within(panel).getAllByText('Offer')).toHaveLength(2);
+    expect(within(panel).getAllByText('Offer')).toHaveLength(1);
     expect(screen.getByRole('tab', { name: 'Offer (2)' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'In Review (4)' })).toBeInTheDocument();
     expect(row(BOARD_ROWS[0]).getByText('Offer')).toBeInTheDocument();
@@ -204,10 +205,11 @@ describe('ApplicationsScreen', () => {
       ),
     ).toHaveAttribute('href', '/resumes?resume=res_swe');
 
-    await user.click(within(panel).getByRole('tab', { name: 'Follow-ups' }));
+    // The undrawn tabs say they are coming (AP-05).
+    await user.click(within(panel).getByRole('tab', { name: 'Follow-ups Soon' }));
     expect(within(panel).getByText('No follow-ups yet')).toBeInTheDocument();
 
-    await user.click(within(panel).getByRole('tab', { name: 'Notes' }));
+    await user.click(within(panel).getByRole('tab', { name: 'Notes Soon' }));
     expect(within(panel).getByText('No notes yet')).toBeInTheDocument();
   });
 
@@ -236,11 +238,11 @@ describe('ApplicationsScreen', () => {
     expect(screen.getByText('Nothing to track yet')).toBeInTheDocument();
   });
 
-  it('shows the page-level error state when the user query fails', async () => {
+  it('says the list failed once, with one retry', async () => {
     renderWithQuery(<ApplicationsScreen />, 'error');
 
     expect(
-      await screen.findByText('Something went wrong', {}, { timeout: SETTLE_MS.error }),
+      await screen.findByText("Couldn't load your applications", {}, { timeout: SETTLE_MS.error }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });

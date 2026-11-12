@@ -14,7 +14,6 @@ import {
 } from '@/ui/icons';
 
 import type { ApplicationStage } from '../applicationStage';
-import { ApplicationStatusBadge } from './ApplicationStatusBadge';
 
 /** "Bengaluru, India (Hybrid)" (286:1624): the workplace in brackets, unless the place says it. */
 function locationLabel(job: Job): string {
@@ -32,7 +31,7 @@ export type ApplicationOverviewTabProps = { row: ApplicationWithJob; stage: Appl
  * a salary) is left out rather than shown empty. The board gives "Job type" the calendar glyph
  * again, and so does this (`toreview.md` §17).
  */
-export function ApplicationOverviewTab({ row, stage }: ApplicationOverviewTabProps) {
+export function ApplicationOverviewTab({ row }: ApplicationOverviewTabProps) {
   const { application, job } = row;
 
   return (
@@ -57,9 +56,6 @@ export function ApplicationOverviewTab({ row, stage }: ApplicationOverviewTabPro
             {formatSalaryBand(job.salary)}
           </DetailRow>
         )}
-        <DetailRow icon={<IdCardIcon className="size-4" />} label="Status">
-          <ApplicationStatusBadge stage={stage} />
-        </DetailRow>
       </dl>
 
       <h3 className="mt-6 text-title-l font-semibold text-neutral-800">Job description</h3>
