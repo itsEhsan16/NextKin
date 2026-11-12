@@ -92,6 +92,11 @@ export function ResumePreviewTab({ resume }: { resume: Resume }) {
   // The page on a muted tile, as the typeset pages above sit: one card, the sheet drawn as paper.
   return (
     <div className="rounded-md bg-surface-subtle p-4">
+      {/* The typeset pages aren't ready, so this is the content drawn in the app's own type; the
+          download is typeset in the resume's template (redesign R6b, audit RS-30). */}
+      <p className="mb-3 text-caption-m text-text-tertiary">
+        Quick preview. The PDF you download is typeset in your resume’s template.
+      </p>
       <ResumeSheet
         name={name}
         body={body}

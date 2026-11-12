@@ -9,6 +9,7 @@ import { useEffect, useId, useState } from 'react';
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
+import { MenuItem } from '@/ui/FilterDropdown';
 import { fieldBox } from '@/ui/fieldBox';
 import { iconButton } from '@/ui/iconButton';
 import { CopyIcon, RenameIcon, TrashIcon } from '@/ui/icons';
@@ -23,18 +24,24 @@ import { DownloadPrompts } from './DownloadPrompts';
  * A row's kebab (304:3141), which the board draws without a menu (toreview §124): Edit,
  * Duplicate, Download PDF, and Delete behind a confirmation. Download's refusals (a draft, an
  * unconfirmed version) come back as a toast, since the row has no room to say them.
+ *
+ * Redesign R6b: the app's own menu rows (`MenuItem`: 36px, the shared motion and disabled look;
+ * audit RS-58). On the detail card, which has its own Download button, the menu leaves Download
+ * out (RS-25). Rename has a visible label, opens with the name selected, and Enter saves (RS-59).
+ * Delete is permanent on the server (`services/resumes.ts`), so its copy says so (RS-57).
  */
 
-const item =
-  'flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-body-l font-medium text-text-primary outline-none data-[highlighted]:bg-surface-muted';
 const glyph = 'size-4 shrink-0 text-text-secondary';
 
 export function ResumeRowMenu({
   resume,
   onDuplicated,
+  context = 'row',
 }: {
   resume: Resume;
   onDuplicated?: (id: string) => void;
+  /** `card`: the detail card, whose own Download button stands for the menu's. */
+  context?: 'row' | 'card';
 }) {
   const router = useRouter();
   const duplicate = useDuplicateResume();
@@ -49,6 +56,18 @@ export function ResumeRowMenu({
   useEffect(() => {
     if (download.blocked) showToast(download.blocked, { tone: 'info' });
   }, [download.blocked]);
+
+  const saveName = () => {
+    const title = (renaming ?? '').trim();
+    if (!title || title === resume.title) return setRenaming(null);
+    rename.mutate(
+      { id: resume.id, title: title.slice(0, 200) },
+      {
+        onSuccess: () => setRenaming(null),
+        onError: () => showToast('We couldn’t rename it. Try again.', { tone: 'error' }),
+      },
+    );
+  };
 
   return (
     <>
@@ -70,23 +89,19 @@ export function ResumeRowMenu({
             align="end"
             sideOffset={6}
             className={cn(
-              'z-dropdown min-w-56 rounded-lg border border-border-default bg-surface-card p-1.5 shadow-popover',
+              'z-dropdown min-w-56 rounded-lg border border-border-subtle bg-surface-card p-1.5 shadow-popover outline-none',
               menuSurfaceMotion,
             )}
           >
-            <Dropdown.Item
-              className={item}
-              onSelect={() => router.push(resumeEditorHref(resume.id))}
-            >
+            <MenuItem onSelect={() => router.push(resumeEditorHref(resume.id))}>
               <Edit03 aria-hidden className={glyph} />
               {letter ? 'Edit letter' : 'Edit'}
-            </Dropdown.Item>
-            <Dropdown.Item className={item} onSelect={() => setRenaming(resume.title)}>
+            </MenuItem>
+            <MenuItem onSelect={() => setRenaming(resume.title)}>
               <RenameIcon aria-hidden className={glyph} />
               Rename
-            </Dropdown.Item>
-            <Dropdown.Item
-              className={item}
+            </MenuItem>
+            <MenuItem
               disabled={duplicate.isPending}
               onSelect={() =>
                 duplicate.mutate(resume.id, {
@@ -101,23 +116,18 @@ export function ResumeRowMenu({
             >
               <CopyIcon aria-hidden className={glyph} />
               Duplicate
-            </Dropdown.Item>
-            <Dropdown.Item
-              className={item}
-              disabled={download.busy}
-              onSelect={() => download.start()}
-            >
-              <Download01 aria-hidden className={glyph} />
-              Download PDF
-            </Dropdown.Item>
+            </MenuItem>
+            {context === 'row' && (
+              <MenuItem disabled={download.busy} onSelect={() => download.start()}>
+                <Download01 aria-hidden className={glyph} />
+                Download PDF
+              </MenuItem>
+            )}
             <Dropdown.Separator className="my-1 h-px bg-border-faint" />
-            <Dropdown.Item
-              className={cn(item, 'text-danger-600')}
-              onSelect={() => setConfirming(true)}
-            >
+            <MenuItem tone="danger" onSelect={() => setConfirming(true)}>
               <TrashIcon aria-hidden className="size-4 shrink-0" />
               Delete
-            </Dropdown.Item>
+            </MenuItem>
           </Dropdown.Content>
         </Dropdown.Portal>
       </Dropdown.Root>
@@ -131,27 +141,25 @@ export function ResumeRowMenu({
         busyLabel="Saving…"
         busy={rename.isPending}
         onCancel={() => setRenaming(null)}
-        onConfirm={() => {
-          const title = (renaming ?? '').trim();
-          if (!title || title === resume.title) return setRenaming(null);
-          rename.mutate(
-            { id: resume.id, title: title.slice(0, 200) },
-            {
-              onSuccess: () => setRenaming(null),
-              onError: () => showToast('We couldn’t rename it. Try again.', { tone: 'error' }),
-            },
-          );
-        }}
+        onConfirm={saveName}
       >
-        <label htmlFor={renameId} className="sr-only">
-          Name
+        <label htmlFor={renameId} className="text-body-m font-semibold text-text-primary">
+          {letter ? 'Letter name' : 'Resume name'}
         </label>
         <input
           id={renameId}
           value={renaming ?? ''}
           maxLength={200}
+          autoFocus
+          onFocus={(e) => e.currentTarget.select()}
           onChange={(e) => setRenaming(e.target.value)}
-          className={cn(fieldBox, 'h-control-lg px-3.5 text-body-l')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              saveName();
+            }
+          }}
+          className={cn(fieldBox, 'mt-1.5 h-control-lg px-3.5 text-body-l')}
         />
       </ConfirmDialog>
       <ConfirmDialog

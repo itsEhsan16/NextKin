@@ -56,13 +56,12 @@ export function ResumeDetailsTab({ resume }: { resume: Resume }) {
         </DetailRow>
       )}
       {/* Never a bare number (redesign R6a, audit RS-32; V2 §7.8): the band beside it, what it was
-          measured against, and how it is scored. Gating the total on a job (D-15, RS-34) is the
-          Score tab's change in R6b; until then this row agrees with that tab. */}
+          measured against, and how it is scored. A total only against a job (D-15, RS-34), as on
+          the Score tab. */}
       <DetailRow icon={<Check className="size-4" />} label="ATS score">
-        {resume.atsScore != null ? (
+        {resume.atsScore != null && resume.linkedJobId ? (
           <>
-            {resume.atsScore} · {ATS_BAND_LABEL[atsBandFor(resume.atsScore)]}
-            {resume.linkedJobId ? ', for this job' : ''} ·{' '}
+            {resume.atsScore} · {ATS_BAND_LABEL[atsBandFor(resume.atsScore)]}, for this job ·{' '}
             <Link
               href={'/help' as Route}
               className="rounded-sm text-brand-600 transition-colors duration-press ease-standard hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"

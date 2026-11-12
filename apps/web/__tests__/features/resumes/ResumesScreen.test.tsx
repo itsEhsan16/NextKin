@@ -251,6 +251,19 @@ describe('ResumesScreen', () => {
     ).toBeInTheDocument();
     expect(within(panel).getByText(ATS_BAND_LABEL[score.band])).toBeInTheDocument();
     expect(within(panel).getByText('Missing: "Figma"')).toBeInTheDocument();
+    // Beside the number, how it is scored; under it, the parts it is built from (RS-36).
+    expect(within(panel).getByRole('link', { name: 'How it’s scored' })).toHaveAttribute(
+      'href',
+      '/help',
+    );
+    if (score.report?.jdMatch) {
+      expect(
+        within(panel).getByRole('region', { name: 'What the score is built from' }),
+      ).toBeInTheDocument();
+    }
+    expect(
+      within(panel).getAllByRole('link', { name: /^Fix .* in the editor$/ })[0],
+    ).toHaveAttribute('href', '/resumes/res_swe/edit');
 
     await user.click(within(panel).getByRole('tab', { name: 'Version History' }));
     expect(await within(panel).findByText('Version 4', {}, { timeout: 3000 })).toBeInTheDocument();
@@ -258,7 +271,7 @@ describe('ResumesScreen', () => {
     expect(within(panel).getByText('Current')).toBeInTheDocument();
   });
 
-  it('says a draft has no score yet', async () => {
+  it('gives an unscored draft no ring and no number, only a way to a job (D-15, RS-34)', async () => {
     const user = userEvent.setup();
     renderWithQuery(<ResumesScreen />);
     await settle();
@@ -267,7 +280,12 @@ describe('ResumesScreen', () => {
     const panel = await panelFor('Data Analyst Resume');
     await user.click(within(panel).getByRole('tab', { name: 'ATS Score' }));
 
-    expect(within(panel).getByText('Not scored yet')).toBeInTheDocument();
+    expect(within(panel).getByText('Add a job to score')).toBeInTheDocument();
+    expect(within(panel).getByRole('link', { name: 'Add a job' })).toHaveAttribute(
+      'href',
+      '/create/build',
+    );
+    expect(within(panel).queryByRole('img', { name: /ATS Score/ })).not.toBeInTheDocument();
   });
 
   it('asks how to start, makes nothing until Continue, and opens the editor (toreview §124)', async () => {
@@ -346,11 +364,11 @@ describe('ResumesScreen', () => {
     await user.click(screen.getByRole('button', { name: 'More options for General Resume' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     const dialog = await screen.findByRole('dialog', { name: 'Rename this resume' });
-    const field = within(dialog).getByRole('textbox', { name: 'Name' });
+    // A visible label, and Enter saves (RS-59).
+    const field = within(dialog).getByRole('textbox', { name: 'Resume name' });
     expect(field).toHaveValue('General Resume');
     await user.clear(field);
-    await user.type(field, 'Generalist Resume');
-    await user.click(within(dialog).getByRole('button', { name: 'Save name' }));
+    await user.type(field, 'Generalist Resume{Enter}');
 
     expect(
       await screen.findByRole('button', { name: 'Generalist Resume' }, { timeout: 3000 }),
@@ -424,6 +442,14 @@ describe('ResumesScreen', () => {
       { name: 'Is everything here true?' },
       { timeout: 3000 },
     );
+    // Focus starts on the safe answer, and the editor is one press away (RS-53, RS-54).
+    await waitFor(() =>
+      expect(within(prompt).getByRole('button', { name: 'Not yet' })).toHaveFocus(),
+    );
+    expect(within(prompt).getByRole('link', { name: 'Edit first' })).toHaveAttribute(
+      'href',
+      '/resumes/res_swe/edit',
+    );
     await user.click(within(prompt).getByRole('button', { name: 'Not yet' }));
     expect(printDocument).not.toHaveBeenCalled();
     await waitFor(() =>
@@ -475,6 +501,32 @@ describe('ResumesScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Marketing Manager Resume' }));
     expect(new URL(window.location.href).searchParams.get('resume')).toBe('res_mm');
   });
+
+  it('opens an older version to its changes and asks before restoring it (RS-41/42)', async () => {
+    const user = userEvent.setup();
+    renderWithQuery(<ResumesScreen />);
+    await settle();
+    const panel = await panelFor('Software Engineer Resume');
+    await user.click(within(panel).getByRole('tab', { name: 'Version History' }));
+    await within(panel).findByText('Version 4', {}, { timeout: 3000 });
+    const older = await within(panel).findByRole(
+      'button',
+      { name: /^Version 1/, expanded: false },
+      { timeout: 3000 },
+    );
+    await user.click(older);
+    expect(older).toHaveAttribute('aria-expanded', 'true');
+    await user.click(within(panel).getByRole('button', { name: 'Restore this version' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Restore version 1?' });
+    expect(within(confirm).getByText(/It becomes version 5/)).toBeInTheDocument();
+    await user.click(within(confirm).getByRole('button', { name: 'Restore' }));
+    // The mock keeps no text for its fixture versions, so it refuses this restore (a restore
+    // that changed nothing must not look like one that worked); either way the dialog closes.
+    await waitFor(
+      () => expect(screen.queryByRole('dialog', { name: 'Restore version 1?' })).toBeNull(),
+      { timeout: 5000 },
+    );
+  }, 20000);
 
   it('opens the resume a link names (?resume=, `toreview.md` §102)', async () => {
     renderWithQuery(<ResumesScreen initialId="res_mm" />);

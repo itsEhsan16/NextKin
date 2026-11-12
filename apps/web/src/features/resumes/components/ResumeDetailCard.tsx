@@ -69,7 +69,7 @@ export function ResumeDetailCard({
           </Tag>
         )}
         {/* The rows' menu, so the card's kebab does what theirs does (toreview §131). */}
-        <ResumeRowMenu resume={resume} {...(onDuplicated ? { onDuplicated } : {})} />
+        <ResumeRowMenu resume={resume} context="card" {...(onDuplicated ? { onDuplicated } : {})} />
       </div>
 
       <ResumeMetaRow resume={resume} className="mt-4 shrink-0" />

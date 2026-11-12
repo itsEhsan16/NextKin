@@ -1,11 +1,17 @@
 'use client';
 
 import type { Profile, ResumeTemplateId, User } from '@nextkin/shared/models';
-import { useGeneration, useSetResumeTemplate, useStartGeneration } from '@nextkin/shared/queries';
+import {
+  useGeneration,
+  useSetResumeTemplate,
+  useStartGeneration,
+  useSubscription,
+} from '@nextkin/shared/queries';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
+import { allowanceNote, generationAllowance } from '@/features/create/createLibrary';
 import { Radio } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
 import { fieldBox } from '@/ui/fieldBox';
@@ -83,6 +89,8 @@ export function BuildFromProfile({
   }) => ReactNode;
 }) {
   const start = useStartGeneration();
+  const subscription = useSubscription();
+  const allowance = generationAllowance(subscription.data?.usage);
   const setTemplate = useSetResumeTemplate();
   const [runId, setRunId] = useState('');
   const [name, setName] = useState(`${profile.headline?.trim() || 'My resume'} — General`);
@@ -266,8 +274,13 @@ export function BuildFromProfile({
       {footer({
         note: failed ? (
           <span className="text-danger-600">{failed}</span>
+        ) : // What it costs, before it is pressed (redesign R6b, audit RS-46).
+        allowance.spent ? (
+          allowanceNote(allowance, 'generation', 'generations')
         ) : (
-          'Opens in the editor when it’s written.'
+          `Uses 1 generation${
+            allowance.known ? ` (${allowance.limit - allowance.used} left this month)` : ''
+          }. Opens in the editor when it’s written.`
         ),
         label: failed ? 'Try again' : 'Create resume',
         busyLabel: 'Writing…',

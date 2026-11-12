@@ -1,5 +1,6 @@
 'use client';
 
+import { resumeEditorHref } from '../resumeHref';
 import type { useConfirmedDownload } from '../useConfirmedDownload';
 import { AccuracyPrompt } from './AccuracyPrompt';
 import { VerifyEmailDialog } from './VerifyEmailDialog';
@@ -17,9 +18,14 @@ export function DownloadPrompts({
       <AccuracyPrompt
         open={download.asking}
         onAnswer={download.answer}
+        editHref={resumeEditorHref(download.id)}
         {...(added ? { added } : {})}
       />
-      <VerifyEmailDialog open={download.verifying} onClose={download.closeVerify} />
+      <VerifyEmailDialog
+        open={download.verifying}
+        onClose={download.closeVerify}
+        onRetry={() => download.start()}
+      />
     </>
   );
 }

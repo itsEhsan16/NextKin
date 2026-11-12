@@ -67,7 +67,16 @@ export function useConfirmedDownload(id: string) {
   const answer = useCallback(
     (confirmed: boolean) => {
       setAsking(false);
-      if (confirmed) confirm.mutate(undefined, { onSuccess: () => start(fileName.current) });
+      if (!confirmed) return;
+      confirm.mutate(undefined, {
+        onSuccess: () => start(fileName.current),
+        // A confirmation that didn't save says so, with the way back (redesign R6b, RS-56).
+        onError: () =>
+          showToast('Couldn’t save your confirmation.', {
+            tone: 'error',
+            action: { label: 'Try again', onClick: () => setAsking(true) },
+          }),
+      });
     },
     [confirm, start],
   );
@@ -78,6 +87,7 @@ export function useConfirmedDownload(id: string) {
     (exportResume.isError && !(exportResume.error instanceof ExportBlockedError)) ||
     confirm.isError;
   return {
+    id,
     start,
     asking,
     answer,

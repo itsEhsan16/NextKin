@@ -56,6 +56,14 @@ const WAYS: { key: Way; title: string; detail: string; art: ReactNode }[] = [
   },
 ];
 
+/** Which ways spend one of the month's generations (V2 §13). */
+const COST: Record<Way, string> = {
+  tailor: 'Uses 1 generation',
+  build: 'Uses 1 generation',
+  upload: 'Free',
+  scratch: 'Free',
+};
+
 const COPY: Record<Step, { title: string; lede: string }> = {
   choose: {
     title: 'Create a new resume',
@@ -97,11 +105,14 @@ export function CreateResumeDialog({
   const profile = useProfile();
   const user = useCurrentUser();
   const [step, setStep] = useState<Step>('choose');
-  const [way, setWay] = useState<Way>('build');
+  const [picked, setPicked] = useState<Way | null>(null);
 
   const close = (next: boolean) => {
     onOpenChange(next);
-    if (!next) setStep('choose');
+    if (!next) {
+      setStep('choose');
+      setPicked(null);
+    }
   };
   const openEditor = (id: string) => {
     close(false);
@@ -124,6 +135,10 @@ export function CreateResumeDialog({
     } else setStep(way);
   };
   const hasRoles = (profile.data?.experiences.length ?? 0) > 0;
+  // Building needs roles, so a profile without any starts on uploading rather than on a choice
+  // whose Continue is off (redesign R6b, audit RS-48).
+  const way: Way = picked ?? (profile.data && !hasRoles ? 'upload' : 'build');
+  const setWay = setPicked;
 
   return (
     <Dialog open={open} onOpenChange={close} size="xl">
@@ -173,7 +188,6 @@ export function CreateResumeDialog({
                   role="radio"
                   aria-checked={on}
                   onClick={() => setWay(w.key)}
-                  onDoubleClick={next}
                   className={cn(
                     rowSurface(on),
                     'relative flex flex-col items-start gap-3 rounded-xl p-4.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
@@ -188,6 +202,10 @@ export function CreateResumeDialog({
                     {w.key === 'build' && profile.data && !hasRoles
                       ? 'Your profile has no roles yet — add them first, or start from scratch.'
                       : w.detail}
+                  </span>
+                  {/* What it costs, before it is picked (RS-46). */}
+                  <span className="text-caption-m font-medium text-text-tertiary">
+                    {COST[w.key]}
                   </span>
                 </button>
               );
