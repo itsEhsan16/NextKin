@@ -1046,6 +1046,10 @@ body:has([data-admin-signin]) {
 @utility z-tooltip {
   z-index: var(--z-tooltip);
 }
+/* Half a circle filled in the current colour: D-14's "partly met" mark (redesign R3c). */
+@utility half-fill {
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+}
 @utility opacity-disabled {
   opacity: var(--opacity-disabled);
 }

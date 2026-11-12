@@ -4,9 +4,8 @@ import { ATS_BAND_LABEL, atsBandFor } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { InfoCircle } from '@/ui/lineIcons';
-import { ScoreRing } from '@/ui/ScoreRing';
+import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
 
-const RING = { strong: 'success', good: 'success', fair: 'warning', weak: 'danger' } as const;
 const PILL = {
   strong: 'bg-success-surface text-success-text',
   good: 'bg-success-surface text-success-text',
@@ -58,7 +57,7 @@ export function AtsMatchCard({
           sweep
           outOf10
           showLabel
-          tone={RING[band]}
+          tone={ringToneFor(band)}
         />
         <div className="flex min-w-0 flex-col items-start gap-2">
           <span className={cn('rounded-md px-3 py-1 text-body-m font-semibold', PILL[band])}>

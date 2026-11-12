@@ -17,7 +17,8 @@ import { LogoMarkIllustration } from '@/ui/illustrations';
 import { outlineButton } from '@/ui/outlineButton';
 import { pageColumn } from '@/ui/pageFrame';
 import { ProgressBar } from '@/ui/ProgressBar';
-import { ScoreRing } from '@/ui/ScoreRing';
+import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
+import { SCORE_TONE } from '@/ui/scoreTone';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
@@ -28,16 +29,8 @@ import { StateView } from '@/ui/StateView';
  * Copy keeps "ATS score" and never claims a result in a named employer's system (§7.8).
  */
 
-const BAND_TONE = { strong: 'success', good: 'success', fair: 'warning', weak: 'danger' } as const;
-/**
- * The band chip in the ring's own tone. It was always green, so a public page called a Fair or
- * Weak result in the colour of a strong one (audit SR-01).
- */
-const BAND_CHIP = {
-  success: 'bg-success-surface text-success-text',
-  warning: 'bg-warning-50 text-warning-text',
-  danger: 'bg-danger-50 text-danger-text',
-} as const;
+// The band's own colours (`scoreTone.ts`): the chip was always green, so a public page called a
+// Fair or Weak result in the colour of a strong one (audit SR-01).
 const STATUS_LABEL: Record<string, string> = {
   met: 'Met',
   partial: 'Partly met',
@@ -116,7 +109,7 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
             outOf10
             large
             sweep={reveal}
-            tone={report.band ? BAND_TONE[report.band] : 'success'}
+            tone={report.band ? ringToneFor(report.band) : 'brand'}
           />
         )}
         <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
@@ -130,7 +123,8 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-caption-m font-semibold',
-                BAND_CHIP[BAND_TONE[report.band]],
+                SCORE_TONE[report.band].surface,
+                SCORE_TONE[report.band].text,
               )}
             >
               ATS score · {ATS_BAND_LABEL[report.band]} match
@@ -213,7 +207,7 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
                     // A half-filled ring: some credit, not full.
                     <span
                       aria-hidden
-                      className="size-3 rounded-full border-[1.5px] border-current bg-[linear-gradient(90deg,currentColor_50%,transparent_50%)]"
+                      className="size-3 rounded-full border-2 border-current half-fill"
                     />
                   ) : (
                     <span

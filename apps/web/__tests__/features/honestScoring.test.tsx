@@ -20,7 +20,8 @@ describe('honest score defaults', () => {
 
   it('colours a score ring by its band, never green by default (RS-35)', () => {
     expect(ringToneFor('strong')).toBe('success');
-    expect(ringToneFor('good')).toBe('success');
+    // Good is a grey track with an indigo arc (owner, 2026-11-12), not Strong's green.
+    expect(ringToneFor('good')).toBe('brand');
     expect(ringToneFor('fair')).toBe('warning');
     expect(ringToneFor('weak')).toBe('danger');
   });

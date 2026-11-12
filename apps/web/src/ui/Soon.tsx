@@ -57,7 +57,8 @@ export function SoonTag({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center rounded-full bg-neutral-100 px-1.5 py-px text-micro font-semibold text-text-tertiary',
+        // `text-secondary`, not tertiary: tertiary on this grey was 4.34:1, under AA (redesign R3c).
+        'inline-flex shrink-0 items-center rounded-full bg-neutral-100 px-1.5 py-px text-micro font-semibold text-text-secondary',
         className,
       )}
     >

@@ -5,7 +5,7 @@ import { atsBandFor, type JobMatch } from '@nextkin/shared/models';
 import { cn } from '@/lib/cn';
 import { cardSurface } from '@/ui/Card';
 import { CheckCircle, InfoCircle, Lightbulb02 } from '@/ui/lineIcons';
-import { ScoreRing } from '@/ui/ScoreRing';
+import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
 import { Skeleton } from '@/ui/Skeleton';
 
 const BAND_TITLE = {
@@ -64,7 +64,6 @@ export function ScoreSummaryCard({
     missing.length === 0
       ? 'All key keywords are in. Add results to stand out.'
       : `Missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ` +${missing.length - 3}` : ''}. Add only what’s true.`;
-  const good = band === 'strong' || band === 'good';
   return (
     // Compact: it is the one fixed block above the assistant, which takes the rest (toreview §122).
     <section
@@ -79,7 +78,7 @@ export function ScoreSummaryCard({
         sweep
         outOf10
         showLabel
-        tone={good ? 'success' : band === 'fair' ? 'warning' : 'danger'}
+        tone={ringToneFor(band)}
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">

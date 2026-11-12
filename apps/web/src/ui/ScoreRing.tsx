@@ -3,6 +3,8 @@ import type { CSSProperties } from 'react';
 
 import { cn } from '@/lib/cn';
 
+import { SCORE_TONE, type RingTone } from './scoreTone';
+
 export type ScoreRingProps = {
   score: number;
   label: string;
@@ -22,7 +24,7 @@ export type ScoreRingProps = {
    * The arc's colour. Required: it used to default to green, so a weak score drew as a good one
    * wherever a caller forgot it (audit RS-35). A score passes `ringToneFor(band)`.
    */
-  tone: 'success' | 'warning' | 'danger';
+  tone: RingTone;
   /** Read the 0–100 score out of 10 with one decimal: the tailor flow's "7.0" (toreview §113). */
   outOf10?: boolean;
   /** The big ring W-FLOW 03 draws (850:215): a hero-size number and an uppercase label. */
@@ -41,17 +43,21 @@ export type ScoreRingProps = {
  * Rule 7 says the artboard wins, so the caller passes the board's label and the conflict is
  * logged rather than silently resolved here.
  */
-/** A score's arc colour from its band, as the tailor flow's summary draws it (ScoreSummaryCard). */
-export function ringToneFor(band: AtsBand): ScoreRingProps['tone'] {
-  return band === 'strong' || band === 'good' ? 'success' : band === 'fair' ? 'warning' : 'danger';
+/** A score's arc tone from its band: the one honest scale (`scoreTone.ts`). */
+export function ringToneFor(band: AtsBand): RingTone {
+  return SCORE_TONE[band].arc;
 }
 
-/** The arc's colour by band: the tailor flow draws a Good 72 in amber and a Strong 88 in green. */
-const RING_TONE = {
-  success: 'text-success-text',
-  warning: 'text-warning-text',
-  danger: 'text-danger-600',
-} as const;
+/**
+ * The arc's colour, from the score tokens (redesign R3c). `brand` is Good's indigo arc and a
+ * completion meter's; it used to be impossible, so Good drew green like Strong.
+ */
+const RING_TONE: Record<RingTone, string> = {
+  success: 'text-score-strong-arc',
+  brand: 'text-score-good-arc',
+  warning: 'text-score-fair-arc',
+  danger: 'text-score-weak-arc',
+};
 
 export function ScoreRing({
   score,
@@ -87,7 +93,7 @@ export function ScoreRing({
           fill="none"
           stroke="currentColor"
           strokeWidth={stroke}
-          className="text-neutral-100"
+          className="text-score-track"
         />
         <circle
           cx={size / 2}

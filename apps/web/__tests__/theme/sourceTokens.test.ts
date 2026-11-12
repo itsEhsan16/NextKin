@@ -88,11 +88,13 @@ const RULES: Rule[] = [
   },
   {
     // Every other `-[…]` value: mostly one-off sizes (`w-[146px]`). Grid tracks (`grid-cols-[…]`)
-    // and `var(--…)` reads are layout techniques on tokens, so they don't count. Overlaps the
-    // narrower rules above on purpose: this is the total to drive down.
+    // and `var(--…)` reads are layout techniques on tokens, and `data-[…]`/`aria-[…]` are state
+    // selectors rather than values, so none of them count. Overlaps the narrower rules above on
+    // purpose: this is the total to drive down.
     name: 'other arbitrary values',
-    pattern: /\b(?!grid-(?:cols|rows)-)[a-z][a-z0-9-]*-\[(?!var\()[^\]]+\]/g,
-    ceiling: 810,
+    pattern:
+      /\b(?!grid-(?:cols|rows)-|(?:group-|peer-)?(?:data|aria)-)[a-z][a-z0-9-]*-\[(?!var\()[^\]]+\]/g,
+    ceiling: 742,
     fix: 'use a spacing, size or container token; add one if the value repeats',
   },
 ];

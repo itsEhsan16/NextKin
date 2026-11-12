@@ -23,11 +23,10 @@ import {
   SettingsLightbulbIllustration,
   SparkleIllustration,
 } from '@/ui/illustrations';
-import { ScoreRing } from '@/ui/ScoreRing';
+import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
 
 import { backButton, ColumnHead, primaryButton, stepCard } from '../jobFlow/FlowChrome';
 
-const RING = { strong: 'success', good: 'success', fair: 'warning', weak: 'danger' } as const;
 const PILL = {
   strong: 'bg-success-surface text-success-text',
   good: 'bg-success-surface text-success-text',
@@ -115,7 +114,7 @@ export function AtsResult({
             large
             showLabel
             sweep
-            tone={RING[band]}
+            tone={ringToneFor(band)}
           />
           <span
             className={cn('rounded-full px-2.5 py-0.5 text-caption-m font-semibold', PILL[band])}
