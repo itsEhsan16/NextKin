@@ -36,7 +36,7 @@ export function ProfileSoFar({ rows }: { rows: ProfileSoFarRow[] }) {
             <dd className="flex min-w-0 flex-1 items-center gap-2">
               {value ? (
                 <>
-                  <span className="min-w-0 flex-1 truncate text-body-m font-semibold text-text-primary animate-reveal">
+                  <span className="min-w-0 flex-1 line-clamp-2 text-body-m font-semibold text-text-primary animate-reveal">
                     {value}
                   </span>
                   <CheckCircleIcon

@@ -61,7 +61,7 @@ export function OnboardingField({
             emphasis && 'h-control-xl',
           )}
         >
-          <Icon className="size-3.5 shrink-0 text-text-tertiary" />
+          <Icon className="size-4 shrink-0 text-text-tertiary" />
           <input
             id={id}
             value={value}
@@ -71,7 +71,7 @@ export function OnboardingField({
             autoComplete={autoComplete}
             autoFocus={autoFocus}
             className={cn(
-              'min-w-0 flex-1 bg-transparent font-medium text-text-primary outline-none placeholder:font-normal placeholder:text-neutral-400',
+              'min-w-0 flex-1 bg-transparent font-medium text-text-primary outline-none placeholder:font-normal placeholder:text-text-tertiary',
               emphasis ? 'text-h2' : 'text-body-l',
             )}
           />

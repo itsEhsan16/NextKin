@@ -46,7 +46,7 @@ describe('Web onboarding · questions', () => {
       const user = userEvent.setup();
       renderStep('/onboarding', <NameStepScreen />);
 
-      expect(screen.getByText('Step 1 of 4')).toBeInTheDocument();
+      expect(screen.getByText('About you · 1 of 4')).toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Skip for now' })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: /Back/ })).not.toBeInTheDocument();
       expect(screen.getByText('WELCOME TO NEXTKIN', { exact: false })).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('Web onboarding · questions', () => {
       useOnboardingStore.setState({ name: 'George Smith' });
       renderStep('/onboarding/goal', <GoalStepScreen />);
 
-      expect(screen.getByText('Step 2 of 4')).toBeInTheDocument();
+      expect(screen.getByText('About you · 2 of 4')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Skip for now' })).toHaveAttribute('href', '/');
       expect(screen.getByRole('link', { name: /Back/ })).toHaveAttribute('href', '/onboarding');
       expect(

@@ -54,20 +54,8 @@ export function NameStepScreen() {
   return (
     <QuestionLayout
       eyebrow="Welcome to NextKin"
-      title={
-        <>
-          First, what should
-          <br />
-          we call you?
-        </>
-      }
-      help={
-        <>
-          We’ll use it on your resume and to say hello.
-          <br />
-          You can change it later.
-        </>
-      }
+      title={<>First, what should we call you?</>}
+      help={<>We’ll use it on your resume and to say hello. You can change it later.</>}
       onContinue={onContinue}
       canContinue={value.trim().length > 0}
     >

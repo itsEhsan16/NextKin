@@ -33,10 +33,22 @@ export const FLOW_PROGRESS: Record<
   OnboardingFlow,
   { total: number; label: (step: number) => string }
 > = {
-  questions: { total: 4, label: (step) => `Step ${step} of 4` },
+  questions: { total: 4, label: (step) => `About you · ${step} of 4` },
   build: { total: 3, label: (step) => `A few quick questions · ${step} of 3` },
   done: { total: 1, label: () => 'All done' },
 };
+
+/**
+ * How far along the bar is, which only ever moves forward (redesign R7c, audit OB-04): the longest
+ * way through is eight pages (four questions, three quick ones, then the starting point), so the
+ * quick questions carry on from the fourth instead of starting a new bar at a third. The upload,
+ * the shorter way, sits one step past the questions; the starting point fills it.
+ */
+export function progressOf(page: OnboardingPage): number {
+  if (page.flow === 'done') return 1;
+  if (page.flow === 'build') return (4 + page.step) / 8;
+  return (page.key === 'upload' ? 5 : page.step) / 8;
+}
 
 /** Where "Skip for now" and ONB 08's "Go to my dashboard" go: Home. */
 export const ONBOARDING_EXIT: Route = '/';

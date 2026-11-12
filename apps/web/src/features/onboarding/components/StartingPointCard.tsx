@@ -31,14 +31,15 @@ export function StartingPointCard({
       aria-label="Your starting point"
       className={cn(cardSurface, cardPad, 'flex flex-col gap-4 animate-reveal')}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <span
           aria-hidden
           className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-body-l font-bold text-text-brand"
         >
           {initials}
         </span>
-        <div className="flex min-w-0 flex-1 flex-col">
+        {/* Room for the name before the chip: on a phone the chip wraps under it (OB-39). */}
+        <div className="flex min-w-40 flex-1 flex-col">
           <p className="truncate text-h2 font-bold text-text-primary">{name}</p>
           {headline && (
             <p className="truncate text-body-m font-medium text-text-secondary">{headline}</p>

@@ -54,7 +54,7 @@ export function YearField({
             aria-labelledby={`${labelId} ${valueId}`}
             className={cn(
               menuTrigger,
-              'flex h-control-lg w-full items-center gap-2.5 rounded-lg border border-border-default bg-surface-card pl-3.5 pr-3 text-left',
+              'flex h-control-lg w-full items-center gap-2.5 rounded-md border border-border-default bg-surface-card pl-3.5 pr-3 text-left',
               'transition-colors duration-press ease-standard hover:border-neutral-400',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 data-[state=open]:border-brand-600 data-[state=open]:bg-surface-brand-strong',
             )}
@@ -64,7 +64,7 @@ export function YearField({
               id={valueId}
               className={cn(
                 'min-w-0 flex-1 truncate text-body-l font-medium',
-                value ? 'text-text-primary' : 'font-normal text-neutral-400',
+                value ? 'text-text-primary' : 'font-normal text-text-tertiary',
               )}
             >
               {value ?? 'Year'}

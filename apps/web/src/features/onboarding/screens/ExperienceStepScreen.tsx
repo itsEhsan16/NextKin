@@ -72,21 +72,19 @@ export function ExperienceStepScreen() {
 
   return (
     <QuestionLayout
-      eyebrow="Question 3"
-      title={
-        <>
-          How much experience
-          <br />
-          do you have?
-        </>
-      }
+      eyebrow="Your experience"
+      title={<>How much experience do you have?</>}
       help="All your working years together, roughly."
       onContinue={onContinue}
       canContinue={experience !== undefined}
       back="/onboarding/goal"
     >
       {/* The board's 3 + 2 grid (814:150, 814:151), its last cell left empty. */}
-      <div role="radiogroup" aria-label="Your experience" className="grid grid-cols-3 gap-2.5">
+      <div
+        role="radiogroup"
+        aria-label="Your experience"
+        className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3"
+      >
         {EXPERIENCE_BANDS.map((band) => (
           <OptionCard
             key={band.value}

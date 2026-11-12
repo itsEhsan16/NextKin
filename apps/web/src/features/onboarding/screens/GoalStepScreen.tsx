@@ -52,7 +52,7 @@ export function GoalStepScreen() {
 
   return (
     <QuestionLayout
-      eyebrow="Question 2"
+      eyebrow="Your goal"
       title={firstName ? `Nice to meet you, ${firstName}!` : 'Nice to meet you!'}
       subtitle="What are you aiming for?"
       help="Pick the one that fits best."

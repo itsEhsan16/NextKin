@@ -2,6 +2,8 @@ import Link from 'next/link';
 import type { Route } from 'next';
 
 import { cn } from '@/lib/cn';
+
+import { useOnboardingStore } from '../onboardingStore';
 import { ArrowRightIcon, TickIcon } from '@/ui/icons';
 
 type Step = { label: string; done?: boolean; href?: Route };
@@ -10,13 +12,16 @@ type Step = { label: string; done?: boolean; href?: Route };
  * ONB 08's next steps (816:211), the §7.2 guided checklist: the profile, done; adding a job,
  * which opens Upload a JD; then the first tailored resume, which needs that job first.
  */
-const STEPS: readonly Step[] = [
-  { label: 'Your profile', done: true },
+const steps = (profileDone: boolean): readonly Step[] => [
+  // After an upload the profile isn't filled yet: it waits on a review (OB-25).
+  { label: 'Your profile', done: profileDone },
   { label: 'Add a job you want — paste a link or a description', href: '/upload-jd' },
   { label: 'Generate your first tailored resume' },
 ];
 
 export function NextSteps() {
+  const uploaded = useOnboardingStore((state) => state.resume === 'upload');
+  const STEPS = steps(!uploaded);
   return (
     <section aria-labelledby="next-steps" className="flex flex-col">
       <h2 id="next-steps" className="text-title-l font-bold text-text-primary">
@@ -66,7 +71,7 @@ export function NextSteps() {
                     className={cn(
                       'text-body-l',
                       step.done
-                        ? 'font-medium text-neutral-400'
+                        ? 'font-medium text-text-tertiary'
                         : 'font-semibold text-text-primary',
                     )}
                   >

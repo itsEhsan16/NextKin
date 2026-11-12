@@ -1,5 +1,9 @@
 'use client';
 
+import Link from 'next/link';
+import type { Route } from 'next';
+import { textLink } from '@/ui/textLink';
+import { cn } from '@/lib/cn';
 import { isUnreadableFileError, useImportResume } from '@nextkin/shared/queries';
 import { useState } from 'react';
 
@@ -66,9 +70,11 @@ export function UploadStepScreen() {
 
   return (
     <QuestionLayout
-      eyebrow="Question 4 · Upload"
+      eyebrow="Your resume"
       title="Drop your resume here"
-      help="We’ll read it and fill your profile. You can check everything before it’s saved."
+      // The parsed draft isn't applied yet (no review step is designed), so the copy says what
+      // happens: the resume is kept, the profile isn't changed (redesign R7c, audit OB-25).
+      help="We’ll add it to your resumes. Your profile isn’t changed until you review it."
       onContinue={() => router.push('/onboarding/done')}
       canContinue={state?.status === 'read'}
       back="/onboarding/resume"
@@ -83,6 +89,16 @@ export function UploadStepScreen() {
           </CollapseFade>
         )}
         {name && state && <ReadFileRow key={name} name={name} state={state} />}
+        {/* A file that won't read isn't a dead end (OB-27). */}
+        {state?.status === 'failed' && (
+          <Link
+            href={'/onboarding/work' as Route}
+            onClick={() => answer({ resume: 'build' })}
+            className={cn(textLink, 'text-body-m')}
+          >
+            Continue without a resume
+          </Link>
+        )}
       </div>
     </QuestionLayout>
   );

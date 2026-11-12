@@ -5,7 +5,7 @@ import { brandOutlineButton } from '@/ui/brandOutlineButton';
 import { DocumentsIcon } from '@/ui/icons';
 import { UploadResumeFileIllustration } from '@/ui/illustrations';
 
-import { RESUME_ACCEPT } from '../resumeUpload';
+import { RESUME_INPUT_ACCEPT } from '../resumeUpload';
 
 /**
  * ONB 04b's dashed drop zone (814:353): the upload art, "Drag and drop your resume here", Browse
@@ -101,7 +101,7 @@ export function ResumeDropZone({
       <input
         id={inputId}
         type="file"
-        accept={RESUME_ACCEPT}
+        accept={RESUME_INPUT_ACCEPT}
         aria-label="Resume file"
         aria-describedby={hintId}
         disabled={disabled}

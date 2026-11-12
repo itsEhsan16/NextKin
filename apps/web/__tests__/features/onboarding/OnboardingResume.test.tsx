@@ -38,10 +38,12 @@ describe('Web onboarding · resume', () => {
       const user = userEvent.setup();
       renderStep('/onboarding/resume', <ResumeStepScreen />);
 
-      expect(screen.getByText('Step 4 of 4')).toBeInTheDocument();
+      expect(screen.getByText('About you · 4 of 4')).toBeInTheDocument();
+      // The bar runs over the whole way through (eight pages at most) and never empties: the
+      // fourth question is 4 of 8, and the quick questions carry on from it (redesign R7c, OB-04).
       expect(screen.getByRole('progressbar', { name: 'Onboarding progress' })).toHaveAttribute(
         'aria-valuenow',
-        '100',
+        '50',
       );
       expect(continueButton()).toBeDisabled();
 
@@ -71,7 +73,7 @@ describe('Web onboarding · resume', () => {
       const user = userEvent.setup();
       renderStep('/onboarding/upload', <UploadStepScreen />);
 
-      expect(screen.getByText('Step 4 of 4')).toBeInTheDocument();
+      expect(screen.getByText('About you · 4 of 4')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Back/ })).toHaveAttribute(
         'href',
         '/onboarding/resume',

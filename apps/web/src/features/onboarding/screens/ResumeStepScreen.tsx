@@ -16,13 +16,8 @@ export function ResumeStepScreen() {
 
   return (
     <QuestionLayout
-      eyebrow="Question 4"
-      title={
-        <>
-          Do you already have
-          <br />a resume?
-        </>
-      }
+      eyebrow="Your resume"
+      title={<>Do you already have a resume?</>}
       help="Either way works. We’ll use it to fill your profile — nothing is made up."
       onContinue={() =>
         router.push(resume === 'upload' ? '/onboarding/upload' : '/onboarding/work')
@@ -30,7 +25,11 @@ export function ResumeStepScreen() {
       canContinue={resume !== undefined}
       back="/onboarding/experience"
     >
-      <div role="radiogroup" aria-label="Do you have a resume?" className="flex gap-3">
+      <div
+        role="radiogroup"
+        aria-label="Do you have a resume?"
+        className="flex flex-col gap-3 sm:flex-row"
+      >
         {RESUME_CHOICES.map((choice) => (
           <ChoiceCard
             key={choice.value}

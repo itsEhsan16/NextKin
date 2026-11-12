@@ -73,13 +73,7 @@ export function WorkStepScreen() {
   return (
     <QuestionLayout
       eyebrow="Let’s build your starting point"
-      title={
-        <>
-          What’s your most
-          <br />
-          recent job?
-        </>
-      }
+      title={<>What’s your most recent job?</>}
       help="Just the basics. You can add more roles later."
       onContinue={onContinue}
       canContinue={noWork || (list.length > 0 && list.every(roleComplete))}

@@ -1,5 +1,6 @@
 import type { CareerGoal, ExperienceBand } from '@nextkin/shared/models';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { ResumeChoice } from './onboardingOptions';
 
@@ -9,7 +10,10 @@ import type { ResumeChoice } from './onboardingOptions';
  * account and profile, and writes them back when it continues. The resume choice only picks the
  * way on, so it is never saved.
  *
- * In memory only: a reload starts the questions again from what the profile already holds.
+ * Kept for the tab's session (redesign R7c, audit OB-05): a reload, Back or a link to a later
+ * step comes back to the answers given, not to an empty card. It is read after the first paint
+ * (`skipHydration`; `OnboardingFrame` rehydrates it), so the server render and the first client
+ * render agree.
  */
 /** One role on ONB 05 (816:8–816:32). Months are `YYYY-MM`; `to` is `'present'` for a current role. */
 export type RoleAnswer = {
@@ -59,21 +63,35 @@ type OnboardingState = OnboardingAnswers & {
   reset: () => void;
 };
 
-export const useOnboardingStore = create<OnboardingState>((set) => ({
-  answer: (patch) => set(patch),
-  reset: () =>
-    set({
-      name: undefined,
-      goal: undefined,
-      targetRole: undefined,
-      experience: undefined,
-      jobTitle: undefined,
-      resume: undefined,
-      resumeFile: undefined,
-      resumeSummary: undefined,
-      roles: undefined,
-      noWork: undefined,
-      skills: undefined,
-      education: undefined,
+export const useOnboardingStore = create<OnboardingState>()(
+  persist(
+    (set) => ({
+      answer: (patch) => set(patch),
+      reset: () =>
+        set({
+          name: undefined,
+          goal: undefined,
+          targetRole: undefined,
+          experience: undefined,
+          jobTitle: undefined,
+          resume: undefined,
+          resumeFile: undefined,
+          resumeSummary: undefined,
+          roles: undefined,
+          noWork: undefined,
+          skills: undefined,
+          education: undefined,
+        }),
     }),
-}));
+    {
+      name: 'nextkin:onboarding',
+      storage: createJSONStorage(() => sessionStorage),
+      skipHydration: true,
+      // The answers only; the actions are rebuilt.
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(([, value]) => typeof value !== 'function'),
+        ) as OnboardingAnswers,
+    },
+  ),
+);
