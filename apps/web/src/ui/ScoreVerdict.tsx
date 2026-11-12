@@ -1,7 +1,7 @@
 import { MATCH_BAND_LABEL } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import { MatchSparkleIcon } from '@/ui/icons';
@@ -113,8 +113,16 @@ function ScorePanel({
   className,
 }: ScoreVerdictProps) {
   const name = KIND_NAME[kind];
-  const frame = (body: ReactNode, labelId?: string) => (
-    <div role="group" aria-labelledby={labelId} className={cn('flex items-start gap-4', className)}>
+  // Unique per panel: two panels on one page must not label each other (found on the R3d showcase).
+  const uid = useId();
+  const frame = (body: ReactNode, labelId?: string, label?: string) => (
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      aria-label={labelId ? undefined : label}
+      aria-busy={state === 'loading' || undefined}
+      className={cn('flex items-start gap-4', className)}
+    >
       {body}
     </div>
   );
@@ -127,6 +135,8 @@ function ScorePanel({
           <SkeletonLines widths={['w-1/3', 'w-2/3']} />
         </div>
       </>,
+      undefined,
+      `${name}: loading`,
     );
   }
 
@@ -140,13 +150,15 @@ function ScorePanel({
           </button>
         )}
       </p>,
+      undefined,
+      `${name}: couldn't score`,
     );
   }
 
   // No job description: no ring and no number (D-15). The dashed circle holds the ring's place.
   if (state === 'no-jd' || state === 'insufficient' || score == null || band == null) {
     const noJd = state !== 'insufficient';
-    const id = `score-${kind}-empty`;
+    const id = `${uid}-empty`;
     return frame(
       <>
         <span
@@ -175,7 +187,7 @@ function ScorePanel({
 
   const tone = SCORE_TONE[band];
   const word = BAND_WORD[band];
-  const id = `score-${kind}-band`;
+  const id = `${uid}-band`;
   return frame(
     <>
       <ScoreRing

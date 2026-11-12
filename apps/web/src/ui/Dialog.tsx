@@ -1,7 +1,7 @@
 'use client';
 
 import * as Radix from '@radix-ui/react-dialog';
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { useRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
@@ -51,13 +51,36 @@ export function Dialog({
   size = 'md',
   className,
   children,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...content
 }: DialogProps) {
+  // Where focus was when the dialog opened, so closing it puts the keyboard user back in place.
+  // Radix only does this for its own `Trigger`, and every dialog here opens from app state, so
+  // focus used to fall to the page body (found on the R3d showcase).
+  const returnTo = useRef<HTMLElement | null>(null);
   return (
     <Radix.Root open={open} onOpenChange={onOpenChange}>
       <Radix.Portal>
         <Radix.Overlay className={OVERLAY} />
-        <Radix.Content className={cn(PANEL, SIZE[size], className)} {...content}>
+        <Radix.Content
+          className={cn(PANEL, SIZE[size], className)}
+          onOpenAutoFocus={(event) => {
+            const active = document.activeElement;
+            returnTo.current = active instanceof HTMLElement ? active : null;
+            onOpenAutoFocus?.(event);
+          }}
+          onCloseAutoFocus={(event) => {
+            onCloseAutoFocus?.(event);
+            const target = returnTo.current;
+            returnTo.current = null;
+            if (!event.defaultPrevented && target?.isConnected) {
+              event.preventDefault();
+              target.focus();
+            }
+          }}
+          {...content}
+        >
           {children}
         </Radix.Content>
       </Radix.Portal>

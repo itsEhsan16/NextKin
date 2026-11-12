@@ -5,17 +5,14 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
-import { buttonClass } from '@/ui/Button';
 import { cardSurface } from '@/ui/Card';
 import { iconButton } from '@/ui/iconButton';
-import { ChevronRight, InfoCircle, ShieldTick } from '@/ui/lineIcons';
+import { ChevronRight, ShieldTick } from '@/ui/lineIcons';
 import { SparkleIllustration } from '@/ui/illustrations';
 
 import { FlowSteps } from '../components/FlowSteps';
 
-/** The two buttons every W-FLOW footer carries (849:313, 849:315). */
-export const backButton = buttonClass({ variant: 'secondary', size: 'lg' });
-export const primaryButton = buttonClass({ size: 'lg' });
+export { backButton, finalButton, primaryButton } from '@/ui/FlowFooter';
 
 /** The brand tile with the sparkle that leads the header before a job is picked (849:155). */
 export function SparkleTile() {
@@ -130,39 +127,8 @@ export function ColumnHead({
 /** A step's card (849:193): the app's card, with the board's soft shadow. */
 export const stepCard = cn(cardSurface, 'overflow-hidden rounded-xl');
 
-/**
- * The bar under a step (849:138): what the press costs or needs on the left, Back and the step's
- * one primary action on the right.
- */
-export function FlowFooter({
-  note,
-  noteTone = 'neutral',
-  children,
-}: {
-  note?: ReactNode;
-  noteTone?: 'neutral' | 'danger';
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        'sticky bottom-4 z-sticky flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-border-subtle bg-surface-card/90 px-5 py-3 shadow-popover backdrop-blur-md',
-      )}
-    >
-      <p
-        role={noteTone === 'danger' ? 'alert' : undefined}
-        className={cn(
-          'flex min-w-0 flex-1 items-center gap-2 text-body-m font-medium',
-          noteTone === 'danger' ? 'text-danger-600' : 'text-text-tertiary',
-        )}
-      >
-        {note && <InfoCircle aria-hidden className="size-4.5 shrink-0 text-neutral-400" />}
-        {note}
-      </p>
-      <div className="flex shrink-0 items-center gap-3">{children}</div>
-    </div>
-  );
-}
+// The footer moved to `ui/FlowFooter` (redesign R3d); re-exported for the flows that import it here.
+export { FlowFooter } from '@/ui/FlowFooter';
 
 /** A panel inside a step card (W-FLOW 01–02 redesign, toreview §150): bordered, on white. */
 export const panel =
