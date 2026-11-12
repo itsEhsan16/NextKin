@@ -39,6 +39,8 @@ export function Stepper({
               aria-current={current ? 'step' : undefined}
               className={cn(
                 'flex h-8 items-center gap-2 rounded-full py-1 pl-1 pr-3 text-body-s font-medium transition-colors duration-base ease-standard',
+                // Below 640 only the current step keeps its words, so the row fits a phone.
+                !current && 'max-sm:pr-1',
                 current
                   ? 'bg-surface-card font-semibold text-text-primary shadow-card ring-1 ring-border-subtle'
                   : done
@@ -59,7 +61,7 @@ export function Stepper({
               >
                 {done ? <Check className="size-3.5" /> : index + 1}
               </span>
-              {label}
+              <span className={current ? undefined : 'max-sm:sr-only'}>{label}</span>
               <span className="sr-only">{done ? ', done' : current ? ', current step' : ''}</span>
             </span>
           </li>

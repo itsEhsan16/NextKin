@@ -55,5 +55,6 @@ export { Cube01 } from '@untitledui/icons/Cube01';
 export { DotsHorizontal } from '@untitledui/icons/DotsHorizontal';
 export { Grid01 } from '@untitledui/icons/Grid01';
 export { LayersThree01 } from '@untitledui/icons/LayersThree01';
+export { Menu01 } from '@untitledui/icons/Menu01';
 export { SearchLg } from '@untitledui/icons/SearchLg';
 export { Users01 } from '@untitledui/icons/Users01';

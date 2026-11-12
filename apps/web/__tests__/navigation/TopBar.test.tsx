@@ -85,4 +85,30 @@ describe('TopBar', () => {
     expect(screen.queryByRole('link', { name: 'Back to Jobs' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Upload New JD' })).toBeInTheDocument();
   });
+
+  // Redesign R4 (audit SH-04): the ⌘K hint promised a search that went nowhere.
+  it('searches jobs on Enter, and ⌘K / Ctrl+K jumps to the field', async () => {
+    const user = userEvent.setup();
+    onPage('/');
+    push.mockClear();
+    renderWithQuery(<TopBar />);
+    const field = screen.getByRole('searchbox', { name: 'Search jobs, skills, companies' });
+
+    await user.keyboard('{Control>}k{/Control}');
+    expect(field).toHaveFocus();
+
+    await user.type(field, 'product designer{Enter}');
+    expect(push).toHaveBeenCalledWith('/jobs?q=product%20designer');
+  });
+
+  it('opens the sidebar from its menu button, where there is no rail', async () => {
+    const user = userEvent.setup();
+    onPage('/');
+    const opened = jest.fn();
+    window.addEventListener('nextkin:open-sidebar', opened);
+    renderWithQuery(<TopBar />);
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(opened).toHaveBeenCalledTimes(1);
+    window.removeEventListener('nextkin:open-sidebar', opened);
+  });
 });

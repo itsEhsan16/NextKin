@@ -38,6 +38,8 @@ export type JobsScreenProps = {
    * page) until the user picks a job or changes what the list shows.
    */
   initialJobId?: string;
+  /** Words to search on arrival: `/jobs?q=…`, from the top bar's search (redesign R4). */
+  initialQuery?: string;
 };
 
 /**
@@ -54,8 +56,8 @@ export type JobsScreenProps = {
  * Selection lives in local `useState`, not a URL param — see `toreview.md` §15.1 for why. The
  * one way in from a URL is `?job=`, which `JobsRoute` reads and hands over as `initialJobId`.
  */
-export function JobsScreen({ initialJobId }: JobsScreenProps) {
-  const [searchInput, setSearchInput] = useState('');
+export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
+  const [searchInput, setSearchInput] = useState(initialQuery ?? '');
   const [filters, setFilters] = useState<JobFilters>(EMPTY_JOB_FILTERS);
   const [sort, setSort] = useState<JobSort>('relevance');
   const [selectedId, setSelectedId] = useState<string | undefined>(initialJobId);

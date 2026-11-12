@@ -40,7 +40,7 @@ export function PillTabs<T extends string>({
       role="tablist"
       aria-label={label}
       className={cn(
-        'relative inline-flex max-w-full items-center gap-0.5 self-start overflow-x-auto rounded-full bg-surface-muted p-1 [scrollbar-width:none]',
+        'relative inline-flex min-w-0 max-w-full items-center gap-0.5 self-start overflow-x-auto rounded-full bg-surface-muted p-1 [scrollbar-width:none]',
         className,
       )}
     >

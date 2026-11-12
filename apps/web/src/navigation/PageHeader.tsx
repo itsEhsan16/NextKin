@@ -28,7 +28,8 @@ export function PageHeader({ eyebrow, title, subtitle, aside, className }: PageH
   const text = (
     <>
       {eyebrow != null && <div className="text-body-m text-text-secondary">{eyebrow}</div>}
-      <h1 className="mt-1 text-display-l text-text-primary">{title}</h1>
+      {/* One step smaller on a phone, where the full size took two lines (redesign R4, SH-14). */}
+      <h1 className="mt-1 text-h1 text-text-primary sm:text-display-l">{title}</h1>
       {subtitle != null && <p className="mt-1.5 text-body-l text-text-secondary">{subtitle}</p>}
     </>
   );

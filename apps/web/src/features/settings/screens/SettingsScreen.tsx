@@ -208,7 +208,7 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
   return (
     <div className={cn(pageFrame, 'flex flex-col pb-8')}>
       <PageHeader
-        className="pr-80"
+        className="md:pr-80"
         eyebrow={
           <span className="flex items-center gap-1.5">
             Settings
@@ -219,7 +219,8 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
         subtitle={heading.subtitle}
       />
 
-      <div className="mt-6 grid grid-cols-[272px_minmax(0,1fr)] items-start gap-6">
+      {/* Two columns from 768; stacked below, so a phone never scrolls sideways (redesign R4). */}
+      <div className="mt-6 grid items-start gap-6 md:grid-cols-[272px_minmax(0,1fr)]">
         <SettingsNav
           active={section}
           onChange={setSection}

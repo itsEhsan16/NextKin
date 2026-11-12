@@ -12,6 +12,9 @@ import { JobsScreen } from './JobsScreen';
  * Read on the client, the route is static and Next prefetches all of it (`toreview.md` §84).
  */
 export function JobsRoute() {
-  const job = useSearchParams().get('job');
-  return <JobsScreen initialJobId={job ?? undefined} />;
+  const params = useSearchParams();
+  const job = params.get('job');
+  // `?q=` is the top bar's search (redesign R4). A new search starts the page afresh.
+  const q = params.get('q') ?? '';
+  return <JobsScreen key={q} initialJobId={job ?? undefined} initialQuery={q || undefined} />;
 }

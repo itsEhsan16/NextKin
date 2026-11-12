@@ -77,13 +77,12 @@ describe('Sidebar', () => {
    * behaviour, so this pins the `tabIndex={-1}` each one sets itself — a guarantee independent of
    * `inert` support, and what a real keyboard-Tab pass (`toreview.md` §11) also needs to hold.
    */
-  it("keeps only the current state's upgrade link and bell button in the tab order", async () => {
+  it("keeps only the current state's upgrade link in the tab order, and has no bell", async () => {
     const user = userEvent.setup();
     renderWithQuery(<Sidebar />);
 
     const compactUpgrade = () => screen.getByRole('link', { name: 'Upgrade to Pro' });
     const expandedUpgrade = () => screen.getByRole('link', { name: 'Upgrade Now' });
-    const bell = () => screen.getByRole('button', { name: /Notifications/ });
 
     // `useSidebarCollapsed`'s cached state is module-scoped, not reset between tests, so an
     // earlier test's toggle click can leave this one starting collapsed — force a known starting
@@ -95,19 +94,18 @@ describe('Sidebar', () => {
       await user.click(collapseToggle);
     }
 
-    // Expanded: the card's own CTA is reachable; the compact rail link and the bell are the
-    // ones out of the way.
+    // The sidebar's own bell is gone (redesign R4, SH-03): the top bar's is the one way in.
+    expect(screen.queryByRole('button', { name: /Notifications/ })).toBeNull();
+
+    // Expanded: the card's own CTA is reachable; the compact rail link is out of the way.
     expect(expandedUpgrade()).not.toHaveAttribute('tabindex', '-1');
     expect(compactUpgrade()).toHaveAttribute('tabindex', '-1');
-    expect(bell()).not.toHaveAttribute('tabindex', '-1');
 
     await user.click(await screen.findByRole('button', { name: 'Collapse navigation' }));
 
-    // Collapsed: the rail's compact link takes over; the card's CTA and the bell (absent from
-    // the rail board entirely) drop out.
+    // Collapsed: the rail's compact link takes over; the card's CTA drops out.
     expect(compactUpgrade()).not.toHaveAttribute('tabindex', '-1');
     expect(expandedUpgrade()).toHaveAttribute('tabindex', '-1');
-    expect(bell()).toHaveAttribute('tabindex', '-1');
   });
 });
 

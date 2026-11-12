@@ -9,6 +9,9 @@ import { useSidebarCollapsed } from './useSidebarCollapsed';
 /** Below this the window has no room for the panel beside the page: `theme.css`'s `rail` too. */
 export const NARROW_SIDEBAR_QUERY = '(width < 80rem)';
 
+/** Dispatched on `window` by the top bar's menu button to open the panel over the page. */
+export const OPEN_SIDEBAR_EVENT = 'nextkin:open-sidebar';
+
 /**
  * Whether the sidebar is the rail, and what its toggle does (`toreview.md` §84).
  *
@@ -45,6 +48,34 @@ export function useSidebarRail(pathname: string) {
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [overlay]);
+
+  // The top bar's menu button (below 768, where there is no rail to click) asks for the panel.
+  useEffect(() => {
+    const open = () => {
+      if (narrow) setOverlayFrom(pathname);
+    };
+    window.addEventListener(OPEN_SIDEBAR_EVENT, open);
+    return () => window.removeEventListener(OPEN_SIDEBAR_EVENT, open);
+  }, [narrow, pathname]);
+
+  // While the panel is open over the page (redesign R4, audit SH-05): focus moves into it, the
+  // page behind is inert (out of the tab order and the accessibility tree), and closing it puts
+  // focus back where it was.
+  useEffect(() => {
+    if (!overlay) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const page = document.getElementById('main')?.parentElement;
+    page?.setAttribute('inert', '');
+    const panel = panelRef.current;
+    const first =
+      panel?.querySelector<HTMLElement>('[aria-current="page"]') ??
+      panel?.querySelector<HTMLElement>('a[href], button:not([disabled])');
+    first?.focus();
+    return () => {
+      page?.removeAttribute('inert');
+      if (opener?.isConnected) opener.focus();
     };
   }, [overlay]);
 

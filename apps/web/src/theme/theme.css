@@ -979,6 +979,13 @@ body:has([data-admin-signin]) {
     --sidebar-gutter: 240px;
   }
 }
+/* Below 768 there is no rail at all: the page gets the whole width and the panel opens over it
+   from the top bar's menu button (redesign R4, audit SH-01: every 390 shot scrolled sideways). */
+@media (width < 48rem) {
+  :root {
+    --sidebar-gutter: 0px;
+  }
+}
 
 /*
  * Redesign R2: z-layers (02-tokens §2.14). Tailwind v4 has no z-index namespace, so each layer is

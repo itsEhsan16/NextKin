@@ -1,17 +1,19 @@
 import { cn } from '@/lib/cn';
 import { CollapseFade } from '@/ui/CollapseFade';
-import { BellIcon } from '@/ui/icons';
 import { LogoMarkIllustration } from '@/ui/illustrations';
-import { Soon } from '@/ui/Soon';
 
 export type SidebarHeaderProps = {
   /** The rail, as React knows it: labels and tab order only. The look is `rail:` CSS. */
   collapsed: boolean;
-  hasUnread: boolean;
   onToggle: () => void;
 };
 
-export function SidebarHeader({ collapsed, hasUnread, onToggle }: SidebarHeaderProps) {
+/**
+ * The logo (which toggles the panel) and the wordmark. The second, inert bell that sat here is
+ * gone (redesign R4, audit SH-03): it showed the same unread dot as the top bar's working bell,
+ * so one dot meant two things. The top bar's bell is the one way to the notifications.
+ */
+export function SidebarHeader({ collapsed, onToggle }: SidebarHeaderProps) {
   return (
     <div className="flex w-full items-center gap-2 transition-[gap] duration-base ease-standard rail:gap-0">
       <button
@@ -39,23 +41,6 @@ export function SidebarHeader({ collapsed, hasUnread, onToggle }: SidebarHeaderP
             step that reads as a wordmark rather than a label once the tagline beside it went.
             Clipped, not truncated, so no ellipsis flashes as it collapses. */}
         <span className="block whitespace-nowrap text-h2 text-text-primary">NextKin</span>
-      </CollapseFade>
-
-      <CollapseFade open="panel" className="ml-auto shrink-0" inert={collapsed || undefined}>
-        <Soon>
-          <button
-            aria-disabled="true"
-            type="button"
-            aria-label={hasUnread ? 'Notifications, unread' : 'Notifications'}
-            tabIndex={collapsed ? -1 : undefined}
-            className="relative flex size-8 shrink-0 items-center justify-center rounded-full text-text-secondary transition-colors duration-press ease-standard hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-          >
-            <BellIcon className="size-[18px]" />
-            {hasUnread && (
-              <span className="absolute right-1.5 top-1.5 size-[5px] rounded-full bg-danger-dot transition-opacity duration-fast ease-standard starting:opacity-0" />
-            )}
-          </button>
-        </Soon>
       </CollapseFade>
     </div>
   );

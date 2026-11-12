@@ -132,7 +132,7 @@ export function DocumentViewerScreen({ id }: { id: string }) {
       />
 
       {!document ? (
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
           <Skeleton className="h-[52rem] rounded-lg" />
           {/* The details card, the callout and Other cover letters. */}
           <div className="flex flex-col gap-6">
@@ -145,7 +145,7 @@ export function DocumentViewerScreen({ id }: { id: string }) {
         <div
           key={document.id}
           className={cn(
-            'grid items-start gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]',
+            'grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]',
             reveal && 'animate-rise',
           )}
         >

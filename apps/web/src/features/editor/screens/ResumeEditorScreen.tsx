@@ -153,7 +153,12 @@ export function ResumeEditorScreen({ id }: { id: string }) {
         ]}
       />
 
-      <div className={cn('grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]', WORKSPACE)}>
+      <div
+        className={cn(
+          'grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
+          WORKSPACE,
+        )}
+      >
         <div
           className={cn(
             '-m-1 min-h-0 p-1 lg:overflow-y-auto [scrollbar-width:thin]',

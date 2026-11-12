@@ -8,7 +8,6 @@ import {
   useCurrentUser,
   useDocuments,
   useSubscription,
-  useUnreadCount,
 } from '@nextkin/shared/queries';
 
 import { stageOf, type ApplicationStage } from '@/features/applications/applicationStage';
@@ -91,7 +90,6 @@ export function Sidebar() {
   const subscription = useSubscription();
   const documents = useDocuments();
   const applications = useApplications();
-  const unread = useUnreadCount();
 
   // The board draws 3 here, which no subset of the statuses yields, so the badge counts what is
   // still open rather than matching the drawing: every application not Rejected, Withdrawn or
@@ -112,6 +110,15 @@ export function Sidebar() {
   return (
     <RailTooltipProvider>
       <div data-sidebar-shell="" data-overlay={overlay || undefined} className="contents">
+        {/* Opened over the page (below 1280): a scrim says the page behind is out of reach, and a
+            click on it closes the panel (redesign R4, audit SH-05). */}
+        {overlay && (
+          <div
+            aria-hidden
+            onClick={closeOverlay}
+            className="fixed inset-0 z-sidebar-scrim bg-surface-overlay animate-reveal"
+          />
+        )}
         <div
           aria-hidden
           className="w-(--sidebar-gutter) shrink-0 transition-[width] duration-base ease-standard"
@@ -120,7 +127,8 @@ export function Sidebar() {
         {/* Named, so a route change's cross-fade leaves the sidebar perfectly still (`theme.css`). */}
         <div
           ref={panelRef}
-          className="fixed inset-y-0 left-0 z-sidebar w-[240px] p-[7px] transition-[width] duration-base ease-standard rail:w-[72px]"
+          // Below 768 the panel waits off-canvas until the menu button opens it (redesign R4).
+          className="fixed inset-y-0 left-0 z-sidebar w-[240px] p-[7px] transition-[width,translate] duration-base ease-standard rail:w-[72px] max-md:-translate-x-full max-md:in-data-overlay:translate-x-0"
           style={{ viewTransitionName: 'app-sidebar' }}
         >
           <nav
@@ -132,7 +140,7 @@ export function Sidebar() {
               'rail:px-2 rail:py-3 rail:[--nav-row:var(--spacing-control-lg)] in-data-overlay:shadow-popover',
             )}
           >
-            <SidebarHeader collapsed={rail} hasUnread={(unread.data ?? 0) > 0} onToggle={toggle} />
+            <SidebarHeader collapsed={rail} onToggle={toggle} />
 
             <UserChip
               name={user.data ? `${user.data.firstName} ${user.data.lastName}` : undefined}

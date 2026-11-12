@@ -54,11 +54,11 @@ export function StatusPage({
           role={alert ? 'alert' : undefined}
           className={cn(
             cardSurface,
-            'flex w-full max-w-xl animate-reveal flex-col items-center gap-4 px-10 pb-10 pt-12 text-center',
+            'flex w-full max-w-xl animate-reveal flex-col items-center gap-4 px-5 pb-10 pt-12 text-center sm:px-10',
           )}
         >
           {art && (
-            <div aria-hidden className="mb-2 flex justify-center">
+            <div aria-hidden className="mb-2 flex max-w-full justify-center [&_svg]:max-w-full">
               {art}
             </div>
           )}

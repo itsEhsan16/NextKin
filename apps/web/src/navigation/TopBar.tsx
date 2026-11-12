@@ -3,17 +3,19 @@
 import { useUnreadCount } from '@nextkin/shared/queries';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 
 import { cn } from '@/lib/cn';
 import { brandButton } from '@/ui/brandButton';
 import { BellIcon, SearchIcon, UploadIcon } from '@/ui/icons';
+import { Menu01 } from '@/ui/lineIcons';
 import { pageColumn, topBarHeight } from '@/ui/pageFrame';
 import { pressable } from '@/ui/pressable';
 import { Soon } from '@/ui/Soon';
 
 import { AccountMenu } from './AccountMenu';
+import { OPEN_SIDEBAR_EVENT } from './useSidebarRail';
 
 /** A primary action with a `null` destination is an inert button. */
 type UploadAction = { label: string; href: Route | null };
@@ -47,7 +49,8 @@ const IN_BAR: { upload?: UploadAction; inBar?: boolean } = { inBar: true };
 
 const uploadAction = cn(
   brandButton,
-  'h-control-md gap-2 rounded-full px-5 text-body-m font-semibold',
+  // Below 768 it is the icon alone, in a circle (its words stay for screen readers).
+  'h-control-md gap-2 rounded-full px-5 text-body-m font-semibold max-md:w-control-md max-md:px-0',
 );
 
 /**
@@ -57,8 +60,8 @@ const uploadAction = cn(
  * one bar in the `(app)` layout rather than one per page, so it is in the same place everywhere
  * and what is typed into the search survives a navigation.
  *
- * The search field isn't wired yet: the app-wide search has no results surface. Upload New JD
- * opens the JD upload page (`toreview.md` §23).
+ * The search opens Jobs with the words typed (redesign R4). Upload New JD opens the JD upload
+ * page (`toreview.md` §23).
  */
 export function TopBar() {
   const pathname = usePathname();
@@ -70,6 +73,8 @@ export function TopBar() {
   const hasUnread = (unread.data ?? 0) > 0;
   const scrolled = useScrolled(Boolean(page?.inBar));
   const clear = page?.inBar && !scrolled;
+  const searchInput = useRef<HTMLInputElement>(null);
+  const submitSearch = useGlobalSearch(searchInput);
 
   return (
     // Named, so a route change's cross-fade leaves the bar still and drawn over the page
@@ -84,31 +89,62 @@ export function TopBar() {
       )}
       style={{ viewTransitionName: 'app-topbar' }}
     >
-      <div className={cn(pageColumn, 'flex h-full items-end gap-6 pb-2')}>
-        <div className="pointer-events-auto ml-auto flex shrink-0 items-center gap-3">
-          <label className="flex h-control-md w-[320px] items-center gap-2.5 rounded-full border border-border-subtle bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
+      <div className={cn(pageColumn, 'flex h-full items-end gap-3 pb-2 md:gap-6')}>
+        {/* Below 768 there is no rail, so the panel opens from here (redesign R4, audit SH-01). */}
+        <button
+          type="button"
+          aria-label="Open menu"
+          onClick={() => window.dispatchEvent(new Event(OPEN_SIDEBAR_EVENT))}
+          className={cn(
+            'pointer-events-auto flex size-control-md shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary shadow-card hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 md:hidden',
+            pressable,
+          )}
+        >
+          <Menu01 aria-hidden className="size-5" />
+        </button>
+        <div className="pointer-events-auto ml-auto flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+          {/* Searches jobs: Enter opens Jobs with the words, and ⌘K / Ctrl+K jumps here (audit
+              SH-04: the hint promised both, and neither worked). Below 768 it is the icon. */}
+          <form
+            role="search"
+            onSubmit={submitSearch}
+            className="hidden h-control-md w-60 items-center gap-2.5 rounded-full border border-border-subtle bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100 md:flex 2xl:w-80"
+          >
             <SearchIcon className="size-4 shrink-0 text-text-tertiary" />
             <input
+              ref={searchInput}
               type="search"
+              name="q"
               placeholder="Search jobs, skills, companies..."
               aria-label="Search jobs, skills, companies"
+              aria-keyshortcuts="Meta+K Control+K"
               className="min-w-0 flex-1 bg-transparent text-body-m text-text-primary outline-none placeholder:text-text-tertiary"
             />
             <kbd className="shrink-0 rounded-sm bg-surface-muted px-1.5 py-0.5 font-sans text-micro text-text-tertiary">
               ⌘K
             </kbd>
-          </label>
+          </form>
+          <Link
+            href={'/jobs' as Route}
+            aria-label="Search jobs"
+            className={cn(
+              'flex size-control-md shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary shadow-card hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 md:hidden',
+              pressable,
+            )}
+          >
+            <SearchIcon className="size-4" />
+          </Link>
 
           {upload.href ? (
             <Link href={upload.href} className={uploadAction}>
               <UploadIcon className="size-4" />
-              {upload.label}
+              <span className="max-md:sr-only">{upload.label}</span>
             </Link>
           ) : (
             <Soon>
               <button type="button" aria-disabled="true" className={uploadAction}>
                 <UploadIcon className="size-4" />
-                {upload.label}
+                <span className="max-md:sr-only">{upload.label}</span>
               </button>
             </Soon>
           )}
@@ -149,4 +185,27 @@ function useScrolled(enabled: boolean) {
   }, [enabled]);
 
   return enabled && scrolled;
+}
+
+/**
+ * The bar's search (redesign R4, audit SH-04): Enter opens Jobs filtered by the words, and
+ * ⌘K / Ctrl+K focuses the field from anywhere in the app.
+ */
+function useGlobalSearch(input: RefObject<HTMLInputElement | null>) {
+  const router = useRouter();
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        input.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [input]);
+  return (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const words = input.current?.value.trim() ?? '';
+    router.push((words ? `/jobs?q=${encodeURIComponent(words)}` : '/jobs') as Route);
+  };
 }

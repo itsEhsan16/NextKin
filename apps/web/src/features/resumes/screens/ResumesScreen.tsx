@@ -107,7 +107,7 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
         subtitle="Create, customize, and manage your resumes for every opportunity."
       />
 
-      <div className="mt-6 grid min-h-0 flex-1 grid-cols-[53fr_47fr] gap-6">
+      <div className="mt-6 grid min-h-0 flex-1 gap-6 md:grid-cols-[53fr_47fr]">
         <div className="flex min-h-0 min-w-0 flex-col gap-4">
           <ResumeSearchBar
             search={search}

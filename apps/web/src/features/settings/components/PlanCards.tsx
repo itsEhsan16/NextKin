@@ -55,7 +55,7 @@ export function PlanCards({ subscription, pro }: PlanCardsProps) {
   const price = pro ? planPrice(pro) : undefined;
 
   return (
-    <div className="grid grid-cols-2 items-stretch gap-6">
+    <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
       <section aria-label="Current plan" className={cn(cardSurface, cardPad, 'flex flex-col')}>
         <div className="flex flex-1 items-start gap-4">
           <NavUpgradeIllustration aria-hidden className="h-auto w-10 shrink-0" />

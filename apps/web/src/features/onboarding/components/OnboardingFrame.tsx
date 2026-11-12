@@ -32,7 +32,7 @@ export function OnboardingFrame({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-neutral-0">
-      <header className="mx-auto flex w-full max-w-[1064px] items-center justify-between gap-6 px-10 pt-5">
+      <header className="mx-auto flex w-full max-w-[1064px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 pt-5 sm:px-10">
         <div className="flex items-center gap-2.5">
           <OnboardingLogoIllustration className="h-[29px] w-7" />
           <span className="text-h1 font-bold text-text-primary">NextKin</span>

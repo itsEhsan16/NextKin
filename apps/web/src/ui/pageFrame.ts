@@ -1,9 +1,10 @@
 /**
  * The column every page sits in (`toreview.md` §16): the full width beside the sidebar up to
- * 1440, with 24px gutters. The layout's `TopBar` sits in the same column, so its buttons end where
- * a page's content does.
+ * 1440. The layout's `TopBar` sits in the same column, so its buttons end where a page's content
+ * does. Gutters step 16 / 24 / 32 with the window, so a phone-width window never scrolls sideways
+ * (redesign R4, audit SH-01).
  */
-export const pageColumn = 'mx-auto w-full max-w-[1440px] px-8';
+export const pageColumn = 'mx-auto w-full max-w-container-page px-4 sm:px-6 lg:px-8';
 
 /**
  * A page's frame: the column, starting 24px under the top bar's band, which puts every title 32px
@@ -29,10 +30,14 @@ export const stickyBelowTopBar = 'top-[5.25rem]';
 /**
  * A page that starts inside the top bar's band, its title level with the bar's controls: every
  * built page but Settings, as the owner moved them up (2026-10-09, `toreview.md` §87). `TopBar`'s
- * `BY_PATH` lists them. The bar draws no background on such a page (`TopBar`'s `inBar`) until the page scrolls
- * under it.
+ * `BY_PATH` lists them. The bar draws no background on such a page (`TopBar`'s `inBar`) until the
+ * page scrolls under it.
+ *
+ * From 1280 only (redesign R4, audit SH-02): below that the bar's controls take the band's width,
+ * and the title ran under the search ("Find the right oppor…" at 1024), so it sits under the bar
+ * like any other page.
  */
-export const pageFrameInBar = `${pageColumn} -mt-16 pt-6`;
+export const pageFrameInBar = `${pageColumn} pt-8 xl:-mt-16 xl:pt-6`;
 
-/** The whole window, for a list page that starts inside the top bar's band. */
-export const pageFillInBar = 'h-dvh';
+/** The whole window, for a list page that starts inside the top bar's band (from 1280). */
+export const pageFillInBar = 'h-[calc(100dvh-4rem)] xl:h-dvh';
