@@ -81,7 +81,8 @@ export function ResumeDetailCard({
         onChange={setTab}
         label="Resume detail"
         idBase={panel}
-        className="mt-6 shrink-0"
+        // Narrower than the four tabs (a 768 window), the bar scrolls sideways inside the card.
+        className="mt-6 shrink-0 overflow-x-auto scrollbar-thin"
       />
 
       {/* Keyed by tab: after the first switch, each tab's content fades in (`toreview.md` §84). */}
