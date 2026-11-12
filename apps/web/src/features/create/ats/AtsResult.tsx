@@ -13,7 +13,9 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
+import { ATS_DISCLAIMER } from '@/features/create/createLibrary';
 import { cn } from '@/lib/cn';
+import { textLink } from '@/ui/textLink';
 import { Callout } from '@/ui/Callout';
 import { iconButton } from '@/ui/iconButton';
 import { PersonIcon, StarIcon } from '@/ui/icons';
@@ -119,14 +121,30 @@ export function AtsResult({
           <span
             className={cn('rounded-full px-2.5 py-0.5 text-caption-m font-semibold', PILL[band])}
           >
-            ATS score · {ATS_BAND_LABEL[band]}
+            NextKin score · {ATS_BAND_LABEL[band]}
           </span>
+          {/* The job match apart from the score (V2 §7.8), and what the number is (CR-23). */}
+          {match && (
+            <p className="text-body-m font-semibold text-text-primary">
+              Job match {Math.round((match.matched / Math.max(1, match.total)) * 100)}%
+              <span className="font-normal text-text-tertiary">
+                {' '}
+                · {match.matched} of {match.total} keywords
+              </span>
+            </p>
+          )}
           <p className="text-center text-body-l text-text-secondary">
             {match
               ? `Your resume shows ${match.matched} of this job’s ${match.total} key keywords.`
               : result.missing.length === 0
                 ? 'Every keyword the job asks for is on your resume.'
                 : `${result.missing.length} of the job’s keywords aren’t on your resume yet.`}
+          </p>
+          <p className="text-center text-caption-m text-text-tertiary">
+            {ATS_DISCLAIMER}{' '}
+            <Link href={'/help' as Route} className={textLink}>
+              How this score works
+            </Link>
           </p>
           {plan && (
             <ul

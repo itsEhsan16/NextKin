@@ -149,10 +149,14 @@ describe('Cover Letter', () => {
     const tones = screen.getByRole('heading', { name: 'Try another tone' }).closest('aside')!;
     const professional = within(tones).getByText('Professional').closest('li')!;
     expect(within(professional).getByText('Current')).toBeInTheDocument();
-    for (const tone of ['Confident', 'Warm', 'Concise']) {
+    // V2 §7.10's tone names (CR-33); each rewrite says what it is and what it costs (CR-37, CR-41).
+    for (const tone of ['Confident', 'Conversational', 'Concise']) {
       const row = within(tones).getByText(tone).closest('li')!;
-      expect(within(row).getByRole('button', { name: 'Rewrite' })).toBeInTheDocument();
+      expect(
+        within(row).getByRole('button', { name: `Rewrite in a ${tone.toLowerCase()} tone` }),
+      ).toBeInTheDocument();
     }
+    expect(within(tones).getByText(/Rewrites the whole letter · uses 1/)).toBeInTheDocument();
 
     // The first download asks whether the letter is accurate (V2 §15 risk 2).
     const download = screen.getByRole('button', { name: /Download PDF/ });

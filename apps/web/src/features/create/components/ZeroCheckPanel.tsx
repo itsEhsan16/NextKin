@@ -112,7 +112,7 @@ export function ZeroCheckPanel({
       <p className="text-body-l text-text-secondary">
         {done
           ? 'Every guess is checked. It’s yours to edit and download.'
-          : 'One at a time. Nothing is saved until every guess is checked.'}
+          : 'One at a time. The draft is kept in Resumes; it downloads once every guess is checked.'}
       </p>
       <div
         aria-label={`${progress.checked} of ${progress.total} checked`}

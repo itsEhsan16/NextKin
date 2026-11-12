@@ -33,6 +33,7 @@ export function JobStep({
   backHref = '/' as Route,
   note,
   busyLabel,
+  spent = false,
 }: {
   flow: JobFlow;
   onPicked: (job: PickedJob) => void;
@@ -43,6 +44,8 @@ export function JobStep({
   note?: string;
   /** Held while the caller works on the pick (the ATS check starts its run). */
   busyLabel?: string;
+  /** This month's allowance is used: the primary becomes the way to more (CR-19, V2 §13.5). */
+  spent?: boolean;
 }) {
   const copy = JOB_FLOWS[flow];
   const saved = useSavedJobs();
@@ -126,10 +129,16 @@ export function JobStep({
         <Link href={backHref} className={backButton}>
           Back
         </Link>
-        <button type="button" onClick={next} disabled={!ready || busy} className={primaryButton}>
-          {busyLabel ?? (busy ? 'Reading the job…' : 'Continue')}
-          <ArrowRight aria-hidden className="size-4.5" />
-        </button>
+        {spent ? (
+          <Link href={'/upgrade' as Route} className={primaryButton}>
+            See Pro plans
+          </Link>
+        ) : (
+          <button type="button" onClick={next} disabled={!ready || busy} className={primaryButton}>
+            {busyLabel ?? (busy ? 'Reading the job…' : 'Continue')}
+            <ArrowRight aria-hidden className="size-4.5" />
+          </button>
+        )}
       </FlowFooter>
     </div>
   );

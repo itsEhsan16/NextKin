@@ -192,7 +192,12 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
               : (allowanceNote(allowance, 'check', 'ATS checks') ??
                 'Uses one of this month’s checks.')
         }
-        {...(start.isPending || start.isSuccess ? { busyLabel: 'Starting the check…' } : {})}
+        // Held from the press: reading a saved job and starting the check are one action, so
+        // a second press can't start (and spend) a second check (CR-20).
+        {...(extract.isPending || start.isPending || start.isSuccess
+          ? { busyLabel: extract.isPending ? 'Reading the job…' : 'Starting the check…' }
+          : {})}
+        spent={allowance.spent}
         onPicked={check}
       />,
     );

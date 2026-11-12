@@ -36,8 +36,9 @@ export const TONE_COPY: Record<
     line: 'Direct and sure of your results.',
     sample: (j) => `“I want to bring my work to ${j.company || 'your team'} as your ${j.title}.”`,
   },
+  // V2 §7.10's name for it (redesign R6e, audit CR-33).
   conversational: {
-    label: 'Warm',
+    label: 'Conversational',
     line: 'Friendly and personal.',
     sample: (j) => `“I’d love to help shape what ${j.company || 'your team'} builds next.”`,
   },
@@ -69,6 +70,7 @@ function BuiltFromRow({
       </div>
       <Link
         href={change}
+        aria-label={`Change ${label.toLowerCase()}`}
         className="flex h-8 items-center rounded-full border border-border-default bg-surface-card px-3.5 text-body-s font-semibold text-text-primary transition-colors duration-fast ease-standard hover:border-border-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       >
         Change

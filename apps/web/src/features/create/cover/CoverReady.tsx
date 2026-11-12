@@ -25,6 +25,7 @@ import { BriefcaseIcon } from '@/ui/icons';
 import { Check, ChevronRight, Download01, Edit03, File06 } from '@/ui/lineIcons';
 import { NavDocumentsIllustration } from '@/ui/illustrations';
 import { Skeleton } from '@/ui/Skeleton';
+import { StateView } from '@/ui/StateView';
 import { StableLabel } from '@/ui/StableLabel';
 
 import { coverAllowance } from '../createLibrary';
@@ -55,7 +56,9 @@ export function CoverReady({
   const download = useConfirmedDownload(letterId);
   const subscription = useSubscription();
   const again = useStartGeneration();
-  const spent = coverAllowance(subscription.data?.usage).spent;
+  const allowance = coverAllowance(subscription.data?.usage);
+  const spent = allowance.spent;
+  const left = allowance.known ? Math.max(0, allowance.limit - allowance.used) : undefined;
   const tone = generation.tone ?? 'professional';
   const letter =
     content.data?.kind === 'cover_letter' ? (content.data as CoverLetterContent) : undefined;
@@ -105,7 +108,7 @@ export function CoverReady({
         </span>
         <span className="flex-1" />
         <Link href={resumeEditorHref(letterId)} className={backButton}>
-          <Edit03 aria-hidden className="mr-2 size-4" />
+          <Edit03 aria-hidden className="size-4" />
           Edit letter
         </Link>
         <button
@@ -130,7 +133,15 @@ export function CoverReady({
           className={cn(stepCard, 'bg-neutral-100 px-6 pt-6 lg:col-span-2')}
         >
           <div className="mx-auto max-w-2xl bg-surface-card px-14 pb-16 pt-16 shadow-popover">
-            {letter ? (
+            {content.isError && !letter ? (
+              <StateView
+                tone="danger"
+                title="Couldn’t load your letter"
+                message="It is saved in Resumes. Check your connection and try again."
+                actionLabel="Try again"
+                onAction={() => void content.refetch()}
+              />
+            ) : letter ? (
               <LetterPage
                 name={name}
                 contact={contact}
@@ -154,7 +165,11 @@ export function CoverReady({
             <NavDocumentsIllustration aria-hidden className="h-auto w-10" />
             <div>
               <h2 className="text-h2 font-bold text-text-primary">Try another tone</h2>
-              <p className="text-body-m text-text-secondary">Rewrites the whole letter</p>
+              {/* What a rewrite costs, before it is pressed (CR-37). */}
+              <p className="text-body-m text-text-secondary">
+                Rewrites the whole letter · uses 1
+                {left !== undefined ? ` (${left} left this month)` : ''}
+              </p>
             </div>
           </div>
           <ul className="flex flex-col gap-3">
@@ -180,6 +195,7 @@ export function CoverReady({
                   ) : (
                     <button
                       type="button"
+                      aria-label={`Rewrite in a ${TONE_COPY[t].label.toLowerCase()} tone`}
                       disabled={spent || again.isPending}
                       onClick={() => retone(t)}
                       className="rounded-sm text-body-m font-semibold text-text-brand hover:underline disabled:text-text-tertiary disabled:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
@@ -203,19 +219,19 @@ export function CoverReady({
                 aria-hidden
                 className="flex size-7 items-center justify-center rounded-md bg-neutral-100 text-text-tertiary"
               >
-                <BriefcaseIcon className="size-3.5" />
+                <BriefcaseIcon className="size-4" />
               </span>
               {job.company ? `${job.title} · ${job.company}` : job.title}
             </p>
-            {source.data && (
+            {(source.data || source.isError) && (
               <p className="flex items-center gap-2.5 text-body-l text-text-secondary">
                 <span
                   aria-hidden
                   className="flex size-7 items-center justify-center rounded-md bg-neutral-100 text-text-tertiary"
                 >
-                  <File06 className="size-4.5" />
+                  <File06 className="size-4" />
                 </span>
-                {source.data.title} (resume)
+                {source.data ? `${source.data.title} (resume)` : 'Resume unavailable'}
               </p>
             )}
           </div>

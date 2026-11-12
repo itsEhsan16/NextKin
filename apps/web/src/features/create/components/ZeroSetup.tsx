@@ -124,7 +124,8 @@ export function ZeroSetup({
     ? START_FAILED
     : allowance.spent
       ? allowanceNote(allowance, 'generation', 'generations')
-      : 'Nothing is saved until you’ve checked the draft.';
+      : // What is true (CR-43): the draft is kept in Resumes; the download waits on the check.
+        'Your draft is kept in Resumes. You can download it once every guess is checked.';
   return (
     <div className="flex flex-col gap-6">
       <section aria-labelledby="zero-basics" className={stepCard}>
@@ -150,7 +151,11 @@ export function ZeroSetup({
               <p id={yearsId} className="text-body-m font-semibold text-text-primary">
                 Years of experience
               </p>
-              <div role="radiogroup" aria-labelledby={yearsId} className="grid grid-cols-5 gap-2.5">
+              <div
+                role="radiogroup"
+                aria-labelledby={yearsId}
+                className="grid grid-cols-3 gap-2.5 sm:grid-cols-5"
+              >
                 {ZERO_YEARS.map((y) => {
                   const on = about.years === y;
                   return (

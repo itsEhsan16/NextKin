@@ -202,7 +202,13 @@ export function CoverLetterScreen({
             ? START_FAILED
             : allowance.spent
               ? (allowanceNote(allowance, 'cover letter', 'cover letters') ?? '')
-              : 'Saved to Resumes. You can edit every line before you download.'
+              : // What it costs, before it is spent (V2 §13.5; redesign R6e, audit CR-32).
+                [
+                  allowanceNote(allowance, 'cover letter', 'cover letters'),
+                  'Saved to Resumes. You can edit every line before you download.',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
         }
         noteTone={start.isError ? 'danger' : 'neutral'}
         spent={allowance.spent}
