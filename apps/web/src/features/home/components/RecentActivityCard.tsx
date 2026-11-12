@@ -109,7 +109,8 @@ export function RecentActivityCard({ entries, status, onRetry }: RecentActivityC
     <Card loading={status === 'pending'} className="w-full p-6 lg:w-[380px] lg:shrink-0">
       <SectionHeader
         title="Recent Activity"
-        actionHref={hasActivity ? ('/insights' as Route) : undefined}
+        // No activity history page exists yet, so no "View all" leading somewhere else (HM-11).
+        actionHref={undefined}
       />
 
       {status === 'pending' && (
@@ -137,6 +138,8 @@ export function RecentActivityCard({ entries, status, onRetry }: RecentActivityC
           className={reveal ? 'animate-reveal' : undefined}
           title="Nothing yet"
           message="Your recent actions will appear here."
+          actionLabel="Find jobs"
+          actionHref={'/jobs' as Route}
         />
       )}
 

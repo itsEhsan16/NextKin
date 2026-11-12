@@ -43,6 +43,8 @@ const BY_PATH: Record<string, { upload?: UploadAction; inBar?: boolean }> = {
   '/help': { inBar: true },
   '/assistant': { inBar: true },
   '/insights': { inBar: true },
+  // One page frame for every built page (redesign R7a, audit NT-01).
+  '/notifications': { inBar: true },
 };
 
 const IN_BAR: { upload?: UploadAction; inBar?: boolean } = { inBar: true };

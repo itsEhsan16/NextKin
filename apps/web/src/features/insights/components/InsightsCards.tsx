@@ -72,7 +72,7 @@ function Change({ pct }: { pct: number }) {
       )}
     >
       <span aria-hidden>{pct > 0 ? '↑' : pct < 0 ? '↓' : '→'}</span>
-      <span className="sr-only">{pct >= 0 ? 'up' : 'down'}</span>
+      <span className="sr-only">{pct > 0 ? 'up' : pct < 0 ? 'down' : 'no change'}</span>
       {Math.abs(pct)}%
     </span>
   );
@@ -137,7 +137,8 @@ export function FunnelCard({ funnel }: { funnel: CareerInsights['funnel'] }) {
   const base = Math.max(funnel.applications, 1);
   const stages: [string, number][] = [
     ['Applications', funnel.applications],
-    ['Shortlisted', funnel.shortlisted],
+    // The app's own stage word (IN-07): Applications says In Review, not "Shortlisted".
+    ['In review', funnel.shortlisted],
     ['Interviews', funnel.interviews],
     ['Offers', funnel.offers],
   ];
@@ -174,7 +175,14 @@ export function FunnelCard({ funnel }: { funnel: CareerInsights['funnel'] }) {
 }
 
 /** "AI Insights" (462:52): four observations, each under the board's glyph for its subject. */
-export function AiInsightsCard({ insights }: { insights: CareerInsights['aiInsights'] }) {
+export function AiInsightsCard({
+  insights,
+  basis,
+}: {
+  insights: CareerInsights['aiInsights'];
+  /** What the observations are drawn from, said under them (IN-10, "show the source"). */
+  basis: string;
+}) {
   return (
     <section aria-labelledby="insights-ai" className={insightPanel}>
       <div className="flex items-center gap-3">
@@ -199,6 +207,7 @@ export function AiInsightsCard({ insights }: { insights: CareerInsights['aiInsig
           );
         })}
       </ul>
+      <p className="mt-4 text-caption-m text-text-tertiary">{basis}</p>
     </section>
   );
 }

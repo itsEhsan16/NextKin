@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/cn';
 import { Card } from '@/ui/Card';
 import { AiSparkIcon } from '@/ui/icons';
-import { primaryButton } from '@/ui/primaryButton';
+import { buttonClass } from '@/ui/Button';
 
 /**
  * "Improve your chances with AI" (286:640), at the compact density.
@@ -27,9 +27,10 @@ export function AiPromoCard() {
         </p>
         <Link
           href="/assistant"
+          // One filled button per view (HM-09): the top bar's Upload New JD is the filled one.
           className={cn(
-            primaryButton,
-            'mt-5 h-control-md gap-2 rounded-full pl-4 pr-5 text-body-m',
+            buttonClass({ variant: 'brand-secondary', size: 'md', pill: true }),
+            'mt-5 pl-4 pr-5',
           )}
         >
           <AiSparkIcon className="h-[18px] w-[17px]" />

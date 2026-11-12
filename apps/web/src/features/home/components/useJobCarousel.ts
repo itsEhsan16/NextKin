@@ -11,9 +11,19 @@ import {
 import { motion } from '@/theme/tokens';
 
 /** How many cards show at once at the widest; the loop needs that many copies at its end. */
-const SHOWN = 2;
+const SHOWN_WIDE = 2;
 
 const REDUCE = '(prefers-reduced-motion: reduce)';
+/** Where two cards fit side by side (`PER_VIEW` in `TopJobMatches`): from 1280. */
+const WIDE = '(min-width: 80rem)';
+
+function subscribeWide(onChange: () => void) {
+  if (typeof window.matchMedia !== 'function') return () => {};
+  const query = window.matchMedia(WIDE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+const wideNow = () => typeof window.matchMedia !== 'function' || window.matchMedia(WIDE).matches;
 
 /** The reader's reduced-motion setting, followed live: turning it on mid-visit stops the loop. */
 function subscribeReducedMotion(onChange: () => void) {
@@ -32,10 +42,17 @@ const reducedMotionNow = () =>
  * arrive from the right.
  *
  * It advances by itself every `motion.delays.carousel` unless something holds it: a pointer over
- * it, focus inside it, a hidden tab, or a reader who asked for reduced motion.
+ * it, focus inside it, a hidden tab, a reader who asked for reduced motion, or the pause button
+ * (redesign R7a, audit HM-06: the advance had no visible way to stop it).
+ *
+ * How many show at once follows the window (two from 1280, one below), so two picks below 1280
+ * still move and the second can be reached; it used to count two everywhere and hide the arrows.
  */
 export function useJobCarousel(count: number) {
+  const wide = useSyncExternalStore(subscribeWide, wideNow, () => true);
+  const SHOWN = wide ? SHOWN_WIDE : 1;
   const moves = count > SHOWN;
+  const [paused, setPaused] = useState(false);
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(true);
   const [held, setHeld] = useState(false);
@@ -94,12 +111,12 @@ export function useJobCarousel(count: number) {
   }, [animate]);
 
   useEffect(() => {
-    if (!moves || held || reduced) return undefined;
+    if (!moves || held || reduced || paused) return undefined;
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') next();
     }, motion.delays.carousel);
     return () => clearInterval(timer);
-  }, [moves, held, reduced, next]);
+  }, [moves, held, reduced, paused, next]);
 
   const order = moves
     ? [...Array.from({ length: count }, (_, i) => i), ...Array.from({ length: SHOWN }, (_, i) => i)]
@@ -107,6 +124,10 @@ export function useJobCarousel(count: number) {
 
   return {
     moves,
+    paused,
+    togglePaused: () => setPaused((was) => !was),
+    /** Whether it advances by itself at all: not under reduced motion. */
+    auto: !reduced,
     // A shorter list after a refetch must not leave the track past its end.
     index: moves && index <= count ? index : 0,
     animate,

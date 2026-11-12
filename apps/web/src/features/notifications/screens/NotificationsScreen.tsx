@@ -16,8 +16,11 @@ import { cn } from '@/lib/cn';
 import { formatRelativeTime } from '@/lib/format';
 import { parseBold } from '@/lib/richText';
 import { PageHeader } from '@/navigation/PageHeader';
-import { outlineButton } from '@/ui/outlineButton';
-import { pageFrame } from '@/ui/pageFrame';
+import { showToast } from '@/lib/toast';
+import { buttonClass } from '@/ui/Button';
+import { ChevronRightIcon } from '@/ui/icons';
+import { Settings01 } from '@/ui/lineIcons';
+import { pageFrameInBar } from '@/ui/pageFrame';
 import { pressable } from '@/ui/pressable';
 import { SkeletonListRow } from '@/ui/SkeletonShapes';
 import { StateView } from '@/ui/StateView';
@@ -49,20 +52,30 @@ export function NotificationsScreen() {
   };
 
   return (
-    <div className={cn(pageFrame, 'pb-12')}>
+    <div className={cn(pageFrameInBar, 'pb-12')}>
       <PageHeader
         title={NOTIFICATIONS_TITLE}
         subtitle="What happened on NextKin, newest first."
         aside={
           <div className="flex items-center gap-3">
-            <Link href={'/settings?tab=notifications' as Route} className={textLink}>
+            {/* Sized buttons, not a bare outline and a body-l link (NT-02). */}
+            <Link
+              href={'/settings?tab=notifications' as Route}
+              className={buttonClass({ variant: 'ghost', size: 'sm' })}
+            >
+              <Settings01 aria-hidden className="size-4" />
               Preferences
             </Link>
             {unread && (
               <button
                 type="button"
-                className={cn(outlineButton, pressable)}
-                onClick={() => markAll.mutate(undefined)}
+                className={buttonClass({ variant: 'secondary', size: 'sm' })}
+                onClick={() =>
+                  markAll.mutate(undefined, {
+                    onError: () =>
+                      showToast('We couldn’t mark them read. Try again.', { tone: 'error' }),
+                  })
+                }
               >
                 Mark all read
               </button>
@@ -99,7 +112,13 @@ export function NotificationsScreen() {
                 key={row.id}
                 row={row}
                 onOpen={() => open(row)}
-                onRemove={() => remove.mutate(row.id)}
+                href={webHrefOf(row.deepLink)}
+                onRemove={() =>
+                  remove.mutate(row.id, {
+                    onError: () =>
+                      showToast('We couldn’t remove it. Try again.', { tone: 'error' }),
+                  })
+                }
               />
             ))}
           </ul>
@@ -109,12 +128,19 @@ export function NotificationsScreen() {
   );
 }
 
+/**
+ * One notification. Unread says so in shape as well as tint: a dot and a heavier headline
+ * (redesign R7a, audit NT-03); the tint eases off once read. A row that goes somewhere is a
+ * button with a chevron; one with nowhere to go only marks itself read (NT-07).
+ */
 function NotificationRow({
   row,
+  href,
   onOpen,
   onRemove,
 }: {
   row: Notification;
+  href: string | null | undefined;
   onOpen: () => void;
   onRemove: () => void;
 }) {
@@ -124,17 +150,19 @@ function NotificationRow({
   return (
     <li
       className={cn(
-        'flex items-start gap-3 rounded-xl border border-border-subtle p-4 shadow-card',
+        'flex items-start gap-3 rounded-xl border border-border-subtle p-4 shadow-card transition-colors duration-base ease-standard',
         row.read ? 'bg-surface-card' : 'bg-brand-50',
       )}
     >
+      {!row.read && <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-brand-600" />}
       <button
         type="button"
         onClick={onOpen}
-        aria-label={`${headline}${row.read ? '' : ', unread'}`}
-        className={cn('min-w-0 flex-1 text-left', pressable)}
+        disabled={!href && row.read}
+        aria-label={`${href ? '' : row.read ? '' : 'Mark as read: '}${headline}${row.read ? '' : ', unread'}`}
+        className={cn('min-w-0 flex-1 text-left disabled:cursor-default', pressable)}
       >
-        <p className="text-body-m text-text-primary">
+        <p className={cn('text-body-m text-text-primary', !row.read && 'font-semibold')}>
           {parseBold(row.body).map((run, index) =>
             run.bold ? (
               <strong key={index} className="font-semibold">
@@ -152,6 +180,7 @@ function NotificationRow({
           {formatRelativeTime(row.createdAt)}
         </p>
       </button>
+      {href && <ChevronRightIcon aria-hidden className="mt-1 size-4 shrink-0 text-text-tertiary" />}
       <button
         type="button"
         onClick={onRemove}

@@ -26,8 +26,9 @@ describe('InsightsScreen (461:14)', () => {
       within(screen.getByRole('region', { name: 'Interviews' })).getByText(/200%/),
     ).toBeInTheDocument();
     expect(
+      // Says what it averages (redesign R7a, IN-02), not a vague "10+".
       within(screen.getByRole('region', { name: 'Resume Score' })).getByText(
-        'Based on 10+ job matches',
+        /^Average of \d+ resume-to-job match/,
       ),
     ).toBeInTheDocument();
 

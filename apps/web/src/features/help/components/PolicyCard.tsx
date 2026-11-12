@@ -1,4 +1,4 @@
-import type { LegalDocKey } from '@nextkin/shared/models';
+import { LEGAL_DOC_TITLE, type LegalDocKey } from '@nextkin/shared/models';
 import { useLegal } from '@nextkin/shared/queries';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -26,6 +26,21 @@ export function PolicyCard({ doc }: { doc: LegalDocKey }) {
   const Art = ART[doc];
   const reveal = useReveal(Boolean(legal.data));
 
+  // A summary that didn't load says so and can be asked for again (redesign R7a, audit HP-01).
+  if (!legal.data && legal.isError)
+    return (
+      <div className={cn(cardSurface, cardPad, 'flex flex-col gap-2')}>
+        <p className="text-title-l text-text-primary">{LEGAL_DOC_TITLE[doc]}</p>
+        <p className="text-body-m text-text-secondary">Couldn’t load the summary.</p>
+        <button
+          type="button"
+          onClick={() => void legal.refetch()}
+          className="w-fit rounded-sm text-body-m font-semibold text-text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
+          Try again
+        </button>
+      </div>
+    );
   if (!legal.data) return <Skeleton className="h-40 rounded-lg" />;
 
   const { title, updatedAt, intro, url } = legal.data;

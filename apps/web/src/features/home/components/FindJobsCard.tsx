@@ -19,7 +19,8 @@ export function FindJobsCard() {
       />
       <span className="relative text-h2 text-text-inverse">Find Jobs</span>
       <span className="relative mt-0.5 text-body-s text-brand-on-dark">
-        Search millions of jobs
+        {/* A scale claim with no source in the claims register (HM-08). */}
+        Browse jobs matched to your profile
       </span>
     </Link>
   );

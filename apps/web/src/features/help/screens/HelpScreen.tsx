@@ -50,13 +50,15 @@ export function HelpScreen() {
   const switched = useReveal(true, filter);
 
   const items = useMemo(() => faq.data ?? [], [faq.data]);
+  // The pills count what the search leaves, so a pill and what shows under it agree (HP-02).
   const counts = useMemo(() => {
-    const result = { all: items.length } as Record<HelpFilter, number>;
+    const found = items.filter((item) => matchesSearch(item, query));
+    const result = { all: found.length } as Record<HelpFilter, number>;
     for (const topic of FAQ_TOPIC_ORDER) {
-      result[topic] = items.filter((item) => item.topic === topic).length;
+      result[topic] = found.filter((item) => item.topic === topic).length;
     }
     return result;
-  }, [items]);
+  }, [items, query]);
 
   const shown = items.filter(
     (item) => (filter === 'all' || item.topic === filter) && matchesSearch(item, query),
@@ -165,8 +167,9 @@ export function HelpScreen() {
                         <p className="text-body-m font-semibold text-text-primary">
                           Search reads the answers too
                         </p>
+                        {/* No example word that depends on an answer's wording (HP-07). */}
                         <p className="text-body-s text-text-tertiary">
-                          Try “watermark” to find the export answer.
+                          Type a word from the answer you need, not only from the question.
                         </p>
                       </div>
                     </div>

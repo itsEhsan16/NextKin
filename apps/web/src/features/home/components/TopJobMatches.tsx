@@ -12,11 +12,13 @@ import { Card } from '@/ui/Card';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { iconButton } from '@/ui/iconButton';
 import { ChevronRightIcon } from '@/ui/icons';
+import { PauseCircle, PlayCircle } from '@/ui/lineIcons';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { LogoAdobeIllustration, LogoGoogleIllustration } from '@/ui/illustrations';
 
+import { MatchBadge } from '@/features/jobs/components/MatchBadge';
 import { jobPageHref } from '@/features/jobs/jobPageLibrary';
 
 import { useJobCarousel } from './useJobCarousel';
@@ -68,6 +70,24 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
         controls={
           carousel.moves && (
             <span className="flex items-center gap-2">
+              {carousel.auto && (
+                <button
+                  type="button"
+                  aria-label={carousel.paused ? 'Resume moving' : 'Pause moving'}
+                  aria-pressed={carousel.paused}
+                  onClick={carousel.togglePaused}
+                  className={cn(
+                    iconButton,
+                    'border border-border-subtle bg-surface-card text-text-secondary shadow-card',
+                  )}
+                >
+                  {carousel.paused ? (
+                    <PlayCircle aria-hidden className="size-4" />
+                  ) : (
+                    <PauseCircle aria-hidden className="size-4" />
+                  )}
+                </button>
+              )}
               <button
                 type="button"
                 aria-label="Previous matches"
@@ -119,6 +139,8 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
           className={reveal ? 'animate-reveal' : undefined}
           title="No matches yet"
           message="Complete your profile and we'll start matching you to roles."
+          actionLabel="Complete your profile"
+          actionHref={'/profile' as Route}
         />
       )}
 
@@ -207,11 +229,9 @@ function JobMatchCard({ job, slot }: { job: Job; slot: number }) {
 
       <div className="relative flex items-center gap-9 pt-3">
         <Logo job={job} />
-        {match != null && (
-          <span className="rounded-full bg-success-surface px-2.5 py-1 text-caption-m font-semibold text-success-text">
-            {match}% Match
-          </span>
-        )}
+        {/* The band's own colour and word (redesign R7a, audit HM-03): it was green for every
+            score. Nothing without a band, as on the Jobs list. */}
+        {match != null && <MatchBadge score={match / 100} band={job.matchBand} />}
       </div>
 
       <h3 className="relative mt-2.5 max-w-[136px] text-title-l text-text-primary">{job.title}</h3>

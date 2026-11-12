@@ -61,3 +61,7 @@ export { LayersThree01 } from '@untitledui/icons/LayersThree01';
 export { Menu01 } from '@untitledui/icons/Menu01';
 export { SearchLg } from '@untitledui/icons/SearchLg';
 export { Users01 } from '@untitledui/icons/Users01';
+export { MinusCircle } from '@untitledui/icons/MinusCircle';
+export { PauseCircle } from '@untitledui/icons/PauseCircle';
+export { PlayCircle } from '@untitledui/icons/PlayCircle';
+export { Settings01 } from '@untitledui/icons/Settings01';

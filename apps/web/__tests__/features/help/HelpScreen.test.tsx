@@ -86,7 +86,10 @@ describe('HelpScreen (563:4)', () => {
     );
     await settle();
 
-    expect(await screen.findByText('george.smith@gmail.com')).toBeInTheDocument();
+    // A labelled read-only field (HP-05).
+    expect(await screen.findByDisplayValue('george.smith@gmail.com')).toHaveAccessibleName(
+      'Reply goes to',
+    );
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(screen.getByText('Write a message first.')).toBeInTheDocument();
 

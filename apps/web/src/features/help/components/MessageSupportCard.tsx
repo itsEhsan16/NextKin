@@ -6,10 +6,10 @@ import {
   type SupportTopic,
 } from '@nextkin/shared/models';
 import { useCurrentUser, useSubmitTicket } from '@nextkin/shared/queries';
-import Link from 'next/link';
 import { useId, useState, type FormEvent } from 'react';
 
 import { cn } from '@/lib/cn';
+import { Callout } from '@/ui/Callout';
 import { cardPad, cardSurface } from '@/ui/Card';
 import { showToast } from '@/lib/toast';
 import { brandButton } from '@/ui/brandButton';
@@ -38,6 +38,7 @@ export function MessageSupportCard() {
   const replyHint = useId();
   const messageId = useId();
   const problemId = useId();
+  const replyId = useId();
 
   const empty = message.trim().length === 0;
   const problem = tried && empty ? 'Write a message first.' : null;
@@ -91,23 +92,28 @@ export function MessageSupportCard() {
         Choose what your message is about
       </p>
 
-      <p className={cn(LABEL, 'mt-5')}>Reply goes to</p>
+      {/* A labelled read-only field, not a div (HP-05). Changing the account email isn't built,
+          so the hint no longer sends anyone to do it (HP-04). */}
+      <label htmlFor={replyId} className={cn(LABEL, 'mt-5')}>
+        Reply goes to
+      </label>
       <div
-        aria-describedby={replyHint}
-        className={cn(fieldBox, 'mt-2 h-control-lg gap-2.5 bg-neutral-50 px-3 text-text-secondary')}
+        className={cn(
+          fieldBox,
+          'mt-2 h-control-lg gap-2.5 bg-surface-subtle px-3 text-text-secondary',
+        )}
       >
         <MailIcon aria-hidden className="size-4 shrink-0 text-text-tertiary" />
-        <span className="truncate">{user.data?.email ?? ''}</span>
+        <input
+          id={replyId}
+          readOnly
+          value={user.data?.email ?? ''}
+          aria-describedby={replyHint}
+          className="min-w-0 flex-1 truncate bg-transparent outline-none"
+        />
       </div>
       <p id={replyHint} className={HINT}>
-        Change it in{' '}
-        <Link
-          href="/settings"
-          className="rounded-sm text-text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-        >
-          Account settings
-        </Link>
-        .
+        Your account email.
       </p>
 
       <label htmlFor={messageId} className={cn(LABEL, 'mt-5')}>
@@ -136,6 +142,11 @@ export function MessageSupportCard() {
         </p>
       </div>
 
+      {submit.isError && !submit.isPending && (
+        <Callout tone="warning" className="mt-4">
+          Not sent. Your message is still here; try again.
+        </Callout>
+      )}
       <button
         type="submit"
         aria-disabled={submit.isPending}

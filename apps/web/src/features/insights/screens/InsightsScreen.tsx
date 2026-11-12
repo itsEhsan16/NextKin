@@ -87,11 +87,24 @@ function ProgressCard({ pageRange }: { pageRange: InsightsRange }) {
   );
 }
 
+/** Below this many analyzed jobs there is too little to say anything about (IN-08). */
+const ENOUGH = 3;
+
 function Dashboard({ data, range }: { data: CareerInsights; range: InsightsRange }) {
   const previous = PREVIOUS_LABEL[data.range];
+  if (data.jobsAnalyzed.value < ENOUGH && data.applicationsSent.value === 0)
+    return (
+      <StateView
+        title="Insights start after your first few jobs"
+        message="Analyze a few jobs and the patterns in them show up here: the skills they ask for, the roles that fit, and how your applications move."
+        actionLabel="Analyze a job"
+        actionHref={'/create/build' as Route}
+        className="py-16"
+      />
+    );
   return (
     <>
-      <div className="grid grid-cols-2 gap-6 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           Art={ProfileTermsIllustration}
           label="Jobs Analyzed"
@@ -115,14 +128,20 @@ function Dashboard({ data, range }: { data: CareerInsights; range: InsightsRange
           label="Resume Score"
           stat={data.resumeScore}
           outOf={100}
-          footnote={`Based on ${data.resumeScore.basedOn}+ job matches`}
+          // Says what it averages (IN-02): resume-to-job matches, each against a job (D-15).
+          footnote={`Average of ${data.resumeScore.basedOn} resume-to-job ${
+            data.resumeScore.basedOn === 1 ? 'match' : 'matches'
+          }`}
         />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,560fr)_minmax(0,290fr)_minmax(0,298fr)]">
         <ProgressCard pageRange={range} />
         <FunnelCard funnel={data.funnel} />
-        <AiInsightsCard insights={data.aiInsights} />
+        <AiInsightsCard
+          insights={data.aiInsights}
+          basis={`From your jobs and applications in the ${rangeLabel(data.range).toLowerCase()}.`}
+        />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,350fr)_minmax(0,340fr)_minmax(0,458fr)]">

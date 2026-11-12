@@ -33,7 +33,8 @@ export function RecommendationCard({
         </h2>
       </div>
       <p className="mt-4 max-w-[290px] text-display-l text-text-primary">
-        You&rsquo;re a strong fit for {recommendation.role} roles!
+        {/* A verdict with its reason under it, not praise (redesign R7a, audit IN-01). */}
+        {recommendation.role} roles match your profile best
       </p>
       <p className="mt-3 max-w-[270px] text-body-m text-text-secondary">{recommendation.reason}</p>
       <Link
