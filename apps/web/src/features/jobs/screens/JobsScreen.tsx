@@ -10,6 +10,7 @@ import {
   useJobs,
   useJob,
 } from '@nextkin/shared/queries';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
@@ -27,6 +28,7 @@ import { JobList } from '../components/JobList';
 import { JobSeekerIllustration } from '../components/JobSeekerIllustration';
 import { JobsSearchBar } from '../components/JobsSearchBar';
 import { useSaveJob } from '../hooks/useSaveJob';
+import { jobPageHref } from '../jobPageLibrary';
 import { WEB_JOB_SORT_LABEL } from '../jobSort';
 
 const NO_JOBS: Job[] = [];
@@ -57,6 +59,7 @@ export type JobsScreenProps = {
  * one way in from a URL is `?job=`, which `JobsRoute` reads and hands over as `initialJobId`.
  */
 export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
+  const router = useRouter();
   const [searchInput, setSearchInput] = useState(initialQuery ?? '');
   const [filters, setFilters] = useState<JobFilters>(EMPTY_JOB_FILTERS);
   const [sort, setSort] = useState<JobSort>('relevance');
@@ -67,7 +70,10 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
   // Search is part of the same filters object as everything else, not a separate query key —
   // debounced here first so typing doesn't mint a new key per keystroke. The salary sliders are
   // too: a drag passes through every step, and each one used to fetch a list and a count.
-  const debounced = useDebouncedValue(searchInput);
+  const typed = useDebouncedValue(searchInput);
+  // Search / Enter applies the words without waiting out the typing pause (audit JB-09).
+  const [submitted, setSubmitted] = useState<string | null>(null);
+  const debounced = submitted === searchInput ? submitted : typed;
   const salaryMin = useDebouncedValue(filters.salaryMin);
   const salaryMax = useDebouncedValue(filters.salaryMax);
   const effectiveFilters = useMemo<JobFilters>(
@@ -151,13 +157,15 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
         subtitle="Discover jobs that match your skills and career goals."
       />
 
-      <div className="mt-4 grid min-h-0 flex-1 grid-cols-[56fr_44fr] gap-6">
+      {/* Two columns from 1024; below, the list is the page and a card opens the job's own page
+          (redesign R5a, audit JB-01: two ~110px columns at 390). */}
+      <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[56fr_44fr]">
         <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
           {/* The board's character at three quarters: its skyline behind the search bar's right
               end, the figure in the gap before the detail card, the caption just above that
               card. Painted first, so the search bar and the detail card cover what they cover
               on the board. The search bar is 80% of this column, hence the anchor. */}
-          <JobSeekerIllustration className="absolute -top-[50px] left-[calc(80%-61px)] origin-top-left scale-75" />
+          <JobSeekerIllustration className="absolute -top-[50px] left-[calc(80%-61px)] origin-top-left scale-75 max-xl:hidden" />
 
           <JobsSearchBar
             value={searchInput}
@@ -165,6 +173,7 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
               unpin();
               setSearchInput(value);
             }}
+            onSubmit={() => setSubmitted(searchInput)}
           />
           <JobFilterChipsRow
             filters={filters}
@@ -198,6 +207,10 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
               selectedId={activeId}
               onSelect={(id) => {
                 unpin();
+                if (window.matchMedia?.('(width < 64rem)').matches) {
+                  router.push(jobPageHref(id));
+                  return;
+                }
                 setSelectedId(id);
               }}
               onToggleSave={(id) => {
@@ -213,7 +226,7 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
           </div>
         </div>
 
-        <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
+        <div className="relative flex min-h-0 min-w-0 flex-col pb-5 max-lg:hidden">
           <JobDetailPanel
             job={selectedJob}
             status={detailStatus}

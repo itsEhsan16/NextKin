@@ -22,6 +22,8 @@ const HEADING = 'text-title-l font-bold text-neutral-800';
  */
 export function JobOverviewTab({ job }: JobOverviewTabProps) {
   const [expanded, setExpanded] = useState(false);
+  // Perks are the short tags of the same benefits: they stand in only without a full list.
+  const benefits = job.benefits?.length ? job.benefits : (job.perks ?? []);
 
   return (
     <div>
@@ -34,6 +36,12 @@ export function JobOverviewTab({ job }: JobOverviewTabProps) {
       <CollapseFade axis="vertical" open={expanded} inert={!expanded}>
         <h3 className={cn(HEADING, 'pt-4')}>Requirements</h3>
         <BulletList items={job.requirements} className="mt-1.5" />
+        {benefits.length > 0 && (
+          <>
+            <h3 className={cn(HEADING, 'pt-4')}>Benefits</h3>
+            <BulletList items={benefits} className="mt-1.5" />
+          </>
+        )}
       </CollapseFade>
 
       <button

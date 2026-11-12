@@ -1,5 +1,7 @@
 import { applyPageOf } from '@nextkin/shared/jobs/applyPage';
-import type { Job, Profile } from '@nextkin/shared/models';
+import type { Job, MatchBasis, Profile } from '@nextkin/shared/models';
+
+import type { ScoreReason } from '@/ui/ScoreVerdict';
 import type { JobFactsKnown } from '@nextkin/shared/queries';
 import type { Route } from 'next';
 
@@ -94,6 +96,27 @@ function listingMatchRows(job: Job, profile: Profile | undefined): MatchRow[] {
     { label: 'Location', value: locationValue, met: locationMet },
     { label: 'Work type', value: workMet ? 'Matches' : 'Differs', met: workMet },
   ];
+}
+
+/**
+ * Why a job matches, from the engine's own criteria (redesign R5a, audit JB-04): the editorial
+ * "Matches your…" line sat beside an AI sparkle but was fixture prose. What's met comes first, then
+ * what's only partly met (D-14), then what's missing. Preferred-only criteria are left out.
+ */
+export function reasonsFromCriteria(job: Job, max: number): ScoreReason[] {
+  const criteria = job.matchCriteria ?? [];
+  const order = { met: 0, partial: 1, missing: 2 } as const;
+  return criteria
+    .filter((c): c is typeof c & { state: keyof typeof order } => c.state in order)
+    .sort((a, b) => order[a.state] - order[b.state])
+    .slice(0, max)
+    .map((c) => ({ kind: c.state, label: c.label }));
+}
+
+/** "4 of 5 required": what a band rests on, short enough for a card (audit JB-05, G16). */
+export function requiredCaption(basis: MatchBasis | undefined): string | undefined {
+  if (!basis || basis.requiredTotal === 0) return undefined;
+  return `${basis.requiredMet} of ${basis.requiredTotal} required`;
 }
 
 /** "Mountain View, CA" beside the company name: the headquarters' city and state, shortened. */

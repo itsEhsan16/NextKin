@@ -3,10 +3,12 @@ import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
 import { brandButton } from '@/ui/brandButton';
+import { brandOutlineButton } from '@/ui/brandOutlineButton';
+import { JobAiSparkleIllustration } from '@/ui/illustrations';
 import { ArrowRightIcon, ExternalLinkIcon } from '@/ui/icons';
 import { outlineButton } from '@/ui/outlineButton';
 
-import { jobPageHref } from '../jobPageLibrary';
+import { tailorHref } from '../jobPageLibrary';
 
 export type JobDetailActionsProps = {
   onApply: () => void;
@@ -50,12 +52,17 @@ export function JobDetailActions({
           {!applied && <ExternalLinkIcon className="size-4" />}
         </button>
       )}
+      {/* "View job details" went: the title already opens the job's page (audit JB-13). The
+          panel's tailor action sits here instead of in a callout at the foot of the card. */}
       <Link
-        href={jobPageHref(jobId)}
-        className={cn(outlineButton, 'h-control-lg gap-2 rounded-md text-body-l font-semibold')}
+        href={tailorHref(jobId)}
+        className={cn(
+          brandOutlineButton,
+          'h-control-lg gap-2 rounded-md text-body-l font-semibold',
+        )}
       >
-        View job details
-        <ArrowRightIcon aria-hidden className="size-4" />
+        <JobAiSparkleIllustration aria-hidden className="h-auto w-4 shrink-0" />
+        Tailor resume
       </Link>
     </div>
   );

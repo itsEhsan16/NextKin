@@ -2,29 +2,32 @@ import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
 import { fieldBox } from '@/ui/fieldBox';
 import { SearchIcon } from '@/ui/icons';
+import { XClose } from '@/ui/lineIcons';
 
-export type JobsSearchBarProps = { value: string; onChange: (value: string) => void };
+export type JobsSearchBarProps = {
+  value: string;
+  onChange: (value: string) => void;
+  /** Search pressed (or Enter): apply the words now rather than after the typing pause. */
+  onSubmit?: () => void;
+};
 
 /**
- * The page-level search field + "Search" button (304:2401/2407) — distinct from the header's
- * global search; this one filters the list below via `JobFilters.query`. It is 80% of the list
- * column, as on the board (534 of 660): the illustration's character stands in the space it
- * leaves. `relative` so it paints over the illustration's skyline, which sits behind it.
- *
- * Filtering is already live as the user types (the query is debounced, not gated on a click —
- * `JobsScreen` owns that), so the button's own submit does nothing beyond what typing already
- * triggers; it is still a real `<button type="submit">` inside a `<form>`, so it's a proper
- * keyboard target and Enter in the field behaves the way a search field's Enter key should.
+ * The Jobs page's search (304:2397): the field and the Search button. Results follow the typing
+ * after a short pause; Search and Enter apply it at once, and the × clears it (redesign R5a,
+ * audit JB-09: Search used to do nothing).
  */
-export function JobsSearchBar({ value, onChange }: JobsSearchBarProps) {
+export function JobsSearchBar({ value, onChange, onSubmit }: JobsSearchBarProps) {
   return (
     <form
       role="search"
-      onSubmit={(event) => event.preventDefault()}
-      className="relative flex w-4/5 items-center gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit?.();
+      }}
+      className="relative flex w-full items-center gap-3 lg:w-4/5"
     >
       <div className="relative min-w-0 flex-1">
-        <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+        <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-text-disabled" />
         <input
           type="text"
           value={value}
@@ -33,9 +36,23 @@ export function JobsSearchBar({ value, onChange }: JobsSearchBarProps) {
           aria-label="Search jobs"
           className={cn(
             fieldBox,
-            'rounded-full pl-10 pr-4 text-body-l shadow-card placeholder:text-neutral-400',
+            'rounded-full pl-10 text-body-l shadow-card placeholder:text-text-disabled',
+            value ? 'pr-10' : 'pr-4',
           )}
         />
+        {value && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              onChange('');
+              onSubmit?.();
+            }}
+            className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition-colors duration-press ease-standard hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus-ring"
+          >
+            <XClose aria-hidden className="size-4" />
+          </button>
+        )}
       </div>
       <button type="submit" className={buttonClass({ size: 'lg', pill: true })}>
         Search

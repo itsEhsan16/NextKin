@@ -12,8 +12,16 @@ export type UnderlineTabsProps<T extends string> = {
   onChange: (tab: T) => void;
   /** The tab list's accessible name. */
   label: string;
+  /**
+   * The id of the panel the tabs control, so each tab names it (`aria-controls`) and the caller
+   * can label the panel with the active tab: `aria-labelledby={tabId(idBase, active)}`.
+   */
+  idBase?: string;
   className?: string;
 };
+
+/** The id `UnderlineTabs` gives a tab, for a panel's `aria-labelledby`. */
+export const tabId = (idBase: string, tab: string) => `${idBase}-tab-${tab}`;
 
 /**
  * The underline tab bar a detail card switches its content with: Overview, About, Skills,
@@ -32,8 +40,23 @@ export function UnderlineTabs<T extends string>({
   active,
   onChange,
   label,
+  idBase,
   className,
 }: UnderlineTabsProps<T>) {
+  // Arrow keys move between tabs and select them, Home/End go to the ends, and only the selected
+  // tab is in the Tab order (WAI-ARIA tabs, automatic activation; redesign R5a, audit JB-11).
+  const move = (from: number, step: number | 'first' | 'last') => {
+    const next =
+      step === 'first'
+        ? 0
+        : step === 'last'
+          ? tabs.length - 1
+          : (from + step + tabs.length) % tabs.length;
+    const tab = tabs[next];
+    if (!tab) return;
+    onChange(tab.id);
+    listRef.current?.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus();
+  };
   const listRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -61,13 +84,31 @@ export function UnderlineTabs<T extends string>({
       // Labels never wrap; below 1280 (a narrower window, `toreview.md` §84) the tabs sit closer.
       className={cn('relative flex gap-6 border-b border-border-card max-xl:gap-4', className)}
     >
-      {tabs.map((tab) => (
+      {tabs.map((tab, index) => (
         <button
           key={tab.id}
           type="button"
           role="tab"
+          id={idBase ? tabId(idBase, tab.id) : undefined}
+          aria-controls={idBase}
           aria-selected={active === tab.id}
+          tabIndex={active === tab.id ? 0 : -1}
           onClick={() => onChange(tab.id)}
+          onKeyDown={(event) => {
+            const step =
+              event.key === 'ArrowRight'
+                ? 1
+                : event.key === 'ArrowLeft'
+                  ? -1
+                  : event.key === 'Home'
+                    ? 'first'
+                    : event.key === 'End'
+                      ? 'last'
+                      : null;
+            if (step === null) return;
+            event.preventDefault();
+            move(index, step);
+          }}
           className={cn(
             'whitespace-nowrap border-b-2 border-transparent pb-3 text-body-l font-semibold transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
             active === tab.id ? 'text-brand-600' : 'text-text-tertiary hover:text-text-primary',

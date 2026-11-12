@@ -25,12 +25,23 @@ const BOARD_CARDS = [
 const cardNames = () =>
   screen
     .getAllByRole('button', { name: / at / })
-    .map((button) => button.getAttribute('aria-label'));
+    .map((button) => (button.getAttribute('aria-label') ?? '').replace(BAND_SUFFIX, ''));
+
+/**
+ * Since redesign R5a a card's name goes on to say its verdict and whether it's saved ("…, Strong
+ * match, saved"), so a card is found by the start of its name.
+ */
+const BAND_SUFFIX = /, (?:Strong|Good|Fair|Weak) match.*$|, saved$/;
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const cardName = (base: string) => new RegExp(`^${escapeRegExp(base)}(?:,|$)`);
 
 /**
  * The detail panel for the default job. List and detail are separate queries, each with its own
  * simulated latency, so this waits past both rather than the default `findBy` second.
  */
+const push = jest.fn();
+jest.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+
 /** Lets the mock layer's calls land for a while, inside `act`, since they update the screen. */
 const settle = (ms: number) => act(() => new Promise<void>((resolve) => setTimeout(resolve, ms)));
 
@@ -46,13 +57,19 @@ describe('JobsScreen', () => {
 
   it('draws the redrawn card: verdict, facts, why it matches and the footer (719:2)', async () => {
     renderWithQuery(<JobsScreen />);
-    const select = await screen.findByRole('button', { name: BOARD_CARDS[1] }, { timeout: 3000 });
+    const select = await screen.findByRole(
+      'button',
+      { name: cardName(BOARD_CARDS[1]) },
+      { timeout: 3000 },
+    );
     const adobe = within(select.parentElement as HTMLElement);
 
     expect(screen.getAllByText('Strong match').length).toBeGreaterThanOrEqual(5);
-    expect(
-      screen.getByText('Matches your design systems work and remote preference'),
-    ).toBeInTheDocument();
+    // Why it matches comes from the engine's criteria, with what the band rests on (redesign R5a,
+    // audits JB-04/JB-05); the editorial "Matches your…" line is gone.
+    expect(screen.queryByText('Matches your design systems work and remote preference')).toBeNull();
+    expect(adobe.getByText('4 of 4 required')).toBeInTheDocument();
+    expect(adobe.getAllByText('(met)', { exact: false }).length).toBeGreaterThan(0);
     // Adobe's location is "Remote", so its workplace pill isn't repeated.
     expect(adobe.getAllByText('Remote', { selector: 'li' })).toHaveLength(1);
     expect(screen.getByText('₹15–19 LPA · est.')).toBeInTheDocument();
@@ -103,9 +120,9 @@ describe('JobsScreen', () => {
     expect(
       await screen.findByText('39 results', {}, { timeout: SETTLE_MS.normal * 2 }),
     ).toBeInTheDocument();
-    await screen.findByRole('button', { name: BOARD_CARDS[0] });
+    await screen.findByRole('button', { name: cardName(BOARD_CARDS[0]) });
     expect(cardNames().slice(0, BOARD_CARDS.length)).toEqual(BOARD_CARDS);
-    expect(screen.getByRole('button', { name: BOARD_CARDS[0] })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: cardName(BOARD_CARDS[0]) })).toHaveAttribute(
       'aria-current',
       'true',
     );
@@ -129,15 +146,20 @@ describe('JobsScreen', () => {
       { timeout: 2000 },
     );
     expect(applied).toHaveAttribute('href', '/applications?application=app_web_google');
-    // The redrawn board (304:2680) puts the apply action and View job details straight under the meta
-    // line, above the tabs and the description, so they are in the card's first screenful.
+    // The apply action and Tailor resume sit straight under the meta line, above the tabs, so they
+    // are in the card's first screenful. "View job details" went: the title opens the job's page
+    // (redesign R5a, audit JB-13).
     const tabs = within(panel).getByRole('tablist');
-    for (const action of [applied, within(panel).getByRole('link', { name: 'View job details' })]) {
+    const tailor = within(panel).getByRole('link', { name: 'Tailor resume' });
+    expect(tailor).toHaveAttribute('href', '/jobs/job_google/tailor');
+    for (const action of [applied, tailor]) {
       expect(action.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
-    // Four tags, then the overflow pill for the other two.
-    expect(within(panel).getByText('User Research')).toBeInTheDocument();
-    expect(within(panel).getByText('+2')).toBeInTheDocument();
+    expect(within(panel).queryByRole('link', { name: 'View job details' })).toBeNull();
+    // The verdict is a scored panel with its reasons (the whole listing was read).
+    expect(
+      within(panel).getByRole('img', { name: 'Job match, Strong match: 98 out of 100' }),
+    ).toBeInTheDocument();
     expect(
       within(panel).getByRole('tab', { name: 'Overview', selected: true }),
     ).toBeInTheDocument();
@@ -183,12 +205,14 @@ describe('JobsScreen', () => {
     expect(
       await screen.findByRole(
         'button',
-        { name: 'Product Designer at Zoho, Chennai' },
+        { name: cardName('Product Designer at Zoho, Chennai') },
         { timeout: SETTLE_MS.normal * 2 },
       ),
     ).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: BOARD_CARDS[0] })).not.toBeInTheDocument(),
+      expect(
+        screen.queryByRole('button', { name: cardName(BOARD_CARDS[0]) }),
+      ).not.toBeInTheDocument(),
     );
   });
 
@@ -197,7 +221,7 @@ describe('JobsScreen', () => {
     renderWithQuery(<JobsScreen />);
     await openPanel();
 
-    await user.click(screen.getByRole('button', { name: BOARD_CARDS[1] }));
+    await user.click(screen.getByRole('button', { name: cardName(BOARD_CARDS[1]) }));
     // No wait: the detail is seeded from the list, so there is no skeleton in between.
     expect(screen.getByRole('region', { name: 'Sr. UX Designer at Adobe' })).toBeInTheDocument();
   });
@@ -216,7 +240,7 @@ describe('JobsScreen', () => {
     // The panel opens on the list's copy at once; give the job's own fetch time to land too.
     await openPanel();
     await settle(SETTLE_MS.normal);
-    const card = screen.getByRole('button', { name: BOARD_CARDS[0] }).closest('div');
+    const card = screen.getByRole('button', { name: cardName(BOARD_CARDS[0]) }).closest('div');
 
     // Saving refreshes every jobs query when it settles; offline, the save and that refresh both
     // fail. The list already on screen has to survive it.
@@ -224,7 +248,7 @@ describe('JobsScreen', () => {
     await user.click(within(card as HTMLElement).getByRole('button', { name: 'Save job' }));
     await settle(SETTLE_MS.error);
 
-    expect(screen.getByRole('button', { name: BOARD_CARDS[0] })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: cardName(BOARD_CARDS[0]) })).toBeInTheDocument();
     expect(screen.queryByText(/^Couldn't load/)).not.toBeInTheDocument();
   }, 10_000);
 
@@ -234,7 +258,9 @@ describe('JobsScreen', () => {
 
     // The count and list are independent queries with their own simulated latency, so waiting on
     // the count text alone doesn't guarantee the list itself has rendered yet.
-    const card = (await screen.findByRole('button', { name: BOARD_CARDS[0] })).closest('div');
+    const card = (await screen.findByRole('button', { name: cardName(BOARD_CARDS[0]) })).closest(
+      'div',
+    );
     expect(card).not.toBeNull();
     // job_google seeds unsaved.
     await user.click(within(card as HTMLElement).getByRole('button', { name: 'Save job' }));
@@ -250,7 +276,7 @@ describe('JobsScreen', () => {
 
     // Count and list are independent queries with their own simulated latency — wait for the list
     // itself, not just the count, before looking for its own "Load more" button.
-    await screen.findByRole('button', { name: BOARD_CARDS[0] });
+    await screen.findByRole('button', { name: cardName(BOARD_CARDS[0]) });
     expect(screen.queryByText('Afterpay')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Load more' }));
@@ -261,7 +287,7 @@ describe('JobsScreen', () => {
 
   it('leaves page two to "Load more" while the filters read the whole catalogue', async () => {
     renderWithQuery(<JobsScreen />);
-    await screen.findByRole('button', { name: BOARD_CARDS[0] });
+    await screen.findByRole('button', { name: cardName(BOARD_CARDS[0]) });
 
     // The Location and Company options come from every page. Reading them used to share the
     // visible list's cache entry, so page two appeared in the list by itself (`toreview.md` §84).
@@ -281,7 +307,9 @@ describe('JobsScreen', () => {
 
     // job_3 (Zalando) is the first listing on page one that no web application points at.
     await user.click(
-      await screen.findByRole('button', { name: 'Design Systems Engineer at Zalando, Berlin, DE' }),
+      await screen.findByRole('button', {
+        name: cardName('Design Systems Engineer at Zalando, Berlin, DE'),
+      }),
     );
     const panel = await screen.findByRole(
       'region',
@@ -318,7 +346,7 @@ describe('JobsScreen', () => {
     ).toHaveAttribute('href', '/applications?application=app_web_flipkart');
     await screen.findByText('39 results', {}, { timeout: SETTLE_MS.normal * 2 });
     expect(
-      screen.queryByRole('button', { name: 'UX Designer at Flipkart, Bengaluru, India' }),
+      screen.queryByRole('button', { name: cardName('UX Designer at Flipkart, Bengaluru, India') }),
     ).not.toBeInTheDocument();
   });
 
@@ -328,17 +356,26 @@ describe('JobsScreen', () => {
 
     const panel = await openPanel();
 
-    await user.click(within(panel).getByRole('tab', { name: 'About' }));
+    // Three tabs since redesign R5a: Benefits moved into Overview, and Reviews (always empty) went.
+    expect(
+      within(panel)
+        .getAllByRole('tab')
+        .map((tab) => tab.textContent),
+    ).toEqual(['Overview', 'Skills', 'Company']);
+
+    await user.click(within(panel).getByRole('tab', { name: 'Company' }));
     expect(await within(panel).findByText('google.com')).toBeInTheDocument();
 
-    // The listing's own benefits, not "none listed" for a job that lists four (audit JB-07).
-    await user.click(within(panel).getByRole('tab', { name: 'Benefits' }));
+    // Arrow keys move between tabs and select them (audit JB-11).
+    await user.keyboard('{ArrowLeft}');
+    expect(within(panel).getByRole('tab', { name: 'Skills', selected: true })).toHaveFocus();
+
+    // The listing's own benefits sit in Overview, under "Show more".
+    await user.click(within(panel).getByRole('tab', { name: 'Overview' }));
+    await user.click(within(panel).getByRole('button', { name: 'Show more' }));
     expect(
       await within(panel).findByText('Health insurance for you and your family'),
     ).toBeInTheDocument();
-    expect(
-      within(panel).queryByText("This company hasn't listed benefits for this role."),
-    ).toBeNull();
   });
 
   it("offers the three sorts under the web board's labels", async () => {

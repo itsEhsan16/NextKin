@@ -6,29 +6,22 @@ import { useState } from 'react';
 
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
-import { AiCallout } from '@/ui/AiCallout';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
 import { StateView } from '@/ui/StateView';
-import { UnderlineTabs } from '@/ui/UnderlineTabs';
-import { iconButton } from '@/ui/iconButton';
-import { MoreHorizontalIcon } from '@/ui/icons';
+import { tabId, UnderlineTabs } from '@/ui/UnderlineTabs';
 
 import { JOB_DETAIL_TABS, type JobDetailTab } from '../jobDetailTabs';
-import { BulletList } from './BulletList';
 import { JobAboutTab } from './JobAboutTab';
 import { JobDetailActions } from './JobDetailActions';
-import { JobEmptyTab } from './JobEmptyTab';
 import { JobMetaRow } from './JobMetaRow';
 import { JobOverviewTab } from './JobOverviewTab';
 import { JobSkillsTab } from './JobSkillsTab';
-import { JobTagPills } from './JobTagPills';
-import { MatchBadge } from './MatchBadge';
 import Link from 'next/link';
 
-import { jobPageHref, tailorHref } from '../jobPageLibrary';
+import { jobPageHref, reasonsFromCriteria } from '../jobPageLibrary';
+import { ReasonList, ScoreVerdict } from '@/ui/ScoreVerdict';
 import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
-import { Soon, soonControl } from '@/ui/Soon';
 
 export type JobDetailPanelProps = {
   job?: Job;
@@ -117,29 +110,7 @@ function JobDetailBody({ job, reveal, onApply, applied, applicationHref }: JobDe
         reveal && '*:animate-reveal',
       )}
     >
-      <div className="flex items-start justify-between">
-        <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="plain" />
-        <div className="-mr-2 flex items-center gap-1">
-          <MatchBadge score={job.matchScore} band={job.matchBand} />
-          <Soon>
-            <button
-              aria-disabled="true"
-              type="button"
-              aria-label="More options"
-              className={cn(iconButton, 'text-text-tertiary hover:text-text-primary', soonControl)}
-            >
-              <MoreHorizontalIcon className="size-5" />
-            </button>
-          </Soon>
-        </div>
-      </div>
-      {/* What the number rests on (G16), spec-derived until an artboard draws it (toreview §105.18). */}
-      {job.matchScore != null && job.matchBasis && (
-        <p className="mt-1.5 text-right text-caption-m text-text-tertiary">
-          {matchBasisCaption(job.matchBasis)}
-        </p>
-      )}
-
+      <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="plain" />
       {/* The title opens the job's own page (724:2). */}
       <h2 className="mt-4 text-h1 text-neutral-800">
         <Link
@@ -152,6 +123,10 @@ function JobDetailBody({ job, reveal, onApply, applied, applicationHref }: JobDe
       <p className="mt-1 text-body-m text-text-company">{job.company}</p>
       <JobMetaRow job={job} className="mt-3" />
 
+      {/* The verdict with its reasons (redesign R5a, S-02). A number only when the whole listing
+          was read; otherwise the band and what it rests on (P11-03, G16). */}
+      <JobVerdict job={job} />
+
       <div className="mt-5">
         <JobDetailActions
           onApply={onApply}
@@ -161,50 +136,58 @@ function JobDetailBody({ job, reveal, onApply, applied, applicationHref }: JobDe
         />
       </div>
 
-      <JobTagPills tags={job.tags} max={4} size="md" className="mt-5" />
       <UnderlineTabs
         tabs={JOB_DETAIL_TABS}
         active={tab}
         onChange={setTab}
         label="Job detail"
+        idBase={`job-${job.id}-panel`}
         className="mt-6"
       />
 
       {/* Keyed by tab: after the first switch, each tab's content fades in (`toreview.md` §84). */}
-      <div key={tab} className={cn('pt-5', switched && 'animate-reveal')}>
+      <div
+        key={tab}
+        id={`job-${job.id}-panel`}
+        role="tabpanel"
+        aria-labelledby={tabId(`job-${job.id}-panel`, tab)}
+        className={cn('pt-5', switched && 'animate-reveal')}
+      >
         {tab === 'overview' && <JobOverviewTab job={job} />}
-        {tab === 'about' && <JobAboutTab job={job} />}
         {tab === 'skills' && <JobSkillsTab job={job} />}
-        {/* The listing's own benefits when it states them; it used to say "none listed" even
-            for a job whose page shows four (audit JB-07). */}
-        {tab === 'benefits' &&
-          (job.benefits?.length || job.perks?.length ? (
-            // Perks are the short tags of the same benefits, so they stand in only when the
-            // listing gives no full list.
-            <BulletList items={job.benefits?.length ? job.benefits : (job.perks ?? [])} />
-          ) : (
-            <JobEmptyTab
-              title="Nothing here yet"
-              message="This company hasn't listed benefits for this role."
-            />
-          ))}
-        {tab === 'reviews' && (
-          <JobEmptyTab
-            title="Nothing here yet"
-            message="No reviews are available for this company yet."
-          />
-        )}
-      </div>
-
-      {/* "Tailor your resume for this job" (304:2761): the card's last element since the redraw.
-          Opens the three-step tailor flow (734:2, `toreview.md` §103). */}
-      <div className="mt-6">
-        <AiCallout
-          title="Tailor your resume for this job"
-          message="Increase your chances with AI-powered suggestions."
-          href={tailorHref(job.id)}
-        />
+        {tab === 'company' && <JobAboutTab job={job} />}
       </div>
     </section>
+  );
+}
+
+/** The panel's verdict: a scored ring with reasons, or the band and its basis, or nothing. */
+function JobVerdict({ job }: { job: Job }) {
+  if (!job.matchBand) return null;
+  const reasons = reasonsFromCriteria(job, 3);
+  if (job.matchScore != null && job.matchBasis?.kind === 'full') {
+    return (
+      <ScoreVerdict
+        variant="panel"
+        kind="match"
+        score={job.matchScore * 100}
+        band={job.matchBand}
+        reasons={reasons}
+        className="mt-5 rounded-lg border border-border-subtle p-4"
+      />
+    );
+  }
+  return (
+    <div className="mt-5 flex flex-col gap-2 rounded-lg border border-border-subtle p-4">
+      <div className="flex items-center gap-2">
+        <ScoreVerdict variant="pill" kind="match" band={job.matchBand} />
+        {job.matchBasis && (
+          <span className="text-caption-m text-text-tertiary">
+            {matchBasisCaption(job.matchBasis)}
+          </span>
+        )}
+      </div>
+      <ReasonList reasons={reasons} />
+    </div>
   );
 }

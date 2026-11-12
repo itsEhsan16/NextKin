@@ -5,12 +5,14 @@ import { cn } from '@/lib/cn';
 import { formatPostedAge } from '@/lib/format';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { JobAiSparkleIllustration } from '@/ui/illustrations';
+import { ReasonList } from '@/ui/ScoreVerdict';
+import { MATCH_BAND_LABEL } from '@nextkin/shared/models';
 import { cardFaceHover, cardFaceMotion } from '@/ui/pressable';
 
 import { JobFactPills } from './JobFactPills';
 import { MatchPill } from './MatchPill';
 import { SaveButton } from './SaveButton';
-import { tailorHref } from '../jobPageLibrary';
+import { reasonsFromCriteria, requiredCaption, tailorHref } from '../jobPageLibrary';
 
 export type JobCardProps = {
   job: Job;
@@ -43,6 +45,16 @@ export type JobCardProps = {
  */
 export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: JobCardProps) {
   const age = formatPostedAge(job.postedAt);
+  const reasons = reasonsFromCriteria(job, 2);
+  const basis = job.matchBand ? requiredCaption(job.matchBasis) : undefined;
+  // The card's name says what a sighted reader sees on it: the job, the verdict and saved.
+  const name = [
+    `${job.title} at ${job.company}, ${job.location}`,
+    job.matchBand && MATCH_BAND_LABEL[job.matchBand],
+    job.isSaved && 'saved',
+  ]
+    .filter(Boolean)
+    .join(', ');
 
   return (
     <div className="group/card relative">
@@ -53,7 +65,7 @@ export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: 
         // Location is part of the label, not just title+company: several fixture jobs share a
         // title and employer (two different "Senior Product Designer" roles at Stripe), which
         // would otherwise give two distinct cards the same accessible name.
-        aria-label={`${job.title} at ${job.company}, ${job.location}`}
+        aria-label={name}
         className="peer absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       />
 
@@ -71,20 +83,19 @@ export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: 
           <p className="min-w-0 flex-1 truncate text-body-l font-semibold text-text-primary">
             {job.company}
           </p>
-          <MatchPill band={job.matchBand} />
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <MatchPill band={job.matchBand} />
+            {/* What the band rests on, on the card itself (audit JB-05). */}
+            {basis && <span className="text-caption-m text-text-tertiary">{basis}</span>}
+          </div>
         </div>
 
         <h3 className="truncate text-h2 text-text-primary">{job.title}</h3>
 
         <JobFactPills job={job} />
 
-        {job.matchReason && (
-          <p className="flex items-center gap-2.5 rounded-md bg-surface-brand-strong py-2.5 pl-3 pr-3.5 text-body-m font-medium text-text-secondary">
-            <JobAiSparkleIllustration className="h-auto w-5 shrink-0" />
-            <span aria-hidden className="h-4 w-px shrink-0 bg-border-brand-strong" />
-            <span className="min-w-0 flex-1">{job.matchReason}</span>
-          </p>
-        )}
+        {/* Why it matches, from the engine's criteria (audit JB-04), not editorial prose. */}
+        <ReasonList reasons={reasons} />
 
         <div className="flex items-center gap-2 pt-0.5">
           <span className="min-w-0 flex-1 text-caption-m text-text-tertiary">

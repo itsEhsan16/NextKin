@@ -208,28 +208,7 @@ function ScorePanel({
         >
           {word}
         </span>
-        {reasons.length > 0 && (
-          <ul className="mt-2 flex flex-col gap-1">
-            {reasons.map((reason) => (
-              <li
-                key={reason.label}
-                className="flex items-start gap-2 text-body-s text-text-secondary"
-              >
-                <ReasonIcon kind={reason.kind} />
-                <span>
-                  {reason.label}
-                  <span className="sr-only">
-                    {reason.kind === 'met'
-                      ? ' (met)'
-                      : reason.kind === 'partial'
-                        ? ' (partly: listed, not shown in a dated role)'
-                        : ' (missing)'}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ReasonList reasons={reasons} className="mt-2" />
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
           {action &&
             (action.href ? (
@@ -257,6 +236,39 @@ function ScorePanel({
       </div>
     </>,
     id,
+  );
+}
+
+/**
+ * Reasons as a list: met, partly met (D-14's half credit), missing, an icon each and the state in
+ * words for screen readers. Used inside the `panel` and on its own on the job card.
+ */
+export function ReasonList({
+  reasons,
+  className,
+}: {
+  reasons: readonly ScoreReason[];
+  className?: string;
+}) {
+  if (reasons.length === 0) return null;
+  return (
+    <ul className={cn('flex flex-col gap-1', className)}>
+      {reasons.map((reason) => (
+        <li key={reason.label} className="flex items-start gap-2 text-body-s text-text-secondary">
+          <ReasonIcon kind={reason.kind} />
+          <span>
+            {reason.label}
+            <span className="sr-only">
+              {reason.kind === 'met'
+                ? ' (met)'
+                : reason.kind === 'partial'
+                  ? ' (partly: listed, not shown in a dated role)'
+                  : ' (missing)'}
+            </span>
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
