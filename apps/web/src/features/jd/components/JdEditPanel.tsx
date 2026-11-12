@@ -13,7 +13,8 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { useId, useState, type ReactNode } from 'react';
 
-import { backButton, primaryButton, stepCard } from '@/features/create/jobFlow/FlowChrome';
+import { buttonClass } from '@/ui/Button';
+import { cardSurface } from '@/ui/Card';
 import { cn } from '@/lib/cn';
 import { Callout } from '@/ui/Callout';
 import { formatRelativeTime } from '@/lib/format';
@@ -166,7 +167,11 @@ export function JdEditPanel({
           <h1 className="text-h1 font-bold tracking-tight text-text-primary">Edit details</h1>
         </div>
         {!failed && (
-          <button type="button" onClick={onDone} className={backButton}>
+          <button
+            type="button"
+            onClick={onDone}
+            className={buttonClass({ variant: 'secondary', size: 'lg' })}
+          >
             Cancel
           </button>
         )}
@@ -175,7 +180,7 @@ export function JdEditPanel({
           form={formId}
           disabled={update.isPending}
           aria-busy={update.isPending}
-          className={primaryButton}
+          className={buttonClass({ size: 'lg' })}
         >
           <StableLabel label="Save changes" busyLabel="Saving…" busy={update.isPending} />
         </button>
@@ -189,7 +194,7 @@ export function JdEditPanel({
             e.preventDefault();
             save();
           }}
-          className={cn(stepCard, 'flex flex-col gap-6 p-8 lg:col-span-2')}
+          className={cn(cardSurface, 'flex flex-col gap-6 rounded-xl p-8 lg:col-span-2')}
         >
           <div className="flex items-center gap-3.5">
             <JdArtDocumentSearchIllustration aria-hidden className="h-auto w-11 shrink-0" />
@@ -333,7 +338,7 @@ export function JdEditPanel({
 
         <aside
           aria-label="The text as it was given"
-          className={cn(stepCard, 'flex flex-col gap-4 p-6 lg:sticky lg:top-6')}
+          className={cn(cardSurface, 'flex flex-col gap-4 rounded-xl p-6 lg:sticky lg:top-6')}
         >
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-title-l font-bold text-text-primary">

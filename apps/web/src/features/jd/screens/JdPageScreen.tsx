@@ -74,8 +74,8 @@ export function JdPageScreen({ id }: { id: string }) {
         <StateView
           title="We couldn’t find that job description"
           message="It may have been removed. Paste it again to read it."
-          actionLabel="Upload a job description"
-          actionHref={'/upload-jd' as Route}
+          actionLabel="Paste a job description"
+          actionHref={'/create/build' as Route}
         />
       </div>
     );
@@ -95,7 +95,7 @@ export function JdPageScreen({ id }: { id: string }) {
           key={draft.data.status}
           draft={draft.data}
           onDone={stopEditing}
-          backHref={(failed ? '/upload-jd' : `/jd/${encodeURIComponent(id)}`) as Route}
+          backHref={(failed ? '/create/build' : `/jd/${encodeURIComponent(id)}`) as Route}
         />
       </div>
     );
@@ -115,8 +115,8 @@ export function JdPageScreen({ id }: { id: string }) {
             <JobPageTop
               job={view.job}
               variant="jd"
-              backHref={'/upload-jd' as Route}
-              backLabel="Back to Upload a JD"
+              backHref={'/create/build' as Route}
+              backLabel="Back to Build Resume"
               actions={
                 !edit && !reading ? (
                   <Button

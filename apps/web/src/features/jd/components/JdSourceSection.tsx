@@ -30,6 +30,7 @@ export function JdSourceSection({ text, open: initial = false }: { text: string;
           type="button"
           aria-expanded={open}
           aria-controls={bodyId}
+          aria-label={open ? 'Hide the full description' : 'Show the full description'}
           onClick={() => setOpen((value) => !value)}
           className={cn(
             pressable,

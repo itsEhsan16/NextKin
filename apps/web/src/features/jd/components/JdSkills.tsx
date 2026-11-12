@@ -2,12 +2,10 @@
 
 import type { JdDraft, Profile } from '@nextkin/shared/models';
 
-import { cn } from '@/lib/cn';
-import { CheckCircle } from '@/ui/lineIcons';
 import { ProfileSkillsIllustration } from '@/ui/illustrations';
 
-import { hasSkill } from '../../jobs/jobPageLibrary';
 import { Bullets, JobSection } from '../../jobs/components/page/JobSections';
+import { SkillEvidenceLegend, SkillEvidenceList } from '../../jobs/components/SkillEvidenceList';
 
 const lower = (text: string) => text.trim().toLowerCase();
 const YEARS_OR_DEGREE =
@@ -51,46 +49,23 @@ export function JdSkills({
   if (groups.length === 0 && qualifications.length === 0) return null;
 
   return (
-    <JobSection
-      id="jd-skills"
-      Art={ProfileSkillsIllustration}
-      title="What this job asks for"
-      aside={
-        profile ? (
-          <span className="flex items-center gap-1.5 text-body-s text-text-tertiary">
-            <CheckCircle aria-hidden className="size-4.5 text-success-600" />
-            Already on your profile
-          </span>
-        ) : undefined
-      }
-    >
+    <JobSection id="jd-skills" Art={ProfileSkillsIllustration} title="What this job asks for">
       <div className="flex flex-col gap-4">
+        {/* One list and legend with the job page (redesign R5c, audit JD-02). */}
+        {profile && groups.length > 0 && <SkillEvidenceLegend />}
         {groups.map((group) => (
           <div key={group.key}>
             <h3 className="text-body-s font-semibold text-text-primary">
               {group.label}{' '}
               <span className="font-normal text-text-tertiary">· {group.skills.length}</span>
             </h3>
-            <ul aria-label={`${group.label} skills`} className="mt-2 flex flex-wrap gap-2">
-              {group.skills.map((skill) => {
-                const own = hasSkill(profile, skill);
-                return (
-                  <li
-                    key={skill}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-sm border px-2 py-1 text-caption-m font-medium',
-                      own
-                        ? 'border-transparent bg-success-surface text-success-text'
-                        : 'border-border-default bg-surface-card text-text-secondary',
-                    )}
-                  >
-                    {own && <CheckCircle aria-hidden className="size-4" />}
-                    {skill}
-                    {own && <span className="sr-only">(on your profile)</span>}
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="mt-2">
+              <SkillEvidenceList
+                skills={group.skills}
+                profile={profile}
+                label={`${group.label} skills`}
+              />
+            </div>
           </div>
         ))}
         {qualifications.length > 0 && (

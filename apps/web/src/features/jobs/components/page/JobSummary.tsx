@@ -27,10 +27,15 @@ import {
 } from '@/ui/icons';
 
 import { experienceLabel } from '../../experienceRange';
+import { jdTailorHref } from '@/features/jd/jdHref';
+
 import { matchRows, shortPlace } from '../../jobPageLibrary';
 import { MATCH_TONE } from '../../matchTone';
 
 type Glyph = ComponentType<SVGProps<SVGSVGElement>>;
+
+/** The match card's box: beside the title from 1280, under the facts below (audit JB-20). */
+const MATCH_CARD = 'w-full shrink-0 rounded-md bg-neutral-50 p-5 xl:w-[240px]';
 
 /** The facts a job description stated; every one of a listing's. */
 const ALL_KNOWN: JobFactsKnown = {
@@ -108,7 +113,26 @@ export function MatchCard({
   profile: Profile | undefined;
   known?: JobFactsKnown;
 }) {
-  if (!job.matchBand) return null;
+  if (!job.matchBand) {
+    // A job description is what a score needs (D-15), so its page says one is coming rather than
+    // showing nothing (redesign R5c, audit JD-04). Never a placeholder number.
+    if (!known) return null;
+    return (
+      <section aria-label="How well you match" className={MATCH_CARD}>
+        <p className="text-body-m font-semibold text-text-primary">Not scored yet</p>
+        <p className="mt-1 text-body-s text-text-secondary">
+          Tailoring scores your resume against this job, requirement by requirement.
+        </p>
+        <Link
+          href={jdTailorHref(job.id)}
+          className="mt-3 inline-flex items-center gap-1 rounded-sm text-body-s font-medium text-text-brand transition-opacity duration-press ease-standard hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        >
+          Tailor my resume
+          <ChevronRightIcon aria-hidden className="size-3" />
+        </Link>
+      </section>
+    );
+  }
   const tone = MATCH_TONE[job.matchBand];
   // A number only when the whole listing was read (P11-03); otherwise the band says it (R5b).
   const score =
@@ -119,7 +143,7 @@ export function MatchCard({
     <section
       aria-label="How well you match"
       // Beside the title from 1280; under the facts below, so they keep their width (JB-20).
-      className="w-full shrink-0 rounded-md bg-neutral-50 p-5 xl:w-[240px]"
+      className={MATCH_CARD}
     >
       <div className="flex items-center gap-2">
         {score != null && (
@@ -191,6 +215,11 @@ export function JobSummary({
 }) {
   const hq = shortPlace(job.companyHeadquarters);
   const company = job.company.trim();
+  const description = known
+    ? withoutTitleLine(job.description, job.title, company)
+    : company && job.description.startsWith(company)
+      ? job.description.slice(company.length).trimStart()
+      : job.description;
   return (
     <div className="px-8 pb-5 pt-6">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
@@ -209,12 +238,16 @@ export function JobSummary({
         <MatchCard job={job} profile={profile} {...(known ? { known } : {})} />
       </div>
 
-      {job.description && (
+      {description && (
         <p className="mt-5 text-body-m text-text-secondary">
-          {company && <span className="font-semibold text-text-primary">{company}</span>}{' '}
-          {company && job.description.startsWith(company)
-            ? job.description.slice(company.length).trimStart()
-            : job.description}
+          {/* A listing leads with its company in bold. A job description doesn't: its company is
+              the row above, and its first line repeated the title (audit JD-03). */}
+          {company && !known && (
+            <>
+              <span className="font-semibold text-text-primary">{company}</span>{' '}
+            </>
+          )}
+          {description}
         </p>
       )}
 
@@ -241,4 +274,21 @@ export function JobSummary({
       )}
     </div>
   );
+}
+
+/**
+ * A pasted job description often opens with "{title} at {company} — {city}", which the page has
+ * just shown as its heading. Drop that line (to the first full stop, dash or line break) when it
+ * starts with the title, so the description starts where the description does.
+ */
+export function withoutTitleLine(text: string, title: string, company: string): string {
+  const trimmed = text.trimStart();
+  const lower = trimmed.toLowerCase();
+  const heads = [title, company && `${title} at ${company}`].filter(Boolean) as string[];
+  if (!heads.some((head) => lower.startsWith(head.toLowerCase()))) return text;
+  const lineEnd = trimmed.search(/\n|\.\s/);
+  if (lineEnd >= 0) return trimmed.slice(lineEnd + 1).trimStart();
+  // One run-on line: drop "{title} at {company} — {city}" up to where the next sentence starts.
+  const next = trimmed.match(/^.*?\s—\s\S+\s+(?=[A-Z])/);
+  return next ? trimmed.slice(next[0].length) : text;
 }

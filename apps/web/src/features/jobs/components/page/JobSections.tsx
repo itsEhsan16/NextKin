@@ -4,25 +4,17 @@ import type { Job, Profile } from '@nextkin/shared/models';
 import { useUpdateSkills } from '@nextkin/shared/queries';
 import type { ComponentType, ReactNode, SVGProps } from 'react';
 
-import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
-import {
-  CalendarIcon,
-  CheckCircleIcon,
-  GlobeIcon,
-  LocationOutlineIcon,
-  PeopleIcon,
-  PlusIcon,
-} from '@/ui/icons';
+import { CalendarIcon, GlobeIcon, LocationOutlineIcon, PeopleIcon } from '@/ui/icons';
 import {
   InsightsStarIllustration,
   ProfileCompanyIllustration,
   ProfileGoalsIllustration,
   ProfileSkillsIllustration,
 } from '@/ui/illustrations';
-import { pressable } from '@/ui/pressable';
 
 import { hasSkill, siteLabel } from '../../jobPageLibrary';
+import { SkillEvidenceLegend, SkillEvidenceList } from '../SkillEvidenceList';
 
 type Art = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -79,9 +71,10 @@ export function Responsibilities({ job }: { job: Job }) {
 }
 
 /**
- * Qualifications (730:…): the job's skills against the profile — on it in green, missing in dashed
- * amber — then what the listing requires. A missing skill the user has is one click from their
- * profile; nothing is added that they did not pick.
+ * Qualifications (730:…): the job's skills against the profile, then what the listing requires.
+ * The skills read as the match engine counts them (redesign R5c, D-14): shown in a dated role,
+ * only listed, or missing, the same list and legend as the JD page. A missing skill the user has
+ * is one click from their profile, with Undo; nothing is added that they did not pick.
  */
 export function Qualifications({ job, profile }: { job: Job; profile: Profile | undefined }) {
   const update = useUpdateSkills();
@@ -101,61 +94,30 @@ export function Qualifications({ job, profile }: { job: Job; profile: Profile | 
 
   if (job.tags.length === 0 && job.requirements.length === 0) return null;
   return (
-    <JobSection
-      id="job-qualifications"
-      Art={ProfileSkillsIllustration}
-      title="Qualifications"
-      aside={
-        <span className="flex items-center gap-1.5 text-body-s text-text-tertiary">
-          <CheckCircleIcon aria-hidden className="size-3.5 text-success-600" />
-          On your profile
-        </span>
-      }
-    >
-      <p className="text-body-s text-text-secondary">
-        {job.tags.length > 0 && (
-          <>
-            The skills this listing names, checked against your profile:{' '}
+    <JobSection id="job-qualifications" Art={ProfileSkillsIllustration} title="Qualifications">
+      {job.tags.length > 0 && (
+        <>
+          <p className="text-body-s text-text-secondary">
+            The skills this listing names, against your profile:{' '}
             <span className="font-semibold text-text-primary">
               {onProfile} of {job.tags.length} on it
             </span>
-            . Have one that isn&apos;t? Add it.{' '}
-          </>
-        )}
-        A skill you only list counts half until a role on your resume shows it.
-      </p>
-      <ul aria-label="Skills this job asks for" className="mt-3 flex flex-wrap gap-2">
-        {job.tags.map((skill) =>
-          hasSkill(profile, skill) ? (
-            <li
-              key={skill}
-              className="flex items-center gap-1.5 rounded-sm bg-success-surface px-2 py-1 text-caption-m font-medium text-success-text animate-pop-in"
-            >
-              <CheckCircleIcon aria-hidden className="size-3" />
-              {skill}
-            </li>
-          ) : (
-            <li key={skill}>
-              <button
-                type="button"
-                onClick={() => add(skill)}
-                disabled={!profile || update.isPending}
-                aria-label={`Add ${skill} to your profile`}
-                className={cn(
-                  pressable,
-                  // Neutral, not amber: a skill you haven't listed isn't an error (JB-22).
-                  'flex items-center gap-1.5 rounded-sm border border-dashed border-border-default bg-surface-card px-2 py-1 text-caption-m font-medium text-text-secondary',
-                  'not-disabled:hover:border-brand-300 not-disabled:hover:text-text-brand disabled:opacity-60',
-                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-                )}
-              >
-                <PlusIcon aria-hidden className="size-3" />
-                {skill}
-              </button>
-            </li>
-          ),
-        )}
-      </ul>
+            .
+          </p>
+          <div className="mt-2">
+            <SkillEvidenceLegend canAdd={Boolean(profile)} />
+          </div>
+          <div className="mt-3">
+            <SkillEvidenceList
+              skills={job.tags}
+              profile={profile}
+              label="Skills this job asks for"
+              {...(profile ? { onAdd: add } : {})}
+              disabled={update.isPending}
+            />
+          </div>
+        </>
+      )}
       {job.requirements.length > 0 && (
         <>
           <h3 className="mt-5 text-body-m font-semibold text-text-primary">Required</h3>

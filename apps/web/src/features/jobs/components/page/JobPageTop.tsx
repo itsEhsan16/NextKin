@@ -8,7 +8,10 @@ import type { ReactNode } from 'react';
 import { useRaiseApplyAsk } from '@/features/applications/applyAsk';
 import { cn } from '@/lib/cn';
 import { formatApplicants, formatPostedAge } from '@/lib/format';
+import { jdHref } from '@/features/jd/jdHref';
 import { brandButton } from '@/ui/brandButton';
+import { buttonClass } from '@/ui/Button';
+import { Edit05 } from '@/ui/lineIcons';
 import { iconButton } from '@/ui/iconButton';
 import { ChevronRightIcon, ExternalLinkIcon } from '@/ui/icons';
 import { pressable } from '@/ui/pressable';
@@ -90,6 +93,18 @@ function JdBarEnd({ job, actions }: { job: Job; actions?: ReactNode }) {
     <>
       <span className="text-body-m font-medium text-text-secondary">Job description</span>
       <span className="flex-1" />
+      {/* Correct what was read, on a good read too (redesign R5c, audit JD-01: the review was
+          reachable only after a failed read). Shown when the page offers its own actions, which
+          it does once reading is done. */}
+      {actions && (
+        <Link
+          href={jdHref(job.id, { edit: true })}
+          className={buttonClass({ variant: 'secondary', size: 'md', pill: true })}
+        >
+          <Edit05 aria-hidden className="size-4" />
+          Edit details
+        </Link>
+      )}
       {actions}
       {job.applyUrl && <ApplyLink job={job} />}
     </>

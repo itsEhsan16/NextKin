@@ -117,9 +117,9 @@ describe('JdPageScreen', () => {
     expect(screen.queryByRole('heading', { name: 'Company' })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Similar jobs' })).not.toBeInTheDocument();
 
-    expect(screen.getByRole('link', { name: 'Back to Upload a JD' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Back to Build Resume' })).toHaveAttribute(
       'href',
-      '/upload-jd',
+      '/create/build',
     );
   });
 
@@ -137,10 +137,13 @@ describe('JdPageScreen', () => {
     const draft = await pastedJd();
     renderWithQuery(<JdPageScreen id={draft.id} />);
 
-    const toggle = await screen.findByRole('button', { name: 'Show' }, LOADED);
+    const toggle = await screen.findByRole('button', { name: 'Show the full description' }, LOADED);
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await user.click(toggle);
-    expect(screen.getByRole('button', { name: 'Hide' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Hide the full description' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
     expect(screen.getByText(/Senior Product Designer/, { selector: 'div' })).toBeInTheDocument();
   });
 

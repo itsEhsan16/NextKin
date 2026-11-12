@@ -53,6 +53,7 @@ export { Zap } from '@untitledui/icons/Zap';
 export { Code02 } from '@untitledui/icons/Code02';
 export { Cube01 } from '@untitledui/icons/Cube01';
 export { DotsHorizontal } from '@untitledui/icons/DotsHorizontal';
+export { Edit05 } from '@untitledui/icons/Edit05';
 export { Grid01 } from '@untitledui/icons/Grid01';
 export { LayersThree01 } from '@untitledui/icons/LayersThree01';
 export { Menu01 } from '@untitledui/icons/Menu01';
