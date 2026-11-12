@@ -52,25 +52,42 @@ export function Transcript({ messages }: { messages: AssistantMessage[] }) {
     return () => observer.disconnect();
   }, []);
 
+  const last = messages[messages.length - 1];
+  const announce =
+    last && last.role === 'assistant' && !openedWith.has(last.id)
+      ? last.status === 'complete'
+        ? last.refusal
+          ? 'Answer ready. The assistant couldn’t help with that.'
+          : 'Answer ready.'
+        : last.status === 'failed'
+          ? 'The answer didn’t finish.'
+          : ''
+      : '';
+
   return (
-    <ol ref={list} aria-label="Conversation" className="flex flex-col gap-4">
-      {messages.map((message, index) => {
-        const label = dayLabel(message.createdAt);
-        const previous = messages[index - 1];
-        const newDay = !previous || dayLabel(previous.createdAt) !== label;
-        return (
-          <Fragment key={message.id}>
-            {newDay && (
-              <li aria-hidden className="flex justify-center">
-                <span className="rounded-full bg-surface-muted px-3 py-1 text-caption-m text-text-tertiary">
-                  {label}
-                </span>
-              </li>
-            )}
-            <MessageBubble message={message} fresh={!openedWith.has(message.id)} />
-          </Fragment>
-        );
-      })}
-    </ol>
+    <>
+      <p aria-live="polite" className="sr-only">
+        {announce}
+      </p>
+      <ol ref={list} aria-label="Conversation" className="flex flex-col gap-4">
+        {messages.map((message, index) => {
+          const label = dayLabel(message.createdAt);
+          const previous = messages[index - 1];
+          const newDay = !previous || dayLabel(previous.createdAt) !== label;
+          return (
+            <Fragment key={message.id}>
+              {newDay && (
+                <li aria-hidden className="flex justify-center">
+                  <span className="rounded-full bg-surface-muted px-3 py-1 text-caption-m text-text-tertiary">
+                    {label}
+                  </span>
+                </li>
+              )}
+              <MessageBubble message={message} fresh={!openedWith.has(message.id)} />
+            </Fragment>
+          );
+        })}
+      </ol>
+    </>
   );
 }

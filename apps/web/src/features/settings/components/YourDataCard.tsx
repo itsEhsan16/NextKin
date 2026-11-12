@@ -14,8 +14,8 @@ import {
   SettingsPreferencesIllustration,
 } from '@/ui/illustrations';
 
-import { RowChevron, SETTING_LIST, SettingRow } from './SettingRow';
-import { Soon, soonControl } from '@/ui/Soon';
+import { SETTING_LIST, SettingRow } from './SettingRow';
+import { SoonTag } from '@/ui/Soon';
 
 const ACTION = 'h-control-sm min-w-32 shrink-0 rounded-md px-3.5 text-body-s font-semibold';
 
@@ -30,7 +30,7 @@ const EXPORT_IDLE = 'Get a copy of your profile, resumes, and activity data.';
  * and never says the account goes, so it wants new words before it does anything. Both say
  * "Coming soon" (`toreview.md` §30, §102).
  */
-export function YourDataCard() {
+export function YourDataCard({ onOpenDelete }: { onOpenDelete: () => void }) {
   const dataExport = useDataExport();
   const requestExport = useRequestDataExport();
   const status = dataExport.data?.status;
@@ -69,23 +69,23 @@ export function YourDataCard() {
           Icon={SettingsPreferencesIllustration}
           title="Manage data preferences"
           line="Control how your data is collected and used."
-          control={(lineId) => <RowChevron label="Manage data preferences" describedBy={lineId} />}
+          // Nothing behind it yet: it says so instead of looking like a link (ST-04).
+          control={() => <SoonTag />}
         />
         <SettingRow
           Icon={SettingsDeleteIllustration}
           title="Delete my data"
-          line="Permanently delete all your data from our systems."
+          line="Deleting your account deletes your data with it."
+          // One way to delete, the Delete account section (ST-19).
           control={(lineId) => (
-            <Soon>
-              <button
-                aria-disabled="true"
-                type="button"
-                aria-describedby={lineId}
-                className={cn(soonControl, dangerOutlineButton, ACTION)}
-              >
-                Delete my data
-              </button>
-            </Soon>
+            <button
+              type="button"
+              aria-describedby={lineId}
+              onClick={onOpenDelete}
+              className={cn(dangerOutlineButton, ACTION)}
+            >
+              Delete account
+            </button>
           )}
         />
       </ul>

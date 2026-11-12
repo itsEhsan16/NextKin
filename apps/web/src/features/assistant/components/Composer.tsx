@@ -3,6 +3,9 @@
 import { ASSISTANT_DISCLAIMER, type AssistantAttachment } from '@nextkin/shared/models';
 import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 
+import type { Route } from 'next';
+import Link from 'next/link';
+
 import { cn } from '@/lib/cn';
 import { CollapseFade } from '@/ui/CollapseFade';
 import { InfoCircleIcon, SendIcon } from '@/ui/icons';
@@ -99,6 +102,18 @@ export function Composer({
             ))}
           </ul>
         )}
+        {/* Out of messages: said in place of a dead box, with the way to more (AS-02, V2 §13.5). */}
+        {spent && (
+          <p className="mb-2 flex flex-wrap items-center gap-x-2 rounded-md bg-surface-paid px-3 py-2 text-body-s text-text-paid">
+            You’ve used today’s messages. They come back tomorrow.
+            <Link
+              href={'/upgrade' as Route}
+              className="font-semibold underline-offset-2 hover:underline"
+            >
+              See Pro plans
+            </Link>
+          </p>
+        )}
         <div className="flex items-center gap-3">
           <AttachMenu
             open={menuOpen}
@@ -124,7 +139,7 @@ export function Composer({
               fit(event.target);
             }}
             onKeyDown={onKeyDown}
-            className="min-w-0 flex-1 resize-none bg-transparent py-3 text-prose text-text-primary outline-none placeholder:text-neutral-400 disabled:cursor-not-allowed"
+            className="min-w-0 flex-1 resize-none bg-transparent py-3 text-prose text-text-primary outline-none placeholder:text-text-tertiary disabled:cursor-not-allowed"
           />
           <button
             type="button"
@@ -158,7 +173,7 @@ export function Composer({
           }}
         />
         <span className="flex-1" />
-        <span className="text-body-s font-medium tabular-nums text-neutral-400">
+        <span className="text-body-s font-medium tabular-nums text-text-tertiary">
           <span className="sr-only">Characters used: </span>
           {draft.length} / {MESSAGE_MAX}
         </span>

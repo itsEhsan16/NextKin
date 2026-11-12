@@ -66,7 +66,12 @@ export function completionItems(user: User, profile: Profile): CompletionItem[] 
     { label: 'Location', done: Boolean(profile.location) },
     { label: 'Add a bio', done: Boolean(profile.bio) },
     { label: 'Add work experience', done: profile.experiences.length > 0 },
-    { label: 'Link your LinkedIn', done: Boolean(profile.linkedinConnected) },
+    {
+      label: 'Add your LinkedIn',
+      done:
+        Boolean(profile.linkedinConnected) ||
+        profile.links.some((link) => link.kind === 'linkedin'),
+    },
     { label: 'Upload a profile photo', done: Boolean(user.avatarUrl) },
   ];
 }

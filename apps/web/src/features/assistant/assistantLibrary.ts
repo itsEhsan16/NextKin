@@ -11,9 +11,6 @@ import {
 /** The composer's cap (768:125's "0 / 500"), the same as mobile's. */
 export const MESSAGE_MAX = 500;
 
-/** How many earlier chats the History shows before it scrolls. */
-export const HISTORY_SHOWN = 6;
-
 export type Starter = {
   key: string;
   label: string;
@@ -95,7 +92,7 @@ export const jobAttachment = (job: Job): AssistantAttachment => ({
   kind: 'job',
   id: job.id,
   title: `${job.company} — ${job.title}`,
-  detail: 'Saved job',
+  detail: 'Job on NextKin',
 });
 
 /** The file kinds the upload option takes (772:355): PDF or DOCX. */

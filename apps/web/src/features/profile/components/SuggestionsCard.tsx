@@ -1,3 +1,4 @@
+import type { Profile } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { ComponentType, SVGProps } from 'react';
@@ -31,7 +32,16 @@ const ASSISTANT = '/assistant' as Route;
  * "AI profile suggestions" (477:2): four ways to strengthen the profile, each opening the AI
  * Assistant, the nearest thing web has to a guided edit, as the Jobs callouts do.
  */
-export function SuggestionsCard() {
+export function SuggestionsCard({ profile }: { profile: Profile | undefined }) {
+  // Nothing suggested that is already there (PF-03): a listed portfolio or personal site isn't
+  // "to add".
+  const shown = SUGGESTIONS.filter(
+    ({ id }) =>
+      !(
+        id === 'portfolio' &&
+        profile?.links.some((link) => link.kind === 'portfolio' || link.kind === 'website')
+      ),
+  );
   return (
     <section aria-labelledby="profile-suggestions" className={cn(cardSurface, cardPad)}>
       <div className="flex items-start gap-3">
@@ -47,7 +57,7 @@ export function SuggestionsCard() {
       </div>
 
       <ul className="mt-4 flex flex-col gap-0.5">
-        {SUGGESTIONS.map(({ id, label }) => {
+        {shown.map(({ id, label }) => {
           const Art = ART[id];
           return (
             <li key={id}>
@@ -82,7 +92,9 @@ export function OpportunitiesCard() {
       <div className="min-w-0">
         <h2 className="text-title-l text-text-primary">Ready for more opportunities?</h2>
         <p className="mt-1 text-body-s text-text-tertiary">
-          A complete profile gets 3x more views from recruiters.
+          {/* What the profile is used for, not an unsourced "3x more views" (PF-04): recruiter
+              discovery isn't part of NextKin (V2 §6.2). */}
+          Job matches and tailored resumes read your skills and experience.
         </p>
       </div>
     </section>

@@ -151,7 +151,7 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
           ) : (
             <Skeleton className="h-110 rounded-lg" />
           )}
-          <SuggestionsCard />
+          <SuggestionsCard profile={profile.data} />
           <OpportunitiesCard />
         </div>
       </div>

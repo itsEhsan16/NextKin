@@ -18,7 +18,8 @@ const TABS = [
 
 /** Resolves once the profile has loaded; the completion ring sits beside every section. */
 const settle = () =>
-  screen.findByRole('img', { name: 'Profile completion: 80%' }, { timeout: SETTLE_MS.normal * 2 });
+  // The ring counts the checklist (redesign R7b, PF-03): George's seven items are all done.
+  screen.findByRole('img', { name: 'Profile completion: 100%' }, { timeout: SETTLE_MS.normal * 2 });
 
 const card = (name: string) => screen.getByRole('region', { name });
 
@@ -155,22 +156,26 @@ describe('ProfileScreen', () => {
       'Location',
       'Add a bio',
       'Add work experience',
+      // The LinkedIn listed under Social links counts (PF-03).
+      'Add your LinkedIn',
     ]) {
       expect(checklistRow(done)).toHaveTextContent(', done');
     }
-    expect(checklistRow('Link your LinkedIn')).toHaveTextContent(', to do');
 
     const suggestions = card('AI profile suggestions');
     for (const name of [
       'Add 2–3 more skills',
       'Write a stronger summary',
-      'Add a portfolio link',
       'Highlight measurable impact in your experience',
       'View all suggestions',
     ]) {
       expect(within(suggestions).getByRole('link', { name })).toHaveAttribute('href', '/assistant');
     }
+    // Nothing suggested that is already there: George lists a portfolio (PF-03).
+    expect(within(suggestions).queryByRole('link', { name: 'Add a portfolio link' })).toBeNull();
     expect(screen.getByText('Ready for more opportunities?')).toBeInTheDocument();
+    // No unsourced recruiter claim (PF-04).
+    expect(screen.queryByText(/3x more views/)).toBeNull();
   });
 
   it('opens a section from its tab and from View all', async () => {

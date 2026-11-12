@@ -2,6 +2,7 @@ import type { ThemePreference } from '@nextkin/shared/models';
 import type { ComponentType, SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { SoonTag } from '@/ui/Soon';
 import {
   SettingsSessionsIllustration,
   SettingsThemeDarkIllustration,
@@ -45,7 +46,6 @@ export function ThemePicker({ value, onChange }: ThemePickerProps) {
             role="radio"
             aria-checked={selected}
             disabled={!available}
-            title={available ? undefined : 'Coming with dark mode'}
             onClick={() => {
               if (!selected) onChange(id);
             }}
@@ -58,6 +58,8 @@ export function ThemePicker({ value, onChange }: ThemePickerProps) {
           >
             <Icon aria-hidden className="h-auto max-h-6 w-7.5 shrink-0" />
             {label}
+            {/* Said on the control, not in a tooltip a disabled button never opens (ST-10). */}
+            {!available && <SoonTag />}
           </button>
         );
       })}

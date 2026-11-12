@@ -2,7 +2,10 @@
 
 import type { AssistantThreadSummary } from '@nextkin/shared/models';
 
+import { useState } from 'react';
+
 import { cn } from '@/lib/cn';
+import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { cardSurface } from '@/ui/Card';
 import { formatHistoryDate } from '@/lib/format';
 import { FilterDropdown, MenuItem } from '@/ui/FilterDropdown';
@@ -41,7 +44,7 @@ function ChatRow({
           >
             {thread.title}
           </span>
-          <span className="shrink-0 text-micro font-medium text-neutral-400">
+          <span className="shrink-0 text-micro font-medium text-text-tertiary">
             {formatHistoryDate(thread.updatedAt)}
           </span>
         </span>
@@ -76,6 +79,7 @@ export function HistoryCard({
   onClear: () => void;
   canClear: boolean;
 }) {
+  const [confirming, setConfirming] = useState(false);
   return (
     <section
       aria-labelledby="assistant-history"
@@ -86,7 +90,7 @@ export function HistoryCard({
           History
         </h2>
         {threads && (
-          <span className="text-body-m font-medium text-neutral-400">({threads.length})</span>
+          <span className="text-body-m font-medium text-text-tertiary">({threads.length})</span>
         )}
         <span className="flex-1" />
         <FilterDropdown
@@ -102,7 +106,8 @@ export function HistoryCard({
           }
         >
           {canClear ? (
-            <MenuItem tone="danger" onSelect={onClear}>
+            // Clearing deletes the messages, so it asks first (AS-04).
+            <MenuItem tone="danger" onSelect={() => setConfirming(true)}>
               Clear this chat
             </MenuItem>
           ) : (
@@ -152,6 +157,17 @@ export function HistoryCard({
           ))}
         </ul>
       )}
+      <ConfirmDialog
+        open={confirming}
+        title="Clear this chat?"
+        message="Its messages are deleted. This can’t be undone."
+        confirmLabel="Clear chat"
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false);
+          onClear();
+        }}
+      />
     </section>
   );
 }

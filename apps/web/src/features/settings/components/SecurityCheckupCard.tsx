@@ -58,8 +58,9 @@ function checks(security: AccountSecurity, now: Date): Check[] {
       Art: SettingsDevicePhoneIllustration,
       label: 'Two-factor',
       value: security.twoFactorEnabled ? 'On' : 'Off',
-      line: security.twoFactorEnabled ? 'Your account asks for a code' : 'Turn it on below',
-      review: !security.twoFactorEnabled,
+      // Two-factor can't be turned on yet, so it isn't counted as something to review (ST-18).
+      line: security.twoFactorEnabled ? 'Your account asks for a code' : 'Not available yet',
+      review: false,
     },
     {
       key: 'sessions',

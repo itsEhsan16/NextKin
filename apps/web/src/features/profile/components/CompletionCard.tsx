@@ -13,7 +13,7 @@ import type { ProfileTab } from '../profileLibrary';
 /** Where each checklist item is filled in. */
 const ITEM_TAB: Record<string, ProfileTab> = {
   'Add work experience': 'experience',
-  'Link your LinkedIn': 'links',
+  'Add your LinkedIn': 'links',
 };
 
 /**
@@ -37,7 +37,9 @@ export function CompletionCard({
 }) {
   const items = completionItems(user, profile);
   const complete = items.every((item) => item.done);
-  const percent = Math.round(profile.completeness * 100);
+  // One source for the ring and the list (redesign R7b, audit PF-03): the ring read a stored
+  // score (80%) beside a list showing 6 of 7 done.
+  const percent = Math.round((items.filter((item) => item.done).length / items.length) * 100);
 
   return (
     <section aria-labelledby="profile-completion" className={cn(cardSurface, cardPad)}>

@@ -7,7 +7,7 @@ import {
   useCurrentUser,
   useProfile,
 } from '@nextkin/shared/queries';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import { replaceQuery } from '@/lib/replaceQuery';
@@ -21,7 +21,6 @@ import { StateView } from '@/ui/StateView';
 
 import { AccountInfoCard } from '../components/AccountInfoCard';
 import { BillingSection } from '../components/BillingSection';
-import { ComingSoonPanel } from '../components/ComingSoonPanel';
 import { ConnectedAccountsSection } from '../components/ConnectedAccountsSection';
 import { DeleteAccountSection } from '../components/DeleteAccountSection';
 import { NotificationPreferences } from '../components/NotificationPreferences';
@@ -30,7 +29,8 @@ import { PasswordCard } from '../components/PasswordCard';
 import { PreferencesSection } from '../components/PreferencesSection';
 import { PrivacySection } from '../components/PrivacySection';
 import { SecurityCheckupCard } from '../components/SecurityCheckupCard';
-import { SESSIONS_LIST_ID, SessionsCard } from '../components/SessionsCard';
+import { SecurityLinkCard } from '../components/SecurityLinkCard';
+import { SessionsCard } from '../components/SessionsCard';
 import { SettingsIllustration } from '../components/SettingsIllustration';
 import { SETTINGS_PANEL_ID, SettingsNav, settingsTabId } from '../components/SettingsNav';
 import { TwoFactorCard } from '../components/TwoFactorCard';
@@ -73,17 +73,12 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
   const security = useAccountSecurity();
   const appSettings = useAppSettings();
 
-  // Privacy & data's "Active sessions" opens Account, and the button pressed goes with the section
-  // it sat in. Focus goes on to the devices it named, or to Account's tab until they have loaded,
-  // so a keyboard user isn't dropped at the top of the page.
-  const toSessions = useRef(false);
-  const accountReady = Boolean(user.data && profile.data && security.data);
-  useEffect(() => {
-    if (!toSessions.current || section !== 'account') return;
-    const devices = document.getElementById(SESSIONS_LIST_ID);
-    if (devices || accountReady) toSessions.current = false;
-    (devices ?? document.getElementById(settingsTabId('account')))?.focus();
-  }, [section, accountReady]);
+  // A link card's button goes with the section it sat in, so focus moves on to the new section's
+  // tab and a keyboard user isn't dropped at the top of the page.
+  const go = (next: typeof section) => {
+    setSection(next);
+    requestAnimationFrame(() => document.getElementById(settingsTabId(next))?.focus());
+  };
 
   // Data first: settings refetch after every saved switch, and one failed refresh used to blank
   // the whole page (`toreview.md` §84).
@@ -131,9 +126,7 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
         {me && mine && safety && (
           <>
             <AccountInfoCard user={me} profile={mine} />
-            <PasswordCard security={safety} />
-            <TwoFactorCard security={safety} />
-            <SessionsCard sessions={safety.sessions} />
+            <SecurityLinkCard onOpen={() => go('security')} />
           </>
         )}
       </Reveal>
@@ -164,10 +157,8 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
     body = (
       <PrivacySection
         security={safety}
-        onOpenAccount={() => {
-          toSessions.current = true;
-          setSection('account');
-        }}
+        onOpenSecurity={() => go('security')}
+        onOpenDelete={() => go('delete')}
       />
     );
   } else if (section === 'connected') {
@@ -199,10 +190,8 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
     );
   } else if (section === 'billing') {
     body = <BillingSection />;
-  } else if (section === 'delete') {
-    body = <DeleteAccountSection onCancel={() => setSection('account')} />;
   } else {
-    body = <ComingSoonPanel section={section} />;
+    body = <DeleteAccountSection onCancel={() => setSection('account')} />;
   }
 
   return (
@@ -241,10 +230,11 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
             section === 'security' ||
             section === 'billing' ||
             section === 'delete') && (
-            <SettingsIllustration className="absolute bottom-full right-2.5 animate-reveal" />
+            // From 1280 only: narrower, it covers the subtitle (ST-16).
+            <SettingsIllustration className="absolute bottom-full right-2.5 hidden animate-reveal xl:block" />
           )}
           {section === 'notifications' && (
-            <NotificationsIllustration className="absolute bottom-full right-[16%] animate-reveal" />
+            <NotificationsIllustration className="absolute bottom-full right-[16%] hidden animate-reveal xl:block" />
           )}
           {/* Keyed by section: after the first switch, each section fades in (`toreview.md` §84). */}
           <div key={section} className={cn('flex flex-col gap-6', switched && 'animate-reveal')}>

@@ -12,11 +12,11 @@ import { formatCoarseAge } from '@/lib/format';
  * accounts are built from mockups (`toreview.md` §30).
  */
 export const SETTINGS_SECTIONS = {
-  account: { label: 'Account', description: 'Email, password, basic info' },
+  account: { label: 'Account', description: 'Email, phone, basic info' },
   preferences: { label: 'Preferences', description: 'App settings and language' },
   notifications: { label: 'Notifications', description: 'Manage what you receive' },
   privacy: { label: 'Privacy & data', description: 'Control your data' },
-  connected: { label: 'Connected accounts', description: 'Google, LinkedIn, etc.' },
+  connected: { label: 'Connected accounts', description: 'Google sign-in' },
   billing: { label: 'Billing & plan', description: 'Manage subscription' },
   security: { label: 'Security', description: 'Two-factor auth, sessions' },
   delete: { label: 'Delete account', description: 'Permanently delete your account' },

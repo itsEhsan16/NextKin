@@ -76,56 +76,44 @@ describe('SettingsScreen — Privacy & data (from the mockup)', () => {
       within(data).getByText('Get a copy of your profile, resumes, and activity data.'),
     ).toBeInTheDocument();
     expect(within(data).getByRole('button', { name: 'Download data' })).toBeInTheDocument();
-    expect(
-      within(data).getByRole('button', { name: 'Manage data preferences' }),
-    ).toBeInTheDocument();
-    expect(within(data).getByRole('button', { name: 'Delete my data' })).toBeInTheDocument();
+    // Nothing behind it yet, so no chevron that looks like a link (ST-04); deleting is one place,
+    // the Delete account section (ST-19).
+    expect(within(data).queryByRole('button', { name: 'Manage data preferences' })).toBeNull();
+    expect(within(data).getByRole('button', { name: 'Delete account' })).toBeInTheDocument();
 
-    const security = card('Security');
+    // Two-factor and devices are in Security only (ST-03).
     expect(
-      within(security).getByRole('button', { name: 'Enable two-factor authentication' }),
+      within(card('Password, two-factor and devices')).getByRole('button', {
+        name: 'Open Security',
+      }),
     ).toBeInTheDocument();
-    expect(
-      within(security).getByRole('button', { name: 'Active sessions' }),
-    ).toHaveAccessibleDescription('Manage your logged-in devices.');
   });
 
   it(
-    'saves each privacy setting the moment it changes, and neither control flips back',
+    'saves the analytics opt-out the moment it changes, and shows the rest as coming',
     async () => {
       const user = userEvent.setup();
       renderWithQuery(<SettingsScreen initialSection="privacy" />);
       const privacy = await settle();
-      const engines = within(privacy).getByRole('switch', { name: 'Show on search engines' });
-      const visibility = within(privacy).getByRole('button', {
-        name: 'Profile visibility: Visible to recruiters',
-      });
-      const shownEngines = recordValues(() => engines.getAttribute('aria-checked'));
-      const shownVisibility = recordValues(() => visibility.getAttribute('aria-label'));
-      const saved = () => {
-        const { searchEngines, profileVisibility } = mockStore.state.privacySettings;
-        return [searchEngines, profileVisibility];
-      };
+      // Nothing reads these in Release 1 (V2 §6.2): shown, off, "Soon" (redesign R7b, ST-05).
+      expect(
+        within(privacy).getByRole('switch', { name: 'Show on search engines' }),
+      ).toBeDisabled();
+      expect(
+        within(privacy).getByRole('button', { name: 'Profile visibility: Visible to recruiters' }),
+      ).toBeDisabled();
 
-      // Both write the one set of settings, so the second save has to land after the first.
-      await user.click(engines);
-      expect(engines).toHaveAttribute('aria-checked', 'true');
-      await user.click(visibility);
-      await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Private' }));
-      await waitFor(() =>
-        expect(visibility).toHaveAttribute('aria-label', 'Profile visibility: Private'),
-      );
-      await waitFor(() => expect(saved()).toEqual([true, 'private']), {
+      const share = within(privacy).getByRole('switch', { name: 'Share anonymized data' });
+      const shown = recordValues(() => share.getAttribute('aria-checked'));
+      await user.click(share);
+      expect(share).toHaveAttribute('aria-checked', 'false');
+      await waitFor(() => expect(mockStore.state.privacySettings.shareAnonymizedData).toBe(false), {
         timeout: SETTLE_MS.normal * 4,
       });
+      // It says so (ST-06).
+      expect(await within(privacy).findByText('Saved', {}, { timeout: 3000 })).toBeInTheDocument();
       await writesLand();
-
-      expect(saved()).toEqual([true, 'private']);
-      expect(shownEngines.stop()).toEqual(['false', 'true']);
-      expect(shownVisibility.stop()).toEqual([
-        'Profile visibility: Visible to recruiters',
-        'Profile visibility: Private',
-      ]);
+      expect(shown.stop()).toEqual(['true', 'false']);
     },
     ROUND_TRIPS_MS,
   );
@@ -136,17 +124,17 @@ describe('SettingsScreen — Privacy & data (from the mockup)', () => {
       jest.spyOn(repos.user, 'updatePrivacySettings').mockImplementationOnce(failsSoon);
       const user = userEvent.setup();
       renderWithQuery(<SettingsScreen initialSection="privacy" />);
-      const engines = within(await settle()).getByRole('switch', {
-        name: 'Show on search engines',
+      const share = within(await settle()).getByRole('switch', {
+        name: 'Share anonymized data',
       });
 
-      await user.click(engines);
-      expect(engines).toHaveAttribute('aria-checked', 'true');
-      await waitFor(() => expect(engines).toHaveAttribute('aria-checked', 'false'));
+      await user.click(share);
+      expect(share).toHaveAttribute('aria-checked', 'false');
+      await waitFor(() => expect(share).toHaveAttribute('aria-checked', 'true'));
       await writesLand();
 
-      expect(engines).toHaveAttribute('aria-checked', 'false');
-      expect(mockStore.state.privacySettings.searchEngines).toBe(false);
+      expect(share).toHaveAttribute('aria-checked', 'true');
+      expect(mockStore.state.privacySettings.shareAnonymizedData).toBe(true);
     },
     ROUND_TRIPS_MS,
   );
@@ -205,33 +193,30 @@ describe('SettingsScreen — Privacy & data (from the mockup)', () => {
     );
   });
 
-  it('opens the Account section from Active sessions, with focus on the devices', async () => {
+  it('opens Security from its link card, with focus on its tab', async () => {
     const user = userEvent.setup();
     renderWithQuery(<SettingsScreen initialSection="privacy" />);
     await settle();
 
-    await user.click(within(card('Security')).getByRole('button', { name: 'Active sessions' }));
-    expect(screen.getByRole('tab', { name: 'Account', selected: true })).toBeInTheDocument();
-    const devices = await screen.findByRole(
-      'list',
-      { name: 'Signed-in devices' },
-      { timeout: SETTLE_MS.normal * 2 },
-    );
-    // The button pressed went with Privacy & data, so focus goes on to the devices it named.
-    await waitFor(() => expect(devices).toHaveFocus());
+    await user.click(screen.getByRole('button', { name: 'Open Security' }));
+    const tab = screen.getByRole('tab', { name: 'Security', selected: true });
+    await waitFor(() => expect(tab).toHaveFocus());
   });
 
   it('shows its own loading state, and an error only where the settings go', async () => {
     const { security } = mockStore.state;
     const loading = renderWithQuery(
-      <PrivacySection security={security} onOpenAccount={() => {}} />,
+      <PrivacySection security={security} onOpenSecurity={() => {}} onOpenDelete={() => {}} />,
     );
     // The cards arrive together: while the settings load there is no card, and no error.
     expect(screen.queryByRole('region')).toBeNull();
     expect(screen.queryByText("Couldn't load your privacy settings")).toBeNull();
     loading.unmount();
 
-    renderWithQuery(<PrivacySection security={security} onOpenAccount={() => {}} />, 'error');
+    renderWithQuery(
+      <PrivacySection security={security} onOpenSecurity={() => {}} onOpenDelete={() => {}} />,
+      'error',
+    );
     expect(
       await screen.findByText(
         "Couldn't load your privacy settings",
@@ -242,6 +227,6 @@ describe('SettingsScreen — Privacy & data (from the mockup)', () => {
     // Only the settings failed: the export and the security, which load elsewhere, stay.
     expect(screen.queryByRole('region', { name: 'Privacy settings' })).toBeNull();
     expect(card('Your data')).toBeInTheDocument();
-    expect(card('Security')).toBeInTheDocument();
+    expect(card('Password, two-factor and devices')).toBeInTheDocument();
   });
 });

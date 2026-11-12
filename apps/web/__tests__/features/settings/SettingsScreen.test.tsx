@@ -19,8 +19,12 @@ const SECTIONS = [
   'Delete account',
 ];
 
-/** Resolves once the account and its security have loaded: the devices list is the last to draw. */
+/** Resolves once the account has loaded. */
 const settle = () =>
+  screen.findByRole('region', { name: 'Account information' }, { timeout: SETTLE_MS.normal * 2 });
+
+/** Resolves once Security's devices have loaded: the list is the last to draw. */
+const devicesLoaded = () =>
   screen.findByRole('list', { name: 'Signed-in devices' }, { timeout: SETTLE_MS.normal * 2 });
 
 const card = (name: string) => screen.getByRole('region', { name });
@@ -71,6 +75,19 @@ describe('SettingsScreen', () => {
       within(info).getByRole('button', { name: 'Edit account information' }),
     ).toBeInTheDocument();
 
+    // Password, two-factor and devices live in Security only (redesign R7b, ST-03).
+    expect(screen.queryByRole('region', { name: 'Password' })).toBeNull();
+    expect(
+      within(card('Password, two-factor and devices')).getByRole('button', {
+        name: 'Open Security',
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the password and two-factor in Security', async () => {
+    renderWithQuery(<SettingsScreen initialSection="security" />);
+    await devicesLoaded();
+
     const password = card('Password');
     expect(valueOf(password, 'Last changed')).toHaveTextContent('Jan 14, 2024');
     expect(within(password).getByRole('button', { name: 'Change password' })).toBeInTheDocument();
@@ -86,9 +103,17 @@ describe('SettingsScreen', () => {
     ).toBeInTheDocument();
   });
 
-  it('lists the signed-in devices, this one first', async () => {
+  it('goes from Account to Security from the link card', async () => {
+    const user = userEvent.setup();
     renderWithQuery(<SettingsScreen />);
-    const devices = await settle();
+    await settle();
+    await user.click(screen.getByRole('button', { name: 'Open Security' }));
+    expect(screen.getByRole('tab', { name: 'Security', selected: true })).toBeInTheDocument();
+  });
+
+  it('lists the signed-in devices, this one first', async () => {
+    renderWithQuery(<SettingsScreen initialSection="security" />);
+    const devices = await devicesLoaded();
 
     const rows = within(devices).getAllByRole('listitem');
     expect(rows).toHaveLength(3);
@@ -125,15 +150,17 @@ describe('SettingsScreen', () => {
   it('opens Security (554:4027) on arrival: the checkup, then the three cards', async () => {
     const user = userEvent.setup();
     renderWithQuery(<SettingsScreen initialSection="security" />);
-    await settle();
+    await devicesLoaded();
 
     expect(screen.getByRole('tab', { name: 'Security', selected: true })).toBeInTheDocument();
     expect(
       screen.getByText("Manage your password, two-factor sign-in, and where you're signed in."),
     ).toBeInTheDocument();
     const checkup = card('Security checkup');
-    // The password (Jan 14, 2024) is over a year old and two-factor is off: two to review.
-    expect(within(checkup).getByText('2 to review')).toBeInTheDocument();
+    // The password (Jan 14, 2024) is over a year old: one to review. Two-factor is off but can't
+    // be turned on yet, so it isn't counted (ST-18).
+    expect(within(checkup).getByText('1 to review')).toBeInTheDocument();
+    expect(within(checkup).getByText('Not available yet')).toBeInTheDocument();
     expect(within(checkup).getByText('Off')).toBeInTheDocument();
     expect(within(checkup).getByText('3 devices')).toBeInTheDocument();
     expect(within(checkup).getByText('This device and 2 others')).toBeInTheDocument();
@@ -155,7 +182,7 @@ describe('SettingsScreen', () => {
   });
 
   it('says so when no device is signed in', async () => {
-    renderWithQuery(<SettingsScreen />, 'empty');
+    renderWithQuery(<SettingsScreen initialSection="security" />, 'empty');
 
     expect(
       await screen.findByText('No active sessions', {}, { timeout: SETTLE_MS.empty * 3 }),

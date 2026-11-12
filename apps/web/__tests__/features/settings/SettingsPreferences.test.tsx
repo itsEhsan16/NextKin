@@ -114,8 +114,7 @@ describe('SettingsScreen — Preferences (356:2)', () => {
     expect(partTime).toBeChecked();
   });
 
-  it('saves the app settings and the switches at once, with light the only theme', async () => {
-    const user = userEvent.setup();
+  it('keeps light the only theme, and shows what nothing reads yet as coming', async () => {
     renderWithQuery(<SettingsScreen initialSection="preferences" />);
     await settle();
 
@@ -124,29 +123,21 @@ describe('SettingsScreen — Preferences (356:2)', () => {
       'aria-checked',
       'true',
     );
-    for (const name of ['Dark', 'System']) {
+    // Said on the control, with a Soon tag (redesign R7b, ST-10).
+    for (const name of [/^Dark/, /^System/]) {
       expect(within(app).getByRole('radio', { name })).toBeDisabled();
     }
-    expect(within(app).getByRole('button', { name: 'Language: English (US)' })).toBeEnabled();
+    // The UI ships in English and every page prints its own dates, so these change nothing yet:
+    // shown, off, "Soon" (ST-05).
+    expect(within(app).getByRole('button', { name: 'Language: English (US)' })).toBeDisabled();
     expect(
       within(app).getByRole('button', { name: 'Date format: DD MMM YYYY (e.g., 14 Jan 2024)' }),
-    ).toBeInTheDocument();
-
-    await user.click(
+    ).toBeDisabled();
+    expect(
       within(app).getByRole('button', {
         name: 'Time zone: (GMT+05:30) India Standard Time - Bengaluru',
       }),
-    );
-    await user.click(
-      await screen.findByRole('menuitemcheckbox', {
-        name: '(GMT+01:00) Central European Time - Berlin',
-      }),
-    );
-    expect(
-      await within(app).findByRole('button', {
-        name: 'Time zone: (GMT+01:00) Central European Time - Berlin',
-      }),
-    ).toBeInTheDocument();
+    ).toBeDisabled();
 
     const ai = card('Content & AI preferences');
     expect(
@@ -154,9 +145,7 @@ describe('SettingsScreen — Preferences (356:2)', () => {
         .getAllByRole('switch')
         .map((toggle) => toggle.getAttribute('aria-checked')),
     ).toEqual(['true', 'false', 'true']);
-    const experiments = within(ai).getByRole('switch', { name: 'Include experimental features' });
-    await user.click(experiments);
-    expect(experiments).toHaveAttribute('aria-checked', 'true');
+    for (const toggle of within(ai).getAllByRole('switch')) expect(toggle).toBeDisabled();
   });
 
   it(
@@ -180,35 +169,6 @@ describe('SettingsScreen — Preferences (356:2)', () => {
 
       expect(saved()).toEqual(both);
       expect(shown.stop()).toEqual([false, true]);
-    },
-    ROUND_TRIPS_MS,
-  );
-
-  it(
-    'keeps two quick switch flips, and neither flips back while the first saves',
-    async () => {
-      const user = userEvent.setup();
-      renderWithQuery(<SettingsScreen initialSection="preferences" />);
-      await settle();
-      const ai = card('Content & AI preferences');
-      const personalize = within(ai).getByRole('switch', {
-        name: 'Personalize job recommendations',
-      });
-      const shown = recordValues(() => personalize.getAttribute('aria-checked'));
-      const saved = () => {
-        const { experimentalFeatures, personalizedRecommendations } = mockStore.state.appSettings;
-        return [experimentalFeatures, personalizedRecommendations];
-      };
-
-      await user.click(within(ai).getByRole('switch', { name: 'Include experimental features' }));
-      await user.click(personalize);
-      await waitFor(() => expect(saved()).toEqual([true, false]), {
-        timeout: SETTLE_MS.normal * 4,
-      });
-      await act(() => new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS.normal)));
-
-      expect(saved()).toEqual([true, false]);
-      expect(shown.stop()).toEqual(['true', 'false']);
     },
     ROUND_TRIPS_MS,
   );

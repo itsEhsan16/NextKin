@@ -13,7 +13,10 @@ import {
   SettingsSecurityIllustration,
 } from '@/ui/illustrations';
 import { SelectField } from '@/ui/SelectField';
+import { SoonTag } from '@/ui/Soon';
 import { Switch } from '@/ui/Switch';
+
+import { SaveStatus, useSaveStatus } from '../useSaveStatus';
 
 import { PROFILE_VISIBILITY_LABEL, PROFILE_VISIBILITY_OPTIONS } from '../settingsLibrary';
 import { SETTING_LIST, SettingRow } from './SettingRow';
@@ -47,6 +50,9 @@ const TOGGLES: readonly {
   },
 ];
 
+/** The one switch something reads today: V2 §8.5's analytics opt-out. */
+const LIVE = new Set<Toggle>(['shareAnonymizedData']);
+
 /**
  * "Privacy settings" (Privacy & data mockup): who can see the profile, and three switches, each
  * saved the moment it changes and described by its row's line. By your call the recruiter and
@@ -56,7 +62,9 @@ const TOGGLES: readonly {
  */
 export function PrivacySettingsCard({ settings }: { settings: PrivacySettings }) {
   const update = useUpdatePrivacySettings();
-  const save = (patch: Partial<PrivacySettings>) => update.mutate(patch);
+  const saved = useSaveStatus();
+  const save = (patch: Partial<PrivacySettings>) =>
+    saved.run((options) => update.mutate(patch, options));
 
   const flip = (key: Toggle, on: boolean) => {
     const patch: Partial<PrivacySettings> = {};
@@ -69,6 +77,7 @@ export function PrivacySettingsCard({ settings }: { settings: PrivacySettings })
       Art={SettingsSecurityIllustration}
       title="Privacy settings"
       description="Manage how your information is used and who can see it."
+      action={<SaveStatus state={saved.state} />}
     >
       <ul className={SETTING_LIST}>
         <SettingRow
@@ -76,15 +85,20 @@ export function PrivacySettingsCard({ settings }: { settings: PrivacySettings })
           title="Profile visibility"
           line="Choose who can view your profile (recruiters, public, or private)."
           control={(lineId) => (
-            <SelectField
-              label="Profile visibility"
-              describedBy={lineId}
-              value={settings.profileVisibility}
-              options={PROFILE_VISIBILITY_OPTIONS}
-              labelOf={(option) => PROFILE_VISIBILITY_LABEL[option]}
-              onChange={(profileVisibility) => save({ profileVisibility })}
-              className="w-48"
-            />
+            // No public profile or recruiter portal in Release 1 (V2 §6.2): shown, off, "Soon".
+            <span className="flex items-center gap-2">
+              <SoonTag />
+              <SelectField
+                label="Profile visibility"
+                describedBy={lineId}
+                value={settings.profileVisibility}
+                options={PROFILE_VISIBILITY_OPTIONS}
+                labelOf={(option) => PROFILE_VISIBILITY_LABEL[option]}
+                onChange={() => undefined}
+                disabled
+                className="w-48"
+              />
+            </span>
           )}
         />
         {TOGGLES.map(({ key, Icon, title, line }) => (
@@ -94,12 +108,16 @@ export function PrivacySettingsCard({ settings }: { settings: PrivacySettings })
             title={title}
             line={line}
             control={(lineId) => (
-              <Switch
-                label={title}
-                describedBy={lineId}
-                checked={settings[key]}
-                onChange={(on) => flip(key, on)}
-              />
+              <span className="flex items-center gap-2">
+                {!LIVE.has(key) && <SoonTag />}
+                <Switch
+                  label={title}
+                  describedBy={lineId}
+                  checked={settings[key]}
+                  disabled={!LIVE.has(key)}
+                  onChange={(on) => flip(key, on)}
+                />
+              </span>
             )}
           />
         ))}

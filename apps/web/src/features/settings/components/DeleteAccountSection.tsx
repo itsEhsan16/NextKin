@@ -58,7 +58,7 @@ const LOSSES: readonly {
   },
   {
     title: 'Connected accounts',
-    line: 'Linked accounts (e.g., Google, LinkedIn) will be unlinked',
+    line: 'Google sign-in will be unlinked',
     Art: ProfileLinksIllustration,
   },
 ];

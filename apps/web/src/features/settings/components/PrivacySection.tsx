@@ -6,15 +6,16 @@ import { usePrivacySettings } from '@nextkin/shared/queries';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
-import { PrivacySecurityCard } from './PrivacySecurityCard';
+import { SecurityLinkCard } from './SecurityLinkCard';
 import { PrivacySettingsCard } from './PrivacySettingsCard';
 import { YourDataCard } from './YourDataCard';
 
 export type PrivacySectionProps = {
   /** The account's security, which the page already loads for the Account section. */
   security: AccountSecurity | undefined;
-  /** Where "Active sessions" goes: the Account section, which lists the devices. */
-  onOpenAccount: () => void;
+  /** Two-factor and devices live in Security only (redesign R7b, audit ST-03). */
+  onOpenSecurity: () => void;
+  onOpenDelete: () => void;
 };
 
 /**
@@ -27,7 +28,7 @@ export type PrivacySectionProps = {
  * export and the security below come from elsewhere and still work. A failed refetch keeps the
  * settings it had, so it never takes the card away.
  */
-export function PrivacySection({ security, onOpenAccount }: PrivacySectionProps) {
+export function PrivacySection({ security, onOpenSecurity, onOpenDelete }: PrivacySectionProps) {
   const privacy = usePrivacySettings();
 
   if (privacy.isPending || !security) {
@@ -53,8 +54,8 @@ export function PrivacySection({ security, onOpenAccount }: PrivacySectionProps)
           onAction={() => void privacy.refetch()}
         />
       )}
-      <YourDataCard />
-      <PrivacySecurityCard security={security} onOpenSessions={onOpenAccount} />
+      <YourDataCard onOpenDelete={onOpenDelete} />
+      <SecurityLinkCard onOpen={onOpenSecurity} />
     </>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
 import type { AppSettings } from '@nextkin/shared/models';
-import { useUpdateAppSettings } from '@nextkin/shared/queries';
 
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { NavAiAssistantIllustration } from '@/ui/illustrations';
+import { SoonTag } from '@/ui/Soon';
 import { Switch } from '@/ui/Switch';
 
 type Toggle = 'aiSuggestions' | 'experimentalFeatures' | 'personalizedRecommendations';
@@ -34,13 +34,7 @@ const TOGGLES: readonly { key: Toggle; label: string; description: string }[] = 
  * (`toreview.md` §22). The line beside a switch drops under its name when the card is narrow.
  */
 export function ContentAiCard({ settings }: { settings: AppSettings }) {
-  const update = useUpdateAppSettings();
-
-  const flip = (key: Toggle, on: boolean) => {
-    const patch: Partial<AppSettings> = {};
-    patch[key] = on;
-    update.mutate(patch);
-  };
+  // Nothing reads these yet, so they show their value, off, with "Soon" (redesign R7b, ST-05).
 
   return (
     <AccountCard
@@ -55,7 +49,10 @@ export function ContentAiCard({ settings }: { settings: AppSettings }) {
               <span className="text-body-m text-text-primary">{label}</span>
               <span className="text-body-s text-text-tertiary">{description}</span>
             </p>
-            <Switch label={label} checked={settings[key]} onChange={(on) => flip(key, on)} />
+            <span className="flex shrink-0 items-center gap-2">
+              <SoonTag />
+              <Switch label={label} checked={settings[key]} onChange={() => undefined} disabled />
+            </span>
           </li>
         ))}
       </ul>

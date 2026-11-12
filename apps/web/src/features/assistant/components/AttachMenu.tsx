@@ -282,7 +282,7 @@ export function AttachMenu({
             isAttached={isAttached}
             onPick={onToggle}
           />
-          <p className="flex items-center gap-1.5 pb-0.5 pl-2.5 pt-2 text-micro font-medium text-neutral-400">
+          <p className="flex items-center gap-1.5 pb-0.5 pl-2.5 pt-2 text-micro font-medium text-text-tertiary">
             <LockIcon aria-hidden className="size-2.5" />
             Read only — the assistant never edits your files.
           </p>
