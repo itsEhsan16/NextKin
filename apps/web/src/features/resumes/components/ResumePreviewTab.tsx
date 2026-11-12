@@ -33,13 +33,14 @@ export function ResumePreviewTab({ resume }: { resume: Resume }) {
       <PageImages
         pages={typeset.pages}
         stale={typeset.stale}
-        className="rounded-md bg-neutral-50 p-5"
+        title={resume.title}
+        className="rounded-md bg-surface-subtle p-5"
       />
     );
 
   if (content.isPending) {
     return (
-      <div className="flex flex-col gap-2.5 rounded-md bg-neutral-50 p-5">
+      <div className="flex flex-col gap-2.5 rounded-md bg-surface-subtle p-5">
         <Skeleton className="h-6 w-1/3" />
         <Skeleton className="h-4 w-1/4" />
         <Skeleton className="h-4 w-2/3" />
@@ -77,7 +78,7 @@ export function ResumePreviewTab({ resume }: { resume: Resume }) {
   // Every web document is a resume; a letter reads as its paragraphs until one is drawn.
   if (body.kind === 'cover_letter') {
     return (
-      <div className="flex flex-col gap-2 rounded-md bg-neutral-50 p-5 text-body-s text-text-secondary">
+      <div className="flex flex-col gap-2 rounded-md bg-surface-subtle p-5 text-body-s text-text-secondary">
         <p>{body.greeting}</p>
         {body.paragraphs.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
@@ -90,7 +91,7 @@ export function ResumePreviewTab({ resume }: { resume: Resume }) {
   const name = user.data ? `${user.data.firstName} ${user.data.lastName}` : '';
   // The page on a muted tile, as the typeset pages above sit: one card, the sheet drawn as paper.
   return (
-    <div className="rounded-md bg-neutral-50 p-4">
+    <div className="rounded-md bg-surface-subtle p-4">
       <ResumeSheet
         name={name}
         body={body}

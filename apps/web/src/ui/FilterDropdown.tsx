@@ -85,6 +85,45 @@ export function FilterCheckboxItem({
   );
 }
 
+export type FilterRadioGroupProps<V extends string> = {
+  value: V | undefined;
+  onValueChange: (value: V) => void;
+  options: readonly (readonly [V, string])[];
+};
+
+/**
+ * A single choice in a menu (redesign R6a, audit RS-08): sort orders, "Last updated". Radio rows
+ * with a round mark, so a one-of-many list never looks like a multi-select. Picking closes the
+ * menu.
+ */
+export function FilterRadioGroup<V extends string>({
+  value,
+  onValueChange,
+  options,
+}: FilterRadioGroupProps<V>) {
+  return (
+    <Dropdown.RadioGroup value={value ?? ''} onValueChange={(next) => onValueChange(next as V)}>
+      {options.map(([option, label]) => (
+        <Dropdown.RadioItem
+          key={option}
+          value={option}
+          className={cn(
+            'group/item flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-body-m text-text-primary outline-none transition-colors duration-press ease-standard',
+            'data-[highlighted]:bg-surface-muted',
+          )}
+        >
+          <span className="flex size-4 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface-card transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600">
+            <Dropdown.ItemIndicator className={tickMotion}>
+              <span className="block size-2 rounded-full bg-brand-600" />
+            </Dropdown.ItemIndicator>
+          </span>
+          <span className="truncate">{label}</span>
+        </Dropdown.RadioItem>
+      ))}
+    </Dropdown.RadioGroup>
+  );
+}
+
 export type MenuItemProps = {
   onSelect: () => void;
   /** `danger` for an action that undoes something: Connected accounts' "Disconnect". */

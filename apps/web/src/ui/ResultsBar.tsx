@@ -1,5 +1,5 @@
 import { FilterChip } from '@/ui/FilterChip';
-import { FilterCheckboxItem, FilterDropdown } from '@/ui/FilterDropdown';
+import { FilterDropdown, FilterRadioGroup } from '@/ui/FilterDropdown';
 import { Skeleton } from '@/ui/Skeleton';
 
 export type ResultsBarProps<S extends string> = {
@@ -32,7 +32,7 @@ export function ResultsBar<S extends string>({
       {loading || count == null ? (
         <Skeleton className="h-5 w-24" />
       ) : (
-        <p className="text-body-l font-bold text-neutral-800">
+        <p aria-live="polite" className="text-body-l font-bold text-text-primary">
           {count} {count === 1 ? noun.one : noun.other}
         </p>
       )}
@@ -41,15 +41,11 @@ export function ResultsBar<S extends string>({
         align="end"
         trigger={<FilterChip label={sortLabel ?? sortOptions[sort]} active={false} />}
       >
-        {(Object.entries(sortOptions) as [S, string][]).map(([value, label]) => (
-          <FilterCheckboxItem
-            key={value}
-            checked={sort === value}
-            onCheckedChange={() => onSortChange(value)}
-          >
-            {label}
-          </FilterCheckboxItem>
-        ))}
+        <FilterRadioGroup
+          value={sort}
+          onValueChange={onSortChange}
+          options={Object.entries(sortOptions) as [S, string][]}
+        />
       </FilterDropdown>
     </div>
   );

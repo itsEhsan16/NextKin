@@ -5,7 +5,14 @@ import { pressable } from '@/ui/pressable';
  * "Reset" at the end of a filter row (286:1300, 304:3119): brand text, no frame, level with the
  * row's first line.
  */
-export function ResetButton({ onClick }: { onClick: () => void }) {
+export function ResetButton({
+  onClick,
+  label = 'Reset',
+}: {
+  onClick: () => void;
+  /** "Clear filters" where it clears the chips and the search but keeps the group (RS-07). */
+  label?: string;
+}) {
   return (
     <button
       type="button"
@@ -15,7 +22,7 @@ export function ResetButton({ onClick }: { onClick: () => void }) {
         pressable,
       )}
     >
-      Reset
+      {label}
     </button>
   );
 }

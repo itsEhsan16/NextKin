@@ -217,7 +217,7 @@ describe('ApplicationsScreen', () => {
     await settle();
 
     await user.click(screen.getByRole('button', { name: 'Sort by: Most recent' }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Oldest first' }));
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Oldest first' }));
     await user.keyboard('{Escape}');
 
     expect(

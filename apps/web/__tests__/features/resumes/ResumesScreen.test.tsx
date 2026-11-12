@@ -63,9 +63,10 @@ describe('ResumesScreen', () => {
     for (const label of ['Resume type', 'Last updated', 'Target role', 'Status']) {
       expect(screen.getByRole('button', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
     }
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+    // Nothing to clear yet (redesign R6a, RS-07), and one sort control (RS-06).
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sort by: Last updated' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Sort resumes: Last updated' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Sort resumes/ })).not.toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: 'Search resumes' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Create New Resume' })).toBeInTheDocument();
   });
@@ -88,7 +89,10 @@ describe('ResumesScreen', () => {
       expect(row(title).getByText(variant)).toBeInTheDocument();
       expect(row(title).getByText(state)).toBeInTheDocument();
     }
-    expect(screen.getByRole('button', { name: TITLES[0] })).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('button', { name: TITLES[0] })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: TITLES[0] })).toHaveAccessibleDescription(
+      'Tailored, ATS Optimized, updated 2 days ago',
+    );
 
     // The rows win over the board's own pill counts, which read (2) and (0) (toreview.md §18).
     for (const name of [
@@ -175,8 +179,9 @@ describe('ResumesScreen', () => {
     expect(screen.getByRole('tab', { name: 'All Resumes (2)' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Tailored (0)' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(await screen.findByText('5 resumes found')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
   });
 
   it('searches from the panel', async () => {
@@ -191,18 +196,16 @@ describe('ResumesScreen', () => {
     expect(await panelFor('Marketing Manager Resume')).toBeInTheDocument();
   });
 
-  it('re-sorts from either sort control', async () => {
+  it('re-sorts from the sort control', async () => {
     const user = userEvent.setup();
     renderWithQuery(<ResumesScreen />);
     await settle();
 
     await user.click(screen.getByRole('button', { name: 'Sort by: Last updated' }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Name' }));
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Name' }));
     await user.keyboard('{Escape}');
 
     expect(await screen.findByRole('button', { name: 'Sort by: Name' })).toBeInTheDocument();
-    // One order behind both controls.
-    expect(screen.getByRole('button', { name: 'Sort resumes: Name' })).toBeInTheDocument();
     expect(rowNames()).toEqual([
       'Data Analyst Resume',
       'General Resume',
@@ -225,6 +228,14 @@ describe('ResumesScreen', () => {
       'href',
       '/jobs?job=job_google',
     );
+    // Never a bare number: the band, that it is for this job, and how it is scored (RS-32).
+    expect(within(panel).getByText(/· (Strong|Good|Fair|Weak), for this job/)).toBeInTheDocument();
+    expect(within(panel).getByRole('link', { name: 'How it’s scored' })).toHaveAttribute(
+      'href',
+      '/help',
+    );
+    // The card's one scroller is the tab panel, named by its tab (RS-22, RS-26).
+    expect(within(panel).getByRole('tabpanel', { name: 'Details' })).toHaveClass('overflow-y-auto');
 
     // The engine's score (C-10): this software engineer's resume against Google's design JD, read
     // against a designer's profile, so Figma is a skill the profile backs and the resume lacks.
@@ -442,16 +453,27 @@ describe('ResumesScreen', () => {
     expect(
       await screen.findByText('No resumes yet', {}, { timeout: SETTLE_MS.empty }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Nothing to preview yet')).toBeInTheDocument();
+    // One empty state with one way on: nothing to search, filter or preview yet (RS-11).
+    expect(screen.getByRole('button', { name: 'Create your first resume' })).toBeInTheDocument();
+    expect(screen.queryByRole('searchbox', { name: 'Search resumes' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Nothing to preview yet')).not.toBeInTheDocument();
   });
 
-  it('shows the page-level error state when the user query fails', async () => {
+  it('says the list failed, and offers to try again', async () => {
     renderWithQuery(<ResumesScreen />, 'error');
 
     expect(
-      await screen.findByText('Something went wrong', {}, { timeout: SETTLE_MS.error }),
+      await screen.findByText("Couldn't load your resumes", {}, { timeout: SETTLE_MS.error }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+  });
+
+  it('keeps the open resume in the address (RS-16)', async () => {
+    const user = userEvent.setup();
+    renderWithQuery(<ResumesScreen />);
+    await settle();
+    await user.click(screen.getByRole('button', { name: 'Marketing Manager Resume' }));
+    expect(new URL(window.location.href).searchParams.get('resume')).toBe('res_mm');
   });
 
   it('opens the resume a link names (?resume=, `toreview.md` §102)', async () => {

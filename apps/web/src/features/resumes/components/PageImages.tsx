@@ -14,9 +14,12 @@ import { browserStorageUrl } from '@/lib/storageUrl';
 export function PageImages({
   pages,
   stale = false,
+  title,
   className,
 }: {
   pages: PreviewPage[];
+  /** The document's name, so each page's alt says whose page it is (RS-31). */
+  title?: string;
   stale?: boolean;
   className?: string;
 }) {
@@ -31,7 +34,12 @@ export function PageImages({
         </span>
       ) : null}
       {pages.map((page, i) => (
-        <Page key={page.url} page={page} label={`Page ${i + 1} of ${pages.length}`} dim={stale} />
+        <Page
+          key={page.url}
+          page={page}
+          label={`${title ? `${title}, page` : 'Page'} ${i + 1} of ${pages.length}`}
+          dim={stale}
+        />
       ))}
     </div>
   );
@@ -41,7 +49,7 @@ function Page({ page, label, dim }: { page: PreviewPage; label: string; dim: boo
   const [loaded, setLoaded] = useState(false);
   return (
     <div
-      className="w-full bg-surface-card shadow-popover"
+      className="w-full bg-surface-card shadow-card"
       // The page's own proportions hold its place before the image arrives.
       style={{
         aspectRatio: page.width && page.height ? `${page.width} / ${page.height}` : '8.5 / 11',

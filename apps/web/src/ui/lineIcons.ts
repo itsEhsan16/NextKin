@@ -39,6 +39,7 @@ export { XClose } from '@untitledui/icons/XClose';
 export const iconSize = { sm: 'size-4 shrink-0', md: 'size-5 shrink-0' } as const;
 export { Bookmark } from '@untitledui/icons/Bookmark';
 export { Briefcase01 } from '@untitledui/icons/Briefcase01';
+export { Building07 } from '@untitledui/icons/Building07';
 export { Calendar } from '@untitledui/icons/Calendar';
 export { Link01 } from '@untitledui/icons/Link01';
 export { LinkExternal01 } from '@untitledui/icons/LinkExternal01';

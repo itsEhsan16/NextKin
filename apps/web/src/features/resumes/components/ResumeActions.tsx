@@ -6,7 +6,8 @@ import Link from 'next/link';
 
 import { jobHref } from '@/features/jobs/jobHref';
 import { cn } from '@/lib/cn';
-import { buttonClass } from '@/ui/Button';
+import { Button, buttonClass } from '@/ui/Button';
+import { Callout } from '@/ui/Callout';
 import { Download01, Edit03, Send01 } from '@/ui/lineIcons';
 
 import { resumeEditorHref } from '../resumeHref';
@@ -14,9 +15,12 @@ import { useConfirmedDownload } from '../useConfirmedDownload';
 import { DownloadPrompts } from './DownloadPrompts';
 
 // Edit leads as the one primary, Download and Use for Job beside it, the three sharing the row
-// equally. Too narrow for three (a tablet-width window, `toreview.md` §84), the row wraps rather
-// than running out of the card.
-const EQUAL = 'min-w-40 flex-1 whitespace-nowrap';
+// out from their own width, on one row (redesign R6a, audit RS-21: a 160px floor each pushed "Use
+// for Job" onto a line of its own). Below 1440 "Use for Job" is its icon, named for screen readers
+// and on hover; below 1280 Edit and Download drop their icons. Narrower still, the row wraps
+// rather than cutting a label.
+const EQUAL = 'flex-auto whitespace-nowrap';
+const USE_FOR_JOB = 'max-2xl:size-control-lg max-2xl:flex-none max-2xl:px-0';
 const PRIMARY = cn(buttonClass({ variant: 'primary', size: 'lg' }), EQUAL);
 const SECONDARY = cn(buttonClass({ variant: 'secondary', size: 'lg' }), EQUAL);
 
@@ -34,34 +38,46 @@ export function ResumeActions({ resume, className }: { resume: Resume; className
 
   return (
     <div className={className}>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <Link href={resumeEditorHref(resume.id)} className={PRIMARY}>
-          <Edit03 className="size-4 shrink-0" />
+          <Edit03 aria-hidden className="size-4 shrink-0 max-xl:hidden" />
           {resume.docType === 'cover_letter' ? 'Edit Letter' : 'Edit Resume'}
         </Link>
-        <button
-          type="button"
-          disabled={download.busy}
-          aria-busy={download.busy}
+        {/* Says it is working while the PDF is made (RS-20). */}
+        <Button
+          variant="secondary"
+          size="lg"
+          loading={download.busy}
+          busyLabel="Preparing…"
           onClick={() => download.start()}
-          className={SECONDARY}
+          icon={
+            <Download01 aria-hidden className="size-4 shrink-0 text-text-secondary max-xl:hidden" />
+          }
+          className={EQUAL}
         >
-          <Download01 className="size-4 shrink-0 text-text-secondary" />
           Download
-        </button>
+        </Button>
         <Link
           href={resume.linkedJobId ? jobHref(resume.linkedJobId) : ('/jobs' as Route)}
-          className={SECONDARY}
+          title="Use for Job"
+          className={cn(SECONDARY, USE_FOR_JOB)}
         >
-          <Send01 className="size-4 shrink-0 text-text-secondary" />
-          Use for Job
+          <Send01 aria-hidden className="size-4 shrink-0 text-text-secondary" />
+          <span className="max-2xl:sr-only">Use for Job</span>
         </Link>
       </div>
       <DownloadPrompts download={download} />
+      {/* Why a download is blocked, and the way on (RS-24). */}
       {download.blocked && (
-        <p role="status" className="mt-2 text-body-s text-text-secondary">
-          {download.blocked}
-        </p>
+        <Callout tone="warning" className="mt-3">
+          {download.blocked}{' '}
+          <Link
+            href={resumeEditorHref(resume.id)}
+            className="font-semibold underline underline-offset-2"
+          >
+            Open in editor
+          </Link>
+        </Callout>
       )}
     </div>
   );

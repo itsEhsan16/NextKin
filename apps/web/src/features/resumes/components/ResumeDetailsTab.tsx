@@ -1,11 +1,12 @@
-import type { Resume } from '@nextkin/shared/models';
+import { ATS_BAND_LABEL, atsBandFor, type Resume } from '@nextkin/shared/models';
+import type { Route } from 'next';
 import Link from 'next/link';
 
 import { jobHref } from '@/features/jobs/jobHref';
 import { formatCoarseAge, formatShortDate } from '@/lib/format';
 import { DetailRow } from '@/ui/DetailRow';
-import { BriefcaseIcon, CalendarIcon, ClockIcon, IdCardIcon, LinkIcon, PdfIcon } from '@/ui/icons';
-import { Check, File06 } from '@/ui/lineIcons';
+import { BriefcaseIcon, CalendarIcon, ClockIcon, PdfIcon } from '@/ui/icons';
+import { Building07, Check, CheckCircle, File06 } from '@/ui/lineIcons';
 import { Tag } from '@/ui/Tag';
 
 import { pagesLabel, STATE_LABEL, STATE_TONE, stateOf, VARIANT_LABEL } from '../resumeLibrary';
@@ -26,7 +27,7 @@ export function ResumeDetailsTab({ resume }: { resume: Resume }) {
         </DetailRow>
       )}
       {state && (
-        <DetailRow icon={<LinkIcon className="size-4" />} label="Status">
+        <DetailRow icon={<CheckCircle className="size-4" />} label="Status">
           <Tag tone={STATE_TONE[state]}>{STATE_LABEL[state]}</Tag>
         </DetailRow>
       )}
@@ -35,13 +36,18 @@ export function ResumeDetailsTab({ resume }: { resume: Resume }) {
           {resume.targetRole}
         </DetailRow>
       )}
+      {resume.targetCompany && (
+        <DetailRow icon={<Building07 className="size-4" />} label="Company">
+          {resume.targetCompany}
+        </DetailRow>
+      )}
       <DetailRow icon={<CalendarIcon className="size-4" />} label="Created">
         {formatShortDate(resume.createdAt)}
       </DetailRow>
       <DetailRow icon={<ClockIcon className="size-4" />} label="Last updated">
         {`${formatShortDate(resume.updatedAt)} (${formatCoarseAge(resume.updatedAt).toLowerCase()})`}
       </DetailRow>
-      <DetailRow icon={<IdCardIcon className="size-4" />} label="Versions">
+      <DetailRow icon={<ClockIcon className="size-4" />} label="Versions">
         {resume.versionCount}
       </DetailRow>
       {resume.pageCount != null && (
@@ -49,11 +55,33 @@ export function ResumeDetailsTab({ resume }: { resume: Resume }) {
           {pagesLabel(resume.pageCount)}
         </DetailRow>
       )}
-      {resume.atsScore != null && (
-        <DetailRow icon={<Check className="size-4" />} label="ATS score">
-          {resume.atsScore}
-        </DetailRow>
-      )}
+      {/* Never a bare number (redesign R6a, audit RS-32; V2 §7.8): the band beside it, what it was
+          measured against, and how it is scored. Gating the total on a job (D-15, RS-34) is the
+          Score tab's change in R6b; until then this row agrees with that tab. */}
+      <DetailRow icon={<Check className="size-4" />} label="ATS score">
+        {resume.atsScore != null ? (
+          <>
+            {resume.atsScore} · {ATS_BAND_LABEL[atsBandFor(resume.atsScore)]}
+            {resume.linkedJobId ? ', for this job' : ''} ·{' '}
+            <Link
+              href={'/help' as Route}
+              className="rounded-sm text-brand-600 transition-colors duration-press ease-standard hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            >
+              How it’s scored
+            </Link>
+          </>
+        ) : (
+          <>
+            Not scored · a total needs a job ·{' '}
+            <Link
+              href={'/create/build' as Route}
+              className="rounded-sm text-brand-600 transition-colors duration-press ease-standard hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            >
+              Add a job
+            </Link>
+          </>
+        )}
+      </DetailRow>
       {resume.linkedJobId && (
         <DetailRow icon={<BriefcaseIcon className="size-4" />} label="Written for">
           <Link

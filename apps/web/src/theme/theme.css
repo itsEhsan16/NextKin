@@ -734,6 +734,11 @@
     skeleton-sweep var(--transition-duration-shimmer) linear infinite;
 }
 
+/* A thin scrollbar on inner scrollers (redesign R6a, audit RS-19). */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+}
+
 @utility cursor-pointer {
   cursor: var(--cursor-hand);
 }

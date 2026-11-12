@@ -386,10 +386,10 @@ describe('JobsScreen', () => {
 
     await user.click(screen.getByRole('button', { name: 'Most relevant' }));
     for (const label of ['Most relevant', 'Most recent', 'Salary']) {
-      expect(await screen.findByRole('menuitemcheckbox', { name: label })).toBeInTheDocument();
+      expect(await screen.findByRole('menuitemradio', { name: label })).toBeInTheDocument();
     }
 
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Most recent' }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Most recent' }));
     await user.keyboard('{Escape}');
     expect(await screen.findByRole('button', { name: 'Most recent' })).toBeInTheDocument();
   });

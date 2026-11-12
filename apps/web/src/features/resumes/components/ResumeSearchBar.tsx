@@ -1,35 +1,23 @@
 'use client';
 
-import type { ResumeSort } from '@nextkin/shared/models';
-
 import { cn } from '@/lib/cn';
 import { fieldBox } from '@/ui/fieldBox';
-import { FilterCheckboxItem, FilterDropdown } from '@/ui/FilterDropdown';
-import { SearchIcon, SortIcon } from '@/ui/icons';
-import { outlineButton } from '@/ui/outlineButton';
-
-import { RESUME_SORT_OPTIONS } from '../resumeLibrary';
+import { SearchIcon } from '@/ui/icons';
+import { XClose } from '@/ui/lineIcons';
 
 export type ResumeSearchBarProps = {
   search: string;
   onSearchChange: (value: string) => void;
-  sort: ResumeSort;
-  onSortChange: (sort: ResumeSort) => void;
   className?: string;
 };
 
 /**
- * The library's search and its sort, over the list they narrow (the board draws them in the
- * detail panel, 304:3246; the overhaul lifts them to the list's header so the panel is one card).
- * The sort is the same order as "Sort by" over the list, as an icon action beside the field.
+ * The library's search, over the list it narrows (the board draws it in the detail panel,
+ * 304:3246; the overhaul lifts it to the list's header so the panel is one card). The sort lives
+ * once, in "Sort by" over the list (redesign R6a, audit RS-06: an icon here was a second control
+ * for the same order). A filled field can be cleared in one press.
  */
-export function ResumeSearchBar({
-  search,
-  onSearchChange,
-  sort,
-  onSortChange,
-  className,
-}: ResumeSearchBarProps) {
+export function ResumeSearchBar({ search, onSearchChange, className }: ResumeSearchBarProps) {
   return (
     <div className={cn('flex items-center gap-3', className)}>
       <label
@@ -45,36 +33,19 @@ export function ResumeSearchBar({
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search resumes..."
           aria-label="Search resumes"
-          className="min-w-0 flex-1 bg-transparent text-body-m text-text-primary outline-none placeholder:text-text-tertiary"
+          className="min-w-0 flex-1 bg-transparent text-body-m text-text-primary outline-none placeholder:text-text-tertiary [&::-webkit-search-cancel-button]:hidden"
         />
-      </label>
-
-      <FilterDropdown
-        align="end"
-        trigger={
+        {search && (
           <button
             type="button"
-            aria-label={`Sort resumes: ${RESUME_SORT_OPTIONS[sort]}`}
-            title={`Sort: ${RESUME_SORT_OPTIONS[sort]}`}
-            className={cn(
-              outlineButton,
-              'size-control-lg shrink-0 rounded-md text-text-secondary hover:text-text-primary',
-            )}
+            onClick={() => onSearchChange('')}
+            aria-label="Clear the search"
+            className="-mr-1.5 flex size-7 shrink-0 items-center justify-center rounded-full text-text-tertiary transition-colors duration-press ease-standard hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            <SortIcon className="size-4" />
+            <XClose aria-hidden className="size-4" />
           </button>
-        }
-      >
-        {(Object.entries(RESUME_SORT_OPTIONS) as [ResumeSort, string][]).map(([value, label]) => (
-          <FilterCheckboxItem
-            key={value}
-            checked={sort === value}
-            onCheckedChange={() => onSortChange(value)}
-          >
-            {label}
-          </FilterCheckboxItem>
-        ))}
-      </FilterDropdown>
+        )}
+      </label>
     </div>
   );
 }

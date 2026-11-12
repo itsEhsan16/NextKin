@@ -41,9 +41,14 @@ export const STATE_LABEL: Record<ResumeState, string> = {
 };
 
 export const STATE_HINT: Record<ResumeState, string> = {
-  ats_optimized: 'Passes every check on our published ATS rubric',
+  // The flag is the formatting checks alone (`scoring/report.ts`), not the whole rubric and not
+  // fit for a job (redesign R6a, audit RS-03; the label's rename waits on the owner).
+  ats_optimized:
+    'Passes every formatting check in NextKin’s rubric. Says nothing about fit for a job.',
   draft: 'Not finished: it needs more before it can be downloaded',
-  archived: 'Hidden from your main list',
+  // All lists archived documents too, as the board draws (304:3245), so the hint says so
+  // (redesign R6a, audit RS-04: it used to say "Hidden from your main list").
+  archived: 'Set aside, still listed under All',
 };
 
 export const STATES = Object.keys(STATE_LABEL) as ResumeState[];
@@ -65,7 +70,10 @@ export function stateOf(resume: Resume): ResumeState | undefined {
   return undefined;
 }
 
-/** The pills (304:3097), in the board's order. All counts archived documents too, as drawn. */
+/**
+ * The pills (304:3097), in the board's order. All counts archived documents too, as drawn; the
+ * Archived pill shows only while something is archived (redesign R6a, audit RS-05).
+ */
 export type ResumeTab = 'all' | 'tailored' | 'ats_optimized' | 'drafts' | 'archived';
 
 export const RESUME_TABS: readonly { id: ResumeTab; label: string }[] = [

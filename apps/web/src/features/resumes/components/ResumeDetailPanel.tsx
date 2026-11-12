@@ -17,6 +17,8 @@ export type ResumeDetailPanelProps = {
   hasAny: boolean;
   onRetry: () => void;
   onCreate?: () => void;
+  /** Opens a copy made from the card's menu, as the row's menu does (RS-60). */
+  onSelect?: (id: string) => void;
   className?: string;
 };
 
@@ -25,8 +27,8 @@ export type ResumeDetailPanelProps = {
  * the library's search and sort here; the overhaul moved them over the list they narrow
  * (`ResumeSearchBar`), so the panel holds the document and nothing nested in a second frame.
  *
- * Like the other pages' detail cards it keeps its natural height and scrolls as one unit only when
- * the window is shorter than it (`toreview.md` §16).
+ * Like the other pages' detail cards it keeps its natural height. When the window is shorter, only
+ * the open tab scrolls, under the card's header, actions and tabs (redesign R6a, audit RS-22).
  */
 export function ResumeDetailPanel({
   resume,
@@ -34,8 +36,10 @@ export function ResumeDetailPanel({
   hasAny,
   onRetry,
   onCreate,
+  onSelect,
   className,
 }: ResumeDetailPanelProps) {
+  const card = status === 'success' && resume;
   const reveal = useReveal(status === 'success', resume?.id);
   return (
     <div
@@ -43,7 +47,9 @@ export function ResumeDetailPanel({
         // No frame while it loads (§196): the placeholder is never a boxed patch.
         status === 'pending' ? cardSurfaceLoading : cardSurface,
         cardPad,
-        'min-h-0 overflow-y-auto [scrollbar-width:thin]',
+        // A resume's card keeps its header, actions and tabs in view and scrolls only the tab
+        // (redesign R6a, audit RS-22); the other states scroll as one.
+        card ? 'flex min-h-0 flex-col' : 'min-h-0 overflow-y-auto scrollbar-thin',
         className,
       )}
     >
@@ -92,7 +98,12 @@ export function ResumeDetailPanel({
       )}
 
       {status === 'success' && resume && (
-        <ResumeDetailCard key={resume.id} resume={resume} reveal={reveal} />
+        <ResumeDetailCard
+          key={resume.id}
+          resume={resume}
+          reveal={reveal}
+          {...(onSelect ? { onDuplicated: onSelect } : {})}
+        />
       )}
     </div>
   );

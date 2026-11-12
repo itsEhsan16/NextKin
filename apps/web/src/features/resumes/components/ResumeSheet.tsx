@@ -53,12 +53,12 @@ export function ResumeSheet({
     <div className={cn('rounded-md border border-border-card px-4 pb-4 pt-5', className)}>
       <h3 className="text-h2 text-text-primary">{shownName}</h3>
       {body.headline && (
-        <p className="mt-0.5 text-body-m font-semibold text-neutral-700">{body.headline}</p>
+        <p className="mt-0.5 text-body-m font-semibold text-text-secondary">{body.headline}</p>
       )}
       {contact.length > 0 && (
         <ul
           aria-label="Contact details"
-          className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1.5 text-micro text-neutral-400"
+          className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1.5 text-caption-m text-text-tertiary"
         >
           {contact.map(({ key, Icon, label }) => (
             <li key={key} className="flex items-center gap-1.5">
@@ -111,7 +111,7 @@ export function ResumeSheet({
                   <p className="text-body-s font-bold text-text-primary">{entry.degree}</p>
                   <p className="text-micro font-semibold text-text-tertiary">{entry.institution}</p>
                 </div>
-                <p className="shrink-0 text-micro text-neutral-400">{entry.period}</p>
+                <p className="shrink-0 text-caption-m text-text-tertiary">{entry.period}</p>
               </li>
             ))}
           </ul>
@@ -150,7 +150,7 @@ function SheetRole({ role }: { role: ContentRole }) {
               {[role.company, role.location].filter(Boolean).join(' • ')}
             </p>
           </div>
-          <p className="shrink-0 text-micro text-neutral-400">{role.period}</p>
+          <p className="shrink-0 text-caption-m text-text-tertiary">{role.period}</p>
         </div>
         <Bullets items={role.bullets} />
       </div>
