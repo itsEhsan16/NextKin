@@ -4,6 +4,7 @@ import type { Job, Resume, TailorComparison } from '@nextkin/shared/models';
 import { projectedScore } from '@nextkin/shared/tailor/customize';
 import type { Route } from 'next';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 import {
   backButton,
@@ -45,7 +46,7 @@ export function EnhanceStep({
   resume: Resume | undefined;
   onChangeResume: () => void;
   choices: TailorChoices;
-  allowanceNote: string;
+  allowanceNote: ReactNode;
   spent: boolean;
   pending: boolean;
   backHref: Route;
@@ -100,13 +101,14 @@ export function EnhanceStep({
 
       <MoreWays comparison={comparison} choices={choices} />
 
-      <FlowFooter note={allowanceNote}>
+      <FlowFooter note={allowanceNote} noteIcon={false}>
         <Link href={backHref} className={backButton}>
           Back
         </Link>
         <Button
           size="lg"
           onClick={onCreate}
+          variant="inverse"
           disabled={spent || choices.fixes.size === 0}
           loading={pending}
           busyLabel="Starting…"

@@ -313,6 +313,11 @@
   --container-sheet: 540px;
   --container-form: 420px;
   --spacing-aside-rail: 340px;
+  /* R5d drawer widths from 1280 (02-tokens §4.10); xl stops short of the sidebar. */
+  --spacing-drawer-sm: 400px;
+  --spacing-drawer-md: 560px;
+  --spacing-drawer-lg: 880px;
+  --spacing-drawer-xl: min(1200px, calc(100vw - var(--sidebar-gutter) - 1.5rem));
   --spacing-aside-card: 380px;
   --spacing-search: 320px;
   --spacing-menu-min: 220px;

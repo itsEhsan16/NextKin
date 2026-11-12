@@ -48,7 +48,7 @@ export function FlowHeader({
   step: number;
 }) {
   return (
-    <header className="flex flex-wrap items-center gap-x-8 gap-y-4">
+    <header className="flex flex-wrap items-center gap-x-8 gap-y-4 in-data-drawer:pr-12">
       <div className="flex min-w-0 flex-1 items-center gap-3.5">
         <Link
           href={backHref}

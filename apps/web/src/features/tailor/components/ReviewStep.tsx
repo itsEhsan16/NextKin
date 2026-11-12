@@ -10,6 +10,7 @@ import { useConfirmedDownload } from '@/features/resumes/useConfirmedDownload';
 import { cn } from '@/lib/cn';
 
 import { resumeFileName } from '../tailorLibrary';
+import { ChangeLog } from './ChangeLog';
 import { ResumeAssistantPanel } from './ResumeAssistantPanel';
 import { ResumePreview } from './ResumePreview';
 import { ReviewHeader } from './ReviewHeader';
@@ -79,6 +80,7 @@ export function ReviewStep({
             projected={run?.projected}
             match={run?.jobMatch}
           />
+          {run && <ChangeLog job={job} run={run} />}
           <ResumeAssistantPanel generation={generation} company={job.company} />
         </div>
         <div className="lg:min-h-0">

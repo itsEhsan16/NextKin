@@ -23,9 +23,12 @@ export const finalButton = buttonClass({ variant: 'inverse', size: 'lg' });
 export function FlowFooter({
   note,
   noteTone = 'neutral',
+  noteIcon = true,
   children,
 }: {
   note?: ReactNode;
+  /** Off when the note draws its own icon (a `CreditPill`). */
+  noteIcon?: boolean;
   noteTone?: 'neutral' | 'danger';
   children: ReactNode;
 }) {
@@ -38,7 +41,9 @@ export function FlowFooter({
           noteTone === 'danger' ? 'text-feedback-danger-text' : 'text-text-tertiary',
         )}
       >
-        {note && <InfoCircle aria-hidden className="size-4.5 shrink-0 text-text-disabled" />}
+        {note && noteIcon && (
+          <InfoCircle aria-hidden className="size-4.5 shrink-0 text-text-disabled" />
+        )}
         {note}
       </div>
       <div className="flex shrink-0 items-center gap-3">{children}</div>

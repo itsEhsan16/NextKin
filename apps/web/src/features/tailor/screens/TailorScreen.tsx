@@ -18,9 +18,11 @@ import { jobFlowHref } from '@/features/create/jobFlow/jobFlow';
 import { cn } from '@/lib/cn';
 import { replaceQuery } from '@/lib/replaceQuery';
 import { useReveal } from '@/lib/useReveal';
+import { CreditPill } from '@/ui/CreditPill';
 import { pageFillMin, pageFrame } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { TimeEstimateNote } from '@/ui/TimeEstimateNote';
 
 import { TailorResumeDialog } from '../components/TailorResumeDialog';
 import { TailorRunView } from '../components/TailorRunView';
@@ -97,9 +99,23 @@ export function TailorScreen({
   const limit = usage?.generationsLimit ?? 0;
   const left = Math.max(0, limit - (usage?.generationsUsed ?? 0));
   const spent = usage != null && limit > 0 && left === 0;
-  const quota = spent
-    ? `You’ve used all ${limit} tailored resumes this month.`
-    : `Uses 1 of your ${limit} tailored resumes this month.`;
+  // What the press costs and how long it takes, said where it is pressed (redesign R5d; Jobright
+  // §1.5.4). The range is the run screen's own ("Usually 10–20 seconds").
+  const quota = spent ? (
+    <CreditPill
+      state="none"
+      text={`All ${limit} tailored resumes used this month`}
+      upgradeHref={'/upgrade' as Route}
+    />
+  ) : (
+    <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+      <CreditPill
+        state="cost"
+        text={limit > 0 ? `Uses 1 · ${left} left this month` : 'Uses 1 tailored resume'}
+      />
+      <TimeEstimateNote>Usually takes 10–20 seconds</TimeEstimateNote>
+    </span>
+  );
   const noResumes = resumes.data != null && tailorable.length === 0;
   const zeroHref = createHref('zero-resume', {
     role: job?.title,

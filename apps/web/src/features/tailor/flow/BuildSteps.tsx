@@ -3,6 +3,7 @@
 import type { BuildComparison, Job } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 import {
   backButton,
@@ -40,7 +41,7 @@ export function BuildEnhanceStep({
   comparison: BuildComparison;
   added: readonly string[];
   onAdded: (added: string[]) => void;
-  allowanceNote: string;
+  allowanceNote: ReactNode;
   spent: boolean;
   pending: boolean;
   backHref: Route;
@@ -134,13 +135,14 @@ export function BuildEnhanceStep({
         </div>
         <BuildImprovements comparison={comparison} />
       </section>
-      <FlowFooter note={allowanceNote}>
+      <FlowFooter note={allowanceNote} noteIcon={false}>
         <Link href={backHref} className={backButton}>
           Back
         </Link>
         <Button
           size="lg"
           onClick={onCreate}
+          variant="inverse"
           disabled={spent}
           loading={pending}
           busyLabel="Starting…"
