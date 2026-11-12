@@ -7,6 +7,7 @@ import type { Route } from 'next';
 import { DownloadPrompts } from '@/features/resumes/components/DownloadPrompts';
 import { useConfirmedDownload } from '@/features/resumes/useConfirmedDownload';
 import { primaryButton } from '@/features/create/jobFlow/FlowChrome';
+import { jobHref } from '@/features/jobs/jobHref';
 import { cn } from '@/lib/cn';
 import { cardSurface } from '@/ui/Card';
 import { RedoIcon, UndoIcon } from '@/ui/icons';
@@ -78,10 +79,21 @@ export function LetterEditorScreen({ id }: { id: string }) {
           status={draft.status}
           savedAt={draft.savedAt}
           onRetry={() => draft.save(shown)}
-          back={{ href: '/documents' as Route, label: 'Documents' }}
+          // Letters are Resume records and list in Resumes, not Documents (redesign R6c,
+          // audit ED-44).
+          back={{ href: '/resumes' as Route, label: 'Resumes' }}
           icon={<Mail01 className="size-5" />}
           noun="Letter"
-          {...(job ? { tag: `For ${job}` } : {})}
+          // The job it was written for, as a link to it (redesign R6c, audit ED-50).
+          {...(job
+            ? {
+                context: {
+                  kind: 'job' as const,
+                  label: `For ${job}`,
+                  ...(r?.linkedJobId ? { href: jobHref(r.linkedJobId) } : {}),
+                },
+              }
+            : {})}
         />
         <div className="ml-auto flex items-center gap-2.5">
           <button

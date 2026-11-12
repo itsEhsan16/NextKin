@@ -43,7 +43,17 @@ const CHANGE_MARK: Record<VersionChange['kind'], string> = {
  *   restore becomes a new version, so nothing is lost (RS-41, V2 §7.11).
  * - A version older than the plan keeps is listed, locked, not deleted (RS-43, V2 §13).
  */
-export function ResumeVersionsTab({ resume }: { resume: Resume }) {
+export function ResumeVersionsTab({
+  resume,
+  canRestore = true,
+}: {
+  resume: Resume;
+  /**
+   * Off in the editor, whose unsaved typing a restore would overwrite: there it lists who made
+   * each version and what changed, and restoring happens from Resumes.
+   */
+  canRestore?: boolean;
+}) {
   const versions = useResumeVersions(resume.id);
 
   if (versions.isPending) {
@@ -91,6 +101,7 @@ export function ResumeVersionsTab({ resume }: { resume: Resume }) {
           version={version}
           current={version.id === resume.currentVersionId}
           next={latest + 1}
+          canRestore={canRestore}
         />
       ))}
     </ol>
@@ -102,10 +113,12 @@ function VersionRow({
   version,
   current,
   next,
+  canRestore,
 }: {
   resume: Resume;
   version: ResumeVersion;
   current: boolean;
+  canRestore: boolean;
   /** The number a restore would take. */
   next: number;
 }) {
@@ -182,13 +195,15 @@ function VersionRow({
       {opens && open && (
         <div id={bodyId} className="animate-reveal px-4 pb-4">
           <VersionChanges resumeId={resume.id} versionId={version.id} />
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            className={cn(buttonClass({ variant: 'secondary', size: 'sm' }), 'mt-3')}
-          >
-            Restore this version
-          </button>
+          {canRestore && (
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              className={cn(buttonClass({ variant: 'secondary', size: 'sm' }), 'mt-3')}
+            >
+              Restore this version
+            </button>
+          )}
         </div>
       )}
 

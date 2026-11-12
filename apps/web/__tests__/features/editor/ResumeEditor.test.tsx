@@ -58,7 +58,15 @@ describe('the resume editor', () => {
   it('opens the resume with every section, the live page and the save status', async () => {
     const user = userEvent.setup();
     await open();
-    expect(screen.getByRole('button', { name: 'Product Designer Resume' })).toBeInTheDocument();
+    // The title is a heading; the rename button is its control (redesign R6c, ED-12). This is the
+    // base resume, and the top bar says so (ED-03), with the history a press away (ED-07).
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Product Designer Resume' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rename resume' })).toBeInTheDocument();
+    expect(screen.getByText('Base resume')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Version history' })).toBeInTheDocument();
+    expect(screen.getByText('1 page')).toBeInTheDocument();
     for (const heading of SECTIONS) {
       expect(screen.getByRole('region', { name: heading })).toBeInTheDocument();
     }
@@ -94,6 +102,22 @@ describe('the resume editor', () => {
       screen.getByRole<HTMLInputElement>('textbox', { name: 'Full name' }).value,
     );
   });
+
+  it('says base or copy until dismissed, and lists versions without restoring them (ED-04, ED-07)', async () => {
+    const user = userEvent.setup();
+    await open();
+    expect(
+      screen.getByText(/Tailored copies already made keep their own text/),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Got it' }));
+    expect(screen.queryByText(/Tailored copies already made/)).toBeNull();
+    expect(window.localStorage.getItem('nextkin:editor-copy-note:res_pd')).toBe('1');
+
+    await user.click(screen.getByRole('button', { name: 'Version history' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Version history' });
+    expect(await within(drawer).findByText('Version 3', {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(within(drawer).queryByRole('button', { name: 'Restore this version' })).toBeNull();
+  }, 15000);
 
   it('opens every section of a blank resume', async () => {
     const blank = await repos.resumes.create({ title: 'Untitled resume', docType: 'resume' });

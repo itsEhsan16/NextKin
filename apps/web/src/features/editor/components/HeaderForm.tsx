@@ -64,7 +64,7 @@ export function HeaderForm({
       </FieldRow>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1.5 text-body-s font-semibold text-neutral-700">Contact row</legend>
+        <legend className="mb-1.5 text-body-m font-semibold text-text-primary">Contact row</legend>
         {header.items.length === 0 && (
           <p className="text-body-s text-text-tertiary">
             Add how employers reach you: your email and phone at least.

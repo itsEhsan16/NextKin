@@ -10,8 +10,10 @@ import { onReveal } from '../reveal';
 import { removeButton, toolButton, toolIcon } from './controls';
 
 /** Faded until the tile is under the pointer or holds focus: still visible, still reachable. */
+// At rest the tools stay readable (70%, so tertiary ink holds 3:1), and a disabled one keeps its
+// own 40% rather than fading twice (redesign R6c, audit ED-17).
 const quiet =
-  'opacity-60 group-focus-within/entry:opacity-100 group-hover/entry:opacity-100 transition-[color,background-color,opacity,scale]';
+  'not-disabled:opacity-70 group-focus-within/entry:opacity-100 group-hover/entry:opacity-100 transition-[color,background-color,opacity,scale]';
 
 /**
  * One entry of a section — a role, a school, a project (EDIT 01, 866:276): a muted tile inside the

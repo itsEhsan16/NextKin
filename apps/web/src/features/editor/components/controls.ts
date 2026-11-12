@@ -9,7 +9,7 @@ import { iconButton } from '@/ui/iconButton';
  */
 export const toolButton = cn(
   iconButton,
-  'text-text-tertiary hover:text-text-primary disabled:opacity-35 disabled:hover:bg-transparent',
+  'text-text-tertiary hover:text-text-primary disabled:opacity-40 disabled:hover:bg-transparent',
 );
 
 export const removeButton = cn(toolButton, 'hover:bg-danger-50 hover:text-danger-text');

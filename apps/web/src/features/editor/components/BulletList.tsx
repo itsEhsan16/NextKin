@@ -80,7 +80,7 @@ export function BulletList({
                 event.preventDefault();
                 drop(index);
               }}
-              className="flex items-center gap-1.5 rounded-lg border border-border-default bg-surface-card py-1 pl-1.5 pr-1 transition-colors duration-press ease-standard focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 hover:border-neutral-400"
+              className="flex items-center gap-1.5 rounded-lg border border-border-default bg-surface-card py-1 pl-1.5 pr-1 transition-colors duration-press ease-standard focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 hover:border-border-strong"
             >
               <button
                 type="button"
@@ -93,7 +93,7 @@ export function BulletList({
                   event.preventDefault();
                   onChange(move(lines, index, by));
                 }}
-                className={cn(toolButton, 'cursor-grab text-neutral-400 active:cursor-grabbing')}
+                className={cn(toolButton, 'cursor-grab text-text-tertiary active:cursor-grabbing')}
               >
                 <DragIcon aria-hidden className={toolIcon} />
               </button>

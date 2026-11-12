@@ -63,7 +63,7 @@ export function LetterForm({
               event.preventDefault();
               drop(i);
             }}
-            className="flex items-start gap-1.5 rounded-xl border border-border-default bg-surface-card py-2 pl-2 pr-1.5 transition-colors duration-press ease-standard hover:border-neutral-400 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600"
+            className="flex items-start gap-1.5 rounded-xl border border-border-default bg-surface-card py-2 pl-2 pr-1.5 transition-colors duration-press ease-standard hover:border-border-strong focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600"
           >
             <button
               type="button"
@@ -76,7 +76,7 @@ export function LetterForm({
                 event.preventDefault();
                 setParagraphs(move(paragraphs, i, by));
               }}
-              className={cn(toolButton, 'cursor-grab text-neutral-400 active:cursor-grabbing')}
+              className={cn(toolButton, 'cursor-grab text-text-tertiary active:cursor-grabbing')}
             >
               <DragIcon aria-hidden className={toolIcon} />
             </button>

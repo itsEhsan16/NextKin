@@ -4,14 +4,15 @@ import type { DocProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
 import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
 import type { ReactNode } from 'react';
 
-import { primaryButton } from '@/features/create/jobFlow/FlowChrome';
 import { cn } from '@/lib/cn';
+import { buttonClass } from '@/ui/Button';
 import { brandButton } from '@/ui/brandButton';
 import { HistoryIcon, SyncIcon } from '@/ui/icons';
 import { AlertTriangle, ArrowRight } from '@/ui/lineIcons';
 import { outlineButton } from '@/ui/outlineButton';
 
 import type { EditorBackup } from '../editorBackup';
+import { formatClock } from '../formatClock';
 import { reveal } from '../reveal';
 import { anchorOf } from './EditorForm';
 
@@ -19,9 +20,9 @@ import { anchorOf } from './EditorForm';
 
 const banner =
   'flex flex-wrap items-center gap-x-3.5 gap-y-2 rounded-xl border py-3 pl-4 pr-3 text-text-primary';
-const bannerButton = 'h-9 rounded-lg px-3.5 text-body-m font-semibold';
-const time = (at: Date) =>
-  `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
+// The control tokens' small height, not a hand-picked h-9 (redesign R6c, audit ED-35).
+const bannerButton = 'h-control-sm rounded-lg px-3.5 text-body-m font-semibold';
+const primaryButton = buttonClass({ size: 'lg' });
 
 function BannerText({ icon, title, line }: { icon: ReactNode; title: string; line: string }) {
   return (
@@ -53,7 +54,7 @@ export function RestoreBanner({
   const at = new Date(backup.at);
   const when =
     at.toDateString() === new Date().toDateString()
-      ? `at ${time(at)}`
+      ? `at ${formatClock(at)}`
       : `on ${at.toLocaleDateString(undefined, { dateStyle: 'medium' })}`;
   return (
     <div role="status" className={cn(banner, 'border-border-brand bg-surface-brand')}>

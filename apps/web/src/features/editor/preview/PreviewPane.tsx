@@ -8,6 +8,7 @@ import { PageImages } from '@/features/resumes/components/PageImages';
 import { cn } from '@/lib/cn';
 import { SegmentedControl } from '@/ui/SegmentedControl';
 import { Skeleton } from '@/ui/Skeleton';
+import { StateView } from '@/ui/StateView';
 
 import { PAGE_HEIGHT, PAGE_WIDTH, ResumePage } from './ResumePage';
 
@@ -35,7 +36,7 @@ function useFitScale() {
   return { box, scale };
 }
 
-function LivePage({ doc }: { doc: ResumeDocument }) {
+function LivePage({ doc, onPages }: { doc: ResumeDocument; onPages: (pages: number) => void }) {
   const { box, scale } = useFitScale();
   const page = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(PAGE_HEIGHT);
@@ -48,6 +49,7 @@ function LivePage({ doc }: { doc: ResumeDocument }) {
   }, []);
   const pages = Math.max(1, Math.ceil(height / PAGE_HEIGHT));
   const sheet = pages * PAGE_HEIGHT;
+  useEffect(() => onPages(pages), [pages, onPages]);
 
   return (
     <div
@@ -94,6 +96,20 @@ function PdfPages({
 }) {
   const preview = useResumePreview(resumeId, versionId);
   const data = preview.data;
+  // A request that failed outright says so, with a retry, and points at the live view (ED-39).
+  if (preview.isError && !data) {
+    return (
+      <div className="flex min-h-0 flex-1 items-center justify-center px-5 py-5">
+        <StateView
+          tone="danger"
+          title="We couldn’t load the typeset pages"
+          message="The live preview is still accurate."
+          actionLabel="Try again"
+          onAction={() => void preview.refetch()}
+        />
+      </div>
+    );
+  }
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]">
       {(saving || data?.status === 'pending') && (
@@ -144,6 +160,7 @@ export function PreviewPane({
   className?: string;
 }) {
   const [tab, setTab] = useState<Tab>('live');
+  const [pages, setPages] = useState(1);
   return (
     <section
       aria-label="Preview"
@@ -166,10 +183,16 @@ export function PreviewPane({
             { id: 'pdf', label: 'PDF pages', title: 'Exactly what Download PDF gives you' },
           ]}
         />
+        {/* How long it is, as the live page measures it (redesign R6c, audit ED-40). */}
+        {tab === 'live' && (
+          <span className="inline-flex h-6 items-center rounded-full bg-surface-card px-2.5 text-caption-m font-medium text-text-secondary">
+            {pages === 1 ? '1 page' : `${pages} pages`}
+          </span>
+        )}
         {toolbar && <div className="ml-auto">{toolbar}</div>}
       </div>
       {tab === 'live' ? (
-        <LivePage doc={doc} />
+        <LivePage doc={doc} onPages={setPages} />
       ) : (
         <PdfPages resumeId={doc.resumeId} versionId={doc.versionId} saving={saving} />
       )}

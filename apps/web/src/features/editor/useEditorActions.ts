@@ -6,6 +6,9 @@ import { useMemo, useState } from 'react';
 import { useConfirmedDownload } from '@/features/resumes/useConfirmedDownload';
 import { showToast } from '@/lib/toast';
 
+import { anchorOf } from './components/EditorForm';
+import { reveal } from './reveal';
+
 import type { ResumeEditor } from './useResumeEditor';
 
 /**
@@ -29,8 +32,12 @@ export function useEditorActions(id: string, editor: ResumeEditor) {
       return;
     }
     if (editor.doc?.pendingReview) {
+      // Take them to the first guess on the page (redesign R6c, audit ED-06). Confirming a guess
+      // is still the app's review step: the web has no endpoint for it yet.
+      const role = editor.doc.experience.find((entry) => entry.assumed);
+      if (role) reveal({ anchor: anchorOf('experience'), entryId: role.id });
       showToast(
-        'Some details were guessed for you. Check them in the mobile app’s review before you download.',
+        'Some details were guessed for you. Check the ones marked here, then confirm them in the NextKin app before you download.',
         { tone: 'info' },
       );
       return;

@@ -65,8 +65,12 @@ export function SectionCard({
               setRenaming(false);
             }}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === 'Escape')
-                (event.target as HTMLInputElement).blur();
+              if (event.key === 'Enter') (event.target as HTMLInputElement).blur();
+              // Escape leaves the name as it was (redesign R6c, audit ED-18), as the title does.
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                setRenaming(false);
+              }
             }}
             className="mr-2 h-control-md min-w-0 flex-1 rounded-md border border-border-brand-strong px-3 text-title-l font-semibold text-text-primary outline-none ring-4 ring-brand-100"
           />

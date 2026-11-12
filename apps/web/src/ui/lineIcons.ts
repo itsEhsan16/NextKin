@@ -10,6 +10,7 @@ export { AlertCircle } from '@untitledui/icons/AlertCircle';
 export { AlertTriangle } from '@untitledui/icons/AlertTriangle';
 export { ArrowRight } from '@untitledui/icons/ArrowRight';
 export { ArrowUp } from '@untitledui/icons/ArrowUp';
+export { ArrowUpRight } from '@untitledui/icons/ArrowUpRight';
 export { Bell01 } from '@untitledui/icons/Bell01';
 export { Check } from '@untitledui/icons/Check';
 export { CheckCircle } from '@untitledui/icons/CheckCircle';

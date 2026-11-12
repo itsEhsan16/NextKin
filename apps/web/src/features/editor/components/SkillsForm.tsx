@@ -103,7 +103,7 @@ export function SkillsForm({
               maxLength={80}
               placeholder="Label, e.g. Languages"
               onChange={(event) => setGroup(index, { label: event.target.value }, 'label')}
-              className="h-8 min-w-0 flex-1 rounded-md border border-transparent px-2 text-body-s font-semibold text-neutral-700 hover:border-border-default focus-visible:border-border-brand focus-visible:outline-none"
+              className="h-8 min-w-0 flex-1 rounded-md border border-transparent px-2 text-body-m font-semibold text-text-primary hover:border-border-default focus-visible:border-border-brand focus-visible:outline-none"
             />
             <button
               type="button"
@@ -129,7 +129,7 @@ export function SkillsForm({
       ))}
       <div className="flex flex-col gap-1.5">
         {skills.groups.length > 0 && (
-          <span className="px-2 text-body-s font-semibold text-neutral-700">Other skills</span>
+          <span className="px-2 text-body-m font-semibold text-text-primary">Other skills</span>
         )}
         <ChipInput
           label="Skills"

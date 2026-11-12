@@ -3,6 +3,7 @@
 import { cn } from '@/lib/cn';
 import { CheckCircle } from '@/ui/lineIcons';
 
+import { formatClock } from '../formatClock';
 import type { SaveStatus } from '../useAutosave';
 
 /**
@@ -28,9 +29,6 @@ const TONE: Record<SaveStatus, string> = {
   failed: 'bg-danger-50 text-danger-text',
 };
 
-const time = (at: Date) =>
-  `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
-
 export function SaveIndicator({
   status,
   savedAt,
@@ -45,8 +43,10 @@ export function SaveIndicator({
       <p
         role="status"
         aria-live="polite"
+        // One width for the common states, so the pills beside it don't shift on every keystroke
+        // (redesign R6c, audit ED-13).
         className={cn(
-          'inline-flex h-6 min-w-0 items-center gap-1.5 rounded-full px-2.5 text-caption-m font-semibold transition-colors duration-base ease-standard',
+          'inline-flex h-6 min-w-38 items-center gap-1.5 rounded-full px-2.5 text-caption-m font-semibold transition-colors duration-base ease-standard',
           TONE[status],
         )}
       >
@@ -63,7 +63,7 @@ export function SaveIndicator({
         )}
         <span className="truncate">
           {COPY[status]}
-          {status === 'saved' && savedAt ? ` · ${time(savedAt)}` : ''}
+          {status === 'saved' && savedAt ? ` · ${formatClock(savedAt)}` : ''}
         </span>
       </p>
       {(status === 'retrying' || status === 'failed') && (

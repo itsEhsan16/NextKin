@@ -200,7 +200,7 @@ export function EditorForm({
           <Dropdown.Trigger asChild>
             <button
               type="button"
-              className="flex h-control-lg items-center justify-center gap-2 rounded-lg border border-dashed border-border-default text-body-m font-semibold text-text-secondary transition-colors duration-fast ease-standard hover:border-neutral-400 hover:bg-surface-card hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+              className="flex h-control-lg items-center justify-center gap-2 rounded-lg border border-dashed border-border-default text-body-m font-semibold text-text-secondary transition-colors duration-fast ease-standard hover:border-border-strong hover:bg-surface-card hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
             >
               <PlusIcon aria-hidden className="size-4" />
               Add a section
