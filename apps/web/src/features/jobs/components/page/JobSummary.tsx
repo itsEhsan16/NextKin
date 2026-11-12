@@ -12,11 +12,13 @@ import type { ComponentType, SVGProps } from 'react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { CheckCircle, XClose } from '@/ui/lineIcons';
 import { formatSalaryBand } from '@/lib/format';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import {
   ApartmentIcon,
   BriefcaseIcon,
+  CheckIcon,
   ChevronRightIcon,
   ClockIcon,
   LocationOutlineIcon,
@@ -106,17 +108,35 @@ export function MatchCard({
   profile: Profile | undefined;
   known?: JobFactsKnown;
 }) {
-  if (job.matchScore == null || !job.matchBand) return null;
+  if (!job.matchBand) return null;
   const tone = MATCH_TONE[job.matchBand];
+  // A number only when the whole listing was read (P11-03); otherwise the band says it (R5b).
+  const score =
+    job.matchScore != null && job.matchBasis?.kind !== 'snippet' && job.matchBasis?.kind !== 'title'
+      ? Math.round(job.matchScore * 100)
+      : null;
   return (
     <section
       aria-label="How well you match"
-      className="w-full shrink-0 rounded-md bg-neutral-50 p-5 md:w-[220px]"
+      // Beside the title from 1280; under the facts below, so they keep their width (JB-20).
+      className="w-full shrink-0 rounded-md bg-neutral-50 p-5 xl:w-[240px]"
     >
-      <div className="flex items-baseline gap-1">
-        <span className="text-display-l text-text-primary">{Math.round(job.matchScore * 100)}</span>
-        <span className="text-body-l font-semibold text-text-primary">%</span>
-        <span className={cn('ml-auto text-micro font-bold uppercase tracking-wide', tone.text)}>
+      <div className="flex items-center gap-2">
+        {score != null && (
+          <span className="flex items-baseline gap-0.5">
+            <span className="text-display-l text-text-primary">{score}</span>
+            <span className="text-body-l font-semibold text-text-primary">%</span>
+          </span>
+        )}
+        {/* The band in its own colour on the honest scale (redesign R3c), never green by default. */}
+        <span
+          className={cn(
+            'rounded-full px-2.5 py-0.5 text-caption-m font-semibold',
+            score != null && 'ml-auto',
+            tone.surface,
+            tone.text,
+          )}
+        >
           {MATCH_BAND_LABEL[job.matchBand]}
         </span>
       </div>
@@ -127,9 +147,18 @@ export function MatchCard({
       )}
       <dl className="mt-3 flex flex-col gap-1.5">
         {matchRows(job, profile, known).map((row) => (
-          <div key={row.label} className="flex items-center justify-between text-body-s">
+          <div key={row.label} className="flex items-center gap-2 text-body-s">
+            {/* Met or not, by icon as well as word (audit JB-27). */}
+            {row.met ? (
+              <CheckCircle aria-hidden className="size-3.5 shrink-0 text-feedback-success-icon" />
+            ) : (
+              <XClose aria-hidden className="size-3.5 shrink-0 text-text-tertiary" />
+            )}
             <dt className="text-text-secondary">{row.label}</dt>
-            <dd className="font-semibold text-text-primary">{row.value}</dd>
+            <dd className="ml-auto font-semibold text-text-primary">
+              {row.value}
+              <span className="sr-only">{row.met ? ', met' : ', not met'}</span>
+            </dd>
           </div>
         ))}
       </dl>
@@ -137,7 +166,8 @@ export function MatchCard({
         href="/help"
         className="mt-3 inline-flex items-center gap-1 rounded-sm text-body-s font-medium text-text-brand transition-opacity duration-press ease-standard hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       >
-        How we match
+        {/* Help opens on the scoring answer (V2 §7.8: every score links its rubric). */}
+        How NextKin Score works
         <ChevronRightIcon aria-hidden className="size-3" />
       </Link>
     </section>
@@ -163,7 +193,7 @@ export function JobSummary({
   const company = job.company.trim();
   return (
     <div className="px-8 pb-5 pt-6">
-      <div className="flex flex-col gap-5 md:flex-row md:items-start">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
         <div className="min-w-0 flex-1">
           {/* A div: the logo's letter tile (a JD has no logo) is itself a block. */}
           {company && (
@@ -201,9 +231,9 @@ export function JobSummary({
           {job.perks?.map((perk) => (
             <li
               key={perk}
-              className="flex items-center gap-1 rounded-sm bg-success-surface px-2 py-1 text-caption-m font-medium text-success-text"
+              className="flex items-center gap-1 rounded-sm bg-feedback-success-surface px-2 py-1 text-caption-m font-medium text-feedback-success-text"
             >
-              <span aria-hidden>✓</span>
+              <CheckIcon aria-hidden className="size-3" />
               {perk}
             </li>
           ))}

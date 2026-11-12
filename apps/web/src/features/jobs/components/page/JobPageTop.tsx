@@ -74,7 +74,11 @@ function ApplyLink({ job }: { job: Job }) {
       onClick={() => raise({ jobId: job.id })}
       className={cn(brandButton, 'h-control-md gap-2 rounded-full px-4 text-body-m font-semibold')}
     >
-      Apply on company site
+      {/* "Apply" alone below 1280, where the bar is the card's width beside the rail (JB-19);
+          the rest stays for screen readers. */}
+      <span>
+        Apply<span className="max-xl:sr-only"> on company site</span>
+      </span>
       <ExternalLinkIcon aria-hidden className="size-3.5" />
       <span className="sr-only">(opens in a new tab)</span>
     </a>
@@ -117,16 +121,30 @@ function ListingBarEnd({ job, tab, onTab, onToggleSave, savePending }: { job: Jo
         ))}
       </div>
       <span className="flex-1" />
-      <span className="rounded-full bg-brand-50 px-2.5 py-1 text-caption-m text-text-brand">
-        Posted {formatPostedAge(job.postedAt).replace(/^1 day ago$/, 'yesterday')}
-      </span>
-      {job.applicantsCount != null && (
-        <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-caption-m text-text-secondary">
-          {formatApplicants(job.applicantsCount).replace(/\+? applied$/, ' applicants')}
-        </span>
-      )}
       <SaveButton saved={job.isSaved} onToggle={onToggleSave} pending={savePending} />
-      <ApplyLink job={job} />
+      {/* A closed listing keeps its page, but there's nothing to apply to (audit JB-26); and
+          without a link, Apply would have opened an empty href. */}
+      {!job.unavailable && applyUrl(job) && <ApplyLink job={job} />}
+      {/* The freshness chips: beside the actions from 1280, on their own line below, so the
+          actions stay together and in order (audit JB-19). */}
+      <span className="flex items-center gap-2 max-xl:order-last max-xl:w-full max-xl:pl-10">
+        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-caption-m text-text-brand">
+          Posted {formatPostedAge(job.postedAt).replace(/^1 day ago$/, 'yesterday')}
+        </span>
+        {job.applicantsCount != null && (
+          <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-caption-m text-text-secondary">
+            {formatApplicants(job.applicantsCount).replace(/\+? applied$/, ' applicants')}
+          </span>
+        )}
+      </span>
+      {job.unavailable && (
+        <p
+          role="status"
+          className="w-full rounded-md bg-feedback-warning-surface px-3 py-2 text-body-s font-medium text-feedback-warning-text"
+        >
+          This listing has closed. It stays in your saved jobs.
+        </p>
+      )}
     </>
   );
 }

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { cardSurface } from '@/ui/Card';
-import { pageFillMin, pageFrame } from '@/ui/pageFrame';
+import { pageFillMin, pageFrame, stickyBelowTopBarLg } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
@@ -34,7 +34,6 @@ export function JobPageScreen({ id }: { id: string }) {
   const save = useSaveJob();
   const [tab, setTab] = useState<JobPageTab>('overview');
   const reveal = useReveal(job.data != null, id);
-  const switched = useReveal(true, tab);
   const tailorDialog = useTailorDialog({ kind: 'job', id });
 
   if (queryPhase(job) === 'error') {
@@ -54,7 +53,9 @@ export function JobPageScreen({ id }: { id: string }) {
     <div className={cn(pageFrame, 'pb-8')}>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         {!job.data ? (
-          <Skeleton className="h-[60rem] rounded-lg" />
+          <div role="status" aria-label="Loading job">
+            <Skeleton className="h-[60rem] rounded-lg" />
+          </div>
         ) : (
           <article
             key={id}
@@ -64,27 +65,28 @@ export function JobPageScreen({ id }: { id: string }) {
             <JobPageTop
               job={job.data}
               tab={tab}
-              onTab={setTab}
+              onTab={(next) => {
+                setTab(next);
+                const target = next === 'company' ? document.getElementById('job-company') : null;
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               onToggleSave={() => save.toggle(job.data!)}
               savePending={save.isPending}
             />
-            <div key={tab} className={cn('pb-4', switched && 'animate-reveal')}>
-              {tab === 'overview' ? (
-                <>
-                  <JobSummary job={job.data} profile={profile.data} />
-                  <Responsibilities job={job.data} />
-                  <Qualifications job={job.data} profile={profile.data} />
-                  <Benefits job={job.data} />
-                  <CompanySection job={job.data} />
-                </>
-              ) : (
-                <CompanySection job={job.data} />
-              )}
+            {/* One page; the tabs jump within it (audit JB-24: Company used to re-render the
+                section that already ends Overview, alone). */}
+            <div className="pb-4">
+              <JobSummary job={job.data} profile={profile.data} />
+              <Responsibilities job={job.data} />
+              <Qualifications job={job.data} profile={profile.data} />
+              <Benefits job={job.data} />
+              <CompanySection job={job.data} />
             </div>
           </article>
         )}
 
-        <div className="flex flex-col gap-6 lg:sticky lg:top-[5.25rem]">
+        <div className={cn('flex flex-col gap-6 lg:sticky', stickyBelowTopBarLg)}>
           {job.data ? (
             <>
               <AiToolsCard job={job.data} onTailor={tailorDialog.openDialog} />

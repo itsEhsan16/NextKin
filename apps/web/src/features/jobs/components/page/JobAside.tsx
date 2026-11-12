@@ -28,7 +28,18 @@ type Art = ComponentType<SVGProps<SVGSVGElement>>;
 const TOOL =
   'flex w-full items-center gap-3 rounded-md px-4 py-3.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
 
-function ToolBody({ title, line, Art }: { title: string; line: string; Art: Art }) {
+function ToolBody({
+  title,
+  line,
+  Art,
+  live = false,
+}: {
+  title: string;
+  line: string;
+  Art: Art;
+  /** A tool that opens something: it gets the chevron the Similar rows have (audit JB-28). */
+  live?: boolean;
+}) {
   return (
     <>
       <span className="min-w-0 flex-1">
@@ -36,6 +47,7 @@ function ToolBody({ title, line, Art }: { title: string; line: string; Art: Art 
         <span className="block text-body-s text-text-tertiary">{line}</span>
       </span>
       <Art aria-hidden className="h-auto w-7 shrink-0" />
+      {live && <ChevronRightIcon aria-hidden className="size-3.5 shrink-0 text-text-tertiary" />}
     </>
   );
 }
@@ -72,6 +84,7 @@ export function AiToolsCard({
       title="Tailor your resume"
       line="Match it to this job, then download"
       Art={AssistantTermsIllustration}
+      live
     />
   );
   return (
@@ -109,6 +122,7 @@ export function AiToolsCard({
                 title="Write a cover letter"
                 line="From your resume and this job"
                 Art={SettingsEmailIllustration}
+                live
               />
             </Link>
           ) : (
@@ -153,19 +167,14 @@ export function AiToolsCard({
 export function SimilarJobsCard({ job }: { job: Job }) {
   const similar = useSimilarJobs(job.id);
   const rows = similar.data?.slice(0, 3) ?? [];
-  if (similar.isSuccess && rows.length === 0) return null;
+  // Optional, so it steps aside on error rather than showing a heading over nothing (JB-25).
+  if ((similar.isSuccess && rows.length === 0) || similar.isError) return null;
   return (
     <section aria-labelledby="job-similar" className={cn(cardSurface, cardPad)}>
       <div className="flex items-center justify-between">
         <h2 id="job-similar" className="text-title-l font-semibold text-text-primary">
           Similar jobs
         </h2>
-        <Link
-          href="/jobs"
-          className="rounded-sm text-body-s font-semibold text-text-brand transition-opacity duration-press ease-standard hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-        >
-          View all
-        </Link>
       </div>
       {similar.isPending ? (
         <div className="mt-3 flex flex-col gap-2">

@@ -27,6 +27,9 @@ export const pageFillMin = 'min-h-[calc(100dvh-4rem)]';
 /** Where a column held in view sticks: 20px under the top bar's band, clear of its buttons. */
 export const stickyBelowTopBar = 'top-[5.25rem]';
 
+/** The same, from 1024 up (where a rail column sticks). A literal, so Tailwind finds it. */
+export const stickyBelowTopBarLg = 'lg:top-[5.25rem]';
+
 /**
  * A page that starts inside the top bar's band, its title level with the bar's controls: every
  * built page but Settings, as the owner moved them up (2026-10-09, `toreview.md` §87). `TopBar`'s
