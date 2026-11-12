@@ -215,10 +215,10 @@ function HowItWorksCard() {
     >
       <div aria-hidden className="flex h-44 w-64 shrink-0 items-center justify-center">
         <Image
-          src="/illustrations/connected-lock.png"
+          src="/illustrations/v2/connected.webp"
           alt=""
-          width={223}
-          height={124}
+          width={560}
+          height={304}
           className="h-auto w-56 object-contain"
         />
       </div>

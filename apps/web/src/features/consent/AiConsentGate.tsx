@@ -46,10 +46,10 @@ export function AiConsentGate() {
     >
       <div className="flex flex-col gap-3.5 px-6.5 pb-5 pt-5.5">
         <Image
-          src="/illustrations/flow/ai-consent.png"
+          src="/illustrations/v2/ai-consent.webp"
           alt=""
-          width={236}
-          height={190}
+          width={526}
+          height={560}
           className="h-47 w-auto object-contain"
         />
         <DialogTitle className="text-h2 font-bold text-text-primary">

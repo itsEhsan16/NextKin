@@ -13,10 +13,10 @@ export function ResumesIllustration({ className }: { className?: string }) {
       <Image
         // Above the fold and the page's largest paint: fetched with the page, not lazily (§84).
         loading="eager"
-        src="/illustrations/resumes-hero.png"
+        src="/illustrations/v2/resumes.webp"
         alt=""
-        width={220}
-        height={82}
+        width={560}
+        height={462}
         className="size-full object-contain"
       />
     </div>

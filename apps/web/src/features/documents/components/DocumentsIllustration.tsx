@@ -15,10 +15,10 @@ export function DocumentsIllustration({ className }: { className?: string }) {
       <Image
         // Above the fold and the page's largest paint: fetched with the page, not lazily (§84).
         loading="eager"
-        src="/illustrations/documents-hero.png"
+        src="/illustrations/v2/documents.webp"
         alt=""
-        width={248}
-        height={92}
+        width={560}
+        height={494}
         className="size-full object-contain"
       />
       <span className="absolute left-[232px] top-[20px] whitespace-pre text-center font-caveat text-title-l font-semibold text-text-caveat">

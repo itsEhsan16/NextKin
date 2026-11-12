@@ -137,10 +137,10 @@ export function CoverToneStep({
               change={changeResume}
             />
             <Image
-              src="/illustrations/flow/cover-search.png"
+              src="/illustrations/v2/cover-search.webp"
               alt=""
-              width={360}
-              height={240}
+              width={560}
+              height={512}
               className="mx-auto h-auto w-64 object-contain"
             />
           </div>
@@ -238,10 +238,10 @@ export function CoverTailorFirst({
         </div>
         <div className="flex flex-wrap items-center gap-10 px-8 pb-8 pt-6">
           <Image
-            src="/illustrations/flow/build.png"
+            src="/illustrations/v2/build.webp"
             alt=""
-            width={300}
-            height={200}
+            width={560}
+            height={538}
             className="h-auto w-72 shrink-0 object-contain"
           />
           <div className="flex min-w-0 flex-col gap-3.5">

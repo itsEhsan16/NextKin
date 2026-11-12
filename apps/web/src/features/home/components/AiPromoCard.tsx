@@ -40,10 +40,10 @@ export function AiPromoCard() {
 
       {/* eslint-disable-next-line @next/next/no-img-element -- static SVG art, no optimisation to do */}
       <img
-        src="/illustrations/ai-assistant.svg"
+        src="/illustrations/v2/ai-assistant.webp"
         alt=""
         aria-hidden
-        className="pointer-events-none absolute bottom-0 right-3 h-[169px] w-[243px] max-lg:hidden"
+        className="pointer-events-none absolute bottom-3 right-6 h-[150px] w-auto object-contain max-lg:hidden"
       />
     </Card>
   );

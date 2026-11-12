@@ -196,10 +196,10 @@ export function ZeroSetup({
             </Callout>
           </div>
           <Image
-            src="/illustrations/flow/zero.png"
+            src="/illustrations/v2/zero.webp"
             alt=""
-            width={380}
-            height={280}
+            width={480}
+            height={560}
             className="hidden h-auto w-96 shrink-0 object-contain lg:block"
           />
         </div>

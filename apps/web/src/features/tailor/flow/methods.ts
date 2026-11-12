@@ -7,10 +7,10 @@ export type Method = 'tailor' | 'profile' | 'zero' | 'upload';
 export const METHOD_ORDER: readonly Method[] = ['tailor', 'profile', 'zero', 'upload'];
 
 export const METHOD_ART: Record<Method, string> = {
-  tailor: '/illustrations/flow/profile.png',
-  profile: '/illustrations/flow/build.png',
-  zero: '/illustrations/flow/zero.png',
-  upload: '/illustrations/flow/upload.png',
+  tailor: '/illustrations/v2/profile.webp',
+  profile: '/illustrations/v2/build.webp',
+  zero: '/illustrations/v2/zero.webp',
+  upload: '/illustrations/v2/upload.webp',
 };
 
 export const METHOD_TITLE: Record<Method, string> = {

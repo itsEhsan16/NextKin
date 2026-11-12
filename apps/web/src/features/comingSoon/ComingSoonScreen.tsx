@@ -20,10 +20,10 @@ const PAGES: Record<ComingSoonPage, ComingSoonProps> = {
       'Practice questions written for one job and your resume, so you walk in knowing what they will ask.',
     art: (
       <Image
-        src="/illustrations/flow/interview-soon.png"
+        src="/illustrations/v2/interview-soon.webp"
         alt=""
-        width={330}
-        height={220}
+        width={431}
+        height={560}
         className="h-55 w-auto object-contain"
       />
     ),

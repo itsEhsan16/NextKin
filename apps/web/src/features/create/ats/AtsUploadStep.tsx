@@ -96,10 +96,10 @@ export function AtsUploadStep({
               )}
             >
               <Image
-                src="/illustrations/flow/upload.png"
+                src="/illustrations/v2/upload.webp"
                 alt=""
-                width={250}
-                height={168}
+                width={455}
+                height={560}
                 className="h-auto w-36 shrink-0 rounded-lg object-contain sm:w-60"
               />
               <div className="flex min-w-0 flex-col items-start gap-2">

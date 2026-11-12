@@ -31,22 +31,17 @@ export type TopJobMatchesProps = {
 };
 
 /**
- * One character per card, by position (286:358, 286:495), then the owner's CH1–CH9 (705:1268 …
- * 705:2338) for the cards that slide in after them (`toreview.md` §101). Served rather than
- * inlined — 46–123KB each, which is the `public/illustrations` rule in the README. The first two
- * keep their board placement; the rest stand on the card's floor at the same height.
+ * One clay object per card, by position (redesign, 2026-11-13: the clay set replaced the board's
+ * characters, so web and mobile share one illustration style). Each stands at the card's lower
+ * right, left of which the basis caption stops (`pr-32`).
  */
-const CHARACTERS: readonly { src: string; className: string }[] = [
-  { src: '/illustrations/job-seeker-1.svg', className: 'right-0.5 top-[26px] h-[139px] w-[124px]' },
-  {
-    src: '/illustrations/job-seeker-2.svg',
-    className: 'right-[5px] top-[23px] h-[138px] w-[119px]',
-  },
-  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({
-    src: `/illustrations/job-seeker-ch${n}.svg`,
-    className: 'bottom-0 right-1.5 h-[136px] w-auto',
-  })),
-];
+const CHARACTERS: readonly { src: string; className: string }[] = Array.from(
+  { length: 11 },
+  (_, i) => ({
+    src: `/illustrations/v2/match-${i + 1}.webp`,
+    className: 'bottom-3 right-3 h-[104px] w-auto object-contain',
+  }),
+);
 
 /** Two cards side by side from `xl`, one below it; the step is a card and the gap between. */
 const PER_VIEW = '[--per:1] xl:[--per:2]';

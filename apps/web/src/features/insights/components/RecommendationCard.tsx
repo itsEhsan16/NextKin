@@ -49,10 +49,10 @@ export function RecommendationCard({
       </Link>
       {/* A raster on the board (463:67). */}
       <Image
-        src="/illustrations/insights-recommendation.png"
+        src="/illustrations/v2/recommendation.webp"
         alt=""
-        width={190}
-        height={93}
+        width={560}
+        height={541}
         className="pointer-events-none absolute bottom-2.5 right-1.5 h-[93px] w-[190px] object-contain"
       />
     </section>

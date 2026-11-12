@@ -27,10 +27,10 @@ export function AssistantWelcome({
       {/* "Illustration (from mobile ASSISTANT 02)", a raster on the board. */}
       <Image
         loading="eager"
-        src="/illustrations/assistant-robot.png"
+        src="/illustrations/v2/assistant-welcome.webp"
         alt=""
-        width={180}
-        height={136}
+        width={558}
+        height={560}
         className="h-[120px] w-[160px] object-contain [@media(max-height:860px)]:h-[72px] [@media(max-height:860px)]:w-[96px]"
       />
       <h2 className="mt-3 text-hero text-text-primary">

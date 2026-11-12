@@ -18,10 +18,10 @@ export function ApplicationsIllustration({ className }: { className?: string }) 
       <Image
         // Above the fold and the page's largest paint: fetched with the page, not lazily (§84).
         loading="eager"
-        src="/illustrations/applications-progress.png"
+        src="/illustrations/v2/applications.webp"
         alt=""
-        width={189}
-        height={92}
+        width={482}
+        height={560}
         className="size-full object-contain"
       />
       <span className="absolute left-[177px] top-2 whitespace-pre font-caveat text-title-l font-normal text-brand-600">

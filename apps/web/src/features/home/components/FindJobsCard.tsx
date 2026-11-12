@@ -12,10 +12,10 @@ export function FindJobsCard() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- static SVG art, no optimisation to do */}
       <img
-        src="/illustrations/find-jobs.svg"
+        src="/illustrations/v2/find-jobs.webp"
         alt=""
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-2 h-[110px] w-[161px] -translate-x-1/2"
+        className="pointer-events-none absolute left-1/2 top-2 h-[110px] w-auto -translate-x-1/2 object-contain"
       />
       <span className="relative text-h2 text-text-inverse">Find Jobs</span>
       <span className="relative mt-0.5 text-body-s text-brand-on-dark">
