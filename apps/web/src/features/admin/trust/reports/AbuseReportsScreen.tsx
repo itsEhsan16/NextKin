@@ -131,7 +131,7 @@ export function AbuseReportsScreen() {
         </div>
       )}
 
-      <div className="grid items-start gap-6 @min-[1400px]/admin:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="grid items-start gap-6 @admin-2xl/admin:grid-cols-[minmax(0,1fr)_400px]">
         <AdminCard
           icon="Flag01"
           title="Reports"

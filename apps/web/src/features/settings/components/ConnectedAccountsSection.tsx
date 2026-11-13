@@ -13,7 +13,6 @@ import { useEffect, useRef, type ComponentType, type ReactNode, type SVGProps } 
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { cn } from '@/lib/cn';
 import { cardPad, cardSurface } from '@/ui/Card';
-import { brandButton } from '@/ui/brandButton';
 import { FilterDropdown, MenuItem } from '@/ui/FilterDropdown';
 import { iconButton } from '@/ui/iconButton';
 import { ArrowRightIcon, MoreVerticalIcon } from '@/ui/icons';
@@ -25,7 +24,6 @@ import {
   SettingsPreferencesIllustration,
   SettingsPrivacyIllustration,
 } from '@/ui/illustrations';
-import { outlineButton } from '@/ui/outlineButton';
 import { Skeleton } from '@/ui/Skeleton';
 import { StableLabel } from '@/ui/StableLabel';
 import { StateView } from '@/ui/StateView';
@@ -34,6 +32,7 @@ import { Tag } from '@/ui/Tag';
 import { CONNECTED_PROVIDER } from '../settingsLibrary';
 import { useReveal } from '@/lib/useReveal';
 import { Soon, soonControl } from '@/ui/Soon';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const ACTION = 'h-control-md min-w-24 shrink-0 rounded-md px-5 text-body-m';
 
@@ -92,7 +91,7 @@ function AccountRow({ account }: { account: ConnectedAccount }) {
                 ref={manageRef}
                 type="button"
                 aria-label={`Manage ${name}`}
-                className={cn(soonControl, outlineButton, ACTION)}
+                className={cn(soonControl, BUTTON_VARIANT.secondary, ACTION)}
               >
                 Manage
               </button>
@@ -134,7 +133,7 @@ function AccountRow({ account }: { account: ConnectedAccount }) {
               connect.mutate(account.provider, keepFocus);
             }}
             className={cn(
-              brandButton,
+              BUTTON_VARIANT.primary,
               ACTION,
               'aria-disabled:cursor-default aria-disabled:opacity-60',
               swapped && 'animate-pop-in',

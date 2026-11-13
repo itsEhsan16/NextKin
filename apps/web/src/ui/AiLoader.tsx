@@ -72,7 +72,7 @@ export function AiLoader({
       <span
         {...a11y}
         className={cn(
-          'relative block h-[3px] w-full overflow-hidden rounded-full bg-neutral-200/70',
+          'relative block h-indicator w-full overflow-hidden rounded-full bg-neutral-200/70',
           className,
         )}
       >

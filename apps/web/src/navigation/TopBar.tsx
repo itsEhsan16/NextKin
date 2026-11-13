@@ -7,8 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 
 import { cn } from '@/lib/cn';
-import { brandButton } from '@/ui/brandButton';
-import { BellIcon, SearchIcon, UploadIcon } from '@/ui/icons';
+import { AiSparkIcon, BellIcon, SearchIcon, UploadIcon } from '@/ui/icons';
 import { Menu01 } from '@/ui/lineIcons';
 import { pageColumn, topBarHeight } from '@/ui/pageFrame';
 import { pressable } from '@/ui/pressable';
@@ -16,21 +15,25 @@ import { Soon } from '@/ui/Soon';
 
 import { AccountMenu } from './AccountMenu';
 import { OPEN_SIDEBAR_EVENT } from './useSidebarRail';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /** A primary action with a `null` destination is an inert button. */
 type UploadAction = { label: string; href: Route | null };
 
-/** Every page's primary action unless the page says otherwise: the JD upload page (247:2). */
-const UPLOAD_JD: UploadAction = { label: 'Upload New JD', href: '/upload-jd' };
+/**
+ * Every page's primary action unless the page says otherwise: Build Resume, whose first step takes
+ * the job (the Upload a JD page went, owner 2026-11-12, toreview §203).
+ */
+const BUILD_RESUME: UploadAction = { label: 'Build Resume', href: '/create/build' };
 
 /**
  * What the bar says on particular pages; the rest of it is the same everywhere.
  * - Documents' board names its action "Upload New Document", and nothing is behind it yet (§19).
- * - Home, Jobs, Applications, Resumes, Documents, Profile, the JD upload page, Help, the AI
- *   Assistant and Insights put their titles
+ * - Home, Jobs, Applications, Resumes, Documents, Profile, Help, the AI Assistant and Insights
+ *   put their titles
  *   in the bar's band (`pageFrameInBar`), so the bar draws no background there and lets clicks
  *   through everywhere but its controls (§87). Those that scroll take the bar's background back
- *   once the page has moved under it. The upload page's "Back to Jobs" went with the move (§93).
+ *   once the page has moved under it.
  */
 const BY_PATH: Record<string, { upload?: UploadAction; inBar?: boolean }> = {
   '/': { inBar: true },
@@ -39,7 +42,6 @@ const BY_PATH: Record<string, { upload?: UploadAction; inBar?: boolean }> = {
   '/resumes': { inBar: true },
   '/documents': { upload: { label: 'Upload New Document', href: null }, inBar: true },
   '/profile': { inBar: true },
-  '/upload-jd': { inBar: true },
   '/help': { inBar: true },
   '/assistant': { inBar: true },
   '/insights': { inBar: true },
@@ -50,20 +52,20 @@ const BY_PATH: Record<string, { upload?: UploadAction; inBar?: boolean }> = {
 const IN_BAR: { upload?: UploadAction; inBar?: boolean } = { inBar: true };
 
 const uploadAction = cn(
-  brandButton,
+  BUTTON_VARIANT.primary,
   // Below 768 it is the icon alone, in a circle (its words stay for screen readers).
   'h-control-md gap-2 rounded-full px-5 text-body-m font-semibold max-md:w-control-md max-md:px-0',
 );
 
 /**
- * The app-wide actions: search, Upload New JD, notifications and the avatar, whose menu holds
+ * The app-wide actions: search, Build Resume, notifications and the avatar, whose menu holds
  * Profile, Settings and Sign out (toreview §164). They sit on a band of
  * their own above every page, pinned while the page scrolls under it (`toreview.md` §28). There is
  * one bar in the `(app)` layout rather than one per page, so it is in the same place everywhere
  * and what is typed into the search survives a navigation.
  *
- * The search opens Jobs with the words typed (redesign R4). Upload New JD opens the JD upload
- * page (`toreview.md` §23).
+ * The search opens Jobs with the words typed (redesign R4). Build Resume opens the job step of
+ * the one resume flow (`toreview.md` §203).
  */
 export function TopBar() {
   const pathname = usePathname();
@@ -71,7 +73,7 @@ export function TopBar() {
 
   // A document opened in the viewer starts in the band too (563:1377).
   const page = BY_PATH[pathname] ?? (pathname.startsWith('/documents/') ? IN_BAR : undefined);
-  const upload = page?.upload ?? UPLOAD_JD;
+  const upload = page?.upload ?? BUILD_RESUME;
   const hasUnread = (unread.data ?? 0) > 0;
   const scrolled = useScrolled(Boolean(page?.inBar));
   const clear = page?.inBar && !scrolled;
@@ -86,7 +88,7 @@ export function TopBar() {
         'sticky top-0 z-topbar transition-colors duration-base ease-standard',
         clear
           ? 'pointer-events-none bg-transparent'
-          : 'bg-neutral-100/80 shadow-[0_1px_0_var(--color-border-default)] backdrop-blur-md',
+          : 'bg-neutral-100/80 shadow-hairline-bottom backdrop-blur-md',
         topBarHeight,
       )}
       style={{ viewTransitionName: 'app-topbar' }}
@@ -110,7 +112,7 @@ export function TopBar() {
           <form
             role="search"
             onSubmit={submitSearch}
-            className="hidden h-control-md w-60 items-center gap-2.5 rounded-full border border-border-subtle bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100 md:flex 2xl:w-80"
+            className="hidden h-control-md w-60 items-center gap-2.5 rounded-full border border-border-subtle bg-surface-card px-4 shadow-card transition-field duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100 md:flex 2xl:w-80"
           >
             <SearchIcon className="size-4 shrink-0 text-text-tertiary" />
             <input
@@ -139,7 +141,7 @@ export function TopBar() {
 
           {upload.href ? (
             <Link href={upload.href} className={uploadAction}>
-              <UploadIcon className="size-4" />
+              <AiSparkIcon className="size-4" />
               <span className="max-md:sr-only">{upload.label}</span>
             </Link>
           ) : (

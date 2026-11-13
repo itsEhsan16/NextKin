@@ -40,16 +40,16 @@ export function AdminDrawer({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-neutral-900/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
+        <Dialog.Overlay className="fixed inset-0 z-overlay bg-neutral-900/40 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out" />
         <Dialog.Content
           aria-describedby={undefined}
           onCloseAutoFocus={returnFocus}
-          className="fixed inset-y-0 right-0 z-50 flex w-[min(560px,100vw)] flex-col bg-surface-card shadow-modal outline-none data-[state=open]:animate-drawer-in"
+          className="fixed inset-y-0 right-0 z-modal flex w-[min(560px,100vw)] flex-col bg-surface-card shadow-modal outline-none data-[state=open]:animate-drawer-in"
         >
           <div className="flex shrink-0 items-start gap-3 border-b border-neutral-200 py-5 pl-6 pr-5">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <div className="flex items-center gap-2.5">
-                <Dialog.Title className="truncate text-h2 font-semibold tracking-[-0.005em] text-text-primary">
+                <Dialog.Title className="truncate text-h2 font-semibold tracking-snug text-text-primary">
                   {title}
                 </Dialog.Title>
                 {badge}

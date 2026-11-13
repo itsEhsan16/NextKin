@@ -88,7 +88,7 @@ export function UnderlineTabs<T extends string>({
       role="tablist"
       aria-label={label}
       // Labels never wrap; below 1280 (a narrower window, `toreview.md` §84) the tabs sit closer.
-      className={cn('relative flex gap-6 border-b border-border-card max-xl:gap-4', className)}
+      className={cn('relative flex gap-6 border-b border-border-default max-xl:gap-4', className)}
     >
       {tabs.map((tab, index) => (
         <button
@@ -126,7 +126,7 @@ export function UnderlineTabs<T extends string>({
       ))}
       <span
         aria-hidden
-        className="pointer-events-none absolute -bottom-px left-0 h-[3px] rounded-full w-(--tab-w,0px) translate-x-(--tab-x,0px) bg-brand-600 duration-base ease-standard in-data-placed:transition-[translate,width]"
+        className="pointer-events-none absolute -bottom-px left-0 h-indicator rounded-full w-(--tab-w,0px) translate-x-(--tab-x,0px) bg-brand-600 duration-base ease-standard in-data-placed:transition-[translate,width]"
       />
     </div>
   );

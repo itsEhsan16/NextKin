@@ -11,8 +11,8 @@ import { backButton, primaryButton } from '@/features/create/jobFlow/FlowChrome'
 import { DocTile, Radio, resumeLine, rowSurface } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
 import { formatUpdated } from '@/lib/format';
-import { outlineButton } from '@/ui/outlineButton';
 import { Skeleton } from '@/ui/Skeleton';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /** "Base resume · Updated 2 days ago", "For Google · Updated last week", as mobile's sheet words it. */
 export function resumeMeta(resume: Resume): string {
@@ -124,7 +124,7 @@ function DialogBody({
                 type="button"
                 onClick={onRetry}
                 className={cn(
-                  outlineButton,
+                  BUTTON_VARIANT.secondary,
                   'h-control-md rounded-md px-3 text-body-s font-semibold',
                 )}
               >

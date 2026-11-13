@@ -7,10 +7,10 @@ import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 import { Check } from '@/ui/lineIcons';
-import { outlineButton } from '@/ui/outlineButton';
 import { buttonClass } from '@/ui/Button';
 import { Skeleton } from '@/ui/Skeleton';
 import { textLink } from '@/ui/textLink';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const field =
   'rounded-md border border-border-default bg-surface-card text-body-m text-text-primary transition-colors duration-press ease-standard hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
@@ -134,7 +134,10 @@ export function TypedFigure({
               onSave(null);
               onDone();
             }}
-            className={cn(outlineButton, 'h-8 rounded-sm px-3.5 text-body-m font-semibold')}
+            className={cn(
+              BUTTON_VARIANT.secondary,
+              'h-8 rounded-sm px-3.5 text-body-m font-semibold',
+            )}
           >
             Keep the original
           </button>

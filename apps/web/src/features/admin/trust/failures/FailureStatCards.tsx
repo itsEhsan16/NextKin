@@ -35,7 +35,7 @@ export function FailureStatCards({
   const value = (pick: (s: FailureStats) => string) => (failed ? '—' : s && pick(s));
   const caption = (pick: (s: FailureStats) => string) => (failed ? 'Couldn’t load' : s && pick(s));
   return (
-    <div className="grid grid-cols-2 gap-4 @min-[1100px]/admin:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 @admin-lg/admin:grid-cols-4">
       <StatCard
         icon="FileX02"
         title="Failed (30 days)"

@@ -6,8 +6,8 @@ import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import { ChevronDownIcon } from '@/ui/icons';
 import { Check } from '@/ui/lineIcons';
 import { chevronTurn, menuSurfaceMotion, menuTrigger } from '@/ui/menuMotion';
-import { outlineButton } from '@/ui/outlineButton';
 import { cn } from '@/lib/cn';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /**
  * The page's design (toreview §124). Each is one column of real text with standard headings, so
@@ -60,7 +60,7 @@ export function TemplatePicker({
           type="button"
           aria-label={`Template: ${current.name}`}
           className={cn(
-            outlineButton,
+            BUTTON_VARIANT.secondary,
             menuTrigger,
             'h-control-sm gap-2 rounded-md px-3 text-body-m font-semibold',
           )}

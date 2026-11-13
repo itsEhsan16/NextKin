@@ -86,7 +86,7 @@ function Body({
           <div className="flex flex-wrap items-center gap-2.5">
             <p
               key={kind}
-              className="animate-reveal text-display-l font-semibold tracking-[-0.015em] text-text-primary"
+              className="animate-reveal text-display-l font-semibold tracking-display text-text-primary"
             >
               {formatCount(runs)}
             </p>

@@ -14,7 +14,6 @@ import { tailorPath, useTailorTarget } from '@/features/tailor/tailorTarget';
 import { JobLogoTile } from '@/features/tailor/flow/EntityRow';
 import { cn } from '@/lib/cn';
 import { AtsCheckIllustration } from '@/ui/illustrations';
-import { outlineButton } from '@/ui/outlineButton';
 import { pageFrame } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StableLabel } from '@/ui/StableLabel';
@@ -29,6 +28,7 @@ import { FlowHeader } from '../jobFlow/FlowChrome';
 import { JOB_FLOWS, type PickedJob } from '../jobFlow/jobFlow';
 import { JobStep } from '../jobFlow/JobStep';
 import { atsLines } from '../runLines';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 export type AtsCheckScreenProps = { resumeId?: string; step?: 'job'; runId?: string };
 
@@ -169,7 +169,10 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
                   router.replace(atsHref({ ...(resumeId ? { resumeId } : {}), step: 'job' })),
               })
             }
-            className={cn(outlineButton, 'h-control-lg rounded-md px-5 text-body-l font-semibold')}
+            className={cn(
+              BUTTON_VARIANT.secondary,
+              'h-control-lg rounded-md px-5 text-body-l font-semibold',
+            )}
           >
             <StableLabel label="Cancel" busyLabel="Cancelling…" busy={cancel.isPending} />
           </button>

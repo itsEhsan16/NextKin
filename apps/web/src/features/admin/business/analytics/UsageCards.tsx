@@ -134,7 +134,7 @@ export function QuotaConsumptionCard({ quota }: { quota: AnalyticsQuota | null }
         <>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
-              <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+              <p className="animate-reveal text-display-l font-semibold tracking-display text-text-primary">
                 {formatRate(quota.atCapShare)}
               </p>
               {quota.deltaPoints !== null && (

@@ -91,10 +91,7 @@ export function CodeInput({
       {digits.map((digit, index) => (
         <span key={index} className="contents">
           {index === 3 && (
-            <span
-              aria-hidden
-              className="text-[26.4px] font-medium leading-8 tracking-[-0.012em] text-neutral-300"
-            >
+            <span aria-hidden className="text-admin-h1 font-medium tracking-title text-neutral-300">
               –
             </span>
           )}
@@ -128,7 +125,7 @@ export function CodeInput({
               if (isComplete(code)) onComplete(code);
             }}
             className={cn(
-              'h-14 w-12 rounded-[10px] border bg-surface-card text-center text-display-l font-semibold tracking-[-0.01em] text-text-primary caret-brand-600 shadow-xs outline-none transition-[border-color,box-shadow] duration-fast ease-standard placeholder:text-neutral-300 focus:placeholder:text-transparent',
+              'h-14 w-12 rounded-admin-md border bg-surface-card text-center text-display-l font-semibold tracking-heading text-text-primary caret-brand-600 shadow-xs outline-none transition-field duration-fast ease-standard placeholder:text-neutral-300 focus:placeholder:text-transparent',
               'focus:border-2 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/24',
               invalid ? 'border-danger-600' : 'border-neutral-300',
             )}

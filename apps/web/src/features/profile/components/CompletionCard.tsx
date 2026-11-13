@@ -1,7 +1,6 @@
 import type { Profile, User } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
-import { brandButton } from '@/ui/brandButton';
 import { ArrowRightIcon, CheckCircleIcon } from '@/ui/icons';
 import { ScoreRing } from '@/ui/ScoreRing';
 
@@ -9,6 +8,7 @@ import { completionItems } from '@/features/account/accountLibrary';
 import { cardPad, cardSurface } from '@/ui/Card';
 
 import type { ProfileTab } from '../profileLibrary';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /** Where each checklist item is filled in. */
 const ITEM_TAB: Record<string, ProfileTab> = {
@@ -89,7 +89,7 @@ export function CompletionCard({
       <button
         type="button"
         className={cn(
-          brandButton,
+          BUTTON_VARIANT.primary,
           'mt-6 h-control-lg w-full gap-2 rounded-md text-body-m font-semibold',
         )}
         onClick={() => {

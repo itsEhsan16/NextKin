@@ -23,10 +23,10 @@ describe('TopBar', () => {
     expect(
       screen.getByRole('searchbox', { name: 'Search jobs, skills, companies' }),
     ).toBeInTheDocument();
-    // Upload New JD opens the JD upload page (247:2).
-    expect(screen.getByRole('link', { name: 'Upload New JD' })).toHaveAttribute(
+    // Build Resume opens the job step of the one resume flow (toreview §203).
+    expect(screen.getByRole('link', { name: 'Build Resume' })).toHaveAttribute(
       'href',
-      '/upload-jd',
+      '/create/build',
     );
     expect(screen.getByRole('link', { name: /^Notifications/ })).toHaveAttribute(
       'href',
@@ -75,15 +75,7 @@ describe('TopBar', () => {
 
     // 286:2026 draws "Upload New Document"; nothing is behind it yet.
     expect(screen.getByRole('button', { name: 'Upload New Document' })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Upload New JD' })).not.toBeInTheDocument();
-  });
-
-  it("draws no way back on the upload page, whose title sits in the bar's band", () => {
-    onPage('/upload-jd');
-    renderWithQuery(<TopBar />);
-
-    expect(screen.queryByRole('link', { name: 'Back to Jobs' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Upload New JD' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Build Resume' })).not.toBeInTheDocument();
   });
 
   // Redesign R4 (audit SH-04): the ⌘K hint promised a search that went nowhere.

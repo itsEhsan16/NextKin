@@ -69,7 +69,7 @@ export function ReportCard({
 
       <div className="flex flex-col gap-2">
         <p className="text-body-s font-medium text-text-secondary">Reporter’s reason</p>
-        <blockquote className="rounded-[10px] border border-neutral-200 bg-neutral-50 px-3.5 py-3 text-body-s text-neutral-800">
+        <blockquote className="rounded-admin-md border border-neutral-200 bg-neutral-50 px-3.5 py-3 text-body-s text-neutral-800">
           {report.reason}
         </blockquote>
       </div>

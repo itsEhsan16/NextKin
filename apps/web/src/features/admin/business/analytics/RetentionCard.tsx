@@ -59,7 +59,7 @@ function Heatmap({ retention }: { retention: AnalyticsRetention }) {
             key={rate}
             aria-hidden
             style={{ backgroundColor: fillOf(rate) }}
-            className="h-2.5 w-5 rounded-[2px]"
+            className="h-2.5 w-5 rounded-xs"
           />
         ))}
         <span>100%</span>

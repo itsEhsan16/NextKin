@@ -6,7 +6,6 @@ import { SIGN_IN } from '@/lib/dataSource';
 import { signOut } from '@/lib/signOut';
 import { cardPad, cardSurface } from '@/ui/Card';
 import { showToast } from '@/lib/toast';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
 import { fieldBox } from '@/ui/fieldBox';
 import { InfoCircleIcon } from '@/ui/icons';
 import {
@@ -17,10 +16,10 @@ import {
   SettingsMatchScoreIllustration,
   SettingsResumesIllustration,
 } from '@/ui/illustrations';
-import { outlineButton } from '@/ui/outlineButton';
 import { pressable } from '@/ui/pressable';
 import { StableLabel } from '@/ui/StableLabel';
 import { Soon, soonControl } from '@/ui/Soon';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /** What typing unlocks the button (467:628). */
 const CONFIRM_WORD = 'DELETE';
@@ -144,7 +143,7 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
             type="button"
             className={cn(
               soonControl,
-              brandOutlineButton,
+              BUTTON_VARIANT['brand-secondary'],
               'h-control-md shrink-0 rounded-md px-5 text-body-m',
             )}
           >
@@ -177,7 +176,7 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
             setTyped('');
             onCancel();
           }}
-          className={cn(outlineButton, 'h-control-lg rounded-md px-6 text-body-m')}
+          className={cn(BUTTON_VARIANT.secondary, 'h-control-lg rounded-md px-6 text-body-m')}
         >
           Cancel
         </button>

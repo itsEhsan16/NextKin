@@ -47,7 +47,7 @@ export function QueueItem({
         onClick={onSelect}
         aria-current={selected ? 'true' : undefined}
         className={cn(
-          'flex w-full items-center gap-3 rounded-[10px] p-3 text-left transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-brand-600',
+          'flex w-full items-center gap-3 rounded-admin-md p-3 text-left transition-colors duration-press ease-standard focus-visible:outline-2 focus-visible:outline-brand-600',
           // The board's chosen item carries a 1px border (68px); the rest have none (66px).
           selected ? 'border border-brand-100 bg-brand-50' : 'hover:bg-neutral-50',
         )}
@@ -81,11 +81,11 @@ export function ChangeSummary({ change }: { change: KbChange }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-[10px] border border-neutral-200 bg-surface-card text-neutral-700 shadow-xs">
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-admin-md border border-neutral-200 bg-surface-card text-neutral-700 shadow-xs">
           <AdminIcon name={kind.icon} size="xl" />
         </span>
         <div className="flex min-w-0 flex-col gap-2">
-          <h3 className="text-h2 font-semibold leading-7 tracking-[-0.005em] text-text-primary">
+          <h3 className="text-h2 font-semibold leading-7 tracking-snug text-text-primary">
             {change.detail.heading}
           </h3>
           <div className="flex flex-wrap gap-2">

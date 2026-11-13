@@ -157,7 +157,7 @@ export function SignInScreen() {
               size="xl"
               pill
               loading={busy}
-              className="mt-1 w-full max-lg:h-14 max-lg:bg-linear-to-r max-lg:from-brand-600 max-lg:to-border-selected max-lg:shadow-[0_14px_28px_-10px_var(--color-brand-600)]"
+              className="mt-1 w-full max-lg:h-14 max-lg:bg-linear-to-r max-lg:from-brand-600 max-lg:to-border-selected max-lg:shadow-brand-glow"
             >
               {busy ? 'Signing in…' : 'Sign in'}
               {!busy && <ArrowRight className={cn(iconSize.md, 'lg:hidden')} />}

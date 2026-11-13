@@ -12,12 +12,12 @@ import { cn } from '@/lib/cn';
 import { Callout } from '@/ui/Callout';
 import { cardPad, cardSurface } from '@/ui/Card';
 import { showToast } from '@/lib/toast';
-import { brandButton } from '@/ui/brandButton';
 import { fieldBox } from '@/ui/fieldBox';
 import { MailIcon, SendIcon } from '@/ui/icons';
 import { SettingsEmailIllustration } from '@/ui/illustrations';
 import { SelectField } from '@/ui/SelectField';
 import { StableLabel } from '@/ui/StableLabel';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const LABEL = 'text-body-m font-medium text-text-primary';
 const HINT = 'mt-1.5 text-body-s text-text-tertiary';
@@ -151,7 +151,7 @@ export function MessageSupportCard() {
         type="submit"
         aria-disabled={submit.isPending}
         className={cn(
-          brandButton,
+          BUTTON_VARIANT.primary,
           'mt-5 h-control-lg w-full gap-2 rounded-md text-body-m font-semibold aria-disabled:cursor-default aria-disabled:opacity-60',
         )}
       >

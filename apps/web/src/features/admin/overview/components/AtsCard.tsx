@@ -30,7 +30,7 @@ export function AtsCard({ ats }: { ats: AdminAtsDistribution | null }) {
         <>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
-              <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+              <p className="animate-reveal text-display-l font-semibold tracking-display text-text-primary">
                 {ats.mean !== null ? ats.mean : formatCount(checks)}
               </p>
               {/* A change in the mean score is in score points, written bare as the board does

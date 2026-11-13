@@ -77,7 +77,7 @@ export function PlansScreen() {
           />
         </AdminCard>
       ) : (
-        <div className="grid gap-4 @min-[1100px]/admin:grid-cols-3">
+        <div className="grid gap-4 @admin-lg/admin:grid-cols-3">
           {plans.data
             ? all.map((plan) => (
                 <PlanCard

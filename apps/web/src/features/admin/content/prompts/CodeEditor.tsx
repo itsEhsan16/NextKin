@@ -24,7 +24,7 @@ function Highlighted({ line }: { line: string }) {
         part.startsWith('{{') ? (
           <span
             key={index}
-            className="-mx-[3px] inline-block rounded-[4px] border border-brand-100 bg-brand-50 px-0.5 font-medium leading-[20px] tracking-[-0.012em] text-brand-700"
+            className="-mx-[3px] inline-block rounded-tag border border-brand-100 bg-brand-50 px-0.5 font-medium leading-[20px] tracking-title text-brand-700"
           >
             {part}
           </span>

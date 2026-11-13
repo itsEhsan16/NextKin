@@ -103,7 +103,7 @@ export function JdPageScreen({ id }: { id: string }) {
 
   return (
     <div className={cn(pageFrame, 'pb-8')}>
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_var(--spacing-aside-rail)]">
         {!view || !draft.data ? (
           <Skeleton className="h-192 rounded-lg" />
         ) : (

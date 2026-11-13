@@ -99,7 +99,7 @@ export function SkillsScreen() {
         </AdminCard>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 @min-[1100px]/admin:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 @admin-lg/admin:grid-cols-4">
             <StatCard
               icon="Tag01"
               title="Skills"
@@ -127,8 +127,8 @@ export function SkillsScreen() {
             />
           </div>
 
-          <div className="grid items-start gap-6 @min-[1200px]/admin:grid-cols-[320px_minmax(0,1fr)]">
-            <div className="grid gap-6 @min-[900px]/admin:grid-cols-2 @min-[1200px]/admin:grid-cols-1">
+          <div className="grid items-start gap-6 @admin-xl/admin:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="grid gap-6 @admin-sm/admin:grid-cols-2 @admin-xl/admin:grid-cols-1">
               {data ? (
                 <>
                   <TaxonomyCard

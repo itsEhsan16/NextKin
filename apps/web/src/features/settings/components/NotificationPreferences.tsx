@@ -28,7 +28,6 @@ import {
   SettingsPrivacyIllustration,
   SettingsSessionsIllustration,
 } from '@/ui/illustrations';
-import { outlineButton } from '@/ui/outlineButton';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { Switch } from '@/ui/Switch';
@@ -40,6 +39,7 @@ import {
   withTopicChannel,
 } from '../notificationsLibrary';
 import { Soon, soonControl } from '@/ui/Soon';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 type Glyph = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -114,7 +114,7 @@ export function NotificationPreferences() {
           disabled={resetting}
           onClick={() => reset.mutate()}
           className={cn(
-            outlineButton,
+            BUTTON_VARIANT.secondary,
             'h-control-sm shrink-0 gap-1.5 rounded-md px-3.5 text-body-s font-semibold',
           )}
         >

@@ -142,7 +142,7 @@ describe('Web onboarding · finish', () => {
 
       expect(screen.getByRole('link', { name: /Add a job you want/ })).toHaveAttribute(
         'href',
-        '/upload-jd',
+        '/create/build',
       );
       expect(screen.getByRole('img', { name: 'Done' })).toBeInTheDocument();
 

@@ -17,12 +17,12 @@ import {
   LinkIcon,
 } from '@/ui/icons';
 import { cardPad, cardSurface } from '@/ui/Card';
-import { outlineButton } from '@/ui/outlineButton';
 import { Tag } from '@/ui/Tag';
 
 import { FORMAT_LABEL, KIND_LABEL, KIND_TONE } from '../documentLibrary';
 import { FileTypeTile } from './FileTypeTile';
 import { Soon, soonControl } from '@/ui/Soon';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const ACTION = 'h-control-lg gap-2 whitespace-nowrap rounded-md px-3 text-body-l font-semibold';
 
@@ -136,7 +136,7 @@ export function ViewerDetailsCard({
           <button
             aria-disabled="true"
             type="button"
-            className={cn(outlineButton, ACTION, 'flex-1', soonControl)}
+            className={cn(BUTTON_VARIANT.secondary, ACTION, 'flex-1', soonControl)}
           >
             <DownloadIcon aria-hidden className="size-4 shrink-0 text-text-secondary" />
             Download
@@ -146,7 +146,7 @@ export function ViewerDetailsCard({
           <button
             aria-disabled="true"
             type="button"
-            className={cn(outlineButton, ACTION, 'flex-1', soonControl)}
+            className={cn(BUTTON_VARIANT.secondary, ACTION, 'flex-1', soonControl)}
           >
             <LinkIcon aria-hidden className="size-4 shrink-0 text-text-secondary" />
             Share
@@ -157,7 +157,11 @@ export function ViewerDetailsCard({
             aria-disabled="true"
             type="button"
             aria-label="More actions"
-            className={cn(soonControl, outlineButton, 'size-control-lg shrink-0 rounded-full')}
+            className={cn(
+              soonControl,
+              BUTTON_VARIANT.secondary,
+              'size-control-lg shrink-0 rounded-full',
+            )}
           >
             <EllipsisIcon aria-hidden className="size-4 text-text-secondary" />
           </button>

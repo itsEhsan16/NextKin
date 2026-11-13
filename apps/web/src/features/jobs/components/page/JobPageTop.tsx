@@ -7,9 +7,7 @@ import type { ReactNode } from 'react';
 
 import { useRaiseApplyAsk } from '@/features/applications/applyAsk';
 import { cn } from '@/lib/cn';
-import { formatApplicants, formatPostedAge } from '@/lib/format';
 import { jdHref } from '@/features/jd/jdHref';
-import { brandButton } from '@/ui/brandButton';
 import { buttonClass } from '@/ui/Button';
 import { Edit05 } from '@/ui/lineIcons';
 import { iconButton } from '@/ui/iconButton';
@@ -18,6 +16,7 @@ import { pressable } from '@/ui/pressable';
 
 import { applyUrl } from '../../jobPageLibrary';
 import { SaveButton } from '../SaveButton';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 export type JobPageTab = 'overview' | 'company';
 
@@ -38,8 +37,9 @@ type ListingBar = {
 type JdBar = { variant: 'jd'; backHref: Route; backLabel: string; actions?: ReactNode };
 
 /**
- * The card's own bar (730:4): back to the jobs, the Overview and Company tabs, when it was posted
- * and how many applied, Save, and Apply on the employer's site. The application happens there, so
+ * The card's own bar (730:4): back to the jobs, the Overview and Company tabs, Save, and Apply on
+ * the employer's site. When it was posted and how many applied sit under the facts (owner,
+ * 2026-11-13). The application happens there, so
  * the button opens it in a new tab.
  *
  * On a job description's page the bar keeps its back button and Apply (only when the JD came from
@@ -75,7 +75,10 @@ function ApplyLink({ job }: { job: Job }) {
       target="_blank"
       rel="noreferrer"
       onClick={() => raise({ jobId: job.id })}
-      className={cn(brandButton, 'h-control-md gap-2 rounded-full px-4 text-body-m font-semibold')}
+      className={cn(
+        BUTTON_VARIANT.primary,
+        'h-control-md gap-2 rounded-full px-4 text-body-m font-semibold',
+      )}
     >
       {/* "Apply" alone below 1280, where the bar is the card's width beside the rail (JB-19);
           the rest stays for screen readers. */}
@@ -140,18 +143,6 @@ function ListingBarEnd({ job, tab, onTab, onToggleSave, savePending }: { job: Jo
       {/* A closed listing keeps its page, but there's nothing to apply to (audit JB-26); and
           without a link, Apply would have opened an empty href. */}
       {!job.unavailable && applyUrl(job) && <ApplyLink job={job} />}
-      {/* The freshness chips: beside the actions from 1280, on their own line below, so the
-          actions stay together and in order (audit JB-19). */}
-      <span className="flex items-center gap-2 max-xl:order-last max-xl:w-full max-xl:pl-10">
-        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-caption-m text-text-brand">
-          Posted {formatPostedAge(job.postedAt).replace(/^1 day ago$/, 'yesterday')}
-        </span>
-        {job.applicantsCount != null && (
-          <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-caption-m text-text-secondary">
-            {formatApplicants(job.applicantsCount).replace(/\+? applied$/, ' applicants')}
-          </span>
-        )}
-      </span>
       {job.unavailable && (
         <p
           role="status"

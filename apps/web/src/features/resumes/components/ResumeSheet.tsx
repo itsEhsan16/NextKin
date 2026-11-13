@@ -50,7 +50,7 @@ export function ResumeSheet({
   const shownName = body.header?.name ?? name;
 
   return (
-    <div className={cn('rounded-md border border-border-card px-4 pb-4 pt-5', className)}>
+    <div className={cn('rounded-md border border-border-default px-4 pb-4 pt-5', className)}>
       <h3 className="text-h2 text-text-primary">{shownName}</h3>
       {body.headline && (
         <p className="mt-0.5 text-body-m font-semibold text-text-secondary">{body.headline}</p>

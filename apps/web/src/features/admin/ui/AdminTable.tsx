@@ -41,7 +41,7 @@ export function SortHeader({
       type="button"
       onClick={onToggle}
       aria-label={`Sort by ${label}${direction ? `, ${direction === 'asc' ? 'ascending' : 'descending'}` : ''}`}
-      className="-mx-1 inline-flex items-center gap-3 rounded-[4px] px-1 hover:text-text-primary focus-visible:outline-2 focus-visible:outline-brand-600"
+      className="-mx-1 inline-flex items-center gap-3 rounded-tag px-1 hover:text-text-primary focus-visible:outline-2 focus-visible:outline-brand-600"
     >
       {label}
       <AdminIcon
@@ -76,7 +76,7 @@ export function AdminCheckbox({
           if (element) element.indeterminate = indeterminate;
         }}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.checked)}
-        className="peer absolute inset-0 cursor-pointer appearance-none rounded-[4px] border border-neutral-300 bg-surface-card transition-colors duration-press ease-standard checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className="peer absolute inset-0 cursor-pointer appearance-none rounded-tag border border-neutral-300 bg-surface-card transition-colors duration-press ease-standard checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       />
       {indeterminate ? (
         <span className="pointer-events-none relative m-auto h-0.5 w-2 rounded-full bg-text-inverse" />

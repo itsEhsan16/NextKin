@@ -77,7 +77,7 @@ function Spread({ ats, checks }: { ats: AnalyticsAts; checks: number }) {
     <>
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2.5">
-          <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+          <p className="animate-reveal text-display-l font-semibold tracking-display text-text-primary">
             {ats.mean ?? formatCount(checks)}
           </p>
           {ats.deltaPoints !== null && (
@@ -110,7 +110,7 @@ function Spread({ ats, checks }: { ats: AnalyticsAts; checks: number }) {
                     animationDelay: `calc(${index} * var(--stagger-step))`,
                   }}
                   className={cn(
-                    'w-full origin-bottom animate-bar-grow rounded-t-[4px] transition-[opacity] duration-fast ease-standard group-focus-visible/band:ring-2 group-focus-visible/band:ring-brand-600 group-focus-visible/band:ring-offset-1',
+                    'w-full origin-bottom animate-bar-grow rounded-t-tag transition-[opacity] duration-fast ease-standard group-focus-visible/band:ring-2 group-focus-visible/band:ring-brand-600 group-focus-visible/band:ring-offset-1',
                     fill(index, bucket.from),
                     active !== null && !shown && 'opacity-35',
                   )}
@@ -119,7 +119,7 @@ function Spread({ ats, checks }: { ats: AnalyticsAts; checks: number }) {
                   <div
                     role="tooltip"
                     className={cn(
-                      'pointer-events-none absolute bottom-[calc(100%+8px)] z-20 w-max animate-pop-in rounded-sm border border-neutral-200 bg-surface-card px-3 py-1.5 text-caption-m shadow-popover',
+                      'pointer-events-none absolute bottom-[calc(100%+8px)] z-tooltip w-max animate-pop-in rounded-sm border border-neutral-200 bg-surface-card px-3 py-1.5 text-caption-m shadow-popover',
                       index < 2 ? 'left-0' : index > 7 ? 'right-0' : 'left-1/2 -translate-x-1/2',
                     )}
                   >

@@ -65,11 +65,12 @@ describe('JobsScreen', () => {
     const adobe = within(select.parentElement as HTMLElement);
 
     expect(screen.getAllByText('Strong match').length).toBeGreaterThanOrEqual(5);
-    // Why it matches comes from the engine's criteria, with what the band rests on (redesign R5a,
-    // audits JB-04/JB-05); the editorial "Matches your…" line is gone.
-    expect(screen.queryByText('Matches your design systems work and remote preference')).toBeNull();
-    expect(adobe.getByText('4 of 4 required')).toBeInTheDocument();
-    expect(adobe.getAllByText('(met)', { exact: false }).length).toBeGreaterThan(0);
+    // The board's one line beside the AI sparkle, and the band without "N of M required" under it
+    // (owner, 2026-11-13: the card's upper part as the design draws it).
+    expect(
+      adobe.getByText('Matches your design systems work and remote preference'),
+    ).toBeInTheDocument();
+    expect(adobe.queryByText('4 of 4 required')).toBeNull();
     // Adobe's location is "Remote", so its workplace pill isn't repeated.
     expect(adobe.getAllByText('Remote', { selector: 'li' })).toHaveLength(1);
     expect(screen.getByText('₹15–19 LPA · est.')).toBeInTheDocument();
@@ -88,9 +89,8 @@ describe('JobsScreen', () => {
     expect(
       screen.getByText('Discover jobs that match your skills and career goals.'),
     ).toBeInTheDocument();
-    // The source text layer reads "Opportuniies" — the spelling is fixed here; the curly quotes
-    // and the line break are the board's.
-    expect(screen.getByText('“Better Opportunities Ahead”')).toBeInTheDocument();
+    // The header's character and its caption are gone (owner, 2026-11-13).
+    expect(screen.queryByText('“Better Opportunities Ahead”')).toBeNull();
     expect(screen.getByPlaceholderText('Job title, company, or keyword')).toBeInTheDocument();
     for (const label of [
       'Location',
@@ -146,20 +146,22 @@ describe('JobsScreen', () => {
       { timeout: 2000 },
     );
     expect(applied).toHaveAttribute('href', '/applications?application=app_web_google');
-    // The apply action and Tailor resume sit straight under the meta line, above the tabs, so they
-    // are in the card's first screenful. "View job details" went: the title opens the job's page
-    // (redesign R5a, audit JB-13).
+    // The board's card, back at the owner's word (2026-11-13): Apply (here, the way to the
+    // application) and View Job under the meta line, above the tabs; the ⋯ menu; the match badge;
+    // the tailoring callout at the foot.
     const tabs = within(panel).getByRole('tablist');
-    const tailor = within(panel).getByRole('link', { name: 'Tailor resume' });
-    expect(tailor).toHaveAttribute('href', '/jobs/job_google/tailor');
-    for (const action of [applied, tailor]) {
+    const view = within(panel).getByRole('link', { name: 'View Job' });
+    expect(view).toHaveAttribute('href', '/jobs/job_google');
+    for (const action of [applied, view]) {
       expect(action.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
-    expect(within(panel).queryByRole('link', { name: 'View job details' })).toBeNull();
-    // The verdict is a scored panel with its reasons (the whole listing was read).
     expect(
-      within(panel).getByRole('img', { name: 'Job match, Strong match: 98 out of 100' }),
+      within(panel).getByRole('button', { name: 'More for Lead UX Designer' }),
     ).toBeInTheDocument();
+    expect(within(panel).getByText('98% Match')).toBeInTheDocument();
+    expect(
+      within(panel).getByRole('link', { name: /Tailor your resume for this job/ }),
+    ).toHaveAttribute('href', '/jobs/job_google/tailor');
     expect(
       within(panel).getByRole('tab', { name: 'Overview', selected: true }),
     ).toBeInTheDocument();
@@ -171,7 +173,7 @@ describe('JobsScreen', () => {
     expect(
       await screen.findByText('No jobs match your filters', {}, { timeout: SETTLE_MS.empty }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Select a job')).toBeInTheDocument();
+    expect(screen.getByText('Select a job from the list to see its details.')).toBeInTheDocument();
   });
 
   it('shows the page-level error state when the user query fails', async () => {
@@ -226,8 +228,10 @@ describe('JobsScreen', () => {
     expect(screen.getByRole('region', { name: 'Sr. UX Designer at Adobe' })).toBeInTheDocument();
   });
 
-  it('never says "Select a job" while the first load is under way', async () => {
-    const seen = recordValues(() => screen.queryByText('Select a job') !== null);
+  it('never shows the blank no-job card while the first load is under way', async () => {
+    const seen = recordValues(
+      () => screen.queryByText('Select a job from the list to see its details.') !== null,
+    );
     renderWithQuery(<JobsScreen />);
     await openPanel();
 
@@ -356,26 +360,27 @@ describe('JobsScreen', () => {
 
     const panel = await openPanel();
 
-    // Three tabs since redesign R5a: Benefits moved into Overview, and Reviews (always empty) went.
+    // The board's five tabs (owner, 2026-11-13).
     expect(
       within(panel)
         .getAllByRole('tab')
         .map((tab) => tab.textContent),
-    ).toEqual(['Overview', 'Skills', 'Company']);
+    ).toEqual(['Overview', 'About', 'Skills', 'Benefits', 'Reviews']);
 
-    await user.click(within(panel).getByRole('tab', { name: 'Company' }));
+    await user.click(within(panel).getByRole('tab', { name: 'About' }));
     expect(await within(panel).findByText('google.com')).toBeInTheDocument();
 
     // Arrow keys move between tabs and select them (audit JB-11).
-    await user.keyboard('{ArrowLeft}');
+    await user.keyboard('{ArrowRight}');
     expect(within(panel).getByRole('tab', { name: 'Skills', selected: true })).toHaveFocus();
 
-    // The listing's own benefits sit in Overview, under "Show more".
-    await user.click(within(panel).getByRole('tab', { name: 'Overview' }));
-    await user.click(within(panel).getByRole('button', { name: 'Show more' }));
+    // The listing's own benefits have their tab again; Reviews says plainly there are none.
+    await user.click(within(panel).getByRole('tab', { name: 'Benefits' }));
     expect(
       await within(panel).findByText('Health insurance for you and your family'),
     ).toBeInTheDocument();
+    await user.click(within(panel).getByRole('tab', { name: 'Reviews' }));
+    expect(await within(panel).findByText('No reviews yet')).toBeInTheDocument();
   });
 
   it("offers the three sorts under the web board's labels", async () => {

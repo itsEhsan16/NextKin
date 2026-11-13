@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { JobsRoute } from '@/features/jobs/screens/JobsRoute';
 import { ProfileRoute } from '@/features/profile/screens/ProfileRoute';
 import { SettingsRoute } from '@/features/settings/screens/SettingsRoute';
-import { UploadJdRoute } from '@/features/upload/screens/UploadJdRoute';
 import { PageTransition } from '@/ui/PageTransition';
 
 let mockQuery = '';
@@ -26,9 +25,6 @@ jest.mock('@/features/profile/screens/ProfileScreen', () => ({
 }));
 jest.mock('@/features/settings/screens/SettingsScreen', () => ({
   SettingsScreen: mockProbe('settings'),
-}));
-jest.mock('@/features/upload/screens/UploadJdScreen', () => ({
-  UploadJdScreen: mockProbe('upload'),
 }));
 
 const propsOf = (name: string) => JSON.parse(screen.getByLabelText(name).textContent ?? '{}');
@@ -54,17 +50,6 @@ describe('route adapters', () => {
     mockQuery = 'tab=nonsense';
     render(<SettingsRoute />);
     expect(propsOf('settings')).toEqual({});
-
-    mockQuery = 'tab=file';
-    render(<UploadJdRoute />);
-    // One box since toreview §114: an old ?tab= link still lands on it, and is ignored.
-    expect(propsOf('upload')).toEqual({ intent: 'tailor' });
-  });
-
-  it('opens Upload a JD on building when Build Resume sent it (toreview §125)', () => {
-    mockQuery = 'for=build';
-    render(<UploadJdRoute />);
-    expect(propsOf('upload')).toEqual({ intent: 'build' });
   });
 });
 

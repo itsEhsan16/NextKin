@@ -57,11 +57,11 @@ export function KeywordRail({
       </div>
       <div className="hidden rounded-lg border border-border-subtle bg-surface-card p-3 @2xl/main:block">
         <p className="px-2 pb-3 pt-1 text-body-l font-bold text-text-primary">Categories</p>
-        <div className="relative flex flex-col gap-token-4">
+        <div className="relative flex flex-col gap-1">
           <SlidingHighlight
             index={index}
             row="var(--spacing-control-lg)"
-            gap="var(--spacing-token-4)"
+            gap="var(--spacing)"
             className="rounded-md bg-surface-brand"
           />
           {items.map((item) => {

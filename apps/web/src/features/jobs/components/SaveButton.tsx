@@ -1,7 +1,7 @@
 import { cn } from '@/lib/cn';
 import { BookmarkIcon } from '@/ui/icons';
 import { iconButton } from '@/ui/iconButton';
-import { outlineButton } from '@/ui/outlineButton';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 export type SaveButtonProps = {
   saved: boolean;
@@ -63,7 +63,7 @@ export function SaveButton({
       disabled={pending}
       aria-pressed={saved}
       className={cn(
-        outlineButton,
+        BUTTON_VARIANT.secondary,
         'flex h-control-lg w-full gap-2 rounded-md text-body-l font-semibold',
       )}
     >

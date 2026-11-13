@@ -19,16 +19,16 @@ export const pageFrame = `${pageColumn} pt-8`;
 export const topBarHeight = 'h-16';
 
 /** Exactly the window under the top bar: the list pages, whose one list is what scrolls. */
-export const pageFill = 'h-[calc(100dvh-4rem)]';
+export const pageFill = 'h-page-fill';
 
 /** At least the window under the top bar: error and coming-soon states, centred in it. */
-export const pageFillMin = 'min-h-[calc(100dvh-4rem)]';
+export const pageFillMin = 'min-h-page-fill';
 
 /** Where a column held in view sticks: 20px under the top bar's band, clear of its buttons. */
-export const stickyBelowTopBar = 'top-[5.25rem]';
+export const stickyBelowTopBar = 'top-below-topbar';
 
 /** The same, from 1024 up (where a rail column sticks). A literal, so Tailwind finds it. */
-export const stickyBelowTopBarLg = 'lg:top-[5.25rem]';
+export const stickyBelowTopBarLg = 'lg:top-below-topbar';
 
 /**
  * A page that starts inside the top bar's band, its title level with the bar's controls: every
@@ -43,4 +43,4 @@ export const stickyBelowTopBarLg = 'lg:top-[5.25rem]';
 export const pageFrameInBar = `${pageColumn} pt-8 xl:-mt-16 xl:pt-6`;
 
 /** The whole window, for a list page that starts inside the top bar's band (from 1280). */
-export const pageFillInBar = 'h-[calc(100dvh-4rem)] xl:h-dvh';
+export const pageFillInBar = 'h-page-fill xl:h-dvh';

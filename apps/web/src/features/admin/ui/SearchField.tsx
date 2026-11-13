@@ -18,7 +18,7 @@ export function SearchField({ value, onChange, placeholder, label, className }: 
   return (
     <label
       className={cn(
-        'flex h-[42px] w-[340px] items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card px-3 shadow-xs transition-[border-color,box-shadow] duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100',
+        'flex h-[42px] w-[340px] items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card px-3 shadow-xs transition-field duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100',
         className,
       )}
     >

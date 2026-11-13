@@ -43,16 +43,16 @@ function Stage({ document }: { document: CareerDocument }) {
       />
     );
   } else if (document.coverLetter) {
-    page = <Skeleton className="mx-auto aspect-[540/764] w-full max-w-[540px] rounded-sm" />;
+    page = <Skeleton className="mx-auto aspect-[540/764] w-full max-w-sheet rounded-sm" />;
   } else if (document.certificate) {
     page = (
-      <div className="mx-auto w-full max-w-[540px] rounded-sm bg-surface-card p-6 shadow-card">
+      <div className="mx-auto w-full max-w-sheet rounded-sm bg-surface-card p-6 shadow-card">
         <CertificateSheet certificate={document.certificate} />
       </div>
     );
   } else {
     page = (
-      <div className="mx-auto w-full max-w-[420px]">
+      <div className="mx-auto w-full max-w-form">
         <DocumentPreview document={document} />
       </div>
     );

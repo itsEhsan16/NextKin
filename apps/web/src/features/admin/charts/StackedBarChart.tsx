@@ -131,7 +131,7 @@ export function StackedBarChart({ days, kind }: StackedBarChartProps) {
                       height: at(runs),
                       animationDelay: `calc(${index} * var(--stagger-step))`,
                     }}
-                    className="relative flex w-[35px] max-w-[62%] origin-bottom animate-bar-grow flex-col-reverse overflow-hidden rounded-t-[4px] transition-[height] duration-base ease-standard"
+                    className="relative flex w-[35px] max-w-[62%] origin-bottom animate-bar-grow flex-col-reverse overflow-hidden rounded-t-tag transition-[height] duration-base ease-standard"
                   >
                     {kinds.map((k) => (
                       <span

@@ -41,9 +41,6 @@ export const colors = {
   borderDefault: '#e2e8f0',
   borderSubtle: '#f1f5f9',
   borderBrand: '#ede9fe',
-  borderDivider: '#e2e8f0',
-  borderFaint: '#f1f5f9',
-  borderCard: '#e2e8f0',
   borderSelected: '#6366f1',
 
   dangerDot: '#ff4148',
@@ -265,6 +262,12 @@ export const typography = {
   bodyS: [13, 20, 0, 400],
   captionM: [12, 18, 0, 500],
   micro: [11, 16, 0.2, 500],
+  /** The admin portal's sizes (its boards run 10% larger; redesign R8). */
+  adminDisplay: [32, 40, -2, 800],
+  adminBrand: [28, 34, -2, 800],
+  adminStat: [28.6, 37.4, -1.5, 600],
+  adminH1: [26.4, 32, -1, 600],
+  adminPrice: [22, 33, 0, 600],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
 export type TypographyRole = keyof typeof typography;
@@ -283,7 +286,21 @@ export type IconSize = keyof typeof iconSizes;
 /** The three control heights (`h-control-*`, `size-control-*`) — see theme.css. */
 export const controls = { sm: 36, md: 40, lg: 44, xl: 48 } as const;
 
-export const radii = { sm: 8, md: 12, lg: 16, xl: 20, '2xl': 24, panel: 24, full: 999 } as const;
+export const radii = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  '2xl': 24,
+  full: 999,
+  /** The small radii (admin boards, checkbox, chart bars; redesign R8). */
+  hairline: 1,
+  xs: 2,
+  checkbox: 3,
+  tag: 4,
+  'admin-sm': 6,
+  'admin-md': 10,
+} as const;
 
 /** Elevation (`toreview.md` §132): white cards on a grey canvas, lifting on hover. */
 export const shadows = {
@@ -300,6 +317,10 @@ export const shadows = {
   /** The admin boards' modal and side panel. */
   modal: '0 8px 8px -4px rgba(16, 24, 40, 0.03), 0 20px 24px -4px rgba(16, 24, 40, 0.08)',
   dialog: '0 24px 48px -12px rgba(15, 23, 42, 0.25)',
+  /** The top bar's rule while the page scrolls under it (`border-default`, resolved). */
+  hairlineBottom: '0 1px 0 #e2e8f0',
+  /** The sign-in hero's brand glow on narrow screens (`brand-600`, resolved). */
+  brandGlow: '0 14px 28px -10px #4f46e5',
   button: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 2px rgba(15, 23, 42, 0.12)',
 } as const;
 
@@ -318,6 +339,7 @@ export const motion = {
     float: 2800,
     think: 1400,
     sweep: 2000,
+    glint: 3600,
     /** One pass of the skeletons' diagonal light across the window (§196). */
     shimmer: 1600,
     /** How long a skeleton waits before it shows, so a quick load never flashes one (§196). */

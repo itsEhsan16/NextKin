@@ -236,7 +236,7 @@ export function AliasChips({
           key={alias}
           className={cn(
             'border border-neutral-200 px-2 py-0.5 text-caption-m text-neutral-700',
-            pill ? 'rounded-full bg-neutral-50' : 'rounded-[6px] bg-surface-card',
+            pill ? 'rounded-full bg-neutral-50' : 'rounded-admin-sm bg-surface-card',
           )}
         >
           {alias}

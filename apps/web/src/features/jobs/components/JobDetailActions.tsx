@@ -2,27 +2,26 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
-import { brandButton } from '@/ui/brandButton';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
-import { JobAiSparkleIllustration } from '@/ui/illustrations';
+import { buttonClass } from '@/ui/Button';
 import { ArrowRightIcon, ExternalLinkIcon } from '@/ui/icons';
-import { outlineButton } from '@/ui/outlineButton';
 
-import { tailorHref } from '../jobPageLibrary';
+import { jobPageHref } from '../jobPageLibrary';
 
 export type JobDetailActionsProps = {
   onApply: () => void;
   applied: boolean;
-  /** The job whose full page the second button opens (724:2). */
+  /** The job whose full page "View Job" opens (724:2). */
   jobId: string;
-  /** Once applied, the button becomes the way to that application (`toreview.md` §102). */
+  /** Once applied, the first button becomes the way to that application (`toreview.md` §102). */
   applicationHref?: Route;
 };
 
+const half = 'w-full';
+
 /**
- * "Apply Now" + "View job details" (304:2772) — two `control-lg` halves. The board's "Save Job"
- * gave way to the job's full page (724:2) at the owner's word; the list card's bookmark still
- * saves (`toreview.md` §104). NextKin submits nothing, so Apply opens the employer's page and the
+ * "Apply Now" + "View Job" (304:2772): two `lg` halves. The board's second button was "Save Job";
+ * the owner asked for the job's full page there (2026-11-13), and saving moved to the ⋯ menu and
+ * the list card's bookmark. NextKin submits nothing, so Apply opens the employer's page and the
  * app then asks whether they applied (owner, 2026-10-31).
  */
 export function JobDetailActions({
@@ -36,7 +35,7 @@ export function JobDetailActions({
       {applied && applicationHref ? (
         <Link
           href={applicationHref}
-          className={cn(outlineButton, 'h-control-lg gap-2 rounded-md text-body-l font-semibold')}
+          className={cn(buttonClass({ variant: 'secondary', size: 'lg' }), half)}
         >
           View application
           <ArrowRightIcon aria-hidden className="size-4" />
@@ -46,23 +45,18 @@ export function JobDetailActions({
           type="button"
           onClick={onApply}
           disabled={applied}
-          className={cn(brandButton, 'h-control-lg gap-2 rounded-md text-body-l font-semibold')}
+          className={cn(buttonClass({ size: 'lg' }), half)}
         >
           {applied ? 'Applied' : 'Apply Now'}
-          {!applied && <ExternalLinkIcon className="size-4" />}
+          {!applied && <ExternalLinkIcon aria-hidden className="size-4" />}
         </button>
       )}
-      {/* "View job details" went: the title already opens the job's page (audit JB-13). The
-          panel's tailor action sits here instead of in a callout at the foot of the card. */}
       <Link
-        href={tailorHref(jobId)}
-        className={cn(
-          brandOutlineButton,
-          'h-control-lg gap-2 rounded-md text-body-l font-semibold',
-        )}
+        href={jobPageHref(jobId)}
+        className={cn(buttonClass({ variant: 'secondary', size: 'lg' }), half)}
       >
-        <JobAiSparkleIllustration aria-hidden className="h-auto w-4 shrink-0" />
-        Tailor resume
+        View Job
+        <ArrowRightIcon aria-hidden className="size-4" />
       </Link>
     </div>
   );

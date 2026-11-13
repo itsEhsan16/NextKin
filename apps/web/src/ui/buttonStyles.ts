@@ -4,7 +4,7 @@ import { pressable } from './pressable';
  * Every button look in one place (redesign R3b, `doc/redesign/03-component-inventory.md` Button).
  * Nine helpers used to restate these, and the same "primary" rendered three ways: bevelled, flat
  * with a shadow, and flat without. `Button`/`buttonClass` read this map, and the old helper names
- * (`brandButton`, `outlineButton`, …) are aliases of its entries until every caller moves (R8).
+ * (`brandButton`, `outlineButton`, …) were aliases of its entries until R8 removed them.
  *
  * Whole literal strings on purpose: Tailwind finds classes by scanning source text, so a class
  * built by concatenation at runtime would never be generated.

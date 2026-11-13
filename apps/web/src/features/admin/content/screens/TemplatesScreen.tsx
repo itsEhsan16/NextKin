@@ -146,7 +146,7 @@ export function TemplatesScreen() {
           onAction={() => void templates.refetch()}
         />
       ) : templates.isPending ? (
-        <div aria-hidden className="grid gap-6 @min-[1100px]/admin:grid-cols-3">
+        <div aria-hidden className="grid gap-6 @admin-lg/admin:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (
             <Skeleton key={i} className="h-[469px] rounded-lg" />
           ))}
@@ -163,7 +163,7 @@ export function TemplatesScreen() {
           />
         </AdminCard>
       ) : (
-        <div className="grid gap-6 @min-[700px]/admin:grid-cols-2 @min-[1100px]/admin:grid-cols-3">
+        <div className="grid gap-6 @admin-xs/admin:grid-cols-2 @admin-lg/admin:grid-cols-3">
           {shown.map((template) => (
             <TemplateCard key={template.slug} template={template} />
           ))}

@@ -43,10 +43,13 @@ const nextConfig: NextConfig = {
 
   // The Account page became Profile (476:4, `toreview.md` §91); old links and bookmarks land there.
   // Tailor to a Job and Build Resume became one flow (owner, toreview §155): its step 2 offers both.
+  // The Upload a JD page went (owner, 2026-11-12, toreview §203): that flow's first step takes a
+  // pasted description, a link or a file.
   async redirects() {
     return [
       { source: '/account', destination: '/profile', permanent: false },
       { source: '/create/tailor', destination: '/create/build', permanent: false },
+      { source: '/upload-jd', destination: '/create/build', permanent: false },
     ];
   },
 

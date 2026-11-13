@@ -15,13 +15,13 @@ import { useReveal } from '@/lib/useReveal';
 import { cardSurface } from '@/ui/Card';
 import { AiSparkIcon, ArrowRightIcon, CheckCircleIcon } from '@/ui/icons';
 import { LogoMarkIllustration } from '@/ui/illustrations';
-import { outlineButton } from '@/ui/outlineButton';
 import { pageColumn } from '@/ui/pageFrame';
 import { ProgressBar } from '@/ui/ProgressBar';
 import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
 import { SCORE_TONE } from '@/ui/scoreTone';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /**
  * A shared ATS report, public (ImBackendImplementationPlan P11-10; V2 §4.1; SYS 05, 871:600). It
@@ -61,7 +61,7 @@ export function SharedReportScreen({ token }: { token: string }) {
           <Link
             href={(CLERK_ENABLED ? SIGN_UP : '/sign-in') as Route}
             className={cn(
-              outlineButton,
+              BUTTON_VARIANT.secondary,
               'h-control-md gap-2 whitespace-nowrap rounded-md px-4 text-body-m font-semibold',
             )}
           >

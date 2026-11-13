@@ -214,7 +214,7 @@ function DeletionStats({
     return stats ? text(stats) : 'Not connected yet';
   };
   return (
-    <div className="grid grid-cols-2 gap-4 @min-[1000px]/admin:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 @admin-md/admin:grid-cols-4">
       <StatCard
         icon="Hourglass01"
         title="Open"

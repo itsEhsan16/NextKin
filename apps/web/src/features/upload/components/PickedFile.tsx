@@ -23,7 +23,7 @@ export function PickedFile({
   reading?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border-card bg-surface-card px-3.5 py-3 shadow-raised">
+    <div className="flex items-center gap-3 rounded-lg border border-border-default bg-surface-card px-3.5 py-3 shadow-raised">
       {isPdfName(file.name) ? (
         <JdPdfFileIllustration className="h-9 w-auto shrink-0" />
       ) : (

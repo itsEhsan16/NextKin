@@ -168,7 +168,7 @@ export function Track({ share, fill, label }: { share: number; fill: string; lab
       <span
         style={{ width: `${pct}%` }}
         className={cn(
-          'block h-full animate-meter-grow rounded-full transition-[width] duration-base ease-standard',
+          'block h-full animate-meter-grow rounded-full transition-width duration-base ease-standard',
           fill,
         )}
       />

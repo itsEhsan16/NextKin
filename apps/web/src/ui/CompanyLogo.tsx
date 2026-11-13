@@ -44,7 +44,7 @@ export function CompanyLogo({ company, logoUrl, variant }: CompanyLogoProps) {
       className={cn(
         'flex shrink-0 items-center justify-center rounded-md',
         size,
-        framed && 'border border-border-faint bg-surface-card',
+        framed && 'border border-border-subtle bg-surface-card',
       )}
     >
       {renderLogo ? (

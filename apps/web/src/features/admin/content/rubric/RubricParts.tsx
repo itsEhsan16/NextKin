@@ -60,7 +60,7 @@ export function VersionsList({
               <label
                 key={v.version}
                 className={cn(
-                  'flex cursor-pointer items-center gap-3 rounded-[10px] p-3 transition-colors duration-press has-focus-visible:outline-2 has-focus-visible:outline-brand-600',
+                  'flex cursor-pointer items-center gap-3 rounded-admin-md p-3 transition-colors duration-press has-focus-visible:outline-2 has-focus-visible:outline-brand-600',
                   chosen
                     ? // Only the chosen row is outlined, so it is 2px taller, as drawn (408:3295).
                       'border border-brand-100 bg-brand-50'

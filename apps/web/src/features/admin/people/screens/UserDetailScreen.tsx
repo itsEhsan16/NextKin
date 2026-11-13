@@ -82,7 +82,7 @@ export function UserDetailScreen({ id }: { id: string }) {
       <header className="flex flex-wrap items-center gap-3">
         <PersonAvatar name={data.name} tint={AVATAR_TINTS[0]} size="lg" />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h1 className="text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+          <h1 className="text-display-l font-semibold tracking-display text-text-primary">
             {data.name}
           </h1>
           <p className="text-title-l font-normal tracking-normal text-text-secondary">
@@ -115,7 +115,7 @@ export function UserDetailScreen({ id }: { id: string }) {
         />
       </header>
 
-      <div className="grid items-start gap-6 @min-[1400px]/admin:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="grid items-start gap-6 @admin-2xl/admin:grid-cols-[minmax(0,1fr)_400px]">
         <div className="flex min-w-0 flex-col gap-6">
           <DetailTabs
             id={tabsId}
@@ -224,7 +224,7 @@ function TabBody({
     default:
       return (
         <div key="overview" className="flex animate-reveal flex-col gap-6">
-          <div className="grid gap-6 @min-[900px]/admin:grid-cols-2">
+          <div className="grid gap-6 @admin-sm/admin:grid-cols-2">
             <AccountCard user={user} />
             <UsageCard user={user} />
           </div>

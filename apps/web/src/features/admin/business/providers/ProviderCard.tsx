@@ -106,7 +106,7 @@ export function ProviderCard({ provider, index }: { provider: AdminJobProvider; 
             stays focusable while a change saves, so focus doesn't fall to the page. */}
         <label
           aria-busy={toggle.isPending || undefined}
-          className="relative isolate flex cursor-pointer after:absolute after:-inset-3 after:-z-10"
+          className="relative isolate flex cursor-pointer after:absolute after:-inset-3 after:z-behind"
         >
           <Switch
             checked={provider.enabled}
@@ -135,7 +135,7 @@ export function ProviderCard({ provider, index }: { provider: AdminJobProvider; 
         <Row>
           <span
             aria-hidden
-            className="flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-neutral-200 text-neutral-600 shadow-xs"
+            className="flex size-10 shrink-0 items-center justify-center rounded-admin-md border border-neutral-200 text-neutral-600 shadow-xs"
           >
             <AdminIcon name="Key01" />
           </span>

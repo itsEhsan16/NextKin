@@ -101,7 +101,7 @@ export function RetentionHeatmap({ retention }: { retention: AnalyticsRetention 
                   setAt({ row, col });
                   handlers.onFocus();
                 }}
-                className="group/cell relative rounded-[6px] outline-none"
+                className="group/cell relative rounded-admin-sm outline-none"
               >
                 <Swatch
                   cell={cell}
@@ -112,7 +112,7 @@ export function RetentionHeatmap({ retention }: { retention: AnalyticsRetention 
                 {active === key && 'rate' in cell && (
                   <div
                     role="tooltip"
-                    className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-20 w-max -translate-x-1/2 animate-pop-in rounded-sm border border-neutral-200 bg-surface-card px-3 py-1.5 text-caption-m shadow-popover"
+                    className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-tooltip w-max -translate-x-1/2 animate-pop-in rounded-sm border border-neutral-200 bg-surface-card px-3 py-1.5 text-caption-m shadow-popover"
                   >
                     <span className="font-semibold text-text-primary">
                       {cohort.label} · Week {col}
@@ -159,7 +159,7 @@ function Swatch({
       <span
         aria-hidden
         className={cn(
-          'flex h-[38px] items-center justify-center rounded-[6px] border border-neutral-100 bg-neutral-50 text-caption-m text-text-tertiary',
+          'flex h-[38px] items-center justify-center rounded-admin-sm border border-neutral-100 bg-neutral-50 text-caption-m text-text-tertiary',
           cell.state === 'future' && 'border-dashed',
           ring,
         )}
@@ -173,7 +173,7 @@ function Swatch({
       aria-hidden
       style={{ backgroundColor: fillOf(cell.rate) }}
       className={cn(
-        'flex h-[38px] cursor-default items-center justify-center rounded-[6px] text-caption-m font-semibold transition-[opacity,box-shadow] duration-fast ease-standard',
+        'flex h-[38px] cursor-default items-center justify-center rounded-admin-sm text-caption-m font-semibold transition-[opacity,box-shadow] duration-fast ease-standard',
         cell.rate >= 0.5 ? 'text-text-inverse' : 'text-text-primary',
         week === TARGET_WEEK && 'border-[1.5px] border-brand-700',
         dimmed && 'opacity-50',

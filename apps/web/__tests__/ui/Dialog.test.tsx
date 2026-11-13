@@ -18,7 +18,7 @@ describe('Dialog', () => {
       'z-modal',
       'rounded-2xl',
       'shadow-dialog',
-      'w-[min(640px,calc(100vw-2rem))]',
+      'w-dialog-lg',
     );
     expect(panel).toHaveAccessibleDescription('Choose one to tailor.');
     expect(document.querySelector('.z-overlay')).toHaveClass('bg-surface-overlay');

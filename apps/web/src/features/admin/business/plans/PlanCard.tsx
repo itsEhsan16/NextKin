@@ -62,7 +62,7 @@ export function PlanCard({ plan, badge, onEditQuotas }: PlanCardProps) {
     >
       <div className="flex flex-col gap-1">
         <p className="flex items-baseline gap-1.5">
-          <span className="text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+          <span className="text-display-l font-semibold tracking-display text-text-primary">
             {formatPrice(plan.prices.USD, 'USD')}
           </span>
           <span className="text-body-m text-text-secondary">/ {per}</span>
@@ -75,7 +75,7 @@ export function PlanCard({ plan, badge, onEditQuotas }: PlanCardProps) {
           <p className="text-body-s text-text-secondary">
             {free ? 'Active users on Free' : 'Active subscribers'}
           </p>
-          <p className="text-[22px] font-semibold leading-[33px] text-text-primary">
+          <p className="text-admin-price text-text-primary">
             {plan.active === null ? '—' : formatCount(plan.active)}
           </p>
         </div>

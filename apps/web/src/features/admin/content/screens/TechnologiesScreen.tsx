@@ -72,7 +72,7 @@ export function TechnologiesScreen() {
         </div>
       }
     >
-      <div className="grid grid-cols-2 gap-4 @min-[1100px]/admin:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 @admin-lg/admin:grid-cols-4">
         <StatCard
           icon="Database01"
           title="Technologies"

@@ -50,7 +50,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-neutral-900/30 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out lg:hidden" />
+          <Dialog.Overlay className="fixed inset-0 z-sidebar-scrim bg-neutral-900/30 data-[state=open]:animate-reveal data-[state=closed]:pointer-events-none data-[state=closed]:animate-fade-out lg:hidden" />
           <Dialog.Content
             aria-describedby={undefined}
             // Focus lands on the current page's row, not the first focusable item: that is the
@@ -66,7 +66,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               }
             }}
             onCloseAutoFocus={returnFocus}
-            className="fixed inset-y-0 left-0 z-50 shadow-popover outline-none data-[state=open]:animate-rise lg:hidden"
+            className="fixed inset-y-0 left-0 z-sidebar shadow-popover outline-none data-[state=open]:animate-rise lg:hidden"
           >
             <Dialog.Title className="sr-only">Admin navigation</Dialog.Title>
             <AdminSidebar onNavigate={() => setOpen(false)} />
@@ -82,7 +82,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </div>
       {/* Confirmations from staff actions (suspended, saved, published). Above the dialogs' z-50,
           so a toast fired while a dialog is open isn't hidden under its overlay. */}
-      <div className="relative z-[60]">
+      <div className="relative z-toast">
         <Toaster />
       </div>
     </div>

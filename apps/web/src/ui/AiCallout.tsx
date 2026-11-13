@@ -40,7 +40,7 @@ export function AiCallout({ title, message, href, icon, tone = 'brand' }: AiCall
           ? 'bg-surface-brand-strong'
           : tone === 'muted'
             ? 'bg-surface-muted'
-            : 'border border-border-card bg-surface-card',
+            : 'border border-border-default bg-surface-card',
       )}
     >
       {icon ?? <NavAiAssistantIllustration className="h-auto w-10 shrink-0" />}

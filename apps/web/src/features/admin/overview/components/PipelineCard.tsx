@@ -67,9 +67,7 @@ function Stat({ label, value, note }: { label: string; value: string; note: stri
     <div className="flex min-w-0 flex-1 basis-0 flex-col gap-1 border-neutral-100 not-first:border-l not-first:pl-4">
       <dt className="text-body-s font-medium text-text-secondary">{label}</dt>
       {/* The board's figures are 24/32 at -1%; no type role holds that size. */}
-      <dd className="animate-reveal text-[26.4px] font-semibold leading-8 tracking-[-0.01em] text-text-primary">
-        {value}
-      </dd>
+      <dd className="animate-reveal text-admin-h1 text-text-primary">{value}</dd>
       <dd className="text-caption-m font-normal text-text-tertiary">{note}</dd>
     </div>
   );

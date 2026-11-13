@@ -32,7 +32,7 @@ export function MethodCard({
   return (
     <div
       className={cn(
-        'relative flex items-center gap-5 rounded-lg border bg-surface-card py-4 pl-5 pr-6 transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard',
+        'relative flex items-center gap-5 rounded-lg border bg-surface-card py-4 pl-5 pr-6 transition-card duration-base ease-standard',
         on
           ? 'border-brand-600 shadow-card ring-1 ring-brand-600'
           : disabled

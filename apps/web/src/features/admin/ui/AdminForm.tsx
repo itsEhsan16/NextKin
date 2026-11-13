@@ -17,7 +17,7 @@ import { AdminIcon } from '@/ui/animated/AdminIcon';
  */
 
 const control =
-  'w-full rounded-sm border border-neutral-300 bg-surface-card text-body-m text-text-primary shadow-xs outline-none transition-[border-color,box-shadow] duration-fast ease-standard placeholder:text-text-tertiary focus:border-border-selected focus:ring-4 focus:ring-brand-100 aria-invalid:border-danger-600 disabled:opacity-60';
+  'w-full rounded-sm border border-neutral-300 bg-surface-card text-body-m text-text-primary shadow-xs outline-none transition-field duration-fast ease-standard placeholder:text-text-tertiary focus:border-border-selected focus:ring-4 focus:ring-brand-100 aria-invalid:border-danger-600 disabled:opacity-60';
 
 export function FieldLabel({
   htmlFor,
@@ -208,7 +208,7 @@ export function CheckboxRow({
           type="checkbox"
           checked={checked}
           onChange={(event) => onChange(event.target.checked)}
-          className="peer size-4 cursor-pointer appearance-none rounded-[4px] border border-neutral-300 bg-surface-card transition-colors duration-press checked:border-brand-600 checked:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          className="peer size-4 cursor-pointer appearance-none rounded-tag border border-neutral-300 bg-surface-card transition-colors duration-press checked:border-brand-600 checked:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
         />
         <AdminIcon
           name="Check"

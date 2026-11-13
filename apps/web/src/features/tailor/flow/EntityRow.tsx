@@ -20,7 +20,7 @@ export function Entity({ lead, label, title }: { lead: ReactNode; label: string;
 
 export function JobLogoTile({ job }: { job: Job }) {
   return (
-    <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border-faint bg-surface-card">
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card">
       <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="inline" />
     </span>
   );

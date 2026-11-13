@@ -134,13 +134,13 @@ function PdfPages({
         </p>
       )}
       {data && data.pages.length > 0 ? (
-        <div className="mx-auto max-w-[720px]">
+        <div className="mx-auto max-w-reading">
           <PageImages pages={data.pages} stale={Boolean(data.stale)} />
         </div>
       ) : (
         data?.status !== 'failed' &&
         data?.status !== 'structured' && (
-          <Skeleton className="mx-auto aspect-[816/1056] w-full max-w-[720px] rounded-md" />
+          <Skeleton className="mx-auto aspect-[816/1056] w-full max-w-reading rounded-md" />
         )
       )}
     </div>

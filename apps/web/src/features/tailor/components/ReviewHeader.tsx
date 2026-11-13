@@ -9,17 +9,16 @@ import { useRaiseApplyAsk } from '@/features/applications/applyAsk';
 import { resumeHref } from '@/features/resumes/resumeHref';
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
-import { brandButton } from '@/ui/brandButton';
 import { FilterDropdown, MenuItem } from '@/ui/FilterDropdown';
 import { iconButton } from '@/ui/iconButton';
 import { Check, ChevronRight, DotsVertical, Download01, Edit03 } from '@/ui/lineIcons';
-import { outlineButton } from '@/ui/outlineButton';
 import { StableLabel } from '@/ui/StableLabel';
 
 import type { Job } from '@nextkin/shared/models';
 
 import { JobLogoTile } from '../flow/EntityRow';
 import { fitMessage } from './FitToPage';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const BUTTON = 'h-control-md gap-2 rounded-md px-4 text-body-m font-semibold';
 
@@ -131,7 +130,10 @@ export function ReviewHeader({
         )}
         <MenuItem onSelect={() => router.push(resumeHref(resumeId))}>Open in Resumes</MenuItem>
       </FilterDropdown>
-      <Link href={`/resumes/${resumeId}/edit` as Route} className={cn(outlineButton, BUTTON)}>
+      <Link
+        href={`/resumes/${resumeId}/edit` as Route}
+        className={cn(BUTTON_VARIANT.secondary, BUTTON)}
+      >
         <Edit03 aria-hidden className="size-4" />
         Edit resume
       </Link>
@@ -139,7 +141,7 @@ export function ReviewHeader({
         type="button"
         disabled={downloading || !resumeId}
         onClick={onDownload}
-        className={cn(brandButton, BUTTON)}
+        className={cn(BUTTON_VARIANT.primary, BUTTON)}
       >
         <Download01 aria-hidden className="size-4" />
         <StableLabel label="Download PDF" busyLabel="Preparing…" busy={downloading} />

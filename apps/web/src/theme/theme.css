@@ -18,6 +18,12 @@
  * Phase 0, refine per screen" rule the mobile plan uses.
  */
 @theme {
+  /*
+   * Only our own colours (redesign R8): Tailwind's default palette (`red-500`, `white`, …) is
+   * switched off, so a stray default class generates nothing instead of an off-brand colour.
+   */
+  --color-*: initial;
+
   /* Text */
   --color-text-primary: var(--color-neutral-900);
   --color-text-secondary: var(--color-neutral-600);
@@ -73,16 +79,6 @@
   --color-border-default: var(--color-neutral-200);
   --color-border-subtle: var(--color-neutral-100);
   --color-border-brand: var(--color-brand-75);
-  /*
-   * The Jobs board drew three more greys within a few RGB units of the two above (`#e2e5ee`,
-   * `#eef0f5`, `#e8eaf1`, plus a fourth, `#eaecf2`, folded in at transcription time). The
-   * premium pass (`toreview.md` §32) collapses them: five near-identical hairlines read as
-   * noise, not hierarchy. The names survive as value aliases until the class sweep retires
-   * them — `divider` and `card` are `border-default`, `faint` is `border-subtle`.
-   */
-  --color-border-divider: var(--color-border-default);
-  --color-border-faint: var(--color-border-subtle);
-  --color-border-card: var(--color-border-default);
   /* The selected job card's 2px ring (304:2451) — kept distinct from `border-brand` and the
      sidebar's `button-rim` despite being numerically close, matching this file's own precedent
      of transcribing a board's actual value over merging near-duplicates when the value repeats
@@ -161,7 +157,7 @@
 
   /* Jobs board one-offs: the company-name text on every job card/detail panel (distinct from
      `text-tertiary`, used consistently for this one role), and the handwritten illustration
-     caption colour (imported raw, same treatment as `radius-panel`). */
+     caption colour (imported raw, as the sidebar panel radius was). */
   --color-text-company: var(--color-neutral-500);
   --color-text-caveat: #3b28f0;
 
@@ -324,6 +320,37 @@
   --spacing-sidebar-expanded: 240px;
   --spacing-sidebar-rail: 72px;
   --spacing-sidebar-row: 200px;
+  /*
+   * Redesign R8 (`02-tokens.md` §5.4 "must become tokens"): the shell's own measures and the
+   * dialog widths, so no page restates them. Same pixels as the values they replace.
+   */
+  --spacing-topbar: 4rem;
+  --spacing-page-fill: calc(100dvh - var(--spacing-topbar));
+  --spacing-below-topbar: calc(var(--spacing-topbar) + 1.25rem);
+  --spacing-sidebar-inset: 7px;
+  --spacing-aside-slim: 300px;
+  --spacing-indicator: 3px;
+  --spacing-progress: 7px;
+  --spacing-dialog-sm: min(480px, calc(100vw - 2rem));
+  --spacing-dialog-md: min(560px, calc(100vw - 2rem));
+  --spacing-dialog-lg: min(640px, calc(100vw - 2rem));
+  --spacing-dialog-xl: min(720px, calc(100vw - 2rem));
+  /* The admin's container steps (`@container/admin`), which were arbitrary sizes. */
+  --container-admin-xs: 700px;
+  --container-admin-sm: 900px;
+  --container-admin-md: 1000px;
+  --container-admin-lg: 1100px;
+  --container-admin-xl: 1200px;
+  --container-admin-2xl: 1400px;
+  /* Letter-spacing the admin boards and a few labels draw (redesign R8). */
+  --tracking-snug: -0.005em;
+  --tracking-heading: -0.01em;
+  --tracking-title: -0.012em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.02em;
+  --tracking-caps: 0.04em;
+  --tracking-caps-wide: 0.06em;
+  --tracking-overline: 0.08em;
   /* 2xl was Tailwind's 96rem with no users; 90rem matches the 1440 page column. */
   --breakpoint-2xl: 90rem;
 
@@ -401,15 +428,30 @@
   --text-micro--letter-spacing: 0.002em;
   --text-micro--font-weight: 500;
 
-  /* Space — the board's scale, on top of Tailwind's own 4px base */
-  --spacing-token-2: 2px;
-  --spacing-token-4: 4px;
-  --spacing-token-6: 6px;
-  --spacing-token-8: 8px;
-  --spacing-token-12: 12px;
-  --spacing-token-16: 16px;
-  --spacing-token-20: 20px;
-  --spacing-token-24: 24px;
+  /*
+   * The admin portal's display numbers and titles (redesign R8: they were arbitrary sizes). The
+   * admin boards are drawn 10% larger than the app's scale, so 26.4 is 24 x 1.1.
+   */
+  --text-admin-display: 32px;
+  --text-admin-display--line-height: 40px;
+  --text-admin-display--letter-spacing: -0.02em;
+  --text-admin-display--font-weight: 800;
+  --text-admin-brand: 28px;
+  --text-admin-brand--line-height: 34px;
+  --text-admin-brand--letter-spacing: -0.02em;
+  --text-admin-brand--font-weight: 800;
+  --text-admin-stat: 28.6px;
+  --text-admin-stat--line-height: 37.4px;
+  --text-admin-stat--letter-spacing: -0.015em;
+  --text-admin-stat--font-weight: 600;
+  --text-admin-h1: 26.4px;
+  --text-admin-h1--line-height: 32px;
+  --text-admin-h1--letter-spacing: -0.01em;
+  --text-admin-h1--font-weight: 600;
+  --text-admin-price: 22px;
+  --text-admin-price--line-height: 33px;
+  --text-admin-price--letter-spacing: 0px;
+  --text-admin-price--font-weight: 600;
 
   /*
    * Control heights — the airy pass (owner, `toreview.md` §132; were 30/36/40 under §16). Every control on every
@@ -436,8 +478,16 @@
   /* Page-level panels and dialogs (toreview §132). */
   --radius-2xl: 24px;
   --radius-full: 999px;
-  /* The sidebar panel (304:497). No Home equivalent — imported raw from that board. */
-  --radius-panel: 24px;
+  /*
+   * The small radii the admin boards draw (Untitled UI's scale) and two marks of the user app
+   * (redesign R8: they were arbitrary values). Same pixels as before.
+   */
+  --radius-hairline: 1px;
+  --radius-xs: 2px;
+  --radius-checkbox: 3px;
+  --radius-tag: 4px;
+  --radius-admin-sm: 6px;
+  --radius-admin-md: 10px;
 
   /*
    * Elevation (`toreview.md` §132). White cards sit on the grey canvas with a soft layered shadow
@@ -459,6 +509,10 @@
   --shadow-modal: 0 8px 8px -4px rgba(16, 24, 40, 0.03), 0 20px 24px -4px rgba(16, 24, 40, 0.08);
   /* Dialogs: the one surface above everything. */
   --shadow-dialog: 0 24px 48px -12px rgba(15, 23, 42, 0.25);
+  /* The top bar's 1px rule while the page scrolls under it (redesign R8). */
+  --shadow-hairline-bottom: 0 1px 0 var(--color-border-default);
+  /* The sign-in hero's brand glow on narrow screens (redesign R8). */
+  --shadow-brand-glow: 0 14px 28px -10px var(--color-brand-600);
   /* The primary button's lit top edge and soft drop. */
   --shadow-button: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 2px rgba(15, 23, 42, 0.12);
 }
@@ -502,6 +556,8 @@
   --transition-duration-think: 1400ms;
   /* The loading line's light crossing the track once. */
   --transition-duration-sweep: 2000ms;
+  /* One cycle of an AI action's glint: a soft light crossing it, then a rest (owner, 2026-11-13). */
+  --transition-duration-glint: 3600ms;
   /* One pass of the skeletons' diagonal light across the whole window (§196). Slow on purpose. */
   --transition-duration-shimmer: 1600ms;
   /* A skeleton waits this long before it shows (§196): a quicker load never flashes one. */
@@ -553,6 +609,8 @@
   /* The AI loaders (`ui/AiLoader.tsx`, §132.8): dots that think, a line that sweeps, a ring that draws. */
   --animate-think: think var(--transition-duration-think) var(--ease-standard) infinite;
   --animate-sweep: sweep var(--transition-duration-sweep) var(--ease-standard) infinite;
+  /* A soft light gliding across an AI action ("Tailor with AI"), then resting before the next. */
+  --animate-glint: glint var(--transition-duration-glint) var(--ease-standard) infinite;
   --animate-ring-draw: ring-draw var(--transition-duration-think) var(--ease-standard) infinite;
 
   @keyframes reveal {
@@ -646,6 +704,15 @@
       translate: 0 -3px;
       scale: 1.15;
       opacity: 1;
+    }
+  }
+  @keyframes glint {
+    0% {
+      translate: 0 0;
+    }
+    55%,
+    100% {
+      translate: 400% 0;
     }
   }
   @keyframes sweep {
@@ -1008,6 +1075,8 @@ body:has([data-admin-signin]) {
  */
 @layer theme {
   :root {
+    /* Behind its own box's content: a pseudo-element hit area or hover wash (redesign R8). */
+    --z-behind: -1;
     --z-base: 0;
     --z-raised: 10;
     --z-sticky: 20;
@@ -1027,6 +1096,9 @@ body:has([data-admin-signin]) {
     --opacity-hover-dim: 0.9;
     --opacity-muted-on-inverse: 0.7;
   }
+}
+@utility z-behind {
+  z-index: var(--z-behind);
 }
 @utility z-base {
   z-index: var(--z-base);
@@ -1150,4 +1222,25 @@ body:has([data-admin-signin]) {
     --color-surface-glass: color-mix(in srgb, var(--color-neutral-950) 80%, transparent);
     --color-surface-glass-panel: color-mix(in srgb, var(--color-neutral-900) 90%, transparent);
   }
+}
+
+/*
+ * The three transition sets the app repeats (redesign R8): a field's border and focus ring, a
+ * width that grows, and an interactive card's surface and lift. Like `transition-[…]`, they set
+ * the properties and leave the duration and easing to `duration-*` and `ease-*`.
+ */
+@utility transition-field {
+  transition-property: border-color, box-shadow;
+  transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+  transition-duration: var(--tw-duration, var(--default-transition-duration));
+}
+@utility transition-width {
+  transition-property: width;
+  transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+  transition-duration: var(--tw-duration, var(--default-transition-duration));
+}
+@utility transition-card {
+  transition-property: background-color, border-color, box-shadow, translate;
+  transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+  transition-duration: var(--tw-duration, var(--default-transition-duration));
 }

@@ -147,7 +147,7 @@ function Stats({
   const growth = (count: number) =>
     stats && count > 0 ? <TrendBadge up>{formatCount(count)}</TrendBadge> : undefined;
   return (
-    <div className={cn('grid grid-cols-2 gap-4 @min-[1000px]/admin:grid-cols-5')}>
+    <div className={cn('grid grid-cols-2 gap-4 @admin-md/admin:grid-cols-5')}>
       <StatCard
         icon="Users01"
         title="Total users"

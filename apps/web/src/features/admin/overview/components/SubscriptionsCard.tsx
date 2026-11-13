@@ -57,7 +57,7 @@ function Body({ s }: { s: AdminSubscriptions }) {
     <>
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2.5">
-          <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] tabular-nums text-text-primary">
+          <p className="animate-reveal text-display-l font-semibold tracking-display tabular-nums text-text-primary">
             {formatCount(s.activePro)}
           </p>
           {s.delta && <DeltaBadge delta={s.delta} />}
@@ -109,7 +109,7 @@ function Body({ s }: { s: AdminSubscriptions }) {
                 {...bind(row.currency)}
                 className={cn(
                   'relative isolate flex cursor-default flex-col gap-0.5 outline-none transition-opacity duration-fast ease-standard',
-                  'before:absolute before:-inset-x-2 before:-inset-y-1 before:-z-10 before:rounded-sm before:transition-colors before:duration-fast before:ease-standard focus-visible:before:ring-2 focus-visible:before:ring-brand-600',
+                  'before:absolute before:-inset-x-2 before:-inset-y-1 before:z-behind before:rounded-sm before:transition-colors before:duration-fast before:ease-standard focus-visible:before:ring-2 focus-visible:before:ring-brand-600',
                   active === row.currency && 'before:bg-neutral-50',
                   active !== null && active !== row.currency && 'opacity-50',
                 )}

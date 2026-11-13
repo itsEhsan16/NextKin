@@ -46,32 +46,32 @@ const RULES: Rule[] = [
   {
     name: 'raw colour literals (hex, rgb, hsl)',
     pattern: /#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b(?![0-9a-fA-F])|\brgba?\(|\bhsla?\(/g,
-    ceiling: 2,
+    ceiling: 0,
     fix: 'use a colour token class, or read the value from `@/theme/tokens`',
   },
   {
     name: "Tailwind's default palette (not our tokens)",
     pattern:
       /\b(?:bg|text|border|ring|fill|stroke|outline|accent|divide|from|via|to)-(?:white|black|(?:gray|zinc|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate)-\d{2,3})\b/g,
-    ceiling: 4,
+    ceiling: 0,
     fix: 'use the semantic or ramp token (`text-text-inverse`, `bg-neutral-0`, …)',
   },
   {
     name: 'numeric z-index',
     pattern: /\bz-(?:\d+|\[[^\]]+\])/g,
-    ceiling: 13,
+    ceiling: 0,
     fix: 'use a z-layer token once R2 adds them (`02-tokens.md` §2.14)',
   },
   {
     name: 'arbitrary radius',
     pattern: /\brounded(?:-[a-z]{1,2})?-\[[^\]]+\]/g,
-    ceiling: 39,
+    ceiling: 0,
     fix: 'use `rounded-sm|md|lg|xl|2xl|full`, or add a radius token',
   },
   {
     name: 'arbitrary font size',
     pattern: /\btext-\[\d[^\]]*\]/g,
-    ceiling: 7,
+    ceiling: 0,
     fix: 'use a type role (`text-body-m`, `text-caption-m`, …)',
   },
   {
@@ -83,18 +83,19 @@ const RULES: Rule[] = [
   {
     name: 'arbitrary shadow',
     pattern: /\bshadow-\[[^\]]+\]/g,
-    ceiling: 2,
+    ceiling: 0,
     fix: 'use a shadow token (`shadow-card`, `shadow-popover`, …)',
   },
   {
     // Every other `-[…]` value: mostly one-off sizes (`w-[146px]`). Grid tracks (`grid-cols-[…]`)
-    // and `var(--…)` reads are layout techniques on tokens, and `data-[…]`/`aria-[…]` are state
-    // selectors rather than values, so none of them count. Overlaps the narrower rules above on
-    // purpose: this is the total to drive down.
+    // and `var(--…)` reads are layout techniques on tokens, and `data-[…]`/`aria-[…]`/`has-[…]`/
+    // `nth-[…]` are selectors rather than values, so none of them count. The match starts at a
+    // class's own start (redesign R8: it used to start mid-word, so `grid-cols-[…]` counted as
+    // `cols-[…]`). Overlaps the narrower rules above on purpose: this is the total to drive down.
     name: 'other arbitrary values',
     pattern:
-      /\b(?!grid-(?:cols|rows)-|(?:group-|peer-)?(?:data|aria)-)[a-z][a-z0-9-]*-\[(?!var\()[^\]]+\]/g,
-    ceiling: 713,
+      /(?<![\w-])(?!grid-(?:cols|rows)-|(?:group-|peer-)?(?:data|aria|has|nth)-)[a-z][a-z0-9-]*-\[(?!var\()[^\]]+\]/g,
+    ceiling: 431,
     fix: 'use a spacing, size or container token; add one if the value repeats',
   },
 ];

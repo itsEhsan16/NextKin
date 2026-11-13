@@ -87,7 +87,7 @@ export function Histogram({
                       animationDelay: `calc(${index} * var(--stagger-step))`,
                     }}
                     className={cn(
-                      'w-full origin-bottom animate-bar-grow rounded-t-[4px] transition-[height,opacity,filter] duration-fast ease-standard group-focus-visible/bucket:ring-2 group-focus-visible/bucket:ring-brand-600 group-focus-visible/bucket:ring-offset-1',
+                      'w-full origin-bottom animate-bar-grow rounded-t-tag transition-[height,opacity,filter] duration-fast ease-standard group-focus-visible/bucket:ring-2 group-focus-visible/bucket:ring-brand-600 group-focus-visible/bucket:ring-offset-1',
                       fillOf(bucket, mean),
                       active !== null && !shown && 'opacity-35',
                       shown && 'brightness-95',
@@ -104,7 +104,7 @@ export function Histogram({
                         active !== null && 'opacity-0',
                       )}
                     >
-                      <span className="absolute -top-0.5 right-1 whitespace-nowrap rounded-[6px] bg-neutral-900 px-1.5 py-0.5 text-caption-m font-semibold text-text-inverse">
+                      <span className="absolute -top-0.5 right-1 whitespace-nowrap rounded-admin-sm bg-neutral-900 px-1.5 py-0.5 text-caption-m font-semibold text-text-inverse">
                         Mean {mean}
                       </span>
                     </span>

@@ -75,7 +75,7 @@ export function FilterCheckboxItem({
     >
       {/* A checkbox, square and filled when ticked (owner, 2026-11-04): the filled check-circle
           inside a round box read as a broken radio. */}
-      <span className="flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-border-default bg-surface-card text-white transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600 group-data-[state=checked]/item:bg-brand-600">
+      <span className="flex size-4 shrink-0 items-center justify-center rounded-tag border border-border-default bg-surface-card text-text-inverse transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600 group-data-[state=checked]/item:bg-brand-600">
         <Dropdown.ItemIndicator className={tickMotion}>
           <Check aria-hidden className="size-3" />
         </Dropdown.ItemIndicator>

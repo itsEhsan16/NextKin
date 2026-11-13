@@ -83,7 +83,7 @@ export function KbReviewScreen() {
           onAction={() => void queue.refetch()}
         />
       ) : (
-        <div className="grid items-start gap-6 @min-[1200px]/admin:grid-cols-[420px_minmax(0,1fr)]">
+        <div className="grid items-start gap-6 @admin-xl/admin:grid-cols-[420px_minmax(0,1fr)]">
           <AdminCard
             icon="ClipboardCheck"
             title="Changes waiting"

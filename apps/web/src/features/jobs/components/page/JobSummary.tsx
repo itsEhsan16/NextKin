@@ -12,8 +12,8 @@ import type { ComponentType, SVGProps } from 'react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { formatApplicants, formatPostedAge, formatSalaryBand } from '@/lib/format';
 import { CheckCircle, XClose } from '@/ui/lineIcons';
-import { formatSalaryBand } from '@/lib/format';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import {
   ApartmentIcon,
@@ -234,6 +234,9 @@ export function JobSummary({
           )}
           <h1 className="text-display-l text-text-primary">{job.title}</h1>
           <Facts job={job} {...(known ? { known } : {})} />
+          {/* When it was posted and how many applied, under the facts (owner, 2026-11-13; they sat in
+              the bar above). A listing's only: a pasted description has neither. */}
+          {!known && <Freshness job={job} />}
         </div>
         <MatchCard job={job} profile={profile} {...(known ? { known } : {})} />
       </div>
@@ -291,4 +294,20 @@ export function withoutTitleLine(text: string, title: string, company: string): 
   // One run-on line: drop "{title} at {company} — {city}" up to where the next sentence starts.
   const next = trimmed.match(/^.*?\s—\s\S+\s+(?=[A-Z])/);
   return next ? trimmed.slice(next[0].length) : text;
+}
+
+/** "Posted 2 days ago" and "80 applicants", as two soft chips. */
+function Freshness({ job }: { job: Job }) {
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2">
+      <span className="rounded-full bg-brand-50 px-2.5 py-1 text-caption-m text-text-brand">
+        Posted {formatPostedAge(job.postedAt).replace(/^1 day ago$/, 'yesterday')}
+      </span>
+      {job.applicantsCount != null && (
+        <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-caption-m text-text-secondary">
+          {formatApplicants(job.applicantsCount).replace(/\+? applied$/, ' applicants')}
+        </span>
+      )}
+    </div>
+  );
 }

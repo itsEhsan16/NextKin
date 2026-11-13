@@ -149,14 +149,14 @@ export function SavedJobList({
                 aria-checked={on}
                 onClick={() => onChange(job.id)}
                 className={cn(
-                  'flex items-center gap-3.5 rounded-lg border px-4 py-3 text-left transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+                  'flex items-center gap-3.5 rounded-lg border px-4 py-3 text-left transition-card duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
                   on
                     ? 'border-brand-600 bg-surface-brand-strong shadow-card ring-1 ring-brand-600'
                     : 'border-border-default bg-surface-card hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
                 )}
               >
                 <Radio on={on} />
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border-faint bg-surface-card">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card">
                   <CompanyLogo
                     company={job.company}
                     logoUrl={job.companyLogoUrl}

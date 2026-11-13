@@ -14,7 +14,7 @@ export function RetryCaption({ onRetry }: { onRetry: () => void }) {
         type="button"
         onClick={onRetry}
         aria-label="Try again loading the figures"
-        className="rounded-[4px] font-semibold text-brand-700 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-brand-600"
+        className="rounded-tag font-semibold text-brand-700 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-brand-600"
       >
         Try again
       </button>

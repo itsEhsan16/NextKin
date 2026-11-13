@@ -66,11 +66,11 @@ export function SettingsNav({ active, onChange, className }: SettingsNavProps) {
     >
       {/* Only the rows in here, so the wash's arithmetic starts at this box's top. A row is Body/L's
           line (20), Body/S's (18) and 10px above and below: 58, as the rows measured before. */}
-      <div className="relative flex flex-col gap-token-2 [--settings-row:calc(var(--text-body-l--line-height)+var(--text-body-s--line-height)+var(--spacing-token-20))]">
+      <div className="relative flex flex-col gap-0.5 [--settings-row:calc(var(--text-body-l--line-height)+var(--text-body-s--line-height)+calc(var(--spacing)*5))]">
         <SlidingHighlight
           index={SETTINGS_SECTION_ORDER.indexOf(active)}
           row="var(--settings-row)"
-          gap="var(--spacing-token-2)"
+          gap="calc(var(--spacing)*0.5)"
           className="rounded-md bg-surface-brand-strong shadow-button"
         />
 

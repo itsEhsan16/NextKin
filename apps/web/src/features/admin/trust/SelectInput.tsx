@@ -55,7 +55,7 @@ export function SelectInput<T extends string>({
               ariaLabel ?? (label ? `${label}: ${display ?? chosen?.label ?? ''}` : undefined)
             }
             className={cn(
-              'flex h-11 w-full items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card pl-3.5 pr-3 text-left text-body-m text-text-primary shadow-xs transition-[border-color,box-shadow] duration-fast ease-standard hover:bg-neutral-50 focus-visible:border-border-selected focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
+              'flex h-11 w-full items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card pl-3.5 pr-3 text-left text-body-m text-text-primary shadow-xs transition-field duration-fast ease-standard hover:bg-neutral-50 focus-visible:border-border-selected focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
               menuTrigger,
             )}
           >
@@ -78,7 +78,7 @@ export function SelectInput<T extends string>({
               value={option.id}
               className="group/item flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-body-m text-text-primary outline-none transition-colors duration-press ease-standard data-[highlighted]:bg-surface-muted"
             >
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-border-default bg-surface-card text-white transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600 group-data-[state=checked]/item:bg-brand-600">
+              <span className="flex size-4 shrink-0 items-center justify-center rounded-tag border border-border-default bg-surface-card text-text-inverse transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600 group-data-[state=checked]/item:bg-brand-600">
                 <Dropdown.ItemIndicator className={tickMotion}>
                   <Check aria-hidden className="size-3" />
                 </Dropdown.ItemIndicator>

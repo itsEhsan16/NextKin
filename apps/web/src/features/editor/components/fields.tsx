@@ -97,7 +97,7 @@ export function TextArea({
         placeholder={placeholder}
         aria-describedby={hint ? `${id}-hint` : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full min-w-0 resize-y rounded-md border border-border-default bg-surface-card px-3.5 py-3 text-body-m leading-relaxed text-text-primary transition-[border-color,box-shadow] duration-fast ease-standard placeholder:text-text-tertiary hover:border-neutral-400 focus-visible:border-border-selected focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100"
+        className="w-full min-w-0 resize-y rounded-md border border-border-default bg-surface-card px-3.5 py-3 text-body-m leading-relaxed text-text-primary transition-field duration-fast ease-standard placeholder:text-text-tertiary hover:border-neutral-400 focus-visible:border-border-selected focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100"
       />
       {hint && (
         <p id={`${id}-hint`} className={hintText}>

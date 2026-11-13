@@ -101,18 +101,18 @@ function Body({ run }: { run: FailureDetail }) {
       </ol>
 
       <PanelHeading>Error</PanelHeading>
-      <div className="flex flex-col gap-1.5 rounded-[10px] border border-neutral-200 bg-neutral-50 px-4 py-3.5">
-        <p className="flex items-center gap-2 text-body-s font-semibold tracking-[0.02em] text-danger-600">
+      <div className="flex flex-col gap-1.5 rounded-admin-md border border-neutral-200 bg-neutral-50 px-4 py-3.5">
+        <p className="flex items-center gap-2 text-body-s font-semibold tracking-label text-danger-600">
           <AdminIcon name="AlertTriangle" size="sm" />
           {run.errorCode}
         </p>
-        <p className="text-caption-m font-normal leading-5 tracking-[0.02em] text-neutral-700">
+        <p className="text-caption-m font-normal leading-5 tracking-label text-neutral-700">
           {run.error.message}
         </p>
-        <p className="whitespace-pre text-caption-m font-normal leading-5 tracking-[0.02em] text-neutral-700">
+        <p className="whitespace-pre text-caption-m font-normal leading-5 tracking-label text-neutral-700">
           {`request_id  ${run.error.requestRef ? `req_···${run.error.requestRef.slice(-4)}` : '—'}   stage  ${run.stage}`}
         </p>
-        <p className="whitespace-pre text-caption-m font-normal leading-5 tracking-[0.02em] text-neutral-700">
+        <p className="whitespace-pre text-caption-m font-normal leading-5 tracking-label text-neutral-700">
           {`retry_policy  ${run.error.retryPolicy}`}
         </p>
       </div>
@@ -188,7 +188,7 @@ function Stage({ stage, last }: { stage: FailureStage; last: boolean }) {
           <span
             aria-hidden
             className={cn(
-              'h-[18px] w-0.5 rounded-[1px]',
+              'h-[18px] w-0.5 rounded-hairline',
               stage.outcome === 'done' ? 'bg-success-600/35' : 'bg-neutral-200',
             )}
           />

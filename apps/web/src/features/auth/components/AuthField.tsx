@@ -29,7 +29,7 @@ export function AuthField({ label, icon: Icon, trailing, error, ...input }: Auth
           'flex h-control-xl items-center gap-3 rounded-full border bg-surface-card pl-4 pr-1.5',
           // On a phone the field is the mockup's taller, softer box, and its placeholder names it.
           'max-lg:h-14 max-lg:gap-4 max-lg:rounded-lg max-lg:pl-5',
-          'transition-[border-color,box-shadow] duration-fast ease-standard',
+          'transition-field duration-fast ease-standard',
           'focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100',
           error ? 'border-border-danger' : 'border-border-default hover:border-neutral-400',
         )}

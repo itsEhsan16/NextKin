@@ -27,7 +27,7 @@ export function AiPromoCard() {
         </p>
         <Link
           href="/assistant"
-          // One filled button per view (HM-09): the top bar's Upload New JD is the filled one.
+          // One filled button per view (HM-09): the top bar's Build Resume is the filled one.
           className={cn(
             buttonClass({ variant: 'brand-secondary', size: 'md', pill: true }),
             'mt-5 pl-4 pr-5',

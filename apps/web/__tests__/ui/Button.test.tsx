@@ -1,19 +1,14 @@
 import { render, screen } from '@testing-library/react';
 
-import { brandButton } from '@/ui/brandButton';
 import { Button, buttonClass } from '@/ui/Button';
 import { BUTTON_VARIANT } from '@/ui/buttonStyles';
-import { outlineButton } from '@/ui/outlineButton';
-import { primaryButton } from '@/ui/primaryButton';
 
 /** One button map behind every helper (redesign R3b). */
 describe('Button', () => {
-  it('gives the old helper names the same look as the matching variant', () => {
-    expect(brandButton).toBe(BUTTON_VARIANT.primary);
-    expect(outlineButton).toBe(BUTTON_VARIANT.secondary);
-    // The bevel is retired: primaryButton is the flat primary now.
-    expect(primaryButton).toContain(BUTTON_VARIANT.primary);
-    expect(primaryButton).not.toMatch(/button-rim|button-face/);
+  it('draws the primary flat, with no retired bevel', () => {
+    // The legacy helper names are gone (redesign R8); every caller reads the map or `Button`.
+    expect(buttonClass()).toContain(BUTTON_VARIANT.primary);
+    expect(BUTTON_VARIANT.primary).not.toMatch(/button-rim|button-face/);
   });
 
   it('keeps paid fuchsia and danger red apart from the brand primary', () => {

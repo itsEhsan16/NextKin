@@ -75,7 +75,7 @@ export function resumeLine(resume: Resume): string {
 
 export const rowSurface = (on: boolean) =>
   cn(
-    'rounded-lg border transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard',
+    'rounded-lg border transition-card duration-base ease-standard',
     on
       ? 'border-brand-600 bg-surface-brand-strong shadow-card ring-1 ring-brand-600'
       : 'border-border-default bg-surface-card hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
@@ -149,7 +149,7 @@ export function OptionCard({
     <div
       className={cn(
         // Picture cards stay white when chosen (849:819); only the border says so.
-        'relative flex min-w-0 flex-1 gap-5 rounded-lg border bg-surface-card p-6 transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard',
+        'relative flex min-w-0 flex-1 gap-5 rounded-lg border bg-surface-card p-6 transition-card duration-base ease-standard',
         on
           ? 'border-brand-600 shadow-card ring-1 ring-brand-600'
           : 'border-border-default hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover',
@@ -214,7 +214,7 @@ export function OtherWayRow({
     </>
   );
   const className =
-    'flex w-full items-center gap-3 rounded-lg border border-border-default bg-surface-card py-3.5 pl-3.5 pr-4 text-left transition-[background-color,border-color,box-shadow,translate] duration-base ease-standard hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
+    'flex w-full items-center gap-3 rounded-lg border border-border-default bg-surface-card py-3.5 pl-3.5 pr-4 text-left transition-card duration-base ease-standard hover:-translate-y-0.5 hover:border-border-brand-strong hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
   return href ? (
     <Link href={href} className={className}>
       {body}

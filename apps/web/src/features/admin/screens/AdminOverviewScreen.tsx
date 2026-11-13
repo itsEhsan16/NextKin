@@ -56,7 +56,7 @@ export function AdminOverviewScreen() {
       <header className="flex flex-wrap items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           {/* The board's title tracks -1.5%, a little looser than the display role's -2%. */}
-          <h1 className="text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+          <h1 className="text-display-l font-semibold tracking-display text-text-primary">
             {me.data ? (
               `Welcome back, ${me.data.name}`
             ) : meFailed ? (
@@ -90,9 +90,9 @@ export function AdminOverviewScreen() {
             updating && 'opacity-60',
           )}
         >
-          <div className="grid gap-6 @min-[1400px]/admin:grid-cols-[minmax(0,1fr)_400px]">
+          <div className="grid gap-6 @admin-2xl/admin:grid-cols-[minmax(0,1fr)_400px]">
             <div className="flex min-w-0 flex-col gap-6">
-              <div className="grid grid-cols-2 gap-4 @min-[900px]/admin:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 @admin-sm/admin:grid-cols-4">
                 {KPI_KEYS.map((key) => {
                   if (!data) return <KpiCardSkeleton key={key} kpiKey={key} />;
                   const kpi = data.kpis.find((k) => k.key === key);
@@ -114,7 +114,7 @@ export function AdminOverviewScreen() {
               )}
             </div>
             {/* `items-start`: side by side, Pipeline keeps its own height rather than Needs attention's. */}
-            <div className="grid content-start items-start gap-6 @min-[900px]/admin:grid-cols-2 @min-[1400px]/admin:grid-cols-1">
+            <div className="grid content-start items-start gap-6 @admin-sm/admin:grid-cols-2 @admin-2xl/admin:grid-cols-1">
               <NeedsAttentionCard
                 queues={queues.data}
                 permissions={me.data?.permissions}
@@ -129,7 +129,7 @@ export function AdminOverviewScreen() {
             </div>
           </div>
 
-          <div className="grid gap-6 @min-[700px]/admin:grid-cols-2 @min-[1400px]/admin:grid-cols-4">
+          <div className="grid gap-6 @admin-xs/admin:grid-cols-2 @admin-2xl/admin:grid-cols-4">
             {data ? (
               <>
                 <AiCostCard cost={data.aiCost} range={data.range} />

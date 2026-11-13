@@ -224,7 +224,7 @@ export function EditorForm({
                   {preset}
                 </Dropdown.Item>
               ))}
-              <Dropdown.Separator className="my-1 h-px bg-border-faint" />
+              <Dropdown.Separator className="my-1 h-px bg-border-subtle" />
               <Dropdown.Item
                 className={cn(menuItem, 'font-semibold text-text-brand')}
                 onSelect={() => addSection('')}

@@ -18,13 +18,13 @@ import { cn } from '@/lib/cn';
  */
 const SIZE = {
   /** Confirm, rename. */
-  sm: 'w-[min(480px,calc(100vw-2rem))]',
+  sm: 'w-dialog-sm',
   /** Consent, notices, accuracy, verify email. */
-  md: 'w-[min(560px,calc(100vw-2rem))]',
+  md: 'w-dialog-md',
   /** Pickers and method choice. */
-  lg: 'w-[min(640px,calc(100vw-2rem))]',
+  lg: 'w-dialog-lg',
   /** Create resume, with its template grid. */
-  xl: 'w-[min(720px,calc(100vw-2rem))]',
+  xl: 'w-dialog-xl',
 } as const;
 
 export type DialogSize = keyof typeof SIZE;

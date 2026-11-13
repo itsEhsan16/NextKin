@@ -4,8 +4,8 @@ import type { FormEvent, ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import { ArrowRightIcon } from '@/ui/icons';
-import { brandButton } from '@/ui/brandButton';
 import { pressable } from '@/ui/pressable';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 export type QuestionLayoutProps = {
   /** "WELCOME TO NEXTKIN", "QUESTION 2" (814:2, 814:22). */
@@ -65,7 +65,7 @@ export function QuestionLayout({
       type="submit"
       disabled={!canContinue}
       className={cn(
-        brandButton,
+        BUTTON_VARIANT.primary,
         'h-control-lg gap-2 rounded-md px-5 text-body-m font-semibold',
         layout === 'stacked' && 'w-full',
       )}
@@ -77,7 +77,7 @@ export function QuestionLayout({
 
   return (
     <form onSubmit={submit} className="flex flex-col animate-reveal">
-      <p className="text-micro font-bold uppercase tracking-[0.08em] text-text-brand">{eyebrow}</p>
+      <p className="text-micro font-bold uppercase tracking-overline text-text-brand">{eyebrow}</p>
       <h1 className="mt-2.5 text-hero font-bold text-text-primary">{title}</h1>
       {subtitle && <p className="text-display-l font-semibold text-text-tertiary">{subtitle}</p>}
       <p className="mt-2 text-body-l text-text-secondary">{help}</p>

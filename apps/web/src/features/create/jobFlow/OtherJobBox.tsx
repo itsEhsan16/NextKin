@@ -3,12 +3,12 @@
 import type { JdInput } from '@nextkin/shared/models';
 import { useRef, useState, type DragEvent, type ReactNode } from 'react';
 
-import { looksLikeLink } from '@/features/upload/components/JobInput';
 import { PickedFile } from '@/features/upload/components/PickedFile';
 import {
   FILE_ACCEPT,
   fileProblem,
   linkProblem,
+  looksLikeLink,
   MAX_JD_CHARS,
   SAMPLE_JD,
 } from '@/features/upload/uploadLibrary';

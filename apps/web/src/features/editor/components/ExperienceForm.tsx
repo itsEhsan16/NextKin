@@ -114,7 +114,7 @@ export function ExperienceForm({
           {role.groups.map((group, gi) => (
             <div
               key={group.id}
-              className="flex flex-col gap-3 rounded-md border border-border-faint bg-neutral-50 p-3"
+              className="flex flex-col gap-3 rounded-md border border-border-subtle bg-neutral-50 p-3"
             >
               <div className="flex items-end gap-2">
                 <FieldRow className="flex-1">

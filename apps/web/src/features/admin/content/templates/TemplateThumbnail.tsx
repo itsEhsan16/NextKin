@@ -24,7 +24,11 @@ type Shape = 'bar' | 'square' | 'circle';
 /** `[left, top, width, height, tone, shape]`: one mark on the page, in the board's pixels. */
 type Bar = readonly [number, number, number, number, Tone, Shape?];
 
-const SHAPE: Record<Shape, string> = { bar: 'rounded-[1px]', square: '', circle: 'rounded-full' };
+const SHAPE: Record<Shape, string> = {
+  bar: 'rounded-hairline',
+  square: '',
+  circle: 'rounded-full',
+};
 
 /** A run of text lines `step` apart, each `h` tall, at the board's widths. */
 const lines = (
@@ -143,14 +147,14 @@ export function TemplateThumbnail({
   return (
     <div
       aria-hidden
-      className="flex h-[236px] items-end justify-center overflow-hidden rounded-[10px] border border-neutral-100 bg-neutral-50 pt-5"
+      className="flex h-[236px] items-end justify-center overflow-hidden rounded-admin-md border border-neutral-100 bg-neutral-50 pt-5"
     >
       <div
         data-testid="template-page"
         className={cn(
           // The board's page shadow is Untitled UI's shadow-lg, which no token holds yet; the
           // modal's is the nearest (toreview, shared needs).
-          'relative h-[226px] w-[160px] shrink-0 overflow-hidden rounded-[2px] border border-neutral-200 bg-surface-card shadow-lg',
+          'relative h-[226px] w-[160px] shrink-0 overflow-hidden rounded-xs border border-neutral-200 bg-surface-card shadow-lg',
           dimmed && 'opacity-60',
         )}
       >

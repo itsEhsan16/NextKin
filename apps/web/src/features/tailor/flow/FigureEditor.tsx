@@ -11,9 +11,9 @@ import { useState } from 'react';
 import { Capsule } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
-import { outlineButton } from '@/ui/outlineButton';
 
 import { TypedFigure } from './TypedFigure';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const OTHER = 'other';
 
@@ -126,7 +126,10 @@ export function FigureEditor({
               onSave(null);
               onDone();
             }}
-            className={cn(outlineButton, 'h-8 rounded-sm px-3.5 text-body-m font-semibold')}
+            className={cn(
+              BUTTON_VARIANT.secondary,
+              'h-8 rounded-sm px-3.5 text-body-m font-semibold',
+            )}
           >
             Keep the original
           </button>

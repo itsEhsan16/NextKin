@@ -18,7 +18,7 @@ import { adminButton } from '../ui/adminButton';
 export function Backdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
-      <div className="absolute -top-40 h-[1000px] w-[1600px] bg-[linear-gradient(to_right,var(--color-neutral-300)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-neutral-300)_1px,transparent_1px)] bg-[size:56px_56px] bg-[position:16px_52px] [mask-image:radial-gradient(ellipse_55%_55%_at_50%_50%,rgb(0_0_0/1)_0%,rgb(0_0_0/0.5)_60%,transparent_100%)]" />
+      <div className="absolute -top-40 h-[1000px] w-[1600px] bg-[linear-gradient(to_right,var(--color-neutral-300)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-neutral-300)_1px,transparent_1px)] bg-[size:56px_56px] bg-[position:16px_52px] [mask-image:radial-gradient(ellipse_55%_55%_at_50%_50%,black_0%,color-mix(in_srgb,black_50%,transparent)_60%,transparent_100%)]" />
       <div className="absolute -top-[340px] h-[760px] w-[1300px] rounded-full bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--color-brand-500)_32%,transparent),transparent)]" />
     </div>
   );
@@ -35,14 +35,11 @@ export function Heading({
 }) {
   return (
     <>
-      <span className="flex size-12 items-center justify-center rounded-[10px] border border-neutral-200 bg-surface-card text-neutral-700 shadow-xs">
+      <span className="flex size-12 items-center justify-center rounded-admin-md border border-neutral-200 bg-surface-card text-neutral-700 shadow-xs">
         <AdminIcon name={icon} />
       </span>
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1
-          id="signin-title"
-          className="text-[26.4px] font-semibold leading-8 tracking-[-0.01em] text-text-primary"
-        >
+        <h1 id="signin-title" className="text-admin-h1 text-text-primary">
           {title}
         </h1>
         <p className="text-body-m text-text-secondary">{text}</p>

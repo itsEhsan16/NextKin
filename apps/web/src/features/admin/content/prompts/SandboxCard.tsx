@@ -117,12 +117,12 @@ function Body({
           <ul className="flex flex-col gap-4">
             {result.bullets.map((bullet, index) => (
               <li key={index} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                <div className="flex h-full flex-col gap-1 rounded-[10px] border border-neutral-200 bg-neutral-50 px-3.5 py-3 text-body-s">
+                <div className="flex h-full flex-col gap-1 rounded-admin-md border border-neutral-200 bg-neutral-50 px-3.5 py-3 text-body-s">
                   <span className="text-caption-m font-medium text-text-tertiary">Before</span>
                   <p className="text-text-secondary">{bullet.before}</p>
                 </div>
                 <AdminIcon name="ArrowRight" className="text-neutral-400" />
-                <div className="flex h-full flex-col gap-1 rounded-[10px] border border-brand-100 bg-surface-card px-3.5 py-3 text-body-s">
+                <div className="flex h-full flex-col gap-1 rounded-admin-md border border-brand-100 bg-surface-card px-3.5 py-3 text-body-s">
                   <span className="flex items-center gap-2 text-caption-m font-normal">
                     <span className="font-medium text-brand-700">After</span>
                     <span className="flex-1" />
@@ -134,7 +134,7 @@ function Body({
             ))}
           </ul>
           {/* Four across, as drawn; two by two where the column is too narrow for four. */}
-          <dl className="grid grid-cols-2 rounded-[10px] border border-neutral-200 bg-neutral-50 @min-[700px]:grid-cols-4">
+          <dl className="grid grid-cols-2 rounded-admin-md border border-neutral-200 bg-neutral-50 @admin-xs:grid-cols-4">
             <RunStat icon="Terminal" label="Input tokens" value={formatCount(result.inputTokens)} />
             <RunStat icon="File06" label="Output tokens" value={formatCount(result.outputTokens)} />
             <RunStat icon="CurrencyDollar" label="Cost" value={formatRunCost(result.costUsd)} />
@@ -152,7 +152,7 @@ function Body({
 
 function RunStat({ icon, label, value }: { icon: AdminIconName; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2 whitespace-nowrap border-neutral-200 px-4 py-3 text-body-s even:border-l nth-[n+3]:border-t @min-[700px]:not-first:border-l @min-[700px]:nth-[n+3]:border-t-0">
+    <div className="flex items-center gap-2 whitespace-nowrap border-neutral-200 px-4 py-3 text-body-s even:border-l nth-[n+3]:border-t @admin-xs:not-first:border-l @admin-xs:nth-[n+3]:border-t-0">
       <AdminIcon name={icon} size="sm" className="text-neutral-400" />
       <dt className="flex-1 text-text-secondary">{label}</dt>
       <dd className="font-semibold tabular-nums text-text-primary">{value}</dd>
@@ -186,7 +186,7 @@ function SampleSelect({
             aria-labelledby={id}
             aria-describedby={`${id}-value`}
             className={cn(
-              'flex h-11 w-full items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card px-3.5 text-left text-body-m text-text-primary shadow-xs transition-[border-color,box-shadow] duration-fast hover:bg-neutral-50 focus-visible:border-border-selected focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
+              'flex h-11 w-full items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card px-3.5 text-left text-body-m text-text-primary shadow-xs transition-field duration-fast hover:bg-neutral-50 focus-visible:border-border-selected focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100',
               menuTrigger,
             )}
           >
@@ -205,7 +205,7 @@ function SampleSelect({
               value={option.id}
               className="group/item flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-body-m text-text-primary outline-none transition-colors duration-press ease-standard data-[highlighted]:bg-surface-muted"
             >
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface-card text-white transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600 group-data-[state=checked]/item:bg-brand-600">
+              <span className="flex size-4 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface-card text-text-inverse transition-colors duration-press ease-standard group-data-[state=checked]/item:border-brand-600 group-data-[state=checked]/item:bg-brand-600">
                 <Dropdown.ItemIndicator className={tickMotion}>
                   <Check aria-hidden className="size-3" />
                 </Dropdown.ItemIndicator>

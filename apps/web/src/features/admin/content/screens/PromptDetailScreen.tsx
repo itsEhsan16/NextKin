@@ -102,8 +102,8 @@ function Loaded({ detail }: { detail: PromptDetail }) {
         </div>
       }
     >
-      <div className="grid items-start gap-6 @min-[1400px]/admin:grid-cols-[320px_minmax(0,1fr)_400px]">
-        <div className="grid gap-6 @min-[1000px]/admin:grid-cols-2 @min-[1400px]/admin:grid-cols-1">
+      <div className="grid items-start gap-6 @admin-2xl/admin:grid-cols-[320px_minmax(0,1fr)_400px]">
+        <div className="grid gap-6 @admin-md/admin:grid-cols-2 @admin-2xl/admin:grid-cols-1">
           <VersionsCard detail={detail} />
           {detail.stage && <StageCard stage={detail.stage} />}
         </div>

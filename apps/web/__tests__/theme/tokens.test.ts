@@ -138,6 +138,7 @@ describe('theme tokens', () => {
       'shimmer',
       'think',
       'sweep',
+      'glint',
       'ring-draw',
     ]);
     for (const [, , value] of animations) {

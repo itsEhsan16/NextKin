@@ -6,10 +6,8 @@ import { cn } from '@/lib/cn';
 import { ArrowRight } from '@/ui/lineIcons';
 import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
-import { brandButton } from '@/ui/brandButton';
 import { DownloadIcon, EllipsisIcon, LinkIcon, MoreVerticalIcon, SendIcon } from '@/ui/icons';
 import { iconButton } from '@/ui/iconButton';
-import { outlineButton } from '@/ui/outlineButton';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { EmptyStateArt } from '@/ui/illustrations';
@@ -20,6 +18,7 @@ import { FileTypeTile } from './FileTypeTile';
 import { applyCopy, useLetterJob } from '../useLetterJob';
 import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Soon, soonControl } from '@/ui/Soon';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 export type DocumentDetailPanelProps = {
   document?: CareerDocument;
@@ -157,7 +156,10 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
       {/* One row from 1024: below 1280 Download and Share drop their icons, and a narrower card wraps (DC-16). Open stays in this tab, so its arrow says so
           (DC-15); Download and Share read as unavailable, not just say it on hover. */}
       <div className="mt-5 flex flex-wrap gap-2.5">
-        <Link href={`/documents/${document.id}` as Route} className={cn(brandButton, ACTION)}>
+        <Link
+          href={`/documents/${document.id}` as Route}
+          className={cn(BUTTON_VARIANT.primary, ACTION)}
+        >
           Open
           <ArrowRight aria-hidden className="size-4 shrink-0" />
         </Link>
@@ -165,7 +167,7 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
           <button
             aria-disabled="true"
             type="button"
-            className={cn(outlineButton, ACTION, soonControl)}
+            className={cn(BUTTON_VARIANT.secondary, ACTION, soonControl)}
           >
             <DownloadIcon
               aria-hidden
@@ -178,7 +180,7 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
           <button
             aria-disabled="true"
             type="button"
-            className={cn(outlineButton, ACTION, soonControl)}
+            className={cn(BUTTON_VARIANT.secondary, ACTION, soonControl)}
           >
             <LinkIcon aria-hidden className="size-4 shrink-0 text-text-secondary max-xl:hidden" />
             Share
@@ -189,7 +191,11 @@ function DocumentDetailCard({ document, reveal }: { document: CareerDocument; re
             aria-disabled="true"
             type="button"
             aria-label="More actions"
-            className={cn(soonControl, outlineButton, 'size-control-lg shrink-0 rounded-full')}
+            className={cn(
+              soonControl,
+              BUTTON_VARIANT.secondary,
+              'size-control-lg shrink-0 rounded-full',
+            )}
           >
             <EllipsisIcon className="size-4 text-text-secondary" />
           </button>

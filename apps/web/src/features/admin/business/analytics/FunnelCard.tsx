@@ -71,7 +71,7 @@ function Body({ funnel, range }: { funnel: AnalyticsFunnel; range: AnalyticsRang
     <>
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2.5">
-          <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+          <p className="animate-reveal text-display-l font-semibold tracking-display text-text-primary">
             {formatRate(funnel.conversion)}
           </p>
           {funnel.deltaPoints !== null && (
@@ -116,7 +116,7 @@ function Body({ funnel, range }: { funnel: AnalyticsFunnel; range: AnalyticsRang
                       animationDelay: `calc(${index} * var(--stagger-step))`,
                     }}
                     className={cn(
-                      'h-8 shrink-0 origin-left animate-meter-grow rounded-[6px] transition-[opacity,filter] duration-fast ease-standard',
+                      'h-8 shrink-0 origin-left animate-meter-grow rounded-admin-sm transition-[opacity,filter] duration-fast ease-standard',
                       fillAt(index),
                       active !== null && !shown && 'opacity-35',
                       shown && 'brightness-95',

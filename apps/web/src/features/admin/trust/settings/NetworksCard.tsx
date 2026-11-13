@@ -119,7 +119,7 @@ export function NetworksCard({
           {list.map((entry) => (
             <li
               key={entry.cidr}
-              className="flex items-center gap-1.5 rounded-[6px] border border-neutral-300 bg-surface-card py-1 pl-2.5 pr-1.5 text-body-s"
+              className="flex items-center gap-1.5 rounded-admin-sm border border-neutral-300 bg-surface-card py-1 pl-2.5 pr-1.5 text-body-s"
             >
               <span className="font-medium text-neutral-700">{entry.cidr}</span>
               {entry.label && <span className="text-text-tertiary">{entry.label}</span>}
@@ -128,7 +128,7 @@ export function NetworksCard({
                 aria-label={`Remove ${entry.cidr}`}
                 disabled={saving}
                 onClick={() => remove(entry.cidr)}
-                className="relative flex size-4 items-center justify-center rounded-[4px] text-neutral-400 hover:text-neutral-700 focus-visible:outline-2 focus-visible:outline-brand-600 after:absolute after:-inset-3.5"
+                className="relative flex size-4 items-center justify-center rounded-tag text-neutral-400 hover:text-neutral-700 focus-visible:outline-2 focus-visible:outline-brand-600 after:absolute after:-inset-3.5"
               >
                 <AdminIcon name="XClose" size="xs" />
               </button>

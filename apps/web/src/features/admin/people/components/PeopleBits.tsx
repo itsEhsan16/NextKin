@@ -94,7 +94,7 @@ export function UsageBar({
         <span
           style={{ width: `${share * 100}%` }}
           className={cn(
-            'h-full shrink-0 animate-meter-grow rounded-l-full transition-[width] duration-base ease-standard',
+            'h-full shrink-0 animate-meter-grow rounded-l-full transition-width duration-base ease-standard',
             share >= 1 && 'rounded-r-full',
             share >= 0.9 ? 'bg-warning-600' : 'bg-brand-600',
           )}

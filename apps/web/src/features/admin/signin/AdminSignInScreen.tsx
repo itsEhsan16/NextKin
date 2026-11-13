@@ -130,9 +130,7 @@ export function AdminSignInScreen() {
       <div className="relative flex w-full flex-1 flex-col items-center pb-10 pt-[min(240px,18vh)]">
         <span className="flex items-center gap-2.5">
           <LogoMarkIllustration className="h-10 w-[39px]" />
-          <span className="text-[32px] font-extrabold leading-10 tracking-[-0.02em] text-text-primary">
-            NextKin
-          </span>
+          <span className="text-admin-display text-text-primary">NextKin</span>
         </span>
 
         <section

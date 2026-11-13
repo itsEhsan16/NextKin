@@ -106,7 +106,7 @@ export function CeilingField({ provider }: { provider: AdminJobProvider }) {
       <FieldLabel htmlFor={id}>Daily ceiling</FieldLabel>
       <div
         className={cn(
-          'flex h-11 items-center gap-2 rounded-sm border bg-surface-card px-3.5 shadow-xs transition-[border-color,box-shadow] duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100',
+          'flex h-11 items-center gap-2 rounded-sm border bg-surface-card px-3.5 shadow-xs transition-field duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100',
           valid ? 'border-neutral-300' : 'border-danger-600',
         )}
       >

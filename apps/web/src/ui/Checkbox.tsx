@@ -31,7 +31,7 @@ export function Checkbox({ label, checked, onChange, disabled }: CheckboxProps) 
       <span
         aria-hidden
         className={cn(
-          'flex size-4 shrink-0 items-center justify-center rounded-[3px] border transition-colors duration-press ease-standard peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-600',
+          'flex size-4 shrink-0 items-center justify-center rounded-checkbox border transition-colors duration-press ease-standard peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-600',
           checked
             ? 'border-brand-600 bg-brand-600 text-text-inverse'
             : 'border-neutral-400 bg-surface-card',

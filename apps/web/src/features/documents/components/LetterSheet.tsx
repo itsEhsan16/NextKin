@@ -34,7 +34,7 @@ export function LetterSheet({
   return (
     <article
       aria-label={`${letter.company} cover letter`}
-      className="mx-auto flex aspect-[540/764] w-full max-w-[540px] flex-col rounded-sm border border-border-default bg-surface-card px-[9.6%] py-[9.3%] shadow-card"
+      className="mx-auto flex aspect-[540/764] w-full max-w-sheet flex-col rounded-sm border border-border-default bg-surface-card px-[9.6%] py-[9.3%] shadow-card"
     >
       <p className="text-h1 font-bold text-text-primary">{name}</p>
       <p className="mt-0.5 text-body-m font-medium text-text-secondary">{letter.senderHeadline}</p>

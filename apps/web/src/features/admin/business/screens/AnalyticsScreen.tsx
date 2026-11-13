@@ -98,11 +98,11 @@ export function AnalyticsScreen() {
         />
       ) : !data ? (
         <div aria-hidden className="flex flex-col gap-6">
-          <div className="grid gap-4 @min-[1100px]/admin:grid-cols-2">
+          <div className="grid gap-4 @admin-lg/admin:grid-cols-2">
             <Skeleton className="h-[516px] rounded-lg" />
             <Skeleton className="h-[516px] rounded-lg" />
           </div>
-          <div className="grid gap-4 @min-[1100px]/admin:grid-cols-3">
+          <div className="grid gap-4 @admin-lg/admin:grid-cols-3">
             {Array.from({ length: 3 }, (_, index) => (
               <Skeleton key={index} className="h-[431px] rounded-lg" />
             ))}
@@ -117,11 +117,11 @@ export function AnalyticsScreen() {
             updating && 'opacity-60',
           )}
         >
-          <div className="grid gap-4 @min-[1100px]/admin:grid-cols-2">
+          <div className="grid gap-4 @admin-lg/admin:grid-cols-2">
             <FunnelCard funnel={data.funnel} range={data.range} />
             <RetentionCard retention={data.retention} />
           </div>
-          <div className="grid gap-4 @min-[1100px]/admin:grid-cols-3">
+          <div className="grid gap-4 @admin-lg/admin:grid-cols-3">
             <GenerationsByKindCard generations={data.generations} />
             <AtsSpreadCard ats={data.ats} />
             <QuotaConsumptionCard quota={data.quota} />

@@ -21,7 +21,7 @@ export function AdminPage({ title, subtitle, actions, children, className }: Adm
     <div className={cn('flex flex-col gap-6 px-8 pb-10 pt-8', className)}>
       <header className="flex flex-wrap items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h1 className="text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+          <h1 className="text-display-l font-semibold tracking-display text-text-primary">
             {title}
           </h1>
           {subtitle != null && (

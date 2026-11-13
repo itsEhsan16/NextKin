@@ -94,7 +94,7 @@ function Provider({ provider }: { provider: AdminProvider }) {
           <span
             style={{ width: `${share}%` }}
             className={cn(
-              'block h-full animate-meter-grow rounded-full transition-[width] duration-base ease-standard',
+              'block h-full animate-meter-grow rounded-full transition-width duration-base ease-standard',
               warn ? 'bg-warning-600' : 'bg-brand-600',
             )}
           />

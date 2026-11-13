@@ -40,7 +40,7 @@ export function KpiCard({ kpi, range }: { kpi: AdminKpi; range: AdminRange }) {
       bodyClassName="gap-3"
     >
       <div className="flex items-end justify-between gap-2">
-        <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+        <p className="animate-reveal text-display-l font-semibold tracking-display text-text-primary">
           {value}
         </p>
         {kpi.trend.length > 1 && (

@@ -3,11 +3,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
-import { brandButton } from '@/ui/brandButton';
 import { ArrowRightIcon } from '@/ui/icons';
 import { InsightsStarIllustration } from '@/ui/illustrations';
 
 import { insightPanel } from './InsightsCards';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /**
  * "Next Recommendation" (463:48): the role the account fits best, why, and the way to those jobs,
@@ -40,7 +40,7 @@ export function RecommendationCard({
       <Link
         href="/jobs"
         className={cn(
-          brandButton,
+          BUTTON_VARIANT.primary,
           'relative z-raised mt-auto h-control-lg w-fit gap-2 rounded-md px-5 text-body-m font-semibold',
         )}
       >

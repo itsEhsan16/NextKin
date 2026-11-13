@@ -5,8 +5,6 @@ import { useDataExport, useRequestDataExport } from '@nextkin/shared/queries';
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { cn } from '@/lib/cn';
 import { exportLine } from '@/lib/dataExport';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
-import { dangerOutlineButton } from '@/ui/dangerOutlineButton';
 import {
   NavDocumentsIllustration,
   SettingsDeleteIllustration,
@@ -16,6 +14,7 @@ import {
 
 import { SETTING_LIST, SettingRow } from './SettingRow';
 import { SoonTag } from '@/ui/Soon';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const ACTION = 'h-control-sm min-w-32 shrink-0 rounded-md px-3.5 text-body-s font-semibold';
 
@@ -56,7 +55,7 @@ export function YourDataCard({ onOpenDelete }: { onOpenDelete: () => void }) {
                 if (!preparing) requestExport.mutate();
               }}
               className={cn(
-                brandOutlineButton,
+                BUTTON_VARIANT['brand-secondary'],
                 ACTION,
                 'aria-disabled:cursor-default aria-disabled:opacity-60',
               )}
@@ -82,7 +81,7 @@ export function YourDataCard({ onOpenDelete }: { onOpenDelete: () => void }) {
               type="button"
               aria-describedby={lineId}
               onClick={onOpenDelete}
-              className={cn(dangerOutlineButton, ACTION)}
+              className={cn(BUTTON_VARIANT['danger-secondary'], ACTION)}
             >
               Delete account
             </button>

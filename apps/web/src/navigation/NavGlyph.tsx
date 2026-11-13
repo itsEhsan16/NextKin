@@ -12,7 +12,7 @@ import type { ComponentType, SVGProps } from 'react';
  */
 export function NavGlyph({ Icon }: { Icon: ComponentType<SVGProps<SVGSVGElement>> }) {
   return (
-    <span className="flex w-10 shrink-0 items-center justify-center transition-[width] duration-base ease-standard rail:w-8 [&>svg]:h-auto [&>svg]:max-h-7 [&>svg]:w-10 [&>svg]:transition-[width] [&>svg]:duration-base [&>svg]:ease-standard rail:[&>svg]:w-8">
+    <span className="flex w-10 shrink-0 items-center justify-center transition-width duration-base ease-standard rail:w-8 [&>svg]:h-auto [&>svg]:max-h-7 [&>svg]:w-10 [&>svg]:transition-width [&>svg]:duration-base [&>svg]:ease-standard rail:[&>svg]:w-8">
       <Icon />
     </span>
   );

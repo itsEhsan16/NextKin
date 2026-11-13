@@ -154,7 +154,7 @@ export function AssistantScreen({ jobId, resumeId }: { jobId?: string; resumeId?
     <div className={cn(pageFrameInBar, pageFillInBar, 'flex flex-col pb-6')}>
       <PageHeader title="AI Assistant" />
 
-      <div className="mt-4 grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_300px] gap-6">
+      <div className="mt-4 grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_var(--spacing-aside-slim)] gap-6">
         <section
           aria-label="Chat"
           className={cn(cardSurface, 'flex min-h-0 flex-col overflow-hidden')}
@@ -165,7 +165,7 @@ export function AssistantScreen({ jobId, resumeId }: { jobId?: string; resumeId?
           >
             {loading ? (
               // The welcome's shape: most visits open on an empty chat (`toreview.md` §102).
-              <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 pb-4">
+              <div className="mx-auto flex w-full max-w-narrow flex-col items-center gap-3 pb-4">
                 <Skeleton className="size-[120px] rounded-full [@media(max-height:860px)]:size-[72px]" />
                 <Skeleton className="h-9 w-80 rounded-md" />
                 <Skeleton className="h-5 w-96 rounded-md" />

@@ -41,7 +41,7 @@ export function RationaleCard({
           </ActionButton>
         )
       }
-      bodyClassName="grid gap-8 @min-[1000px]/admin:grid-cols-[minmax(0,1fr)_340px]"
+      bodyClassName="grid gap-8 @admin-md/admin:grid-cols-[minmax(0,1fr)_var(--spacing-aside-rail)]"
     >
       <div className="flex flex-col gap-3">
         {rationale.paragraphs.map((p, i) => (
@@ -52,12 +52,12 @@ export function RationaleCard({
         {rationale.byline && <p className="text-body-s text-text-tertiary">{rationale.byline}</p>}
       </div>
       {rationale.evidence.length > 0 && (
-        <div className="flex flex-col gap-1 border-neutral-100 @min-[1000px]/admin:border-l @min-[1000px]/admin:pl-6">
+        <div className="flex flex-col gap-1 border-neutral-100 @admin-md/admin:border-l @admin-md/admin:pl-6">
           <h3 className="text-body-s font-semibold text-text-primary">Evidence</h3>
           <ul className="flex flex-col gap-1">
             {rationale.evidence.map((e) => (
               <li key={e.title} className="flex items-center gap-3 py-2.5 text-body-s">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-neutral-200 bg-surface-card text-neutral-500 shadow-button-xs">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-admin-md border border-neutral-200 bg-surface-card text-neutral-500 shadow-button-xs">
                   <AdminIcon name="File06" size="md" />
                 </span>
                 <span className="flex min-w-0 flex-col">
@@ -94,12 +94,12 @@ export function ImpactCard({
       }
       trailing={<AdminBadge tone="neutral">Dry run · nothing saved</AdminBadge>}
       // Both halves grow from zero, so the right one is its divider and inset wider (409:2516).
-      bodyClassName="flex flex-col gap-8 @min-[1000px]/admin:flex-row"
+      bodyClassName="flex flex-col gap-8 @admin-md/admin:flex-row"
     >
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2.5">
-            <p className="text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+            <p className="text-display-l font-semibold tracking-display text-text-primary">
               {impact.meanFrom} → {impact.meanTo}
             </p>
             <TrendBadge up={impact.meanTo >= impact.meanFrom}>{delta} pts</TrendBadge>
@@ -111,7 +111,7 @@ export function ImpactCard({
         </div>
         <p className="text-body-s text-text-secondary">{impact.note}</p>
       </div>
-      <div className="flex flex-1 flex-col gap-4 border-neutral-100 @min-[1000px]/admin:border-l @min-[1000px]/admin:pl-8">
+      <div className="flex flex-1 flex-col gap-4 border-neutral-100 @admin-md/admin:border-l @admin-md/admin:pl-8">
         <PassRate
           label={`Pass rate (70+) under v${activeVersion ?? '—'}`}
           rate={impact.passFrom}

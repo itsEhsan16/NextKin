@@ -43,7 +43,7 @@ export function TemporaryPasswordDialog({
       }
     >
       <div className="flex flex-col gap-3">
-        <code className="rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-center font-mono text-body-l tracking-[0.06em] text-text-primary">
+        <code className="rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3 text-center font-mono text-body-l tracking-caps-wide text-text-primary">
           {grant?.temporaryPassword}
         </code>
         <button

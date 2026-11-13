@@ -8,10 +8,9 @@ import { useResetSession } from '@nextkin/shared/queries';
 
 import { cn } from '@/lib/cn';
 import { auth } from '@/lib/dataSource';
-import { brandButton } from '@/ui/brandButton';
 import { cardSurface } from '@/ui/Card';
 import { fieldBox } from '@/ui/fieldBox';
-import { outlineButton } from '@/ui/outlineButton';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /**
  * Development-only sign-in for the seeded accounts (ImBackendImplementationPlan P5-07). Web's sign-in
@@ -89,7 +88,7 @@ export function DevSignIn() {
             <button
               type="button"
               onClick={() => void signOut()}
-              className={cn(outlineButton, 'h-control-sm rounded-md px-3')}
+              className={cn(BUTTON_VARIANT.secondary, 'h-control-sm rounded-md px-3')}
             >
               Sign out
             </button>
@@ -104,7 +103,7 @@ export function DevSignIn() {
                 disabled={busy}
                 onClick={() => void signIn(account.email, LOCAL_PASSWORD)}
                 className={cn(
-                  outlineButton,
+                  BUTTON_VARIANT.secondary,
                   'flex h-auto w-full flex-col items-start rounded-md px-3 py-2 text-left',
                 )}
               >
@@ -146,7 +145,7 @@ export function DevSignIn() {
           <button
             type="submit"
             disabled={busy}
-            className={cn(brandButton, 'h-control-md rounded-md px-4 font-semibold')}
+            className={cn(BUTTON_VARIANT.primary, 'h-control-md rounded-md px-4 font-semibold')}
           >
             {busy ? 'Signing in…' : 'Sign in'}
           </button>

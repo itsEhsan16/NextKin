@@ -4,10 +4,10 @@ import { cn } from '@/lib/cn';
 import { FilterDropdown, FilterRadioGroup } from '@/ui/FilterDropdown';
 import { HugeChevronDown } from '@/ui/hugeIcons';
 import { chevronTurn, menuTrigger } from '@/ui/menuMotion';
-import { outlineButton } from '@/ui/outlineButton';
 import { StableLabel } from '@/ui/StableLabel';
 
 import { SETTABLE_STATUSES, STAGE_LABEL } from '../applicationStage';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 export type UpdateStatusMenuProps = {
   status: ApplicationStatus;
@@ -33,7 +33,7 @@ export function UpdateStatusMenu({ status, onChange, saving = false }: UpdateSta
           type="button"
           aria-busy={saving || undefined}
           className={cn(
-            outlineButton,
+            BUTTON_VARIANT.secondary,
             'flex h-control-lg w-full gap-2 rounded-md text-body-l font-semibold',
             menuTrigger,
           )}

@@ -31,7 +31,7 @@ export function AdminNavRow({ item, active, count, onNavigate }: AdminNavRowProp
       aria-current={active ? 'page' : undefined}
       {...hoverProps}
       className={cn(
-        'flex min-h-[38px] w-full items-center gap-3 rounded-[6px] border px-3 py-[7px] text-body-m font-semibold',
+        'flex min-h-[38px] w-full items-center gap-3 rounded-admin-sm border px-3 py-[7px] text-body-m font-semibold',
         'transition-[background-color,border-color,box-shadow,color,scale] duration-base ease-standard active:scale-(--scale-pressed)',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
         active

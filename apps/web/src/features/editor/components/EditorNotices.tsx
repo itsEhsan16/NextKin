@@ -6,15 +6,14 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
-import { brandButton } from '@/ui/brandButton';
 import { HistoryIcon, SyncIcon } from '@/ui/icons';
 import { AlertTriangle, ArrowRight } from '@/ui/lineIcons';
-import { outlineButton } from '@/ui/outlineButton';
 
 import type { EditorBackup } from '../editorBackup';
 import { formatClock } from '../formatClock';
 import { reveal } from '../reveal';
 import { anchorOf } from './EditorForm';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /** The editor's banners (EDIT 03) and its download checklist (EDIT 02). */
 
@@ -64,10 +63,18 @@ export function RestoreBanner({
         line={`You made edits ${when} that weren’t saved — the tab closed before they reached us.`}
       />
       <div className="flex gap-2">
-        <button type="button" onClick={onDiscard} className={cn(outlineButton, bannerButton)}>
+        <button
+          type="button"
+          onClick={onDiscard}
+          className={cn(BUTTON_VARIANT.secondary, bannerButton)}
+        >
           Discard
         </button>
-        <button type="button" onClick={onRestore} className={cn(brandButton, bannerButton)}>
+        <button
+          type="button"
+          onClick={onRestore}
+          className={cn(BUTTON_VARIANT.primary, bannerButton)}
+        >
           Restore
         </button>
       </div>
@@ -100,7 +107,7 @@ export function ConflictBanner({
           type="button"
           disabled={busy}
           onClick={onCopy}
-          className={cn(outlineButton, bannerButton)}
+          className={cn(BUTTON_VARIANT.secondary, bannerButton)}
         >
           Copy my edits
         </button>
@@ -108,7 +115,7 @@ export function ConflictBanner({
           type="button"
           disabled={busy}
           onClick={onReload}
-          className={cn(brandButton, bannerButton)}
+          className={cn(BUTTON_VARIANT.primary, bannerButton)}
         >
           Load the latest
         </button>

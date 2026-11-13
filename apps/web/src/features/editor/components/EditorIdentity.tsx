@@ -67,7 +67,7 @@ function Name({ id, title, noun }: { id: string; title: string; noun: string }) 
           if (event.key === 'Enter') (event.target as HTMLInputElement).blur();
           if (event.key === 'Escape') setEditing(false);
         }}
-        className="h-control-md w-full min-w-0 max-w-[420px] rounded-md border border-border-brand-strong bg-surface-card px-2.5 text-h1 font-semibold text-text-primary outline-none ring-4 ring-brand-100"
+        className="h-control-md w-full min-w-0 max-w-form rounded-md border border-border-brand-strong bg-surface-card px-2.5 text-h1 font-semibold text-text-primary outline-none ring-4 ring-brand-100"
       />
     );
   return (

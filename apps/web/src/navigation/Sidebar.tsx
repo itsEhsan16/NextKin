@@ -121,20 +121,20 @@ export function Sidebar() {
         )}
         <div
           aria-hidden
-          className="w-(--sidebar-gutter) shrink-0 transition-[width] duration-base ease-standard"
+          className="w-(--sidebar-gutter) shrink-0 transition-width duration-base ease-standard"
         />
 
         {/* Named, so a route change's cross-fade leaves the sidebar perfectly still (`theme.css`). */}
         <div
           ref={panelRef}
           // Below 768 the panel waits off-canvas until the menu button opens it (redesign R4).
-          className="fixed inset-y-0 left-0 z-sidebar w-[240px] p-[7px] transition-[width,translate] duration-base ease-standard rail:w-[72px] max-md:-translate-x-full max-md:in-data-overlay:translate-x-0"
+          className="fixed inset-y-0 left-0 z-sidebar w-sidebar-expanded p-sidebar-inset transition-[width,translate] duration-base ease-standard rail:w-[72px] max-md:-translate-x-full max-md:in-data-overlay:translate-x-0"
           style={{ viewTransitionName: 'app-sidebar' }}
         >
           <nav
             aria-label="Main"
             className={cn(
-              'flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-panel border border-border-subtle bg-surface-card shadow-card px-3 py-4 transition-[padding,box-shadow] duration-base ease-standard [--nav-row:var(--spacing-control-lg)] shorter:[--nav-row:var(--spacing-control-md)]',
+              'flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-2xl border border-border-subtle bg-surface-card shadow-card px-3 py-4 transition-[padding,box-shadow] duration-base ease-standard [--nav-row:var(--spacing-control-lg)] shorter:[--nav-row:var(--spacing-control-md)]',
               // The rail keeps its 40px squares at any height: it is 633px tall, so it never needs
               // the step. Opened over the page, the panel floats on the popover shadow.
               'rail:px-2 rail:py-3 rail:[--nav-row:var(--spacing-control-lg)] in-data-overlay:shadow-popover',
@@ -161,7 +161,7 @@ export function Sidebar() {
             <div className="mt-auto flex w-full flex-col gap-2 pt-3">
               <UpgradeCard collapsed={rail} />
 
-              <div className="w-full border-t border-border-subtle transition-[width] duration-base ease-standard rail:w-8" />
+              <div className="w-full border-t border-border-subtle transition-width duration-base ease-standard rail:w-8" />
 
               <NavList
                 items={NAV_FOOTER_ITEMS}
@@ -198,7 +198,7 @@ function NavList({ items, activePath, collapsed, counts, onNavigate, className }
       <SlidingHighlight
         index={activeIndex(items, activePath)}
         row="var(--nav-row)"
-        gap="var(--spacing-token-4)"
+        gap="var(--spacing)"
         className="rounded-md border border-transparent bg-border-brand rail:border-brand-600 rail:bg-transparent"
       />
 
@@ -211,7 +211,7 @@ function NavList({ items, activePath, collapsed, counts, onNavigate, className }
           width jump instantly instead of easing — nav's own `items-center`/`items-stretch`
           toggle was doing the exact same thing one level up. The gap is the token the
           highlight's arithmetic adds to each row. */}
-      <ul className="relative flex w-full flex-col gap-token-4">
+      <ul className="relative flex w-full flex-col gap-1">
         {items.map((item) => (
           <li key={item.key} className="mx-auto w-fit">
             <NavRow

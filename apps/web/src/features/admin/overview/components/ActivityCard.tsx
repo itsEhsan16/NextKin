@@ -81,7 +81,7 @@ export function ActivityCard({ enabled = true }: { enabled?: boolean }) {
       title="Recent admin activity"
       trailing={
         <div className="flex items-center gap-3">
-          <label className="flex h-control-md w-[300px] items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card px-3 shadow-xs transition-[border-color,box-shadow] duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
+          <label className="flex h-control-md w-[300px] items-center gap-2 rounded-sm border border-neutral-300 bg-surface-card px-3 shadow-xs transition-field duration-fast ease-standard focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
             <AdminIcon name="SearchLg" className="text-neutral-500" />
             <input
               type="search"

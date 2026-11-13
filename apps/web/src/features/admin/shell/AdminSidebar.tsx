@@ -58,9 +58,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
             <LogoMarkIllustration className="h-[34px] w-[33px] shrink-0" />
             {/* The board's wordmark (401:1439) is 20.8 ExtraBold, -2%; enlarged at the owner's
                 request (2026-11-05). No type role is this size. */}
-            <span className="text-[28px] font-extrabold leading-[34px] tracking-[-0.02em] text-text-primary">
-              NextKin
-            </span>
+            <span className="text-admin-brand text-text-primary">NextKin</span>
           </span>
           <AdminBadge tone="brand" className="px-2.5 py-1 text-body-s">
             Admin
@@ -79,7 +77,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
           >
             <AdminIcon name="SearchLg" className="text-neutral-500" />
             <span className="flex-1 text-body-m text-text-tertiary">Search</span>
-            <kbd className="rounded-[4px] border border-neutral-200 px-[5px] py-px font-sans text-caption-m text-neutral-400">
+            <kbd className="rounded-tag border border-neutral-200 px-[5px] py-px font-sans text-caption-m text-neutral-400">
               ⌘K
             </kbd>
           </button>

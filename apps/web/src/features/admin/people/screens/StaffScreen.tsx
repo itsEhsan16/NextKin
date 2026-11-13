@@ -79,7 +79,7 @@ export function StaffScreen() {
       subtitle="Who can do what in the admin portal. Role changes need a Super Admin and are audited."
       actions={assign && <InviteButton onClick={() => setInviting(true)} />}
     >
-      <div className="grid grid-cols-2 gap-4 @min-[1000px]/admin:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 @admin-md/admin:grid-cols-5">
         {ROLES.map((role) => (
           <StatCard
             key={role}

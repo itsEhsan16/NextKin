@@ -1,28 +1,33 @@
 'use client';
 
-import { matchBasisCaption, type Job } from '@nextkin/shared/models';
+import type { Job } from '@nextkin/shared/models';
 import type { Route } from 'next';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { showToast } from '@/lib/toast';
 import { useReveal } from '@/lib/useReveal';
+import { AiCallout } from '@/ui/AiCallout';
+import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
+import { FilterDropdown, MenuItem } from '@/ui/FilterDropdown';
+import { iconButton } from '@/ui/iconButton';
+import { MoreVerticalIcon } from '@/ui/icons';
 import { StateView } from '@/ui/StateView';
-import { EmptyStateArt } from '@/ui/illustrations';
 import { tabId, UnderlineTabs } from '@/ui/UnderlineTabs';
 
 import { JOB_DETAIL_TABS, type JobDetailTab } from '../jobDetailTabs';
+import { jobPageHref, tailorHref } from '../jobPageLibrary';
+import { BulletList } from './BulletList';
 import { JobAboutTab } from './JobAboutTab';
 import { JobDetailActions } from './JobDetailActions';
 import { JobMetaRow } from './JobMetaRow';
 import { JobOverviewTab } from './JobOverviewTab';
 import { JobSkillsTab } from './JobSkillsTab';
-import Link from 'next/link';
-
-import { jobPageHref, reasonsFromCriteria } from '../jobPageLibrary';
-import { ReasonList, ScoreVerdict } from '@/ui/ScoreVerdict';
-import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
+import { JobTagPills } from './JobTagPills';
+import { MatchBadge } from './MatchBadge';
 
 export type JobDetailPanelProps = {
   job?: Job;
@@ -32,6 +37,9 @@ export type JobDetailPanelProps = {
   applied: boolean;
   /** Where the recorded application opens, once there is one. */
   applicationHref?: Route;
+  /** Save or unsave the job, from the ⋯ menu. */
+  onToggleSave: () => void;
+  savePending: boolean;
 };
 
 type JobDetailBodyProps = Omit<JobDetailPanelProps, 'job' | 'status' | 'onRetry'> & {
@@ -53,13 +61,11 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
 
   if (status === 'empty') {
     return (
-      <div className={cn(CARD, 'p-6')}>
-        <StateView
-          art={<EmptyStateArt object="globe" />}
-          title="Select a job"
-          message="Choose a job from the list to see its details."
-        />
-      </div>
+      // A plain blank card filling the column (266:5, owner 2026-11-13): no art, no copy. The
+      // words stay for screen readers so the column still says what it is waiting for.
+      <section aria-label="Job details" className={cn(CARD, 'min-h-0 flex-1')}>
+        <p className="sr-only">Select a job from the list to see its details.</p>
+      </section>
     );
   }
 
@@ -92,107 +98,167 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
 }
 
 /**
- * The whole card, in the redrawn board's order (304:2680): the job's header, then Apply Now and
- * Save Job straight under its meta line — so they sit in the card's first screenful at any window
- * height — then the tags, the tabs and their content, and the tailoring callout last.
- *
- * At its natural height when it fits. When a job's details are taller than the space the screen
- * gives it, the card scrolls as one unit, like LinkedIn's right pane, instead of pinning its ends
- * and squeezing the description between them (`toreview.md` §16). `min-h-0` is what lets it
- * shrink to the column and scroll.
+ * The card as the board draws it (304:2680), back at the owner's word and polished (2026-11-13:
+ * "I like this design, so bring it back … Upper part stay fixed"). The header stays put: logo,
+ * match badge and ⋯ menu; the title (it opens the job's page), company and meta line; Apply Now
+ * and View Job; the skill pills; the tabs. Only the tab's content and the tailoring callout under
+ * it scroll, so the job and its actions are always in view.
  */
-function JobDetailBody({ job, reveal, onApply, applied, applicationHref }: JobDetailBodyProps) {
+function JobDetailBody({
+  job,
+  reveal,
+  onApply,
+  applied,
+  applicationHref,
+  onToggleSave,
+  savePending,
+}: JobDetailBodyProps) {
   const [tab, setTab] = useState<JobDetailTab>('overview');
   const switched = useReveal(true, tab);
+  const panelId = `job-${job.id}-panel`;
 
   return (
     <section
       aria-label={`${job.title} at ${job.company}`}
       // The frame stays put; its contents fade in (`toreview.md` §84).
-      className={cn(
-        CARD,
-        'min-h-0 overflow-y-auto p-6 [scrollbar-width:thin]',
-        reveal && '*:animate-reveal',
-      )}
+      className={cn(CARD, 'flex min-h-0 flex-col overflow-hidden', reveal && '*:animate-reveal')}
     >
-      <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="plain" />
-      {/* The title opens the job's own page (724:2). */}
-      <h2 className="mt-4 text-h1 text-neutral-800">
-        <Link
-          href={jobPageHref(job.id)}
-          className="rounded-sm transition-colors duration-press ease-standard hover:text-text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-        >
-          {job.title}
-        </Link>
-      </h2>
-      <p className="mt-1 text-body-m text-text-company">{job.company}</p>
-      <JobMetaRow job={job} className="mt-3" />
+      <div className="shrink-0 px-6 pt-6">
+        <div className="flex items-start justify-between gap-3">
+          <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="plain" />
+          <div className="-mr-2 flex items-center gap-1">
+            <MatchBadge score={job.matchScore} band={job.matchBand} />
+            <JobMenu job={job} onToggleSave={onToggleSave} savePending={savePending} />
+          </div>
+        </div>
 
-      {/* The verdict with its reasons (redesign R5a, S-02). A number only when the whole listing
-          was read; otherwise the band and what it rests on (P11-03, G16). */}
-      <JobVerdict job={job} />
+        <h2 className="mt-4 text-h1 text-text-primary">
+          <Link
+            href={jobPageHref(job.id)}
+            className="rounded-sm transition-colors duration-press ease-standard hover:text-text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          >
+            {job.title}
+          </Link>
+        </h2>
+        <p className="mt-1 text-body-m text-text-company">{job.company}</p>
+        <JobMetaRow job={job} className="mt-3" />
 
-      <div className="mt-5">
-        <JobDetailActions
-          onApply={onApply}
-          applied={applied}
-          applicationHref={applicationHref}
-          jobId={job.id}
+        <div className="mt-5">
+          <JobDetailActions
+            onApply={onApply}
+            applied={applied}
+            applicationHref={applicationHref}
+            jobId={job.id}
+          />
+        </div>
+
+        {job.tags.length > 0 && <JobTagPills tags={job.tags} max={4} size="md" className="mt-4" />}
+
+        <UnderlineTabs
+          tabs={JOB_DETAIL_TABS}
+          active={tab}
+          onChange={setTab}
+          label="Job detail"
+          idBase={panelId}
+          className="mt-5"
         />
       </div>
 
-      <UnderlineTabs
-        tabs={JOB_DETAIL_TABS}
-        active={tab}
-        onChange={setTab}
-        label="Job detail"
-        idBase={`job-${job.id}-panel`}
-        className="mt-6"
-      />
-
-      {/* Keyed by tab: after the first switch, each tab's content fades in (`toreview.md` §84). */}
+      {/* Keyed by tab: a switch starts at the top and fades in (`toreview.md` §84). */}
       <div
         key={tab}
-        id={`job-${job.id}-panel`}
+        id={panelId}
         role="tabpanel"
-        aria-labelledby={tabId(`job-${job.id}-panel`, tab)}
-        className={cn('pt-5', switched && 'animate-reveal')}
+        aria-labelledby={tabId(panelId, tab)}
+        tabIndex={0}
+        className={cn(
+          'min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-5 scrollbar-thin focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600',
+          switched && 'animate-reveal',
+        )}
       >
         {tab === 'overview' && <JobOverviewTab job={job} />}
+        {tab === 'about' && <JobAboutTab job={job} />}
         {tab === 'skills' && <JobSkillsTab job={job} />}
-        {tab === 'company' && <JobAboutTab job={job} />}
+        {tab === 'benefits' && <JobBenefitsTab job={job} />}
+        {tab === 'reviews' && (
+          <StateView
+            title="No reviews yet"
+            message={`Reviews of ${job.company} aren't available on NextKin yet.`}
+            className="py-8"
+          />
+        )}
+
+        {/* "Tailor your resume for this job" (304:2761), the card's last element: the three-step
+            tailor flow for this job (734:2, `toreview.md` §103). */}
+        <div className="mt-6">
+          <AiCallout
+            title="Tailor your resume for this job"
+            message="Increase your chances with AI-powered suggestions."
+            href={tailorHref(job.id)}
+          />
+        </div>
       </div>
     </section>
   );
 }
 
-/** The panel's verdict: a scored ring with reasons, or the band and its basis, or nothing. */
-function JobVerdict({ job }: { job: Job }) {
-  if (!job.matchBand) return null;
-  const reasons = reasonsFromCriteria(job, 3);
-  if (job.matchScore != null && job.matchBasis?.kind === 'full') {
+/** Benefits, or the listing's perks when there's no full list; plainly none when neither. */
+function JobBenefitsTab({ job }: { job: Job }) {
+  const benefits = job.benefits?.length ? job.benefits : (job.perks ?? []);
+  if (benefits.length === 0) {
     return (
-      <ScoreVerdict
-        variant="panel"
-        kind="match"
-        score={job.matchScore * 100}
-        band={job.matchBand}
-        reasons={reasons}
-        className="mt-5 rounded-lg border border-border-subtle p-4"
+      <StateView
+        title="No benefits listed"
+        message={`${job.company} hasn't listed benefits for this role.`}
+        className="py-8"
       />
     );
   }
   return (
-    <div className="mt-5 flex flex-col gap-2 rounded-lg border border-border-subtle p-4">
-      <div className="flex items-center gap-2">
-        <ScoreVerdict variant="pill" kind="match" band={job.matchBand} />
-        {job.matchBasis && (
-          <span className="text-caption-m text-text-tertiary">
-            {matchBasisCaption(job.matchBasis)}
-          </span>
-        )}
-      </div>
-      <ReasonList reasons={reasons} />
+    <div>
+      <h3 className="text-title-l font-bold text-text-primary">Benefits</h3>
+      <BulletList items={benefits} className="mt-1.5" />
     </div>
+  );
+}
+
+/** The ⋯ menu (304:2697): save the job, or copy its link. */
+function JobMenu({
+  job,
+  onToggleSave,
+  savePending,
+}: {
+  job: Job;
+  onToggleSave: () => void;
+  savePending: boolean;
+}) {
+  return (
+    <FilterDropdown
+      align="end"
+      trigger={
+        <button
+          type="button"
+          aria-label={`More for ${job.title}`}
+          className={cn(iconButton, 'text-text-tertiary hover:text-text-primary')}
+        >
+          <MoreVerticalIcon className="size-5" />
+        </button>
+      }
+    >
+      <MenuItem onSelect={onToggleSave} disabled={savePending}>
+        {job.isSaved ? 'Remove from saved' : 'Save job'}
+      </MenuItem>
+      <MenuItem
+        onSelect={() => {
+          const url = `${window.location.origin}${jobPageHref(job.id)}`;
+          void navigator.clipboard
+            ?.writeText(url)
+            .then(() => showToast('Link copied'))
+            .catch(() => showToast("Couldn't copy the link", { tone: 'error' }));
+        }}
+      >
+        Copy link
+      </MenuItem>
+    </FilterDropdown>
   );
 }

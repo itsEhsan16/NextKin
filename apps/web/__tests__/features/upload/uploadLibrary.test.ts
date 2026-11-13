@@ -1,17 +1,11 @@
 import {
   fileProblem,
-  isUploadTab,
   linkProblem,
   MAX_FILE_BYTES,
-  skillSummary,
+  looksLikeLink,
 } from '@/features/upload/uploadLibrary';
 
 describe('uploadLibrary', () => {
-  it('knows its three tabs', () => {
-    expect(['file', 'link', 'paste'].every(isUploadTab)).toBe(true);
-    expect(isUploadTab('docs')).toBe(false);
-  });
-
   it('takes the board’s four formats up to 5MB', () => {
     for (const name of ['jd.pdf', 'jd.DOC', 'jd.docx', 'jd.txt']) {
       expect(fileProblem({ name, size: 1000 })).toBeNull();
@@ -35,15 +29,8 @@ describe('uploadLibrary', () => {
     expect(linkProblem('https://localhost/jd')).not.toBeNull();
   });
 
-  it('counts the skills a draft found', () => {
-    expect(skillSummary({ requiredSkills: ['Figma', 'SQL'], preferredSkills: ['WCAG'] })).toBe(
-      'found 3 skills: 2 required, 1 preferred',
-    );
-    expect(skillSummary({ requiredSkills: ['Figma'], preferredSkills: [] })).toBe(
-      'found 1 skill: 1 required, 0 preferred',
-    );
-    expect(skillSummary({ requiredSkills: [], preferredSkills: [] })).toBe(
-      'didn’t recognise any skills in it',
-    );
+  it('tells a single link from a pasted description', () => {
+    expect(looksLikeLink(' https://example.com/jobs/1 ')).toBe(true);
+    expect(looksLikeLink('Senior designer at https://example.com')).toBe(false);
   });
 });

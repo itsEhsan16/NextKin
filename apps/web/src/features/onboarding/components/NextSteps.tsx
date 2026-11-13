@@ -10,12 +10,12 @@ type Step = { label: string; done?: boolean; href?: Route };
 
 /**
  * ONB 08's next steps (816:211), the §7.2 guided checklist: the profile, done; adding a job,
- * which opens Upload a JD; then the first tailored resume, which needs that job first.
+ * which opens Build Resume's job step; then the first tailored resume, which needs that job first.
  */
 const steps = (profileDone: boolean): readonly Step[] => [
   // After an upload the profile isn't filled yet: it waits on a review (OB-25).
   { label: 'Your profile', done: profileDone },
-  { label: 'Add a job you want — paste a link or a description', href: '/upload-jd' },
+  { label: 'Add a job you want — paste a link or a description', href: '/create/build' },
   { label: 'Generate your first tailored resume' },
 ];
 

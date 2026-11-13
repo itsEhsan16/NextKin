@@ -43,7 +43,7 @@ export function RubricScreen() {
   if (!rubric.data) {
     return (
       <AdminPage title="ATS rubric">
-        <div aria-hidden className="grid gap-6 @min-[1200px]/admin:grid-cols-[320px_minmax(0,1fr)]">
+        <div aria-hidden className="grid gap-6 @admin-xl/admin:grid-cols-[320px_minmax(0,1fr)]">
           <Skeleton className="h-[366px] rounded-lg" />
           <Skeleton className="h-[536px] rounded-lg" />
         </div>
@@ -106,8 +106,8 @@ function Loaded({ rubric }: { rubric: RubricOverview }) {
         </div>
       }
     >
-      <div className="grid items-start gap-6 @min-[1200px]/admin:grid-cols-[320px_minmax(0,1fr)]">
-        <div className="grid gap-6 @min-[900px]/admin:grid-cols-2 @min-[1200px]/admin:grid-cols-1">
+      <div className="grid items-start gap-6 @admin-xl/admin:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="grid gap-6 @admin-sm/admin:grid-cols-2 @admin-xl/admin:grid-cols-1">
           <VersionsList versions={rubric.versions} value={viewing} onChange={setViewing} />
           {draft && rubric.checklist.length > 0 && (
             <ChecklistCard

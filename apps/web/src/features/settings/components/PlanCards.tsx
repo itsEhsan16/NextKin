@@ -1,19 +1,22 @@
 import type { Plan, Subscription } from '@nextkin/shared/models';
 import { cn } from '@/lib/cn';
 import { cardPad, cardSurface } from '@/ui/Card';
-import { brandButton } from '@/ui/brandButton';
 import { CloseIcon, TickIcon } from '@/ui/icons';
 import { NavUpgradeIllustration } from '@/ui/illustrations';
 import { Soon, soonControl } from '@/ui/Soon';
 
 import { FREE_LINES, planPrice, PRO_LINES, type PlanLine } from '../billingLibrary';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /**
  * Upgrade to Pro waits for checkout (V2 §13). It used to link to `/upgrade`, a coming-soon page
  * whose only way on was back to this tab: a loop (audit ST-08). Until checkout exists it says so
  * where the user is pointing, and "View all plans" is gone because both plans are on this page.
  */
-const upgradeButton = cn(brandButton, 'h-control-lg rounded-md px-8 text-body-m font-semibold');
+const upgradeButton = cn(
+  BUTTON_VARIANT.primary,
+  'h-control-lg rounded-md px-8 text-body-m font-semibold',
+);
 
 function Lines({ lines, label }: { lines: readonly PlanLine[]; label: string }) {
   return (

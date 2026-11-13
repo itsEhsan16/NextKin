@@ -123,7 +123,7 @@ export function ResumeRowMenu({
                 Download PDF
               </MenuItem>
             )}
-            <Dropdown.Separator className="my-1 h-px bg-border-faint" />
+            <Dropdown.Separator className="my-1 h-px bg-border-subtle" />
             <MenuItem tone="danger" onSelect={() => setConfirming(true)}>
               <TrashIcon aria-hidden className="size-4 shrink-0" />
               Delete

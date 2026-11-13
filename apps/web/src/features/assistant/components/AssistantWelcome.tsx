@@ -36,14 +36,14 @@ export function AssistantWelcome({
       <h2 className="mt-3 text-hero text-text-primary">
         {firstName ? `Hi ${firstName}, how can I help?` : 'How can I help?'}
       </h2>
-      <p className="mt-2 max-w-[560px] text-body-l text-text-secondary">
+      <p className="mt-2 max-w-narrow text-body-l text-text-secondary">
         Ask about your job search, resumes, ATS scores and interviews. I advise — I never change
         your documents.
       </p>
 
       <ul
         aria-label="Topics"
-        className="mt-6 [@media(max-height:860px)]:mt-4 grid w-full max-w-[560px] grid-cols-2 gap-3.5"
+        className="mt-6 [@media(max-height:860px)]:mt-4 grid w-full max-w-narrow grid-cols-2 gap-3.5"
       >
         {STARTERS.map(({ key, label, draft, Art }) => (
           <li key={key}>

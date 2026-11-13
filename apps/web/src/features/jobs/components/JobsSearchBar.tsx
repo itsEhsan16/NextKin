@@ -24,7 +24,7 @@ export function JobsSearchBar({ value, onChange, onSubmit }: JobsSearchBarProps)
         event.preventDefault();
         onSubmit?.();
       }}
-      className="relative flex w-full items-center gap-3 lg:w-4/5"
+      className="relative flex w-full items-center gap-3"
     >
       <div className="relative min-w-0 flex-1">
         <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-text-disabled" />

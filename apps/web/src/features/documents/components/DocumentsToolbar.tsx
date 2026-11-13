@@ -29,7 +29,7 @@ export function DocumentsToolbar({
 }: DocumentsToolbarProps) {
   return (
     <div className="flex items-center gap-3">
-      <label className="flex h-control-lg min-w-0 max-w-sm flex-1 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 shadow-card transition-[border-color,box-shadow] duration-fast ease-standard hover:border-border-strong focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
+      <label className="flex h-control-lg min-w-0 max-w-sm flex-1 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 shadow-card transition-field duration-fast ease-standard hover:border-border-strong focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100">
         <SearchIcon aria-hidden className="size-4 shrink-0 text-text-tertiary" />
         <input
           type="search"

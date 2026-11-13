@@ -22,7 +22,7 @@ export function ServiceBanner() {
   if (!text || hidden === text) return null;
   return (
     <div role="status" className="fixed inset-x-0 bottom-4 z-banner flex justify-center px-4">
-      <div className="flex max-w-[720px] animate-pop-in items-center gap-3 rounded-lg bg-surface-inverse py-2.5 pl-4 pr-2 text-body-m font-medium text-text-inverse shadow-popover">
+      <div className="flex max-w-reading animate-pop-in items-center gap-3 rounded-lg bg-surface-inverse py-2.5 pl-4 pr-2 text-body-m font-medium text-text-inverse shadow-popover">
         <WarningIcon aria-hidden className="size-4 shrink-0 text-warning-50" />
         <p className="min-w-0 flex-1">{text}</p>
         <button

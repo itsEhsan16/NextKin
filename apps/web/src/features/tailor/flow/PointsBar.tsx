@@ -45,7 +45,7 @@ export function PointsBar({ parts }: { parts: readonly ScorePart[] }) {
               >
                 <div
                   className={cn(
-                    'h-full rounded-full transition-[width] duration-meter ease-decelerate',
+                    'h-full rounded-full transition-width duration-meter ease-decelerate',
                     filled >= 99 ? 'bg-success-600' : 'bg-brand-600',
                   )}
                   style={{ width: `${filled}%` }}

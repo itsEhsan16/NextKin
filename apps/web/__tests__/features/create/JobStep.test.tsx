@@ -26,9 +26,7 @@ describe('Choose the job', () => {
   it('picks the newest saved job and goes on to compare it, for Build', async () => {
     const user = userEvent.setup();
     renderWithQuery(<JobFlowScreen flow="build" />);
-    expect(
-      screen.getByRole('heading', { name: 'Let’s start with the job' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Let’s start with the job' })).toBeInTheDocument();
     const list = await screen.findByRole('radiogroup', { name: 'Your saved jobs' }, wait);
     const [first, second] = within(list).getAllByRole('radio');
     expect(first).toHaveAttribute('aria-checked', 'true');

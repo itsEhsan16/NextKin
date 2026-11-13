@@ -5,14 +5,13 @@ import { cn } from '@/lib/cn';
 import { formatPostedAge } from '@/lib/format';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { JobAiSparkleIllustration } from '@/ui/illustrations';
-import { ReasonList } from '@/ui/ScoreVerdict';
 import { MATCH_BAND_LABEL } from '@nextkin/shared/models';
 import { cardFaceHover, cardFaceMotion } from '@/ui/pressable';
 
 import { JobFactPills } from './JobFactPills';
 import { MatchPill } from './MatchPill';
 import { SaveButton } from './SaveButton';
-import { reasonsFromCriteria, requiredCaption, tailorHref } from '../jobPageLibrary';
+import { reasonsFromCriteria, tailorHref } from '../jobPageLibrary';
 
 export type JobCardProps = {
   job: Job;
@@ -45,8 +44,12 @@ export type JobCardProps = {
  */
 export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: JobCardProps) {
   const age = formatPostedAge(job.postedAt);
-  const reasons = reasonsFromCriteria(job, 2);
-  const basis = job.matchBand ? requiredCaption(job.matchBasis) : undefined;
+  // Why it matches, in the board's one line beside the AI sparkle (719:2; owner, 2026-11-13: "the
+  // upper part same as the design"). The listing's own sentence when it has one; otherwise what the
+  // engine found met, so the line never claims a match the criteria don't show (audit JB-04).
+  const met = reasonsFromCriteria(job, 3).filter((reason) => reason.kind === 'met');
+  const why =
+    job.matchReason ?? (met.length ? met.map((reason) => reason.label).join(' · ') : undefined);
   // The card's name says what a sighted reader sees on it: the job, the verdict and saved.
   const name = [
     `${job.title} at ${job.company}, ${job.location}`,
@@ -83,19 +86,21 @@ export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: 
           <p className="min-w-0 flex-1 truncate text-body-l font-semibold text-text-primary">
             {job.company}
           </p>
-          <div className="flex shrink-0 flex-col items-end gap-1">
-            <MatchPill band={job.matchBand} />
-            {/* What the band rests on, on the card itself (audit JB-05). */}
-            {basis && <span className="text-caption-m text-text-tertiary">{basis}</span>}
-          </div>
+          {/* The band alone, as the board draws it; "N of M required" stays on the detail card. */}
+          <MatchPill band={job.matchBand} />
         </div>
 
         <h3 className="truncate text-h2 text-text-primary">{job.title}</h3>
 
         <JobFactPills job={job} />
 
-        {/* Why it matches, from the engine's criteria (audit JB-04), not editorial prose. */}
-        <ReasonList reasons={reasons} />
+        {why && (
+          <p className="flex items-center gap-2.5 rounded-md bg-surface-brand-strong py-2.5 pl-3 pr-3.5 text-body-m font-medium text-text-secondary">
+            <JobAiSparkleIllustration className="h-auto w-5 shrink-0" />
+            <span aria-hidden className="h-4 w-px shrink-0 bg-border-brand-strong" />
+            <span className="line-clamp-2 min-w-0 flex-1">{why}</span>
+          </p>
+        )}
 
         <div className="flex items-center gap-2 pt-0.5">
           <span className="min-w-0 flex-1 text-caption-m text-text-tertiary">
@@ -106,8 +111,15 @@ export function JobCard({ job, selected, onSelect, onToggleSave, savePending }: 
           <Link
             href={tailorHref(job.id)}
             aria-label={`Tailor your resume for ${job.title} at ${job.company} with AI`}
-            className="pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-full border border-border-brand bg-surface-brand-strong py-1.5 pl-3 pr-3.5 text-body-m font-semibold text-text-brand transition-colors duration-press ease-standard hover:bg-border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            className="pointer-events-auto relative isolate flex shrink-0 items-center gap-1.5 overflow-hidden rounded-full border border-border-brand bg-surface-brand-strong py-1.5 pl-3 pr-3.5 text-body-m font-semibold text-text-brand transition-colors duration-press ease-standard hover:bg-border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
+            {/* A soft light glides across the pill and rests (owner, 2026-11-13: "a soft moving
+                gradient inside of the same color, more like a shimmer"). It starts and ends out of
+                view, so reduced motion (which jumps it to its end) leaves the pill plain. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 -left-1/2 z-behind w-1/2 -skew-x-12 animate-glint bg-linear-to-r from-transparent via-brand-200/70 to-transparent"
+            />
             <JobAiSparkleIllustration className="h-auto w-3.75 shrink-0" />
             Tailor with AI
           </Link>

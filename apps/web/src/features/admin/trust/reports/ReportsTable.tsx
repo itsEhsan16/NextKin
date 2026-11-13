@@ -79,7 +79,7 @@ export function ReportsTable({
                     onFocus(row.id);
                   }}
                   aria-label={`Open ${row.id}`}
-                  className="rounded-[4px] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                  className="rounded-tag hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                 >
                   {row.id}
                 </button>

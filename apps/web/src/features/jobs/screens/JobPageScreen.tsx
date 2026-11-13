@@ -51,7 +51,7 @@ export function JobPageScreen({ id }: { id: string }) {
 
   return (
     <div className={cn(pageFrame, 'pb-8')}>
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_var(--spacing-aside-rail)]">
         {!job.data ? (
           <div role="status" aria-label="Loading job">
             <Skeleton className="h-[60rem] rounded-lg" />

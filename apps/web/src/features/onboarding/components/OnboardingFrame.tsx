@@ -40,7 +40,7 @@ export function OnboardingFrame({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-neutral-0">
-      <header className="mx-auto flex w-full max-w-[1064px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 pt-5 sm:px-6 lg:px-10">
+      <header className="mx-auto flex w-full max-w-flow flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 pt-5 sm:px-6 lg:px-10">
         <div className="flex items-center gap-2.5">
           <OnboardingLogoIllustration className="h-[29px] w-7" />
           <span className="text-h1 font-bold text-text-primary">NextKin</span>
@@ -73,7 +73,7 @@ export function OnboardingFrame({ children }: { children: ReactNode }) {
 
       <main
         id="main"
-        className="mx-auto grid w-full max-w-[1064px] gap-x-16 px-4 pb-6 pt-6 sm:px-6 lg:px-10 lg:grid-cols-[minmax(0,540px)_380px] lg:justify-between"
+        className="mx-auto grid w-full max-w-flow gap-x-16 px-4 pb-6 pt-6 sm:px-6 lg:px-10 lg:grid-cols-[minmax(0,540px)_380px] lg:justify-between"
       >
         <div className="min-w-0">{children}</div>
         <aside className="hidden flex-col gap-1 lg:flex">

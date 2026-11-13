@@ -34,9 +34,7 @@ export function StatCard({ icon, title, value, badge, caption, trailing }: StatC
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2.5">
-            <p className="animate-reveal text-[28.6px] font-semibold leading-[37.4px] tracking-[-0.015em] text-text-primary">
-              {value}
-            </p>
+            <p className="animate-reveal text-admin-stat text-text-primary">{value}</p>
             {badge}
           </div>
           {caption != null && <p className="text-body-s text-text-secondary">{caption}</p>}

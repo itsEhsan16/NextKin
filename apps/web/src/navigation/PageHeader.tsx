@@ -20,7 +20,7 @@ export type PageHeaderProps = {
 
 /**
  * The top of every page's content: the eyebrow, the title and the line under it, a ~78px block at
- * the compact density (`toreview.md` §16). The app-wide actions (search, Upload New JD,
+ * the compact density (`toreview.md` §16). The app-wide actions (search, Build Resume,
  * notifications, avatar) are not part of it. They are the layout's `TopBar`, pinned above every
  * page (`toreview.md` §28).
  */

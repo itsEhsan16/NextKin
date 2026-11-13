@@ -65,7 +65,7 @@ export function PromptsScreen() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 @min-[1200px]/admin:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 @admin-xl/admin:grid-cols-5">
             <StatCard
               icon="GitBranch01"
               title="Pipeline stages"

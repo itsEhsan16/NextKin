@@ -2,7 +2,7 @@ import { pressable } from './pressable';
 
 /**
  * A glyph-only action in a row: a device's or an account's kebab, a Privacy & data chevron. The
- * caller adds the ink. A constant rather than a component, like `outlineButton`.
+ * caller adds the ink. A constant rather than a component, like `BUTTON_VARIANT`.
  */
 export const iconButton =
   `flex size-control-sm shrink-0 items-center justify-center rounded-full ${pressable} ` +

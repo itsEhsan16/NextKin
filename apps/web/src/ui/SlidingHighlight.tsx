@@ -7,7 +7,7 @@ export type SlidingHighlightProps = {
   index: number;
   /**
    * Every row's height, and the space between rows, as CSS lengths: tokens or custom properties
-   * (`var(--spacing-token-4)`), not raw numbers. Every row has to be exactly `row` tall, or the
+   * (`var(--spacing)`), not raw numbers. Every row has to be exactly `row` tall, or the
    * arithmetic below won't land on it.
    */
   row: string;

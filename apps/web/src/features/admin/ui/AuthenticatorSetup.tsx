@@ -33,14 +33,14 @@ export function AuthenticatorQr({ otpauthUrl, secret }: { otpauthUrl: string; se
       <div
         role="img"
         aria-label="QR code for your authenticator app"
-        className="size-44 rounded-md border border-neutral-200 bg-white p-3 [&_svg]:size-full"
+        className="size-44 rounded-md border border-neutral-200 bg-neutral-0 p-3 [&_svg]:size-full"
         // The markup is the qrcode library's own SVG of the otpauth link: no user input in it.
         dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
       />
       <div className="flex w-full flex-col items-center gap-1.5">
         <p className="text-body-s text-text-secondary">Can’t scan it? Enter this key instead:</p>
         <div className="flex items-center gap-2">
-          <code className="rounded-sm bg-neutral-50 px-2 py-1 font-mono text-body-s tracking-[0.04em] text-text-primary">
+          <code className="rounded-sm bg-neutral-50 px-2 py-1 font-mono text-body-s tracking-caps text-text-primary">
             {grouped}
           </code>
           <button
@@ -65,7 +65,7 @@ export function BackupCodeList({ codes }: { codes: string[] }) {
     <div className="flex w-full flex-col gap-3">
       <ul className="grid grid-cols-2 gap-2 rounded-md border border-neutral-200 bg-neutral-50 p-4">
         {codes.map((code) => (
-          <li key={code} className="font-mono text-body-m tracking-[0.04em] text-text-primary">
+          <li key={code} className="font-mono text-body-m tracking-caps text-text-primary">
             {code}
           </li>
         ))}

@@ -142,14 +142,14 @@ function AliasesDialog({ skill, onClose }: { skill: Skill; onClose: () => void }
           {aliases.map((alias) => (
             <li
               key={alias}
-              className="flex items-center gap-1 rounded-[6px] border border-neutral-200 bg-surface-card py-0.5 pl-2 pr-1 text-caption-m text-neutral-700"
+              className="flex items-center gap-1 rounded-admin-sm border border-neutral-200 bg-surface-card py-0.5 pl-2 pr-1 text-caption-m text-neutral-700"
             >
               {alias}
               <button
                 type="button"
                 aria-label={`Remove ${alias}`}
                 onClick={() => setAliases(aliases.filter((a) => a !== alias))}
-                className="relative flex size-4 items-center justify-center rounded-[3px] text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 after:absolute after:-inset-3"
+                className="relative flex size-4 items-center justify-center rounded-checkbox text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 after:absolute after:-inset-3"
               >
                 <AdminIcon name="XClose" size="xs" />
               </button>

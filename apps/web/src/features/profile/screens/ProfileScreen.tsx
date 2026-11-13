@@ -90,7 +90,7 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
 
       <ProfileTabs active={tab} onChange={setTab} />
 
-      <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_var(--spacing-aside-rail)] items-start gap-6">
         {/* Keyed by tab: after the first switch, each tab fades in (`toreview.md` §84). */}
         <div
           key={tab}

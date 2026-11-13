@@ -1,9 +1,9 @@
 import { useId, type ComponentType, type ReactNode, type SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
 import { cardPad, cardSurface } from '@/ui/Card';
 import { EditIcon } from '@/ui/icons';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 export type AccountCardProps = {
   title: string;
@@ -83,7 +83,7 @@ export function AccountCard({
             type="button"
             aria-label={`Edit ${title.toLowerCase()}`}
             className={cn(
-              brandOutlineButton,
+              BUTTON_VARIANT['brand-secondary'],
               'h-control-sm shrink-0 gap-1.5 rounded-md px-3.5 text-body-s font-semibold',
             )}
           >

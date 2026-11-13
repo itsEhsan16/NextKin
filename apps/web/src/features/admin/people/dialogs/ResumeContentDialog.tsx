@@ -94,7 +94,7 @@ export function ResumeContentDialog({
         {resume && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3.5 py-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-neutral-200 bg-surface-card text-neutral-600 shadow-xs">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-admin-md border border-neutral-200 bg-surface-card text-neutral-600 shadow-xs">
                 <AdminIcon name="File06" size="md" />
               </span>
               <div className="flex min-w-0 flex-col text-body-s">

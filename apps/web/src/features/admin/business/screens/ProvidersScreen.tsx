@@ -37,7 +37,7 @@ export function ProvidersScreen() {
       }
     >
       {providers.isPending ? (
-        <div aria-hidden className="grid gap-4 @min-[1100px]/admin:grid-cols-2">
+        <div aria-hidden className="grid gap-4 @admin-lg/admin:grid-cols-2">
           {Array.from({ length: 4 }, (_, index) => (
             <Skeleton key={index} className="h-[415px] rounded-lg" />
           ))}
@@ -55,7 +55,7 @@ export function ProvidersScreen() {
           <CardEmpty title="No job providers" message="Job search has no sources set up yet." />
         </div>
       ) : (
-        <div className="grid gap-4 @min-[1100px]/admin:grid-cols-2">
+        <div className="grid gap-4 @admin-lg/admin:grid-cols-2">
           {providers.data.map((provider, index) => (
             <ProviderCard key={provider.provider} provider={provider} index={index} />
           ))}

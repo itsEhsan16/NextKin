@@ -9,7 +9,6 @@ import { jobHref } from '@/features/jobs/jobHref';
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
-import { brandButton } from '@/ui/brandButton';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
 import { StateView } from '@/ui/StateView';
@@ -25,6 +24,7 @@ import { ApplicationSubmissionTab } from './ApplicationSubmissionTab';
 import { UpdateStatusMenu } from './UpdateStatusMenu';
 import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Soon, soonControl } from '@/ui/Soon';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 type ApplicationDetailTab = 'overview' | 'application' | 'follow-ups' | 'notes';
 
@@ -174,7 +174,10 @@ function ApplicationDetailBody({
       <div className="mt-5 grid grid-cols-2 gap-3">
         <Link
           href={jobHref(job.id)}
-          className={cn(brandButton, 'h-control-lg gap-2 rounded-md text-body-l font-semibold')}
+          className={cn(
+            BUTTON_VARIANT.primary,
+            'h-control-lg gap-2 rounded-md text-body-l font-semibold',
+          )}
         >
           View Job
           {/* An app page, not a new tab (AP-12). */}

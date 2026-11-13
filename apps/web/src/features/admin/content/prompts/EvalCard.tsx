@@ -89,7 +89,7 @@ export function EvalCard({ detail }: { detail: PromptDetail }) {
         <>
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] tabular-nums text-text-primary">
+              <p className="animate-reveal text-display-l font-semibold tracking-display tabular-nums text-text-primary">
                 {formatScore(result.score)}
               </p>
               <AdminBadge
@@ -172,7 +172,7 @@ export function ChangeNoteCard({ detail }: { detail: PromptDetail }) {
         aria-label="Change note"
         placeholder="What changed and why"
         disabled={!detail.draft}
-        className="min-h-[116px] w-full resize-y rounded-sm border border-neutral-300 bg-surface-card px-3.5 py-2.5 text-body-m text-text-primary shadow-xs outline-none transition-[border-color,box-shadow] duration-fast focus:border-border-selected focus:ring-4 focus:ring-brand-100 disabled:bg-neutral-50 disabled:text-text-tertiary"
+        className="min-h-[116px] w-full resize-y rounded-sm border border-neutral-300 bg-surface-card px-3.5 py-2.5 text-body-m text-text-primary shadow-xs outline-none transition-field duration-fast focus:border-border-selected focus:ring-4 focus:ring-brand-100 disabled:bg-neutral-50 disabled:text-text-tertiary"
       />
       <p className="text-caption-m font-normal text-text-secondary">
         {detail.draft

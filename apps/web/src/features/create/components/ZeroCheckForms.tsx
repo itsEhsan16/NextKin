@@ -13,9 +13,8 @@ import { useState, type ReactNode } from 'react';
 import { DateRange } from '@/features/editor/components/DateRange';
 import { FieldRow, TextField } from '@/features/editor/components/fields';
 import { cn } from '@/lib/cn';
-import { brandButton } from '@/ui/brandButton';
-import { outlineButton } from '@/ui/outlineButton';
 import { StableLabel } from '@/ui/StableLabel';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /**
  * ZERO 04's three questions on the web (toreview §125): a guessed role, skill or education entry,
@@ -72,7 +71,10 @@ function Actions({
         type="button"
         onClick={onSave}
         disabled={busy}
-        className={cn(brandButton, 'h-control-lg rounded-md px-5 text-body-l font-semibold')}
+        className={cn(
+          BUTTON_VARIANT.primary,
+          'h-control-lg rounded-md px-5 text-body-l font-semibold',
+        )}
       >
         <StableLabel label="Save answer" busyLabel="Saving…" busy={busy} />
       </button>
@@ -80,7 +82,10 @@ function Actions({
         type="button"
         onClick={onRemove}
         disabled={busy}
-        className={cn(outlineButton, 'h-control-lg rounded-md px-5 text-body-l font-semibold')}
+        className={cn(
+          BUTTON_VARIANT.secondary,
+          'h-control-lg rounded-md px-5 text-body-l font-semibold',
+        )}
       >
         {removeLabel}
       </button>

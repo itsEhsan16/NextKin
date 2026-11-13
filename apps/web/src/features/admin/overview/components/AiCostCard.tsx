@@ -41,7 +41,7 @@ export function AiCostCard({ cost, range }: { cost: AdminAiCost | null; range: A
         <>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
-              <p className="animate-reveal text-display-l font-semibold tracking-[-0.015em] text-text-primary">
+              <p className="animate-reveal text-display-l font-semibold tracking-display text-text-primary">
                 {formatUsd(cost.totalUsd)}
               </p>
               {cost.delta && <DeltaBadge delta={cost.delta} />}
@@ -85,7 +85,7 @@ export function AiCostCard({ cost, range }: { cost: AdminAiCost | null; range: A
                 {...bind(stage.key)}
                 className={cn(
                   'relative isolate flex cursor-default items-center gap-2 text-body-s outline-none transition-opacity duration-fast ease-standard',
-                  'before:absolute before:-inset-x-2 before:-inset-y-1 before:-z-10 before:rounded-sm before:transition-colors before:duration-fast before:ease-standard focus-visible:before:ring-2 focus-visible:before:ring-brand-600',
+                  'before:absolute before:-inset-x-2 before:-inset-y-1 before:z-behind before:rounded-sm before:transition-colors before:duration-fast before:ease-standard focus-visible:before:ring-2 focus-visible:before:ring-brand-600',
                   active === stage.key && 'before:bg-neutral-50',
                   active !== null && active !== stage.key && 'opacity-50',
                 )}

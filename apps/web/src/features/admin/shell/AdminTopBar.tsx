@@ -47,7 +47,7 @@ export function AdminTopBar({ onOpenNav }: AdminTopBarProps) {
   const degraded = (status.data?.capabilities ?? []).filter((c) => c.degraded).length;
 
   return (
-    <header className="sticky top-0 z-20 flex h-[73px] items-center gap-3 border-b border-neutral-200 bg-surface-card/90 px-8 backdrop-blur-md">
+    <header className="sticky top-0 z-topbar flex h-[73px] items-center gap-3 border-b border-neutral-200 bg-surface-card/90 px-8 backdrop-blur-md">
       {onOpenNav && (
         <IconButton
           icon="Menu01"

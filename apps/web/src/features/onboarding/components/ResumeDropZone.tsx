@@ -1,11 +1,11 @@
 import { useId, useState, type DragEvent } from 'react';
 
 import { cn } from '@/lib/cn';
-import { brandOutlineButton } from '@/ui/brandOutlineButton';
 import { DocumentsIcon } from '@/ui/icons';
 import { UploadResumeFileIllustration } from '@/ui/illustrations';
 
 import { RESUME_INPUT_ACCEPT } from '../resumeUpload';
+import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /**
  * ONB 04b's dashed drop zone (814:353): the upload art, "Drag and drop your resume here", Browse
@@ -68,7 +68,7 @@ export function ResumeDropZone({
           <span
             aria-hidden
             className={cn(
-              brandOutlineButton,
+              BUTTON_VARIANT['brand-secondary'],
               'h-control-md shrink-0 gap-2 rounded-md border-brand-600 px-3.5 text-body-m font-semibold',
             )}
           >
@@ -86,7 +86,7 @@ export function ResumeDropZone({
           <span
             aria-hidden
             className={cn(
-              brandOutlineButton,
+              BUTTON_VARIANT['brand-secondary'],
               'mt-2 h-control-md gap-2 rounded-md border-brand-600 px-4 text-body-l font-semibold',
             )}
           >

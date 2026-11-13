@@ -55,10 +55,7 @@ export function AdminSettingsScreen() {
 
       <div role="tabpanel" id={`settings-panel-${tab}`} aria-labelledby={`settings-tab-${tab}`}>
         {settings.isPending ? (
-          <div
-            aria-hidden
-            className="grid gap-6 @min-[1200px]/admin:grid-cols-[minmax(0,1fr)_440px]"
-          >
+          <div aria-hidden className="grid gap-6 @admin-xl/admin:grid-cols-[minmax(0,1fr)_440px]">
             <Skeleton className="h-[640px] rounded-lg" />
             <Skeleton className="h-[480px] rounded-lg" />
           </div>
@@ -77,7 +74,7 @@ export function AdminSettingsScreen() {
             />
           </AdminCard>
         ) : !data ? (
-          <div className="grid items-start gap-6 @min-[1200px]/admin:grid-cols-[minmax(0,1fr)_440px]">
+          <div className="grid items-start gap-6 @admin-xl/admin:grid-cols-[minmax(0,1fr)_440px]">
             <AdminCard icon="ShieldTick" title="Security">
               <NotConnected what="admin settings" />
             </AdminCard>
@@ -92,7 +89,7 @@ export function AdminSettingsScreen() {
             <RetentionCard settings={data} />
           </div>
         ) : (
-          <div className="grid items-start gap-6 @min-[1200px]/admin:grid-cols-[minmax(0,1fr)_440px]">
+          <div className="grid items-start gap-6 @admin-xl/admin:grid-cols-[minmax(0,1fr)_440px]">
             <div className="flex min-w-0 flex-col gap-6">
               <MfaCard settings={data} />
               <SessionCard settings={data} onSave={onSave} />

@@ -29,11 +29,11 @@ export function ProgressBar({
       aria-valuenow={percent}
       aria-valuemin={0}
       aria-valuemax={100}
-      className={cn('h-[7px] w-full overflow-hidden rounded-full bg-neutral-200', className)}
+      className={cn('h-progress w-full overflow-hidden rounded-full bg-neutral-200', className)}
     >
       <div
         className={cn(
-          'h-full rounded-full bg-brand-600 transition-[width] duration-meter ease-decelerate',
+          'h-full rounded-full bg-brand-600 transition-width duration-meter ease-decelerate',
           sweep && 'animate-meter-grow',
           fillClassName,
         )}

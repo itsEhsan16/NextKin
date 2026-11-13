@@ -46,8 +46,15 @@ function ToolBody({
         <span className="block text-body-m font-semibold">{title}</span>
         <span className="block text-body-s text-text-tertiary">{line}</span>
       </span>
-      <Art aria-hidden className="h-auto w-7 shrink-0" />
-      {live && <ChevronRightIcon aria-hidden className="size-3.5 shrink-0 text-text-tertiary" />}
+      {/* One 40px art box and one chevron slot on every row, so the three icons line up whether
+          or not a row opens something (owner, 2026-11-13: "increase the icon size … all three
+          align"). */}
+      <span aria-hidden className="flex size-10 shrink-0 items-center justify-center">
+        <Art className="h-auto max-h-full w-10 max-w-full" />
+      </span>
+      <span aria-hidden className="flex size-3.5 shrink-0">
+        {live && <ChevronRightIcon className="size-3.5 text-text-tertiary" />}
+      </span>
     </>
   );
 }

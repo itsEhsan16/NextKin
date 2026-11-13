@@ -25,7 +25,6 @@ import { useApplyOnSite } from '@/features/applications/applyAsk';
 import { JobDetailPanel } from '../components/JobDetailPanel';
 import { JobFilterChipsRow } from '../components/JobFilterChipsRow';
 import { JobList } from '../components/JobList';
-import { JobSeekerIllustration } from '../components/JobSeekerIllustration';
 import { JobsSearchBar } from '../components/JobsSearchBar';
 import { useSaveJob } from '../hooks/useSaveJob';
 import { jobPageHref } from '../jobPageLibrary';
@@ -161,12 +160,6 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
           (redesign R5a, audit JB-01: two ~110px columns at 390). */}
       <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[56fr_44fr]">
         <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
-          {/* The board's character at three quarters: its skyline behind the search bar's right
-              end, the figure in the gap before the detail card, the caption just above that
-              card. Painted first, so the search bar and the detail card cover what they cover
-              on the board. The search bar is 80% of this column, hence the anchor. */}
-          <JobSeekerIllustration className="absolute -top-[50px] left-[calc(80%-61px)] origin-top-left scale-75 max-xl:hidden" />
-
           <JobsSearchBar
             value={searchInput}
             onChange={(value) => {
@@ -234,6 +227,8 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
             onApply={() => selectedJob && applyOnSite(selectedJob)}
             applied={application != null}
             applicationHref={application ? applicationHref(application.id) : undefined}
+            onToggleSave={() => selectedJob && save.toggle(selectedJob)}
+            savePending={save.savingId === selectedJob?.id}
           />
         </div>
       </div>
