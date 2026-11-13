@@ -224,6 +224,13 @@ export function TailorScreen({
   }
 
   const done = runId && run.data?.status === 'ready';
+  // Each step before the current one is a link back to it, keeping the resume and the mode.
+  const mode = build ? ({ mode: 'build' } as const) : {};
+  const kept = resumeId && !build ? { resumeId } : {};
+  const stepHrefs = [
+    tailorPath(target, { step: 'resume', ...kept, ...mode }),
+    tailorPath(target, { step: 'enhance', ...kept, ...mode }),
+  ];
   return (
     <div className={cn(pageFrame, 'flex flex-col gap-5 pb-8')}>
       {/* The finished resume needs no step line (owner, toreview §120): its toolbar has the way back. */}
@@ -236,6 +243,7 @@ export function TailorScreen({
           leading={<JobLogoTile job={job} />}
           steps={STEPS}
           step={runId ? STEPS.length - 1 : STEP_INDEX[step]}
+          stepHrefs={stepHrefs}
         />
       ) : (
         <Skeleton className="h-10 w-full rounded-md" />

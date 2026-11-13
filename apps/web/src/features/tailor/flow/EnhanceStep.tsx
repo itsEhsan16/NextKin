@@ -20,14 +20,14 @@ import { ArrowRight, ShieldTick, iconSize } from '@/ui/lineIcons';
 import type { TailorChoices } from '../useTailorRun';
 import { EnhanceAside } from './EnhanceAside';
 import { EnhanceHeader } from './EnhanceHeader';
-import { KeywordPanel } from './KeywordPanel';
-import { MoreWays } from './MoreWays';
+import { RaiseScorePanel } from './RaiseScorePanel';
 
 /**
  * "Choose keywords to add", step 2 of the tailor flow (owner's mockup, 2026-11-11; it folds the
  * old Enhance in, toreview §149): the job → the resume, the keywords it lacks to tick, and on the
  * right the score, what the AI rewrites and where the score lands. Everything else the plan asks
- * (header checks, roles, real results) waits folded in "More ways to raise your score".
+ * (roles, real results, header checks, other fixes) sits beside the keywords as categories of
+ * one rail (owner, 2026-11-14); it was a folded card under the step.
  */
 export function EnhanceStep({
   job,
@@ -82,7 +82,7 @@ export function EnhanceStep({
         <div className="grid gap-6 @5xl:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
           <div className="@container/main flex min-w-0 flex-col gap-6">
             <EnhanceHeader job={job} resume={resume} onChangeResume={onChangeResume} />
-            <KeywordPanel comparison={comparison} choices={choices} />
+            <RaiseScorePanel comparison={comparison} choices={choices} />
             <p className="flex items-start gap-2 text-body-s font-medium text-text-tertiary">
               <ShieldTick aria-hidden className="mt-px size-4 shrink-0" />
               {NEVER_ADDS_SKILLS}
@@ -98,8 +98,6 @@ export function EnhanceStep({
           />
         </div>
       </section>
-
-      <MoreWays comparison={comparison} choices={choices} />
 
       <FlowFooter note={allowanceNote} noteIcon={false}>
         <Link href={backHref} className={backButton}>

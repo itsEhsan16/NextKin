@@ -12,15 +12,24 @@ const ORDER = ['keywords', 'timeline', 'sections', 'formatting', 'achievements']
  * "Where your points go" (850:228): the 10 points as one bar, each part as wide as its weight and
  * filled to what the resume earns now, what it loses under it, and the biggest loss named.
  */
-export function PointsBar({ parts }: { parts: readonly ScorePart[] }) {
+export function PointsBar({
+  parts,
+  framed = true,
+}: {
+  parts: readonly ScorePart[];
+  /** False inside a dialog, which has its own title and padding. */
+  framed?: boolean;
+}) {
   const ordered = ORDER.map((key) => parts.find((p) => p.key === key)).filter(
     (p): p is ScorePart => p !== undefined,
   );
   const worst = [...parts].sort((a, b) => b.lost - a.lost)[0];
   return (
-    <div className="flex flex-col gap-3.5 px-8 pb-8 pt-2">
+    <div className={cn('flex flex-col gap-3.5', framed && 'px-8 pb-8 pt-2')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-title-l font-bold text-text-primary">Where your points go</h2>
+        {framed && (
+          <h2 className="text-title-l font-bold text-text-primary">Where your points go</h2>
+        )}
         {worst && worst.lost > 0 && (
           <p className="flex items-center gap-1.5 text-body-m font-semibold text-warning-text">
             <AlertTriangle aria-hidden className="size-4.5" />

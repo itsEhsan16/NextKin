@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
@@ -18,7 +18,7 @@ const step = (index: number): PlanStep => ({
 });
 
 describe('Add real results (toreview §149)', () => {
-  it('lists lines without a result, three at first, and finishes one by two picks', async () => {
+  it('lists every line without a result, and finishes one by two picks in a dialog', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
     render(
@@ -29,15 +29,15 @@ describe('Add real results (toreview §149)', () => {
         onFigure={onFigure}
       />,
     );
-    expect(screen.getAllByRole('button', { name: 'Add the result' })).toHaveLength(3);
-    await user.click(screen.getByRole('button', { name: 'Show 1 more' }));
     expect(screen.getAllByRole('button', { name: 'Add the result' })).toHaveLength(4);
 
     const [first] = screen.getAllByRole('button', { name: 'Add the result' });
     await user.click(first!);
-    await user.click(screen.getAllByRole('button', { name: 'Saved money' })[0]!);
-    await user.click(screen.getAllByRole('button', { name: '10%' })[0]!);
-    await user.click(screen.getAllByRole('button', { name: 'Use this line' })[0]!);
+    const dialog = screen.getByRole('dialog', { name: 'Add the result' });
+    await user.click(within(dialog).getByRole('button', { name: 'Saved money' }));
+    await user.click(within(dialog).getByRole('button', { name: '10%' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Use this line' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(onFigure).toHaveBeenCalledWith(
       { roleId: 'role_web', index: 1, text: 'Built feature 1.' },
       'Built feature 1, cutting costs by about 10%.',

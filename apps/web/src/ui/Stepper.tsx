@@ -1,3 +1,6 @@
+import type { Route } from 'next';
+import Link from 'next/link';
+
 import { cn } from '@/lib/cn';
 import { Check } from '@/ui/lineIcons';
 
@@ -6,24 +9,30 @@ import { Check } from '@/ui/lineIcons';
  * one filled, the rest grey, joined by lines that fill as you go. Labels say what the user does
  * ("Choose the job", "Pick keywords", "Review"), not what the system does. `step` past the last
  * ticks them all. Screen readers hear each step's state, and the current one carries
- * `aria-current="step"`.
+ * `aria-current="step"`. A done step with an address in `hrefs` is a link back to it (owner,
+ * 2026-11-14: "clicking on any steps should move me to that").
  */
 export function Stepper({
   steps,
   step,
   label = 'Steps',
+  hrefs,
 }: {
   steps: readonly string[];
   /** The current step, from 0. */
   step: number;
   /** What the list is called for screen readers. */
   label?: string;
+  /** Where each step lives; a done step with one becomes a link back to it. */
+  hrefs?: readonly (Route | undefined)[];
 }) {
   return (
     <ol aria-label={label} className="flex items-center gap-2">
       {steps.map((label, index) => {
         const done = index < step;
         const current = index === step;
+        const href = done ? hrefs?.[index] : undefined;
+        const Pill = href ? Link : 'span';
         return (
           <li key={label} className="flex items-center gap-2">
             {index > 0 && (
@@ -35,7 +44,8 @@ export function Stepper({
                 )}
               />
             )}
-            <span
+            <Pill
+              href={href as Route}
               aria-current={current ? 'step' : undefined}
               className={cn(
                 'flex h-8 items-center gap-2 rounded-full py-1 pl-1 pr-3 text-body-s font-medium transition-colors duration-base ease-standard',
@@ -46,6 +56,8 @@ export function Stepper({
                   : done
                     ? 'bg-brand-50 text-text-brand'
                     : 'bg-surface-muted text-text-tertiary',
+                href &&
+                  'hover:bg-brand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
               )}
             >
               <span
@@ -63,7 +75,7 @@ export function Stepper({
               </span>
               <span className={current ? undefined : 'max-sm:sr-only'}>{label}</span>
               <span className="sr-only">{done ? ', done' : current ? ', current step' : ''}</span>
-            </span>
+            </Pill>
           </li>
         );
       })}

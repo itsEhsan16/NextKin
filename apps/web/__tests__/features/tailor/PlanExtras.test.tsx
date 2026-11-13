@@ -86,8 +86,11 @@ describe('the plan inside Enhance', () => {
     expect(within(row).getByText('+0.1')).toBeInTheDocument();
     // Only the skill-list step: keywords are capsules and results have their own list.
     expect(screen.queryByText('Docker')).toBeNull();
+    // Where is asked in a dialog (owner, 2026-11-14), the job's own line quoted.
     await user.click(within(row).getByRole('button', { name: 'Say where you used it' }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Intern · Acme' }));
+    const dialog = screen.getByRole('dialog', { name: 'Where did you use Claude Code?' });
+    expect(dialog).toHaveTextContent('Rapid prototyping: ship MVPs fast');
+    await user.click(within(dialog).getByRole('checkbox', { name: 'Intern · Acme' }));
     expect(choices.togglePlace).toHaveBeenCalledWith('Claude Code', 'role_old', true);
   });
 
@@ -99,11 +102,15 @@ describe('the plan inside Enhance', () => {
     });
     renderWithQuery(<ShowInRole steps={[evidence]} places={places} choices={choices} />);
     await user.click(screen.getByRole('button', { name: /Used in: Full-Stack Developer/ }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: /Skills only/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Where did you use Claude Code?' });
+    expect(
+      within(dialog).getByRole('checkbox', { name: 'Full-Stack Developer · Webcros' }),
+    ).toBeChecked();
+    await user.click(within(dialog).getByRole('checkbox', { name: /Skills only/ }));
     expect(choices.setAdded).toHaveBeenCalledWith(['Git']);
   });
 
-  it('"More to raise your score" lists the other steps with who does each and what it adds', () => {
+  it('"Other fixes" lists the other steps with who does each and what it adds', () => {
     renderWithQuery(
       <MoreFixes steps={[keyword, evidence, number, contact, wording]} resumeId="res_1" />,
     );
@@ -133,6 +140,7 @@ describe('the plan inside Enhance', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Add the result' }));
+    expect(screen.getByRole('dialog', { name: 'Add the result' })).toBeInTheDocument();
     const use = screen.getByRole('button', { name: 'Use this line' });
     expect(use).toBeDisabled();
     expect(screen.queryByRole('button', { pressed: true })).toBeNull();

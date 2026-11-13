@@ -1,14 +1,19 @@
 'use client';
 
 import type { Job, TailorComparison, TailorFix } from '@nextkin/shared/models';
+import { useState } from 'react';
 
 import { Check } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
+import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
 import { ArrowUp, Stars02 } from '@/ui/lineIcons';
+import { SegmentedControl } from '@/ui/SegmentedControl';
+import { textLink } from '@/ui/textLink';
 
 import type { TailorChoices } from '../useTailorRun';
 import { FIX_ROWS } from '../tailorLibrary';
 import { AtsMatchCard } from './AtsMatchCard';
+import { PointsBar } from './PointsBar';
 
 /** "Aimed at Lead UX Designer", "Your latest 2 roles" (852:298-326): what each part will do. */
 function partLine(
@@ -58,13 +63,31 @@ export function EnhanceAside({
   const target = comparison.plan?.target;
   const goal = target?.goal;
   const gain = projected !== undefined && base !== undefined ? projected - base : 0;
+  const [points, setPoints] = useState(false);
+  const parts = comparison.plan?.parts ?? [];
   return (
     <aside
       className="grid min-w-0 content-start items-start gap-4 @3xl:grid-cols-2 @5xl:grid-cols-1"
       aria-label="What changes"
     >
       {comparison.scored !== false && (
-        <AtsMatchCard score={comparison.score} gain={answersGain} selected={choices.added.length} />
+        <div className="flex min-w-0 flex-col gap-2">
+          <AtsMatchCard
+            score={comparison.score}
+            gain={answersGain}
+            selected={choices.added.length}
+          />
+          {/* Where the 10 points go, in a dialog (owner, 2026-11-14: everything up here). */}
+          {parts.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setPoints(true)}
+              className={cn(textLink, 'self-start px-1 text-body-m text-text-brand')}
+            >
+              See where your points go
+            </button>
+          )}
+        </div>
       )}
 
       <section aria-labelledby="ai-will-change" className={card}>
@@ -79,7 +102,7 @@ export function EnhanceAside({
           {FIX_ROWS.map((row) => {
             const on = choices.fixes.has(row.key);
             return (
-              <li key={row.key}>
+              <li key={row.key} className="flex flex-col">
                 <button
                   type="button"
                   role="checkbox"
@@ -104,6 +127,19 @@ export function EnhanceAside({
                     </span>
                   </span>
                 </button>
+                {/* How much history to edit, beside the part it changes (owner, 2026-11-14). */}
+                {row.key === 'experience' && on && (
+                  <SegmentedControl
+                    label="How much of your work history to edit"
+                    className="mb-1.5 ml-9"
+                    segments={[
+                      { id: 'quick' as const, label: 'Latest 2 roles' },
+                      { id: 'full' as const, label: 'Every role' },
+                    ]}
+                    value={choices.experience}
+                    onChange={choices.setExperience}
+                  />
+                )}
               </li>
             );
           })}
@@ -130,6 +166,21 @@ export function EnhanceAside({
           </div>
         </div>
       )}
+
+      <Dialog open={points} onOpenChange={setPoints} size="lg">
+        <div className="flex flex-col gap-4 px-6 pb-6 pt-6">
+          <div>
+            <DialogTitle className="text-h2 font-bold text-text-primary">
+              Where your points go
+            </DialogTitle>
+            <DialogDescription className="mt-1 text-body-m text-text-secondary">
+              The 10 points, each part as wide as its weight and filled to what your resume earns
+              now.
+            </DialogDescription>
+          </div>
+          <PointsBar parts={parts} framed={false} />
+        </div>
+      </Dialog>
     </aside>
   );
 }

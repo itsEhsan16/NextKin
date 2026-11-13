@@ -138,11 +138,14 @@ describe('Choosing the resume (toreview §110)', () => {
   });
 });
 
-/** A keyword's tick box, in whichever tab holds it. */
+/** A rail category: the chip and the side row both render here (CSS picks one by width). */
+const category = (name: RegExp) => screen.getAllByRole('button', { name })[0]!;
+
+/** A keyword's tick box, in whichever list holds it. */
 async function findKeyword(user: ReturnType<typeof userEvent.setup>, label: string) {
   const box = screen.queryByRole('checkbox', { name: label });
   if (box) return box;
-  await user.click(screen.getByRole('tab', { name: /^Optional keywords/ }));
+  await user.click(category(/^Optional keywords/));
   return screen.getByRole('checkbox', { name: label });
 }
 
@@ -167,8 +170,15 @@ describe('Tailor flow (734:2, 734:679)', () => {
       within(enhance).getByRole('img', { name: 'ATS score: 5.6 out of 10' }),
     ).toBeInTheDocument();
     expect(within(enhance).getByRole('button', { name: 'Change' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /^Missing keywords \(\d+\)$/ })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /^Optional keywords \(\d+\)$/ })).toBeInTheDocument();
+    // Every way to raise the score is a category of one rail (owner, 2026-11-14).
+    const rail = screen.getByRole('navigation', { name: 'Ways to raise your score' });
+    expect(
+      within(rail).getAllByRole('button', { name: /^Missing keywords \d+$/ })[0],
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      within(rail).getAllByRole('button', { name: /^Optional keywords \d+$/ }),
+    ).not.toHaveLength(0);
+    expect(screen.queryByText(/More ways to raise your score/)).toBeNull();
 
     // Nothing starts ticked (toreview §114).
     expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
@@ -176,12 +186,11 @@ describe('Tailor flow (734:2, 734:679)', () => {
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
     expect(screen.getByText('1 keyword selected')).toBeInTheDocument();
 
-    // The rest of the plan is folded away until opened; where the points go is inside it.
-    const more = screen.getByRole('button', { name: /More ways to raise your score/ });
-    expect(more).toHaveAttribute('aria-expanded', 'false');
-    await user.click(more);
+    // Where the points go opens in a dialog from the score card.
     await user.click(screen.getByRole('button', { name: 'See where your points go' }));
-    expect(screen.getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
+    const points = screen.getByRole('dialog', { name: 'Where your points go' });
+    expect(within(points).getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
 
     await user.click(screen.getByRole('button', { name: /Add 1 keyword & continue/ }));
     await waitFor(
@@ -222,10 +231,11 @@ describe('Tailor flow (734:2, 734:679)', () => {
       within(enhance).getByRole('button', { name: 'Used in: Software Engineer · Google +1' }),
     ).toBeInTheDocument();
 
-    // Results sit in "More ways", outside the keyword step.
-    await user.click(screen.getByRole('button', { name: /More ways to raise your score/ }));
-    const results = screen.getByRole('region', { name: 'Add real results' });
-    expect(enhance).not.toContainElement(results);
+    // Results are a category of the same rail, inside the step.
+    await user.click(category(/^Add real results/));
+    expect(
+      within(enhance).getByRole('list', { name: 'Lines to add a result to' }),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Add 2 keywords & continue/ }));
     await waitFor(() => expect(start).toHaveBeenCalledTimes(1), wait);

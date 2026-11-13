@@ -77,6 +77,8 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
           {...(job && runId ? { leading: <JobLogoTile job={job} /> } : {})}
           steps={steps}
           step={index}
+          // A done step is a link back to it (owner, 2026-11-14).
+          stepHrefs={[atsHref(), atsHref({ ...(resumeId ? { resumeId } : {}), step: 'job' })]}
         />
       )}
       <div key={`${index}-${runId ?? ''}`} className="animate-reveal">

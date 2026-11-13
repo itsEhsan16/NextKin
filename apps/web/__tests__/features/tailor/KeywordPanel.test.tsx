@@ -49,9 +49,9 @@ const comparison: TailorComparison = {
   ],
 };
 
-function Harness() {
+function Harness({ tab = 'missing' }: { tab?: 'missing' | 'optional' }) {
   const choices = useTailorChoices();
-  return <KeywordPanel comparison={comparison} choices={choices} />;
+  return <KeywordPanel comparison={comparison} choices={choices} tab={tab} />;
 }
 
 const list = () => screen.getByRole('list', { name: /keywords$/ });
@@ -61,30 +61,25 @@ const names = () =>
     .map((b) => b.getAttribute('aria-label'));
 
 describe('KeywordPanel', () => {
-  it('splits required from optional, with nothing ticked and each row priced', async () => {
-    const user = userEvent.setup();
-    render(<Harness />);
-    expect(screen.getByRole('tab', { name: 'Missing keywords (3)' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+  it('splits required from optional, with nothing ticked and each row priced', () => {
+    const { rerender } = render(<Harness />);
     expect(names()).toEqual(['React', 'Jira', 'Agile']);
     expect(within(list()).getByText('+0.5')).toBeInTheDocument();
     expect(within(list()).getByText('—')).toBeInTheDocument();
     expect(screen.getByText('0 keywords selected')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('tab', { name: 'Optional keywords (1)' }));
+    rerender(<Harness tab="optional" />);
     expect(names()).toEqual(['teamwork']);
   });
 
   it('filters by category and by search, and says when nothing matches', async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    const rail = screen.getByRole('navigation', { name: 'Keyword categories' });
-    await user.click(within(rail).getAllByRole('button', { name: /Tools & platforms/ })[0]!);
+    const kinds = screen.getByRole('group', { name: 'Keyword kinds' });
+    await user.click(within(kinds).getByRole('button', { name: /Tools & platforms/ }));
     expect(names()).toEqual(['Jira']);
 
-    await user.click(within(rail).getAllByRole('button', { name: /^All/ })[0]!);
+    await user.click(within(kinds).getByRole('button', { name: /^All/ }));
     await user.type(screen.getByRole('searchbox', { name: 'Search keywords' }), 'zz');
     expect(screen.getByText('No keyword matches “zz”.')).toBeInTheDocument();
   });
