@@ -44,7 +44,14 @@ export function SignInScreen() {
     const found = validateSignIn({ email, password });
     setErrors(found);
     setFailure(null);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) {
+      // Focus goes to the first field to fix (redesign R7d, audit AU-04), once it says so.
+      const form = event.currentTarget as HTMLFormElement;
+      requestAnimationFrame(() =>
+        form.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus(),
+      );
+      return;
+    }
     setBusy(true);
     try {
       if (USES_BACKEND) {
@@ -91,7 +98,11 @@ export function SignInScreen() {
               autoComplete="username"
               placeholder="Email address"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                // A fixed field stops saying it is wrong (AU-04).
+                if (errors.email) setErrors((current) => ({ ...current, email: undefined }));
+              }}
               error={errors.email}
             />
             <div className="flex flex-col gap-3">
@@ -102,7 +113,11 @@ export function SignInScreen() {
                 autoComplete="current-password"
                 placeholder="Password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  if (errors.password)
+                    setErrors((current) => ({ ...current, password: undefined }));
+                }}
                 error={errors.password}
                 trailing={
                   <button

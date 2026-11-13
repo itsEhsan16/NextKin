@@ -1,12 +1,17 @@
 'use client';
 
+import Link from 'next/link';
+import type { Route } from 'next';
+import { Skeleton } from '@/ui/Skeleton';
+import { Callout } from '@/ui/Callout';
+import { textLink } from '@/ui/textLink';
 import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 import { onConsentRequired, useAiConsent, useGrantAiConsent } from '@nextkin/shared/queries';
 
-import { backButton, primaryButton } from '@/features/create/jobFlow/FlowChrome';
+import { buttonClass } from '@/ui/Button';
 import { showToast } from '@/lib/toast';
 import { AiAssistantIcon, ShieldCheckIcon } from '@/ui/icons';
 import { StableLabel } from '@/ui/StableLabel';
@@ -39,18 +44,22 @@ export function AiConsentGate() {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        // "Not now": nothing carries on.
-        if (!next) retry.current = null;
+        // "Not now": nothing carries on, and it says so (redesign R7d, audit AU-17).
+        if (!next && retry.current) {
+          retry.current = null;
+          showToast('AI actions stay off until you agree.', { tone: 'info' });
+        }
       }}
       size="md"
     >
-      <div className="flex flex-col gap-3.5 px-6.5 pb-5 pt-5.5">
+      {/* Scrolls on a short window instead of running off it (AU-18). */}
+      <div className="flex min-h-0 flex-col gap-3.5 overflow-y-auto px-6.5 pb-5 pt-5.5">
         <Image
           src="/illustrations/v2/ai-consent.webp"
           alt=""
           width={526}
           height={560}
-          className="h-47 w-auto object-contain"
+          className="h-47 w-auto object-contain max-sm:hidden"
         />
         <DialogTitle className="text-h2 font-bold text-text-primary">
           Before NextKin uses AI
@@ -58,6 +67,25 @@ export function AiConsentGate() {
         <DialogDescription className="text-body-l font-medium text-text-secondary">
           To read your documents and write new ones, NextKin sends their content to:
         </DialogDescription>
+        {/* While it loads, the rows' shapes; if it fails, why Agree is off and a retry (AU-15). */}
+        {consent.isPending && (
+          <div role="status" aria-label="Loading the list" className="flex flex-col gap-2">
+            <Skeleton className="h-16 rounded-lg" />
+            <Skeleton className="h-16 rounded-lg" />
+          </div>
+        )}
+        {!list && consent.isError && (
+          <Callout tone="warning">
+            We couldn’t load who your documents go to, so you can’t agree yet.{' '}
+            <button
+              type="button"
+              onClick={() => void consent.refetch()}
+              className="font-semibold underline underline-offset-2"
+            >
+              Try again
+            </button>
+          </Callout>
+        )}
         <ul className="flex flex-col gap-2">
           {list?.providers.map((p) => (
             <li key={p.name} className="flex gap-3 rounded-lg bg-neutral-50 px-3.5 py-3">
@@ -80,9 +108,18 @@ export function AiConsentGate() {
           <ShieldCheckIcon aria-hidden className="size-4 shrink-0 text-success-600" />
           Your name, email, phone and address are never sent.
         </p>
+        <p className="text-body-s text-text-tertiary">
+          You can change this any time in{' '}
+          <Link href={'/settings?tab=privacy' as Route} className={textLink}>
+            Privacy &amp; data
+          </Link>
+          .
+        </p>
       </div>
       <div className="flex flex-wrap justify-end gap-2.5 border-t border-border-default pb-4 pl-6 pr-5 pt-3.5">
-        <DialogClose className={backButton}>Not now</DialogClose>
+        <DialogClose className={buttonClass({ variant: 'secondary', size: 'lg' })}>
+          Not now
+        </DialogClose>
         <button
           type="button"
           disabled={!list || grant.isPending}
@@ -99,7 +136,7 @@ export function AiConsentGate() {
               onError: () => showToast('That didn’t save. Try again.', { tone: 'error' }),
             })
           }
-          className={primaryButton}
+          className={buttonClass({ size: 'lg' })}
         >
           <StableLabel label="Agree and continue" busyLabel="Saving…" busy={grant.isPending} />
         </button>

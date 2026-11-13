@@ -10,7 +10,8 @@ describe('ComingSoonScreen', () => {
     render(<ComingSoonScreen page="interview" />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Interview Prep' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/');
+    // The back button says where it goes (redesign R7d, SY-04).
+    expect(screen.getByRole('link', { name: 'Back to Home' })).toHaveAttribute('href', '/');
     expect(screen.getByText('Coming soon')).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 2, name: 'Interview Prep is coming soon' }),
@@ -21,7 +22,8 @@ describe('ComingSoonScreen', () => {
       'href',
       '/applications',
     );
-    expect(screen.queryByRole('link', { name: 'Back to Home' })).toBeNull();
+    // The page's one action is that, not another way home: only the header goes back.
+    expect(screen.getAllByRole('link', { name: 'Back to Home' })).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Help & support' })).toHaveAttribute('href', '/help');
     // No more "Not built yet" dead end, and no planning note for the team.
     expect(screen.queryByText(/Not built yet/)).toBeNull();
@@ -39,11 +41,10 @@ describe('ComingSoonScreen', () => {
       />,
     );
 
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/applications');
-    expect(screen.getByRole('link', { name: 'Back to Applications' })).toHaveAttribute(
-      'href',
-      '/applications',
-    );
+    // The header's back and the page's action both go there, and both say so.
+    for (const link of screen.getAllByRole('link', { name: 'Back to Applications' })) {
+      expect(link).toHaveAttribute('href', '/applications');
+    }
     expect(
       screen.getByRole('heading', { level: 2, name: 'Reports is coming soon' }),
     ).toBeInTheDocument();
@@ -57,6 +58,8 @@ describe('NotFoundScreen', () => {
     expect(
       screen.getByRole('heading', { level: 2, name: 'We couldn’t find that page' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to Home' })).toHaveAttribute('href', '/');
+    for (const link of screen.getAllByRole('link', { name: 'Back to Home' })) {
+      expect(link).toHaveAttribute('href', '/');
+    }
   });
 });

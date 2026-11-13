@@ -95,3 +95,4 @@ export { SparkleIllustration } from './SparkleIllustration';
 export { SparkleTipIllustration } from './SparkleTipIllustration';
 export { UploadResumeFileIllustration } from './UploadResumeFileIllustration';
 export { ZeroResumeIllustration } from './ZeroResumeIllustration';
+export { EmptyStateArt, type EmptyStateObject } from './EmptyStateArt';

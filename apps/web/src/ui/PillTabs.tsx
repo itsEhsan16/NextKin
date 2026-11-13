@@ -15,6 +15,11 @@ export type PillTabsProps<T extends string> = {
   onChange: (tab: T) => void;
   /** The tab list's accessible name. */
   label: string;
+  /**
+   * Tighter pills on one line that scroll sideways rather than wrap, where a lone pill on a second
+   * line looks broken (Applications, owner 2026-11-13).
+   */
+  compact?: boolean;
   className?: string;
 };
 
@@ -31,6 +36,7 @@ export function PillTabs<T extends string>({
   counts,
   onChange,
   label,
+  compact = false,
   className,
 }: PillTabsProps<T>) {
   const [track, thumb] = useThumb(tabs.findIndex((t) => t.id === active));
@@ -40,7 +46,8 @@ export function PillTabs<T extends string>({
       role="tablist"
       aria-label={label}
       className={cn(
-        'relative inline-flex min-w-0 max-w-full flex-wrap items-center gap-0.5 self-start rounded-xl bg-surface-muted p-1',
+        'relative inline-flex min-w-0 max-w-full items-center gap-0.5 self-start rounded-xl bg-surface-muted p-1',
+        compact ? 'flex-nowrap gap-0 overflow-x-auto scrollbar-none' : 'flex-wrap',
         className,
       )}
     >
@@ -64,7 +71,8 @@ export function PillTabs<T extends string>({
             aria-selected={selected}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'relative h-8 whitespace-nowrap rounded-full px-4 text-body-m font-semibold tabular-nums transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              'relative h-8 shrink-0 whitespace-nowrap rounded-full text-body-m font-semibold tabular-nums transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              compact ? 'px-2.5' : 'px-4',
               selected ? 'text-text-primary' : 'text-text-tertiary hover:text-text-primary',
             )}
           >

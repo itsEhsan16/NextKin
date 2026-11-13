@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import { JobCard } from './JobCard';
 import { StableLabel } from '@/ui/StableLabel';
@@ -72,6 +73,7 @@ export function JobList({
   if (jobs.length === 0) {
     return (
       <StateView
+        art={<EmptyStateArt object="monitor" />}
         className={reveal ? 'animate-reveal' : undefined}
         title="No jobs match your filters"
         message="Try widening your search or clearing a filter."

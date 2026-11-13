@@ -17,6 +17,7 @@ import { pageFillMin } from './pageFrame';
 export function StatusPage({
   name,
   backHref = '/' as Route,
+  backLabel = 'Back to Home',
   art,
   pill,
   heading,
@@ -27,6 +28,8 @@ export function StatusPage({
   /** The header's title: "Not found", "Interview Prep". */
   name: string;
   backHref?: Route;
+  /** Names the back button by where it goes (redesign R7d, audit SY-04). */
+  backLabel?: string;
   art?: ReactNode;
   pill?: ReactNode;
   heading: string;
@@ -39,7 +42,7 @@ export function StatusPage({
       <div className="flex items-center gap-3">
         <Link
           href={backHref}
-          aria-label="Back"
+          aria-label={backLabel}
           className={cn(
             iconButton,
             'border border-border-subtle bg-surface-card text-text-primary shadow-card',
@@ -51,7 +54,6 @@ export function StatusPage({
       </div>
       <div className="flex flex-1 items-center justify-center pb-16">
         <div
-          role={alert ? 'alert' : undefined}
           className={cn(
             cardSurface,
             'flex w-full max-w-xl animate-reveal flex-col items-center gap-4 px-5 pb-10 pt-12 text-center sm:px-10',
@@ -63,8 +65,11 @@ export function StatusPage({
             </div>
           )}
           {pill}
-          <h2 className="text-h1 font-bold text-text-primary">{heading}</h2>
-          <p className="max-w-md text-body-m text-text-secondary">{message}</p>
+          {/* An alert reads the words, not the art and the button (SY-04). */}
+          <div role={alert ? 'alert' : undefined} className="flex flex-col items-center gap-4">
+            <h2 className="text-h1 font-bold text-text-primary">{heading}</h2>
+            <p className="max-w-md text-body-m text-text-secondary">{message}</p>
+          </div>
           {action && <div className="mt-2">{action}</div>}
           <p className="mt-2 flex w-full items-center justify-center gap-1.5 border-t border-border-subtle pt-5 text-body-s text-text-tertiary">
             <HelpIcon aria-hidden className="size-3.5" />

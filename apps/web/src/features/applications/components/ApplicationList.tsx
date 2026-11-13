@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import { ApplicationRow } from './ApplicationRow';
 
@@ -62,6 +63,7 @@ export function ApplicationList({
   if (!hasAny) {
     return (
       <StateView
+        art={<EmptyStateArt object="briefcase" />}
         className={reveal ? 'animate-reveal' : undefined}
         title="No applications yet"
         message="Jobs you apply to show up here, so you can follow each one through."

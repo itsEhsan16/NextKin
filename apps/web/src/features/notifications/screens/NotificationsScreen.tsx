@@ -24,6 +24,7 @@ import { pageFrameInBar } from '@/ui/pageFrame';
 import { pressable } from '@/ui/pressable';
 import { SkeletonListRow } from '@/ui/SkeletonShapes';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 import { textLink } from '@/ui/textLink';
 
 import { webHrefOf } from '../webHref';
@@ -102,6 +103,7 @@ export function NotificationsScreen() {
           />
         ) : rows.length === 0 ? (
           <StateView
+            art={<EmptyStateArt object="headphones" />}
             title="Nothing yet"
             message="Finished resumes, saved jobs closing soon and follow-ups on your applications show up here."
           />

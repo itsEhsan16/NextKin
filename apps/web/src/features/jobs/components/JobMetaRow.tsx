@@ -2,7 +2,7 @@ import type { Job } from '@nextkin/shared/models';
 import { EMPLOYMENT_TYPE_LABEL } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
-import { BriefcaseIcon, ClockIcon, LocationPinIcon } from '@/ui/icons';
+import { HugeBriefcase, HugeLocation, HugeWorkHistory } from '@/ui/hugeIcons';
 
 import { experienceLabel } from '../experienceRange';
 
@@ -25,9 +25,9 @@ const ALL_FIELDS: readonly JobMetaField[] = ['location', 'type', 'experience'];
 export function JobMetaRow({ job, fields = ALL_FIELDS, className }: JobMetaRowProps) {
   const items = (
     [
-      { key: 'location', Icon: LocationPinIcon, label: job.location },
-      { key: 'type', Icon: BriefcaseIcon, label: EMPLOYMENT_TYPE_LABEL[job.employmentType] },
-      { key: 'experience', Icon: ClockIcon, label: experienceLabel(job) },
+      { key: 'location', Icon: HugeLocation, label: job.location },
+      { key: 'type', Icon: HugeBriefcase, label: EMPLOYMENT_TYPE_LABEL[job.employmentType] },
+      { key: 'experience', Icon: HugeWorkHistory, label: experienceLabel(job) },
     ] as const
   ).filter((item) => fields.includes(item.key));
 

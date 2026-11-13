@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import type { DocumentView } from '../documentLibrary';
 import { DocumentRow } from './DocumentRow';
@@ -62,6 +63,7 @@ export function DocumentList({
   if (!hasAny) {
     return (
       <StateView
+        art={<EmptyStateArt object="notes" />}
         className={reveal ? 'animate-reveal' : undefined}
         title="No documents yet"
         message="Uploading certificates and ID proofs is coming soon. Letters you write are in Resumes."

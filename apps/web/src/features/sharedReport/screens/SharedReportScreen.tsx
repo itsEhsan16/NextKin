@@ -10,6 +10,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { CLERK_ENABLED, SIGN_UP } from '@/lib/clerk';
 import { useReveal } from '@/lib/useReveal';
 import { cardSurface } from '@/ui/Card';
 import { AiSparkIcon, ArrowRightIcon, CheckCircleIcon } from '@/ui/icons';
@@ -39,7 +40,8 @@ const STATUS_LABEL: Record<string, string> = {
 const card = cn(cardSurface, 'rounded-xl p-5.5 shadow-card');
 const tenths = (n: number) => String(Math.round(n * 10) / 10);
 const dateLine = (iso: string) =>
-  new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(
+  // The reader's own locale (redesign R7d, audit SR-08).
+  new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).format(
     new Date(iso),
   );
 
@@ -55,19 +57,22 @@ export function SharedReportScreen({ token }: { token: string }) {
             <LogoMarkIllustration aria-hidden className="h-7 w-auto" />
             NextKin
           </span>
+          {/* To sign-up, not to the app a stranger can't open (SR-05); one line at 390 (SR-04). */}
           <Link
-            href={'/' as Route}
+            href={(CLERK_ENABLED ? SIGN_UP : '/sign-in') as Route}
             className={cn(
               outlineButton,
-              'h-control-md gap-2 rounded-md px-4 text-body-m font-semibold',
+              'h-control-md gap-2 whitespace-nowrap rounded-md px-4 text-body-m font-semibold',
             )}
           >
-            Make your own — free
+            <span className="sm:hidden">Try NextKin free</span>
+            <span className="max-sm:hidden">Make your own — free</span>
             <ArrowRightIcon aria-hidden className="size-3.5" />
           </Link>
         </header>
         {report.status === 'pending' && (
-          <div className="flex flex-col gap-4" aria-busy>
+          <div className="flex flex-col gap-4" role="status" aria-busy>
+            <span className="sr-only">Loading the report</span>
             <Skeleton className="h-36 rounded-xl" />
             <Skeleton className="h-80 rounded-xl" />
           </div>
@@ -95,8 +100,11 @@ export function SharedReportScreen({ token }: { token: string }) {
 
 function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean }) {
   const job = report.targetTitle
-    ? `${report.targetTitle}${report.targetCompany ? ` · ${report.targetCompany}` : ''}`
+    ? `${report.targetTitle}${report.targetCompany ? ` at ${report.targetCompany}` : ''}`
     : null;
+  // The verdict in one line, from the requirements themselves (SR-03): how many weren't shown.
+  const asked = report.requirements.length;
+  const notShown = report.requirements.filter((r) => r.status === 'gap').length;
   return (
     <div className={cn('flex flex-col gap-4', reveal && 'animate-reveal')}>
       <section className={cn(card, 'flex flex-wrap items-center gap-6')}>
@@ -117,7 +125,7 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
             Shared ATS report
           </p>
           <h1 className="text-h2 font-bold text-text-primary">
-            {job ? `A resume scored against a ${job} job` : 'A resume’s ATS report'}
+            {job ? `A resume scored for ${job}` : 'A resume’s ATS report'}
           </h1>
           {report.band && (
             <span
@@ -129,6 +137,13 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
             >
               ATS score · {ATS_BAND_LABEL[report.band]} match
             </span>
+          )}
+          {asked > 0 && (
+            <p className="text-body-m font-semibold text-text-primary">
+              {notShown === 0
+                ? `Every one of the job’s ${asked} requirements is shown.`
+                : `${notShown} of the job’s ${asked} requirements ${notShown === 1 ? 'isn’t' : 'aren’t'} shown yet.`}
+            </p>
           )}
           <p className="text-body-m text-text-secondary">
             Shared on {dateLine(report.sharedAt)}. A snapshot: it doesn’t change if the resume does.
@@ -240,9 +255,16 @@ function ReportBody({ report, reveal }: { report: SharedReport; reveal: boolean 
 
       <p className="text-center text-caption-m text-text-tertiary">
         The ATS score is NextKin’s own measure, not a result from any company’s hiring system.
-        Scored by rubric {report.method.rubric}, engine {report.method.engine}, as of{' '}
-        {report.method.asOf}.
       </p>
+      {/* The method, for whoever wants it, not up front (SR-06). */}
+      <details className="text-center text-caption-m text-text-tertiary">
+        <summary className="cursor-pointer rounded-sm hover:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          How this was scored
+        </summary>
+        <p className="mt-1">
+          Rubric {report.method.rubric}, engine {report.method.engine}, as of {report.method.asOf}.
+        </p>
+      </details>
     </div>
   );
 }

@@ -59,7 +59,7 @@ const TILES: readonly Tile[] = [
 ];
 
 /**
- * Quick Start, at the compact density: 120px tiles with the board's art at ~72%. Its title goes
+ * Quick Start: 160px tiles with 80px art (owner, 2026-11-13: the icons read too small). Its title goes
  * through `SectionHeader` like every other Home section, rather than the 20px H2 it had alone.
  */
 export function QuickStartCard() {
@@ -71,9 +71,9 @@ export function QuickStartCard() {
           <li key={key}>
             <Link
               href={href}
-              className="flex h-[140px] flex-col items-center justify-end rounded-lg bg-neutral-50 px-2 pb-4 transition-[background-color,box-shadow,translate,scale] duration-base ease-standard hover:-translate-y-0.5 hover:bg-surface-card hover:shadow-card-hover active:scale-(--scale-pressed) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+              className="flex h-40 flex-col items-center justify-end rounded-lg bg-neutral-50 px-2 pb-4 transition-[background-color,box-shadow,translate,scale] duration-base ease-standard hover:-translate-y-0.5 hover:bg-surface-card hover:shadow-card-hover active:scale-(--scale-pressed) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
             >
-              <Art className="mb-auto mt-4 h-[56px] w-[52px]" />
+              <Art className="mb-auto mt-3 size-20" />
               <span className="text-body-m font-semibold text-text-primary">{label}</span>
               <span className="mt-1 text-caption-m text-text-tertiary">{hint}</span>
             </Link>

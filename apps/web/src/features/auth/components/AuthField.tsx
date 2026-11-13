@@ -45,7 +45,7 @@ export function AuthField({ label, icon: Icon, trailing, error, ...input }: Auth
           id={id}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className="h-full min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-neutral-400"
+          className="h-full min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-text-tertiary"
           {...input}
         />
         {trailing}

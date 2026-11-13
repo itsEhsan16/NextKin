@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
+import { PRO_SUMMARY } from '@/features/settings/billingLibrary';
 import { CollapseFade } from '@/ui/CollapseFade';
 import { NavUpgradeIllustration } from '@/ui/illustrations';
 import { buttonClass } from '@/ui/Button';
@@ -54,9 +55,7 @@ export function UpgradeCard({ collapsed }: { collapsed: boolean }) {
               <span className="text-body-m font-semibold text-text-paid">Upgrade to Pro</span>
               {/* What gives way on a short window (`short` in theme.css): the rows above need the
                   room more than this line does, and the title and button still say what it is. */}
-              <span className="text-micro text-text-tertiary short:hidden">
-                Unlimited generations, DOCX export and priority processing.
-              </span>
+              <span className="text-micro text-text-tertiary short:hidden">{PRO_SUMMARY}</span>
             </div>
           </div>
           <Link

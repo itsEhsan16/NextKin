@@ -19,6 +19,7 @@ import { pageFrame } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StableLabel } from '@/ui/StableLabel';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import { AtsResult } from '../ats/AtsResult';
 import { AtsUploadStep } from '../ats/AtsUploadStep';
@@ -141,6 +142,7 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
       return frame(
         3,
         <StateView
+          art={<EmptyStateArt object="trophy" />}
           title="Your check is done"
           message="The result is on your resume’s ATS Score tab."
           actionLabel="Open Resumes"

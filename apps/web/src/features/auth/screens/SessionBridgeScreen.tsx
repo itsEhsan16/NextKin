@@ -56,7 +56,7 @@ export function SessionBridgeScreen() {
           <div role="alert" className="flex w-full max-w-md animate-reveal flex-col gap-5">
             <h1 className="text-h1 font-bold text-text-primary">We couldn’t sign you in</h1>
             <p className="text-body-l text-text-secondary">
-              Your account is fine. Check your connection and try again.
+              We couldn’t finish signing you in. Check your connection and try again.
             </p>
             <div className="flex flex-col gap-3">
               <Button size="xl" pill className="w-full" onClick={() => mutate()}>

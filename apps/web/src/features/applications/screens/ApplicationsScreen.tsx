@@ -31,7 +31,6 @@ import {
 import { ApplicationDetailPanel } from '../components/ApplicationDetailPanel';
 import { ApplicationFilterChipsRow } from '../components/ApplicationFilterChipsRow';
 import { ApplicationList } from '../components/ApplicationList';
-import { ApplicationsIllustration } from '../components/ApplicationsIllustration';
 
 const NONE: ApplicationWithJob[] = [];
 
@@ -116,23 +115,14 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
         </div>
       ) : (
         <div className="mt-4 grid min-h-0 flex-1 grid-cols-[56fr_44fr] gap-6">
-          <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
-            {/* Where the board puts the character (304:3093): under the search field, rising out of
-              the header band over this column's top-right corner, its right edge running 60px on
-              under the detail card and its caption just above that card. Anchored to this column
-              like the Jobs character, so it holds its place at every width and with the sidebar
-              open or shut. Painted first: the pills and the detail card sit above it. */}
-            <ApplicationsIllustration className="absolute -right-[60px] -top-[50px]" />
-
-            {/* The pills wrap short of the drawing's left edge (189 - 60 = 129px in from the right),
-              which leaves "Withdrawn" on a line of its own at most widths, as drawn. */}
+          <div className="flex min-h-0 min-w-0 flex-col gap-4">
             <PillTabs
               tabs={STAGE_TABS}
               active={tab}
               counts={listStatus === 'success' ? counts : undefined}
               onChange={setTab}
               label="Application status"
-              className="relative pr-[129px]"
+              compact
             />
             <ApplicationFilterChipsRow
               filters={filters}

@@ -53,16 +53,17 @@ export function Soon({ children, label = 'Coming soon', side = 'top' }: SoonProp
  * The small "Soon" mark beside a link whose destination is still a placeholder page, so the
  * reader knows before clicking that they will land on a "coming soon" screen.
  */
-export function SoonTag({ className }: { className?: string }) {
+export function SoonTag({ className, size = 'sm' }: { className?: string; size?: 'sm' | 'md' }) {
   return (
     <span
       className={cn(
         // `text-secondary`, not tertiary: tertiary on this grey was 4.34:1, under AA (redesign R3c).
-        'inline-flex shrink-0 items-center rounded-full bg-neutral-100 px-1.5 py-px text-micro font-semibold text-text-secondary',
+        'inline-flex shrink-0 items-center rounded-full bg-neutral-100 font-semibold text-text-secondary',
+        size === 'md' ? 'px-3 py-1 text-caption-m' : 'px-1.5 py-px text-micro',
         className,
       )}
     >
-      Soon
+      {size === 'md' ? 'Coming soon' : 'Soon'}
     </span>
   );
 }

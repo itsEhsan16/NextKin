@@ -7,16 +7,16 @@ import { useState } from 'react';
 import { JobMetaRow } from '@/features/jobs/components/JobMetaRow';
 import { jobHref } from '@/features/jobs/jobHref';
 import { cn } from '@/lib/cn';
-import { ArrowRight } from '@/ui/lineIcons';
 import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
 import { brandButton } from '@/ui/brandButton';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 import { UnderlineTabs, type UnderlineTab } from '@/ui/UnderlineTabs';
 import { iconButton } from '@/ui/iconButton';
-import { MoreVerticalIcon } from '@/ui/icons';
+import { HugeArrowRight, HugeMoreVertical } from '@/ui/hugeIcons';
 
 import { stageOf } from '../applicationStage';
 import { ApplicationOverviewTab } from './ApplicationOverviewTab';
@@ -67,11 +67,16 @@ export function ApplicationDetailPanel({
       <div className={cn(CARD, 'p-6')}>
         {hasAny ? (
           <StateView
+            art={<EmptyStateArt object="notebook" />}
             title="Select an application"
             message="Choose one from the list to see where it stands."
           />
         ) : (
-          <StateView title="Nothing to track yet" message="Apply to a job and it will show here." />
+          <StateView
+            art={<EmptyStateArt object="briefcase" />}
+            title="Nothing to track yet"
+            message="Apply to a job and it will show here."
+          />
         )}
       </div>
     );
@@ -156,7 +161,7 @@ function ApplicationDetailBody({
               aria-label="More options"
               className={cn(iconButton, 'text-text-tertiary hover:text-text-primary', soonControl)}
             >
-              <MoreVerticalIcon className="size-4" />
+              <HugeMoreVertical className="size-4" />
             </button>
           </Soon>
         </div>
@@ -173,7 +178,7 @@ function ApplicationDetailBody({
         >
           View Job
           {/* An app page, not a new tab (AP-12). */}
-          <ArrowRight aria-hidden className="size-4" />
+          <HugeArrowRight className="size-4" />
         </Link>
         <UpdateStatusMenu status={application.status} onChange={onUpdateStatus} saving={saving} />
       </div>

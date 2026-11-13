@@ -12,6 +12,7 @@ import { iconButton } from '@/ui/iconButton';
 import { outlineButton } from '@/ui/outlineButton';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import { documentMeta } from '../documentLibrary';
 import { DocumentPreview } from './DocumentPreview';
@@ -55,11 +56,13 @@ export function DocumentDetailPanel({
         <div className={cn(CARD, 'p-6')}>
           {hasAny ? (
             <StateView
+              art={<EmptyStateArt object="tablet" />}
               title="Select a document"
               message="Choose one from the list to preview it."
             />
           ) : (
             <StateView
+              art={<EmptyStateArt object="tablet" />}
               title="Nothing to preview yet"
               message="When a document is here, its preview shows here."
             />

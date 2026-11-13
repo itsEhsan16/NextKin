@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
+import { AlertTriangle } from '@/ui/lineIcons';
 import { buttonClass } from '@/ui/Button';
 
 export type StateViewProps = {
@@ -49,11 +50,19 @@ export function StateView({
         className,
       )}
     >
-      {art && (
+      {art ? (
         <div aria-hidden className="mb-3">
           {art}
         </div>
-      )}
+      ) : tone === 'danger' ? (
+        // An error is marked as one, not drawn like an empty list (redesign R7d, audit SY-05).
+        <span
+          aria-hidden
+          className="mb-2 flex size-10 items-center justify-center rounded-full bg-feedback-danger-surface text-feedback-danger-icon"
+        >
+          <AlertTriangle className="size-5" />
+        </span>
+      ) : null}
       <p className="text-title-l text-text-primary">{title}</p>
       {message && <p className="max-w-sm text-body-m text-text-secondary">{message}</p>}
       {actionLabel && actionHref ? (

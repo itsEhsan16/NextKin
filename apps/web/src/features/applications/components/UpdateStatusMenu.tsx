@@ -2,7 +2,7 @@ import type { ApplicationStatus } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { FilterDropdown, FilterRadioGroup } from '@/ui/FilterDropdown';
-import { ChevronDownIcon } from '@/ui/icons';
+import { HugeChevronDown } from '@/ui/hugeIcons';
 import { chevronTurn, menuTrigger } from '@/ui/menuMotion';
 import { outlineButton } from '@/ui/outlineButton';
 import { StableLabel } from '@/ui/StableLabel';
@@ -39,7 +39,7 @@ export function UpdateStatusMenu({ status, onChange, saving = false }: UpdateSta
           )}
         >
           <StableLabel label="Update Status" busyLabel="Saving…" busy={saving} />
-          <ChevronDownIcon className={cn('size-4 text-text-secondary', chevronTurn)} />
+          <HugeChevronDown className={cn('size-4 text-text-secondary', chevronTurn)} />
         </button>
       }
     >

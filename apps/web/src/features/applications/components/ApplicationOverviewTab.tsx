@@ -6,12 +6,13 @@ import { jobHref } from '@/features/jobs/jobHref';
 import { formatCoarseAge, formatSalaryBand, formatShortDate } from '@/lib/format';
 import { DetailRow } from '@/ui/DetailRow';
 import {
-  ArrowRightIcon,
-  CalendarIcon,
-  IdCardIcon,
-  LocationOutlineIcon,
-  PaymentsIcon,
-} from '@/ui/icons';
+  HugeArrowRight,
+  HugeBriefcase,
+  HugeCalendarCheck,
+  HugeIdCard,
+  HugeLocation,
+  HugeMoney,
+} from '@/ui/hugeIcons';
 
 import type { ApplicationStage } from '../applicationStage';
 
@@ -37,22 +38,22 @@ export function ApplicationOverviewTab({ row }: ApplicationOverviewTabProps) {
   return (
     <>
       <dl className="flex flex-col gap-3">
-        <DetailRow icon={<CalendarIcon className="size-4" />} label="Applied on">
+        <DetailRow icon={<HugeCalendarCheck className="size-4" />} label="Applied on">
           {`${formatShortDate(application.appliedAt)} (${formatCoarseAge(application.appliedAt)})`}
         </DetailRow>
         {job.reference && (
-          <DetailRow icon={<IdCardIcon className="size-4" />} label="Job ID">
+          <DetailRow icon={<HugeIdCard className="size-4" />} label="Job ID">
             {job.reference}
           </DetailRow>
         )}
-        <DetailRow icon={<CalendarIcon className="size-4" />} label="Job type">
+        <DetailRow icon={<HugeBriefcase className="size-4" />} label="Job type">
           {EMPLOYMENT_TYPE_LABEL[job.employmentType]}
         </DetailRow>
-        <DetailRow icon={<LocationOutlineIcon className="size-4" />} label="Location">
+        <DetailRow icon={<HugeLocation className="size-4" />} label="Location">
           {locationLabel(job)}
         </DetailRow>
         {job.salary && (
-          <DetailRow icon={<PaymentsIcon className="size-4" />} label="Salary range">
+          <DetailRow icon={<HugeMoney className="size-4" />} label="Salary range">
             {formatSalaryBand(job.salary)}
           </DetailRow>
         )}
@@ -65,7 +66,7 @@ export function ApplicationOverviewTab({ row }: ApplicationOverviewTabProps) {
         className="mt-2 inline-flex items-center gap-2 rounded-sm text-body-l font-semibold text-brand-600 transition-colors duration-press ease-standard hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       >
         View full job description
-        <ArrowRightIcon className="size-4" />
+        <HugeArrowRight className="size-4" />
       </Link>
     </>
   );

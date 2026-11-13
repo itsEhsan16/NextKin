@@ -2,8 +2,9 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { ArrowRightIcon, ClockIcon } from './icons';
+import { ArrowRightIcon } from './icons';
 import { buttonClass } from './Button';
+import { SoonTag } from './Soon';
 import { StatusPage } from './StatusPage';
 
 export type ComingSoonLink = { label: string; href: Route };
@@ -40,12 +41,11 @@ export function ComingSoon({
     <StatusPage
       name={title}
       backHref={back.href}
+      backLabel={back.label}
       art={art}
       pill={
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-caption-m font-semibold text-text-brand">
-          <ClockIcon aria-hidden className="size-3" />
-          Coming soon
-        </span>
+        // The one "soon" badge, at page size (SY-10): neutral, so it never reads as a brand action.
+        <SoonTag size="md" />
       }
       heading={`${title} is coming soon`}
       message={description}

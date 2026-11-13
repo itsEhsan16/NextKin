@@ -15,6 +15,7 @@ import { ClockIcon } from '@/ui/icons';
 import { CheckCircle, ChevronRight, Edit03, Lock01, Stars02, Upload01 } from '@/ui/lineIcons';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 import { Tag } from '@/ui/Tag';
 
 type Actor = NonNullable<ResumeVersion['actor']>;
@@ -84,6 +85,7 @@ export function ResumeVersionsTab({
   if (versions.data.length === 0) {
     return (
       <StateView
+        art={<EmptyStateArt object="monitor" />}
         title="No versions yet"
         message="Each saved change will show up here."
         className="py-8"

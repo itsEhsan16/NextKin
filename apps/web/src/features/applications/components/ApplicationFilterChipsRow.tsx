@@ -39,94 +39,92 @@ export function ApplicationFilterChipsRow({
   const workplaces = useMemo(() => distinct(rows.map((row) => row.job.remote)), [rows]);
 
   return (
-    // Holds one line down to a ~600px list column (a 1396px window) and wraps below that, like
-    // the Jobs row, with Reset staying level with the first line.
-    <div className="flex items-start gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <FilterDropdown
-          trigger={<FilterChip label="Time period" active={filters.appliedWithin != null} />}
-        >
-          {(Object.entries(TIME_WINDOW_LABEL) as [TimeWindow, string][]).map(([value, label]) => (
-            <FilterCheckboxItem
-              key={value}
-              checked={filters.appliedWithin === value}
-              onCheckedChange={() =>
-                onChange({ appliedWithin: filters.appliedWithin === value ? undefined : value })
-              }
-            >
-              {label}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
+    // One wrapping row (owner, 2026-11-13: "correct the filter spacing"): Reset follows the last
+    // chip instead of standing alone at the far right, and a wrapped line keeps the same 8px gaps.
+    <div className="flex flex-wrap items-center gap-2">
+      <FilterDropdown
+        trigger={<FilterChip label="Time period" active={filters.appliedWithin != null} />}
+      >
+        {(Object.entries(TIME_WINDOW_LABEL) as [TimeWindow, string][]).map(([value, label]) => (
+          <FilterCheckboxItem
+            key={value}
+            checked={filters.appliedWithin === value}
+            onCheckedChange={() =>
+              onChange({ appliedWithin: filters.appliedWithin === value ? undefined : value })
+            }
+          >
+            {label}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
 
-        <FilterDropdown
-          trigger={<FilterChip label="Job type" active={filters.employmentTypes.length > 0} />}
-        >
-          {types.map((value) => (
-            <FilterCheckboxItem
-              key={value}
-              checked={filters.employmentTypes.includes(value)}
-              onCheckedChange={() =>
-                onChange({ employmentTypes: toggle(filters.employmentTypes, value) })
-              }
-            >
-              {EMPLOYMENT_TYPE_LABEL[value]}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
+      <FilterDropdown
+        trigger={<FilterChip label="Job type" active={filters.employmentTypes.length > 0} />}
+      >
+        {types.map((value) => (
+          <FilterCheckboxItem
+            key={value}
+            checked={filters.employmentTypes.includes(value)}
+            onCheckedChange={() =>
+              onChange({ employmentTypes: toggle(filters.employmentTypes, value) })
+            }
+          >
+            {EMPLOYMENT_TYPE_LABEL[value]}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
 
-        <FilterDropdown
-          trigger={<FilterChip label="Company" active={filters.companies.length > 0} />}
-        >
-          {companies.map((company) => (
-            <FilterCheckboxItem
-              key={company}
-              checked={filters.companies.includes(company)}
-              onCheckedChange={() => onChange({ companies: toggle(filters.companies, company) })}
-            >
-              {company}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
+      <FilterDropdown
+        trigger={<FilterChip label="Company" active={filters.companies.length > 0} />}
+      >
+        {companies.map((company) => (
+          <FilterCheckboxItem
+            key={company}
+            checked={filters.companies.includes(company)}
+            onCheckedChange={() => onChange({ companies: toggle(filters.companies, company) })}
+          >
+            {company}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
 
-        <FilterDropdown
-          trigger={<FilterChip label="Location" active={filters.locations.length > 0} />}
-        >
-          {locations.map((location) => (
-            <FilterCheckboxItem
-              key={location}
-              checked={filters.locations.includes(location)}
-              onCheckedChange={() => onChange({ locations: toggle(filters.locations, location) })}
-            >
-              {location}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
+      <FilterDropdown
+        trigger={<FilterChip label="Location" active={filters.locations.length > 0} />}
+      >
+        {locations.map((location) => (
+          <FilterCheckboxItem
+            key={location}
+            checked={filters.locations.includes(location)}
+            onCheckedChange={() => onChange({ locations: toggle(filters.locations, location) })}
+          >
+            {location}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
 
-        <FilterDropdown
-          trigger={
-            <FilterChip
-              label="More filters"
-              active={filters.remote.length > 0}
-              icon={<SlidersIcon className="size-3.5 shrink-0" />}
-              chevron="none"
-            />
-          }
-        >
-          <p className="px-2 pb-1 pt-0.5 text-micro text-text-tertiary">Workplace</p>
-          {workplaces.map((value) => (
-            <FilterCheckboxItem
-              key={value}
-              checked={filters.remote.includes(value)}
-              onCheckedChange={() => onChange({ remote: toggle(filters.remote, value) })}
-            >
-              {REMOTE_TYPE_LABEL[value]}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
-      </div>
+      <FilterDropdown
+        trigger={
+          <FilterChip
+            label="More filters"
+            active={filters.remote.length > 0}
+            icon={<SlidersIcon className="size-3.5 shrink-0" />}
+            chevron="none"
+          />
+        }
+      >
+        <p className="px-2 pb-1 pt-0.5 text-micro text-text-tertiary">Workplace</p>
+        {workplaces.map((value) => (
+          <FilterCheckboxItem
+            key={value}
+            checked={filters.remote.includes(value)}
+            onCheckedChange={() => onChange({ remote: toggle(filters.remote, value) })}
+          >
+            {REMOTE_TYPE_LABEL[value]}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
 
-      <ResetButton onClick={onReset} />
+      <ResetButton onClick={onReset} className="ml-1" />
     </div>
   );
 }

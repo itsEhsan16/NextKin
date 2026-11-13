@@ -739,6 +739,10 @@
   scrollbar-width: thin;
 }
 
+@utility scrollbar-none {
+  scrollbar-width: none;
+}
+
 @utility cursor-pointer {
   cursor: var(--cursor-hand);
 }

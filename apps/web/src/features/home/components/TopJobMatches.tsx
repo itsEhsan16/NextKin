@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 
-import { matchBasisCaption, type Job } from '@nextkin/shared/models';
+import type { Job } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
@@ -16,7 +16,7 @@ import { PauseCircle, PlayCircle } from '@/ui/lineIcons';
 import { SectionHeader } from '@/ui/SectionHeader';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
-import { LogoAdobeIllustration, LogoGoogleIllustration } from '@/ui/illustrations';
+import { EmptyStateArt, LogoAdobeIllustration, LogoGoogleIllustration } from '@/ui/illustrations';
 
 import { MatchBadge } from '@/features/jobs/components/MatchBadge';
 import { jobPageHref } from '@/features/jobs/jobPageLibrary';
@@ -31,17 +31,16 @@ export type TopJobMatchesProps = {
 };
 
 /**
- * One clay object per card, by position (redesign, 2026-11-13: the clay set replaced the board's
- * characters, so web and mobile share one illustration style). Each stands at the card's lower
- * right, left of which the basis caption stops (`pr-32`).
+ * One person per card, by position (286:358, 286:495), then the owner's CH1–CH9 (705:1268 …
+ * 705:2338) for the cards that slide in after them (`toreview.md` §101). Back on 2026-11-13 at the
+ * owner's word: the clay objects that stood in for them now draw the empty states. Served rather
+ * than inlined (46–123KB each, the `public/illustrations` rule in the README).
  */
-const CHARACTERS: readonly { src: string; className: string }[] = Array.from(
-  { length: 11 },
-  (_, i) => ({
-    src: `/illustrations/v2/match-${i + 1}.webp`,
-    className: 'bottom-3 right-3 h-[104px] w-auto object-contain',
-  }),
-);
+const CHARACTERS: readonly string[] = [
+  '/illustrations/job-seeker-1.svg',
+  '/illustrations/job-seeker-2.svg',
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `/illustrations/job-seeker-ch${n}.svg`),
+];
 
 /** Two cards side by side from `xl`, one below it; the step is a card and the gap between. */
 const PER_VIEW = '[--per:1] xl:[--per:2]';
@@ -112,9 +111,9 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
 
       {status === 'pending' && (
         <div className="mt-5 grid gap-4 xl:grid-cols-2">
-          {/* One block per card, at the cards' own minimum height (§196). */}
-          <Skeleton className="h-[172px] rounded-lg" />
-          <Skeleton className="hidden h-[172px] rounded-lg xl:block" />
+          {/* One block per card, at the cards' own height (§196). */}
+          <Skeleton className="h-48 rounded-lg" />
+          <Skeleton className="hidden h-48 rounded-lg xl:block" />
         </div>
       )}
 
@@ -131,6 +130,7 @@ export function TopJobMatches({ jobs, status, onRetry }: TopJobMatchesProps) {
 
       {status === 'success' && picks.length === 0 && (
         <StateView
+          art={<EmptyStateArt object="rocket" />}
           className={reveal ? 'animate-reveal' : undefined}
           title="No matches yet"
           message="Complete your profile and we'll start matching you to roles."
@@ -199,61 +199,63 @@ function Logo({ job }: { job: Job }) {
 function JobMatchCard({ job, slot }: { job: Job; slot: number }) {
   const match = job.matchScore != null ? Math.round(job.matchScore * 100) : undefined;
   const character = CHARACTERS[slot % CHARACTERS.length];
+  const place = job.location ? `${job.company} · ${job.location}` : job.company;
 
   return (
     <Link
       href={jobPageHref(job.id)}
       className={cn(
         pressable,
-        // At least the board's 172, taller when a long title or basis needs it; the two in view
-        // share the taller height.
-        'relative flex min-h-[172px] flex-1 flex-col overflow-hidden rounded-lg border border-border-subtle bg-neutral-50 px-4 pb-3.5 transition-[background-color,box-shadow] duration-base ease-standard hover:bg-surface-card hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+        // One fixed height and a slot for every piece (2026-11-13): a long title or company never
+        // moves the chips or the person, and the two cards in view always line up. Sized to the
+        // longest content (a two-line title and the applicants row), so a short card isn't hollow.
+        'flex h-48 flex-1 gap-2 overflow-hidden rounded-lg border border-border-subtle bg-neutral-50 pl-4 transition-[background-color,box-shadow] duration-base ease-standard hover:bg-surface-card hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
       )}
     >
-      {/* Behind the copy and clipped by the card, exactly as the board stacks it. */}
-      {character && (
-        /* eslint-disable-next-line @next/next/no-img-element -- fixed-size SVG art, nothing to optimise */
-        <img
-          src={character.src}
-          alt=""
-          aria-hidden
-          loading={slot < 2 ? 'eager' : 'lazy'}
-          className={`pointer-events-none absolute ${character.className}`}
-        />
-      )}
+      <div className="flex min-w-0 flex-1 flex-col py-3.5">
+        {/* Logo and score, side by side. The band's own colour and word (redesign R7a, HM-03). */}
+        <div className="flex h-7 items-center gap-2.5">
+          <Logo job={job} />
+          {match != null && <MatchBadge score={match / 100} band={job.matchBand} />}
+        </div>
 
-      <div className="relative flex items-center gap-9 pt-3">
-        <Logo job={job} />
-        {/* The band's own colour and word (redesign R7a, audit HM-03): it was green for every
-            score. Nothing without a band, as on the Jobs list. */}
-        {match != null && <MatchBadge score={match / 100} band={job.matchBand} />}
-      </div>
-
-      <h3 className="relative mt-2.5 max-w-[136px] text-title-l text-text-primary">{job.title}</h3>
-      <p className="relative mt-0.5 text-body-s font-medium text-text-tertiary">{job.company}</p>
-      {/* The basis behind the number (G16; toreview §105.18). */}
-      {match != null && job.matchBasis && (
-        // Kept left of the character (up to 124px wide) and wrapped to two lines rather than run
-        // under it; the whole sentence stays on hover.
-        <p
-          title={matchBasisCaption(job.matchBasis)}
-          className="relative mt-0.5 line-clamp-2 pr-32 text-caption-m text-text-tertiary"
-        >
-          {matchBasisCaption(job.matchBasis)}
+        {/* Title: up to two lines, then cut; company and place: one line. The whole text stays on hover. The
+            score's basis line is off for now (owner, 2026-11-13: where it goes is to be decided). */}
+        <h3 title={job.title} className="mt-2.5 line-clamp-2 text-title-l text-text-primary">
+          {job.title}
+        </h3>
+        <p title={place} className="mt-0.5 truncate text-body-s font-medium text-text-tertiary">
+          {place}
         </p>
-      )}
 
-      <div className="relative mt-2.5 flex flex-wrap gap-1.5">
-        <Chip>{job.employmentType === 'full_time' ? 'Full-time' : job.employmentType}</Chip>
-        <Chip>{formatShortAge(job.postedAt)}</Chip>
+        {/* The foot: always at the card's floor, whatever sits above. */}
+        <div className="mt-auto flex flex-col gap-2 pt-2">
+          <div className="flex gap-1.5 overflow-hidden">
+            <Chip>{job.employmentType === 'full_time' ? 'Full-time' : job.employmentType}</Chip>
+            <Chip>{formatShortAge(job.postedAt)}</Chip>
+          </div>
+          {job.applicantsCount != null && (
+            <div className="flex h-5 items-center gap-2">
+              <ApplicantStack />
+              <span className="truncate text-caption-m font-medium text-text-tertiary">
+                {formatApplicants(job.applicantsCount)}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {job.applicantsCount != null && (
-        <div className="relative mt-auto flex items-center gap-2 pt-2.5">
-          <ApplicantStack />
-          <span className="text-caption-m font-medium text-text-tertiary">
-            {formatApplicants(job.applicantsCount)}
-          </span>
+      {/* The person's own column: same width, standing on the same floor, in every card. */}
+      {character && (
+        <div aria-hidden className="relative w-30 shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size SVG art, nothing to optimise */}
+          <img
+            src={character}
+            alt=""
+            loading={slot < 2 ? 'eager' : 'lazy'}
+            draggable={false}
+            className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-40 w-full object-contain object-bottom"
+          />
         </div>
       )}
     </Link>
@@ -282,7 +284,7 @@ function ApplicantStack() {
 function Chip({ children }: { children: React.ReactNode }) {
   return (
     /* 22px — the board's 25px chip (286:343) at the compact density. */
-    <span className="rounded-full bg-surface-card px-2.5 py-1 text-caption-m font-medium text-text-secondary">
+    <span className="shrink-0 whitespace-nowrap rounded-full bg-surface-card px-2.5 py-1 text-caption-m font-medium text-text-secondary">
       {children}
     </span>
   );

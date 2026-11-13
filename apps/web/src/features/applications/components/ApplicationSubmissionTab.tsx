@@ -7,7 +7,7 @@ import { resumeHref } from '@/features/resumes/resumeHref';
 import { formatShortDate } from '@/lib/format';
 import { DetailRow } from '@/ui/DetailRow';
 import { Skeleton } from '@/ui/Skeleton';
-import { CalendarIcon, IdCardIcon } from '@/ui/icons';
+import { HugeCalendar, HugeCalendarCheck, HugeFile } from '@/ui/hugeIcons';
 
 import type { ApplicationStage } from '../applicationStage';
 
@@ -27,10 +27,10 @@ export function ApplicationSubmissionTab({ row, stage }: ApplicationSubmissionTa
 
   return (
     <dl className="flex flex-col gap-3">
-      <DetailRow icon={<CalendarIcon className="size-4" />} label="Applied on">
+      <DetailRow icon={<HugeCalendarCheck className="size-4" />} label="Applied on">
         {formatShortDate(application.appliedAt)}
       </DetailRow>
-      <DetailRow icon={<IdCardIcon className="size-4" />} label="Resume sent">
+      <DetailRow icon={<HugeFile className="size-4" />} label="Resume sent">
         {resume ? (
           <Link
             href={resumeHref(resume.id)}
@@ -45,7 +45,7 @@ export function ApplicationSubmissionTab({ row, stage }: ApplicationSubmissionTa
         )}
       </DetailRow>
       {stage === 'interview' && application.interviewAt && (
-        <DetailRow icon={<CalendarIcon className="size-4" />} label="Interview">
+        <DetailRow icon={<HugeCalendar className="size-4" />} label="Interview">
           {formatShortDate(application.interviewAt)}
         </DetailRow>
       )}

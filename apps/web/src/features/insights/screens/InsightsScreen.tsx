@@ -16,6 +16,7 @@ import { pageFillMin, pageFrameInBar } from '@/ui/pageFrame';
 import { SelectField } from '@/ui/SelectField';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 import {
   InsightsHeroIllustration,
   NavInterviewPrepIllustration,
@@ -95,6 +96,7 @@ function Dashboard({ data, range }: { data: CareerInsights; range: InsightsRange
   if (data.jobsAnalyzed.value < ENOUGH && data.applicationsSent.value === 0)
     return (
       <StateView
+        art={<EmptyStateArt object="chart" />}
         title="Insights start after your first few jobs"
         message="Analyze a few jobs and the patterns in them show up here: the skills they ask for, the roles that fit, and how your applications move."
         actionLabel="Analyze a job"

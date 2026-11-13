@@ -1,3 +1,4 @@
+import { PRO_SUMMARY } from '@/features/settings/billingLibrary';
 import type { Route } from 'next';
 import Image from 'next/image';
 
@@ -32,8 +33,7 @@ const PAGES: Record<ComingSoonPage, ComingSoonProps> = {
   upgrade: {
     title: 'Upgrade to Pro',
     section: 'V2 §13, plans, entitlements and billing',
-    description:
-      'More resume generations, DOCX export, more ATS checks and unlimited cover letters.',
+    description: PRO_SUMMARY,
     art: <LogoMarkIllustration className="h-16 w-auto" />,
     // The plans, the card on file and the invoices are Settings → Billing & plan (`toreview.md` §102).
     alternative: { label: 'See your plan and billing', href: '/settings?tab=billing' as Route },

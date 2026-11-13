@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import { ResumeRow } from './ResumeRow';
 
@@ -68,6 +69,7 @@ export function ResumeList({
   if (!hasAny) {
     return (
       <StateView
+        art={<EmptyStateArt object="palette" />}
         className={reveal ? 'animate-reveal' : undefined}
         title="No resumes yet"
         message="Tailor one to a job, build one from your profile, upload the one you have, or start from a blank page."

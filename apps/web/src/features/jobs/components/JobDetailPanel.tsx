@@ -9,6 +9,7 @@ import { useReveal } from '@/lib/useReveal';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 import { tabId, UnderlineTabs } from '@/ui/UnderlineTabs';
 
 import { JOB_DETAIL_TABS, type JobDetailTab } from '../jobDetailTabs';
@@ -53,7 +54,11 @@ export function JobDetailPanel({ job, status, onRetry, ...actions }: JobDetailPa
   if (status === 'empty') {
     return (
       <div className={cn(CARD, 'p-6')}>
-        <StateView title="Select a job" message="Choose a job from the list to see its details." />
+        <StateView
+          art={<EmptyStateArt object="globe" />}
+          title="Select a job"
+          message="Choose a job from the list to see its details."
+        />
       </div>
     );
   }

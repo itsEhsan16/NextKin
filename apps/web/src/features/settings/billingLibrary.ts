@@ -19,6 +19,14 @@ export const FREE_LINES: readonly PlanLine[] = [
   { label: 'Priority generation queue', included: false },
 ];
 
+/**
+ * What Pro adds, in one sentence for the places that summarise it: the sidebar's Upgrade card and
+ * the Upgrade page (redesign R7d, audit SY-03). It restates `PRO_LINES`: those places used to
+ * promise "unlimited generations" and "unlimited cover letters", which the plan doesn't give.
+ */
+export const PRO_SUMMARY =
+  '100 resume generations a month, DOCX export, the full template library and a priority queue.';
+
 /** The Pro card's list, every line included. */
 export const PRO_LINES: readonly PlanLine[] = [
   { label: '100 resume generations a month', included: true },

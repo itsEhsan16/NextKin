@@ -13,6 +13,7 @@ import { pageFillInBar, pageFrameInBar } from '@/ui/pageFrame';
 import { PillTabs } from '@/ui/PillTabs';
 import { ResultsBar } from '@/ui/ResultsBar';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import { CreateResumeDialog } from '../components/CreateResumeDialog';
 import { ResumeDetailPanel } from '../components/ResumeDetailPanel';
@@ -130,6 +131,7 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
       ) : firstRun ? (
         <div className="mt-6 flex flex-1 items-center justify-center">
           <StateView
+            art={<EmptyStateArt object="palette" />}
             title="No resumes yet"
             message="Tailor one to a job, build one from your profile, upload the one you have, or start from a blank page."
             actionLabel="Create your first resume"

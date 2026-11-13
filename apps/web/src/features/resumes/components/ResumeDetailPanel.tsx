@@ -7,6 +7,7 @@ import { useReveal } from '@/lib/useReveal';
 import { cardPad, cardSurface, cardSurfaceLoading } from '@/ui/Card';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { EmptyStateArt } from '@/ui/illustrations';
 
 import { ResumeDetailCard } from './ResumeDetailCard';
 
@@ -56,12 +57,14 @@ export function ResumeDetailPanel({
       {status === 'empty' &&
         (hasAny ? (
           <StateView
+            art={<EmptyStateArt object="palette" />}
             className="py-10"
             title="Select a resume"
             message="Choose one from the list to preview it."
           />
         ) : (
           <StateView
+            art={<EmptyStateArt object="palette" />}
             className="py-10"
             title="Nothing to preview yet"
             message="Create a resume and its preview will show here."
