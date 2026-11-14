@@ -99,7 +99,9 @@ export function RaiseScorePanel({
         {(open === 'missing' || open === 'optional') && (
           <KeywordPanel comparison={comparison} choices={choices} tab={open} />
         )}
-        {open === 'roles' && <ShowInRole steps={steps} places={places} choices={choices} />}
+        {open === 'roles' && (
+          <ShowInRole steps={steps} places={places} picks={comparison.picks} choices={choices} />
+        )}
         {open === 'results' && (
           <RealResults
             steps={steps}

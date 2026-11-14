@@ -1,6 +1,6 @@
 'use client';
 
-import type { TailorPlace } from '@nextkin/shared/models';
+import type { FigureDraft, TailorPlace } from '@nextkin/shared/models';
 import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
 import type { ReactNode } from 'react';
 
@@ -10,7 +10,7 @@ import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog
 import { iconButton } from '@/ui/iconButton';
 import { Briefcase01, XClose, Zap } from '@/ui/lineIcons';
 
-import { FigureEditor } from './FigureEditor';
+import { LineResult } from './LineResult';
 
 type Bullet = NonNullable<PlanStep['bullet']>;
 
@@ -33,10 +33,7 @@ function Head({ icon, title, line }: { icon: ReactNode; title: string; line: Rea
           {line}
         </DialogDescription>
       </div>
-      <DialogClose
-        aria-label="Close"
-        className={cn(iconButton, '-mr-1 -mt-1 ml-auto')}
-      >
+      <DialogClose aria-label="Close" className={cn(iconButton, '-mr-1 -mt-1 ml-auto')}>
         <XClose aria-hidden className="size-5 text-text-tertiary" />
       </DialogClose>
     </div>
@@ -58,12 +55,15 @@ export function PlaceDialog({
   need,
   places,
   where,
+  best,
   onToggle,
   onClear,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   keyword: string;
+  /** The roles whose lines best fit it, from the comparison's own picks: listed first, tagged. */
+  best?: readonly string[] | undefined;
   /** The job's own line that asks for it. */
   need?: string | undefined;
   places: readonly TailorPlace[];
@@ -72,6 +72,8 @@ export function PlaceDialog({
   onClear: () => void;
 }) {
   const none = !where?.length;
+  const fits = (id: string) => best?.includes(id) ?? false;
+  const ordered = [...places.filter((p) => fits(p.id)), ...places.filter((p) => !fits(p.id))];
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="md">
       <div className="flex min-h-0 flex-col gap-4 px-6 pb-5 pt-6">
@@ -85,7 +87,7 @@ export function PlaceDialog({
           }
         />
         <ul className="flex min-h-0 flex-col gap-2 overflow-y-auto">
-          {places.map((place) => {
+          {ordered.map((place) => {
             const on = where?.includes(place.id) ?? false;
             return (
               <li key={place.id}>
@@ -106,6 +108,11 @@ export function PlaceDialog({
                   <span className="min-w-0 flex-1 text-body-l font-medium text-text-primary">
                     {place.label}
                   </span>
+                  {fits(place.id) && (
+                    <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-caption-m font-semibold text-text-brand">
+                      Best fit
+                    </span>
+                  )}
                 </label>
               </li>
             );
@@ -149,8 +156,9 @@ export function PlaceDialog({
 }
 
 /**
- * "Add the result" in a pop-up (owner, 2026-11-14): the line as it stands, then what improved and
- * by about how much, or a typed result. Using the line or keeping the original closes it.
+ * "Add the result" in a pop-up (owner, 2026-11-14), fitted to this line: the AI's rewrite of it
+ * with a gap for the real figure, what belongs in the gap, and a guess when it has one
+ * (`LineResult`). Using the line or keeping the original closes it.
  */
 export function ResultDialog({
   open,
@@ -158,6 +166,7 @@ export function ResultDialog({
   resumeId,
   bullet,
   saved,
+  draft,
   onSave,
 }: {
   open: boolean;
@@ -165,27 +174,28 @@ export function ResultDialog({
   resumeId: string;
   bullet: Bullet;
   saved: string | undefined;
+  /** The draft the row already fetched, so the dialog opens on it. */
+  draft?: FigureDraft | null | undefined;
   onSave: (text: string | null) => void;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="lg">
-      <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-6 pb-6 pt-6">
+      <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-6 pb-6 pt-6">
         <Head
           icon={<Zap className="size-5" />}
           title={saved ? 'Edit your result' : 'Add the result'}
-          line="Say what came of this line, and the AI writes it in."
+          line="What came of this work? Fill in the real figure and the line reads with it."
         />
-        <blockquote className="rounded-lg border-l-4 border-border-brand-strong bg-neutral-50 px-4 py-3 text-body-m text-text-secondary">
-          {bullet.text}
-        </blockquote>
-        <FigureEditor
-          open={open}
-          resumeId={resumeId}
-          bullet={bullet}
-          saved={saved}
-          onSave={onSave}
-          onDone={() => onOpenChange(false)}
-        />
+        {open && (
+          <LineResult
+            resumeId={resumeId}
+            bullet={bullet}
+            saved={saved}
+            draft={draft}
+            onSave={onSave}
+            onDone={() => onOpenChange(false)}
+          />
+        )}
       </div>
     </Dialog>
   );

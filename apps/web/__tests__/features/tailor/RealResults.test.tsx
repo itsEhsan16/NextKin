@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
 
 import { RealResults } from '@/features/tailor/flow/RealResults';
+import { renderWithQuery, SETTLE_MS } from '../../../testSupport/render';
 
 const step = (index: number): PlanStep => ({
   id: `n${index}`,
@@ -18,10 +19,10 @@ const step = (index: number): PlanStep => ({
 });
 
 describe('Add real results (toreview §149)', () => {
-  it('lists every line without a result, and finishes one by two picks in a dialog', async () => {
+  it('lists every line without a result, and finishes one in a dialog fitted to the line', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
-    render(
+    renderWithQuery(
       <RealResults
         steps={[1, 2, 3, 4].map(step)}
         resumeId="res_1"
@@ -34,18 +35,25 @@ describe('Add real results (toreview §149)', () => {
     const [first] = screen.getAllByRole('button', { name: 'Add the result' });
     await user.click(first!);
     const dialog = screen.getByRole('dialog', { name: 'Add the result' });
-    await user.click(within(dialog).getByRole('button', { name: 'Saved money' }));
-    await user.click(within(dialog).getByRole('button', { name: '10%' }));
-    await user.click(within(dialog).getByRole('button', { name: 'Use this line' }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // The line with its gap, and the AI's guess offered apart (the mock's draft).
+    const guess = await within(dialog).findByRole(
+      'button',
+      { name: "Use the AI's guess: about 20%" },
+      { timeout: SETTLE_MS.normal },
+    );
+    const use = within(dialog).getByRole('button', { name: 'Use this line' });
+    expect(use).toBeDisabled();
+    await user.click(guess);
+    await user.click(use);
     expect(onFigure).toHaveBeenCalledWith(
       { roleId: 'role_web', index: 1, text: 'Built feature 1.' },
-      'Built feature 1, cutting costs by about 10%.',
+      'Built feature 1, improving about 20%.',
     );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('draws nothing when every line has a result', () => {
-    const { container } = render(
+    const { container } = renderWithQuery(
       <RealResults steps={[]} resumeId="res_1" figureOf={() => undefined} onFigure={jest.fn()} />,
     );
     expect(container).toBeEmptyDOMElement();

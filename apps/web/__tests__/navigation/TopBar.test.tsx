@@ -28,9 +28,10 @@ describe('TopBar', () => {
       'href',
       '/create/build',
     );
-    expect(screen.getByRole('link', { name: /^Notifications/ })).toHaveAttribute(
-      'href',
-      '/notifications',
+    // The bell opens the notification panel (owner, 2026-11-14), not the page.
+    expect(screen.getByRole('button', { name: /^Notifications/ })).toHaveAttribute(
+      'aria-haspopup',
+      'dialog',
     );
     expect(screen.getByRole('button', { name: 'Your account' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Back to Jobs' })).not.toBeInTheDocument();
@@ -58,7 +59,7 @@ describe('TopBar', () => {
 
     expect(
       await screen.findByRole(
-        'link',
+        'button',
         { name: 'Notifications, unread' },
         { timeout: SETTLE_MS.normal },
       ),

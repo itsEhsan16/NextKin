@@ -109,10 +109,12 @@ function placedLabel(places: readonly TailorPlace[], where: readonly string[] | 
 function ShowInRoleRow({
   step,
   places,
+  best,
   choices,
 }: {
   step: PlanStep & { keyword: string };
   places: readonly TailorPlace[];
+  best: readonly string[] | undefined;
   choices: TailorChoices;
 }) {
   const [open, setOpen] = useState(false);
@@ -153,6 +155,7 @@ function ShowInRoleRow({
         keyword={step.keyword}
         need={step.need}
         places={places}
+        best={best}
         where={placed?.where}
         onToggle={(where, on) => choices.togglePlace(step.keyword, where, on)}
         onClear={() => choices.setAdded(choices.added.filter((l) => l !== step.keyword))}
@@ -169,10 +172,13 @@ function ShowInRoleRow({
 export function ShowInRole({
   steps,
   places,
+  picks,
   choices,
 }: {
   steps: readonly PlanStep[];
   places: readonly TailorPlace[];
+  /** The roles whose lines best fit each skill, from the comparison. */
+  picks?: Readonly<Record<string, readonly string[]>> | undefined;
   choices: TailorChoices;
 }) {
   const items = showInRoleItems(steps, places);
@@ -184,7 +190,13 @@ export function ShowInRole({
       label="Skills to show in a role"
     >
       {items.map((step) => (
-        <ShowInRoleRow key={step.id} step={step} places={places} choices={choices} />
+        <ShowInRoleRow
+          key={step.id}
+          step={step}
+          places={places}
+          best={picks?.[step.keyword]}
+          choices={choices}
+        />
       ))}
     </CategoryList>
   );
