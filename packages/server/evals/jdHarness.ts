@@ -17,7 +17,7 @@ import { JD_GOLDEN, JD_GOLDEN_VERSION, type JdCase } from './jdGolden';
  */
 
 export type JdCheck = { caseId: string; check: string; pass: boolean; detail?: string };
-export type JdReport = { golden: string; cases: number; checks: JdCheck[]; passRate: number; invented: JdCheck[] };
+export type JdReport = { golden: string; cases: number; checks: JdCheck[]; passRate: number; invented: JdCheck[]; keywordRecall: number | null };
 
 const id = (name: string) => resolveSkill(TAXONOMY, name).id;
 const has = (names: readonly string[], want: string) => names.some((n) => id(n) === id(want));
@@ -58,6 +58,14 @@ export function checkCase(c: JdCase, jd: VerifiedJd): JdCheck[] {
   if (w.minResponsibilities) add('responsibilities', s.responsibilities.length >= w.minResponsibilities, String(s.responsibilities.length));
   if (w.minLocations) add('locations', s.locations.length >= w.minLocations, String(s.locations.length));
   if (w.language) add('language', jd.language === w.language, jd.language);
+  if (w.title) add('title', jd.title === w.title, jd.title ?? 'none');
+  if (w.company) add('company', jd.company === w.company, jd.company ?? 'none');
+  const named = [...jd.requiredSkills, ...jd.preferredSkills, ...(jd.softSkills ?? [])];
+  for (const k of w.notSkill ?? []) add(`notSkill:${k}`, !named.some((n) => n.toLowerCase() === k.toLowerCase()), named.join(', '));
+  const schooling = s.education.map((e) => e.value).join(' | ');
+  for (const e of w.education ?? []) add(`education:${e}`, schooling.toLowerCase().includes(e.toLowerCase()), schooling);
+  if (w.page) add('page', jd.page?.kind === w.page, jd.page?.kind ?? 'none');
+  if (w.noPage) add('noPage', jd.page === undefined, jd.page?.kind);
   if (w.chromeAbsent) {
     const kept = JSON.stringify({ ...s, issues: [], stats: null }).toLowerCase();
     for (const chrome of w.chromeAbsent) {
@@ -70,7 +78,7 @@ export function checkCase(c: JdCase, jd: VerifiedJd): JdCheck[] {
 }
 
 /** Checks a case labelled "states none" failing: the reading invented something. */
-const INVENTION = new Set(['noPay', 'noYears', 'noWorkMode', 'notRequired']);
+const INVENTION = new Set(['noPay', 'noYears', 'noWorkMode', 'notRequired', 'noPage', 'notSkill']);
 
 export function seedPrompt(): PromptVersion {
   const p = PROMPTS.find((x) => x.name === 'jd.extract')!;
@@ -95,7 +103,14 @@ export async function runJdGolden(gateway: AiGateway, cases: readonly JdCase[] =
     checks,
     passRate: checks.length ? passed / checks.length : 0,
     invented: checks.filter((c) => !c.pass && INVENTION.has(c.check.split(':')[0]!)),
+    keywordRecall: recallOf(checks),
   };
+}
+
+/** Of the skills the labels say a posting names, the share the reading found (toreview §206.2). */
+function recallOf(checks: readonly JdCheck[]): number | null {
+  const named = checks.filter((c) => c.check.startsWith('required:') || c.check.startsWith('preferred:'));
+  return named.length ? named.filter((c) => c.pass).length / named.length : null;
 }
 
 export function jdGate(report: JdReport): { pass: boolean; failures: string[] } {

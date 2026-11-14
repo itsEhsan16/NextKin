@@ -6,6 +6,9 @@ import { guardedFetch } from '../net/egress';
 import { LinkError, type LinkFailure } from './address';
 import type { PageReading } from './reading';
 
+/** A reading as the worker receives it. A reader one release behind does not name the page's kind. */
+export type LinkReading = Omit<PageReading, 'pageKind' | 'signals'> & Partial<Pick<PageReading, 'pageKind' | 'signals'>>;
+
 /**
  * The worker's client for the link reader (toreview §144.3). The worker never touches a URL a user
  * gives: it asks the service, through the egress guard, and gets back text. A site's answer is a
@@ -21,7 +24,7 @@ export class LinkReaderUnavailableError extends Error {
 }
 
 export interface LinkReader {
-  read(url: string): Promise<PageReading>;
+  read(url: string): Promise<LinkReading>;
 }
 
 export type LinkReaderConfig = Pick<Config, 'LINK_READER_URL'> & Partial<Pick<Config, 'LINK_READER_TOKEN' | 'LINK_READER_TOKEN_FILE'>>;
@@ -35,6 +38,12 @@ const reading = z.object({
   closesAt: z.string().optional(),
   text: z.string(),
   words: z.number(),
+  // Absent from an older reader; the model's reading then judges the page on its own.
+  pageKind: z.enum(['job', 'closed_job', 'listing', 'removed', 'unknown']).optional(),
+  closedNote: z.string().optional(),
+  signals: z
+    .object({ postings: z.number(), listType: z.boolean(), jobLinks: z.number(), proseWords: z.number(), closedWording: z.string().optional(), redirected: z.boolean() })
+    .optional(),
 });
 const answer = z.object({ reading });
 const refusal = z.object({ reason: z.string() });

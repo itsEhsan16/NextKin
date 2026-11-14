@@ -1,6 +1,11 @@
 'use client';
 
-import { atsBandFor, type JobMatch } from '@nextkin/shared/models';
+import {
+  atsBandFor,
+  nextStepsLine,
+  type JobMatch,
+  type TailorNextStep,
+} from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { cardSurface } from '@/ui/Card';
@@ -27,6 +32,7 @@ export function ScoreSummaryCard({
   baseline,
   projected,
   match,
+  next,
   loading = false,
 }: {
   score: number | undefined;
@@ -36,6 +42,8 @@ export function ScoreSummaryCard({
   /** What the plan promised for these answers, out of 100. */
   projected?: number | undefined;
   match: JobMatch | undefined;
+  /** What would raise the score further, priced on this version (toreview §206.3). */
+  next?: readonly TailorNextStep[] | undefined;
 }) {
   if (score == null && loading) return <Skeleton className="h-28 shrink-0 rounded-lg" />;
   if (score == null)
@@ -60,10 +68,13 @@ export function ScoreSummaryCard({
   const promise =
     projected != null && score < projected - 1 ? `Plan aimed for ${tenths(projected)}` : null;
   const missing = match?.missing ?? [];
+  // The run's own next steps, with what each adds, when it has them; else the keywords left.
   const tip =
-    missing.length === 0
+    nextStepsLine(next) ??
+    (missing.length === 0
       ? 'All key keywords are in. Add results to stand out.'
-      : `Missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ` +${missing.length - 3}` : ''}. Add only what’s true.`;
+      : `Missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ` +${missing.length - 3}` : ''}. Add only what’s true.`);
+  const done = missing.length === 0 && !next?.length;
   return (
     // Compact: it is the one fixed block above the assistant, which takes the rest (toreview §122).
     <section
@@ -103,12 +114,10 @@ export function ScoreSummaryCard({
         <p
           className={cn(
             'mt-3 flex items-start gap-2 rounded-md px-3 py-2.5 text-body-s font-medium',
-            missing.length === 0
-              ? 'bg-success-surface text-success-text'
-              : 'bg-warning-50 text-warning-text',
+            done ? 'bg-success-surface text-success-text' : 'bg-warning-50 text-warning-text',
           )}
         >
-          {missing.length === 0 ? (
+          {done ? (
             <CheckCircle aria-hidden className="mt-0.5 size-4 shrink-0" />
           ) : (
             <Lightbulb02 aria-hidden className="mt-0.5 size-4 shrink-0" />

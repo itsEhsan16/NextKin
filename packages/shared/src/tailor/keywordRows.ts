@@ -2,7 +2,7 @@ import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { phraseKey } from '@nextkin/engines/text';
 import { resolveSkill, skillById, type SkillCategory } from '@nextkin/engines/normalizer';
 
-import type { TailorComparison, TailorKeyword } from '../models/tailor';
+import type { KeywordElsewhere, TailorComparison, TailorKeyword } from '../models/tailor';
 
 /**
  * The keyword table of the tailor flow's "Choose keywords" step (owner's mockup, 2026-11-11):
@@ -69,6 +69,8 @@ export type KeywordRow = {
   top: boolean;
   /** The job's own line asking for it. */
   quote?: string;
+  /** Where the candidate's own records already show it (toreview §206.3). */
+  elsewhere?: KeywordElsewhere;
 };
 
 function categoryOf(k: TailorKeyword): { bucket: KeywordBucket; tag: string | null } {
@@ -103,6 +105,7 @@ export function keywordRowsOf(comparison: TailorComparison): KeywordRow[] {
         ...(price ? { basis: price.basis } : {}),
         top: k.top === true,
         ...(k.quote ? { quote: k.quote } : {}),
+        ...(k.elsewhere ? { elsewhere: k.elsewhere } : {}),
       };
     });
   return sortRows(rows, 'default');
@@ -116,7 +119,8 @@ const worthOf = (r: KeywordRow, missing: number) => r.worth ?? missing;
 export function sortRows(rows: readonly KeywordRow[], sort: KeywordSort): KeywordRow[] {
   const out = [...rows];
   if (sort === 'default')
-    return out.sort((a, b) => Number(b.top) - Number(a.top) || worthOf(b, -1) - worthOf(a, -1));
+    // What the candidate already has leads: it is the surest gain on the page (toreview §206.3).
+    return out.sort((a, b) => Number(Boolean(b.elsewhere)) - Number(Boolean(a.elsewhere)) || Number(b.top) - Number(a.top) || worthOf(b, -1) - worthOf(a, -1));
   const dir = sort === 'worth-desc' ? 1 : -1;
   return out.sort((a, b) => {
     if (a.worth === null || b.worth === null) return Number(a.worth === null) - Number(b.worth === null);

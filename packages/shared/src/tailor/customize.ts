@@ -113,19 +113,50 @@ export function toggleKeyword(c: CustomizeChoices, label: string, on: boolean): 
 
 /**
  * A keyword ticked or unticked. A tick takes the places the comparison picked for it, as the AI's
- * (toreview §163); a keyword with none is a skills-list tick only.
+ * (toreview §163); a keyword with none is a skills-list keyword only. Where the candidate's own
+ * records back a place (`backed`, toreview §206.3), the tick takes that instead, as their own
+ * word: their profile already says they used it there.
  */
-export function tickKeyword(c: CustomizeChoices, label: string, on: boolean, picks?: Readonly<Record<string, readonly string[]>>): CustomizeChoices {
+export function tickKeyword(
+  c: CustomizeChoices,
+  label: string,
+  on: boolean,
+  picks?: Readonly<Record<string, readonly string[]>>,
+  backed?: Readonly<Record<string, readonly string[]>>,
+): CustomizeChoices {
   const next = toggleKeyword(c, label, on);
+  const own = on ? backed?.[label] : undefined;
+  if (own?.length) return setPlace(next, label, { where: own, note: '', by: 'you' });
   const where = on ? picks?.[label] : undefined;
   return where?.length ? setPlace(next, label, { where, note: '', by: 'ai' }) : next;
 }
 
 /** "Select all" over the shown keywords; again, "Clear all" (owner, toreview §113). */
-export function toggleAll(c: CustomizeChoices, labels: readonly string[], picks?: Readonly<Record<string, readonly string[]>>): CustomizeChoices {
+export function toggleAll(
+  c: CustomizeChoices,
+  labels: readonly string[],
+  picks?: Readonly<Record<string, readonly string[]>>,
+  backed?: Readonly<Record<string, readonly string[]>>,
+): CustomizeChoices {
   const allOn = labels.length > 0 && labels.every((l) => c.added.includes(l));
-  return labels.reduce((next, label) => tickKeyword(next, label, !allOn, picks), c);
+  return labels.reduce((next, label) => tickKeyword(next, label, !allOn, picks, backed), c);
 }
+
+/**
+ * One line for a screen with no room for a row each (the phone's chips): which missing keywords
+ * the candidate's own records already show.
+ */
+export function alreadyYoursLine(comparison: TailorComparison): string | null {
+  const labels = alreadyYours(comparison).map((k) => k.label);
+  if (labels.length === 0) return null;
+  const named = labels.slice(0, 3).join(', ');
+  const rest = labels.length - 3;
+  return `Already on your profile or another resume: ${named}${rest > 0 ? ` and ${rest} more` : ''}. Tap to add.`;
+}
+
+/** The missing keywords the candidate's own records already show (toreview §206.3). */
+export const alreadyYours = (comparison: TailorComparison): TailorKeyword[] =>
+  comparison.keywords.filter((k) => !k.onResume && k.elsewhere !== undefined);
 
 /** A keyword's places replaced; none left drops the entry (Skills only). */
 export function setPlace(c: CustomizeChoices, label: string, place: KeywordPlace | null): CustomizeChoices {

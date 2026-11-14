@@ -413,6 +413,7 @@ export interface JobDescriptions {
   edited: Json | null;
   error_message: string | null;
   extracted: Json | null;
+  failure_reason: string | null;
   id: Generated<string>;
   job_id: string | null;
   jobs_cache_id: string | null;

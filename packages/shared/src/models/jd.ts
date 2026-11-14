@@ -92,6 +92,8 @@ export type JdDraft = {
   status?: 'extracting' | 'ready' | 'failed';
   /** Plain language, when the extraction failed. */
   error?: string;
+  /** Which failure it was, when the extraction failed (toreview §206). */
+  failureReason?: JdFailureReason;
   /** What the extraction kept, and how many items it dropped for want of a quote in the text. */
   extraction?: { kept: number; dropped: number };
   /** The language the JD is written in (D-11: German JDs are read, resumes stay English). */
@@ -115,6 +117,43 @@ export type JdDraft = {
 
 export type JdStage = 'reading' | 'understanding' | 'checking';
 
+/**
+ * Why a job description could not be read (toreview §206), so a screen can say the right thing
+ * and offer the right next step. `error` carries the server's sentence; this names the case.
+ */
+export const JD_FAILURE_REASONS = [
+  'invalid',
+  'private',
+  'robots',
+  'refused',
+  'gone',
+  'unsupported',
+  'too_large',
+  'timeout',
+  'unreachable',
+  'empty',
+  /** A list of jobs or a search page, not one posting. */
+  'listing',
+  /** The posting was taken down or has closed, and its description is no longer there. */
+  'removed',
+  /** Text that is not a job posting at all. */
+  'not_a_job',
+  'unreadable',
+  'provider',
+] as const;
+export type JdFailureReason = (typeof JD_FAILURE_REASONS)[number];
+
+/**
+ * A posting that was read but says it has closed, or whose closing date has passed (toreview
+ * §206). Its description is still usable; every screen that goes on with it says so first.
+ */
+export const jdHasClosed = (draft: Pick<JdDraft, 'structured'> | undefined): boolean =>
+  Boolean(draft?.structured?.issues.some((issue) => issue.kind === 'expired'));
+
+export const JD_CLOSED_TITLE = 'This posting has closed';
+export const JD_CLOSED_NOTE =
+  'It may no longer take applications. You can still build a resume for it.';
+
 /** One typed requirement (C-10; the extractor verifies spans from P9). */
 export type JdRequirement = {
   id: string;
@@ -129,5 +168,5 @@ export type JdRequirement = {
 
 /** Every edit the review screen can make; identity, origin and the source text are fixed. */
 export type JdDraftPatch = Partial<
-  Omit<JdDraft, 'id' | 'createdAt' | 'source' | 'rawText' | 'sourceUrl' | 'requirements' | 'status' | 'error' | 'extraction' | 'language' | 'reading' | 'structured' | 'stage'>
+  Omit<JdDraft, 'id' | 'createdAt' | 'source' | 'rawText' | 'sourceUrl' | 'requirements' | 'status' | 'error' | 'failureReason' | 'extraction' | 'language' | 'reading' | 'structured' | 'stage'>
 >;

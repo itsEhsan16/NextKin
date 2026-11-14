@@ -1,4 +1,4 @@
-import { UNTITLED_JD, type JdDraft, type JdDraftPatch, type JdStage } from '@nextkin/shared/models/jd';
+import { JD_FAILURE_REASONS, UNTITLED_JD, type JdDraft, type JdDraftPatch, type JdStage } from '@nextkin/shared/models/jd';
 import { jdStructuredSchema } from '@nextkin/shared/schemas/jdStructured';
 import { jdLists, typedRequirements } from '@nextkin/shared/scoring/adapters';
 
@@ -15,6 +15,7 @@ export type Row = {
   edited: unknown;
   status: string;
   error_message: string | null;
+  failure_reason: string | null;
   stats: unknown;
   language: string | null;
   job_id: string | null;
@@ -24,7 +25,7 @@ export type Row = {
   created_at: Date;
 };
 
-export const COLUMNS = ['id', 'source', 'raw_text', 'extracted', 'edited', 'status', 'error_message', 'stats', 'language', 'job_id', 'source_url', 'stage', 'structure_version', 'created_at'] as const;
+export const COLUMNS = ['id', 'source', 'raw_text', 'extracted', 'edited', 'status', 'error_message', 'failure_reason', 'stats', 'language', 'job_id', 'source_url', 'stage', 'structure_version', 'created_at'] as const;
 
 const present = <T>(value: T | null | undefined): value is T => value !== null && value !== undefined && value !== '';
 
@@ -48,6 +49,7 @@ export function toDraft(row: Row): JdDraft {
   // The structured reading is checked again on the way out: a row that no longer validates is shown
   // the old way rather than half-drawn (toreview §153).
   const structured = x.structured ? jdStructuredSchema.safeParse(x.structured) : undefined;
+  const failureReason = row.status === 'failed' ? JD_FAILURE_REASONS.find((reason) => reason === row.failure_reason) : undefined;
   return {
     id: row.id,
     source: row.source as JdDraft['source'],
@@ -66,6 +68,7 @@ export function toDraft(row: Row): JdDraft {
     requirements: row.status === 'ready' ? typedRequirements(jdLists({ ...lists, rawText: row.raw_text })) : [],
     status: row.status as JdDraft['status'],
     ...(row.error_message ? { error: row.error_message } : {}),
+    ...(failureReason ? { failureReason } : {}),
     ...(stats && typeof stats.kept === 'number' ? { extraction: { kept: stats.kept, dropped: stats.dropped ?? 0 } } : {}),
     ...(row.language ? { language: row.language as 'en' | 'de' } : x.language === 'other' ? { language: 'other' as const } : {}),
     ...(x.reading ? { reading: x.reading } : {}),

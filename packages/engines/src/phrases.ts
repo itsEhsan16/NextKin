@@ -2,8 +2,9 @@
  * JD phrases the taxonomy does not know ("user interfaces", "code reviews", "KYC"), found in a
  * resume's own text (toreview §112). A requirement with an `x:` id used to be met only by an
  * identical skills-list entry; a bullet that said it earned nothing. Here a phrase is found as whole
- * words in order, punctuation between them ignored, a plural "s" either side ignored: "user
- * interface" meets "user interfaces". Pure.
+ * words in order, punctuation between them ignored, a word's common endings folded either side:
+ * "user interface" meets "user interfaces", "workflow automation" meets "automated workflows"
+ * only where the words come in the same order. Pure.
  */
 
 import { phraseKey, tokenize } from './text';
@@ -16,8 +17,23 @@ export interface PhraseMention {
   surface: string;
 }
 
-/** A word as compared: lower case, without a plural "s" on words of four letters or more. */
-const stem = (key: string) => (key.length >= 4 && key.endsWith('s') && !key.endsWith('ss') ? key.slice(0, -1) : key);
+/**
+ * A word as compared: lower case, with its common endings folded so one word's forms meet
+ * (toreview §206.2): "dashboards" and "dashboard"; "automate", "automated", "automating" and
+ * "automation"; "policies" and "policy". Deliberately light: endings only, on words long enough
+ * that the stem is still the word, and only ever for a phrase the taxonomy does not know. A named
+ * skill is matched by its aliases, never by this.
+ */
+export function stem(key: string): string {
+  let word = key;
+  if (word.length >= 5 && word.endsWith('ies')) word = `${word.slice(0, -3)}y`;
+  else if (word.length >= 4 && word.endsWith('s') && !word.endsWith('ss') && !word.endsWith('us') && !word.endsWith('is')) word = word.slice(0, -1);
+  if (word.length >= 8 && word.endsWith('tion')) word = word.slice(0, -3);
+  else if (word.length >= 7 && word.endsWith('ing')) word = word.slice(0, -3);
+  else if (word.length >= 6 && word.endsWith('ed')) word = word.slice(0, -2);
+  if (word.length >= 5 && word.endsWith('e')) word = word.slice(0, -1);
+  return word;
+}
 
 /** The phrases' ids and stemmed words, from `x:` skill ids. */
 export function phraseIndex(ids: Iterable<string>): { id: string; words: string[] }[] {

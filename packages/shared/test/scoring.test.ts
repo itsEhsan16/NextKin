@@ -43,7 +43,7 @@ describe.each(['mobile', 'web'] as const)('the %s seed', (platform) => {
         continue;
       }
       expect(store.state.scoringJds[resume.id], resume.id).toBeDefined();
-      expect(score.report?.provenance).toMatchObject({ engine: '1.0.0', rubric: 'rubric-2', taxonomy: 'taxonomy-0.1.0', kb: 'kb-0.1.0' });
+      expect(score.report?.provenance).toMatchObject({ engine: '1.1.0', rubric: 'rubric-2', taxonomy: 'taxonomy-0.1.0', kb: 'kb-0.1.0' });
       expect(resume.atsScore).toBe(score.total);
       expect(score.report?.total).toBe(score.total);
     }

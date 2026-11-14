@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { nothingChosen, projectedScore, tailorRunInput } from '@/data/models/customize';
-import { isConsentRequired, useStartGeneration } from '@/data/queries';
+import { isConsentRequired, useKeywordQuestions, useStartGeneration } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -14,6 +14,7 @@ import { OnboardingFrame } from '../components/OnboardingFrame';
 import { TailorResumeSheet } from '../components/TailorResumeSheet';
 import { customizeKey, useCustomizeChoices } from '../customizeStore';
 import { FlowCard, FlowFooter, FlowRow, FlowSection } from '../flow/FlowKit';
+import { KeywordAsks } from '../flow/KeywordAsks';
 import { AiPlanCard, MoreOptionsSheet, ReviewHero, SkillChips } from '../flow/ReviewParts';
 import { generationsLeftNote, spentNote } from '../generationQuota';
 import { useCreateActions, type CustomizeTarget } from '../hooks/useCreateActions';
@@ -45,6 +46,9 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
   const set = (next: typeof choices) => update(() => next);
 
   const { target, comparison, resume, subscription, resumes } = data;
+  // "Did you use these?" (toreview §206.3): asked once the comparison is there, never in its way.
+  const asked =
+    useKeywordQuestions(comparison.data?.resumeId ?? '', comparison.data?.jdId ?? '').data ?? [];
   const enter = useRevealStagger(
     !!target && !!resume.data && !!comparison.data && !!subscription.data,
   );
@@ -211,6 +215,11 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
           <FlowSection title="Skills it asks for" body="Tap the missing ones you really have.">
             <SkillChips comparison={result} choices={choices} onChange={set} />
           </FlowSection>
+        </Animated.View>
+      ) : null}
+      {asked.length > 0 ? (
+        <Animated.View entering={enter(2)}>
+          <KeywordAsks questions={asked} choices={choices} onChange={set} />
         </Animated.View>
       ) : null}
       <Animated.View entering={enter(3)}>

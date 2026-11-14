@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { blockedSiteNotice, sharedJobOf, type JdInput } from '@/data/models';
-import { track, unreadableLinkMessage, useExtractJd } from '@/data/queries';
+import { jdFailureReason, track, unreadableLinkMessage, useExtractJd } from '@/data/queries';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -38,6 +38,8 @@ export function ShareScreen() {
         router.replace({ pathname: '/create/build/review', params: { jdId: draft.id } });
       } catch (error) {
         const refused = input.source === 'link' ? unreadableLinkMessage(error) : null;
+        const reason = jdFailureReason(error);
+        const said = reason === 'listing' || reason === 'removed' || reason === 'gone';
         if (!refused || input.source !== 'link') {
           setFailed(true);
           return;
@@ -47,7 +49,8 @@ export function ShareScreen() {
           params: {
             mode: 'paste',
             at: String(Date.now()),
-            notice: blockedSiteNotice(input.url) ?? refused,
+            // A list of jobs or a posting that is gone is not the site blocking us (§206).
+            notice: (said ? null : blockedSiteNotice(input.url)) ?? refused,
           },
         });
       }

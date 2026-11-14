@@ -16,7 +16,9 @@ import type { Bps } from './bps';
 import { deepFreeze, fingerprint } from './canonical';
 
 /** The engines' semver. Bump on any change to what an engine decides. */
-export const ENGINE_VERSION = '1.0.0';
+// 1.1.0 (toreview §206.2): a posting's structured reading supplies its years and conditions, and
+// an unknown phrase meets its other word forms. Reports stamped 1.0.0 say their method changed.
+export const ENGINE_VERSION = '1.1.0';
 
 export type ComponentKey = 'keywords' | 'timeline' | 'sections' | 'formatting' | 'achievements';
 

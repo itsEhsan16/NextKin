@@ -121,6 +121,8 @@ export const qk = {
     match: (jdId: string) => ['jd', 'match', jdId] as const,
     /** A resume measured against a JD the user brought (W-TAILOR 01 on a JD). */
     compareJd: (resumeId: string, jdId: string) => ['jd', 'compareJd', resumeId, jdId] as const,
+    /** "Did you use this here?" for one resume against one JD (toreview §206.3). */
+    questions: (resumeId: string, jdId: string) => ['jd', 'questions', resumeId, jdId] as const,
   },
   documents: {
     all: ['documents'] as const,

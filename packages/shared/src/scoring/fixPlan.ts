@@ -123,6 +123,22 @@ function pathPlan(path: TargetPath, report: DocumentScore['report'], rawText: st
   };
 }
 
+/** How many next steps a ready screen is given. */
+export const NEXT_STEPS = 4;
+
+/**
+ * What is left after a run (toreview §206.3): the plan rebuilt on the finished resume, and of it
+ * only the steps the candidate alone can take that the score measures. Each worth is the path's
+ * own re-score, so the line never promises more than doing it would give.
+ */
+export function nextStepsOf(result: DocumentScore | undefined, rawText?: string): { title: string; worth: number }[] {
+  const plan = fixPlanOf({ result, ...(rawText ? { rawText } : {}), improvements: [] });
+  return (plan?.steps ?? [])
+    .filter((step) => step.who === 'you' && step.worth !== null && step.worth > 0)
+    .slice(0, NEXT_STEPS)
+    .map((step) => ({ title: step.title, worth: step.worth as number }));
+}
+
 export function fixPlanOf(args: { result: DocumentScore | undefined; rawText?: string; improvements: readonly TailorImprovement[] }): FixPlan | undefined {
   const report = args.result?.report;
   if (!report || report.total === null) return undefined;

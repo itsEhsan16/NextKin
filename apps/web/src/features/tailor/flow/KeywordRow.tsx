@@ -1,6 +1,7 @@
 'use client';
 
 import type { TailorPlace } from '@nextkin/shared/models';
+import { elsewhereNote } from '@nextkin/shared/tailor/elsewhere';
 import { impactSegments, type KeywordRow as Row } from '@nextkin/shared/tailor/keywordRows';
 import type { ReactNode } from 'react';
 
@@ -91,6 +92,8 @@ export function TickBox({
  * One keyword of the table (owner's mockup, 2026-11-11): its tick, its name and category, and
  * what it adds once placed in a role. A ticked one the comparison found a place for shows where it
  * goes underneath, as Enhance did (toreview §163); one that fits nowhere is a skills-list tick.
+ * One the user's profile, another of their resumes or a certificate already shows says so, and
+ * where (toreview §206.3).
  */
 export function KeywordRow({
   row,
@@ -129,10 +132,24 @@ export function KeywordRow({
                 {row.tag}
               </Tag>
             )}
+            {row.elsewhere && (
+              <Tag tone="success" shape="pill">
+                You have this
+              </Tag>
+            )}
           </span>
         </TickBox>
         <ImpactMeter worth={row.worth} max={max} />
       </div>
+      {/* Where the user's own records show it (toreview §206.3): an offer, never ticked for them. */}
+      {row.elsewhere && (
+        <p className="pb-2.5 pl-9 text-body-s text-text-secondary">
+          {elsewhereNote(row.elsewhere)}
+          {row.elsewhere.line && (
+            <span className="text-text-tertiary"> “{row.elsewhere.line}”</span>
+          )}
+        </p>
+      )}
       {checked && showPlace && (
         <div className="flex items-center gap-2 pb-3 pl-9">
           <span className="text-body-s font-medium text-text-tertiary">Goes in</span>

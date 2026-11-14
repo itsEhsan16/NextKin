@@ -53,6 +53,20 @@ export function useJdComparison(resumeId: string, jdId: string) {
   });
 }
 
+/**
+ * "Did you use this here?" (toreview §206.3): asked once the comparison is on screen, and never
+ * in its way. A failure shows no questions; the keyword table is unchanged either way.
+ */
+export function useKeywordQuestions(resumeId: string, jdId: string) {
+  return useQuery({
+    queryKey: qk.jd.questions(resumeId, jdId),
+    queryFn: () => repos.jd.keywordQuestions(resumeId, jdId),
+    enabled: resumeId.length > 0 && jdId.length > 0,
+    staleTime: Infinity,
+    retry: false,
+  });
+}
+
 /** "Add the result", drafted (toreview §129): one bullet around a gap for its real figure. */
 export function useDraftFigure() {
   return useMutation({

@@ -6,6 +6,7 @@ import type { FormatFacts } from '@nextkin/engines/document';
 import type { ProfileFacts } from '@nextkin/engines/facts';
 import type { TargetPathOptions } from '@nextkin/engines/targetPlan';
 import { PARSE_SAFE_TEMPLATE, type ContactPresence } from '@nextkin/shared/scoring/adapters';
+import { nextStepsOf, TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
 import { jobMatchOf, keywordsFrom } from '@nextkin/shared/scoring/tailorComparison';
 import { scoringDocumentOf } from '@nextkin/shared/scoring/canonical';
 import { scoreDocument, type DocumentScore, type ScoringJd } from '@nextkin/shared/scoring/report';
@@ -46,7 +47,7 @@ export const scoreAgainst = (args: { document: CanonicalResumeJson; facts: Profi
     ...(args.path ? { path: args.path } : {}),
   });
 
-export const scoringJdOfStage = (jd: StageJd): ScoringJd => ({ requiredSkills: jd.requiredSkills, preferredSkills: jd.preferredSkills, tools: jd.tools, rawText: jd.rawText, completeness: jd.completeness });
+export const scoringJdOfStage = (jd: StageJd): ScoringJd => ({ requiredSkills: jd.requiredSkills, preferredSkills: jd.preferredSkills, tools: jd.tools, rawText: jd.rawText, completeness: jd.completeness, ...(jd.stated ? { stated: jd.stated } : {}) });
 
 /** The written document: the review's when the run has that stage (toreview §170), else the validation's. */
 const finalOf = (outputs: Record<string, unknown>) => (outputs.review ?? outputs.validate) as ValidationOutput;
@@ -57,8 +58,11 @@ export const scoreStage: StageDef = {
   async run(ctx) {
     const run = readRun(ctx.run);
     const jd = (ctx.outputs.jd as StageJd | null) ?? null;
-    const doc = finalOf(ctx.outputs).document;
-    const result = scoreAgainst({ document: doc, facts: run.snapshot.facts, contact: run.snapshot.contact, jd: jd ? scoringJdOfStage(jd) : null, asOf: run.asOf });
+    const final = finalOf(ctx.outputs);
+    const doc = final.document;
+    // A tailored run also plans what is left (toreview §206.3): the same path the comparison
+    // showed, re-scored on the finished resume, so the ready screen can name the next steps.
+    const result = scoreAgainst({ document: doc, facts: run.snapshot.facts, contact: run.snapshot.contact, jd: jd ? scoringJdOfStage(jd) : null, asOf: run.asOf, ...(final.tailor && jd ? { path: TAILOR_PATH } : {}) });
     return { output: result };
   },
 };
@@ -157,7 +161,8 @@ export const persistStage: StageDef = {
     // A tailored run's result, for its ready screen (W-TAILOR 04): read by `toSnapshot`.
     // The job match is counted on the new version's ledger, against the JD the comparison used (§112).
     const jobMatch = tailor && result && jd ? jobMatchOf(keywordsFrom(result, jd.rawText, jd.title)) : undefined;
-    const tailored = tailor ? { ...(result?.score ? { score: result.score.total } : {}), changes: tailor.changes, pages: tailor.pages, ...(tailor.pageBasis ? { pageBasis: tailor.pageBasis } : {}), ...(jobMatch ? { jobMatch } : {}), stripped: validation.stripped.length } : undefined;
+    const next = tailor && result && jd ? nextStepsOf(result, jd.rawText) : [];
+    const tailored = tailor ? { ...(next.length ? { next } : {}), ...(result?.score ? { score: result.score.total } : {}), changes: tailor.changes, pages: tailor.pages, ...(tailor.pageBasis ? { pageBasis: tailor.pageBasis } : {}), ...(jobMatch ? { jobMatch } : {}), stripped: validation.stripped.length } : undefined;
     return { output: { resumeId: written.resumeId, versionId: written.versionId, stripped: validation.stripped.length, revisions: validation.revisions, ...(tailored ? { tailor: tailored } : {}) } };
   },
 };

@@ -1,7 +1,8 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { figureDraftRequestSchema, figureDraftSchema } from '@nextkin/shared/schemas/jd';
+import { figureDraftRequestSchema, figureDraftSchema, keywordQuestionsRequestSchema, keywordQuestionsSchema } from '@nextkin/shared/schemas/jd';
 
 import { draftFigure, type FigureDraftDeps } from '../../services/figureDraft';
+import { askKeywordQuestions } from '../../services/keywordQuestions';
 import type { ApiEnv } from '../env';
 import { requireAuth } from '../middleware/guards';
 import { checked } from '../respond';
@@ -28,6 +29,22 @@ export function tailorRoutes(deps: FigureDraftDeps): OpenAPIHono<ApiEnv> {
       },
     }),
     async (c) => c.json(checked(figureDraftSchema, await draftFigure(deps, requireAuth(c).identity, c.req.valid('json'))), 200),
+  );
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/tailor/keyword-questions',
+      tags: ['tailor'],
+      summary: 'Questions about keywords the job asks for that the resume does not show, each beside the resume line that hints at it. Nothing is added to a resume here; only the candidate’s "yes" does that, through the run.',
+      request: { body: { required: true, content: { 'application/json': { schema: keywordQuestionsRequestSchema } } } },
+      responses: {
+        200: { description: 'The questions.', content: { 'application/json': { schema: keywordQuestionsSchema } } },
+        ...authErrors,
+        ...notFoundError,
+        ...commonErrors,
+      },
+    }),
+    async (c) => c.json(checked(keywordQuestionsSchema, { questions: await askKeywordQuestions(deps, requireAuth(c).identity, c.req.valid('json')) }), 200),
   );
   return app;
 }

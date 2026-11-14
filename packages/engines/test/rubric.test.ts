@@ -80,7 +80,7 @@ describe('the rubric and score (P8-07)', () => {
   });
 
   it('carries the provenance stamp', () => {
-    expect(score(backendInput()).stamp).toMatchObject({ engine: '1.0.0', rubric: 'rubric-2', taxonomy: { version: 'taxonomy-0.1.0' }, kb: { version: 'kb-0.1.0' }, asOf: '2026-10' });
+    expect(score(backendInput()).stamp).toMatchObject({ engine: '1.1.0', rubric: 'rubric-2', taxonomy: { version: 'taxonomy-0.1.0' }, kb: { version: 'kb-0.1.0' }, asOf: '2026-10' });
   });
 
   it('no source file, field name or string claims a named third-party ATS', () => {

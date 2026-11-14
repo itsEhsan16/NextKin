@@ -75,6 +75,22 @@ export function createMockJdRepo(store: MockStore): JdRepo {
         if (input.source === 'link' && /blocked/i.test(hostOf(input.url))) {
           throw new MockError('UNREADABLE_LINK', "We couldn't read that job page");
         }
+        // A list of jobs and a posting that was taken down (toreview §206), in the server's own
+        // words, for a host with "joblist" or "removed" in it.
+        if (input.source === 'link' && /joblist/i.test(hostOf(input.url))) {
+          throw new MockError(
+            'UNREADABLE_LINK',
+            'This link opens a list of jobs, not one posting. The original may have closed. Open the job itself and paste its link or description.',
+            { reason: 'listing' },
+          );
+        }
+        if (input.source === 'link' && /removed/i.test(hostOf(input.url))) {
+          throw new MockError(
+            'UNREADABLE_LINK',
+            'This posting is no longer available. If you saved its description, paste it here.',
+            { reason: 'removed' },
+          );
+        }
         const draft = extractJdDraft(input, {
           jobs: store.state.jobs,
           dictionary: SKILL_DICTIONARY,
@@ -101,6 +117,9 @@ export function createMockJdRepo(store: MockStore): JdRepo {
       }),
 
     forJob: (jobId) => simulate(() => clone(draftForJob(jobId)), EXTRACT_LATENCY),
+
+    // The mock asks nothing: its comparisons carry no picks to ask about (toreview §206.3).
+    keywordQuestions: () => simulate(() => []),
 
     // The mock has no model: the plain draft, the line with its gap after "improving", the "AI
     // guess" chip (§173) and two picks in the shape the model sends (owner, 2026-11-14).

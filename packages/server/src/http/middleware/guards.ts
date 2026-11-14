@@ -122,6 +122,13 @@ const CLASSES: {
     anonymous: { name: 'figure', limit: 5, windowSeconds: 60 },
     user: { name: 'figure', limit: 40, windowSeconds: 60 },
   },
+  // "Did you use this here?" (toreview §206.3): one fast-tier call as the comparison opens, cached
+  // for the same resume and job. Its own bucket, so opening the page never spends another allowance.
+  {
+    prefix: '/api/v1/tailor/keyword-questions',
+    anonymous: { name: 'keyword-questions', limit: 5, windowSeconds: 60 },
+    user: { name: 'keyword-questions', limit: 20, windowSeconds: 60 },
+  },
   // Reporting a shared link (toreview §171.13): anyone holding a link may, so the bucket is small.
   // Reading the link itself is a GET and keeps the default bucket.
   {

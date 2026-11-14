@@ -7,8 +7,7 @@ import { loadConfig } from '../../src/config';
 import { createDatabase, type Database } from '../../src/db/database';
 import { applyUrlHashOf, jobIdOf } from '../../src/jobs/ids';
 import { LinkError, type LinkFailure } from '../../src/links/address';
-import { LinkReaderUnavailableError, type LinkReader } from '../../src/links/client';
-import type { PageReading } from '../../src/links/reading';
+import { LinkReaderUnavailableError, type LinkReader, type LinkReading } from '../../src/links/client';
 import * as applications from '../../src/services/applications';
 import { createJd, getJd, LINK_FAILURE, LINKS_PER_HOUR, runJdExtract } from '../../src/services/jd';
 import * as jobs from '../../src/services/jobs';
@@ -36,7 +35,7 @@ afterAll(async () => {
 
 const URL_A = 'https://jobs.example.com/acme/senior-backend-engineer';
 
-const page = (over: Partial<PageReading> = {}): PageReading => ({ url: URL_A, structured: false, text: JD_TEXT, words: 40, ...over });
+const page = (over: Partial<LinkReading> = {}): LinkReading => ({ url: URL_A, structured: false, text: JD_TEXT, words: 40, ...over });
 const reader = (read: LinkReader['read']): LinkReader => ({ read });
 const refusing = (reason: LinkFailure) => reader(async () => Promise.reject(new LinkError(reason)));
 
@@ -69,18 +68,55 @@ describe('a job from a link', () => {
     await expect(createJd(db, as(userId), { source: 'link', url: 'http://localhost/admin' }, null)).rejects.toMatchObject({ code: 'UNREADABLE_LINK' });
   });
 
-  it.each(['refused', 'robots', 'gone', 'unsupported', 'empty', 'timeout'] as LinkFailure[])('a %s page fails with a reason, and nothing invented', async (reason) => {
+  it.each(['refused', 'robots', 'gone', 'unsupported', 'empty', 'timeout', 'listing', 'removed'] as LinkFailure[])('a %s page fails with a reason, and nothing invented', async (reason) => {
     const userId = await backendUser(db, users);
     const { outcome, draft } = await read(userId, refusing(reason));
     expect(outcome).toBe('failed');
-    expect(draft).toMatchObject({ status: 'failed', error: LINK_FAILURE[reason], rawText: '', requiredSkills: [] });
+    expect(draft).toMatchObject({ status: 'failed', error: LINK_FAILURE[reason], failureReason: reason, rawText: '', requiredSkills: [] });
+  });
+
+  // toreview §206: a list of jobs, a posting that was taken down, and one that closed but can still be read.
+  it('a list of jobs is not read as the first job on it', async () => {
+    const userId = await backendUser(db, users);
+    const { outcome, draft } = await read(userId, reader(async () => page({ pageKind: 'listing' })));
+    expect(outcome).toBe('failed');
+    expect(draft).toMatchObject({ status: 'failed', failureReason: 'listing', error: LINK_FAILURE.listing, requiredSkills: [] });
+    expect(draft.error).toContain('list of jobs');
+  });
+
+  it('a list the reader did not catch is caught by the reading, when its job titles are in the text', async () => {
+    const userId = await backendUser(db, users);
+    const text = ['Open roles at Acme', 'Senior Designer — Berlin', 'Backend Engineer — Remote', 'Data Analyst — Pune', 'Office Manager — Berlin'].join('\n');
+    const nothing = (nothingOnThePage as () => { data: object; text: string; stopReason: 'tool_use' })();
+    const severalJobs: FakeScript = () => ({ ...nothing, data: { ...nothing.data, page: { kind: 'several_jobs', quote: null, jobTitles: ['Senior Designer', 'Backend Engineer', 'Data Analyst'] } } });
+    const { outcome, draft } = await read(userId, reader(async () => page({ text, pageKind: 'unknown' })), URL_A, severalJobs);
+    expect(outcome).toBe('failed');
+    expect(draft).toMatchObject({ failureReason: 'listing', error: LINK_FAILURE.listing });
+  });
+
+  it('a closed posting that still shows its description is read, and flagged as closed', async () => {
+    const userId = await backendUser(db, users);
+    const note = 'This job is no longer accepting applications.';
+    const { outcome, draft } = await read(userId, reader(async () => page({ text: `${note}\n${JD_TEXT}`, pageKind: 'closed_job', closedNote: note })));
+    expect(outcome).toBe('ready');
+    expect(draft.requiredSkills.length).toBeGreaterThan(0);
+    expect(draft.structured?.issues.some((issue) => issue.kind === 'expired')).toBe(true);
+  });
+
+  it('reads a closed posting again rather than answering from the draft it holds', async () => {
+    const userId = await backendUser(db, users);
+    const closed = reader(async () => page({ pageKind: 'closed_job', closedNote: 'This job is no longer accepting applications.' }));
+    const first = await read(userId, closed);
+    const again = await createJd(db, as(userId), { source: 'link', url: URL_A }, null);
+    expect(again.id).not.toBe(first.id);
+    expect(again.status).toBe('extracting');
   });
 
   it('a page the model finds no job on fails the same way', async () => {
     const userId = await backendUser(db, users);
     const { outcome, draft } = await read(userId, reader(async () => page({ text: 'Sign in to see this page. We could not find what you were looking for on this site today.' })), URL_A, nothingOnThePage);
     expect(outcome).toBe('failed');
-    expect(draft.error).toBe(LINK_FAILURE.empty);
+    expect(draft).toMatchObject({ error: LINK_FAILURE.empty, failureReason: 'not_a_job' });
   });
 
   it('a reader that is down tries again, and only the last attempt gives up', async () => {

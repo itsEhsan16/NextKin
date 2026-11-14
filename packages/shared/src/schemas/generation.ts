@@ -89,6 +89,7 @@ export const generationSchema = z.object({
       projected: z.number().optional(),
       jobMatch: z.object({ matched: z.number(), total: z.number(), percent: z.number(), missing: z.array(z.string()), basis: z.string() }).optional(),
       baselineJobMatch: z.object({ matched: z.number(), total: z.number(), percent: z.number(), missing: z.array(z.string()), basis: z.string() }).optional(),
+      next: z.array(z.object({ title: z.string(), worth: z.number() })).optional(),
     })
     .optional(),
 }) satisfies z.ZodType<Generation>;

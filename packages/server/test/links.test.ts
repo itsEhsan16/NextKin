@@ -29,6 +29,8 @@ const reasonOf = (fn: () => unknown): LinkFailure | undefined => {
 
 const WORDS = Array.from({ length: 160 }, (_, i) => `word${i}`).join(' ');
 const JOB = `Senior Designer at Acme. You will lead design work. ${WORDS}`;
+/** The cards of a job board: many links, each a few words, no description of any one job. */
+const CARDS = Array.from({ length: 20 }, (_, i) => `<li><a href="/jobs/${1000 + i}">Engineer ${i}</a> <span>Berlin</span> <span>Full time</span> <span>Posted today</span></li>`).join('');
 
 describe('addresses', () => {
   it.each(['10.0.0.1', '127.0.0.1', '169.254.169.254', '172.16.0.9', '192.168.1.1', '100.64.0.1', '0.0.0.0', '::1', 'fe80::1', 'fc00::1', '::ffff:127.0.0.1', '::ffff:7f00:1', '::ffff:a9fe:a9fe'])('%s is not public', (ip) => {
@@ -184,6 +186,14 @@ function site(hits: string[]): Promise<{ server: Server; base: string; port: num
     }
     if (path === '/huge') return html(200, 'x'.repeat(200_000));
     if (path === '/hop') return html(302, '', { location: '/plain' });
+    // toreview §206: where the address of a closed posting really ends up.
+    if (path === '/jobs') return html(200, `<title>Jobs</title><main><h1>Open roles</h1><ul>${CARDS}</ul></main>`);
+    if (path === '/jobs/48213') return html(302, '', { location: '/jobs' });
+    if (path === '/careers') return html(200, `<title>Careers</title><main><p>${JOB}</p></main>`);
+    if (path === '/careers/role/77123') return html(301, '', { location: '/careers' });
+    if (path === '/jobs/closed-empty') return html(200, '<title>Acme</title><main><p>This job is no longer available.</p><a href="/jobs">See open roles</a></main>');
+    if (path === '/jobs/closed-full') return html(200, `<title>Role</title><main><p>This job is no longer accepting applications.</p><p>${JOB}</p></main>`);
+    if (path === '/jobs/with-similar') return html(200, `<title>Role</title><main><p>${JOB}</p><h2>Similar jobs</h2><ul>${CARDS}</ul></main>`);
     if (path === '/to-metadata') return html(302, '', { location: 'http://169.254.169.254/latest/meta-data/' });
     if (path === '/to-robots-blocked') return html(302, '', { location: '/blocked-by-robots' });
     return html(200, 'unexpected');
@@ -249,10 +259,24 @@ describe('the reader', () => {
     ['/file', 'unsupported'],
     ['/huge', 'too_large'],
     ['/to-metadata', 'private'],
+    ['/jobs', 'listing'],
+    ['/jobs/48213', 'listing'],
+    ['/careers/role/77123', 'listing'],
+    ['/jobs/closed-empty', 'removed'],
   ] as [string, LinkFailure][])('%s ends the read: %s, with no browser', async (path, reason) => {
     renderCalls = 0;
     expect(await failure(path)).toBe(reason);
     expect(renderCalls).toBe(0);
+  });
+
+  it('reads a closed posting that still shows its description, and says it has closed', async () => {
+    const reading = await read(`${local.base}/jobs/closed-full`);
+    expect(reading).toMatchObject({ pageKind: 'closed_job', closedNote: 'This job is no longer accepting applications.' });
+    expect(reading.text).toContain('Senior Designer');
+  });
+
+  it('reads a posting that sits above the other jobs on the site', async () => {
+    expect(await read(`${local.base}/jobs/with-similar`)).toMatchObject({ pageKind: 'job' });
   });
 
   it('never asks the browser to get past a robots.txt refusal', async () => {
