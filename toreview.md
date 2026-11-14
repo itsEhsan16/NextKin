@@ -17281,3 +17281,17 @@ this section is appended to as each lands.
 - **Live eval: not run.** OpenRouter refused the key in `.env` ("The provider refused the
   credentials") and there is no Anthropic key. `jd.extract` v7 and `tailor.infer` v1 are still
   untested against a real model, and the recordings are still stale. Needs a working key.
+
+### §206.5 — Merged, pushed and deployed to the AWS demo (owner said to, 2026-11-15)
+
+- **Merged** into `main` (`37959f7`) and pushed. The uncommitted §204 and §205 notes on `main` were
+  committed first, on their own, so the merge kept them.
+- **Deployed** `NextkinDemo` (`cdk deploy`): only container images changed (web, worker, link
+  reader, LaTeX, migrate, seed); no permission, network or database resource changed.
+- **On the demo:** migration 0056 applied; `task seed-reference` installed `jd.extract` v7,
+  `tailor.infer` v1 and routing v8 with the accounts left alone. `/api/v1/health/deep` is ok and
+  every service finished its rollout.
+- **Still not seen working with a real model.** The two prompts run for the first time on the
+  demo. If a job description stops reading there, `jd.extract` v7 is the first place to look;
+  the worker log names the failure.
+- The local OpenRouter key is refused, so `pnpm eval:jd --openrouter` still cannot run here.
