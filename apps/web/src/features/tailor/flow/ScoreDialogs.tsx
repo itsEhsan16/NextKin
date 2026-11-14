@@ -184,7 +184,7 @@ export function ResultDialog({
         <Head
           icon={<Zap className="size-5" />}
           title={saved ? 'Edit your result' : 'Add the result'}
-          line="What came of this work? Fill in the real figure and the line reads with it."
+          line="Pick what came of this work and about how much. Only what’s true."
         />
         {open && (
           <LineResult

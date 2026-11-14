@@ -174,6 +174,8 @@ export const figureDraftSchema = z.object({
   by: z.enum(['model', 'rules']),
   /** The model's guess at a typical figure (toreview §173): shown as "AI guess", used only on a tap. */
   suggestion: z.string().optional(),
+  /** Results to pick from, each with its own amounts (owner, 2026-11-14). */
+  options: z.array(z.object({ what: z.string(), before: z.string(), after: z.string(), amounts: z.array(z.string()) })).optional(),
 });
 export type JdCreate = z.infer<typeof jdCreateSchema>;
 export type JdPatchBody = z.infer<typeof jdPatchSchema>;

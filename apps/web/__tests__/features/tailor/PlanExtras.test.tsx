@@ -137,7 +137,7 @@ describe('the plan inside Enhance', () => {
       expect(screen.queryByText(covered)).toBeNull();
   });
 
-  it('"Add the result" fills the gap in the line’s own draft with the real figure', async () => {
+  it('"Add the result" takes another amount when none of the AI’s fit', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
     renderWithQuery(
@@ -150,18 +150,15 @@ describe('the plan inside Enhance', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Add the result' }));
     const dialog = screen.getByRole('dialog', { name: 'Add the result' });
-    const input = await within(dialog).findByRole(
-      'textbox',
-      { name: /Your figure/ },
-      { timeout: 4000 },
+    await user.click(
+      await within(dialog).findByRole('button', { name: /People using it/ }, { timeout: 4000 }),
     );
-    const use = within(dialog).getByRole('button', { name: 'Use this line' });
-    expect(use).toBeDisabled();
-    await user.type(input, 'page load time by 30%');
-    await user.click(use);
+    await user.click(within(dialog).getByRole('button', { name: /Another amount/ }));
+    await user.type(within(dialog).getByRole('textbox', { name: /The amount/ }), '2,500 people');
+    await user.click(within(dialog).getByRole('button', { name: 'Use this line' }));
     expect(onFigure).toHaveBeenCalledWith(
       number.bullet,
-      'Built the checkout in Next.js, improving page load time by 30%.',
+      'Built the checkout in Next.js, used by 2,500 people.',
     );
   });
 

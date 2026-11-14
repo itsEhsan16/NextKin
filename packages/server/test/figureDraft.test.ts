@@ -1,7 +1,7 @@
 import { figureLine } from '@nextkin/shared/models/tailor';
 import { describe, expect, it } from 'vitest';
 
-import { fallbackDraft, fitsSuggestion, keepsToLine } from '../src/services/figureDraft';
+import { fallbackDraft, fitsSuggestion, fitsWhat, keepsToLine, keptOptions } from '../src/services/figureDraft';
 
 /** "Add the result", drafted (toreview §129): the AI may only make room for the user's figure. */
 
@@ -32,5 +32,30 @@ describe('figure drafts', () => {
     expect(fitsSuggestion('faster')).toBe(false);
     expect(fitsSuggestion('20% by moving the checkout to GraphQL')).toBe(false);
     expect(fitsSuggestion('40% with Kubernetes')).toBe(false);
+  });
+
+  it('keeps only the options that stay true to the line, with at least two clean amounts (owner, 2026-11-14)', () => {
+    const good = { what: 'checkout speed', before: 'Built the checkout in Next.js and TypeScript for the customer and admin apps, cutting page load time by', after: '.', amounts: ['20%', '35%', '50%'] };
+    const options = keptOptions(LINE, [
+      good,
+      // A figure in the wording itself: the AI wrote the result for them.
+      { ...good, what: 'orders', before: 'Built the checkout in Next.js and TypeScript for the customer and admin apps, handling 10,000', after: ' orders.' },
+      // A technology the line never named.
+      { ...good, what: 'GraphQL adoption', before: 'Built the checkout in Next.js, TypeScript and GraphQL for the customer and admin apps, serving', after: '.' },
+      // Amounts that are not short figures.
+      { ...good, what: 'admin time saved', amounts: ['a lot', 'many hours'] },
+      { ...good, what: 'customers served', before: 'Built the checkout in Next.js and TypeScript for the customer and admin apps, serving', after: ' customers a month.', amounts: ['500+', '2,000+', 'tons of people with Kubernetes'] },
+    ]);
+    expect(options.map((o) => o.what)).toEqual(['checkout speed', 'customers served']);
+    expect(options[1]!.amounts).toEqual(['500+', '2,000+']);
+    expect(figureLine(options[0]!, options[0]!.amounts[1]!)).toBe('Built the checkout in Next.js and TypeScript for the customer and admin apps, cutting page load time by 35%.');
+    expect(keptOptions(LINE, undefined)).toEqual([]);
+  });
+
+  it('names a result in a few plain words, without a figure or a technology', () => {
+    expect(fitsWhat('sellers onboarded')).toBe(true);
+    expect(fitsWhat('20% faster')).toBe(false);
+    expect(fitsWhat('Kubernetes clusters migrated')).toBe(false);
+    expect(fitsWhat('the number of people who signed up on the site')).toBe(false);
   });
 });
