@@ -61,6 +61,8 @@ import type { FigureDraft,
   PrivacySettings,
   Profile,
   ProfileDraft,
+  ResumeSyncDecision,
+  ResumeSyncStatus,
   ProfileLink,
   ProfilePatch,
   ConfirmFacts,
@@ -215,6 +217,13 @@ export type ProfileRepo = {
   getGapQuestions(): Promise<GapQuestion[]>;
   /** An answer or a skip. Answers with what's left to ask. */
   answerGap(id: string, answer: GapAnswer): Promise<GapQuestion[]>;
+  /**
+   * Where the profile stands against the base resume: never filled, behind a newer version, or
+   * current. The profile is filled from the base resume, first without asking, then on a yes.
+   */
+  getResumeSync(): Promise<ResumeSyncStatus>;
+  /** Fills the profile from that base resume version (`accept`), or records the no. */
+  decideResumeSync(decision: ResumeSyncDecision): Promise<Profile>;
 };
 
 export type ExportFormat = 'pdf' | 'docx' | 'txt';

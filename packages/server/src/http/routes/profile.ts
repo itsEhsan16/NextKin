@@ -12,12 +12,15 @@ import {
   profileDraftSchema,
   profilePatchSchema,
   profileSchema,
+  resumeSyncDecisionSchema,
+  resumeSyncStatusSchema,
   skillsInputSchema,
 } from '@nextkin/shared/schemas/profile';
 import type { IdempotencyStore } from '../../cache/stores';
 import type { Database } from '../../db/database';
 import * as gaps from '../../services/gaps';
 import * as profile from '../../services/profile';
+import * as resumeSync from '../../services/resumeSync';
 import type { LoadedProfile } from '../../services/profileRead';
 import type { ApiEnv } from '../env';
 import { etagFor, requireIfMatch } from '../etag';
@@ -177,6 +180,23 @@ export function profileRoutes(deps: ProfileDeps): OpenAPIHono<ApiEnv> {
       responses: { 200: whole('The profile.'), ...authErrors, ...writeErrors, ...commonErrors },
     }),
     async (c) => respond(c, await profile.applyDraft(db, requireAuth(c).identity, c.req.valid('json'))),
+  );
+
+  app.openapi(
+    createRoute({ method: 'get', path: '/profile/resume-sync', tags: ['profile'], summary: 'Where the profile stands against the base resume: never filled, behind a newer version, or current.', responses: { 200: { description: 'The status.', content: { 'application/json': { schema: resumeSyncStatusSchema } } }, ...authErrors, ...commonErrors } }),
+    async (c) => c.json(checked(resumeSyncStatusSchema, await resumeSync.getResumeSync(db, requireAuth(c).identity)), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/profile/resume-sync',
+      tags: ['profile'],
+      summary: 'Fill the profile from that base resume version (accept), or remember the no. Never overwrites what the person typed.',
+      request: { body: body(resumeSyncDecisionSchema) },
+      responses: { 200: whole('The profile.'), ...authErrors, ...notFoundError, ...writeErrors, ...commonErrors },
+    }),
+    async (c) => respond(c, await resumeSync.decideResumeSync(db, requireAuth(c).identity, c.req.valid('json'))),
   );
 
   app.openapi(

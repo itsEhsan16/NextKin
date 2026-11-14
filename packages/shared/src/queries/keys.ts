@@ -24,6 +24,8 @@ export const qk = {
     all: ['profile'] as const,
     me: () => ['profile', 'me'] as const,
     gaps: () => ['profile', 'gaps'] as const,
+    /** Where the profile stands against the base resume (filled from it, behind it, current). */
+    resumeSync: () => ['profile', 'resume-sync'] as const,
   },
   resumes: {
     all: ['resumes'] as const,

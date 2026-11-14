@@ -26,6 +26,13 @@ export type Experience = {
   skills: string[];
   /** One line on what the role was, as the web Profile board prints it under the dates (476:701). */
   summary?: string;
+  /** Where the role was based: "Bengaluru, India". */
+  location?: string;
+  /**
+   * What the person did there, one line each, as their resume states it (the stored
+   * `responsibilities`). What a resume built from the profile writes its bullets from.
+   */
+  highlights?: string[];
 };
 
 export type Education = {
@@ -249,3 +256,54 @@ export type ProfileDraft = {
   education?: Education[];
   certifications?: Certification[];
 };
+
+/**
+ * Where the profile stands against the user's base resume (the profile is filled from it).
+ *
+ * - `none`: there is no base resume, or it has nothing to read.
+ * - `first`: the profile has never been filled from a resume; the app fills it without asking.
+ * - `changed`: the base resume changed since the profile was last filled (or since the user said
+ *   no) and holds something the profile does not: the app asks, once per version.
+ * - `current`: nothing to do.
+ */
+export type ResumeSyncState = 'none' | 'first' | 'changed' | 'current';
+
+/** What filling the profile from the resume would add, counted, for the question's one line. */
+export type ResumeSyncChanges = {
+  roles: number;
+  education: number;
+  skills: number;
+  certifications: number;
+  projects: number;
+  links: number;
+  /** Details a row already on the profile would gain: bullets, a location, a field of study. */
+  updates: number;
+  /** Empty single fields the resume fills: headline, summary, phone, location, years. */
+  fields: ('headline' | 'summary' | 'phone' | 'location' | 'years')[];
+};
+
+export type ResumeSyncStatus = {
+  state: ResumeSyncState;
+  resumeId?: string;
+  versionId?: string;
+  /** The base resume's title, as the library names it. */
+  resumeTitle?: string;
+  changes?: ResumeSyncChanges;
+};
+
+/** The answer to "Add this to your profile?" (or the silent first fill, `accept: true`). */
+export type ResumeSyncDecision = { versionId: string; accept: boolean };
+
+/** Whether filling from the resume would change anything at all. */
+export const resumeSyncHasChanges = (changes: ResumeSyncChanges | undefined): boolean =>
+  Boolean(
+    changes &&
+      (changes.roles ||
+        changes.education ||
+        changes.skills ||
+        changes.certifications ||
+        changes.projects ||
+        changes.links ||
+        changes.updates ||
+        changes.fields.length),
+  );

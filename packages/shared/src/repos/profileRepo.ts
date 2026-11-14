@@ -251,6 +251,10 @@ export function createMockProfileRepo(store: MockStore): ProfileRepo {
         });
       }),
 
+    // The mock keeps its seeded profile: there is no parsed base resume to fill it from.
+    getResumeSync: () => simulate(() => ({ state: 'none' as const })),
+    decideResumeSync: () => simulate(() => store.state.profile),
+
     getGapQuestions: () =>
       simulate(() => gapQuestionsOf(store.state.profile, store.state.gapAnswers), { empty: () => [] }),
 

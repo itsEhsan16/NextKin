@@ -134,7 +134,7 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
                   </div>
                 </>
               )}
-              {tab === 'experience' && <ExperienceCard roles={mine.experiences} />}
+              {tab === 'experience' && <ExperienceCard roles={mine.experiences} detailed />}
               {tab === 'education' && <EducationCard education={mine.education} />}
               {tab === 'skills' && <SkillsCard skills={mine.skills} />}
               {tab === 'preferences' && <CareerPreferencesCard profile={mine} />}

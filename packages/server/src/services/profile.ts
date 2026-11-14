@@ -24,7 +24,7 @@ const normalise = (value: string) => value.trim().toLowerCase();
 const nullable = (value: string | undefined) => (value && value.trim() ? value.trim() : null);
 
 /** Runs a write and answers with the whole profile, persisting the derived completeness. */
-async function write(db: Database, identity: Identity, change: (tx: Tx) => Promise<void>): Promise<LoadedProfile> {
+export async function write(db: Database, identity: Identity, change: (tx: Tx) => Promise<void>): Promise<LoadedProfile> {
   return db.withUser(identity, async (tx) => {
     await change(tx);
     const loaded = await loadProfile(tx, identity.userId);
@@ -118,6 +118,9 @@ const experienceRow = (e: Omit<Experience, 'id'>) => ({
   end_precision: e.current || !e.endDate ? null : ('day' as const),
   is_current: e.current,
   description: nullable(e.summary),
+  // Sent only when the client has them, so a form that does not edit them never wipes them.
+  ...(e.location !== undefined ? { location: nullable(e.location) } : {}),
+  ...(e.highlights !== undefined ? { responsibilities: e.highlights.map((line) => line.trim()).filter(Boolean) } : {}),
 });
 
 async function insertExperience(tx: Tx, userId: string, e: Omit<Experience, 'id'>, provenance: Provenance) {

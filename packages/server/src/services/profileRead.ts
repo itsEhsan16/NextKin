@@ -47,9 +47,10 @@ export interface StoredPreferences extends Partial<ProfilePreferences> {
 }
 
 export function jobPreferences(stored: unknown): ProfilePreferences {
-  const job: Partial<ProfilePreferences> & { notifications?: unknown; gapAnswers?: unknown } = { ...((stored ?? {}) as StoredPreferences) };
+  const job: Partial<ProfilePreferences> & { notifications?: unknown; gapAnswers?: unknown; resumeSync?: unknown } = { ...((stored ?? {}) as StoredPreferences) };
   delete job.notifications;
   delete job.gapAnswers;
+  delete job.resumeSync;
   return { ...DEFAULT_JOB_PREFERENCES, ...job };
 }
 
@@ -77,7 +78,7 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
   const [roles, roleSkills, education, certifications, links, skills] = await Promise.all([
     tx
       .selectFrom('experience')
-      .select(['id', 'provenance', 'company', 'title', 'is_current', 'description', dateText('start_date').as('start'), dateText('end_date').as('end')])
+      .select(['id', 'provenance', 'company', 'title', 'is_current', 'description', 'location', 'responsibilities', dateText('start_date').as('start'), dateText('end_date').as('end')])
       .where('user_id', '=', userId)
       .orderBy('sort_order')
       .orderBy('created_at')
@@ -134,6 +135,8 @@ export async function loadProfile(tx: Tx, userId: string): Promise<LoadedProfile
       current: role.is_current,
       skills: tagsByRole.get(role.id) ?? [],
       summary: opt(role.description),
+      ...(role.location ? { location: role.location } : {}),
+      ...(role.responsibilities?.length ? { highlights: role.responsibilities } : {}),
     })),
     education: education.map((e) => ({
       provenance: e.provenance as FactProvenance,
