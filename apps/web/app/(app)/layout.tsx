@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { ApplyAskHost } from '@/features/applications/components/ApplyAskHost';
+import { ResumeSyncHost } from '@/features/profile/components/ResumeSyncHost';
 import { RunWatcher } from '@/features/tailor/RunWatcher';
 import { Sidebar } from '@/navigation/Sidebar';
 import { AppOpened } from '@/providers/AppOpened';
@@ -26,6 +27,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Runs the user left with "Leave and notify me" (toreview §114). */}
       <RunWatcher />
       <ApplyAskHost />
+      {/* The profile, filled from the base resume; asks when the resume changes. */}
+      <ResumeSyncHost />
       <AppOpened />
       <SessionGate />
     </div>

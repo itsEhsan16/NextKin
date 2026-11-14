@@ -31,13 +31,15 @@ export type ExperienceCardProps = {
   roles: Experience[];
   /** Overview's card: the first roles, "View all" and "Manage experience" open the tab. */
   onViewAll?: () => void;
+  /** The Experience tab: each role's bullets in full, as the resume states them. */
+  detailed?: boolean;
 };
 
 /**
  * "Experience" (476:664): each role with its employer's initial, the dates and how long, and a
  * line on what it was. The kebab is drawn without a menu behind it, so it is inert until one is.
  */
-export function ExperienceCard({ roles, onViewAll }: ExperienceCardProps) {
+export function ExperienceCard({ roles, onViewAll, detailed = false }: ExperienceCardProps) {
   return (
     <ProfileCard
       title="Experience"
@@ -57,12 +59,27 @@ export function ExperienceCard({ roles, onViewAll }: ExperienceCardProps) {
                 <p className="text-body-l font-semibold text-text-primary">{role.title}</p>
                 <p className="mt-0.5 text-body-m font-semibold text-text-secondary">
                   {role.company}
+                  {role.location && (
+                    <span className="font-medium text-text-tertiary"> · {role.location}</span>
+                  )}
                 </p>
                 <p className="mt-0.5 whitespace-pre text-body-m text-text-tertiary">
                   {roleDates(role)}
                 </p>
                 {role.summary && (
                   <p className="mt-0.5 text-body-m text-text-tertiary">{role.summary}</p>
+                )}
+                {detailed && role.highlights && role.highlights.length > 0 && (
+                  <ul className="mt-2.5 flex list-disc flex-col gap-1.5 pl-4.5 text-body-m text-text-secondary marker:text-text-tertiary">
+                    {role.highlights.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                )}
+                {!detailed && !role.summary && role.highlights?.[0] && (
+                  <p className="mt-0.5 line-clamp-2 text-body-m text-text-tertiary">
+                    {role.highlights[0]}
+                  </p>
                 )}
               </div>
               <Soon>

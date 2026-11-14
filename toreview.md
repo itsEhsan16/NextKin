@@ -17015,3 +17015,20 @@ web tokens only:
 - **Unrelated failure.** In the full `pnpm test`, `ResumeEditor.test.tsx` "opens the resume…" hit
   Jest's 5 s timeout under load. It passes alone with `--testTimeout=30000`, and it doesn't import
   anything changed here.
+
+## §203 — The profile fills itself from the base resume, and asks when the resume changes (owner, 2026-11-14)
+
+Owner ask: the profile should fetch everything from the base resume, strongly enough to build a resume from it; when the resume changes, a simple Yes / No popup asks whether to add the changes.
+
+**Built**
+- Server `services/resumeSync.ts`: reads the base resume's current version (the canonical JSON the parse wrote) into the profile — headline (or the latest role's title), summary → bio, phone and place from the header (never the email), links by kind (LinkedIn/GitHub/portfolio/website), every skill (the list, role tags, projects' stack lines), every role with **all its bullets** (stored in `experience.responsibilities`, which `pipeline/facts.ts` already feeds to generation), location, month/year precision, and skill tags found in that role's own lines (short names like "Go" match case-sensitively so "go live" isn't Go); schools with field and dates; certifications ("Not stated" issuer, as the parse does); projects with stack + bullets in the description; years of experience with overlaps merged.
+- Never overwrites: a matched row only gets its blanks filled (location, bullets when it has none, field, start, missing skill tags); single fields only when empty; Zero-Resume `assumed` facts are skipped. Onboarding's "B.Tech CSE, 2021" matches the resume's school on degree + end year instead of duplicating.
+- `GET/POST /api/v1/profile/resume-sync`. The marker (`{versionId, decision, at}`) lives in `profiles.preferences.resumeSync` — no migration; `jobPreferences` strips it.
+- Web `ResumeSyncHost` in the app shell: first time → fills silently + toast "Your profile is filled in from …"; later base versions that would add anything → the dialog (profile clay art, what would be added as tiles, "Nothing you’ve typed is changed", No / Yes, add them). No is remembered per version; Escape is "not now" for this visit. Held while on `/resumes/*/edit` and `/create/*`, raised on leaving.
+- Profile → Experience tab now shows each role's location and bullets; Overview shows the first bullet when a role has no summary.
+
+**Judgement calls / to check**
+- First fill writes to existing accounts on their next visit (that's the ask). Rows land as `parsed_confirmed`.
+- No backend was running (Docker off), so the endpoints weren't exercised against Postgres; covered by unit tests on the pure read/plan (`packages/server/test/resumeSync.test.ts`) and a web component test. Integration test not written.
+- Mobile is untouched (mock and types only); the mock repo answers `none`.
+- `packages/server/openapi.json` was already stale before this; regenerating it adds ~1.8k unrelated lines, so it was left alone.

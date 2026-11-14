@@ -1,5 +1,5 @@
 import type { Certification, ConfirmFacts, Education, Experience, Profile, ProfileLink } from '../../models/profile';
-import { gapQuestionListSchema, profileSchema } from '../../schemas/profile';
+import { gapQuestionListSchema, profileSchema, resumeSyncStatusSchema } from '../../schemas/profile';
 import { NotFoundError } from '../state';
 import type { ProfileRepo } from '../types';
 import { ApiError, newIdempotencyKey, type HttpClient } from './client';
@@ -90,5 +90,7 @@ export function createHttpProfileRepo(http: HttpClient): ProfileRepo & { reset()
     getGapQuestions: async () => gapQuestionListSchema.parse(await http.request('/profile/gaps')).questions,
     answerGap: async (id, answer) => gapQuestionListSchema.parse(await http.request(`/profile/gaps/${encodeURIComponent(id)}`, { method: 'POST', body: answer })).questions,
     applyProfileDraft: (draft) => call('/profile/draft', { method: 'POST', body: draft, idempotencyKey: newIdempotencyKey() }),
+    getResumeSync: async () => resumeSyncStatusSchema.parse(await http.request('/profile/resume-sync')),
+    decideResumeSync: (decision) => call('/profile/resume-sync', { method: 'POST', body: decision }),
   };
 }

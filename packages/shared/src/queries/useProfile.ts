@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { GapAnswer, Profile, ProfilePreferences } from '../models';
+import type { GapAnswer, Profile, ProfilePreferences, ResumeSyncDecision } from '../models';
 import { repos } from '../repos';
 
 import { qk } from './keys';
@@ -70,5 +70,32 @@ export function useUpdatePreferences() {
       void queryClient.invalidateQueries({ queryKey: qk.jobs.picks() });
       return refetchWhenQueueEmpty(queryClient, PREFERENCES_QUEUE, qk.profile.all);
     },
+  });
+}
+
+/**
+ * Where the profile stands against the base resume. Fresh on every read: a resume saved anywhere
+ * in the app can move it.
+ */
+export function useResumeSync(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: qk.profile.resumeSync(),
+    queryFn: () => repos.profile.getResumeSync(),
+    staleTime: 0,
+    enabled: options.enabled ?? true,
+  });
+}
+
+/** Fills the profile from the base resume (a yes, or the first fill), or records a no. */
+export function useDecideResumeSync() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (decision: ResumeSyncDecision) => repos.profile.decideResumeSync(decision),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(qk.profile.me(), profile);
+      queryClient.setQueryData(qk.profile.resumeSync(), { state: 'current' });
+      void queryClient.invalidateQueries({ queryKey: qk.profile.gaps() });
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: qk.profile.resumeSync() }),
   });
 }

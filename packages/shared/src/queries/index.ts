@@ -134,8 +134,10 @@ export { usePrivacySettings, useUpdatePrivacySettings } from './usePrivacy';
 export {
   useAnswerGap,
   useCompleteNextStep,
+  useDecideResumeSync,
   useGapQuestions,
   useProfile,
+  useResumeSync,
   useUpdatePreferences,
 } from './useProfile';
 export {

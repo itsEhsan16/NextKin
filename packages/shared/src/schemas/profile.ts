@@ -8,7 +8,13 @@ import type {
   ProfileDraft,
   ProfilePreferences,
 } from '../models/profile';
-import type { ConfirmFacts, GapAnswer } from '../models/profile';
+import type {
+  ConfirmFacts,
+  GapAnswer,
+  ResumeSyncChanges,
+  ResumeSyncDecision,
+  ResumeSyncStatus,
+} from '../models/profile';
 import { profileLinkSchema } from './settings';
 
 /**
@@ -64,6 +70,8 @@ export const experienceSchema = z.object({
   current: z.boolean(),
   skills: z.array(tag).max(50),
   summary: z.string().max(4000).optional(),
+  location: z.string().max(200).optional(),
+  highlights: z.array(z.string().max(600)).max(30).optional(),
 }) satisfies z.ZodType<Experience>;
 
 export const educationSchema = z.object({
@@ -191,3 +199,26 @@ export const profileDraftSchema = z
     certifications: z.array(certificationSchema).max(50).optional(),
   })
   .strict() satisfies z.ZodType<ProfileDraft>;
+
+export const resumeSyncChangesSchema = z.object({
+  roles: z.number().int().min(0),
+  education: z.number().int().min(0),
+  skills: z.number().int().min(0),
+  certifications: z.number().int().min(0),
+  projects: z.number().int().min(0),
+  links: z.number().int().min(0),
+  updates: z.number().int().min(0),
+  fields: z.array(z.enum(['headline', 'summary', 'phone', 'location', 'years'])),
+}) satisfies z.ZodType<ResumeSyncChanges>;
+
+export const resumeSyncStatusSchema = z.object({
+  state: z.enum(['none', 'first', 'changed', 'current']),
+  resumeId: z.string().optional(),
+  versionId: z.string().optional(),
+  resumeTitle: z.string().optional(),
+  changes: resumeSyncChangesSchema.optional(),
+}) satisfies z.ZodType<ResumeSyncStatus>;
+
+export const resumeSyncDecisionSchema = z
+  .object({ versionId: z.string().min(1).max(100), accept: z.boolean() })
+  .strict() satisfies z.ZodType<ResumeSyncDecision>;
