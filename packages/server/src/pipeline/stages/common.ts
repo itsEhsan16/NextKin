@@ -1,6 +1,7 @@
 import type { PartialDate } from '@nextkin/engines/dates';
 import type { ScoringDocument } from '@nextkin/engines/document';
 import type { FactRole, ProfileFacts } from '@nextkin/engines/facts';
+import type { JdStated } from '@nextkin/engines/requirements';
 import type { ContactPresence } from '@nextkin/shared/scoring/adapters';
 import { z } from 'zod';
 
@@ -49,6 +50,8 @@ export interface StageJd {
   rawText: string;
   completeness: 'full' | 'snippet';
   language: 'en' | 'de' | 'other' | null;
+  /** The structured reading's years and conditions (toreview §206.2), when the JD has one. */
+  stated?: JdStated;
 }
 
 export const isoOf = (d: PartialDate | null | undefined): string | null =>

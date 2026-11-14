@@ -1,24 +1,27 @@
 'use client';
 
 import type { TailorComparison } from '@nextkin/shared/models';
+import { useKeywordQuestions } from '@nextkin/shared/queries';
 import { keywordRowsOf } from '@nextkin/shared/tailor/keywordRows';
 import { useMemo, useState } from 'react';
 
-import { AlertCircle, Briefcase01, Edit05, Plus, User01, Zap } from '@/ui/lineIcons';
+import { AlertCircle, Briefcase01, Edit05, Lightbulb02, Plus, User01, Zap } from '@/ui/lineIcons';
 
 import type { TailorChoices } from '../useTailorRun';
 import { HeaderChecks } from './HeaderChecks';
 import { KeywordPanel } from './KeywordPanel';
+import { KeywordQuestions, saidYes } from './KeywordQuestions';
 import { MoreFixes, ShowInRole, moreFixItems, showInRoleItems } from './PlanExtras';
 import { RealResults, resultBullets } from './RealResults';
 import { ScoreRail, type RailItem } from './ScoreRail';
 
-type Category = 'missing' | 'optional' | 'roles' | 'results' | 'header' | 'fixes';
+type Category = 'missing' | 'optional' | 'asked' | 'roles' | 'results' | 'header' | 'fixes';
 
 /**
  * Every way to raise the score in one place (owner, 2026-11-14: "categorized intelligently …
  * all things are in upper part only"): the keywords the resume lacks, the skills to show in a
  * role, the lines to finish with a result, the header lines to check, and the rest of the plan.
+ * "Did you use these?" (toreview §206.3) asks about keywords the resume's own lines hint at.
  * The rail says how many each holds and how many are answered; the open one's list sits beside
  * it. Answers that need typing or picking open in a dialog. A category with nothing in it is left
  * out, except the two keyword lists, which say so.
@@ -37,6 +40,9 @@ export function RaiseScorePanel({
   const bullets = resultBullets(steps);
   const checks = comparison.headerChecks ?? [];
   const fixes = moreFixItems(steps);
+  // "Did you use these?" (toreview §206.3): asked beside the page, never in its way. Until the
+  // questions arrive, or if they don't, the category is simply not there.
+  const asked = useKeywordQuestions(comparison.resumeId, comparison.jdId).data ?? [];
 
   const inTab = (tab: 'missing' | 'optional') => rows.filter((r) => r.tab === tab);
   const tickedIn = (tab: 'missing' | 'optional') =>
@@ -56,6 +62,13 @@ export function RaiseScorePanel({
       count: inTab('optional').length,
       answered: tickedIn('optional'),
       icon: Plus,
+    },
+    {
+      id: 'asked',
+      label: 'Did you use these?',
+      count: asked.length,
+      answered: asked.filter((q) => saidYes(choices, q)).length,
+      icon: Lightbulb02,
     },
     {
       id: 'roles',
@@ -99,6 +112,7 @@ export function RaiseScorePanel({
         {(open === 'missing' || open === 'optional') && (
           <KeywordPanel comparison={comparison} choices={choices} tab={open} />
         )}
+        {open === 'asked' && <KeywordQuestions questions={asked} choices={choices} />}
         {open === 'roles' && (
           <ShowInRole steps={steps} places={places} picks={comparison.picks} choices={choices} />
         )}

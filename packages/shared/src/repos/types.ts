@@ -1,5 +1,6 @@
 import type { ProductEvent } from '../schemas/events';
 import type { FigureDraft,
+  KeywordQuestion,
   AdminActivity,
   AdminMe,
   AdminOverview,
@@ -432,6 +433,11 @@ export type JdRepo = {
    * for its real figure. `text` is the bullet as the screen shows it, for the plain draft.
    */
   draftFigure(resumeId: string, roleId: string, line: number, text: string): Promise<FigureDraft>;
+  /**
+   * "Did you use this here?" (toreview §206.3): questions about keywords the job asks for that
+   * the resume does not show, each beside the line that hints at it. Only a "yes" adds anything.
+   */
+  keywordQuestions(resumeId: string, jdId: string): Promise<KeywordQuestion[]>;
   /** A job on NextKin, read once and reused (BUILD 04b reads it to compare with the profile). */
   forJob(jobId: string): Promise<JdDraft>;
   /**

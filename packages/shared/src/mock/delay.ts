@@ -3,11 +3,14 @@ import { intBetween, seeded } from './seed';
 
 export class MockError extends Error {
   readonly code: string;
+  /** As the server's error carries them: a failed reading's reason (toreview §206). */
+  readonly details: unknown;
 
-  constructor(code: string, message: string) {
+  constructor(code: string, message: string, details: unknown = null) {
     super(message);
     this.name = 'MockError';
     this.code = code;
+    this.details = details;
   }
 }
 

@@ -50,6 +50,11 @@ const words = (text: string) => wordKeys(text).map(stem).filter((w) => !STOP.has
 /** The same word, or one form of the other: "integrations" meets "integrated" (six letters alike). */
 const sameWord = (a: string, b: string) => a === b || (a.length >= 6 && b.length >= 6 && a.slice(0, 6) === b.slice(0, 6));
 
+/** Whether the technology existed while the place ran (a project has no dates, so it passes). */
+export const placeFitsEra = (place: FitPlace, keyword: string, asOf: PartialDate | undefined): boolean => fitsEra(place, keyword, asOf);
+/** How close a place's own lines sit to a keyword: 0 is nothing in common. */
+export const placeCloseness = (place: FitPlace, keyword: string): number => closeness(place, keyword);
+
 function fitsEra(place: FitPlace, keyword: string, asOf: PartialDate | undefined): boolean {
   if (!place.start || place.end === undefined || !asOf) return true;
   const report = validateTimeline({ roles: [{ id: place.id, start: place.start, end: place.end, skills: [keyword] }], kb: KB, taxonomy: TAXONOMY, asOf });

@@ -25,7 +25,11 @@ export type LinkFailure =
   /** The site could not be reached, or answered with an error of its own. */
   | 'unreachable'
   /** The page held too little to be a job posting. */
-  | 'empty';
+  | 'empty'
+  /** A list of jobs or a search page, not one posting (toreview §206). */
+  | 'listing'
+  /** The posting was taken down: the page says so, and holds no description. */
+  | 'removed';
 
 export class LinkError extends Error {
   constructor(

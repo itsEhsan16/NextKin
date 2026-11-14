@@ -61,6 +61,8 @@ export type StructureOptions = {
   closesAt?: string;
   /** Today, YYYY-MM-DD: an earlier deadline is flagged as expired. */
   today: string;
+  /** The page's own words that the posting has closed (toreview §206): flagged, never hidden. */
+  closedNote?: string;
 };
 
 /** The model's name for a field, as the checks name it: "pay" and "salary" are compensation. */
@@ -266,6 +268,18 @@ export function structureJd(
       field: 'application',
       note: `This listing said it closes on ${closing}, which has passed. It may no longer be open.`,
       quotes: application.filter((a) => a.kind === 'deadline').flatMap((a) => a.quotes),
+      by: 'rules',
+    });
+  }
+  // The posting itself says it has closed (toreview §206). Its description is still read, and the
+  // reader is told: one "expired" issue, whichever way it was found.
+  if (options.closedNote && !issues.some((issue) => issue.kind === 'expired')) {
+    const said = locate(hay, options.closedNote);
+    issues.push({
+      kind: 'expired',
+      field: 'application',
+      note: 'This posting says it has closed. It may no longer be open.',
+      quotes: said ? [said] : [],
       by: 'rules',
     });
   }

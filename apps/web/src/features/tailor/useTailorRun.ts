@@ -49,11 +49,18 @@ export function useTailorChoices() {
      * A keyword ticked or unticked, taking the places the comparison picked for it (toreview §163);
      * with none it is a skills-list tick only.
      */
-    tick: (keyword: string, on: boolean, picks?: TailorComparison['picks']) =>
-      setChoices((c) => tickKeyword(c, keyword, on, picks)),
+    tick: (
+      keyword: string,
+      on: boolean,
+      picks?: TailorComparison['picks'],
+      backed?: TailorComparison['backed'],
+    ) => setChoices((c) => tickKeyword(c, keyword, on, picks, backed)),
     /** "Select all" over these keywords, each with its picks; again, "Clear". */
-    tickAll: (keywords: readonly string[], picks?: TailorComparison['picks']) =>
-      setChoices((c) => toggleAll(c, keywords, picks)),
+    tickAll: (
+      keywords: readonly string[],
+      picks?: TailorComparison['picks'],
+      backed?: TailorComparison['backed'],
+    ) => setChoices((c) => toggleAll(c, keywords, picks, backed)),
     /** One place switched on or off for a keyword (it ticks it); the set is the user's from then. */
     togglePlace: (keyword: string, where: string, on: boolean) =>
       setChoices((c) => togglePlace(c, keyword, where, on)),

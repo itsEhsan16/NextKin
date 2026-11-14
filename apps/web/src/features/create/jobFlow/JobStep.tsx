@@ -1,10 +1,17 @@
 'use client';
 
-import { isConsentRequired, useExtractJd, useSavedJobs } from '@nextkin/shared/queries';
+import { JD_CLOSED_NOTE, JD_CLOSED_TITLE, jdHasClosed } from '@nextkin/shared/models/jd';
+import {
+  isConsentRequired,
+  jdFailureMessage,
+  useExtractJd,
+  useSavedJobs,
+} from '@nextkin/shared/queries';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { Callout } from '@/ui/Callout';
 import { ArrowRight } from '@/ui/lineIcons';
 
 import {
@@ -55,16 +62,20 @@ export function JobStep({
   const [other, setOther] = useState<OtherJob>(emptyOtherJob);
   const [source, setSource] = useState<'saved' | 'other' | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  // A posting that was read but has closed (toreview §206): said here, before anything is built.
+  const [closedId, setClosedId] = useState<string | null>(null);
 
   const pickedSaved = savedId ?? jobs[0]?.id ?? null;
   const using = source ?? (saved.data && jobs.length === 0 ? 'other' : 'saved');
-  const busy = extract.isPending || extract.isSuccess || busyLabel !== undefined;
+  const busy =
+    extract.isPending || (extract.isSuccess && closedId == null) || busyLabel !== undefined;
   const failed = extract.isError && !isConsentRequired(extract.error);
   const ready =
     using === 'saved' ? pickedSaved != null : other.file != null || other.text.trim().length > 0;
 
   const next = () => {
     setProblem(null);
+    if (closedId && using === 'other') return onPicked({ kind: 'jd', id: closedId });
     if (using === 'saved') {
       if (pickedSaved) onPicked({ kind: 'job', id: pickedSaved });
       return;
@@ -77,7 +88,10 @@ export function JobStep({
     const read = otherJobInput(other);
     if (!read) return setProblem('Paste the job description or its link, or upload a file.');
     if ('problem' in read) return setProblem(read.problem);
-    extract.mutate(read.input, { onSuccess: (draft) => onPicked({ kind: 'jd', id: draft.id }) });
+    extract.mutate(read.input, {
+      onSuccess: (draft) =>
+        jdHasClosed(draft) ? setClosedId(draft.id) : onPicked({ kind: 'jd', id: draft.id }),
+    });
   };
 
   return (
@@ -113,14 +127,22 @@ export function JobStep({
               selected={using === 'other'}
               busy={extract.isPending}
               onAnalyze={readOther}
-              problem={problem ?? (failed ? READ_FAILED : null)}
+              problem={
+                problem ?? (failed ? (jdFailureMessage(extract.error) ?? READ_FAILED) : null)
+              }
               onChange={(value) => {
                 setOther(value);
                 setSource(value.text || value.file ? 'other' : 'saved');
                 setProblem(null);
+                setClosedId(null);
                 extract.reset();
               }}
             />
+            {closedId && using === 'other' && (
+              <Callout tone="warning" className="mt-3">
+                <span className="font-semibold">{JD_CLOSED_TITLE}.</span> {JD_CLOSED_NOTE}
+              </Callout>
+            )}
           </div>
         </div>
       </section>
@@ -135,7 +157,12 @@ export function JobStep({
           </Link>
         ) : (
           <button type="button" onClick={next} disabled={!ready || busy} className={primaryButton}>
-            {busyLabel ?? (busy ? 'Reading the job…' : 'Continue')}
+            {busyLabel ??
+              (busy
+                ? 'Reading the job…'
+                : closedId && using === 'other'
+                  ? 'Continue anyway'
+                  : 'Continue')}
             <ArrowRight aria-hidden className="size-4.5" />
           </button>
         )}

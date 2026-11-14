@@ -4,6 +4,7 @@ import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { resolveSkill } from '@nextkin/engines/normalizer';
 import { legacyFields, type JdLegacyFields } from '@nextkin/shared/jobs/jdLegacy';
 import type { JdReading } from '@nextkin/shared/jobs/jdSections';
+import { haystackOf, locate } from '@nextkin/shared/jobs/jdLocate';
 import { structureJd } from '@nextkin/shared/jobs/jdStructure';
 import type { JdStructured } from '@nextkin/shared/models/jdStructured';
 import { jdStructuredSchema } from '@nextkin/shared/schemas/jdStructured';
@@ -62,6 +63,12 @@ export const jdExtractionSchema = z.object({
   application: z.array(said.extend({ kind: z.enum(['method', 'url', 'email', 'deadline', 'documents', 'process']) })).max(12),
   extras: z.array(said).max(20),
   issues: z.array(z.object({ kind: z.enum(['conflict', 'ambiguous']), field: z.string().max(40), note: z.string().max(400), quotes: z.array(quote).min(1).max(4) })).max(10),
+  // Version 7 (toreview §206): what the text is, before anything is taken from it. Optional, so a
+  // reading made by an earlier prompt still validates.
+  page: z
+    .object({ kind: z.enum(['single_job', 'several_jobs', 'closed', 'not_a_job']), quote: quote.nullable(), jobTitles: z.array(z.string().trim().min(1).max(160)).max(6) })
+    .nullable()
+    .optional(),
 });
 export type JdExtraction = z.infer<typeof jdExtractionSchema>;
 
@@ -76,6 +83,30 @@ export interface VerifiedJd extends Omit<JdLegacyFields, 'softSkills'> {
   reading?: JdReading;
   /** When the page it was read from says it closes (toreview §144.3). */
   closesAt?: string;
+  /** What the text turned out to be, where the model said so and code could confirm it (§206). */
+  page?: PageVerdict;
+}
+
+/**
+ * The model's view of what it was handed, kept only where the text bears it out (G14): a list of
+ * jobs needs three of its job titles found in the text, and a closed posting needs the words that
+ * say so. "Not a job" has nothing to quote; the caller believes it only when the reading is empty.
+ */
+export type PageVerdict = { kind: 'several_jobs' } | { kind: 'closed'; note: string } | { kind: 'not_a_job' };
+
+const SAYS_CLOSED = /closed|expired|no longer|filled|not (?:available|accepting)|unavailable|removed|taken down|archived|nicht mehr|geschlossen|besetzt/i;
+const TITLES_FOR_A_LIST = 3;
+
+export function pageVerdict(raw: string, page: JdExtraction['page']): PageVerdict | undefined {
+  if (!page || page.kind === 'single_job') return undefined;
+  if (page.kind === 'not_a_job') return { kind: 'not_a_job' };
+  const hay = haystackOf(raw);
+  if (page.kind === 'several_jobs') {
+    const titles = new Set(page.jobTitles.filter((title) => locate(hay, title)).map((title) => normalise(title)));
+    return titles.size >= TITLES_FOR_A_LIST ? { kind: 'several_jobs' } : undefined;
+  }
+  const said = page.quote ? locate(hay, page.quote) : null;
+  return said && said.text.length <= 300 && SAYS_CLOSED.test(said.text) ? { kind: 'closed', note: said.text.trim() } : undefined;
 }
 
 export const CACHE_DAYS = 30;
@@ -143,14 +174,30 @@ export function splitSkills(text: string): string[] {
 /** A skill name as the taxonomy reads it: split where it names several, dropped if not a skill. */
 const skillNames = (name: string): string[] => (isSkillName(name) ? splitSkills(name.trim()) : []);
 
+const COMPANY_SUFFIX = /\b(?:inc|ltd|llc|llp|plc|pvt|private|limited|gmbh|ag|corp|corporation|co|company)\b\.?/gi;
+const companyKey = (text: string) => normalise(text.replace(COMPANY_SUFFIX, ' ')).replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+
+/**
+ * The hiring company's own name is not a skill (toreview §159, §206.2): "Amazon" in an Amazon
+ * posting was read as a required skill. A product that carries the company's name ("Google
+ * Workspace") is a different phrase and stays, as does a name the taxonomy knows as a skill.
+ */
+export function skillNamesFor(company: string | null | undefined): (name: string) => string[] {
+  const own = company ? companyKey(company) : '';
+  if (!own) return skillNames;
+  return (name) => (companyKey(name) === own && !resolveSkill(TAXONOMY, name).known ? [] : skillNames(name));
+}
+
 const today = () => new Date().toISOString().slice(0, 10);
 
 /**
  * Keeps only what the text says (toreview §153): the structure is built from the quotes found in
  * it, and the flat lists every consumer reads are derived from that structure.
  */
-export function verify(raw: string, extraction: JdExtraction, options: { closesAt?: string; today?: string } = {}): VerifiedJd {
-  const structured = structureJd(raw, extraction, { skillNames, today: options.today ?? today(), ...(options.closesAt ? { closesAt: options.closesAt } : {}) });
+export function verify(raw: string, extraction: JdExtraction, options: { closesAt?: string; today?: string; closedNote?: string } = {}): VerifiedJd {
+  const page = pageVerdict(raw, extraction.page);
+  const closedNote = options.closedNote ?? (page?.kind === 'closed' ? page.note : undefined);
+  const structured = structureJd(raw, extraction, { skillNames: skillNamesFor(extraction.company?.text), today: options.today ?? today(), ...(options.closesAt ? { closesAt: options.closesAt } : {}), ...(closedNote ? { closedNote } : {}) });
   const parsed = jdStructuredSchema.safeParse(structured);
   if (!parsed.success) throw new Error(`the structured reading did not validate: ${parsed.error.issues[0]?.message ?? 'unknown'}`);
   const legacy = legacyFields(structured);
@@ -162,6 +209,7 @@ export function verify(raw: string, extraction: JdExtraction, options: { closesA
     language: extraction.language,
     stats: { kept: structured.stats.kept, dropped: structured.stats.dropped, droppedItems: droppedItems.slice(0, 20) },
     structured,
+    ...(page ? { page } : {}),
   };
 }
 
@@ -173,10 +221,12 @@ export async function extractJd(args: {
   context: CallContext;
   /** When the page it was read from says it closes, so a past date is flagged. */
   closesAt?: string;
+  /** The page's own words that the posting has closed (toreview §206). */
+  closedNote?: string;
 }): Promise<{ jd: VerifiedJd; cached: boolean; meta?: CallMeta }> {
   const key = `jd:${args.prompt.id}:${contentHash(args.text)}`;
   const hit = await args.cache.get<JdExtraction>(key);
-  const options = args.closesAt ? { closesAt: args.closesAt } : {};
+  const options = { ...(args.closesAt ? { closesAt: args.closesAt } : {}), ...(args.closedNote ? { closedNote: args.closedNote } : {}) };
   if (hit) return { jd: verify(args.text, hit, options), cached: true };
   const { data, meta } = await args.gateway.extract({
     stage: 'jd_extract',

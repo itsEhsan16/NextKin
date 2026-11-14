@@ -101,6 +101,7 @@ const STAGE_LABEL: Record<string, string> = {
   cover_write: 'Cover letter',
   interview_write: 'Interview prep',
   figure_draft: 'Draft figures',
+  keyword_questions: 'Keyword questions',
   kb_candidates: 'KB candidates',
 };
 

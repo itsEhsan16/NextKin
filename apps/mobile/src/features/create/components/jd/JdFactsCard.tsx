@@ -1,6 +1,12 @@
 import { View } from 'react-native';
 
-import { EMPLOYMENT_TYPE_LABEL, type JdFact, type JdIssue, type JdStructured } from '@/data/models';
+import {
+  EMPLOYMENT_TYPE_LABEL,
+  JD_CLOSED_TITLE,
+  type JdFact,
+  type JdIssue,
+  type JdStructured,
+} from '@/data/models';
 import {
   WORK_MODE_LABEL,
   experienceText,
@@ -127,6 +133,11 @@ export function JdWorthKnowing({ issues }: { issues: readonly JdIssue[] }) {
   const { colors, radii, spacing } = useTheme();
   const styles = useStyles();
   if (issues.length === 0) return null;
+  // A closed posting leads, under its own heading (toreview §206).
+  const closed = issues.some((issue) => issue.kind === 'expired');
+  const ordered = closed
+    ? [...issues].sort((a, b) => Number(b.kind === 'expired') - Number(a.kind === 'expired'))
+    : issues;
 
   return (
     <View
@@ -140,10 +151,10 @@ export function JdWorthKnowing({ issues }: { issues: readonly JdIssue[] }) {
       <View style={[styles.line, { gap: spacing[2] }]}>
         <Icon name="AlertTriangle" size="sm" color={colors.warningStrong} />
         <Text {...a11yHeader()} variant="captionSemiBold" color="warningStrong">
-          Worth knowing
+          {closed ? JD_CLOSED_TITLE : 'Worth knowing'}
         </Text>
       </View>
-      {issues.map((issue) => (
+      {ordered.map((issue) => (
         <View key={`${issue.field}:${issue.note}`} style={{ gap: spacing[1] }}>
           <Text
             variant="caption"

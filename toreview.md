@@ -17032,3 +17032,214 @@ Owner ask: the profile should fetch everything from the base resume, strongly en
 - No backend was running (Docker off), so the endpoints weren't exercised against Postgres; covered by unit tests on the pure read/plan (`packages/server/test/resumeSync.test.ts`) and a web component test. Integration test not written.
 - Mobile is untouched (mock and types only); the mock repo answers `none`.
 - `packages/server/openapi.json` was already stale before this; regenerating it adds ~1.8k unrelated lines, so it was left alone.
+
+## §206 — Smarter job reading, fuller JD mapping, real suggestions (owner, 2026-11-15)
+
+Branch `jd/intelligent-reading` (worktree `.claude/worktrees/jd-intelligent-reading`). Plan:
+`C:\Users\ACER\.claude\plans\pasted-content-id-36f7-hey-i-effervescent-rocket.md`. Three phases;
+this section is appended to as each lands.
+
+**Owner decisions (2026-11-15)**
+- Suggestions may draw on the **profile, other resumes and certificates**, each offered for the
+  candidate to accept. This reverses §110.3's "the chosen resume only".
+- The AI may propose **skills and duties the candidate probably has, as yes/no questions per role**.
+  Only a "yes" becomes a fact.
+- A **closed posting whose description is still there is read**, with a clear notice. A link is
+  refused only when the description is gone.
+- A **list of jobs or a search page is refused** with a plain message. No picker.
+
+### §206.1 — Phase 1: the link reader knows what it read
+
+**What was wrong**
+- `links/reading.ts` took the first of however many JobPosting blocks a page carried, so a board
+  page became its first job.
+- A link that redirected to the site's job list, and a 200 page saying "no longer available", were
+  both read as the job.
+- A failure kept only its sentence, and the web job step and mobile's build screen replaced that
+  sentence with one generic line.
+
+**What changed**
+- **Page kind, by code** (`links/pageKind.ts`): `job`, `closed_job`, `listing`, `removed`,
+  `unknown`. Signals: distinct JobPosting blocks and whether one names this address, a list type in
+  the page's data, links that each open a job, lines long enough to be description prose, the
+  page's own closed wording, and whether the link ended somewhere that no longer names the posting.
+- **The reader refuses** `listing` and `removed` (two new `LinkFailure` reasons). A `closed_job` is
+  returned with the page's own words (`closedNote`).
+- **The model's view, same call** (`jd.extract` v7, `page` field), kept only where the text bears
+  it out: a list needs three of its job titles found in the text; "closed" needs the words that say
+  so. This also covers pasted text and uploaded files.
+- **Reason code**: migration `0056` adds `job_descriptions.failure_reason`; the draft carries
+  `failureReason`; `jdFailureReason()` / `jdFailureMessage()` in the shared queries.
+- **Closed postings**: one `expired` issue however it was found; web shows a notice on the job
+  page and in the job step ("Continue anyway"); mobile's build screen does the same, and "Worth
+  knowing" leads with it. A closed link is read again rather than answered from the stored draft.
+- **Messages**: the web job step and mobile's build and share screens now show the server's
+  sentence for a list or a removed posting.
+
+**Judgement calls (to confirm)**
+- **Cautious about calling a page a list.** Code calls it one only with several postings that
+  don't match the address, a redirect away from the posting, or many job links and under 120 words
+  of prose. A page with real prose is left to the model's check. Reason: a wrong refusal costs the
+  candidate more than a second look.
+- **A pasted or uploaded list is refused too** ("This looks like a list of several jobs…"), on the
+  model's word plus three located titles. Before this, pasted text had no "is this a job" check.
+- **`gone` (404/410) now reads "This posting is no longer available…"**, the same sentence as
+  `removed`.
+- **A link the model finds no job on is now reason `not_a_job`**, with the same sentence as before.
+- **Mobile flow notice** reuses the text field's error line for the closed notice (no new
+  component; rule 7). It reads as an error colour; an artboard should replace it.
+- **`types.generated.ts` was edited by hand** for the new column (no database was running).
+  Run `pnpm migrate` then `pnpm --filter @nextkin/server db:types:check`.
+
+**Not verified**
+- `pnpm test:integration`: not run. The owner's stack was down and starting it reseeds accounts.
+  New cases are in `test/integration/links.int.test.ts`.
+- `pnpm eval:jd`: the prompt went to v7, so every recording is stale. A live run
+  (`--openrouter`, about $0.20) is needed; six page-kind cases were added to `evals/jdGolden.ts`.
+- Real pages, tried once from a laptop with no browser renderer (2026-11-15): a live Lever
+  posting read as `job`; the Lever demo board refused as `listing`; a dead Greenhouse job link
+  (which redirects to the board with `?error=true`) refused as `listing`; a dead Lever id `gone`.
+  Greenhouse's and Ashby's own board pages draw themselves with script, so without the renderer
+  they ended `empty`; with the Chromium renderer they should end `listing`, which is not yet seen.
+- Mobile: not seen on a device.
+- Deploy needs `pnpm migrate` and `pnpm seed --reference-only` (prompt v7), never `pnpm seed`.
+
+### §206.2 — Phase 2: the JD's reading reaches the score
+
+**What was wrong**
+- The structured reading placed years, degrees, certificates, languages and conditions with their
+  quotes, but scoring and tailoring never saw them: the ledger searched the raw text again with a
+  handful of phrases. The job page and the comparison could disagree.
+- The JD page's match card ignored the years the posting asks.
+- The hiring company's own name could be read as a required skill (§159's open item).
+
+**What changed**
+- **One source** (`shared/jobs/jdRequirements.ts`, `statedOf`): the reading's facts become the
+  ledger's requirements, each with its span. `JdLists.stated` carries them to every scorer: the
+  comparison, the tailor run's plan and score, the JD match card.
+- **Years per skill** come from the line that names the skill ("3+ years of Python"), in the same
+  clause as the number. With a reading, the looser sentence search is no longer used.
+- **Degrees, certificates, languages, work authorisation and location** are ledger eligibility
+  rows: reported, never scored (G15). Conditions on age or gender are never turned into something
+  to "meet".
+- **The match card** applies the posting's overall years, the same experience fit a listing has.
+- **Company name** is dropped from the skill lists (`skillNamesFor`), unless the taxonomy knows it
+  as a skill; a product carrying the name stays.
+- **Word forms**: a phrase the taxonomy does not know now meets its other endings
+  (automate/automated/automation, policies/policy). A plural "s" was already folded (§112).
+- **Engine version 1.1.0.** Reports stamped 1.0.0 will say their method changed.
+- **Eval**: title, company, "not a skill", education lines and a keyword-recall figure; one new
+  case (`degree-and-certificate`). Golden set is now `jd-structure-0.2.0`, 28 cases.
+
+**Judgement calls (to confirm)**
+- **Scores can move.** A JD's match % now includes the experience fit; a skill's asked years may
+  differ from before (tighter clause rule); a few unknown phrases now match other word forms.
+  All three are more faithful to the posting, none tuned toward a number.
+- **Years under-ask on purpose.** "5+ years with Python, Django and Flask" ties the 5 to Python
+  only. Erring this way never invents a bar the posting did not set.
+- **"Edit details" on the web job page stays.** The plan said to hide it per §153, but the later
+  redesign (R5c, audit JD-01) put it back on purpose. Its edits still change only the flat lists.
+
+**Deferred from the plan (not built)**
+- Schema v3 fields: certificates as their own list in the structure, a skill's "core vs
+  mentioned" emphasis, sponsorship offered, reporting line and team size, intern/staff/principal
+  levels. None of these changes a score today; each needs a prompt bump, a schema migration path
+  and page work.
+- Re-reading stored JDs when the prompt version changes.
+- Restoring redacted application emails and phone numbers in quotes.
+- Dropping job phrases such as "D2C operations": the owner asked for themes as keywords in v6,
+  so this needs a clearer rule before code removes any.
+- More related-skill links in the taxonomy (NoSQL ↔ MongoDB), which is still the ~190-row starter.
+
+**Not verified**
+- `pnpm eval:jd` live, as for §206.1.
+- `pnpm test:integration`.
+
+### §206.3 — Phase 3: suggestions that raise a real score
+
+**What was wrong**
+- Tailoring read only the resume it started from. A skill recorded on the profile, on another
+  resume or on a certificate showed as "missing", with nothing to say it was the candidate's.
+- Nothing asked about a skill the resume's own lines hint at but never name.
+- After a run, the ready screen named missing keywords but not what each was worth.
+
+**What changed**
+- **"You have this"** (`shared/tailor/elsewhere.ts`, `services/tailorElsewhere.ts`): each missing
+  keyword is looked for in the profile, in up to five of the candidate's other resumes, and in
+  their certificates, by the same reading the score uses. The keyword row says where it was found
+  and quotes the line. These rows lead the table. Nothing starts ticked.
+  - Where the record is a role this resume also has, the tick confirms it there as the
+    candidate's own word (`backed`, `by: 'you'`), so the run may write it and it earns full credit.
+  - Where the role is not on this resume, or it is only in a skills list or on a certificate, the
+    tick is a skills-list tick, as before.
+- **"Did you use these?"** (`shared/tailor/questions.ts`, `services/keywordQuestions.ts`,
+  `POST /tailor/keyword-questions`, prompt `tailor.infer` v1, stage `keyword_questions`): a
+  question beside the resume line that hints at a missing keyword.
+  - The rules ask about the places the comparison already picked (§163).
+  - A model may add more. It returns only a keyword it was given, a place id and a line number.
+    Code checks each (a real gap, a real place and line, the line doesn't already name it, the
+    technology existed while the role ran) and writes the question itself. The model writes no
+    words the candidate reads.
+  - "Yes" confirms it at that role (`by: 'you'`); "No" is where each starts and adds nothing.
+  - Web: a new category in "Ways to raise your score". Mobile: a card under the skill chips.
+- **Next steps after a run**: the finished resume is re-scored along the same path, and the
+  result carries the candidate's remaining steps with what each adds (`tailor.next`). The web
+  score card's one line now reads "Next: Add Kafka (+0.4) · … Only if it's true."
+- **Routing v8**, one new prompt. Deploy needs `pnpm seed --reference-only`.
+
+**Judgement calls (to confirm)**
+- **Other tailored resumes are not read.** They carry skill tags the AI placed for one job
+  (`by: 'ai'`, §162), which should not vouch for a new one. Only uploaded, base and built resumes.
+- **A profile role's skill tag counts as that role showing the skill**, so a tick places it there
+  as the candidate's word. That is what the tag means on the profile, but it is one step from
+  "the candidate typed a line saying so".
+- **A model question has no lexical check.** A check that the line shares words with the keyword
+  would throw away exactly the hints a model is for (REST endpoints → Postman). What protects
+  the candidate is that it is only ever a question, with their own line shown.
+- **Questions are capped**: eight in all, three a place, one a keyword; the phone shows four.
+- **The score card keeps one line.** Next steps replace the "Missing: …" tip rather than add a
+  second block (owner, 2026-11-04: "too much unnecessary text").
+- **Mobile chips say it in one line** ("Already on your profile or another resume: …"), because
+  a chip has no room for a row. An artboard should replace it.
+
+**Deferred from the plan (not built)**
+- Uploaded certificate documents: the server has no certificate document kind yet, so only the
+  profile's certifications are read.
+- Missing sections (certifications, projects) as their own steps.
+- Weak-line advice (the lint findings are still dropped after a run).
+- The writer's input (`resume.generate`) was not changed.
+- Next steps on mobile's ready screen.
+- The mock data layer asks no questions and finds nothing "elsewhere": both need the server.
+
+**Not verified**
+- No live model has run `tailor.infer` or `jd.extract` v7. Both prompts are untested against a
+  real model; the code checks around them are unit-tested.
+- `pnpm test:integration`, and the whole flow in a browser on the real backend.
+- Mobile on a device.
+
+**Seen in the browser (web, mock data, from this worktree, 2026-11-15)**
+- A link on a host with "joblist" in it shows the list-page sentence in the job step, in place of
+  the old generic line. A host with "removed" in it gives the removed-posting sentence (mock only).
+- "You have this", "Did you use these?" and the next-steps line were not seen in a browser: the
+  mock data layer does not produce them.
+
+### §206.4 — Run against the local stack (owner said to, 2026-11-15)
+
+- **Stack** started from the worktree (`core`, `scan`, `pay`); same `nextkin` volumes, nothing
+  reseeded. Stopped again afterwards.
+- **Migration 0056 applied** to the local database. `db:types:check` passes: the hand-edited
+  types match. The main checkout does not have the 0056 file yet, so its migrate will see one
+  applied file it does not know until this branch is merged.
+- **Integration: 1,633 of 1,640 pass.** Every new case passes (list page, removed posting, closed
+  posting read and flagged, re-read of a closed link, reason codes).
+  - Two things it caught in this work, both fixed: the new route needed its access-matrix entry
+    and its own rate bucket (`keyword-questions`, 20 a minute); and `failureReason` used a zod
+    `.catch()` the OpenAPI generator cannot describe, so it is now a plain string on the wire and
+    the apps narrow it.
+  - **Seven still fail, none from this work.** Six fail the same way on the untouched main
+    checkout: `libraryP10` (2), `libraryApi` (1), `renders` (2), `tailorConfirmP14` (1, the §116
+    placement that §159 removed). The seventh is the access matrix missing
+    `GET` and `POST /api/v1/profile/resume-sync`, from the profile-sync work (§203).
+- **Live eval: not run.** OpenRouter refused the key in `.env` ("The provider refused the
+  credentials") and there is no Anthropic key. `jd.extract` v7 and `tailor.infer` v1 are still
+  untested against a real model, and the recordings are still stale. Needs a working key.

@@ -8,10 +8,12 @@ import {
   type Job,
   type Profile,
 } from '@nextkin/shared/models';
+import { JD_CLOSED_NOTE, JD_CLOSED_TITLE } from '@nextkin/shared/models/jd';
 import type { JobFactsKnown } from '@nextkin/shared/queries';
 import type { ComponentType, SVGProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { Callout } from '@/ui/Callout';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import {
   ApartmentIcon,
@@ -136,9 +138,15 @@ export function JdTop({
       : null,
   ].filter((c): c is string => Boolean(c));
   const facts = quickFacts(s);
+  const closed = s.issues.some((issue) => issue.kind === 'expired');
 
   return (
     <div className="px-8 pb-5 pt-6">
+      {closed && (
+        <Callout tone="warning" className="mb-5">
+          <span className="font-semibold">{JD_CLOSED_TITLE}.</span> {JD_CLOSED_NOTE}
+        </Callout>
+      )}
       <div className="flex flex-col gap-5 md:flex-row md:items-start">
         <div className="min-w-0 flex-1">
           {company && (

@@ -63,6 +63,8 @@ export function KeywordPanel({
   const shown = sortRows(filterRows(rows, { tab, bucket: group, query }), sort);
   const max = Math.max(0, ...rows.map((r) => r.worth ?? 0));
   const picks = comparison.picks;
+  // Places the user's own records back (toreview §206.3): a tick takes these as their own word.
+  const backed = comparison.backed;
   const places = comparison.places ?? [];
   const added = choices.added;
   const visible = shown.map((r) => r.label);
@@ -73,6 +75,7 @@ export function KeywordPanel({
       ? choices.tickAll(
           visible.filter((l) => !added.includes(l)),
           picks,
+          backed,
         )
       : choices.setAdded(added.filter((l) => !visible.includes(l)));
 
@@ -140,12 +143,14 @@ export function KeywordPanel({
                     row={row}
                     max={max}
                     checked={on}
-                    onToggle={(next) => choices.tick(row.label, next, picks)}
+                    onToggle={(next) => choices.tick(row.label, next, picks, backed)}
                     places={places}
                     place={place}
                     showPlace={
                       row.bucket !== 'soft' &&
-                      ((picks?.[row.label]?.length ?? 0) > 0 || place !== undefined)
+                      ((picks?.[row.label]?.length ?? 0) > 0 ||
+                        (backed?.[row.label]?.length ?? 0) > 0 ||
+                        place !== undefined)
                     }
                     onTogglePlace={(where, next) => choices.togglePlace(row.label, where, next)}
                     onClearPlaces={() => choices.clearPlaces(row.label)}

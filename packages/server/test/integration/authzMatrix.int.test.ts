@@ -267,6 +267,7 @@ const MATRIX: Record<string, Entry> = {
   'GET /api/v1/assistant/sessions/current': { access: 'user' },
   // §129: the "Add the result" line drafted for a figure.
   'POST /api/v1/tailor/figure-draft': { access: 'user', body: { resumeId: 'probe', roleId: 'probe', line: 0 } },
+  'POST /api/v1/tailor/keyword-questions': { access: 'user', body: { resumeId: 'probe', jdId: 'probe' } },
   'POST /api/v1/assistant/sessions': { access: 'user' },
   'POST /api/v1/assistant/sessions/current/clear': { access: 'user' },
   'POST /api/v1/assistant/sessions/{id}/open': { access: 'user' },

@@ -59,6 +59,27 @@ export type TailorKeyword = {
   top?: boolean;
   /** A soft skill ("communication"): offered in its own group, never in the job match. */
   kind?: 'skill' | 'soft';
+  /** Where the candidate's own records already show it, when this resume does not (§206.3). */
+  elsewhere?: KeywordElsewhere;
+};
+
+/**
+ * A missing keyword found in the candidate's own records (owner, 2026-11-15; toreview §206.3):
+ * their profile, another of their resumes, or a certificate. It is an offer, never an addition:
+ * the row says where it was found, and nothing changes until they tick it.
+ */
+export type KeywordElsewhere = {
+  from: 'profile' | 'resume' | 'certificate';
+  /** A dated role shows it, it is only in a skills list, or a certificate names it. */
+  shown: 'experience' | 'listed' | 'certificate';
+  /** The role ("Backend Engineer at Acme"), the certificate, or the source itself. */
+  in: string;
+  /** How the source is named: "your profile", or the other resume's title. */
+  source: string;
+  /** The same role on the resume being tailored, when it has it. */
+  where?: string;
+  /** The record's own line that shows it. */
+  line?: string;
 };
 
 export type TailorKeywordShown = 'experience' | 'listed' | 'fewer_years';
@@ -100,6 +121,11 @@ export type TailorComparison = {
    * place ids, best first. A keyword with none is a skills-list keyword only.
    */
   picks?: Record<string, string[]>;
+  /**
+   * Places on this resume that the candidate's own records back for a keyword (toreview §206.3):
+   * a tick takes these as the user's own word, not as the AI's pick.
+   */
+  backed?: Record<string, string[]>;
   /** "Your fix plan" (toreview §115): where the points go, and the steps ranked by worth. */
   plan?: FixPlan;
   /** Header statements that don't fit this job (toreview §170), asked in Enhance. */
@@ -117,6 +143,22 @@ export type JobMatch = {
   percent: number;
   missing: string[];
   basis: string;
+};
+
+/**
+ * "Did you use this here?" (owner, 2026-11-15; toreview §206.3): a missing keyword, the role or
+ * project it may belong to, and that place's own line that hints at it. Only a "yes" adds
+ * anything, as the candidate's own word. `by` says who proposed it; code checked both.
+ */
+export type KeywordQuestion = {
+  keyword: string;
+  /** The place id, as `TailorPlace.id`. */
+  where: string;
+  /** The place as the screen names it: "Backend Engineer, Acme". */
+  place: string;
+  /** The resume's own line the question sits beside. */
+  line: string;
+  by: 'rules' | 'model';
 };
 
 /** A role or project of the base resume a keyword can be confirmed at. */
@@ -226,7 +268,24 @@ export type TailorRun = TailorChoices & {
   pages?: number;
   /** Why it has that length (G17), e.g. "Fitted to 1 page: under 5 years of experience". */
   pageBasis?: string;
+  /**
+   * What would raise the new version's score further (toreview §206.3): the steps only the
+   * candidate can take, each with what re-scoring the finished resume says it adds.
+   */
+  next?: TailorNextStep[];
 };
+
+/** One step left after a run, priced on the finished resume: "Add Kafka", +0.4 out of 10. */
+export type TailorNextStep = { title: string; worth: number };
+
+/** The ready screen's one line of next steps, or null when none is left. */
+export function nextStepsLine(next: readonly TailorNextStep[] | undefined): string | null {
+  if (!next?.length) return null;
+  return `Next: ${next
+    .slice(0, 2)
+    .map((step) => `${step.title} (+${step.worth.toFixed(1)})`)
+    .join(' · ')}. Only if it’s true.`;
+}
 
 /** The page length a tailored resume is cut to; recruiters skim one or two (TAILOR 02). */
 export const TAILOR_TARGET_PAGES = 2;

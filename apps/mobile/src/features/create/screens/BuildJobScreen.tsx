@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import type { Job, JdFile } from '@/data/models';
+import { JD_CLOSED_NOTE, JD_CLOSED_TITLE, jdHasClosed, type Job, type JdFile } from '@/data/models';
 import {
   isUnreadableLinkError,
+  jdFailureMessage,
+  jdFailureReason,
   useCurrentUser,
   useExtractJd,
   useJobPicks,
@@ -37,6 +39,7 @@ export const BUILD_JOB_TITLE = 'Which job is it for?';
 const LEDE = 'Paste a job, or pick one you saved.';
 const READ_FAILED = 'We couldn’t read that job. Try again.';
 const BLOCKED = 'That site blocks reading. Paste the job description instead.';
+const CLOSED = `${JD_CLOSED_TITLE}. ${JD_CLOSED_NOTE}`;
 const TOO_BIG = 'That file is over 5 MB.';
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const SEARCH_FROM = 5;
@@ -88,6 +91,8 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
   const [tab, setTab] = useState<Tab>('saved');
   const [query, setQuery] = useState('');
   const busy = useRef(false);
+  // A posting that was read but has closed (toreview §206): said here, then Continue goes on.
+  const [closedId, setClosedId] = useState<string | undefined>();
 
   useEffect(() => {
     if (requested) pick(requested);
@@ -107,19 +112,33 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
     if (!picked) return;
     if (picked.size != null && picked.size > MAX_FILE_BYTES) return fail(TOO_BIG);
     setFailure(undefined);
+    setClosedId(undefined);
     setFile(picked);
     setText('');
   };
 
   const readPasted = async () => {
     if (!input || busy.current) return;
+    if (closedId) return actions.openCompare({ jdId: closedId });
     busy.current = true;
     setFailure(undefined);
     try {
       const draft = await extract.mutateAsync(input);
+      if (jdHasClosed(draft)) {
+        setClosedId(draft.id);
+        fail(CLOSED);
+        return;
+      }
       actions.openCompare({ jdId: draft.id });
     } catch (error) {
-      fail(input.source === 'link' && isUnreadableLinkError(error) ? BLOCKED : READ_FAILED);
+      // A list of jobs or a posting that is gone is said in the server's words; a site that
+      // refuses keeps the short line this screen has always shown.
+      const reason = jdFailureReason(error);
+      const said =
+        reason && reason !== 'refused' && reason !== 'robots' ? jdFailureMessage(error) : null;
+      fail(
+        said ?? (input.source === 'link' && isUnreadableLinkError(error) ? BLOCKED : READ_FAILED),
+      );
     } finally {
       busy.current = false;
     }
@@ -210,7 +229,7 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
         input ? (
           <Animated.View entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}>
             <Button
-              label={reading ? 'Reading the job…' : 'Continue'}
+              label={reading ? 'Reading the job…' : closedId ? 'Continue anyway' : 'Continue'}
               size="xl"
               block
               loading={reading}
@@ -230,7 +249,10 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
             accessibilityRole="button"
             accessibilityLabel="Remove file"
             feedback="subtle"
-            onPress={() => setFile(null)}
+            onPress={() => {
+              setFile(null);
+              setClosedId(undefined);
+            }}
           >
             <Icon name="XClose" size="sm" color={colors.iconDefault} />
           </Pressable>
@@ -246,6 +268,7 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
           onChangeText={(next) => {
             setText(next);
             setFailure(undefined);
+            setClosedId(undefined);
           }}
           error={failure}
         />

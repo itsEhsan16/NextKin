@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { JdDraft, JdDraftPatch, JdInput } from '../models';
+import { JD_FAILURE_REASONS, type JdFailureReason } from '../models/jd';
 import { repos } from '../repos';
 
 import { qk } from './keys';
@@ -103,3 +104,21 @@ export function isUnreadableLinkError(error: unknown): boolean {
 /** Why a link could not be read, in the server's words: each says what the candidate can do next. */
 export const unreadableLinkMessage = (error: unknown): string | null =>
   isUnreadableLinkError(error) ? (error as Error).message : null;
+
+/**
+ * Which failure a job description's reading ended in (toreview §206): a list of jobs, a posting
+ * that was taken down, a site that refused. Null when the error is not a reading failure.
+ */
+export function jdFailureReason(error: unknown): JdFailureReason | null {
+  const details = (error as { details?: unknown } | null)?.details;
+  const reason = (details as { reason?: unknown } | null)?.reason;
+  return JD_FAILURE_REASONS.find((known) => known === reason) ?? null;
+}
+
+/** The server's sentence for a job description it could not read, whatever the source was. */
+export function jdFailureMessage(error: unknown): string | null {
+  const code = (error as { code?: unknown } | null)?.code;
+  return error instanceof Error && (code === 'UNREADABLE_LINK' || code === 'UNREADABLE_FILE')
+    ? error.message
+    : null;
+}

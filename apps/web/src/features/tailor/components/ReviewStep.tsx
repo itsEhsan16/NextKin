@@ -79,6 +79,7 @@ export function ReviewStep({
             baseline={run?.baselineScore}
             projected={run?.projected}
             match={run?.jobMatch}
+            next={run?.next}
           />
           {run && <ChangeLog job={job} run={run} />}
           <ResumeAssistantPanel generation={generation} company={job.company} />

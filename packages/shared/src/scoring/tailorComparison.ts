@@ -11,6 +11,7 @@ import {
   type TailorKeyword,
   type TailorKeywordShown,
 } from '../models';
+import { backedPlaces, elsewhereFor } from '../tailor/elsewhere';
 import { jdLists } from './adapters';
 import type { DocumentScore, ScoringJd } from './report';
 import { fixPlanOf } from './fixPlan';
@@ -234,13 +235,18 @@ export function comparisonOf(args: {
   /** The places' own lines, for where each missing keyword fits (toreview §163). */
   fitPlaces?: readonly FitPlace[];
   asOf?: PartialDate;
+  /** The candidate's other records, to say which missing keywords they already have (§206.3). */
+  elsewhere?: Omit<Parameters<typeof elsewhereFor>[0], 'keywords'>;
 }): TailorComparison {
   const total = args.result?.score?.total;
   const soft: TailorKeyword[] = (args.softSkills ?? []).map((label) => {
     const quote = quoteOf(args.rawText, label);
     return { label, onResume: says(args.resumeText ?? '', label), source: 'description', kind: 'soft', ...(quote ? { quote } : {}) };
   });
-  const keywords = [...keywordsFrom(args.result, args.rawText, args.title), ...soft];
+  const read = [...keywordsFrom(args.result, args.rawText, args.title), ...soft];
+  const found = args.elsewhere ? elsewhereFor({ ...args.elsewhere, keywords: read }) : {};
+  const keywords = read.map((k) => (found[k.label] ? { ...k, elsewhere: found[k.label]! } : k));
+  const backed = backedPlaces(found);
   const jobMatch = jobMatchOf(keywords);
   const plan = fixPlanOf({ result: args.result, ...(args.rawText ? { rawText: args.rawText } : {}), improvements: args.improvements });
   const picks = args.fitPlaces ? picksFor(keywords, args.fitPlaces, args.asOf) : {};
@@ -254,6 +260,7 @@ export function comparisonOf(args: {
     ...(jobMatch ? { jobMatch } : {}),
     ...(args.places?.length ? { places: args.places } : {}),
     ...(Object.keys(picks).length ? { picks } : {}),
+    ...(Object.keys(backed).length ? { backed } : {}),
     ...(plan ? { plan } : {}),
     improvements: args.improvements,
     ...(args.pageCount != null ? { pageCount: args.pageCount } : {}),

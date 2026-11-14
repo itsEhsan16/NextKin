@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { atsBandFor, type FigureDraft, type TailorComparison } from '@/data/models';
 import {
+  alreadyYoursLine,
   figureKey,
   keywordGroups,
   setFigure,
@@ -321,8 +322,10 @@ export function SkillChips({
   const [all, setAll] = useState(false);
   const { missing, have } = useMemo(() => {
     const g = keywordGroups(comparison);
+    // What the user's own records already show comes first (toreview §206.3).
+    const yours = (k: { elsewhere?: unknown }) => Number(k.elsewhere !== undefined);
     return {
-      missing: [...g.top, ...g.soft, ...g.more],
+      missing: [...g.top, ...g.soft, ...g.more].sort((a, b) => yours(b) - yours(a)),
       have: shownKeywords(comparison).filter((k) => k.onResume),
     };
   }, [comparison]);
@@ -331,8 +334,14 @@ export function SkillChips({
     ...have.map((k) => ({ label: k.label, locked: true })),
   ];
   const shown = all ? chips : chips.slice(0, COLLAPSED);
+  const yoursLine = alreadyYoursLine(comparison);
   return (
     <View>
+      {yoursLine ? (
+        <Text variant="footnote" color="textSecondary" style={styles.yours}>
+          {yoursLine}
+        </Text>
+      ) : null}
       <View style={styles.chips}>
         {shown.map((chip) => (
           <ChoiceChip
@@ -347,6 +356,7 @@ export function SkillChips({
                   chip.label,
                   !choices.added.includes(chip.label),
                   comparison.picks,
+                  comparison.backed,
                 ),
               )
             }
@@ -461,6 +471,7 @@ const useStyles = scaledSheet((_s, u) => ({
     paddingBottom: u(12),
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
+  yours: { marginBottom: u(8) },
   more: { alignSelf: 'flex-start', paddingVertical: u(10) },
   sheetPad: { paddingHorizontal: u(24), paddingBottom: u(12) },
   sheetBody: { paddingTop: u(8), paddingBottom: u(12), gap: u(16) },

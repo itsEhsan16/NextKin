@@ -33,6 +33,6 @@ describe('the structured-reading set', () => {
     const checks = checkCase(c, jd);
     expect(checks.find((x) => x.check === 'notRequired:Rust')?.pass).toBe(false);
     expect(checks.find((x) => x.check === 'noPay')?.pass).toBe(false);
-    expect(jdGate({ golden: 'x', cases: 1, checks, passRate: 0.9, invented: checks.filter((x) => !x.pass && ['notRequired', 'noPay'].includes(x.check.split(':')[0]!)) }).pass).toBe(false);
+    expect(jdGate({ golden: 'x', cases: 1, checks, passRate: 0.9, keywordRecall: null, invented: checks.filter((x) => !x.pass && ['notRequired', 'noPay'].includes(x.check.split(':')[0]!)) }).pass).toBe(false);
   });
 });

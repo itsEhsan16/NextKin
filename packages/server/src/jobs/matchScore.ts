@@ -2,7 +2,7 @@ import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { monthRange, unionMonths, type PartialDate } from '@nextkin/engines/dates';
 import { evidenceOf } from '@nextkin/engines/document';
 import { rubricById } from '@nextkin/engines/provenance';
-import { buildLedger, requirementsFromJd, type Evidence, type LedgerEntry } from '@nextkin/engines/requirements';
+import { buildLedger, requirementsFromJd, type Evidence, type JdStated, type LedgerEntry } from '@nextkin/engines/requirements';
 import { matchBandFor, type MatchBasis, type MatchCriterion, type MatchBand } from '@nextkin/shared/models/job';
 
 import type { Tx } from '../db/database';
@@ -68,12 +68,12 @@ function criterionOf(entry: LedgerEntry): MatchCriterion | null {
 const list = (names: string[]) => (names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`);
 
 /** What the score reads of a listing; a job description's own page passes its reading in this shape. */
-export type MatchSubject = Pick<NormalizedJob, 'requiredSkills' | 'preferredSkills' | 'descriptionKind' | 'description' | 'requirements'> & Partial<Pick<NormalizedJob, 'experienceYears'>>;
+export type MatchSubject = Pick<NormalizedJob, 'requiredSkills' | 'preferredSkills' | 'descriptionKind' | 'description' | 'requirements'> & Partial<Pick<NormalizedJob, 'experienceYears'>> & { stated?: JdStated };
 
 export function scoreMatch(listing: MatchSubject, ctx: MatchContext): JobMatch | null {
   if (!ctx.hasProfile) return null;
   const requirements = requirementsFromJd(
-    { requiredSkills: listing.requiredSkills, preferredSkills: listing.preferredSkills, rawText: listing.descriptionKind === 'full' ? [listing.description, ...listing.requirements].join('\n') : listing.description },
+    { requiredSkills: listing.requiredSkills, preferredSkills: listing.preferredSkills, rawText: listing.descriptionKind === 'full' ? [listing.description, ...listing.requirements].join('\n') : listing.description, ...(listing.stated ? { stated: listing.stated } : {}) },
     TAXONOMY,
   );
   const ledger = buildLedger({ requirements, evidence: ctx.evidence, rubric: rubricById(), asOf: ctx.asOf });

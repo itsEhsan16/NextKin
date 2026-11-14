@@ -7,6 +7,7 @@ import {
   type ExperienceLevel,
   type JdDraft,
   type JdDraftPatch,
+  type JdFailureReason,
 } from '@nextkin/shared/models';
 import { useUpdateJdDraft } from '@nextkin/shared/queries';
 import type { Route } from 'next';
@@ -29,6 +30,15 @@ import { SelectField } from '@/ui/SelectField';
 import { StableLabel } from '@/ui/StableLabel';
 
 import { SkillListField } from './SkillListField';
+
+/** Why the reading failed, in a line (toreview §206). */
+const FAILED_LEDE: Partial<Record<JdFailureReason, string>> = {
+  unreadable: 'We couldn’t read this as a job description.',
+  listing: 'That link opened a list of jobs, not one posting.',
+  removed: 'This posting is no longer available.',
+  gone: 'This posting is no longer available.',
+  not_a_job: 'We couldn’t find a job description in what you gave us.',
+};
 
 const LEVELS = Object.keys(EXPERIENCE_LEVEL_LABEL) as ExperienceLevel[];
 const TYPES = Object.keys(EMPLOYMENT_TYPE_LABEL) as EmploymentType[];
@@ -204,7 +214,7 @@ export function JdEditPanel({
               </h2>
               <p className="text-body-m text-text-secondary">
                 {failed
-                  ? 'We couldn’t read this as a job description. Enter its details yourself — the text is on the right.'
+                  ? `${FAILED_LEDE[draft.failureReason ?? 'unreadable'] ?? FAILED_LEDE.unreadable} Enter its details yourself — the text is on the right.`
                   : 'Fix anything we got wrong. We compare your resume with what’s here.'}
               </p>
             </div>

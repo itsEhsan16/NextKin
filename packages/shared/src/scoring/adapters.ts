@@ -3,6 +3,7 @@ import type { FormatFacts, ScoringDocument } from '@nextkin/engines/document';
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { requirementsFromJd, type JdLists, type Requirement } from '@nextkin/engines/requirements';
 
+import { statedOf } from '../jobs/jdRequirements';
 import type { JdDraft, JdRequirement } from '../models/jd';
 import type { Profile } from '../models/profile';
 import type { ContentRole, ResumeContent } from '../models/resumeContent';
@@ -117,11 +118,15 @@ export const profileContact = (profile: Profile, hasEmail = true): ContactPresen
 });
 
 /** The JD's lists as the engines take them. */
-export const jdLists = (draft: Pick<JdDraft, 'requiredSkills' | 'preferredSkills' | 'tools' | 'rawText'>): JdLists => ({
+export const jdLists = (
+  draft: Pick<JdDraft, 'requiredSkills' | 'preferredSkills' | 'tools' | 'rawText'> & Partial<Pick<JdDraft, 'structured'>>,
+): JdLists => ({
   requiredSkills: draft.requiredSkills,
   preferredSkills: draft.preferredSkills,
   tools: draft.tools,
   rawText: draft.rawText,
+  // The structured reading's years and conditions, so the ledger reports what the page shows.
+  ...(draft.structured ? { stated: statedOf(draft.structured) } : {}),
 });
 
 export const requirementsOf = (lists: JdLists): Requirement[] => requirementsFromJd(lists, TAXONOMY);

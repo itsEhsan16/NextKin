@@ -6,6 +6,8 @@ import { factIndex } from '@nextkin/engines/facts';
 import { rubricById } from '@nextkin/engines/provenance';
 import { buildLedger, requirementsFromJd } from '@nextkin/engines/requirements';
 import { eraValidSkills } from '@nextkin/engines/timeline';
+import { isStructured } from '@nextkin/shared/jobs/jdLegacy';
+import { statedOf } from '@nextkin/shared/jobs/jdRequirements';
 import { CANONICAL_SCHEMA_VERSION, type CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
 import { z } from 'zod';
 
@@ -64,6 +66,7 @@ export function stageJdOf(row: NonNullable<Awaited<ReturnType<typeof readJdRow>>
     rawText: row.raw_text,
     completeness: row.raw_text.split(/\s+/).filter(Boolean).length >= FULL_JD_WORDS ? 'full' : 'snippet',
     language: (row.language as StageJd['language']) ?? x.language ?? null,
+    ...(isStructured(x.structured) ? { stated: statedOf(x.structured) } : {}),
   };
   return jd;
 }
@@ -101,6 +104,7 @@ export function planFor(facts: ProfileFacts, jd: StageJd | null, run: RunInput):
         preferredSkills: jd.preferredSkills,
         tools: jd.tools,
         rawText: jd.rawText,
+        ...(jd.stated ? { stated: jd.stated } : {}),
       },
       TAXONOMY,
     );

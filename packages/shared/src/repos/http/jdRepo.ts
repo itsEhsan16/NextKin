@@ -4,7 +4,7 @@ import { jobSchema } from '../../schemas/job';
 import type { AdoptedDocument } from '../adopt';
 import { fetchDocument } from './serverDocs';
 import type { TailorComparison } from '../../models/tailor';
-import { figureDraftSchema, jdDraftSchema, jdMatchSchema, tailorComparisonSchema } from '../../schemas/jd';
+import { figureDraftSchema, jdDraftSchema, jdMatchSchema, keywordQuestionsSchema, tailorComparisonSchema } from '../../schemas/jd';
 import type { JdRepo } from '../types';
 import { ApiError, type HttpClient } from './client';
 import { poll, uploadFile, type FileUploader } from './uploads';
@@ -34,7 +34,7 @@ export function createHttpJdRepo(
   uploader: FileUploader | undefined,
   mock: JdRepo,
   options: { everyMs?: number; timeoutMs?: number; bridge?: JdBridge; strict?: boolean } = {},
-): Pick<JdRepo, 'extract' | 'get' | 'update' | 'forJob' | 'compare' | 'compareToJd' | 'match' | 'draftFigure'> {
+): Pick<JdRepo, 'extract' | 'get' | 'update' | 'forJob' | 'compare' | 'compareToJd' | 'match' | 'draftFigure' | 'keywordQuestions'> {
   const fromListing = async (jobId: string, details?: object) => parse(await http.request('/jd', { body: { source: 'job', jobId, ...(details ? { details } : {}) } }));
   const compareOnServer = async (resumeId: string, jdId: string): Promise<TailorComparison> =>
     tailorComparisonSchema.parse(await http.request(`/jd/${jdId}/comparison?resumeId=${encodeURIComponent(resumeId)}`)) as TailorComparison;
@@ -43,7 +43,7 @@ export function createHttpJdRepo(
     const timeoutMs = options.timeoutMs ?? (draft.source === 'link' ? 75_000 : 45_000);
     const done = await poll(async () => parse(await http.request(`/jd/${draft.id}`)), (d) => d.status !== 'extracting', { everyMs: options.everyMs ?? 800, timeoutMs });
     // The draft stays: §7.5 lets the user enter its fields by hand (`details.jdId`).
-    if (done.status === 'failed') throw new ApiError(draft.source === 'link' ? 'UNREADABLE_LINK' : 'UNREADABLE_FILE', done.error ?? 'We couldn’t read this job description.', 422, { jdId: done.id });
+    if (done.status === 'failed') throw new ApiError(draft.source === 'link' ? 'UNREADABLE_LINK' : 'UNREADABLE_FILE', done.error ?? 'We couldn’t read this job description.', 422, { jdId: done.id, ...(done.failureReason ? { reason: done.failureReason } : {}) });
     return done;
   };
   return {
@@ -81,6 +81,10 @@ export function createHttpJdRepo(
     async draftFigure(resumeId, roleId, line, text) {
       if (!isServerId(resumeId)) return mock.draftFigure(resumeId, roleId, line, text);
       return figureDraftSchema.parse(await http.request('/tailor/figure-draft', { body: { resumeId, roleId, line } }));
+    },
+    async keywordQuestions(resumeId, jdId) {
+      if (!isServerId(resumeId) || !isServerId(jdId)) return mock.keywordQuestions(resumeId, jdId);
+      return keywordQuestionsSchema.parse(await http.request('/tailor/keyword-questions', { body: { resumeId, jdId } })).questions;
     },
     async get(id) {
       return isServerId(id) ? parse(await http.request(`/jd/${id}`)) : mock.get(id);

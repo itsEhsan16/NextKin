@@ -11,13 +11,16 @@ import type { Database, Identity } from '../db/database';
 import { errors } from '../http/errors';
 import { findRow, toDraft } from './jdDraft';
 import { asOfNow, measureBase, readBase } from './tailorBase';
+import { readElsewhere } from './tailorElsewhere';
 
 /**
  * W-TAILOR 01, "See your difference" (toreview §110): one of the user's resumes measured against a
  * job description. The engines score the resume's own text against the JD, with the resume's own
  * lines as the yardstick — exactly how a tailored run measures its baseline and its result
  * (`measureBase`, `scoreAgainst`), so "Up from N" compares like with like (G16). No model call, no
- * quota, no AI consent: it reads only what the user owns. An uploaded file, still as uploaded,
+ * quota, no AI consent: it reads only what the user owns. That includes their profile and their
+ * other resumes, which are read only to say "you already have this" beside a missing keyword
+ * (toreview §206.3); the score itself still measures this resume alone. An uploaded file, still as uploaded,
  * brings its own page count and measured layout (toreview §110.6); otherwise the page count is the
  * line-budget estimate (`scoring/pages.ts`), labelled as one, and the layout is NextKin's template.
  */
@@ -31,6 +34,8 @@ export async function compareResumeToJd(db: Database, identity: Identity, jdId: 
     // With the path to 8.5 (toreview §129): each step re-scored on top of the ones before it.
     const result = measureBase(base, draft, asOf, TAILOR_PATH);
     const topKeywords = keywordsFrom(result, draft.rawText, draft.title).filter((k) => k.top).map((k) => k.label);
+    // The candidate's other records (toreview §206.3): which missing keywords are already theirs.
+    const elsewhere = await readElsewhere(tx, identity.userId, resumeId, doc);
     const headerChecks = headerChecksFor(doc.header, { title: draft.title, location: draft.location ?? null });
     const comparison = comparisonOf({
       resumeId,
@@ -57,6 +62,7 @@ export async function compareResumeToJd(db: Database, identity: Identity, jdId: 
       places: placesOf(doc),
       fitPlaces: fitPlacesOf(doc),
       asOf,
+      elsewhere,
     });
     return headerChecks.length ? { ...comparison, headerChecks } : comparison;
   });

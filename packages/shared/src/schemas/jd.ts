@@ -90,6 +90,9 @@ export const jdDraftSchema = z.object({
     .optional(),
   status: z.enum(['extracting', 'ready', 'failed']).optional(),
   error: z.string().optional(),
+  // A plain string on the wire, so a reason this client does not know yet still parses; the apps
+  // narrow it (`jdFailureReason`), and the sentence in `error` shows either way.
+  failureReason: z.string().max(40).optional(),
   extraction: z.object({ kept: z.number(), dropped: z.number() }).optional(),
   language: z.enum(['en', 'de', 'other']).optional(),
   /** The JD in its sections, when a model grouped them (toreview §129); else the page reads them. */
@@ -122,13 +125,23 @@ export type JdMatchBody = z.infer<typeof jdMatchSchema>;
 /** "Job match" (toreview §112): the JD's keywords the resume shows, with the missing ones. */
 export const jobMatchSchema = z.object({ matched: z.number().int().min(0), total: z.number().int().min(1), percent: z.number().min(0).max(100), missing: z.array(z.string()), basis: z.string() });
 
+/** Where the candidate's own records show a keyword this resume lacks (toreview §206.3). */
+const keywordElsewhereSchema = z.object({
+  from: z.enum(['profile', 'resume', 'certificate']),
+  shown: z.enum(['experience', 'listed', 'certificate']),
+  in: z.string(),
+  source: z.string(),
+  where: z.string().optional(),
+  line: z.string().optional(),
+});
+
 export const tailorComparisonSchema = z.object({
   resumeId: z.string(),
   jobId: z.string().optional(),
   jdId: z.string(),
   score: z.number().min(0).max(100),
   scored: z.boolean().optional(),
-  keywords: z.array(z.object({ label: z.string(), onResume: z.boolean(), shown: z.enum(['experience', 'listed', 'fewer_years']).optional(), source: z.enum(['required', 'description']), quote: z.string().optional(), top: z.boolean().optional(), kind: z.enum(['skill', 'soft']).optional() })),
+  keywords: z.array(z.object({ label: z.string(), onResume: z.boolean(), shown: z.enum(['experience', 'listed', 'fewer_years']).optional(), source: z.enum(['required', 'description']), quote: z.string().optional(), top: z.boolean().optional(), kind: z.enum(['skill', 'soft']).optional(), elsewhere: keywordElsewhereSchema.optional() })),
   improvements: z.array(
     z.object({ key: z.enum(['headline', 'summary', 'length', 'layout', 'skills', 'years']), label: z.string(), detail: z.string(), ok: z.boolean() }),
   ),
@@ -137,6 +150,7 @@ export const tailorComparisonSchema = z.object({
   jobMatch: jobMatchSchema.optional(),
   places: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
   picks: z.record(z.string(), z.array(z.string())).optional(),
+  backed: z.record(z.string(), z.array(z.string())).optional(),
   plan: z
     .object({
       score: z.number(),
@@ -176,6 +190,11 @@ export const figureDraftSchema = z.object({
   suggestion: z.string().optional(),
   /** Results to pick from, each with its own amounts (owner, 2026-11-14). */
   options: z.array(z.object({ what: z.string(), before: z.string(), after: z.string(), amounts: z.array(z.string()) })).optional(),
+});
+/** "Did you use this here?" (toreview §206.3): which resume against which job description. */
+export const keywordQuestionsRequestSchema = z.object({ resumeId: z.string().max(100), jdId: z.string().max(100) }).strict();
+export const keywordQuestionsSchema = z.object({
+  questions: z.array(z.object({ keyword: z.string(), where: z.string(), place: z.string(), line: z.string(), by: z.enum(['rules', 'model']) })),
 });
 export type JdCreate = z.infer<typeof jdCreateSchema>;
 export type JdPatchBody = z.infer<typeof jdPatchSchema>;

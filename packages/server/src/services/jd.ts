@@ -1,4 +1,4 @@
-import type { JdDraft, JdDraftPatch } from '@nextkin/shared/models/jd';
+import type { JdDraft, JdDraftPatch, JdFailureReason } from '@nextkin/shared/models/jd';
 import { readJdSections } from '@nextkin/shared/jobs/jdSections';
 import type { JdCreate } from '@nextkin/shared/schemas/jd';
 import { sql } from 'kysely';
@@ -10,7 +10,7 @@ import type { Database, Identity } from '../db/database';
 import { AppError, errors } from '../http/errors';
 import { applyUrlHashOf, jobIdOf } from '../jobs/ids';
 import { LinkError, parseLink, type LinkFailure } from '../links/address';
-import { LinkReaderUnavailableError, type LinkReader } from '../links/client';
+import { LinkReaderUnavailableError, type LinkReader, type LinkReading } from '../links/client';
 import type { Logger } from '../observability/logger';
 import { enqueue } from '../outbox/outbox';
 import { JD_DOCUMENT_KINDS } from '../parsing/analyzer';
@@ -53,6 +53,11 @@ const CHECK_LINK = 'We can’t read that address. Check the link, or paste the d
 const SITE_REFUSED = 'This site doesn’t let us read its pages. Open the job and paste its description here.';
 const NO_ANSWER = 'We couldn’t reach that page. Try again, or paste the description instead.';
 const NOT_A_JOB = 'We couldn’t find a job on that page. It may be behind a sign-in. Paste the description instead.';
+/** The posting is not there to read (toreview §206). Said plainly: nothing is read in its place. */
+const POSTING_GONE = 'This posting is no longer available. If you saved its description, paste it here.';
+const JOB_LIST = 'This link opens a list of jobs, not one posting. The original may have closed. Open the job itself and paste its link or description.';
+const SEVERAL_JOBS = 'This looks like a list of several jobs, not one posting. Paste the description of the job you want.';
+const NO_JOB_HERE = 'We couldn’t find a job description in this. Paste the full description of one job.';
 
 /** What the candidate is told about a link we could not read. Each says what they can do next. */
 export const LINK_FAILURE: Record<LinkFailure, string> = {
@@ -60,13 +65,21 @@ export const LINK_FAILURE: Record<LinkFailure, string> = {
   private: CHECK_LINK,
   robots: SITE_REFUSED,
   refused: SITE_REFUSED,
-  gone: 'This job’s page no longer exists. It may have closed.',
+  gone: POSTING_GONE,
   unsupported: 'That link opens a file. Download it and upload it here instead.',
   too_large: NO_ANSWER,
   timeout: NO_ANSWER,
   unreachable: NO_ANSWER,
   empty: NOT_A_JOB,
+  listing: JOB_LIST,
+  removed: POSTING_GONE,
 };
+
+/** A stored reading that says its posting has closed, or whose closing date has since passed. */
+function hasClosed(extracted: unknown, today: string): boolean {
+  const x = (extracted ?? {}) as { closesAt?: string; structured?: { issues?: { kind?: string }[] } };
+  return Boolean(x.structured?.issues?.some((issue) => issue.kind === 'expired')) || (typeof x.closesAt === 'string' && x.closesAt.slice(0, 10) < today);
+}
 
 /** Links one candidate may have read in an hour: the reader must not become a free fetch service. */
 export const LINKS_PER_HOUR = 30;
@@ -132,7 +145,8 @@ async function jdFromLink(db: Database, identity: Identity, raw: string, details
       .where('created_at', '>', sql<Date>`now() - make_interval(days => ${LINK_REUSE_DAYS})`)
       .orderBy('created_at', 'desc')
       .executeTakeFirst();
-    if (known && !details) return toDraft(known as Row);
+    // A posting that had closed is read again: it may have been taken down since (toreview §206).
+    if (known && !details && !hasClosed(known.extracted, new Date().toISOString().slice(0, 10))) return toDraft(known as Row);
     const recent = await tx
       .selectFrom('job_descriptions')
       .select((eb) => eb.fn.countAll<string>().as('n'))
@@ -182,7 +196,7 @@ export async function updateJd(db: Database, identity: Identity, id: string, pat
     const manual = row.status === 'failed' && enteredByHand(edited);
     const updated = await tx
       .updateTable('job_descriptions')
-      .set({ edited: JSON.stringify(edited), ...(manual ? { status: 'ready', error_message: null } : {}) })
+      .set({ edited: JSON.stringify(edited), ...(manual ? { status: 'ready', error_message: null, failure_reason: null } : {}) })
       .where('id', '=', id)
       .returning(COLUMNS)
       .executeTakeFirstOrThrow();
@@ -272,8 +286,8 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
 
   const finish = (set: Record<string, unknown>) =>
     deps.db.withUser(identity, (tx) => tx.updateTable('job_descriptions').set(set).where('id', '=', message.jdId).where('status', '=', 'extracting').execute());
-  const fail = async (text: string) => {
-    await finish({ status: 'failed', error_message: text, stage: null });
+  const fail = async (text: string, reason: JdFailureReason) => {
+    await finish({ status: 'failed', error_message: text, failure_reason: reason, stage: null });
     return 'failed' as const;
   };
   const stage = (to: 'reading' | 'understanding' | 'checking') => finish({ stage: to });
@@ -281,35 +295,49 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
   // Only a clean scan releases a file (P7-03). Still scanning: let the message come back.
   if (found.source === 'file' && found.upload_status !== 'clean') {
     if (found.upload_status === 'pending' || found.upload_status === 'scanning') {
-      if (lastAttempt) return fail(JD_FAILURE.unreadable);
+      if (lastAttempt) return fail(JD_FAILURE.unreadable, 'unreadable');
       throw new Error('the upload is still being scanned');
     }
-    return fail(JD_FAILURE.unreadable);
+    return fail(JD_FAILURE.unreadable, 'unreadable');
   }
 
   try {
     let text = found.raw_text;
     let closesAt: string | undefined;
+    let closedNote: string | undefined;
+    let pageKind: LinkReading['pageKind'];
     if (found.source !== 'paste') await stage('reading');
     if (found.source === 'link') {
-      if (!deps.links || !found.source_url) return fail(NO_ANSWER);
+      if (!deps.links || !found.source_url) return fail(NO_ANSWER, 'unreachable');
       const reading = await deps.links.read(found.source_url);
+      // The reader refuses these itself; one a release behind may still hand them over.
+      if (reading.pageKind === 'listing' || reading.pageKind === 'removed') return fail(LINK_FAILURE[reading.pageKind], reading.pageKind);
       text = repairText(reading.text).slice(0, MAX_TEXT);
       closesAt = reading.closesAt;
+      pageKind = reading.pageKind;
+      if (reading.pageKind === 'closed_job') closedNote = reading.closedNote;
     }
     if (found.source === 'file') {
-      if (!deps.files || !found.bucket || !found.object_key) return fail(JD_FAILURE.unreadable);
+      if (!deps.files || !found.bucket || !found.object_key) return fail(JD_FAILURE.unreadable, 'unreadable');
       const bytes = await deps.files.storage.read(found.bucket, found.object_key, deps.files.maxBytes);
       const analysis = await analyzeIsolated(bytes, { allowed: JD_DOCUMENT_KINDS, limits: deps.files.limits });
       // Hidden text never reaches the model (G9): the analyzer returns visible text only.
       text = repairText(await withOcr(deps, analysis)).slice(0, MAX_TEXT);
-      if (text.replace(/\s+/g, '').length < 40) return fail(JD_FAILURE.unreadable);
+      if (text.replace(/\s+/g, '').length < 40) return fail(JD_FAILURE.unreadable, 'unreadable');
     }
     await stage('understanding');
     const prompt = await deps.db.withSystem('jd: read the extraction prompt', (tx) => activePrompt(tx, JD_TEMPLATE));
-    const { jd, cached } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}) });
-    // The model is the last check on a link: a sign-in page or a closed posting has text, not a job.
-    if (found.source === 'link' && !looksLikeAJob(jd)) return fail(NOT_A_JOB);
+    const { jd, cached } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}), ...(closedNote ? { closedNote } : {}) });
+    // What the text is comes before what it says (toreview §206). The page's own data is believed
+    // first: one JobPosting block is one job, whatever else the page lists beside it.
+    const link = found.source === 'link';
+    if (jd.page?.kind === 'several_jobs' && pageKind !== 'job' && pageKind !== 'closed_job') return fail(link ? JOB_LIST : SEVERAL_JOBS, 'listing');
+    // The model is the last check: a sign-in page or a taken-down posting has text, not a job.
+    if (!looksLikeAJob(jd)) {
+      if (jd.page?.kind === 'closed') return fail(POSTING_GONE, 'removed');
+      if (link) return fail(NOT_A_JOB, 'not_a_job');
+      if (jd.page?.kind === 'not_a_job') return fail(NO_JOB_HERE, 'not_a_job');
+    }
     await stage('checking');
     // The structure places every line, so the separate section grouping (§129) runs only for a
     // reading without one.
@@ -327,15 +355,15 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
     deps.log.info({ event: 'jd.extracted', cached, kept: jd.stats.kept, dropped: jd.stats.dropped }, 'job description extracted');
     return 'ready';
   } catch (error) {
-    if (error instanceof UnreadableError) return fail(JD_FAILURE.unreadable);
-    if (error instanceof LinkError) return fail(LINK_FAILURE[error.reason]);
+    if (error instanceof UnreadableError) return fail(JD_FAILURE.unreadable, 'unreadable');
+    if (error instanceof LinkError) return fail(LINK_FAILURE[error.reason] ?? NO_ANSWER, error.reason in LINK_FAILURE ? error.reason : 'unreachable');
     if (error instanceof LinkReaderUnavailableError) {
-      if (lastAttempt) return fail(NO_ANSWER);
+      if (lastAttempt) return fail(NO_ANSWER, 'unreachable');
       throw error;
     }
     const transient = error instanceof LlmError ? error.retryable : true;
     if (transient && !lastAttempt) throw error;
-    return fail(JD_FAILURE.provider);
+    return fail(JD_FAILURE.provider, 'provider');
   }
 }
 

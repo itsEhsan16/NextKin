@@ -19,7 +19,28 @@ import type { RubricVersion } from './provenance';
 import { phraseKey, sentences, type Range } from './text';
 
 export type Importance = 'required' | 'preferred';
-export type EligibilityKind = 'work_authorization' | 'language' | 'location' | 'clearance';
+export type EligibilityKind = 'work_authorization' | 'language' | 'location' | 'clearance' | 'education' | 'certification' | 'other';
+
+/** A condition the posting states, as its structured reading found it (toreview §206.2). */
+export interface StatedEligibility {
+  kind: EligibilityKind;
+  /** The posting's own words. */
+  text: string;
+  importance?: Importance;
+  span?: Range;
+}
+
+/**
+ * What a posting's structured reading states, when there is one. It replaces this module's own
+ * search of the raw text: the reading has already placed each line and quoted it, so the ledger
+ * reports the same facts the job's page shows. None of it moves points beyond what the raw-text
+ * rules already did: years sharpen one skill's credit, eligibility is only ever reported.
+ */
+export interface JdStated {
+  /** Years asked for a skill, by the skill as the posting wrote it. */
+  skillYears?: Readonly<Record<string, number>>;
+  eligibility?: readonly StatedEligibility[];
+}
 
 export interface Requirement {
   id: string;
@@ -39,6 +60,8 @@ export interface JdLists {
   preferredSkills: readonly string[];
   tools?: readonly string[];
   rawText?: string;
+  /** The structured reading's facts. Absent for a posting read before it, or a listing snippet. */
+  stated?: JdStated;
 }
 
 const YEARS = /(\d{1,2})\s*\+?\s*(?:years?|yrs?|jahre|jahren)(?![\p{L}])/iu;
@@ -85,10 +108,27 @@ function yearsAsked(text: string, taxonomy: Taxonomy): Map<string, number> {
   return asked;
 }
 
+/** Stated conditions as ledger rows: one id per kind for the first, numbered after that. */
+function eligibilityFrom(stated: readonly StatedEligibility[]): Requirement[] {
+  const seen = new Map<EligibilityKind, number>();
+  const out: Requirement[] = [];
+  for (const item of stated) {
+    const text = item.text.trim();
+    if (!text) continue;
+    const n = seen.get(item.kind) ?? 0;
+    seen.set(item.kind, n + 1);
+    out.push({ id: n === 0 ? `elig:${item.kind}` : `elig:${item.kind}:${n + 1}`, kind: 'eligibility', importance: item.importance ?? 'required', text, eligibility: item.kind, ...(item.span ? { span: item.span } : {}) });
+  }
+  return out;
+}
+
 /** Typed requirements from a JD's lists (P9 adds verified spans from the extractor). */
 export function requirementsFromJd(jd: JdLists, taxonomy: Taxonomy): Requirement[] {
   const raw = jd.rawText ?? '';
   const asked = yearsAsked(raw, taxonomy);
+  // The reading's own line for a skill says its years more surely than a sentence search does.
+  const stated = new Map<string, number>();
+  for (const [name, years] of Object.entries(jd.stated?.skillYears ?? {})) stated.set(resolveSkill(taxonomy, name).id, years);
   const out = new Map<string, Requirement>();
   const add = (written: string, importance: Importance) => {
     const text = written.trim();
@@ -101,7 +141,9 @@ export function requirementsFromJd(jd: JdLists, taxonomy: Taxonomy): Requirement
       if (importance === 'required') existing.importance = 'required';
       return;
     }
-    const minYears = ownYears ? Number(ownYears[1]) : skill.known ? asked.get(skill.id) : undefined;
+    // A reading's lines are the whole answer where there is one: the looser sentence search would
+    // hand "5 years in logistics, some Kafka" to Kafka as well.
+    const minYears = ownYears ? Number(ownYears[1]) : jd.stated?.skillYears ? stated.get(skill.id) : skill.known ? asked.get(skill.id) : undefined;
     const first = raw ? findSkill(taxonomy, raw, skill)[0] : undefined;
     out.set(skill.id, {
       id: `req:${skill.id}`,
@@ -116,7 +158,8 @@ export function requirementsFromJd(jd: JdLists, taxonomy: Taxonomy): Requirement
   jd.requiredSkills.forEach((s) => add(s, 'required'));
   jd.preferredSkills.forEach((s) => add(s, 'preferred'));
   (jd.tools ?? []).forEach((s) => add(s, 'preferred'));
-  return [...out.values(), ...eligibilityIn(raw)];
+  // With a structured reading its conditions are the list; the phrase search is the fallback.
+  return [...out.values(), ...(jd.stated?.eligibility ? eligibilityFrom(jd.stated.eligibility) : eligibilityIn(raw))];
 }
 
 /** What a resume (or a profile) shows for each skill. */

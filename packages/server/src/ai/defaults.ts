@@ -16,8 +16,9 @@ import type { Prices, Routing } from './routing';
 // Version 5 (toreview §153): the job reader places the whole posting, each fact quoted: 8000 out.
 // Version 6 (toreview §159): it also lists the posting's themes; a long posting reaches ~7.5k: 12000.
 // Version 7 (toreview §170): the review of a whole tailored resume, on the generation tier.
+// Version 8 (toreview §206.3): "did you use this here?", on the fast tier; code checks every answer.
 export const ROUTING_DEFAULT: Routing = {
-  version: 7,
+  version: 8,
   stages: {
     default: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
@@ -64,6 +65,11 @@ export const ROUTING_DEFAULT: Routing = {
     figure_draft: [
       { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 300, inputBudgetTokens: 1000, temperature: 0.2 },
       { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 300, inputBudgetTokens: 1000, temperature: 0.2 },
+    ],
+    // "Did you use this here?" (toreview §206.3): keywords and a resume's lines in, triples out.
+    keyword_questions: [
+      { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 700, inputBudgetTokens: 6000, temperature: 0 },
+      { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 700, inputBudgetTokens: 6000, temperature: 0 },
     ],
     resume_extract: [
       { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 8000, inputBudgetTokens: 12000, temperature: 0 },

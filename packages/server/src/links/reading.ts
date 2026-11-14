@@ -1,5 +1,7 @@
 import { parse, parseFragment, type DefaultTreeAdapterMap } from 'parse5';
 
+import { classifyPage, closedWordingIn, jobLinkCount, leftThePosting, proseWordCount, type PageKind, type PageSignals } from './pageKind';
+
 /**
  * What a page says, as text a person would see (toreview §144.3). A JobPosting block in the page's
  * own JSON-LD is the best source: many job sites publish one, and it names the role and the
@@ -22,6 +24,17 @@ export interface PageReading {
   closesAt?: string;
   text: string;
   words: number;
+  /** What the page turned out to be (toreview §206). A list or a taken-down posting is not read. */
+  pageKind: PageKind;
+  /** The page's own words that the posting has closed, when it says so. */
+  closedNote?: string;
+  signals: PageSignals;
+}
+
+/** What the reader knows beyond the page: the address the candidate gave, and the time. */
+export interface ReadContext {
+  requested?: string;
+  now?: Date;
 }
 
 /** Below this, a page with no JobPosting block has not said enough to be a job posting. */
@@ -100,12 +113,77 @@ const text = (value: unknown): string | undefined => {
   return plain || undefined;
 };
 
+const isType = (value: Json, name: string): boolean => {
+  const type = value['@type'];
+  return type === name || (Array.isArray(type) && type.includes(name));
+};
+
 function jobPostings(value: unknown): Json[] {
   if (Array.isArray(value)) return value.flatMap(jobPostings);
   if (!isObject(value)) return [];
-  const type = value['@type'];
-  if (type === 'JobPosting' || (Array.isArray(type) && type.includes('JobPosting'))) return [value];
-  return jobPostings(value['@graph']);
+  if (isType(value, 'JobPosting')) return [value];
+  // A list page wraps each posting in a ListItem; a page's main thing may sit in mainEntity.
+  return [...jobPostings(value['@graph']), ...jobPostings(value.itemListElement), ...jobPostings(value.item), ...jobPostings(value.mainEntity)];
+}
+
+/** Whether the page's own data calls it a list of things or a search result. */
+function saysItIsAList(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(saysItIsAList);
+  if (!isObject(value)) return false;
+  if (isType(value, 'SearchResultsPage')) return true;
+  if (isType(value, 'ItemList') && Array.isArray(value.itemListElement) && value.itemListElement.length >= 3) return true;
+  return saysItIsAList(value['@graph']) || saysItIsAList(value.mainEntity);
+}
+
+const identifierOf = (posting: Json): string | undefined => {
+  const id = posting.identifier;
+  const value = isObject(id) ? id.value : id;
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : undefined;
+};
+
+const postingKey = (posting: Json): string => `${typeof posting.title === 'string' ? posting.title : ''}|${typeof posting.url === 'string' ? posting.url : (identifierOf(posting) ?? '')}`;
+
+const samePage = (a: string, b: string): boolean => {
+  try {
+    const x = new URL(a, b);
+    const y = new URL(b);
+    return x.host === y.host && x.pathname.replace(/\/+$/, '') === y.pathname.replace(/\/+$/, '');
+  } catch {
+    return false;
+  }
+};
+
+interface Blocks {
+  /** The one posting this page is about, when it can be told. */
+  posting?: Json;
+  postings: number;
+  listType: boolean;
+}
+
+/**
+ * The posting a page is about. One block is that posting. Several are a list, unless one of them
+ * names this very address: taking the first of many is how a board page became "the job".
+ */
+function readBlocks(blocks: readonly string[], addresses: readonly string[]): Blocks {
+  const found = new Map<string, Json>();
+  let listType = false;
+  for (const raw of blocks) {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      for (const posting of jobPostings(parsed)) if (!found.has(postingKey(posting))) found.set(postingKey(posting), posting);
+      listType ||= saysItIsAList(parsed);
+    } catch {
+      // A malformed block says nothing; the page's text may still.
+    }
+  }
+  const all = [...found.values()];
+  if (all.length <= 1) return { ...(all[0] ? { posting: all[0] } : {}), postings: all.length, listType };
+  const mine = all.filter((posting) => {
+    const url = typeof posting.url === 'string' ? posting.url : undefined;
+    const id = identifierOf(posting);
+    return addresses.some((address) => (url !== undefined && samePage(url, address)) || (id !== undefined && id.length >= 4 && address.includes(id)));
+  });
+  return { ...(mine.length === 1 && mine[0] ? { posting: mine[0] } : {}), postings: all.length, listType };
 }
 
 const organisation = (value: unknown): string | undefined => (isObject(value) ? text(value.name) : text(value));
@@ -119,18 +197,22 @@ function place(value: unknown): string | undefined {
   return parts.length ? parts.join(', ') : undefined;
 }
 
-function postingIn(document: Node): Json | undefined {
-  let found: Json | undefined;
+function jsonLdIn(document: Node): string[] {
+  const blocks: string[] = [];
   walk(document, (el) => {
-    if (found || el.tagName !== 'script' || !/ld\+json/i.test(attr(el, 'type') ?? '')) return;
-    const raw = el.childNodes.filter(isText).map((n) => n.value).join('');
-    try {
-      found = jobPostings(JSON.parse(raw))[0];
-    } catch {
-      // A malformed block says nothing; the page's text may still.
-    }
+    if (el.tagName !== 'script' || !/ld\+json/i.test(attr(el, 'type') ?? '')) return;
+    blocks.push(el.childNodes.filter(isText).map((n) => n.value).join(''));
   });
-  return found;
+  return blocks;
+}
+
+function hrefsIn(document: Node): string[] {
+  const hrefs: string[] = [];
+  walk(document, (el) => {
+    const href = el.tagName === 'a' ? attr(el, 'href') : undefined;
+    if (href) hrefs.push(href);
+  });
+  return hrefs;
 }
 
 /** The posting's own description is HTML more often than not. */
@@ -152,20 +234,43 @@ const compose = (parts: { title?: string | undefined; company?: string | undefin
     .trim()
     .slice(0, MAX_TEXT);
 
-/** A page read through a browser hands its JSON-LD and text over directly. */
-export function readRendered(input: { url: string; title: string; text: string; jsonLd: string[] }): PageReading {
-  for (const block of input.jsonLd) {
-    try {
-      const posting = jobPostings(JSON.parse(block))[0];
-      if (posting) return fromPosting(input.url, posting) ?? fromText(input.url, input.title, input.text);
-    } catch {
-      // As above.
-    }
-  }
-  return fromText(input.url, input.title, input.text);
+interface Seen {
+  url: string;
+  title: string | undefined;
+  /** The text of the part that holds the page, for the reading. */
+  main: string;
+  /** Everything visible, for the notices that sit outside the main part. */
+  whole: string;
+  jsonLd: readonly string[];
+  hrefs: readonly string[];
 }
 
-function fromPosting(url: string, posting: Json): PageReading | null {
+type Draft = Omit<PageReading, 'pageKind' | 'closedNote' | 'signals'>;
+
+/** One reading from what a page showed, however it was fetched, with the page's kind decided. */
+function readSeen(seen: Seen, context: ReadContext): PageReading {
+  const addresses = [seen.url, ...(context.requested ? [context.requested] : [])];
+  const blocks = readBlocks(seen.jsonLd, addresses);
+  const draft = (blocks.posting ? fromPosting(seen.url, blocks.posting) : null) ?? fromText(seen.url, seen.title, seen.main);
+  const closedWording = closedWordingIn(seen.whole.slice(0, MAX_TEXT));
+  const signals: PageSignals = {
+    postings: blocks.postings,
+    listType: blocks.listType,
+    jobLinks: jobLinkCount(seen.hrefs, seen.url),
+    proseWords: proseWordCount(draft.text),
+    ...(closedWording ? { closedWording } : {}),
+    redirected: context.requested ? leftThePosting(context.requested, seen.url) : false,
+  };
+  const pageKind = classifyPage({ structured: draft.structured, unmatchedPostings: blocks.postings > 1 && !blocks.posting, signals, closesAt: draft.closesAt, now: context.now ?? new Date() });
+  return { ...draft, pageKind, ...(closedWording ? { closedNote: closedWording } : {}), signals };
+}
+
+/** A page read through a browser hands its JSON-LD, text and links over directly. */
+export function readRendered(input: { url: string; title: string; text: string; jsonLd: string[]; hrefs?: string[] }, context: ReadContext = {}): PageReading {
+  return readSeen({ url: input.url, title: input.title, main: input.text, whole: input.text, jsonLd: input.jsonLd, hrefs: input.hrefs ?? [] }, context);
+}
+
+function fromPosting(url: string, posting: Json): Draft | null {
   const body = typeof posting.description === 'string' ? descriptionText(posting.description) : '';
   if (wordCount(body) < MIN_STRUCTURED_WORDS) return null;
   const title = text(posting.title);
@@ -177,17 +282,18 @@ function fromPosting(url: string, posting: Json): PageReading | null {
   return { url, structured: true, ...(title ? { title } : {}), ...(company ? { company } : {}), ...(location ? { location } : {}), ...(closesAt ? { closesAt } : {}), text: composed, words: wordCount(composed) };
 }
 
-function fromText(url: string, title: string | undefined, body: string): PageReading {
+function fromText(url: string, title: string | undefined, body: string): Draft {
   const composed = tidy(body).slice(0, MAX_TEXT);
   return { url, structured: false, ...(title ? { title } : {}), text: composed, words: wordCount(composed) };
 }
 
-export function readHtml(html: string, url: string): PageReading {
+export function readHtml(html: string, url: string, context: ReadContext = {}): PageReading {
   const document = parse(html);
-  const posting = postingIn(document);
-  const structured = posting ? fromPosting(url, posting) : null;
-  return structured ?? fromText(url, pageTitle(document), mainText(document));
+  return readSeen({ url, title: pageTitle(document), main: mainText(document), whole: visibleText(document), jsonLd: jsonLdIn(document), hrefs: hrefsIn(document) }, context);
 }
+
+/** A page we will not read as a job: a list of jobs, or a posting that was taken down. */
+export const notOnePosting = (reading: Pick<PageReading, 'pageKind'>): 'listing' | 'removed' | null => (reading.pageKind === 'listing' || reading.pageKind === 'removed' ? reading.pageKind : null);
 
 const CHALLENGE = /just a moment|attention required|security check|verify (that )?you(['’]re| are) (a )?human|are you (a )?(robot|human)|checking your browser|access denied|request blocked|enable javascript and cookies|unusual traffic|captcha/i;
 

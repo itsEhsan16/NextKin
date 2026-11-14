@@ -36,11 +36,22 @@ export type JdWant = {
   language?: 'en' | 'de';
   /** Page chrome that must not be kept as any part of the job. */
   chromeAbsent?: string[];
+  /** The title and the company, exactly as the posting writes them (toreview §206.2). */
+  title?: string;
+  company?: string;
+  /** Names that must not be read as a skill at all: the hiring company, a job phrase. */
+  notSkill?: string[];
+  /** Education and certificate lines the reading must keep (a word from each). */
+  education?: string[];
+  /** What the text is, when it is not one open posting (toreview §206). */
+  page?: 'several_jobs' | 'closed' | 'not_a_job';
+  /** One posting: it must not be called a list, closed or "not a job". */
+  noPage?: boolean;
 };
 
 export type JdCase = { id: string; scenario: string; text: string; want: JdWant };
 
-export const JD_GOLDEN_VERSION = 'jd-structure-0.1.0';
+export const JD_GOLDEN_VERSION = 'jd-structure-0.2.0';
 
 export const JD_GOLDEN: readonly JdCase[] = [
   {
@@ -69,7 +80,7 @@ Nice to have
 
 Compensation
 $120,000 – $150,000 per year, plus equity.`,
-    want: { required: ['React', 'TypeScript'], preferred: ['GraphQL'], notRequired: ['GraphQL'], pay: { min: 120000, max: 150000, currency: 'USD', period: 'year' }, minYears: 3, maxYears: 5, workMode: 'hybrid', employmentType: 'full_time', minResponsibilities: 3, noIssues: true },
+    want: { noPage: true, required: ['React', 'TypeScript'], preferred: ['GraphQL'], notRequired: ['GraphQL'], pay: { min: 120000, max: 150000, currency: 'USD', period: 'year' }, minYears: 3, maxYears: 5, workMode: 'hybrid', employmentType: 'full_time', minResponsibilities: 3, noIssues: true },
   },
   {
     id: 'one-paragraph',
@@ -250,6 +261,122 @@ Own the roadmap for our merchant onboarding product.`,
 Apply by 15 Oct 2026.
 Freshers welcome. Learn route planning and warehouse operations.`,
     want: { freshersOk: true, issues: ['application'] },
+  },
+  {
+    id: 'listing-page',
+    scenario: 'A job board page listing several openings (where a closed link often lands)',
+    text: `Careers at Harborline Freight
+12 open roles
+
+Operations Analyst
+Rotterdam · Full-time · Posted 3 days ago
+Apply
+
+Senior Backend Engineer
+Remote (EU) · Full-time · Posted 5 days ago
+Apply
+
+Customer Success Manager
+Hamburg · Full-time · Posted 1 week ago
+Apply
+
+Warehouse Shift Lead
+Antwerp · Shift work · Posted 1 week ago
+Apply
+
+Payroll Specialist
+Rotterdam · Part-time · Posted 2 weeks ago
+Apply
+
+Data Engineer
+Remote (EU) · Contract · Posted 2 weeks ago
+Apply
+
+Load more jobs`,
+    want: { page: 'several_jobs' },
+  },
+  {
+    id: 'closed-with-text',
+    scenario: 'A closed posting that still shows its description',
+    text: `This job is no longer accepting applications.
+
+QA Engineer — Marlowe Robotics
+Pune, India · Full-time
+
+You will test the firmware and the mobile app for our warehouse robots.
+- Write automated tests in Python with pytest
+- Run regression suites before every release
+- Report defects in Jira and follow them to closure
+
+Requirements
+- 2+ years of software testing experience
+- Python and Selenium are required
+- Experience with CI pipelines is a plus`,
+    want: { page: 'closed', issues: ['application'], title: 'QA Engineer', company: 'Marlowe Robotics', required: ['Python', 'Selenium'], notSkill: ['Marlowe Robotics'], minYears: 2, minResponsibilities: 3 },
+  },
+  {
+    id: 'removed-page',
+    scenario: 'A taken-down posting: a notice and the site around it, no description',
+    text: `Tessaly Health — Careers
+Sorry, this position has been filled.
+The job you are looking for is no longer available.
+View all open positions
+Join our talent community
+Privacy · Terms · Cookie settings`,
+    want: { page: 'closed', noPay: true, noYears: true },
+  },
+  {
+    id: 'sign-in-page',
+    scenario: 'A sign-in wall, not a job',
+    text: `Sign in to continue
+Email address
+Password
+Forgot your password?
+New here? Create an account to see this job and thousands more.
+By continuing you agree to our Terms of Service and Privacy Policy.`,
+    want: { page: 'not_a_job', noPay: true, noYears: true },
+  },
+  {
+    id: 'two-levels',
+    scenario: 'One posting that hires at two levels, with other jobs listed under it',
+    text: `Software Engineer I / Software Engineer II — Quillmark Systems
+Bengaluru · Full-time · 4 openings
+
+We are hiring at two levels for the same team. You will build the document search service.
+- Design and ship REST APIs in Java and Spring Boot
+- Tune PostgreSQL queries and indexes
+- Take part in on-call for the services you own
+
+What we need
+- SE I: 1-2 years of backend experience. SE II: 3-5 years.
+- Java and SQL are a must
+- Kafka is good to have
+
+Similar jobs
+Frontend Engineer — Quillmark Systems
+Site Reliability Engineer — Quillmark Systems
+Engineering Manager — Quillmark Systems
+Product Designer — Quillmark Systems`,
+    want: { noPage: true, title: 'Software Engineer I / Software Engineer II', company: 'Quillmark Systems', required: ['Java', 'SQL'], preferred: ['Kafka'], notSkill: ['Quillmark Systems', 'Frontend Engineer'], minResponsibilities: 3 },
+  },
+  {
+    id: 'degree-and-certificate',
+    scenario: 'A degree, a certificate and years tied to one skill',
+    text: `Cloud Engineer — Northgate Insurance
+Leeds, UK · Hybrid
+
+What you will do
+- Run our AWS estate and its Terraform modules
+- Build deployment pipelines in GitHub Actions
+- Work with Northgate Insurance underwriting teams on data platforms
+
+What you need
+- 4+ years of AWS in production
+- Terraform and Kubernetes
+- Bachelor's degree in Computer Science or a related field
+- AWS Certified Solutions Architect is preferred
+- Experience in insurance is a plus`,
+    want: { noPage: true, title: 'Cloud Engineer', company: 'Northgate Insurance', required: ['AWS', 'Terraform', 'Kubernetes'], notSkill: ['Northgate Insurance'], education: ['Bachelor', 'Certified'], workMode: 'hybrid', minResponsibilities: 3 },
   },
   {
     id: 'perks-vs-schedule',

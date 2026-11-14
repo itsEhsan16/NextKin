@@ -86,6 +86,8 @@ export {
 } from './useInterview';
 export {
   isUnreadableLinkError,
+  jdFailureMessage,
+  jdFailureReason,
   unreadableLinkMessage,
   useExtractJd,
   JD_READING_POLL_MS,
@@ -94,7 +96,7 @@ export {
   useTailorComparison,
   useUpdateJdDraft,
 } from './useJd';
-export { unreadableJdId, useDraftFigure, useJdComparison, useJdJob, useJdMatch } from './useJdJob';
+export { unreadableJdId, useDraftFigure, useJdComparison, useJdJob, useJdMatch, useKeywordQuestions } from './useJdJob';
 export type { JobFactsKnown } from '../jobs/fromJd';
 export {
   useApplications,

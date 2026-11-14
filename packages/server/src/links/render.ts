@@ -3,7 +3,7 @@ import { chromium, type Browser } from 'playwright-core';
 import { LinkError, type LinkPolicy } from './address';
 import { USER_AGENT } from './fetchPage';
 import { startGuardProxy, type GuardProxy } from './proxy';
-import { readRendered, type PageReading } from './reading';
+import { readRendered, type PageReading, type ReadContext } from './reading';
 
 /**
  * A page that needs a browser to show its content (toreview §144.3). Only a page the site served
@@ -19,7 +19,7 @@ const SETTLE_MS = 6000;
 const SETTLED_CHARS = 1500;
 
 export interface PageRenderer {
-  render(url: string, timeoutMs: number): Promise<PageReading>;
+  render(url: string, timeoutMs: number, context?: ReadContext): Promise<PageReading>;
   close(): Promise<void>;
 }
 
@@ -48,7 +48,7 @@ export function createPageRenderer(options: RendererOptions = {}): PageRenderer 
   };
 
   return {
-    async render(url, timeoutMs) {
+    async render(url, timeoutMs, read = {}) {
       started ??= start().catch((error: unknown) => {
         started = null;
         throw error;
@@ -69,8 +69,10 @@ export function createPageRenderer(options: RendererOptions = {}): PageRenderer 
           title: document.title,
           text: document.body?.innerText ?? '',
           jsonLd: [...document.querySelectorAll('script[type*="ld+json"]')].map((s) => s.textContent ?? ''),
+          hrefs: [...document.querySelectorAll('a[href]')].slice(0, 3000).map((a) => (a as HTMLAnchorElement).href),
         }));
-        return readRendered({ url: page.url(), ...seen });
+        // `page.url()` is where the page ended up, after any redirect its own script made.
+        return readRendered({ url: page.url(), ...seen }, read);
       } catch (error) {
         if (error instanceof LinkError) throw error;
         throw new LinkError(error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'unreachable');
