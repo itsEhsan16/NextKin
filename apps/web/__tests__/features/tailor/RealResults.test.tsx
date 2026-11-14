@@ -19,7 +19,7 @@ const step = (index: number): PlanStep => ({
 });
 
 describe('Add real results (toreview §149)', () => {
-  it('lists every line without a result, and finishes one in a dialog fitted to the line', async () => {
+  it('lists every line without a result, and finishes one by picking the AI’s result and amount for that line', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
     renderWithQuery(
@@ -35,19 +35,22 @@ describe('Add real results (toreview §149)', () => {
     const [first] = screen.getAllByRole('button', { name: 'Add the result' });
     await user.click(first!);
     const dialog = screen.getByRole('dialog', { name: 'Add the result' });
-    // The line with its gap, and the AI's guess offered apart (the mock's draft).
-    const guess = await within(dialog).findByRole(
+    // The AI's own results for this line, then that result's amounts: pick, don't type.
+    const result = await within(dialog).findByRole(
       'button',
-      { name: "Use the AI's guess: about 20%" },
+      { name: /Time saved/ },
       { timeout: SETTLE_MS.normal },
     );
     const use = within(dialog).getByRole('button', { name: 'Use this line' });
     expect(use).toBeDisabled();
-    await user.click(guess);
+    await user.click(result);
+    expect(use).toBeDisabled();
+    await user.click(within(dialog).getByRole('button', { name: /5 hours/ }));
+    expect(dialog).toHaveTextContent('Built feature 1, saving 5 hours of manual work a week.');
     await user.click(use);
     expect(onFigure).toHaveBeenCalledWith(
       { roleId: 'role_web', index: 1, text: 'Built feature 1.' },
-      'Built feature 1, improving about 20%.',
+      'Built feature 1, saving 5 hours of manual work a week.',
     );
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });

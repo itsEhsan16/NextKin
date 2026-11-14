@@ -146,6 +146,14 @@ export type TailorFigure = { where: string; line: number; text: string };
  * `after`. The AI never writes the figure; `hint` says what kind of figure goes there. `by: 'rules'`
  * is the plain fallback ("…, improving ___").
  */
+/**
+ * One result this line could claim, written by the model for this line (owner, 2026-11-14: "custom
+ * option of what and how"): what it is ("sellers onboarded"), the line rewritten around its gap, and
+ * three conservative amounts to pick from ("50+ sellers", "200+ sellers", "1,000+ sellers"). The
+ * candidate picks only what is true; code checks the wording keeps to the line (G14).
+ */
+export type FigureOption = { what: string; before: string; after: string; amounts: string[] };
+
 export type FigureDraft = {
   before: string;
   after: string;
@@ -157,6 +165,8 @@ export type FigureDraft = {
    * (owner, 2026-11-07), apart from the line: G13 still keeps every figure out of before/after.
    */
   suggestion?: string;
+  /** Two or three results to pick from, each with its own amounts (owner, 2026-11-14). */
+  options?: FigureOption[];
 };
 
 /** The plain draft: the line as written, with the gap after "improving". */

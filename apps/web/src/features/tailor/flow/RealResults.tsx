@@ -43,8 +43,13 @@ function ResultRow({
     if (figure !== undefined || !isIdle) return;
     mutate({ resumeId, roleId: bullet.roleId, line: bullet.index, text: bullet.text });
   }, [figure, isIdle, mutate, resumeId, bullet]);
-  // The rules' fallback asks the same thing of every line, so only the model's own question shows.
-  const asks = draft?.by === 'model' ? draft.hint : undefined;
+  // What this line could show: the AI's own results for it, else its one question. The rules'
+  // fallback asks the same thing of every line, so it shows nothing here.
+  const asks = draft?.options?.length
+    ? draft.options.map((o) => o.what).join(' · ')
+    : draft?.by === 'model'
+      ? draft.hint
+      : undefined;
   return (
     <li className={categoryRow}>
       <div className="min-w-0 flex-1 basis-60">
@@ -60,7 +65,7 @@ function ResultRow({
         </p>
         {!figure && asks && (
           <p className="mt-1 animate-reveal text-body-s font-medium text-text-brand">
-            Missing: {asks}
+            Could show: {asks}
           </p>
         )}
       </div>
