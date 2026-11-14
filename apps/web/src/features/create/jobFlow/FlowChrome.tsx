@@ -38,6 +38,7 @@ export function FlowHeader({
   leading = <SparkleTile />,
   steps,
   step,
+  stepHrefs,
 }: {
   backHref: Route;
   backLabel: string;
@@ -46,9 +47,11 @@ export function FlowHeader({
   leading?: ReactNode;
   steps: readonly string[];
   step: number;
+  /** Where each step lives, so a done step is a link back to it. */
+  stepHrefs?: readonly (Route | undefined)[];
 }) {
   return (
-    <header className="flex flex-wrap items-center gap-x-8 gap-y-4 in-data-drawer:pr-12">
+    <header className="flex flex-wrap items-center gap-x-8 gap-y-4">
       <div className="flex min-w-0 flex-1 items-center gap-3.5">
         <Link
           href={backHref}
@@ -66,7 +69,7 @@ export function FlowHeader({
           <p className="truncate text-h2 font-bold tracking-tight text-text-primary">{title}</p>
         </div>
       </div>
-      <FlowSteps steps={steps} step={step} />
+      <FlowSteps steps={steps} step={step} {...(stepHrefs ? { hrefs: stepHrefs } : {})} />
     </header>
   );
 }

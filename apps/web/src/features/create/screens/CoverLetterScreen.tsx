@@ -91,6 +91,15 @@ export function CoverLetterScreen({
           {...(job ? { leading: <JobLogoTile job={job} /> } : {})}
           steps={STEPS}
           step={stepIndex}
+          // Back to the resume step from the letter (owner, 2026-11-14: steps move you there).
+          stepHrefs={[
+            undefined,
+            coverHref({
+              ...(target ? { target } : {}),
+              ...(resumeId ? { resumeId } : {}),
+              step: 'resume',
+            }),
+          ]}
         />
       )}
       <div key={`${stepIndex}-${runId ?? ''}`} className="animate-reveal">

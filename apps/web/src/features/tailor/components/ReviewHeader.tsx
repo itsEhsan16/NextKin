@@ -53,7 +53,7 @@ export function ReviewHeader({
   const fit = useFitToOnePage(resumeId);
   const raiseApplyAsk = useRaiseApplyAsk();
   return (
-    <header className="flex flex-wrap items-center gap-x-3.5 gap-y-3 in-data-drawer:pr-12">
+    <header className="flex flex-wrap items-center gap-x-3.5 gap-y-3">
       {backHref && (
         <Link
           href={backHref}

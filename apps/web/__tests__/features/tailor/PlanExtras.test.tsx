@@ -79,15 +79,27 @@ describe('the plan inside Enhance', () => {
     const user = userEvent.setup();
     const choices = choicesWith();
     renderWithQuery(
-      <ShowInRole steps={[keyword, evidence, number]} places={places} choices={choices} />,
+      <ShowInRole
+        steps={[keyword, evidence, number]}
+        places={places}
+        picks={{ 'Claude Code': ['role_old'] }}
+        choices={choices}
+      />,
     );
     const row = screen.getByText('Claude Code').closest('li')!;
     expect(within(row).getByText('Required')).toBeInTheDocument();
     expect(within(row).getByText('+0.1')).toBeInTheDocument();
     // Only the skill-list step: keywords are capsules and results have their own list.
     expect(screen.queryByText('Docker')).toBeNull();
+    // Where is asked in a dialog (owner, 2026-11-14), the job's own line quoted.
     await user.click(within(row).getByRole('button', { name: 'Say where you used it' }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Intern · Acme' }));
+    const dialog = screen.getByRole('dialog', { name: 'Where did you use Claude Code?' });
+    expect(dialog).toHaveTextContent('Rapid prototyping: ship MVPs fast');
+    // The role whose lines fit it best comes first, tagged.
+    const boxes = within(dialog).getAllByRole('checkbox');
+    expect(boxes[0]).toHaveAccessibleName(/Intern · Acme/);
+    expect(within(dialog).getByText('Best fit')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('checkbox', { name: /Intern · Acme/ }));
     expect(choices.togglePlace).toHaveBeenCalledWith('Claude Code', 'role_old', true);
   });
 
@@ -99,11 +111,15 @@ describe('the plan inside Enhance', () => {
     });
     renderWithQuery(<ShowInRole steps={[evidence]} places={places} choices={choices} />);
     await user.click(screen.getByRole('button', { name: /Used in: Full-Stack Developer/ }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: /Skills only/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Where did you use Claude Code?' });
+    expect(
+      within(dialog).getByRole('checkbox', { name: 'Full-Stack Developer · Webcros' }),
+    ).toBeChecked();
+    await user.click(within(dialog).getByRole('checkbox', { name: /Skills only/ }));
     expect(choices.setAdded).toHaveBeenCalledWith(['Git']);
   });
 
-  it('"More to raise your score" lists the other steps with who does each and what it adds', () => {
+  it('"Other fixes" lists the other steps with who does each and what it adds', () => {
     renderWithQuery(
       <MoreFixes steps={[keyword, evidence, number, contact, wording]} resumeId="res_1" />,
     );
@@ -121,7 +137,7 @@ describe('the plan inside Enhance', () => {
       expect(screen.queryByText(covered)).toBeNull();
   });
 
-  it('"Add the result" builds the line from two picks, with nothing picked for them', async () => {
+  it('"Add the result" fills the gap in the line’s own draft with the real figure', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
     renderWithQuery(
@@ -133,20 +149,23 @@ describe('the plan inside Enhance', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Add the result' }));
-    const use = screen.getByRole('button', { name: 'Use this line' });
+    const dialog = screen.getByRole('dialog', { name: 'Add the result' });
+    const input = await within(dialog).findByRole(
+      'textbox',
+      { name: /Your figure/ },
+      { timeout: 4000 },
+    );
+    const use = within(dialog).getByRole('button', { name: 'Use this line' });
     expect(use).toBeDisabled();
-    expect(screen.queryByRole('button', { pressed: true })).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Made it faster' }));
-    expect(use).toBeDisabled();
-    await user.click(screen.getByRole('button', { name: '25%' }));
+    await user.type(input, 'page load time by 30%');
     await user.click(use);
     expect(onFigure).toHaveBeenCalledWith(
       number.bullet,
-      'Built the checkout in Next.js, cutting the time it took by about 25%.',
+      'Built the checkout in Next.js, improving page load time by 30%.',
     );
   });
 
-  it('"Something else" drafts the line; the user fills only the figure', async () => {
+  it('"Write the whole line myself" edits the line freely', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
     renderWithQuery(
@@ -158,13 +177,21 @@ describe('the plan inside Enhance', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Add the result' }));
-    await user.click(screen.getByRole('button', { name: 'Something else' }));
-    const input = await screen.findByRole('textbox', { name: /The result/ }, { timeout: 4000 });
-    await user.type(input, 'page load time by 30%');
-    await user.click(screen.getByRole('button', { name: 'Use this line' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add the result' });
+    await user.click(
+      await within(dialog).findByRole(
+        'button',
+        { name: 'Write the whole line myself' },
+        { timeout: 4000 },
+      ),
+    );
+    const box = within(dialog).getByRole('textbox', { name: /Your line, with its real result/ });
+    await user.clear(box);
+    await user.type(box, 'Built the checkout in Next.js, cutting load time by 40%.');
+    await user.click(within(dialog).getByRole('button', { name: 'Use this line' }));
     expect(onFigure).toHaveBeenCalledWith(
       number.bullet,
-      'Built the checkout in Next.js, improving page load time by 30%.',
+      'Built the checkout in Next.js, cutting load time by 40%.',
     );
   });
 });

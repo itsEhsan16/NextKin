@@ -14,6 +14,8 @@ import { pressable } from '@/ui/pressable';
 import { Soon } from '@/ui/Soon';
 
 import { AccountMenu } from './AccountMenu';
+import { NotificationsPanel } from '@/features/notifications/components/NotificationsPanel';
+
 import { OPEN_SIDEBAR_EVENT } from './useSidebarRail';
 import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
@@ -79,6 +81,7 @@ export function TopBar() {
   const clear = page?.inBar && !scrolled;
   const searchInput = useRef<HTMLInputElement>(null);
   const submitSearch = useGlobalSearch(searchInput);
+  const [bell, setBell] = useState(false);
 
   return (
     // Named, so a route change's cross-fade leaves the bar still and drawn over the page
@@ -153,9 +156,13 @@ export function TopBar() {
             </Soon>
           )}
 
-          {/* The feed (toreview §148.1). */}
-          <Link
-            href="/notifications"
+          {/* The feed, in a panel from the bell (owner, 2026-11-14); the full page stays at
+              /notifications (toreview §148.1). */}
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={bell}
+            onClick={() => setBell(true)}
             aria-label={hasUnread ? 'Notifications, unread' : 'Notifications'}
             className={cn(
               'relative flex size-control-md shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary shadow-card hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
@@ -166,7 +173,8 @@ export function TopBar() {
             {hasUnread && (
               <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-danger-dot ring-2 ring-surface-card" />
             )}
-          </Link>
+          </button>
+          <NotificationsPanel open={bell} onOpenChange={setBell} />
 
           {/* Profile (476:4), Settings and Sign out, from every screen. */}
           <AccountMenu />

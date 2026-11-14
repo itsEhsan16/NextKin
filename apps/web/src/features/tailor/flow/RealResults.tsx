@@ -1,23 +1,30 @@
 'use client';
 
 import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
-import { useState } from 'react';
+import { useDraftFigure } from '@nextkin/shared/queries';
+import { useEffect, useState } from 'react';
 
-import { ColumnHead, stepCard } from '@/features/create/jobFlow/FlowChrome';
 import { cn } from '@/lib/cn';
-import { CollapseFade } from '@/ui/CollapseFade';
-import { InsightsStarIllustration } from '@/ui/illustrations';
-import { ChevronDownIcon } from '@/ui/icons';
-import { Check } from '@/ui/lineIcons';
+import { Check, Plus } from '@/ui/lineIcons';
 import { textLink } from '@/ui/textLink';
 
-import { FigureEditor } from './FigureEditor';
+import { CategoryList, categoryRow } from './PlanExtras';
+import { ResultDialog } from './ScoreDialogs';
 
 type Bullet = NonNullable<PlanStep['bullet']>;
 
-const SHOWN = 3;
-const linkAction = cn(textLink, 'flex items-center gap-1.5 text-body-m text-text-brand');
+const linkAction = cn(textLink, 'flex shrink-0 items-center gap-1.5 text-body-m text-text-brand');
 
+/** The lines with no measured result, from the plan's own steps. */
+export function resultBullets(steps: readonly PlanStep[]): Bullet[] {
+  return steps.flatMap((s) => (s.kind === 'number' && s.bullet ? [s.bullet] : []));
+}
+
+/**
+ * One line to finish. It asks the AI for its own draft as soon as the list shows (the server keeps
+ * each for 30 days), so the row can say what this line is missing ("Add: how many artisans signed
+ * up") and the dialog opens on it, instead of the same generic question for every line.
+ */
 function ResultRow({
   bullet,
   resumeId,
@@ -29,11 +36,19 @@ function ResultRow({
   figure: string | undefined;
   onFigure: (text: string | null) => void;
 }) {
-  const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
+  const draftFigure = useDraftFigure();
+  const { mutate, isIdle, data: draft } = draftFigure;
+  useEffect(() => {
+    if (figure !== undefined || !isIdle) return;
+    mutate({ resumeId, roleId: bullet.roleId, line: bullet.index, text: bullet.text });
+  }, [figure, isIdle, mutate, resumeId, bullet]);
+  // The rules' fallback asks the same thing of every line, so only the model's own question shows.
+  const asks = draft?.by === 'model' ? draft.hint : undefined;
   return (
-    <li className="flex flex-col gap-2 rounded-lg bg-neutral-50 px-4 py-3">
-      <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
-        <p className="min-w-0 flex-1 text-body-m text-text-secondary">
+    <li className={categoryRow}>
+      <div className="min-w-0 flex-1 basis-60">
+        <p className="text-body-m text-text-secondary">
           {figure ? (
             <span className="flex items-start gap-2 text-text-primary">
               <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-success-600" />
@@ -43,88 +58,61 @@ function ResultRow({
             bullet.text
           )}
         </p>
-        <button
-          type="button"
-          aria-expanded={editing}
-          onClick={() => setEditing((v) => !v)}
-          className={linkAction}
-        >
-          {figure ? 'Edit your result' : 'Add the result'}
-          <ChevronDownIcon
-            aria-hidden
-            className={cn(
-              'size-3 transition-transform duration-press ease-standard',
-              editing && 'rotate-180',
-            )}
-          />
-        </button>
+        {!figure && asks && (
+          <p className="mt-1 animate-reveal text-body-s font-medium text-text-brand">
+            Missing: {asks}
+          </p>
+        )}
       </div>
-      <CollapseFade axis="vertical" open={editing}>
-        <FigureEditor
-          open={editing}
-          resumeId={resumeId}
-          bullet={bullet}
-          saved={figure}
-          onSave={onFigure}
-          onDone={() => setEditing(false)}
-        />
-      </CollapseFade>
+      <button type="button" onClick={() => setOpen(true)} className={linkAction}>
+        {!figure && <Plus aria-hidden className="size-4" />}
+        {figure ? 'Edit your result' : 'Add the result'}
+      </button>
+      <ResultDialog
+        open={open}
+        onOpenChange={setOpen}
+        resumeId={resumeId}
+        bullet={bullet}
+        saved={figure}
+        draft={draft}
+        onSave={onFigure}
+      />
     </li>
   );
 }
 
 /**
- * "Add real results" (owner, 2026-11-02, toreview §149): the lines with no measured result, from the
- * plan's own steps, each finished by two picks. Its own card under Enhance (owner, toreview §163).
+ * "Add real results" (owner, 2026-11-02, toreview §149): the lines with no measured result, each
+ * finished in a dialog fitted to that line (owner, 2026-11-14).
  */
 export function RealResults({
   steps,
   resumeId,
   figureOf,
   onFigure,
-  flat = false,
 }: {
   steps: readonly PlanStep[];
   resumeId: string;
-  /** Inside another card ("More ways to raise your score"): no card of its own. */
-  flat?: boolean;
   figureOf: (bullet: Bullet) => string | undefined;
   onFigure: (bullet: Bullet, text: string | null) => void;
 }) {
-  const [all, setAll] = useState(false);
-  const bullets = steps.flatMap((s) => (s.kind === 'number' && s.bullet ? [s.bullet] : []));
+  const bullets = resultBullets(steps);
   if (bullets.length === 0) return null;
-  const shown = all ? bullets : bullets.slice(0, SHOWN);
   return (
-    <section
-      aria-label="Add real results"
-      className={cn(!flat && stepCard, 'flex flex-col gap-3.5', !flat && 'px-8 py-6')}
+    <CategoryList
+      title="Add real results"
+      hint="Lines that say what you did but not what came of it"
+      label="Lines to add a result to"
     >
-      <ColumnHead
-        art={<InsightsStarIllustration className="h-auto w-11" />}
-        title="Add real results"
-        subtitle="Lines that say what you did but not what came of it. Pick only what’s true."
-      />
-      <ul className="flex flex-col gap-2">
-        {shown.map((bullet) => (
-          <ResultRow
-            key={`${bullet.roleId}:${bullet.index}`}
-            bullet={bullet}
-            resumeId={resumeId}
-            figure={figureOf(bullet)}
-            onFigure={(text) => onFigure(bullet, text)}
-          />
-        ))}
-      </ul>
-      {bullets.length > SHOWN && (
-        <button
-          type="button"
-          onClick={() => setAll((v) => !v)}
-          className={cn(linkAction, 'self-start')}
-        >
-          {all ? 'Show fewer' : `Show ${bullets.length - SHOWN} more`}
-        </button>
-      )}
-    </section>
+      {bullets.map((bullet) => (
+        <ResultRow
+          key={`${bullet.roleId}:${bullet.index}`}
+          bullet={bullet}
+          resumeId={resumeId}
+          figure={figureOf(bullet)}
+          onFigure={(text) => onFigure(bullet, text)}
+        />
+      ))}
+    </CategoryList>
   );
 }

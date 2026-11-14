@@ -17,7 +17,6 @@ import { fieldBox } from '@/ui/fieldBox';
 import { InfoCircle, SearchLg, SwitchVertical01 } from '@/ui/lineIcons';
 import { pressable } from '@/ui/pressable';
 import { textLink } from '@/ui/textLink';
-import { UnderlineTabs } from '@/ui/UnderlineTabs';
 
 import type { TailorChoices } from '../useTailorRun';
 import { KeywordRail } from './KeywordRail';
@@ -35,24 +34,24 @@ const SORT_LABEL: Record<KeywordSort, string> = {
 };
 const IMPACT_BASIS =
   'Points out of 10 each keyword adds once one of your roles shows it, from your plan. Listed in Skills only, it adds half.';
-const TAB_NAME: Record<KeywordTab, string> = { missing: 'Missing', optional: 'Optional' };
+export const TAB_NAME: Record<KeywordTab, string> = { missing: 'Missing', optional: 'Optional' };
 
 /**
  * "Choose keywords to add" (owner's mockup, 2026-11-11): what the job asks for that the resume
- * lacks, required ones under Missing and preferred or soft ones under Optional, filtered by
- * category and search, each with what it adds. Nothing starts ticked (toreview §114).
+ * lacks, required ones under Missing and preferred or soft ones under Optional, filtered by kind
+ * and search, each with what it adds. Nothing starts ticked (toreview §114). Which of the two is
+ * open is the score rail's choice (owner, 2026-11-14), so the kinds are a row of chips here.
  */
 export function KeywordPanel({
   comparison,
   choices,
+  tab,
 }: {
   comparison: TailorComparison;
   choices: TailorChoices;
+  tab: KeywordTab;
 }) {
   const rows = useMemo(() => keywordRowsOf(comparison), [comparison]);
-  const [tab, setTab] = useState<KeywordTab>(
-    rows.some((r) => r.tab === 'missing') || rows.length === 0 ? 'missing' : 'optional',
-  );
   const [bucket, setBucket] = useState<KeywordBucket | undefined>();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<KeywordSort>('default');
@@ -77,16 +76,11 @@ export function KeywordPanel({
         )
       : choices.setAdded(added.filter((l) => !visible.includes(l)));
 
-  const tabs = (['missing', 'optional'] as const).map((id) => ({
-    id,
-    label: `${TAB_NAME[id]} keywords (${rows.filter((r) => r.tab === id).length})`,
-  }));
-
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <UnderlineTabs tabs={tabs} active={tab} onChange={setTab} label="Keywords to add" />
-        <label className="relative w-full @xl/main:w-72">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <KeywordRail total={inTab} counts={counts} active={group} onChange={setBucket} />
+        <label className="relative ml-auto w-full @xl/main:w-64">
           <span className="sr-only">Search keywords</span>
           <SearchLg
             aria-hidden
@@ -102,107 +96,100 @@ export function KeywordPanel({
         </label>
       </div>
 
-      <div className="grid gap-4 @2xl/main:grid-cols-[16rem_minmax(0,1fr)]">
-        <KeywordRail total={inTab} counts={counts} active={group} onChange={setBucket} />
-
-        <div className="flex min-w-0 flex-col gap-3">
-          <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-card">
-            <div className="flex items-center gap-4 border-b border-border-subtle bg-neutral-50 px-4">
-              <TickBox
-                label={`Select every keyword shown (${visible.length})`}
-                checked={allOn}
-                mixed={onCount > 0 && !allOn}
-                onChange={selectVisible}
-              >
-                <span className="text-body-l font-semibold text-text-primary">
-                  {TAB_NAME[tab]} keywords ({shown.length})
-                </span>
-              </TickBox>
-              <span className="flex items-center gap-1.5 text-body-m font-semibold text-text-primary">
-                ATS impact
-                <span title={IMPACT_BASIS} className="text-text-tertiary">
-                  <InfoCircle aria-label={IMPACT_BASIS} className="size-4" />
-                </span>
-                <button
-                  type="button"
-                  aria-label={SORT_LABEL[sort]}
-                  title={SORT_LABEL[sort]}
-                  onClick={() => setSort((s) => NEXT_SORT[s])}
-                  className={cn(
-                    pressable,
-                    'flex size-control-sm items-center justify-center rounded-md hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-brand-600',
-                    sort === 'default' ? 'text-text-tertiary' : 'text-brand-600',
-                  )}
-                >
-                  <SwitchVertical01 aria-hidden className="size-4" />
-                </button>
-              </span>
-            </div>
-            {shown.length > 0 ? (
-              <ul aria-label={`${TAB_NAME[tab]} keywords`} className="max-h-112 overflow-y-auto">
-                {shown.map((row) => {
-                  const on = added.includes(row.label);
-                  const place = choices.places[row.label];
-                  return (
-                    <KeywordRow
-                      key={row.label}
-                      row={row}
-                      max={max}
-                      checked={on}
-                      onToggle={(next) => choices.tick(row.label, next, picks)}
-                      places={places}
-                      place={place}
-                      showPlace={
-                        row.bucket !== 'soft' &&
-                        ((picks?.[row.label]?.length ?? 0) > 0 || place !== undefined)
-                      }
-                      onTogglePlace={(where, next) => choices.togglePlace(row.label, where, next)}
-                      onClearPlaces={() => choices.clearPlaces(row.label)}
-                    />
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="px-4 py-10 text-center text-body-m text-text-tertiary">
-                {query.trim()
-                  ? `No keyword matches “${query.trim()}”.`
-                  : inTab === 0 && tab === 'missing'
-                    ? 'Nothing missing. Your resume already has every keyword this job requires.'
-                    : 'Nothing here.'}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-border-subtle bg-surface-card px-4">
+      <div className="flex min-w-0 flex-col gap-3">
+        <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-card">
+          <div className="flex items-center gap-4 border-b border-border-subtle bg-neutral-50 px-4">
             <TickBox
-              label={`Select all (${visible.length})`}
-              className="flex-none"
+              label={`Select every keyword shown (${visible.length})`}
               checked={allOn}
               mixed={onCount > 0 && !allOn}
               onChange={selectVisible}
             >
-              <span className="text-body-m font-semibold text-text-primary">
-                Select all ({visible.length})
+              <span className="text-body-l font-semibold text-text-primary">
+                {TAB_NAME[tab]} keywords ({shown.length})
               </span>
             </TickBox>
-            <button
-              type="button"
-              disabled={added.length === 0}
-              onClick={() => choices.setAdded([])}
-              className={cn(
-                textLink,
-                'min-h-control-lg text-body-m text-text-secondary disabled:text-text-tertiary',
-              )}
-            >
-              Clear selection
-            </button>
-            <span
-              aria-live="polite"
-              className="ml-auto text-body-m font-semibold text-text-primary"
-            >
-              {added.length} keyword{added.length === 1 ? '' : 's'} selected
+            <span className="flex items-center gap-1.5 text-body-m font-semibold text-text-primary">
+              ATS impact
+              <span title={IMPACT_BASIS} className="text-text-tertiary">
+                <InfoCircle aria-label={IMPACT_BASIS} className="size-4" />
+              </span>
+              <button
+                type="button"
+                aria-label={SORT_LABEL[sort]}
+                title={SORT_LABEL[sort]}
+                onClick={() => setSort((s) => NEXT_SORT[s])}
+                className={cn(
+                  pressable,
+                  'flex size-control-sm items-center justify-center rounded-md hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-brand-600',
+                  sort === 'default' ? 'text-text-tertiary' : 'text-brand-600',
+                )}
+              >
+                <SwitchVertical01 aria-hidden className="size-4" />
+              </button>
             </span>
           </div>
+          {shown.length > 0 ? (
+            <ul aria-label={`${TAB_NAME[tab]} keywords`} className="max-h-112 overflow-y-auto">
+              {shown.map((row) => {
+                const on = added.includes(row.label);
+                const place = choices.places[row.label];
+                return (
+                  <KeywordRow
+                    key={row.label}
+                    row={row}
+                    max={max}
+                    checked={on}
+                    onToggle={(next) => choices.tick(row.label, next, picks)}
+                    places={places}
+                    place={place}
+                    showPlace={
+                      row.bucket !== 'soft' &&
+                      ((picks?.[row.label]?.length ?? 0) > 0 || place !== undefined)
+                    }
+                    onTogglePlace={(where, next) => choices.togglePlace(row.label, where, next)}
+                    onClearPlaces={() => choices.clearPlaces(row.label)}
+                  />
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="px-4 py-10 text-center text-body-m text-text-tertiary">
+              {query.trim()
+                ? `No keyword matches “${query.trim()}”.`
+                : inTab === 0 && tab === 'missing'
+                  ? 'Nothing missing. Your resume already has every keyword this job requires.'
+                  : 'Nothing here.'}
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-border-subtle bg-surface-card px-4">
+          <TickBox
+            label={`Select all (${visible.length})`}
+            className="flex-none"
+            checked={allOn}
+            mixed={onCount > 0 && !allOn}
+            onChange={selectVisible}
+          >
+            <span className="text-body-m font-semibold text-text-primary">
+              Select all ({visible.length})
+            </span>
+          </TickBox>
+          <button
+            type="button"
+            disabled={added.length === 0}
+            onClick={() => choices.setAdded([])}
+            className={cn(
+              textLink,
+              'min-h-control-lg text-body-m text-text-secondary disabled:text-text-tertiary',
+            )}
+          >
+            Clear selection
+          </button>
+          <span aria-live="polite" className="ml-auto text-body-m font-semibold text-text-primary">
+            {added.length} keyword{added.length === 1 ? '' : 's'} selected
+          </span>
         </div>
       </div>
     </div>
