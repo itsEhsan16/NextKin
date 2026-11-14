@@ -17032,3 +17032,42 @@ Owner ask: the profile should fetch everything from the base resume, strongly en
 - No backend was running (Docker off), so the endpoints weren't exercised against Postgres; covered by unit tests on the pure read/plan (`packages/server/test/resumeSync.test.ts`) and a web component test. Integration test not written.
 - Mobile is untouched (mock and types only); the mock repo answers `none`.
 - `packages/server/openapi.json` was already stale before this; regenerating it adds ~1.8k unrelated lines, so it was left alone.
+
+## §204 — The Upload a JD page is gone; Build Resume's job step takes its place (owner, 2026-11-12)
+
+The owner asked to remove `/upload-jd` entirely: the Build Resume flow's first step already takes
+a pasted description, a link or a file through the same reader (`OtherJobBox`, `useExtractJd`).
+
+**What changed**
+- **The page is deleted:** the route, its screen, the side panels and the page-only illustrations
+  (the five `Jd*` heroes and the seven job-board logos, with their source SVGs).
+- **Old links redirect.** `/upload-jd` redirects to `/create/build` (`next.config.ts`).
+- **The top bar.** Its action reads **Build Resume** with the sparkle icon and opens
+  `/create/build`. Documents' inert "Upload New Document" keeps the tray icon.
+- **Onboarding.** The "Next steps" item "Add a job you want…" opens `/create/build`.
+- **The job description page** (`/jd/<id>`):
+  - Its back link is now "Back to Build Resume".
+  - The failed-read edit view goes back to `/create/build`.
+  - The not-found state's action is now "Paste a job description".
+- **What stays.** `uploadLibrary` keeps only the job box's limits and checks; `looksLikeLink`
+  moved into it from the deleted `JobInput`. `PickedFile` stays.
+
+**Judgement calls (to confirm)**
+- **Straight to tailoring.** Nothing now opens a pasted job description on its own page before
+  tailoring; the job step goes straight on to the resume. This reverses the 2026-10-21 decision
+  that Analyze opens the JD page first. Saved job descriptions still open on `/jd/<id>`.
+- **The top-bar label** changed from "Upload New JD" to "Build Resume", the flow's own name.
+
+**Not touched**
+- Mobile's JD screens.
+- The generated icons that were already unused before this change.
+
+## §205 — AWS demo: staff sign-in recovery (2026-11-14)
+
+- **Lockout.** `ehsan@nextkin.ai` (Super Admin) could not sign in on the demo, and no second staff
+  account existed to reset it: the demo's seed ran before staff seeding, and `admin@nextkin.test`
+  there is a plain user account, so `staff-create` refuses that address.
+- **Recovery.** Owner chose a temporary Super Admin, `recovery-admin@nextkin.test`
+  (`task staff-create`). It resets Ehsan from Staff & roles. **To do: deactivate it afterwards.**
+- **Gap left open.** There is still no CLI reset for a locked-out sole Super Admin (a `staff-reset`
+  task mirroring `resetStaff`); decide whether to add one.
