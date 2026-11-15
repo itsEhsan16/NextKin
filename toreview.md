@@ -17517,4 +17517,15 @@ Whether a suggestion is true is the candidate's call. Branch `tailor/perfect-sco
 - **Prompts are not seeded** on any stack: `pnpm seed --reference-only` is needed, never
   `pnpm seed`.
 - Mobile on a device. The web button in a browser on the real backend.
-- Not committed, not deployed.
+
+### §211.3 — Merged, pushed and deployed to the AWS demo (owner said to, 2026-11-15)
+
+- **Committed** as `dee0d2b` (with the web work of §207–§210, which shared its files), **merged**
+  into `main` (`601ed6f`) and pushed.
+- **Deployed** `NextkinDemo` (`cdk deploy`, 689 s): only container images changed. No migration.
+- **On the demo:** `task seed-reference` installed `jd.extract` v8, `resume.generate` v9 and
+  `resume.review` v2 with the accounts left alone. `/api/v1/health/deep` is ok and all six
+  services finished their rollout.
+- **The new prompts run for the first time on the demo.** If a job stops reading or a resume
+  stops generating there, those three are the first place to look; the worker log names it.
+- Scores on the demo move to `rubric-3` as each resume is next measured.
