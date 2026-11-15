@@ -17295,3 +17295,226 @@ this section is appended to as each lands.
   demo. If a job description stops reading there, `jd.extract` v7 is the first place to look;
   the worker log names the failure.
 - The local OpenRouter key is refused, so `pnpm eval:jd --openrouter` still cannot run here.
+
+## §207 — "Add the result" opens on the AI's best suggestion; the AI draft never reached ordinary accounts (owner, 2026-11-15)
+
+The owner sent the dialog showing only the plain fallback ("…, improving ___") and asked for the
+AI to give its best input, the user free to use or change it, with a pencil on the line in place
+of "Write the whole line myself".
+
+**The bug behind the screenshot**
+- Prompts are reference data only staff and the system may read (`0004`, `apply_reference_rls`).
+  `services/figureDraft.ts` read its prompt inside the candidate's own transaction, so the active
+  version was never found, the error was swallowed, and **every draft for an ordinary account fell
+  back to the rules**. The demo's log showed `figure.draft_skipped` for each one.
+- The new keyword questions (§206.3) copied that pattern and were skipped the same way.
+- It hid because the unit tests never touched the database, and the log's allowlist dropped the
+  `reason` field that would have said why.
+- **Fixed:** both services read the prompt as the system, as the job reader does. The reason is
+  now in the log message. New `test/integration/figureDraft.int.test.ts` holds the whole path
+  for an account that has agreed to AI, and for one that has not (no model call).
+
+**The dialog (web `LineResult.tsx`)**
+- It opens on a finished line: the AI's first result and its smallest amount, or its one typical
+  figure. A line under it says "The AI's suggestion. Keep it only if it's true, or change it."
+- Picking another result brings that result's smallest amount; any amount, "Another amount" or
+  typing changes it, and the label goes once the choice is the user's.
+- A pencil on the line opens it for free editing, starting from the line as it reads.
+  "Write the whole line myself" is gone.
+- Nothing is saved until "Use this line".
+
+**Judgement calls (to confirm)**
+- **This reverses two earlier owner rules**: "nothing is picked for the user" (2026-11-14) and
+  "the AI's guess is used only on a tap" (§173). A figure the AI chose is now in the line when the
+  dialog opens, and "Use this line" is enabled. The label and the final tap are what stand between
+  a guess and the resume (G13). Say if the label should be stronger.
+- **Smallest amount first**, because the model lists amounts smallest first and the conservative
+  one is the safer default.
+- With no AI draft at all (no consent, no model), the dialog is as before: the gap and a hint.
+
+**Not done**
+- Mobile's `PlanFigureEditor` is unchanged: it still asks for a tap.
+- Not deployed: the demo still skips the AI draft until this fix is released.
+- Seen in a browser on mock data only (prefilled line, pencil). The real model's draft has still
+  not been seen.
+
+## §208 — Web tailor flow: seven fixes from the owner's screenshots (owner, 2026-11-15)
+
+**What changed**
+1. **Keyword search removed** from "Choose keywords" (`KeywordPanel`). The kind chips stay.
+2. **The bar under the table is gone** ("Select all · Clear selection · N keywords selected").
+   The table's own head box selects and clears every keyword shown; the footer button says how
+   many are ticked.
+3. **No empty band under the footer bar.** A flow page is now at least the window tall and laid
+   out as a column (`flowPage`, `stepShell`, `stepCard` in `FlowChrome`): the step's card takes
+   the height its content leaves and the bar rests at the bottom. Applied to every step that
+   shares the layout (job, method, resume, keywords, build keywords, the run).
+4. **The generating stage is a step like the others** (`RunProgress`): the same card with
+   "Step 3 of 3", the heading, the bar and the run's lines, the art beside them, and the same
+   footer bar holding the note and "Leave and notify me". It was a narrow centred card.
+   `RunProgress` is shared, so the cover letter, ATS check and Zero Resume runs changed with it.
+5. **The preview never draws a plain page in place of the typeset one** (`ResumePreview`). While
+   the pages are being typeset it shows "Typesetting your resume…"; if typesetting failed it says
+   so with "Try again" (the preview request retries a transient failure). Only a document with no
+   typeset pages at all (`structured`: the mock's fixtures) is still drawn from its content.
+6. **"What changed for this job" removed** from the review; `ChangeLog.tsx` and its test deleted.
+   Text view still marks the AI's changes on the page.
+7. **The ATS card is simpler** (`ScoreSummaryCard`): ring, "ATS score", the band, one quiet line
+   (how it moved, key keywords), and one next step under a hairline. No tinted box, no info icon.
+8. Earlier the same day: the score dialogs' header icon lost its tinted tile; the Experience
+   option's control hugs its two choices and its caption no longer repeats the selection.
+
+**Judgement calls (to confirm)**
+- **"Not proper div way … consistent"** was read as: one shared layout for every step, text that
+  wraps or truncates instead of pushing things out, and the run stage on the same card. Say if a
+  specific screen was meant.
+- **The selected count** now shows only on the footer button ("Add 36 keywords & continue").
+- **`changeLines`** (`tailorLibrary.ts`) is no longer used by any screen; left in place.
+- **Other previews** (Resumes page, editor) may still fall back to the drawn page while
+  typesetting; only the tailor review's preview was changed.
+
+**Not verified**
+- Seen in a browser on mock data only: keywords step, the tall-window fill, the run stage, the
+  review card. The typesetting and failed states are covered by tests, not seen with the real
+  LaTeX renderer.
+- The cover letter, ATS check and Zero Resume run screens were not opened after the shared
+  `RunProgress` change; their tests pass.
+- Not deployed.
+
+## §209 — Review screen: taller assistant, the website's own scrollbar, an assistant that changes more (owner, 2026-11-15)
+
+**What changed**
+- **The assistant is taller.** With "What changed" gone and the score card slimmer (§208), the
+  assistant takes the freed height: 530px in a 900px window. Nothing else was added to the column.
+- **One scrollbar for the whole website** (`theme.css`): a slim rounded thumb in brand indigo
+  (`brand-300`, `brand-500` under the pointer) on a clear track, no arrow buttons. It applies to
+  the page, lists, panels and dialogs.
+  - Chromium and Safari draw it from the `::-webkit-scrollbar` parts; Firefox gets the standard
+    `scrollbar-width` / `scrollbar-color`, fenced to it.
+  - The `scrollbar-thin` class and `[scrollbar-width:thin]` were removed from 20 components:
+    either one turns the branded thumb off in Chromium. Tailwind ships its own `scrollbar-thin`,
+    so the name cannot be reused.
+- **The review's assistant changes more of the resume** (`ResumeAssistantPanel`, `tailorLibrary`):
+  - One request can change **several parts** ("tidy my skills and shorten the summary") or the
+    **whole resume** ("polish my whole resume"). Each part is rewritten in turn, saved as its own
+    version, and shown with its own before/after, Keep and Undo.
+  - **Polite phrasing is acted on**: "can you…", "I want to…", "let's…", "help me…". Only a
+    request that began with the verb used to change anything; the rest were answered in words.
+  - When a request names no part, the choices now include **Whole resume**.
+  - **Undo** works on any change until a later one rewrites the same part (it was only the last).
+  - A new first suggestion: "Polish my whole resume for this job".
+
+**Judgement calls (to confirm)**
+- **The owner's third request was cut off** ("enable it to make changes in the resume in…"). It
+  was read as: let the assistant change more of the resume from the chat. Say what the rest was.
+- **Still only from the resume's own lines.** A rewrite rewords what the resume says and never
+  adds a skill, employer or figure (G13). "Add Kubernetes to my skills" still cannot add a skill
+  the resume does not have; adding facts stays in the keyword step, where the user confirms them.
+- **Four parts**: summary, skills, experience, projects. The header, education and
+  certifications are facts and are not rewritten.
+- **Each part is its own run**, so a whole-resume request is four AI rewrites.
+
+**Not verified**
+- Seen in a browser on mock data only. The whole-resume request against the real backend
+  (four section runs in a row) has not been tried.
+- Firefox and Safari scrollbars were not seen; Chromium was.
+- Not deployed.
+
+## §210 — Applications and Documents, empty: the same two columns as when they are full (owner, 2026-11-15)
+
+The owner's screenshots showed both pages with nothing in them: the list's drawing floated on
+the bare page, and beside it sat a short card with a second drawing saying the same thing.
+
+**What changed** (`ui/EmptyPanel.tsx`, the two lists and the two detail panels)
+- **The list keeps its place.** Empty, it is one dashed outline filling the list's own area,
+  with the drawing, the line and a way onward inside it: "Find jobs" on Applications, "Open
+  Resumes" on Documents (where letters live while uploads are not built).
+- **The detail card is still the card.** As tall as its column, with one quiet mark and line. It
+  no longer repeats the list's drawing.
+- **Both end on the same line**, so the page reads as its two columns with or without anything
+  in them. Measured in a 900px window: both end at 880px on each page.
+- **"No match" uses the same outline**, so filtering to nothing does not change the page's shape.
+- **Documents' caption** ("Organize, Prepare, Go Further") no longer runs under the card's top
+  edge: its three lines start at the top of the art and set 24px apart.
+- The words of every state are unchanged.
+
+**Judgement calls (to confirm)**
+- **One drawing, not two.** The list carries it; the detail card has a line icon in a soft tile.
+- **The tabs, filters and sort stay** on an empty page, as they are part of the structure asked
+  to stay constant. They do nothing with no rows.
+- **Only these two pages.** Jobs and Resumes have the same two-column shape and were not changed.
+
+**Not verified**
+- Seen in a browser on the mock's "empty" mode; one screenshot caught the page mid-fade, the
+  rest was measured. Not deployed.
+
+## §211 — Suggest everything that reaches 10/10; the candidate decides what goes in (owner, 2026-11-15, D-25)
+
+A resume tailored for an "AI-Native Product Manager – Graduate Trainee (2026 Passouts)" job
+scored 8.4/10 here and 53% on an outside checker. The owner's rule from now on: the AI suggests
+every keyword, soft skill and result that takes the resume to 10/10. Nothing is pre-selected. What
+the candidate accepts is written in and counted in full; what they leave out is not written.
+Whether a suggestion is true is the candidate's call. Branch `tailor/perfect-score`, uncommitted.
+
+**§211.1 The PDF's hyphens** (`export/latex/textLayer.ts`)
+- Every "-" a resume typed came out of the PDF as U+2010, so "AI-Native" on the page was a
+  different word to a checker. This was the "job title not found".
+- No TeX setting fixes it. The PDF's character tables are corrected after the compile, with
+  `pdf-lib` (new dependency, 1.17.1). The page looks the same.
+- Checked on a real compile: the title reads back letter for letter.
+
+**§211.2 What changed**
+- **Score** (`rubric-3`, engine 1.2.0): a keyword the printed resume names earns full credit,
+  wherever it is. Years asked are reported, not scored. Five lines with a measured result is
+  full marks, and project lines count. `rubric-1` and `rubric-2` are kept for stored runs.
+- **Keywords**: soft skills are scored keywords. Every keyword the job names is shown and
+  counted; the "top ten" only orders them and "More keywords" is gone.
+- **Job reader** (`jd.extract` v8): keeps the posting's own phrases ("Data analysis tools",
+  "Customer calls"), and "… tools" / "… technologies" phrases are no longer dropped.
+- **Headline**: the job's title as written, brackets included.
+- **Writer** (`resume.generate` v9) and **reviewer** (`resume.review` v2): every accepted keyword
+  goes in a sentence, in the job's wording, as well as in Skills. The reviewer never drops one.
+- **Checks**: an accepted keyword may be named in any dated role or project. It is never cut
+  from Skills to keep the list at 60. One failed project line no longer undoes the project.
+- **Results on project lines**: offered and counted, end to end.
+- **"Accept all suggestions"** on web (Enhance step) and mobile (Review): ticks every keyword,
+  says yes to every question, and on web takes each line's best suggested result.
+- **Rules**: `CLAUDE.md` Backend rule 5, and G13, G16, D-14 and new D-25 in the backend plan.
+  The V2 spec file is not edited; D-25 records that it overrides §7.6/§7.8 on this point.
+- **Copy**: "Tick only the keywords you really have" and its kin now say the candidate picks.
+- **Coverage check** (`packages/server/evals/coverage.ts`): reads a finished PDF as a checker
+  does and lists each job phrase found or missing, the title, the result count, odd hyphens.
+
+**What stays**
+- Nothing is written without the candidate accepting it. Nothing starts ticked.
+- The AI invents no employer, school, degree, date, past job title or certificate.
+- The accuracy confirmation before download. No copy names a third-party ATS.
+
+**Judgement calls (to confirm)**
+- **Soft skills the candidate did not tick are not policed.** "Collaboration" is an ordinary
+  word, so a line using it is not removed. Unticked hard keywords still are.
+- **Bolt-on lines are still dropped** ("Used X, Y and Z"). The keywords stay in Skills, and the
+  writer is told to put each in a real sentence instead.
+- **A project whose line the candidate rewrote with a result is not rewritten by the AI**, so
+  an accepted keyword will not be worked into that project.
+- **Mobile's "Accept all" does not fill results.** They stay a line-by-line choice there.
+- **A line the AI has no figure for stays empty.** Accept-all then says how many are left; the
+  score is short of 10 until the candidate writes them.
+- **Dates are the one part no suggestion fixes.** A resume with a date problem stays under 10.
+- **Every existing score moves** to `rubric-3` when it is next measured, mostly upward (the
+  mock's base resume: 90 to 92). Stored runs keep the rubric they were scored on.
+- **The "m/w/d" marker now stays in a German headline**, as part of the title as written.
+
+**Not verified**
+- **No live model run.** The local OpenRouter key is refused, so the three new prompts have
+  not been tried on a real model, and the job that started this was not re-run end to end.
+- **The outside checker itself.** Only the owner can rescan a new PDF there.
+- **Integration tests run** (owner's go-ahead, 2026-11-15): 1,645 pass, 7 fail, and the 7 are the
+  ones that failed before this work (authz matrix missing `/api/v1/profile/resume-sync`,
+  libraryApi, libraryP10 x2, renders x2, and the LaTeX "broken source" test, which gets
+  "size10.clo not found" where it expects "Undefined control sequence"). Three tests that named
+  `rubric-2` now name `rubric-3`. `tailorConfirmP14`, red before, passes.
+- **Prompts are not seeded** on any stack: `pnpm seed --reference-only` is needed, never
+  `pnpm seed`.
+- Mobile on a device. The web button in a browser on the real backend.
+- Not committed, not deployed.

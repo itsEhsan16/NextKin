@@ -19,6 +19,7 @@
 import { compareCodePoints, type Bps } from './bps';
 import type { ScoringDocument } from './document';
 import { bestRoleFor } from './placement';
+import { rubricById } from './provenance';
 import { isQuantified } from './quantified';
 import type { Importance } from './requirements';
 import { scoreCore, type Assumptions, type FormatCheckId, type ScoreInput, type ScoreResult, type SectionCheckId } from './rubric';
@@ -73,10 +74,16 @@ const withRoleSkill = (doc: ScoringDocument, skill: string, roleId: string | nul
   roles: roleId === null ? doc.roles : doc.roles.map((r) => (r.id === roleId ? { ...r, skills: [...(r.skills ?? []), skill] } : r)),
 });
 
+/** A project's id as a place: `project:<its id>`, or its position when it has none. */
+export const projectPlaceId = (project: { id?: string }, index: number): string => project.id ?? `project:${index}`;
+
 /** The placeholder the fixes engine uses: only to measure; the user writes the real figure. */
 const withFigure = (doc: ScoringDocument, roleId: string, index: number): ScoringDocument => ({
   ...doc,
   roles: doc.roles.map((r) => (r.id === roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === index ? `${b} (1)` : b)) } : r)),
+  ...(doc.projects
+    ? { projects: doc.projects.map((p, at) => (projectPlaceId(p, at) === roleId ? { ...p, bullets: p.bullets.map((b, i) => (i === index ? `${b} (1)` : b)) } : p)) }
+    : {}),
 });
 
 function apply(state: State, action: PathAction): State {
@@ -127,6 +134,14 @@ function candidates(input: ScoreInput, base: Omit<ScoreResult, 'fixes'>): PathAc
   for (const r of input.document.roles) {
     r.bullets.forEach((text, bulletIndex) => {
       if (!isQuantified(text, input.taxonomy)) actions.push({ type: 'add_figure', roleId: r.id, bulletIndex, text });
+    });
+  }
+  // Project lines can carry a result too, where the rubric counts them (rubric-3).
+  if ((input.rubric ?? rubricById(input.rubricId)).achievements?.projects) {
+    (input.document.projects ?? []).forEach((p, at) => {
+      p.bullets.forEach((text, bulletIndex) => {
+        if (!isQuantified(text, input.taxonomy)) actions.push({ type: 'add_figure', roleId: projectPlaceId(p, at), bulletIndex, text });
+      });
     });
   }
   for (const check of base.components.find((c) => c.key === 'sections')?.checks ?? []) {

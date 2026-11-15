@@ -29,7 +29,8 @@ export interface ScoringDocument {
   roles: readonly ScoringRole[];
   education: readonly { institution: string; degree: string }[];
   certifications?: readonly string[];
-  projects?: readonly { name: string; description?: string; bullets: readonly string[] }[];
+  /** `id` names a project to the path planner, so a result can be asked for on one of its lines. */
+  projects?: readonly { id?: string; name: string; description?: string; bullets: readonly string[] }[];
   /** Whether each contact detail is present. Never the values. */
   contact: { email: boolean; phone: boolean; location: boolean };
   links?: readonly string[];

@@ -86,7 +86,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
         <div className="h-4 shrink-0" />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-0.5 [scrollbar-width:thin]">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-0.5">
         <div className="flex min-h-full flex-col gap-0.5 *:shrink-0">
           {me.isError && !me.data ? (
             // Without the role there is nothing honest to show: say so rather than hide the rows.

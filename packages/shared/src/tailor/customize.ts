@@ -54,8 +54,9 @@ export const statesResult = (text: string): boolean => isQuantified(text, TAXONO
  * "About 8.7/10 after this" (toreview §129): the AI's own steps, plus each of your steps you have
  * answered, at the gain the path measured for it. The score is linear in these answers (a
  * requirement's credit, a share of bullets, a count of sections), so the sum is the re-score up to
- * rounding; the run pins the exact figure when it starts. A tick without a place earns the listed
- * half of a keyword (D-14); a figure counts once it states a result.
+ * rounding; the run pins the exact figure when it starts. A tick earns the keyword in full, with a
+ * place or without (D-25, toreview §211: the score reads the page, and the tick puts the keyword on
+ * it); a figure counts once it states a result.
  */
 export function projectedScore(plan: FixPlan | undefined, c: CustomizeChoices): number | undefined {
   if (!plan?.target) return undefined;
@@ -63,7 +64,7 @@ export function projectedScore(plan: FixPlan | undefined, c: CustomizeChoices): 
   for (const s of plan.steps) {
     if (s.who !== 'you' || s.worth === null) continue;
     const placed = s.keyword !== undefined && c.added.includes(s.keyword) && (c.places[s.keyword]?.where.length ?? 0) > 0;
-    if (s.kind === 'keyword' && s.keyword && c.added.includes(s.keyword)) total += placed ? s.worth : s.worth / 2;
+    if (s.kind === 'keyword' && s.keyword && c.added.includes(s.keyword)) total += s.worth;
     else if (s.kind === 'evidence' && placed) total += s.worth;
     else if (s.kind === 'number' && s.bullet) {
       const text = c.figures?.[figureKey(s.bullet.roleId, s.bullet.index)];
@@ -99,7 +100,7 @@ export function setFigure(c: CustomizeChoices, roleId: string, line: number, tex
   return { ...c, figures };
 }
 
-/** Everything on, the whole history, nothing tapped: the user adds, never the default (D-14). */
+/** Everything on, the whole history, nothing tapped: the candidate picks, nothing is pre-selected (D-25). */
 export const initialChoices = (): CustomizeChoices => ({ fixes: CUSTOMIZE_FIXES, experience: 'full', added: [], places: {} });
 
 export function toggleKeyword(c: CustomizeChoices, label: string, on: boolean): CustomizeChoices {
@@ -143,6 +144,33 @@ export function toggleAll(
 }
 
 /**
+ * "Accept all suggestions" (owner, D-25, toreview §211): everything the AI suggests for this job,
+ * taken in one go. Every missing keyword is ticked with its places, every "Did you use this?" is
+ * answered yes, and each line given here takes its suggested result. What the candidate already
+ * answered is kept as they answered it. Nothing calls this but their own press.
+ */
+export function acceptAll(
+  c: CustomizeChoices,
+  comparison: TailorComparison,
+  extras: { questions?: readonly { keyword: string; where: string }[]; lines?: readonly { roleId: string; index: number; text: string }[] } = {},
+): CustomizeChoices {
+  let next = comparison.keywords
+    .filter((k) => !k.onResume && !c.added.includes(k.label))
+    .reduce((n, k) => tickKeyword(n, k.label, true, comparison.picks, comparison.backed), c);
+  for (const q of extras.questions ?? []) {
+    if (!next.places[q.keyword]?.where.includes(q.where)) next = togglePlace(next, q.keyword, q.where, true);
+  }
+  for (const line of extras.lines ?? []) {
+    if (!next.figures?.[figureKey(line.roleId, line.index)] && statesResult(line.text)) next = setFigure(next, line.roleId, line.index, line.text);
+  }
+  return next;
+}
+
+/** Whether every keyword is ticked and every question answered yes. */
+export const allAccepted = (c: CustomizeChoices, comparison: TailorComparison, questions: readonly { keyword: string; where: string }[] = []): boolean =>
+  comparison.keywords.every((k) => k.onResume || c.added.includes(k.label)) && questions.every((q) => c.places[q.keyword]?.where.includes(q.where) ?? false);
+
+/**
  * One line for a screen with no room for a row each (the phone's chips): which missing keywords
  * the candidate's own records already show.
  */
@@ -179,21 +207,24 @@ export function setFix(c: CustomizeChoices, fix: TailorFix, on: boolean): Custom
   return { ...c, fixes: CUSTOMIZE_FIXES.filter((f) => fixes.includes(f)) };
 }
 
-/** The screen's keyword rows: the top missing skills, the soft skills, then the rest. */
+/**
+ * The screen's keyword rows: every missing skill, the most important first, then the soft skills.
+ * `more` is always empty since D-25 (toreview §211): nothing the job names is folded away, because
+ * a keyword the candidate never saw is one they could not accept.
+ */
 export function keywordGroups(comparison: TailorComparison): { top: TailorKeyword[]; soft: TailorKeyword[]; more: TailorKeyword[] } {
   const missing = comparison.keywords.filter((k) => !k.onResume);
-  const ranked = missing.some((k) => k.top);
+  const skills = missing.filter((k) => k.kind !== 'soft');
   return {
-    top: missing.filter((k) => k.kind !== 'soft' && (!ranked || k.top)),
+    top: [...skills.filter((k) => k.top), ...skills.filter((k) => !k.top)],
     soft: missing.filter((k) => k.kind === 'soft'),
-    more: ranked ? missing.filter((k) => k.kind !== 'soft' && !k.top) : [],
+    more: [],
   };
 }
 
-/** The keywords the resume already shows, of the ones the screen counts (the top ones). */
+/** The keywords the resume already shows: all of them, as the job match counts them. */
 export function shownKeywords(comparison: TailorComparison): TailorKeyword[] {
-  const skills = comparison.keywords.filter((k) => k.kind !== 'soft');
-  return skills.some((k) => k.top) ? skills.filter((k) => k.top) : skills;
+  return [...comparison.keywords];
 }
 
 /** Nothing to run: every part switched off and no keyword tapped. */

@@ -110,7 +110,7 @@ describe('the review: skills', () => {
     expect(out.record.refused).toEqual([{ op: 'move_skill', target: 'Git', why: 'no_such_line' }]);
   });
 
-  it('drops a duplicate or a ticked job phrase, never a real skill the user ticked', () => {
+  it('drops a duplicate, never a keyword the candidate accepted or a skill the resume had (toreview §211)', () => {
     const { doc, ctx } = setup();
     const out = applyReview(
       doc,
@@ -124,9 +124,8 @@ describe('the review: skills', () => {
     );
     const listed = out.doc.skills.map((s) => s.name);
     expect(listed).not.toContain('Git');
-    expect(listed).not.toContain('cloud environments');
-    expect(listed).toEqual(expect.arrayContaining(['Terraform', 'React', 'Git & GitHub workflows']));
-    expect(out.record.refused.map((r) => r.why)).toEqual(['real_skill', 'not_a_duplicate']);
+    expect(listed).toEqual(expect.arrayContaining(['cloud environments', 'Terraform', 'React', 'Git & GitHub workflows']));
+    expect(out.record.refused.map((r) => r.why)).toEqual(['accepted_by_user', 'accepted_by_user', 'not_a_duplicate']);
   });
 });
 

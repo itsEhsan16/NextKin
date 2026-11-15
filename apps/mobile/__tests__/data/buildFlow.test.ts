@@ -99,8 +99,8 @@ describe('Build Resume (BUILD 01–07, toreview §67 / §74)', () => {
     // The requirement ledger (C-10): required counts twice preferred, so Figma met and Fintech
     // missing of the required, both preferred met: (2 + 1 + 1) of (2 + 2 + 1 + 1) = 67.
     expect(result.score).toBe(67);
-    // D-14: a skill the profile only lists, with no dated role behind it, earns half.
-    expect(compareProfileToJob(draft(['Figma', 'Fintech'], ['Design systems', 'Prototyping']), { headline: 'x', skills }).score).toBe(33);
+    // D-25 (toreview §211): a skill the profile lists counts in full, with a dated role or without.
+    expect(compareProfileToJob(draft(['Figma', 'Fintech'], ['Design systems', 'Prototyping']), { headline: 'x', skills }).score).toBe(67);
     expect(result.keywords).toEqual([
       { label: 'Figma', onResume: true, source: 'required' },
       { label: 'Design systems', onResume: true, source: 'description' },

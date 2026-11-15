@@ -13,7 +13,7 @@ import { useState, type ReactNode } from 'react';
 
 import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { createHref } from '@/features/create/createLibrary';
-import { FlowHeader } from '@/features/create/jobFlow/FlowChrome';
+import { FlowHeader, flowPage } from '@/features/create/jobFlow/FlowChrome';
 import { jobFlowHref } from '@/features/create/jobFlow/jobFlow';
 import { cn } from '@/lib/cn';
 import { replaceQuery } from '@/lib/replaceQuery';
@@ -232,7 +232,7 @@ export function TailorScreen({
     tailorPath(target, { step: 'enhance', ...kept, ...mode }),
   ];
   return (
-    <div className={cn(pageFrame, 'flex flex-col gap-5 pb-8')}>
+    <div className={cn(pageFrame, flowPage)}>
       {/* The finished resume needs no step line (owner, toreview §120): its toolbar has the way back. */}
       {done ? null : job ? (
         <FlowHeader
@@ -248,7 +248,10 @@ export function TailorScreen({
       ) : (
         <Skeleton className="h-10 w-full rounded-md" />
       )}
-      <div key={runId ? 'run' : step} className={cn(switched && 'animate-reveal')}>
+      <div
+        key={runId ? 'run' : step}
+        className={cn('flex min-w-0 flex-1 flex-col', switched && 'animate-reveal')}
+      >
         {body}
       </div>
       {job && (

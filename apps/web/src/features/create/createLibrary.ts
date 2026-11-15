@@ -120,9 +120,12 @@ export const pickCoverLetterSource = (sources: readonly Resume[], preferredId?: 
 
 export const START_FAILED = "We couldn't start it. Check your connection and try again.";
 
-/** What a resume-making step promises about skills, said once (toreview §131). */
+/**
+ * What a resume-making step promises about skills, said once (toreview §131; reworded for D-25,
+ * toreview §211: the candidate decides what goes on, and nothing goes on without them).
+ */
 export const NEVER_ADDS_SKILLS =
-  'We only add skills you tick. Interviewers may ask about anything on it.';
+  'We add only what you accept. You decide what goes on your resume, and interviewers may ask about any of it.';
 
 /** The ATS score's own disclaimer, one wording everywhere it shows (V2 §7.8, toreview §131). */
 export const ATS_DISCLAIMER =

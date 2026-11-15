@@ -29,9 +29,9 @@ describe('the Customize choices', () => {
     expect(nothingChosen(c)).toBe(false);
   });
 
-  it('groups the missing keywords: top skills, soft skills, the rest', () => {
+  it('groups the missing keywords: every skill, the top ones first, then the soft skills; none folded away (D-25)', () => {
     const g = keywordGroups(comparison);
-    expect([g.top, g.soft, g.more].map((l) => l.map((k) => k.label))).toEqual([['KYC', 'Vue'], ['teamwork'], ['Fintech']]);
+    expect([g.top, g.soft, g.more].map((l) => l.map((k) => k.label))).toEqual([['KYC', 'Vue', 'Fintech'], ['teamwork'], []]);
   });
 
   it('taps, selects all, clears all, and forgets a place when a keyword is untapped', () => {
@@ -89,7 +89,7 @@ describe('figures and the projection (toreview §129)', () => {
     let c = initialChoices();
     expect(projectedScore(plan, c)).toBe(6.8);
     c = toggleKeyword(c, 'KYC', true);
-    expect(projectedScore(plan, c)).toBe(7.4); // listed only: half of 1.2
+    expect(projectedScore(plan, c)).toBe(8); // accepted: the keyword in full, with a place or without (D-25)
     c = setPlace(c, 'KYC', { where: ['role_a'], note: '' });
     expect(projectedScore(plan, c)).toBe(8);
     c = setPlace(toggleKeyword(c, 'React', true), 'React', { where: ['role_a'], note: '' });

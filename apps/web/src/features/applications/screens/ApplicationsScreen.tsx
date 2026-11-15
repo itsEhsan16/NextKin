@@ -142,7 +142,7 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
 
             {/* The page's one scroller, 8px wider than the column either side so the selected
               row's ring and shadow aren't clipped. */}
-            <div className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto px-2 pb-5 pt-1 scrollbar-thin">
+            <div className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto px-2 pb-5 pt-1">
               <ApplicationList
                 rows={visible}
                 status={listStatus}

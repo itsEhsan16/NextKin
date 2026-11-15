@@ -11,6 +11,7 @@ import {
   primaryButton,
   StepHeading,
   stepCard,
+  stepShell,
   TrustNote,
 } from '@/features/create/jobFlow/FlowChrome';
 import { useResumeUpload } from '@/features/create/jobFlow/useResumeUpload';
@@ -62,7 +63,7 @@ export function ResumeStep({
 }) {
   const company = job.company.trim();
   return (
-    <div className="flex flex-col gap-6">
+    <div className={stepShell}>
       <section aria-labelledby="resume-step" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
           <StepHeading

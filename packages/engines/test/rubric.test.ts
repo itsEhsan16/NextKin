@@ -15,7 +15,7 @@ describe('the rubric and score (P8-07)', () => {
   });
 
   it('weights come from the versioned rubric and sum to the total', () => {
-    const result = score(backendInput());
+    const result = score(backendInput({ rubricId: 'rubric-2' }));
     expect(result.components.map((c) => [c.key, c.weightBps])).toEqual([
       ['keywords', 4000],
       ['timeline', 2000],
@@ -65,7 +65,7 @@ describe('the rubric and score (P8-07)', () => {
   });
 
   it('simulates each fix’s impact by re-scoring the edit', () => {
-    const result = score(backendInput());
+    const result = score(backendInput({ rubricId: 'rubric-2' }));
     const ask = result.fixes.find((f) => f.type === 'ask_for_number')!;
     expect(ask).toMatchObject({ roleId: 'role_shop', bulletIndex: 2 });
     expect(ask.impactBps).toBe(167);
@@ -80,7 +80,7 @@ describe('the rubric and score (P8-07)', () => {
   });
 
   it('carries the provenance stamp', () => {
-    expect(score(backendInput()).stamp).toMatchObject({ engine: '1.1.0', rubric: 'rubric-2', taxonomy: { version: 'taxonomy-0.1.0' }, kb: { version: 'kb-0.1.0' }, asOf: '2026-10' });
+    expect(score(backendInput()).stamp).toMatchObject({ engine: '1.2.0', rubric: 'rubric-3', taxonomy: { version: 'taxonomy-0.1.0' }, kb: { version: 'kb-0.1.0' }, asOf: '2026-10' });
   });
 
   it('no source file, field name or string claims a named third-party ATS', () => {
@@ -89,6 +89,30 @@ describe('the rubric and score (P8-07)', () => {
     const files = readdirSync(dir, { recursive: true }).map(String).filter((f) => f.endsWith('.ts'));
     for (const file of files) expect(readFileSync(join(dir, file), 'utf8'), file).not.toMatch(vendors);
     expect(canonicalJson(score(backendInput()))).not.toMatch(vendors);
+  });
+});
+
+describe('results under the coverage rubric (rubric-3, D-25)', () => {
+  const plain = (n: number) => Array.from({ length: n }, (_, i) => `Ran the weekly release for squad ${'abcdefgh'[i]}`);
+  const role = (bullets: string[]) => ({ ...BACKEND_RESUME.roles[0]!, bullets });
+  const part = (document: typeof BACKEND_RESUME, rubricId = 'rubric-3') => score(backendInput({ document, rubricId })).components.find((c) => c.key === 'achievements')!;
+
+  it('five lines with a measured result is full marks, however many lines there are', () => {
+    const five = ['Cut onboarding from 5 days to 2', 'Grew revenue 40%', 'Saved $1.2M a year', 'Led a team of 6 engineers', 'Served 10k requests per second'];
+    const doc = { ...BACKEND_RESUME, roles: [role([...five, ...plain(6)])] };
+    expect(part(doc)).toMatchObject({ scoreBps: 10_000, basis: { quantified: 5, bullets: 11, needed: 5 } });
+    expect(part(doc, 'rubric-2').scoreBps).toBeLessThan(5_000);
+  });
+
+  it('a resume with fewer than five lines needs a result on each', () => {
+    const doc = { ...BACKEND_RESUME, roles: [role(['Grew revenue 40%', ...plain(2)])] };
+    expect(part(doc)).toMatchObject({ scoreBps: 3333, basis: { quantified: 1, bullets: 3, needed: 3 } });
+  });
+
+  it('project lines count beside role lines', () => {
+    const doc = { ...BACKEND_RESUME, roles: [role(plain(3))], projects: [{ name: 'Ledger', bullets: ['Cut reconciliation from 3 hours to 20 minutes', 'Served 10k requests per second'] }] };
+    expect(part(doc)).toMatchObject({ basis: { quantified: 2, bullets: 5, needed: 5 }, scoreBps: 4000 });
+    expect(part(doc, 'rubric-2').basis).toMatchObject({ quantified: 0, bullets: 3 });
   });
 });
 

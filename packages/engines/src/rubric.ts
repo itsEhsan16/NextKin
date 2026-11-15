@@ -193,10 +193,17 @@ export function scoreCore(input: ScoreInput, assume: Assumptions = {}): Omit<Sco
   const formatPassed = formatChecks.filter((c) => c.passed).length;
   const formatting = component('formatting', rubric, ratioBps(formatPassed, formatChecks.length), { passed: formatPassed, total: formatChecks.length }, formatChecks);
 
-  // Achievements: the share of experience bullets with a measurable outcome.
-  const bullets = doc.roles.flatMap((r) => r.bullets);
+  // Achievements: lines with a measurable outcome. Up to rubric-2, the share of role lines. From
+  // rubric-3, against a target (five such lines is full marks, or every line when there are
+  // fewer), with project lines counted beside role lines.
+  const bullets = [...doc.roles.flatMap((r) => r.bullets), ...(rubric.achievements?.projects ? (doc.projects ?? []).flatMap((p) => p.bullets) : [])];
   const quantified = bullets.filter((b) => isQuantified(b, taxonomy)).length;
-  const achievements = component('achievements', rubric, bullets.length === 0 ? 0 : ratioBps(quantified, bullets.length), { quantified, bullets: bullets.length });
+  const needed = rubric.achievements ? Math.min(rubric.achievements.target, bullets.length) : bullets.length;
+  const achievements = component('achievements', rubric, needed === 0 ? 0 : ratioBps(Math.min(quantified, needed), needed), {
+    quantified,
+    bullets: bullets.length,
+    ...(rubric.achievements ? { needed } : {}),
+  });
 
   const components = [keywords, timeline, sectionsResult, formatting, achievements];
   const pointsBps = components.reduce((sum, c) => sum + (c.contributionBps ?? 0), 0);

@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { AlertCircle, Briefcase01, Edit05, Lightbulb02, Plus, User01, Zap } from '@/ui/lineIcons';
 
 import type { TailorChoices } from '../useTailorRun';
+import { AcceptAll } from './AcceptAll';
 import { HeaderChecks } from './HeaderChecks';
 import { KeywordPanel } from './KeywordPanel';
 import { KeywordQuestions, saidYes } from './KeywordQuestions';
@@ -101,7 +102,9 @@ export function RaiseScorePanel({
   const open = items.some((i) => i.id === picked) ? picked : 'missing';
 
   return (
-    <div className="grid gap-4 @2xl/main:grid-cols-[15rem_minmax(0,1fr)]">
+    <div className="flex min-w-0 flex-col gap-4">
+      <AcceptAll comparison={comparison} choices={choices} questions={asked} bullets={bullets} />
+      <div className="grid gap-4 @2xl/main:grid-cols-[15rem_minmax(0,1fr)]">
       <ScoreRail
         title="Ways to raise your score"
         items={items}
@@ -126,6 +129,7 @@ export function RaiseScorePanel({
         )}
         {open === 'header' && <HeaderChecks checks={checks} choices={choices} />}
         {open === 'fixes' && <MoreFixes steps={steps} resumeId={comparison.resumeId} />}
+      </div>
       </div>
     </div>
   );

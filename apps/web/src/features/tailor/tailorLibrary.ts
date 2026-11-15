@@ -179,6 +179,29 @@ export function sectionOf(text: string): ResumeSectionKey | null {
   return null;
 }
 
+const NAMES: Record<'summary' | 'skills' | 'experience' | 'projects', RegExp> = {
+  summary: /\b(?:summary|profile|intro(?:duction)?)\b/i,
+  skills: /\bskills?\b/i,
+  experience: /\b(?:experience|roles?|bullets?|work history)\b/i,
+  projects: /\bprojects?\b/i,
+};
+const WHOLE =
+  /\b(?:whole|entire|everything|every section|all sections|all of it)\b|\b(?:my|the|this) (?:resume|cv)\b/i;
+
+/**
+ * Every part a request names, in the resume's own order, so one request can change several
+ * (owner, 2026-11-15: "give the AI more power"): "shorten my summary and tidy my skills" is two.
+ * A request for the whole resume that names no part is all of them. None named is none: the
+ * assistant then asks which.
+ */
+export function sectionsOf(text: string): ResumeSectionKey[] {
+  const named = REWRITE_SECTIONS.filter((section) =>
+    NAMES[section as keyof typeof NAMES].test(text),
+  );
+  if (named.length > 0) return named;
+  return WHOLE.test(text) ? [...REWRITE_SECTIONS] : [];
+}
+
 /** The sections the assistant offers when a request doesn't name one. */
 export const REWRITE_SECTIONS: readonly ResumeSectionKey[] = [
   'summary',

@@ -7,7 +7,8 @@ import { cn } from '@/lib/cn';
  * characters' height, the board's 354×131 at seven tenths. A raster on the board, so a PNG, cut to
  * 744×276 from the 2059×764 export. The caption (307:4007) is live text in the handwritten face,
  * where the board sets it: to the character's right, just above the card. The board opens its
- * quote and never closes it; this closes it.
+ * quote and never closes it; this closes it. Its three lines start at the top of the box and set
+ * 24px apart, so the last one clears the card's top edge (it used to run under it).
  */
 export function DocumentsIllustration({ className }: { className?: string }) {
   return (
@@ -21,7 +22,7 @@ export function DocumentsIllustration({ className }: { className?: string }) {
         height={494}
         className="size-full object-contain"
       />
-      <span className="absolute left-[232px] top-[20px] whitespace-pre text-center font-caveat text-title-l font-semibold text-text-caveat">
+      <span className="absolute left-[232px] top-0 whitespace-pre text-center font-caveat text-title-l font-semibold leading-6 text-text-caveat">
         {'“Organize\nPrepare\nGo Further”'}
       </span>
     </div>

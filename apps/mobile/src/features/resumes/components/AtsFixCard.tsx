@@ -31,7 +31,7 @@ const APPLY_H = 30 / 0.75;
 const APPLY_PAD_X = 12 / 0.75;
 
 /** V2 §7.8: a keyword the profile does not back is shown, never written in. */
-const GAP_NOTE = "Not on your profile — only add it if it's true";
+const GAP_NOTE = 'Not on your profile. Yours to add';
 
 /**
  * One check on the AI fix list (RESUMES 09): a status ring, what the score found, what applying

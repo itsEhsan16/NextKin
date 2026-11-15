@@ -101,15 +101,31 @@ describe('the path to a target (§129)', () => {
     const text = '12+ years of experience with Go and PostgreSQL. Kafka is required.';
     const requirements = requirementsFromJd({ requiredSkills: ['Go', 'PostgreSQL', 'Kafka'], preferredSkills: [], rawText: text }, TAXONOMY);
     // Go shows from 2018; PostgreSQL, once the user confirms it at that role, as long. Both short of 12.
-    const after = planToTarget(thinInput({ jd: { requirements, text, completeness: 'full' } }), { targetBps: TARGET })!;
+    const after = planToTarget(thinInput({ jd: { requirements, text, completeness: 'full' }, rubricId: 'rubric-2' }), { targetBps: TARGET })!;
     expect(after.blockers.map((b) => [b.skillName, b.askedYears])).toEqual([['Go', 12], ['PostgreSQL', 12]]);
     expect(after.ceilingBps).toBeLessThan(10_000);
+  });
+
+  it('under the coverage rubric years block nothing: every suggestion taken reaches the top (rubric-3, D-25)', () => {
+    const text = '12+ years of experience with Go and PostgreSQL. Kafka is required.';
+    const requirements = requirementsFromJd({ requiredSkills: ['Go', 'PostgreSQL', 'Kafka'], preferredSkills: [], rawText: text }, TAXONOMY);
+    const path = planToTarget(thinInput({ jd: { requirements, text, completeness: 'full' } }), { targetBps: 10_000 })!;
+    expect(path.blockers).toEqual([]);
+    expect(path.ceilingBps).toBe(10_000);
+    expect(path.reachesTarget).toBe(true);
+  });
+
+  it('a project line is offered a result where the rubric counts it (rubric-3)', () => {
+    const doc: ScoringDocument = { ...THIN, projects: [{ id: 'project:p1', name: 'Ledger', bullets: ['Built a reconciliation tool'] }] };
+    const steps = (rubricId?: string) => planToTarget(thinInput({ document: doc, profile: doc, ...(rubricId ? { rubricId } : {}) }), { targetBps: 10_000 })!.steps;
+    expect(steps().find((s) => s.action.type === 'add_figure' && s.action.roleId === 'project:p1')).toMatchObject({ who: 'you' });
+    expect(steps('rubric-2').some((s) => s.action.type === 'add_figure' && s.action.roleId === 'project:p1')).toBe(false);
   });
 
   it('an impossible years ask is a blocker at its ceiling, not as written (rubric-2)', () => {
     const text = '30+ years of experience with Go.';
     const requirements = requirementsFromJd({ requiredSkills: ['Go'], preferredSkills: [], rawText: text }, TAXONOMY);
-    const path = planToTarget(backendInput({ jd: { requirements, text, completeness: 'full' }, kb: approvedKb() }), { targetBps: TARGET })!;
+    const path = planToTarget(backendInput({ jd: { requirements, text, completeness: 'full' }, kb: approvedKb(), rubricId: 'rubric-2' }), { targetBps: TARGET })!;
     expect(path.blockers[0]).toMatchObject({ skillName: 'Go', askedYears: 17 });
   });
 

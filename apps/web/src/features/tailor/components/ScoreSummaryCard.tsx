@@ -9,7 +9,7 @@ import {
 
 import { cn } from '@/lib/cn';
 import { cardSurface } from '@/ui/Card';
-import { CheckCircle, InfoCircle, Lightbulb02 } from '@/ui/lineIcons';
+import { ArrowUp, CheckCircle, Lightbulb02 } from '@/ui/lineIcons';
 import { ScoreRing, ringToneFor } from '@/ui/ScoreRing';
 import { Skeleton } from '@/ui/Skeleton';
 
@@ -22,10 +22,10 @@ const BAND_TITLE = {
 const tenths = (score: number) => (score / 10).toFixed(1);
 
 /**
- * The review's score card (toreview §121, from the owner's mockup): the ring, the band in words,
- * what it rests on — the job's key keywords the resume shows, and how the score moved — then one
- * plain next step. Every number is the run's own (G17). A plan score the run missed (toreview §129)
- * is still said, in a few words (owner, 2026-11-04: "too much unnecessary text").
+ * The review's score card, simplified (owner, 2026-11-15): the ring, the band in words, and one
+ * quiet line of what it rests on — how the score moved and how many of the job's key keywords
+ * the resume shows. Under a hairline, one plain next step. No tinted boxes and no stray icons;
+ * every number is the run's own (G17). A plan score the run missed (toreview §129) is still said.
  */
 export function ScoreSummaryCard({
   score,
@@ -45,7 +45,7 @@ export function ScoreSummaryCard({
   /** What would raise the score further, priced on this version (toreview §206.3). */
   next?: readonly TailorNextStep[] | undefined;
 }) {
-  if (score == null && loading) return <Skeleton className="h-28 shrink-0 rounded-lg" />;
+  if (score == null && loading) return <Skeleton className="h-36 shrink-0 rounded-lg" />;
   if (score == null)
     return (
       <section className={cn(cardSurface, 'shrink-0 p-6')}>
@@ -56,10 +56,11 @@ export function ScoreSummaryCard({
       </section>
     );
   const band = atsBandFor(score);
+  const up = baseline != null && score > baseline;
   const moved =
     baseline == null
       ? null
-      : score > baseline
+      : up
         ? `Up from ${tenths(baseline)}`
         : score < baseline
           ? `Down from ${tenths(baseline)}`
@@ -77,54 +78,49 @@ export function ScoreSummaryCard({
   const done = missing.length === 0 && !next?.length;
   return (
     // Compact: it is the one fixed block above the assistant, which takes the rest (toreview §122).
-    <section
-      aria-labelledby="review-score"
-      className={cn(cardSurface, 'flex shrink-0 items-center gap-5 p-6')}
-    >
-      <ScoreRing
-        score={score}
-        label="Out of 10"
-        name="ATS score"
-        size={84}
-        sweep
-        outOf10
-        showLabel
-        tone={ringToneFor(band)}
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <h2 id="review-score" className="text-h2 font-bold text-text-primary">
+    <section aria-labelledby="review-score" className={cn(cardSurface, 'shrink-0 overflow-hidden')}>
+      <div className="flex items-center gap-5 px-6 py-5">
+        <ScoreRing
+          score={score}
+          label="Out of 10"
+          name="ATS score"
+          size={76}
+          sweep
+          outOf10
+          showLabel
+          tone={ringToneFor(band)}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-caption-m font-semibold uppercase tracking-wide text-text-tertiary">
+            ATS score
+          </p>
+          <h2 id="review-score" className="mt-0.5 text-h2 font-bold text-text-primary">
             {BAND_TITLE[band]}
           </h2>
-          {match && (
-            <span title={match.basis} className="text-text-tertiary">
-              <InfoCircle aria-label={match.basis} className="size-4" />
-            </span>
-          )}
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-s font-medium text-text-secondary">
+            {moved && (
+              <span className={cn('flex items-center gap-1', up && 'text-success-text')}>
+                {up && <ArrowUp aria-hidden className="size-3.5" />}
+                {moved}
+              </span>
+            )}
+            {match && (
+              <span title={match.basis}>
+                {match.matched} of {match.total} key keywords
+              </span>
+            )}
+            {promise && <span>{promise}</span>}
+          </p>
         </div>
-        <p className="mt-1 text-body-m text-text-secondary">
-          {[
-            match ? `${match.matched} of ${match.total} key keywords` : 'Your score for this job',
-            moved,
-            promise,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
-        <p
-          className={cn(
-            'mt-3 flex items-start gap-2 rounded-md px-3 py-2.5 text-body-s font-medium',
-            done ? 'bg-success-surface text-success-text' : 'bg-warning-50 text-warning-text',
-          )}
-        >
-          {done ? (
-            <CheckCircle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          ) : (
-            <Lightbulb02 aria-hidden className="mt-0.5 size-4 shrink-0" />
-          )}
-          {tip}
-        </p>
       </div>
+      <p className="flex items-start gap-2.5 border-t border-border-subtle px-6 py-3 text-body-s text-text-secondary">
+        {done ? (
+          <CheckCircle aria-hidden className="mt-0.5 size-4 shrink-0 text-success-600" />
+        ) : (
+          <Lightbulb02 aria-hidden className="mt-0.5 size-4 shrink-0 text-text-tertiary" />
+        )}
+        <span className="min-w-0 break-words">{tip}</span>
+      </p>
     </section>
   );
 }

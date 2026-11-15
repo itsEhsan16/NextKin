@@ -137,11 +137,17 @@ export const contentHash = (text: string): string => createHash('sha256').update
 const NOT_A_SKILL = /\b(?:bachelor|master|degree|ph\.?\s?d|diploma|graduate|years?|yrs)\b/i;
 /** A category, not a skill: "backend technologies", "APIs", "modern frameworks" (toreview §110.5). */
 const CATEGORY_NOUN = /^(?:technologies|technology|tools|frameworks|languages|skills|concepts|principles|practices|methodologies|platforms|systems|apis?|stacks?|solutions)$/i;
-/** Only generic lowercase words before it ("backend", "modern web"); "REST APIs" names one. */
+/** A word that says nothing of which: "modern frameworks", "various tools", "relevant technologies". */
+const GENERIC = /^(?:modern|new|newer|latest|current|various|multiple|several|other|similar|related|relevant|emerging|different|appropriate|necessary|common|standard|key|core|such|these|those|our|their|any|all|and|or)$/i;
+/**
+ * The noun alone, or behind words that name nothing ("tools", "modern frameworks"). A phrase that
+ * says which is a keyword the posting names and a checker matches (owner, D-25, toreview §211):
+ * "data analysis tools", "analytics tools", "backend technologies", "REST APIs".
+ */
 function isCategory(text: string): boolean {
   const words = text.trim().split(/\s+/);
   const noun = words.pop() ?? '';
-  return CATEGORY_NOUN.test(noun) && words.length <= 2 && words.every((w) => /^[\p{Ll}-]+$/u.test(w));
+  return CATEGORY_NOUN.test(noun) && words.every((w) => GENERIC.test(w));
 }
 export const isSkillName = (text: string): boolean =>
   text.trim().split(/\s+/).length <= 6 && !NOT_A_SKILL.test(text) && (resolveSkill(TAXONOMY, text).known || !isCategory(text));

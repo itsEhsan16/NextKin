@@ -82,7 +82,7 @@ export function ResumeDetailCard({
         label="Resume detail"
         idBase={panel}
         // Narrower than the four tabs (a 768 window), the bar scrolls sideways inside the card.
-        className="mt-6 shrink-0 overflow-x-auto scrollbar-thin"
+        className="mt-6 shrink-0 overflow-x-auto"
       />
 
       {/* Keyed by tab: after the first switch, each tab's content fades in (`toreview.md` §84). */}
@@ -93,7 +93,7 @@ export function ResumeDetailCard({
         aria-labelledby={tabId(panel, tab)}
         // The card's one scroller; 8px wider either side so the preview's shadow isn't clipped.
         className={cn(
-          '-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pt-5 scrollbar-thin',
+          '-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pt-5',
           switched && 'animate-reveal',
         )}
       >

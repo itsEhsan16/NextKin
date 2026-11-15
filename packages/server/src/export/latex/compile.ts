@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import type { Config } from '../../config';
 import { guardedFetch } from '../../net/egress';
+import { plainHyphens } from './textLayer';
 import type { CompileResult } from './types';
 
 /**
@@ -96,7 +97,9 @@ export function createLatexCompiler(config: LatexCompilerConfig, options: LatexC
         const parsed = answer.safeParse(body);
         if (!parsed.success) throw new LatexCompileError('unavailable', 'the LaTeX compiler answered in an unexpected shape', [], res.status);
         const { pdf, pages, pngs, ms } = parsed.data;
-        return { pdf: bytes(pdf), pages, pngs: pngs.map(bytes), ms };
+        // The text layer's hyphens are made plain here, so every consumer of a compile (the
+        // preview, the download, the read-back) gets the same file (toreview §211.1).
+        return { pdf: await plainHyphens(bytes(pdf)), pages, pngs: pngs.map(bytes), ms };
       }
       const detail = failure.safeParse(body);
       const message = detail.success && detail.data.error ? detail.data.error : `HTTP ${res.status}`;

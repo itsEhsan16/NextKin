@@ -145,20 +145,23 @@ export function strippedInUse<T extends { claimId: string }>(stripped: readonly 
 export const tailoredPages = (doc: CanonicalResumeJson) => estimatePages(toResumeContent(doc, { resumeId: 'x', versionId: 'x' }));
 
 /**
- * The job's title as a headline: without what a posting adds in brackets ("(m/w/d)", "(Fresher,
- * Full-Stack Growth Path)"), and with a hyphen the copy turned into "?" restored (toreview §112).
+ * The job's title as a headline, as the posting wrote it, brackets included (owner, toreview
+ * §211.2: a checker compares the title letter for letter, and "(2026 Passouts)" cut off read as a
+ * different job). Only a hyphen the copy turned into "?" is restored (toreview §112).
  */
 export const headlineOf = (jdTitle: string): string =>
   jdTitle
     .replace(/(?<=\p{L})\?(?=\p{L})/gu, '-')
-    .replace(/\s*[([][^)\]]*[)\]]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 120);
 
 export const skillKey = (name: string) => resolveSkill(TAXONOMY, name).id;
 
-/** The base's skills and the ticked ones; with `byJob`, those the job names first, in its order. */
+/**
+ * The base's skills and the ticked ones; with `byJob`, those the job names first, in its order,
+ * then anything else the candidate accepted, then the rest.
+ */
 function skillsFor(base: CanonicalResumeJson, request: TailorRunInput, job: TailorJob | null, byJob: boolean): CanonicalResumeJson['skills'] {
   const keys = new Set(base.skills.map((s) => skillKey(s.name)));
   const ticked = request.added
@@ -173,7 +176,7 @@ function skillsFor(base: CanonicalResumeJson, request: TailorRunInput, job: Tail
     if (!rank.has(key)) rank.set(key, i);
   });
   return all
-    .map((skill, i) => ({ skill, i, r: rank.get(skillKey(skill.name)) ?? Number.MAX_SAFE_INTEGER }))
+    .map((skill, i) => ({ skill, i, r: rank.get(skillKey(skill.name)) ?? (skill.id.startsWith('added-') ? Number.MAX_SAFE_INTEGER - 1 : Number.MAX_SAFE_INTEGER) }))
     .sort((a, b) => a.r - b.r || a.i - b.i)
     .map((x) => x.skill);
 }
@@ -186,22 +189,31 @@ function groupsFor(groups: NonNullable<CanonicalResumeJson['skillGroups']>, skil
 }
 
 /**
- * Projects (toreview §113): with the Projects fix on, a project takes the model's bullets only when
- * every one passes `checkProjectBullets` against that project's own lines; otherwise it keeps its
- * lines as the file had them. Kept lines cite their own line of the base.
+ * Projects (toreview §113): with the Projects fix on, a project takes the model's bullets that pass
+ * `checkProjectBullets` against that project's own lines and the keywords the candidate accepted
+ * (toreview §211). A bullet that fails is not written; the lines no passing bullet rewrote stay as
+ * the file had them, so one bad line no longer undoes the whole project. A project whose line the
+ * candidate rewrote with its result stays exactly as they left it. Kept lines cite their own line.
  */
 function projectsFor(base: CanonicalResumeJson, generated: CanonicalResumeJson, request: TailorRunInput): CanonicalResumeJson['projects'] {
-  const facts = factsOfDocument(base, { ...(request.confirmed ? { confirmed: request.confirmed } : {}) });
+  const facts = factsOfDocument(base, { ...(request.confirmed ? { confirmed: request.confirmed } : {}), placeable: request.added });
   const leftOut = leftOutChecker(TAXONOMY, request.skipped);
   const named = leftOutChecker(TAXONOMY, request.added);
   return base.projects.map((project, pi) => {
     const keptProject = { ...project, bullets: project.bullets.map((b, bi) => kept(b, `kept-p${pi}-${bi}`, `${project.factId}#p${bi}`)) };
     if (!request.fixes.includes('projects')) return keptProject;
+    if ((request.figures ?? []).some((f) => f.where === `project:${project.factId}`)) return keptProject;
     const bullets = (generated.projects.find((g) => g.factId === project.factId)?.bullets ?? []).filter((b) => !isBoltOn(b.text, named));
     const own = facts.projects.find((f) => f.id === project.factId);
     if (bullets.length === 0 || !own) return keptProject;
     const issues = checkProjectBullets({ id: own.id, name: own.name, lines: own.lines ?? [], skills: own.skills ?? [] }, bullets, TAXONOMY, leftOut);
-    return issues.length === 0 ? { ...project, bullets } : keptProject;
+    if (issues.length === 0) return { ...project, bullets };
+    const failed = new Set(issues.map((issue) => issue.index));
+    const good = bullets.filter((_, i) => !failed.has(i));
+    // A bullet citing the project as a whole says nothing of which lines it replaced.
+    if (good.length === 0 || good.some((b) => b.evidence.includes(own.id))) return keptProject;
+    const rewritten = new Set(good.flatMap((b) => b.evidence));
+    return { ...project, bullets: [...good, ...keptProject.bullets.filter((_, bi) => !rewritten.has(`${project.factId}#p${bi}`))] };
   });
 }
 
@@ -271,7 +283,10 @@ export function mergeTailored(args: {
   delete rest.summary;
   // The header as the user answered its checks in Enhance (toreview §170); otherwise as the file had it.
   const header = withHeaderChoices(base.header, request.header ?? []);
-  const all = skillsFor(base, request, job, fixes.has('skills')).slice(0, 60);
+  // Sixty skills is the list's length, but nothing the candidate accepted is ever cut to keep it
+  // (toreview §211: accepted keywords used to sit last, and were the first to go).
+  const accepted = new Set(request.added.map(skillKey));
+  const all = skillsFor(base, request, job, fixes.has('skills')).filter((s, i) => i < 60 || accepted.has(skillKey(s.name)));
   // Lines of the same name become one, and a skill is listed once (toreview §170).
   const skillGroups = base.skillGroups ? tidyGroups(placeInGroups(groupsFor(base.skillGroups, all, fixes.has('skills')), request.added, TAXONOMY), TAXONOMY) : undefined;
   const skills = skillGroups ? listedOnce(all, skillGroups) : all;

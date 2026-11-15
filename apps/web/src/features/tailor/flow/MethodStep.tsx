@@ -11,6 +11,7 @@ import {
   primaryButton,
   StepHeading,
   stepCard,
+  stepShell,
   TrustNote,
 } from '@/features/create/jobFlow/FlowChrome';
 import { useGuardedRouter } from '@/navigation/guardedRouter';
@@ -77,7 +78,7 @@ export function MethodStep({
     else if (method === 'upload' && uploaded) onUploaded(uploaded.resumeId);
   };
   return (
-    <div className="flex flex-col gap-6">
+    <div className={stepShell}>
       <section aria-labelledby="method-step" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
           <StepHeading

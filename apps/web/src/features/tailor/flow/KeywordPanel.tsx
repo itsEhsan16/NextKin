@@ -13,10 +13,8 @@ import {
 import { useMemo, useState } from 'react';
 
 import { cn } from '@/lib/cn';
-import { fieldBox } from '@/ui/fieldBox';
-import { InfoCircle, SearchLg, SwitchVertical01 } from '@/ui/lineIcons';
+import { InfoCircle, SwitchVertical01 } from '@/ui/lineIcons';
 import { pressable } from '@/ui/pressable';
-import { textLink } from '@/ui/textLink';
 
 import type { TailorChoices } from '../useTailorRun';
 import { KeywordRail } from './KeywordRail';
@@ -38,9 +36,11 @@ export const TAB_NAME: Record<KeywordTab, string> = { missing: 'Missing', option
 
 /**
  * "Choose keywords to add" (owner's mockup, 2026-11-11): what the job asks for that the resume
- * lacks, required ones under Missing and preferred or soft ones under Optional, filtered by kind
- * and search, each with what it adds. Nothing starts ticked (toreview §114). Which of the two is
- * open is the score rail's choice (owner, 2026-11-14), so the kinds are a row of chips here.
+ * lacks, required ones under Missing and preferred or soft ones under Optional, filtered by kind,
+ * each with what it adds. Nothing starts ticked (toreview §114). Which of the two is open is the
+ * score rail's choice (owner, 2026-11-14), so the kinds are a row of chips here. The table's own
+ * head selects every keyword shown; the search box and the second "Select all" bar under the
+ * table are gone (owner, 2026-11-15: unnecessary, and the head already does it).
  */
 export function KeywordPanel({
   comparison,
@@ -53,14 +53,13 @@ export function KeywordPanel({
 }) {
   const rows = useMemo(() => keywordRowsOf(comparison), [comparison]);
   const [bucket, setBucket] = useState<KeywordBucket | undefined>();
-  const [query, setQuery] = useState('');
   const [sort, setSort] = useState<KeywordSort>('default');
 
   const inTab = rows.filter((r) => r.tab === tab).length;
   const counts = bucketCounts(rows, tab);
   // A category the open tab doesn't hold falls back to All.
   const group = counts.some((c) => c.bucket === bucket) ? bucket : undefined;
-  const shown = sortRows(filterRows(rows, { tab, bucket: group, query }), sort);
+  const shown = sortRows(filterRows(rows, { tab, bucket: group }), sort);
   const max = Math.max(0, ...rows.map((r) => r.worth ?? 0));
   const picks = comparison.picks;
   // Places the user's own records back (toreview §206.3): a tick takes these as their own word.
@@ -81,23 +80,7 @@ export function KeywordPanel({
 
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <KeywordRail total={inTab} counts={counts} active={group} onChange={setBucket} />
-        <label className="relative ml-auto w-full @xl/main:w-64">
-          <span className="sr-only">Search keywords</span>
-          <SearchLg
-            aria-hidden
-            className="pointer-events-none absolute left-3.5 top-1/2 size-4.5 -translate-y-1/2 text-text-tertiary"
-          />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search keywords…"
-            className={cn(fieldBox, 'pl-10 pr-3.5 placeholder:text-text-tertiary')}
-          />
-        </label>
-      </div>
+      <KeywordRail total={inTab} counts={counts} active={group} onChange={setBucket} />
 
       <div className="flex min-w-0 flex-col gap-3">
         <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-card">
@@ -160,41 +143,11 @@ export function KeywordPanel({
             </ul>
           ) : (
             <p className="px-4 py-10 text-center text-body-m text-text-tertiary">
-              {query.trim()
-                ? `No keyword matches “${query.trim()}”.`
-                : inTab === 0 && tab === 'missing'
-                  ? 'Nothing missing. Your resume already has every keyword this job requires.'
-                  : 'Nothing here.'}
+              {inTab === 0 && tab === 'missing'
+                ? 'Nothing missing. Your resume already has every keyword this job requires.'
+                : 'Nothing here.'}
             </p>
           )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-border-subtle bg-surface-card px-4">
-          <TickBox
-            label={`Select all (${visible.length})`}
-            className="flex-none"
-            checked={allOn}
-            mixed={onCount > 0 && !allOn}
-            onChange={selectVisible}
-          >
-            <span className="text-body-m font-semibold text-text-primary">
-              Select all ({visible.length})
-            </span>
-          </TickBox>
-          <button
-            type="button"
-            disabled={added.length === 0}
-            onClick={() => choices.setAdded([])}
-            className={cn(
-              textLink,
-              'min-h-control-lg text-body-m text-text-secondary disabled:text-text-tertiary',
-            )}
-          >
-            Clear selection
-          </button>
-          <span aria-live="polite" className="ml-auto text-body-m font-semibold text-text-primary">
-            {added.length} keyword{added.length === 1 ? '' : 's'} selected
-          </span>
         </div>
       </div>
     </div>

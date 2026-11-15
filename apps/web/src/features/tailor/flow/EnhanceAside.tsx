@@ -28,8 +28,8 @@ function partLine(
     return choices.added.length
       ? `The job’s skills first, plus the ${choices.added.length} you ticked`
       : 'The job’s skills first';
-  if (fix === 'experience')
-    return choices.experience === 'quick' ? 'Your latest 2 roles' : 'Every role';
+  // Which roles is the control's to say, right under this line; the line says what happens to them.
+  if (fix === 'experience') return 'Bullets reworded for this job';
   if (fix === 'projects') return 'Reworded in this job’s terms';
   const pages = comparison.pageCount;
   return pages && pages > 2 ? `${pages} pages down to 2` : 'Fit to one page, or two with 5+ years';
@@ -131,7 +131,8 @@ export function EnhanceAside({
                 {row.key === 'experience' && on && (
                   <SegmentedControl
                     label="How much of your work history to edit"
-                    className="mb-1.5 ml-9"
+                    // Hugs its two options: in this column it would otherwise stretch, leaving an empty track.
+                    className="mb-1.5 ml-9 self-start"
                     segments={[
                       { id: 'quick' as const, label: 'Latest 2 roles' },
                       { id: 'full' as const, label: 'Every role' },

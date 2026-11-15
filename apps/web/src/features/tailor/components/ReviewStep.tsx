@@ -10,7 +10,6 @@ import { useConfirmedDownload } from '@/features/resumes/useConfirmedDownload';
 import { cn } from '@/lib/cn';
 
 import { resumeFileName } from '../tailorLibrary';
-import { ChangeLog } from './ChangeLog';
 import { ResumeAssistantPanel } from './ResumeAssistantPanel';
 import { ResumePreview } from './ResumePreview';
 import { ReviewHeader } from './ReviewHeader';
@@ -27,7 +26,8 @@ const WORKSPACE = 'lg:h-[calc(100dvh-7.5rem)]';
  * Step 3, done: "Resume review" (toreview §121, from the owner's mockup). The header holds the
  * file and the actions; on the left, the score in words and the AI Resume Assistant — "Try asking",
  * Create cover letter, one box; on the right, the page (Preview / Text view). The resume is already
- * saved to Resumes.
+ * saved to Resumes. The folded "What changed for this job" list is gone (owner, 2026-11-15); Text
+ * view still marks the AI's changes on the page itself.
  */
 export function ReviewStep({
   job,
@@ -81,7 +81,6 @@ export function ReviewStep({
             match={run?.jobMatch}
             next={run?.next}
           />
-          {run && <ChangeLog job={job} run={run} />}
           <ResumeAssistantPanel generation={generation} company={job.company} />
         </div>
         <div className="lg:min-h-0">

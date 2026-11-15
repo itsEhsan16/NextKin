@@ -167,7 +167,7 @@ describe('Tailor flow (734:2, 734:679)', () => {
     expect(within(enhance).getByText('Step 2 of 3')).toBeInTheDocument();
     expect(within(enhance).getByText('Product Designer Resume (base)')).toBeInTheDocument();
     expect(
-      within(enhance).getByRole('img', { name: 'ATS score: 5.6 out of 10' }),
+      within(enhance).getByRole('img', { name: 'ATS score: 6.3 out of 10' }),
     ).toBeInTheDocument();
     expect(within(enhance).getByRole('button', { name: 'Change' })).toBeInTheDocument();
     // Every way to raise the score is a category of one rail (owner, 2026-11-14).
@@ -184,7 +184,7 @@ describe('Tailor flow (734:2, 734:679)', () => {
     expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
     await user.click(await findKeyword(user, 'Figma'));
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
-    expect(screen.getByText('1 keyword selected')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Add 1 keyword & continue/ })).toBeInTheDocument();
 
     // Where the points go opens in a dialog from the score card.
     await user.click(screen.getByRole('button', { name: 'See where your points go' }));

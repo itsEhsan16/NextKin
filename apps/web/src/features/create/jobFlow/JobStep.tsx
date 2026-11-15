@@ -20,6 +20,7 @@ import {
   primaryButton,
   StepHeading,
   stepCard,
+  stepShell,
   TrustNote,
 } from './FlowChrome';
 import { JOB_FLOWS, type JobFlow, type PickedJob } from './jobFlow';
@@ -95,7 +96,7 @@ export function JobStep({
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={stepShell}>
       <section aria-labelledby="job-step" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
           <StepHeading

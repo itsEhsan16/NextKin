@@ -172,10 +172,10 @@ export function AtsResult({ result, onRubric, arrived = false }: AtsResultProps)
         <Text variant="title3" color="ink" {...a11yHeader()}>
           Missing keywords
         </Text>
-        {/* §7.8 / D-14: a missing keyword is a gap to fill truthfully, never text to paste in. */}
+        {/* D-25 (toreview §211): the candidate decides which missing keywords go on. */}
         <Text variant="callout" color="textSecondary">
           {result.missing.length > 0
-            ? 'Add only the ones you really have.'
+            ? 'Add the ones you want on your resume.'
             : 'Your resume already shows every keyword the job asks for.'}
         </Text>
         {result.missing.length > 0 ? (

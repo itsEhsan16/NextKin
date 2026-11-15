@@ -23,6 +23,7 @@ export const saidYes = (choices: Pick<TailorChoices, 'places'>, q: KeywordQuesti
  * "Did you use these?" (owner, 2026-11-15; toreview §206.3): a keyword the job asks for, beside
  * the line of the user's own resume that hints they used it. Only the user knows, so each is
  * asked. "Yes" confirms it at that role as their own word; "No" is the default and adds nothing.
+ * What they say yes to is theirs to claim (D-25, toreview §211).
  * Spec-derived (no board yet), from the flow's own rows and the shared SegmentedControl, as
  * "Check your header" is.
  */
@@ -37,7 +38,7 @@ export function KeywordQuestions({
   return (
     <CategoryList
       title="Did you use these?"
-      hint="Only say yes if it’s true"
+      hint="Say yes and it goes on your resume, in that role"
       label="Skills this job asks for that your resume may already hint at"
     >
       {questions.map((q) => {

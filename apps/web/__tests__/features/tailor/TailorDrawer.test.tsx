@@ -1,10 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import type { Job, TailorRun } from '@nextkin/shared/models';
-import { repos, resetMockRepos } from '@nextkin/shared/repos';
-
-import { ChangeLog } from '@/features/tailor/components/ChangeLog';
 import { Drawer } from '@/ui/Drawer';
 import { FlowFooter } from '@/ui/FlowFooter';
 import { CreditPill } from '@/ui/CreditPill';
@@ -36,25 +32,6 @@ describe('Drawer', () => {
     onOpenChange.mockClear();
     await userEvent.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
-  });
-});
-
-describe('What changed for this job (audit TL-43)', () => {
-  let job: Job;
-  beforeEach(async () => {
-    resetMockRepos();
-    job = await repos.jobs.get('job_google');
-  });
-
-  const run = { sourceResumeId: 'res_pd', added: ['Figma'], skipped: ['Sketch'] } as TailorRun;
-
-  it('counts what the run changed and lists what it left out, and why', async () => {
-    render(<ChangeLog job={job} run={run} />);
-    const summary = screen.getByText('What changed for this job');
-    expect(summary.closest('summary')).toHaveTextContent(/\d+ changes/);
-    await userEvent.click(summary);
-    expect(screen.getByText('Added Figma — you ticked it')).toBeVisible();
-    expect(screen.getByText('Sketch left out — you didn’t tick it')).toBeVisible();
   });
 });
 

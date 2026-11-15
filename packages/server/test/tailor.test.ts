@@ -69,7 +69,7 @@ describe('the tailored merge', () => {
     expect(doc.roles.map((r) => [r.company, r.title, r.start, r.end])).toEqual(BASE.roles.map((r) => [r.company, r.title, r.start, r.end]));
     // Summary off: the base's, word for word.
     expect(doc.summary?.text).toBe(BASE.summary?.text);
-    expect(doc.headline).toBe('Senior Backend Engineer');
+    expect(doc.headline).toBe('Senior Backend Engineer (m/w/d)');
     expect(doc.education).toEqual(BASE.education);
   });
 
@@ -111,7 +111,7 @@ describe('the tailored merge', () => {
     const doc = mergeTailored({ base: BASE, generated: GENERATED, request: asked, job: JOB });
     const changes = changesOf({ base: BASE, final: doc, request: asked, stripped: 2, pages: 1 });
     expect(changes.map((c) => c.label)).toEqual([
-      'Headline aimed at Senior Backend Engineer',
+      'Headline aimed at Senior Backend Engineer (m/w/d)',
       'Added Terraform, as you chose',
       'The skills this job asks for listed first',
       'Rewrote the bullets in Senior Backend Engineer · Lumen Pay',
@@ -128,9 +128,19 @@ describe('the tailored merge', () => {
     expect(strippedInUse(stripped, BASE, asked).map((s) => s.claimId)).toEqual(['b0-1', 'b1-0-r1', 'header:pay']);
   });
 
-  it('aims the headline without a posting’s marker', () => {
-    expect(headlineOf('Senior Backend Engineer (m/w/d)')).toBe('Senior Backend Engineer');
-    expect(headlineOf('Data Analyst (f/m/x) – Remote')).toBe('Data Analyst – Remote');
+  it('aims the headline at the job’s title as the posting wrote it, brackets included (toreview §211.2)', () => {
+    expect(headlineOf('Senior Backend Engineer (m/w/d)')).toBe('Senior Backend Engineer (m/w/d)');
+    expect(headlineOf('AI-Native Product Manager –  Graduate Trainee (2026 Passouts)')).toBe('AI-Native Product Manager – Graduate Trainee (2026 Passouts)');
+    expect(headlineOf('Full?Stack Developer')).toBe('Full-Stack Developer');
+  });
+
+  it('never cuts a keyword the candidate accepted to keep the skills list short (toreview §211)', () => {
+    const many = Array.from({ length: 70 }, (_, i) => ({ id: `k${i}`, name: `Tool ${i}`, evidence: [], origin: 'user' as const }));
+    const asked = request({ fixes: [], added: ['Terraform', 'Customer calls'] });
+    const doc = mergeTailored({ base: { ...BASE, skills: many }, generated: GENERATED, request: asked, job: JOB });
+    const names = doc.skills.map((s) => s.name);
+    expect(names).toHaveLength(62);
+    expect(names).toEqual(expect.arrayContaining(['Terraform', 'Customer calls']));
   });
 });
 

@@ -41,6 +41,15 @@ describe.skipIf(!ready)('the LaTeX compile service (latex profile)', () => {
     expect(Buffer.from(result.pngs[0]?.subarray(1, 4) ?? []).toString()).toBe('PNG');
   });
 
+  it('types a hyphen that reads as a hyphen: the job title matches letter for letter (toreview §211.1)', async () => {
+    const headline = 'AI-Native Product Manager – Graduate Trainee (2026 Passouts)';
+    const result = await compiler().compile(texOf({ ...warmupResume(0, 'letter'), headline }));
+    const page = await (await getDocument({ data: new Uint8Array(result.pdf) }).promise).getPage(1);
+    const text = (await page.getTextContent()).items.map((item) => ('str' in item ? item.str : '')).join(' ');
+    expect(text).toContain(headline);
+    expect(text).not.toMatch(/[\u2010\u2011\u00AD]/);
+  });
+
   it('keeps an uploaded one-pager on one page, with every contact link live', async () => {
     const { header, body } = splitHeader(TEXT, LINKS);
     const { document } = crossCheck(EXTRACTION, body);

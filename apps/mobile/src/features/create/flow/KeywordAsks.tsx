@@ -37,7 +37,7 @@ export function KeywordAsks({
   if (shown.length === 0) return null;
 
   return (
-    <FlowSection title="Did you use these?" body="Only say yes if it’s true.">
+    <FlowSection title="Did you use these?" body="Say yes and it goes on your resume, in that role.">
       <FlowCard style={styles.card}>
         {shown.map((q, index) => {
           const yes = choices.places[q.keyword]?.where.includes(q.where) ?? false;
