@@ -93,13 +93,13 @@ function pathStepOf(step: PathStep, report: DocumentScore['report'], rawText: st
     case 'confirm_skill': {
       const need = quoteOf(rawText, a.skillName);
       const base = { ...scored, keyword: a.skillName, importance: a.importance, ...(need ? { need } : {}), ...(a.roleId ? { where: a.roleId } : {}) };
-      const placed = a.roleId ? 'The AI places it in the role it fits best' : 'No role’s dates fit it, so it goes in your Skills';
+      const placed = a.roleId ? 'The AI writes it into the role it fits best' : 'It goes in your Skills';
       return a.from === 'gap'
-        ? { ...base, kind: 'keyword', title: `Add ${a.skillName}`, have: 'Not on your resume', basis: `Only if you’ve used it. ${placed}` }
+        ? { ...base, kind: 'keyword', title: `Add ${a.skillName}`, have: 'Not on your resume', basis: `Yours to accept. ${placed}` }
         : { ...base, kind: 'evidence', title: `Show ${a.skillName} in a role`, have: 'Only in your skills list — half credit', basis: placed };
     }
     case 'add_figure':
-      return { ...scored, kind: 'number', title: `Add the result to “${clip(a.text)}”`, have: 'No measured result yet', basis: 'Write the real figure: a number, a %, time or money saved. Nothing is made up.', bullet: { roleId: a.roleId, index: a.bulletIndex, text: a.text } };
+      return { ...scored, kind: 'number', title: `Add the result to “${clip(a.text)}”`, have: 'No measured result yet', basis: 'Take the suggested result or write your own: a number, a %, time or money saved.', bullet: { roleId: a.roleId, index: a.bulletIndex, text: a.text } };
     case 'pass_section':
       return { ...scored, kind: 'section', title: a.check === 'summary' && step.who === 'ai' ? 'Write a summary aimed at this job' : SECTION_FIX[a.check as SectionCheckId], have: 'Missing or too short', basis: step.who === 'ai' ? 'The AI writes it from your own lines' : 'What re-scoring with it gives' };
     case 'pass_format':
@@ -173,10 +173,13 @@ export function fixPlanOf(args: { result: DocumentScore | undefined; rawText?: s
     if (r.status === 'gap') {
       const listed = share(r.importance, rubric.credit.listed);
       const shown = share(r.importance, rubric.credit.demonstrated);
-      steps.push({ id: `kw:${r.id}`, kind: 'keyword', title: `Add ${r.text}`, have: 'Not on your resume', worth: tenth(shown), basis: `+${tenth(listed)} in your skills, +${tenth(shown)} when a role shows it — only if you have it`, who: 'you', ...base });
+      // Under the coverage rubric a keyword on the page is worth the same wherever it is (D-25).
+      const basis = listed >= shown ? `+${tenth(shown)} once it is on your resume. Yours to accept` : `+${tenth(listed)} in your skills, +${tenth(shown)} when a role shows it. Yours to accept`;
+      steps.push({ id: `kw:${r.id}`, kind: 'keyword', title: `Add ${r.text}`, have: 'Not on your resume', worth: tenth(shown), basis, who: 'you', ...base });
     } else if (r.status === 'partial' && r.evidence === 'listed') {
       const more = share(r.importance, rubric.credit.demonstrated - rubric.credit.listed);
-      steps.push({ id: `ev:${r.id}`, kind: 'evidence', title: `Show ${r.text} in a role`, have: 'Only in your skills list — half credit', worth: tenth(more), basis: 'Full credit once a role you held shows it', who: 'you', ...base });
+      // A report scored on an earlier rubric can still say "only listed"; it earns nothing more now.
+      if (more > 0) steps.push({ id: `ev:${r.id}`, kind: 'evidence', title: `Show ${r.text} in a role`, have: 'Only in your skills list — half credit', worth: tenth(more), basis: 'Full credit once a role you held shows it', who: 'you', ...base });
     } else if (r.status === 'partial' && r.years) {
       steps.push({ id: `yr:${r.id}`, kind: 'evidence', title: `${r.text}: ${r.years.asked}+ years asked`, have: `Your roles show ${r.years.shown} years`, worth: null, basis: 'Tailoring can’t add years; lead with what you did with it', who: 'nobody', ...base });
     }

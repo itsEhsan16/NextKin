@@ -17,14 +17,14 @@ type Bullet = NonNullable<PlanStep['bullet']>;
 /** A job's line as quoted: without the list mark the listing gave it ("- Strong Figma …"). */
 export const quoteOf = (need: string) => need.replace(/^[\s\-–—•*]+/, '');
 
-/** The dialogs' shared head: a tile, the question, one line under it, and a close button. */
+/**
+ * The dialogs' shared head: an icon, the question, one line under it, and a close button. The icon
+ * sits bare beside the title (owner, 2026-11-15: no tinted tile behind it).
+ */
 function Head({ icon, title, line }: { icon: ReactNode; title: string; line: ReactNode }) {
   return (
-    <div className="flex items-start gap-3.5">
-      <span
-        aria-hidden
-        className="flex size-11 shrink-0 items-center justify-center rounded-md bg-brand-50 text-text-brand"
-      >
+    <div className="flex items-start gap-3">
+      <span aria-hidden className="flex h-7 shrink-0 items-center text-text-brand">
         {icon}
       </span>
       <div className="min-w-0">

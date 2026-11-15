@@ -11,8 +11,9 @@ import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
 import { CompanyLogo } from '@/ui/CompanyLogo';
 import { DetailCardSkeleton } from '@/ui/DetailCardSkeleton';
+import { EmptyMark, emptyDetail } from '@/ui/EmptyPanel';
+import { Briefcase01 } from '@/ui/lineIcons';
 import { StateView } from '@/ui/StateView';
-import { EmptyStateArt } from '@/ui/illustrations';
 import { UnderlineTabs, type UnderlineTab } from '@/ui/UnderlineTabs';
 import { iconButton } from '@/ui/iconButton';
 import { HugeArrowRight, HugeMoreVertical } from '@/ui/hugeIcons';
@@ -62,18 +63,20 @@ export function ApplicationDetailPanel({
 }: ApplicationDetailPanelProps) {
   const reveal = useReveal(status === 'success', row?.application.id);
 
+  // Empty, the card is still the card: as tall as its column, with one quiet line in it. The
+  // drawing and the way onward are the list's (owner, 2026-11-15).
   if (status === 'empty') {
     return (
-      <div className={cn(CARD, 'p-6')}>
+      <div className={emptyDetail}>
         {hasAny ? (
           <StateView
-            art={<EmptyStateArt object="notebook" />}
+            art={<EmptyMark icon={Briefcase01} />}
             title="Select an application"
             message="Choose one from the list to see where it stands."
           />
         ) : (
           <StateView
-            art={<EmptyStateArt object="briefcase" />}
+            art={<EmptyMark icon={Briefcase01} />}
             title="Nothing to track yet"
             message="Apply to a job and it will show here."
           />
@@ -144,11 +147,7 @@ function ApplicationDetailBody({
     <section
       aria-label={`${job.title} at ${job.company}`}
       // The frame stays put; its contents fade in (`toreview.md` §84).
-      className={cn(
-        CARD,
-        'min-h-0 overflow-y-auto p-6 [scrollbar-width:thin]',
-        reveal && '*:animate-reveal',
-      )}
+      className={cn(CARD, 'min-h-0 overflow-y-auto p-6', reveal && '*:animate-reveal')}
     >
       <div className="flex items-start justify-between">
         <CompanyLogo company={job.company} logoUrl={job.companyLogoUrl} variant="plain" />

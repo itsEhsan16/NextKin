@@ -6,7 +6,7 @@ import { useGuardedRouter } from '@/navigation/guardedRouter';
 import { cn } from '@/lib/cn';
 import { pageFrame } from '@/ui/pageFrame';
 
-import { FlowHeader } from './FlowChrome';
+import { FlowHeader, flowPage } from './FlowChrome';
 import { afterJob, JOB_FLOWS } from './jobFlow';
 import { JobStep } from './JobStep';
 
@@ -18,7 +18,7 @@ export function JobFlowScreen({ flow }: { flow: 'build' | 'tailor' }) {
   const router = useGuardedRouter();
   const copy = JOB_FLOWS[flow];
   return (
-    <div className={cn(pageFrame, 'flex flex-col gap-5 pb-8')}>
+    <div className={cn(pageFrame, flowPage)}>
       <FlowHeader
         backHref={'/' as Route}
         backLabel="Back to Home"

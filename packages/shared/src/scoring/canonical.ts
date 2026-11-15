@@ -62,7 +62,8 @@ export function scoringDocumentOf(json: CanonicalResumeJson, contact: ContactPre
     }),
     education: json.education.map((e) => ({ institution: e.institution, degree: e.degree })),
     certifications: json.certifications.map((c) => c.name),
-    projects: json.projects.map((p) => ({ name: p.name, ...(p.description ? { description: p.description } : {}), bullets: p.bullets.map((b) => b.text) })),
+    // The id is the project's place (`placesOf`), so a result can be asked for on its lines.
+    projects: json.projects.map((p) => ({ id: `project:${p.factId}`, name: p.name, ...(p.description ? { description: p.description } : {}), bullets: p.bullets.map((b) => b.text) })),
     contact,
   };
 }

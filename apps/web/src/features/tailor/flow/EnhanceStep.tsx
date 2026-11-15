@@ -11,6 +11,7 @@ import {
   FlowFooter,
   stepCard,
   StepHeading,
+  stepShell,
 } from '@/features/create/jobFlow/FlowChrome';
 import { NEVER_ADDS_SKILLS } from '@/features/create/createLibrary';
 import { cn } from '@/lib/cn';
@@ -67,7 +68,7 @@ export function EnhanceStep({
   const ticked = choices.added.length;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={stepShell}>
       <section
         aria-labelledby="enhance-step"
         className={cn(stepCard, '@container flex flex-col gap-6 p-8')}
@@ -77,7 +78,7 @@ export function EnhanceStep({
           step={2}
           of={3}
           title="Choose keywords to add"
-          lede="Tick only the keywords you really have. The AI works each one in where your experience backs it, to raise your ATS score."
+          lede="Pick what to add. Everything you accept goes on your resume, in this job’s own words, to raise your ATS score."
         />
         <div className="grid gap-6 @5xl:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
           <div className="@container/main flex min-w-0 flex-col gap-6">

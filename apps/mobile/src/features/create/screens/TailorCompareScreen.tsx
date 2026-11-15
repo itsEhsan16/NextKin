@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { nothingChosen, projectedScore, tailorRunInput } from '@/data/models/customize';
+import { acceptAll, allAccepted, nothingChosen, projectedScore, tailorRunInput } from '@/data/models/customize';
 import { isConsentRequired, useKeywordQuestions, useStartGeneration } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
@@ -212,7 +212,19 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
       </Animated.View>
       {result.keywords.length > 0 ? (
         <Animated.View entering={enter(2)}>
-          <FlowSection title="Skills it asks for" body="Tap the missing ones you really have.">
+          <FlowSection title="Skills it asks for" body="Tap the ones to add. What you accept goes on your resume.">
+            {/* "Accept all suggestions" (owner, D-25, toreview §211): never pre-selected, one tap takes
+                every keyword and answers every question yes. Results stay a line-by-line choice here. */}
+            {result.keywords.some((k) => !k.onResume) && !allAccepted(choices, result, asked) ? (
+              <FlowCard style={styles.optionsCard}>
+                <FlowRow
+                  icon="Stars02"
+                  title="Accept all suggestions"
+                  body="Adds every keyword this job asks for. You can untap any of them."
+                  onPress={() => set(acceptAll(choices, result, { questions: asked }))}
+                />
+              </FlowCard>
+            ) : null}
             <SkillChips comparison={result} choices={choices} onChange={set} />
           </FlowSection>
         </Animated.View>

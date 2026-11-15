@@ -271,6 +271,9 @@ export function buildLedger(input: {
     else if (tier === 'listed') [status, creditBps] = ['partial', rubric.credit.listed];
     else if (short) [status, creditBps] = ['partial', rubric.credit.yearsShort];
     else [status, creditBps] = ['met', rubric.credit.demonstrated];
+    // Under a coverage rubric (rubric-3) "only listed" and "fewer years" earn full credit, so the
+    // keyword is met: the row must not read as a part credit the score no longer applies.
+    if (status === 'partial' && creditBps >= rubric.credit.demonstrated) status = 'met';
 
     const weight = req.importance === 'required' ? rubric.requirementWeight.required : rubric.requirementWeight.preferred;
     weighted += weight * creditBps;

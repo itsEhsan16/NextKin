@@ -101,13 +101,26 @@ export function factsOfDocument(
 
 /**
  * The base resume with the user's rewritten bullets in place (toreview §129). Each replaces the
- * line it names, as the user's own words; one naming a role or line that isn't there is dropped.
+ * line it names, in a role or a project, as the user's own words; one naming a place or line that
+ * isn't there is dropped.
  * The run's facts and its merge both read the base through this, so they agree.
  */
 export function withFigures(doc: CanonicalResumeJson, figures: readonly { where: string; line: number; text: string }[] = []): CanonicalResumeJson {
   if (figures.length === 0) return doc;
   return {
     ...doc,
+    // A project's lines take a result too (toreview §211): its place is `project:<factId>`.
+    projects: doc.projects.map((project) => {
+      const mine = figures.filter((f) => f.where === `project:${project.factId}` && f.line < project.bullets.length && f.text.trim());
+      if (mine.length === 0) return project;
+      return {
+        ...project,
+        bullets: project.bullets.map((b, i) => {
+          const figure = mine.find((f) => f.line === i);
+          return figure ? { ...b, text: figure.text.trim(), origin: 'user' as const, evidence: [] } : b;
+        }),
+      };
+    }),
     roles: doc.roles.map((role) => {
       const mine = figures.filter((f) => f.where === role.roleId && f.line < role.bullets.length && f.text.trim());
       if (mine.length === 0) return role;

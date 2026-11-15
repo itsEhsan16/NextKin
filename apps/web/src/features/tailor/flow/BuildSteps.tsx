@@ -11,6 +11,7 @@ import {
   FlowFooter,
   StepHeading,
   stepCard,
+  stepShell,
 } from '@/features/create/jobFlow/FlowChrome';
 import { Capsule } from '@/features/create/jobFlow/FlowRows';
 import { NEVER_ADDS_SKILLS } from '@/features/create/createLibrary';
@@ -52,7 +53,7 @@ export function BuildEnhanceStep({
   const toggle = (label: string) =>
     onAdded(added.includes(label) ? added.filter((l) => l !== label) : [...added, label]);
   return (
-    <div className="flex flex-col gap-6">
+    <div className={stepShell}>
       <section aria-labelledby="build-enhance" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
           <StepHeading
@@ -60,7 +61,7 @@ export function BuildEnhanceStep({
             step={2}
             of={3}
             title="Choose what to add"
-            lede="Tick only the keywords you really have. They go on the resume and on your profile."
+            lede="Pick the keywords to add. What you accept goes on the resume and on your profile."
           />
         </div>
         <BuildHeader job={job} comparison={comparison} />

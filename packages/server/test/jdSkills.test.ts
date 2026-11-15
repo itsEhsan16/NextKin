@@ -80,7 +80,9 @@ describe('the skill lists', () => {
   });
 
   it('a category is not a skill: "backend technologies", a bare "APIs" (toreview §110.5)', () => {
-    for (const name of ['backend technologies', 'APIs', 'modern frameworks', 'tools']) expect(isSkillName(name)).toBe(false);
+    for (const name of ['APIs', 'modern frameworks', 'tools', 'various other tools']) expect(isSkillName(name)).toBe(false);
+    // A phrase that says which is the posting's own keyword (toreview §211).
+    for (const name of ['backend technologies', 'data analysis tools', 'analytics tools', 'Analytics Tools']) expect(isSkillName(name)).toBe(true);
     for (const name of ['REST APIs', 'NoSQL', 'version control', 'AWS']) expect(isSkillName(name)).toBe(true);
   });
 });

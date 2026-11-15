@@ -82,7 +82,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await settle();
 
     expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Match 9.0 out of 10')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Match 9.2 out of 10')).toBeOnTheScreen();
     expect(screen.getByText('Senior Product Designer · Stripe')).toBeOnTheScreen();
     // The AI's plan is already picked (§173).
     expect(screen.getByText('Summary aimed at Stripe')).toBeOnTheScreen();
@@ -90,7 +90,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     // On the resume: ticked and locked. Missing: unticked until the user adds it (D-14).
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
-    expect(screen.getByText('Tap the missing ones you really have.')).toBeOnTheScreen();
+    expect(screen.getByText('Tap the ones to add. What you accept goes on your resume.')).toBeOnTheScreen();
   });
 
   it('starts the run tailorRunInput builds from a tapped chip and the default options', async () => {
@@ -112,7 +112,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
         baseResumeId: 'res_base',
         tailor: {
           sourceResumeId: 'res_base',
-          baselineScore: 90,
+          baselineScore: 92,
           sourcePages: 3,
           added: ['Fintech'],
           skipped: [],
@@ -141,6 +141,24 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
 
   it('ticks a result on: a sheet offers the AI’s guess, and a tap adds it (§174)', async () => {
     const startSpy = jest.spyOn(repos.generations, 'start');
+    // The seeded resume already states five results, which the coverage rubric counts as full
+    // marks (D-25, toreview §211), so its plan asks for none. This one line is given a step.
+    const compare = repos.jd.compare.bind(repos.jd);
+    jest.spyOn(repos.jd, 'compare').mockImplementation(async (...args) => {
+      const comparison = await compare(...args);
+      if (!comparison.plan) return comparison;
+      const step = {
+        id: 'path:figure:exp_4:0',
+        kind: 'number' as const,
+        title: 'Add the result to “Ran the design reviews”',
+        have: 'No measured result yet',
+        worth: 0.2,
+        basis: 'Take the suggested result or write your own.',
+        who: 'you' as const,
+        bullet: { roleId: 'exp_4', index: 0, text: 'Ran the design reviews' },
+      };
+      return { ...comparison, plan: { ...comparison.plan, steps: [...comparison.plan.steps, step] } };
+    });
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
     await settle();

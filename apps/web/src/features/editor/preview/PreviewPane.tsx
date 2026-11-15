@@ -54,7 +54,7 @@ function LivePage({ doc, onPages }: { doc: ResumeDocument; onPages: (pages: numb
   return (
     <div
       ref={box}
-      className="flex min-h-0 flex-1 justify-center overflow-y-auto overflow-x-hidden px-5 py-5 [scrollbar-width:thin]"
+      className="flex min-h-0 flex-1 justify-center overflow-y-auto overflow-x-hidden px-5 py-5"
     >
       <div
         style={{ width: PAGE_WIDTH * scale, height: sheet * scale }}
@@ -111,7 +111,7 @@ function PdfPages({
     );
   }
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]">
+    <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
       {(saving || data?.status === 'pending') && (
         <p className="mb-3 rounded-md bg-surface-brand px-3 py-2 text-body-s text-text-brand">
           {saving

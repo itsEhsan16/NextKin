@@ -4,8 +4,9 @@ import type { JdStructured } from '../models/jdStructured';
 /**
  * The flat lists every consumer reads (match, tailor comparison, generation, interview prep, the
  * mobile app), derived from the structured reading (toreview §153) so none of them changes.
- * Required and preferred split by the posting's own importance; soft skills stay apart and are never
- * scored. Tools are no longer a separate list: a tool the posting requires is required.
+ * Required and preferred split by the posting's own importance. Soft skills stay their own list,
+ * and are scored as keywords the job prefers (`jdLists`; owner, D-25, toreview §211): a resume
+ * checker counts them. Tools are no longer a separate list: a tool the posting requires is required.
  */
 export type JdLegacyFields = {
   title: string | null;

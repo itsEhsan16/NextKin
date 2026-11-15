@@ -49,9 +49,10 @@ export async function askKeywordQuestions(deps: KeywordQuestionDeps, identity: I
   const found = await deps.db.withUser(identity, async (tx) => {
     const base = await readBase(tx, identity.userId, request.resumeId);
     const allowed = deps.ai ? await hasAiConsent(tx, identity.userId) : false;
-    const prompt = allowed ? await activePrompt(tx, QUESTIONS_TEMPLATE).catch(() => null) : null;
-    return { doc: base.doc, prompt, allowed };
+    return { doc: base.doc, allowed };
   });
+  // Only staff and the system may read prompts; read as the candidate it is never found (§207).
+  const prompt = found.allowed ? await deps.db.withSystem('tailor: read the questions prompt', (tx) => activePrompt(tx, QUESTIONS_TEMPLATE)).catch(() => null) : null;
   const ctx: QuestionContext = {
     keywords: comparison.keywords,
     places: comparison.places ?? [],
@@ -62,8 +63,8 @@ export async function askKeywordQuestions(deps: KeywordQuestionDeps, identity: I
   const rules = keywordQuestions(ctx);
   const asked = new Set(rules.map((q) => q.keyword));
   const open = askable(ctx.keywords).filter((k) => !asked.has(k.label)).slice(0, MAX_KEYWORDS).map((k) => k.label);
-  if (deps.ai && !found.prompt) deps.log.warn({ event: 'tailor.questions_skipped', reason: found.allowed ? 'no_active_prompt' : 'no_ai_consent' }, 'keyword questions used the rules');
-  if (!deps.ai || !found.prompt || open.length === 0 || ctx.fitPlaces.length === 0) return rules;
+  if (deps.ai && !prompt) deps.log.warn({ event: 'tailor.questions_skipped' }, `keyword questions used the rules: ${found.allowed ? 'no active prompt' : 'no AI consent'}`);
+  if (!deps.ai || !prompt || open.length === 0 || ctx.fitPlaces.length === 0) return rules;
 
   const places = ctx.fitPlaces.map((place) => ({
     id: place.id,
@@ -71,18 +72,18 @@ export async function askKeywordQuestions(deps: KeywordQuestionDeps, identity: I
     lines: placeLines(place).slice(0, MAX_LINES).map((text, n) => ({ n, text: redactContact(text).slice(0, 300) })),
   }));
   const input = { keywords: open, places };
-  const key = `tq:${found.prompt.id}:${createHash('sha256').update(JSON.stringify(input)).digest('hex')}`;
+  const key = `tq:${prompt.id}:${createHash('sha256').update(JSON.stringify(input)).digest('hex')}`;
   try {
     let data = await deps.ai.cache.get<z.infer<typeof proposalsSchema>>(key);
     if (!data) {
       ({ data } = await deps.ai.gateway.extract({
         stage: 'keyword_questions',
-        system: found.prompt.body.system.map((text) => ({ text })),
+        system: prompt.body.system.map((text) => ({ text })),
         input,
         schema: proposalsSchema,
         name: 'keyword_questions',
         description: 'For each keyword worth asking about: the place and the line that hints at it.',
-        context: { userId: identity.userId, correlationId: null, promptVersionId: found.prompt.id },
+        context: { userId: identity.userId, correlationId: null, promptVersionId: prompt.id },
       }));
       await deps.ai.cache.set(key, data, CACHE_SECONDS);
     }

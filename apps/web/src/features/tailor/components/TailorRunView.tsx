@@ -32,7 +32,7 @@ export function TailorRunView({
   user: User | undefined;
 }) {
   const router = useRouter();
-  if (!run || !job) return <Skeleton className="mx-auto h-160 w-full max-w-170 rounded-lg" />;
+  if (!run || !job) return <Skeleton className="h-110 w-full flex-1 rounded-xl" />;
   if (run.status === 'failed') {
     return (
       <div className={cn(cardSurface, 'py-12')}>

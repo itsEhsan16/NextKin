@@ -195,4 +195,30 @@ describe('the tailored resume, ready', () => {
       jobId: 'job_google',
     });
   });
+  it('waits for the typeset pages instead of drawing a plain page, and has no “What changed” list', async () => {
+    // The server's answer while a new version is being typeset: no pages yet.
+    const preview = jest
+      .spyOn(repos.resumes, 'preview')
+      .mockResolvedValue({ status: 'pending', versionId: 'v1', pages: [] });
+    renderWithQuery(<ReviewStep job={job} generation={run({ score: 71 })} user={undefined} />);
+    const page = await screen.findByRole('region', { name: 'Your new resume' }, wait);
+    expect(await within(page).findByText('Typesetting your resume…', {}, wait)).toBeInTheDocument();
+    // The resume's own lines are not drawn in the typeset page's place.
+    expect(within(page).queryByText('Work Experience')).toBeNull();
+    expect(screen.queryByText('What changed for this job')).toBeNull();
+    preview.mockRestore();
+  });
+
+  it('says so when the pages could not be typeset, and offers to try again', async () => {
+    const preview = jest
+      .spyOn(repos.resumes, 'preview')
+      .mockResolvedValue({ status: 'failed', versionId: 'v1', pages: [] });
+    renderWithQuery(<ReviewStep job={job} generation={run({ score: 71 })} user={undefined} />);
+    const page = await screen.findByRole('region', { name: 'Your new resume' }, wait);
+    expect(
+      await within(page).findByText('We couldn’t typeset this resume', {}, wait),
+    ).toBeInTheDocument();
+    expect(within(page).getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    preview.mockRestore();
+  });
 });

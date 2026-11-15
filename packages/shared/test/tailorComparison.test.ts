@@ -76,13 +76,13 @@ describe('the JD line and the job match (toreview §112)', () => {
       { label: 'KYC', onResume: false, source: 'description' },
     ]);
     expect(match).toMatchObject({ matched: 2, total: 3, percent: 67, missing: ['KYC'] });
-    expect(match?.basis).toMatch(/^2 of this job’s 3 most important keywords/);
+    expect(match?.basis).toMatch(/^2 of the 3 keywords this job names/);
     expect(jobMatchOf([])).toBeUndefined();
   });
 });
 
 describe('the top keywords, years and soft skills (toreview §113)', () => {
-  it('ranks required first, then the title, then how often the JD says it; the match counts only those', () => {
+  it('ranks required first, then the title, then how often the JD says it; the match counts every keyword (D-25)', () => {
     const many = Array.from({ length: 12 }, (_, i) => ({ label: `Skill${i}`, onResume: i % 2 === 0, source: (i < 3 ? 'required' : 'description') as 'required' | 'description' }));
     const raw = 'Skill11 and Skill11 again, Skill11.';
     const marked = markTop([...many, { label: 'teamwork', onResume: false, source: 'description', kind: 'soft' }], raw, 'Skill10 Developer');
@@ -93,7 +93,17 @@ describe('the top keywords, years and soft skills (toreview §113)', () => {
     expect(top).not.toContain('Skill8');
     expect(top).not.toContain('Skill9');
     expect(top).not.toContain('teamwork');
-    expect(jobMatchOf(marked)?.total).toBe(10);
+    expect(jobMatchOf(marked)?.total).toBe(13);
+  });
+
+  it('a soft skill the score read is a keyword like the rest, in its own group', () => {
+    const result = { report: { requirements: [
+      { id: 'a', text: 'React', importance: 'required', status: 'met', evidence: 'demonstrated' },
+      { id: 'b', text: 'Stakeholder management', importance: 'preferred', status: 'gap', evidence: 'unbacked' },
+    ] } } as unknown as Parameters<typeof keywordsFrom>[0];
+    const read = keywordsFrom(result, undefined, undefined, ['stakeholder management']);
+    expect(read.map((k) => [k.label, k.onResume, k.kind])).toEqual([['React', true, undefined], ['Stakeholder management', false, 'soft']]);
+    expect(jobMatchOf(read)).toMatchObject({ matched: 1, total: 2, missing: ['Stakeholder management'] });
   });
 
   it('reads the years a JD asks for and says what the resume shows', () => {

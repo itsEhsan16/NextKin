@@ -159,7 +159,7 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
           </Text>
           <Text variant="callout" color="textSecondary" style={styles.hint}>
             {missing.length > 0
-              ? 'Tap the missing ones you really have.'
+              ? 'Tap the ones to add. What you accept goes on your resume.'
               : 'Your profile has every one.'}
           </Text>
           <View style={styles.chips}>

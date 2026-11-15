@@ -73,9 +73,7 @@ export function Drawer({
           >
             <XClose aria-hidden className="size-5" />
           </Radix.Close>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-width:thin]">
-            {children}
-          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
         </Radix.Content>
       </Radix.Portal>
     </Radix.Root>

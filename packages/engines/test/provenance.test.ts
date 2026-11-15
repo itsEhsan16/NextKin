@@ -15,6 +15,7 @@ import { backendInput } from './fixtures/documents';
 const PINNED: Record<string, string> = {
   'rubric-1': 'f1:71283963e2dd2d1e',
   'rubric-2': 'f1:b6446afd23c3b330',
+  'rubric-3': 'f1:3957b537ca3a40d4',
 };
 
 describe('the versioned method (P8-01)', () => {
@@ -38,7 +39,15 @@ describe('the versioned method (P8-01)', () => {
       const stored = canonicalJson(score(backendInput({ rubricId })));
       expect(canonicalJson(score(backendInput({ rubricId }))), rubricId).toBe(stored);
     }
-    expect(score(backendInput()).stamp.rubric).toBe('rubric-2');
+    expect(score(backendInput()).stamp.rubric).toBe('rubric-3');
+  });
+
+  it('rubric-3 keeps the weights and bands, and changes only what earns keyword and results credit (D-25)', () => {
+    const [two, three] = [rubricById('rubric-2'), rubricById('rubric-3')];
+    expect([three.components, three.bands, three.requirementWeight, three.pastedMinWords]).toEqual([two.components, two.bands, two.requirementWeight, two.pastedMinWords]);
+    expect(three.credit).toEqual({ demonstrated: 10_000, listed: 10_000, unbacked: 0, yearsShort: 10_000 });
+    expect(three.achievements).toEqual({ target: 5, projects: true });
+    expect(two.achievements).toBeUndefined();
   });
 
   it('rubric-2 changes only the years ceiling; a fair JD scores the same under both', () => {

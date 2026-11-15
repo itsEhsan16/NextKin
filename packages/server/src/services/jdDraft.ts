@@ -65,7 +65,7 @@ export function toDraft(row: Row): JdDraft {
     ...(row.source_url ? { sourceUrl: row.source_url } : {}),
     ...(e.savedToJobs !== undefined ? { savedToJobs: e.savedToJobs } : {}),
     ...(row.job_id ? { jobId: row.job_id } : {}),
-    requirements: row.status === 'ready' ? typedRequirements(jdLists({ ...lists, rawText: row.raw_text })) : [],
+    requirements: row.status === 'ready' ? typedRequirements(jdLists({ ...lists, ...(x.softSkills?.length ? { softSkills: x.softSkills } : {}), rawText: row.raw_text })) : [],
     status: row.status as JdDraft['status'],
     ...(row.error_message ? { error: row.error_message } : {}),
     ...(failureReason ? { failureReason } : {}),

@@ -37,7 +37,8 @@ describe('job-first tailoring (toreview §56)', () => {
     // Engine-computed (C-10): Stripe's listing reads as Design systems and Figma required, both on
     // the resume, and Fintech preferred, which nothing on it shows. TAILOR 02's 72 and its eight
     // seeded keywords were board copy, replaced by what the engines measure.
-    expect(comparison.score).toBe(90);
+    // 92 since the coverage rubric (D-25, toreview §211): five measured results is full marks.
+    expect(comparison.score).toBe(92);
     expect(comparison.keywords).toHaveLength(3);
     expect(comparison.keywords.filter((k) => k.onResume)).toHaveLength(2);
     expect(missingKeywords(comparison).map((k) => k.label)).toEqual(['Fintech']);

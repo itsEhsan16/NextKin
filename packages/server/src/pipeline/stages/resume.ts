@@ -60,7 +60,8 @@ export function stageJdOf(row: NonNullable<Awaited<ReturnType<typeof readJdRow>>
     company: pick('company', x.company ?? null),
     location: pick('location', x.location ?? null),
     requiredSkills: pick('requiredSkills', x.requiredSkills ?? []),
-    preferredSkills: pick('preferredSkills', x.preferredSkills ?? []),
+    // Soft skills are keywords the job prefers, as the comparison scores them (`jdLists`; D-25).
+    preferredSkills: [...pick('preferredSkills', x.preferredSkills ?? []), ...(x.softSkills ?? [])],
     tools: pick('tools', x.tools ?? []),
     responsibilities: pick('responsibilities', x.responsibilities ?? []),
     rawText: row.raw_text,

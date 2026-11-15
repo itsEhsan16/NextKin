@@ -66,13 +66,19 @@ describe('KeywordPanel', () => {
     expect(names()).toEqual(['React', 'Jira', 'Agile']);
     expect(within(list()).getByText('+0.5')).toBeInTheDocument();
     expect(within(list()).getByText('—')).toBeInTheDocument();
-    expect(screen.getByText('0 keywords selected')).toBeInTheDocument();
+    // One "select all", in the table's head; no search box and no second bar under the table.
+    expect(screen.getAllByRole('checkbox', { name: /^Select every keyword shown/ })).toHaveLength(
+      1,
+    );
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.queryByText(/keywords? selected/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear selection' })).toBeNull();
 
     rerender(<Harness tab="optional" />);
     expect(names()).toEqual(['teamwork']);
   });
 
-  it('filters by category and by search, and says when nothing matches', async () => {
+  it('filters by category', async () => {
     const user = userEvent.setup();
     render(<Harness />);
     const kinds = screen.getByRole('group', { name: 'Keyword kinds' });
@@ -80,26 +86,25 @@ describe('KeywordPanel', () => {
     expect(names()).toEqual(['Jira']);
 
     await user.click(within(kinds).getByRole('button', { name: /^All/ }));
-    await user.type(screen.getByRole('searchbox', { name: 'Search keywords' }), 'zz');
-    expect(screen.getByText('No keyword matches “zz”.')).toBeInTheDocument();
+    expect(names()).toEqual(['React', 'Jira', 'Agile']);
   });
 
-  it('selects only the rows shown, clears, and shows where a placed tick goes', async () => {
+  it('selects every row shown from the table’s head, clears with it, and shows where a placed tick goes', async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    await user.type(screen.getByRole('searchbox', { name: 'Search keywords' }), 'r');
-    expect(names()).toEqual(['React', 'Jira']);
-    await user.click(screen.getByRole('checkbox', { name: 'Select all (2)' }));
+    const all = screen.getByRole('checkbox', { name: 'Select every keyword shown (3)' });
+    await user.click(all);
     expect(screen.getByRole('checkbox', { name: 'React' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Jira' })).toBeChecked();
-    expect(screen.getByText('2 keywords selected')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Agile' })).toBeChecked();
     // React was picked a place in the resume; Jira fits nowhere, so it has no picker.
     expect(screen.getAllByRole('button', { name: /AI adds it to: Engineer · Acme/ })).toHaveLength(
       1,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
-    expect(screen.getByText('0 keywords selected')).toBeInTheDocument();
+    // The same box clears them.
+    await user.click(all);
     expect(screen.getByRole('checkbox', { name: 'React' })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Agile' })).not.toBeChecked();
   });
 });

@@ -8,9 +8,9 @@ import { useEffect, useState } from 'react';
 import { Capsule } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
-import { AlertCircle, Check, Stars02 } from '@/ui/lineIcons';
+import { iconButton } from '@/ui/iconButton';
+import { Check, Edit05, Stars02 } from '@/ui/lineIcons';
 import { Skeleton } from '@/ui/Skeleton';
-import { textLink } from '@/ui/textLink';
 
 const field =
   'rounded-md border border-border-default bg-surface-card text-body-m text-text-primary transition-colors duration-press ease-standard hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
@@ -18,12 +18,13 @@ const field =
 type Bullet = { roleId: string; index: number; text: string };
 
 /**
- * "Add the result", fitted to this one line (owner, 2026-11-14: the generic "Made it faster / Saved
- * money" picks felt ready-made). The AI rewrites the user's own bullet around a gap and says what
- * belongs in it ("how many artisans signed up"); the user types the real figure and watches the
- * line read with it. When the AI has a typical figure it offers it apart, as a guess to tap only if
- * it is close to true (toreview §173). The AI never writes a figure into the line. "Write the
- * whole line myself" edits it freely. Mobile's `PlanFigureEditor` is the same flow.
+ * "Add the result", fitted to this one line. The AI rewrites the user's own bullet around a gap
+ * and, since the owner's word of 2026-11-15 (toreview §207), fills that gap with its best
+ * suggestion: the first result it offers and its smallest amount, or its one typical figure. The
+ * dialog opens on a finished line the user can use as it is, change by picking another result or
+ * amount, type over, or rewrite whole from the pencil on the line. Nothing is saved until "Use
+ * this line", and the suggestion is labelled as the AI's, to keep only if it is true (G13).
+ * Mobile's `PlanFigureEditor` is the same flow.
  */
 export function LineResult({
   resumeId,
@@ -44,15 +45,24 @@ export function LineResult({
   const draftFigure = useDraftFigure();
   const [fetched, setFetched] = useState<FigureDraft | null>(null);
   const [own, setOwn] = useState<string | null>(saved ?? null);
-  const [figure, setFigure] = useState('');
-  // Which of the AI's results is picked, and whether the amount is being typed.
-  const [pick, setPick] = useState<number | null>(null);
+  // What the user has chosen; `undefined` and `null` mean "not touched yet", so the AI's stands.
+  const [picked, setPicked] = useState<number | null | undefined>(undefined);
+  const [typed, setTyped] = useState<string | null>(null);
   const [typing, setTyping] = useState(false);
   const draft = given ?? fetched;
   const options = draft?.options ?? [];
+  // The AI's best: its first result, until the user picks another or none.
+  const pick = picked === undefined ? (options.length > 0 ? 0 : null) : picked;
   const chosen = pick !== null ? options[pick] : undefined;
   // The wording the figure goes into: the picked result's, else the plain draft's.
   const shape = chosen ?? draft;
+  const best = chosen
+    ? (chosen.amounts[0] ?? '')
+    : options.length > 0
+      ? ''
+      : (draft?.suggestion ?? '');
+  const figure = typed ?? best;
+  const fromAi = typed === null && figure !== '';
 
   const { mutate, isIdle } = draftFigure;
   useEffect(() => {
@@ -65,10 +75,10 @@ export function LineResult({
 
   const line = own ?? (shape && figure.trim() ? figureLine(shape, figure) : '');
   const counts = line !== '' && statesResult(line) && line.trim() !== bullet.text.trim();
-  const suggestion = draft?.suggestion;
   const choose = (index: number) => {
-    setPick(index === pick ? null : index);
-    setFigure('');
+    // Another result brings its own best amount; tapping the picked one clears it.
+    setPicked(index === pick ? null : index);
+    setTyped(index === pick ? '' : null);
     setTyping(false);
   };
   const save = () => {
@@ -107,27 +117,44 @@ export function LineResult({
         </div>
       ) : (
         <div className="flex animate-reveal flex-col gap-4">
-          {/* The line as it will read, the gap filled live. */}
-          <p
-            aria-live="polite"
-            className="rounded-lg border-l-4 border-border-brand-strong bg-neutral-50 px-4 py-3 text-body-m leading-relaxed text-text-primary"
-          >
-            {shape!.before}{' '}
-            <span
-              className={cn(
-                'rounded-sm px-1 font-semibold',
-                figure.trim() ? 'bg-brand-50 text-text-brand' : 'bg-warning-50 text-warning-text',
-              )}
+          {/* The line as it will read, the gap filled live; the pencil rewrites it whole. */}
+          <div className="flex items-start gap-2 rounded-lg border-l-4 border-border-brand-strong bg-neutral-50 py-2 pl-4 pr-2">
+            <p
+              aria-live="polite"
+              className="min-w-0 flex-1 py-1 text-body-m leading-relaxed text-text-primary"
             >
-              {figure.trim() || (chosen ? chosen.what.toLowerCase() : draft.hint)}
-            </span>
-            {shape!.after}
-          </p>
+              {shape!.before}{' '}
+              <span
+                className={cn(
+                  'rounded-sm px-1 font-semibold',
+                  figure.trim() ? 'bg-brand-50 text-text-brand' : 'bg-warning-50 text-warning-text',
+                )}
+              >
+                {figure.trim() || (chosen ? chosen.what.toLowerCase() : draft.hint)}
+              </span>
+              {shape!.after}
+            </p>
+            <button
+              type="button"
+              aria-label="Edit this line"
+              title="Edit this line"
+              onClick={() => setOwn(line || bullet.text)}
+              className={cn(iconButton, 'size-control-sm shrink-0')}
+            >
+              <Edit05 aria-hidden className="size-4" />
+            </button>
+          </div>
+          {fromAi && (
+            <p className="-mt-2 flex items-center gap-1.5 text-body-s font-medium text-text-brand">
+              <Stars02 aria-hidden className="size-4 shrink-0" />
+              The AI’s suggestion. Keep it only if it’s true, or change it.
+            </p>
+          )}
 
           {options.length > 0 ? (
             <>
-              {/* The AI's own results for this line, then its amounts: pick, don't type
-                  (owner, 2026-11-14). Nothing is picked for the user. */}
+              {/* The AI's own results for this line, then its amounts: its best is picked to
+                  start, and any other is one tap away. */}
               <fieldset className="flex flex-col gap-2">
                 <legend className="mb-2 text-body-m font-semibold text-text-primary">
                   What came of it?
@@ -156,7 +183,7 @@ export function LineResult({
                         state={!typing && figure === amount ? 'on' : 'off'}
                         onToggle={() => {
                           setTyping(false);
-                          setFigure(figure === amount ? '' : amount);
+                          setTyped(figure === amount ? '' : amount);
                         }}
                       />
                     ))}
@@ -165,14 +192,14 @@ export function LineResult({
                       state={typing ? 'on' : 'off'}
                       onToggle={() => {
                         setTyping(!typing);
-                        setFigure('');
+                        setTyped('');
                       }}
                     />
                   </div>
                   {typing && (
                     <input
                       value={figure}
-                      onChange={(e) => setFigure(e.target.value)}
+                      onChange={(e) => setTyped(e.target.value)}
                       maxLength={40}
                       autoFocus
                       aria-label={`The amount: ${chosen.what}`}
@@ -184,40 +211,19 @@ export function LineResult({
               )}
             </>
           ) : (
-            <>
-              {suggestion && (
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                  <span className="text-body-s font-medium text-text-secondary">AI guess</span>
-                  <button
-                    type="button"
-                    aria-label={`Use the AI's guess: ${suggestion}`}
-                    onClick={() => setFigure(suggestion)}
-                    className="flex items-center gap-1.5 rounded-full border border-dashed border-border-brand-strong bg-surface-brand px-3 py-1 text-body-m font-semibold text-text-brand transition-colors duration-fast ease-standard hover:bg-brand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-                  >
-                    <Stars02 aria-hidden className="size-4" />
-                    {suggestion}
-                  </button>
-                  <span className="flex items-center gap-1 text-body-s text-warning-text">
-                    <AlertCircle aria-hidden className="size-4" />A guess. Use it only if it’s close
-                    to true.
-                  </span>
-                </div>
-              )}
-
-              <label className="flex flex-col gap-1.5">
-                <span className="text-body-m font-semibold text-text-primary">
-                  Your figure: {draft.hint}
-                </span>
-                <input
-                  value={figure}
-                  onChange={(e) => setFigure(e.target.value)}
-                  maxLength={40}
-                  autoFocus
-                  placeholder={draft.hint}
-                  className={cn(field, 'h-control-md px-3')}
-                />
-              </label>
-            </>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-body-m font-semibold text-text-primary">
+                Your figure: {draft.hint}
+              </span>
+              <input
+                value={figure}
+                onChange={(e) => setTyped(e.target.value)}
+                maxLength={40}
+                autoFocus
+                placeholder={draft.hint}
+                className={cn(field, 'h-control-md px-3')}
+              />
+            </label>
           )}
         </div>
       )}
@@ -253,15 +259,6 @@ export function LineResult({
             className={buttonClass({ variant: 'secondary', size: 'md' })}
           >
             Keep the original
-          </button>
-        )}
-        {own === null && draft && (
-          <button
-            type="button"
-            onClick={() => setOwn(bullet.text)}
-            className={cn(textLink, 'text-body-m')}
-          >
-            Write the whole line myself
           </button>
         )}
       </div>

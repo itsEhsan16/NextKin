@@ -162,7 +162,7 @@ describe('the plan inside Enhance', () => {
     );
   });
 
-  it('"Write the whole line myself" edits the line freely', async () => {
+  it('the pencil on the line edits it freely, starting from the AI’s line', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
     renderWithQuery(
@@ -176,13 +176,11 @@ describe('the plan inside Enhance', () => {
     await user.click(screen.getByRole('button', { name: 'Add the result' }));
     const dialog = screen.getByRole('dialog', { name: 'Add the result' });
     await user.click(
-      await within(dialog).findByRole(
-        'button',
-        { name: 'Write the whole line myself' },
-        { timeout: 4000 },
-      ),
+      await within(dialog).findByRole('button', { name: 'Edit this line' }, { timeout: 4000 }),
     );
+    expect(within(dialog).queryByText('Write the whole line myself')).toBeNull();
     const box = within(dialog).getByRole('textbox', { name: /Your line, with its real result/ });
+    expect(box).toHaveValue('Built the checkout in Next.js, saving 2 hours of manual work a week.');
     await user.clear(box);
     await user.type(box, 'Built the checkout in Next.js, cutting load time by 40%.');
     await user.click(within(dialog).getByRole('button', { name: 'Use this line' }));

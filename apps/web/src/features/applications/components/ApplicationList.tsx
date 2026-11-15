@@ -1,7 +1,9 @@
 import type { ApplicationWithJob } from '@nextkin/shared/models';
+import type { Route } from 'next';
 
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
+import { emptyList } from '@/ui/EmptyPanel';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { EmptyStateArt } from '@/ui/illustrations';
@@ -60,26 +62,31 @@ export function ApplicationList({
     );
   }
 
+  // Empty, the list keeps its place: one outline where the rows will be (owner, 2026-11-15).
   if (!hasAny) {
     return (
-      <StateView
-        art={<EmptyStateArt object="briefcase" />}
-        className={reveal ? 'animate-reveal' : undefined}
-        title="No applications yet"
-        message="Jobs you apply to show up here, so you can follow each one through."
-      />
+      <div className={cn(emptyList, reveal && 'animate-reveal')}>
+        <StateView
+          art={<EmptyStateArt object="briefcase" />}
+          title="No applications yet"
+          message="Jobs you apply to show up here, so you can follow each one through."
+          actionLabel="Find jobs"
+          actionHref={'/jobs' as Route}
+        />
+      </div>
     );
   }
 
   if (rows.length === 0) {
     return (
-      <StateView
-        className={reveal ? 'animate-reveal' : undefined}
-        title="No applications match"
-        message="Try another status, or clear the filters."
-        actionLabel="Reset filters"
-        onAction={onReset}
-      />
+      <div className={cn(emptyList, reveal && 'animate-reveal')}>
+        <StateView
+          title="No applications match"
+          message="Try another status, or clear the filters."
+          actionLabel="Reset filters"
+          onAction={onReset}
+        />
+      </div>
     );
   }
 

@@ -19,7 +19,7 @@ const step = (index: number): PlanStep => ({
 });
 
 describe('Add real results (toreview §149)', () => {
-  it('lists every line without a result, and finishes one by picking the AI’s result and amount for that line', async () => {
+  it('lists every line without a result, and opens each on the AI’s best suggestion, to use or change', async () => {
     const user = userEvent.setup();
     const onFigure = jest.fn();
     renderWithQuery(
@@ -35,17 +35,23 @@ describe('Add real results (toreview §149)', () => {
     const [first] = screen.getAllByRole('button', { name: 'Add the result' });
     await user.click(first!);
     const dialog = screen.getByRole('dialog', { name: 'Add the result' });
-    // The AI's own results for this line, then that result's amounts: pick, don't type.
-    const result = await within(dialog).findByRole(
+    // The AI's first result and its smallest amount are filled in to start (toreview §207): a
+    // finished line, labelled as the AI's, that the user may use as it is.
+    await within(dialog).findByRole(
       'button',
       { name: /Time saved/ },
       { timeout: SETTLE_MS.normal },
     );
     const use = within(dialog).getByRole('button', { name: 'Use this line' });
-    expect(use).toBeDisabled();
-    await user.click(result);
-    expect(use).toBeDisabled();
+    expect(dialog).toHaveTextContent('Built feature 1, saving 2 hours of manual work a week.');
+    expect(dialog).toHaveTextContent(
+      'The AI’s suggestion. Keep it only if it’s true, or change it.',
+    );
+    expect(use).toBeEnabled();
+    expect(onFigure).not.toHaveBeenCalled();
+    // Changing it is one tap, and the label goes: it is the user's choice now.
     await user.click(within(dialog).getByRole('button', { name: /5 hours/ }));
+    expect(dialog).not.toHaveTextContent('The AI’s suggestion');
     expect(dialog).toHaveTextContent('Built feature 1, saving 5 hours of manual work a week.');
     await user.click(use);
     expect(onFigure).toHaveBeenCalledWith(

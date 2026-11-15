@@ -172,7 +172,7 @@ function JobDetailBody({
         aria-labelledby={tabId(panelId, tab)}
         tabIndex={0}
         className={cn(
-          'min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-5 scrollbar-thin focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600',
+          'min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600',
           switched && 'animate-reveal',
         )}
       >

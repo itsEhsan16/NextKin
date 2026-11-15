@@ -1,6 +1,7 @@
 import type { TailorComparison, TailorExperienceDepth, TailorFix } from '@nextkin/shared/models';
 import { useStartGeneration } from '@nextkin/shared/queries';
 import {
+  acceptAll,
   figureKey,
   initialChoices,
   setFigure,
@@ -76,6 +77,9 @@ export function useTailorChoices() {
       index: number,
       choice: { action: 'remove' | 'replace'; text?: string } | null,
     ) => setChoices((c) => setHeaderChoice(c, index, choice)),
+    /** "Accept all suggestions" (toreview §211): every keyword, every question, each given line. */
+    acceptAll: (comparison: TailorComparison, extras: Parameters<typeof acceptAll>[2]) =>
+      setChoices((c) => acceptAll(c, comparison, extras)),
     /** A new resume picked: its keywords differ, so the taps start again. */
     resetKeywords: () =>
       setChoices((c) => ({ ...c, added: [], places: {}, figures: {}, header: {} })),

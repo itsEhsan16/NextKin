@@ -215,7 +215,7 @@ export function NotificationsPanel({
             </div>
           )}
 
-          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             {status === 'pending' ? (
               <div
                 aria-label="Loading your notifications"

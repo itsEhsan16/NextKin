@@ -1,7 +1,6 @@
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import type { ProfileFacts } from '@nextkin/engines/facts';
 import { leftOutChecker } from '@nextkin/engines/leftOut';
-import { resolveSkill } from '@nextkin/engines/normalizer';
 import { checkProjectBullets } from '@nextkin/engines/projectClaims';
 import { phraseKey } from '@nextkin/engines/text';
 import type { CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
@@ -68,12 +67,6 @@ const wordsOf = (text: string) => new Set(phraseKey(text).split(' ').filter((w) 
 const within = (a: Set<string>, b: Set<string>) => a.size > 0 && [...a].every((w) => b.has(w));
 /** "Git" beside "Git & GitHub workflows", "postgres" beside "PostgreSQL": the same skill twice. */
 const duplicates = (a: string, b: string) => skillKey(a) === skillKey(b) || within(wordsOf(a), wordsOf(b)) || within(wordsOf(b), wordsOf(a));
-/** A job phrase, not a skill: the taxonomy doesn't know it and it isn't a name ("Key Vault", "Databricks"). */
-const isPhrase = (name: string) => {
-  if (resolveSkill(TAXONOMY, name).known) return false;
-  const words = name.trim().split(/\s+/);
-  return words.length >= 2 ? words.slice(1).every((w) => !/^[A-Z]/.test(w)) : /^[a-z]/.test(name.trim());
-};
 const sameLabel = (a: string, b: string) => phraseKey(a) === phraseKey(b);
 const isPermutation = (order: readonly string[], of: readonly string[]) => order.length === of.length && new Set(order).size === order.length && of.every((x) => order.includes(x));
 
@@ -122,10 +115,15 @@ function applyOne(doc: Doc, edit: ReviewEdit, ctx: Ctx): Outcome {
         const kept = doc.skills.find((s) => s.name.toLowerCase() === edit.keep!.toLowerCase());
         if (!kept || kept === skill) return { why: 'no_such_skill' };
         if (!duplicates(skill.name, kept.name)) return { why: 'not_a_duplicate' };
+        // What the candidate accepted stays in the job's own wording (toreview §211): of two names
+        // for one skill, the accepted one is never the one dropped.
+        if (isTicked && !ticked.has(skillKey(kept.name))) return { why: 'accepted_by_user' };
+        if (isTicked && phraseKey(skill.name) !== phraseKey(kept.name)) return { why: 'accepted_by_user' };
         if (!fixes.has('skills') && !isTicked) return { why: 'part_off' };
-      } else if (!isTicked || !isPhrase(skill.name)) {
-        // Only a ticked job phrase that is not a skill may go; a real skill the user ticked stays.
-        return { why: 'real_skill' };
+      } else {
+        // Nothing is dropped outright: a skill the resume had is the candidate's, and one they
+        // accepted for this job is theirs to keep (toreview §211, where a ticked job phrase could go).
+        return { why: isTicked ? 'accepted_by_user' : 'real_skill' };
       }
       return { doc: withoutSkill(doc, skill.name) };
     }

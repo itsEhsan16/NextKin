@@ -121,32 +121,37 @@ export interface FigureDraftDeps {
 export async function draftFigure(deps: FigureDraftDeps, identity: Identity, request: { resumeId: string; roleId: string; line: number }): Promise<FigureDraft> {
   const found = await deps.db.withUser(identity, async (tx) => {
     const base = await readBase(tx, identity.userId, request.resumeId);
-    const role = base.doc.roles.find((r) => r.roleId === request.roleId);
+    // A place is a role's id, or `project:<factId>` for a project's line (toreview §211).
+    const project = base.doc.projects.find((p) => `project:${p.factId}` === request.roleId);
+    const role = project ? { title: project.name, bullets: project.bullets } : base.doc.roles.find((r) => r.roleId === request.roleId);
     const bullet = role?.bullets[request.line];
     if (!role || !bullet) throw errors.notFound('bullet');
     // Without AI consent (P12-12) no model is asked: the rules' draft is the answer.
     const allowed = deps.ai ? await hasAiConsent(tx, identity.userId) : false;
-    const prompt = allowed ? await activePrompt(tx, FIGURE_TEMPLATE).catch(() => null) : null;
-    return { line: bullet.text, title: role.title, prompt, allowed };
+    return { line: bullet.text, title: role.title, allowed };
   });
+  // Prompts are reference data only staff and the system may read (0004, `apply_reference_rls`):
+  // read as the candidate, the active version was never found and every draft fell back to the
+  // rules unseen (toreview §207). The system reads it, as the job reader does.
+  const prompt = found.allowed ? await deps.db.withSystem('figure: read the draft prompt', (tx) => activePrompt(tx, FIGURE_TEMPLATE)).catch(() => null) : null;
   const fallback = fallbackDraft(found.line);
   // Say why there is no model draft, so a missing prompt can't fall back unseen (owner, 2026-11-14).
-  if (deps.ai && !found.prompt)
-    deps.log.warn({ event: 'figure.draft_skipped', reason: found.allowed ? 'no_active_prompt' : 'no_ai_consent' }, 'figure draft used the rules');
-  if (!deps.ai || !found.prompt) return fallback;
+  // The reason goes in the message: the log's allowlist drops an unlisted field.
+  if (deps.ai && !prompt) deps.log.warn({ event: 'figure.draft_skipped' }, `figure draft used the rules: ${found.allowed ? 'no active prompt' : 'no AI consent'}`);
+  if (!deps.ai || !prompt) return fallback;
 
-  const key = `fig:${found.prompt.id}:${createHash('sha256').update(`${found.title}\n${found.line}`).digest('hex')}`;
+  const key = `fig:${prompt.id}:${createHash('sha256').update(`${found.title}\n${found.line}`).digest('hex')}`;
   try {
     let data = await deps.ai.cache.get<z.infer<typeof figureDraftSchema>>(key);
     if (!data) {
       ({ data } = await deps.ai.gateway.extract({
         stage: 'figure_draft',
-        system: found.prompt.body.system.map((text) => ({ text })),
+        system: prompt.body.system.map((text) => ({ text })),
         input: { roleTitle: found.title, line: found.line },
         schema: figureDraftSchema,
         name: 'figure_draft',
         description: 'The bullet rewritten around a gap where the user writes its real result.',
-        context: { userId: identity.userId, correlationId: null, promptVersionId: found.prompt.id },
+        context: { userId: identity.userId, correlationId: null, promptVersionId: prompt.id },
       }));
       await deps.ai.cache.set(key, data, CACHE_SECONDS);
     }

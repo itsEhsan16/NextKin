@@ -174,7 +174,7 @@ export function gate(report: EvalReport, bar = BAR): { pass: boolean; failures: 
   const failures = [
     t.anachronisms > bar.anachronisms && `${t.anachronisms} anachronisms (bar ${bar.anachronisms})`,
     t.untraceableHardFacts > bar.untraceableHardFacts && `${t.untraceableHardFacts} untraceable hard facts`,
-    t.gapInsertions > bar.gapInsertions && `${t.gapInsertions} gap requirements written in`,
+    t.gapInsertions > bar.gapInsertions && `${t.gapInsertions} requirements the candidate did not accept were written in`,
     t.strippedClaims > bar.strippedClaims && `${t.strippedClaims} claims had to be stripped`,
     t.revisionRate > bar.maxRevisionRate && `revision rate ${(t.revisionRate * 100).toFixed(0)}% (bar ${bar.maxRevisionRate * 100}%)`,
     t.supportedRecall < bar.minSupportedRecall && `supported-requirement recall ${(t.supportedRecall * 100).toFixed(0)}%`,

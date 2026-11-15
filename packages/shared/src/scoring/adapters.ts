@@ -79,7 +79,8 @@ export function documentFromContent(content: ResumeContent, contactFallback?: Co
     })),
     education: content.education.map((entry) => ({ institution: entry.institution, degree: entry.degree })),
     certifications: content.certifications,
-    projects: content.projects.map((project) => ({ name: project.name, description: project.description, bullets: project.bullets })),
+    // The id is the project's place (`placesOfContent`), so a result can be asked for on its lines.
+    projects: content.projects.map((project) => ({ id: `project:${project.id}`, name: project.name, description: project.description, bullets: project.bullets })),
     contact,
     ...(content.links ? { links: content.links } : {}),
   };
@@ -119,10 +120,12 @@ export const profileContact = (profile: Profile, hasEmail = true): ContactPresen
 
 /** The JD's lists as the engines take them. */
 export const jdLists = (
-  draft: Pick<JdDraft, 'requiredSkills' | 'preferredSkills' | 'tools' | 'rawText'> & Partial<Pick<JdDraft, 'structured'>>,
+  draft: Pick<JdDraft, 'requiredSkills' | 'preferredSkills' | 'tools' | 'rawText'> & Partial<Pick<JdDraft, 'structured' | 'softSkills'>>,
 ): JdLists => ({
   requiredSkills: draft.requiredSkills,
-  preferredSkills: draft.preferredSkills,
+  // The job's soft skills are keywords too (owner, D-25, toreview §211): a checker counts
+  // "Stakeholder management" like any other phrase, so the score does, as one the job prefers.
+  preferredSkills: [...draft.preferredSkills, ...(draft.softSkills ?? [])],
   tools: draft.tools,
   rawText: draft.rawText,
   // The structured reading's years and conditions, so the ledger reports what the page shows.

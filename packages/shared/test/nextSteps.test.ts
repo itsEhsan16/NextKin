@@ -38,7 +38,7 @@ describe('what is left after a run', () => {
   it('names the candidate’s own steps, each with a measured gain', () => {
     expect(next.length).toBeGreaterThan(0);
     expect(next.length).toBeLessThanOrEqual(NEXT_STEPS);
-    expect(next.map((s) => s.title)).toEqual(expect.arrayContaining(['Add Git', 'Show Java in a role']));
+    expect(next.map((s) => s.title)).toEqual(expect.arrayContaining(['Add Git']));
     for (const step of next) expect(step.worth).toBeGreaterThan(0);
   });
 
@@ -53,7 +53,7 @@ describe('what is left after a run', () => {
 
   it('makes one short line for the ready screen', () => {
     expect(nextStepsLine([{ title: 'Add Git', worth: 0.8 }, { title: 'Show Java in a role', worth: 0.4 }, { title: 'x', worth: 0.1 }])).toBe(
-      'Next: Add Git (+0.8) · Show Java in a role (+0.4). Only if it’s true.',
+      'Next: Add Git (+0.8) · Show Java in a role (+0.4). Yours to accept.',
     );
     expect(nextStepsLine([])).toBeNull();
     expect(nextStepsLine(undefined)).toBeNull();

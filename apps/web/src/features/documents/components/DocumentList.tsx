@@ -1,7 +1,9 @@
 import type { CareerDocument } from '@nextkin/shared/models';
+import type { Route } from 'next';
 
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
+import { emptyList } from '@/ui/EmptyPanel';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { EmptyStateArt } from '@/ui/illustrations';
@@ -60,26 +62,31 @@ export function DocumentList({
     );
   }
 
+  // Empty, the list keeps its place: one outline where the rows will be (owner, 2026-11-15).
   if (!hasAny) {
     return (
-      <StateView
-        art={<EmptyStateArt object="notes" />}
-        className={reveal ? 'animate-reveal' : undefined}
-        title="No documents yet"
-        message="Uploading certificates and ID proofs is coming soon. Letters you write are in Resumes."
-      />
+      <div className={cn(emptyList, reveal && 'animate-reveal')}>
+        <StateView
+          art={<EmptyStateArt object="notes" />}
+          title="No documents yet"
+          message="Uploading certificates and ID proofs is coming soon. Letters you write are in Resumes."
+          actionLabel="Open Resumes"
+          actionHref={'/resumes' as Route}
+        />
+      </div>
     );
   }
 
   if (documents.length === 0) {
     return (
-      <StateView
-        className={reveal ? 'animate-reveal' : undefined}
-        title="No documents match"
-        message="Try another group, or clear the search."
-        actionLabel="Clear search"
-        onAction={onReset}
-      />
+      <div className={cn(emptyList, reveal && 'animate-reveal')}>
+        <StateView
+          title="No documents match"
+          message="Try another group, or clear the search."
+          actionLabel="Clear search"
+          onAction={onReset}
+        />
+      </div>
     );
   }
 

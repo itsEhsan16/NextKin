@@ -25,11 +25,12 @@ import { Mail01, Send01 } from '@/ui/lineIcons';
 import { NavAiAssistantIllustration, SparkleTipIllustration } from '@/ui/illustrations';
 import { pressable } from '@/ui/pressable';
 
-import { REWRITE_SECTIONS, sectionLines, sectionOf } from '../tailorLibrary';
+import { REWRITE_SECTIONS, sectionLines, sectionsOf } from '../tailorLibrary';
 import { CoverLetterCard } from './CoverLetterCard';
 
 /** "Try asking", the assistant's own chip style: edits it makes, and questions it answers. */
 const SUGGESTIONS: readonly string[] = [
+  'Polish my whole resume for this job',
   'Shorten my summary to remove filler words',
   'Use stronger action verbs for my latest experience',
   'Remove skills not related to this job',
@@ -37,11 +38,27 @@ const SUGGESTIONS: readonly string[] = [
   'What should I improve next for this job?',
 ];
 
-/** An edit the AI makes to a section ("shorten…", "remove…"), as opposed to a question. */
-export const isEditRequest = (text: string) =>
-  /^(?:please\s+)?(?:make|rewrite|shorten|remove|add|use|change|improve|fix|cut|reword|tighten|drop|delete|replace|put|trim)\b/i.test(
-    text.trim(),
-  );
+const EDIT_VERB =
+  '(?:make|rewrite|shorten|remove|add|use|change|improve|fix|cut|reword|tighten|drop|delete|replace|put|trim|polish|update|edit|rephrase|simplify|strengthen|clean|reorder|move|expand|condense|tailor|align|emphasi[sz]e|highlight|rework|refine|correct|merge)';
+const EDIT_REQUEST = new RegExp(
+  [
+    // "Shorten…", "Please remove…", "Also tighten…"
+    `^(?:(?:please|kindly|now|also|and|then)[\\s,]+)*${EDIT_VERB}\\b`,
+    // "Can you shorten…", "Could you please fix…"
+    `^(?:can|could|would|will) you (?:please |kindly |just )?${EDIT_VERB}\\b`,
+    // "I want you to…", "I'd like to…", "I need you to…", "Let's…", "Help me…"
+    `^(?:i (?:want|need|would like)|i['’]d like)(?: you)? to ${EDIT_VERB}\\b`,
+    `^(?:let['’]?s|help me(?: to)?) ${EDIT_VERB}\\b`,
+  ].join('|'),
+  'i',
+);
+
+/**
+ * An edit the AI makes ("shorten…", "can you remove…", "I want to tighten…"), as opposed to a
+ * question ("why is my score…", "what should I improve…"). It was only a request that began with
+ * the verb, so anything said politely was answered in words and changed nothing.
+ */
+export const isEditRequest = (text: string) => EDIT_REQUEST.test(text.trim());
 
 /**
  * An edit turn. `choose`: the words named no section, so the assistant asks which (audit TL-42).
@@ -50,6 +67,8 @@ export const isEditRequest = (text: string) =>
  */
 type EditState =
   | { state: 'choose' }
+  /** One of several parts a request named, waiting for the one before it. */
+  | { state: 'queued' }
   | { state: 'working' }
   | { state: 'failed' }
   | { state: 'done'; before: DocumentContent | undefined; decided?: 'kept' | 'undone' | 'undoing' };
@@ -75,8 +94,9 @@ const local = (
 /**
  * "AI Resume Assistant" on the review (toreview §121, from the owner's mockup, in the assistant's
  * own design): a greeting, "Try asking" chips, Create cover letter, and one box. An edit request
- * rewrites one section from the resume's own lines (`useRewriteSection`); a question goes to the
- * assistant with this resume attached, and its answer shows here, as in the chat.
+ * rewrites every part it names, or the whole resume, from the resume's own lines
+ * (`useRewriteSection`), one part after another; a question goes to the assistant with this
+ * resume attached, and its answer shows here, as in the chat.
  */
 export function ResumeAssistantPanel({
   generation,
@@ -102,7 +122,9 @@ export function ResumeAssistantPanel({
     const node = scroller.current;
     if (node && turns.length > 0) node.scrollTo?.({ top: node.scrollHeight, behavior: 'smooth' });
   }, [turns.length]);
-  const busy = rewrite.isPending || send.isPending || restore.isPending;
+  // Several parts are rewritten one after another; `batch` holds the box between them.
+  const [batch, setBatch] = useState(false);
+  const busy = batch || rewrite.isPending || send.isPending || restore.isPending;
   // The last question's reply arrives through the conversation; if it never does, say so (§131).
   const last = turns.at(-1);
   const awaiting =
@@ -114,18 +136,42 @@ export function ResumeAssistantPanel({
 
   const update = (id: string, patch: Record<string, unknown>) =>
     setTurns((all) => all.map((t) => (t.id === id ? ({ ...t, ...patch } as Turn) : t)));
-  const runRewrite = async (id: string, section: ResumeSectionKey, instruction: string) => {
-    update(id, { section, state: 'working' });
-    // What the section said before, for the before/after and for Undo. Read it first if it
-    // hasn't loaded yet: without it the change could not be undone.
+  /**
+   * One request, one or several parts (owner, 2026-11-15): each named part is rewritten in turn
+   * from the resume's own lines, saved as its own version, and shown with its own before/after
+   * to keep or undo. A part that fails says so and the rest carry on.
+   */
+  const runRewrites = async (
+    id: string,
+    sections: readonly ResumeSectionKey[],
+    question: string,
+  ) => {
+    const ids = sections.map((_, k) => (k === 0 ? id : `${id}-${k}`));
+    setTurns((all) => [
+      ...all.filter((t) => t.id !== id),
+      ...sections.map((section, k): Turn => ({
+        id: ids[k]!,
+        // Only the first carries the user's words; the rest are the same request, continued.
+        question: k === 0 ? question : '',
+        kind: 'edit',
+        section,
+        state: k === 0 ? 'working' : 'queued',
+      })),
+    ]);
+    setBatch(true);
+    // What each part said before, for the before/after and for Undo. Read once, up front: the
+    // parts are different, so an earlier rewrite never changes what a later one started from.
     const before = content.data ?? (await content.refetch()).data;
-    rewrite.mutate(
-      { section, instruction },
-      {
-        onSuccess: () => update(id, { state: 'done', before }),
-        onError: () => update(id, { state: 'failed' }),
-      },
-    );
+    for (const [k, section] of sections.entries()) {
+      update(ids[k]!, { state: 'working' });
+      try {
+        await rewrite.mutateAsync({ section, instruction: question });
+        update(ids[k]!, { state: 'done', before });
+      } catch {
+        update(ids[k]!, { state: 'failed' });
+      }
+    }
+    setBatch(false);
   };
   const undo = (turn: Turn) => {
     if (turn.kind !== 'edit' || turn.state !== 'done' || !turn.section) return;
@@ -149,13 +195,12 @@ export function ResumeAssistantPanel({
     const id = `turn-${(nextId.current += 1)}`;
     setDraft('');
     if (isEditRequest(question)) {
-      const section = sectionOf(question);
-      if (!section) {
+      const sections = sectionsOf(question);
+      if (sections.length === 0) {
         setTurns((all) => [...all, { id, question, kind: 'edit', state: 'choose' }]);
         return;
       }
-      setTurns((all) => [...all, { id, question, kind: 'edit', section, state: 'working' }]);
-      void runRewrite(id, section, question);
+      void runRewrites(id, sections, question);
     } else {
       setTurns((all) => [...all, { id, question, kind: 'ask' }]);
       send.mutate(
@@ -174,6 +219,8 @@ export function ResumeAssistantPanel({
         return local(`${turn.id}-r`, 'assistant', 'Which part should I change?');
       const label = RESUME_SECTION_LABEL[turn.section].toLowerCase();
       // Local turns are never 'streaming': that status makes the bubble fetch a reply by its id.
+      if (turn.state === 'queued')
+        return local(`${turn.id}-r`, 'assistant', `Next, your ${label}.`);
       if (turn.state === 'working')
         return local(`${turn.id}-r`, 'assistant', `Rewriting your ${label}…`);
       if (turn.state === 'failed')
@@ -253,10 +300,7 @@ export function ResumeAssistantPanel({
         </button>
       </div>
 
-      <div
-        ref={scroller}
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4 [scrollbar-width:thin]"
-      >
+      <div ref={scroller} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
         {letterOpen && (
           <CoverLetterCard
             generation={generation}
@@ -266,8 +310,17 @@ export function ResumeAssistantPanel({
         )}
         {turns.length > 0 && (
           <ul aria-label="Conversation" className="flex flex-col gap-3">
-            {turns.flatMap((turn) => [
-              <MessageBubble key={turn.id} message={local(turn.id, 'user', turn.question)} fresh />,
+            {turns.flatMap((turn, at) => [
+              // A request for several parts is said once, above the first of them.
+              ...(turn.question
+                ? [
+                    <MessageBubble
+                      key={turn.id}
+                      message={local(turn.id, 'user', turn.question)}
+                      fresh
+                    />,
+                  ]
+                : []),
               <MessageBubble key={`${turn.id}-r`} message={replyOf(turn)} fresh />,
               ...(turn.kind === 'edit' && turn.state === 'choose'
                 ? [
@@ -278,13 +331,25 @@ export function ResumeAssistantPanel({
                             <button
                               type="button"
                               disabled={busy}
-                              onClick={() => void runRewrite(turn.id, section, turn.question)}
+                              onClick={() => void runRewrites(turn.id, [section], turn.question)}
                               className={chip}
                             >
                               {RESUME_SECTION_LABEL[section]}
                             </button>
                           </li>
                         ))}
+                        <li>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() =>
+                              void runRewrites(turn.id, REWRITE_SECTIONS, turn.question)
+                            }
+                            className={chip}
+                          >
+                            Whole resume
+                          </button>
+                        </li>
                       </ul>
                     </li>,
                   ]
@@ -297,7 +362,20 @@ export function ResumeAssistantPanel({
                       before={sectionLines(turn.before, turn.section)}
                       after={sectionLines(content.data, turn.section)}
                       decided={turn.decided}
-                      canUndo={turn.before?.kind === 'resume' && turn === last}
+                      // Undo puts this part back as it was; that is safe until a later change
+                      // has rewritten the same part on top of it.
+                      canUndo={
+                        turn.before?.kind === 'resume' &&
+                        !turns
+                          .slice(at + 1)
+                          .some(
+                            (later) =>
+                              later.kind === 'edit' &&
+                              later.section === turn.section &&
+                              later.state === 'done' &&
+                              later.decided !== 'undone',
+                          )
+                      }
                       onKeep={() => update(turn.id, { decided: 'kept' })}
                       onUndo={() => undo(turn)}
                     />,
@@ -379,8 +457,8 @@ export function ResumeAssistantPanel({
 
 /**
  * The before/after of one AI rewrite, with Keep and Undo (audit TL-42, V2 §7.6: a change is a
- * new version, never a silent overwrite). Only the latest change can be undone: an older one
- * would put back text a later change already built on.
+ * new version, never a silent overwrite). A change can be undone until a later one rewrites the
+ * same part: undoing it then would put back text the later change already built on.
  */
 function EditReview({
   section,

@@ -50,7 +50,7 @@ export function ResumeDetailPanel({
         cardPad,
         // A resume's card keeps its header, actions and tabs in view and scrolls only the tab
         // (redesign R6a, audit RS-22); the other states scroll as one.
-        card ? 'flex min-h-0 flex-col' : 'min-h-0 overflow-y-auto scrollbar-thin',
+        card ? 'flex min-h-0 flex-col' : 'min-h-0 overflow-y-auto',
         className,
       )}
     >

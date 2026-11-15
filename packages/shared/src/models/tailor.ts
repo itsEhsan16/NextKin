@@ -223,6 +223,17 @@ export function figureLine(draft: Pick<FigureDraft, 'before' | 'after'>, figure:
   return `${draft.before.trim()} ${figure.trim()}${glue}${after}`;
 }
 
+/**
+ * The AI's best finished line for a draft (owner, toreview §207, §211): its first result at its
+ * smallest amount, or its one typical figure. Null when it offers none (the rules' draft), so the
+ * line is left for the candidate to write.
+ */
+export function bestFigureLine(draft: FigureDraft): string | null {
+  const option = draft.options?.[0];
+  const amount = option ? option.amounts[0] : draft.suggestion;
+  return amount?.trim() ? figureLine(option ?? draft, amount) : null;
+}
+
 /** The add-or-skip answers TAILOR 03 collects for each missing keyword. */
 export type TailorChoices = { added: string[]; skipped: string[] };
 
@@ -284,7 +295,7 @@ export function nextStepsLine(next: readonly TailorNextStep[] | undefined): stri
   return `Next: ${next
     .slice(0, 2)
     .map((step) => `${step.title} (+${step.worth.toFixed(1)})`)
-    .join(' · ')}. Only if it’s true.`;
+    .join(' · ')}. Yours to accept.`;
 }
 
 /** The page length a tailored resume is cut to; recruiters skim one or two (TAILOR 02). */

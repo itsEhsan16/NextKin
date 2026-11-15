@@ -7,7 +7,8 @@ import { rubricById } from '../src/provenance';
 import { buildLedger, requirementsFromJd, type Evidence } from '../src/requirements';
 import { AS_OF, BACKEND_JD_TEXT, BACKEND_RESUME } from './fixtures/documents';
 
-const rubric = rubricById();
+// The tiers below are D-14's, which rubric-2 holds. rubric-3 (coverage, D-25) has its own block.
+const rubric = rubricById('rubric-2');
 const ledger = (requirements: ReturnType<typeof requirementsFromJd>, evidence: Evidence, backing?: Evidence) =>
   buildLedger({ requirements, evidence, rubric, asOf: AS_OF, ...(backing ? { backing } : {}) });
 const dated = (id: string, skills: string[], from: number, to: number | null) => ({
@@ -42,6 +43,35 @@ describe('typed requirements from a JD', () => {
   it('turns eligibility sentences into flags', () => {
     const reqs = requirementsFromJd({ requiredSkills: [], preferredSkills: [], rawText: BACKEND_JD_TEXT }, TAXONOMY);
     expect(reqs.map((r) => r.eligibility)).toEqual(['work_authorization', 'language']);
+  });
+});
+
+describe('the ledger under the coverage rubric (rubric-3, D-25)', () => {
+  const coverage = rubricById('rubric-3');
+  const reqs = requirementsFromJd({ requiredSkills: ['Go', 'Kafka', 'Docker'], preferredSkills: ['Redis'] }, TAXONOMY);
+  const go = (evidence: Evidence, backing?: Evidence) => buildLedger({ requirements: reqs, evidence, rubric: coverage, asOf: AS_OF, ...(backing ? { backing } : {}) });
+
+  it('a keyword the resume names earns full credit wherever it is; one it does not name earns none', () => {
+    const result = go({ roles: [dated('r', ['go'], 2018, null)], listed: ['docker'] });
+    const by = Object.fromEntries(result.entries.map((e) => [e.skillId, e]));
+    expect([by.go!.status, by.docker!.status, by.kafka!.status, by.redis!.status]).toEqual(['met', 'met', 'gap', 'gap']);
+    expect([by.go!.creditBps, by.docker!.creditBps, by.kafka!.creditBps]).toEqual([10_000, 10_000, 0]);
+  });
+
+  it('every keyword named is a full match', () => {
+    expect(go({ roles: [], listed: ['go', 'kafka', 'docker', 'redis'] }).matchBps).toBe(10_000);
+  });
+
+  it('years asked are reported, not scored', () => {
+    const five = requirementsFromJd({ requiredSkills: ['5+ years Go'], preferredSkills: [] }, TAXONOMY);
+    const entry = buildLedger({ requirements: five, evidence: { roles: [dated('r', ['go'], 2023, 2026)], listed: [] }, rubric: coverage, asOf: AS_OF }).entries[0]!;
+    expect(entry).toMatchObject({ status: 'met', creditBps: 10_000, years: { asked: 5, shownMonths: 36 } });
+  });
+
+  it('what the candidate did not accept is still not credited', () => {
+    const doc: Evidence = { roles: [dated('r', ['go', 'kafka'], 2018, null)], listed: [] };
+    const accepted: Evidence = { roles: [dated('r', ['go'], 2018, null)], listed: [] };
+    expect(go(doc, accepted).entries.find((e) => e.skillId === 'kafka')).toMatchObject({ status: 'gap', creditBps: 0 });
   });
 });
 

@@ -30,7 +30,9 @@ const box =
 /**
  * The new resume (toreview §121, from the owner's mockup): Preview, the typeset page the download
  * holds (toreview §111), or Text view, the resume as text with the AI's changes marked. Zoom and
- * the page count sit above it, beside a full-screen button.
+ * the page count sit above it, beside a full-screen button. While the pages are being typeset the
+ * preview waits for them; it used to show a plain page drawn from the content in the meantime,
+ * which looked like a different resume.
  */
 export function ResumePreview({
   resumeId,
@@ -47,6 +49,11 @@ export function ResumePreview({
   const resume = useResume(resumeId);
   const preview = useResumePreview(resumeId, resume.data?.currentVersionId);
   const typeset = preview.data?.pages.length ? preview.data : undefined;
+  // Only a document with no typeset pages at all (`structured`: the mock's fixtures) is drawn
+  // from its content. A resume still being typeset, or one that failed, never falls back to that
+  // plain page (owner, 2026-11-15): it waits, or says it failed and offers to try again.
+  const drawn = preview.data?.status === 'structured';
+  const typesetFailed = preview.data?.status === 'failed' || preview.isError;
   const pages = typeset?.pageCount ?? estimated;
   const [view, setView] = useState<View>('preview');
   const [zoom, setZoom] = useState<(typeof ZOOMS)[number]>(100);
@@ -142,7 +149,7 @@ export function ResumePreview({
           const node = event.currentTarget;
           setPage(Math.min(pages, Math.round(node.scrollTop / node.clientHeight) + 1));
         }}
-        className="mx-auto min-h-0 w-full max-w-170 flex-1 overflow-y-auto overflow-x-hidden motion-safe:scroll-smooth [scrollbar-width:thin]"
+        className="mx-auto min-h-0 w-full max-w-170 flex-1 overflow-y-auto overflow-x-hidden motion-safe:scroll-smooth"
       >
         <div
           className="origin-top rounded-sm bg-surface-card shadow-popover transition-transform duration-base ease-standard"
@@ -152,8 +159,16 @@ export function ResumePreview({
             <TextView sections={text} />
           ) : typeset ? (
             <PageImages pages={typeset.pages} stale={typeset.stale} />
-          ) : body ? (
+          ) : drawn && body ? (
             <ResumeSheet name={name} body={body} />
+          ) : typesetFailed ? (
+            <StateView
+              tone="danger"
+              title="We couldn’t typeset this resume"
+              message="Your resume is saved. Try again to see its pages."
+              actionLabel="Try again"
+              onAction={() => void preview.refetch()}
+            />
           ) : content.isError ? (
             <StateView
               tone="danger"
@@ -163,7 +178,12 @@ export function ResumePreview({
               onAction={() => void content.refetch()}
             />
           ) : (
-            <Skeleton className="aspect-[600/780] w-full rounded-md" />
+            <div role="status" className="relative">
+              <Skeleton className="aspect-[600/780] w-full rounded-md" />
+              <p className="absolute inset-x-0 top-8 text-center text-body-m font-medium text-text-tertiary">
+                Typesetting your resume…
+              </p>
+            </div>
           )}
         </div>
       </div>

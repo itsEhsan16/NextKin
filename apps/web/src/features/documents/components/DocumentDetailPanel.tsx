@@ -3,14 +3,14 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
-import { ArrowRight } from '@/ui/lineIcons';
+import { ArrowRight, File06 } from '@/ui/lineIcons';
 import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
 import { DownloadIcon, EllipsisIcon, LinkIcon, MoreVerticalIcon, SendIcon } from '@/ui/icons';
 import { iconButton } from '@/ui/iconButton';
 import { Skeleton } from '@/ui/Skeleton';
+import { EmptyMark, emptyDetail } from '@/ui/EmptyPanel';
 import { StateView } from '@/ui/StateView';
-import { EmptyStateArt } from '@/ui/illustrations';
 
 import { documentMeta } from '../documentLibrary';
 import { DocumentPreview } from './DocumentPreview';
@@ -50,18 +50,25 @@ export function DocumentDetailPanel({
   const apply = document ? applyCopy(document, applyHref) : undefined;
 
   return (
-    <div className={cn('min-h-0 overflow-y-auto scrollbar-thin', className)}>
+    <div
+      className={cn(
+        'min-h-0 overflow-y-auto',
+        // Empty, the card fills the column, as a document's card and callout do.
+        status === 'empty' && 'flex flex-1 flex-col',
+        className,
+      )}
+    >
       {status === 'empty' && (
-        <div className={cn(CARD, 'p-6')}>
+        <div className={emptyDetail}>
           {hasAny ? (
             <StateView
-              art={<EmptyStateArt object="tablet" />}
+              art={<EmptyMark icon={File06} />}
               title="Select a document"
               message="Choose one from the list to preview it."
             />
           ) : (
             <StateView
-              art={<EmptyStateArt object="tablet" />}
+              art={<EmptyMark icon={File06} />}
               title="Nothing to preview yet"
               message="When a document is here, its preview shows here."
             />

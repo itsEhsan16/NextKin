@@ -127,8 +127,22 @@ export function ColumnHead({
   );
 }
 
-/** A step's card (849:193): the app's card, with the board's soft shadow. */
-export const stepCard = cn(cardSurface, 'overflow-hidden rounded-xl');
+/**
+ * A flow page: the app's frame, at least the window tall, laid out as a column (owner,
+ * 2026-11-15). With `stepShell` and `stepCard` inside it, the step's card takes whatever height
+ * its content leaves and the footer bar rests at the bottom of the window, however short the
+ * step is: no band of empty page under the bar.
+ */
+export const flowPage = 'flex min-h-page-fill flex-col gap-5 pb-8';
+
+/** A step: its card, then its footer bar. It takes the rest of the flow page. */
+export const stepShell = 'flex min-w-0 flex-1 flex-col gap-6';
+
+/**
+ * A step's card (849:193): the app's card, with the board's soft shadow. In a `stepShell` it
+ * grows to fill the step, so a short step still ends at the footer bar.
+ */
+export const stepCard = cn(cardSurface, 'flex-1 overflow-hidden rounded-xl');
 
 // The footer moved to `ui/FlowFooter` (redesign R3d); re-exported for the flows that import it here.
 export { FlowFooter } from '@/ui/FlowFooter';

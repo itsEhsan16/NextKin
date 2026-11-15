@@ -56,15 +56,14 @@ describe('fixPlanOf', () => {
 
   it('prices each step as the engine would score it, unmeasured and unfixable last', () => {
     expect(plan.steps.map((s) => [s.kind, s.worth, s.who])).toEqual([
-      // Git, required: 40 × 2/5 = 16 points of 100 when shown in a role → 1.6 of 10.
+      // Git, required: 40 × 2/5 = 16 points of 100 once it is on the resume → 1.6 of 10.
       ['keyword', 1.6, 'you'],
-      // Java listed: the other half of 16 → 0.8.
-      ['evidence', 0.8, 'you'],
+      // Java, "only listed" in a report from an earlier rubric: full credit already (D-25), no step.
       ['number', 0.3, 'you'],
       ['summary', null, 'ai'],
       ['years', null, 'nobody'],
     ]);
-    expect(plan.steps[0]).toMatchObject({ title: 'Add Git', need: 'Strong Git workflows.', basis: '+0.8 in your skills, +1.6 when a role shows it — only if you have it' });
+    expect(plan.steps[0]).toMatchObject({ title: 'Add Git', need: 'Strong Git workflows.', basis: '+1.6 once it is on your resume. Yours to accept' });
   });
 
   it('is undefined without a total (D-15)', () => {

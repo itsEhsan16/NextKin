@@ -192,7 +192,7 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
               card's ring and shadow aren't clipped. */}
           <div
             ref={scrollerRef}
-            className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-5 pt-1 [scrollbar-width:thin]"
+            className="-mx-2 -mt-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-5 pt-1"
           >
             <JobList
               jobs={jobs}

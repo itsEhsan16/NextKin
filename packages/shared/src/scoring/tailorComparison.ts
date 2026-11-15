@@ -38,16 +38,19 @@ export const scoringJdOf = (draft: JdDraft): ScoringJd => ({
 });
 
 /**
- * How the ledger saw it (D-14): used in a dated role is full credit; only listed, or shown for
- * fewer years than asked, is part credit. The comparison says which, so a tick is never worth
- * more on screen than in the score (toreview §110.6).
+ * How the ledger saw it. Under the coverage rubric (D-25, toreview §211) a keyword the resume
+ * names is met wherever it is, so this reads "experience"; a run scored on an earlier rubric
+ * (D-14) can still say only listed, or shown for fewer years than asked.
  */
 const shownOf = (r: DocumentScore['report']['requirements'][number]): TailorKeywordShown | undefined =>
   r.status === 'met' ? 'experience' : r.status !== 'partial' ? undefined : r.evidence === 'listed' ? 'listed' : 'fewer_years';
 
 const SHOWN_ORDER: Record<TailorKeywordShown, number> = { experience: 0, fewer_years: 1, listed: 2 };
 
-/** How many keywords step 1 shows, as Jobright's "ATS job keywords (8/10)" (toreview §113). */
+/**
+ * How many keywords are marked as the job's most important (toreview §113). Since D-25 (toreview
+ * §211) the mark only orders them: every keyword the job names is shown and counted.
+ */
 export const TOP_KEYWORDS = 10;
 
 /** Compares two equal-length number tuples, first differing place first. */
@@ -69,12 +72,11 @@ const timesSaid = (text: string, phrase: string): number => {
 /**
  * The job's most important keywords (toreview §113), by code from what the JD says: required
  * before preferred, then the ones the title names, then how often the text names them, then the
- * JD's own order. Soft skills are never among them.
+ * JD's own order. Soft skills are ranked with the rest; preferred, they come after what is required.
  */
 export function markTop(keywords: readonly TailorKeyword[], rawText = '', title = '', n = TOP_KEYWORDS): TailorKeyword[] {
   const ranked = keywords
     .map((k, i) => ({ k, i }))
-    .filter(({ k }) => k.kind !== 'soft')
     .map(({ k, i }) => ({ label: k.label, i, rank: [k.source === 'required' ? 0 : 1, says(title, k.label) ? 0 : 1, -timesSaid(rawText, k.label), i] }))
     .sort((a, b) => byTuple(a.rank, b.rank));
   const top = new Set(ranked.slice(0, n).map((r) => r.label));
@@ -82,12 +84,12 @@ export function markTop(keywords: readonly TailorKeyword[], rawText = '', title 
 }
 
 /**
- * "Job match": of the job's top keywords (all of them when none is marked), how many the resume
- * shows anywhere, in its skills, summary, roles or projects (toreview §112, §113).
+ * "Job match": of every keyword the job names, soft skills included, how many the resume shows
+ * anywhere, in its skills, summary, roles or projects (toreview §112; all of them since §211, where
+ * it was the top ten: a checker counts the whole list, so a full match must mean the whole list).
  */
 export function jobMatchOf(keywords: readonly TailorKeyword[]): JobMatch | undefined {
-  const skills = keywords.filter((k) => k.kind !== 'soft');
-  const counted = skills.some((k) => k.top) ? skills.filter((k) => k.top) : skills;
+  const counted = keywords;
   if (counted.length === 0) return undefined;
   const matched = counted.filter((k) => k.onResume).length;
   const total = counted.length;
@@ -96,12 +98,17 @@ export function jobMatchOf(keywords: readonly TailorKeyword[]): JobMatch | undef
     total,
     percent: Math.round((matched / total) * 100),
     missing: counted.filter((k) => !k.onResume).map((k) => k.label),
-    basis: `${matched} of this job’s ${total} most important keywords appear in your resume: in its skills, summary, roles or projects. Soft skills aren’t counted.`,
+    basis: `${matched} of the ${total} keywords this job names appear in your resume: in its skills, summary, roles or projects.`,
   };
 }
 
-/** The JD's skills, each marked on or off the resume and how, from the requirement ledger. */
-export function keywordsFrom(result: DocumentScore | undefined, rawText?: string, title?: string): TailorKeyword[] {
+/**
+ * The JD's keywords, each marked on or off the resume and how, from the requirement ledger.
+ * `softSkills` are the ones the reading called soft skills: scored like the rest, shown in their
+ * own group.
+ */
+export function keywordsFrom(result: DocumentScore | undefined, rawText?: string, title?: string, softSkills: readonly string[] = []): TailorKeyword[] {
+  const soft = new Set(softSkills.map((s) => phraseKey(s)));
   const out: TailorKeyword[] = (result?.report.requirements ?? [])
     .filter((r) => r.status !== 'eligibility')
     .map((r) => {
@@ -112,6 +119,7 @@ export function keywordsFrom(result: DocumentScore | undefined, rawText?: string
         onResume: r.status === 'met' || r.status === 'partial',
         ...(shown ? { shown } : {}),
         source: r.importance === 'required' ? 'required' : 'description',
+        ...(soft.has(phraseKey(r.text)) ? { kind: 'soft' as const } : {}),
         ...(quote ? { quote } : {}),
       };
     });
@@ -239,11 +247,16 @@ export function comparisonOf(args: {
   elsewhere?: Omit<Parameters<typeof elsewhereFor>[0], 'keywords'>;
 }): TailorComparison {
   const total = args.result?.score?.total;
-  const soft: TailorKeyword[] = (args.softSkills ?? []).map((label) => {
-    const quote = quoteOf(args.rawText, label);
-    return { label, onResume: says(args.resumeText ?? '', label), source: 'description', kind: 'soft', ...(quote ? { quote } : {}) };
-  });
-  const read = [...keywordsFrom(args.result, args.rawText, args.title), ...soft];
+  const scored = keywordsFrom(args.result, args.rawText, args.title, args.softSkills);
+  // A soft skill the score did not read (a comparison with no engine result) is still offered.
+  const have = new Set(scored.map((k) => phraseKey(k.label)));
+  const soft: TailorKeyword[] = (args.softSkills ?? [])
+    .filter((label) => !have.has(phraseKey(label)))
+    .map((label) => {
+      const quote = quoteOf(args.rawText, label);
+      return { label, onResume: says(args.resumeText ?? '', label), source: 'description', kind: 'soft', ...(quote ? { quote } : {}) };
+    });
+  const read = [...scored, ...soft];
   const found = args.elsewhere ? elsewhereFor({ ...args.elsewhere, keywords: read }) : {};
   const keywords = read.map((k) => (found[k.label] ? { ...k, elsewhere: found[k.label]! } : k));
   const backed = backedPlaces(found);

@@ -65,17 +65,22 @@ export async function prepareTailor(
   const ticked = [...new Map([...args.tailoring.keywords, ...confirmed.map((c) => c.keyword)].map((k) => [key(k), k.trim()])).values()];
   const tickedKeys = new Set(ticked.map(key));
   const baseline = measureBase(base, draft, args.asOf);
-  const skipped = keywordsFrom(baseline)
-    .filter((k) => !k.onResume && !tickedKeys.has(key(k.label)))
+  // What the candidate saw and did not accept is not written in. A soft skill is left off the list:
+  // "collaboration" is an ordinary word, and a line that happens to use it is not a claim.
+  const skipped = keywordsFrom(baseline, undefined, undefined, draft.softSkills)
+    .filter((k) => !k.onResume && k.kind !== 'soft' && !tickedKeys.has(key(k.label)))
     .map((k) => k.label);
 
   const baselineJobMatch = jobMatchOf(keywordsFrom(baseline, draft.rawText, draft.title));
   // A rewritten bullet replaces a line of this resume that exists (toreview §129); others are ignored.
-  const figures = (args.tailoring.figures ?? []).filter((f) => base.doc.roles.some((r) => r.roleId === f.where && f.line < r.bullets.length));
+  const figures = (args.tailoring.figures ?? []).filter(
+    (f) => base.doc.roles.some((r) => r.roleId === f.where && f.line < r.bullets.length) || base.doc.projects.some((p) => `project:${p.factId}` === f.where && f.line < p.bullets.length),
+  );
   const source = withFigures(base.doc, figures);
-  // Ticked keywords with no place go in the skills list only (owner, toreview §159); a bullet names
-  // one only where its own lines support it.
-  const facts = factsOfDocument(source, { added: ticked, confirmed, redact: redactContact });
+  // What the candidate accepted is theirs to claim (owner, D-25, toreview §211, reversing §159):
+  // every accepted keyword is listed in the skills and may be named in any dated role or project,
+  // so no check removes a line for naming it.
+  const facts = factsOfDocument(source, { added: ticked, confirmed, placeable: ticked, redact: redactContact });
   const checks = new Map(headerChecksFor(base.doc.header, { title: draft.title, location: draft.location ?? null }).map((c) => [c.index, c]));
   const header = (args.tailoring.header ?? []).filter((c) => checks.has(c.index) && (c.action === 'remove' || c.text));
   const projected = projectionOf({ source, facts, contact: base.contact, draft, ticked, confirmed, fixes: args.tailoring.fixes, asOf: args.asOf });
