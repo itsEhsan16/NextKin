@@ -17605,3 +17605,22 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   is a third of a point; `tailorCompareP14` now expects "not lower" where it expected "higher".
 - **An unbacked keyword earned repeated-term credit** (found by a mobile test): fixed.
 
+
+### §212.2 — Merged, deployed to the AWS demo; why "Add the result" fell back there (owner said to, 2026-11-17)
+
+- **Merged** by the owner as `863dfd5` (PR 2). **Deployed** `NextkinDemo` (`cdk deploy`, 582 s):
+  container images only, no migration. `task seed-reference` installed `jd.recall` v1 and
+  `resume.generate` v10 with the accounts left alone. `/api/v1/health/deep` is ok and all six
+  services finished their rollout.
+- **Why the demo showed the typed box.** Its log has seven fallbacks in four days: five
+  `figure.draft_failed` and two `figure.draft_skipped`. In each failure the prompt was found and
+  the model was called and answered (about 1.5 s), then the draft failed. The log redacts the
+  error text, so this is a reading of the code, not of the error: the `figure_draft` route allowed
+  300 output tokens, sized for the v1 answer of one rewritten bullet, and prompt v3 asks for up
+  to three rewrites with amounts. A long bullet's answer is cut off and does not parse.
+- **The fix** is routing version 9 (1200 tokens out, 3000 in), on `fix/figure-draft-token-limit`.
+  It needs a deploy and `seed-reference` after merging. Not yet confirmed on a live model.
+- **The new prompts ran for the first time on the demo.** If a job stops reading or a resume
+  stops generating there, `jd.recall` and `resume.generate` v10 are the first place to look.
+- Scores on the demo move to `rubric-4` as each resume is next measured; a job read before
+  today is read again the next time its page is opened.
