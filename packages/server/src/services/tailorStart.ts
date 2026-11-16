@@ -1,6 +1,7 @@
 import type { PartialDate } from '@nextkin/engines/dates';
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { resolveSkill } from '@nextkin/engines/normalizer';
+import { isQuantified } from '@nextkin/engines/quantified';
 import type { Tailoring } from '@nextkin/shared/schemas/generation';
 import { factsOfDocument, placesOf, withChoices, withFigures } from '@nextkin/shared/scoring/documentFacts';
 import { TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
@@ -73,7 +74,8 @@ export async function prepareTailor(
 
   const baselineJobMatch = jobMatchOf(keywordsFrom(baseline, draft.rawText, draft.title));
   // A rewritten bullet replaces a line of this resume that exists (toreview §129); others are ignored.
-  const figures = (args.tailoring.figures ?? []).filter(
+  // A line whose number measures nothing ("improving 10") is not a result and is not written (toreview §212).
+  const figures = (args.tailoring.figures ?? []).filter((f) => isQuantified(f.text, TAXONOMY)).filter(
     (f) => base.doc.roles.some((r) => r.roleId === f.where && f.line < r.bullets.length) || base.doc.projects.some((p) => `project:${p.factId}` === f.where && f.line < p.bullets.length),
   );
   const source = withFigures(base.doc, figures);

@@ -209,7 +209,27 @@ export type FigureDraft = {
   suggestion?: string;
   /** Two or three results to pick from, each with its own amounts (owner, 2026-11-14). */
   options?: FigureOption[];
+  /**
+   * Why there is no AI suggestion, when there is none (toreview §212): the dialog says so and
+   * offers to try again, where it used to show an empty box with no word of why.
+   */
+  reason?: FigureDraftReason;
 };
+
+/** No model on this server, no AI consent, no prompt installed, the call failed, or its answer strayed from the line. */
+export type FigureDraftReason = 'no_ai' | 'no_consent' | 'no_prompt' | 'failed' | 'rejected';
+
+/** What the dialog says for each reason, and whether asking again can help. */
+export const FIGURE_REASON: Record<FigureDraftReason, { note: string; retry: boolean }> = {
+  no_ai: { note: 'AI suggestions aren’t switched on here yet.', retry: false },
+  no_consent: { note: 'AI suggestions are off for your account. Allow AI processing in Settings › Privacy & data to get one.', retry: true },
+  no_prompt: { note: 'AI suggestions aren’t set up on this server yet.', retry: false },
+  failed: { note: 'The AI didn’t answer this time.', retry: true },
+  rejected: { note: 'The AI couldn’t fit a result into this line without changing what it says.', retry: true },
+};
+
+/** Whether a draft has anything of the AI's to offer: a result to pick, or a typical figure. */
+export const hasSuggestion = (draft: FigureDraft): boolean => Boolean(draft.options?.length || draft.suggestion?.trim());
 
 /** The plain draft: the line as written, with the gap after "improving". */
 export function fallbackFigureDraft(line: string): FigureDraft {

@@ -1,6 +1,6 @@
 'use client';
 
-import { figureLine, type FigureDraft } from '@nextkin/shared/models';
+import { FIGURE_REASON, figureLine, hasSuggestion, type FigureDraft } from '@nextkin/shared/models';
 import { useDraftFigure } from '@nextkin/shared/queries';
 import { statesResult } from '@nextkin/shared/tailor/customize';
 import { useEffect, useState } from 'react';
@@ -24,7 +24,11 @@ type Bullet = { roleId: string; index: number; text: string };
  * dialog opens on a finished line the user can use as it is, change by picking another result or
  * amount, type over, or rewrite whole from the pencil on the line. Nothing is saved until "Use
  * this line", and the suggestion is labelled as the AI's, to keep only if it is true (G13).
- * Mobile's `PlanFigureEditor` is the same flow.
+ *
+ * Nobody has to type (owner, 2026-11-17, toreview §212). A box to type in appears only when the
+ * user asks for one ("Another amount", "Change the figure", the pencil, "Write it myself"). When
+ * the AI has nothing to offer, the dialog says why and offers to ask again, where it used to show
+ * an empty box. Mobile's `PlanFigureEditor` is the same flow.
  */
 export function LineResult({
   resumeId,
@@ -49,7 +53,10 @@ export function LineResult({
   const [picked, setPicked] = useState<number | null | undefined>(undefined);
   const [typed, setTyped] = useState<string | null>(null);
   const [typing, setTyping] = useState(false);
-  const draft = given ?? fetched;
+  // A draft asked for again here replaces the one the row brought.
+  const draft = fetched ?? given;
+  const offers = draft ? hasSuggestion(draft) : false;
+  const why = draft && !offers ? FIGURE_REASON[draft.reason ?? 'rejected'] : undefined;
   const options = draft?.options ?? [];
   // The AI's best: its first result, until the user picks another or none.
   const pick = picked === undefined ? (options.length > 0 ? 0 : null) : picked;
@@ -64,7 +71,12 @@ export function LineResult({
   const figure = typed ?? best;
   const fromAi = typed === null && figure !== '';
 
-  const { mutate, isIdle } = draftFigure;
+  const { mutate, isIdle, isPending } = draftFigure;
+  const ask = () =>
+    mutate(
+      { resumeId, roleId: bullet.roleId, line: bullet.index, text: bullet.text },
+      { onSuccess: setFetched, onError: () => setOwn(bullet.text) },
+    );
   useEffect(() => {
     if (own !== null || given || !isIdle) return;
     mutate(
@@ -72,6 +84,8 @@ export function LineResult({
       { onSuccess: setFetched, onError: () => setOwn(bullet.text) },
     );
   }, [own, given, isIdle, mutate, resumeId, bullet]);
+  // The line's gap, when the AI has nothing for it, is not shown as a line to fill in.
+  const showLine = !why;
 
   const line = own ?? (shape && figure.trim() ? figureLine(shape, figure) : '');
   const counts = line !== '' && statesResult(line) && line.trim() !== bullet.text.trim();
@@ -123,16 +137,24 @@ export function LineResult({
               aria-live="polite"
               className="min-w-0 flex-1 py-1 text-body-m leading-relaxed text-text-primary"
             >
-              {shape!.before}{' '}
-              <span
-                className={cn(
-                  'rounded-sm px-1 font-semibold',
-                  figure.trim() ? 'bg-brand-50 text-text-brand' : 'bg-warning-50 text-warning-text',
-                )}
-              >
-                {figure.trim() || (chosen ? chosen.what.toLowerCase() : draft.hint)}
-              </span>
-              {shape!.after}
+              {showLine ? (
+                <>
+                  {shape!.before}{' '}
+                  <span
+                    className={cn(
+                      'rounded-sm px-1 font-semibold',
+                      figure.trim()
+                        ? 'bg-brand-50 text-text-brand'
+                        : 'bg-warning-50 text-warning-text',
+                    )}
+                  >
+                    {figure.trim() || (chosen ? chosen.what.toLowerCase() : draft.hint)}
+                  </span>
+                  {shape!.after}
+                </>
+              ) : (
+                bullet.text
+              )}
             </p>
             <button
               type="button"
@@ -151,7 +173,33 @@ export function LineResult({
             </p>
           )}
 
-          {options.length > 0 ? (
+          {why ? (
+            <div className="flex flex-col gap-3">
+              <p role="status" className="text-body-m text-text-secondary">
+                {why.note}
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                {why.retry && (
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={ask}
+                    className={buttonClass({ size: 'md' })}
+                  >
+                    <Stars02 aria-hidden className="size-4" />
+                    {isPending ? 'Asking the AI…' : 'Ask the AI again'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setOwn(bullet.text)}
+                  className={buttonClass({ variant: 'secondary', size: 'md' })}
+                >
+                  Write it myself
+                </button>
+              </div>
+            </div>
+          ) : options.length > 0 ? (
             <>
               {/* The AI's own results for this line, then its amounts: its best is picked to
                   start, and any other is one tap away. */}
@@ -210,8 +258,8 @@ export function LineResult({
                 </fieldset>
               )}
             </>
-          ) : (
-            <label className="flex flex-col gap-1.5">
+          ) : typing ? (
+            <label className="flex animate-reveal flex-col gap-1.5">
               <span className="text-body-m font-semibold text-text-primary">
                 Your figure: {draft.hint}
               </span>
@@ -220,10 +268,21 @@ export function LineResult({
                 onChange={(e) => setTyped(e.target.value)}
                 maxLength={40}
                 autoFocus
-                placeholder={draft.hint}
+                placeholder={draft.suggestion ?? draft.hint}
                 className={cn(field, 'h-control-md px-3')}
               />
             </label>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setTyping(true);
+                setTyped(figure);
+              }}
+              className={cn(buttonClass({ variant: 'secondary', size: 'md' }), 'self-start')}
+            >
+              Change the figure
+            </button>
           )}
         </div>
       )}
@@ -237,18 +296,22 @@ export function LineResult({
         {counts && <Check aria-hidden className="size-4" />}
         {counts
           ? 'Counts as a measured result'
-          : 'Only the real number: a count, a %, time or money saved. Interviewers may ask how you measured it.'}
+          : own !== null && /\d/.test(own) && own.trim() !== bullet.text.trim()
+            ? 'That number doesn’t say what it measures yet. Add a unit or what it counts: 10%, 100 users, 2 hours.'
+            : 'Only the real number: a count, a %, time or money saved. Interviewers may ask how you measured it.'}
       </p>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <button
-          type="button"
-          disabled={!counts}
-          onClick={save}
-          className={buttonClass({ size: 'md' })}
-        >
-          Use this line
-        </button>
+        {(!why || own !== null) && (
+          <button
+            type="button"
+            disabled={!counts}
+            onClick={save}
+            className={buttonClass({ size: 'md' })}
+          >
+            Use this line
+          </button>
+        )}
         {saved !== undefined && (
           <button
             type="button"

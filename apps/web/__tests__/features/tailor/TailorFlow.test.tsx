@@ -167,7 +167,7 @@ describe('Tailor flow (734:2, 734:679)', () => {
     expect(within(enhance).getByText('Step 2 of 3')).toBeInTheDocument();
     expect(within(enhance).getByText('Product Designer Resume (base)')).toBeInTheDocument();
     expect(
-      within(enhance).getByRole('img', { name: 'ATS score: 6.3 out of 10' }),
+      within(enhance).getByRole('img', { name: 'ATS score: 3.4 out of 10' }),
     ).toBeInTheDocument();
     expect(within(enhance).getByRole('button', { name: 'Change' })).toBeInTheDocument();
     // Every way to raise the score is a category of one rail (owner, 2026-11-14).
