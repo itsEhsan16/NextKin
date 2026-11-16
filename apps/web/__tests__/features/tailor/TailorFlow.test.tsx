@@ -162,9 +162,12 @@ describe('Tailor flow (734:2, 734:679)', () => {
     const start = jest.spyOn(repos.generations, 'start');
     renderWithQuery(<RoutedTailor target={{ kind: 'job', id: 'job_google' }} resumeId="res_pd" />);
 
-    // Step 2 of 3 (owner's mockup, 2026-11-11): the job → the resume, the keywords, the score.
+    // The keywords step (owner's mockup, 2026-11-11): the job → the resume, the keywords, the score.
+    // Since 2026-11-17: no step line, no "take everything" card, no "where your points go" link.
     const enhance = await screen.findByRole('region', { name: 'Choose keywords to add' }, wait);
-    expect(within(enhance).getByText('Step 2 of 3')).toBeInTheDocument();
+    expect(within(enhance).queryByText('Step 2 of 3')).toBeNull();
+    expect(within(enhance).queryByText('Take everything the AI suggests')).toBeNull();
+    expect(within(enhance).queryByRole('button', { name: 'See where your points go' })).toBeNull();
     expect(within(enhance).getByText('Product Designer Resume (base)')).toBeInTheDocument();
     expect(
       within(enhance).getByRole('img', { name: 'ATS score: 3.4 out of 10' }),
@@ -185,12 +188,6 @@ describe('Tailor flow (734:2, 734:679)', () => {
     await user.click(await findKeyword(user, 'Figma'));
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
     expect(screen.getByRole('button', { name: /Add 1 keyword & continue/ })).toBeInTheDocument();
-
-    // Where the points go opens in a dialog from the score card.
-    await user.click(screen.getByRole('button', { name: 'See where your points go' }));
-    const points = screen.getByRole('dialog', { name: 'Where your points go' });
-    expect(within(points).getByRole('list', { name: 'Your score by part' })).toBeInTheDocument();
-    await user.keyboard('{Escape}');
 
     await user.click(screen.getByRole('button', { name: /Add 1 keyword & continue/ }));
     await waitFor(

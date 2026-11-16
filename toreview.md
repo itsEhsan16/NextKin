@@ -17637,3 +17637,18 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - web create-flow Jest, 18 tests in 5 suites, pass;
   - lint and typecheck are clean.
 - **Not seen in a browser:** the preview tool won't run a server outside this session's folder, and starting one in a terminal was refused.
+
+## §214 — "Choose keywords to add", trimmed and the score moved up (owner, 2026-11-17)
+- **Removed:**
+  - the "Take everything the AI suggests" card (`AcceptAll`, deleted with its test; `choices.acceptAll` stays in `useTailorRun`, now unused by the page);
+  - "Step 2 of 3";
+  - the lede;
+  - the keyword-kind chips (`KeywordRail`, deleted). The table now lists every kind at once.
+  - "See where your points go" and its dialog (`PointsBar`, deleted).
+- **Moved:** the title now heads the left column (no `StepHeading`), so the right column opens at the very top with ATS Match Score, then "What the AI will change". The region is still labelled "Choose keywords to add".
+- **The space under the footer:** not reproduced. On the local web (sample data, "Lead UX Designer · Google") at 1600 × 900, the page ends 32 px under the footer bar in every category and keyword tab. The sidebar is fixed, so it adds no height. The owner's case (a pasted JD, "Other 22") may differ; **ask the owner for the window size and what was open.** The removals above take about 300 px off the step either way.
+- **Verified:**
+  - web tailor Jest: 67 tests in 11 suites pass; `TailorFlow` and `KeywordPanel` tests were updated to the new page;
+  - lint and typecheck are clean.
+- **Not seen in a browser:** this branch hasn't run in a browser; the measurements above were on the main checkout's dev server.
+- **Watch:** branch `fix/keywords-score-results` (§212, unmerged) also edits the tailor flow; expect conflicts when both merge.

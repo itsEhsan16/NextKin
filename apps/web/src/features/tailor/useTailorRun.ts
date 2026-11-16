@@ -77,7 +77,7 @@ export function useTailorChoices() {
       index: number,
       choice: { action: 'remove' | 'replace'; text?: string } | null,
     ) => setChoices((c) => setHeaderChoice(c, index, choice)),
-    /** "Accept all suggestions" (toreview §211): every keyword, every question, each given line. */
+    /** Every keyword, every question, each given line (toreview §211; its button left the page 2026-11-17). */
     acceptAll: (comparison: TailorComparison, extras: Parameters<typeof acceptAll>[2]) =>
       setChoices((c) => acceptAll(c, comparison, extras)),
     /** A new resume picked: its keywords differ, so the taps start again. */
