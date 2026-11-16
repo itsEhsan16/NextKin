@@ -17,8 +17,11 @@ import type { Prices, Routing } from './routing';
 // Version 6 (toreview §159): it also lists the posting's themes; a long posting reaches ~7.5k: 12000.
 // Version 7 (toreview §170): the review of a whole tailored resume, on the generation tier.
 // Version 8 (toreview §206.3): "did you use this here?", on the fast tier; code checks every answer.
+// Version 9 (toreview §212.2): "Add the result" answers with up to three rewrites of the bullet
+// since its prompt's v3, not one; 300 tokens cut a long bullet's answer off mid-way and the
+// draft failed. 1200 out, and room in for the longer prompt.
 export const ROUTING_DEFAULT: Routing = {
-  version: 8,
+  version: 9,
   stages: {
     default: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
@@ -63,8 +66,8 @@ export const ROUTING_DEFAULT: Routing = {
     ],
     // "Add the result" drafts (toreview §129): one bullet in, one bullet out; code checks it.
     figure_draft: [
-      { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 300, inputBudgetTokens: 1000, temperature: 0.2 },
-      { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 300, inputBudgetTokens: 1000, temperature: 0.2 },
+      { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 1200, inputBudgetTokens: 3000, temperature: 0.2 },
+      { provider: 'bedrock', model: 'us.anthropic.claude-haiku-5-5', maxTokens: 1200, inputBudgetTokens: 3000, temperature: 0.2 },
     ],
     // "Did you use this here?" (toreview §206.3): keywords and a resume's lines in, triples out.
     keyword_questions: [
