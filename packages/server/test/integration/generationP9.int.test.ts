@@ -134,7 +134,7 @@ describe('the resume pipeline (P9-02 to P9-04)', () => {
     const result = await generationResult(db, { userId, role: 'user' }, run.generationId);
     expect(result.content.kind).toBe('resume');
     expect(result.resume.atsScore).toBe(result.score?.total);
-    expect(result.score?.report?.provenance.rubric).toBe('rubric-3');
+    expect(result.score?.report?.provenance.rubric).toBe('rubric-4');
   });
 
   it('repairs fabricated claims with a bounded revision', async () => {

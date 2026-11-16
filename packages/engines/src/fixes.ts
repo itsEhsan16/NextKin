@@ -71,7 +71,7 @@ function withSkill(doc: ScoringDocument, skill: string, roleId: string | null): 
 function withQuantifiedBullet(doc: ScoringDocument, roleId: string, index: number): ScoringDocument {
   return {
     ...doc,
-    roles: doc.roles.map((r) => (r.id === roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === index ? `${b} (1)` : b)) } : r)),
+    roles: doc.roles.map((r) => (r.id === roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === index ? `${b} (10%)` : b)) } : r)),
   };
 }
 

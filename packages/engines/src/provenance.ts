@@ -20,7 +20,10 @@ import { deepFreeze, fingerprint } from './canonical';
 // an unknown phrase meets its other word forms. Reports stamped 1.0.0 say their method changed.
 // 1.2.0 (toreview §211): rubric-3, the coverage rubric. A keyword the printed resume names earns
 // full credit; measured results are counted on project lines too, against a target.
-export const ENGINE_VERSION = '1.2.0';
+// 1.3.0 (toreview §212): rubric-4, the checker rubric. The keyword part also reads the job's
+// exact wording, its soft skills on their own, how often its most-repeated terms appear and
+// whether the job title is on the page. A measured result needs a unit or a counted thing.
+export const ENGINE_VERSION = '1.3.0';
 
 export type ComponentKey = 'keywords' | 'timeline' | 'sections' | 'formatting' | 'achievements';
 
@@ -34,7 +37,16 @@ export interface RubricVersion {
   /** How much a required requirement counts against a preferred one (§7.8). */
   requirementWeight: { required: number; preferred: number };
   /** D-14: credit by evidence tier, and for a skill shown for fewer years than asked. */
-  credit: { demonstrated: Bps; listed: Bps; unbacked: Bps; yearsShort: Bps };
+  credit: { demonstrated: Bps; listed: Bps; unbacked: Bps; yearsShort: Bps; otherWording?: Bps };
+  /**
+   * What the keyword part is made of (rubric-4 on), as relative weights: the job's hard keywords,
+   * its soft skills, its most-repeated terms said often enough, and its title on the page. A part
+   * the job gives nothing to measure (no soft skill, no repeated term, no title) is left out and
+   * the others share its weight. Absent on earlier rubrics: one coverage figure.
+   */
+  keywordParts?: { hard: number; soft: number; repetition: number; title: number };
+  /** A term the job says `minSaid` times or more is full marks at `full` mentions on the resume, half at one. */
+  repetition?: { minSaid: number; full: number };
   sections: { summaryMinWords: number; skillsMin: number };
   /** A run of this many words copied from the JD earns nothing (G16). */
   pastedMinWords: number;
@@ -105,11 +117,39 @@ const RUBRIC_3: RubricVersion = {
     'project lines count beside role lines. Superseded D-14 (owner, D-25).',
 };
 
+/**
+ * The checker rubric (owner, 2026-11-17; toreview §212). rubric-3 read 9.9 where an outside
+ * checker read 80% on the same page: half the score was near-automatic for one of our templates,
+ * and the title, the job's exact wording and how often it repeats a term were not measured. Now
+ * the keyword part is three quarters of the score and is read the way a checker reads it.
+ */
+const RUBRIC_4: RubricVersion = {
+  ...RUBRIC_3,
+  id: 'rubric-4',
+  publishedOn: '2026-11-17',
+  components: [
+    { key: 'keywords', weightBps: 7500 },
+    { key: 'timeline', weightBps: 300 },
+    { key: 'sections', weightBps: 1000 },
+    { key: 'formatting', weightBps: 200 },
+    { key: 'achievements', weightBps: 1000 },
+  ],
+  credit: { demonstrated: 10_000, listed: 10_000, unbacked: 0, yearsShort: 10_000, otherWording: 5_000 },
+  keywordParts: { hard: 45, soft: 10, repetition: 10, title: 10 },
+  repetition: { minSaid: 3, full: 2 },
+  rationale:
+    'Keywords 75 (hard keywords 45, soft skills 10, repeated terms 10, job title 10), measured ' +
+    'results 10, sections 10, timeline 3, formatting 2. A keyword written in other words than ' +
+    'the job uses earns half until it is written the job’s way. A term the job says three times ' +
+    'or more earns full marks at two mentions, half at one. The title is read in the headline ' +
+    'and summary. Owner, 2026-11-17: the score should say what an outside checker says.',
+};
+
 /** Every published rubric version. Add new versions; never edit one. */
-export const RUBRICS: Readonly<Record<string, RubricVersion>> = deepFreeze({ [RUBRIC_1.id]: RUBRIC_1, [RUBRIC_2.id]: RUBRIC_2, [RUBRIC_3.id]: RUBRIC_3 });
+export const RUBRICS: Readonly<Record<string, RubricVersion>> = deepFreeze({ [RUBRIC_1.id]: RUBRIC_1, [RUBRIC_2.id]: RUBRIC_2, [RUBRIC_3.id]: RUBRIC_3, [RUBRIC_4.id]: RUBRIC_4 });
 
 /** The version new runs use. */
-export const CURRENT_RUBRIC_ID = RUBRIC_3.id;
+export const CURRENT_RUBRIC_ID = RUBRIC_4.id;
 
 export function rubricById(id: string = CURRENT_RUBRIC_ID): RubricVersion {
   const rubric = RUBRICS[id];

@@ -47,7 +47,7 @@ describe('shared ATS reports (P11-10)', () => {
     expect(report.targetTitle).toBe('Senior Backend Engineer');
     expect(report.targetCompany).toBeNull(); // the employer only when the user chooses to show it
     expect(report.requirements.length).toBeGreaterThan(0);
-    expect(report.method.rubric).toBe('rubric-3');
+    expect(report.method.rubric).toBe('rubric-4');
     // No contact detail, no employer of the user's, no bullet text.
     expect(raw).not.toContain(email);
     for (const text of ['Lumen Pay', 'Cartwheel', 'settlement service', '2 million transactions']) expect(raw).not.toContain(text);

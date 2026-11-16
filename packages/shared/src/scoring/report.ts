@@ -206,7 +206,7 @@ export function toAtsReport(result: ScoreResult, doc: ScoringDocument, previous?
   };
 }
 
-export type ScoringJd = JdLists & { completeness: 'full' | 'snippet' };
+export type ScoringJd = JdLists & { completeness: 'full' | 'snippet'; /** The job's title, when its text names one. */ title?: string };
 
 export interface DocumentScore {
   report: AtsReport;
@@ -237,7 +237,7 @@ export function scoreDocument(args: {
     asOf,
     kb: KB,
     taxonomy: TAXONOMY,
-    ...(jd ? { jd: { requirements: requirementsOf(jd), text: jd.rawText, completeness: jd.completeness } } : {}),
+    ...(jd ? { jd: { requirements: requirementsOf(jd), text: jd.rawText, completeness: jd.completeness, ...(jd.title ? { title: jd.title } : {}) } } : {}),
     ...(profile ? { profile } : {}),
   };
   const result = score(input);

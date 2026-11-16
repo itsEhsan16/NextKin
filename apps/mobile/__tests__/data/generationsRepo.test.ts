@@ -150,7 +150,7 @@ describe('GenerationsRepo (mock)', () => {
       await jest.advanceTimersByTimeAsync(GENERATION_TICK_MS * 5);
 
       const score = store.state.atsScores[GENERATING_RESUME_ID];
-      expect(score?.report?.provenance.rubric).toBe('rubric-3');
+      expect(score?.report?.provenance.rubric).toBe('rubric-4');
       expect(store.state.scoringJds[GENERATING_RESUME_ID]).toBeDefined();
       const resume = store.state.resumes.find((item) => item.id === GENERATING_RESUME_ID);
       expect(resume?.status).toBe('ready');

@@ -45,6 +45,10 @@ export interface StageJd {
   location: string | null;
   requiredSkills: string[];
   preferredSkills: string[];
+  /** The soft skills among `preferredSkills`, so the score can read them apart (rubric-4). */
+  softSkills?: string[];
+  /** Whether the posting names its title (else `title` is a stand-in and is not scored). */
+  titled?: boolean;
   tools: string[];
   responsibilities: string[];
   rawText: string;

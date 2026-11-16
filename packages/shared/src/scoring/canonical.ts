@@ -57,7 +57,8 @@ export function scoringDocumentOf(json: CanonicalResumeJson, contact: ContactPre
         ...(start ? { start } : {}),
         end: r.end === null ? null : (date(r.end) ?? undefined),
         bullets: r.bullets.map((b) => b.text),
-        skills: r.skills,
+        // A role's skill tags are not passed: no template prints them, and the score counts only
+        // what the printed page says (toreview §212). The role's own lines are read instead.
       };
     }),
     education: json.education.map((e) => ({ institution: e.institution, degree: e.degree })),

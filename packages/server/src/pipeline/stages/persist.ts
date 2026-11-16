@@ -47,7 +47,19 @@ export const scoreAgainst = (args: { document: CanonicalResumeJson; facts: Profi
     ...(args.path ? { path: args.path } : {}),
   });
 
-export const scoringJdOfStage = (jd: StageJd): ScoringJd => ({ requiredSkills: jd.requiredSkills, preferredSkills: jd.preferredSkills, tools: jd.tools, rawText: jd.rawText, completeness: jd.completeness, ...(jd.stated ? { stated: jd.stated } : {}) });
+export const scoringJdOfStage = (jd: StageJd): ScoringJd => {
+  const soft = new Set(jd.softSkills ?? []);
+  return {
+    requiredSkills: jd.requiredSkills,
+    preferredSkills: jd.preferredSkills.filter((s) => !soft.has(s)),
+    ...(soft.size > 0 ? { softSkills: [...soft] } : {}),
+    tools: jd.tools,
+    rawText: jd.rawText,
+    completeness: jd.completeness,
+    ...(jd.titled ? { title: jd.title } : {}),
+    ...(jd.stated ? { stated: jd.stated } : {}),
+  };
+};
 
 /** The written document: the review's when the run has that stage (toreview §170), else the validation's. */
 const finalOf = (outputs: Record<string, unknown>) => (outputs.review ?? outputs.validate) as ValidationOutput;

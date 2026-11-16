@@ -5,7 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { canonicalJson } from '../src/canonical';
 import { TAXONOMY } from '../src/datasets/taxonomy';
 import { isQuantified } from '../src/quantified';
-import { score } from '../src/rubric';
+import type { ScoringDocument } from '../src/document';
+import { requirementsFromJd } from '../src/requirements';
+import { score, titleWords } from '../src/rubric';
+import { planToTarget } from '../src/targetPlan';
 import { approvedKb, backendInput, BACKEND_RESUME } from './fixtures/documents';
 
 describe('the rubric and score (P8-07)', () => {
@@ -80,7 +83,7 @@ describe('the rubric and score (P8-07)', () => {
   });
 
   it('carries the provenance stamp', () => {
-    expect(score(backendInput()).stamp).toMatchObject({ engine: '1.2.0', rubric: 'rubric-3', taxonomy: { version: 'taxonomy-0.1.0' }, kb: { version: 'kb-0.1.0' }, asOf: '2026-10' });
+    expect(score(backendInput()).stamp).toMatchObject({ engine: '1.3.0', rubric: 'rubric-4', taxonomy: { version: 'taxonomy-0.1.0' }, kb: { version: 'kb-0.1.0' }, asOf: '2026-10' });
   });
 
   it('no source file, field name or string claims a named third-party ATS', () => {
@@ -89,6 +92,54 @@ describe('the rubric and score (P8-07)', () => {
     const files = readdirSync(dir, { recursive: true }).map(String).filter((f) => f.endsWith('.ts'));
     for (const file of files) expect(readFileSync(join(dir, file), 'utf8'), file).not.toMatch(vendors);
     expect(canonicalJson(score(backendInput()))).not.toMatch(vendors);
+  });
+});
+
+describe('the keyword part under the checker rubric (rubric-4, toreview §212)', () => {
+  const text = 'Product Manager. Product management is the job: product management of the roadmap, product management with design. Needs SQL, PostgreSQL and leadership.';
+  const jd = (title?: string) => ({
+    requirements: requirementsFromJd({ requiredSkills: ['product management', 'SQL', 'PostgreSQL'], preferredSkills: [], softSkills: ['leadership'], rawText: text }, TAXONOMY),
+    text,
+    completeness: 'full' as const,
+    ...(title ? { title } : {}),
+  });
+  const doc = (over: Partial<ScoringDocument>): ScoringDocument => ({ ...BACKEND_RESUME, headline: undefined, summary: BACKEND_RESUME.summary, skills: ['SQL', 'PostgreSQL', 'product management', 'leadership'], roles: [], projects: [], ...over });
+  const keywords = (document: ScoringDocument, title?: string) => score(backendInput({ document, profile: undefined, jd: jd(title) })).components.find((c) => c.key === 'keywords')!;
+
+  it('soft skills are scored on their own', () => {
+    const without = keywords(doc({ skills: ['SQL', 'PostgreSQL', 'product management'] }));
+    expect(without.basis).toMatchObject({ hardBps: 10_000, softBps: 0 });
+    expect(keywords(doc({})).basis).toMatchObject({ hardBps: 10_000, softBps: 10_000 });
+  });
+
+  it('a term the job says three times is half at one mention, full at two', () => {
+    expect(keywords(doc({})).basis).toMatchObject({ repeatedTerms: 1, repeatedFull: 0, repeatedHalf: 1 });
+    const twice = keywords(doc({ projects: [{ name: 'Roadmap', bullets: ['Ran product management for the checkout roadmap'] }] }));
+    expect(twice.basis).toMatchObject({ repeatedTerms: 1, repeatedFull: 1, repeatedHalf: 0 });
+    expect(twice.scoreBps).toBe(10_000);
+  });
+
+  it('the job title is read in the headline and summary, brackets left out', () => {
+    expect(titleWords('AI-Native Product Manager – Graduate Trainee (2026 Passouts)')).toEqual(['ai', 'nativ', 'product', 'manager', 'graduat', 'traine']);
+    expect(keywords(doc({}), 'Product Manager (2026)').basis).toMatchObject({ titleWords: 2, titleFound: 0 });
+    expect(keywords(doc({ headline: 'Product Manager' }), 'Product Manager (2026)').basis).toMatchObject({ titleWords: 2, titleFound: 2 });
+  });
+
+  it('a keyword written another way than the job writes it earns half until it is mirrored', () => {
+    const entry = (skills: string[]) => score(backendInput({ document: doc({ skills }), profile: undefined, jd: jd() })).ledger.find((e) => e.skillId === 'postgresql')!;
+    expect(entry(['SQL', 'Postgres'])).toMatchObject({ status: 'partial', creditBps: 5_000, wording: { jd: 'PostgreSQL', resume: 'Postgres' } });
+    expect(entry(['SQL', 'Postgres', 'PostgreSQL'])).toMatchObject({ status: 'met', creditBps: 10_000 });
+    const old = score(backendInput({ document: doc({ skills: ['SQL', 'Postgres'] }), profile: undefined, jd: jd(), rubricId: 'rubric-3' })).ledger.find((e) => e.skillId === 'postgresql')!;
+    expect(old).toMatchObject({ status: 'met', creditBps: 10_000 });
+  });
+
+  it('every suggestion taken reaches the top', () => {
+    const path = planToTarget(backendInput({ document: doc({ skills: ['SQL', 'Postgres'] }), profile: undefined, jd: jd('Product Manager') }), { targetBps: 10_000 })!;
+    expect(path.steps.map((s) => s.action.type)).toEqual(expect.arrayContaining(['confirm_skill', 'match_title', 'mirror_wording']));
+    // What is left is not a keyword: the fixture has no dated role and no line to carry a result.
+    expect(path.steps.at(-1)!.totalAfterBps).toBe(path.ceilingBps);
+    // Keywords 75 of 75: only the 10 for results and the dated-role check's share stay open.
+    expect(path.ceilingBps).toBe(9_000);
   });
 });
 
@@ -127,6 +178,11 @@ describe('the quantified-outcome detector', () => {
     'Reduced p99 latency by 120 ms',
     'Built the component kit, adopted by three squads',
     'Mentored dozens of new hires',
+    'Cut page weight, improving load time by 10%',
+    'Grew sign-ups 3x in a quarter',
+    'Onboarded 100 users in the first month',
+    'Ran a 5-day design sprint',
+    'Led a team of 6',
   ];
   const never = [
     'Migrated services to Python 3',
@@ -140,6 +196,10 @@ describe('the quantified-outcome detector', () => {
     'Seit 03.2020 im Team',
     'Ran K8s clusters',
     'One of the first designers on the team',
+    // A number that measures nothing (toreview §212).
+    'Scoped around performance, SEO, and accessibility, improving 10.',
+    'Secured through role-based access control, improving role based access by 100.',
+    'Shipped 12 and moved on',
   ];
   it.each(counts)('counts "%s"', (bullet) => expect(isQuantified(bullet, TAXONOMY)).toBe(true));
   it.each(never)('never counts "%s"', (bullet) => expect(isQuantified(bullet, TAXONOMY)).toBe(false));

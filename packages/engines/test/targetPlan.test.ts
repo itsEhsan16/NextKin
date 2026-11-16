@@ -49,10 +49,13 @@ function rescoreAll(input: ScoreInput, steps: readonly PathStep[]): number {
       document = addSkill(document, a.skillName, a.roleId);
       profile = profile && addSkill(profile, a.skillName, a.roleId);
     } else if (a.type === 'add_figure') {
-      document = { ...document, roles: document.roles.map((r) => (r.id === a.roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === a.bulletIndex ? `${b} (1)` : b)) } : r)) };
+      document = { ...document, roles: document.roles.map((r) => (r.id === a.roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === a.bulletIndex ? `${b} (10%)` : b)) } : r)) };
     } else if (a.type === 'pass_section') (passedSections as Set<string>).add(a.check);
     else if (a.type === 'pass_format') (passedFormat as Set<string>).add(a.check);
-    else removedClaims.add(`${a.roleId}\u0000${a.skillId}`);
+    else if (a.type === 'resolve_timeline') removedClaims.add(`${a.roleId}\u0000${a.skillId}`);
+    else if (a.type === 'mirror_wording') document = addSkill(document, a.jd, null);
+    else if (a.type === 'repeat_keyword') document = { ...document, summary: [document.summary ?? '', a.skillName].filter(Boolean).join('. ') };
+    else document = { ...document, headline: a.title };
   }
   return scoreCore({ ...input, document, ...(profile ? { profile } : {}) }, { passedSections, passedFormat, removedClaims }).totalBps!;
 }
@@ -130,7 +133,7 @@ describe('the path to a target (§129)', () => {
   });
 
   it('a resume already past the target needs no step', () => {
-    const path = planToTarget(backendInput(), { targetBps: TARGET })!;
+    const path = planToTarget(backendInput({ rubricId: 'rubric-3' }), { targetBps: TARGET })!;
     expect(path.startBps).toBeGreaterThanOrEqual(TARGET);
     expect(path.stepsToTarget).toBe(0);
   });
@@ -143,7 +146,8 @@ describe('the path to a target (§129)', () => {
 
   it('a timeline flag is the user’s to resolve', () => {
     const doc: ScoringDocument = { ...THIN, roles: [...THIN.roles, { id: 'r_2010', title: 'Dev', company: 'Old', start: { year: 2009, month: 1 }, end: { year: 2012, month: 1 }, skills: ['Kubernetes'], bullets: ['Shipped 3 releases'] }] };
-    const path = planToTarget(thinInput({ document: doc, profile: doc, kb: approvedKb() }), { targetBps: TARGET })!;
+    // rubric-3: under rubric-4 the timeline is 3 points, and taking the claim off costs its keyword more.
+    const path = planToTarget(thinInput({ document: doc, profile: doc, kb: approvedKb(), rubricId: 'rubric-3' }), { targetBps: TARGET })!;
     expect(path.steps.find((s) => s.id === 'timeline:r_2010:kubernetes')).toMatchObject({ who: 'you' });
   });
 

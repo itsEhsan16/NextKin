@@ -53,12 +53,18 @@ export interface Requirement {
   eligibility?: EligibilityKind;
   /** Where the JD says it (offsets into the JD text), when found. */
   span?: Range;
+  /** A trait or way of working ("leadership"), scored on its own from rubric-4. */
+  soft?: boolean;
+  /** How many times the JD's text says it, when the text is known. */
+  timesSaid?: number;
 }
 
 export interface JdLists {
   requiredSkills: readonly string[];
   preferredSkills: readonly string[];
   tools?: readonly string[];
+  /** The job's soft skills: preferred keywords, marked so a rubric can score them apart. */
+  softSkills?: readonly string[];
   rawText?: string;
   /** The structured reading's facts. Absent for a posting read before it, or a listing snippet. */
   stated?: JdStated;
@@ -130,7 +136,7 @@ export function requirementsFromJd(jd: JdLists, taxonomy: Taxonomy): Requirement
   const stated = new Map<string, number>();
   for (const [name, years] of Object.entries(jd.stated?.skillYears ?? {})) stated.set(resolveSkill(taxonomy, name).id, years);
   const out = new Map<string, Requirement>();
-  const add = (written: string, importance: Importance) => {
+  const add = (written: string, importance: Importance, soft = false) => {
     const text = written.trim();
     if (!text) return;
     const ownYears = YEARS.exec(text);
@@ -144,7 +150,8 @@ export function requirementsFromJd(jd: JdLists, taxonomy: Taxonomy): Requirement
     // A reading's lines are the whole answer where there is one: the looser sentence search would
     // hand "5 years in logistics, some Kafka" to Kafka as well.
     const minYears = ownYears ? Number(ownYears[1]) : jd.stated?.skillYears ? stated.get(skill.id) : skill.known ? asked.get(skill.id) : undefined;
-    const first = raw ? findSkill(taxonomy, raw, skill)[0] : undefined;
+    const said = raw ? findSkill(taxonomy, raw, skill) : [];
+    const first = said[0];
     out.set(skill.id, {
       id: `req:${skill.id}`,
       kind: 'skill',
@@ -153,11 +160,14 @@ export function requirementsFromJd(jd: JdLists, taxonomy: Taxonomy): Requirement
       skill,
       ...(minYears !== undefined ? { minYears } : {}),
       ...(first ? { span: { start: first.start, end: first.end } } : {}),
+      ...(soft ? { soft: true } : {}),
+      ...(said.length > 0 ? { timesSaid: said.length } : {}),
     });
   };
   jd.requiredSkills.forEach((s) => add(s, 'required'));
   jd.preferredSkills.forEach((s) => add(s, 'preferred'));
   (jd.tools ?? []).forEach((s) => add(s, 'preferred'));
+  (jd.softSkills ?? []).forEach((s) => add(s, 'preferred', true));
   // With a structured reading its conditions are the list; the phrase search is the fallback.
   return [...out.values(), ...(jd.stated?.eligibility ? eligibilityFrom(jd.stated.eligibility) : eligibilityIn(raw))];
 }
@@ -175,6 +185,10 @@ export interface Evidence {
   listed: readonly string[];
   /** How the document wrote each skill, for mirroring the JD's wording. */
   surfaces?: Readonly<Record<string, string>>;
+  /** Every way the document wrote each skill, as phrase keys. */
+  wordings?: Readonly<Record<string, readonly string[]>>;
+  /** How many times the document names each skill. */
+  mentions?: Readonly<Record<string, number>>;
 }
 
 export type EvidenceTier = 'demonstrated' | 'listed' | 'unbacked';
@@ -196,12 +210,20 @@ export interface LedgerEntry {
   /** Set when the resume names the skill differently from the JD. */
   wording?: { jd: string; resume: string };
   span?: Range;
+  soft?: boolean;
+  /** A term the job repeats: how often it says it, and how often the resume does. */
+  repeated?: { said: number; mentions: number };
 }
 
 export interface RequirementLedger {
   entries: LedgerEntry[];
   /** The keyword component and the JD match %: null when the JD names no skill. */
   matchBps: Bps | null;
+  /** Coverage of the hard keywords alone, and of the soft skills alone; null when there are none. */
+  hardBps: Bps | null;
+  softBps: Bps | null;
+  /** The job's repeated terms said often enough; null when it repeats none or the rubric does not ask. */
+  repetition: { bps: Bps; terms: number; full: number; half: number } | null;
   counts: {
     requiredMet: number;
     requiredPartial: number;
@@ -248,6 +270,8 @@ export function buildLedger(input: {
   const entries: LedgerEntry[] = [];
   let weighted = 0;
   let weights = 0;
+  const split = { hard: { weighted: 0, weights: 0 }, soft: { weighted: 0, weights: 0 } };
+  const repeat = { terms: 0, full: 0, half: 0 };
   const counts = { requiredMet: 0, requiredPartial: 0, requiredTotal: 0, preferredMet: 0, preferredPartial: 0, preferredTotal: 0 };
 
   for (const req of requirements) {
@@ -275,20 +299,35 @@ export function buildLedger(input: {
     // keyword is met: the row must not read as a part credit the score no longer applies.
     if (status === 'partial' && creditBps >= rubric.credit.demonstrated) status = 'met';
 
+    const resumeWording = evidence.surfaces?.[skillId];
+    // The job's own words for it, without a years ask ("5+ years of Python" is "Python").
+    const jdWording = req.skill.known ? req.text.replace(YEARS, '').replace(/^\s*(?:of|in|with)\s+/i, '').trim() || req.text : req.skill.name;
+    const written = evidence.wordings?.[skillId] ?? (resumeWording ? [phraseKey(resumeWording)] : []);
+    const otherWords = status !== 'gap' && written.length > 0 && !written.includes(phraseKey(jdWording));
+    // A checker looks for the job's own spelling (rubric-4): "Postgres" for "PostgreSQL" is half.
+    if (otherWords && req.skill.known && rubric.credit.otherWording !== undefined && creditBps > rubric.credit.otherWording) {
+      [status, creditBps] = ['partial', rubric.credit.otherWording];
+    }
+
     const weight = req.importance === 'required' ? rubric.requirementWeight.required : rubric.requirementWeight.preferred;
     weighted += weight * creditBps;
     weights += weight;
+    const part = req.soft ? split.soft : split.hard;
+    part.weighted += weight * creditBps;
+    part.weights += weight;
+    const mentions = evidence.mentions?.[skillId] ?? (status === 'gap' ? 0 : 1);
+    const repeated = rubric.repetition && (req.timesSaid ?? 0) >= rubric.repetition.minSaid ? { said: req.timesSaid!, mentions } : undefined;
+    if (repeated && rubric.repetition) {
+      repeat.terms += 1;
+      if (mentions >= rubric.repetition.full) repeat.full += 1;
+      else if (mentions > 0) repeat.half += 1;
+    }
     const prefix = req.importance === 'required' ? 'required' : 'preferred';
     counts[`${prefix}Total`] += 1;
     if (status === 'met') counts[`${prefix}Met`] += 1;
     if (status === 'partial') counts[`${prefix}Partial`] += 1;
 
-    const resumeWording = evidence.surfaces?.[skillId];
-    const jdWording = req.skill.known ? req.text : req.skill.name;
-    const wording =
-      status !== 'gap' && resumeWording && phraseKey(resumeWording) !== phraseKey(jdWording)
-        ? { jd: jdWording, resume: resumeWording }
-        : undefined;
+    const wording = otherWords && resumeWording ? { jd: jdWording, resume: resumeWording } : undefined;
 
     entries.push({
       requirementId: req.id,
@@ -305,8 +344,18 @@ export function buildLedger(input: {
       roleIds: tier === 'demonstrated' ? doc.roleIds : [],
       ...(wording ? { wording } : {}),
       ...(req.span ? { span: req.span } : {}),
+      ...(req.soft ? { soft: true } : {}),
+      ...(repeated ? { repeated } : {}),
     });
   }
 
-  return { entries, matchBps: weights > 0 ? divRoundHalfEven(weighted, weights) : null, counts };
+  const bpsOf = (p: { weighted: number; weights: number }) => (p.weights > 0 ? divRoundHalfEven(p.weighted, p.weights) : null);
+  return {
+    entries,
+    matchBps: weights > 0 ? divRoundHalfEven(weighted, weights) : null,
+    hardBps: bpsOf(split.hard),
+    softBps: bpsOf(split.soft),
+    repetition: repeat.terms > 0 ? { bps: divRoundHalfEven((repeat.full * 2 + repeat.half) * 10_000, repeat.terms * 2), ...repeat } : null,
+    counts,
+  };
 }
