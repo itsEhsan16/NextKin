@@ -16,7 +16,7 @@ const PINNED: Record<string, string> = {
   'rubric-1': 'f1:71283963e2dd2d1e',
   'rubric-2': 'f1:b6446afd23c3b330',
   'rubric-3': 'f1:3957b537ca3a40d4',
-  'rubric-4': 'f1:3745ed0d04d7478c',
+  'rubric-4': 'f1:ec9d3686c1f07727',
 };
 
 describe('the versioned method (P8-01)', () => {

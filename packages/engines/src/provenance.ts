@@ -45,6 +45,11 @@ export interface RubricVersion {
    * the others share its weight. Absent on earlier rubrics: one coverage figure.
    */
   keywordParts?: { hard: number; soft: number; repetition: number; title: number };
+  /**
+   * Keyword evidence is only what the page prints (rubric-4 on): a role's skill tags, which no
+   * template prints, are still checked against the role's dates but earn no keyword credit.
+   */
+  printedOnly?: boolean;
   /** A term the job says `minSaid` times or more is full marks at `full` mentions on the resume, half at one. */
   repetition?: { minSaid: number; full: number };
   sections: { summaryMinWords: number; skillsMin: number };
@@ -137,12 +142,14 @@ const RUBRIC_4: RubricVersion = {
   credit: { demonstrated: 10_000, listed: 10_000, unbacked: 0, yearsShort: 10_000, otherWording: 5_000 },
   keywordParts: { hard: 45, soft: 10, repetition: 10, title: 10 },
   repetition: { minSaid: 3, full: 2 },
+  printedOnly: true,
   rationale:
     'Keywords 75 (hard keywords 45, soft skills 10, repeated terms 10, job title 10), measured ' +
     'results 10, sections 10, timeline 3, formatting 2. A keyword written in other words than ' +
     'the job uses earns half until it is written the job’s way. A term the job says three times ' +
     'or more earns full marks at two mentions, half at one. The title is read in the headline ' +
-    'and summary. Owner, 2026-11-17: the score should say what an outside checker says.',
+    'and summary. Role skill tags, which no template prints, are not keyword evidence. Owner, ' +
+    '2026-11-17: the score should say what an outside checker says.',
 };
 
 /** Every published rubric version. Add new versions; never edit one. */

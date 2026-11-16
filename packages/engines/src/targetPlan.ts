@@ -98,8 +98,9 @@ function apply(state: State, action: PathAction): State {
     case 'confirm_skill': {
       // The user's "yes, I used it there" is a new fact: it backs the document and the yardstick.
       const placed = withRoleSkill(input.document, action.skillName, action.roleId);
-      // A term the job repeats is said again where there is no role line to carry it: the summary.
-      const again = action.timesToSay && action.roleId === null ? Array.from({ length: action.timesToSay - 1 }, () => action.skillName) : [];
+      // A term the job repeats is said again in a sentence. Measured as said in the summary; the
+      // writer may place it in a line of the role instead.
+      const again = action.timesToSay ? Array.from({ length: action.timesToSay - 1 }, () => action.skillName) : [];
       const document = again.length > 0 ? { ...placed, summary: [placed.summary ?? '', ...again].filter(Boolean).join('. ') } : placed;
       const profile = input.profile ? withRoleSkill(input.profile, action.skillName, input.profile.roles.some((r) => r.id === action.roleId) ? action.roleId : null) : undefined;
       return { input: { ...input, document, ...(profile ? { profile } : {}) }, assume };

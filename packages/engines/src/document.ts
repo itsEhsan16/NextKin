@@ -73,7 +73,7 @@ export function roleText(role: Pick<ScoringRole, 'title' | 'bullets'>): string {
 export function evidenceOf(
   document: ScoringDocument,
   taxonomy: Taxonomy,
-  options: { jdText?: string; minCopiedWords: number; removed?: ReadonlySet<string>; phrases?: Iterable<string> } = { minCopiedWords: 8 },
+  options: { jdText?: string; minCopiedWords: number; removed?: ReadonlySet<string>; phrases?: Iterable<string>; /** Leave out role skill tags: they are not on the printed page. */ printedOnly?: boolean } = { minCopiedWords: 8 },
 ): DocumentEvidence {
   const copied: CopiedText[] = [];
   const surfaces: Record<string, string> = {};
@@ -115,7 +115,7 @@ export function evidenceOf(
 
   const roles: EvidenceRole[] = document.roles.map((role) => {
     const ids = new Set<string>();
-    for (const written of role.skills ?? []) {
+    for (const written of options.printedOnly ? [] : (role.skills ?? [])) {
       const ref = resolveSkill(taxonomy, written);
       for (const id of new Set([ref.id, ...named(written)])) {
         say(id, written.trim());

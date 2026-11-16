@@ -17587,8 +17587,21 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **No live model run** of `jd.recall` v1 or `resume.generate` v10.
 - **The Zycus job was not re-run**: its text is not in the repo, so there is no golden case for
   it and the 80% was not reproduced. `eval:jd` now runs the second pass but was not run live.
-- **Integration tests and the browser were not run**: starting the stack reseeds the seeded
-  accounts, which needs the owner's word. Four integration tests were edited by hand to name
-  `rubric-4` and the draft's `reason`.
+- **Integration tests run** (owner's go-ahead, 2026-11-17): 1,619 pass, 26 fail on the first
+  run. Three were this work and are fixed (below). The other 23 are not: 17 need ClamAV or
+  stripe-mock, which were not started (`scan` and payments profiles), and 6 are the ones that
+  failed before §211 (authz matrix, libraryApi, libraryP10 x2, renders x2).
 - **Prompts need seeding** wherever this runs: `pnpm seed --reference-only`, never `pnpm seed`.
 - Mobile on a device.
+
+### §212.1 — What the integration run caught (2026-11-17)
+
+- **Role skill tags are still read by the timeline check.** Dropping them from the scoring
+  document stopped a Kubernetes claim on a too-early role being flagged. They are passed again;
+  rubric-4 carries `printedOnly`, so they are date-checked but earn no keyword credit.
+- **"Apply this fix" wrote only a tag.** `patchForFix` and `applySkillFix` put a backed skill on
+  the role as a tag, which no page prints. Both now also list it in the skills.
+- **A layout check may not move the total.** Formatting is 2 of 100, so one failed check of six
+  is a third of a point; `tailorCompareP14` now expects "not lower" where it expected "higher".
+- **An unbacked keyword earned repeated-term credit** (found by a mobile test): fixed.
+

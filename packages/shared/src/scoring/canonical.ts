@@ -57,8 +57,9 @@ export function scoringDocumentOf(json: CanonicalResumeJson, contact: ContactPre
         ...(start ? { start } : {}),
         end: r.end === null ? null : (date(r.end) ?? undefined),
         bullets: r.bullets.map((b) => b.text),
-        // A role's skill tags are not passed: no template prints them, and the score counts only
-        // what the printed page says (toreview §212). The role's own lines are read instead.
+        // The role's skill tags: the timeline check reads them as claims made at this role. No
+        // template prints them, so from rubric-4 they are not keyword evidence (toreview §212).
+        skills: r.skills,
       };
     }),
     education: json.education.map((e) => ({ institution: e.institution, degree: e.degree })),

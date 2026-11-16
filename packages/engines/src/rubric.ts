@@ -172,7 +172,7 @@ export function scoreCore(input: ScoreInput, assume: Assumptions = {}): Omit<Sco
 
   // The JD's phrases the taxonomy does not know are looked for in the text too (toreview §112).
   const phrases = (input.jd?.requirements ?? []).flatMap((r) => (r.skill && !r.skill.known ? [r.skill.id] : []));
-  const docEvidence = evidenceOf(doc, taxonomy, { jdText: input.jd?.text, minCopiedWords: rubric.pastedMinWords, removed, phrases });
+  const docEvidence = evidenceOf(doc, taxonomy, { jdText: input.jd?.text, minCopiedWords: rubric.pastedMinWords, removed, phrases, ...(rubric.printedOnly ? { printedOnly: true } : {}) });
   const profileEvidence = input.profile ? evidenceOf(input.profile, taxonomy, { minCopiedWords: rubric.pastedMinWords, phrases }).evidence : undefined;
 
   // Keywords: the requirement ledger.
