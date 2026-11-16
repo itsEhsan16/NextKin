@@ -141,6 +141,31 @@ describe('the keyword part under the checker rubric (rubric-4, toreview §212)',
     // Keywords 75 of 75: only the 10 for results and the dated-role check's share stay open.
     expect(path.ceilingBps).toBe(9_000);
   });
+
+  it('a repeated term said once is a step to say it again; with the AI allowed, the AI’s own', () => {
+    const input = backendInput({ document: doc({ headline: 'Product Manager' }), profile: undefined, jd: jd('Product Manager') });
+    const yours = planToTarget(input, { targetBps: 10_000 })!.steps.find((s) => s.action.type === 'repeat_keyword')!;
+    expect(yours).toMatchObject({ id: 'repeat:req:product-management', who: 'you', action: { said: 3, mentions: 1 } });
+    const ai = planToTarget(input, { targetBps: 10_000, aiCan: { repeat: true, wording: true, title: true } })!;
+    expect(ai.steps.find((s) => s.action.type === 'repeat_keyword')).toMatchObject({ who: 'ai' });
+    expect(ai.aiBps).toBe(ai.steps.filter((s) => s.who === 'ai').at(-1)!.totalAfterBps);
+  });
+
+  it('a missing repeated term, accepted where no role can carry it, is written twice', () => {
+    const input = backendInput({ document: doc({ skills: ['SQL', 'PostgreSQL', 'leadership'], headline: 'Product Manager' }), profile: undefined, jd: jd('Product Manager') });
+    const path = planToTarget(input, { targetBps: 10_000, aiCan: { wording: true, title: true } })!;
+    const step = path.steps.find((s) => s.id === 'skill:req:product-management')!;
+    expect(step.action).toMatchObject({ type: 'confirm_skill', roleId: null, timesToSay: 2 });
+    // Hard keywords and the repeated term are both full once it is taken: nothing is left to repeat.
+    expect(path.steps.some((s) => s.action.type === 'repeat_keyword')).toBe(false);
+  });
+
+  it('the AI mirrors a wording and sets the title only where the caller says it may', () => {
+    const input = backendInput({ document: doc({ skills: ['SQL', 'Postgres', 'product management', 'leadership'] }), profile: undefined, jd: jd('Product Manager') });
+    const who = (aiCan?: Parameters<typeof planToTarget>[1]['aiCan']) => Object.fromEntries(planToTarget(input, { targetBps: 10_000, ...(aiCan ? { aiCan } : {}) })!.steps.map((s) => [s.action.type, s.who]));
+    expect(who()).toMatchObject({ mirror_wording: 'you', match_title: 'you' });
+    expect(who({ wording: true, title: true })).toMatchObject({ mirror_wording: 'ai', match_title: 'ai' });
+  });
 });
 
 describe('results under the coverage rubric (rubric-3, D-25)', () => {
