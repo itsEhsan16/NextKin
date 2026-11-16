@@ -17624,3 +17624,16 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   stops generating there, `jd.recall` and `resume.generate` v10 are the first place to look.
 - Scores on the demo move to `rubric-4` as each resume is next measured; a job read before
   today is read again the next time its page is opened.
+
+## §213 — "Choose a job": both panels the same height, a designed empty state (owner, 2026-11-17)
+- **Layout:**
+  - On the job step (`create/jobFlow`), "Your saved jobs" and "Add a new job" now stand the same height.
+  - Both grid columns are flex columns, and each panel is `flex-1`, so the row's height (set by the taller panel, usually "Add a new job") is filled by both.
+- **Empty saved jobs:**
+  - The dashed box now fills the rest of its panel and centres: the clay binoculars (`JobSeekerBinocularsIllustration`, the web's existing empty-jobs art), "No saved jobs yet", "Bring one from anywhere, or save one from Jobs." and "Browse jobs →".
+  - No new art was generated.
+- **Branch:** made on `claude/web-saved-jobs-empty`, cut from `main` (1468657), because `claude/app-ui-ux-redesign-1a1793` is 50 commits behind and its merge with `main` conflicts in server and prompt code (§202 vs D-25), which needs its own pass.
+- **Verified:**
+  - web create-flow Jest, 18 tests in 5 suites, pass;
+  - lint and typecheck are clean.
+- **Not seen in a browser:** the preview tool won't run a server outside this session's folder, and starting one in a terminal was refused.

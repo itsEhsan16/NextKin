@@ -13,6 +13,7 @@ import { fieldBox } from '@/ui/fieldBox';
 import { SearchIcon } from '@/ui/icons';
 import { ArrowRight, Bookmark, LinkExternal01 } from '@/ui/lineIcons';
 import { Pager, pageOf } from '@/ui/Pager';
+import { JobSeekerBinocularsIllustration } from '@/ui/illustrations/JobSeekerBinocularsIllustration';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
@@ -21,7 +22,7 @@ import { PanelHead, panel } from './FlowChrome';
 /** Four a page, as the redesigned W-FLOW 01 draws it (toreview §150). */
 const PAGE = 4;
 
-const moreLink = cn(textLink, 'flex items-center gap-1.5 self-start pt-1 text-body-m');
+const moreLink = cn(textLink, 'flex items-center gap-1.5 pt-1 text-body-m');
 const manageLink = cn(textLink, 'flex items-center gap-1.5 text-body-m text-text-brand');
 
 function Radio({ on }: { on: boolean }) {
@@ -124,9 +125,13 @@ export function SavedJobList({
     );
   } else if (jobs.length === 0) {
     body = (
-      <div className="flex flex-col items-start gap-1.5 rounded-lg border border-dashed border-border-default px-4 py-5">
-        <p className="text-body-l text-text-secondary">
-          No saved jobs yet. Bring one from anywhere, or save one from Jobs.
+      // The empty state fills what's left of the panel, so it stands as tall as "Add a new job"
+      // beside it (owner, 2026-11-17): the clay binoculars, then what to do.
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-default px-6 py-8 text-center">
+        <JobSeekerBinocularsIllustration className="mb-2 h-32 w-auto" />
+        <p className="text-title-l font-bold text-text-primary">No saved jobs yet</p>
+        <p className="max-w-xs text-body-m text-text-secondary">
+          Bring one from anywhere, or save one from Jobs.
         </p>
         <Link href={'/jobs' as Route} className={moreLink}>
           Browse jobs
@@ -199,7 +204,8 @@ export function SavedJobList({
   }
 
   return (
-    <div className={panel}>
+    // flex-1: as tall as the column, which the grid stretches to "Add a new job" beside it.
+    <div className={cn(panel, 'flex-1')}>
       {head}
       {body}
     </div>

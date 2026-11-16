@@ -108,7 +108,8 @@ export function JobStep({
           />
         </div>
         <div className="grid gap-5 px-8 pb-8 pt-4 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
-          <div className="min-w-0">
+          {/* Both columns stretch to the row, and each panel fills its column (owner, 2026-11-17). */}
+          <div className="flex min-w-0 flex-col">
             <SavedJobList
               jobs={jobs}
               loading={saved.isPending}
