@@ -11,7 +11,7 @@ import { type DatedSpan } from './dates';
 import { mentionsIn, resolveSkill, type Taxonomy } from './normalizer';
 import { phraseIndex, phraseMentions } from './phrases';
 import type { Evidence, EvidenceRole } from './requirements';
-import { copiedRanges, insideAny, type Range } from './text';
+import { copiedRanges, insideAny, phraseKey, type Range } from './text';
 
 export interface ScoringRole extends DatedSpan {
   id: string;
@@ -73,10 +73,20 @@ export function roleText(role: Pick<ScoringRole, 'title' | 'bullets'>): string {
 export function evidenceOf(
   document: ScoringDocument,
   taxonomy: Taxonomy,
-  options: { jdText?: string; minCopiedWords: number; removed?: ReadonlySet<string>; phrases?: Iterable<string> } = { minCopiedWords: 8 },
+  options: { jdText?: string; minCopiedWords: number; removed?: ReadonlySet<string>; phrases?: Iterable<string>; /** Leave out role skill tags: they are not on the printed page. */ printedOnly?: boolean } = { minCopiedWords: 8 },
 ): DocumentEvidence {
   const copied: CopiedText[] = [];
   const surfaces: Record<string, string> = {};
+  const wordings: Record<string, string[]> = {};
+  const mentions: Record<string, number> = {};
+  /** One place the document names a skill, in the words it used. */
+  const say = (id: string, surface: string) => {
+    surfaces[id] ??= surface;
+    mentions[id] = (mentions[id] ?? 0) + 1;
+    const key = phraseKey(surface);
+    const known = (wordings[id] ??= []);
+    if (!known.includes(key)) known.push(key);
+  };
   const removed = options.removed ?? new Set<string>();
   const phrases = phraseIndex(options.phrases ?? []);
   const named = (written: string) => phraseMentions(written, phrases).map((m) => m.id);
@@ -85,10 +95,10 @@ export function evidenceOf(
     const ranges: Range[] = options.jdText ? copiedRanges(text, options.jdText, options.minCopiedWords) : [];
     for (const range of ranges) copied.push({ ...(roleId ? { roleId } : {}), text: text.slice(range.start, range.end) });
     const skills = mentionsIn(taxonomy, text).map((m) => ({ id: m.skillId, start: m.start, end: m.end, surface: m.surface }));
-    return [...skills, ...phraseMentions(text, phrases)]
+    return [...skills, ...phraseMentions(text, phrases, true)]
       .filter((m) => !insideAny(m.start, m.end, ranges))
       .map((m) => {
-        surfaces[m.id] ??= m.surface;
+        say(m.id, m.surface);
         return m.id;
       });
   };
@@ -97,18 +107,20 @@ export function evidenceOf(
   const listed = new Set<string>();
   for (const written of document.skills) {
     const ref = resolveSkill(taxonomy, written);
-    surfaces[ref.id] ??= written.trim();
-    listed.add(ref.id);
-    for (const id of named(written)) listed.add(id);
+    for (const id of new Set([ref.id, ...named(written)])) {
+      say(id, written.trim());
+      listed.add(id);
+    }
   }
 
   const roles: EvidenceRole[] = document.roles.map((role) => {
     const ids = new Set<string>();
-    for (const written of role.skills ?? []) {
+    for (const written of options.printedOnly ? [] : (role.skills ?? [])) {
       const ref = resolveSkill(taxonomy, written);
-      surfaces[ref.id] ??= written.trim();
-      ids.add(ref.id);
-      for (const id of named(written)) ids.add(id);
+      for (const id of new Set([ref.id, ...named(written)])) {
+        say(id, written.trim());
+        ids.add(id);
+      }
     }
     for (const id of read(roleText(role), role.id)) ids.add(id);
     const kept = [...ids].filter((id) => !removed.has(`${role.id}\u0000${id}`));
@@ -118,7 +130,7 @@ export function evidenceOf(
   const loose = [document.headline ?? '', document.summary ?? '', ...(document.projects ?? []).flatMap((p) => [p.name, p.description ?? '', ...p.bullets])];
   for (const text of loose) for (const id of read(text)) listed.add(id);
 
-  return { evidence: { roles, listed: [...listed], surfaces }, copied };
+  return { evidence: { roles, listed: [...listed], surfaces, wordings, mentions }, copied };
 }
 
 /** Every skill id the document shows anywhere. */

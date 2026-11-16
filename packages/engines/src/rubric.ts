@@ -24,7 +24,8 @@ import { datasetRef, ENGINE_VERSION, rubricById, type ComponentKey, type RubricV
 import { yearsCeilings } from './plausibility';
 import { isQuantified } from './quantified';
 import { buildLedger, type LedgerEntry, type Requirement, type RequirementLedger } from './requirements';
-import { wordCount } from './text';
+import { stem } from './phrases';
+import { tokenize, wordCount } from './text';
 import { validateTimeline, type EarlyAdoption, type TimelineReport } from './timeline';
 
 export type Band = 'strong' | 'good' | 'fair' | 'weak';
@@ -54,6 +55,8 @@ export interface JdInput {
   text?: string;
   /** A full description or a listing snippet: a snippet's match says less. */
   completeness: 'full' | 'snippet';
+  /** The job's title, read against the headline and summary from rubric-4. */
+  title?: string;
 }
 
 export interface ScoreInput {
@@ -135,6 +138,26 @@ function datesConsistent(doc: ScoringDocument): boolean {
   return precisions.size <= 1;
 }
 
+/** Words a title carries that name nothing: joiners, and a hiring note in brackets ("(2026 Passouts)"). */
+const TITLE_FILLER = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'for', 'in', 'at', 'to', 'with']);
+
+/** The job title's own words, stemmed: brackets and joiners left out. */
+export function titleWords(title: string): string[] {
+  const words = tokenize(title.replace(/\([^)]*\)|\[[^\]]*\]/g, ' '))
+    .filter((t) => t.kind === 'word' && !TITLE_FILLER.has(t.key) && !/^\d+$/.test(t.key))
+    .map((t) => stem(t.key));
+  return [...new Set(words)];
+}
+
+/** How many of the job title's words the headline and summary say. Null when there is no title. */
+function titleMatch(doc: ScoringDocument, title: string | undefined): { words: number; found: number; bps: Bps } | null {
+  const wanted = title ? titleWords(title) : [];
+  if (wanted.length === 0) return null;
+  const said = new Set(tokenize(`${doc.headline ?? ''}\n${doc.summary ?? ''}`).filter((t) => t.kind === 'word').map((t) => stem(t.key)));
+  const found = wanted.filter((w) => said.has(w)).length;
+  return { words: wanted.length, found, bps: ratioBps(found, wanted.length) };
+}
+
 function component(key: ComponentKey, rubric: RubricVersion, scoreBps: Bps | null, basis: Record<string, number>, checks?: Check[]): ComponentResult {
   const weightBps = rubric.components.find((c) => c.key === key)!.weightBps;
   const contributionBps = scoreBps === null ? null : divRoundHalfEven(weightBps * scoreBps, FULL_BPS);
@@ -149,7 +172,7 @@ export function scoreCore(input: ScoreInput, assume: Assumptions = {}): Omit<Sco
 
   // The JD's phrases the taxonomy does not know are looked for in the text too (toreview §112).
   const phrases = (input.jd?.requirements ?? []).flatMap((r) => (r.skill && !r.skill.known ? [r.skill.id] : []));
-  const docEvidence = evidenceOf(doc, taxonomy, { jdText: input.jd?.text, minCopiedWords: rubric.pastedMinWords, removed, phrases });
+  const docEvidence = evidenceOf(doc, taxonomy, { jdText: input.jd?.text, minCopiedWords: rubric.pastedMinWords, removed, phrases, ...(rubric.printedOnly ? { printedOnly: true } : {}) });
   const profileEvidence = input.profile ? evidenceOf(input.profile, taxonomy, { minCopiedWords: rubric.pastedMinWords, phrases }).evidence : undefined;
 
   // Keywords: the requirement ledger.
@@ -163,7 +186,39 @@ export function scoreCore(input: ScoreInput, assume: Assumptions = {}): Omit<Sco
         ...(rubric.yearsCappedAtTechAge ? { yearsCeiling: yearsCeilings(input.jd.requirements, kb, asOf) } : {}),
       })
     : null;
-  const keywords = component('keywords', rubric, ledger?.matchBps ?? null, ledger ? { ...ledger.counts } : {});
+  // From rubric-4 the keyword part is a blend: hard keywords, soft skills, the job's repeated
+  // terms and its title. A part with nothing to measure is left out; the rest share its weight.
+  const title = ledger && rubric.keywordParts ? titleMatch(doc, input.jd?.title) : null;
+  let keywordBps = ledger?.matchBps ?? null;
+  if (ledger && rubric.keywordParts && ledger.matchBps !== null) {
+    const parts: [number, Bps | null][] = [
+      [rubric.keywordParts.hard, ledger.hardBps],
+      [rubric.keywordParts.soft, ledger.softBps],
+      [rubric.keywordParts.repetition, ledger.repetition?.bps ?? null],
+      [rubric.keywordParts.title, title?.bps ?? null],
+    ];
+    const measured = parts.filter((p): p is [number, Bps] => p[1] !== null);
+    const weight = measured.reduce((sum, [w]) => sum + w, 0);
+    keywordBps = weight > 0 ? divRoundHalfEven(measured.reduce((sum, [w, bps]) => sum + w * bps, 0), weight) : ledger.matchBps;
+  }
+  const keywords = component(
+    'keywords',
+    rubric,
+    keywordBps,
+    ledger
+      ? {
+          ...ledger.counts,
+          ...(rubric.keywordParts
+            ? {
+                ...(ledger.hardBps !== null ? { hardBps: ledger.hardBps } : {}),
+                ...(ledger.softBps !== null ? { softBps: ledger.softBps } : {}),
+                ...(ledger.repetition ? { repeatedTerms: ledger.repetition.terms, repeatedFull: ledger.repetition.full, repeatedHalf: ledger.repetition.half } : {}),
+                ...(title ? { titleWords: title.words, titleFound: title.found } : {}),
+              }
+            : {}),
+        }
+      : {},
+  );
 
   // Timeline: every technology claim on every role.
   const report = validateTimeline({

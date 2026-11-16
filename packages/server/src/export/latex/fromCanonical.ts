@@ -1,5 +1,5 @@
 import { MARKETS, type MarketProfile } from '@nextkin/engines/markets';
-import { bulletGroups, STANDARD_ORDER } from '@nextkin/shared/scoring/structure';
+import { bulletGroups, certificationsAsWritten, STANDARD_ORDER } from '@nextkin/shared/scoring/structure';
 import type { CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
 
 import { marketPeriod, type Identity } from '../model';
@@ -113,7 +113,9 @@ function sectionOf(doc: CanonicalResumeJson, key: string, market: MarketProfile)
 
 export function latexResumeOf(doc: CanonicalResumeJson, who: Identity, options: { density?: LatexDensity; paper?: LatexResume['paper']; market?: MarketProfile } = {}): LatexResume {
   const market = options.market ?? MARKETS.profiles.us;
-  const order = doc.layout?.order ?? [...STANDARD_ORDER, ...(doc.sections ?? []).map((s) => `x:${s.id}`)];
+  const all = doc.layout?.order ?? [...STANDARD_ORDER, ...(doc.sections ?? []).map((s) => `x:${s.id}`)];
+  // The file's own Certifications section prints; the typed list of the same certificates does not.
+  const order = certificationsAsWritten(doc) ? all.filter((key) => key !== 'certifications') : all;
   return {
     name: doc.header?.name ?? who.name,
     ...(doc.headline ? { headline: doc.headline } : {}),

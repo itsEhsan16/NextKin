@@ -185,7 +185,7 @@ export async function validateDocument(args: ValidateArgs): Promise<ValidationOu
  */
 async function tailored(ctx: StageContext, tailor: TailorRunInput, jd: StageJd | null, validated: ValidationOutput): Promise<ValidationOutput> {
   const base = await readTailorBase(ctx, tailor);
-  const job = jd ? { title: jd.title, skills: [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools] } : null;
+  const job = jd ? { title: jd.title, skills: [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools], ...(jd.softSkills?.length ? { soft: jd.softSkills } : {}) } : null;
   const merged = mergeTailored({ base, generated: validated.document, request: tailor, job });
   return { ...validated, document: merged, stripped: strippedInUse(validated.stripped, base, tailor) };
 }

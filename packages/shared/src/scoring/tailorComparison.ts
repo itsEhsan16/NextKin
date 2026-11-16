@@ -12,6 +12,7 @@ import {
   type TailorKeywordShown,
 } from '../models';
 import { backedPlaces, elsewhereFor } from '../tailor/elsewhere';
+import { UNTITLED_JD } from '../models/jd';
 import { jdLists } from './adapters';
 import type { DocumentScore, ScoringJd } from './report';
 import { fixPlanOf } from './fixPlan';
@@ -35,6 +36,7 @@ export const FULL_JD_WORDS = 80;
 export const scoringJdOf = (draft: JdDraft): ScoringJd => ({
   ...jdLists(draft),
   completeness: wordCount(draft.rawText) >= FULL_JD_WORDS ? 'full' : 'snippet',
+  ...(draft.title && draft.title !== UNTITLED_JD ? { title: draft.title } : {}),
 });
 
 /**

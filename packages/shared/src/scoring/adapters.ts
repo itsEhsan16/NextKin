@@ -123,10 +123,12 @@ export const jdLists = (
   draft: Pick<JdDraft, 'requiredSkills' | 'preferredSkills' | 'tools' | 'rawText'> & Partial<Pick<JdDraft, 'structured' | 'softSkills'>>,
 ): JdLists => ({
   requiredSkills: draft.requiredSkills,
-  // The job's soft skills are keywords too (owner, D-25, toreview §211): a checker counts
-  // "Stakeholder management" like any other phrase, so the score does, as one the job prefers.
-  preferredSkills: [...draft.preferredSkills, ...(draft.softSkills ?? [])],
+  preferredSkills: draft.preferredSkills,
   tools: draft.tools,
+  // The job's soft skills are keywords too (owner, D-25, toreview §211): a checker counts
+  // "Stakeholder management" like any other phrase. They are preferred keywords, kept apart so
+  // the checker rubric can score them on their own (rubric-4, toreview §212).
+  ...(draft.softSkills?.length ? { softSkills: draft.softSkills } : {}),
   rawText: draft.rawText,
   // The structured reading's years and conditions, so the ledger reports what the page shows.
   ...(draft.structured ? { stated: statedOf(draft.structured) } : {}),

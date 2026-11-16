@@ -252,8 +252,12 @@ export function applyZeroAnswer(doc: CanonicalResumeJson, answer: ZeroResolution
 export function applySkillFix(doc: CanonicalResumeJson, fix: AtsFix): CanonicalResumeJson {
   const skill = fix.skill;
   if (fix.type !== 'surface_backed_skill' || !fix.insertable || !skill) throw new CanonicalEditError('NOT_FOUND', 'That fix cannot be applied.');
-  const role = fix.roleId ? doc.roles.find((r) => r.roleId === fix.roleId) : undefined;
-  if (role) return role.skills.includes(skill) ? doc : { ...doc, roles: doc.roles.map((r) => (r === role ? { ...r, skills: [...r.skills, skill] } : r)) };
-  if (doc.skills.some((s) => s.name.toLowerCase() === skill.toLowerCase())) return doc;
-  return { ...doc, skills: [...doc.skills, { id: idMinter(doc)('fix-k'), name: skill, evidence: [], origin: 'user' }] };
+  // The skills list is what prints, so the skill always joins it (toreview §212): a tag on the
+  // role alone is on no page.
+  const listed = doc.skills.some((s) => s.name.toLowerCase() === skill.toLowerCase())
+    ? doc
+    : { ...doc, skills: [...doc.skills, { id: idMinter(doc)('fix-k'), name: skill, evidence: [], origin: 'user' as const }] };
+  const role = fix.roleId ? listed.roles.find((r) => r.roleId === fix.roleId) : undefined;
+  if (!role || role.skills.includes(skill)) return listed;
+  return { ...listed, roles: listed.roles.map((r) => (r === role ? { ...r, skills: [...r.skills, skill] } : r)) };
 }

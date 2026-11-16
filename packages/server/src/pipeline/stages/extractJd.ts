@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
-import { resolveSkill } from '@nextkin/engines/normalizer';
+import { mentionsIn, resolveSkill, skillById } from '@nextkin/engines/normalizer';
+import { sentences } from '@nextkin/engines/text';
 import { legacyFields, type JdLegacyFields } from '@nextkin/shared/jobs/jdLegacy';
 import type { JdReading } from '@nextkin/shared/jobs/jdSections';
 import { haystackOf, locate } from '@nextkin/shared/jobs/jdLocate';
@@ -196,12 +197,64 @@ export function skillNamesFor(company: string | null | undefined): (name: string
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+type ReadSkill = JdExtraction['skills'][number];
+const MAX_SKILLS = 100;
+/** A line this short around a skill's name is a button or a label, not the job asking for it. */
+const SWEEP_MIN_WORDS = 4;
+const SWEEP_MAX_QUOTE = 300;
+/** An alias this short says too little on its own to add without the model. */
+const SWEEP_MIN_ALIAS = 3;
+
+/**
+ * Skills the taxonomy knows that the text names and the model's list left out (toreview §212).
+ * The model's recall is not a guarantee, and a resume checker counts every one of these; so code
+ * reads the text for them too. Each is quoted from the sentence that names it and added as one the
+ * job prefers: the model said nothing of its importance, and code does not guess "required".
+ */
+export function sweepKnownSkills(raw: string, listed: readonly ReadSkill[]): ReadSkill[] {
+  const have = new Set(listed.flatMap((k) => splitSkills(k.name)).map((name) => resolveSkill(TAXONOMY, name)).filter((ref) => ref.known).map((ref) => ref.id));
+  const lines = sentences(raw);
+  const found: ReadSkill[] = [];
+  for (const mention of mentionsIn(TAXONOMY, raw)) {
+    if (have.has(mention.skillId)) continue;
+    // Only what is plainly a named skill: a broad field ("Web") or a short alias ("UI" for UI
+    // design) is the model's call, with the sentence in front of it.
+    const def = skillById(TAXONOMY, mention.skillId);
+    const byName = def !== undefined && normalise(mention.surface) === normalise(def.name);
+    if (!def || def.category === 'domain' || (!byName && mention.surface.length <= SWEEP_MIN_ALIAS)) continue;
+    const line = lines.find((r) => mention.start >= r.start && mention.end <= r.end);
+    const sentence = line ? raw.slice(line.start, line.end).trim() : '';
+    if (sentence.split(/\s+/).length < SWEEP_MIN_WORDS) continue;
+    have.add(mention.skillId);
+    found.push({ name: mention.surface, quote: sentence.length <= SWEEP_MAX_QUOTE ? sentence : mention.surface, category: 'other', importance: 'preferred' });
+  }
+  return found;
+}
+
+/** The first reading with what a later pass found added, once each, the first reading's own first. */
+export function mergeSkills(first: readonly ReadSkill[], more: readonly ReadSkill[]): ReadSkill[] {
+  const seen = new Set(first.map((k) => normalise(k.name)));
+  const out = [...first];
+  for (const k of more) {
+    const key = normalise(k.name);
+    if (seen.has(key) || out.length >= MAX_SKILLS) continue;
+    seen.add(key);
+    out.push(k);
+  }
+  return out;
+}
+
+/** What the second pass returns: only the keywords the first reading missed. */
+export const jdRecallSchema = z.object({ skills: jdExtractionSchema.shape.skills });
+
 /**
  * Keeps only what the text says (toreview §153): the structure is built from the quotes found in
  * it, and the flat lists every consumer reads are derived from that structure.
  */
 export function verify(raw: string, extraction: JdExtraction, options: { closesAt?: string; today?: string; closedNote?: string } = {}): VerifiedJd {
   const page = pageVerdict(raw, extraction.page);
+  // Code's own read for skills it knows by name, on top of the model's list (toreview §212).
+  extraction = { ...extraction, skills: mergeSkills(extraction.skills, page && page.kind !== 'closed' ? [] : sweepKnownSkills(raw, extraction.skills)) };
   const closedNote = options.closedNote ?? (page?.kind === 'closed' ? page.note : undefined);
   const structured = structureJd(raw, extraction, { skillNames: skillNamesFor(extraction.company?.text), today: options.today ?? today(), ...(options.closesAt ? { closesAt: options.closesAt } : {}), ...(closedNote ? { closedNote } : {}) });
   const parsed = jdStructuredSchema.safeParse(structured);
@@ -229,8 +282,14 @@ export async function extractJd(args: {
   closesAt?: string;
   /** The page's own words that the posting has closed (toreview §206). */
   closedNote?: string;
-}): Promise<{ jd: VerifiedJd; cached: boolean; meta?: CallMeta }> {
-  const key = `jd:${args.prompt.id}:${contentHash(args.text)}`;
+  /**
+   * The second pass (toreview §212): the same text with the first reading's keywords, asked only
+   * for what that reading missed. Best effort: without it, or when it fails, the first reading
+   * stands.
+   */
+  recall?: PromptVersion;
+}): Promise<{ jd: VerifiedJd; cached: boolean; meta?: CallMeta; recalled?: number; recallError?: string }> {
+  const key = `jd:${args.prompt.id}${args.recall ? `+${args.recall.id}` : ''}:${contentHash(args.text)}`;
   const hit = await args.cache.get<JdExtraction>(key);
   const options = { ...(args.closesAt ? { closesAt: args.closesAt } : {}), ...(args.closedNote ? { closedNote: args.closedNote } : {}) };
   if (hit) return { jd: verify(args.text, hit, options), cached: true };
@@ -244,6 +303,29 @@ export async function extractJd(args: {
     description: 'The job posting in its canonical fields; every item quotes the text it came from.',
     context: args.context,
   });
-  await args.cache.set(key, data, CACHE_DAYS * 24 * 3600);
-  return { jd: verify(args.text, data, options), cached: false, meta };
+  let read = data;
+  let recalled: number | undefined;
+  let recallError: string | undefined;
+  if (args.recall && data.skills.length > 0 && (!data.page || data.page.kind === 'single_job')) {
+    try {
+      const more = await args.gateway.extract({
+        stage: 'jd_extract',
+        system: args.recall.body.system.map((text) => ({ text })),
+        input: { task: 'list only the keywords of this job posting that the first reading missed', alreadyListed: data.skills.map((k) => k.name) },
+        untrusted: args.text,
+        schema: jdRecallSchema,
+        name: 'missed_keywords',
+        description: 'Keywords the posting names that are not in the list already made; each quotes the text.',
+        context: { ...args.context, promptVersionId: args.recall.id },
+      });
+      const merged = mergeSkills(data.skills, more.data.skills);
+      recalled = merged.length - data.skills.length;
+      read = { ...data, skills: merged };
+    } catch (error) {
+      recallError = error instanceof Error ? error.message : String(error);
+    }
+  }
+  // A reading whose second pass failed is not cached: the next request tries the pass again.
+  if (!recallError) await args.cache.set(key, read, CACHE_DAYS * 24 * 3600);
+  return { jd: verify(args.text, read, options), cached: false, meta, ...(recalled !== undefined ? { recalled } : {}), ...(recallError ? { recallError } : {}) };
 }

@@ -57,6 +57,8 @@ export function scoringDocumentOf(json: CanonicalResumeJson, contact: ContactPre
         ...(start ? { start } : {}),
         end: r.end === null ? null : (date(r.end) ?? undefined),
         bullets: r.bullets.map((b) => b.text),
+        // The role's skill tags: the timeline check reads them as claims made at this role. No
+        // template prints them, so from rubric-4 they are not keyword evidence (toreview §212).
         skills: r.skills,
       };
     }),

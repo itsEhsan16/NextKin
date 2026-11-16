@@ -18,12 +18,11 @@ import { analyzeIsolated, type IsolationLimits } from '../parsing/pool';
 import { UnreadableError, type Analysis } from '../parsing/types';
 import { contentHash, extractJd, repairText, verify, type JdExtraction, type VerifiedJd } from '../pipeline/stages/extractJd';
 import { JD_SECTIONS_TEMPLATE, structureJd } from '../pipeline/stages/jdSections';
-import { JD_STRUCTURE_VERSION } from '@nextkin/shared/models/jdStructured';
 import type { OcrPort } from '../ocr/tesseract';
 import { toGrayPng } from '../ocr/png';
 import type { StoragePort } from '../storage/storage';
 import { findListing } from './jobs';
-import { activePrompt } from './prompts';
+import { activePrompt, type PromptVersion } from './prompts';
 import { requireAiConsent } from './consent';
 import { COLUMNS, findRow, toDraft, type Row } from './jdDraft';
 
@@ -42,6 +41,15 @@ export { toDraft } from './jdDraft';
  */
 
 export const JD_TEMPLATE = 'jd.extract';
+/** The second pass that lists what the first reading missed (toreview §212). */
+export const JD_RECALL_TEMPLATE = 'jd.recall';
+/**
+ * How a stored JD was read, in `structure_version`: null before the structured reading, 1 while a
+ * re-read is queued, 2 the structured reading (§153), 3 with the second pass and code's own sweep
+ * for known skills (§212). A row read an older way is read again once from the text it holds.
+ */
+export const JD_READING_VERSION = 3;
+const QUEUED_FOR_REREAD = 1;
 const MAX_TEXT = 20000;
 
 export const JD_FAILURE = {
@@ -173,8 +181,14 @@ async function jdFromLink(db: Database, identity: Identity, raw: string, details
 export const getJd = (db: Database, identity: Identity, id: string): Promise<JdDraft> =>
   db.withUser(identity, async (tx) => {
     const row = await findRow(tx, id);
-    if (row.status === 'ready' && row.source !== 'job' && row.structure_version === null && row.raw_text.trim()) {
-      const marked = await tx.updateTable('job_descriptions').set({ structure_version: 1 }).where('id', '=', id).where('structure_version', 'is', null).executeTakeFirst();
+    const readBefore = row.structure_version === null || (row.structure_version > QUEUED_FOR_REREAD && row.structure_version < JD_READING_VERSION);
+    if (row.status === 'ready' && row.source !== 'job' && readBefore && row.raw_text.trim()) {
+      const marked = await tx
+        .updateTable('job_descriptions')
+        .set({ structure_version: QUEUED_FOR_REREAD })
+        .where('id', '=', id)
+        .where((eb) => (row.structure_version === null ? eb('structure_version', 'is', null) : eb('structure_version', '=', row.structure_version)))
+        .executeTakeFirst();
       if (Number(marked.numUpdatedRows) > 0) {
         await enqueue(tx, { queue: 'generation-standard', groupId: `${identity.userId}#jd`, type: 'jd.extract', payload: { jdId: id, userId: identity.userId, upgrade: true }, correlationId: null });
       }
@@ -233,6 +247,16 @@ async function sectionsByModel(deps: JdExtractDeps, text: string, title: string 
   }
 }
 
+/** The second pass's prompt, when it is installed: a stack seeded before §212 reads without it. */
+async function recallPrompt(deps: JdExtractDeps): Promise<PromptVersion | undefined> {
+  try {
+    return await deps.db.withSystem('jd: read the recall prompt', (tx) => activePrompt(tx, JD_RECALL_TEMPLATE));
+  } catch {
+    deps.log.warn({ event: 'jd.recall_skipped' }, 'no active jd.recall prompt; the job description is read in one pass');
+    return undefined;
+  }
+}
+
 /** A job description names some of what the job asks. A page with none of it is something else. */
 const looksLikeAJob = (jd: VerifiedJd): boolean => jd.requiredSkills.length + jd.preferredSkills.length + jd.tools.length + jd.responsibilities.length >= 2;
 
@@ -256,9 +280,10 @@ async function upgradeJd(deps: JdExtractDeps, message: { jdId: string; userId: s
   try {
     const prompt = await deps.db.withSystem('jd: read the extraction prompt', (tx) => activePrompt(tx, JD_TEMPLATE));
     const closesAt = (found.extracted as { closesAt?: string } | null)?.closesAt;
-    const { jd } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, text: found.raw_text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}) });
+    const recall = await recallPrompt(deps);
+    const { jd } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, ...(recall ? { recall } : {}), text: found.raw_text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}) });
     await deps.db.withUser(identity, (tx) =>
-      tx.updateTable('job_descriptions').set({ extracted: JSON.stringify({ ...jd, ...(closesAt ? { closesAt } : {}) }), stats: JSON.stringify(jd.stats), structure_version: JD_STRUCTURE_VERSION }).where('id', '=', message.jdId).where('structure_version', '=', 1).execute(),
+      tx.updateTable('job_descriptions').set({ extracted: JSON.stringify({ ...jd, ...(closesAt ? { closesAt } : {}) }), stats: JSON.stringify(jd.stats), structure_version: JD_READING_VERSION }).where('id', '=', message.jdId).where('structure_version', '=', 1).execute(),
     );
     deps.log.info({ event: 'jd.upgraded', kept: jd.stats.kept, dropped: jd.stats.dropped }, 'job description read again into the structure');
     return 'ready';
@@ -327,7 +352,8 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
     }
     await stage('understanding');
     const prompt = await deps.db.withSystem('jd: read the extraction prompt', (tx) => activePrompt(tx, JD_TEMPLATE));
-    const { jd, cached } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}), ...(closedNote ? { closedNote } : {}) });
+    const recall = await recallPrompt(deps);
+    const { jd, cached, recalled, recallError } = await extractJd({ gateway: deps.gateway, cache: deps.cache, prompt, ...(recall ? { recall } : {}), text, context: { userId: message.userId, correlationId: message.correlationId, promptVersionId: prompt.id }, ...(closesAt ? { closesAt } : {}), ...(closedNote ? { closedNote } : {}) });
     // What the text is comes before what it says (toreview §206). The page's own data is believed
     // first: one JobPosting block is one job, whatever else the page lists beside it.
     const link = found.source === 'link';
@@ -345,14 +371,15 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
     await finish({
       status: 'ready',
       stage: null,
-      structure_version: jd.structured ? JD_STRUCTURE_VERSION : null,
+      structure_version: jd.structured ? JD_READING_VERSION : null,
       raw_text: text,
       extracted: JSON.stringify({ ...jd, ...(reading ? { reading } : {}), ...(closesAt ? { closesAt } : {}) }),
       stats: JSON.stringify(jd.stats),
       language: jd.language === 'other' ? null : jd.language,
       content_hash: contentHash(text),
     });
-    deps.log.info({ event: 'jd.extracted', cached, kept: jd.stats.kept, dropped: jd.stats.dropped }, 'job description extracted');
+    if (recallError) deps.log.warn({ event: 'jd.recall_failed', err: recallError }, 'the second pass failed; the first reading stands');
+    deps.log.info({ event: 'jd.extracted', cached, kept: jd.stats.kept, dropped: jd.stats.dropped, ...(recalled !== undefined ? { recalled } : {}) }, 'job description extracted');
     return 'ready';
   } catch (error) {
     if (error instanceof UnreadableError) return fail(JD_FAILURE.unreadable, 'unreadable');
@@ -482,7 +509,7 @@ export async function jdForListing(db: Database, identity: Identity, jobId: stri
         stats: JSON.stringify(extracted.stats),
         content_hash: contentHash(rawText),
         language: 'en',
-        structure_version: extracted.structured ? JD_STRUCTURE_VERSION : null,
+        structure_version: extracted.structured ? JD_READING_VERSION : null,
         job_id: jobId,
         jobs_cache_id: found.cacheId,
       })

@@ -190,6 +190,8 @@ export const figureDraftSchema = z.object({
   suggestion: z.string().optional(),
   /** Results to pick from, each with its own amounts (owner, 2026-11-14). */
   options: z.array(z.object({ what: z.string(), before: z.string(), after: z.string(), amounts: z.array(z.string()) })).optional(),
+  /** Why there is no AI suggestion (toreview §212). */
+  reason: z.enum(['no_ai', 'no_consent', 'no_prompt', 'failed', 'rejected']).optional(),
 });
 /** "Did you use this here?" (toreview §206.3): which resume against which job description. */
 export const keywordQuestionsRequestSchema = z.object({ resumeId: z.string().max(100), jdId: z.string().max(100) }).strict();

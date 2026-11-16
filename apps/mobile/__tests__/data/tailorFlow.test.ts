@@ -37,8 +37,9 @@ describe('job-first tailoring (toreview §56)', () => {
     // Engine-computed (C-10): Stripe's listing reads as Design systems and Figma required, both on
     // the resume, and Fintech preferred, which nothing on it shows. TAILOR 02's 72 and its eight
     // seeded keywords were board copy, replaced by what the engines measure.
-    // 92 since the coverage rubric (D-25, toreview §211): five measured results is full marks.
-    expect(comparison.score).toBe(92);
+    // 83 since the checker rubric (toreview §212): the keyword part is 75 of the score, and the
+    // job's title is not yet in this resume's headline or summary.
+    expect(comparison.score).toBe(83);
     expect(comparison.keywords).toHaveLength(3);
     expect(comparison.keywords.filter((k) => k.onResume)).toHaveLength(2);
     expect(missingKeywords(comparison).map((k) => k.label)).toEqual(['Fintech']);
@@ -110,8 +111,9 @@ describe('job-first tailoring (toreview §56)', () => {
     expect(done?.status).toBe('ready');
     const resumeId = done?.resumeId ?? '';
     const resume = store.state.resumes.find((item) => item.id === resumeId);
-    // G16: the profile does not back Fintech, so writing it in moves nothing, and the report says so.
-    expect(resume?.atsScore).toBe(comparison.score);
+    // G16: the profile does not back Fintech, so writing it in earns nothing, and the report says
+    // so. What moved the score is the job's title, which the run wrote into the summary (§212).
+    expect(resume?.atsScore).toBe(88);
     expect(store.state.atsScores[resumeId]?.report?.unbacked).toContain('Fintech');
     expect(resume?.pageCount).toBe(2);
     const body = store.state.contents[resumeId];

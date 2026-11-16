@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { figureLine, type FigureDraft } from '@/data/models';
+import { FIGURE_REASON, figureLine, hasSuggestion, type FigureDraft } from '@/data/models';
 import { statesResult } from '@/data/models/customize';
 import { useDraftFigure } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
+import { ChoiceChip } from '@/ui/ChoiceChip';
 import { Icon } from '@/ui/Icon';
-import { Pressable } from '@/ui/Pressable';
 import { Skeleton } from '@/ui/Skeleton';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
@@ -23,10 +23,14 @@ export type PlanFigureEditorProps = {
 };
 
 /**
- * "Add a result", in its bottom sheet (owner, 2026-11-07: a tick on the plan, then a sheet with the
- * AI's suggestion). The AI rewrites the bullet around a gap. The person picks the AI's guessed
- * figure (labelled a guess) or types the real one. The line is previewed live and counts once it
- * states a measured result. "Write the line myself" edits the whole line instead.
+ * "Add a result", in its bottom sheet (owner, 2026-11-07). The AI rewrites the bullet around a gap
+ * and fills it with its best suggestion: its first result at its smallest amount, or its one
+ * typical figure. The sheet opens on a finished line the person can add as it is, or change by
+ * picking another result or amount.
+ *
+ * Nobody has to type (owner, 2026-11-17, toreview §212; the web's `LineResult` is the same flow).
+ * A field appears only when asked for: "Another amount", "Change the figure", "Write the line
+ * myself". With nothing from the AI, the sheet says why and offers to ask again.
  */
 export function PlanFigureEditor({
   resumeId,
@@ -36,15 +40,37 @@ export function PlanFigureEditor({
   onSave,
   onDone,
 }: PlanFigureEditorProps) {
-  const { colors, sizes, u } = useTheme();
+  const { colors, u } = useTheme();
   const styles = useStyles();
   const draftFigure = useDraftFigure();
   const [fetched, setFetched] = useState<FigureDraft | null>(null);
   const [own, setOwn] = useState<string | null>(saved ?? null);
-  const [figure, setFigure] = useState('');
-  const draft = given ?? fetched;
+  // `undefined` means "not touched yet", so the AI's first result stands.
+  const [picked, setPicked] = useState<number | null | undefined>(undefined);
+  const [typed, setTyped] = useState<string | null>(null);
+  const [typing, setTyping] = useState(false);
+  // A draft asked for again here replaces the one the row brought.
+  const draft = fetched ?? given;
+  const options = draft?.options ?? [];
+  const why =
+    draft && !hasSuggestion(draft) ? FIGURE_REASON[draft.reason ?? 'rejected'] : undefined;
+  const pick = picked === undefined ? (options.length > 0 ? 0 : null) : picked;
+  const chosen = pick !== null ? options[pick] : undefined;
+  const shape = chosen ?? draft;
+  const best = chosen
+    ? (chosen.amounts[0] ?? '')
+    : options.length > 0
+      ? ''
+      : (draft?.suggestion ?? '');
+  const figure = typed ?? best;
+  const fromAi = typed === null && figure !== '';
 
-  const { mutate, isIdle } = draftFigure;
+  const { mutate, isIdle, isPending } = draftFigure;
+  const ask = () =>
+    mutate(
+      { resumeId, roleId: bullet.roleId, line: bullet.index, text: bullet.text },
+      { onSuccess: setFetched, onError: () => setOwn(bullet.text) },
+    );
   useEffect(() => {
     if (own !== null || given || !isIdle) return;
     mutate(
@@ -53,9 +79,15 @@ export function PlanFigureEditor({
     );
   }, [own, given, isIdle, mutate, resumeId, bullet]);
 
-  const line = own ?? (draft && figure.trim() ? figureLine(draft, figure) : '');
+  const line = own ?? (shape && figure.trim() ? figureLine(shape, figure) : '');
   const counts = line !== '' && statesResult(line) && line.trim() !== bullet.text.trim();
-  const suggestion = draft?.suggestion;
+  const choose = (index: number) => {
+    // Another result brings its own best amount; tapping the picked one clears it.
+    setPicked(index === pick ? null : index);
+    setTyped(index === pick ? '' : null);
+    setTyping(false);
+  };
+  const unmeasured = own !== null && /\d/.test(own) && own.trim() !== bullet.text.trim();
 
   return (
     <View style={styles.wrap}>
@@ -81,64 +113,131 @@ export function PlanFigureEditor({
           <Skeleton height={u(18)} />
           <Skeleton width="66%" height={u(18)} />
         </View>
+      ) : why ? (
+        <>
+          <View style={[styles.preview, { backgroundColor: colors.surfaceSubtle }]}>
+            <Text variant="callout" color="ink">
+              {bullet.text}
+            </Text>
+          </View>
+          <Text variant="callout" color="textSecondary" accessibilityLiveRegion="polite">
+            {why.note}
+          </Text>
+          {why.retry ? (
+            <Button
+              label={isPending ? 'Asking the AI…' : 'Ask the AI again'}
+              size="xl"
+              block
+              disabled={isPending}
+              onPress={ask}
+            />
+          ) : null}
+        </>
       ) : (
         <>
           {/* The line as it will read, the gap filled live. */}
           <View
             accessible
-            accessibilityLabel={`Preview: ${figure.trim() ? figureLine(draft, figure) : `${draft.before} … ${draft.after}`}`}
+            accessibilityLabel={`Preview: ${figure.trim() ? figureLine(shape!, figure) : `${shape!.before} … ${shape!.after}`}`}
             style={[styles.preview, { backgroundColor: colors.surfaceSubtle }]}
           >
             <Text variant="callout" color="ink">
-              {draft.before}{' '}
+              {shape!.before}{' '}
               <Text variant="bodyLgStrong" color="brand">
-                {figure.trim() || `[${draft.hint}]`}
+                {figure.trim() || `[${chosen ? chosen.what.toLowerCase() : draft.hint}]`}
               </Text>
-              {draft.after}
+              {shape!.after}
             </Text>
           </View>
-
-          {suggestion ? (
-            <View style={styles.suggest}>
-              <Text variant="footnote" color="textSecondary">
-                AI suggests
+          {fromAi ? (
+            <View style={styles.note}>
+              <Icon name="Stars02" size={u(14)} color={colors.brand} />
+              <Text variant="footnote" color="brand" style={styles.flex}>
+                The AI’s suggestion. Keep it only if it’s true, or change it.
               </Text>
-              <Pressable
-                feedback="subtle"
-                accessibilityRole="button"
-                accessibilityLabel={`Use the AI's guess: ${suggestion}`}
-                onPress={() => setFigure(suggestion)}
-                style={[
-                  styles.guess,
-                  {
-                    backgroundColor: colors.brandSurface,
-                    borderColor: colors.brand,
-                    borderWidth: sizes.border,
-                  },
-                ]}
-              >
-                <Icon name="Stars02" size={u(14)} color={colors.brand} />
-                <Text variant="bodyLgStrong" color="brand">
-                  {suggestion}
-                </Text>
-              </Pressable>
-              <View style={styles.warn}>
-                <Icon name="AlertCircle" size={u(14)} color={colors.warningStrong} />
-                <Text variant="footnote" color="warningStrong" style={styles.flex}>
-                  A guess. Use it only if it’s close to true.
-                </Text>
-              </View>
             </View>
           ) : null}
 
-          <TextField
-            label="Your figure"
-            value={figure}
-            onChangeText={setFigure}
-            placeholder={draft.hint}
-            maxLength={40}
-            accessibilityLabel={`The result: ${draft.hint}`}
-          />
+          {options.length > 0 ? (
+            <>
+              <View style={styles.group} accessibilityRole="radiogroup">
+                <Text variant="bodyLgStrong" color="ink">
+                  What came of it?
+                </Text>
+                <View style={styles.chips}>
+                  {options.map((option, index) => (
+                    <ChoiceChip
+                      key={option.what}
+                      radio
+                      label={option.what}
+                      selected={pick === index}
+                      onPress={() => choose(index)}
+                    />
+                  ))}
+                </View>
+              </View>
+              {chosen ? (
+                <View style={styles.group} accessibilityRole="radiogroup">
+                  <Text variant="bodyLgStrong" color="ink">
+                    About how much?
+                  </Text>
+                  <View style={styles.chips}>
+                    {chosen.amounts.map((amount) => (
+                      <ChoiceChip
+                        key={amount}
+                        radio
+                        label={amount}
+                        selected={!typing && figure === amount}
+                        onPress={() => {
+                          setTyping(false);
+                          setTyped(figure === amount ? '' : amount);
+                        }}
+                      />
+                    ))}
+                    <ChoiceChip
+                      radio
+                      label="Another amount"
+                      selected={typing}
+                      onPress={() => {
+                        setTyping(!typing);
+                        setTyped('');
+                      }}
+                    />
+                  </View>
+                  {typing ? (
+                    <TextField
+                      label="The amount"
+                      value={figure}
+                      onChangeText={setTyped}
+                      placeholder={chosen.amounts[0] ?? ''}
+                      maxLength={40}
+                      autoFocus
+                      accessibilityLabel={`The amount: ${chosen.what}`}
+                    />
+                  ) : null}
+                </View>
+              ) : null}
+            </>
+          ) : typing ? (
+            <TextField
+              label="Your figure"
+              value={figure}
+              onChangeText={setTyped}
+              placeholder={draft.suggestion ?? draft.hint}
+              maxLength={40}
+              autoFocus
+              accessibilityLabel={`The result: ${draft.hint}`}
+            />
+          ) : (
+            <Button
+              label="Change the figure"
+              variant="ghost"
+              onPress={() => {
+                setTyping(true);
+                setTyped(figure);
+              }}
+            />
+          )}
         </>
       )}
 
@@ -147,26 +246,32 @@ export function PlanFigureEditor({
         color={counts ? 'success' : 'textSecondary'}
         accessibilityLiveRegion="polite"
       >
-        {counts ? 'Counts as a measured result' : 'A real number only: a count, %, time or money.'}
+        {counts
+          ? 'Counts as a measured result'
+          : unmeasured
+            ? 'That number doesn’t say what it measures yet. Add a unit or what it counts: 10%, 100 users, 2 hours.'
+            : 'A real number only: a count, %, time or money.'}
       </Text>
 
       <View style={styles.actions}>
-        <Button
-          label="Add to bullet"
-          size="xl"
-          block
-          disabled={!counts}
-          onPress={() => {
-            onSave(line.trim());
-            onDone();
-          }}
-        />
+        {!why || own !== null ? (
+          <Button
+            label="Add to bullet"
+            size="xl"
+            block
+            disabled={!counts}
+            onPress={() => {
+              onSave(line.trim());
+              onDone();
+            }}
+          />
+        ) : null}
         {own === null ? (
           <Button
             label="Write the line myself"
             variant="ghost"
             block
-            onPress={() => setOwn(bullet.text)}
+            onPress={() => setOwn(line || bullet.text)}
           />
         ) : null}
       </View>
@@ -179,17 +284,8 @@ const useStyles = scaledSheet((_s, u) => ({
   flex: { flex: 1 },
   loading: { gap: u(10) },
   preview: { padding: u(16), borderRadius: u(16) },
-  suggest: { gap: u(8) },
-  guess: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: u(6),
-    paddingHorizontal: u(14),
-    paddingVertical: u(9),
-    borderRadius: u(999),
-    borderStyle: 'dashed',
-  },
-  warn: { flexDirection: 'row', alignItems: 'flex-start', gap: u(6) },
+  note: { flexDirection: 'row', alignItems: 'flex-start', gap: u(6) },
+  group: { gap: u(10) },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: u(8) },
   actions: { gap: u(4) },
 }));

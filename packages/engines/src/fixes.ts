@@ -15,6 +15,7 @@ import { compareCodePoints, type Bps } from './bps';
 import { evidenceOf, type ScoringDocument } from './document';
 import type { Importance } from './requirements';
 import { evidenceTier } from './requirements';
+import { rubricById } from './provenance';
 import { scoreCore, type FormatCheckId, type ScoreInput, type ScoreResult, type SectionCheckId } from './rubric';
 import { isQuantified } from './quantified';
 import type { Substitution } from './substitutions';
@@ -63,15 +64,24 @@ const TYPE_RANK: Record<FixType, number> = {
 
 const TIER_RANK = { unbacked: 0, listed: 1, demonstrated: 2 } as const;
 
-function withSkill(doc: ScoringDocument, skill: string, roleId: string | null): ScoringDocument {
+/**
+ * The document with a skill surfaced at a role (a tag, as the writer's line there will say it), or
+ * in the skills list. Where only the printed page is evidence (rubric-4), a tag earns nothing, so
+ * the skill is measured as listed too: what the page will show once it is written in.
+ */
+function withSkill(doc: ScoringDocument, skill: string, roleId: string | null, printedOnly = false): ScoringDocument {
   if (roleId === null) return { ...doc, skills: [...doc.skills, skill] };
-  return { ...doc, roles: doc.roles.map((r) => (r.id === roleId ? { ...r, skills: [...(r.skills ?? []), skill] } : r)) };
+  return {
+    ...doc,
+    ...(printedOnly && !doc.skills.includes(skill) ? { skills: [...doc.skills, skill] } : {}),
+    roles: doc.roles.map((r) => (r.id === roleId ? { ...r, skills: [...(r.skills ?? []), skill] } : r)),
+  };
 }
 
 function withQuantifiedBullet(doc: ScoringDocument, roleId: string, index: number): ScoringDocument {
   return {
     ...doc,
-    roles: doc.roles.map((r) => (r.id === roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === index ? `${b} (1)` : b)) } : r)),
+    roles: doc.roles.map((r) => (r.id === roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === index ? `${b} (10%)` : b)) } : r)),
   };
 }
 
@@ -89,7 +99,7 @@ export function buildFixes(input: ScoreInput, base: Omit<ScoreResult, 'fixes'>):
     const backed = profile ? evidenceTier(profile, entry.skillId) : null;
     if (backed && TIER_RANK[backed.tier] > TIER_RANK[entry.tier]) {
       const roleId = backed.roleIds.find((id) => input.document.roles.some((r) => r.id === id)) ?? null;
-      const next = { ...input, document: withSkill(input.document, entry.text, roleId) };
+      const next = { ...input, document: withSkill(input.document, entry.text, roleId, (input.rubric ?? rubricById(input.rubricId)).printedOnly) };
       fixes.push({
         id: `skill:${entry.requirementId}`,
         type: 'surface_backed_skill',

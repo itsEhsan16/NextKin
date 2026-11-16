@@ -122,7 +122,7 @@ describe('the apps’ HTTP repositories (P9-08)', () => {
     const content = await repos.resumes.getContent(started.resumeId!);
     expect(content.kind === 'resume' && content.experience[0]?.company).toBe('Lumen Pay');
     const score = await repos.resumes.getScore(started.resumeId!);
-    expect(score.report?.provenance.rubric).toBe('rubric-3');
+    expect(score.report?.provenance.rubric).toBe('rubric-4');
     expect(resume.atsScore).toBe(score.total);
     // BUILD 04c's answer joined the profile before the run read it.
     const skills = await h.db.withUser({ userId: user.id, role: 'user' }, (tx) => tx.selectFrom('profile_skills').select('raw_name').where('user_id', '=', user.id).execute());

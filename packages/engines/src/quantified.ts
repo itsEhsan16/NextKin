@@ -6,10 +6,15 @@
  * What never counts: a version (Python 3, Java 8, v2.1, 3.x), a year or a date (2019, 03/2020,
  * Q3), and digits that are part of a technology's name (S3, EC2, HTML5, K8s) — the normalizer
  * claims those first.
+ *
+ * Nor does a number that measures nothing (engine 1.3.0, toreview §212): "improving 10" and "role
+ * based access by 100" say no unit and no counted thing. A number counts with a unit on it (40%,
+ * $1.2M, 3x, 200ms), a thing it counts after it ("6 engineers", "5 days"), or as a size or the end
+ * of a range ("team of 6", "from 5 days to 2").
  */
 
 import { mentionsIn, type Taxonomy } from './normalizer';
-import { tokenize } from './text';
+import { tokenize, type Token } from './text';
 
 const DIGIT = /\d/;
 const YEAR = /^(?:19|20)\d{2}$/;
@@ -28,6 +33,28 @@ const NUMBER_WORDS = new Set([
   'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'twenty',
   'dozen', 'dozens', 'hundred', 'hundreds', 'thousand', 'thousands', 'million', 'millions', 'billion', 'billions',
 ]);
+
+/** A unit written onto the number: 3x, 10k, 1.2m, 200ms, 4h, 50+. */
+const UNIT_SUFFIX = /^\d[\d.,]*(?:x|k|m|bn|b|ms|s|sec|secs|min|mins|h|hr|hrs|d|gb|mb|tb|kb|\+)$/;
+const CURRENCY = new Set(['$', '€', '£', '₹', '¥']);
+/** After a number, these start another thought: they are not the thing it counts. */
+const NOT_COUNTED = new Set(['and', 'or', 'but', 'in', 'on', 'at', 'for', 'with', 'by', 'the', 'a', 'an', 'as', 'while', 'through', 'using', 'via', 'und', 'oder']);
+/** Before a bare number, these make it a size or the end of a range. */
+const SIZE_BEFORE = new Set(['of', 'to', 'von', 'bis', 'auf']);
+
+/** Whether the number at `i` measures something: a unit, a counted thing, a size or a range. */
+function measures(tokens: readonly Token[], i: number): boolean {
+  const token = tokens[i]!;
+  const next = tokens[i + 1];
+  const before = tokens[i - 1];
+  if (UNIT_SUFFIX.test(token.key)) return true;
+  if (next?.key === '%' || next?.key === '×') return true;
+  if (before && CURRENCY.has(before.key)) return true;
+  if (next?.kind === 'word' && !NOT_COUNTED.has(next.key)) return true;
+  // "5-day", "3-person": a hyphen straight into the thing counted.
+  if (next?.key === '-' && tokens[i + 2]?.kind === 'word') return true;
+  return before?.kind === 'word' && SIZE_BEFORE.has(before.key);
+}
 
 export function isQuantified(bullet: string, taxonomy: Taxonomy): boolean {
   const claimed = mentionsIn(taxonomy, bullet);
@@ -54,7 +81,7 @@ export function isQuantified(bullet: string, taxonomy: Taxonomy): boolean {
       i += 2;
       continue;
     }
-    return true;
+    if (measures(tokens, i)) return true;
   }
   return false;
 }

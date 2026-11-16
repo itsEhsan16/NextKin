@@ -79,7 +79,7 @@ describe('"Add the result" for an ordinary account', () => {
       return fitted(...args);
     };
     const draft = await draftFigure({ db, log, ai: { gateway: fakeGateway(db, counting), cache: createMemoryKv() } }, { userId, role: 'user' }, { resumeId, roleId: 'r0', line: 0 });
-    expect(draft.by).toBe('rules');
+    expect(draft).toMatchObject({ by: 'rules', reason: 'no_consent' });
     expect(calls).toBe(0);
   });
 });

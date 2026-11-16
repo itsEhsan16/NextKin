@@ -25,11 +25,17 @@ import type { Importance } from './requirements';
 import { scoreCore, type Assumptions, type FormatCheckId, type ScoreInput, type ScoreResult, type SectionCheckId } from './rubric';
 
 export type PathAction =
-  | { type: 'confirm_skill'; requirementId: string; skillName: string; importance: Importance; roleId: string | null; from: 'gap' | 'listed' }
+  | { type: 'confirm_skill'; requirementId: string; skillName: string; importance: Importance; roleId: string | null; from: 'gap' | 'listed'; /** A term the job repeats is written this many times (rubric-4). */ timesToSay?: number }
   | { type: 'add_figure'; roleId: string; bulletIndex: number; text: string }
   | { type: 'pass_section'; check: SectionCheckId }
   | { type: 'pass_format'; check: FormatCheckId }
-  | { type: 'resolve_timeline'; roleId: string; skillId: string; skillName: string };
+  | { type: 'resolve_timeline'; roleId: string; skillId: string; skillName: string }
+  /** Write a keyword the job's way: the resume says it in other words (rubric-4). */
+  | { type: 'mirror_wording'; requirementId: string; jd: string; resume: string }
+  /** Say a term the job repeats once more, in the summary or a line that is about it (rubric-4). */
+  | { type: 'repeat_keyword'; requirementId: string; skillName: string; said: number; mentions: number }
+  /** Put the job's title in the headline (rubric-4). */
+  | { type: 'match_title'; title: string };
 
 export interface PathStep {
   id: string;
@@ -60,7 +66,7 @@ export interface TargetPath {
 export interface TargetPathOptions {
   targetBps: Bps;
   /** Checks the AI satisfies on its own: the template's formatting, a summary written from facts. */
-  aiCan?: { format?: readonly FormatCheckId[]; sections?: readonly SectionCheckId[] };
+  aiCan?: { format?: readonly FormatCheckId[]; sections?: readonly SectionCheckId[]; wording?: boolean; title?: boolean; repeat?: boolean };
 }
 
 interface State {
@@ -80,9 +86,9 @@ export const projectPlaceId = (project: { id?: string }, index: number): string 
 /** The placeholder the fixes engine uses: only to measure; the user writes the real figure. */
 const withFigure = (doc: ScoringDocument, roleId: string, index: number): ScoringDocument => ({
   ...doc,
-  roles: doc.roles.map((r) => (r.id === roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === index ? `${b} (1)` : b)) } : r)),
+  roles: doc.roles.map((r) => (r.id === roleId ? { ...r, bullets: r.bullets.map((b, i) => (i === index ? `${b} (10%)` : b)) } : r)),
   ...(doc.projects
-    ? { projects: doc.projects.map((p, at) => (projectPlaceId(p, at) === roleId ? { ...p, bullets: p.bullets.map((b, i) => (i === index ? `${b} (1)` : b)) } : p)) }
+    ? { projects: doc.projects.map((p, at) => (projectPlaceId(p, at) === roleId ? { ...p, bullets: p.bullets.map((b, i) => (i === index ? `${b} (10%)` : b)) } : p)) }
     : {}),
 });
 
@@ -91,7 +97,11 @@ function apply(state: State, action: PathAction): State {
   switch (action.type) {
     case 'confirm_skill': {
       // The user's "yes, I used it there" is a new fact: it backs the document and the yardstick.
-      const document = withRoleSkill(input.document, action.skillName, action.roleId);
+      const placed = withRoleSkill(input.document, action.skillName, action.roleId);
+      // A term the job repeats is said again in a sentence. Measured as said in the summary; the
+      // writer may place it in a line of the role instead.
+      const again = action.timesToSay ? Array.from({ length: action.timesToSay - 1 }, () => action.skillName) : [];
+      const document = again.length > 0 ? { ...placed, summary: [placed.summary ?? '', ...again].filter(Boolean).join('. ') } : placed;
       const profile = input.profile ? withRoleSkill(input.profile, action.skillName, input.profile.roles.some((r) => r.id === action.roleId) ? action.roleId : null) : undefined;
       return { input: { ...input, document, ...(profile ? { profile } : {}) }, assume };
     }
@@ -103,6 +113,15 @@ function apply(state: State, action: PathAction): State {
       return { input, assume: { ...assume, passedFormat: new Set([...assume.passedFormat, action.check]) } };
     case 'resolve_timeline':
       return { input, assume: { ...assume, removedClaims: new Set([...assume.removedClaims, `${action.roleId}\u0000${action.skillId}`]) } };
+    case 'mirror_wording':
+      return { input: { ...input, document: withRoleSkill(input.document, action.jd, null) }, assume };
+    case 'repeat_keyword': {
+      // Measured as the term said in the summary; the writer may place it in a line instead.
+      const summary = [input.document.summary ?? '', action.skillName].filter(Boolean).join('. ');
+      return { input: { ...input, document: { ...input.document, summary } }, assume };
+    }
+    case 'match_title':
+      return { input: { ...input, document: { ...input.document, headline: action.title } }, assume };
   }
 }
 
@@ -120,16 +139,41 @@ function idOf(action: PathAction): string {
       return `format:${action.check}`;
     case 'resolve_timeline':
       return `timeline:${action.roleId}:${action.skillId}`;
+    case 'mirror_wording':
+      return `wording:${action.requirementId}`;
+    case 'repeat_keyword':
+      return `repeat:${action.requirementId}`;
+    case 'match_title':
+      return 'title';
   }
 }
 
 function candidates(input: ScoreInput, base: Omit<ScoreResult, 'fixes'>): PathAction[] {
   const actions: PathAction[] = [];
+  const rubric = input.rubric ?? rubricById(input.rubricId);
   for (const entry of base.ledger) {
     if (entry.kind !== 'skill' || !entry.skillId || !entry.tier) continue;
-    if (entry.tier !== 'demonstrated') {
-      actions.push({ type: 'confirm_skill', requirementId: entry.requirementId, skillName: entry.text, importance: entry.importance, roleId: bestRoleFor(entry.text, input.document, input), from: entry.tier === 'listed' ? 'listed' : 'gap' });
+    // On the page in other words than the job's: the step is to write it the job's way.
+    if (entry.wording && entry.status === 'partial' && rubric.credit.otherWording !== undefined) {
+      actions.push({ type: 'mirror_wording', requirementId: entry.requirementId, jd: entry.wording.jd, resume: entry.wording.resume });
+    } else if (entry.tier !== 'demonstrated') {
+      actions.push({
+        type: 'confirm_skill',
+        requirementId: entry.requirementId,
+        skillName: entry.text,
+        importance: entry.importance,
+        roleId: bestRoleFor(entry.text, input.document, input),
+        from: entry.tier === 'listed' ? 'listed' : 'gap',
+        ...(entry.repeated && rubric.repetition ? { timesToSay: rubric.repetition.full } : {}),
+      });
     }
+    if (entry.status !== 'gap' && entry.repeated && rubric.repetition && entry.repeated.mentions < rubric.repetition.full) {
+      actions.push({ type: 'repeat_keyword', requirementId: entry.requirementId, skillName: entry.text, ...entry.repeated });
+    }
+  }
+  const keywordBasis = base.components.find((c) => c.key === 'keywords')?.basis;
+  if (input.jd?.title && keywordBasis && (keywordBasis.titleFound ?? 0) < (keywordBasis.titleWords ?? 0)) {
+    actions.push({ type: 'match_title', title: input.jd.title });
   }
   for (const r of input.document.roles) {
     r.bullets.forEach((text, bulletIndex) => {
@@ -137,7 +181,7 @@ function candidates(input: ScoreInput, base: Omit<ScoreResult, 'fixes'>): PathAc
     });
   }
   // Project lines can carry a result too, where the rubric counts them (rubric-3).
-  if ((input.rubric ?? rubricById(input.rubricId)).achievements?.projects) {
+  if (rubric.achievements?.projects) {
     (input.document.projects ?? []).forEach((p, at) => {
       p.bullets.forEach((text, bulletIndex) => {
         if (!isQuantified(text, input.taxonomy)) actions.push({ type: 'add_figure', roleId: projectPlaceId(p, at), bulletIndex, text });
@@ -172,6 +216,10 @@ function blockersOf(result: Omit<ScoreResult, 'fixes'>): PathBlocker[] {
 function isAi(action: PathAction, aiCan: TargetPathOptions['aiCan']): boolean {
   if (action.type === 'pass_format') return aiCan?.format?.includes(action.check) ?? false;
   if (action.type === 'pass_section') return aiCan?.sections?.includes(action.check) ?? false;
+  // The same skill in the job's spelling, and the job's title as the headline: nothing new is claimed.
+  if (action.type === 'mirror_wording') return aiCan?.wording ?? false;
+  if (action.type === 'match_title') return aiCan?.title ?? false;
+  if (action.type === 'repeat_keyword') return aiCan?.repeat ?? false;
   return false;
 }
 

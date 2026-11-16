@@ -135,17 +135,19 @@ export function regenerated(
 export function patchForFix(content: ResumeContent, fix: AtsFix): ResumeContent {
   const skill = fix.skill;
   if (fix.type !== 'surface_backed_skill' || !fix.insertable || !skill) throw new NotFoundError('AtsFix', fix.id);
+  // The skills list is what prints, so the skill always joins it (toreview §212: a tag on the
+  // role alone is on no page, and earned credit for a keyword the resume did not show).
+  const listed = content.skills.includes(skill) ? content : { ...content, skills: [...content.skills, skill] };
   if (fix.roleId) {
-    const target = content.experience.find((role) => role.roleId === fix.roleId || role.id === fix.roleId);
+    const target = listed.experience.find((role) => role.roleId === fix.roleId || role.id === fix.roleId);
     if (target) {
       return {
-        ...content,
-        experience: content.experience.map((role) =>
+        ...listed,
+        experience: listed.experience.map((role) =>
           role === target && !(role.skills ?? []).includes(skill) ? { ...role, skills: [...(role.skills ?? []), skill] } : role,
         ),
       };
     }
   }
-  if (content.skills.includes(skill)) return content;
-  return { ...content, skills: [...content.skills, skill] };
+  return listed;
 }

@@ -17529,3 +17529,79 @@ Whether a suggestion is true is the candidate's call. Branch `tailor/perfect-sco
 - **The new prompts run for the first time on the demo.** If a job stops reading or a resume
   stops generating there, those three are the first place to look; the worker log names it.
 - Scores on the demo move to `rubric-3` as each resume is next measured.
+
+## §212 — Keywords the job names, a score a checker would give, results nobody types (owner, 2026-11-17)
+
+The owner tailored a resume for "AI-Native Product Manager – Graduate Trainee" on the demo.
+NextKin said 9.9 and 40 of 41 keywords; an outside checker said 80%, with Market Analysis,
+Product design, AI/ML, Leadership and Committed missing, "Product Management" 9 times in the
+job against 2, and 4 measured results. "Add the result" opened on an empty box. The PDF printed
+"improving 10", 35 keywords on one skills line, and Certifications twice. Branch
+`fix/keywords-score-results`, five commits, not merged, not deployed.
+
+**What changed**
+- **rubric-4, engine 1.3.0.** Keywords 75 (hard 45, soft 10, repeated terms 10, job title 10),
+  results 10, sections 10, timeline 3, formatting 2. A known skill written another way than the
+  job writes it earns half until mirrored. A measured result needs a unit or a counted thing.
+  Role skill tags, which no template prints, are no longer evidence.
+- **Reading a job:** a second model pass (`jd.recall` v1) returns what the first list missed;
+  code adds skills the taxonomy knows by name that the text states; a job read before this is
+  read again once when its page is next opened (`structure_version` 2 → 3).
+- **Writing:** a skills line takes 8 accepted keywords, the rest open "Methods & Domain
+  Knowledge"; accepted soft skills go on "Professional Skills"; `resume.generate` v10 says the
+  job's repeated terms twice in sentences and uses the job's spelling.
+- **Add the result (web and mobile):** the draft says why it has no AI line and asks the model
+  once more; the dialog shows the reason with "Ask the AI again"; a field appears only when
+  asked for; a typed number that measures nothing is refused in the dialog and by the server.
+- **PDF:** a file's own Certifications section prints once.
+
+**Judgement calls to check**
+- **The weights are mine**, chosen to track what the checker reported, with no calibration set.
+  Timeline at 3 means a date conflict costs almost nothing in the total (it is still reported),
+  and the path no longer offers "take the claim off" because that costs the keyword more.
+- **Half credit for another wording** applies only to skills the taxonomy knows ("Postgres" for
+  "PostgreSQL"). An unknown phrase is still matched by its words in order, endings folded.
+  "market research" still does not count for "market analysis", and nothing suggests that it
+  could: the candidate is offered "Market Analysis" as a missing keyword instead. The near-miss
+  hint from the plan (step 1.4's "you have market research") was not built.
+- **Repeated terms** are the ones the job's text says 3+ times; full at 2 mentions on the page.
+  The checker's own rule is not published; this is a guess at it.
+- **The job title** is read word by word in the headline and summary, brackets left out. A
+  tailored run prints the job's title as the headline, so it is normally full marks after a run.
+- **The planner treats "write it the job's way", "say it again" and "set the headline" as the
+  AI's own steps** on a tailored run. The writer is told to do the first two; nothing in code
+  forces it, so a run can land under what the plan priced. The real re-score is what is shown.
+- **The code sweep adds a known skill as "preferred"** when a sentence of four or more words
+  names it. A skill named only in a company's "about us" will be offered as a keyword too.
+- **"Methods & Domain Knowledge" and "Professional Skills"** are line names I chose.
+- **Every stored score moves** when next measured, mostly down (the mock's base resume against
+  its job: 92 to 83; the web mock: 6.3 to 3.4). Stored runs keep their rubric.
+- **`rubric_versions` in the database** still says v2 is current, as it did under rubric-3.
+- `LineResult.tsx` (330 lines) and `PlanFigureEditor.tsx` (291) are over the 250-line guide.
+- The mobile plan row still reads "AI suggests about 20%" while its sheet now opens on the
+  first picked result.
+
+**Not verified**
+- **Why the demo fell back** for "Add the result". The AWS session had expired, so its log was
+  not read. After a deploy the dialog itself will say which reason it is.
+- **No live model run** of `jd.recall` v1 or `resume.generate` v10.
+- **The Zycus job was not re-run**: its text is not in the repo, so there is no golden case for
+  it and the 80% was not reproduced. `eval:jd` now runs the second pass but was not run live.
+- **Integration tests run** (owner's go-ahead, 2026-11-17): 1,619 pass, 26 fail on the first
+  run. Three were this work and are fixed (below). The other 23 are not: 17 need ClamAV or
+  stripe-mock, which were not started (`scan` and payments profiles), and 6 are the ones that
+  failed before §211 (authz matrix, libraryApi, libraryP10 x2, renders x2).
+- **Prompts need seeding** wherever this runs: `pnpm seed --reference-only`, never `pnpm seed`.
+- Mobile on a device.
+
+### §212.1 — What the integration run caught (2026-11-17)
+
+- **Role skill tags are still read by the timeline check.** Dropping them from the scoring
+  document stopped a Kubernetes claim on a too-early role being flagged. They are passed again;
+  rubric-4 carries `printedOnly`, so they are date-checked but earn no keyword credit.
+- **"Apply this fix" wrote only a tag.** `patchForFix` and `applySkillFix` put a backed skill on
+  the role as a tag, which no page prints. Both now also list it in the skills.
+- **A layout check may not move the total.** Formatting is 2 of 100, so one failed check of six
+  is a third of a point; `tailorCompareP14` now expects "not lower" where it expected "higher".
+- **An unbacked keyword earned repeated-term credit** (found by a mobile test): fixed.
+

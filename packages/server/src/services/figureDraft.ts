@@ -4,7 +4,7 @@ import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { mentionsIn } from '@nextkin/engines/normalizer';
 import { numbersIn } from '@nextkin/engines/numbers';
 import { phraseKey } from '@nextkin/engines/text';
-import { fallbackFigureDraft, type FigureDraft, type FigureOption } from '@nextkin/shared/models/tailor';
+import { fallbackFigureDraft, hasSuggestion, type FigureDraft, type FigureDraftReason, type FigureOption } from '@nextkin/shared/models/tailor';
 import { z } from 'zod';
 
 import type { AiGateway } from '../ai/gateway';
@@ -111,6 +111,10 @@ export function keepsToLine(line: string, draft: { before: string; after: string
   return own.length === 0 || own.filter((w) => kept.has(w)).length / own.length >= 0.6;
 }
 
+/** What the second ask adds, when the first answer could not be used. */
+const RETRY_NOTE =
+  'Your last answer could not be used. Keep the bullet’s own words: add no number, technology or claim to "before" or "after". Give 2 or 3 options, each with exactly 3 amounts that are a figure with its unit.';
+
 export interface FigureDraftDeps {
   db: Database;
   log: Logger;
@@ -134,37 +138,53 @@ export async function draftFigure(deps: FigureDraftDeps, identity: Identity, req
   // read as the candidate, the active version was never found and every draft fell back to the
   // rules unseen (toreview §207). The system reads it, as the job reader does.
   const prompt = found.allowed ? await deps.db.withSystem('figure: read the draft prompt', (tx) => activePrompt(tx, FIGURE_TEMPLATE)).catch(() => null) : null;
-  const fallback = fallbackDraft(found.line);
+  // The rules' draft carries why the AI's is missing, so the dialog can say so (toreview §212).
+  const fallback = (reason: FigureDraftReason): FigureDraft => ({ ...fallbackDraft(found.line), reason });
   // Say why there is no model draft, so a missing prompt can't fall back unseen (owner, 2026-11-14).
   // The reason goes in the message: the log's allowlist drops an unlisted field.
   if (deps.ai && !prompt) deps.log.warn({ event: 'figure.draft_skipped' }, `figure draft used the rules: ${found.allowed ? 'no active prompt' : 'no AI consent'}`);
-  if (!deps.ai || !prompt) return fallback;
+  if (!deps.ai) return fallback('no_ai');
+  if (!prompt) return fallback(found.allowed ? 'no_prompt' : 'no_consent');
+  const ai = deps.ai;
 
   const key = `fig:${prompt.id}:${createHash('sha256').update(`${found.title}\n${found.line}`).digest('hex')}`;
-  try {
-    let data = await deps.ai.cache.get<z.infer<typeof figureDraftSchema>>(key);
-    if (!data) {
-      ({ data } = await deps.ai.gateway.extract({
+  const ask = async (again: boolean) =>
+    (
+      await ai.gateway.extract({
         stage: 'figure_draft',
         system: prompt.body.system.map((text) => ({ text })),
-        input: { roleTitle: found.title, line: found.line },
+        input: { roleTitle: found.title, line: found.line, ...(again ? { tryAgain: RETRY_NOTE } : {}) },
         schema: figureDraftSchema,
         name: 'figure_draft',
         description: 'The bullet rewritten around a gap where the user writes its real result.',
         context: { userId: identity.userId, correlationId: null, promptVersionId: prompt.id },
-      }));
-      await deps.ai.cache.set(key, data, CACHE_SECONDS);
+      })
+    ).data;
+  /** The draft the candidate can use: it keeps to the line and offers a result or a figure. */
+  const usable = (data: z.infer<typeof figureDraftSchema>): FigureDraft | null => {
+    if (!keepsToLine(found.line, data)) return null;
+    const draft: FigureDraft = { before: data.before, after: data.after, hint: data.hint, by: 'model' };
+    if (fitsSuggestion(data.suggestion)) draft.suggestion = data.suggestion.trim();
+    const options = keptOptions(found.line, data.options);
+    if (options.length) draft.options = options;
+    return hasSuggestion(draft) ? draft : null;
+  };
+  try {
+    const cached = await ai.cache.get<z.infer<typeof figureDraftSchema>>(key);
+    let draft = cached ? usable(cached) : null;
+    // One more try when the answer strayed or offered nothing to pick (toreview §212): the
+    // candidate should not have to type because one answer missed.
+    for (let attempt = 0; !draft && attempt < 2; attempt += 1) {
+      if (attempt === 0 && cached) continue;
+      const data = await ask(attempt > 0);
+      draft = usable(data);
+      if (draft) await ai.cache.set(key, data, CACHE_SECONDS);
     }
-    if (keepsToLine(found.line, data)) {
-      const draft: FigureDraft = { before: data.before, after: data.after, hint: data.hint, by: 'model' };
-      if (fitsSuggestion(data.suggestion)) draft.suggestion = data.suggestion.trim();
-      const options = keptOptions(found.line, data.options);
-      if (options.length) draft.options = options;
-      return draft;
-    }
-    deps.log.info({ event: 'figure.draft_rejected' }, 'figure draft strayed from the line; using the rules');
+    if (draft) return draft;
+    deps.log.info({ event: 'figure.draft_rejected' }, 'figure draft strayed from the line twice; using the rules');
+    return fallback('rejected');
   } catch (error) {
     deps.log.warn({ event: 'figure.draft_failed', err: error instanceof Error ? error.message : String(error) }, 'figure draft failed; using the rules');
+    return fallback('failed');
   }
-  return fallback;
 }

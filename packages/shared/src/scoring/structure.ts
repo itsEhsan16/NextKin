@@ -12,6 +12,17 @@ export const STANDARD_ORDER = ['summary', 'skills', 'experience', 'projects', 'e
 
 const lower = (s: string) => s.trim().toLowerCase();
 
+const CERTIFICATIONS_HEADING = /certific|licen[cs]e|credential/i;
+
+/**
+ * Whether the file's own Certifications section was kept as it was written (an extra section with
+ * that heading). A file that writes its certificates as sentences is read both ways: as that
+ * section, and as the typed list the profile uses. Printing both set the section twice (toreview
+ * §212), so where the file's own lines are there, they are what prints.
+ */
+export const certificationsAsWritten = (doc: Pick<CanonicalResumeJson, 'sections'>): boolean =>
+  (doc.sections ?? []).some((s) => CERTIFICATIONS_HEADING.test(s.heading) && (s.lines.length > 0 || s.entries.length > 0));
+
 export function reconcileStructure(doc: CanonicalResumeJson): CanonicalResumeJson {
   const roles = doc.roles.map((role) => {
     if (!role.entries) return role;

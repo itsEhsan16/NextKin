@@ -90,7 +90,8 @@ describe('the tailor comparison (P14)', () => {
     const edited = await compareResumeToJd(db, identity, jd.id, resumeId);
     expect(edited).toMatchObject({ pagesEstimated: true });
     expect(layoutRow(edited)).toMatchObject({ ok: true, detail: expect.stringContaining('NextKin’s one-column template') });
-    expect(edited.score).toBeGreaterThan(uploaded.score);
+    // Layout is 2 points of 100 since rubric-4 (toreview §212), so one check may not move the total.
+    expect(edited.score).toBeGreaterThanOrEqual(uploaded.score);
   }, 60_000);
 
   it("never measures another user's resume", async () => {

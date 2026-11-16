@@ -65,4 +65,17 @@ describe('latexResumeOf', () => {
   it('produces TeX the lint accepts', () => {
     for (const density of [0, 1, 2] as const) expect(lintTex(texOf(latexResumeOf(uploaded, account, { density }))).problems).toEqual([]);
   });
+
+  it('prints a file’s own Certifications section once, not again as the typed list (toreview §212)', () => {
+    const both = {
+      ...document,
+      layout: undefined,
+      certifications: [{ factId: 'upload-c0', name: 'Cloud Data Analytics Certificate', issuer: 'Cloud Skills' }],
+      sections: [{ id: 's9', heading: 'Certifications', entries: [], lines: [{ id: 'u-x9-l0', text: 'Cloud Data Analytics Certificate - Cloud Skills', evidence: [], origin: 'user' as const }] }],
+    };
+    const headings = (doc: Parameters<typeof latexResumeOf>[0]) => latexResumeOf(doc, account).sections.map((s) => s.heading).filter((h) => h === 'Certifications');
+    expect(headings(both as never)).toHaveLength(1);
+    // With no such section in the file, the typed list is what prints.
+    expect(headings({ ...both, sections: undefined } as never)).toHaveLength(1);
+  });
 });

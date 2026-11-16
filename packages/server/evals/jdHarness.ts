@@ -80,9 +80,9 @@ export function checkCase(c: JdCase, jd: VerifiedJd): JdCheck[] {
 /** Checks a case labelled "states none" failing: the reading invented something. */
 const INVENTION = new Set(['noPay', 'noYears', 'noWorkMode', 'notRequired', 'noPage', 'notSkill']);
 
-export function seedPrompt(): PromptVersion {
-  const p = PROMPTS.find((x) => x.name === 'jd.extract')!;
-  return { id: `seed:jd.extract:v${p.version ?? 1}`, templateId: 'seed:jd.extract', version: p.version ?? 1, body: p.body } as PromptVersion;
+export function seedPrompt(name = 'jd.extract'): PromptVersion {
+  const p = PROMPTS.find((x) => x.name === name)!;
+  return { id: `seed:${name}:v${p.version ?? 1}`, templateId: `seed:${name}`, version: p.version ?? 1, body: p.body } as PromptVersion;
 }
 
 export async function runJdGolden(gateway: AiGateway, cases: readonly JdCase[] = JD_GOLDEN): Promise<JdReport> {
@@ -90,7 +90,8 @@ export async function runJdGolden(gateway: AiGateway, cases: readonly JdCase[] =
   const checks: JdCheck[] = [];
   for (const c of cases) {
     try {
-      const { jd } = await extractJd({ gateway, cache: createMemoryKv(), prompt, text: c.text, context: { tag: 'eval' } });
+      // Read as the service reads it: the second pass included (toreview §212).
+      const { jd } = await extractJd({ gateway, cache: createMemoryKv(), prompt, recall: seedPrompt('jd.recall'), text: c.text, context: { tag: 'eval' } });
       checks.push(...checkCase(c, jd));
     } catch (error) {
       checks.push({ caseId: c.id, check: 'read', pass: false, detail: error instanceof Error ? error.message : String(error) });

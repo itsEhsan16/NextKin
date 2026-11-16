@@ -62,6 +62,8 @@ export function stageJdOf(row: NonNullable<Awaited<ReturnType<typeof readJdRow>>
     requiredSkills: pick('requiredSkills', x.requiredSkills ?? []),
     // Soft skills are keywords the job prefers, as the comparison scores them (`jdLists`; D-25).
     preferredSkills: [...pick('preferredSkills', x.preferredSkills ?? []), ...(x.softSkills ?? [])],
+    ...(x.softSkills?.length ? { softSkills: x.softSkills } : {}),
+    ...(pick('title', x.title ?? null) ? { titled: true } : {}),
     tools: pick('tools', x.tools ?? []),
     responsibilities: pick('responsibilities', x.responsibilities ?? []),
     rawText: row.raw_text,
@@ -72,7 +74,19 @@ export function stageJdOf(row: NonNullable<Awaited<ReturnType<typeof readJdRow>>
   return jd;
 }
 
+/** How often a job must say a term for the writer to say it twice, and how many such terms it is given. */
+const REPEATED_MIN = 3;
+const REPEATED_MAX = 8;
+
+/** The job's repeated terms the resume may name: backed by the facts, or accepted by the candidate. */
+function sayTwiceOf(plan: ResumePlan, accepted: readonly string[]): string[] {
+  const may = new Set([...plan.backed, ...accepted].map((s) => s.toLowerCase()));
+  return (plan.repeated ?? []).filter((term) => may.has(term.toLowerCase())).slice(0, REPEATED_MAX);
+}
+
 export interface ResumePlan {
+  /** Terms the job says three times or more, most said first: the writer says each twice (toreview §212). */
+  repeated?: string[];
   roles: { roleId: string; allowedSkills: string[]; emphasis: string[] }[];
   /** JD requirements the profile backs, in JD order; the generator leads with these. */
   backed: string[];
@@ -98,6 +112,7 @@ export function planFor(facts: ProfileFacts, jd: StageJd | null, run: RunInput):
   let backed: string[] = [];
   let gaps: string[] = [];
   const emphasis = new Map<string, string[]>();
+  let repeated: string[] = [];
   if (jd) {
     const requirements = requirementsFromJd(
       {
@@ -109,6 +124,10 @@ export function planFor(facts: ProfileFacts, jd: StageJd | null, run: RunInput):
       },
       TAXONOMY,
     );
+    repeated = requirements
+      .filter((r) => r.kind === 'skill' && (r.timesSaid ?? 0) >= REPEATED_MIN)
+      .sort((x, y) => (y.timesSaid ?? 0) - (x.timesSaid ?? 0))
+      .map((r) => r.text);
     const phrases = requirements.flatMap((r) => (r.skill && !r.skill.known ? [r.skill.id] : []));
     const { evidence } = evidenceOf(profileDocument(facts, run.snapshot.contact), TAXONOMY, { minCopiedWords: 8, phrases });
     const ledger = buildLedger({
@@ -134,6 +153,7 @@ export function planFor(facts: ProfileFacts, jd: StageJd | null, run: RunInput):
     })),
     backed,
     gaps,
+    ...(repeated.length ? { repeated } : {}),
   };
 }
 
@@ -204,6 +224,8 @@ export function generationInput(
           responsibilities: jd.responsibilities.slice(0, 30),
           // Ticked by the user as skills they have (toreview §116): the model places each one.
           ...(keywordsToPlace.length ? { keywordsToPlace: [...keywordsToPlace] } : {}),
+          // The terms the job itself keeps repeating, of those the resume may name (toreview §212).
+          ...(sayTwiceOf(plan, keywordsToPlace).length ? { sayTwice: sayTwiceOf(plan, keywordsToPlace) } : {}),
         }
       : null,
     profile: {

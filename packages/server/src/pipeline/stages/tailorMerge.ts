@@ -61,6 +61,8 @@ export const tailorOf = (run: Record<string, unknown>): TailorRunInput | null =>
 export interface TailorJob {
   title: string;
   skills: readonly string[];
+  /** The job's soft skills: accepted ones get their own skills line (toreview §212). */
+  soft?: readonly string[];
 }
 
 const QUICK_ROLES = 2;
@@ -288,7 +290,7 @@ export function mergeTailored(args: {
   const accepted = new Set(request.added.map(skillKey));
   const all = skillsFor(base, request, job, fixes.has('skills')).filter((s, i) => i < 60 || accepted.has(skillKey(s.name)));
   // Lines of the same name become one, and a skill is listed once (toreview §170).
-  const skillGroups = base.skillGroups ? tidyGroups(placeInGroups(groupsFor(base.skillGroups, all, fixes.has('skills')), request.added, TAXONOMY), TAXONOMY) : undefined;
+  const skillGroups = base.skillGroups ? tidyGroups(placeInGroups(groupsFor(base.skillGroups, all, fixes.has('skills')), request.added, TAXONOMY, { soft: job?.soft ?? [] }), TAXONOMY) : undefined;
   const skills = skillGroups ? listedOnce(all, skillGroups) : all;
   const merged: CanonicalResumeJson = {
     ...rest,

@@ -33,7 +33,7 @@ const ALL_FORMAT: readonly FormatCheckId[] = ['singleColumn', 'standardHeadings'
  * layout check but date precision, which is the user's own dates), and it writes the summary from
  * the resume's own lines.
  */
-export const TAILOR_PATH: TargetPathOptions = { targetBps: TARGET_SCORE * 1000, aiCan: { format: ALL_FORMAT, sections: ['summary'] } };
+export const TAILOR_PATH: TargetPathOptions = { targetBps: TARGET_SCORE * 1000, aiCan: { format: ALL_FORMAT, sections: ['summary'], wording: true, title: true, repeat: true } };
 
 export type PlanWho = 'ai' | 'you' | 'nobody';
 
@@ -104,6 +104,12 @@ function pathStepOf(step: PathStep, report: DocumentScore['report'], rawText: st
       return { ...scored, kind: 'section', title: a.check === 'summary' && step.who === 'ai' ? 'Write a summary aimed at this job' : SECTION_FIX[a.check as SectionCheckId], have: 'Missing or too short', basis: step.who === 'ai' ? 'The AI writes it from your own lines' : 'What re-scoring with it gives' };
     case 'pass_format':
       return { ...scored, kind: 'format', title: FORMAT_LABEL[a.check], have: 'Your file’s layout', basis: step.who === 'ai' ? 'Downloads in NextKin’s one-column template' : 'Write every date the same way' };
+    case 'mirror_wording':
+      return { ...scored, kind: 'wording', title: `Write “${a.jd}” the way the job does`, have: `Your resume says “${a.resume}”`, basis: 'A checker looks for the job’s exact words. The AI rewrites it; nothing new is claimed.', keyword: a.jd };
+    case 'repeat_keyword':
+      return { ...scored, kind: 'wording', title: `Say “${a.skillName}” more than once`, have: `The job says it ${a.said} times; your resume ${a.mentions === 1 ? 'once' : `${a.mentions} times`}`, basis: 'The AI works it into your summary or a line that is already about it.', keyword: a.skillName };
+    case 'match_title':
+      return { ...scored, kind: 'headline', title: `Put “${clip(a.title, 60)}” under your name`, have: 'The job’s title is not in your headline or summary', basis: 'Recruiters search by job title. The AI sets the headline to the job’s title.' };
     case 'resolve_timeline': {
       const fix = report.fixes.find((f) => f.id === `timeline:${a.roleId}:${a.skillId}`);
       return { ...scored, kind: 'timeline', title: fix?.label ?? `${a.skillName} doesn’t fit a role’s dates`, have: 'A date or a technology’s era doesn’t add up', basis: 'Fix the dates, or take it off that role' };

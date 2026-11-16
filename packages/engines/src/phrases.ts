@@ -46,7 +46,7 @@ export function phraseIndex(ids: Iterable<string>): { id: string; words: string[
   return out;
 }
 
-export function phraseMentions(text: string, phrases: readonly { id: string; words: string[] }[]): PhraseMention[] {
+export function phraseMentions(text: string, phrases: readonly { id: string; words: string[] }[], every = false): PhraseMention[] {
   if (phrases.length === 0 || !text) return [];
   const words = tokenize(text).filter((t) => t.kind === 'word');
   const keys = words.map((w) => stem(w.key));
@@ -58,7 +58,9 @@ export function phraseMentions(text: string, phrases: readonly { id: string; wor
         const start = words[i]!.start;
         const end = words[i + n - 1]!.end;
         out.push({ id: phrase.id, start, end, surface: text.slice(start, end) });
-        break;
+        // `every`: each place it is said, for counting how often (rubric-4's repeated terms).
+        if (!every) break;
+        i += n - 1;
       }
     }
   }

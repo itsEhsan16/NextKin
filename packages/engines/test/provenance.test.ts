@@ -16,6 +16,7 @@ const PINNED: Record<string, string> = {
   'rubric-1': 'f1:71283963e2dd2d1e',
   'rubric-2': 'f1:b6446afd23c3b330',
   'rubric-3': 'f1:3957b537ca3a40d4',
+  'rubric-4': 'f1:ec9d3686c1f07727',
 };
 
 describe('the versioned method (P8-01)', () => {
@@ -39,7 +40,7 @@ describe('the versioned method (P8-01)', () => {
       const stored = canonicalJson(score(backendInput({ rubricId })));
       expect(canonicalJson(score(backendInput({ rubricId }))), rubricId).toBe(stored);
     }
-    expect(score(backendInput()).stamp.rubric).toBe('rubric-3');
+    expect(score(backendInput()).stamp.rubric).toBe('rubric-4');
   });
 
   it('rubric-3 keeps the weights and bands, and changes only what earns keyword and results credit (D-25)', () => {
@@ -48,6 +49,16 @@ describe('the versioned method (P8-01)', () => {
     expect(three.credit).toEqual({ demonstrated: 10_000, listed: 10_000, unbacked: 0, yearsShort: 10_000 });
     expect(three.achievements).toEqual({ target: 5, projects: true });
     expect(two.achievements).toBeUndefined();
+  });
+
+  it('rubric-4 is the checker rubric: keywords three quarters, read four ways (toreview §212)', () => {
+    const four = rubricById('rubric-4');
+    expect(Object.fromEntries(four.components.map((c) => [c.key, c.weightBps]))).toEqual({ keywords: 7500, timeline: 300, sections: 1000, formatting: 200, achievements: 1000 });
+    expect(four.components.reduce((sum, c) => sum + c.weightBps, 0)).toBe(10_000);
+    expect(four.keywordParts).toEqual({ hard: 45, soft: 10, repetition: 10, title: 10 });
+    expect(four.repetition).toEqual({ minSaid: 3, full: 2 });
+    expect(four.credit.otherWording).toBe(5_000);
+    expect(rubricById('rubric-3').keywordParts).toBeUndefined();
   });
 
   it('rubric-2 changes only the years ceiling; a fair JD scores the same under both', () => {
