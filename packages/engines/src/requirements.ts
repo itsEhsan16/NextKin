@@ -315,7 +315,8 @@ export function buildLedger(input: {
     const part = req.soft ? split.soft : split.hard;
     part.weighted += weight * creditBps;
     part.weights += weight;
-    const mentions = evidence.mentions?.[skillId] ?? (status === 'gap' ? 0 : 1);
+    // A keyword that earns nothing (the yardstick does not back it) is not counted as said.
+    const mentions = status === 'gap' ? 0 : (evidence.mentions?.[skillId] ?? 1);
     const repeated = rubric.repetition && (req.timesSaid ?? 0) >= rubric.repetition.minSaid ? { said: req.timesSaid!, mentions } : undefined;
     if (repeated && rubric.repetition) {
       repeat.terms += 1;

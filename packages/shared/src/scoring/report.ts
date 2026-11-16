@@ -125,7 +125,13 @@ function basisFor(result: ScoreResult, key: string): string {
   switch (key) {
     case 'keywords':
       if (c.scoreBps === null) return 'Not measured without a job description';
-      return `${b.requiredMet} of ${b.requiredTotal} required skills met${b.requiredPartial ? `, ${b.requiredPartial} partly` : ''}${b.preferredTotal ? `; ${b.preferredMet} of ${b.preferredTotal} preferred` : ''}`;
+    {
+      // Every number shows its basis (G17): from rubric-4 the keyword part also reads the job's
+      // repeated terms and its title, so the line says how each stands.
+      const repeated = b.repeatedTerms ? `; ${b.repeatedFull ?? 0} of ${b.repeatedTerms} repeated terms said twice` : '';
+      const title = b.titleWords ? `; job title ${b.titleFound === b.titleWords ? 'on the page' : b.titleFound ? 'partly on the page' : 'not on the page'}` : '';
+      return `${b.requiredMet} of ${b.requiredTotal} required skills met${b.requiredPartial ? `, ${b.requiredPartial} partly` : ''}${b.preferredTotal ? `; ${b.preferredMet} of ${b.preferredTotal} preferred` : ''}${repeated}${title}`;
+    }
     case 'timeline':
       if (!b.checked) return 'No technology claims to check';
       return b.hardFails ? `${b.hardFails} technology ${b.hardFails === 1 ? 'claim conflicts' : 'claims conflict'} with the role’s dates` : `${b.passing} of ${b.checked} technology claims fit their roles’ dates`;

@@ -82,7 +82,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await settle();
 
     expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Match 9.2 out of 10')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Match 8.3 out of 10')).toBeOnTheScreen();
     expect(screen.getByText('Senior Product Designer · Stripe')).toBeOnTheScreen();
     // The AI's plan is already picked (§173).
     expect(screen.getByText('Summary aimed at Stripe')).toBeOnTheScreen();
@@ -90,7 +90,9 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     // On the resume: ticked and locked. Missing: unticked until the user adds it (D-14).
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
-    expect(screen.getByText('Tap the ones to add. What you accept goes on your resume.')).toBeOnTheScreen();
+    expect(
+      screen.getByText('Tap the ones to add. What you accept goes on your resume.'),
+    ).toBeOnTheScreen();
   });
 
   it('starts the run tailorRunInput builds from a tapped chip and the default options', async () => {
@@ -112,7 +114,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
         baseResumeId: 'res_base',
         tailor: {
           sourceResumeId: 'res_base',
-          baselineScore: 92,
+          baselineScore: 83,
           sourcePages: 3,
           added: ['Fintech'],
           skipped: [],
@@ -157,7 +159,10 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
         who: 'you' as const,
         bullet: { roleId: 'exp_4', index: 0, text: 'Ran the design reviews' },
       };
-      return { ...comparison, plan: { ...comparison.plan, steps: [...comparison.plan.steps, step] } };
+      return {
+        ...comparison,
+        plan: { ...comparison.plan, steps: [...comparison.plan.steps, step] },
+      };
     });
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
@@ -168,15 +173,17 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
       fireEvent.press(screen.getAllByLabelText('Add a result to a bullet, off')[0]!),
     );
     await settle();
-    expect(screen.getByText('A guess. Use it only if it’s close to true.')).toBeOnTheScreen();
-    await press("Use the AI's guess: about 20%");
+    // The sheet opens on the AI's first result at its smallest amount: nothing to type (§212).
+    expect(
+      screen.getByText('The AI’s suggestion. Keep it only if it’s true, or change it.'),
+    ).toBeOnTheScreen();
     await press('Add to bullet');
     await settle();
     expect(screen.getAllByLabelText('Add a result to a bullet, on').length).toBe(1);
     await press('Create my resume');
     await settle();
     const figures = startSpy.mock.calls[0]?.[0]?.tailor?.figures;
-    expect(figures?.[0]?.text).toMatch(/about 20%/);
+    expect(figures?.[0]?.text).toMatch(/saving 2 hours of manual work a week/);
   });
 
   it('keeps the rare options in a sheet, and one switched off leaves the run', async () => {
