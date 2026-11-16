@@ -13,6 +13,16 @@ import { z } from 'zod';
 
 export const CANONICAL_SCHEMA_VERSION = 1;
 
+/** How many skills a resume lists of its own, before any a tailored run adds. */
+export const OWN_SKILLS = 60;
+/**
+ * The most skills a stored resume holds: its own, and every keyword the candidate accepted for a
+ * job, which are never cut (D-25). A run takes up to 80 accepted keywords, so the two together
+ * fit with room. At 60 for both, a run with 75 accepted keywords could not be saved and hung
+ * (toreview §212.4).
+ */
+export const MAX_SKILLS = 160;
+
 const isoPartial = z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/, 'YYYY or YYYY-MM');
 const factId = z.string().min(1).max(80);
 
@@ -92,8 +102,8 @@ export const zeroReviewSchema = z.object({
   roles: z.number().int().min(0).max(20),
   education: z.number().int().min(0).max(10),
   /** Every skill claim the draft made; the ones still `assumed` are pending. */
-  skills: z.array(z.string().min(1).max(120)).max(60),
-  removedSkills: z.array(z.string().min(1).max(120)).max(60),
+  skills: z.array(z.string().min(1).max(120)).max(MAX_SKILLS),
+  removedSkills: z.array(z.string().min(1).max(120)).max(MAX_SKILLS),
 });
 
 export const canonicalResumeSchema = z.object({
@@ -102,7 +112,7 @@ export const canonicalResumeSchema = z.object({
   summary: claimSchema.optional(),
   skills: z
     .array(z.object({ name: z.string().trim().min(1).max(120), id: z.string().min(1).max(64), evidence: z.array(factId).max(20), origin: z.enum(['generated', 'user', 'assumed']) }))
-    .max(60),
+    .max(MAX_SKILLS),
   /** The file's skill lines ("Front End: React, Next.js"), naming skills of `skills` by name. */
   skillGroups: z.array(z.object({ label: z.string().trim().min(1).max(80), names: z.array(z.string().min(1).max(120)).max(40) })).max(12).optional(),
   roles: z.array(canonicalRoleSchema).max(20),

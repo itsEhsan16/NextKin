@@ -57,6 +57,20 @@ const request = (patch: Partial<TailorRunInput> = {}): TailorRunInput => ({
 const texts = (doc: CanonicalResumeJson, roleId: string) => doc.roles.find((r) => r.roleId === roleId)?.bullets.map((b) => b.text);
 
 describe('the tailored merge', () => {
+  it('a run with 75 accepted keywords on a full skills list still saves, with every one kept (toreview §212.4)', () => {
+    const own = Array.from({ length: 60 }, (_, i) => ({ id: `k${i}`, name: `own skill ${i}`, evidence: [], origin: 'user' as const }));
+    const added = Array.from({ length: 75 }, (_, i) => `accepted keyword ${i}`);
+    const base = { ...BASE, skills: own, skillGroups: [{ label: 'Skills', names: own.slice(0, 20).map((k) => k.name) }] };
+    const doc = mergeTailored({ base, generated: GENERATED, request: request({ added, fixes: ['skills'] }), job: { ...JOB, soft: added.slice(70) } });
+    expect(canonicalResumeSchema.safeParse(doc).success).toBe(true);
+    const names = new Set(doc.skills.map((k) => k.name));
+    expect(added.every((k) => names.has(k))).toBe(true);
+    expect(doc.skills.length).toBeGreaterThan(60);
+    // No skills line holds everything: none past the 40 a line may have.
+    expect(Math.max(...doc.skillGroups!.map((g) => g.names.length))).toBeLessThanOrEqual(40);
+    expect(doc.skillGroups!.length).toBeLessThanOrEqual(12);
+  });
+
   it('a quick edit rewrites the two most recent dated roles and keeps the rest verbatim', () => {
     const asked = request({ experience: 'quick', fixes: ['headline', 'skills', 'experience'] });
     const doc = mergeTailored({ base: BASE, generated: GENERATED, request: asked, job: JOB });

@@ -9,7 +9,7 @@ import { estimatePages } from '@nextkin/shared/scoring/pages';
 import { withHeaderChoices } from '@nextkin/shared/scoring/headerChecks';
 import { placeInGroups, tidyGroups } from '@nextkin/shared/scoring/skillGroups';
 import { reconcileStructure } from '@nextkin/shared/scoring/structure';
-import type { CanonicalResumeJson, CanonicalRoleJson } from '@nextkin/shared/schemas/resumeContent';
+import { MAX_SKILLS, OWN_SKILLS, type CanonicalResumeJson, type CanonicalRoleJson } from '@nextkin/shared/schemas/resumeContent';
 import { z } from 'zod';
 
 import { kept, keepFigures } from './tailorFigures';
@@ -288,7 +288,7 @@ export function mergeTailored(args: {
   // Sixty skills is the list's length, but nothing the candidate accepted is ever cut to keep it
   // (toreview §211: accepted keywords used to sit last, and were the first to go).
   const accepted = new Set(request.added.map(skillKey));
-  const all = skillsFor(base, request, job, fixes.has('skills')).filter((s, i) => i < 60 || accepted.has(skillKey(s.name)));
+  const all = skillsFor(base, request, job, fixes.has('skills')).filter((s, i) => i < OWN_SKILLS || accepted.has(skillKey(s.name))).slice(0, MAX_SKILLS);
   // Lines of the same name become one, and a skill is listed once (toreview §170).
   const skillGroups = base.skillGroups ? tidyGroups(placeInGroups(groupsFor(base.skillGroups, all, fixes.has('skills')), request.added, TAXONOMY, { soft: job?.soft ?? [] }), TAXONOMY) : undefined;
   const skills = skillGroups ? listedOnce(all, skillGroups) : all;
