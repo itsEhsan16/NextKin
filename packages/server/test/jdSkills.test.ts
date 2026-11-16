@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { isSkillName, repairText, skillNamesFor, splitSkills, titleOf, verify, type JdExtraction } from '../src/pipeline/stages/extractJd';
+import { createMemoryKv } from '../src/cache/kv';
+import { extractJd, isSkillName, mergeSkills, repairText, skillNamesFor, splitSkills, sweepKnownSkills, titleOf, verify, type JdExtraction } from '../src/pipeline/stages/extractJd';
 
 /** A skill list holds skills, not qualification lines, whatever the model returns (toreview §110, §153). */
 
@@ -57,7 +58,7 @@ describe('the skill lists', () => {
       responsibilities: [{ text: 'Develop REST APIs', quote: 'Develop REST APIs in Node.js and Express and keep them fast and well tested', group: null }],
     });
     expect(jd.requiredSkills).toEqual(['JavaScript', 'TypeScript']);
-    expect(jd.preferredSkills).toEqual(['Node.js']);
+    expect(jd.preferredSkills).toEqual(['Node.js', 'REST APIs', 'Express']);
     expect(jd.tools).toEqual([]);
     // Shown as the posting wrote it, not the model's shortening.
     expect(jd.responsibilities).toEqual(['Develop REST APIs in Node.js and Express and keep them fast and well tested']);
@@ -164,5 +165,47 @@ describe('the hiring company is not a skill (toreview §206.2)', () => {
   it('with no company, names are read as before', () => {
     expect(skillNamesFor(null)('TypeScript')).toEqual(['TypeScript']);
     expect(skillNamesFor('  ')("Master's degree")).toEqual([]);
+  });
+});
+
+describe('nothing the job names is missed (toreview §212)', () => {
+  const raw = 'We need strong SQL and PostgreSQL skills for this role. You will run market analysis with the product team. Docker\nApply now with Kubernetes';
+
+  it('code reads the text for skills it knows that the model left out, as ones the job prefers', () => {
+    const found = sweepKnownSkills(raw, [skill('SQL', 'We need strong SQL and PostgreSQL skills for this role')]);
+    expect(found).toEqual([{ name: 'PostgreSQL', quote: 'We need strong SQL and PostgreSQL skills for this role', category: 'other', importance: 'preferred' }, expect.objectContaining({ name: 'Kubernetes' })]);
+    // "Docker" alone on a line is a label, not the job asking for it.
+    expect(found.map((k) => k.name)).not.toContain('Docker');
+    const jd = verify(raw, { ...none, skills: [skill('SQL', 'We need strong SQL and PostgreSQL skills for this role')] });
+    expect(jd.requiredSkills).toEqual(['SQL']);
+    expect(jd.preferredSkills).toEqual(expect.arrayContaining(['PostgreSQL']));
+  });
+
+  it('a second pass adds only what the first reading missed, once each', () => {
+    const first = [skill('SQL', 'x'), skill('market research', 'y')];
+    const merged = mergeSkills(first, [skill('sql', 'x'), skill('Market Analysis', 'z'), skill('Leadership', 'w', 'preferred', 'soft'), skill('market analysis', 'z')]);
+    expect(merged.map((k) => k.name)).toEqual(['SQL', 'market research', 'Market Analysis', 'Leadership']);
+  });
+
+  it('the reading asks the second pass with its own list, and stands when that pass fails', async () => {
+    const prompt = { id: 'p1', templateId: 't1', version: 8, body: { system: ['read'] } };
+    const recall = { id: 'p2', templateId: 't2', version: 1, body: { system: ['recall'] } };
+    const calls: { name: string; input: unknown }[] = [];
+    const gateway = (fail: boolean) =>
+      ({
+        async extract(call: { name: string; input: unknown }) {
+          calls.push({ name: call.name, input: call.input });
+          if (call.name === 'job_description') return { data: { ...none, skills: [skill('SQL', 'We need strong SQL and PostgreSQL skills for this role')] }, meta: {} };
+          if (fail) throw new Error('model unavailable');
+          return { data: { skills: [skill('market analysis', 'You will run market analysis with the product team')] }, meta: {} };
+        },
+      }) as never;
+    const read = await extractJd({ gateway: gateway(false), cache: createMemoryKv(), prompt, recall, text: raw, context: { tag: 'eval' } } as never);
+    expect(read.recalled).toBe(1);
+    expect(read.jd.requiredSkills).toEqual(['SQL', 'market analysis']);
+    expect(calls[1]).toMatchObject({ name: 'missed_keywords', input: { alreadyListed: ['SQL'] } });
+    const failed = await extractJd({ gateway: gateway(true), cache: createMemoryKv(), prompt, recall, text: raw, context: { tag: 'eval' } } as never);
+    expect(failed.recallError).toBe('model unavailable');
+    expect(failed.jd.requiredSkills).toEqual(['SQL']);
   });
 });
