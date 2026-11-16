@@ -1,7 +1,7 @@
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { describe, expect, it } from 'vitest';
 
-import { groupFor, placeInGroups, tidyGroups } from '../src/scoring/skillGroups';
+import { ADDED_PER_LINE, OVERFLOW_LINE, SOFT_LINE, groupFor, placeInGroups, tidyGroups } from '../src/scoring/skillGroups';
 
 /** A new keyword on its skill line, as Jobright places them (toreview §113). Synthetic. */
 
@@ -26,6 +26,28 @@ describe('placing a keyword on a skill line', () => {
     expect(placed[0]!.names).toEqual(['React', 'TypeScript', 'HTML', 'Vue']);
     expect(placed[3]!.names).toEqual(['Git', 'debugging', 'logical reasoning']);
     expect(GROUPS[0]!.names).toHaveLength(3);
+  });
+});
+
+describe('accepted keywords do not pile onto one line (toreview §212)', () => {
+  const LINES = [
+    { label: 'Languages', names: ['Python', 'SQL'] },
+    { label: 'Product & AI', names: ['product thinking'] },
+  ];
+  const many = ['market sizing', 'user stories', 'acceptance criteria', 'customer calls', 'surveys', 'product metrics', 'market analysis', 'competitive analysis', 'prioritization frameworks', 'enterprise SaaS', 'procurement software'];
+
+  it('a line takes a few new keywords; the rest open a line of their own', () => {
+    const placed = placeInGroups(LINES, many, TAXONOMY);
+    const product = placed.find((g) => g.label === 'Product & AI')!;
+    expect(product.names.length).toBeLessThanOrEqual(1 + ADDED_PER_LINE);
+    expect(placed.find((g) => g.label === OVERFLOW_LINE)!.names.length).toBeGreaterThan(0);
+    expect(placed.flatMap((g) => g.names)).toEqual(expect.arrayContaining(many));
+  });
+
+  it('soft skills get their own line, never a technical one', () => {
+    const placed = placeInGroups(LINES, ['Leadership', 'market sizing', 'growth mindset'], TAXONOMY, { soft: ['leadership', 'Growth mindset'] });
+    expect(placed.find((g) => g.label === SOFT_LINE)!.names).toEqual(['Leadership', 'growth mindset']);
+    expect(placed.find((g) => g.label === 'Languages')!.names).toEqual(['Python', 'SQL']);
   });
 });
 

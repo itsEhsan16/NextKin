@@ -65,17 +65,51 @@ export function groupFor(keyword: string, groups: Groups, taxonomy: Taxonomy): n
   return catchAll >= 0 ? catchAll : groups.length - 1;
 }
 
-/** The file's skill lines with each new keyword placed on its line, once. */
-export function placeInGroups(groups: Groups, added: readonly string[], taxonomy: Taxonomy): Groups {
+/**
+ * How many keywords a run may add to one of the file's skill lines (toreview §212: 35 accepted
+ * keywords all landed on one "Product & AI" line, which read as a dump). Past this they open a
+ * line of their own, which holds as many again.
+ */
+export const ADDED_PER_LINE = 8;
+/** Where accepted soft skills go: never on a technical line. */
+export const SOFT_LINE = 'Professional Skills';
+/** Where accepted keywords go once the line they fit is full. */
+export const OVERFLOW_LINE = 'Methods & Domain Knowledge';
+const SOFT_LABEL = /\b(?:soft|professional|interpersonal|strengths|people)\b/i;
+
+/**
+ * The file's skill lines with each new keyword placed on its line, once. `soft` names the ones
+ * that are traits or ways of working: they get their own line. A line takes `ADDED_PER_LINE` new
+ * keywords; the rest open a further line, so no line becomes a list of everything the job said.
+ */
+export function placeInGroups(groups: Groups, added: readonly string[], taxonomy: Taxonomy, options: { soft?: readonly string[] } = {}): Groups {
   const out = groups.map((g) => ({ ...g, names: [...g.names] }));
+  const soft = new Set((options.soft ?? []).map((s) => phraseKey(s)));
+  const addedTo = new Map<number, number>();
+  /** The line with this label, made when missing; a full one is followed by "(2)", "(3)". */
+  const lineNamed = (label: string, match?: RegExp): number => {
+    for (let n = 1; ; n += 1) {
+      const name = n === 1 ? label : `${label} (${n})`;
+      let at = out.findIndex((g) => phraseKey(g.label) === phraseKey(name) || (n === 1 && match?.test(g.label)));
+      if (at < 0) at = out.push({ label: name, names: [] }) - 1;
+      if ((addedTo.get(at) ?? 0) < ADDED_PER_LINE * 2 && out[at]!.names.length < 40) return at;
+    }
+  };
   const listed = new Set(out.flatMap((g) => g.names.map((n) => resolveSkill(taxonomy, n).id)));
   for (const keyword of added) {
     const id = resolveSkill(taxonomy, keyword).id;
     if (listed.has(id)) continue;
-    const at = groupFor(keyword, out, taxonomy);
-    // A line holds at most 40 skills (the schema's cap); a full one takes no more.
-    if (at < 0 || out[at]!.names.length >= 40) continue;
+    let at = soft.has(phraseKey(keyword)) ? lineNamed(SOFT_LINE, SOFT_LABEL) : groupFor(keyword, out, taxonomy);
+    if (at < 0) continue;
+    // A hard keyword that fits no line would fall to the last one: never the soft-skills line.
+    if (!soft.has(phraseKey(keyword)) && (out[at]!.label === SOFT_LINE || SOFT_LABEL.test(out[at]!.label))) at = lineNamed(OVERFLOW_LINE);
+    // A line holds at most 40 skills (the schema's cap), and takes only so many new ones.
+    if (out[at]!.names.length >= 40 || (addedTo.get(at) ?? 0) >= ADDED_PER_LINE) {
+      if (out.length >= 12) continue;
+      at = lineNamed(OVERFLOW_LINE);
+    }
     out[at]!.names.push(keyword);
+    addedTo.set(at, (addedTo.get(at) ?? 0) + 1);
     listed.add(id);
   }
   return out;
