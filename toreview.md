@@ -17625,6 +17625,24 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - Scores on the demo move to `rubric-4` as each resume is next measured; a job read before
   today is read again the next time its page is opened.
 
+### §212.3 — Tailoring would not start on the demo after the deploy (2026-11-17)
+
+- **What the owner saw:** "We couldn't start tailoring. Try again." The demo's log: `POST
+  /api/v1/generations` and `GET /jd/:id/comparison` answering 503 after 10 to 16 s, with
+  "Connection terminated unexpectedly".
+- **Cause:** the start and the comparison plan the path to 10/10 inside a database transaction,
+  re-scoring the resume once per possible step. The re-read job has more keywords, so more
+  steps, and every score rebuilt a word index of the whole job description for every line of
+  the resume. The transaction sat idle past the database's limit and was cut.
+- **Fix:** the job's word index is kept for the last job asked about, and split text is
+  remembered. Same results; a 70-keyword job plans in 0.3 s here where it took 2.0 s.
+- **Not fixed:** the planning still runs inside the transaction. A much larger job, or a
+  slower container, can hit the same limit. Moving the scoring outside the transaction is the
+  real cure and was not done.
+- **Not verified on the demo** until this is deployed and the same job is tailored again.
+- The two caches are module state in `packages/engines/src/text.ts`. They hold only values
+  computed from their own arguments, so the engines stay pure in what they return.
+
 ## §213 — "Choose a job": both panels the same height, a designed empty state (owner, 2026-11-17)
 - **Layout:**
   - On the job step (`create/jobFlow`), "Your saved jobs" and "Add a new job" now stand the same height.

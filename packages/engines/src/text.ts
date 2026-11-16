@@ -39,6 +39,20 @@ function isWordChar(ch: string | undefined): boolean {
  * and `,` survive as context: "go-to-market" is go · - · to · - · market.
  */
 export function tokenize(text: string): Token[] {
+  const known = tokenized.get(text);
+  if (known) return known;
+  const tokens = tokenizeText(text);
+  // Bounded: the oldest half goes when it fills. Callers read tokens and never change them.
+  if (tokenized.size >= TOKENIZED_MAX) for (const key of [...tokenized.keys()].slice(0, TOKENIZED_MAX / 2)) tokenized.delete(key);
+  tokenized.set(text, tokens);
+  return tokens;
+}
+
+/** Texts already split: a resume's lines are read again on every re-score (toreview §212.3). */
+const TOKENIZED_MAX = 4000;
+const tokenized = new Map<string, Token[]>();
+
+function tokenizeText(text: string): Token[] {
   const tokens: Token[] = [];
   const chars = Array.from(text);
   // Offsets are in UTF-16 code units so they slice the original string correctly.
@@ -111,17 +125,33 @@ export function insideAny(start: number, end: number, ranges: readonly Range[]):
 }
 
 /**
+ * The source's runs of `minWords` words, kept for the last source asked about. The path planner
+ * re-scores one resume against one JD a hundred times or more, and each score asks about every
+ * line: building this for the whole JD each time made a start request outlast its transaction
+ * (toreview §212.3). Remembering a value computed from the same arguments changes no result.
+ */
+let lastShingles: { source: string; minWords: number; shingles: Set<string> | null } | undefined;
+
+function shinglesOf(source: string, minWords: number): Set<string> | null {
+  if (lastShingles && lastShingles.source === source && lastShingles.minWords === minWords) return lastShingles.shingles;
+  const sourceWords = wordKeys(source);
+  let shingles: Set<string> | null = null;
+  if (sourceWords.length >= minWords) {
+    shingles = new Set<string>();
+    for (let i = 0; i + minWords <= sourceWords.length; i += 1) shingles.add(sourceWords.slice(i, i + minWords).join(' '));
+  }
+  lastShingles = { source, minWords, shingles };
+  return shingles;
+}
+
+/**
  * Ranges of `text` copied from `source`: runs of at least `minWords` consecutive words that appear
  * in the same order in the source (G16: text pasted from the JD earns nothing). Case and
  * punctuation are ignored; the ranges point into `text`.
  */
 export function copiedRanges(text: string, source: string, minWords = 8): Range[] {
-  const sourceWords = wordKeys(source);
-  if (sourceWords.length < minWords) return [];
-  const shingles = new Set<string>();
-  for (let i = 0; i + minWords <= sourceWords.length; i += 1) {
-    shingles.add(sourceWords.slice(i, i + minWords).join(' '));
-  }
+  const shingles = shinglesOf(source, minWords);
+  if (!shingles) return [];
   const words = tokenize(text).filter((token) => token.kind === 'word');
   const covered: boolean[] = new Array<boolean>(words.length).fill(false);
   for (let i = 0; i + minWords <= words.length; i += 1) {
