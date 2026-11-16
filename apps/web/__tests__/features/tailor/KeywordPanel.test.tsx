@@ -78,14 +78,9 @@ describe('KeywordPanel', () => {
     expect(names()).toEqual(['teamwork']);
   });
 
-  it('filters by category', async () => {
-    const user = userEvent.setup();
+  it('lists every kind of keyword together, with no kind filters (owner, 2026-11-17)', () => {
     render(<Harness />);
-    const kinds = screen.getByRole('group', { name: 'Keyword kinds' });
-    await user.click(within(kinds).getByRole('button', { name: /Tools & platforms/ }));
-    expect(names()).toEqual(['Jira']);
-
-    await user.click(within(kinds).getByRole('button', { name: /^All/ }));
+    expect(screen.queryByRole('group', { name: 'Keyword kinds' })).toBeNull();
     expect(names()).toEqual(['React', 'Jira', 'Agile']);
   });
 

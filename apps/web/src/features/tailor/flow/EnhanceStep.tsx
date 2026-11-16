@@ -6,13 +6,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import {
-  backButton,
-  FlowFooter,
-  stepCard,
-  StepHeading,
-  stepShell,
-} from '@/features/create/jobFlow/FlowChrome';
+import { backButton, FlowFooter, stepCard, stepShell } from '@/features/create/jobFlow/FlowChrome';
 import { NEVER_ADDS_SKILLS } from '@/features/create/createLibrary';
 import { cn } from '@/lib/cn';
 import { Button } from '@/ui/Button';
@@ -29,6 +23,10 @@ import { RaiseScorePanel } from './RaiseScorePanel';
  * right the score, what the AI rewrites and where the score lands. Everything else the plan asks
  * (roles, real results, header checks, other fixes) sits beside the keywords as categories of
  * one rail (owner, 2026-11-14); it was a folded card under the step.
+ *
+ * Owner, 2026-11-17: no step line or lede, no "take everything" card, no keyword-kind filters and
+ * no "where your points go" link; the title heads the left column so the score card and what the
+ * AI will change start at the top right.
  */
 export function EnhanceStep({
   job,
@@ -73,15 +71,11 @@ export function EnhanceStep({
         aria-labelledby="enhance-step"
         className={cn(stepCard, '@container flex flex-col gap-6 p-8')}
       >
-        <StepHeading
-          id="enhance-step"
-          step={2}
-          of={3}
-          title="Choose keywords to add"
-          lede="Pick what to add. Everything you accept goes on your resume, in this job’s own words, to raise your ATS score."
-        />
         <div className="grid gap-6 @5xl:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
           <div className="@container/main flex min-w-0 flex-col gap-6">
+            <h1 id="enhance-step" className="text-h1 font-bold tracking-tight text-text-primary">
+              Choose keywords to add
+            </h1>
             <EnhanceHeader job={job} resume={resume} onChangeResume={onChangeResume} />
             <RaiseScorePanel comparison={comparison} choices={choices} />
             <p className="flex items-start gap-2 text-body-s font-medium text-text-tertiary">

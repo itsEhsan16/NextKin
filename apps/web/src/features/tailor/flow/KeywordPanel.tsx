@@ -2,11 +2,9 @@
 
 import type { TailorComparison } from '@nextkin/shared/models';
 import {
-  bucketCounts,
   filterRows,
   keywordRowsOf,
   sortRows,
-  type KeywordBucket,
   type KeywordSort,
   type KeywordTab,
 } from '@nextkin/shared/tailor/keywordRows';
@@ -17,7 +15,6 @@ import { InfoCircle, SwitchVertical01 } from '@/ui/lineIcons';
 import { pressable } from '@/ui/pressable';
 
 import type { TailorChoices } from '../useTailorRun';
-import { KeywordRail } from './KeywordRail';
 import { KeywordRow, TickBox } from './KeywordRow';
 
 const NEXT_SORT: Record<KeywordSort, KeywordSort> = {
@@ -52,14 +49,11 @@ export function KeywordPanel({
   tab: KeywordTab;
 }) {
   const rows = useMemo(() => keywordRowsOf(comparison), [comparison]);
-  const [bucket, setBucket] = useState<KeywordBucket | undefined>();
   const [sort, setSort] = useState<KeywordSort>('default');
 
   const inTab = rows.filter((r) => r.tab === tab).length;
-  const counts = bucketCounts(rows, tab);
-  // A category the open tab doesn't hold falls back to All.
-  const group = counts.some((c) => c.bucket === bucket) ? bucket : undefined;
-  const shown = sortRows(filterRows(rows, { tab, bucket: group }), sort);
+  // Every kind of keyword in one list: the kind filters were removed (owner, 2026-11-17).
+  const shown = sortRows(filterRows(rows, { tab }), sort);
   const max = Math.max(0, ...rows.map((r) => r.worth ?? 0));
   const picks = comparison.picks;
   // Places the user's own records back (toreview §206.3): a tick takes these as their own word.
@@ -80,8 +74,6 @@ export function KeywordPanel({
 
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <KeywordRail total={inTab} counts={counts} active={group} onChange={setBucket} />
-
       <div className="flex min-w-0 flex-col gap-3">
         <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-card">
           <div className="flex items-center gap-4 border-b border-border-subtle bg-neutral-50 px-4">

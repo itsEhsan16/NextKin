@@ -128,7 +128,7 @@ export function OtherJobBox({
   const typed = value.file ? '' : value.text;
 
   return (
-    <div className={panel}>
+    <div className={cn(panel, 'flex-1')}>
       <PanelHead
         icon={<Plus className="size-5" />}
         title="Add a new job"
