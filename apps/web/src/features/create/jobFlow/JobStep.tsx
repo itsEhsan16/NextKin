@@ -11,7 +11,6 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { Callout } from '@/ui/Callout';
 import { ProgressButton, type ProgressPhase } from '@/ui/ProgressButton';
 import { ArrowRight } from '@/ui/lineIcons';
 
@@ -143,6 +142,14 @@ export function JobStep({
               value={other}
               selected={using === 'other'}
               busy={extract.isPending || readPhase === 'done'}
+              // Said inside the box, so the panel and the row keep their height (toreview §220).
+              notice={
+                closedId && using === 'other' ? (
+                  <>
+                    <span className="font-semibold">{JD_CLOSED_TITLE}.</span> {JD_CLOSED_NOTE}
+                  </>
+                ) : undefined
+              }
               problem={
                 problem ?? (failed ? (jdFailureMessage(extract.error) ?? READ_FAILED) : null)
               }
@@ -155,11 +162,6 @@ export function JobStep({
                 extract.reset();
               }}
             />
-            {closedId && using === 'other' && (
-              <Callout tone="warning" className="mt-3">
-                <span className="font-semibold">{JD_CLOSED_TITLE}.</span> {JD_CLOSED_NOTE}
-              </Callout>
-            )}
           </div>
         </div>
       </section>

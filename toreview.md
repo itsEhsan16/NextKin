@@ -17801,3 +17801,23 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - The create and ui suites pass (69); lint and typecheck are clean.
   - In the browser at 1366×900 (mock): a sample job grew from 0% through "Reading the job…" and "Analyzing…" to 100% with no backward step, the button stayed 164px wide, and the step then opened the tailor page.
 - **Not verified frame by frame:** the Browser pane was hidden, so it rendered at 2–16 fps. The owner should watch it once in a real window, for snapping.
+
+## §220 — "Add a new job" keeps one height, empty or filled (owner, 2026-11-17)
+- **What changed (`OtherJobBox.tsx`):** the line under the input is one message row. It reserves two lines (`min-h-11`, two body-m lines) and stacks its three possible contents in one grid cell:
+  - the tip;
+  - an error (`role="alert"`);
+  - the closed-posting notice (`role="status"`).
+  - Whichever shows, the row and the panel keep their height.
+- **Clear instead of a vanishing link (judgement call):** the "Try a sample job" link used to disappear once the box had something in it. That slot now says **Clear** instead, which empties the box (text, link or file) and clears a file error. "Clear" reads better than a blank gap and gives the filled state a useful action.
+- **Closed-posting notice:** the "This posting has closed" warning used to be a `Callout` under the panel, which made the row taller. It now shows in the message row, in the warning colour. The footer still says "Continue anyway".
+- **Unchanged:** the counter row (already reserved on every tab, §217) and the fixed input slot (§218).
+- **Verified:**
+  - In the browser at 1366×900 (mock), the panel measured 545.6px and the row 593.6px in every state:
+    - empty;
+    - a long pasted description;
+    - the link tab, empty and with a link typed;
+    - the upload tab with a PDF chosen;
+    - an unsupported-file error.
+  - That is the same height as "Your saved jobs" beside it.
+  - create-flow Jest pass (18); lint and typecheck are clean.
+- **Limits:** an error longer than two lines at this width would still add a line. Today's messages fit in two at laptop width. The closed-posting state was not seen in the browser (the mock doesn't serve a closed posting from a paste).

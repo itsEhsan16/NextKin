@@ -89,12 +89,15 @@ export function OtherJobBox({
   selected,
   problem,
   busy = false,
+  notice,
 }: {
   value: OtherJob;
   onChange: (next: OtherJob) => void;
   selected: boolean;
   problem?: string | null;
   busy?: boolean;
+  /** A warning about the job the box read (it has closed), said in the message row. */
+  notice?: ReactNode;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -116,6 +119,7 @@ export function OtherJobBox({
   const ready = value.file != null || value.text.trim().length > 0;
   const border = selected || dragging ? 'border-border-brand-strong' : 'border-border-default';
   const typed = value.file ? '' : value.text;
+  const said = (fileError ?? problem) ? 'error' : notice ? 'notice' : 'tip';
 
   return (
     <div className={cn(panel, 'flex-1')}>
@@ -239,32 +243,54 @@ export function OtherJobBox({
         }}
       />
 
-      {(fileError ?? problem) ? (
-        <p role="alert" className="text-body-m text-danger-600">
-          {fileError ?? problem}
-        </p>
-      ) : (
-        <p className="flex flex-wrap items-center gap-1.5 text-body-m text-text-tertiary">
+      {/* The message row, one cell for all three things it can say (owner, toreview §220): the
+          tip, an error, or the closed-posting notice, stacked so the row is as tall whichever
+          shows. It keeps two lines' room, so the panel is the same height empty or filled. */}
+      <div className="grid min-h-11 text-body-m">
+        <p
+          aria-hidden={said !== 'tip' || undefined}
+          className={cn(
+            'col-start-1 row-start-1 flex flex-wrap items-center gap-x-1.5 text-text-tertiary',
+            said !== 'tip' && 'invisible',
+          )}
+        >
           <Lightbulb02 aria-hidden className={iconSize.sm} />
           <span>
             <span className="font-semibold text-text-secondary">Tip:</span> Include the complete job
             description for better suggestions.
           </span>
-          {!ready && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                setTab('paste');
-                onChange({ text: SAMPLE_JD, file: null });
-              }}
-              className={textLink}
-            >
-              Try a sample job
-            </button>
-          )}
+          {/* One slot for both: a sample while the box is empty, Clear once it holds something. */}
+          <button
+            type="button"
+            disabled={busy}
+            tabIndex={said !== 'tip' ? -1 : undefined}
+            onClick={() => {
+              setFileError(null);
+              if (ready) return onChange(emptyOtherJob);
+              setTab('paste');
+              onChange({ text: SAMPLE_JD, file: null });
+            }}
+            className={textLink}
+          >
+            {ready ? 'Clear' : 'Try a sample job'}
+          </button>
         </p>
-      )}
+        <p
+          role="alert"
+          className={cn('col-start-1 row-start-1 text-danger-600', said !== 'error' && 'invisible')}
+        >
+          {said === 'error' ? (fileError ?? problem) : null}
+        </p>
+        <p
+          role="status"
+          className={cn(
+            'col-start-1 row-start-1 text-feedback-warning-text',
+            said !== 'notice' && 'invisible',
+          )}
+        >
+          {said === 'notice' ? notice : null}
+        </p>
+      </div>
     </div>
   );
 }
