@@ -17899,3 +17899,10 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 ## §229 — Method card art 10% larger once more (owner, 2026-11-17)
 - **What changed:** the art box in `MethodCard.tsx` goes from 114×76 to 126×84 (`w-31.5 h-21`), about 98% of the original 128×86. The four §222–§228 changes are kept: no ticked lines, one box for all four cards, one height.
 - **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 126×84 and stay one height, 109.6 → 117.6px. Prettier is clean.
+
+## §230 — "We add only what you accept" pinned to the bottom (owner, 2026-11-17)
+- **What changed:** on "Choose keywords to add" (`EnhanceStep.tsx`), the promise line ("We add only what you accept. You decide what goes on your resume, and interviewers may ask about any of it.") no longer sits in the page body under the score panel. It now rides in the step's footer, which is already pinned to the bottom of the window, under the credit and time note and beside Back and Continue. It is always in view when you choose.
+- **Not changed:** Build's own copy of the line (a `Callout` in `BuildSteps.tsx`) stays where it is; the owner's screenshot was the keyword step.
+- **Verified:**
+  - In the browser at 1366×900 (mock), the line is inside the sticky footer, 16px off the window's bottom (73.6px tall), and shows once.
+  - Tailor suites pass; lint and typecheck are clean.

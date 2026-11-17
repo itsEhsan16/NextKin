@@ -78,10 +78,6 @@ export function EnhanceStep({
             </h1>
             <EnhanceHeader job={job} resume={resume} onChangeResume={onChangeResume} />
             <RaiseScorePanel comparison={comparison} choices={choices} />
-            <p className="flex items-start gap-2 text-body-s font-medium text-text-tertiary">
-              <ShieldTick aria-hidden className="mt-px size-4 shrink-0" />
-              {NEVER_ADDS_SKILLS}
-            </p>
           </div>
           <EnhanceAside
             job={job}
@@ -94,7 +90,20 @@ export function EnhanceStep({
         </div>
       </section>
 
-      <FlowFooter note={allowanceNote} noteIcon={false}>
+      {/* The promise rides in the pinned footer, under what the press costs, so it is always in
+          view at the moment of choosing (owner, toreview §230). */}
+      <FlowFooter
+        noteIcon={false}
+        note={
+          <div className="flex min-w-0 flex-col gap-1">
+            {allowanceNote}
+            <p className="flex items-start gap-2 text-body-s font-medium text-text-tertiary">
+              <ShieldTick aria-hidden className="mt-px size-4 shrink-0" />
+              {NEVER_ADDS_SKILLS}
+            </p>
+          </div>
+        }
+      >
         <Link href={backHref} className={backButton}>
           Back
         </Link>
