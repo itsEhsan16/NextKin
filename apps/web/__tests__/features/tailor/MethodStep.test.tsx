@@ -38,7 +38,8 @@ describe('How would you like to create your resume? (toreview §151, §157)', ()
     ]);
     for (const radio of radios) expect(radio).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByRole('button', { name: /Continue/ })).toBeDisabled();
-    expect(screen.getByText('Step 1 of 3')).toBeInTheDocument();
+    // No step label: the next step has none either (owner, toreview §227).
+    expect(screen.queryByText('Step 1 of 3')).toBeNull();
     expect(screen.getByRole('link', { name: 'Edit job' })).toBeInTheDocument();
   });
 

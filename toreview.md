@@ -17882,3 +17882,10 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 ## §226 — Method card art 10% larger again (owner, 2026-11-17)
 - **What changed:** the art box in `MethodCard.tsx` goes from 104×69 to 114×76 (`w-28.5 h-19`), about 89% of the original 128×86.
 - **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 114×76 and stay one height. They grew 2px, 107.6 → 109.6px, because the art is now the tallest part of the card. Prettier is clean.
+
+## §227 — Method step: no "Step 1 of 3" (owner, 2026-11-17)
+- **What changed:** the "STEP 1 OF 3" label over "How would you like to create your resume?" is gone (`MethodStep.tsx`), because the next step (keywords) shows none. `StepHeading`'s `step`/`of` are now optional and the label renders only with both.
+- **Left alone:** the other flows that use `StepHeading` still show their labels: Choose a job, ATS, Zero, Cover letter, and the Build flow's later steps. Say if those should go too.
+- **Verified:**
+  - In the browser (mock), the heading reads only its title.
+  - `MethodStep.test.tsx` now checks the label is absent. The tailor and create suites plus `FlowChrome` pass (90); lint and typecheck are clean.

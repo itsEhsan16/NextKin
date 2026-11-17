@@ -81,12 +81,7 @@ export function MethodStep({
     <div className={stepShell}>
       <section aria-labelledby="method-step" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
-          <StepHeading
-            id="method-step"
-            step={1}
-            of={3}
-            title="How would you like to create your resume?"
-          />
+          <StepHeading id="method-step" title="How would you like to create your resume?" />
         </div>
         <div className="grid gap-6 px-8 pb-8 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
           <div

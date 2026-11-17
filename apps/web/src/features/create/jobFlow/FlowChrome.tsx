@@ -82,8 +82,9 @@ export function StepHeading({
   lede,
   id,
 }: {
-  step: number;
-  of: number;
+  /** "Step 1 of 3" over the title; a step without them shows none (the method step, §227). */
+  step?: number;
+  of?: number;
   title: string;
   /** The line under the title; a step without one shows none (the method step, toreview §224). */
   lede?: string;
@@ -91,9 +92,11 @@ export function StepHeading({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-caption-m font-semibold uppercase tracking-wide text-text-brand">
-        Step {step} of {of}
-      </p>
+      {step !== undefined && of !== undefined && (
+        <p className="text-caption-m font-semibold uppercase tracking-wide text-text-brand">
+          Step {step} of {of}
+        </p>
+      )}
       <h1 id={id} className="text-h1 font-bold tracking-tight text-text-primary">
         {title}
       </h1>
