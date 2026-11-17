@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { CLAIM_TEXT_MAX, MAX_SKILLS, ROLE_BULLETS_MAX, ROLES_MAX } from './limits';
+
 /**
  * The canonical resume JSON (ImBackendImplementationPlan P9-02, old M2-06): what generation writes,
  * what `resume_versions.content` stores and what the claim ledger checks (G13). Dates are
@@ -13,15 +15,8 @@ import { z } from 'zod';
 
 export const CANONICAL_SCHEMA_VERSION = 1;
 
-/** How many skills a resume lists of its own, before any a tailored run adds. */
-export const OWN_SKILLS = 60;
-/**
- * The most skills a stored resume holds: its own, and every keyword the candidate accepted for a
- * job, which are never cut (D-25). A run takes up to 80 accepted keywords, so the two together
- * fit with room. At 60 for both, a run with 75 accepted keywords could not be saved and hung
- * (toreview §212.4).
- */
-export const MAX_SKILLS = 160;
+// The sizes that must agree with one another live in `limits.ts` (toreview §212.4, §212.5).
+export { MAX_SKILLS, OWN_SKILLS } from './limits';
 
 const isoPartial = z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/, 'YYYY or YYYY-MM');
 const factId = z.string().min(1).max(80);
@@ -29,7 +24,7 @@ const factId = z.string().min(1).max(80);
 export const claimSchema = z
   .object({
     id: z.string().min(1).max(64),
-    text: z.string().trim().min(1).max(600),
+    text: z.string().trim().min(1).max(CLAIM_TEXT_MAX),
     evidence: z.array(factId).max(20),
     origin: z.enum(['generated', 'user', 'assumed']),
   })
@@ -47,7 +42,7 @@ export const canonicalRoleSchema = z.object({
   location: z.string().max(200).optional(),
   /** The role's skill tags from the profile: what its technology claims rest on. */
   skills: z.array(z.string().min(1).max(120)).max(40),
-  bullets: z.array(claimSchema).max(12),
+  bullets: z.array(claimSchema).max(ROLE_BULLETS_MAX),
   /**
    * Client projects inside a role, as the user's file groups them (toreview §111): each names the
    * bullets it holds by id. The bullets stay one list on the role, so the claim ledger, the facts
@@ -115,7 +110,7 @@ export const canonicalResumeSchema = z.object({
     .max(MAX_SKILLS),
   /** The file's skill lines ("Front End: React, Next.js"), naming skills of `skills` by name. */
   skillGroups: z.array(z.object({ label: z.string().trim().min(1).max(80), names: z.array(z.string().min(1).max(120)).max(40) })).max(12).optional(),
-  roles: z.array(canonicalRoleSchema).max(20),
+  roles: z.array(canonicalRoleSchema).max(ROLES_MAX),
   education: z
     .array(
       z.object({

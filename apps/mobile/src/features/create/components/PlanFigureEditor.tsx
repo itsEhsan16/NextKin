@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { FIGURE_REASON, figureLine, hasSuggestion, type FigureDraft } from '@/data/models';
-import { statesResult } from '@/data/models/customize';
+import { FIGURE_TEXT_MAX, FIGURE_TYPED_MAX, statesResult } from '@/data/models/customize';
 import { useDraftFigure } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -80,7 +80,9 @@ export function PlanFigureEditor({
   }, [own, given, isIdle, mutate, resumeId, bullet]);
 
   const line = own ?? (shape && figure.trim() ? figureLine(shape, figure) : '');
-  const counts = line !== '' && statesResult(line) && line.trim() !== bullet.text.trim();
+  // A line the resume can hold: the start request refuses a longer one (toreview §212.5).
+  const fits = line.trim().length <= FIGURE_TEXT_MAX;
+  const counts = line !== '' && fits && statesResult(line) && line.trim() !== bullet.text.trim();
   const choose = (index: number) => {
     // Another result brings its own best amount; tapping the picked one clears it.
     setPicked(index === pick ? null : index);
@@ -99,7 +101,7 @@ export function PlanFigureEditor({
           multiline
           minLines={3}
           maxLines={6}
-          maxLength={300}
+          maxLength={FIGURE_TEXT_MAX}
           autoFocus
           {...(draftFigure.isError
             ? { helper: 'The AI couldn’t draft this line, so write it as you like.' }
@@ -210,7 +212,7 @@ export function PlanFigureEditor({
                       value={figure}
                       onChangeText={setTyped}
                       placeholder={chosen.amounts[0] ?? ''}
-                      maxLength={40}
+                      maxLength={FIGURE_TYPED_MAX}
                       autoFocus
                       accessibilityLabel={`The amount: ${chosen.what}`}
                     />
@@ -224,7 +226,7 @@ export function PlanFigureEditor({
               value={figure}
               onChangeText={setTyped}
               placeholder={draft.suggestion ?? draft.hint}
-              maxLength={40}
+              maxLength={FIGURE_TYPED_MAX}
               autoFocus
               accessibilityLabel={`The result: ${draft.hint}`}
             />
@@ -248,9 +250,11 @@ export function PlanFigureEditor({
       >
         {counts
           ? 'Counts as a measured result'
-          : unmeasured
-            ? 'That number doesn’t say what it measures yet. Add a unit or what it counts: 10%, 100 users, 2 hours.'
-            : 'A real number only: a count, %, time or money.'}
+          : !fits
+            ? `That line is too long for a resume (${line.trim().length} characters; up to ${FIGURE_TEXT_MAX}). Shorten it.`
+            : unmeasured
+              ? 'That number doesn’t say what it measures yet. Add a unit or what it counts: 10%, 100 users, 2 hours.'
+              : 'A real number only: a count, %, time or money.'}
       </Text>
 
       <View style={styles.actions}>

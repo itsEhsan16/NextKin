@@ -3,10 +3,13 @@ import { isQuantified } from '@nextkin/engines/quantified';
 
 import type { GenerationInput } from '../models/generation';
 import type { TailorComparison, TailorConfirmation, TailorExperienceDepth, TailorFigure, TailorFix, TailorKeyword } from '../models/tailor';
+import { ACCEPTED_MAX, FIGURE_TEXT_MAX, FIGURES_MAX } from '../schemas/limits';
 import type { FixPlan } from '../scoring/fixPlan';
 import type { HeaderChoice } from '../scoring/headerChecks';
 
 export type { FixPlan, PlanStep } from '../scoring/fixPlan';
+// The sizes the result editors hold to, for the apps (`schemas/limits.ts`).
+export { FIGURE_TEXT_MAX, FIGURE_TYPED_MAX } from '../schemas/limits';
 
 /**
  * The one "Customize" screen of the job → resume flow (toreview §114, owner 2026-10-19), as pure
@@ -264,4 +267,40 @@ export function tailorRunInput(comparison: TailorComparison, c: CustomizeChoices
       ...(header.length ? { header } : {}),
     },
   };
+}
+
+/**
+ * What stops these choices being sent, in words the candidate can act on, or null (toreview
+ * §212.5). The sizes are the request's own (`schemas/limits.ts`), so the apps never send a run the
+ * server will refuse; before this a result line over the limit failed the whole start with "We
+ * couldn't start tailoring" and no word of which line.
+ */
+export function runProblem(c: CustomizeChoices): string | null {
+  if (c.added.length > ACCEPTED_MAX) return `That’s ${c.added.length} keywords. A resume takes up to ${ACCEPTED_MAX}: untick ${c.added.length - ACCEPTED_MAX} to continue.`;
+  const results = Object.values(c.figures ?? {}).filter((text) => text.trim());
+  const long = results.find((text) => text.trim().length > FIGURE_TEXT_MAX);
+  if (long) return `One result line is too long (${long.trim().length} characters; up to ${FIGURE_TEXT_MAX}). Shorten “${long.trim().slice(0, 50)}…”.`;
+  if (results.length > FIGURES_MAX) return `That’s ${results.length} result lines. A run takes up to ${FIGURES_MAX}.`;
+  return null;
+}
+
+/** What each part of a refused start request is called, by the path the server names. */
+const REFUSED: [RegExp, string][] = [
+  [/^tailoring\.figures\.\d+\.text$/, 'One of your result lines is too long. Shorten it and try again.'],
+  [/^tailoring\.figures/, 'One of your result lines couldn’t be read. Open it, save it again and try again.'],
+  [/^tailoring\.keywords/, 'Too many keywords are ticked for one resume. Untick a few and try again.'],
+  [/^tailoring\.confirmed/, 'One keyword’s “where you used it” couldn’t be read. Untick it, tick it again and try again.'],
+  [/^tailoring\.header/, 'One of your answers about the header couldn’t be read. Answer it again and try again.'],
+];
+
+/**
+ * Why a run did not start, as a line for the user. A refused request (400) says which part was
+ * refused; anything else is the plain retry line. Never the server's own wording.
+ */
+export function startErrorLine(error: unknown, fallback = 'We couldn’t start tailoring. Try again.'): string {
+  const e = error as { code?: unknown; details?: unknown } | null;
+  if (e?.code !== 'VALIDATION_FAILED' || !Array.isArray(e.details)) return fallback;
+  const paths = e.details.flatMap((d) => (typeof (d as { path?: unknown })?.path === 'string' ? [(d as { path: string }).path] : []));
+  for (const [pattern, line] of REFUSED) if (paths.some((path) => pattern.test(path))) return line;
+  return paths.length ? `We couldn’t start tailoring: part of the request wasn’t accepted (${paths[0]}). Tell us if it keeps happening.` : fallback;
 }

@@ -4,6 +4,7 @@ import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { mentionsIn } from '@nextkin/engines/normalizer';
 import { numbersIn } from '@nextkin/engines/numbers';
 import { phraseKey } from '@nextkin/engines/text';
+import { FIGURE_AMOUNT_MAX, FIGURE_DRAFT_MAX } from '@nextkin/shared/schemas/limits';
 import { fallbackFigureDraft, hasSuggestion, type FigureDraft, type FigureDraftReason, type FigureOption } from '@nextkin/shared/models/tailor';
 import { z } from 'zod';
 
@@ -40,7 +41,9 @@ import { readBase } from './tailorBase';
 
 export const FIGURE_TEMPLATE = 'figure.draft';
 const CACHE_SECONDS = 30 * 24 * 3600;
-const MAX_LENGTH = 300;
+// A draft fits a stored line once its figure is in (`limits.ts`): at 300 a bullet of 280
+// characters could get no suggestion at all, and its finished line could not be sent.
+const MAX_LENGTH = FIGURE_DRAFT_MAX;
 
 export const figureDraftSchema = z.object({
   before: z.string().trim().min(1).max(MAX_LENGTH),
@@ -60,7 +63,7 @@ export const figureDraftSchema = z.object({
     .max(4),
 });
 
-const MAX_SUGGESTION = 24;
+const MAX_SUGGESTION = FIGURE_AMOUNT_MAX;
 
 /** A suggestion is a short figure: "about 20%", "5,000 users". No technology, no claim. */
 export function fitsSuggestion(suggestion: string | null | undefined): suggestion is string {

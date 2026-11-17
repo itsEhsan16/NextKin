@@ -2,7 +2,15 @@ import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { acceptAll, allAccepted, nothingChosen, projectedScore, tailorRunInput } from '@/data/models/customize';
+import {
+  acceptAll,
+  allAccepted,
+  nothingChosen,
+  projectedScore,
+  tailorRunInput,
+  runProblem,
+  startErrorLine,
+} from '@/data/models/customize';
 import { isConsentRequired, useKeywordQuestions, useStartGeneration } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
@@ -170,18 +178,24 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
     choices.fixes.includes('length') ? 'trimmed' : 'full length',
   ].join(' · ');
 
-  const create = () =>
+  // Never send a run the server will refuse: say what is in the way instead (toreview §212.5).
+  const problem = runProblem(choices);
+  const create = () => {
+    if (problem) return;
     start.mutate(tailorRunInput(result, choices, props.jobId), {
       onSuccess: (generation) => actions.openGeneration(generation.id),
     });
+  };
 
-  const note = failed
-    ? START_FAILED
-    : spent
-      ? spentNote(limit)
-      : empty
-        ? NOTHING_CHOSEN
-        : generationsLeftNote(used, limit);
+  const note = problem
+    ? problem
+    : failed
+      ? startErrorLine(start.error, START_FAILED)
+      : spent
+        ? spentNote(limit)
+        : empty
+          ? NOTHING_CHOSEN
+          : generationsLeftNote(used, limit);
 
   return page(
     <View style={styles.stack}>
@@ -212,7 +226,10 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
       </Animated.View>
       {result.keywords.length > 0 ? (
         <Animated.View entering={enter(2)}>
-          <FlowSection title="Skills it asks for" body="Tap the ones to add. What you accept goes on your resume.">
+          <FlowSection
+            title="Skills it asks for"
+            body="Tap the ones to add. What you accept goes on your resume."
+          >
             {/* "Accept all suggestions" (owner, D-25, toreview §211): never pre-selected, one tap takes
                 every keyword and answers every question yes. Results stay a line-by-line choice here. */}
             {result.keywords.some((k) => !k.onResume) && !allAccepted(choices, result, asked) ? (
