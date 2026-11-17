@@ -17878,3 +17878,7 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 ## §225 — Method card art 15% larger (owner, 2026-11-17)
 - **What changed:** after seeing §222 live, the owner asked for the cards' art 15% bigger. The one art box in `MethodCard.tsx` goes from 90×60 to 104×69 (`w-26 h-17.25`), so it is now about 80% of the original 128×86.
 - **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 104×69, and they stay one height (107.6px, unchanged: the title and its two-line description are still the tallest part). Lint is clean.
+
+## §226 — Method card art 10% larger again (owner, 2026-11-17)
+- **What changed:** the art box in `MethodCard.tsx` goes from 104×69 to 114×76 (`w-28.5 h-19`), about 89% of the original 128×86.
+- **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 114×76 and stay one height. They grew 2px, 107.6 → 109.6px, because the art is now the tallest part of the card. Prettier is clean.
