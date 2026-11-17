@@ -17916,3 +17916,8 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - The pill says "NextKin" by default, as in the reference; a flow can pass its own `eyebrow`.
   - Type stays on the app's tokens (title 22px `text-h1`, steps 15px `text-body-l`), not the reference's phone pixels.
 - **Verified:** in the browser at 1366×900 (mock), a tailor run on job_google shows the new layout and fits the window with no scroll (card 96–868px; column 672px). Typecheck and lint are clean; tailor and create suites pass (86). Not seen: the stalled state (Check again) and the other three flows' runs, which share the same code.
+
+## §232 — The big orb drawn sharp (owner, 2026-11-17)
+- **What was wrong:** the run screen's large orb (`AiOrb size="xl"`, 160px) was the library's 64px canvas stretched 2.5× with CSS, so its dots were a blurred enlargement of an 80×80 bitmap (on a 1.25× screen).
+- **What changed:** `xl` now uses `SharpOrb` in `AiOrb.tsx`. It takes the library's own engine from `thinking-orbs/engine` (the same 64px preset, frames and painter, so the orb looks the same) and paints on a canvas as large as the box times the pixel ratio (up to 3), with the drawing scaled up. Like the library, it pauses while off screen or in a hidden tab, and holds a still frame under reduced motion. The small orbs (20/32/64) still use `ThinkingOrb` unchanged.
+- **Verified:** in the browser on a tailor run (mock), the big canvas is 200×200 for its 160px box at a pixel ratio of 1.25 (it was 80×80), and a zoomed screenshot shows crisp round dots. Typecheck and lint are clean; tailor, create and ui suites pass (137). Not seen on a 2× or 3× screen.
