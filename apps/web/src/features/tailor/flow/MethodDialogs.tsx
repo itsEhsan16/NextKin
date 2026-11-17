@@ -52,11 +52,6 @@ export function MethodDialogs({
         art={METHOD_ART.tailor}
         title={METHOD_TITLE.tailor}
         line={`Use your existing resume as a base and tailor it to the ${jobTitle} job with AI.`}
-        points={[
-          'Keep your existing experience, education, and sections',
-          'Add the job’s skills and keywords you choose',
-          'Get suggestions to make your lines stronger, like adding real results',
-        ]}
         confirmLabel="Use this resume"
         onConfirm={() => onChoose('tailor')}
       >
@@ -78,11 +73,6 @@ export function MethodDialogs({
         art={METHOD_ART.profile}
         title={METHOD_TITLE.profile}
         line="Build a resume using your saved work experience, education, and skills."
-        points={[
-          'Use your existing profile information',
-          'Keep your details consistent across future resumes',
-          'You can update your profile anytime',
-        ]}
         confirmLabel={roles > 0 || !profile ? 'Use my profile' : 'Fill in my profile'}
         disabled={!profile}
         // A profile with no roles has nothing to build from: the button opens the profile instead.
@@ -115,11 +105,6 @@ export function MethodDialogs({
         art={METHOD_ART.zero}
         title={METHOD_TITLE.zero}
         line="Answer three questions, and we’ll write a first draft for you to review and edit."
-        points={[
-          'Quick and guided — just three answers',
-          'An AI-written first draft aimed at the role',
-          'You’re in full control — we mark every guess for you to check',
-        ]}
         confirmLabel="Start with AI"
         onConfirm={() => onChoose('zero')}
       >

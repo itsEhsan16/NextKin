@@ -8,7 +8,7 @@ import { primaryButton } from '@/features/create/jobFlow/FlowChrome';
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
 import { iconButton } from '@/ui/iconButton';
-import { ArrowRight, Check, XClose } from '@/ui/lineIcons';
+import { ArrowRight, XClose } from '@/ui/lineIcons';
 import { StableLabel } from '@/ui/StableLabel';
 
 /** A tinted row inside the popup: an icon tile, two lines and an action on the right. */
@@ -42,8 +42,9 @@ export function DialogFact({
 
 /**
  * The popup each way to start opens (owner mockup 2026-11-02, toreview §151): its picture, title
- * and line, what it does as a ticked list, one fact or field, then Cancel and the way forward
- * (the upload popup has neither: a dropped file starts at once, toreview §221).
+ * and line, one fact or field, then Cancel and the way forward. The ticked "what it does" list
+ * went (owner, toreview §223); the upload popup has no buttons either (a dropped file is read at
+ * once, toreview §221).
  */
 export function MethodDialog({
   open,
@@ -51,7 +52,6 @@ export function MethodDialog({
   art,
   title,
   line,
-  points,
   children,
   confirmLabel,
   onConfirm,
@@ -64,7 +64,6 @@ export function MethodDialog({
   art: string;
   title: string;
   line: string;
-  points?: readonly string[];
   children?: ReactNode;
   /** The way forward; without it the popup has no button row (the upload starts on a drop). */
   confirmLabel?: string;
@@ -101,16 +100,6 @@ export function MethodDialog({
         <XClose aria-hidden className="size-5 text-text-secondary" />
       </DialogClose>
 
-      {points && (
-        <ul className="flex flex-col gap-3 rounded-lg bg-surface-brand px-5 py-4">
-          {points.map((point) => (
-            <li key={point} className="flex items-start gap-3 text-body-l text-text-primary">
-              <Check aria-hidden className="mt-0.5 size-4.5 shrink-0 text-text-brand" />
-              {point}
-            </li>
-          ))}
-        </ul>
-      )}
       {children}
 
       {confirmLabel && onConfirm && (

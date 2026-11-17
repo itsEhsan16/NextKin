@@ -17859,3 +17859,13 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
     - drawn art box 128×86 → 90×60 on every card. The clay art is portrait, so its drawn height went from 86 to 60px, 70%.
   - The radio, the art and the text block are centred at the same point (53.8px) on every card.
   - The tailor and create suites pass (86; no test read the removed lines). Lint and typecheck are clean.
+
+## §223 — Method popups lose their ticked lists too (owner, 2026-11-17)
+- **What changed:** the owner confirmed the popups should match the cards (§222). The ticked "what it does" lists are gone from the Tailor, Profile and Start-from-scratch popups:
+  - their copy is deleted from `MethodDialogs.tsx`;
+  - `MethodDialog` no longer takes `points`.
+  - The upload popup had already lost its lines (§221).
+- **Spacing:** each popup is now its art, title and line, its one fact row, then Cancel and the way forward. They keep the existing `gap-5` / `p-7`, so the height drops with the list and nothing is left empty. There was no new spacing to tighten.
+- **Verified:**
+  - In the browser at 1366×900 (mock), opening each popup: Tailor 294px, Profile 327px, Start from scratch 352px, Upload 440px, none with a list.
+  - The tailor and create suites pass (86; no test read the removed lines). Lint and typecheck are clean.
