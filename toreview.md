@@ -17845,3 +17845,17 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
     - the popup stayed 440px tall throughout (it was taller with the feature lines and buttons).
   - `MethodStep.test.tsx` has two new tests (reads on pick with no Upload/Cancel; a refused file says why and offers another). The tailor, create and ui suites pass (137); lint and typecheck are clean.
 - **Not verified:** a real mouse drag, and smoothness frame by frame. The session window wasn't open, so the pane ran as a background page with throttled frames. The owner should drag a file over it once in a real window.
+
+## §222 — Method cards: no ticked lines, art 30% smaller, one height (owner, 2026-11-17)
+- **What changed (`features/tailor/flow/MethodCard.tsx`, `methods.ts`):** on the four "How would you like to create your resume?" cards (Tailor my selected resume, Create from my profile, Start from scratch with AI, Upload a resume):
+  - the ticked feature lines are gone, and so is their copy (`METHOD_POINTS`);
+  - every card draws its art in one 90×60 box, 70% of the old 128×86;
+  - the line keeps two lines' room (`min-h-11`, `line-clamp-2`), so all four cards are one height whatever the line's length.
+  - Padding, gaps and the Recommended pill beside the title were already shared, and they still are.
+- **Judgement call: the popups keep their ticked lists.** The popups each card opens (`MethodDialogs.tsx`) still have their own ticked "what it does" lists for Tailor, Profile and Start from scratch. The owner's screenshot and words were about the cards; say if those lists should go too. The upload popup already lost its feature lines in §221.
+- **Verified:**
+  - In the browser at 1366×900 (mock), before → after:
+    - card heights 186 / 162 / 162 / 162px → 107.6px each;
+    - drawn art box 128×86 → 90×60 on every card. The clay art is portrait, so its drawn height went from 86 to 60px, 70%.
+  - The radio, the art and the text block are centred at the same point (53.8px) on every card.
+  - The tailor and create suites pass (86; no test read the removed lines). Lint and typecheck are clean.
