@@ -13,8 +13,9 @@ import { METHOD_ART, METHOD_TITLE, type Method } from './methods';
 
 /**
  * One way to make the resume, as a radio card: its picture, title and line (§151). Every card is
- * the same shape (owner, toreview §222): one 90×60 art box (70% of the old 128px art), the line
- * keeping two lines' room, so all four are the same height with art, text and radio centred alike.
+ * the same shape (owner, toreview §222, §225): one 104×69 art box (the old art at 70%, then 15%
+ * larger), the line keeping two lines' room, so all four are the same height with art, text and
+ * radio centred alike.
  */
 export function MethodCard({
   method,
@@ -58,7 +59,7 @@ export function MethodCard({
         alt=""
         width={250}
         height={168}
-        className="pointer-events-none hidden h-15 w-22.5 shrink-0 object-contain sm:block"
+        className="pointer-events-none hidden h-17.25 w-26 shrink-0 object-contain sm:block"
       />
       <div className="pointer-events-none flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-2.5">

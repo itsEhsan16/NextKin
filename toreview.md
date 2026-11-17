@@ -17874,3 +17874,7 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **What changed:** "How would you like to create your resume?" no longer has the line under it ("Choose how to create your resume for the … role. You can start from your selected resume, …") in `MethodStep.tsx`.
 - **`StepHeading`:** its `lede` is now optional, and it renders no paragraph without one. So nothing is left behind: no empty line, no extra gap. Every other step still passes its lede.
 - **Verified:** the tailor and create suites plus `FlowChrome` pass (90; no test read the line). Lint and typecheck are clean. Not looked at in the browser: the change is one removed paragraph.
+
+## §225 — Method card art 15% larger (owner, 2026-11-17)
+- **What changed:** after seeing §222 live, the owner asked for the cards' art 15% bigger. The one art box in `MethodCard.tsx` goes from 90×60 to 104×69 (`w-26 h-17.25`), so it is now about 80% of the original 128×86.
+- **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 104×69, and they stay one height (107.6px, unchanged: the title and its two-line description are still the tallest part). Lint is clean.
