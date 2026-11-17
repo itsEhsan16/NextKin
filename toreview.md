@@ -17895,3 +17895,7 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Verified:**
   - In the browser at 1366×900 (mock), both lines sit on the circles' centre line. Each starts at one circle's bottom edge and ends at the next one's top, with no gap or overlap.
   - `MethodStep` and `TailorFlow` tests pass; lint and typecheck are clean.
+
+## §229 — Method card art 10% larger once more (owner, 2026-11-17)
+- **What changed:** the art box in `MethodCard.tsx` goes from 114×76 to 126×84 (`w-31.5 h-21`), about 98% of the original 128×86. The four §222–§228 changes are kept: no ticked lines, one box for all four cards, one height.
+- **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 126×84 and stay one height, 109.6 → 117.6px. Prettier is clean.
