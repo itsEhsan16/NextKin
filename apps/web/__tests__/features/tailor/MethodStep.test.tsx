@@ -89,19 +89,42 @@ describe('How would you like to create your resume? (toreview §151, §157)', ()
     expect(screen.getByRole('button', { name: /Continue/ })).toBeDisabled();
   });
 
-  it('the upload popup waits for a file before it can upload', async () => {
+  it('the upload popup reads a file the moment it is picked, with no Upload or Cancel (toreview §221)', async () => {
     const user = userEvent.setup();
     const ways = await openOnMethod();
     await user.click(within(ways).getByRole('radio', { name: 'Upload a resume' }));
     const dialog = await screen.findByRole('dialog', { name: 'Upload a resume' });
-    const go = within(dialog).getByRole('button', { name: /^Upload/ });
-    expect(go).toBeDisabled();
+    expect(within(dialog).queryByRole('button', { name: /^Upload$/ })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(within(dialog).queryByText('Extract your information automatically')).toBeNull();
+
     await user.upload(
       within(dialog).getByLabelText('Resume file'),
       new File(['%PDF'], 'me.pdf', { type: 'application/pdf' }),
     );
     expect(within(dialog).getByText('me.pdf')).toBeInTheDocument();
-    expect(go).toBeEnabled();
+    expect(within(dialog).getByRole('button', { name: 'Reading me.pdf' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(within(dialog).getByRole('status')).toHaveTextContent('Uploading…');
+  });
+
+  it('the upload popup says why a file is refused and offers another', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const ways = await openOnMethod();
+    await user.click(within(ways).getByRole('radio', { name: 'Upload a resume' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Upload a resume' });
+    await user.upload(
+      within(dialog).getByLabelText('Resume file'),
+      new File(['x'], 'notes.exe', { type: 'application/x-msdownload' }),
+    );
+    expect(within(dialog).getByRole('alert')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Try another file' })).toBeInTheDocument();
+    // The zone stays usable.
+    expect(
+      within(dialog).getByRole('button', { name: /drop it here, or press to browse files/ }),
+    ).not.toHaveAttribute('aria-disabled');
   });
 
   it('the profile popup counts what the profile holds', async () => {

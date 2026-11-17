@@ -17821,3 +17821,27 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - That is the same height as "Your saved jobs" beside it.
   - create-flow Jest pass (18); lint and typecheck are clean.
 - **Limits:** an error longer than two lines at this width would still add a line. Today's messages fit in two at laptop width. The closed-posting state was not seen in the browser (the mock doesn't serve a closed posting from a paste).
+
+## §221 — "Upload a resume" popup: no buttons, reads on drop, a flowing gradient ring (owner, 2026-11-17)
+- **Where:** the only place this popup is used is the Tailor/Build flow's "How would you like to create your resume?" step (`features/tailor/flow/MethodDialogs.tsx` → `UploadDialog`). Onboarding's `ResumeDropZone`, the ATS upload step and `TailorResumeDialog` are different components and are untouched.
+- **What changed:**
+  - **Removed:** Cancel, Upload and the three feature lines. `MethodDialog` now leaves out its button row when there is no `confirmLabel`. ✕, Escape and the backdrop close it, but not while a file is being read.
+  - **Reads at once:** a file picked (browse, or Enter/Space on the zone) or dropped is read straight away. A wrong type or too-large file says why under the zone, offers "Try another file", and the zone stays usable.
+  - **Drag-over:** the dashed border gives way to a brand conic-gradient ring that turns, with a gentle lift. The text says "Drop to upload", and it eases back on drag-leave (leaving into the zone's own children doesn't count).
+  - **While reading:** the zone shows the file's name and type, a brand-gradient fill with the same sheen and swaying edge as Continue's, and "Uploading…" → "Reading your resume…" → "Almost there…", cross-faded. The ring keeps turning.
+  - **At 100%:** the read resume becomes the choice, as Upload did before. A failure drains the fill and shows the error with "Try another file".
+- **Progress is the honest timed kind:** `useImportResume` reports no upload progress, so the fill eases toward 90% and runs to 100% only when the read resolves. The logic moved into `ui/useProgressFill.ts`, shared with `ProgressButton` (§219), so both move alike.
+- **New tokens (`theme.css`):** `@property --ring-angle`, the `gradient-ring` utility (brand-200/500/300/600) and `--animate-ring-flow` (the `float` duration, linear).
+- **Accessibility:**
+  - The zone is `role="button"`, Enter/Space opens the picker, and it has `aria-busy` and `aria-disabled` while reading.
+  - The stage is announced politely.
+  - Reduced motion: the global rule runs the ring's turn once, instantly (a still gradient), `motion-reduce` cancels the lift, and the fill steps by stage.
+- **Verified:**
+  - In the browser at 1366×900 (mock), with a drag-over, drag-leave and a PDF drop dispatched by script:
+    - the text changed to "Drop to upload" and back;
+    - the ring faded in and turned (angle 43° → 120° → 223°) with a 2px lift;
+    - the fill went 18% → 34% → 49% as the stage moved to "Reading your resume…";
+    - then the popup closed with "Upload a resume" chosen;
+    - the popup stayed 440px tall throughout (it was taller with the feature lines and buttons).
+  - `MethodStep.test.tsx` has two new tests (reads on pick with no Upload/Cancel; a refused file says why and offers another). The tailor, create and ui suites pass (137); lint and typecheck are clean.
+- **Not verified:** a real mouse drag, and smoothness frame by frame. The session window wasn't open, so the pane ran as a background page with throttled frames. The owner should drag a file over it once in a real window.

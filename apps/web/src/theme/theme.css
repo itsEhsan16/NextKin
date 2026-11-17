@@ -614,6 +614,8 @@
   --animate-ring-draw: ring-draw var(--transition-duration-think) var(--ease-standard) infinite;
   /* The leading edge of `ProgressButton`'s fill: a soft bulge that sways like a liquid's surface. */
   --animate-liquid-edge: liquid-edge var(--transition-duration-think) var(--ease-standard) infinite;
+  /* A drop zone's gradient ring turning while a file is over it or being read (toreview §221). */
+  --animate-ring-flow: ring-flow var(--transition-duration-float) linear infinite;
 
   @keyframes reveal {
     from {
@@ -725,6 +727,11 @@
       translate: 200% 0;
     }
   }
+  @keyframes ring-flow {
+    to {
+      --ring-angle: 360deg;
+    }
+  }
   @keyframes liquid-edge {
     0%,
     100% {
@@ -793,6 +800,27 @@
  * - It fades in after `skeleton-delay`, so a quick load goes from nothing to content.
  * - Under reduced motion the global rule runs both animations once: a still block.
  */
+/*
+ * The gradient ring of an active drop zone (toreview §221): brand stops around a conic gradient
+ * whose angle is a registered property, so `animate-ring-flow` can turn it smoothly. Reduced
+ * motion runs the turn once in an instant (the global rule), leaving a still gradient.
+ */
+@property --ring-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@utility gradient-ring {
+  background: conic-gradient(
+    from var(--ring-angle),
+    var(--color-brand-200),
+    var(--color-brand-500),
+    var(--color-brand-300),
+    var(--color-brand-600),
+    var(--color-brand-200)
+  );
+}
+
 @utility skeleton {
   display: block;
   background-color: var(--color-skeleton);

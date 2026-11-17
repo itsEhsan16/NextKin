@@ -42,7 +42,8 @@ export function DialogFact({
 
 /**
  * The popup each way to start opens (owner mockup 2026-11-02, toreview §151): its picture, title
- * and line, what it does as a ticked list, one fact or field, then Cancel and the way forward.
+ * and line, what it does as a ticked list, one fact or field, then Cancel and the way forward
+ * (the upload popup has neither: a dropped file starts at once, toreview §221).
  */
 export function MethodDialog({
   open,
@@ -65,8 +66,9 @@ export function MethodDialog({
   line: string;
   points?: readonly string[];
   children?: ReactNode;
-  confirmLabel: string;
-  onConfirm: () => void;
+  /** The way forward; without it the popup has no button row (the upload starts on a drop). */
+  confirmLabel?: string;
+  onConfirm?: () => void;
   disabled?: boolean;
   busy?: boolean;
   busyLabel?: string;
@@ -111,25 +113,27 @@ export function MethodDialog({
       )}
       {children}
 
-      <div className="flex flex-wrap justify-end gap-3">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={onClose}
-          className={buttonClass({ variant: 'secondary', size: 'lg' })}
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          disabled={disabled || busy}
-          onClick={onConfirm}
-          className={primaryButton}
-        >
-          <StableLabel label={confirmLabel} busyLabel={busyLabel ?? confirmLabel} busy={busy} />
-          <ArrowRight aria-hidden className="size-4.5" />
-        </button>
-      </div>
+      {confirmLabel && onConfirm && (
+        <div className="flex flex-wrap justify-end gap-3">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onClose}
+            className={buttonClass({ variant: 'secondary', size: 'lg' })}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={disabled || busy}
+            onClick={onConfirm}
+            className={primaryButton}
+          >
+            <StableLabel label={confirmLabel} busyLabel={busyLabel ?? confirmLabel} busy={busy} />
+            <ArrowRight aria-hidden className="size-4.5" />
+          </button>
+        </div>
+      )}
     </Dialog>
   );
 }
