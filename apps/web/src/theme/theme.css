@@ -612,6 +612,8 @@
   /* A soft light gliding across an AI action ("Tailor with AI"), then resting before the next. */
   --animate-glint: glint var(--transition-duration-glint) var(--ease-standard) infinite;
   --animate-ring-draw: ring-draw var(--transition-duration-think) var(--ease-standard) infinite;
+  /* The leading edge of `ProgressButton`'s fill: a soft bulge that sways like a liquid's surface. */
+  --animate-liquid-edge: liquid-edge var(--transition-duration-think) var(--ease-standard) infinite;
 
   @keyframes reveal {
     from {
@@ -721,6 +723,17 @@
     }
     to {
       translate: 200% 0;
+    }
+  }
+  @keyframes liquid-edge {
+    0%,
+    100% {
+      translate: 0 -12%;
+      scale: 1 1.15;
+    }
+    50% {
+      translate: 0 12%;
+      scale: 0.8 1;
     }
   }
   @keyframes ring-draw {

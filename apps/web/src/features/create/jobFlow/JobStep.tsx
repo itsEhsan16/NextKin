@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { Callout } from '@/ui/Callout';
+import { ProgressButton, type ProgressPhase } from '@/ui/ProgressButton';
 import { ArrowRight } from '@/ui/lineIcons';
 
 import {
@@ -34,6 +35,11 @@ const READ_FAILED = 'We couldn’t read that job. Check your connection and try 
  * a job from anywhere on the right, then the footer bar. The newest saved job starts picked;
  * typing in the other box picks that instead. Nothing is spent here.
  */
+/** What Continue says while it reads a pasted description or a link (toreview §219). */
+const READ_STAGES = ['Reading the job…', 'Analyzing…', 'Almost there…'] as const;
+/** The same, for an uploaded file. */
+const FILE_STAGES = ['Reading the file…', 'Analyzing…', 'Almost there…'] as const;
+
 export function JobStep({
   flow,
   onPicked,
@@ -65,11 +71,12 @@ export function JobStep({
   const [problem, setProblem] = useState<string | null>(null);
   // A posting that was read but has closed (toreview §206): said here, before anything is built.
   const [closedId, setClosedId] = useState<string | null>(null);
+  // How Continue's fill stands while it reads a new job; the read job waits for a full pill.
+  const [readPhase, setReadPhase] = useState<ProgressPhase>('idle');
+  const [readId, setReadId] = useState<string | null>(null);
 
   const pickedSaved = savedId ?? jobs[0]?.id ?? null;
   const using = source ?? (saved.data && jobs.length === 0 ? 'other' : 'saved');
-  const busy =
-    extract.isPending || (extract.isSuccess && closedId == null) || busyLabel !== undefined;
   const failed = extract.isError && !isConsentRequired(extract.error);
   const ready =
     using === 'saved' ? pickedSaved != null : other.file != null || other.text.trim().length > 0;
@@ -89,9 +96,17 @@ export function JobStep({
     const read = otherJobInput(other);
     if (!read) return setProblem('Paste the job description or its link, or upload a file.');
     if ('problem' in read) return setProblem(read.problem);
+    setReadPhase('working');
     extract.mutate(read.input, {
-      onSuccess: (draft) =>
-        jdHasClosed(draft) ? setClosedId(draft.id) : onPicked({ kind: 'jd', id: draft.id }),
+      onSuccess: (draft) => {
+        if (jdHasClosed(draft)) {
+          setClosedId(draft.id);
+          return setReadPhase('idle');
+        }
+        setReadId(draft.id);
+        setReadPhase('done');
+      },
+      onError: () => setReadPhase('failed'),
     });
   };
 
@@ -127,7 +142,7 @@ export function JobStep({
             <OtherJobBox
               value={other}
               selected={using === 'other'}
-              busy={extract.isPending}
+              busy={extract.isPending || readPhase === 'done'}
               problem={
                 problem ?? (failed ? (jdFailureMessage(extract.error) ?? READ_FAILED) : null)
               }
@@ -136,6 +151,7 @@ export function JobStep({
                 setSource(value.text || value.file ? 'other' : 'saved');
                 setProblem(null);
                 setClosedId(null);
+                setReadPhase('idle');
                 extract.reset();
               }}
             />
@@ -157,15 +173,18 @@ export function JobStep({
             See Pro plans
           </Link>
         ) : (
-          <button type="button" onClick={next} disabled={!ready || busy} className={primaryButton}>
-            {busyLabel ??
-              (busy
-                ? 'Reading the job…'
-                : closedId && using === 'other'
-                  ? 'Continue anyway'
-                  : 'Continue')}
+          <ProgressButton
+            onClick={next}
+            disabled={!ready && readPhase === 'idle' && busyLabel === undefined}
+            className={primaryButton}
+            phase={busyLabel !== undefined && readPhase !== 'done' ? 'working' : readPhase}
+            stages={other.file ? FILE_STAGES : READ_STAGES}
+            {...(busyLabel !== undefined && readPhase !== 'done' ? { stage: busyLabel } : {})}
+            onFilled={() => readId && onPicked({ kind: 'jd', id: readId })}
+          >
+            {closedId && using === 'other' ? 'Continue anyway' : 'Continue'}
             <ArrowRight aria-hidden className="size-4.5" />
-          </button>
+          </ProgressButton>
         )}
       </FlowFooter>
     </div>

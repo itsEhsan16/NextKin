@@ -17779,3 +17779,25 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - create-flow Jest pass (18). The link test now reads the job through the footer Continue and checks the box has no Analyze job.
   - Lint and typecheck are clean.
 - **Not checked:** widths under 1024, where the panels stack.
+
+## §219 — Continue shows its progress: stage labels and a liquid fill (owner, 2026-11-17)
+- **What changed:** a new `ProgressButton` (`apps/web/src/ui/ProgressButton.tsx`), wired only to the job step's footer Continue (`JobStep.tsx`).
+  - **Labels:** while the step reads a new job, the button walks "Reading the job…" → "Analyzing…" (1.5 s) → "Almost there…" (5 s). An uploaded file starts with "Reading the file…" instead. The labels cross-fade in one grid cell, so the button keeps its width.
+  - **Fill:** a white-tint gradient over the brand pill grows left to right, so the label stays readable on brand (no light brand tint behind white text). A soft sheen (`animate-sweep`) runs inside it, and its leading edge sways (new `--animate-liquid-edge` motion token in `theme.css`).
+- **Honest progress:**
+  - Nothing reports a real percentage, so the fill eases on a timer toward 90% (fast at first, then slower) and never claims to be finished.
+  - When the read resolves, the fill runs to 100% over `duration-meter`, then the step moves on. So `onPicked` now waits about 0.8 s for a full pill.
+  - On an error it drains back, and the existing error line shows in the box.
+  - If the posting has closed, the fill drains, the button says "Continue anyway", and the callout shows as before.
+  - The caller's own `busyLabel` (ATS check: "Starting the check…") shows as a single stage, still with the fill.
+- **Accessibility:**
+  - `aria-busy` and `aria-disabled` while working; presses are refused in code, and the button isn't greyed out.
+  - The stage is announced politely (`role="status"`).
+  - Reduced motion drops the edge and the sheen and steps the fill by stage (30/60/90%), with no transitions (the global rule).
+- **Smoothness:** every frame of the creep is written straight to the fill's `translate`, with no React re-render per frame.
+- **To adopt later:** the keyword step's Continue and the generate/create steps run long and could use `ProgressButton` the same way (`phase`, `stages`, `onFilled`). Not wired yet.
+- **Verified:**
+  - `__tests__/ui/ProgressButton.test.tsx` (5) covers idle, working, done → `onFilled`, failed → drain, and the caller's stage.
+  - The create and ui suites pass (69); lint and typecheck are clean.
+  - In the browser at 1366×900 (mock): a sample job grew from 0% through "Reading the job…" and "Analyzing…" to 100% with no backward step, the button stayed 164px wide, and the step then opened the tailor page.
+- **Not verified frame by frame:** the Browser pane was hidden, so it rendered at 2–16 fps. The owner should watch it once in a real window, for snapping.
