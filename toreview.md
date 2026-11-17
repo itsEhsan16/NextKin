@@ -17907,3 +17907,12 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - In the browser at 1366×900 (mock), the line is inside the sticky footer, 16px off the window's bottom (73.6px tall), and shows once.
   - Tailor suites pass; lint and typecheck are clean.
 - **Corrected the same day (owner):** "not in this, but in the Choose keywords to add card". The footer is back to the credit note alone; the line now closes the card itself, as its last row across both columns, above a faint `border-border-subtle` divider. Measured at 1366×900: the line spans the card's width (987px) and sits 32px above the card's bottom (the card's padding). Tailor suites (68) pass; lint and typecheck are clean.
+
+## §231 — The run screen, one centred column (owner, 2026-11-17)
+- **What changed:** the screen a run shows while it works (`RunProgress.tsx`) is redesigned from the owner's reference (the mobile "Tailoring your resume for Zycus" screen). Inside the step's card, one centred column: the art on top (no grey panel beside the list), a small brand pill ("NEXTKIN"), the title, the job and the starting resume on two lines, then the meter with its percentage, a thicker bar, and the run's steps with the one being worked on on a brand tint. The note (with an info icon) and "Leave and notify me" sit centred under the list. The footer bar under the card is gone from this screen.
+- **Judgement calls:**
+  - It is the shared run screen, so cover letter, ATS check and Zero resume runs change too; they all looked like the tailoring one before and still do. This reverses the 2026-11-15 note in this file's comment ("the narrow centred card did not match"), on the owner's new reference.
+  - "Step 3 of 3" is dropped (the owner dropped step labels on the method step, §227); the `step` prop is gone.
+  - The pill says "NextKin" by default, as in the reference; a flow can pass its own `eyebrow`.
+  - Type stays on the app's tokens (title 22px `text-h1`, steps 15px `text-body-l`), not the reference's phone pixels.
+- **Verified:** in the browser at 1366×900 (mock), a tailor run on job_google shows the new layout and fits the window with no scroll (card 96–868px; column 672px). Typecheck and lint are clean; tailor and create suites pass (86). Not seen: the stalled state (Check again) and the other three flows' runs, which share the same code.
