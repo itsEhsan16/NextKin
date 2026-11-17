@@ -17766,3 +17766,16 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - In the browser at 1366×900 (mock), switching through all three tabs left the Analyze button's top (753.6px), the tip's top and the panel height (557.6px) the same.
   - create-flow Jest pass (18); lint and typecheck are clean.
 - **Not checked:** widths under 1024, where the panels stack.
+
+## §218 — "Add a new job" loses its Analyze job button, keeps its height (owner, 2026-11-17)
+- **What changed:** the box's own "Analyze job" button is gone from all three tabs (`OtherJobBox.tsx`, and its `onAnalyze` prop in `JobStep.tsx`).
+- **Height:** its room (the button's height plus one gap) went to the fixed input slot, now `h-60` instead of `h-44`. The textarea, the link slot and the drop zone are taller, and the panel keeps its height.
+- **How a new job is read now:** the step's footer Continue already did it. Writing, pasting or uploading in the box makes it the chosen source, and Continue then calls `readOther`.
+  - The footer says "Reading the job…" while busy, and "Continue anyway" when the posting has closed.
+  - The `problem` line in the box and the closed-posting callout are unchanged.
+  - The "Try a sample job" link stays.
+- **Verified:**
+  - In the browser at 1366×900 (mock), on all three tabs: the panel was 558px (557.6 before), equal to "Your saved jobs" beside it; the tip didn't move; no Analyze job button.
+  - create-flow Jest pass (18). The link test now reads the job through the footer Continue and checks the box has no Analyze job.
+  - Lint and typecheck are clean.
+- **Not checked:** widths under 1024, where the panels stack.

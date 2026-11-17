@@ -83,7 +83,7 @@ export function JobStep({
     }
     readOther();
   };
-  // Analyze job reads the new job straight away, whatever was picked on the left.
+  // Continue reads the new job when it is the chosen source (writing in the box chooses it).
   const readOther = () => {
     setSource('other');
     const read = otherJobInput(other);
@@ -128,7 +128,6 @@ export function JobStep({
               value={other}
               selected={using === 'other'}
               busy={extract.isPending}
-              onAnalyze={readOther}
               problem={
                 problem ?? (failed ? (jdFailureMessage(extract.error) ?? READ_FAILED) : null)
               }

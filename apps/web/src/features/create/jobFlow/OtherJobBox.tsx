@@ -14,15 +14,7 @@ import {
 } from '@/features/upload/uploadLibrary';
 import { cn } from '@/lib/cn';
 import { Button } from '@/ui/Button';
-import {
-  File06,
-  Lightbulb02,
-  Link01,
-  Plus,
-  Stars02,
-  UploadCloud02,
-  iconSize,
-} from '@/ui/lineIcons';
+import { File06, Lightbulb02, Link01, Plus, UploadCloud02, iconSize } from '@/ui/lineIcons';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { textLink } from '@/ui/textLink';
 
@@ -87,7 +79,8 @@ function TabPane({ on, children }: { on: boolean; children: ReactNode }) {
 
 /**
  * W-FLOW 01's "Add a new job" (849:289, redesigned in toreview §150): paste the description, paste
- * its link, or upload a file, one tab each, then Analyze job. Writing here picks it over a saved job.
+ * its link, or upload a file, one tab each. Writing here picks it over a saved job, and the step's
+ * Continue reads it (the box's own Analyze job went, owner, toreview §218).
  * While the step reads it (`busy`) the box is held as it is (toreview §131).
  */
 export function OtherJobBox({
@@ -96,15 +89,12 @@ export function OtherJobBox({
   selected,
   problem,
   busy = false,
-  onAnalyze,
 }: {
   value: OtherJob;
   onChange: (next: OtherJob) => void;
   selected: boolean;
   problem?: string | null;
   busy?: boolean;
-  /** Reads the job now, as Continue would. */
-  onAnalyze: () => void;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -143,9 +133,10 @@ export function OtherJobBox({
       />
 
       {/* Every tab's body in one fixed slot, stacked in one grid cell: the textarea, the link field
-          and the drop zone all take the same room, so the panel, the tip and Analyze job stay put
-          as the tabs change (owner, toreview §156, §217). */}
-      <div className="grid h-44 grid-rows-1">
+          and the drop zone all take the same room, so the panel and the tip stay put as the tabs
+          change. The slot keeps the room Analyze job had, so the panel stays as tall (owner,
+          toreview §156, §217, §218). */}
+      <div className="grid h-60 grid-rows-1">
         <TabPane on={tab === 'paste'}>
           <div className={cn(box, border, 'flex flex-1 p-4')}>
             <textarea
@@ -274,16 +265,6 @@ export function OtherJobBox({
           )}
         </p>
       )}
-
-      <button
-        type="button"
-        disabled={!ready || busy}
-        onClick={onAnalyze}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border-brand-strong bg-brand-50 text-body-l font-semibold text-text-brand transition-colors duration-press ease-standard hover:bg-brand-100 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-      >
-        <Stars02 aria-hidden className={iconSize.sm} />
-        {busy ? 'Reading the job…' : 'Analyze job'}
-      </button>
     </div>
   );
 }
