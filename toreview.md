@@ -17643,6 +17643,25 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - The two caches are module state in `packages/engines/src/text.ts`. They hold only values
   computed from their own arguments, so the engines stay pure in what they return.
 
+### §212.4 — A tailored run with 75 accepted keywords hung at "Checking the ATS score" (2026-11-17)
+
+- **What the owner saw:** the run sat at 86% for ten minutes. The demo's worker log: the resume
+  was written, fact-checked and reviewed, then the next step failed five times with a
+  `ZodError` and the message was given up on. Nothing marks the run failed, so the screen waits.
+- **Cause:** a stored resume allowed 60 skills, while the merge keeps every accepted keyword on
+  top of the resume's own (§211). The two rules had contradicted each other since §211; the
+  second pass (§212) lists more keywords, and "accept all" on 75 of them crossed the line.
+- **Fix:** a stored resume holds up to 160 skills (`MAX_SKILLS`): 60 of its own (`OWN_SKILLS`)
+  and every accepted keyword, of which a run takes at most 80.
+- **Not fixed: a run whose message is given up on stays "in progress" for ever.** It should be
+  marked failed with a message the user can act on. The owner's stuck run will not recover; a
+  new run is needed after the deploy.
+- **Not fixed: 135 skills on one resume is a keyword dump**, whatever lines they sit on. D-25
+  says the candidate decides, and "Accept all" makes that one click. Whether "Accept all"
+  should stop at what fits a page is the owner's call.
+- The error text is redacted in the log; the cause is read from the code and the new test
+  (60 own skills plus 75 accepted now saves), not from the error itself.
+
 ## §213 — "Choose a job": both panels the same height, a designed empty state (owner, 2026-11-17)
 - **Layout:**
   - On the job step (`create/jobFlow`), "Your saved jobs" and "Add a new job" now stand the same height.
