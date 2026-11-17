@@ -86,7 +86,6 @@ export function MethodStep({
             step={1}
             of={3}
             title="How would you like to create your resume?"
-            lede={`Choose how to create your resume for the ${job.title} role. You can start from your selected resume, build from your profile, or create a new one.`}
           />
         </div>
         <div className="grid gap-6 px-8 pb-8 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">

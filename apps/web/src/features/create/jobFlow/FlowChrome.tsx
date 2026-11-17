@@ -85,7 +85,8 @@ export function StepHeading({
   step: number;
   of: number;
   title: string;
-  lede: string;
+  /** The line under the title; a step without one shows none (the method step, toreview §224). */
+  lede?: string;
   id?: string;
 }) {
   return (
@@ -96,7 +97,7 @@ export function StepHeading({
       <h1 id={id} className="text-h1 font-bold tracking-tight text-text-primary">
         {title}
       </h1>
-      <p className="max-w-prose text-body-l text-text-secondary">{lede}</p>
+      {lede && <p className="max-w-prose text-body-l text-text-secondary">{lede}</p>}
     </div>
   );
 }
