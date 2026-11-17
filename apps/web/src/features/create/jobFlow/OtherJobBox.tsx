@@ -78,7 +78,7 @@ function TabPane({ on, children }: { on: boolean; children: ReactNode }) {
     <div
       aria-hidden={!on}
       inert={!on}
-      className={cn('col-start-1 row-start-1 flex flex-col', !on && 'invisible')}
+      className={cn('col-start-1 row-start-1 flex min-h-0 flex-col', !on && 'invisible')}
     >
       {children}
     </div>
@@ -142,26 +142,22 @@ export function OtherJobBox({
         fill
       />
 
-      {/* Every tab's body in one grid cell: the box is as tall as the tallest, so switching tabs
-          never resizes the step (owner, toreview §156). */}
-      <div className="grid">
+      {/* Every tab's body in one fixed slot, stacked in one grid cell: the textarea, the link field
+          and the drop zone all take the same room, so the panel, the tip and Analyze job stay put
+          as the tabs change (owner, toreview §156, §217). */}
+      <div className="grid h-44 grid-rows-1">
         <TabPane on={tab === 'paste'}>
-          <div className="flex flex-col gap-1.5">
-            <div className={cn(box, border, 'flex min-h-44 p-4')}>
-              <textarea
-                aria-label="Job description or link"
-                value={typed}
-                maxLength={MAX_JD_CHARS}
-                readOnly={busy}
-                aria-busy={busy || undefined}
-                onChange={(event) => onChange({ text: event.target.value, file: null })}
-                placeholder="Paste the full job description here…"
-                className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
-              />
-            </div>
-            <p className="self-end text-body-s font-medium text-text-tertiary">
-              {typed.length.toLocaleString('en-US')} / {MAX_JD_CHARS.toLocaleString('en-US')}
-            </p>
+          <div className={cn(box, border, 'flex flex-1 p-4')}>
+            <textarea
+              aria-label="Job description or link"
+              value={typed}
+              maxLength={MAX_JD_CHARS}
+              readOnly={busy}
+              aria-busy={busy || undefined}
+              onChange={(event) => onChange({ text: event.target.value, file: null })}
+              placeholder="Paste the full job description here…"
+              className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
+            />
           </div>
         </TabPane>
 
@@ -178,6 +174,10 @@ export function OtherJobBox({
               className="min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-text-tertiary"
             />
           </label>
+          <p className="mt-2.5 text-body-s text-text-tertiary">
+            Paste the link to the job posting and we&apos;ll read the description from it. If the
+            site can&apos;t be read, paste the description instead.
+          </p>
         </TabPane>
 
         <TabPane on={tab === 'file'}>
@@ -191,7 +191,7 @@ export function OtherJobBox({
             className={cn(
               box,
               border,
-              'flex min-h-44 flex-1 flex-col items-center justify-center gap-2.5 border-dashed p-4 text-center',
+              'flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 border-dashed p-4 text-center',
               dragging && 'bg-surface-brand',
             )}
           >
@@ -223,6 +223,17 @@ export function OtherJobBox({
           </div>
         </TabPane>
       </div>
+      {/* The counter's row is kept on every tab, blank off the description, so nothing below it
+          moves when the tabs change. */}
+      <p
+        aria-hidden={tab !== 'paste'}
+        className={cn(
+          '-mt-2.5 self-end text-body-s font-medium text-text-tertiary',
+          tab !== 'paste' && 'invisible',
+        )}
+      >
+        {typed.length.toLocaleString('en-US')} / {MAX_JD_CHARS.toLocaleString('en-US')}
+      </p>
       <input
         ref={fileInput}
         type="file"

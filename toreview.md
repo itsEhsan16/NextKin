@@ -17753,3 +17753,16 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - seen in the browser at 1366×900 on Free and on Pro (the mock fixture switched to Pro locally, then reverted), including cancel → "Ends <date>" → "Keep my subscription".
 - **Not checked:** dark theme, widths under 1024, and the backend (real `planId`, invoice numbers, paused state) — only the mock.
 - **Noticed, not changed:** on a Pro account the sidebar still shows the "Upgrade to Pro" card.
+
+## §217 — "Add a new job": one size on all three tabs (owner, 2026-11-17)
+- **What changed:** in `OtherJobBox.tsx`, the input area is one fixed slot (`h-44`), the same on Paste job description, Paste job link and Upload file:
+  - the description textarea fills it;
+  - the link field sits at the top, with a help line under it inside the slot;
+  - the drop zone fills it.
+  - The "0 / 10,000" counter's row is kept on every tab and left blank off the description tab.
+- **Result:** the panel, the tip, "Try a sample job" and Analyze job stay in place as the tabs change.
+- **Judgement call:** the link tab's new help line reads "Paste the link to the job posting and we'll read the description from it. If the site can't be read, paste the description instead." It fills the gap and tells the truth about the link reader.
+- **Verified:**
+  - In the browser at 1366×900 (mock), switching through all three tabs left the Analyze button's top (753.6px), the tip's top and the panel height (557.6px) the same.
+  - create-flow Jest pass (18); lint and typecheck are clean.
+- **Not checked:** widths under 1024, where the panels stack.
