@@ -17728,3 +17728,28 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - web navigation, tailor and create Jest pass, including a new `TopBar` test pinning which paths hide it;
   - lint and typecheck are clean.
 - **Not seen in a browser.**
+
+## §216 — Billing & plan redrawn from the owner's reference (owner, 2026-11-17)
+- **What changed:** Settings → Billing & plan now reads top to bottom as the reference image does:
+  - a full-width plan card (`PlanOverview.tsx`): crown tile, plan name with a status pill (Active, Ends <date>, Paused until <date>, Free), price and cycle on the right, then the facts row (next billing date with "(in N days)", renewal amount "(+ applicable taxes)", subscription started), "Your plan includes" and a "This month's usage" panel with Resume generations and ATS checks meters and "Resets on <date>";
+  - "Payment method" (default card as "Visa ending in 4242") beside "Subscription settings" (auto-renewal and cycle, saved as they change);
+  - "Billing history" as a table with Invoice (number, or id), Date, Description, Amount, Status and Actions.
+  - `PlanCards.tsx` (the Free-beside-Pro pair) is deleted; nothing else used it.
+- **What works and what is still "coming soon":**
+  - "Cancel subscription" is real: a `ConfirmDialog`, then `useCancelSubscription`. While cancelling the card offers "Keep my subscription", while paused "Resume subscription" (`useResumeSubscription`).
+  - "Change plan" / "Upgrade to Pro", the card's "Update", "View all invoices" and each invoice's download stay `Soon`: no checkout and no invoice PDFs exist yet.
+  - There is no "View full plan details": it could only open `/upgrade`, still a coming-soon page, which is the ST-08 loop.
+- **Judgement calls:**
+  - The facts row runs across the whole card, not just the left column as in the reference. At 1366 wide the three facts wrapped into five lines each inside the left column.
+  - "Your plan includes" is one column from `lg` to `2xl` (two below and above), for the same reason.
+  - Facts show only when the data exists, and only on Pro: "Renewal amount" hides once cancelling (nothing renews; the date reads "Access ends"), "Subscription started" is the oldest paid invoice.
+  - On Free the right side reads "₹0 / month · Nothing to pay" (the plan's currency), since the pill already says "Free".
+  - The price is the SKU the account is on (`planId`), or on Free the one its chosen billing cycle would buy.
+  - The cancel dialog uses the brand tone, not the red bin: it can be undone until the period ends.
+  - The Payment method card drops the old "Add payment method" row and per-card menu; the reference has neither, and both were inert.
+- **Verified:**
+  - settings Jest pass (44), with `SettingsBilling.test.tsx` rewritten for the new layout, including a Pro cancel test against the mock;
+  - lint and typecheck are clean;
+  - seen in the browser at 1366×900 on Free and on Pro (the mock fixture switched to Pro locally, then reverted), including cancel → "Ends <date>" → "Keep my subscription".
+- **Not checked:** dark theme, widths under 1024, and the backend (real `planId`, invoice numbers, paused state) — only the mock.
+- **Noticed, not changed:** on a Pro account the sidebar still shows the "Upgrade to Pro" card.

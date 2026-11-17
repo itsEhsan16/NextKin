@@ -9,92 +9,80 @@ import { useId } from 'react';
 
 import { AccountCard } from '@/features/account/components/AccountCard';
 import { cn } from '@/lib/cn';
+import { buttonClass } from '@/ui/Button';
 import { iconButton } from '@/ui/iconButton';
-import { ArrowRightIcon, DownloadIcon, MoreVerticalIcon, PlusIcon } from '@/ui/icons';
-import {
-  NavSettingsIllustration,
-  ProfileTermsIllustration,
-  SettingsBillingIllustration,
-} from '@/ui/illustrations';
+import { ArrowRight, CreditCard02, Download01, Edit03, Receipt, Settings01 } from '@/ui/lineIcons';
 import { SelectField } from '@/ui/SelectField';
+import { Soon, soonControl } from '@/ui/Soon';
 import { Switch } from '@/ui/Switch';
 import { Tag } from '@/ui/Tag';
 
 import { CARD_BRAND_LABEL, cardExpiry, formatMoney, invoiceDate } from '../billingLibrary';
-import { pressable } from '@/ui/pressable';
-import { Soon, soonControl } from '@/ui/Soon';
 
 const CYCLES: readonly BillingCycle[] = ['monthly', 'annual'];
 
 /**
- * "Billing information" (471:3): the cards on file, the default one marked, and a dashed "Add
- * payment method". Adding a card is Stripe's checkout (V2 §13.4), which has no design or client
- * yet, so it and each card's menu are inert (`toreview.md` §92).
+ * "Payment method" (owner's reference, toreview §216): the default card on file. Changing it is
+ * Stripe's checkout (V2 §13.4), which has no client yet, so "Update" says "coming soon".
  */
-export function BillingInfoCard({ billing }: { billing: Billing }) {
+export function PaymentMethodCard({ billing }: { billing: Billing }) {
+  const card =
+    billing.paymentMethods.find((method) => method.isDefault) ?? billing.paymentMethods[0];
+
   return (
     <AccountCard
-      Art={SettingsBillingIllustration}
-      title="Billing information"
-      description="Manage your payment methods and billing details."
-    >
-      <ul aria-label="Payment methods" className="mt-5 flex flex-col gap-2">
-        {billing.paymentMethods.map((card) => (
-          <li key={card.id} className="flex items-center gap-3 rounded-md bg-neutral-50 px-4 py-3">
-            <span
-              aria-hidden
-              className="flex h-7.5 w-11 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-caption-m font-extrabold italic text-text-primary"
-            >
-              {card.brand.toUpperCase()}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-body-m text-text-primary">
-                {CARD_BRAND_LABEL[card.brand]} <span aria-hidden>••••</span>
-                <span className="sr-only">ending</span> {card.last4}
-              </span>
-              <span className="block text-body-s text-text-tertiary">
-                Expires {cardExpiry(card.expMonth, card.expYear)}
-              </span>
-            </span>
-            {card.isDefault && (
-              <Tag tone="success" className="shrink-0">
-                Default
-              </Tag>
-            )}
-            <Soon>
-              <button
-                aria-disabled="true"
-                type="button"
-                aria-label={`Options for ${CARD_BRAND_LABEL[card.brand]} ending ${card.last4}`}
-                className={cn(soonControl, iconButton, '-mr-1 text-text-secondary')}
-              >
-                <MoreVerticalIcon aria-hidden className="size-4" />
-              </button>
-            </Soon>
-          </li>
-        ))}
-        <li>
+      Icon={CreditCard02}
+      tile
+      title="Payment method"
+      description="The card used for your subscription and renewals."
+      action={
+        card && (
           <Soon>
             <button
-              aria-disabled="true"
               type="button"
-              className={cn(
-                soonControl,
-                pressable,
-                'flex h-control-lg w-full items-center gap-2.5 rounded-md border border-dashed border-border-brand-strong px-4 text-body-m text-brand-600 hover:bg-surface-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-              )}
+              aria-disabled="true"
+              className={cn(buttonClass({ variant: 'secondary', size: 'sm' }), soonControl)}
             >
-              <PlusIcon aria-hidden className="size-4" />
-              Add payment method
+              <Edit03 aria-hidden className="size-4" />
+              Update
             </button>
           </Soon>
-        </li>
-      </ul>
+        )
+      }
+      className="h-full"
+    >
+      {card ? (
+        <div className="mt-5 flex items-center gap-4 rounded-md border border-border-subtle px-4 py-3">
+          <span
+            aria-hidden
+            className="flex h-8 w-12 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-caption-m font-extrabold italic text-text-brand"
+          >
+            {card.brand.toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-body-m font-semibold text-text-primary">
+              {CARD_BRAND_LABEL[card.brand]} ending in {card.last4}
+            </span>
+            <span className="block text-body-s text-text-tertiary">
+              Expires {cardExpiry(card.expMonth, card.expYear)}
+            </span>
+          </span>
+          {card.isDefault && (
+            <Tag tone="success" className="shrink-0">
+              Default
+            </Tag>
+          )}
+        </div>
+      ) : (
+        <p className="mt-5 rounded-md bg-neutral-50 px-4 py-4 text-body-m text-text-tertiary">
+          No card on file. You add one at checkout when you upgrade.
+        </p>
+      )}
     </AccountCard>
   );
 }
 
-/** "Subscription settings" (471:28): auto-renewal and the billing cycle, each saved as it changes. */
+/** "Subscription settings": auto-renewal and the billing cycle, each saved as it changes. */
 export function SubscriptionSettingsCard({ billing }: { billing: Billing }) {
   const update = useUpdateBillingSettings();
   const renewLine = useId();
@@ -103,13 +91,15 @@ export function SubscriptionSettingsCard({ billing }: { billing: Billing }) {
 
   return (
     <AccountCard
-      Art={NavSettingsIllustration}
+      Icon={Settings01}
+      tile
       title="Subscription settings"
-      description="Manage how your subscription renews."
+      description="Control how your subscription renews and how you're billed."
+      className="h-full"
     >
       <div className="mt-5 flex min-h-14 items-center gap-4">
         <div className="min-w-0 flex-1">
-          <p className="text-body-m text-text-primary">Auto-renewal</p>
+          <p className="text-body-m font-semibold text-text-primary">Auto-renewal</p>
           <p id={renewLine} className="text-body-s text-text-tertiary">
             Automatically renew your plan at the end of each billing cycle.
           </p>
@@ -123,7 +113,7 @@ export function SubscriptionSettingsCard({ billing }: { billing: Billing }) {
       </div>
       <div className="mt-2 flex min-h-14 items-center gap-4 border-t border-border-subtle pt-2">
         <div className="min-w-0 flex-1">
-          <p className="text-body-m text-text-primary">Billing cycle</p>
+          <p className="text-body-m font-semibold text-text-primary">Billing cycle</p>
           <p id={cycleLine} className="text-body-s text-text-tertiary">
             Choose how often you want to be billed.
           </p>
@@ -135,25 +125,27 @@ export function SubscriptionSettingsCard({ billing }: { billing: Billing }) {
           options={CYCLES}
           labelOf={(option) => BILLING_CYCLE_LABEL[option]}
           onChange={(next) => update.mutate({ cycle: next })}
-          className="w-32"
+          className="w-36"
         />
       </div>
     </AccountCard>
   );
 }
 
-const HEAD = 'px-6 py-2.5 text-left text-caption-m font-medium text-text-tertiary';
-const CELL = 'px-6 py-3.5 text-body-m text-text-primary';
+const HEAD =
+  'whitespace-nowrap px-5 py-2.5 text-left text-caption-m font-medium text-text-tertiary';
+const CELL = 'whitespace-nowrap px-5 py-3.5 text-body-m text-text-primary';
 
 /**
- * "Billing history" (471:56): each invoice's date, what it was for, the amount and whether it's
- * paid, and its PDF. Stripe emails every invoice (V2 §13.4); nothing serves the PDF yet, so the
- * download buttons and "View all invoices" are inert (`toreview.md` §92).
+ * "Billing history": each invoice's number, date, what it was for, the amount and whether it's
+ * paid. Stripe emails every invoice (V2 §13.4); nothing serves the PDF yet, so download and
+ * "View all invoices" say "coming soon" (`toreview.md` §92).
  */
 export function BillingHistoryCard({ billing }: { billing: Billing }) {
   return (
     <AccountCard
-      Art={ProfileTermsIllustration}
+      Icon={Receipt}
+      tile
       title="Billing history"
       description="View and download your past invoices."
       action={
@@ -162,12 +154,12 @@ export function BillingHistoryCard({ billing }: { billing: Billing }) {
             aria-disabled="true"
             type="button"
             className={cn(
-              'flex shrink-0 items-center gap-2 self-center rounded-sm text-body-m text-brand-600 transition-colors duration-press ease-standard hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+              'flex shrink-0 items-center gap-2 self-center rounded-sm text-body-m font-semibold text-text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
               soonControl,
             )}
           >
             View all invoices
-            <ArrowRightIcon aria-hidden className="size-4" />
+            <ArrowRight aria-hidden className="size-4" />
           </button>
         </Soon>
       }
@@ -177,17 +169,13 @@ export function BillingHistoryCard({ billing }: { billing: Billing }) {
           No invoices yet. Each one appears here, and in your email, after a payment.
         </p>
       ) : (
-        <div className="-mx-6 -mb-6 mt-5 overflow-hidden rounded-b-lg border-t border-border-subtle">
-          <table className="w-full table-fixed border-collapse">
-            <colgroup>
-              <col className="w-[18%]" />
-              <col className="w-[32%]" />
-              <col className="w-[17%]" />
-              <col className="w-[21%]" />
-              <col className="w-[12%]" />
-            </colgroup>
+        <div className="mt-5 overflow-x-auto rounded-md border border-border-subtle">
+          <table className="w-full min-w-[40rem] border-collapse">
             <thead className="border-b border-border-subtle bg-neutral-50">
               <tr>
+                <th scope="col" className={HEAD}>
+                  Invoice
+                </th>
                 <th scope="col" className={HEAD}>
                   Date
                 </th>
@@ -200,37 +188,49 @@ export function BillingHistoryCard({ billing }: { billing: Billing }) {
                 <th scope="col" className={HEAD}>
                   Status
                 </th>
-                <th scope="col" className={cn(HEAD, 'text-center')}>
-                  Invoice
+                <th scope="col" className={cn(HEAD, 'text-right')}>
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
               {billing.invoices.map((invoice) => (
                 <tr key={invoice.id}>
+                  <td className={CELL}>
+                    <span className="flex items-center gap-2 font-medium text-text-brand">
+                      <Receipt aria-hidden className="size-4 shrink-0 text-text-tertiary" />
+                      <span className="truncate">{invoice.number ?? invoice.id}</span>
+                    </span>
+                  </td>
                   <td className={CELL}>{invoiceDate(invoice.issuedOn)}</td>
-                  <td className={cn(CELL, 'truncate')}>{invoice.description}</td>
+                  {/* Takes the room left over and truncates in it (`max-w-0`). */}
+                  <td className={cn(CELL, 'w-full max-w-0 truncate')}>{invoice.description}</td>
                   <td className={CELL}>
                     {formatMoney(invoice.amount.amount, invoice.amount.currency)}
                   </td>
                   <td className={CELL}>
                     <Tag
                       tone={invoice.status === 'paid' ? 'success' : 'neutral'}
+                      shape="pill"
                       className="gap-1.5"
                     >
                       <span aria-hidden className="size-2 rounded-full bg-current" />
                       {INVOICE_STATUS_LABEL[invoice.status]}
                     </Tag>
                   </td>
-                  <td className={cn(CELL, 'text-center')}>
+                  <td className={cn(CELL, 'text-right')}>
                     <Soon>
                       <button
                         aria-disabled="true"
                         type="button"
                         aria-label={`Download the ${invoiceDate(invoice.issuedOn)} invoice`}
-                        className={cn(soonControl, iconButton, 'mx-auto text-brand-600')}
+                        className={cn(
+                          soonControl,
+                          iconButton,
+                          'ml-auto border border-border-subtle text-text-brand',
+                        )}
                       >
-                        <DownloadIcon aria-hidden className="size-4" />
+                        <Download01 aria-hidden className="size-4" />
                       </button>
                     </Soon>
                   </td>

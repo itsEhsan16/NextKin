@@ -3,16 +3,16 @@ import { queryPhase, useBilling, usePlans, useSubscription } from '@nextkin/shar
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
-import { BillingHistoryCard, BillingInfoCard, SubscriptionSettingsCard } from './BillingCards';
-import { PlanCards } from './PlanCards';
+import { BillingHistoryCard, PaymentMethodCard, SubscriptionSettingsCard } from './BillingCards';
+import { PlanOverview } from './PlanOverview';
 import { useReveal } from '@/lib/useReveal';
 import { cn } from '@/lib/cn';
 import { cardSurface } from '@/ui/Card';
 
 /**
- * Settings → Billing & plan (470:3), which replaced its coming-soon panel: the current plan beside
- * Pro, then the card on file beside how it renews, then the invoices. Loads its own data, as the
- * Notifications section does.
+ * Settings → Billing & plan, redrawn from the owner's reference (toreview §216): the current plan
+ * full width with its usage, then the card on file beside how it renews, then the invoices. Loads
+ * its own data, as the Notifications section does.
  */
 export function BillingSection() {
   const subscription = useSubscription();
@@ -42,27 +42,33 @@ export function BillingSection() {
     return (
       <>
         {/* The three rows at their loaded heights (`toreview.md` §84). */}
-        <div className="grid grid-cols-2 gap-6">
-          <Skeleton className="h-75 rounded-lg" />
-          <Skeleton className="h-75 rounded-lg" />
-        </div>
+        <Skeleton className="h-100 rounded-lg" />
         <div className="grid grid-cols-2 gap-6">
           <Skeleton className="h-50 rounded-lg" />
           <Skeleton className="h-50 rounded-lg" />
         </div>
-        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-60 rounded-lg" />
       </>
     );
   }
 
+  // The SKU the account renews on; on Free, the one its chosen cycle would buy.
+  const proPlanId =
+    subscription.data.planId && subscription.data.planId !== 'free'
+      ? subscription.data.planId
+      : billing.data.settings.cycle === 'annual'
+        ? 'pro_annual'
+        : 'pro_monthly';
+
   return (
     <div className={cn('flex flex-col gap-6', reveal && 'animate-reveal')}>
-      <PlanCards
+      <PlanOverview
         subscription={subscription.data}
-        pro={plans.data?.find((plan) => plan.id === 'pro_monthly')}
+        plan={plans.data?.find((plan) => plan.id === proPlanId)}
+        invoices={billing.data.invoices}
       />
-      <div className="grid grid-cols-2 items-start gap-6">
-        <BillingInfoCard billing={billing.data} />
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+        <PaymentMethodCard billing={billing.data} />
         <SubscriptionSettingsCard billing={billing.data} />
       </div>
       <BillingHistoryCard billing={billing.data} />

@@ -84,3 +84,9 @@ export const CARD_BRAND_LABEL: Record<CardBrand, string> = {
 /** "04/2027" (471:21). */
 export const cardExpiry = (month: number, year: number): string =>
   `${String(month).padStart(2, '0')}/${year}`;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Whole days from now until an ISO timestamp, never below 0: "(in 30 days)". */
+export const daysUntil = (iso: string, now: number = Date.now()): number =>
+  Math.max(0, Math.ceil((new Date(iso).getTime() - now) / DAY_MS));
