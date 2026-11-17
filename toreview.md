@@ -17889,3 +17889,9 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Verified:**
   - In the browser (mock), the heading reads only its title.
   - `MethodStep.test.tsx` now checks the label is absent. The tailor and create suites plus `FlowChrome` pass (90); lint and typecheck are clean.
+
+## §228 — "What happens next?": a line joins the three steps (owner, 2026-11-17)
+- **What changed:** in the method step's aside (`MethodStep.tsx`), a 2px rounded line in `border-brand-strong` runs from each numbered circle down to the next, like a stepper. The line is decorative (`aria-hidden`); the list is still an `<ol>`.
+- **Verified:**
+  - In the browser at 1366×900 (mock), both lines sit on the circles' centre line. Each starts at one circle's bottom edge and ends at the next one's top, with no gap or overlap.
+  - `MethodStep` and `TailorFlow` tests pass; lint and typecheck are clean.

@@ -135,10 +135,20 @@ export function MethodStep({
               </h2>
               <ol className="flex flex-col gap-3">
                 {NEXT.map((line, i) => (
-                  <li key={line} className="flex items-start gap-3 text-body-m text-text-primary">
+                  <li
+                    key={line}
+                    className="relative flex items-start gap-3 text-body-m text-text-primary"
+                  >
+                    {/* A line from this number down to the next, joining the three (§228). */}
+                    {i < NEXT.length - 1 && (
+                      <span
+                        aria-hidden
+                        className="absolute -bottom-3 left-3.5 top-7 w-0.5 -translate-x-1/2 rounded-full bg-border-brand-strong"
+                      />
+                    )}
                     <span
                       aria-hidden
-                      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-caption-m font-bold text-text-brand"
+                      className="relative flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-caption-m font-bold text-text-brand"
                     >
                       {i + 1}
                     </span>
