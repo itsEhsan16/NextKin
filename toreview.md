@@ -17662,6 +17662,32 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - The error text is redacted in the log; the cause is read from the code and the new test
   (60 own skills plus 75 accepted now saves), not from the error itself.
 
+### §212.5 — "We couldn't start tailoring", refused with 400; the sizes of a run now agree (2026-11-17)
+
+- **What the owner saw:** `POST /api/v1/generations` answered 400 in 4 ms, three times, for a
+  job with 34 keywords ticked. The toast said only "Try again".
+- **Cause, read from the code** (the demo log does not hold the request): a result line in the
+  start request could be 300 characters. The AI's own suggestion could be 300 for the rewritten
+  bullet plus its figure, and a stored bullet 600. Since §212.2 the AI answers for long bullets,
+  so "Accept all" on a resume with one long bullet built a line the server refused, and with it
+  the whole run. The pencil in the dialog also opened a line longer than its own box allowed.
+- **Third of its kind in one day** (60 stored skills against 80 accepted; 300 tokens for three
+  rewrites; now this). Each number was written where it was checked.
+- **Fix at the root:** `packages/shared/src/schemas/limits.ts` holds the sizes that must agree,
+  each derived from the others, and `test/limits.test.ts` builds the fullest run the screen can
+  and requires the server's schema to accept it. A result line is as long as any stored line
+  (600); a run takes as many keywords as a job can list (100, was 80); 120 result lines (was
+  40); a stored resume 160 skills (60 own + 100).
+- **The two apps check before sending** (`runProblem`) and say what is in the way; a refusal
+  that still happens names its part (`startErrorLine`), never a bare "Try again".
+- **A longer bullet now gets an AI suggestion:** the draft's limit rose from 300 to 558
+  characters. Its answer has 1200 tokens; four rewrites of a 558-character bullet may not fit.
+  Not measured on a live model.
+- **Not fixed:** a run the worker gives up on still shows as in progress for ever (§212.4).
+- **Not verified on the demo** until deployed. The refused request itself was never seen, so
+  the cause is the one contradiction the code had on that path, not a reading of that request.
+- `note` on a keyword's place is still capped at 200 characters with no check in the apps.
+
 ## §213 — "Choose a job": both panels the same height, a designed empty state (owner, 2026-11-17)
 - **Layout:**
   - On the job step (`create/jobFlow`), "Your saved jobs" and "Add a new job" now stand the same height.

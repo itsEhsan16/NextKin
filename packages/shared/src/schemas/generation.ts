@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Generation, GenerationInput } from '../models/generation';
+import { ACCEPTED_MAX, BULLET_INDEX_MAX, CONFIRMED_MAX, FIGURE_TEXT_MAX, FIGURES_MAX } from './limits';
 
 /**
  * A generation over the wire (spec §11 `/api/v1/generations`; ImBackendImplementationPlan P6-13,
@@ -85,7 +86,7 @@ export const generationSchema = z.object({
       pages: z.number().optional(),
       pageBasis: z.string().optional(),
       confirmed: z.array(z.object({ keyword: z.string(), where: z.string(), note: z.string().optional(), by: z.enum(['ai', 'you']).optional() })).optional(),
-      figures: z.array(z.object({ where: z.string().trim().min(1).max(100), line: z.number().int().min(0).max(60), text: z.string().trim().min(1).max(300) })).optional(),
+      figures: z.array(z.object({ where: z.string().trim().min(1).max(100), line: z.number().int().min(0).max(BULLET_INDEX_MAX), text: z.string().trim().min(1).max(FIGURE_TEXT_MAX) })).optional(),
       projected: z.number().optional(),
       jobMatch: z.object({ matched: z.number(), total: z.number(), percent: z.number(), missing: z.array(z.string()), basis: z.string() }).optional(),
       baselineJobMatch: z.object({ matched: z.number(), total: z.number(), percent: z.number(), missing: z.array(z.string()), basis: z.string() }).optional(),
@@ -103,15 +104,16 @@ export const tailoringSchema = z
   .object({
     fixes: z.array(z.enum(['headline', 'summary', 'skills', 'experience', 'projects', 'length'])).max(6),
     experience: z.enum(['quick', 'full']).optional(),
-    // A long JD names 40+ terms, and reaching 8.5 can mean ticking most of them (toreview §129).
-    keywords: z.array(z.string().trim().min(1).max(120)).max(80),
+    // "Accept all" takes every missing keyword of the job, so this is as many as a job can list
+    // (`limits.ts`, toreview §212.5).
+    keywords: z.array(z.string().trim().min(1).max(120)).max(ACCEPTED_MAX),
     /** Ticked keywords the user says they used, and where (toreview §112): a role or `project:<id>`, up to three per keyword (§163). */
     confirmed: z
       .array(z.object({ keyword: z.string().trim().min(1).max(120), where: z.string().trim().min(1).max(100), note: z.string().trim().max(200).optional(), by: z.enum(['ai', 'you']).optional() }).strict())
-      .max(240)
+      .max(CONFIRMED_MAX)
       .optional(),
     /** Bullets the user rewrote with their real result (toreview §129). */
-    figures: z.array(z.object({ where: z.string().trim().min(1).max(100), line: z.number().int().min(0).max(60), text: z.string().trim().min(1).max(300) }).strict()).max(40).optional(),
+    figures: z.array(z.object({ where: z.string().trim().min(1).max(100), line: z.number().int().min(0).max(BULLET_INDEX_MAX), text: z.string().trim().min(1).max(FIGURE_TEXT_MAX) }).strict()).max(FIGURES_MAX).optional(),
     /** The user's answers to the header checks (toreview §170): remove a statement, or replace it. */
     header: z.array(z.object({ index: z.number().int().min(0).max(11), action: z.enum(['remove', 'replace']), text: z.string().trim().min(1).max(200).optional() }).strict()).max(12).optional(),
   })

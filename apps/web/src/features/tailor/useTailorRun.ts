@@ -8,6 +8,8 @@ import {
   setFix,
   setHeaderChoice,
   setPlace,
+  runProblem,
+  startErrorLine,
   tailorRunInput,
   tickKeyword,
   toggleAll,
@@ -96,12 +98,19 @@ export function useTailorRun(target: TailorTargetRef) {
   const start = useStartGeneration();
   const create = (comparison: TailorComparison, choices: CustomizeChoices) => {
     if (start.isPending) return;
+    // Never send a run the server will refuse: say what is in the way instead (toreview §212.5).
+    const problem = runProblem(choices);
+    if (problem) {
+      showToast(problem, { tone: 'error' });
+      return;
+    }
     start.mutate(
       tailorRunInput(comparison, choices, target.kind === 'job' ? target.id : undefined),
       {
         onSuccess: (generation) =>
           router.replace(tailorPath(target, { run: generation.id, resumeId: comparison.resumeId })),
-        onError: () => showToast("We couldn't start tailoring. Try again.", { tone: 'error' }),
+        // A refused request names the part that was refused; anything else is the plain retry.
+        onError: (error) => showToast(startErrorLine(error), { tone: 'error' }),
       },
     );
   };

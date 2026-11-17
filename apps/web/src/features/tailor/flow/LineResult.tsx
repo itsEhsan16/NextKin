@@ -2,6 +2,7 @@
 
 import { FIGURE_REASON, figureLine, hasSuggestion, type FigureDraft } from '@nextkin/shared/models';
 import { useDraftFigure } from '@nextkin/shared/queries';
+import { FIGURE_TEXT_MAX, FIGURE_TYPED_MAX } from '@nextkin/shared/schemas/limits';
 import { statesResult } from '@nextkin/shared/tailor/customize';
 import { useEffect, useState } from 'react';
 
@@ -88,7 +89,9 @@ export function LineResult({
   const showLine = !why;
 
   const line = own ?? (shape && figure.trim() ? figureLine(shape, figure) : '');
-  const counts = line !== '' && statesResult(line) && line.trim() !== bullet.text.trim();
+  // A line the resume can hold: the start request refuses a longer one (toreview §212.5).
+  const fits = line.trim().length <= FIGURE_TEXT_MAX;
+  const counts = line !== '' && fits && statesResult(line) && line.trim() !== bullet.text.trim();
   const choose = (index: number) => {
     // Another result brings its own best amount; tapping the picked one clears it.
     setPicked(index === pick ? null : index);
@@ -111,7 +114,7 @@ export function LineResult({
             value={own}
             onChange={(e) => setOwn(e.target.value)}
             rows={3}
-            maxLength={300}
+            maxLength={FIGURE_TEXT_MAX}
             autoFocus
             className={cn(field, 'w-full resize-none px-3 py-2')}
           />
@@ -248,7 +251,7 @@ export function LineResult({
                     <input
                       value={figure}
                       onChange={(e) => setTyped(e.target.value)}
-                      maxLength={40}
+                      maxLength={FIGURE_TYPED_MAX}
                       autoFocus
                       aria-label={`The amount: ${chosen.what}`}
                       placeholder={chosen.amounts[0]}
@@ -266,7 +269,7 @@ export function LineResult({
               <input
                 value={figure}
                 onChange={(e) => setTyped(e.target.value)}
-                maxLength={40}
+                maxLength={FIGURE_TYPED_MAX}
                 autoFocus
                 placeholder={draft.suggestion ?? draft.hint}
                 className={cn(field, 'h-control-md px-3')}
@@ -296,9 +299,11 @@ export function LineResult({
         {counts && <Check aria-hidden className="size-4" />}
         {counts
           ? 'Counts as a measured result'
-          : own !== null && /\d/.test(own) && own.trim() !== bullet.text.trim()
-            ? 'That number doesn’t say what it measures yet. Add a unit or what it counts: 10%, 100 users, 2 hours.'
-            : 'Only the real number: a count, a %, time or money saved. Interviewers may ask how you measured it.'}
+          : !fits
+            ? `That line is too long for a resume (${line.trim().length} characters; up to ${FIGURE_TEXT_MAX}). Shorten it.`
+            : own !== null && /\d/.test(own) && own.trim() !== bullet.text.trim()
+              ? 'That number doesn’t say what it measures yet. Add a unit or what it counts: 10%, 100 users, 2 hours.'
+              : 'Only the real number: a count, a %, time or money saved. Interviewers may ask how you measured it.'}
       </p>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

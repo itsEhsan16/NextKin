@@ -9,6 +9,7 @@ import { haystackOf, locate } from '@nextkin/shared/jobs/jdLocate';
 import { structureJd } from '@nextkin/shared/jobs/jdStructure';
 import type { JdStructured } from '@nextkin/shared/models/jdStructured';
 import { jdStructuredSchema } from '@nextkin/shared/schemas/jdStructured';
+import { JD_SKILLS_MAX } from '@nextkin/shared/schemas/limits';
 import { z } from 'zod';
 
 import type { AiGateway, CallContext, CallMeta } from '../../ai/gateway';
@@ -54,7 +55,7 @@ export const jdExtractionSchema = z.object({
   negotiable: z.object({ quote }).nullable(),
   experience: z.array(said).max(10),
   responsibilities: z.array(said.extend({ group: z.string().max(80).nullable() })).max(40),
-  skills: z.array(z.object({ name: z.string().trim().min(1).max(120), quote, category: z.enum(['language', 'framework', 'database', 'cloud', 'tool', 'api', 'domain', 'soft', 'other']), importance })).max(100),
+  skills: z.array(z.object({ name: z.string().trim().min(1).max(120), quote, category: z.enum(['language', 'framework', 'database', 'cloud', 'tool', 'api', 'domain', 'soft', 'other']), importance })).max(JD_SKILLS_MAX),
   education: z.array(said.extend({ importance })).max(10),
   languages: z.array(z.object({ name: z.string().trim().min(1).max(60), quote, importance, level: z.enum(['basic', 'intermediate', 'advanced', 'fluent', 'native']).nullable() })).max(8),
   benefits: z.array(said).max(30),
@@ -198,7 +199,7 @@ export function skillNamesFor(company: string | null | undefined): (name: string
 const today = () => new Date().toISOString().slice(0, 10);
 
 type ReadSkill = JdExtraction['skills'][number];
-const MAX_SKILLS = 100;
+const MAX_SKILLS = JD_SKILLS_MAX;
 /** A line this short around a skill's name is a button or a label, not the job asking for it. */
 const SWEEP_MIN_WORDS = 4;
 const SWEEP_MAX_QUOTE = 300;
