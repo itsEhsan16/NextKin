@@ -133,7 +133,8 @@ export function ColumnHead({
  * its content leaves and the footer bar rests at the bottom of the window, however short the
  * step is: no band of empty page under the bar.
  */
-export const flowPage = 'flex min-h-page-fill flex-col gap-5 pb-8';
+// The whole window from tablet width up: the top bar steps aside on these flows (`TopBar`).
+export const flowPage = 'flex min-h-page-fill flex-col gap-5 pb-8 md:min-h-dvh';
 
 /** A step: its card, then its footer bar. It takes the rest of the flow page. */
 export const stepShell = 'flex min-w-0 flex-1 flex-col gap-6';

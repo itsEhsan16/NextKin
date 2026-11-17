@@ -69,8 +69,17 @@ const uploadAction = cn(
  * The search opens Jobs with the words typed (redesign R4). Build Resume opens the job step of
  * the one resume flow (`toreview.md` §203).
  */
+/**
+ * The resume flows, Build and Tailor (with Tailor's resume review, the same route): a focused task,
+ * so from tablet width up the bar steps aside and the flow's own header leads (owner, 2026-11-17).
+ * "Build Resume" would start a second resume mid-flow; search and the bell pull away from it. The
+ * sidebar stays, so the way out is always there. Below 768 the bar stays: it holds the menu button.
+ */
+const FOCUS_FLOW = /^\/(?:create\/build|(?:jobs|jd)\/[^/]+\/tailor)(?:\/|$)/;
+
 export function TopBar() {
   const pathname = usePathname();
+  const focus = FOCUS_FLOW.test(pathname);
   const unread = useUnreadCount();
 
   // A document opened in the viewer starts in the band too (563:1377).
@@ -89,6 +98,7 @@ export function TopBar() {
     <header
       className={cn(
         'sticky top-0 z-topbar transition-colors duration-base ease-standard',
+        focus && 'md:hidden',
         clear
           ? 'pointer-events-none bg-transparent'
           : 'bg-neutral-100/80 shadow-hairline-bottom backdrop-blur-md',

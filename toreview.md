@@ -17652,3 +17652,16 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - lint and typecheck are clean.
 - **Not seen in a browser:** this branch hasn't run in a browser; the measurements above were on the main checkout's dev server.
 - **Watch:** branch `fix/keywords-score-results` (§212, unmerged) also edits the tailor flow; expect conflicts when both merge.
+
+## §215 — No top bar on the resume flows (owner, 2026-11-17)
+- **What changed:** on Build (`/create/build`) and Tailor (`/jobs/:id/tailor`, `/jd/:id/tailor`, including Tailor's resume review on the same route), the app's top bar (search, Build Resume, bell, avatar) is `md:hidden`, so the flow's own header leads.
+- **Why:** "Build Resume" would start a second resume mid-flow, and search and the bell pull away from a focused task.
+- **What stays:**
+  - The sidebar stays, so there is always a way out.
+  - Below 768 the bar stays, because it holds the only button that opens the sidebar there.
+- **Layout:** `flowPage` is `md:min-h-dvh`, filling the whole window where the bar is gone.
+- **Judgement call:** Cover letter, ATS check and Zero resume keep the bar (the owner asked about generating the resume). It's one regex in `TopBar.tsx` if they should join.
+- **Verified:**
+  - web navigation, tailor and create Jest pass, including a new `TopBar` test pinning which paths hide it;
+  - lint and typecheck are clean.
+- **Not seen in a browser.**
