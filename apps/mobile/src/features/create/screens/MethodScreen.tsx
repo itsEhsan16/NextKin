@@ -73,7 +73,9 @@ export function MethodScreen({ jobId, jdId }: Omit<CustomizeTarget, 'resumeId'>)
   const hasResume = (resumes.data?.length ?? 0) > 0;
   const hasRoles = (profile.data?.experiences.length ?? 0) > 0;
   // With no resume yet, Tailor can't be the default advice: the profile, or a start from nothing.
-  const recommended: Method = hasResume ? 'tailor' : hasRoles ? 'profile' : 'zero';
+  // Until the library has loaded, Tailor stays the advice: "no resume" is only said once known.
+  const recommended: Method =
+    !resumes.data || hasResume ? 'tailor' : !profile.data || hasRoles ? 'profile' : 'zero';
   const job = target ? `${target.title}${target.company ? ` · ${target.company}` : ''}` : undefined;
 
   const go = () => {

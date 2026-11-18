@@ -17850,3 +17850,7 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - mobile typecheck, lint and the full suite pass: 228 suites, 1963 tests. New: `ResumeFlowParts.test.tsx`; `BuildCompareScreen` tests were rewritten.
   - the web typecheck is clean.
 - **Not seen on a device.** Check the fill's speed on a real read, and the Build list at 360 wide.
+- **Seen in the browser (2026-11-18, Expo web preview on sample data, 375 × 812):** the whole Tailor path from a job (method → resume sheet → Choose Keywords → run → ready) works. Two fixes came from that look:
+  - "Recommended" sat on "Start from scratch" while the resume library was still loading. It now stays on Tailor until the library says there is no resume.
+  - The keyword list opened on an empty Missing tab when the job's keywords were all optional. It now opens on the first tab that has something to tick.
+  - The web preview can't keep a session across a full page reload: expo-sqlite's `.wasm` worker doesn't bundle on Metro web. That predates this branch.

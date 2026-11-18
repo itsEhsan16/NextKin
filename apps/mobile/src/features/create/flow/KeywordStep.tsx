@@ -170,7 +170,14 @@ export function KeywordChooser({
   haveLabel?: string;
 }) {
   const styles = useStyles();
-  const [tab, setTab] = useState<KeywordTabKey>('missing');
+  // Opens on the first tab with something to tick, so an empty Missing never greets anyone.
+  const [tab, setTab] = useState<KeywordTabKey>(() =>
+    rows.some((r) => r.tab === 'missing')
+      ? 'missing'
+      : rows.some((r) => r.tab === 'optional')
+        ? 'optional'
+        : 'all',
+  );
   const [expanded, setExpanded] = useState(false);
   const lists: Record<KeywordTabKey, ListRow[]> = useMemo(
     () => ({
