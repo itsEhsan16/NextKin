@@ -36,6 +36,8 @@ const spentSubscription: Subscription = {
 };
 
 const settle = (ms = 3000) => act(() => jest.advanceTimersByTimeAsync(ms));
+/** The All tab lists every skill, the profile's own ones ticked and locked. */
+const showAll = () => act(async () => fireEvent.press(screen.getByText(/^All \(/)));
 
 /** A job read on BUILD 03/04, asking for these skills (the profile has all but Fintech). */
 async function seedDraft(requiredSkills: string[]): Promise<string> {
@@ -88,18 +90,20 @@ describe('Build Resume step 2: the match (§172)', () => {
     jest.useRealTimers();
   });
 
-  it('shows the match, the skills as chips and one build button (step 2 of 3)', async () => {
+  it('shows the match, the job’s skills to tick and one build button (2 of 3, §235)', async () => {
     const jdId = await seedDraft(BOARD_SKILLS);
     await renderCompare({ jdId });
     expect(screen.getByLabelText('Comparing your profile with this job')).toBeOnTheScreen();
     await settle();
 
-    expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 2 of 3, Choose Keywords')).toBeOnTheScreen();
+    expect(screen.getByText('Choose what to add')).toBeOnTheScreen();
     expect(screen.getByText('Senior Product Designer · CRED')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Match 8.0 out of 10')).toBeOnTheScreen();
+    expect(screen.getByLabelText('ATS score 8.0 out of 10')).toBeOnTheScreen();
     expect(screen.getByText('Good match'.toUpperCase())).toBeOnTheScreen();
-    expect(screen.getByText('Your profile')).toBeOnTheScreen();
-    // On the profile: ticked and locked. Missing: off until the user says they have it.
+    expect(screen.getByText('Using your profile')).toBeOnTheScreen();
+    // On the profile: ticked and locked (All). Missing: off until the user says they have it.
+    await showAll();
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
@@ -112,9 +116,13 @@ describe('Build Resume step 2: the match (§172)', () => {
     await renderCompare({ jdId });
     await settle();
 
+    await showAll();
     await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
     expect(screen.getByText('Added skills go on your profile too.')).toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Build resume' })));
+    expect(screen.getByText('1 keyword selected')).toBeOnTheScreen();
+    await act(async () =>
+      fireEvent.press(screen.getByRole('button', { name: 'Add 1 Keyword & Continue' })),
+    );
     await settle();
 
     expect(startSpy).toHaveBeenCalledWith({
@@ -141,15 +149,12 @@ describe('Build Resume step 2: the match (§172)', () => {
     );
   });
 
-  it('folds what the build will improve until asked', async () => {
+  it('lists what the AI will write from the profile', async () => {
     const jdId = await seedDraft(BOARD_SKILLS);
     await renderCompare({ jdId });
     await settle();
 
-    expect(
-      screen.queryByText('Says Senior UX Designer. This job is Senior Product Designer.'),
-    ).not.toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByLabelText(/^What we’ll improve, \d+$/)));
+    expect(screen.getByText('What the AI will write')).toBeOnTheScreen();
     expect(
       screen.getByText('Says Senior UX Designer. This job is Senior Product Designer.'),
     ).toBeOnTheScreen();

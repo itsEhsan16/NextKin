@@ -28,6 +28,7 @@ import {
   KeywordChooser,
   KeywordFooter,
   ProjectionBar,
+  tailorTicks,
 } from '../flow/KeywordStep';
 import { RESUME_STEP_COUNT, StepHelpSheet, stepName } from '../flow/ResumeSteps';
 import { AiPlanCard, MoreOptionsSheet } from '../flow/ReviewParts';
@@ -246,7 +247,7 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
       </Animated.View>
       {result.keywords.length > 0 ? (
         <Animated.View entering={enter(2)} style={styles.section}>
-          <KeywordChooser comparison={result} choices={choices} onChange={set} />
+          <KeywordChooser {...tailorTicks(result, choices, set)} />
           {projected !== undefined && base !== undefined ? (
             <ProjectionBar projected={projected} base={base} />
           ) : null}

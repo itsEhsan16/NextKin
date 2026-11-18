@@ -17810,10 +17810,7 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - **Build still chooses its source on step 1** ("Built from: resume / profile"), so the method step isn't shown twice. Build sends only someone with no resume and no roles to the method step, instead of the old upload-or-start card.
   - **PlanQuestions (`24190a8`) not ported:** it was written for §202's half-credit scoring. Main's D-25 maths and "Did you use these?" cover the same questions.
   - The All tab lists the resume's own keywords ticked and locked as "On your resume". "From M total" is the job's keyword count.
-- **Not done (proposal items left):**
-  - the before → after score line on the ready screen;
-  - Build's own step 2 (`BuildCompareScreen`) still has its chips. It shows the new step name only, not the keyword list or the help button;
-  - the web's staged Continue fill on the job step.
+- **Proposal items left here were finished in §235.**
 - **Verified:**
   - mobile typecheck and lint are clean;
   - Jest: create and generations suites pass, with `TailorCompareScreen` and `BuildJobScreens` tests rewritten for the new screens and a new `MethodScreen.test.tsx`;
@@ -17828,3 +17825,28 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - **Most likely:** the demo's OpenRouter credit balance is too low for the larger requests. OpenRouter answers 402 ("more credits, or fewer max_tokens") when the balance can't cover `max_tokens`, and the adapter maps a 402 to a non-retryable `error`.
   - **Unconfirmed:** reading the OpenRouter key from Secrets Manager to check the balance was refused in this session. **Owner: check credits at openrouter.ai.** Topping up should fix it with no deploy.
   - **No server code changed.** A follow-up worth having: name 402 as `capped`-like in `toLlmError`, so the log and the run say "out of credit" rather than the generic line.
+
+## §235 — The rest of the app's resume-flow proposal: ready score, Build's keyword step, staged Continue (owner, 2026-11-18)
+- **Ready screen score** (`TailorReady` `ScoreRow`): before → after was already there. It now also says what the web's `ScoreSummaryCard` says:
+  - the band ("ATS score · Good match");
+  - "N of M key keywords";
+  - "Plan aimed for x" when the run fell more than a point short;
+  - one tip: the run's own next steps (`nextStepsLine`), else the key keywords still missing, else "All key keywords are in".
+  - Every number is the run's own. Tailor and Build share it.
+- **Build's step 2** (`BuildCompareScreen`) is now the web's "Choose what to add", built from the same pieces as Tailor's keyword step:
+  - the job & profile row (a tap views the job);
+  - the match card;
+  - Missing / Optional / All, with the profile's skills ticked and locked as "On your profile";
+  - "What the AI will write", shown open (it was a fold);
+  - the count footer: "Add N Keywords & Continue", or "Build resume" with none ticked;
+  - the (?) help sheet.
+  - The profile comparison prices no keyword, so rows show no impact and the card estimates no gain. It says "Added skills go on your profile too" instead.
+  - `KeywordChooser` now takes rows and a tick callback, so Tailor (`tailorTicks`) and Build share it.
+  - `keywordRowsOf` (shared) accepts any `{ keywords, plan? }`; this is a type widening only. The web typecheck is clean.
+- **Job step Continue** (`flow/ProgressButton.tsx`): the web's staged button. "Reading the job…" → "Analyzing…" → "Almost there…" at 0 / 1.5 / 5 s.
+  - The pill fills from the left toward 90% and never claims done. Under reduced motion it steps by stage.
+  - It takes the screen on when the read lands. A failure leaves the plain button. "Continue anyway" for a closed job is kept.
+- **Verified:**
+  - mobile typecheck, lint and the full suite pass: 228 suites, 1963 tests. New: `ResumeFlowParts.test.tsx`; `BuildCompareScreen` tests were rewritten.
+  - the web typecheck is clean.
+- **Not seen on a device.** Check the fill's speed on a real read, and the Build list at 360 wide.

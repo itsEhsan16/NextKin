@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
-import type { TailorRun } from '@/data/models';
+import { atsBandFor, nextStepsLine, type TailorRun } from '@/data/models';
 import { StatusPill } from '@/features/create/flow/FlowKit';
 // Deep import on purpose: the profile barrel drags its screens in.
 import { a11yButton, a11yHeader } from '@/lib';
@@ -30,42 +30,81 @@ export type TailorReadyProps = {
   preview?: ReactNode;
 };
 
+const BAND_LABEL = {
+  strong: 'Strong match',
+  good: 'Good match',
+  fair: 'Fair match',
+  weak: 'Weak match',
+} as const;
+
+/**
+ * The score once the run is done, as the web's ScoreSummaryCard says it (owner, 2026-11-18,
+ * toreview §235): the band, the move from where it started, how many of the job's key keywords
+ * the page shows, a plan the run fell short of, and one next step. Every number is the run's own.
+ */
 function ScoreRow({
   score,
-  baseline,
+  run,
   onSeeChanges,
 }: {
   score?: number;
-  baseline?: number;
+  run?: TailorRun;
   onSeeChanges: () => void;
 }) {
   const { colors, u } = useTheme();
   const styles = useStyles();
   if (score == null) return null;
   const tenths = (n: number) => (Math.round(n) / 10).toFixed(1);
+  const baseline = run?.baselineScore;
+  const projected = run?.projected;
+  const match = run?.jobMatch;
+  const moved = baseline != null && Math.round(baseline) !== Math.round(score);
+  const facts = [
+    match ? `${match.matched} of ${match.total} key keywords` : null,
+    // A point of rounding either way is the same promise kept; a miss is said, briefly.
+    projected != null && score < projected - 1 ? `Plan aimed for ${tenths(projected)}` : null,
+  ].filter((x): x is string => x !== null);
+  const missing = match?.missing ?? [];
+  const tip =
+    nextStepsLine(run?.next) ??
+    (!match
+      ? null
+      : missing.length === 0
+        ? 'All key keywords are in. Add results to stand out.'
+        : `Missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ` +${missing.length - 3}` : ''}. Add only what’s true.`);
   return (
-    <View style={[styles.scoreRow, { backgroundColor: colors.successSurface }]}>
-      <View style={styles.flex}>
-        <Text variant="footnote" color="success">
-          ATS score
-        </Text>
-        <Text variant="title3" color="ink">
-          {baseline != null && Math.round(baseline) !== Math.round(score)
-            ? `${tenths(baseline)} → ${tenths(score)}`
-            : tenths(score)}
-        </Text>
+    <View style={[styles.scoreCard, { backgroundColor: colors.successSurface }]}>
+      <View style={styles.scoreRow}>
+        <View style={styles.flex}>
+          <Text variant="footnote" color="success">
+            {`ATS score · ${BAND_LABEL[atsBandFor(score)]}`}
+          </Text>
+          <Text variant="title3" color="ink">
+            {moved ? `${tenths(baseline!)} → ${tenths(score)}` : tenths(score)}
+          </Text>
+          {facts.length > 0 ? (
+            <Text variant="footnote" color="textSecondary">
+              {facts.join(' · ')}
+            </Text>
+          ) : null}
+        </View>
+        <Pressable
+          {...a11yButton('See what changed', 'Opens this resume’s versions')}
+          feedback="subtle"
+          onPress={onSeeChanges}
+          style={styles.link}
+        >
+          <Text variant="footnote" color="brand">
+            See what changed
+          </Text>
+          <Icon name="ChevronRight" size={u(14)} color={colors.brand} />
+        </Pressable>
       </View>
-      <Pressable
-        {...a11yButton('See what changed', 'Opens this resume’s versions')}
-        feedback="subtle"
-        onPress={onSeeChanges}
-        style={styles.link}
-      >
-        <Text variant="footnote" color="brand">
-          See what changed
+      {tip ? (
+        <Text variant="footnote" color="textSecondary">
+          {tip}
         </Text>
-        <Icon name="ChevronRight" size={u(14)} color={colors.brand} />
-      </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -98,7 +137,7 @@ export function TailorReady({
         {title}
       </Text>
       {preview}
-      <ScoreRow score={score} baseline={run?.baselineScore} onSeeChanges={onSeeChanges} />
+      <ScoreRow score={score} run={run} onSeeChanges={onSeeChanges} />
       {next ?? <NextStepNote text={`Next: download it, then apply on ${where}`} />}
     </View>
   );
@@ -108,13 +147,7 @@ const useStyles = scaledSheet((_s, u) => ({
   wrap: { gap: u(16), paddingTop: u(4), width: '100%' },
   pills: { flexDirection: 'row', alignItems: 'center', gap: u(8), flexWrap: 'wrap' },
   flex: { flex: 1 },
-  scoreRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: u(12),
-    paddingHorizontal: u(14),
-    paddingVertical: u(12),
-    borderRadius: u(18),
-  },
+  scoreCard: { gap: u(8), paddingHorizontal: u(14), paddingVertical: u(12), borderRadius: u(18) },
+  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: u(12) },
   link: { flexDirection: 'row', alignItems: 'center', gap: u(2) },
 }));

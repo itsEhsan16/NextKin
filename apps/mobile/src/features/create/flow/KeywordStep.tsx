@@ -37,10 +37,13 @@ export function JobResumeRow({
   job,
   resumeTitle,
   onPress,
+  label = 'Change the resume',
 }: {
   job: string;
   resumeTitle: string;
   onPress?: () => void;
+  /** What a tap does, for a screen reader. */
+  label?: string;
 }) {
   const { colors, u } = useTheme();
   const styles = useStyles();
@@ -67,7 +70,7 @@ export function JobResumeRow({
         <Pressable
           feedback="subtle"
           accessibilityRole="button"
-          accessibilityLabel={`${job}. Using ${resumeTitle}. Change the resume`}
+          accessibilityLabel={`${job}. Using ${resumeTitle}. ${label}`}
           onPress={onPress}
           style={styles.row}
         >
@@ -86,10 +89,13 @@ export function AtsEstimateCard({
   scored,
   gain,
   ticked,
+  emptyLine = 'Tick the keywords you have to see what they add.',
 }: {
   /** 0–100. */
   score: number;
   scored: boolean;
+  /** The line when nothing ticked adds a measured gain. */
+  emptyLine?: string;
   /** Points out of 10 the candidate's own answers add. */
   gain: number;
   ticked: number;
@@ -124,7 +130,7 @@ export function AtsEstimateCard({
           </>
         ) : (
           <Text variant="callout" color="textSecondary">
-            Tick the keywords you have to see what they add.
+            {emptyLine}
           </Text>
         )}
       </View>
@@ -144,46 +150,49 @@ export const KEYWORDS_SHOWN = 5;
 /**
  * Missing / Optional / All, then the list. Missing is what the job requires and the resume lacks;
  * Optional is what it prefers (and soft skills); All adds the ones the resume already shows,
- * ticked and locked. The tab counts are the rows each tab holds.
+ * ticked and locked. The tab counts are the rows each tab holds. Tailor and Build both draw it:
+ * each says what is ticked and what a tick does.
  */
 export function KeywordChooser({
-  comparison,
-  choices,
-  onChange,
+  rows,
+  have,
+  ticked,
+  onTick,
+  haveLabel = 'On your resume',
 }: {
-  comparison: TailorComparison;
-  choices: CustomizeChoices;
-  onChange: (next: CustomizeChoices) => void;
+  /** The keywords to choose from (`keywordRowsOf`). */
+  rows: readonly KeywordRow[];
+  /** The ones already shown, listed on All only. */
+  have: readonly string[];
+  ticked: readonly string[];
+  /** One tick, or "Select all" / "Clear all" for a tab. */
+  onTick: (labels: readonly string[], on: boolean) => void;
+  haveLabel?: string;
 }) {
   const styles = useStyles();
   const [tab, setTab] = useState<KeywordTabKey>('missing');
   const [expanded, setExpanded] = useState(false);
-  const rows = useMemo(() => keywordRowsOf(comparison), [comparison]);
-  const onResume = useMemo(
-    () => comparison.keywords.filter((k) => k.onResume).map((k) => k.label),
-    [comparison],
-  );
   const lists: Record<KeywordTabKey, ListRow[]> = useMemo(
     () => ({
       missing: rows.filter((r) => r.tab === 'missing').map((row) => ({ row, onResume: false })),
       optional: rows.filter((r) => r.tab === 'optional').map((row) => ({ row, onResume: false })),
       all: [
         ...rows.map((row): ListRow => ({ row, onResume: false })),
-        ...onResume.map((label): ListRow => ({ label, onResume: true })),
+        ...have.map((label): ListRow => ({ label, onResume: true })),
       ],
     }),
-    [rows, onResume],
+    [rows, have],
   );
   const max = Math.max(0, ...rows.map((r) => r.worth ?? 0));
   const list = lists[tab];
   const shown = expanded ? list : list.slice(0, KEYWORDS_SHOWN);
   const open = list.filter((r): r is Extract<ListRow, { onResume: false }> => !r.onResume);
-  const allTicked = open.length > 0 && open.every((r) => choices.added.includes(r.row.label));
-
-  const tick = (label: string, on: boolean, from = choices) =>
-    tickKeyword(from, label, on, comparison.picks, comparison.backed);
+  const allTicked = open.length > 0 && open.every((r) => ticked.includes(r.row.label));
   const toggleAll = () =>
-    onChange(open.reduce((next, r) => tick(r.row.label, !allTicked, next), choices));
+    onTick(
+      open.map((r) => r.row.label),
+      !allTicked,
+    );
 
   return (
     <View style={styles.chooser}>
@@ -204,7 +213,7 @@ export function KeywordChooser({
           <Text variant="callout" color="textSecondary" align="center">
             {tab === 'optional'
               ? 'Nothing optional is missing.'
-              : 'Your resume already shows every keyword this job requires.'}
+              : 'You already show every keyword this job requires.'}
           </Text>
         </FlowCard>
       ) : (
@@ -230,7 +239,7 @@ export function KeywordChooser({
             <View key={labelOf(item)}>
               {index > 0 || open.length > 0 ? <FlowDivider /> : null}
               {item.onResume ? (
-                <KeywordLine label={item.label} checked locked tag={null} />
+                <KeywordLine label={item.label} checked locked lockedLabel={haveLabel} tag={null} />
               ) : (
                 <KeywordLine
                   label={item.row.label}
@@ -238,8 +247,8 @@ export function KeywordChooser({
                   worth={item.row.worth}
                   strong={max > 0 && (item.row.worth ?? 0) >= max * 0.6}
                   yours={item.row.elsewhere !== undefined}
-                  checked={choices.added.includes(item.row.label)}
-                  onToggle={(on) => onChange(tick(item.row.label, on))}
+                  checked={ticked.includes(item.row.label)}
+                  onToggle={(on) => onTick([item.row.label], on)}
                 />
               )}
             </View>
@@ -263,6 +272,26 @@ export function KeywordChooser({
       )}
     </View>
   );
+}
+
+/** Tailor's ticks: a tick takes the places the comparison picked for it (`tickKeyword`). */
+export function tailorTicks(
+  comparison: TailorComparison,
+  choices: CustomizeChoices,
+  onChange: (next: CustomizeChoices) => void,
+) {
+  return {
+    rows: keywordRowsOf(comparison),
+    have: comparison.keywords.filter((k) => k.onResume).map((k) => k.label),
+    ticked: choices.added,
+    onTick: (labels: readonly string[], on: boolean) =>
+      onChange(
+        labels.reduce(
+          (next, label) => tickKeyword(next, label, on, comparison.picks, comparison.backed),
+          choices,
+        ),
+      ),
+  };
 }
 
 function MoreChevron({ up }: { up: boolean }) {
@@ -301,6 +330,7 @@ function KeywordLine({
   yours = false,
   checked,
   locked = false,
+  lockedLabel = 'On your resume',
   onToggle,
 }: {
   label: string;
@@ -310,6 +340,7 @@ function KeywordLine({
   yours?: boolean;
   checked: boolean;
   locked?: boolean;
+  lockedLabel?: string;
   onToggle?: (on: boolean) => void;
 }) {
   const styles = useStyles();
@@ -322,7 +353,7 @@ function KeywordLine({
         </Text>
         <View style={styles.tags}>
           {locked ? (
-            <StatusPill label="On your resume" tone="neutral" />
+            <StatusPill label={lockedLabel} tone="neutral" />
           ) : (
             <>
               {tag ? <StatusPill label={tag} tone="brand" /> : null}
@@ -351,7 +382,7 @@ function KeywordLine({
         accessibilityRole="checkbox"
         accessibilityState={{ checked: true, disabled: true }}
         accessibilityLabel={label}
-        accessibilityHint="Already on your resume"
+        accessibilityHint={`Already there: ${lockedLabel.toLowerCase()}`}
       >
         {content}
       </View>

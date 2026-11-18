@@ -33,6 +33,7 @@ import { OnboardingFrame } from '../components/OnboardingFrame';
 import { useBuildSourceUpload } from '../hooks/useBuildSourceUpload';
 import { useBuildActions } from '../hooks/useStartBuild';
 import { buildAddInput } from '../buildInput';
+import { ProgressButton } from '../flow/ProgressButton';
 import { stepName } from '../flow/ResumeSteps';
 
 export const BUILD_STEPS = 3;
@@ -230,11 +231,10 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
       footer={
         input ? (
           <Animated.View entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}>
-            <Button
-              label={reading ? 'Reading the job…' : closedId ? 'Continue anyway' : 'Continue'}
-              size="xl"
-              block
-              loading={reading}
+            {/* The web's staged Continue (toreview §235): the pill fills while the job is read. */}
+            <ProgressButton
+              label={closedId ? 'Continue anyway' : 'Continue'}
+              working={reading}
               onPress={() => void readPasted()}
             />
           </Animated.View>
