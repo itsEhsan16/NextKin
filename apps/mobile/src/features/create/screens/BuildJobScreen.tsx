@@ -33,6 +33,7 @@ import { OnboardingFrame } from '../components/OnboardingFrame';
 import { useBuildSourceUpload } from '../hooks/useBuildSourceUpload';
 import { useBuildActions } from '../hooks/useStartBuild';
 import { buildAddInput } from '../buildInput';
+import { stepName } from '../flow/ResumeSteps';
 
 export const BUILD_STEPS = 3;
 export const BUILD_JOB_TITLE = 'Which job is it for?';
@@ -208,6 +209,7 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
     <OnboardingFrame
       step={1}
       total={BUILD_STEPS}
+      stepName={stepName(1)}
       title={BUILD_JOB_TITLE}
       subtitle={LEDE}
       onBack={actions.goBack}

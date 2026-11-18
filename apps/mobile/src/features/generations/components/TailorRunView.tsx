@@ -29,6 +29,7 @@ import { TailorChrome } from './TailorChrome';
 import { TailorProgress } from './TailorProgress';
 import { TailorReady } from './TailorReady';
 import { savedPagesLabel, TailorSavedSheet, type TailorSavedFile } from './TailorSavedSheet';
+import { RESUME_STEPS } from '@/features/create/flow/ResumeSteps';
 
 export type TailorRunViewProps = {
   generation: Generation;
@@ -110,7 +111,13 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
       <Screen
         scroll
         edges={['top', 'bottom']}
-        header={<TailorChrome step={ready ? 'download' : 'fix'} onClose={close} />}
+        header={
+          <TailorChrome
+            step={ready ? 'download' : 'fix'}
+            stepName={RESUME_STEPS[2]}
+            onClose={close}
+          />
+        }
         headerStyle={{ paddingBottom: s(ready ? STEPS_TO_PREVIEW : STEPS_TO_ART) }}
         contentContainerStyle={{ paddingBottom: spacing[8] }}
         footer={
@@ -134,7 +141,12 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
               <FlowFooter
                 inset
                 note="Nothing is invented — only your resume and answers."
-                primary={{ label: 'Leave and notify me', icon: 'Bell01', variant: 'outline', onPress: close }}
+                primary={{
+                  label: 'Leave and notify me',
+                  icon: 'Bell01',
+                  variant: 'outline',
+                  onPress: close,
+                }}
               />
             )}
           </Reveal>
@@ -145,7 +157,9 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
           {ready ? (
             <>
               <TailorReady
-                preview={<ResumePagePreview content={doc} name={name} score={resume.data?.atsScore} />}
+                preview={
+                  <ResumePagePreview content={doc} name={name} score={resume.data?.atsScore} />
+                }
                 run={run}
                 company={company}
                 domain={domain}

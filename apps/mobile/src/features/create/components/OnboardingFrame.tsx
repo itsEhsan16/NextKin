@@ -15,7 +15,11 @@ export type OnboardingFrameProps = {
   total: number;
   title: string;
   subtitle?: string;
+  /** The step's name beside its count under the bar: "2 of 3 · Choose Keywords" (the web's steps). */
+  stepName?: string;
   onBack?: () => void;
+  /** A help button in the top-right slot: what this step is for. */
+  onHelp?: () => void;
   onSkip?: () => void;
   /** Shows a close ✕ in Skip's place — for flows the user can leave at any step. */
   onClose?: () => void;
@@ -37,7 +41,9 @@ export function OnboardingFrame({
   total,
   title,
   subtitle,
+  stepName,
   onBack,
+  onHelp,
   onSkip,
   onClose,
   aside,
@@ -64,8 +70,28 @@ export function OnboardingFrame({
           )}
           <View style={styles.progress}>
             <StepProgress step={step} total={total} />
+            {stepName ? (
+              <Text
+                variant="footnote"
+                color="ink"
+                align="center"
+                accessibilityLabel={`Step ${step} of ${total}, ${stepName}`}
+              >
+                <Text variant="footnote" color="brand">
+                  {`${step} of ${total}`}
+                </Text>
+                {`  ·  ${stepName}`}
+              </Text>
+            ) : null}
           </View>
-          {onClose ? (
+          {onHelp ? (
+            <IconButton
+              icon="HelpCircle"
+              label="What is this step?"
+              variant="outline"
+              onPress={onHelp}
+            />
+          ) : onClose ? (
             <IconButton icon="XClose" label="Close" variant="outline" onPress={onClose} />
           ) : onSkip ? (
             <Pressable
@@ -109,7 +135,7 @@ const useStyles = scaledSheet((_s, u) => ({
   body: { paddingHorizontal: u(24), paddingTop: u(8), paddingBottom: u(24) },
   topRow: { flexDirection: 'row', alignItems: 'center', gap: u(16) },
   backSpace: { width: u(44), height: u(44) },
-  progress: { flex: 1 },
+  progress: { flex: 1, gap: u(8) },
   skip: { minWidth: u(44), height: u(44), alignItems: 'flex-end', justifyContent: 'center' },
   heading: { marginTop: u(28), marginBottom: u(24), gap: u(8) },
   aside: { marginTop: -u(8), marginBottom: u(20) },

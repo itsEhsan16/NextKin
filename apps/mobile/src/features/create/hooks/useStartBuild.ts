@@ -127,19 +127,20 @@ export function useBuildActions() {
       goBack,
       openUpgrade,
       /**
-       * BUILD 04b, the profile against the job. From a resume (toreview §139), the resume against
-       * the job on Customize, which owns that run. With neither to compare, Customize again: its
-       * no-resume card is what offers an upload or a start from nothing.
+       * After the job. From a resume (toreview §139), its keywords on Customize, which owns that
+       * run; from the profile, BUILD 04b, the profile against the job. Step 1's "Built from" is
+       * the method choice here. With neither a resume nor a role, the method step asks how to
+       * make one (upload, or from nothing), as the web does (toreview §234).
        */
       openCompare: ({ jobId, jdId }: BuildCompareTarget, options: { replace?: boolean } = {}) => {
-        if (resumeId || profileIsEmpty) {
-          openCustomize({ jobId, jdId, ...(resumeId ? { resumeId } : {}) }, options);
+        if (resumeId) {
+          openCustomize({ jobId, jdId, resumeId }, options);
           return;
         }
-        const href = {
-          pathname: '/create/build/compare' as const,
-          params: { ...(jobId ? { jobId } : {}), ...(jdId ? { jdId } : {}) },
-        };
+        const params = { ...(jobId ? { jobId } : {}), ...(jdId ? { jdId } : {}) };
+        const href = profileIsEmpty
+          ? { pathname: '/create/method' as const, params }
+          : { pathname: '/create/build/compare' as const, params };
         if (options.replace) router.replace(href);
         else router.push(href);
       },

@@ -39,7 +39,6 @@ const metrics: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-
 async function renderScreen(ui: ReactElement, seed?: (client: QueryClient) => void) {
   const queryClient = createQueryClient();
   clients.push(queryClient);
@@ -114,7 +113,7 @@ describe('Build Resume step 1: the job (§172)', () => {
     });
   });
 
-  it('BUILD 01 sends someone with no resume and no roles to the upload-or-start card', async () => {
+  it('BUILD 01 asks someone with no resume and no roles how to make one (the method step)', async () => {
     mockStore.state.resumes = [];
     mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
     await renderScreen(<BuildJobScreen />);
@@ -124,7 +123,7 @@ describe('Build Resume step 1: the job (§172)', () => {
       fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
     );
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/create/tailor',
+      pathname: '/create/method',
       params: { jobId: 'job_stripe' },
     });
   });
@@ -133,9 +132,7 @@ describe('Build Resume step 1: the job (§172)', () => {
     await renderScreen(<BuildJobScreen />);
     await settle();
 
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)),
-    );
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
     await settle();
     await act(async () => fireEvent.press(screen.getByText('Your profile')));
     await settle();
@@ -186,9 +183,7 @@ describe('Build Resume step 1: the job (§172)', () => {
     await renderScreen(<BuildJobScreen />);
     await settle();
 
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)),
-    );
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
     await settle();
     expect(screen.getByText('Build from')).toBeOnTheScreen();
     expect(screen.getByText('Your profile')).toBeOnTheScreen();
@@ -221,12 +216,12 @@ describe('Build Resume step 1: the job (§172)', () => {
     await renderScreen(<BuildJobScreen />);
     await settle();
 
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)),
-    );
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
     await settle();
     await act(async () => fireEvent.press(screen.getByText('Upload from your device')));
-    expect(screen.getByLabelText('Built from Reading George_Smith_Resume.pdf…. Change')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('Built from Reading George_Smith_Resume.pdf…. Change'),
+    ).toBeOnTheScreen();
     await settle();
 
     expect(screen.queryByLabelText('Built from Your profile. Change')).not.toBeOnTheScreen();

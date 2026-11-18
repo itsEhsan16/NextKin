@@ -17778,3 +17778,53 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - Lint is clean.
 - **Typecheck:** fails on `useCreateActions.ts:67` with TS2589 in `router.setParams`. This is **pre-existing**: it fails identically with these edits stashed. It comes from the regenerated `.expo/types/router.d.ts`.
 - **Not seen yet:** in the preview, which redirects to the splash when signed out, or on the phone.
+
+## §234 — The app's resume flow follows the web's three steps; why generation failed on the demo (owner, 2026-11-18)
+- **Branch:** `claude/mobile-tailor-flow`, cut from `origin/main` (ceea61d). It carries the clay illustrations ported from `claude/app-ui-ux-redesign-1a1793` (§233).
+- **Steps:** the app now names its steps the way the web does: "1 of 3 · Job & Resume", "2 of 3 · Choose Keywords", "3 of 3 · Generate Results" (`flow/ResumeSteps.tsx`).
+  - The name sits under the bar in `OnboardingFrame` (`stepName`) and in the run chrome (`TailorChrome`).
+  - A (?) button opens a short help sheet on steps 1 (method) and 2.
+- **New: "How would you like to create your resume?"** (`screens/MethodScreen.tsx`, route `/create/method`). It has the web's four ways with clay art:
+  - "Tailor my selected resume", marked Recommended;
+  - "Create from my profile";
+  - "Start from scratch with AI";
+  - "Upload a resume".
+  - A tap picks a card, then Continue. Tailor and Upload open the existing resume sheet (pick, or upload); Profile goes to BUILD 04b; Scratch goes to Zero Resume.
+  - A way that can't work yet (no resume, or no roles) is greyed out and says why.
+  - `/create/tailor` with a job but no `resumeId` now redirects here. Every "Tailor this job" entry (job page, copied link, gap interview) passes through it.
+- **"Choose keywords to add"** (`TailorCompareScreen` + `flow/KeywordStep.tsx`), from the owner's mockup:
+  - the "Job & resume" row (tap → resume sheet);
+  - the ATS card: ring, band, "+x.x points (est.)", "If you add N selected keywords";
+  - Missing / Optional / All with counts, and the list with a checkbox, kind tag, "+x.x Impact", "Select all", and 5 rows before "Show N more keywords";
+  - the green "About x/10 after this · +x points" bar;
+  - "Did you use these?";
+  - "What the AI will change" (the plan toggles, results, More options);
+  - the web's promise line;
+  - a footer with "N keywords selected · From M total" and "Add N Keywords & Continue" ("Continue" with none ticked).
+  - **The numbers are the web's:** `projectedScore`, with the card's gain being the answers' share (the web's `EnhanceStep` maths). Rows come from the shared `keywordRowsOf` through a new `@/data/models/keywordRows` shim.
+- **Run screen:** "3 of 3 · Generate Results" under the bar for Tailor and Build. A failed Tailor or Build run reads "That run didn't finish" and offers "Back to my choices" (the web's words). Other runs keep "Generation failed".
+- **Judgement calls:**
+  - **Kind chips dropped** (owner, 2026-11-18, matching web §214).
+  - **"Accept all suggestions" dropped:** the web removed its take-everything card (§214). "Select all" per tab replaces it.
+  - **The step-2 "View job" link is gone:** the mockup's row has none. Say if it should come back (e.g. on the row's eyebrow).
+  - **Build still chooses its source on step 1** ("Built from: resume / profile"), so the method step isn't shown twice. Build sends only someone with no resume and no roles to the method step, instead of the old upload-or-start card.
+  - **PlanQuestions (`24190a8`) not ported:** it was written for §202's half-credit scoring. Main's D-25 maths and "Did you use these?" cover the same questions.
+  - The All tab lists the resume's own keywords ticked and locked as "On your resume". "From M total" is the job's keyword count.
+- **Not done (proposal items left):**
+  - the before → after score line on the ready screen;
+  - Build's own step 2 (`BuildCompareScreen`) still has its chips. It shows the new step name only, not the keyword list or the help button;
+  - the web's staged Continue fill on the job step.
+- **Verified:**
+  - mobile typecheck and lint are clean;
+  - Jest: create and generations suites pass, with `TailorCompareScreen` and `BuildJobScreens` tests rewritten for the new screens and a new `MethodScreen.test.tsx`;
+  - the full mobile suite passes: 227 suites, 1961 tests.
+- **Not seen on a device or in Expo Go.** Art sizes and the footer's two-part layout at 360 wide need the owner's phone check.
+- **Why "Generation failed: We couldn't reach our writing service" (demo, 2026-11-18 16:20 IST):**
+  - That copy is only shown for a non-retryable AI error (`runner.ts` FAILURE_MESSAGE.provider).
+  - The worker log shows run `01a1ee44…` failing in the `generate` stage, after an `ai.failover` on `resume_generate` (the reason fields are redacted in the logs).
+  - **Not the daily cap:** a cap trip throws before any failover is logged.
+  - **Not an expired key:** Haiku calls (`resume_extract`) succeeded at 16:11 the same afternoon.
+  - Today `jd_extract` (Haiku, 12000 max tokens) also failed over three times (11:22–11:34) while `resume_extract` (Haiku, 8000) worked.
+  - **Most likely:** the demo's OpenRouter credit balance is too low for the larger requests. OpenRouter answers 402 ("more credits, or fewer max_tokens") when the balance can't cover `max_tokens`, and the adapter maps a 402 to a non-retryable `error`.
+  - **Unconfirmed:** reading the OpenRouter key from Secrets Manager to check the balance was refused in this session. **Owner: check credits at openrouter.ai.** Topping up should fix it with no deploy.
+  - **No server code changed.** A follow-up worth having: name 402 as `capped`-like in `toLlmError`, so the log and the run say "out of credit" rather than the generic line.

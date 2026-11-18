@@ -196,7 +196,7 @@ describe('GenerationScreen — job-first tailoring run (TAILOR 04–06)', () => 
     );
     await renderGeneration(id);
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Change my choices')));
+    await act(async () => fireEvent.press(screen.getByLabelText('Back to my choices')));
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/create/tailor',
       params: { jobId: 'job_stripe', resumeId: 'res_base' },

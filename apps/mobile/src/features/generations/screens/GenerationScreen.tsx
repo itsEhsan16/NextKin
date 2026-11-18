@@ -29,6 +29,7 @@ import { GenerationSteps } from '../components/GenerationSteps';
 import { TailorChrome } from '../components/TailorChrome';
 import { TailorRunView } from '../components/TailorRunView';
 import { useGenerationsActions } from '../hooks/useGenerationsActions';
+import { RESUME_STEPS } from '@/features/create/flow/ResumeSteps';
 
 export type GenerationScreenProps = { id: string };
 
@@ -92,10 +93,14 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
       header={
         // A job-first tailoring run keeps the flow's own chrome even when it fails (TAILOR 04).
         run?.tailor ? (
-          <TailorChrome step="fix" onClose={() => actions.closeFlow(run.jobId)} />
+          <TailorChrome
+            step="fix"
+            stepName={RESUME_STEPS[2]}
+            onClose={() => actions.closeFlow(run.jobId)}
+          />
         ) : run?.origin === 'build' ? (
           // BUILD 05's chrome: the ✕ alone, kept when the build fails.
-          <TailorChrome onClose={() => actions.closeBuild(run.jobId)} />
+          <TailorChrome stepName={RESUME_STEPS[2]} onClose={() => actions.closeBuild(run.jobId)} />
         ) : run?.kind === 'cover_letter' ? (
           // COVER 02's chrome too: a failed letter stopped on the Write step.
           <TailorChrome
@@ -224,7 +229,10 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
         <StateView
           tone="danger"
           icon="AlertTriangle"
-          title="Generation failed"
+          // The resume flow's own words, as the web says them (toreview §234); other runs keep theirs.
+          title={
+            run.tailor || run.origin === 'build' ? 'That run didn’t finish' : 'Generation failed'
+          }
           message={run.error ?? 'It stopped part-way through. Nothing was saved.'}
           actionLabel="Try again"
           // §7.6 forbids a silent hang, and a second tap mid-flight would queue a second run.
@@ -233,7 +241,7 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
             retry.mutate(run.id);
           }}
           secondaryLabel={
-            changeChoices ? 'Change my choices' : fixInput ? 'Edit the job description' : undefined
+            changeChoices ? 'Back to my choices' : fixInput ? 'Edit the job description' : undefined
           }
           onSecondary={changeChoices ?? fixInput}
         />

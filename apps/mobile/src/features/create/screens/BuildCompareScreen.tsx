@@ -19,6 +19,7 @@ import { ReviewHero } from '../flow/ReviewParts';
 import { useCreateActions } from '../hooks/useCreateActions';
 import { useBuildActions, useStartBuild } from '../hooks/useStartBuild';
 import { BUILD_STEPS } from './BuildJobScreen';
+import { stepName } from '../flow/ResumeSteps';
 
 export type BuildCompareScreenProps = {
   /** A saved job: read the way a build reads it. */
@@ -58,6 +59,7 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
     <OnboardingFrame
       step={2}
       total={BUILD_STEPS}
+      stepName={stepName(2)}
       title={BUILD_MATCH_TITLE}
       subtitle={subtitle}
       onBack={actions.goBack}
