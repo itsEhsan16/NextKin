@@ -18066,3 +18066,10 @@ The platform is US-based, and the owner chose USD for the salary filter and the 
 - **Existing saved preferences:** anyone who saved a rupee floor keeps it as rupees (it carries its currency). The picker then shows nothing selected until they pick a dollar floor. Saved job filters on the phone are not persisted, so none carry old rupee numbers.
 - **The sample profile's** minimum salary is now $80k.
 - **Checks:** mobile 1,978, shared 511, server unit 423, web jobs/settings/lib 125. Typecheck and lint are clean.
+
+## §248 — Public pages stay open for signed-out visitors (2026-11-20)
+
+After the §244–§247 deploy, `/legal/privacy`, `/legal/terms` and `/account-deletion` loaded and then sent a signed-out visitor to `/sign-in` about 5 seconds later.
+- **Cause:** the shell's AI-consent read (`/api/v1/me/consents/ai`) answers 401 to a visitor with no session. The HTTP client's 401 hook sends the browser to sign-in from any page that isn't an auth page.
+- **Fix:** `/legal`, `/account-deletion` and `/r` (shared reports, which had the same bounce) join the auth pages in `apps/web/src/lib/dataSource.ts`. Test: `apps/web/__tests__/lib/publicPages.test.ts`.
+- **Still there:** the consent read still fires and 401s on those pages. It's harmless, but quieter if the consent host skipped public pages.
