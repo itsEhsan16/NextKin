@@ -17854,3 +17854,12 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - "Recommended" sat on "Start from scratch" while the resume library was still loading. It now stays on Tailor until the library says there is no resume.
   - The keyword list opened on an empty Missing tab when the job's keywords were all optional. It now opens on the first tab that has something to tick.
   - The web preview can't keep a session across a full page reload: expo-sqlite's `.wasm` worker doesn't bundle on Metro web. That predates this branch.
+
+## §236 — The owner's phone pass on the resume flow: five trims (owner, 2026-11-19)
+- **Notifications ask** (`PushPrimerSheet`): the bell, the title, "Turn on" and "Not now". The explaining line and "You can change this any time in Profile › Notifications" are gone, and the sheet is shorter (330 at 390). This applies everywhere the ask appears, the "Did you apply?" moment included.
+- **Keyword step footer** (Tailor and Build): one button, "Add N keywords" ("Continue" or "Build resume" with none ticked). The count, "From M total" and the allowance line are gone. A red line still shows under the button when a start fails or the server would refuse the run.
+  - **Judgement call:** the "N of 3 generations left" line is no longer shown on this step. The spent state still turns the button into "See Pro plans".
+- **The green "About x/10 after this" card** is removed (`ProjectionBar` is deleted). The ATS card at the top still shows the estimate.
+- **Select all** is a tick at the right of the list's head, with no words ("3 to choose from" and "Select all" are gone). Its screen-reader label is "Select all".
+- **Reading-the-job button** (`ProgressButton`): while it works, a gradient ring (the bottom bar's violet → brand → deep indigo), a white pill inside, a light lavender fill (brand50 → brand100) and the label in brand ink. Idle, it stays the normal pill like every other footer.
+- **Verified:** mobile typecheck and lint are clean; the create, notifications and generations Jest suites pass (38 suites, 199 tests). **Not yet on the phone:** the owner's next look.

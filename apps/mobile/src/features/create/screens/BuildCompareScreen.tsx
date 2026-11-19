@@ -108,7 +108,7 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
         <Skeleton height={u(140)} radius="cardLg" />
         <Skeleton height={u(220)} radius="cardLg" />
       </View>,
-      <KeywordFooter ticked={0} total={0} label={BUILD_CTA} onPress={() => {}} disabled />,
+      <KeywordFooter label={BUILD_CTA} onPress={() => {}} disabled />,
     );
   }
 
@@ -138,16 +138,12 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
 
   const footer = build.quotaSpent ? (
     <KeywordFooter
-      ticked={added.length}
-      total={result.keywords.length}
       label="See Pro plans"
       note={build.quotaNote || undefined}
       onPress={() => actions.openUpgrade('generations')}
     />
   ) : (
     <KeywordFooter
-      ticked={added.length}
-      total={result.keywords.length}
       label={added.length > 0 ? addKeywordsCta(added.length) : BUILD_CTA}
       note={build.error ?? (build.quotaNote || undefined)}
       noteTone={build.error ? 'danger' : 'neutral'}

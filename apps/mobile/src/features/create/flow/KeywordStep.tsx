@@ -227,18 +227,15 @@ export function KeywordChooser({
         <FlowCard style={styles.listCard}>
           {open.length > 0 ? (
             <View style={styles.listHead}>
-              <Text variant="footnote" color="textSecondary">
-                {`${open.length} to choose from`}
-              </Text>
               <Pressable
                 feedback="subtle"
-                accessibilityRole="button"
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: allTicked }}
+                accessibilityLabel="Select all"
                 onPress={toggleAll}
                 style={styles.headLink}
               >
-                <Text variant="footnote" color="brand">
-                  {allTicked ? 'Clear all' : 'Select all'}
-                </Text>
+                <Checkbox checked={allTicked} />
               </Pressable>
             </View>
           ) : null}
@@ -410,42 +407,11 @@ function KeywordLine({
   );
 }
 
-/** The green line under the list: where the choices land (the web's projection banner). */
-export function ProjectionBar({
-  projected,
-  base,
-}: {
-  /** Out of 10. */
-  projected: number;
-  base: number;
-}) {
-  const { colors, u } = useTheme();
-  const styles = useStyles();
-  const gain = Math.round((projected - base) * 10) / 10;
-  if (gain <= 0) return null;
-  const band = atsBandFor(projected * 10);
-  return (
-    <View
-      style={[styles.projection, { backgroundColor: colors.successSurface }]}
-      accessibilityLiveRegion="polite"
-    >
-      <Icon name="ArrowUp" size={u(22)} color={colors.success} />
-      <View style={styles.flex}>
-        <Text variant="bodyLgStrong" color="success">
-          {`About ${outOf10(projected)}/10 after this · ${points(gain)} points`}
-        </Text>
-        <Text variant="footnote" color="success">
-          {`Up from ${outOf10(base)}. That reads as a ${BAND_LABEL[band].toLowerCase()}.`}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-/** The pinned footer: how many are ticked, of how many, and the one button on. */
+/**
+ * The pinned footer: one button, "Add N keywords" (owner, 2026-11-19, toreview §236). A line
+ * under it only when something stands in the way (a run the server would refuse, a failed start).
+ */
 export function KeywordFooter({
-  ticked,
-  total,
   label,
   note,
   noteTone = 'neutral',
@@ -453,8 +419,6 @@ export function KeywordFooter({
   disabled,
   onPress,
 }: {
-  ticked: number;
-  total: number;
   label: string;
   note?: string;
   noteTone?: 'neutral' | 'danger';
@@ -462,37 +426,19 @@ export function KeywordFooter({
   disabled?: boolean;
   onPress: () => void;
 }) {
-  const { colors, u } = useTheme();
   const styles = useStyles();
   return (
     <View style={styles.footer}>
-      <View style={styles.footerRow}>
-        <View style={styles.count}>
-          <Text variant="bodyLgStrong" color="ink">
-            {`${ticked} keyword${ticked === 1 ? '' : 's'} selected`}
-          </Text>
-          <Text variant="footnote" color="textSecondary">
-            {`From ${total} total`}
-          </Text>
-        </View>
-        <Button
-          label={label}
-          size="xl"
-          block
-          loading={loading}
-          disabled={disabled}
-          leading={<Icon name="ArrowRight" size={u(20)} color={colors.textOnDark} />}
-          onPress={onPress}
-          style={styles.flex}
-        />
-      </View>
-      {note ? (
-        <Text
-          variant="footnote"
-          color={noteTone === 'danger' ? 'danger' : 'textTertiary'}
-          align="center"
-          accessibilityLiveRegion="polite"
-        >
+      <Button
+        label={label}
+        size="xl"
+        block
+        loading={loading}
+        disabled={disabled}
+        onPress={onPress}
+      />
+      {note && noteTone === 'danger' ? (
+        <Text variant="footnote" color="danger" align="center" accessibilityLiveRegion="polite">
           {note}
         </Text>
       ) : null}
@@ -508,13 +454,8 @@ const useStyles = scaledSheet((_s, u) => ({
   atsText: { gap: u(6) },
   chooser: { gap: u(14) },
   listCard: { paddingVertical: u(4) },
-  listHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: u(10),
-  },
-  headLink: { paddingVertical: u(4), paddingLeft: u(12) },
+  listHead: { flexDirection: 'row', justifyContent: 'flex-end', paddingVertical: u(8) },
+  headLink: { padding: u(4) },
   line: { flexDirection: 'row', alignItems: 'center', gap: u(14), paddingVertical: u(12) },
   lineText: { gap: u(6) },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: u(6) },
@@ -526,15 +467,5 @@ const useStyles = scaledSheet((_s, u) => ({
     gap: u(6),
     paddingVertical: u(14),
   },
-  projection: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: u(12),
-    paddingHorizontal: u(16),
-    paddingVertical: u(14),
-    borderRadius: u(18),
-  },
   footer: { gap: u(8) },
-  footerRow: { flexDirection: 'row', alignItems: 'center', gap: u(14) },
-  count: { maxWidth: '42%' },
 }));

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { useEffect, useId, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -8,6 +8,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useReducedMotion } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
@@ -46,6 +47,8 @@ export function ProgressButton({
   const styles = useStyles();
   const reduced = useReducedMotion();
   const fill = useSharedValue(0);
+  const ringId = `ring${useId().replace(/:/g, '')}`;
+  const fillId = `fill${useId().replace(/:/g, '')}`;
   const [stage, setStage] = useState(0);
   // A new read starts from the first stage (set while rendering, not after, as the web does).
   const [seen, setSeen] = useState(working);
@@ -89,22 +92,43 @@ export function ProgressButton({
     return <Button label={label} size="xl" block disabled={disabled} onPress={onPress} />;
   }
   const now = stages[Math.min(stage, stages.length - 1)] ?? label;
+  // Owner, 2026-11-19 (toreview §236): a gradient ring round the pill, and a light lavender fill
+  // inside it with the label in brand ink, not a dark pill filling with purple.
   return (
     <View
-      style={[styles.pill, { backgroundColor: colors.surfaceInverse }]}
+      style={styles.pill}
       accessible
       accessibilityRole="button"
       accessibilityState={{ busy: true }}
       accessibilityLabel={now}
       accessibilityLiveRegion="polite"
     >
-      <Animated.View
-        style={[styles.fill, { backgroundColor: colors.brand }, fillStyle]}
-        pointerEvents="none"
-      />
-      <Text variant="buttonLabel" color="textOnDark">
-        {now}
-      </Text>
+      <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Defs>
+          <LinearGradient id={ringId} x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor={colors.navGradientStart} />
+            <Stop offset="0.5" stopColor={colors.navGradientMid} />
+            <Stop offset="1" stopColor={colors.navGradientEnd} />
+          </LinearGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill={`url(#${ringId})`} />
+      </Svg>
+      <View style={[styles.inner, { backgroundColor: colors.surfaceCard }]}>
+        <Animated.View style={[styles.fill, fillStyle]} pointerEvents="none">
+          <Svg style={StyleSheet.absoluteFill}>
+            <Defs>
+              <LinearGradient id={fillId} x1="0" y1="0" x2="1" y2="0">
+                <Stop offset="0" stopColor={colors.brandSurface} />
+                <Stop offset="1" stopColor={colors.tileBrandStrong} />
+              </LinearGradient>
+            </Defs>
+            <Rect width="100%" height="100%" fill={`url(#${fillId})`} />
+          </Svg>
+        </Animated.View>
+        <Text variant="buttonLabel" color="brand">
+          {now}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -112,6 +136,12 @@ export function ProgressButton({
 const useStyles = scaledSheet((_s, u) => ({
   pill: {
     height: u(54),
+    borderRadius: u(999),
+    overflow: 'hidden',
+    padding: u(2),
+  },
+  inner: {
+    flex: 1,
     borderRadius: u(999),
     overflow: 'hidden',
     alignItems: 'center',

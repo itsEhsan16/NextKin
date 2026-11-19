@@ -27,7 +27,6 @@ import {
   JobResumeRow,
   KeywordChooser,
   KeywordFooter,
-  ProjectionBar,
   tailorTicks,
 } from '../flow/KeywordStep';
 import { RESUME_STEP_COUNT, StepHelpSheet, stepName } from '../flow/ResumeSteps';
@@ -40,7 +39,7 @@ export type TailorCompareScreenProps = CustomizeTarget;
 
 /** The button with nothing ticked: the AI's own changes still run. */
 export const CUSTOMIZE_CTA = 'Continue';
-export const addKeywordsCta = (n: number) => `Add ${n} Keyword${n === 1 ? '' : 's'} & Continue`;
+export const addKeywordsCta = (n: number) => `Add ${n} keyword${n === 1 ? '' : 's'}`;
 export const REVIEW_TITLE = 'Choose keywords to add';
 const LEDE =
   'Tick the keywords from the job that you really have. We’ll add them naturally to lift your ATS score.';
@@ -154,9 +153,7 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
       <Skeleton height={u(260)} radius="cardLg" />
     </View>
   );
-  const inertFooter = (
-    <KeywordFooter ticked={0} total={0} label={CUSTOMIZE_CTA} onPress={() => {}} disabled />
-  );
+  const inertFooter = <KeywordFooter label={CUSTOMIZE_CTA} onPress={() => {}} disabled />;
   if (!target || !resumes.data || !subscription.data) return page(loading, inertFooter);
 
   if (data.noResume) {
@@ -202,7 +199,6 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
     projected !== undefined && withoutAnswers !== undefined
       ? Math.round((projected - withoutAnswers) * 10) / 10
       : 0;
-  const base = result.plan?.score;
   const ticked = choices.added.length;
   const optionsLine = [
     choices.experience === 'quick' ? 'Latest 2 roles' : 'Every role',
@@ -248,9 +244,6 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
       {result.keywords.length > 0 ? (
         <Animated.View entering={enter(2)} style={styles.section}>
           <KeywordChooser {...tailorTicks(result, choices, set)} />
-          {projected !== undefined && base !== undefined ? (
-            <ProjectionBar projected={projected} base={base} />
-          ) : null}
         </Animated.View>
       ) : null}
       {asked.length > 0 ? (
@@ -289,16 +282,12 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
     </View>,
     spent ? (
       <KeywordFooter
-        ticked={ticked}
-        total={result.keywords.length}
         label="See Pro plans"
         note={note}
         onPress={() => actions.openUpgrade('generations')}
       />
     ) : (
       <KeywordFooter
-        ticked={ticked}
-        total={result.keywords.length}
         label={ticked > 0 ? addKeywordsCta(ticked) : CUSTOMIZE_CTA}
         note={note}
         noteTone={failed || problem ? 'danger' : 'neutral'}

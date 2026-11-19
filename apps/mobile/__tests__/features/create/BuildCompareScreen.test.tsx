@@ -107,7 +107,8 @@ describe('Build Resume step 2: the match (§172)', () => {
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
-    expect(screen.getByText('Uses 1 of your 3 resume builds this month')).toBeOnTheScreen();
+    // The footer is one button now (toreview §236): no count, no allowance line.
+    expect(screen.queryByText(/resume builds this month/)).not.toBeOnTheScreen();
   });
 
   it('builds with the skills the user ticked, and nothing they did not', async () => {
@@ -119,9 +120,8 @@ describe('Build Resume step 2: the match (§172)', () => {
     await showAll();
     await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
     expect(screen.getByText('Added skills go on your profile too.')).toBeOnTheScreen();
-    expect(screen.getByText('1 keyword selected')).toBeOnTheScreen();
     await act(async () =>
-      fireEvent.press(screen.getByRole('button', { name: 'Add 1 Keyword & Continue' })),
+      fireEvent.press(screen.getByRole('button', { name: 'Add 1 keyword' })),
     );
     await settle();
 

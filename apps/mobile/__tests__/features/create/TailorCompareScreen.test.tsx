@@ -59,7 +59,7 @@ const settle = (ms = 3000) => act(() => jest.advanceTimersByTimeAsync(ms));
 const press = (label: string | RegExp) =>
   act(async () => fireEvent.press(screen.getByLabelText(label)));
 /** The footer's one button: "Continue", or "Add N Keyword(s) & Continue" once any are ticked. */
-const CTA = /Continue$/;
+const CTA = /^(Continue|Add \d+ keywords?)$/;
 /** The All tab lists every keyword, the resume's own ones ticked and locked. */
 const showAll = () => act(async () => fireEvent.press(screen.getByText(/^All \(/)));
 
@@ -105,8 +105,14 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await settle();
     await showAll();
     await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
-    expect(screen.getByText('1 keyword selected')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Add 1 Keyword & Continue')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Add 1 keyword')).toBeOnTheScreen();
+    // Select all is a tick on the right of the list, with no words beside it (§236).
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Select all' })));
+    expect(screen.getByRole('checkbox', { name: 'Fintech' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Select all' })).toBeChecked();
+    expect(screen.queryByText(/to choose from/)).toBeNull();
+    expect(screen.queryByText(/keywords? selected/)).toBeNull();
     expect(screen.getByText('If you add 1 selected keyword')).toBeOnTheScreen();
     expect(screen.getByText(/points \(est\.\)$/)).toBeOnTheScreen();
   });
@@ -119,7 +125,6 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await showAll();
     await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).toBeChecked();
-    expect(screen.getByText('1 of 3 generations left this month')).toBeOnTheScreen();
 
     await press(CTA);
     await settle();
