@@ -17887,3 +17887,17 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - mobile typecheck and lint are clean;
   - the create suites pass (23 suites, 144 tests), with a new scratch test in `BuildJobScreens`.
 - **Not seen on the phone yet.**
+
+## §239 — Bare, larger plan icons; less air on Home; one Tailor row in "From" (owner, 2026-11-19)
+- **Brand icon tiles** (`IconTile` tone `brand` in `ui/kit/FlowKit.tsx`): the lavender disc is gone and the icon is larger (72% of the box, was 50%). The box keeps its size, so no row moves.
+  - It applies everywhere the flow kit draws a brand tile: AI plan rows, More options, the Job & resume row, profile/settings rows built on `FlowRow` (22 uses).
+  - The solid, success and neutral tiles keep their discs.
+- **Home:** the greeting sits 12 under the status bar instead of 24 (page top 16 → 8, header 8 → 4). The other tabs are unchanged.
+- **"How should we create it?":**
+  - one **Tailor my resume** row, naming the resume it will use ("Product Designer · or pick another"). With more than one resume, a tap opens **Which resume?** in the same sheet, listing every tailorable resume (newest first), not just two. With one resume, it picks it;
+  - the pictures are 60 at 390 (were 44);
+  - the sheet is 560 tall (was the 320 picker height), through a new `height` prop on `OptionSheet`.
+- **Verified:**
+  - mobile typecheck and lint are clean;
+  - the full mobile suite passes: 227 suites, 1961 tests. The `BuildJobScreens` test now walks Tailor → Which resume?.
+- **Not seen on the phone yet.**

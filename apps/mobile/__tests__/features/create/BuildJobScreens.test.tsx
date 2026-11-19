@@ -203,17 +203,21 @@ describe('Build Resume step 1: the job (§172)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
     await settle();
-    // The web's four ways (§238): the two latest resumes to tailor, the profile, scratch, upload.
+    // The web's four ways, one row each (§238, §239): Tailor names the resume it will use.
     expect(screen.getByText('How should we create it?')).toBeOnTheScreen();
-    expect(screen.getByText('Tailor “UX Designer Resume”')).toBeOnTheScreen();
-    expect(screen.getByText('Tailor “Product Designer”')).toBeOnTheScreen();
-    expect(screen.queryByText('Tailor “Stripe — Senior PD”')).not.toBeOnTheScreen();
-    expect(screen.queryByText(/Stripe cover letter/)).not.toBeOnTheScreen();
+    expect(screen.getByText('Tailor my resume')).toBeOnTheScreen();
+    expect(screen.getByText('Product Designer · or pick another')).toBeOnTheScreen();
     expect(screen.getByText('Create from my profile')).toBeOnTheScreen();
     expect(screen.getByText('Start from scratch with AI')).toBeOnTheScreen();
     expect(screen.getByText('Upload a resume')).toBeOnTheScreen();
 
-    await act(async () => fireEvent.press(screen.getByText('Tailor “UX Designer Resume”')));
+    // More than one resume: "Which resume?" in the same sheet; cover letters are not offered.
+    await act(async () => fireEvent.press(screen.getByText('Tailor my resume')));
+    await settle();
+    expect(screen.getByText('Which resume?')).toBeOnTheScreen();
+    expect(screen.getByText('Stripe — Senior PD')).toBeOnTheScreen();
+    expect(screen.queryByText(/Stripe cover letter/)).not.toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByText('UX Designer Resume')));
     await settle();
     expect(screen.getByLabelText('Built from UX Designer Resume. Change')).toBeOnTheScreen();
 

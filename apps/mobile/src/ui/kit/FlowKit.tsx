@@ -65,18 +65,21 @@ export function IconTile({
     card: [colors.surfaceCard, colors.ink],
   };
   const look = looks[tone];
+  // Owner, 2026-11-19 (toreview §239): the brand tile is the icon alone, larger, in the same box,
+  // so no row moves; the other tones keep their disc.
+  const bare = tone === 'brand';
   return (
     <View
       style={{
         width: u(size),
         height: u(size),
         borderRadius: u(size / 2),
-        backgroundColor: look[0],
+        backgroundColor: bare ? 'transparent' : look[0],
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Icon name={name} size={u(size * 0.5)} color={look[1]} />
+      <Icon name={name} size={u(size * (bare ? 0.72 : 0.5))} color={look[1]} />
     </View>
   );
 }

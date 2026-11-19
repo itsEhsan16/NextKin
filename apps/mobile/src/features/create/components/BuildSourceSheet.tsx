@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useState } from 'react';
 
 import type { Resume } from '@/data/models';
 import { pluralize } from '@/lib';
@@ -7,13 +8,14 @@ import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
 
 import { tailorableResumes, tailorResumeMeta } from './tailorResumeMeta';
 
+const TAILOR_KEY = 'tailor';
 const PROFILE_KEY = 'profile';
 const SCRATCH_KEY = 'scratch';
 const UPLOAD_KEY = 'upload';
-/** The owner's cut (2026-10-27): the two most recent resumes. */
-const LATEST = 2;
-/** The art's box at 390: the web's method pictures, bare, no tile behind them (§238). */
-const ART = 44;
+/** The art's box at 390: the web's method pictures, bare, no tile behind them (§238, §239). */
+const ART = 60;
+/** Taller than a plain picker: four ways with their pictures, or the resume list (§239). */
+const SHEET_HEIGHT = 560;
 
 /**
  * The web's method pictures (`apps/web/src/features/tailor/flow/methods.ts` METHOD_ART), copied
@@ -26,15 +28,9 @@ export const METHOD_ART = {
   upload: require('../../../../assets/illustrations/methods/upload.webp'),
 } as const;
 
-/** The two most recently updated resumes, keeping the picked one in view if it is older. */
-export function latestResumes(resumes: readonly Resume[], pickedId: string | null): Resume[] {
-  const byRecent = tailorableResumes(resumes).sort((a, b) =>
-    b.updatedAt.localeCompare(a.updatedAt),
-  );
-  const latest = byRecent.slice(0, LATEST);
-  const picked = byRecent.find((resume) => resume.id === pickedId);
-  if (picked && !latest.includes(picked)) latest[LATEST - 1] = picked;
-  return latest;
+/** Every resume that can be tailored, newest first. */
+export function resumesByRecent(resumes: readonly Resume[]): Resume[] {
+  return tailorableResumes(resumes).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 function MethodArt({ source }: { source: number }) {
@@ -55,7 +51,7 @@ export type BuildSourceSheetProps = {
   open: boolean;
   onClose: () => void;
   profile: { name: string; avatarUrl?: string; roles: number; skills: number };
-  /** The library; only the other ways are offered while it loads or when it is empty. */
+  /** The library; Tailor is offered only once it has a resume. */
   resumes: readonly Resume[] | undefined;
   /** The picked resume's id, or null for the profile. */
   resumeId: string | null;
@@ -68,10 +64,9 @@ export type BuildSourceSheetProps = {
 };
 
 /**
- * "From", the job step's one choice of how to make the resume (owner, 2026-11-19, toreview §238):
- * the web's four ways — tailor a resume (the two latest), create from the profile, start from
- * scratch with AI, upload one — each with the web's own picture and no tile behind it. Replaces
- * the separate method screen, which asked the same thing a second time.
+ * "From", the job step's one choice of how to make the resume (owner, 2026-11-19, §238, §239):
+ * the web's four ways, one row each, with the web's own pictures and no tile behind them. Tailor
+ * names the resume it will use; with more than one, it opens "Which resume?" in the same sheet.
  */
 export function BuildSourceSheet({
   open,
@@ -84,13 +79,50 @@ export function BuildSourceSheet({
   onScratch,
   onUpload,
 }: BuildSourceSheetProps) {
-  const options: SheetOption[] = [
-    ...latestResumes(resumes ?? [], resumeId).map((resume) => ({
+  const { s } = useTheme();
+  const [choosing, setChoosing] = useState(false);
+  const library = resumesByRecent(resumes ?? []);
+  const current = library.find((r) => r.id === resumeId) ?? library[0];
+  const close = () => {
+    setChoosing(false);
+    onClose();
+  };
+
+  if (choosing) {
+    const options: SheetOption[] = library.map((resume) => ({
       key: resume.id,
-      label: `Tailor “${resume.title}”`,
+      label: resume.title,
       caption: tailorResumeMeta(resume),
       leading: <MethodArt source={METHOD_ART.tailor} />,
-    })),
+    }));
+    return (
+      <OptionSheet
+        open={open}
+        onClose={close}
+        height={s(SHEET_HEIGHT)}
+        variant="card"
+        title="Which resume?"
+        options={options}
+        selectedKey={current?.id ?? ''}
+        onSelect={(key) => {
+          close();
+          onPick(key);
+        }}
+      />
+    );
+  }
+
+  const options: SheetOption[] = [
+    ...(current
+      ? [
+          {
+            key: TAILOR_KEY,
+            label: 'Tailor my resume',
+            caption: library.length > 1 ? `${current.title} · or pick another` : current.title,
+            leading: <MethodArt source={METHOD_ART.tailor} />,
+          },
+        ]
+      : []),
     {
       key: PROFILE_KEY,
       label: 'Create from my profile',
@@ -117,16 +149,23 @@ export function BuildSourceSheet({
   return (
     <OptionSheet
       open={open}
-      onClose={onClose}
+      onClose={close}
+      height={s(SHEET_HEIGHT)}
       variant="card"
       title="How should we create it?"
       options={options}
-      selectedKey={scratch ? SCRATCH_KEY : (resumeId ?? PROFILE_KEY)}
+      selectedKey={scratch ? SCRATCH_KEY : resumeId ? TAILOR_KEY : PROFILE_KEY}
       onSelect={(key) => {
-        onClose();
+        if (key === TAILOR_KEY) {
+          // One resume: that is the choice. More: say which, in the same sheet.
+          if (library.length > 1) return setChoosing(true);
+          close();
+          return onPick(current!.id);
+        }
+        close();
         if (key === UPLOAD_KEY) onUpload();
         else if (key === SCRATCH_KEY) onScratch();
-        else onPick(key === PROFILE_KEY ? null : key);
+        else onPick(null);
       }}
     />
   );
