@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 import { useState } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { formatLakh } from '@/lib';
+import { formatSalaryStep } from '@/lib';
 import { RangeSlider } from '@/ui/RangeSlider';
 
 const metrics: Metrics = {
@@ -10,21 +10,21 @@ const metrics: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-const MAX = 8_000_000;
+const MAX = 80_000;
 const onChange = jest.fn();
 
-const format = (value: number) => formatLakh(value, { plus: value >= MAX });
+const format = (value: number) => formatSalaryStep(value, { plus: value >= MAX });
 
 /** Controlled, like the sheet: the slider never owns the committed value. */
-function Harness({ initial = [2_000_000, 4_500_000] as [number, number] }) {
+function Harness({ initial = [20_000, 45_000] as [number, number] }) {
   const [value, setValue] = useState<[number, number]>(initial);
   return (
     <RangeSlider
       min={0}
       max={MAX}
-      step={100_000}
-      minDistance={500_000}
-      a11yStep={500_000}
+      step={1_000}
+      minDistance={5_000}
+      a11yStep={5_000}
       value={value}
       onChange={(next) => {
         onChange(next);
@@ -71,14 +71,14 @@ describe('RangeSlider (JOBS 04 · 1:799–1:802)', () => {
     expect(low).toHaveProp('accessibilityValue', {
       min: 0,
       max: MAX,
-      now: 2_000_000,
-      text: '₹20L',
+      now: 20_000,
+      text: '$20k',
     });
     expect(screen.getByLabelText('Maximum salary')).toHaveProp('accessibilityValue', {
       min: 0,
       max: MAX,
-      now: 4_500_000,
-      text: '₹45L',
+      now: 45_000,
+      text: '$45k',
     });
   });
 
@@ -86,10 +86,10 @@ describe('RangeSlider (JOBS 04 · 1:799–1:802)', () => {
     await renderSlider();
 
     await adjust('Minimum salary', 'increment');
-    expect(onChange).toHaveBeenLastCalledWith([2_500_000, 4_500_000]);
+    expect(onChange).toHaveBeenLastCalledWith([25_000, 45_000]);
 
     await adjust('Maximum salary', 'decrement');
-    expect(onChange).toHaveBeenLastCalledWith([2_500_000, 4_000_000]);
+    expect(onChange).toHaveBeenLastCalledWith([25_000, 40_000]);
   });
 
   it('clamps at the scale ends instead of running past them', async () => {
@@ -103,19 +103,19 @@ describe('RangeSlider (JOBS 04 · 1:799–1:802)', () => {
   });
 
   it('stops the thumbs a gap apart rather than letting them swap', async () => {
-    await renderSlider([4_000_000, 4_500_000]);
+    await renderSlider([40_000, 45_000]);
 
     // Already at the minimum gap, so incrementing the low thumb must not move it past the high one.
     await adjust('Minimum salary', 'increment');
-    expect(onChange).toHaveBeenLastCalledWith([4_000_000, 4_500_000]);
+    expect(onChange).toHaveBeenLastCalledWith([40_000, 45_000]);
   });
 
-  it('reports the open-ended top stop as "₹80L+"', async () => {
-    await renderSlider([2_000_000, MAX]);
+  it('reports the open-ended top stop as "$80k+"', async () => {
+    await renderSlider([20_000, MAX]);
 
     expect(screen.getByLabelText('Maximum salary')).toHaveProp(
       'accessibilityValue',
-      expect.objectContaining({ text: '₹80L+' }),
+      expect.objectContaining({ text: '$80k+' }),
     );
   });
 });

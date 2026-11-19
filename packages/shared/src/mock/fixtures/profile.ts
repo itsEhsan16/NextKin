@@ -113,7 +113,7 @@ export const profileFixture: Profile = {
   preferences: {
     availability: 'open_to_offers',
     // "Minimum salary — ₹24L" (Figma 1:2277).
-    minSalary: { min: 2_400_000, currency: 'INR', period: 'year' },
+    minSalary: { min: 80_000, currency: 'USD', period: 'year' },
     locations: ['Bengaluru'],
     remote: 'remote',
     language: 'en',

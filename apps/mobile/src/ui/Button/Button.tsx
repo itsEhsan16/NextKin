@@ -98,7 +98,9 @@ export function Button({
       dimDisabled={!loading}
       style={[
         {
-          height,
+          // At least the drawn height, so large text (font scale up to 1.3) grows the button
+          // instead of clipping its label.
+          minHeight: height,
           borderRadius: pill ? radii.full : radii.xl,
           paddingHorizontal: pill ? u(24) : spacing[5],
           backgroundColor: look.bg,
@@ -119,7 +121,13 @@ export function Button({
         importantForAccessibility={loading ? 'no-hide-descendants' : 'auto'}
       >
         {leading ?? (icon ? <Icon name={icon} size="sm" color={colors[look.fg]} /> : null)}
-        <Text variant={pill ? 'buttonLabel' : 'bodySemiBold'} color={look.fg}>
+        <Text
+          variant={pill ? 'buttonLabel' : 'bodySemiBold'}
+          color={look.fg}
+          align="center"
+          numberOfLines={2}
+          style={styles.labelText}
+        >
           {label}
         </Text>
       </Animated.View>
@@ -137,6 +145,7 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
-  label: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  label: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexShrink: 1 },
+  labelText: { flexShrink: 1 },
   spinner: { alignItems: 'center', justifyContent: 'center' },
 });

@@ -37,7 +37,7 @@ export type JobDetailScreenProps = { id: string };
  * reachable through the platform gesture and the Android hardware button once it scrolls away.
  */
 export function JobDetailScreen({ id }: JobDetailScreenProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const insets = useSafeAreaInsets();
   const actions = useJobsActions();
 
@@ -128,6 +128,10 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
           paddingTop: spacing.headerTopPushed + insets.top,
           paddingBottom: spacing[8],
           gap: spacing[6],
+          // The phone column on a tablet or unfolded foldable, as `Screen` centres every other page.
+          width: '100%',
+          maxWidth: sizes.designWidth,
+          alignSelf: 'center',
         }}
         showsVerticalScrollIndicator={false}
       >

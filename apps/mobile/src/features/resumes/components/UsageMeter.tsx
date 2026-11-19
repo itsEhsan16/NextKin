@@ -1,6 +1,7 @@
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Subscription } from '@/data/models';
+import { upgradeLinkLabel } from '@/features/billing/storePolicy';
 import { a11yButton, hitSlop8 } from '@/lib';
 import { useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
@@ -41,14 +42,14 @@ export function UsageMeter({ subscription, onUpgrade, style }: UsageMeterProps) 
           {label}
         </Text>
         <Pressable
-          {...a11yButton('Upgrade', 'Opens the plans page')}
+          {...a11yButton(upgradeLinkLabel(), 'Opens the plans page')}
           feedback="subtle"
           hitSlop={hitSlop8}
           onPress={onUpgrade}
           style={[styles.upgrade, { gap: s(UPGRADE_GAP) }]}
         >
           <CrownIcon width={s(CROWN_W)} height={s(CROWN_H)} />
-          <Text variant="captionSemiBold">Upgrade</Text>
+          <Text variant="captionSemiBold">{upgradeLinkLabel()}</Text>
           <Icon name="ChevronRight" size="xs" color={colors.textPrimary} />
         </Pressable>
       </View>

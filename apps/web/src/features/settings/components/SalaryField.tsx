@@ -21,7 +21,8 @@ export type SalaryFieldProps = {
  * grouped the way its currency is (lakhs for rupees).
  */
 export function SalaryField({ value, onChange, disabled }: SalaryFieldProps) {
-  const currency: SalaryCurrency = value?.currency ?? 'INR';
+  // US dollars unless a saved preference says otherwise: the platform is US-based (toreview §247).
+  const currency: SalaryCurrency = value?.currency ?? 'USD';
   // What is being typed; null shows the saved amount.
   const [draft, setDraft] = useState<string | null>(null);
   const shown = draft ?? (value?.min != null ? formatAmount(value.min, currency) : '');

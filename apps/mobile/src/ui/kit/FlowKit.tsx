@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Button, type ButtonVariant } from '@/ui/Button';
@@ -209,10 +210,19 @@ export function FlowFooter({
 }) {
   const { colors, u } = useTheme();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const leading = (action: FlowAction, color: string) =>
     action.icon ? <Icon name={action.icon} size={u(20)} color={color} /> : undefined;
   return (
-    <View style={[styles.footer, inset ? styles.inset : null]}>
+    <View
+      style={[
+        styles.footer,
+        // An inset footer is the page's footer slot, and `Screen` hands that slot the bottom
+        // safe-area inset (it stops padding its own root): without it the buttons sit under the
+        // Android navigation bar or the home indicator.
+        inset ? [styles.inset, { paddingBottom: u(8) + insets.bottom }] : null,
+      ]}
+    >
       <View style={styles.footerRow}>
         {secondary ? (
           <Button

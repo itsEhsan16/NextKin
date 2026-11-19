@@ -1,3 +1,4 @@
+import * as Device from 'expo-device';
 import { useRouter, type Href } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
@@ -8,6 +9,15 @@ import { useQueriesSettled } from '@/data/queries';
  * longer a tab (§195): it opens from Home's greeting.
  */
 const WARM_ORDER: readonly Href[] = ['/jobs', '/resumes'];
+
+/**
+ * A phone with this much memory or less keeps tabs lazy: two extra live tabs (a FlashList, a card
+ * grid, their queries) are memory it would rather spend on the screen in front of it, and Android
+ * kills a backgrounded app sooner when it holds more. Those tabs mount on first visit instead,
+ * behind the same fade. `totalMemory` is null where it can't be read, and then warm-up runs.
+ */
+export const LOW_MEMORY_BYTES = 3 * 1024 ** 3;
+const lowMemory = Device.totalMemory != null && Device.totalMemory <= LOW_MEMORY_BYTES;
 
 /**
  * Mounts the other tabs ahead of the first visit, one per idle slot, once the launch screen has
@@ -27,7 +37,7 @@ export function TabWarmup() {
   const handle = useRef<number | null>(null);
 
   useEffect(() => {
-    if (started.current || !settled) return;
+    if (started.current || !settled || lowMemory) return;
     started.current = true;
     const queue = [...WARM_ORDER];
     const next = () => {

@@ -4,4 +4,4 @@
  */
 const base = process.env.EXPO_PUBLIC_WEB_URL ?? process.env.EXPO_PUBLIC_API_BASE_URL;
 
-export const WEB_URL = (base || 'https://nextkin.ai').replace(/\/+$/, '');
+export const WEB_URL = (base || 'https://app.nextkin.ai').replace(/\/+$/, '');

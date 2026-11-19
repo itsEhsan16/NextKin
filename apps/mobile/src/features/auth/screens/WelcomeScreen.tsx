@@ -1,6 +1,7 @@
 import { Redirect, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { board } from '../board';
@@ -38,6 +39,7 @@ export function WelcomeScreen() {
   const reduced = useReducedMotion();
   const { motion, s } = useTheme();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const seen = useOnboardingStore((state) => state.seen);
 
   const fade = useSharedValue(reduced ? 1 : 0);
@@ -81,7 +83,13 @@ export function WelcomeScreen() {
             </Text>
           </View>
 
-          <View style={[styles.centred, { paddingBottom: s(board(FLOOR_GAP)) }]}>
+          <View
+            style={[
+              styles.centred,
+              // Clear of a navigation bar taller than the board's floor.
+              { paddingBottom: Math.max(s(board(FLOOR_GAP)), insets.bottom + s(16)) },
+            ]}
+          >
             <Text variant="welcomeTagline" color="onboardingInk" align="center">
               {'WITH AI THAT WON’T LIE\nON YOUR RESUME.'}
             </Text>

@@ -101,7 +101,9 @@ describe('JobsRepo (mock)', () => {
       mockStore.state.subscription.plan = 'free';
       const open = (await flush(repos.jobs.listSaved())).filter((job) => !job.sourceUrl).length;
       expect(open).toBeGreaterThanOrEqual(10);
-      await expect(flush(repos.jobs.setSaved('job_1', true))).rejects.toBeInstanceOf(PlanLockedError);
+      await expect(flush(repos.jobs.setSaved('job_1', true))).rejects.toBeInstanceOf(
+        PlanLockedError,
+      );
       expect(mockStore.state.jobs.find((job) => job.id === 'job_1')?.isSaved).toBe(false);
     });
 
@@ -115,7 +117,9 @@ describe('JobsRepo (mock)', () => {
     });
 
     it('rejects for unknown ids', async () => {
-      await expect(flush(repos.jobs.setSaved('nope', true))).rejects.toThrow('Job "nope" not found');
+      await expect(flush(repos.jobs.setSaved('nope', true))).rejects.toThrow(
+        'Job "nope" not found',
+      );
     });
 
     it('rejects with MockError in error mode and leaves state untouched', async () => {
@@ -154,21 +158,22 @@ describe('JobsRepo (mock)', () => {
     });
 
     it('keeps a listing whose band overlaps the requested one', async () => {
-      // job_zoho is ₹18–24L, so it survives a ₹20L floor but not a ₹15L ceiling.
-      const above = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMin: 2_000_000 }));
+      // The filter is in US dollars (toreview §247). job_zoho is ₹18–24L, about $20–27k at the
+      // pinned rate, so it survives a $25k floor but not a $17k ceiling.
+      const above = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMin: 25_000 }));
       expect(above.items.some((job) => job.id === 'job_zoho')).toBe(true);
 
-      const below = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMax: 1_500_000 }));
+      const below = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMax: 17_000 }));
       expect(below.items.some((job) => job.id === 'job_zoho')).toBe(false);
     });
 
-    it('compares foreign salaries in INR rather than raw digits', async () => {
-      // job_9 is Shopify at USD 120–150k: worth well over ₹20L, and previously excluded outright
-      // because 120000 < 2000000 as a bare number.
-      const page = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMin: 2_000_000 }));
+    it('compares salaries in another currency by value rather than raw digits', async () => {
+      // job_9 is Shopify at USD 120–150k and job_zoho ₹18–24L: the rupee figures are the bigger
+      // bare numbers, but the dollar band is the one above a $25k floor.
+      const page = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMin: 25_000 }));
       expect(page.items.some((job) => job.id === 'job_9')).toBe(true);
 
-      const capped = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMax: 2_000_000 }));
+      const capped = await flush(repos.jobs.list({ ...EMPTY_JOB_FILTERS, salaryMax: 25_000 }));
       expect(capped.items.some((job) => job.id === 'job_9')).toBe(false);
     });
 

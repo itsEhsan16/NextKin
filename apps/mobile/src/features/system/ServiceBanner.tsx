@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -14,6 +14,14 @@ import { Pressable } from '@/ui/Pressable';
  * what still works; a tap hides it until the message changes. In mock mode it never shows. With no
  * connection it says that instead: nothing else matters until it's back (toreview §145.5).
  */
+/**
+ * How long the note stays before it steps aside on its own. It floats over the top of every
+ * screen, where the back button and the title are, so it must not sit there until someone finds
+ * out that tapping it hides it. A new message (going offline again, a different outage) brings
+ * it back, because the note is keyed on its text.
+ */
+export const BANNER_HOLD_MS = 6000;
+
 export const OFFLINE_NOTE = 'You’re offline. Resumes open again once you’re back online.';
 
 export function ServiceBanner() {
@@ -30,6 +38,10 @@ function BannerNote({ text }: { text: string }) {
   const insets = useSafeAreaInsets();
   const styles = useStyles();
   const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setHidden(true), BANNER_HOLD_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (hidden) return null;
   return (

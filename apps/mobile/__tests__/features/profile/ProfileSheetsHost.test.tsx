@@ -100,10 +100,10 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     useMockModeStore.setState({ mode: 'normal' });
     await act(async () => useProfileStore.getState().hideToast());
 
-    // — Minimum salary offers lakh floors and can clear the preference —
+    // — Minimum salary offers US-dollar floors (§247) and can clear the preference —
     await act(async () => useProfileStore.getState().openSheet('min-salary'));
     expect(await screen.findByRole('header', { name: 'Minimum salary' })).toBeOnTheScreen();
-    await waitFor(() => expect(screen.getByLabelText('₹24L')).toBeSelected(), { timeout: 10000 });
+    await waitFor(() => expect(screen.getByLabelText('$80k')).toBeSelected(), { timeout: 10000 });
     fireEvent.press(screen.getByLabelText('No minimum'));
     await waitFor(() => expect(mockStore.state.profile.preferences.minSalary).toBeUndefined(), {
       timeout: 10000,
@@ -119,9 +119,12 @@ describe('Profile picker & confirm sheets (plan §Phase 5)', () => {
     await waitFor(() => expect(screen.getByLabelText('No minimum')).toBeSelected(), {
       timeout: 10000,
     });
-    fireEvent.press(screen.getByLabelText('₹30L'));
+    fireEvent.press(screen.getByLabelText('$100k'));
     await waitFor(() => expect(stepIds()).not.toContain('step_salary'), { timeout: 10000 });
-    expect(mockStore.state.profile.preferences.minSalary).toMatchObject({ min: 3_000_000 });
+    expect(mockStore.state.profile.preferences.minSalary).toMatchObject({
+      min: 100_000,
+      currency: 'USD',
+    });
     expect(mockStore.state.profile.completeness).toBe(0.86);
     // The other chip is answered by its own editor, never by this one.
     expect(stepIds()).toEqual(['step_skills']);

@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import NextStep from '../../../../assets/onboarding/next-step.svg';
 import { board } from '../board';
 import { AuthLockup } from '../components/AuthLockup';
+import { LegalConsentLine } from '../components/LegalConsentLine';
 import { a11yHeader } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Pressable } from '@/ui/Pressable';
@@ -35,6 +37,7 @@ export function GetStartedScreen() {
   const router = useRouter();
   const { colors, radii, s } = useTheme();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
 
   return (
     <Screen edges={[]} padded={false}>
@@ -61,7 +64,8 @@ export function GetStartedScreen() {
         style={{
           paddingHorizontal: s(board(LAYOUT.gutter)),
           gap: s(board(LAYOUT.gap)),
-          marginBottom: s(board(LAYOUT.floor)),
+          // The board's floor, or clear of a taller navigation bar.
+          marginBottom: Math.max(s(board(LAYOUT.floor)), insets.bottom + s(16)),
         }}
       >
         <Pressable
@@ -108,6 +112,8 @@ export function GetStartedScreen() {
             Sign in
           </Text>
         </Pressable>
+
+        <LegalConsentLine />
       </View>
     </Screen>
   );
@@ -115,7 +121,14 @@ export function GetStartedScreen() {
 
 const useStyles = scaledSheet(() => ({
   centred: { alignItems: 'center' },
-  art: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  // Shrinks on a short phone (360x640) rather than pushing the buttons off the glass.
+  art: {
+    flex: 1,
+    minHeight: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',

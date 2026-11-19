@@ -106,17 +106,20 @@ export const REMOTE_FRIENDLY: RemoteType[] = ['remote', 'hybrid'];
 /**
  * No `salaryMax`: JOBS 04's slider label says ₹20L–₹45L but JOBS 01's chip — the screen that
  * actually ships — says "₹20L+", and its handle positions agree with neither. Seeding only the
- * floor honours the shipped chip and parks the upper thumb on the "₹80L+" top stop.
+ * floor honours the shipped chip and parks the upper thumb on the "$300k+" top stop.
+ *
+ * In US dollars since the filter's unit changed (toreview §247): $25k is the nearest step to the
+ * board's ₹20L, so the sample list is unchanged. A US default is the owner's call.
  */
 const INITIAL_FILTERS: JobFilters = {
   ...EMPTY_JOB_FILTERS,
   employmentTypes: ['full_time'],
   remote: REMOTE_FRIENDLY,
-  salaryMin: 2_000_000,
+  salaryMin: 25_000,
 };
 
 /** Adds or removes one member of a multi-select filter group. */
-const toggleIn = <T,>(list: T[], value: T): T[] =>
+const toggleIn = <T>(list: T[], value: T): T[] =>
   list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 
 export const useJobsStore = create<JobsState>((set) => {
@@ -212,7 +215,8 @@ export const useJobsStore = create<JobsState>((set) => {
     toggleDraftEmploymentType: (type) =>
       set(editDraft((f) => ({ ...f, employmentTypes: toggleIn(f.employmentTypes, type) }))),
 
-    toggleDraftRemote: (type) => set(editDraft((f) => ({ ...f, remote: toggleIn(f.remote, type) }))),
+    toggleDraftRemote: (type) =>
+      set(editDraft((f) => ({ ...f, remote: toggleIn(f.remote, type) }))),
 
     // `undefined` is the "Any" pill, which clears the group rather than being a level of its own.
     toggleDraftExperience: (level) =>

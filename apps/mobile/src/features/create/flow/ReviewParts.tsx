@@ -364,7 +364,12 @@ export function SkillChips({
         ))}
       </View>
       {chips.length > COLLAPSED ? (
-        <Pressable accessibilityRole="button" onPress={() => setAll((v) => !v)} style={styles.more}>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
+          onPress={() => setAll((v) => !v)}
+          style={styles.more}
+        >
           <Text variant="footnote" color="brand">
             {all ? 'Show fewer' : `Show ${chips.length - COLLAPSED} more`}
           </Text>

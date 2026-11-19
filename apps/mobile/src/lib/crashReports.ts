@@ -1,3 +1,4 @@
+import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 
 type Breadcrumb = { category?: string };
@@ -27,6 +28,11 @@ const DROPPED_CRUMBS = new Set(['console', 'xhr', 'fetch', 'ui.input']);
  * they were working on: no user, no request, no typed text. The native side needs a build, so Expo
  * Go only ever reports JavaScript errors.
  */
+function releaseName(version: string): string {
+  const build = Application.nativeBuildVersion;
+  return build ? `${version}+${build}` : version;
+}
+
 export function startCrashReports(): void {
   const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
   if (!dsn || sentry) return;
@@ -36,11 +42,15 @@ export function startCrashReports(): void {
     module.init({
       dsn,
       environment: process.env.EXPO_PUBLIC_APP_ENV ?? 'development',
-      ...(Constants.expoConfig?.version ? { release: Constants.expoConfig.version } : {}),
+      // "1.0.0+42": the store version and the build number, so a crash names the exact build.
+      ...(Constants.expoConfig?.version
+        ? { release: releaseName(Constants.expoConfig.version) }
+        : {}),
       sendDefaultPii: false,
       tracesSampleRate: 0,
       beforeSend: ({ user: _user, request: _request, server_name: _server, ...event }) => event,
-      beforeBreadcrumb: (crumb) => (crumb.category && DROPPED_CRUMBS.has(crumb.category) ? null : crumb),
+      beforeBreadcrumb: (crumb) =>
+        crumb.category && DROPPED_CRUMBS.has(crumb.category) ? null : crumb,
     });
     sentry = module;
   } catch {

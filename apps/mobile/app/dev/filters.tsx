@@ -3,13 +3,13 @@ import { StyleSheet, View } from 'react-native';
 
 import { SALARY_FILTER_MAX, SALARY_FILTER_MIN, SALARY_FILTER_STEP } from '@/data/models';
 import { EMPLOYMENT_TYPE_OPTIONS, EXPERIENCE_OPTIONS } from '@/features/jobs/filterGroups';
-import { formatLakh, formatSalaryBand } from '@/lib';
+import { formatSalaryStep, formatSalaryBand } from '@/lib';
 import { useTheme } from '@/theme';
 import { FilterChip, Screen, Text } from '@/ui';
 import { RangeSlider } from '@/ui/RangeSlider';
 import { DevSection } from '@/ui/dev';
 
-const format = (value: number) => formatLakh(value, { plus: value >= SALARY_FILTER_MAX });
+const format = (value: number) => formatSalaryStep(value, { plus: value >= SALARY_FILTER_MAX });
 
 /** Gallery page for the primitives JOBS 04 introduced. */
 export default function DevFiltersRoute() {
@@ -77,10 +77,10 @@ export default function DevFiltersRoute() {
         />
         <View style={styles.scale}>
           <Text variant="captionSm" color="textSecondary">
-            {formatLakh(SALARY_FILTER_MIN)}
+            {formatSalaryStep(SALARY_FILTER_MIN)}
           </Text>
           <Text variant="captionSm" color="textSecondary">
-            {formatLakh(SALARY_FILTER_MAX, { plus: true })}
+            {formatSalaryStep(SALARY_FILTER_MAX, { plus: true })}
           </Text>
         </View>
       </DevSection>

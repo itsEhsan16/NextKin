@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { board } from '../board';
 import { a11yHeader } from '@/lib';
@@ -22,19 +23,17 @@ const LOCKUP = { top: 97, mark: 54.78323, gap: 6.28442 };
 export function AuthLockup() {
   const { s } = useTheme();
   const styles = useStyles();
+  // The board's 97 of head room covers a usual status bar; a tall punch-hole one still clears.
+  const insets = useSafeAreaInsets();
 
   return (
     <View
       accessible
       {...a11yHeader('NextKin')}
-      style={[styles.centred, { paddingTop: s(board(LOCKUP.top)) }]}
+      style={[styles.centred, { paddingTop: Math.max(s(board(LOCKUP.top)), insets.top + s(8)) }]}
     >
       <BrandMark height={board(LOCKUP.mark)} />
-      <Text
-        variant="wordmark"
-        color="onboardingInk"
-        style={{ marginTop: s(board(LOCKUP.gap)) }}
-      >
+      <Text variant="wordmark" color="onboardingInk" style={{ marginTop: s(board(LOCKUP.gap)) }}>
         NextKin
       </Text>
     </View>

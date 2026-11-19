@@ -23,6 +23,7 @@ jest.mock('expo-router', () => ({
     replace: mockReplace,
   }),
   Link: ({ children }: PropsWithChildren) => children,
+  usePreventRemove: () => () => {},
 }));
 
 const metrics: Metrics = {
@@ -79,8 +80,7 @@ describe('ZeroResumeScreen (ZERO 01, 613:206)', () => {
     jest.useRealTimers();
   });
 
-  const press = (label: string) =>
-    act(async () => fireEvent.press(screen.getByLabelText(label)));
+  const press = (label: string) => act(async () => fireEvent.press(screen.getByLabelText(label)));
 
   it('asks one thing at a time, starting with the name (§175)', async () => {
     await renderZero(undefined, fresh);

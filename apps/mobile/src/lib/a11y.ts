@@ -9,7 +9,8 @@ import type { AccessibilityProps, Insets } from 'react-native';
  * than the one on screen, and the target lands short of 44.
  */
 export const hitSlopFor = (size: number): Insets => {
-  const pad = Math.max(0, (44 - size) / 2);
+  // 48dp, Android's touch-target guidance (and above iOS's 44pt): invisible, so the look holds.
+  const pad = Math.max(0, (48 - size) / 2);
   return { top: pad, bottom: pad, left: pad, right: pad };
 };
 
@@ -40,9 +41,11 @@ export const a11yHiddenWhen = (hidden: boolean): AccessibilityProps | null =>
  * Caps on the OS font-size setting, which multiplies every size on top of the artboard scale.
  * The screens are proportional replicas of a 520px frame, so letting text grow 60% past its
  * designed size is what reintroduces the wrapping and truncation the scaling exists to prevent.
- * Chrome is pinned outright; body gets one modest step.
+ * Chrome is pinned outright. Body follows the phone up to 1.3: someone who set their text to
+ * 130% or more must get noticeably bigger text (owner, 2026-11-20), and the boxes that held body
+ * text at a fixed height grow with it (Button, FeatureRows) instead of clipping.
  */
 export const maxFontScale = {
   chrome: 1,
-  body: 1.1,
+  body: 1.3,
 } as const;

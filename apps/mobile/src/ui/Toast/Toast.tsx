@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
+import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
+import Animated, { FadeInUp, FadeOutDown, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useReducedMotion } from '@/lib';
@@ -52,6 +53,14 @@ export function Toast({
   const { colors, motion, shadows, sizes, zIndex, u } = useTheme();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
+  // With the keyboard up the toast rides above it, frame by frame on the UI thread, instead of
+  // being said behind the keys where nobody can read it. `height` is negative while it is open.
+  const keyboard = useReanimatedKeyboardAnimation();
+  const restingBottom = insets.bottom + u(BOTTOM_LIFT);
+  const gap = u(16);
+  const liftStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: Math.min(0, keyboard.height.value + restingBottom - gap) }],
+  }));
   const glyph = icon
     ? { icon, color: (tone === 'error' ? 'danger' : 'brand') as ColorToken }
     : TONE_GLYPH[tone];
@@ -73,11 +82,12 @@ export function Toast({
 
   return (
     // Always mounted, so hiding removes only the bar and its exit animation plays from here.
-    <View
+    <Animated.View
       pointerEvents="none"
       style={[
         styles.overlay,
-        { bottom: insets.bottom + u(BOTTOM_LIFT), paddingHorizontal: u(16), zIndex: zIndex.toast },
+        { bottom: restingBottom, paddingHorizontal: u(16), zIndex: zIndex.toast },
+        liftStyle,
       ]}
     >
       {visible ? (
@@ -123,7 +133,7 @@ export function Toast({
           </Text>
         </Animated.View>
       ) : null}
-    </View>
+    </Animated.View>
   );
 }
 
