@@ -276,11 +276,14 @@ export const EMPTY_JOB_FILTERS: JobFilters = {
   tags: [],
 };
 
-/** Ends of the salary slider's scale, in INR (Figma 1:803 "₹0" / 1:804 "₹80L+"). */
+/**
+ * Ends of the salary slider's scale, in US dollars a year: "$0" to "$300k+" (owner, 2026-11-20:
+ * the platform is US-based, so the filter speaks USD; it was ₹0–₹80L, toreview §247).
+ */
 export const SALARY_FILTER_MIN = 0;
-export const SALARY_FILTER_MAX = 8_000_000;
-/** One lakh per notch, so the thumbs land on the values the labels can render. */
-export const SALARY_FILTER_STEP = 100_000;
+export const SALARY_FILTER_MAX = 300_000;
+/** $5k per notch, so the thumbs land on values the "$80k" labels can render. */
+export const SALARY_FILTER_STEP = 5_000;
 
 /** Band thresholds shared by fixtures and match meters. */
 export function matchBandFor(score: number): MatchBand {

@@ -17,15 +17,16 @@ const POSTED_WITHIN_MS: Record<PostedWithin, number> = {
 };
 
 /**
- * One pinned table of indicative rates, so the ₹ salary slider can reach listings priced in
- * another currency. A listing's own band is never converted for display; only the comparison
- * against the slider is. A currency-aware filter is X-12's (toreview §105.18).
+ * One pinned table of indicative rates into US dollars, so the $ salary slider can reach listings
+ * priced in another currency. A listing's own band is never converted for display; only the
+ * comparison against the slider is. A currency-aware filter is X-12's (toreview §105.18). The
+ * ratios are the old INR table's (USD 88, EUR 95, AUD 57 rupees), now expressed per dollar.
  */
-export const TO_INR: Record<SalaryCurrency, number> = {
-  INR: 1,
-  USD: 88,
-  EUR: 95,
-  AUD: 57,
+export const TO_USD: Record<SalaryCurrency, number> = {
+  USD: 1,
+  INR: 1 / 88,
+  EUR: 95 / 88,
+  AUD: 57 / 88,
 };
 
 export const PERIODS_PER_YEAR: Record<SalaryRange['period'], number> = {
@@ -34,22 +35,22 @@ export const PERIODS_PER_YEAR: Record<SalaryRange['period'], number> = {
   hour: 2080,
 };
 
-/** Annualised and converted to INR, the unit `JobFilters.salaryMin`/`salaryMax` are expressed in. */
-export const annualInr = (amount: number, salary: SalaryRange): number =>
-  amount * TO_INR[salary.currency] * PERIODS_PER_YEAR[salary.period];
+/** Annualised and converted to US dollars, the unit `JobFilters.salaryMin`/`salaryMax` are in. */
+export const annualUsd = (amount: number, salary: SalaryRange): number =>
+  amount * TO_USD[salary.currency] * PERIODS_PER_YEAR[salary.period];
 
 export const salaryCeiling = (job: Pick<Job, 'salary'>): number => {
   const { salary } = job;
   if (!salary) return 0;
   const top = salary.max ?? salary.min;
-  return top == null ? 0 : annualInr(top, salary);
+  return top == null ? 0 : annualUsd(top, salary);
 };
 
 const byPostedDesc = (a: Job, b: Job): number => b.postedAt.localeCompare(a.postedAt);
 const byRelevance = (a: Job, b: Job): number => a.relevanceRank - b.relevanceRank;
 const bySavedDesc = (a: Job, b: Job): number =>
   (b.savedAt ?? b.postedAt).localeCompare(a.savedAt ?? a.postedAt);
-// Compared in INR so a mixed-currency catalogue sorts by real value, not by raw digits.
+// Compared in USD so a mixed-currency catalogue sorts by real value, not by raw digits.
 const bySalaryDesc = (a: Job, b: Job): number => salaryCeiling(b) - salaryCeiling(a);
 // Soonest deadline first. A listing with no deadline is not closing, so it sorts to the end
 // rather than to the front, which is where an empty string would put it.
@@ -105,8 +106,8 @@ export function matchesFilters(job: Job, filters: JobFilters, now = Date.now()):
     // A listing that quotes no salary can't be shown to satisfy a salary band.
     if (!salary || top == null || bottom == null) return false;
     // Overlap, not containment: keep a listing whose band intersects the requested one.
-    if (filters.salaryMin != null && annualInr(top, salary) < filters.salaryMin) return false;
-    if (filters.salaryMax != null && annualInr(bottom, salary) > filters.salaryMax) return false;
+    if (filters.salaryMin != null && annualUsd(top, salary) < filters.salaryMin) return false;
+    if (filters.salaryMax != null && annualUsd(bottom, salary) > filters.salaryMax) return false;
   }
   if (filters.postedWithin) {
     const age = now - new Date(job.postedAt).getTime();

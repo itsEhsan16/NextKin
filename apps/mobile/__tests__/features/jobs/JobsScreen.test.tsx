@@ -90,9 +90,9 @@ describe('JobsScreen (JOBS 01–03)', () => {
     await renderJobs();
     await screen.findByRole('header', { name: "Today's picks" });
 
-    expect(screen.getByLabelText('Remove filter ₹20L+')).toBeOnTheScreen();
-    fireEvent.press(screen.getByLabelText('Remove filter ₹20L+'));
-    await waitFor(() => expect(screen.queryByLabelText('Remove filter ₹20L+')).toBeNull());
+    expect(screen.getByLabelText('Remove filter $25k+')).toBeOnTheScreen();
+    fireEvent.press(screen.getByLabelText('Remove filter $25k+'));
+    await waitFor(() => expect(screen.queryByLabelText('Remove filter $25k+')).toBeNull());
     expect(screen.getByLabelText('Remove filter Full-time')).toBeOnTheScreen();
 
     fireEvent.press(screen.getByLabelText('Clear all filters'));

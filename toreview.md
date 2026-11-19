@@ -18047,3 +18047,22 @@ An audit of `apps/mobile` for Google Play, then the fixes. Owner decisions: hide
 - Unset, nothing changes. `cdk synth` with a sample ARN emits both.
 - The demo runs `APP_ENV=dev`, where Android-only push is allowed. Staging and production still refuse it without an iOS ARN.
 - The owner's steps are in `aws/setup/08-push-with-claude-in-chrome.md`: Firebase in Chrome, the EAS file variable from the terminal, the SNS platform application in Chrome, then the ARN goes to Claude Code for `cdk.json` and a deploy.
+
+## §247 — Salaries in US dollars (owner, 2026-11-20)
+
+The platform is US-based, and the owner chose USD for the salary filter and the salary preference. Both were Indian rupees in lakh.
+
+- **Shared filter unit:** `JobFilters.salaryMin`/`salaryMax` are now US dollars a year.
+  - The slider runs from $0 to $300k+ in $5k steps (`SALARY_FILTER_*`).
+  - Listings in another currency are compared through `TO_USD` / `annualUsd`. These are the same pinned ratios as the old rupee table (USD 88, EUR 95, AUD 57 rupees), so the sort order and the overlap rules are unchanged.
+  - The server, web and phone all read the same code.
+- **Phone:**
+  - `formatSalaryStep` ("$80k", "$300k+") replaces `formatLakh` on the slider, the applied chip and the minimum-salary picker.
+  - The picker offers $40k–$200k and saves `currency: 'USD'`, so job fit compares it with US listings. A rupee preference against a dollar listing used to read "can't compare".
+  - Thumbs stay at least $20k apart.
+- **Web:** the filter labels read "$80k/yr", and the salary preference defaults to USD, with USD first in its currency list.
+- **Unchanged on purpose:** a listing's own salary still shows in its own currency. The sample jobs are Indian, so "₹28–38L" still appears on their cards. Real listings wait on the job providers (D-12).
+- **Owner's call:** the Jobs tab starts with a "$25k+" salary chip. It's the nearest step to the board's original ₹20L, so the sample list is unchanged. A US default, or no default salary chip at all, is for the owner to choose.
+- **Existing saved preferences:** anyone who saved a rupee floor keeps it as rupees (it carries its currency). The picker then shows nothing selected until they pick a dollar floor. Saved job filters on the phone are not persisted, so none carry old rupee numbers.
+- **The sample profile's** minimum salary is now $80k.
+- **Checks:** mobile 1,978, shared 511, server unit 423, web jobs/settings/lib 125. Typecheck and lint are clean.
