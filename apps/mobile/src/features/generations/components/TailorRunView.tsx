@@ -27,6 +27,7 @@ import { useTailorDownload } from '../hooks/useTailorDownload';
 import { ResumePagePreview } from './ResumePagePreview';
 import { TailorChrome } from './TailorChrome';
 import { TailorProgress } from './TailorProgress';
+import { BuildNextTiles } from './BuildReadyParts';
 import { TailorReady } from './TailorReady';
 import { savedPagesLabel, TailorSavedSheet, type TailorSavedFile } from './TailorSavedSheet';
 import { RESUME_STEPS } from '@/features/create/flow/ResumeSteps';
@@ -100,9 +101,6 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
   const edit = () => {
     if (resumeId) actions.openDocument(resumeId);
   };
-  const seeChanges = () => {
-    if (resumeId) actions.openVersions(resumeId);
-  };
   const doc = resumeBody(content.data);
   const name = user.data ? `${user.data.firstName} ${user.data.lastName}`.trim() : '';
 
@@ -160,11 +158,13 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
                 preview={
                   <ResumePagePreview content={doc} name={name} score={resume.data?.atsScore} />
                 }
-                run={run}
                 company={company}
-                domain={domain}
-                score={resume.data?.atsScore}
-                onSeeChanges={seeChanges}
+                next={
+                  // A letter is written for a job on NextKin (as Build's tile is).
+                  generation.jobId && resumeId ? (
+                    <BuildNextTiles onCoverLetter={() => actions.openCoverLetterSetup(resumeId)} />
+                  ) : undefined
+                }
               />
             </>
           ) : (

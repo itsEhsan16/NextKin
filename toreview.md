@@ -17863,3 +17863,12 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Select all** is a tick at the right of the list's head, with no words ("3 to choose from" and "Select all" are gone). Its screen-reader label is "Select all".
 - **Reading-the-job button** (`ProgressButton`): while it works, a gradient ring (the bottom bar's violet → brand → deep indigo), a white pill inside, a light lavender fill (brand50 → brand100) and the label in brand ink. Idle, it stays the normal pill like every other footer.
 - **Verified:** mobile typecheck and lint are clean; the create, notifications and generations Jest suites pass (38 suites, 199 tests). **Not yet on the phone:** the owner's next look.
+
+## §237 — Ready screen: the ring's label fits, the cover letter replaces the score row (owner, 2026-11-19)
+- **Ring label:** the preview's score badge read "ATS score", which ran past the ring's edge on the owner's Android phone. It now reads "ATS" under the number. The screen reader still says "ATS score 67".
+- **Removed** from the ready screen (Tailor and Build): the green "ATS score · band, x → y, See what changed" row and the "Next: download it, then apply on …" note. The score stays on the preview's ring.
+- **Added:** a "Make a cover letter" tile (the same tile Build already had, renamed from "Cover letter for this job"). It opens cover-letter setup with the new resume.
+  - It shows when the run is for a NextKin job, as Build's rule already was. A pasted job description gets no tile.
+  - Build keeps "Practice the interview" beside it. **Ask:** should Build drop that tile too, to match?
+- **Judgement call:** "See what changed" (to Versions) is gone from this screen. Versions stay reachable from the resume (Edit → the resume page).
+- **Verified:** mobile typecheck and lint are clean; the generations suites pass, plus `ResumeFlowParts` (9 suites, 36 tests).

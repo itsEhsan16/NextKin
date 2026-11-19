@@ -152,10 +152,10 @@ describe('GenerationScreen — job-first tailoring run (TAILOR 04–06)', () => 
     const generation = mockStore.state.generations.find((g) => g.id === id);
     const score = mockStore.state.resumes.find((r) => r.id === generation?.resumeId)?.atsScore;
     expect(score).toBeGreaterThan(72);
-    expect(screen.getByText(/^7.2 → /)).toBeOnTheScreen();
     expect(screen.getByText('SAVED TO RESUMES')).toBeOnTheScreen();
-    expect(screen.getByLabelText('See what changed')).toBeOnTheScreen();
-    expect(screen.getByText('Next: download it, then apply on stripe.com')).toBeOnTheScreen();
+    // The score rides on the preview's ring; the screen ends with the cover letter (§237).
+    expect(screen.queryByLabelText('See what changed')).toBeNull();
+    expect(screen.getByLabelText('Make a cover letter')).toBeOnTheScreen();
 
     // Download → the file goes to the share sheet → TAILOR 06 names it and links out.
     mockRenderPdf.mockResolvedValue({ uri: 'file:///cache/tailored.pdf', name: 'tailored.pdf' });

@@ -1,8 +1,8 @@
-import { act, cleanup, render, screen } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import type { TailorRun } from '@/data/models';
 import { ProgressButton, READ_STAGES } from '@/features/create/flow/ProgressButton';
+import { BuildNextTiles } from '@/features/generations/components/BuildReadyParts';
 import { TailorReady } from '@/features/generations/components/TailorReady';
 
 const metrics: Metrics = {
@@ -36,22 +36,16 @@ describe('the resume flow’s web-matching parts (toreview §235)', () => {
     expect(screen.getByLabelText(READ_STAGES[2])).toBeOnTheScreen();
   });
 
-  it('says the finished score as the web does: band, move, key keywords, a missed plan, next', async () => {
-    const run = {
-      sourceResumeId: 'res_base',
-      baselineScore: 67,
-      projected: 90,
-      jobMatch: { matched: 8, total: 10, percent: 80, missing: ['Kafka', 'Go'], basis: '' },
-      next: [{ title: 'Add a result to a bullet', worth: 0.3 }],
-      added: [],
-      skipped: [],
-    } as unknown as TailorRun;
-    await wrap(<TailorReady run={run} company="Stripe" score={78} onSeeChanges={() => {}} />);
-    expect(screen.getByText('ATS score · Good match')).toBeOnTheScreen();
-    expect(screen.getByText('6.7 → 7.8')).toBeOnTheScreen();
-    expect(screen.getByText('8 of 10 key keywords · Plan aimed for 9.0')).toBeOnTheScreen();
-    expect(
-      screen.getByText('Next: Add a result to a bullet (+0.3). Yours to accept.'),
-    ).toBeOnTheScreen();
+  it('ends the ready screen with the cover-letter tile, not a score row (§237)', async () => {
+    const onCoverLetter = jest.fn();
+    await wrap(
+      <TailorReady company="Stripe" next={<BuildNextTiles onCoverLetter={onCoverLetter} />} />,
+    );
+    expect(screen.getByText('Your resume for Stripe is ready')).toBeOnTheScreen();
+    expect(screen.queryByText(/^ATS score/)).toBeNull();
+    expect(screen.queryByText(/^Next: download it/)).toBeNull();
+    expect(screen.queryByLabelText('Practice the interview')).toBeNull();
+    await act(async () => fireEvent.press(screen.getByLabelText('Make a cover letter')));
+    expect(onCoverLetter).toHaveBeenCalled();
   });
 });

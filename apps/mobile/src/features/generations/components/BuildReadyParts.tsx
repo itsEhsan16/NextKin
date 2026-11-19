@@ -95,7 +95,7 @@ function NextTile({ label, hint, icon, onPress }: TileProps) {
 export type BuildNextTilesProps = {
   /** Absent for a job pasted or uploaded from Home: a letter needs a NextKin job. */
   onCoverLetter?: () => void;
-  onInterview: () => void;
+  onInterview?: () => void;
 };
 
 /**
@@ -109,18 +109,20 @@ export function BuildNextTiles({ onCoverLetter, onInterview }: BuildNextTilesPro
     <View style={styles.tiles}>
       {onCoverLetter ? (
         <NextTile
-          label="Cover letter for this job"
+          label="Make a cover letter"
           hint="Sets up a cover letter from this resume"
           icon={<CoverLetterIcon width={s(COVER_W)} height={s(COVER_H)} />}
           onPress={onCoverLetter}
         />
       ) : null}
-      <NextTile
-        label="Practice the interview"
-        hint="Sets up interview questions from this resume"
-        icon={<InterviewIcon width={s(INTERVIEW_W)} height={s(INTERVIEW_H)} />}
-        onPress={onInterview}
-      />
+      {onInterview ? (
+        <NextTile
+          label="Practice the interview"
+          hint="Sets up interview questions from this resume"
+          icon={<InterviewIcon width={s(INTERVIEW_W)} height={s(INTERVIEW_H)} />}
+          onPress={onInterview}
+        />
+      ) : null}
     </View>
   );
 }

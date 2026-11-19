@@ -15,7 +15,7 @@ import { ResumePagePreview } from './ResumePagePreview';
 import { TailorChrome } from './TailorChrome';
 import { TailorProgress } from './TailorProgress';
 import { TailorReady } from './TailorReady';
-import { resumeBody, siteHost } from './TailorRunView';
+import { resumeBody } from './TailorRunView';
 import { RESUME_STEPS } from '@/features/create/flow/ResumeSteps';
 
 export type BuildRunViewProps = { generation: Generation };
@@ -44,14 +44,9 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
   const user = useCurrentUser();
 
   const company = draft.data?.company ?? job.data?.company;
-  const website = jobId ? job.data?.companyWebsite : undefined;
-  const domain = website ? siteHost(website) || undefined : undefined;
   const close = () => actions.closeBuild(jobId);
   const edit = () => {
     if (resumeId) actions.openDocument(resumeId);
-  };
-  const seeChanges = () => {
-    if (resumeId) actions.openVersions(resumeId);
   };
   const download = () => {
     if (resume.data) openExport(resume.data, 'run');
@@ -106,9 +101,6 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
                   <ResumePagePreview content={resumeBody(content.data)} name={name} score={score} />
                 }
                 company={company}
-                domain={domain}
-                score={score}
-                onSeeChanges={seeChanges}
                 pill={<BuildBandPill score={score} />}
                 next={
                   <BuildNextTiles
