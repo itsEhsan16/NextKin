@@ -283,7 +283,7 @@ function NumberStep({
       <Sheet
         open={editing}
         onClose={() => setEditing(false)}
-        height={u(460)}
+        height={u(380)}
         avoidKeyboard
         accessibilityLabel="Add a result"
         contentStyle={styles.sheetPad}
@@ -392,7 +392,7 @@ export function MoreOptionsSheet({
     <Sheet
       open={open}
       onClose={onClose}
-      height={u(460)}
+      height={u(380)}
       accessibilityLabel="More options"
       contentStyle={styles.sheetPad}
     >

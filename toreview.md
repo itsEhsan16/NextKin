@@ -17753,3 +17753,185 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - seen in the browser at 1366×900 on Free and on Pro (the mock fixture switched to Pro locally, then reverted), including cancel → "Ends <date>" → "Keep my subscription".
 - **Not checked:** dark theme, widths under 1024, and the backend (real `planId`, invoice numbers, paused state) — only the mock.
 - **Noticed, not changed:** on a Pro account the sidebar still shows the "Upgrade to Pro" card.
+
+## §233 — The clay illustrations from Seedream 5.5, in the app (owner, 2026-11-11; ported 2026-11-18)
+- **Ported** from `claude/app-ui-ux-redesign-1a1793` (`12f1ce5`, §211 there) onto `claude/mobile-tailor-flow`. The Assistant Chats sheet keeps main's text-only empty state (its layout commit `473dca0` was not ported), so `assistant/no-chats.webp` is in the tree but unused. PlanQuestions was not ported (see §234).
+- **Source:** 27 images generated on ElevenLabs with `bytedance-seedream-5.5`, from `asset-prompts.md`. The owner picked Seedream over GPT Image 2.6 after a head-to-head.
+  - Five came back on white (applied, build-writing, zero-about, ats-paste, assistant-first-run) and went through `birefnet-v2-bg-removal`, which dropped a few small sparkles on two of them.
+  - `sign-out` was regenerated on 2026-11-11 at the owner's request (the first had a muddy floor haze).
+  - The untouched originals are on For-Next-Kin, page `488:390`.
+- **Processing:** each image is trimmed to its content with a 3% margin, capped at 1080 px wide, and saved as WebP q88 (39–115 KB each), alongside the folders they replace.
+  - The 24 old flat-style PNGs are deleted. Their white or black backgrounds were the original complaint.
+- **Wiring:**
+  - Every site keeps its board box and fits the new art inside it (`contain`, same width or height limit), so screen layouts don't move. Old `shiftX` offsets compensated for the old drawings' whitespace and are now 0.
+  - **`FlowHero.FLOW_ART`:** 17 flow heroes (Build, Tailor, Cover, Zero, ATS, Interview, Assistant first run), rewritten from the measured files.
+  - **Elsewhere:** `ConfirmArt` (sign-out, discard), `CertificationsListScreen`, `DataExportScreen`, `CheckoutConfirm`, `NotFoundScreen`, `CopiedLinkDialogBody`.
+  - **New:**
+    - `no-chats` on the Assistant's empty Chats sheet, about 150 wide at 390;
+    - `applied` fills TAILOR 06's empty IL-T1 slot, 150 × 97 above the title, with the sheet floor grown by the same;
+    - `score-target` beside "Answer to reach 10", through a new optional `art` slot on `FlowSection`.
+- **Judgement calls:**
+  - The five live run heroes (cover-writing, zero-writing, ats-checking, tailor-writing, build-writing) keep their float while a run works. The glint, scan and ink overlays (`LiveArt` anchors) were traced on the old drawings, so they are off (`sparkles: []`, no `page`/`lines`) until anchors are measured on the new art.
+  - An automatic gold-sparkle detector was tried but also caught pen nibs and knobs, so it isn't used.
+- **Verified:**
+  - Jest across create, generations, assistant, account, system, billing, home, ui and profile: 96 suites, 565 tests pass.
+  - Lint is clean.
+- **Typecheck:** fails on `useCreateActions.ts:67` with TS2589 in `router.setParams`. This is **pre-existing**: it fails identically with these edits stashed. It comes from the regenerated `.expo/types/router.d.ts`.
+- **Not seen yet:** in the preview, which redirects to the splash when signed out, or on the phone.
+
+## §234 — The app's resume flow follows the web's three steps; why generation failed on the demo (owner, 2026-11-18)
+- **Branch:** `claude/mobile-tailor-flow`, cut from `origin/main` (ceea61d). It carries the clay illustrations ported from `claude/app-ui-ux-redesign-1a1793` (§233).
+- **Steps:** the app now names its steps the way the web does: "1 of 3 · Job & Resume", "2 of 3 · Choose Keywords", "3 of 3 · Generate Results" (`flow/ResumeSteps.tsx`).
+  - The name sits under the bar in `OnboardingFrame` (`stepName`) and in the run chrome (`TailorChrome`).
+  - A (?) button opens a short help sheet on steps 1 (method) and 2.
+- **New: "How would you like to create your resume?"** (`screens/MethodScreen.tsx`, route `/create/method`). It has the web's four ways with clay art:
+  - "Tailor my selected resume", marked Recommended;
+  - "Create from my profile";
+  - "Start from scratch with AI";
+  - "Upload a resume".
+  - A tap picks a card, then Continue. Tailor and Upload open the existing resume sheet (pick, or upload); Profile goes to BUILD 04b; Scratch goes to Zero Resume.
+  - A way that can't work yet (no resume, or no roles) is greyed out and says why.
+  - `/create/tailor` with a job but no `resumeId` now redirects here. Every "Tailor this job" entry (job page, copied link, gap interview) passes through it.
+- **"Choose keywords to add"** (`TailorCompareScreen` + `flow/KeywordStep.tsx`), from the owner's mockup:
+  - the "Job & resume" row (tap → resume sheet);
+  - the ATS card: ring, band, "+x.x points (est.)", "If you add N selected keywords";
+  - Missing / Optional / All with counts, and the list with a checkbox, kind tag, "+x.x Impact", "Select all", and 5 rows before "Show N more keywords";
+  - the green "About x/10 after this · +x points" bar;
+  - "Did you use these?";
+  - "What the AI will change" (the plan toggles, results, More options);
+  - the web's promise line;
+  - a footer with "N keywords selected · From M total" and "Add N Keywords & Continue" ("Continue" with none ticked).
+  - **The numbers are the web's:** `projectedScore`, with the card's gain being the answers' share (the web's `EnhanceStep` maths). Rows come from the shared `keywordRowsOf` through a new `@/data/models/keywordRows` shim.
+- **Run screen:** "3 of 3 · Generate Results" under the bar for Tailor and Build. A failed Tailor or Build run reads "That run didn't finish" and offers "Back to my choices" (the web's words). Other runs keep "Generation failed".
+- **Judgement calls:**
+  - **Kind chips dropped** (owner, 2026-11-18, matching web §214).
+  - **"Accept all suggestions" dropped:** the web removed its take-everything card (§214). "Select all" per tab replaces it.
+  - **The step-2 "View job" link is gone:** the mockup's row has none. Say if it should come back (e.g. on the row's eyebrow).
+  - **Build still chooses its source on step 1** ("Built from: resume / profile"), so the method step isn't shown twice. Build sends only someone with no resume and no roles to the method step, instead of the old upload-or-start card.
+  - **PlanQuestions (`24190a8`) not ported:** it was written for §202's half-credit scoring. Main's D-25 maths and "Did you use these?" cover the same questions.
+  - The All tab lists the resume's own keywords ticked and locked as "On your resume". "From M total" is the job's keyword count.
+- **Proposal items left here were finished in §235.**
+- **Verified:**
+  - mobile typecheck and lint are clean;
+  - Jest: create and generations suites pass, with `TailorCompareScreen` and `BuildJobScreens` tests rewritten for the new screens and a new `MethodScreen.test.tsx`;
+  - the full mobile suite passes: 227 suites, 1961 tests.
+- **Not seen on a device or in Expo Go.** Art sizes and the footer's two-part layout at 360 wide need the owner's phone check.
+- **Why "Generation failed: We couldn't reach our writing service" (demo, 2026-11-18 16:20 IST):**
+  - That copy is only shown for a non-retryable AI error (`runner.ts` FAILURE_MESSAGE.provider).
+  - The worker log shows run `01a1ee44…` failing in the `generate` stage, after an `ai.failover` on `resume_generate` (the reason fields are redacted in the logs).
+  - **Not the daily cap:** a cap trip throws before any failover is logged.
+  - **Not an expired key:** Haiku calls (`resume_extract`) succeeded at 16:11 the same afternoon.
+  - Today `jd_extract` (Haiku, 12000 max tokens) also failed over three times (11:22–11:34) while `resume_extract` (Haiku, 8000) worked.
+  - **Most likely:** the demo's OpenRouter credit balance is too low for the larger requests. OpenRouter answers 402 ("more credits, or fewer max_tokens") when the balance can't cover `max_tokens`, and the adapter maps a 402 to a non-retryable `error`.
+  - **Unconfirmed:** reading the OpenRouter key from Secrets Manager to check the balance was refused in this session. **Owner: check credits at openrouter.ai.** Topping up should fix it with no deploy.
+  - **No server code changed.** A follow-up worth having: name 402 as `capped`-like in `toLlmError`, so the log and the run say "out of credit" rather than the generic line.
+
+## §235 — The rest of the app's resume-flow proposal: ready score, Build's keyword step, staged Continue (owner, 2026-11-18)
+- **Ready screen score** (`TailorReady` `ScoreRow`): before → after was already there. It now also says what the web's `ScoreSummaryCard` says:
+  - the band ("ATS score · Good match");
+  - "N of M key keywords";
+  - "Plan aimed for x" when the run fell more than a point short;
+  - one tip: the run's own next steps (`nextStepsLine`), else the key keywords still missing, else "All key keywords are in".
+  - Every number is the run's own. Tailor and Build share it.
+- **Build's step 2** (`BuildCompareScreen`) is now the web's "Choose what to add", built from the same pieces as Tailor's keyword step:
+  - the job & profile row (a tap views the job);
+  - the match card;
+  - Missing / Optional / All, with the profile's skills ticked and locked as "On your profile";
+  - "What the AI will write", shown open (it was a fold);
+  - the count footer: "Add N Keywords & Continue", or "Build resume" with none ticked;
+  - the (?) help sheet.
+  - The profile comparison prices no keyword, so rows show no impact and the card estimates no gain. It says "Added skills go on your profile too" instead.
+  - `KeywordChooser` now takes rows and a tick callback, so Tailor (`tailorTicks`) and Build share it.
+  - `keywordRowsOf` (shared) accepts any `{ keywords, plan? }`; this is a type widening only. The web typecheck is clean.
+- **Job step Continue** (`flow/ProgressButton.tsx`): the web's staged button. "Reading the job…" → "Analyzing…" → "Almost there…" at 0 / 1.5 / 5 s.
+  - The pill fills from the left toward 90% and never claims done. Under reduced motion it steps by stage.
+  - It takes the screen on when the read lands. A failure leaves the plain button. "Continue anyway" for a closed job is kept.
+- **Verified:**
+  - mobile typecheck, lint and the full suite pass: 228 suites, 1963 tests. New: `ResumeFlowParts.test.tsx`; `BuildCompareScreen` tests were rewritten.
+  - the web typecheck is clean.
+- **Not seen on a device.** Check the fill's speed on a real read, and the Build list at 360 wide.
+- **Seen in the browser (2026-11-18, Expo web preview on sample data, 375 × 812):** the whole Tailor path from a job (method → resume sheet → Choose Keywords → run → ready) works. Two fixes came from that look:
+  - "Recommended" sat on "Start from scratch" while the resume library was still loading. It now stays on Tailor until the library says there is no resume.
+  - The keyword list opened on an empty Missing tab when the job's keywords were all optional. It now opens on the first tab that has something to tick.
+  - The web preview can't keep a session across a full page reload: expo-sqlite's `.wasm` worker doesn't bundle on Metro web. That predates this branch.
+
+## §236 — The owner's phone pass on the resume flow: five trims (owner, 2026-11-19)
+- **Notifications ask** (`PushPrimerSheet`): the bell, the title, "Turn on" and "Not now". The explaining line and "You can change this any time in Profile › Notifications" are gone, and the sheet is shorter (330 at 390). This applies everywhere the ask appears, the "Did you apply?" moment included.
+- **Keyword step footer** (Tailor and Build): one button, "Add N keywords" ("Continue" or "Build resume" with none ticked). The count, "From M total" and the allowance line are gone. A red line still shows under the button when a start fails or the server would refuse the run.
+  - **Judgement call:** the "N of 3 generations left" line is no longer shown on this step. The spent state still turns the button into "See Pro plans".
+- **The green "About x/10 after this" card** is removed (`ProjectionBar` is deleted). The ATS card at the top still shows the estimate.
+- **Select all** is a tick at the right of the list's head, with no words ("3 to choose from" and "Select all" are gone). Its screen-reader label is "Select all".
+- **Reading-the-job button** (`ProgressButton`): while it works, a gradient ring (the bottom bar's violet → brand → deep indigo), a white pill inside, a light lavender fill (brand50 → brand100) and the label in brand ink. Idle, it stays the normal pill like every other footer.
+- **Verified:** mobile typecheck and lint are clean; the create, notifications and generations Jest suites pass (38 suites, 199 tests). **Not yet on the phone:** the owner's next look.
+
+## §237 — Ready screen: the ring's label fits, the cover letter replaces the score row (owner, 2026-11-19)
+- **Ring label:** the preview's score badge read "ATS score", which ran past the ring's edge on the owner's Android phone. It now reads "ATS" under the number. The screen reader still says "ATS score 67".
+- **Removed** from the ready screen (Tailor and Build): the green "ATS score · band, x → y, See what changed" row and the "Next: download it, then apply on …" note. The score stays on the preview's ring.
+- **Added:** a "Make a cover letter" tile (the same tile Build already had, renamed from "Cover letter for this job"). It opens cover-letter setup with the new resume.
+  - It shows when the run is for a NextKin job, as Build's rule already was. A pasted job description gets no tile.
+  - Build keeps "Practice the interview" beside it. **Ask:** should Build drop that tile too, to match?
+- **Judgement call:** "See what changed" (to Versions) is gone from this screen. Versions stay reachable from the resume (Edit → the resume page).
+- **Verified:** mobile typecheck and lint are clean; the generations suites pass, plus `ResumeFlowParts` (9 suites, 36 tests).
+
+## §238 — No method screen: the four ways live in "From" on the job step (owner, 2026-11-19)
+- **Removed:** the separate "How would you like to create your resume?" screen (`MethodScreen`, `/create/method`, its test). It asked again what "From" already asks. Routing is back to before §234:
+  - "Tailor" from a job page opens Choose Keywords with the default resume;
+  - Build goes by "From".
+- **"From" sheet** (`BuildSourceSheet`, now titled "How should we create it?"): the web's four ways, each with the web's own picture (`apps/web/public/illustrations/v2/{profile,build,zero,upload}.webp`, copied to `assets/illustrations/methods/`), bare, with no tile behind it:
+  - **Tailor "<resume>":** the two latest resumes;
+  - **Create from my profile:** says "Add a role to your profile first" when it has none;
+  - **Start from scratch with AI** (new): the pill reads "From Scratch with AI", and Continue opens Zero Resume for the job (`buildSourceStore.scratch`). A pasted job has no listing, so Zero gets no role from it.
+  - **Upload a resume:** reads the file as before.
+- **Not changed:** the pill keeps its small line icons, since the owner asked for the web pictures where the options are offered. Customize's no-resume card (no resume, no roles) is as it was.
+- **Verified:**
+  - mobile typecheck and lint are clean;
+  - the create suites pass (23 suites, 144 tests), with a new scratch test in `BuildJobScreens`.
+- **Not seen on the phone yet.**
+
+## §239 — Bare, larger plan icons; less air on Home; one Tailor row in "From" (owner, 2026-11-19)
+- **Brand icon tiles** (`IconTile` tone `brand` in `ui/kit/FlowKit.tsx`): the lavender disc is gone and the icon is larger (72% of the box, was 50%). The box keeps its size, so no row moves.
+  - It applies everywhere the flow kit draws a brand tile: AI plan rows, More options, the Job & resume row, profile/settings rows built on `FlowRow` (22 uses).
+  - The solid, success and neutral tiles keep their discs.
+- **Home:** the greeting sits 12 under the status bar instead of 24 (page top 16 → 8, header 8 → 4). The other tabs are unchanged.
+- **"How should we create it?":**
+  - one **Tailor my resume** row, naming the resume it will use ("Product Designer · or pick another"). With more than one resume, a tap opens **Which resume?** in the same sheet, listing every tailorable resume (newest first), not just two. With one resume, it picks it;
+  - the pictures are 60 at 390 (were 44);
+  - the sheet is 560 tall (was the 320 picker height), through a new `height` prop on `OptionSheet`.
+- **Verified:**
+  - mobile typecheck and lint are clean;
+  - the full mobile suite passes: 227 suites, 1961 tests. The `BuildJobScreens` test now walks Tailor → Which resume?.
+- **Not seen on the phone yet.**
+
+## §240 — Sheets hug their content; a cover letter for every finished resume; the wash only on Home (owner, 2026-11-19)
+- **Sheets** (`ui/Sheet/sheetLayout.ts` `resolveSheetHeight`): a sheet now takes its measured content height, shorter or taller. The design height is only the first frame before measurement; until now it was a floor that left an empty white band under the last row of most sheets (the owner saw it on "How should we create it?" and More options).
+  - `fill` sheets (Filters) and the window clamp are unchanged.
+  - The first-frame heights of the From sheet (560 → 420) and the More options / Add a result sheets (460 → 380) were lowered, so they open close to their final size.
+  - **Watch:** this applies to all 25 sheets. One whose body relies on `flex: 1` without `fill` would now shrink to its content; none showed it in the suite. Look at a few sheets on the phone.
+- **Cover letter:** "Make a cover letter" now ends every finished Tailor and Build resume, a pasted job description included. Setup takes the resume and finds the job from it if there is one. (§237's rule hid it for pasted jobs, which is what the owner hit.)
+- **Wash:** the lavender gradient is gone from the flow frame (every flow step and onboarding question), the job page and the JD page. `PageHero` no longer draws it by default.
+  - **Kept:** Home, and the Welcome splash, where the wash is the animation. The owner can say if the splash should lose it too.
+- **Verified:** mobile typecheck and lint are clean; the full suite passes (227 suites, 1961 tests).
+
+## §241 — Grey frames behind cards, fixed for good (owner, 2026-11-19)
+- **What the owner saw:** on Jobs (Today's picks, All jobs, the Discover pill) and Home (create grid, Top Job Matches), cards showed a thick grey rounded frame around a pale inset while the screen faded in. This is the §209 bug again.
+- **Why it came back:** the §209 fix (a4e981e) only ever landed on `claude/app-ui-ux-redesign-1a1793`, which was never merged; this branch was cut from main without it.
+- **Fix:**
+  - The §209 commit is ported (`TabSceneFade` composites offscreen while fading).
+  - The rule is inverted: every shadow token is a CSS `boxShadow` on Android, which fades with its view. Only `ELEVATION_SHADOWS` (fab, sheet, dialog, stickyBarUp, toast) keep `elevation`. Under §209 the list named the CSS cards instead, so any new card token or the segment pill still got elevation.
+  - Newly CSS on Android: `segmentPill` (the Discover/Saved/Applied pill, the resume view toggle), `knob`, `sliderThumb`, `composer`, `composerSend`. Each is drawn before the content that sits on it, so tree order stacks them without elevation.
+- **Guard:** `__tests__/theme/androidShadowGuard.test.js` runs the Android branch. It fails if the elevation list grows without review, if any other token has elevation, or if any file in `src/` or `app/` writes `elevation:` by hand.
+- **Verified:** mobile tsc, eslint, full Jest (228 suites, 1964 tests).
+- **Not seen yet:** on the phone. Watch CSS shadow cost on the long Jobs list on lower-end Android.
+
+## §242 — The ready screen's cover-letter tile uses Home's Cover Letter drawing (owner, 2026-11-19)
+- "Make a cover letter" (Tailor and Build ready screens) now draws `assets/icons/quick-start/cover-letter.svg`, the open envelope on Home's create grid, at 30 wide in its own 41 : 42.9 ratio. It was the create sheet's small glyph (`icons/create/cover-letter.svg`).
+- **Then switched too (owner, same day):** the create sheet's "Write a cover letter" row (52 wide) and History's cover-letter rows (`historyArt.ts`) draw the same envelope. `icons/create/cover-letter.svg` is now unused; kept on disk.
+- **Verified:** tsc, eslint, generations Jest (34). Not seen on the phone.
+
+## §243 — Selected text vanished under a black block (owner, 2026-11-19)
+- **What the owner saw:** selecting text in the job field on Android painted a solid near-black box over the words.
+- **Cause:** Android draws `selectionColor` as the highlight at full strength, and `TextField`, `SearchField`, `AuthField` and the assistant composer all passed `colors.textPrimary` (ink).
+- **Fix:** one hook, `useSelectionColors` (`ui/TextField`), spread on every input. On Android the highlight is a new `textSelection` token (brand at 24%, 35% in the unused dark map), with brand handles (`selectionHandleColor`) and an ink caret. On iOS `selectionColor` is brand, since iOS fades the highlight itself and also tints the caret with it.
+- **Guard:** `__tests__/ui/selectionColors.test.js` checks the Android branch and fails if any file in `src/` or `app/` sets `selectionColor`, `selectionHandleColor` or `cursorColor` by hand.
+- **Verified:** tsc, eslint, full mobile Jest (229 suites, 1966 tests). Not seen on the phone.
+- **Note:** the owner's screenshot of this step showed the lavender wash and no "1 of 3 · Job & Resume" line, neither of which this branch draws, so the phone was likely running an older bundle.

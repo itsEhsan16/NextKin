@@ -5,7 +5,7 @@ import { a11yButton, hitSlopFor, maxFontScale, useReducedMotion } from '@/lib';
 import { motion, useTheme } from '@/theme';
 import { Icon } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
-import { useFieldChrome } from '@/ui/TextField';
+import { useFieldChrome, useSelectionColors } from '@/ui/TextField';
 
 export type SearchFieldProps = {
   value: string;
@@ -33,6 +33,7 @@ export function SearchField({
   style,
 }: SearchFieldProps) {
   const { colors, radii, sizes, spacing, typography, s } = useTheme();
+  const selection = useSelectionColors();
   const reduced = useReducedMotion();
   const chrome = useFieldChrome(undefined, { rest: colors.borderSoft });
   const clearBox = sizes.iconSm;
@@ -64,8 +65,7 @@ export function SearchField({
         onBlur={chrome.onBlur}
         placeholder={placeholder}
         placeholderTextColor={colors.textSecondary}
-        selectionColor={colors.textPrimary}
-        cursorColor={colors.textPrimary}
+        {...selection}
         returnKeyType="search"
         autoCorrect={false}
         maxFontSizeMultiplier={maxFontScale.body}

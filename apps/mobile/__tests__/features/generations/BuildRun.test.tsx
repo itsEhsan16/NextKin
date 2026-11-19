@@ -125,10 +125,10 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
 
     expect(screen.getByLabelText('Step 3 of 3')).toBeOnTheScreen();
     expect(screen.getByText('Building for CRED')).toBeOnTheScreen();
+    expect(screen.getByText('Matching your experience to the job.')).toBeOnTheScreen();
     expect(
-      screen.getByText('Matching your experience to the job.'),
+      screen.getByText('Nothing is invented — only your profile and answers.'),
     ).toBeOnTheScreen();
-    expect(screen.getByText('Nothing is invented — only your profile and answers.')).toBeOnTheScreen();
     expect(screen.getByLabelText('Read the job description, done')).toBeOnTheScreen();
     // The matching is a step of its own, seen working before the writing starts.
     expect(screen.getByLabelText('Matched your experience, in progress')).toBeOnTheScreen();
@@ -159,19 +159,15 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     expect(screen.queryByText(/^Up from/)).toBeNull();
     expect(screen.getByText('SAVED TO RESUMES')).toBeOnTheScreen();
 
-    await act(async () => fireEvent.press(screen.getByLabelText('Cover letter for this job')));
+    await act(async () => fireEvent.press(screen.getByLabelText('Make a cover letter')));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/create/cover-letter',
       params: { resumeId },
     });
     await act(async () => fireEvent.press(screen.getByLabelText('Practice the interview')));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/interview/new', params: { resumeId } });
-    // The list moved to the Versions page: the finished screen keeps one way there (§146.5).
-    await act(async () => fireEvent.press(screen.getByLabelText('See what changed')));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/resumes/[id]/versions',
-      params: { id: resumeId },
-    });
+    // No score row any more (owner, §237): the versions stay one tap away from the resume itself.
+    expect(screen.queryByLabelText('See what changed')).toBeNull();
 
     // BUILD 07: Download PDF raises the app's download sheet; its PDF row hands the file over.
     mockRenderPdf.mockResolvedValue({ uri: 'file:///cache/built.pdf', name: 'built.pdf' });
@@ -201,12 +197,12 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     });
   });
 
-  it('builds for a pasted job without a letter tile, an Apply button or a job to return to', async () => {
+  it('builds for a pasted job with a letter tile but no Apply button or job to return to (§240)', async () => {
     const { id } = await startBuild({ source: 'paste', text: PASTED });
     await renderGeneration(id);
     await finish();
 
-    expect(screen.queryByLabelText('Cover letter for this job')).toBeNull();
+    expect(screen.getByLabelText('Make a cover letter')).toBeOnTheScreen();
     expect(screen.getByLabelText('Practice the interview')).toBeOnTheScreen();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Close')));

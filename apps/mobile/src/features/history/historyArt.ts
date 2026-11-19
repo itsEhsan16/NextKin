@@ -2,7 +2,7 @@ import type { ActivityKind } from '@/data/models';
 import { PROFILE_ROW_ART } from '@/features/profile/profileRowArt';
 import type { ListRowArt } from '@/ui/ListRow';
 
-import CoverLetterIcon from '../../../assets/icons/create/cover-letter.svg';
+import CoverLetterIcon from '../../../assets/icons/quick-start/cover-letter.svg';
 import AccountIcon from '../../../assets/icons/history/account.svg';
 import BillingIcon from '../../../assets/icons/history/billing.svg';
 import BookmarkIcon from '../../../assets/icons/history/bookmark.svg';
@@ -33,8 +33,8 @@ export const ACTIVITY_TILE_ART: Record<ActivityKind, ActivityTileArt> = {
     art: { Icon: PaperPlaneIcon, w: 33.9993, h: 25.2462 },
     width: 34,
   },
-  // Not drawn on HISTORY 01: the create sheet's letter and Home's interview-prep drawings, sized
+  // Not drawn on HISTORY 01: Home's Cover Letter envelope (§242) and Home's interview-prep drawings, sized
   // to sit in the tile like the others.
-  cover_letter: { kind: 'icon', art: { Icon: CoverLetterIcon, w: 39, h: 38.4613 }, width: 28 },
+  cover_letter: { kind: 'icon', art: { Icon: CoverLetterIcon, w: 41, h: 42.8996 }, width: 28 },
   interview: { kind: 'icon', art: { Icon: InterviewIcon, w: 44, h: 44.1229 }, width: 28 },
 };

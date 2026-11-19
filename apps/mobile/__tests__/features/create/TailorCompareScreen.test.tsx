@@ -58,6 +58,10 @@ async function renderCustomize(
 const settle = (ms = 3000) => act(() => jest.advanceTimersByTimeAsync(ms));
 const press = (label: string | RegExp) =>
   act(async () => fireEvent.press(screen.getByLabelText(label)));
+/** The footer's one button: "Continue", or "Add N Keyword(s) & Continue" once any are ticked. */
+const CTA = /^(Continue|Add \d+ keywords?)$/;
+/** The All tab lists every keyword, the resume's own ones ticked and locked. */
+const showAll = () => act(async () => fireEvent.press(screen.getByText(/^All \(/)));
 
 describe('TailorCompareScreen — the one Customize screen (toreview §114)', () => {
   beforeEach(() => {
@@ -76,23 +80,41 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     jest.useRealTimers();
   });
 
-  it('scores out of 10 with its band and shows matched and tap-to-add keywords', async () => {
+  it('scores out of 10 with its band and lists the keywords to tick (§234)', async () => {
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     expect(screen.getByLabelText('Comparing your resume with this job')).toBeOnTheScreen();
     await settle();
 
-    expect(screen.getByLabelText('Step 2 of 3')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Match 8.3 out of 10')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Step 2 of 3, Choose Keywords')).toBeOnTheScreen();
+    expect(screen.getByText('Choose keywords to add')).toBeOnTheScreen();
+    expect(screen.getByLabelText('ATS score 8.3 out of 10')).toBeOnTheScreen();
     expect(screen.getByText('Senior Product Designer · Stripe')).toBeOnTheScreen();
-    // The AI's plan is already picked (§173).
+    expect(screen.getByText(/^Missing \(/)).toBeOnTheScreen();
+    // The AI's changes are already picked (§173).
     expect(screen.getByText('Summary aimed at Stripe')).toBeOnTheScreen();
     expect(screen.getByLabelText('Summary aimed at Stripe, on')).toBeOnTheScreen();
-    // On the resume: ticked and locked. Missing: unticked until the user adds it (D-14).
+    // On the resume: ticked and locked (All). Missing: unticked until the user adds it (D-25).
+    await showAll();
     expect(screen.getByRole('checkbox', { name: 'Figma' })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).not.toBeChecked();
-    expect(
-      screen.getByText('Tap the ones to add. What you accept goes on your resume.'),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('Tick the keywords you have to see what they add.')).toBeOnTheScreen();
+  });
+
+  it('the card and the footer count what a tick adds', async () => {
+    await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
+    await settle();
+    await showAll();
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
+    expect(screen.getByLabelText('Add 1 keyword')).toBeOnTheScreen();
+    // Select all is a tick on the right of the list, with no words beside it (§236).
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
+    await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Select all' })));
+    expect(screen.getByRole('checkbox', { name: 'Fintech' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Select all' })).toBeChecked();
+    expect(screen.queryByText(/to choose from/)).toBeNull();
+    expect(screen.queryByText(/keywords? selected/)).toBeNull();
+    expect(screen.getByText('If you add 1 selected keyword')).toBeOnTheScreen();
+    expect(screen.getByText(/points \(est\.\)$/)).toBeOnTheScreen();
   });
 
   it('starts the run tailorRunInput builds from a tapped chip and the default options', async () => {
@@ -100,11 +122,11 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
 
+    await showAll();
     await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).toBeChecked();
-    expect(screen.getByText('1 of 3 generations left this month')).toBeOnTheScreen();
 
-    await press('Create my resume');
+    await press(CTA);
     await settle();
 
     expect(startSpy).toHaveBeenCalledWith(
@@ -136,7 +158,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
 
     await press('Skills ordered for this job, on');
     expect(screen.getByLabelText('Skills ordered for this job, off')).toBeOnTheScreen();
-    await press('Create my resume');
+    await press(CTA);
     await settle();
     expect(startSpy.mock.calls[0]?.[0]?.tailor?.fixes).not.toContain('skills');
   });
@@ -180,7 +202,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await press('Add to bullet');
     await settle();
     expect(screen.getAllByLabelText('Add a result to a bullet, on').length).toBe(1);
-    await press('Create my resume');
+    await press(CTA);
     await settle();
     const figures = startSpy.mock.calls[0]?.[0]?.tailor?.figures;
     expect(figures?.[0]?.text).toMatch(/saving 2 hours of manual work a week/);
@@ -197,7 +219,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await act(async () => fireEvent.press(screen.getByLabelText('Projects')));
     await press('Done');
     await settle(500);
-    await press('Create my resume');
+    await press(CTA);
     await settle();
 
     const input = startSpy.mock.calls[0]?.[0];
@@ -209,9 +231,10 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     const startSpy = jest.spyOn(repos.generations, 'start');
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
+    await showAll();
     await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
     expect(screen.queryByText(/Used in/)).toBeNull();
-    await press('Create my resume');
+    await press(CTA);
     await settle();
     const tailor = startSpy.mock.calls[0]?.[0]?.tailor;
     expect(tailor?.added).toEqual(['Fintech']);
@@ -230,13 +253,8 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await settle();
 
     expect(screen.getByText(/^Senior Product Designer/)).toBeOnTheScreen();
-    await press('View the job');
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/create/jd',
-      params: { draftId: draft.id },
-    });
 
-    await press('Create my resume');
+    await press(CTA);
     await settle();
     const input = startSpy.mock.calls[0]?.[0];
     expect(input?.jdId).toBe(draft.id);
@@ -249,7 +267,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     await settle();
     await settle();
     await settle();
-    expect(screen.getByText('Product Designer')).toBeOnTheScreen();
+    expect(screen.getByText('Using Product Designer')).toBeOnTheScreen();
     expect(screen.queryByText('Which resume should we tailor?')).toBeNull();
   });
 
@@ -273,7 +291,7 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
     );
     await settle();
 
-    expect(screen.queryByLabelText('Create my resume')).toBeNull();
+    expect(screen.queryByLabelText(CTA)).toBeNull();
     await press('See Pro plans');
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/upgrade',
@@ -284,11 +302,13 @@ describe('TailorCompareScreen — the one Customize screen (toreview §114)', ()
   it('keeps the choices for the same job and resume across a remount', async () => {
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
+    await showAll();
     await act(async () => fireEvent.press(screen.getByRole('checkbox', { name: 'Fintech' })));
     await cleanup();
 
     await renderCustomize({ jobId: 'job_stripe', resumeId: 'res_base' });
     await settle();
+    await showAll();
     expect(screen.getByRole('checkbox', { name: 'Fintech' })).toBeChecked();
   });
 

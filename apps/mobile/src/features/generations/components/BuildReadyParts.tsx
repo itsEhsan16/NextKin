@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
-import CoverLetterIcon from '../../../../assets/icons/create/cover-letter.svg';
+import CoverLetterIcon from '../../../../assets/icons/quick-start/cover-letter.svg';
 import GoodSparkle from '../../../../assets/icons/jobs/match-sparkle-good.svg';
 import StrongSparkle from '../../../../assets/icons/jobs/match-sparkle-strong.svg';
 import InterviewIcon from '../../../../assets/icons/shortcuts/interview-prep.svg';
@@ -29,8 +29,9 @@ const TILE_PAD_Y = 11 / 0.75;
 const TILE_GAP = 10 / 0.75;
 const TILE_RADIUS = 14 / 0.75;
 const TILE_BORDER = 0.75 / 0.75;
+// Home's own Cover Letter drawing (QuickStartCard), 41 x 42.8996, at the tile's 30 wide (§242).
 const COVER_W = 30 / 0.75;
-const COVER_H = 29.5856 / 0.75;
+const COVER_H = (30 * 42.8996) / 41 / 0.75;
 const INTERVIEW_W = 27.9228 / 0.75;
 const INTERVIEW_H = 28.0001 / 0.75;
 
@@ -95,7 +96,7 @@ function NextTile({ label, hint, icon, onPress }: TileProps) {
 export type BuildNextTilesProps = {
   /** Absent for a job pasted or uploaded from Home: a letter needs a NextKin job. */
   onCoverLetter?: () => void;
-  onInterview: () => void;
+  onInterview?: () => void;
 };
 
 /**
@@ -109,18 +110,20 @@ export function BuildNextTiles({ onCoverLetter, onInterview }: BuildNextTilesPro
     <View style={styles.tiles}>
       {onCoverLetter ? (
         <NextTile
-          label="Cover letter for this job"
+          label="Make a cover letter"
           hint="Sets up a cover letter from this resume"
           icon={<CoverLetterIcon width={s(COVER_W)} height={s(COVER_H)} />}
           onPress={onCoverLetter}
         />
       ) : null}
-      <NextTile
-        label="Practice the interview"
-        hint="Sets up interview questions from this resume"
-        icon={<InterviewIcon width={s(INTERVIEW_W)} height={s(INTERVIEW_H)} />}
-        onPress={onInterview}
-      />
+      {onInterview ? (
+        <NextTile
+          label="Practice the interview"
+          hint="Sets up interview questions from this resume"
+          icon={<InterviewIcon width={s(INTERVIEW_W)} height={s(INTERVIEW_H)} />}
+          onPress={onInterview}
+        />
+      ) : null}
     </View>
   );
 }

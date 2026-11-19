@@ -173,7 +173,7 @@ export function HomeScreen() {
       bleedTop
       scrollRef={scrollRef}
       contentContainerStyle={{
-        paddingTop: spacing.headerTop,
+        paddingTop: spacing.headerTopPushed,
         paddingHorizontal: spacing.gutter,
         gap: s(SECTION_GAP),
       }}

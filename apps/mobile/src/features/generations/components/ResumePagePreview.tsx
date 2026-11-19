@@ -154,7 +154,8 @@ export function ResumePagePreview({ content, name, score }: ResumePagePreviewPro
             <ScoreRing
               score={score}
               valueText={String(Math.round(score))}
-              label="ATS score"
+              // "ATS score" ran past the ring's edge on the phone (owner, 2026-11-19, §237).
+              label="ATS"
               size={s(RING)}
               strokeWidth={s(RING_STROKE)}
               ringColor={atsScoreColor(score)}

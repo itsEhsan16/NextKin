@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import type { SvgProps } from 'react-native-svg';
 
 import AtsCheckIcon from '../../../assets/icons/create/ats-check.svg';
-import CoverLetterIcon from '../../../assets/icons/create/cover-letter.svg';
+import CoverLetterIcon from '../../../assets/icons/quick-start/cover-letter.svg';
 import LinkedInIcon from '../../../assets/icons/create/linkedin.svg';
 import NewResumeIcon from '../../../assets/icons/create/new-resume.svg';
 import ScratchIcon from '../../../assets/icons/create/scratch.svg';
@@ -61,7 +61,7 @@ export const CREATE_ROOT_ROWS: readonly CreateRow[] = [
   },
   {
     key: 'cover-letter',
-    art: { Icon: CoverLetterIcon, w: 52, h: 51.2817 },
+    art: { Icon: CoverLetterIcon, w: 52, h: 54.4092 },
     label: 'Write a cover letter',
     description: 'From the resume you tailored for a job',
     ai: true,

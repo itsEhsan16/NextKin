@@ -37,12 +37,12 @@ export type SheetHeightInput = {
 };
 
 /**
- * The design height is a FLOOR, not a fixed size.
+ * A sheet hugs its content (owner, 2026-11-19, toreview §240): the design height is only the
+ * first frame, before the content column has been measured. It used to be a floor, which left a
+ * band of empty white under the last row of most sheets.
  *
- * Figma artboards are 520pt wide; on a narrower phone the sheet's text wraps and the row stack
- * outgrows the scaled artboard height. Because the sheet clips (overflow: 'hidden'), a fixed
- * height would silently cut the last row off — and a clipped row is untappable on Android. So
- * the sheet takes whichever is taller, and never exceeds the screen below the top inset.
+ * Content taller than the design still wins (a clipped row is untappable on Android), and the
+ * sheet never exceeds the screen below the top inset. `fill` sheets skip measurement entirely.
  */
 export function resolveSheetHeight({
   designHeight,
@@ -52,6 +52,6 @@ export function resolveSheetHeight({
   windowHeight,
 }: SheetHeightInput): number {
   const maxHeight = windowHeight - insetTop;
-  const wanted = Math.max(designHeight, contentHeight) + insetBottom;
+  const wanted = (contentHeight > 0 ? contentHeight : designHeight) + insetBottom;
   return Math.min(maxHeight, wanted);
 }

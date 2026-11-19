@@ -3,8 +3,8 @@ import { Redirect, useLocalSearchParams } from 'expo-router';
 import { TailorCompareScreen } from '@/features/create';
 
 /**
- * Customize, for a listing (`jobId`) or a read JD (`jdId`). With neither there is no job yet, so
- * this is the one start, BUILD 01 (toreview §145.1).
+ * "2 of 3 · Choose Keywords", for a listing (`jobId`) or a read JD (`jdId`). With no job at all
+ * this is the one start, BUILD 01 (toreview §145.1), whose "From" picks how to make the resume.
  */
 export default function TailorRoute() {
   const { jobId, jdId, resumeId } = useLocalSearchParams<{
