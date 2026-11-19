@@ -3,6 +3,7 @@ import { AccessibilityInfo, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { Image } from 'expo-image';
+import { usePreventRemove } from 'expo-router';
 
 import { ZERO_YEARS, ZERO_YEARS_LABEL, type ZeroYears } from '@/data/models';
 import { useCurrentUser, useJob, useStartGeneration, useSubscription } from '@/data/queries';
@@ -123,6 +124,13 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
     if (step === 0) actions.goBack();
     else setStep(step - 1);
   };
+  // Android's back (and the iOS edge swipe) past the first question goes back one question, as
+  // the header's chevron does, instead of leaving the whole flow and its answers. Off while a run
+  // starts: its success replaces this screen with the run, and that removal must go through.
+  usePreventRemove(step > 0 && !start.isPending && !start.isSuccess, () => {
+    setRefused(false);
+    setStep((current) => Math.max(0, current - 1));
+  });
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <OnboardingFrame

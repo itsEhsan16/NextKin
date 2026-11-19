@@ -10,3 +10,4 @@ export { useRevealStagger, type StaggerStep } from './useRevealStagger';
 export { useSelectionProgress } from './useSelectionProgress';
 export { useShake } from './useShake';
 export { useSlidingPill } from './useSlidingPill';
+export { useScreenVisible } from './useScreenVisible';

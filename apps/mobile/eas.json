@@ -37,7 +37,8 @@
       "env": {
         "NEXTKIN_REQUIRE_BACKEND": "true",
         "EXPO_PUBLIC_APP_ENV": "production",
-        "EXPO_PUBLIC_DATA_SOURCE": "http"
+        "EXPO_PUBLIC_DATA_SOURCE": "http",
+        "EXPO_PUBLIC_WEB_URL": "https://nextkin.ai"
       }
     }
   },

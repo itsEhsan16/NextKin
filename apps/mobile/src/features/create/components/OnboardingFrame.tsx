@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { a11yHeader } from '@/lib';
-import { scaledSheet } from '@/theme';
+import { scaledSheet, useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
@@ -51,13 +52,21 @@ export function OnboardingFrame({
   children,
 }: OnboardingFrameProps) {
   const styles = useStyles();
+  const { u } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
     <Screen
       keyboard
       scroll
       edges={['top', 'bottom']}
       padded={false}
-      footer={footer ? <View style={styles.footer}>{footer}</View> : undefined}
+      // The footer owns the bottom safe-area inset (`Screen` stops padding its root once there is
+      // one), or the buttons sit under the Android navigation bar.
+      footer={
+        footer ? (
+          <View style={[styles.footer, { paddingBottom: u(8) + insets.bottom }]}>{footer}</View>
+        ) : undefined
+      }
     >
       {/* No lavender wash: it belongs to Home alone (owner, 2026-11-19, §240). */}
       <View style={styles.body}>

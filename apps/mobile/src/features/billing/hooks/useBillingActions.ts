@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { openExternalUrl, WEB_URL } from '@/lib';
 
+import { sellsInApp } from '../storePolicy';
 import { BILLING_PATH } from '../upgradeCopy';
 
 /**
@@ -20,9 +21,15 @@ export function useBillingActions() {
        * Resolves 'done' or 'unavailable' — the caller shows the fallback line rather than leaving
        * a press that did nothing look like a broken button.
        */
-      manageOnWeb: () => openExternalUrl(`${WEB_URL}${BILLING_PATH}`),
+      manageOnWeb: () =>
+        // Android never leaves for a billing page (Play Payments policy, storePolicy.ts). The
+        // screen draws no button for it there; this is the backstop if one ever slips in.
+        sellsInApp()
+          ? openExternalUrl(`${WEB_URL}${BILLING_PATH}`)
+          : Promise.resolve('unavailable' as const),
       /** The backend's hosted checkout (P12-06), in the browser: nothing is sold in the app (D-18). */
-      openCheckout: (url: string) => openExternalUrl(url),
+      openCheckout: (url: string) =>
+        sellsInApp() ? openExternalUrl(url) : Promise.resolve('unavailable' as const),
     }),
     [router],
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, type ComponentProps } from 'react';
+import { useCallback, useEffect, useRef, type ComponentProps } from 'react';
 import {
   Pressable as RNPressable,
   StyleSheet,
@@ -89,7 +89,12 @@ export function Pressable({
         ? callerOpacity
         : 1;
   const shownOpacity = useSharedValue(restOpacity);
+  // Eases only on a change: on mount the value is already where it rests, and starting a timing
+  // to the same number in every pressable of a list row was work for nothing (§244).
+  const restedAt = useRef(restOpacity);
   useEffect(() => {
+    if (restedAt.current === restOpacity) return;
+    restedAt.current = restOpacity;
     shownOpacity.set(reduced ? restOpacity : withTiming(restOpacity, motion.timings.fast));
   }, [motion.timings.fast, reduced, restOpacity, shownOpacity]);
 

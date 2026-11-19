@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { AccessibilityInfo, View, type TextInputInstance } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   backendAuth,
@@ -29,6 +30,7 @@ import { AuthFooterLink } from '../components/AuthFooterLink';
 import { AuthLockup } from '../components/AuthLockup';
 import { CodeStep } from '../components/CodeStep';
 import { GoogleButton } from '../components/GoogleButton';
+import { LegalConsentLine } from '../components/LegalConsentLine';
 import { useOnboardingStore } from '../onboardingStore';
 import { useFirstRunStore } from '../firstRunStore';
 import { useSessionStore } from '../sessionStore';
@@ -170,6 +172,7 @@ export function SignUpScreen() {
   // 520 board, which is barely half of what this one is drawn at.
   const backGlyph = s(board(SIGN_UP.backGlyph));
   const backInset = (sizes.iconButton - backGlyph) / 2;
+  const insets = useSafeAreaInsets();
 
   return (
     <Screen
@@ -183,7 +186,8 @@ export function SignUpScreen() {
         style={{
           position: 'absolute',
           left: s(board(SIGN_UP.backX)) - backInset,
-          top: s(board(SIGN_UP.backY)) - backInset,
+          // Below the status bar on a phone whose bar is taller than the board's.
+          top: Math.max(s(board(SIGN_UP.backY)) - backInset, insets.top),
           zIndex: 1,
         }}
       >
@@ -287,6 +291,9 @@ export function SignUpScreen() {
               {refused && !validation.ok ? FIX_FIRST : serverError}
             </Text>
           ) : null}
+
+          {/* The Terms and Privacy Policy, readable before the account exists (Play policy). */}
+          <LegalConsentLine style={{ marginTop: s(board(12)) }} />
 
           <AuthDivider margin={dividerMargin} gap={SIGN_UP.fieldGap} hairline={SIGN_UP.hairline} />
 

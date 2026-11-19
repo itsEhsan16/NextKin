@@ -10,6 +10,7 @@ import {
   useUpdateResumeSection,
 } from '@/data/queries';
 import { useTheme } from '@/theme';
+import { useUnsavedGuard } from '@/navigation/useUnsavedGuard';
 import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -61,7 +62,6 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
   /** Fields the reader has left. An error on the first keystroke reads as a telling-off. */
   const [touched, setTouched] = useState<Record<string, true>>({});
   const [refused, setRefused] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const loaded = content.data;
   const seed = loaded && section ? draftFor(loaded, section) : undefined;
@@ -90,6 +90,9 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
   const dirty = draft != null && seed != null && !draftsEqual(draft, seed);
   const valid = check?.ok === true;
   const pending = saveSection.isPending || saveLetter.isPending;
+  // Every way off the page asks while there are edits: the chevron, Android's back and the iOS
+  // edge swipe. Not while a save is in flight, whose success leaves the page itself.
+  const guard = useUnsavedGuard(dirty && !pending);
   const failed = saveSection.isError || saveLetter.isError;
 
   // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
@@ -101,16 +104,11 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
     if (failed && !was) AccessibilityInfo.announceForAccessibility(SAVE_FAILED);
   }, [failed]);
 
-  /**
-   * The one way off this page. Android's hardware back is not intercepted here: `BackHandler` is
-   * owned by `Sheet` alone in this codebase, and the discard sheet already claims it while it is
-   * open, so adding a second subscription on the screen would fight it for the same press. The
-   * header chevron is the affordance that asks the question.
-   */
+  /** The header chevron. Hardware back and the swipe reach the same question through the guard. */
   const requestBack = useCallback(() => {
-    if (dirty) setConfirmOpen(true);
+    if (dirty) guard.ask(() => router.back());
     else router.back();
-  }, [dirty, router]);
+  }, [dirty, guard, router]);
 
   const onSaved = useCallback(() => {
     // A document that has never been scored has no score to move, so the toast must not claim one.
@@ -152,18 +150,15 @@ export function SectionEditorScreen({ id, section }: SectionEditorScreenProps) {
 
       {/* A sibling of the page, never a child of its scroller. */}
       <ConfirmSheet
-        open={confirmOpen}
+        open={guard.open}
         title="Discard changes?"
         message={DISCARD}
         art={<ConfirmArt kind="discard" />}
         artGap={0}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
-        onConfirm={() => {
-          setConfirmOpen(false);
-          router.back();
-        }}
-        onCancel={() => setConfirmOpen(false)}
+        onConfirm={guard.confirm}
+        onCancel={guard.cancel}
       />
     </View>
   );

@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import PlanMarkIcon from '../../../../assets/icons/profile/plan-mark.svg';
 import { SUBSCRIPTION_PLAN_LABEL, type Subscription } from '@/data/models';
+import { upgradeLinkLabel } from '@/features/billing/storePolicy';
 import { a11yButton } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
@@ -66,7 +67,7 @@ export function PlanCard({ subscription, onUpgrade }: PlanCardProps) {
 
         {subscription.plan === 'free' ? (
           <View style={[styles.upgrade, { gap: spacing[1] + 2 }]}>
-            <Text variant="segmentActive">Upgrade</Text>
+            <Text variant="segmentActive">{upgradeLinkLabel()}</Text>
             <Icon name="ChevronRight" size="xs" color={colors.textPrimary} />
           </View>
         ) : null}

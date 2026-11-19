@@ -39,6 +39,8 @@ export function ChoiceChip({
       feedback="scale"
       disabled={locked}
       dimDisabled={false}
+      // 40 tall as drawn; the slop takes the target to 48 without moving the wrap.
+      hitSlop={{ top: 4, bottom: 4 }}
       onPress={onPress}
       style={{
         flexDirection: 'row',

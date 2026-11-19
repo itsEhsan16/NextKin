@@ -66,6 +66,13 @@ export function ResumeMenuHost({ surface = 'tabs' }: ResumeMenuHostProps) {
     <Sheet
       open={open}
       onClose={closeMenu}
+      // Back from rename or the delete question returns to the actions, as their Cancel does.
+      onBackStep={() => {
+        if (step === 'actions') return false;
+        if (step === 'rename') cancelRename();
+        else cancelDelete();
+        return true;
+      }}
       // The confirm and rename steps are much shorter; changing the floor morphs the sheet height
       // on the UI thread, the same move as the create sheet's 600 → 555.
       height={step === 'actions' ? sizes.sheetResumeMenuHeight : sizes.sheetPickerHeight}

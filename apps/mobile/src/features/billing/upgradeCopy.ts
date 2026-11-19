@@ -283,6 +283,9 @@ export function renewalLine(renewsAt?: string, now: Date = new Date()): string |
   return date ? `Renews on ${date}` : undefined;
 }
 
+/** The Android Free hero's line when no limit sent the reader here (storePolicy.ts). */
+export const STORE_FREE_CAPTION = 'What Free includes, and what Pro adds.';
+
 export const PLANS_ERROR_TITLE = "Couldn't load the plans";
 export const PLANS_ERROR_MESSAGE = 'Check your connection and try again.';
 

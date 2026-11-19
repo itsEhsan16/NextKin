@@ -89,7 +89,6 @@ export default function RootLayout() {
           <Stack.Screen name="assistant" />
           <Stack.Screen name="support/help" />
           <Stack.Screen name="support/contact" />
-          <Stack.Screen name="legal/[doc]" />
           <Stack.Screen name="account/email" />
           <Stack.Screen name="account/export" />
           <Stack.Screen name="profile/index" />
@@ -119,6 +118,13 @@ export default function RootLayout() {
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
+
+        {/*
+          Readable signed in or out: sign-up links to the Terms and the Privacy Policy before an
+          account exists (Play policy). After (auth), never before it, so a signed-out launch still
+          falls back to (auth) and not to a legal page.
+        */}
+        <Stack.Screen name="legal/[doc]" />
 
         {/* Keep last, for the fallback ordering explained above. */}
         <Stack.Protected guard={__DEV__}>

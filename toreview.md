@@ -17935,3 +17935,77 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Guard:** `__tests__/ui/selectionColors.test.js` checks the Android branch and fails if any file in `src/` or `app/` sets `selectionColor`, `selectionHandleColor` or `cursorColor` by hand.
 - **Verified:** tsc, eslint, full mobile Jest (229 suites, 1966 tests). Not seen on the phone.
 - **Note:** the owner's screenshot of this step showed the lavender wash and no "1 of 3 · Job & Resume" line, neither of which this branch draws, so the phone was likely running an older bundle.
+
+## §244 — Play Store readiness, phones of every size, smoothness on low-end Android (owner, 2026-11-20)
+
+An audit of `apps/mobile` for Google Play, then the fixes. Owner decisions: hide buying on Android for v1, raise the body text cap to 1.3x, and keep the look exactly (no shadow or shimmer changes).
+
+**Play blockers, fixed in code**
+- **Buying on Android.** Play's Payments policy bars a web checkout, and any link to one, from an Android app. `features/billing/storePolicy.ts` (`sellsInApp()`) gates it:
+  - On Android the plan screen shows the limit, the usage and Free vs Pro, with "Pro can't be bought in the Android app yet" and a Done button. Pro readers see "Your plan is managed outside this app". There is no price button, no checkout, no web link and no "nextkin.ai" text.
+  - The "Upgrade" links read "See plans" on Android.
+  - `useBillingActions` refuses to open either URL on Android as a backstop.
+  - Test: `UpgradeScreenAndroid.test.tsx`.
+  - iOS is unchanged; Apple has the same rule and needs its own pass.
+- **Privacy policy and terms before an account exists.** GetStarted and SignUp say "By continuing you agree to the Terms and the Privacy Policy", with links (`auth/components/LegalConsentLine.tsx`). `legal/[doc]` moved out of the signed-in guard and is declared after `(auth)`, so a signed-out launch still lands on `(auth)`. The server's legal reads were already public.
+- **Public web pages.** Play needs these addresses for the listing and the Data safety form:
+  - `apps/web/app/legal/[doc]` renders the published document; the mobile "Open on the web" link used to land on a 404.
+  - `apps/web/app/account-deletion` covers the app, the web (Settings → Delete), and an email for anyone who can't sign in.
+  - **To confirm:** the email `privacy@nextkin.ai` is a placeholder. The page's "we confirm by email and delete within 30 days" and "payment records the law requires are kept" lines are policy wording that needs the owner's (or a lawyer's) yes. Not opened in a browser.
+- **Release config** (`app.config.ts`, `eas.json`):
+  - Version 1.0.0; the build number is still EAS's, auto-incremented.
+  - `blockedPermissions` covers overlay, storage, audio/video media, microphone, camera and location; nothing in the app uses them.
+  - `expo-build-properties` turns on R8 minify and resource shrinking. Target SDK stays Expo 58's 36, which meets Play's minimum.
+  - The Sentry upload plugin is added only when `SENTRY_AUTH_TOKEN` is set, so builds without a Sentry account still work. Crash reports are now tagged `version+build`.
+  - `EXPO_PUBLIC_WEB_URL=https://nextkin.ai` is set for production, so legal and billing links stop falling back to the API host. Is that the real domain?
+  - The five fonts are embedded through the `expo-font` plugin.
+  - Guarded in `releaseConfig.test.ts`.
+  - **Risk:** R8 has not run on a real build. If a release build closes on launch, turn minify off first.
+
+**Phones of every size**
+- **Footers under the nav bar.** On 14 screens the main button sat under the Android 3-button bar (about 48dp) or the gesture handle: the 8 `OnboardingFrame` pages, the 5 run views and the Score page. `OnboardingFrame` and `FlowFooter inset` now add the bottom inset, which also makes `keyboardBottomReserve`'s assumption true. Test: `footerSafeArea.test.tsx`.
+- **ZeroRunView** has text fields (the checks forms) and now opts into `keyboard`.
+- **Auth screens:**
+  - SignIn/SignUp back buttons sit below a status bar taller than the board's.
+  - AuthLockup, AuthFooterLink, GetStarted and Welcome take `max(board value, inset + gap)`, so the 3-button bar and tall punch-hole bars are cleared. On a normal phone nothing moves.
+  - GetStarted's drawing shrinks (and clips) on a 360×640 phone instead of pushing the buttons off the screen.
+- **Sheets** whose content is taller than the screen now scroll instead of clipping their last rows (`Sheet`, `overflowing`). Short sheets lay out exactly as before.
+- **Font scale:** the body cap is 1.3 (was 1.1); chrome stays at 1.
+  - `Button` is now `minHeight` with a 2-line label, so it grows instead of clipping.
+  - `FeatureRows` rows are `minHeight`.
+  - Other fixed-height boxes holding body text may still clip at 130%. Needs a phone pass at the largest font size.
+- **Tablets and foldables.** Android 16 ignores the portrait lock at 600dp and wider. Sheets, Dialogs and JobDetail now keep the 520 column, centred.
+- **Android back:**
+  - Zero Resume steps back one question.
+  - The create sheet's "New resume" pane goes back to the first pane.
+  - The resume menu's rename and delete steps go back to the actions.
+  - New `Sheet.onBackStep` supports this.
+  - Skills, Locations, Desired roles and the resume section editor now ask before discarding on back or swipe, through `useUnsavedGuard`, as Edit Profile does.
+- **Not done, needs your call:** Contact, NewInterviewSet, JdReview and GapInterview still drop typed text on back. Each needs a new "Discard changes?" sheet, which is new UI.
+- **Small fixes:**
+  - The offline/service banner hides after 6s. It used to cover headers until tapped. A new message brings it back.
+  - Toasts rise above the keyboard.
+  - `hitSlopFor` pads to 48 (was 44).
+  - Onboarding Skip, "Show N more" and ChoiceChip got hit slop.
+
+**Smoothness (nothing visible changes)**
+- **Off-screen loops rest.** `useScreenVisible` (focus plus foreground, read from the navigation context so it never throws outside a navigator) pauses `useLoop` (spinners, typing dots, run art, AI pill, progress) and stops skeleton blocks on hidden tabs and covered screens from holding the shared shimmer clock.
+- **Warm-up on low memory.** Phones with 3 GB or less skip `TabWarmup`: Jobs and Resumes mount on first visit instead of living in the background.
+- `Pressable` no longer starts a timing on mount; `RichText` is memoised; the old resume-copy delete waits 3s after launch.
+- **Left alone, on purpose:**
+  - Blur-32 card `boxShadow`s on Android (§241) and the rotated-gradient shimmer are the two biggest GPU costs. Kept by owner decision; measure them first on a low-end phone.
+  - Inline requires: Expo sets them off, and turning them on reorders module start-up, a risk of a launch crash that can't be tested here.
+  - The mock fixtures stay in the bundle: `createRepos` uses them as the fallback.
+  - The filter count fetch stays: deferring it would make the count blink on first open.
+  - The Resumes and Interview layout transitions are the visible morph.
+
+**Owner's store checklist**
+- EAS secrets: `EXPO_PUBLIC_API_BASE_URL`, a `pk_live_` Clerk key, `EXPO_PUBLIC_SENTRY_DSN` (plus `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT` for readable traces) and `GOOGLE_SERVICES_JSON`.
+- Upload the first AAB by hand in Play Console; add a service-account key for `eas submit`.
+- Data safety form: email, name, resume text and job activity (account and app function), crash logs (no PII), `allowBackup: false`, deletion URL `/account-deletion`, privacy URL `/legal/privacy`.
+- Store listing: screenshots, feature graphic, content rating questionnaire, target audience (18+).
+- Phone pass on a release build:
+  - a 2–3 GB phone and a mid-range one;
+  - 3-button navigation;
+  - font at 130% and display size Large;
+  - one tablet or foldable if available.

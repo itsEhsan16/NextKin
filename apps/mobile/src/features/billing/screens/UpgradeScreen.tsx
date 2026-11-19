@@ -22,6 +22,7 @@ import { ProStatusCard } from '../components/ProStatusCard';
 import { UpgradeHero } from '../components/UpgradeHero';
 import { UpgradeSkeleton } from '../components/UpgradeSkeleton';
 import { useBillingActions } from '../hooks/useBillingActions';
+import { sellsInApp, STORE_DONE_CTA, STORE_FREE_NOTE, STORE_PRO_NOTE } from '../storePolicy';
 import {
   annualSaving,
   LOADING_CTA,
@@ -32,6 +33,7 @@ import {
   PLANS_ERROR_TITLE,
   PRO_HERO_CAPTION,
   REASON_LINE,
+  STORE_FREE_CAPTION,
   renewalLine,
   UPGRADED_TOAST,
 } from '../upgradeCopy';
@@ -220,12 +222,45 @@ export function UpgradeScreen({ reason }: UpgradeScreenProps) {
           <PlanComparison />
         </Animated.View>
       </>,
+      sellsInApp() ? (
+        <StickyActionBar
+          floating
+          note={manageNote ?? MANAGE_NOTE}
+          // The browser not opening is a failure, so it reads as one rather than as the hint (§85).
+          noteTone={manageNote ? 'danger' : 'neutral'}
+          primary={{ label: MANAGE_CTA, icon: 'LinkExternal01', onPress: manage }}
+        />
+      ) : (
+        // Android: no way out to a billing page (Play Payments policy, storePolicy.ts).
+        <StickyActionBar
+          floating
+          note={STORE_PRO_NOTE}
+          primary={{ label: STORE_DONE_CTA, onPress: actions.goBack }}
+        />
+      ),
+    );
+  }
+
+  // Android, Free: the plans and the reader's limits, with nothing to buy and nowhere to buy it.
+  // The reason line still names the limit that sent them here (§13.5).
+  if (!sellsInApp()) {
+    return page(
+      <>
+        <UpgradeHero
+          title={SCREEN_TITLE}
+          caption={reason ? REASON_LINE[reason] : STORE_FREE_CAPTION}
+        />
+        <Animated.View entering={enter(0)} style={styles.gapMd}>
+          <PlanUsageCard usage={sub.usage} plan={sub.plan} />
+        </Animated.View>
+        <Animated.View entering={enter(1)} style={styles.gapLg}>
+          <PlanComparison />
+        </Animated.View>
+      </>,
       <StickyActionBar
         floating
-        note={manageNote ?? MANAGE_NOTE}
-        // The browser not opening is a failure, so it reads as one rather than as the hint (§85).
-        noteTone={manageNote ? 'danger' : 'neutral'}
-        primary={{ label: MANAGE_CTA, icon: 'LinkExternal01', onPress: manage }}
+        note={STORE_FREE_NOTE}
+        primary={{ label: STORE_DONE_CTA, onPress: actions.goBack }}
       />,
     );
   }

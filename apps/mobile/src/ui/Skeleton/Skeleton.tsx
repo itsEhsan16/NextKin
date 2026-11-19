@@ -18,6 +18,8 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useReducedMotion } from '@/lib';
 import { useTheme, type radii } from '@/theme';
 
+import { useScreenVisible } from '@/ui/motion/useScreenVisible';
+
 import { acquireSkeletonClock, releaseSkeletonClock, skeletonClock } from './skeletonClock';
 
 export type SkeletonProps = {
@@ -62,11 +64,14 @@ export function Skeleton({
   const left = useSharedValue(0);
   const top = useSharedValue(0);
 
+  // Only blocks on the screen being looked at hold the shared clock, so a hidden tab's loading
+  // page does not keep the shimmer running for nobody (§244).
+  const visible = useScreenVisible();
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || !visible) return;
     acquireSkeletonClock();
     return releaseSkeletonClock;
-  }, [reduced]);
+  }, [reduced, visible]);
 
   const onLayout = useCallback(() => {
     ref.current?.measureInWindow((x, y) => {
