@@ -18,6 +18,7 @@ import { useRevealOnFocus } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
 import { useFieldChrome } from './useFieldChrome';
+import { useSelectionColors } from './useSelectionColors';
 
 export type TextFieldProps = {
   value: string;
@@ -116,6 +117,7 @@ export function TextField({
   style,
 }: TextFieldProps) {
   const { colors, opacity, radii, sizes, spacing, typography, s } = useTheme();
+  const selection = useSelectionColors();
   const revealOnFocus = useRevealOnFocus();
   const fieldRef = useRef<ViewInstance>(null);
 
@@ -187,8 +189,7 @@ export function TextField({
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={colors.textSecondary}
-          selectionColor={colors.textPrimary}
-          cursorColor={colors.textPrimary}
+          {...selection}
           multiline={multiline}
           scrollEnabled={multiline ? true : undefined}
           maxLength={maxLength}

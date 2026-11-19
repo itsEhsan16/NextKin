@@ -54,6 +54,8 @@ export const colorsByScheme = {
     surfaceUnread: palette.brand25,
     /** Unread notification card border (Figma 619:44). */
     unreadBorder: palette.brand75,
+    /** Selected text's highlight on Android, where `selectionColor` is painted at full strength (§243). */
+    textSelection: 'rgba(71, 51, 249, 0.24)',
     /** A read notification card's border — a step softer than borderDefault (Figma 619:89). */
     borderSoft: palette.gray120,
     // Notification tile tints and their glyphs (Figma 619:43 / 619:65 / 619:78 / 619:98 /
@@ -196,6 +198,7 @@ export const colorsByScheme = {
     brandBorder: '#2F2A5C',
     surfaceUnread: '#17152E',
     unreadBorder: '#2A2654',
+    textSelection: 'rgba(124, 108, 255, 0.35)',
     borderSoft: palette.dark700,
     tileBrand: '#221E45',
     tileBrandStrong: '#29245A',

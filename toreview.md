@@ -17927,3 +17927,11 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - "Make a cover letter" (Tailor and Build ready screens) now draws `assets/icons/quick-start/cover-letter.svg`, the open envelope on Home's create grid, at 30 wide in its own 41 : 42.9 ratio. It was the create sheet's small glyph (`icons/create/cover-letter.svg`).
 - **Then switched too (owner, same day):** the create sheet's "Write a cover letter" row (52 wide) and History's cover-letter rows (`historyArt.ts`) draw the same envelope. `icons/create/cover-letter.svg` is now unused; kept on disk.
 - **Verified:** tsc, eslint, generations Jest (34). Not seen on the phone.
+
+## §243 — Selected text vanished under a black block (owner, 2026-11-19)
+- **What the owner saw:** selecting text in the job field on Android painted a solid near-black box over the words.
+- **Cause:** Android draws `selectionColor` as the highlight at full strength, and `TextField`, `SearchField`, `AuthField` and the assistant composer all passed `colors.textPrimary` (ink).
+- **Fix:** one hook, `useSelectionColors` (`ui/TextField`), spread on every input. On Android the highlight is a new `textSelection` token (brand at 24%, 35% in the unused dark map), with brand handles (`selectionHandleColor`) and an ink caret. On iOS `selectionColor` is brand, since iOS fades the highlight itself and also tints the caret with it.
+- **Guard:** `__tests__/ui/selectionColors.test.js` checks the Android branch and fails if any file in `src/` or `app/` sets `selectionColor`, `selectionHandleColor` or `cursorColor` by hand.
+- **Verified:** tsc, eslint, full mobile Jest (229 suites, 1966 tests). Not seen on the phone.
+- **Note:** the owner's screenshot of this step showed the lavender wash and no "1 of 3 · Job & Resume" line, neither of which this branch draws, so the phone was likely running an older bundle.
