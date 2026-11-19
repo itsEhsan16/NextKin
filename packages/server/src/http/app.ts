@@ -21,6 +21,7 @@ import { staffAware } from '../auth/staff/providerGuard';
 import { createStaffAuth } from '../auth/staff/service';
 import { LOCAL_STAFF_KEY, staffNetworkGuard } from './routes/adminKit';
 import { federatedRoutes, type FederatedDeps } from './routes/authFederated';
+import { appVersionRoutes } from './routes/appVersion';
 import { healthRoutes } from './routes/health';
 import { NO_SIGNAL, observedEmail, observedPayments, type DegradedSignal } from '../health/degraded';
 import { accountRoutes } from './routes/account';
@@ -184,6 +185,7 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
 
   const signal = deps.degraded ?? NO_SIGNAL;
   app.route('/', healthRoutes(deps.checks, signal));
+  app.route('/', appVersionRoutes(flags));
   // Settings › Access: staff work only from an allowed network, when the list isn't empty.
   if (deps.db) app.use('/admin/*', staffNetworkGuard(deps.db));
   if (deps.db && identity) {

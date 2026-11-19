@@ -4,6 +4,7 @@ import { useSessionStore } from '@/features/auth';
 import { ShareHost } from '@/features/create';
 import { ApplyAskHost } from '@/features/jobs';
 import { PushHost, PushPrimerHost } from '@/features/notifications';
+import { AppUpdateHost } from '@/features/system';
 import { AccuracyConfirmHost } from '@/features/resumes';
 import { useStackAnimation } from '@/navigation';
 import { AppProviders, useAppReady } from '@/providers';
@@ -137,6 +138,8 @@ export default function RootLayout() {
       {signedIn ? <PushPrimerHost /> : null}
       {signedIn ? <PushHost /> : null}
       {signedIn ? <ShareHost /> : null}
+      {/* Signed in or out: an outdated build must be able to say so before anyone signs in. */}
+      <AppUpdateHost />
     </AppProviders>
   );
 }

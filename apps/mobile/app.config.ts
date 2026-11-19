@@ -103,7 +103,12 @@ const config: ExpoConfig = {
     'expo-sqlite',
     'expo-secure-store',
     // Native only: a development or release build. Daily screen work in Expo Go ignores it.
-    ['expo-notifications', { color: '#4733F9', defaultChannel: 'default' }],
+    // The status-bar icon Android draws for a push: the brand mark, white on transparent, 96px
+    // (toreview §245). Without one Android shows a plain white square. The colour tints it.
+    [
+      'expo-notifications',
+      { icon: './assets/notification-icon.png', color: '#4733F9', defaultChannel: 'default' },
+    ],
     // A job shared from a browser or another app: a link, or the job's text.
     [
       'expo-sharing',

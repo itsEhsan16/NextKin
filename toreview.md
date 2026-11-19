@@ -18009,3 +18009,25 @@ An audit of `apps/mobile` for Google Play, then the fixes. Owner decisions: hide
   - 3-button navigation;
   - font at 130% and display size Large;
   - one tablet or foldable if available.
+
+## §245 — Update prompts, and the push notification icon (owner, 2026-11-20)
+
+**Update prompts.** The server already refused builds below `clients.minimum_version` with a 426 (P3-07), but the phone never told anyone. It now has two prompts, both mounted once in the root layout (`features/system/AppUpdateHost`), signed in or out:
+- **Required:** the build is below the floor, either because `/app/version` says so or because any request came back 426.
+  - The shared HTTP client's new `onUpgradeRequired` sets `data/upgradeRequired.ts`.
+  - The whole app is covered by "Update NextKin" with an Update button that opens the Play Store listing (`market://`, with the web listing as fallback).
+  - Android back stays on that screen.
+- **Available:** `clients.latest_version` is newer than this build.
+  - A sheet with "Update" / "Not now".
+  - Either answer is remembered per version, so it asks once per release.
+- **Server:** new public `GET /api/v1/app/version?platform=android|ios` returns `{ minimum, latest }` from app_settings. `Flags.latestClientVersion` was added, and the seed now carries `clients.latest_version` (`0.0.0`, so nothing shows until it's raised). The seed was not run here.
+- **How to use it after a release:**
+  - Set `clients.latest_version.android` to the new version so older phones get the offer.
+  - Raise `clients.minimum_version.android` only when old builds would break.
+  - Both are settings changes, not deploys. There is no admin screen for them yet: it's a row in `app_settings`.
+- **iOS:** there is no App Store listing yet. The required screen says "update from the App Store" with no button. Add the store URL once the app has one.
+- **Not used:** Google's own in-app update screen (Play Core). It needs a native library and a development build; this works on today's setup.
+- **Not tracked:** usage event names are a fixed list shared with the server, so the prompts send no events.
+- **Not seen on a phone.** Tests: `__tests__/features/system/appUpdate.test.tsx`, `packages/server/test/appVersion.test.ts`, and the 426 case in `packages/shared/test/httpClient.test.ts`.
+
+**Notification icon.** `assets/notification-icon.png` is the brand mark from `android-icon-monochrome.png`, white on transparent, 96×96, with the glyph at 80 px. It's wired into the `expo-notifications` plugin with the brand tint. Without it, Android draws a white square for a push. It only takes effect in a native build, and a push still needs the Firebase/SNS setup (§147).

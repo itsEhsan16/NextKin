@@ -113,4 +113,12 @@ describe('a release build', () => {
       '@sentry/react-native/expo',
     );
   });
+
+  it('gives Android a notification icon of its own, so a push never shows a white square', () => {
+    const plugin = appConfig({}).plugins.find(
+      (p): p is [string, Record<string, unknown>] =>
+        Array.isArray(p) && p[0] === 'expo-notifications',
+    );
+    expect(plugin?.[1].icon).toBe('./assets/notification-icon.png');
+  });
 });

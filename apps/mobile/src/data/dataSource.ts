@@ -6,6 +6,7 @@ import { configureRepos, createHttpClient, parseDataSources } from '@nextkin/sha
 
 import { CLERK_PUBLISHABLE_KEY, clerkTokens } from './clerkSession';
 import { secureTokens } from './secureTokens';
+import { useUpgradeRequired } from './upgradeRequired';
 import { expoUploader } from './uploader';
 
 /**
@@ -38,6 +39,8 @@ export const http = createHttpClient({
   // The store version from app.config: the server's floor answers older builds with 426.
   clientVersion: Constants.expoConfig?.version,
   onSignedOut: () => signedOutHandler(),
+  // Below the server's floor every request fails: the app swaps to its update screen.
+  onUpgradeRequired: (minimum) => useUpgradeRequired.getState().require(minimum),
 });
 
 export const auth = createAuthClient({ http });
