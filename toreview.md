@@ -17957,7 +17957,7 @@ An audit of `apps/mobile` for Google Play, then the fixes. Owner decisions: hide
   - `blockedPermissions` covers overlay, storage, audio/video media, microphone, camera and location; nothing in the app uses them.
   - `expo-build-properties` turns on R8 minify and resource shrinking. Target SDK stays Expo 58's 36, which meets Play's minimum.
   - The Sentry upload plugin is added only when `SENTRY_AUTH_TOKEN` is set, so builds without a Sentry account still work. Crash reports are now tagged `version+build`.
-  - `EXPO_PUBLIC_WEB_URL=https://nextkin.ai` is set for production, so legal and billing links stop falling back to the API host. Is that the real domain?
+  - `EXPO_PUBLIC_WEB_URL=https://app.nextkin.ai` is set for production (first set to the apex `nextkin.ai`, which does not resolve; corrected 2026-11-20), so legal and billing links stop falling back to the API host.
   - The five fonts are embedded through the `expo-font` plugin.
   - Guarded in `releaseConfig.test.ts`.
   - **Risk:** R8 has not run on a real build. If a release build closes on launch, turn minify off first.
