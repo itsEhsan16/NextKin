@@ -128,13 +128,31 @@ export class Services extends Construct {
       healthCheckGracePeriod: Duration.seconds(120),
     });
 
+    // Push (aws/setup/07-push.md, toreview §246): on once `pushAndroidArn` (and later `pushIosArn`)
+    // names an SNS platform application in cdk.json. Only the worker sends, so only it is granted.
+    const pushAndroidArn = this.node.tryGetContext('pushAndroidArn') as string | undefined;
+    const pushIosArn = this.node.tryGetContext('pushIosArn') as string | undefined;
+    const pushArns = [pushAndroidArn, pushIosArn].filter((arn): arn is string => Boolean(arn));
+    const pushEnvironment: Record<string, string> = pushArns.length
+      ? {
+          PUSH_ADAPTER: 'sns',
+          ...(pushAndroidArn ? { PUSH_SNS_ANDROID_ARN: pushAndroidArn } : {}),
+          ...(pushIosArn ? { PUSH_SNS_IOS_ARN: pushIosArn } : {}),
+        }
+      : {};
+
     // --- worker: queues, parsing, generation, PDF export. Spot: an interruption only delays jobs.
     // It typesets resumes on the LaTeX service (§137): the URL and its bearer token.
     const workerDef = taskDef('worker', 1024, 2048);
     workerDef.addContainer('worker', {
       image: appImage('worker', webDataSource),
       command: withDatabaseUrls([...runtimeRoles], 'node dist/worker.mjs'),
-      environment: { ...environment, LATEX_COMPILER_URL: `http://latex.${DEMO.namespace}:8790`, LINK_READER_URL: `http://links.${DEMO.namespace}:8791` },
+      environment: {
+        ...environment,
+        ...pushEnvironment,
+        LATEX_COMPILER_URL: `http://latex.${DEMO.namespace}:8790`,
+        LINK_READER_URL: `http://links.${DEMO.namespace}:8791`,
+      },
       secrets: {
         ...secrets,
         ...roleSecrets(data, [...runtimeRoles]),
@@ -144,6 +162,21 @@ export class Services extends Construct {
       logging: logging('worker'),
     });
     grantApp(workerDef);
+    if (pushArns.length) {
+      // Register a phone (an endpoint under the platform application), then send to it.
+      workerDef.addToTaskRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['sns:CreatePlatformEndpoint', 'sns:GetPlatformApplicationAttributes'],
+          resources: pushArns,
+        }),
+      );
+      workerDef.addToTaskRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['sns:Publish', 'sns:DeleteEndpoint', 'sns:GetEndpointAttributes', 'sns:SetEndpointAttributes'],
+          resources: pushArns.map((arn) => `${arn.replace(':app/', ':endpoint/')}/*`),
+        }),
+      );
+    }
     service('worker', workerDef, network.appSg, {
       capacityProviderStrategies: spot,
       minHealthyPercent: 100,

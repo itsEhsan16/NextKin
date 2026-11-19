@@ -319,6 +319,7 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
           email: mailer,
           inbox: deps.supportInbox ?? 'support@nextkin.test',
           log,
+          appOrigin: config.appOrigin,
         }),
       );
       app.route(

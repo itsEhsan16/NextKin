@@ -1,5 +1,7 @@
 # Turning push on
 
+With Claude in Chrome, follow [08-push-with-claude-in-chrome.md](08-push-with-claude-in-chrome.md) instead: steps 3–4 below are done by the deployment code once `pushAndroidArn` / `pushIosArn` are set in `aws/infra/cdk.json`.
+
 Push is built and sends through Amazon SNS mobile push, as V2 §9.12 says. It's off until the pieces
 below exist. Nothing here can be tested from a laptop: SNS has no local twin, so `PUSH_ADAPTER=log`
 only records that a push would have left.

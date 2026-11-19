@@ -18031,3 +18031,19 @@ An audit of `apps/mobile` for Google Play, then the fixes. Owner decisions: hide
 - **Not seen on a phone.** Tests: `__tests__/features/system/appUpdate.test.tsx`, `packages/server/test/appVersion.test.ts`, and the 426 case in `packages/shared/test/httpClient.test.ts`.
 
 **Notification icon.** `assets/notification-icon.png` is the brand mark from `android-icon-monochrome.png`, white on transparent, 96×96, with the glyph at 80 px. It's wired into the `expo-notifications` plugin with the brand tint. Without it, Android draws a white square for a push. It only takes effect in a native build, and a push still needs the Firebase/SNS setup (§147).
+
+## §246 — Public pages point at the right site; push is ready to switch on (owner, 2026-11-20)
+
+**Domains (owner):** `nextkin.ai` is the landing page, `app.nextkin.ai` is the main app, and `admin.app.nextkin.ai` is staff access. The legal pages, account deletion and web billing all live on the main app.
+
+**The legal links pointed at a domain we don't own.**
+- The live server answered `https://nextkin.app/legal/privacy`. The first seeded version of the documents carried `nextkin.app`. The fixture was corrected in `13fa78b`, but the seed never overwrites a published row, so the live database kept the old value.
+- **Fix:** `getLegal` now builds the address from the server's own `APP_ORIGIN` (`/legal/<key>` on that origin) and ignores the stored one. No data edit or migration is needed, and every environment points at itself. Test: `packages/server/test/legalUrl.test.ts`.
+- The mock fixture, the mobile `WEB_URL` fallback and the iOS "manage your plan" line now say `app.nextkin.ai`.
+- **Still live until a deploy:** `app.nextkin.ai/legal/privacy`, `/legal/terms`, `/account-deletion` and `/api/v1/app/version` answer 404 until this branch is merged and deployed.
+
+**Push is ready to switch on.**
+- `aws/infra/src/services.ts` reads `pushAndroidArn` / `pushIosArn` from `cdk.json`. When set, the worker gets `PUSH_ADAPTER=sns` and the ARNs. It is also granted `CreatePlatformEndpoint`/`GetPlatformApplicationAttributes` on the applications and `Publish`/`DeleteEndpoint`/`Get`/`SetEndpointAttributes` on their endpoints.
+- Unset, nothing changes. `cdk synth` with a sample ARN emits both.
+- The demo runs `APP_ENV=dev`, where Android-only push is allowed. Staging and production still refuse it without an iOS ARN.
+- The owner's steps are in `aws/setup/08-push-with-claude-in-chrome.md`: Firebase in Chrome, the EAS file variable from the terminal, the SNS platform application in Chrome, then the ARN goes to Claude Code for `cdk.json` and a deploy.
