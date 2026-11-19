@@ -5,6 +5,7 @@
     "appDomain": "app.nextkin.ai",
     "appDomainLive": true,
     "clerkPublishableKey": "pk_test_bmF0aXZlLWJhc2lsaXNrLTk3NDMuY2xlcmsuYWNjb3VudHMuZGV2JA",
+    "pushAndroidArn": "arn:aws:sns:us-east-1:962942593570:app/GCM/NextKinAndroid",
     "@aws-cdk/core:checkSecretUsage": true,
     "@aws-cdk/aws-iam:minimizePolicies": true,
     "@aws-cdk/aws-ecs:arnFormatIncludesClusterName": true,
