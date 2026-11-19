@@ -113,7 +113,7 @@ describe('Build Resume step 1: the job (§172)', () => {
     });
   });
 
-  it('BUILD 01 asks someone with no resume and no roles how to make one (the method step)', async () => {
+  it('BUILD 01 sends someone with no resume and no roles to the upload-or-start card', async () => {
     mockStore.state.resumes = [];
     mockStore.state.profile = { ...mockStore.state.profile, experiences: [] };
     await renderScreen(<BuildJobScreen />);
@@ -123,7 +123,7 @@ describe('Build Resume step 1: the job (§172)', () => {
       fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
     );
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/create/method',
+      pathname: '/create/tailor',
       params: { jobId: 'job_stripe' },
     });
   });
@@ -134,7 +134,7 @@ describe('Build Resume step 1: the job (§172)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
     await settle();
-    await act(async () => fireEvent.press(screen.getByText('Your profile')));
+    await act(async () => fireEvent.press(screen.getByText('Create from my profile')));
     await settle();
     expect(screen.getByLabelText('Built from Your profile. Change')).toBeOnTheScreen();
 
@@ -148,6 +148,24 @@ describe('Build Resume step 1: the job (§172)', () => {
 
     await cleanup();
     expect(useBuildSourceStore.getState().picked).toBeUndefined();
+  });
+
+  it('BUILD 01 starts from scratch with AI: Zero Resume for the job (§238)', async () => {
+    await renderScreen(<BuildJobScreen />);
+    await settle();
+
+    await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
+    await settle();
+    await act(async () => fireEvent.press(screen.getByText('Start from scratch with AI')));
+    await settle();
+    expect(screen.getByLabelText('Built from Scratch with AI. Change')).toBeOnTheScreen();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText(/^Senior Product Designer, Stripe/)),
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create/zero-resume',
+      params: { jobId: 'job_stripe' },
+    });
   });
 
   it('BUILD 01 starts from a resume\u2019s own "Tailor to a job"', async () => {
@@ -185,17 +203,17 @@ describe('Build Resume step 1: the job (§172)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
     await settle();
-    expect(screen.getByText('Build from')).toBeOnTheScreen();
-    expect(screen.getByText('Your profile')).toBeOnTheScreen();
-    // The two latest resumes, then an upload; older ones and cover letters are not offered.
-    expect(screen.getByText('UX Designer Resume')).toBeOnTheScreen();
-    // Twice since §174: the "From" pill on the page and the row in the sheet drawn over it.
-    expect(screen.getAllByText('Product Designer').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Stripe — Senior PD')).not.toBeOnTheScreen();
-    expect(screen.queryByText('Stripe cover letter')).not.toBeOnTheScreen();
-    expect(screen.getByText('Upload from your device')).toBeOnTheScreen();
+    // The web's four ways (§238): the two latest resumes to tailor, the profile, scratch, upload.
+    expect(screen.getByText('How should we create it?')).toBeOnTheScreen();
+    expect(screen.getByText('Tailor “UX Designer Resume”')).toBeOnTheScreen();
+    expect(screen.getByText('Tailor “Product Designer”')).toBeOnTheScreen();
+    expect(screen.queryByText('Tailor “Stripe — Senior PD”')).not.toBeOnTheScreen();
+    expect(screen.queryByText(/Stripe cover letter/)).not.toBeOnTheScreen();
+    expect(screen.getByText('Create from my profile')).toBeOnTheScreen();
+    expect(screen.getByText('Start from scratch with AI')).toBeOnTheScreen();
+    expect(screen.getByText('Upload a resume')).toBeOnTheScreen();
 
-    await act(async () => fireEvent.press(screen.getByText('UX Designer Resume')));
+    await act(async () => fireEvent.press(screen.getByText('Tailor “UX Designer Resume”')));
     await settle();
     expect(screen.getByLabelText('Built from UX Designer Resume. Change')).toBeOnTheScreen();
 
@@ -218,7 +236,7 @@ describe('Build Resume step 1: the job (§172)', () => {
 
     await act(async () => fireEvent.press(screen.getByLabelText(/^Built from .*Change$/)));
     await settle();
-    await act(async () => fireEvent.press(screen.getByText('Upload from your device')));
+    await act(async () => fireEvent.press(screen.getByText('Upload a resume')));
     expect(
       screen.getByLabelText('Built from Reading George_Smith_Resume.pdf…. Change'),
     ).toBeOnTheScreen();

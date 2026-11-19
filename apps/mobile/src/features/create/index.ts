@@ -34,7 +34,6 @@ export { FirstResumeScreen } from './screens/FirstResumeScreen';
 export { QuickSetupScreen } from './screens/QuickSetupScreen';
 export { useSetupAnswers } from './setupAnswers';
 export { TailorCompareScreen, type TailorCompareScreenProps } from './screens/TailorCompareScreen';
-export { MethodScreen, METHODS, METHOD_TITLE, type Method } from './screens/MethodScreen';
 export { UploadResumeScreen } from './screens/UploadResumeScreen';
 export { UploadReviewScreen } from './screens/UploadReviewScreen';
 export { ZeroResumeScreen } from './screens/ZeroResumeScreen';

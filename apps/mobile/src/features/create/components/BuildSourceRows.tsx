@@ -13,6 +13,7 @@ const PAGE_RADIUS = 5 / 0.75;
 export type BuildFromSource =
   | { kind: 'profile'; name: string; avatarUrl?: string; roles: number; skills: number }
   | { kind: 'resume'; resume: Resume }
+  | { kind: 'scratch' }
   | { kind: 'reading'; fileName: string };
 
 /** "Built from your profile · 4 roles, 12 skills" or "Built from <resume>". */
@@ -21,7 +22,9 @@ export function buildFromLabel(source: BuildFromSource): string {
     ? `Built from your profile · ${pluralize(source.roles, 'role')}, ${pluralize(source.skills, 'skill')}`
     : source.kind === 'resume'
       ? `Built from ${source.resume.title}`
-      : `Reading ${source.fileName}…`;
+      : source.kind === 'scratch'
+        ? 'Built from scratch with AI'
+        : `Reading ${source.fileName}…`;
 }
 
 /** A resume's page at the avatar's size, for the source sheet. */

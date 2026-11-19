@@ -83,6 +83,8 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
   const resumes = useResumes();
   const resumeId = useBuildSource();
   const pick = useBuildSourceStore((state) => state.pick);
+  const scratch = useBuildSourceStore((state) => state.scratch);
+  const pickScratch = useBuildSourceStore((state) => state.pickScratch);
   const reset = useBuildSourceStore((state) => state.reset);
   const [sourceOpen, setSourceOpen] = useState(false);
   const sourceUpload = useBuildSourceUpload();
@@ -220,9 +222,11 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
             source={
               sourceUpload.reading
                 ? { kind: 'reading', fileName: sourceUpload.reading }
-                : picked
-                  ? { kind: 'resume', resume: picked }
-                  : { kind: 'profile', ...profileSource }
+                : scratch
+                  ? { kind: 'scratch' }
+                  : picked
+                    ? { kind: 'resume', resume: picked }
+                    : { kind: 'profile', ...profileSource }
             }
             onPress={() => setSourceOpen(true)}
           />
@@ -316,7 +320,9 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
           profile={profileSource}
           resumes={resumes.data}
           resumeId={picked ? picked.id : null}
+          scratch={scratch}
           onPick={pick}
+          onScratch={pickScratch}
           onUpload={() => void sourceUpload.upload()}
         />
       ) : null}

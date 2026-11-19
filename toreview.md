@@ -17872,3 +17872,18 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - Build keeps "Practice the interview" beside it. **Ask:** should Build drop that tile too, to match?
 - **Judgement call:** "See what changed" (to Versions) is gone from this screen. Versions stay reachable from the resume (Edit → the resume page).
 - **Verified:** mobile typecheck and lint are clean; the generations suites pass, plus `ResumeFlowParts` (9 suites, 36 tests).
+
+## §238 — No method screen: the four ways live in "From" on the job step (owner, 2026-11-19)
+- **Removed:** the separate "How would you like to create your resume?" screen (`MethodScreen`, `/create/method`, its test). It asked again what "From" already asks. Routing is back to before §234:
+  - "Tailor" from a job page opens Choose Keywords with the default resume;
+  - Build goes by "From".
+- **"From" sheet** (`BuildSourceSheet`, now titled "How should we create it?"): the web's four ways, each with the web's own picture (`apps/web/public/illustrations/v2/{profile,build,zero,upload}.webp`, copied to `assets/illustrations/methods/`), bare, with no tile behind it:
+  - **Tailor "<resume>":** the two latest resumes;
+  - **Create from my profile:** says "Add a role to your profile first" when it has none;
+  - **Start from scratch with AI** (new): the pill reads "From Scratch with AI", and Continue opens Zero Resume for the job (`buildSourceStore.scratch`). A pasted job has no listing, so Zero gets no role from it.
+  - **Upload a resume:** reads the file as before.
+- **Not changed:** the pill keeps its small line icons, since the owner asked for the web pictures where the options are offered. Customize's no-resume card (no resume, no roles) is as it was.
+- **Verified:**
+  - mobile typecheck and lint are clean;
+  - the create suites pass (23 suites, 144 tests), with a new scratch test in `BuildJobScreens`.
+- **Not seen on the phone yet.**

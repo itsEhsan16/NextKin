@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { TailorChoices } from '@/data/models';
 import { useExtractJd, useProfile, useStartGeneration, useSubscription } from '@/data/queries';
 
-import { useBuildSource } from '../buildSourceStore';
+import { useBuildSource, useBuildSourceStore } from '../buildSourceStore';
 import { buildCostNote, spentNote } from '../generationQuota';
 import { useCreateActions } from './useCreateActions';
 
@@ -118,7 +118,8 @@ export function useStartBuild(): StartBuild {
 /** Where the BUILD screens go besides the run (the run itself is `useStartBuild`'s). */
 export function useBuildActions() {
   const router = useRouter();
-  const { goBack, openUpgrade, openCustomize } = useCreateActions();
+  const { goBack, openUpgrade, openCustomize, openZeroResume } = useCreateActions();
+  const scratch = useBuildSourceStore((state) => state.scratch);
   const resumeId = useBuildSource();
   const profile = useProfile();
   const profileIsEmpty = profile.data?.experiences.length === 0;
@@ -127,26 +128,29 @@ export function useBuildActions() {
       goBack,
       openUpgrade,
       /**
-       * After the job. From a resume (toreview §139), its keywords on Customize, which owns that
-       * run; from the profile, BUILD 04b, the profile against the job. Step 1's "Built from" is
-       * the method choice here. With neither a resume nor a role, the method step asks how to
-       * make one (upload, or from nothing), as the web does (toreview §234).
+       * After the job, by what "From" says (owner, 2026-11-19, toreview §238): a resume goes to its
+       * keywords on Customize, which owns that run; scratch goes to Zero Resume; the profile goes
+       * to BUILD 04b, unless it has no roles, when Customize's no-resume card offers the way in.
        */
       openCompare: ({ jobId, jdId }: BuildCompareTarget, options: { replace?: boolean } = {}) => {
-        if (resumeId) {
-          openCustomize({ jobId, jdId, resumeId }, options);
+        if (scratch) {
+          openZeroResume({ jobId });
           return;
         }
-        const params = { ...(jobId ? { jobId } : {}), ...(jdId ? { jdId } : {}) };
-        const href = profileIsEmpty
-          ? { pathname: '/create/method' as const, params }
-          : { pathname: '/create/build/compare' as const, params };
+        if (resumeId || profileIsEmpty) {
+          openCustomize({ jobId, jdId, ...(resumeId ? { resumeId } : {}) }, options);
+          return;
+        }
+        const href = {
+          pathname: '/create/build/compare' as const,
+          params: { ...(jobId ? { jobId } : {}), ...(jdId ? { jdId } : {}) },
+        };
         if (options.replace) router.replace(href);
         else router.push(href);
       },
       openProfileEditor: () => router.push('/profile/edit'),
       browseJobs: () => router.navigate('/(tabs)/jobs'),
     }),
-    [goBack, openCustomize, openUpgrade, profileIsEmpty, resumeId, router],
+    [goBack, openCustomize, openUpgrade, openZeroResume, profileIsEmpty, resumeId, router, scratch],
   );
 }
