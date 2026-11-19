@@ -1,9 +1,11 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { ProgressButton, READ_STAGES } from '@/features/create/flow/ProgressButton';
 import { BuildNextTiles } from '@/features/generations/components/BuildReadyParts';
 import { TailorReady } from '@/features/generations/components/TailorReady';
+import { palette } from '@/theme/palette';
 
 const metrics: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -30,6 +32,10 @@ describe('the resume flow’s web-matching parts (toreview §235)', () => {
       </SafeAreaProvider>,
     );
     expect(screen.getByLabelText(READ_STAGES[0])).toBeOnTheScreen();
+    // Still the black primary pill while it works (§245), with a light sweep across it.
+    const pill = screen.getByLabelText(READ_STAGES[0]);
+    expect(StyleSheet.flatten(pill.props.style).backgroundColor).toBe(palette.ink900);
+    expect(screen.getByTestId('progress-sweep')).toBeOnTheScreen();
     await act(() => jest.advanceTimersByTimeAsync(1600));
     expect(screen.getByLabelText(READ_STAGES[1])).toBeOnTheScreen();
     await act(() => jest.advanceTimersByTimeAsync(3600));

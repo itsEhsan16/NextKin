@@ -17942,3 +17942,8 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Judgement call:** the ring sizes were chosen to stay close to the old avatar, not taken from a board. Say if the photo should keep its 56 and the ring grow around it.
 - **Note:** Home imports the ring file directly; going through `@/features/profile` pulls in Clerk, which left a test hanging on an open handle.
 - **Verified:** tsc, eslint, full mobile Jest (230 suites, 1968 tests), with a new `HomeHeaderRing.test`. Not seen on the phone.
+
+## §245 — The reading button stays black while it works (owner, 2026-11-19)
+- **Why:** §236's working state (a white pill in a purple gradient ring with a lavender fill) turned the black Continue into a different-looking button on tap, its fill barely showed on white, and it was the only button in the app that changed identity. The owner asked what would be best; this was the recommendation, approved.
+- **Now (`ProgressButton`):** the same black primary pill (54 tall, fully round), a white band at 14% sweeping from the left with the same timing (fast to 55% by 1.5s, then creeping to 90%, never claiming done), a white spinner before the stage text, and white stage labels ("Reading the job…" → "Analyzing…" → "Almost there…"). Under reduced motion the band steps by stage. The gradient ring and lavender fill are gone; purple stays on the "about you" pieces.
+- **Verified:** tsc, eslint, full mobile Jest (230 suites, 1968 tests); `ResumeFlowParts.test` pins the black pill and the sweep. Not seen on the phone.
