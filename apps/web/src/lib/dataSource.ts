@@ -23,9 +23,11 @@ export const SIGN_IN = '/sign-in';
 
 /**
  * Pages a signed-out visitor is meant to be on: sign-in, and with Clerk sign-up and the session
- * bridge (toreview §169). A 401 from a background call there is expected, not a lost session.
+ * bridge (toreview §169); and the public pages anyone opens from a link: the legal documents and
+ * account deletion the Play listing points at, and a shared report (toreview §248). A 401 from a
+ * background call there is expected, not a lost session.
  */
-const AUTH_PAGES = [SIGN_IN, '/sign-up', '/session'];
+const AUTH_PAGES = [SIGN_IN, '/sign-up', '/session', '/legal', '/account-deletion', '/r'];
 export const isAuthPage = (pathname: string) =>
   AUTH_PAGES.some((page) => pathname === page || pathname.startsWith(`${page}/`));
 
