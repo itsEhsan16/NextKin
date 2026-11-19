@@ -20,7 +20,7 @@ export type RingGeometry = {
    * `profileRepo.completeNextStep` adds 0.14 per step from 0.72, so two taps land on a capped 1
    * and the badge reads "100%" — one glyph more than the artboard ever contemplated.
    */
-  badge: { width: number; wide: number; height: number; drop: number };
+  badge?: { width: number; wide: number; height: number; drop: number };
 };
 
 /**
@@ -52,11 +52,24 @@ export const EDIT_RING: RingGeometry = {
   badge: { width: 34 / 0.75, wide: (34 * (53.28 / 44)) / 0.75, height: 17 / 0.75, drop: 8 / 0.75 },
 };
 
+/**
+ * Home's avatar (owner, 2026-11-19, §244): Profile's ring, purple, with no number. 60 across with
+ * a 3 stroke and a 50 photo, so the header row grows by 4 over the bare 56 avatar.
+ */
+export const HOME_RING: RingGeometry = {
+  ring: 60,
+  stroke: 3,
+  avatar: 50,
+  track: 'surfaceSubtle',
+};
+
 export type CompletenessRingProps = {
   completeness: number;
   geometry: RingGeometry;
   /** What sits inside the ring — PROFILE 01's monogram, or PROFILE 03's photo. */
   children: ReactNode;
+  /** Off where a parent already speaks for the avatar (Home's profile button says the percent). */
+  accessible?: boolean;
 };
 
 /**
@@ -64,7 +77,12 @@ export type CompletenessRingProps = {
  * the badge's count-up, so they can never drift (the ScoreRing contract, with an avatar where the
  * number would be).
  */
-export function CompletenessRing({ completeness, geometry, children }: CompletenessRingProps) {
+export function CompletenessRing({
+  completeness,
+  geometry,
+  children,
+  accessible = true,
+}: CompletenessRingProps) {
   const { colors, motion, radii, sizes, s } = useTheme();
   const reduced = useReducedMotion();
   const target = Math.max(0, Math.min(1, completeness));
@@ -92,10 +110,12 @@ export function CompletenessRing({ completeness, geometry, children }: Completen
 
   return (
     <View
-      accessible
-      accessibilityRole="progressbar"
-      accessibilityLabel={`Profile ${percent} complete`}
-      accessibilityValue={{ min: 0, max: 100, now: Math.round(target * 100) }}
+      accessible={accessible}
+      accessibilityRole={accessible ? 'progressbar' : undefined}
+      accessibilityLabel={accessible ? `Profile ${percent} complete` : undefined}
+      accessibilityValue={
+        accessible ? { min: 0, max: 100, now: Math.round(target * 100) } : undefined
+      }
       style={[styles.ring, { width: ring, height: ring }]}
     >
       <Svg width={ring} height={ring} style={StyleSheet.absoluteFill}>
@@ -111,7 +131,8 @@ export function CompletenessRing({ completeness, geometry, children }: Completen
           cx={ring / 2}
           cy={ring / 2}
           r={radius}
-          stroke={colors.surfaceInverse}
+          // Purple, owner 2026-11-19 (§244): was ink.
+          stroke={colors.brand}
           strokeWidth={stroke}
           strokeLinecap="round"
           fill="none"
@@ -135,32 +156,34 @@ export function CompletenessRing({ completeness, geometry, children }: Completen
         {children}
       </View>
 
-      <View
-        style={[
-          styles.badge,
-          {
-            width: s(percent.length > 3 ? badge.wide : badge.width),
-            height: s(badge.height),
-            bottom: -s(badge.drop),
-            borderWidth: sizes.borderThick,
-            borderRadius: radii.full,
-            backgroundColor: colors.surfaceInverse,
-            borderColor: colors.surfacePage,
-          },
-        ]}
-      >
-        {/* The ring's shared value runs 0 → completeness, so ×100 IS the percentage. */}
-        <AnimatedNumber
-          value={100}
-          progress={progress}
-          variant="badgeCount"
-          color="textOnDark"
-          format={(n) => {
-            'worklet';
-            return `${Math.round(n)}%`;
-          }}
-        />
-      </View>
+      {badge ? (
+        <View
+          style={[
+            styles.badge,
+            {
+              width: s(percent.length > 3 ? badge.wide : badge.width),
+              height: s(badge.height),
+              bottom: -s(badge.drop),
+              borderWidth: sizes.borderThick,
+              borderRadius: radii.full,
+              backgroundColor: colors.brand,
+              borderColor: colors.surfacePage,
+            },
+          ]}
+        >
+          {/* The ring's shared value runs 0 → completeness, so ×100 IS the percentage. */}
+          <AnimatedNumber
+            value={100}
+            progress={progress}
+            variant="badgeCount"
+            color="textOnBrand"
+            format={(n) => {
+              'worklet';
+              return `${Math.round(n)}%`;
+            }}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }

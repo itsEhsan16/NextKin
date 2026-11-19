@@ -17935,3 +17935,10 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Guard:** `__tests__/ui/selectionColors.test.js` checks the Android branch and fails if any file in `src/` or `app/` sets `selectionColor`, `selectionHandleColor` or `cursorColor` by hand.
 - **Verified:** tsc, eslint, full mobile Jest (229 suites, 1966 tests). Not seen on the phone.
 - **Note:** the owner's screenshot of this step showed the lavender wash and no "1 of 3 · Job & Resume" line, neither of which this branch draws, so the phone was likely running an older bundle.
+
+## §244 — Purple completeness ring on Profile and around Home's avatar (owner, 2026-11-19)
+- **Profile:** the completeness ring's arc and its percent badge are brand purple (were ink); the badge's number is `textOnBrand`. Same on Edit profile, which shares `CompletenessRing`.
+- **Home:** the avatar sits in the same ring, purple, with no number (`HOME_RING`: 60 across, 3 stroke, 50 photo). The header row is 4 taller than the bare 56 avatar; the photo is 6 smaller. The ring is silent to screen readers; the profile button's hint says "Opens your profile, 72% complete". Before the profile loads, the bare avatar shows.
+- **Judgement call:** the ring sizes were chosen to stay close to the old avatar, not taken from a board. Say if the photo should keep its 56 and the ring grow around it.
+- **Note:** Home imports the ring file directly; going through `@/features/profile` pulls in Clerk, which left a test hanging on an open handle.
+- **Verified:** tsc, eslint, full mobile Jest (230 suites, 1968 tests), with a new `HomeHeaderRing.test`. Not seen on the phone.

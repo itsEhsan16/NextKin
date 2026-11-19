@@ -1,5 +1,7 @@
 import { View } from 'react-native';
 
+import { CompletenessRing, HOME_RING } from '@/features/profile/components/CompletenessRing';
+import { formatPercent } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
 import { Avatar } from '@/ui/Avatar';
 import { Icon } from '@/ui/Icon';
@@ -11,6 +13,8 @@ import { Text } from '@/ui/Text';
 export type HomeHeaderProps = {
   firstName?: string;
   avatarUrl?: string;
+  /** Profile completeness, 0–1: drawn as Profile's purple ring around the avatar, no number (§244). */
+  completeness?: number;
   loading?: boolean;
   hasUnread: boolean;
   onPressNotifications: () => void;
@@ -37,6 +41,7 @@ export function greetingFor(now: Date): string {
 export function HomeHeader({
   firstName,
   avatarUrl,
+  completeness,
   loading = false,
   hasUnread,
   onPressNotifications,
@@ -45,9 +50,11 @@ export function HomeHeader({
   onSearch,
   now = new Date(),
 }: HomeHeaderProps) {
-  const { colors, sizes, u } = useTheme();
+  const { colors, s, sizes, u } = useTheme();
   const styles = useStyles();
   const avatarSize = sizes.avatarHeader;
+  const ringed = completeness != null;
+  const ringSize = s(HOME_RING.ring);
   const greeting = greetingFor(now);
 
   return (
@@ -57,14 +64,26 @@ export function HomeHeader({
           feedback="subtle"
           accessibilityRole="button"
           accessibilityLabel={`${greeting}, ${firstName ?? ''}. Your profile`}
-          accessibilityHint="Opens your profile"
+          accessibilityHint={
+            ringed
+              ? `Opens your profile, ${formatPercent(completeness)} complete`
+              : 'Opens your profile'
+          }
           disabled={!onPressProfile || loading}
           dimDisabled={false}
           onPress={onPressProfile}
           style={[styles.row, styles.who]}
         >
           {loading ? (
-            <Skeleton width={avatarSize} height={avatarSize} radius="full" />
+            <Skeleton
+              width={ringed ? ringSize : avatarSize}
+              height={ringed ? ringSize : avatarSize}
+              radius="full"
+            />
+          ) : ringed ? (
+            <CompletenessRing completeness={completeness} geometry={HOME_RING} accessible={false}>
+              <Avatar source={avatarUrl} name={firstName ?? ''} size={s(HOME_RING.avatar)} />
+            </CompletenessRing>
           ) : (
             <Avatar source={avatarUrl} name={firstName ?? ''} size={avatarSize} />
           )}

@@ -12,6 +12,7 @@ import {
   useDashboardStats,
   useHiddenPicks,
   useJobPicks,
+  useProfile,
   useResumes,
   useUnreadCount,
 } from '@/data/queries';
@@ -83,6 +84,7 @@ export function HomeScreen() {
   const resumes = useResumes();
   const stats = useDashboardStats();
   const unread = useUnreadCount();
+  const profile = useProfile();
   // The progress card subscribes to the live run itself; this only starts its fetch alongside
   // the rest, without re-rendering Home on every tick.
 
@@ -137,6 +139,7 @@ export function HomeScreen() {
     <HomeHeader
       firstName={user.data?.firstName}
       avatarUrl={user.data?.avatarUrl}
+      completeness={profile.data?.completeness}
       loading={firstPaint}
       hasUnread={(unread.data ?? 0) > 0}
       onPressNotifications={actions.openNotifications}
