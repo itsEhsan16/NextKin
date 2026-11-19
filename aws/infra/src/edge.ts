@@ -62,7 +62,7 @@ export class Edge extends Construct {
 
     const own = domain?.certificate
       ? {
-          domainNames: [domain.name],
+          domainNames: [domain.name, ...domain.extraNames],
           certificate: domain.certificate,
           minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
         }

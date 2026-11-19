@@ -93,6 +93,7 @@ export function getApi(): OpenAPIHono<ApiEnv> {
       appEnv: config.APP_ENV,
       appOrigin: config.APP_ORIGIN,
       extraOrigins: config.APP_EXTRA_ORIGINS,
+      ...(config.ADMIN_ORIGIN ? { adminOrigin: config.ADMIN_ORIGIN } : {}),
       cursorSecret: config.CURSOR_SECRET,
       staffKey: config.STAFF_TOTP_KEY,
       trustedIpHeader: config.TRUSTED_IP_HEADER,

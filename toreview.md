@@ -18073,3 +18073,31 @@ After the §244–§247 deploy, `/legal/privacy`, `/legal/terms` and `/account-d
 - **Cause:** the shell's AI-consent read (`/api/v1/me/consents/ai`) answers 401 to a visitor with no session. The HTTP client's 401 hook sends the browser to sign-in from any page that isn't an auth page.
 - **Fix:** `/legal`, `/account-deletion` and `/r` (shared reports, which had the same bounce) join the auth pages in `apps/web/src/lib/dataSource.ts`. Test: `apps/web/__tests__/lib/publicPages.test.ts`.
 - **Still there:** the consent read still fires and 401s on those pages. It's harmless, but quieter if the consent host skipped public pages.
+
+## §249 — The admin portal moves to admin.app.nextkin.ai (owner, 2026-11-20)
+
+The admin portal lived at `app.nextkin.ai/admin`. It now has its own address, `admin.app.nextkin.ai`. `nextkin.ai` is the landing page and `app.nextkin.ai` is the user app.
+
+- **DNS:** nothing changes at Namecheap. `admin.app.nextkin.ai` is a name inside the `app.nextkin.ai` Route 53 zone the stack owns. Namecheap answered with all four NS records on 2026-11-20.
+- **Infrastructure** (`aws/infra`):
+  - `cdk.json` has `"adminDomain": "admin.app.nextkin.ai"`.
+  - The ACM certificate adds it as a SAN, which replaces the certificate. CloudFormation makes the new one, validates it in the zone, moves the distribution and then deletes the old one.
+  - The distribution lists both names. The zone gets A and AAAA aliases for `admin`.
+  - Web and worker get `ADMIN_ORIGIN` and `ADMIN_HOST`, and S3 browser uploads trust the origin. The stack outputs `AdminUrl`.
+  - Synth shows exactly that.
+- **Server:**
+  - `ADMIN_ORIGIN` (optional) is trusted by the global cookie-CSRF check and the staff sign-in routes, but not by the user sign-in routes.
+  - Staff invite and reset emails link to it.
+  - Test: `packages/server/test/adminOrigin.test.ts`.
+- **Web** (`apps/web/proxy.ts`, `src/lib/adminHost.ts`):
+  - With `ADMIN_HOST` set, the admin host serves only `/admin/*` (anything else redirects to `/admin`).
+  - Every other host sends `/admin/*` to the same path on the admin host (308).
+  - The admin host skips Clerk's middleware.
+  - Unset, as in local development, nothing changes.
+  - Test: `apps/web/__tests__/lib/adminHost.test.ts`.
+- **Sessions:** the session cookie is `__Host-` and host-only, so staff now sign in once on the new address. A user's and a staff member's sessions no longer share a host.
+- **Also:** the web token ratchet's "other arbitrary values" ceiling is lowered from 430 to 426. `main` was already failing it because the count had dropped.
+- **Not verified until the deploy:**
+  - which host header the container sees behind CloudFront (the helper reads `x-forwarded-host`, then `Host`);
+  - that the Clerk provider on the portal's pages behaves on a new subdomain of the development instance;
+  - the certificate replacement itself.

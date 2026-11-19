@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, type NextFetchEvent } from 'next/server';
 
 import { clerkMiddleware } from '@clerk/nextjs/server';
 
+import { adminHostRedirect, requestHost } from '@/lib/adminHost';
 import { CLERK_ENABLED, CLERK_PUBLISHABLE_KEY } from '@/lib/clerk';
 import { pageSecurityHeaders } from '@/lib/securityHeaders';
 
@@ -61,7 +62,26 @@ function withHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
+/** The admin portal's own host (toreview §249), e.g. admin.app.nextkin.ai. Unset: /admin as before. */
+const ADMIN_HOST = process.env.ADMIN_HOST?.trim().toLowerCase() || undefined;
+
 function pages(request: NextRequest) {
+  // Before the session check: the portal and the user app each answer on their own host only.
+  const host = requestHost(request.headers);
+  const moved = adminHostRedirect({
+    host,
+    pathname: request.nextUrl.pathname,
+    search: request.nextUrl.search,
+    adminHost: ADMIN_HOST,
+  });
+  if (moved) {
+    // Absolute and https either way: behind CloudFront the container itself is reached over http,
+    // so a target built from request.url would bounce through one more redirect.
+    const target = moved.startsWith('https://')
+      ? new URL(moved)
+      : new URL(moved, `https://${host}`);
+    return withHeaders(NextResponse.redirect(target, 308));
+  }
   if (
     USES_BACKEND &&
     needsSession(request.nextUrl.pathname) &&
@@ -97,7 +117,15 @@ function withViewerScheme(request: NextRequest): NextRequest {
 const clerkProxy = (request: NextRequest, event: NextFetchEvent) =>
   clerkPages(withViewerScheme(request), event);
 
-export const proxy = CLERK_ENABLED ? clerkProxy : pages;
+// The admin host never runs Clerk: staff sign in with the server's own accounts (TOTP), and
+// Clerk's development handshake has no business on the portal's address.
+const isAdminHost = (request: NextRequest) =>
+  ADMIN_HOST !== undefined && requestHost(request.headers) === ADMIN_HOST;
+
+export const proxy = CLERK_ENABLED
+  ? (request: NextRequest, event: NextFetchEvent) =>
+      isAdminHost(request) ? pages(request) : clerkProxy(request, event)
+  : pages;
 
 export const config = {
   // Pages only: the API sets its own headers, and static assets need none.

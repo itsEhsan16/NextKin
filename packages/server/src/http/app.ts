@@ -80,6 +80,11 @@ export interface ApiConfig {
   appOrigin: string;
   /** Local only (toreview §131.10): more origins the app answers on, such as a tunnel's. */
   extraOrigins?: readonly string[];
+  /**
+   * The admin portal's own origin (toreview §249): trusted for the global CSRF check and staff
+   * sign-in, never for the user sign-in routes, and the address staff emails link to.
+   */
+  adminOrigin?: string;
   /** Signs pagination cursors. */
   cursorSecret: string;
   /** STAFF_TOTP_KEY: seals staff authenticator secrets (toreview §171.13). */
@@ -180,7 +185,10 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
   // Real sessions whenever identity is wired; tests may inject their own resolver.
   const resolver = deps.authenticate ?? (identity ? createAuthenticator(identity.idp, identity.sessions) : async () => null);
   app.use(authenticate(resolver));
-  app.use(csrf(trustedOrigins(config.appOrigin, config.extraOrigins)));
+  // The admin host shares this API, so its origin may write too; user sign-in stays app-only.
+  const adminExtra = config.adminOrigin ? [config.adminOrigin] : [];
+  const writeOrigins = [...(config.extraOrigins ?? []), ...adminExtra];
+  app.use(csrf(trustedOrigins(config.appOrigin, writeOrigins)));
   app.use(rateLimit(deps.rateLimiter ?? memory.rateLimiter));
 
   const signal = deps.degraded ?? NO_SIGNAL;
@@ -199,7 +207,7 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
       }),
     );
     if (staffAuth) {
-      app.route('/', staffAuthRoutes({ staff: staffAuth, appOrigin: config.appOrigin, ...(config.extraOrigins ? { extraOrigins: config.extraOrigins } : {}) }));
+      app.route('/', staffAuthRoutes({ staff: staffAuth, appOrigin: config.appOrigin, ...(writeOrigins.length ? { extraOrigins: writeOrigins } : {}) }));
     }
     app.route(
       '/',
@@ -307,7 +315,8 @@ export function createApi(deps: ApiDeps): OpenAPIHono<ApiEnv> {
         ...(identity ? { idp: identity.idp, sessions: identity.sessions } : {}),
         ...(staffAuth ? { staff: staffAuth } : {}),
         email: mailer,
-        appOrigin: config.appOrigin,
+        // Staff invite and reset emails link to the portal, on its own host when it has one.
+        appOrigin: config.adminOrigin ?? config.appOrigin,
       };
       app.route('/', adminRoutes(adminDeps));
       // The admin portal's areas (toreview §171.13), one routes file each.
