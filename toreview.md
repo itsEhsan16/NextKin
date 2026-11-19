@@ -17911,3 +17911,14 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Wash:** the lavender gradient is gone from the flow frame (every flow step and onboarding question), the job page and the JD page. `PageHero` no longer draws it by default.
   - **Kept:** Home, and the Welcome splash, where the wash is the animation. The owner can say if the splash should lose it too.
 - **Verified:** mobile typecheck and lint are clean; the full suite passes (227 suites, 1961 tests).
+
+## §241 — Grey frames behind cards, fixed for good (owner, 2026-11-19)
+- **What the owner saw:** on Jobs (Today's picks, All jobs, the Discover pill) and Home (create grid, Top Job Matches), cards showed a thick grey rounded frame around a pale inset while the screen faded in. This is the §209 bug again.
+- **Why it came back:** the §209 fix (a4e981e) only ever landed on `claude/app-ui-ux-redesign-1a1793`, which was never merged; this branch was cut from main without it.
+- **Fix:**
+  - The §209 commit is ported (`TabSceneFade` composites offscreen while fading).
+  - The rule is inverted: every shadow token is a CSS `boxShadow` on Android, which fades with its view. Only `ELEVATION_SHADOWS` (fab, sheet, dialog, stickyBarUp, toast) keep `elevation`. Under §209 the list named the CSS cards instead, so any new card token or the segment pill still got elevation.
+  - Newly CSS on Android: `segmentPill` (the Discover/Saved/Applied pill, the resume view toggle), `knob`, `sliderThumb`, `composer`, `composerSend`. Each is drawn before the content that sits on it, so tree order stacks them without elevation.
+- **Guard:** `__tests__/theme/androidShadowGuard.test.js` runs the Android branch. It fails if the elevation list grows without review, if any other token has elevation, or if any file in `src/` or `app/` writes `elevation:` by hand.
+- **Verified:** mobile tsc, eslint, full Jest (228 suites, 1964 tests).
+- **Not seen yet:** on the phone. Watch CSS shadow cost on the long Jobs list on lower-end Android.
