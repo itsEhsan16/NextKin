@@ -32,11 +32,9 @@ export type SheetProps = {
   /** Called for every dismiss path: scrim tap, swipe-down, Android back. */
   onClose: () => void;
   /**
-   * Design height in px, excluding the bottom safe-area inset. Treated as a FLOOR: the sheet
-   * grows past it whenever its content is taller (narrow screens wrap text, Dynamic Type
-   * enlarges it), because a fixed height plus overflow:'hidden' would silently clip rows —
-   * and a clipped row is untappable on Android. Changing it morphs the sheet on the UI thread
-   * (the CREATE 01 -> 02 push shrinks 600 -> 520).
+   * Design height in px, excluding the bottom safe-area inset: the first frame only. Once its
+   * content is measured the sheet hugs it, shorter or taller (§240), so no empty band sits under
+   * the last row and no row is clipped. Ignored for measurement on a `fill` sheet.
    */
   height: number;
   /**

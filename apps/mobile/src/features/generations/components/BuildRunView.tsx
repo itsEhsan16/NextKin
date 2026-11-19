@@ -104,9 +104,9 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
                 pill={<BuildBandPill score={score} />}
                 next={
                   <BuildNextTiles
-                    // A letter is written for a job; a pasted or uploaded one is not on NextKin.
+                    // Any finished resume can open a letter (§240); the job comes from it if any.
                     onCoverLetter={
-                      jobId && resumeId ? () => actions.openCoverLetterSetup(resumeId) : undefined
+                      resumeId ? () => actions.openCoverLetterSetup(resumeId) : undefined
                     }
                     onInterview={() => {
                       if (resumeId) actions.openInterviewSetup(resumeId);

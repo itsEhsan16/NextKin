@@ -160,8 +160,9 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
                 }
                 company={company}
                 next={
-                  // A letter is written for a job on NextKin (as Build's tile is).
-                  generation.jobId && resumeId ? (
+                  // Any finished resume can open a letter; the job comes from it when it has one
+                  // (owner, 2026-11-19, §240: a pasted job showed no tile).
+                  resumeId ? (
                     <BuildNextTiles onCoverLetter={() => actions.openCoverLetterSetup(resumeId)} />
                   ) : undefined
                 }

@@ -197,12 +197,12 @@ describe('GenerationScreen — Build Resume run (BUILD 05–07)', () => {
     });
   });
 
-  it('builds for a pasted job without a letter tile, an Apply button or a job to return to', async () => {
+  it('builds for a pasted job with a letter tile but no Apply button or job to return to (§240)', async () => {
     const { id } = await startBuild({ source: 'paste', text: PASTED });
     await renderGeneration(id);
     await finish();
 
-    expect(screen.queryByLabelText('Make a cover letter')).toBeNull();
+    expect(screen.getByLabelText('Make a cover letter')).toBeOnTheScreen();
     expect(screen.getByLabelText('Practice the interview')).toBeOnTheScreen();
 
     await act(async () => fireEvent.press(screen.getByLabelText('Close')));

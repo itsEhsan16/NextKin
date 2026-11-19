@@ -3,7 +3,6 @@ import { View } from 'react-native';
 
 import { a11yHeader } from '@/lib';
 import { scaledSheet } from '@/theme';
-import { GradientWash } from '@/ui/GradientWash';
 import { IconButton } from '@/ui/IconButton';
 import { Pressable } from '@/ui/Pressable';
 import { Screen } from '@/ui/Screen';
@@ -60,7 +59,7 @@ export function OnboardingFrame({
       padded={false}
       footer={footer ? <View style={styles.footer}>{footer}</View> : undefined}
     >
-      <GradientWash depth={0.35} />
+      {/* No lavender wash: it belongs to Home alone (owner, 2026-11-19, §240). */}
       <View style={styles.body}>
         <View style={styles.topRow}>
           {onBack ? (

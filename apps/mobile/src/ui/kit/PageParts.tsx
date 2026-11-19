@@ -22,7 +22,8 @@ export function PageHero({
   eyebrow,
   trailing,
   children,
-  wash = 0.4,
+  // The wash is Home's alone (owner, 2026-11-19, §240): opt in, never by default.
+  wash = 0,
   style,
 }: {
   title: string;

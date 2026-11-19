@@ -17901,3 +17901,13 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - mobile typecheck and lint are clean;
   - the full mobile suite passes: 227 suites, 1961 tests. The `BuildJobScreens` test now walks Tailor → Which resume?.
 - **Not seen on the phone yet.**
+
+## §240 — Sheets hug their content; a cover letter for every finished resume; the wash only on Home (owner, 2026-11-19)
+- **Sheets** (`ui/Sheet/sheetLayout.ts` `resolveSheetHeight`): a sheet now takes its measured content height, shorter or taller. The design height is only the first frame before measurement; until now it was a floor that left an empty white band under the last row of most sheets (the owner saw it on "How should we create it?" and More options).
+  - `fill` sheets (Filters) and the window clamp are unchanged.
+  - The first-frame heights of the From sheet (560 → 420) and the More options / Add a result sheets (460 → 380) were lowered, so they open close to their final size.
+  - **Watch:** this applies to all 25 sheets. One whose body relies on `flex: 1` without `fill` would now shrink to its content; none showed it in the suite. Look at a few sheets on the phone.
+- **Cover letter:** "Make a cover letter" now ends every finished Tailor and Build resume, a pasted job description included. Setup takes the resume and finds the job from it if there is one. (§237's rule hid it for pasted jobs, which is what the owner hit.)
+- **Wash:** the lavender gradient is gone from the flow frame (every flow step and onboarding question), the job page and the JD page. `PageHero` no longer draws it by default.
+  - **Kept:** Home, and the Welcome splash, where the wash is the animation. The owner can say if the splash should lose it too.
+- **Verified:** mobile typecheck and lint are clean; the full suite passes (227 suites, 1961 tests).

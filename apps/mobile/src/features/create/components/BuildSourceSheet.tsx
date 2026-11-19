@@ -14,8 +14,8 @@ const SCRATCH_KEY = 'scratch';
 const UPLOAD_KEY = 'upload';
 /** The art's box at 390: the web's method pictures, bare, no tile behind them (§238, §239). */
 const ART = 60;
-/** Taller than a plain picker: four ways with their pictures, or the resume list (§239). */
-const SHEET_HEIGHT = 560;
+/** The first frame before the rows are measured; the sheet then hugs them (§240). */
+const SHEET_HEIGHT = 420;
 
 /**
  * The web's method pictures (`apps/web/src/features/tailor/flow/methods.ts` METHOD_ART), copied
