@@ -28,6 +28,11 @@ if (!['', 'mock', 'http'].includes(webDataSource)) {
 // zone from the first deploy, the certificate and aliases once `appDomainLive` is true.
 const appDomain = app.node.tryGetContext('appDomain') as string | undefined;
 const appDomainLive = String(app.node.tryGetContext('appDomainLive') ?? 'false') === 'true';
+// The admin portal's own address (toreview §249), a name inside the app domain's zone.
+const adminDomain = app.node.tryGetContext('adminDomain') as string | undefined;
+if (adminDomain && (!appDomain || !adminDomain.endsWith(`.${appDomain}`))) {
+  throw new Error(`adminDomain must be a name inside appDomain (${appDomain ?? 'unset'}), e.g. admin.${appDomain ?? 'app.example'}`);
+}
 
 // Clerk (toreview §169): the publishable key is public, so it may live in cdk.json; the secret key
 // goes into Secrets Manager (nextkin-demo/clerk-secret-key) after the first deploy that sets this.
@@ -41,5 +46,14 @@ new DemoStack(app, DEMO.stack, {
   description: 'NextKin demo: internal testing and client demos (APP_ENV=dev)',
   webDataSource,
   ...(clerkPublishableKey ? { clerkPublishableKey } : {}),
-  ...(appDomain ? { appDomain: { name: appDomain, live: appDomainLive } } : {}),
+  ...(appDomain
+    ? {
+        appDomain: {
+          name: appDomain,
+          live: appDomainLive,
+          ...(adminDomain ? { extraNames: [adminDomain] } : {}),
+        },
+      }
+    : {}),
+  ...(adminDomain ? { adminDomain } : {}),
 });

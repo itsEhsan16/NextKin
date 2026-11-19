@@ -95,7 +95,7 @@ const RULES: Rule[] = [
     name: 'other arbitrary values',
     pattern:
       /(?<![\w-])(?!grid-(?:cols|rows)-|(?:group-|peer-)?(?:data|aria|has|nth)-)[a-z][a-z0-9-]*-\[(?!var\()[^\]]+\]/g,
-    ceiling: 430,
+    ceiling: 426,
     fix: 'use a spacing, size or container token; add one if the value repeats',
   },
 ];

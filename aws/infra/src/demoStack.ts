@@ -11,7 +11,9 @@ export interface DemoStackProps extends StackProps {
   /** NEXT_PUBLIC_DATA_SOURCE for the web build: 'http' (default) uses the API, 'mock' the fixtures. */
   webDataSource: string;
   /** The app's own domain (toreview §165): phase 1 the zone, phase 2 (`live`) the rest. */
-  appDomain?: { name: string; live: boolean };
+  appDomain?: { name: string; live: boolean; extraNames?: readonly string[] };
+  /** The admin portal's own address (toreview §249): served once the app domain is live. */
+  adminDomain?: string;
   /** Clerk's publishable key (toreview §169): set, sign-up and sign-in go through Clerk. */
   clerkPublishableKey?: string;
 }
@@ -32,12 +34,16 @@ export class DemoStack extends Stack {
     const domain = props.appDomain ? new AppDomain(this, 'Domain', props.appDomain) : undefined;
     const edge = new Edge(this, 'Edge', network, data, domain);
     const extraOrigins = edge.appOrigin === edge.defaultOrigin ? [] : [edge.defaultOrigin];
-    data.allowBrowserUploads([edge.appOrigin, ...extraOrigins]);
+    // Only once the certificate covers it, or the name would answer with a certificate error.
+    const adminHost = props.adminDomain && domain?.certificate ? props.adminDomain : undefined;
+    const adminOrigin = adminHost ? `https://${adminHost}` : undefined;
+    data.allowBrowserUploads([edge.appOrigin, ...extraOrigins, ...(adminOrigin ? [adminOrigin] : [])]);
     const services = new Services(this, 'Services', {
       network,
       data,
       appOrigin: edge.appOrigin,
       extraOrigins,
+      ...(adminHost ? { adminHost } : {}),
       webDataSource: props.webDataSource,
       ...(props.clerkPublishableKey ? { clerkPublishableKey: props.clerkPublishableKey } : {}),
     });
@@ -47,6 +53,7 @@ export class DemoStack extends Stack {
     const output = (id: string, value: string) => new CfnOutput(this, id, { value });
     output('AppUrl', edge.appOrigin);
     output('DefaultUrl', edge.defaultOrigin);
+    if (adminOrigin) output('AdminUrl', `${adminOrigin}/admin`);
     if (domain) {
       // Phase 1: the four values to add at Namecheap as NS records for the host of the subdomain.
       new CfnOutput(this, 'DomainNameServers', {

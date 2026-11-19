@@ -25,6 +25,8 @@ export interface ServicesProps {
   appOrigin: string;
   /** More origins the server trusts: the cloudfront.net address once the own domain is live. */
   extraOrigins?: readonly string[];
+  /** The admin portal's own host (toreview §249), e.g. admin.app.nextkin.ai. */
+  adminHost?: string;
   /** NEXT_PUBLIC_DATA_SOURCE baked into the web build: '' (mock) or 'http'. */
   webDataSource: string;
   /** NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY baked into the web build, when sign-in uses Clerk. */
@@ -97,7 +99,14 @@ export class Services extends Construct {
       },
     });
 
-    const environment = appEnvironment(data, appOrigin, extraOrigins);
+    const environment = {
+      ...appEnvironment(data, appOrigin, extraOrigins),
+      // The server trusts the portal's origin and links staff there; the web proxy serves the
+      // portal only on that host and moves /admin there from every other (toreview §249).
+      ...(props.adminHost
+        ? { ADMIN_ORIGIN: `https://${props.adminHost}`, ADMIN_HOST: props.adminHost }
+        : {}),
+    };
     const secrets = appSecrets(data);
     const runtimeRoles = ['app', 'maintenance', 'readonly'] as const;
     const grantApp = (definition: ecs.FargateTaskDefinition) => {

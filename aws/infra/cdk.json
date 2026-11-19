@@ -4,6 +4,7 @@
   "context": {
     "appDomain": "app.nextkin.ai",
     "appDomainLive": true,
+    "adminDomain": "admin.app.nextkin.ai",
     "clerkPublishableKey": "pk_test_bmF0aXZlLWJhc2lsaXNrLTk3NDMuY2xlcmsuYWNjb3VudHMuZGV2JA",
     "pushAndroidArn": "arn:aws:sns:us-east-1:962942593570:app/GCM/NextKinAndroid",
     "@aws-cdk/core:checkSecretUsage": true,
