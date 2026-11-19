@@ -17925,5 +17925,5 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 
 ## §242 — The ready screen's cover-letter tile uses Home's Cover Letter drawing (owner, 2026-11-19)
 - "Make a cover letter" (Tailor and Build ready screens) now draws `assets/icons/quick-start/cover-letter.svg`, the open envelope on Home's create grid, at 30 wide in its own 41 : 42.9 ratio. It was the create sheet's small glyph (`icons/create/cover-letter.svg`).
-- **Left alone:** the create sheet (`createSteps.ts`) and History's art (`historyArt.ts`) still use the small glyph. Say if those should switch too.
+- **Then switched too (owner, same day):** the create sheet's "Write a cover letter" row (52 wide) and History's cover-letter rows (`historyArt.ts`) draw the same envelope. `icons/create/cover-letter.svg` is now unused; kept on disk.
 - **Verified:** tsc, eslint, generations Jest (34). Not seen on the phone.
