@@ -24,7 +24,13 @@ import { ToolkitBento } from './sections/ToolkitBento';
  */
 export function LandingScreen() {
   return (
-    <div className="landing min-h-dvh overflow-x-clip bg-lp-page font-sans text-lp-ink">
+    // `data-public-page`: a signed-out visitor belongs here, so a background 401 must not send them
+    // to sign-in. On nextkin.ai the address is `/`, which the path list can't tell from the app's
+    // Home (src/lib/dataSource.ts).
+    <div
+      data-public-page
+      className="landing min-h-dvh overflow-x-clip bg-lp-page font-sans text-lp-ink"
+    >
       <SmoothScroll />
       <ScrollProgress />
       <LandingNav />

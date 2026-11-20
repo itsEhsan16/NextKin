@@ -52,6 +52,13 @@ describe('LandingScreen', () => {
     expect(within(pricing).getByText('$19')).toBeInTheDocument();
   });
 
+  it('marks itself a public page, so a background 401 never sends a visitor to sign-in', () => {
+    // On nextkin.ai the landing page sits at `/`, which the sign-in redirect can't tell from the
+    // app's Home by path alone (src/lib/dataSource.ts).
+    render(<LandingScreen />);
+    expect(document.querySelector('[data-public-page]')).not.toBeNull();
+  });
+
   it('labels the job-link field', () => {
     render(<LandingScreen />);
     expect(screen.getByLabelText('Job link')).toBeInTheDocument();

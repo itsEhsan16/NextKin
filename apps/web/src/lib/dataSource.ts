@@ -27,9 +27,24 @@ export const SIGN_IN = '/sign-in';
  * account deletion the Play listing points at, and a shared report (toreview §248). A 401 from a
  * background call there is expected, not a lost session.
  */
-const AUTH_PAGES = [SIGN_IN, '/sign-up', '/session', '/legal', '/account-deletion', '/r'];
+const AUTH_PAGES = [
+  SIGN_IN,
+  '/sign-up',
+  '/session',
+  '/legal',
+  '/account-deletion',
+  '/r',
+  '/landing',
+];
 export const isAuthPage = (pathname: string) =>
   AUTH_PAGES.some((page) => pathname === page || pathname.startsWith(`${page}/`));
+
+/**
+ * A page that marks itself public (`data-public-page`): the landing page, which on nextkin.ai sits
+ * at `/` (owner, 2026-11-21), a path the list above can't allow, since the app's Home is `/` too.
+ * The page is server-rendered, so the mark is in the DOM before any background call can 401.
+ */
+const onPublicPage = () => document.querySelector('[data-public-page]') !== null;
 
 const goToSignIn = () => {
   if (typeof window === 'undefined') return;
@@ -42,7 +57,7 @@ const goToSignIn = () => {
     return;
   }
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  if (!isAuthPage(window.location.pathname)) window.location.assign(SIGN_IN);
+  if (!isAuthPage(window.location.pathname) && !onPublicPage()) window.location.assign(SIGN_IN);
 };
 
 export const http = createHttpClient({
