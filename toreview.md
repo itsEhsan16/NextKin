@@ -18408,3 +18408,28 @@ The owner asked for every landing component to be rebuilt with more precision an
 - **What changed:** `AuthBrandPanel`'s logo drops the white rounded tile. It now uses the landing nav's `/landing/logo-mark-glow.svg` (the star on a soft white spread) with the same framing: a 36px slot, with the glow overflowing it.
 - **Still loads on the app host:** the proxy matcher skips `.svg` files, so `/landing/…` loads there too.
 - **Watch for:** `LogoMarkIllustration` is no longer used here. If the app has another branded panel with the tile, it may want the same treatment.
+
+### §251.12 — nextkin.ai serves the landing page (owner, 2026-11-21; in progress)
+
+- **Decision:** the landing page lives on the bare domain. The domain's DNS stays at Namecheap, as decided on 2026-11-04 (§165), because it carries the email forwarding.
+- **Done:**
+  - **Certificate:** an ACM certificate for `nextkin.ai` + `www.nextkin.ai`, requested by CLI (us-east-1, DNS validation): `…certificate/52d9cec3-3bfb-4aab-9b96-41dd2431a5f8`. It is pending until the two validation CNAMEs are added at Namecheap.
+  - **Infra code:**
+    - `Edge.addLanding` creates a second CloudFront distribution (`LandingCdn`) with the same origin and route classes. The app's distribution and its certificate stay untouched.
+    - Services set `LANDING_HOST=nextkin.ai,www.nextkin.ai` and `APP_HOST=app.nextkin.ai` on web.
+    - The deploy outputs `LandingCdnDomain` and `LandingUrl`.
+    - It is switched on by the `cdk.json` context keys `landingDomains` and `landingCertificateArn`, which aren't set yet, because CloudFront refuses a pending certificate.
+    - Synth checked: both distributions have the right aliases and web has the env.
+- **Done later the same day:**
+  - Chrome added the validation CNAMEs (prompt A) and the certificate is ISSUED.
+  - `cdk.json` sets `landingDomains` and `landingCertificateArn`, and it is deployed: `LandingCdnDomain` = `dp76rlk4ir1mh.cloudfront.net`.
+  - Tested by pinning `nextkin.ai` to that edge:
+    - `/` and `www/` give 200 with the landing page.
+    - `/sign-in` gives 308 to `https://app.nextkin.ai/sign-in`.
+    - `/legal/privacy` and `/legal/terms` give 200.
+    - `/legal` alone is 404 on every host; there is no index page.
+- **Remaining:** prompt B (the `@` ALIAS and `www` CNAME at Namecheap), then verify over real DNS.
+- **Mail:** Namecheap's mail mode is Email Forwarding, but no forward is defined, so mail to `@nextkin.ai` goes nowhere yet.
+- **Docker:** it now needs `C:\Users\ACER\bin\docker-clean-start.ps1` (desktop shortcut "Docker (clean start)"). The stale inference socket breaks every start otherwise.
+- **Email:** nothing is removed at Namecheap. The `@` and `www` names were empty in public DNS today; MX, SPF and the `app` NS records stay.
+- **To decide later:** whether `www` should redirect to the bare domain. Today both names serve the page.

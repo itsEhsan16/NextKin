@@ -34,6 +34,18 @@ if (adminDomain && (!appDomain || !adminDomain.endsWith(`.${appDomain}`))) {
   throw new Error(`adminDomain must be a name inside appDomain (${appDomain ?? 'unset'}), e.g. admin.${appDomain ?? 'app.example'}`);
 }
 
+// The marketing site on nextkin.ai (owner, 2026-11-21): the names, and the ACM certificate that
+// covers them, requested by CLI and validated by CNAMEs at Namecheap (the domain's DNS stays
+// there). Left out until that certificate is ISSUED: CloudFront refuses a pending one.
+const landingDomains = String(app.node.tryGetContext('landingDomains') ?? '')
+  .split(',')
+  .map((d) => d.trim())
+  .filter(Boolean);
+const landingCertificateArn = app.node.tryGetContext('landingCertificateArn') as string | undefined;
+if (landingDomains.length && !landingCertificateArn?.startsWith('arn:aws:acm:us-east-1:')) {
+  throw new Error('landingDomains needs landingCertificateArn: an ISSUED ACM certificate in us-east-1');
+}
+
 // Clerk (toreview §169): the publishable key is public, so it may live in cdk.json; the secret key
 // goes into Secrets Manager (nextkin-demo/clerk-secret-key) after the first deploy that sets this.
 const clerkPublishableKey = app.node.tryGetContext('clerkPublishableKey') as string | undefined;
@@ -56,4 +68,7 @@ new DemoStack(app, DEMO.stack, {
       }
     : {}),
   ...(adminDomain ? { adminDomain } : {}),
+  ...(landingDomains.length && landingCertificateArn
+    ? { landing: { names: landingDomains, certificateArn: landingCertificateArn } }
+    : {}),
 });

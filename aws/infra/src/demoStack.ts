@@ -16,6 +16,12 @@ export interface DemoStackProps extends StackProps {
   adminDomain?: string;
   /** Clerk's publishable key (toreview §169): set, sign-up and sign-in go through Clerk. */
   clerkPublishableKey?: string;
+  /**
+   * The marketing site (owner, 2026-11-21): nextkin.ai and www on their own distribution, with a
+   * certificate validated at Namecheap beforehand. Needs the app domain live (its host is where
+   * app paths move to).
+   */
+  landing?: { names: readonly string[]; certificateArn: string };
 }
 
 /**
@@ -38,12 +44,21 @@ export class DemoStack extends Stack {
     const adminHost = props.adminDomain && domain?.certificate ? props.adminDomain : undefined;
     const adminOrigin = adminHost ? `https://${adminHost}` : undefined;
     data.allowBrowserUploads([edge.appOrigin, ...extraOrigins, ...(adminOrigin ? [adminOrigin] : [])]);
+    const landing =
+      props.landing && domain?.certificate
+        ? {
+            hosts: props.landing.names,
+            appHost: domain.name,
+            cdn: edge.addLanding(props.landing.names, props.landing.certificateArn),
+          }
+        : undefined;
     const services = new Services(this, 'Services', {
       network,
       data,
       appOrigin: edge.appOrigin,
       extraOrigins,
       ...(adminHost ? { adminHost } : {}),
+      ...(landing ? { landing: { hosts: landing.hosts, appHost: landing.appHost } } : {}),
       webDataSource: props.webDataSource,
       ...(props.clerkPublishableKey ? { clerkPublishableKey: props.clerkPublishableKey } : {}),
     });
@@ -54,6 +69,11 @@ export class DemoStack extends Stack {
     output('AppUrl', edge.appOrigin);
     output('DefaultUrl', edge.defaultOrigin);
     if (adminOrigin) output('AdminUrl', `${adminOrigin}/admin`);
+    if (landing) {
+      // At Namecheap: an ALIAS record for @ and a CNAME for www, both to this value.
+      output('LandingCdnDomain', landing.cdn.distributionDomainName);
+      output('LandingUrl', `https://${landing.hosts[0]}`);
+    }
     if (domain) {
       // Phase 1: the four values to add at Namecheap as NS records for the host of the subdomain.
       new CfnOutput(this, 'DomainNameServers', {

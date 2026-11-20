@@ -27,6 +27,11 @@ export interface ServicesProps {
   extraOrigins?: readonly string[];
   /** The admin portal's own host (toreview §249), e.g. admin.app.nextkin.ai. */
   adminHost?: string;
+  /**
+   * The marketing hosts (owner, 2026-11-21), e.g. nextkin.ai and www.nextkin.ai, and the app host
+   * their app paths move to. The web proxy serves the landing page at `/` on them.
+   */
+  landing?: { hosts: readonly string[]; appHost: string };
   /** NEXT_PUBLIC_DATA_SOURCE baked into the web build: '' (mock) or 'http'. */
   webDataSource: string;
   /** NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY baked into the web build, when sign-in uses Clerk. */
@@ -105,6 +110,9 @@ export class Services extends Construct {
       // portal only on that host and moves /admin there from every other (toreview §249).
       ...(props.adminHost
         ? { ADMIN_ORIGIN: `https://${props.adminHost}`, ADMIN_HOST: props.adminHost }
+        : {}),
+      ...(props.landing
+        ? { LANDING_HOST: props.landing.hosts.join(','), APP_HOST: props.landing.appHost }
         : {}),
     };
     const secrets = appSecrets(data);

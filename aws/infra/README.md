@@ -122,6 +122,13 @@ theirs up again after a Super Admin resets their sign-in. Invite everyone else f
 | Resume before a demo | `pnpm --filter @nextkin/infra task resume` (2–4 min; ClamAV needs a few more for uploads) |
 | Tear down | `pnpm --filter @nextkin/infra cdk destroy --profile nextkin`. The buckets are kept and the database leaves a final snapshot |
 
+## The landing page on nextkin.ai
+
+`nextkin.ai` and `www.nextkin.ai` serve the landing page from a second CloudFront distribution
+(`LandingCdn`); the domain's DNS stays at Namecheap. The steps, the certificate and the two Claude in
+Chrome prompts for Namecheap are in [`landing-domain.md`](landing-domain.md). Context keys:
+`landingDomains` (comma-separated) and `landingCertificateArn` (an ISSUED us-east-1 certificate).
+
 ## Sign-up through Clerk (toreview §169)
 
 Off until `clerkPublishableKey` is set. To turn it on:
