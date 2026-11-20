@@ -4,6 +4,7 @@ import { clerkMiddleware } from '@clerk/nextjs/server';
 
 import { adminHostRedirect, requestHost } from '@/lib/adminHost';
 import { CLERK_ENABLED, CLERK_PUBLISHABLE_KEY } from '@/lib/clerk';
+import { landingHostRoute, parseHosts } from '@/lib/landingHost';
 import { pageSecurityHeaders } from '@/lib/securityHeaders';
 
 // Page security headers (src/lib/securityHeaders.ts). A proxy rather than next.config `headers()`
@@ -65,6 +66,10 @@ function withHeaders(response: NextResponse): NextResponse {
 /** The admin portal's own host (toreview §249), e.g. admin.app.nextkin.ai. Unset: /admin as before. */
 const ADMIN_HOST = process.env.ADMIN_HOST?.trim().toLowerCase() || undefined;
 
+/** The marketing host(s), e.g. nextkin.ai, and the app's own host it hands app paths to. */
+const LANDING_HOSTS = parseHosts(process.env.LANDING_HOST);
+const APP_HOST = process.env.APP_HOST?.trim().toLowerCase() || undefined;
+
 function pages(request: NextRequest) {
   // Before the session check: the portal and the user app each answer on their own host only.
   const host = requestHost(request.headers);
@@ -81,6 +86,22 @@ function pages(request: NextRequest) {
       ? new URL(moved)
       : new URL(moved, `https://${host}`);
     return withHeaders(NextResponse.redirect(target, 308));
+  }
+  // The marketing host: `/` is the landing page, app paths move to the app host.
+  const landing = landingHostRoute({
+    host,
+    pathname: request.nextUrl.pathname,
+    search: request.nextUrl.search,
+    landingHosts: LANDING_HOSTS,
+    appHost: APP_HOST,
+  });
+  if (landing?.kind === 'redirect') {
+    return withHeaders(NextResponse.redirect(new URL(landing.location), 308));
+  }
+  if (landing?.kind === 'rewrite') {
+    const target = request.nextUrl.clone();
+    target.pathname = landing.pathname;
+    return withHeaders(NextResponse.rewrite(target));
   }
   if (
     USES_BACKEND &&

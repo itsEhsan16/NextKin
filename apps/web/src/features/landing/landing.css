@@ -1,0 +1,370 @@
+/**
+ * Landing page (Figma 524:419, "Landing v5 · Show your work") styles that are not tokens. Its
+ * `lp-*` tokens live at the end of theme.css: they must come after that file's `--color-*: initial`.
+ */
+
+/* The hero's violet ground (01 Hero, 525:390): a vertical violet fade with a soft lilac bloom. */
+.lp-hero-ground {
+  background:
+    radial-gradient(ellipse 116.67px 130px at 0% 90%, rgba(201, 196, 255, 0.5), transparent),
+    linear-gradient(180deg, #5b4df0 0%, #7468f6 45%, #b4aefb 100%);
+}
+
+.lp-button-gradient {
+  background-image: linear-gradient(166deg, #7266f7 0%, #4a3ae8 71%);
+}
+
+/* SplitText mask lines must not clip descenders of the serif accent. */
+.landing .lp-line-mask {
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing * {
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * The hero field's moving glass ring (owner, 2026-11-20). A conic band of violets with white glints
+ * spins around the pill; a top sheen makes it read as glass, and a blurred copy glows behind.
+ * `--lp-ring-angle` is a registered property so the conic angle itself can animate.
+ */
+@property --lp-ring-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.lp-glass-ring {
+  --lp-ring-width: 5px;
+  --lp-ring-band: conic-gradient(
+    from var(--lp-ring-angle),
+    #ede9fe 0deg,
+    #ffffff 14deg,
+    #e9d5ff 28deg,
+    #c084fc 60deg,
+    #7c3aed 110deg,
+    #3b1d8f 160deg,
+    #5b21b6 200deg,
+    #a78bfa 250deg,
+    #ffffff 290deg,
+    #c4b5fd 320deg,
+    #ede9fe 360deg
+  );
+  --lp-ring-glow: conic-gradient(
+    from var(--lp-ring-angle),
+    #f5f3ff 0deg,
+    #a78bfa 60deg,
+    #a78bfa 140deg,
+    #c4b5fd 220deg,
+    #ffffff 290deg,
+    #f5f3ff 360deg
+  );
+  position: relative;
+  isolation: isolate;
+  border-radius: 9999px;
+  padding: var(--lp-ring-width);
+  /* The angle spins here, on the element that computes the bands, so both layers follow it. */
+  animation: lp-ring-spin 3.5s linear infinite;
+}
+
+/* The ring itself: the band, masked to a hairline, under a glass sheen. */
+.lp-glass-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  padding: var(--lp-ring-width);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.75),
+      rgba(255, 255, 255, 0) 45%,
+      rgba(255, 255, 255, 0.3)
+    ),
+    var(--lp-ring-band);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* The glow: the same band, blurred, just behind the pill. */
+.lp-glass-ring::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: var(--lp-ring-glow);
+  filter: blur(16px);
+  opacity: 0.7;
+}
+
+@keyframes lp-ring-spin {
+  to {
+    --lp-ring-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-glass-ring {
+    animation: none;
+  }
+}
+
+/*
+ * Integration beams (owner, 2026-11-20): pulses of light running along the connector wires —
+ * inward from the job boards to the NextKin hub, then outward from the hub to the files. The
+ * wires SVG is used as a mask over a radial gradient band whose radius animates around the hub
+ * centre (50%, 57.7% of the 1100×520 web); `cqw` comes from the web's @container. `--lp-beam`
+ * animates on the same element that paints it, so the gradient follows.
+ */
+@property --lp-beam {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+.lp-beams {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 2px rgba(139, 124, 255, 0.9)) drop-shadow(0 0 6px rgba(85, 67, 238, 0.6));
+}
+
+.lp-beam {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: url('/landing/integrations-wires.svg') 0 0 / 100% 100% no-repeat;
+  mask: url('/landing/integrations-wires.svg') 0 0 / 100% 100% no-repeat;
+  animation: lp-beam-run 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* Boards → hub: the band closes in on the hub; the half above the hub only. */
+.lp-beam--in {
+  clip-path: inset(0 0 42.3% 0);
+  background: radial-gradient(
+    circle at 50% 57.7%,
+    transparent calc((1 - var(--lp-beam)) * 38cqw - 1cqw),
+    #ffffff calc((1 - var(--lp-beam)) * 38cqw),
+    #8b7cff calc((1 - var(--lp-beam)) * 38cqw + 1.5cqw),
+    transparent calc((1 - var(--lp-beam)) * 38cqw + 6cqw)
+  );
+}
+
+/* Hub → files: the band opens out from the hub; the half below it, half a beat later. */
+.lp-beam--out {
+  clip-path: inset(57.7% 0 0 0);
+  animation-delay: 1.3s;
+  background: radial-gradient(
+    circle at 50% 57.7%,
+    transparent calc(4cqw + var(--lp-beam) * 26cqw - 6cqw),
+    #8b7cff calc(4cqw + var(--lp-beam) * 26cqw - 1.5cqw),
+    #ffffff calc(4cqw + var(--lp-beam) * 26cqw),
+    transparent calc(4cqw + var(--lp-beam) * 26cqw + 1cqw)
+  );
+}
+
+@keyframes lp-beam-run {
+  0% {
+    --lp-beam: 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    --lp-beam: 1;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-beams {
+    display: none;
+  }
+}
+
+/*
+ * Landing v2 dark glass cards (owner, 2026-11-20, toreview §251), after the owner's references:
+ * a deep indigo surface, a hairline glass edge lit from the top left, film grain, an optional
+ * halftone of dots, and a soft violet light beam. Only transform and opacity ever animate.
+ */
+.lp-glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid var(--color-lp-glass-line);
+  /* Light frosted glass (owner, 2026-11-20: "dark tone does not look good"). */
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(139, 124, 255, 0.14) 0%, transparent 55%),
+    linear-gradient(160deg, #ffffff 0%, #faf9ff 55%, #f2f0ff 100%);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 1px 2px rgba(27, 22, 80, 0.04),
+    0 24px 48px -28px rgba(85, 67, 238, 0.28);
+  color: var(--color-lp-on-glass);
+}
+
+/* Film grain over everything. */
+.lp-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* A halftone of fine dots, fading out from one corner (the references' textured light). */
+.lp-glass-dots {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(85, 67, 238, 0.22) 1px, transparent 1.2px);
+  background-size: 7px 7px;
+  -webkit-mask-image: radial-gradient(60% 60% at 85% 20%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(60% 60% at 85% 20%, #000 0%, transparent 70%);
+  opacity: 0.55;
+}
+
+/* A soft light beam: a blurred streak that breathes. Colour via --lp-beam-color. */
+.lp-light-beam {
+  --lp-beam-color: 139, 124, 255;
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 9999px;
+  /* On light glass the beam is a soft violet glow rather than a white streak. */
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(var(--lp-beam-color), 0.32) 0%,
+    rgba(var(--lp-beam-color), 0.16) 35%,
+    transparent 72%
+  );
+  filter: blur(22px);
+  animation: lp-beam-breathe 7s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes lp-beam-breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: translate3d(0, 0, 0) rotate(var(--lp-beam-rotate, -24deg)) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(0, -4%, 0) rotate(var(--lp-beam-rotate, -24deg)) scale(1.08);
+  }
+}
+
+/* A pointer spotlight, moved with transform by GSAP. */
+.lp-glass-spot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  pointer-events: none;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(139, 124, 255, 0.14), transparent 62%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.lp-glass:hover .lp-glass-spot {
+  opacity: 1;
+}
+
+/* Glass chips and panels inside a card (the references' inner UI). */
+.lp-glass-panel {
+  border: 1px solid rgba(85, 67, 238, 0.12);
+  background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.86));
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 14px 30px -18px rgba(85, 67, 238, 0.3);
+  backdrop-filter: blur(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-light-beam {
+    animation: none;
+  }
+}
+
+/* Clay scene tiles float gently, each on its own phase. */
+.lp-clay-float {
+  animation: lp-clay-float 5.5s ease-in-out infinite;
+}
+.lp-clay-float:nth-of-type(2n) {
+  animation-delay: -1.8s;
+}
+.lp-clay-float:nth-of-type(3n) {
+  animation-delay: -3.4s;
+}
+
+@keyframes lp-clay-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-1deg);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) rotate(1.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-clay-float {
+    animation: none;
+  }
+}
+
+/* The nav's frosted glass (owner, 2026-11-21: "make them more glassy"): a light-catching gradient
+   fill, a strong saturated blur, a soft inner sheen along the top and a drop shadow. No outline,
+   so the logo pill stays borderless. One look over violet, one over the light sections. */
+.lp-nav-glass {
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+}
+.lp-nav-glass--dark {
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.3) 0%,
+    rgb(255 255 255 / 0.1) 50%,
+    rgb(255 255 255 / 0.18) 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.4),
+    inset 0 -8px 16px -10px rgb(255 255 255 / 0.25),
+    inset 0 0 24px rgb(255 255 255 / 0.06),
+    0 12px 32px -10px rgb(20 12 80 / 0.35);
+}
+.lp-nav-glass--light {
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.9) 0%,
+    rgb(255 255 255 / 0.55) 50%,
+    rgb(255 255 255 / 0.75) 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.95),
+    inset 0 -8px 16px -10px rgb(124 108 255 / 0.12),
+    0 12px 32px -12px rgb(20 22 43 / 0.16);
+}

@@ -18101,3 +18101,310 @@ The admin portal lived at `app.nextkin.ai/admin`. It now has its own address, `a
   - which host header the container sees behind CloudFront (the helper reads `x-forwarded-host`, then `Host`);
   - that the Clerk provider on the portal's pages behaves on a new subdomain of the development instance;
   - the certificate replacement itself.
+
+## §250 — The v5 landing page is built, with GSAP and Motion (owner, 2026-11-20)
+
+The owner asked for the Figma board `524:419` ("Landing v5 · Show your work", For-Next-Kin) built as nextkin.ai's first page, with GSAP and Motion and a free hand on motion. It is at `apps/web/app/landing/page.tsx`, built from `src/features/landing/`.
+
+- **Routing.** `src/lib/landingHost.ts` is modelled on `adminHost.ts`. Two server-only env vars drive it, and with them unset nothing changes:
+  - `LANDING_HOST` is comma-separated, e.g. `nextkin.ai,www.nextkin.ai`.
+  - `APP_HOST` is e.g. `app.nextkin.ai`.
+
+  On a landing host:
+  - The proxy rewrites `/` to `/landing`.
+  - `/legal/*` and `/account-deletion` are served there too.
+  - Every other path 308s to the same path on `APP_HOST`. That is why every CTA is a plain `<a href="/sign-up">`: the redirect needs a full page load.
+
+  Unit tests are in `__tests__/lib/landingHost.test.ts`.
+- **Not done, needs the owner:**
+  - Point `nextkin.ai` and `www` (still on Namecheap DNS) at the web service: certificate SAN, distribution alias, DNS.
+  - Set the two env vars.
+  - Nothing in `aws/infra` was touched.
+- **Hand-off params.** The hero field sends `/sign-up?job=<link>` and the final CTA sends `/sign-up?email=<address>`. Sign-up ignores both today, so the visitor has to paste the link or type the address again. Wiring them in is a small follow-up.
+- **Tokens.**
+  - The board binds no colour variables. The palette was read off its fills into `lp-*` tokens at the end of `theme.css`, mirrored in `tokens.ts`. They sit at the end because they must follow `--color-*: initial`.
+  - The type roles (`text-lp-display`, `lp-h2`, …) come from the board's "LP v5" text styles, with tracking in em.
+  - `src/features/landing/` is on the `sourceTokens` allowlist like the other generated art. It still has many board one-off values (illustration greys, chip colours). Say if you want them tokenised.
+- **Motion.**
+  - GSAP: ScrollTrigger, SplitText and DrawSVG.
+  - Lenis for smooth scroll, on GSAP's ticker.
+  - Motion for hover and state: nav capsule, accordion, pricing pill, magnetic buttons.
+  - Every animation runs under `gsap.matchMedia('(prefers-reduced-motion: no-preference)')`. The markup is server-rendered in its final state, so reduced motion, no JS and crawlers all get the static board.
+  - The proof band pins only at ≥1024px wide and ≥760px tall.
+- **Things I designed or wrote that the board doesn't have:**
+  - The tablet and phone layouts (the board is 1440 only), and the mobile menu.
+  - The dark glass nav capsule after scrolling.
+  - The hand-drawn underline under "honestly", and the typed example links in the hero field.
+  - FAQ answers 3–8. The board shows only the first two. The privacy answer is a claim that needs your sign-off.
+- **Open questions:**
+  - The pricing Monthly/Annually toggle switches visually only, because the board has no annual price. Send annual prices to make it real.
+  - The board's placeholders stay as drawn:
+    - the contact address `hello@nextkin.com (placeholder)`, a .com domain;
+    - the "Coming soon" store chips with stand-in logos;
+    - the LinkedIn and Naukri stand-in marks;
+    - footer links with no page yet (Company, Careers, Press, Blog, Resume examples, Report an issue), which point to `#`.
+  - The integrations section sits on the page's white. The board's screenshot hints at a faint lavender ground there.
+- **Verified:**
+  - Chrome at 1440, 768 and 375, every section: no horizontal overflow and no console errors on a clean load.
+  - The FAQ and the pricing toggle.
+  - tsc and ESLint (0 errors) on the landing files, plus the landing, theme and routing Jest suites.
+  - Reduced motion was checked only through the jsdom render test, not in a real browser.
+- **Dev note:** while the dev server hot-reloads a landing file, React can log `removeChild` / `insertBefore` errors. SplitText has rewritten text that React owns. A fresh load is clean. Keep `Reveal` on static text only.
+
+### §250.1 — Board-fidelity pass after the owner's review (2026-11-20)
+
+The owner said the page looked different from the board. Motion and scroll effects were fine; the at-rest appearance wasn't. Fixed:
+
+- **Fonts:** the serif accent word (Instrument Serif) never rendered anywhere, so every heading's accent fell back to sans italic. The `--font-instrument-serif` variable sat on a wrapper div, but the `font-serif-accent` token resolves at `:root`. The variable now sits on `<html>` like Caveat's (`app/layout.tsx`, not preloaded).
+- **Hero:** this matches the board to the pixel at 1440.
+  - The nav row sits in the hero, not as a sticky capsule.
+  - The headline line-height is 86px; it had collapsed to 66px because a base `leading-*` beat the token. The subtitle is 30px and the button is 53px.
+  - The mock is clipped at the board's 1300px card height. The extra underline is gone.
+- **Line-height across sections:** a base `leading-[…]` or `tracking-[…]` overrode the responsive `sm:/lg:text-lp-*`. Matching responsive leading and tracking were added in nine section files.
+- **Page background:** it is the board's `#fbfaff`, not white.
+- **Job boards:** five static chips, as drawn, instead of the marquee.
+- **Proof band:**
+  - The subtitle is on one line, as on the board.
+  - Highlighted job-post words settle as plain violet; there is no marker underline.
+- **Score:** the Basis tag sits at the board's height.
+- **Final CTA:** the deco squares land flat on the board's checker grid. The 3D flips were left half-turned.
+- **Crash fix:** loading or reloading the page while scrolled down, including `#pricing` links, crashed the whole page. ScrollTrigger `once: true` triggers kill themselves during another trigger's first refresh. Every landing trigger now uses `toggleActions: 'play none none none'` instead.
+- **Motion kept:** the scroll progress line, the pointer glow, the copy drifting up as the hero leaves, and the typed example links in the field.
+- **Verified:** in Chrome at 1707 wide, section by section against `get_screenshot` of each board frame. The dev overlay's single "issue" is an `fdprocessedid` hydration warning from a form-filler browser extension, not the page.
+
+### §250.2 — Real board logos, hub centred (owner, 2026-11-20)
+
+- **Logos:** the job-board chips and the integrations web now use each company's own logo instead of the board's drawn stand-ins. The files are in `apps/web/public/landing/`:
+  - `logo-linkedin.svg`: Wikimedia Commons "LinkedIn icon.svg".
+  - `logo-naukri-mark.svg`: naukri.com's own header logo (`static.naukimg.com/.../naukri_gnb_logo.svg`), cropped to its round mark.
+  - `logo-workday.svg`: workday.com's own logo SVG.
+  - `logo-lever.png`: lever.co's own logo, resized to 240px wide.
+
+  Indeed, Glassdoor, Greenhouse and Wellfound keep the board's Simple Icons marks, which are those brands' official shapes.
+
+  These are third-party trademarks. Showing "works with" logos is common, but whether to license them or ask permission is your call. The board had flagged this earlier.
+- **Hub:** the NextKin mark in the integrations hub is centred in its ring. The board's x/y offsets had it about 3px up and to the left.
+
+### §250.3 — Moving glass ring on the hero field (owner, 2026-11-20)
+
+The owner asked for this from a chrome-ring reference image. The hero's job-link field now sits in a 5px animated ring, `.lp-glass-ring` in `landing.css`. The ring is not on the board.
+
+- **Ring:** a conic band of white glints, magenta-violet and deep purple spins every 3.5s under a glass sheen.
+- **Glow:** a blurred, light-purple copy glows behind the field.
+- **Animation:** the angle is a registered `@property` (`--lp-ring-angle`) animated on the wrapper itself. It must be animated there: animating it on the pseudo-elements left the band frozen, because the gradient variable is computed on the wrapper.
+- **Reduced motion:** the ring stays still.
+- **Size:** the field is 10px wider and taller than the board's 720×69, to make room for the ring.
+
+### §250.4 — Pricing: no motion, new Pro card (owner, 2026-11-20)
+
+- **Motion:** the pricing section has none now. Removed:
+  - the cards' rise-in and the feature rows ticking in;
+  - the Pro float and glow, and the drifting background glows;
+  - the $19 count-up and the magnetic button;
+  - the toggle's sliding pill. The toggle now just switches.
+- **Pro card:** keeps the landing board's size, taller than Free and Team so it sticks out above and below them (owner: "don't change the sizing"). Its type sizes are unchanged too. It takes the Plan Pro look (NEXKTKIN-PVT `678:71`): the 2px `#7c6cff` border, a 127° gradient from `#5b44f2` to `#3b1fb0`, the inner edge shadow, the violet drop shadow, white checks and a white button.
+- **Badge:** "Most popular" is now the board's tab (`678:153`) hanging from the card's top edge, with a crown icon, instead of a floating pill.
+- Free and Team are unchanged.
+
+### §250.5 — Proof band motion rethought (owner: "too jerky", 2026-11-20)
+
+- **Removed:**
+  - the 1100px scroll pin, which held row 1 hidden while you scrolled;
+  - the scrubbed rewrite tied to scroll position;
+  - the word-by-word pop-in and the "before" line dimming then un-dimming;
+  - the marquee's scroll-velocity push, which lurched and flipped direction when scrolling up;
+  - the cards' `drop-shadow` filter, which repainted every frame in the moving row. It is now an equivalent `box-shadow`.
+- **Now:** everything is time-based, one pass as the band arrives.
+  - The heading rises.
+  - Row 1's cards glide up in a stagger.
+  - Each card's job-post words warm from ink to violet once it has landed.
+  - Row 2 fades up and then drifts at a constant 28px/s, easing to a crawl on hover.
+- **Marquee:** `parts/Marquee.tsx` re-measures on resize so the loop never jumps at a breakpoint.
+- **Measured:** in Chrome, scrolling through the band averaged 14.2ms a frame, as smooth as the motion-free pricing section measured the same way (18.4ms).
+
+### §250.6 — Integrations: icons only, pulsing beams (owner, 2026-11-20)
+
+- **Icons only:** the white tiles (fill, border, shadow) behind each logo and file icon are gone, on desktop and phone. The NextKin hub keeps its ring.
+- **Beams:** light pulses run along the connector wires.
+  - Inward from the job boards to the hub, then outward from the hub to the files, half a beat later, on a 2.6s loop with a soft violet glow.
+  - The wires SVG masks a radial gradient band whose radius animates around the hub (`.lp-beam`, `@property --lp-beam`), so the artwork itself is untouched.
+  - The beams fade in after the wires draw.
+  - Hidden under reduced motion.
+- **Icon size** (follow-up, same day): with the tiles gone, logos went from 30 to 44 board px, the Workday and Lever wordmarks to 56 and 52, and file icons from 30 to 40. Their PDF/DOCX/TXT tags went from 8 to 10px, centred under each file.
+- **File icons** (follow-up, same day): the PDF, DOCX and TXT nodes now use Untitled UI's own file-type icons from the new MIT dependency `@untitledui/file-icons@0.0.9` (default variant), imported per icon so only three ship. They are 48 board px. The old doc SVG and separate tag are gone.
+
+### §250.7 — Nav: a frosted backdrop per group (owner, 2026-11-20)
+
+Once the page scrolls, each nav group gets its own soft frosted pill: the logo, the links and the auth buttons. There is still no shared bar.
+
+- **Over light sections:** white at 65–80% with `backdrop-blur-xl` and a faint shadow.
+- **Over violet:** white at 12–16% with the same blur.
+- **At the very top:** the board, untouched.
+- **Logo** (follow-up, same day): no container. There is no pill, border or shadow, just a soft blur once scrolled, with a faint page-tone haze (`#1d1a5c` at 25% over violet). It is feathered by a radial mask so it has no edge. The links and auth pills keep their frosted pills.
+
+## §251 — Landing v2: dark glass cards, micro-scenes, 3D clay icons (owner, 2026-11-20)
+
+The owner asked for every landing component to be rebuilt with more precision and detail, each with its own micro-animations. They attached references: dark glass cards with a detailed mini-UI scene, light beams and grain, plus glossy 3D toys on grids.
+
+**Owner choices:**
+- Cards are dark indigo glass in our palette, on the light page.
+- Every section except the hero and pricing is in scope; pricing stays motion-free (§250.4).
+- Build straight in code. **Board `524:419` is now outdated** for these sections.
+- Icons were a pilot first, then a batch.
+
+**Foundations:**
+- **Tokens:** `lp-night`, `lp-night-2`, `lp-glass-line`, `lp-beam`, `lp-beam-hot`, `lp-ember`, `lp-on-glass`, `lp-on-glass-dim`.
+- **CSS (`landing.css`):** `.lp-glass` (gradient, glass edge, grain from an inline SVG data-URI), `.lp-glass-dots`, `.lp-light-beam`, `.lp-glass-spot` and `.lp-glass-panel`.
+- **Components:** `parts/GlassCard.tsx` and `parts/ClayTile.tsx`.
+- **Motion:** `motion/loop.ts` (`useSceneLoop` pauses offscreen; `useSceneOnce`).
+
+**3D icons:**
+- **Model:** Weave GPT Image 2.6.
+  - First pilot: 3 transparent matte icons, 6 credits. Rejected by the owner as "quite different" from the references.
+  - Re-pilot: 2 scenes in the reference style, 4 credits.
+  - Batch: 14 scenes, 28 credits. 38 credits in all, each run approved.
+- **Owner:** the icons don't need to follow the theme colours.
+- **The set:** 16 square scenes, each a glossy gummy toy lying on a bold glowing grid, top-down in window light. The re-pilot document scene also has a peeling face sticker.
+- **In Figma:** For-Next-Kin page `550:390` "🧸 Landing 3D icons".
+- **In the app:** `apps/web/public/landing/3d/scene-*.webp` (512px, 346 KB total).
+
+**Sections rebuilt** (scenes in `sections/scenes/<section>/`, built by four parallel builders):
+- **Problem:** cards for "resume deals out to six jobs" (with a 40 sent · 0 replies ticker), "gauge sweeps to 58 min" and "Kubernetes flags Can't defend this".
+- **How it works:**
+  - A glass mini-scene per step, with route beams.
+  - The step 3 keyword switches are now animated, not clickable.
+- **Proof:** glass rewrite cards. The before line is struck through, a sweep crosses each card, and the highlights glow. Still no pin or scrub; the row 2 marquee is unchanged.
+- **Score:**
+  - A glass Match panel with an elastic current bar, a beam, a scan loop and a pulse.
+  - The Basis tag shows only at ≥1280px, with a shorter note ("18 of 21 requirements found on the page") and a 32px leader, so it fits inside the clipped glass panel.
+- **Facts:** glass tiles with clay scenes; odometers kept.
+- **Toolkit:**
+  - Heatmap sweep, tab cycle with cursor hover, scan line over the files, command palette that types and steps.
+  - The command-palette suggestions are new wording.
+  - The templates band is glass.
+- **Integrations:**
+  - The web sits on one big glass panel with an orbital glow.
+  - The logos are back on frosted-white tiles, because the black or navy marks vanish on dark glass. This partly reverses §250.6's "just icons", which was made on the light page.
+  - The Workday and Lever wordmarks shrank to 46 and 44 px.
+- **FAQ:**
+  - The contact column is a glass card with avatars, a typing indicator and a reply.
+  - **The new line "Real people on the other end, usually within a day" is a response-time promise. Please confirm or remove it.** The R/M/S avatars are placeholder initials.
+- **CTA:** a violet grid with glowing intersections and window streaks; the gift and document scenes lie on it, with pointer parallax. The old deco squares are gone.
+- **Footer:** "Let's talk" sits on a glass card (`data-nav-dark`).
+
+**Fixes during verification:**
+- The Problem gauge's tick coordinates are rounded, to fix a hydration mismatch where trig floats differed between server and client.
+
+**Verified in Chrome:**
+- All sections render. Loading straight at `#faq` (mid-page) works.
+- Frame times held at about 6–9 ms per frame with zero frames over 34 ms. That matches the motion-free pricing section (6.2 ms).
+- Loops freeze when off screen.
+- No horizontal overflow at 375 or 768.
+- tsc and ESLint (0 errors) pass, and the full web Jest suite passes: 947/947.
+
+**Not verified:** reduced motion in a real browser (covered by the jsdom render test only). The only console error is the form-filler extension's `fdprocessedid` hydration warning.
+
+### §251.1 — Light tone; icon backgrounds are the owner's (2026-11-20)
+
+- **Light tone:** the owner said "dark tone does not look good".
+  - `.lp-glass` is now frosted glass, white to lavender, and `.lp-glass-panel` is white with a violet hairline.
+  - Beams are soft violet glows; `lp-on-glass` and `lp-on-glass-dim` are ink and copy grey; the `lp-glass-line` hairline is violet at 12%.
+  - Every scene was restyled to ink text, white and lavender chips, violet strokes and soft violet shadows. The animations are unchanged.
+  - The hero, proof band and CTA stay violet as on the board. Only they carry `data-nav-dark`.
+  - Integrations dropped its logo tiles again, and its Workday and Lever wordmarks went back to 56 and 52 px.
+- **Icon backgrounds:** they are scenes, so the grid is part of each image. The owner will remove the backgrounds in Figma (page `550:390`). Figma's own Remove background button isn't reachable through the MCP. Weave's Bria model is, at about 0.6 credits an image, but the owner declined it. Pull the cut-outs into `public/landing/3d/` once they're ready.
+- **Verified:** in Chrome, all sections at 1536 px. tsc and ESLint (0 errors) pass, and the landing and theme Jest suites pass (301).
+
+### §251.2 — No integrations container; flat CTA (owner, 2026-11-21)
+
+- **Integrations:** the glass panel is gone (its fill, edge, dots and two beams). The web, its pulsing wires and the hub's orbital glow sit straight on the page.
+- **Final CTA:** the ground is a flat `lp-violet`, with no gradient. The window-light streaks (and their drift) and the darkened edges are gone too. The grid lines, glowing intersections and clay tiles stay.
+
+### §251.3 — No pink glow; no doodle hand (owner, 2026-11-21)
+
+- **No pink blur anywhere.**
+  - The "ember" light-beam tone is removed (the CSS rule, the `tone` prop and its use on the Problem, Toolkit and footer cards). Those beams are violet now.
+  - The integrations orbit uses lilac `#a78bfa` instead of pink.
+  - The hero ring's soft glow uses lilac `#a78bfa` instead of `#e879f9`.
+  - Solid pink accents that are not blurs stay: the gauge arc, the "Initech" chip and an avatar gradient.
+- **The How it works doodle hand is removed:** its markup, its animation and `public/landing/how-doodle-hand.png`.
+
+### §251.4 — The owner's transparent clay cut-outs are in (owner, 2026-11-21)
+
+- **Source:** the owner removed the backgrounds in Figma (page 550:390). Each frame's 1024px alpha image was pulled with `download_assets`. The two leftover originals (553:363, 553:364) were skipped.
+- **Files:** each cut-out is trimmed to its object and centred on a square with about 5% padding. The 16 icons are written as 512px alpha WebP to `public/landing/3d/clay-*.webp`, about 404 KB in total.
+  - The old opaque `scene-*.webp` files are gone.
+  - The new name is deliberate: Next's image optimizer cached the old opaque files under the old URLs, so new names keep any cache from serving the old tiles.
+- **`ClayTile`:** no tile, ring or sheen any more. The object stands free with `object-contain`, still floats and tilts toward the pointer, and has a soft static contact shadow (a radial gradient, not a filter). The shadow is on by default for icons of 56px or more.
+- **CTA:** the square cast shadow behind the two CTA objects is removed, because it showed as a box behind the cut-outs.
+- **To check:** the document icon is a document plus a sticker, so it reads smaller than the others in the Facts row. If it should be bigger, it needs re-cropping in Figma.
+
+### §251.5 — Clay icons for the proof band roles (owner, 2026-11-21)
+
+- **What:** the owner asked for role icons "in the same style". Five new Weave GPT Image 2.6 runs (10 credits, approved) were generated with a transparent background, so nobody had to remove backgrounds. They are on Figma page 550:390 as `clay-*.png`.
+- **The subjects were picked for each role's purpose, not copied from the old line icons:**
+  - Frontend developer: a `</>` code tag
+  - Marketing associate: a megaphone (it was a bar chart)
+  - Data analyst: a database stack
+  - Support specialist: a headset
+  - Fresh graduate: the existing grad cap
+  - QA engineer: a bug (it was a gear)
+- **Code:** the role row in `RewriteCard` shows a 44px `ClayTile` with no float and no shadow, in place of the violet circle with an SVG. `Rewrite.icon` is typed as `ClayScene`. The six unused `public/landing/proof-icon-*.svg` files are deleted; the sparkle stays for the eyebrow.
+
+### §251.6 — Nav glass and logo (owner, 2026-11-21)
+
+- **Logo pill:** the frosted pill behind the logo is back once the page scrolls, with no border. It replaced the feathered blur.
+- **"More glassy":** `.lp-nav-glass` in `landing.css` is a 135° light-catching gradient fill, `blur(22px) saturate(180%)`, a soft inner top sheen, a lower inner glow and a drop shadow. It has a `--dark` look over violet and a `--light` look over light sections, and is used on the logo pill and on the links pill once scrolled.
+  - The glass sits on its own layer that fades in by opacity, because a gradient background can't transition.
+  - The links pill keeps the board's thin border; the logo pill has none.
+- **Logo:** the star is bigger and aligned.
+  - The mark's slot used to be sized to the glow SVG's box, so the star drew at about 29px with a 20px gap before the wordmark.
+  - The slot is now the star itself (30px, or 36px from `sm`), with the glow overflowing it. The wordmark is 24px, or 28px from `sm`, with leading none and a 10px gap.
+  - The star's centre and the wordmark's cap-height centre were measured within 1px of each other; a 1px nudge evens them.
+- **Fixed (owner: "Yes, fix it"):** the white nav text no longer sits over the white proof cards.
+  - `useOverDark` became `useNavTone`, which works out each group (logo, links, menu) on its own. Each group samples three points across its middle and turns white only when at least two of them are over violet (`data-nav-dark`) and not over a light surface (`data-nav-light`).
+  - The marked light surfaces are the proof cards, the hero field, the hero mock and the CTA email field.
+  - It checks on scroll and every 300ms, because the proof marquee moves cards under the nav while the page is still. Each check is a few rect reads, and state only changes when a tone flips.
+  - In the browser, over a proof card the logo and links went ink, and over the hero they stayed white.
+
+### §251.7 — Templates band: real mini-resumes and a parser read pass (owner, 2026-11-21)
+
+- **The sheets:** each of the four is now a small but legible resume in its own style instead of identical grey bars. All keep the band's promise: single column, standard headings, no photos, no tables. The board's 176×224 size is kept.
+  - **Modern professional:** a violet name and violet uppercase headings with a hairline rule.
+  - **Tech friendly:** a monospace `// skills` style, skill chips and a Projects section.
+  - **Bold impact:** a dark header band with the name reversed out, and heavy headings with a bar.
+  - **Minimalist focus:** a centred name, wide margins and small-caps headings with hairline rules.
+  - The people and employers are made up: Priya Sharma, Daniel Okafor, Maya Chen and Sam Rivera.
+- **The read pass:** after the existing deal-and-sweep, the parser reads each page in turn, 0.5s apart. A violet scan band runs down the sheet, each section heading gets a green tick and a brief green wash as the band reaches it, and the sheet ends on an "Every section read" chip. It runs once on entry (`useSceneOnce`). Every tween ends on the markup, so reduced motion shows the finished state.
+- **Owner to confirm:**
+  - **Confirmed (owner, 2026-11-21):** the four names are the real launch set. They still exist only on the landing page, so the app's template work should use these names.
+  - "Every section read" is deliberately general. If the parser later reports per-template results, a count could replace it.
+
+### §251.8 — The Monthly/Annually toggle works (owner, 2026-11-21)
+
+- **What it changes:** choosing Annually switches the Pro card to **$109 per year** with the line "About $9.08/mo, billed yearly. Cancel anytime." Monthly stays at $19 per month, "Billed monthly. Cancel anytime."
+- **Where the price comes from:** $109 is the server's price book (`pro_annual`, the midpoint of the spec §13.2 band, §105), which is what checkout charges. An older note (§84-era landing work) said $99 and is superseded.
+  - $109 is 52% under 12 × $19, so "Save over 45%" stays true.
+  - The prices live in `PRO_PRICE` in `Pricing.tsx` and must change with the price book.
+- **No motion:** the section stays motion-free, as the owner asked.
+- **Steady layout:** both billing lines sit in one grid cell, so the card's height doesn't change when the line wraps at 1024px. Measured steady at 1440, 1024 and 375.
+- **Not done:** "Upgrade to Pro" still goes to `/sign-up` without the chosen period. Sign-up has no plan parameter, so the app asks for the period later at checkout.
+- **Test:** `LandingScreen.test.tsx` covers the switch both ways.
+
+### §251.9 — CTA: an animated grid pattern instead of the dotted grid (owner, 2026-11-21)
+
+- **What changed:** after the owner's animated-grid reference, the "Ready to land your next role?" card has a flat violet ground with a fine white SVG line grid (56px cells, 20% white). The grid is skewed 12° so it reads as a receding plane, and its edges fade under a radial mask. The glowing intersection dots and their breathing loop are removed.
+- **The animation:** 28 single cells light up softly (white at 16%), hold, fade out, and come back in a new random cell. Each has its own random delay, hold and gap. Their start positions are seeded, so the server and client render the same frame.
+- **Cost:** it runs only while the card is on screen; a ScrollTrigger plays and pauses the loops, and in the browser they were confirmed frozen off screen. It animates opacity and SVG `x`/`y` attributes only. With reduced motion the squares stay as drawn at mixed strengths.
+- **Where:** `CtaGrid` in `scenes/cta/CtaStage.tsx`. The glint tween is gone from `FinalCta.tsx`.
+
+### §251.10 — FAQ contact card uses the generated portraits (owner, 2026-11-21)
+
+- **What changed:** the R / M / S initial bubbles are replaced by three of the generated portraits the mobile onboarding already uses (`apps/mobile/assets/onboarding/people/p1–p3`). They are copied as 192px WebP (quality 90) to `public/landing/people-p1..3@2x.webp`, about 6 KB each, and served unoptimised so they stay sharp on high-density screens (the first 96px copies, recompressed by the optimiser, looked blurry to the owner).
+- **Illustrative only:** these are generated people, not the real support team, so they shouldn't be presented as named staff.
+
+### §251.11 — Sign-in panel logo on the soft white glow (owner, 2026-11-21)
+
+- **What changed:** `AuthBrandPanel`'s logo drops the white rounded tile. It now uses the landing nav's `/landing/logo-mark-glow.svg` (the star on a soft white spread) with the same framing: a 36px slot, with the glow overflowing it.
+- **Still loads on the app host:** the proxy matcher skips `.svg` files, so `/landing/…` loads there too.
+- **Watch for:** `LogoMarkIllustration` is no longer used here. If the app has another branded panel with the tile, it may want the same treatment.
