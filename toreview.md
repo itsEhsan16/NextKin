@@ -18428,7 +18428,16 @@ The owner asked for every landing component to be rebuilt with more precision an
     - `/sign-in` gives 308 to `https://app.nextkin.ai/sign-in`.
     - `/legal/privacy` and `/legal/terms` give 200.
     - `/legal` alone is 404 on every host; there is no index page.
-- **Remaining:** prompt B (the `@` ALIAS and `www` CNAME at Namecheap), then verify over real DNS.
+- **LIVE 2026-11-21:**
+  - **DNS:** Chrome added the `@` ALIAS and `www` CNAME to `dp76rlk4ir1mh.cloudfront.net` (prompt B).
+  - **Live checks:**
+    - `https://nextkin.ai` and `www` serve the landing page; `http` gives 301 to `https`.
+    - The certificate covers `nextkin.ai` and `www.nextkin.ai`.
+    - `/sign-in` and `/sign-up` give 308 to `app.nextkin.ai`.
+    - The five MX records, SPF and the `app` NS records are intact.
+  - **Bug found in a real browser:** a background 401 sent signed-out visitors from `nextkin.ai/` to sign-in, because `/` is also the app's Home.
+    - **Fix (`d8dcfb4`):** the landing root carries `data-public-page` and the 401 hook in `src/lib/dataSource.ts` skips such pages. `/landing` was added to the public paths.
+    - **After the redeploy:** the browser stays on `nextkin.ai/`, and the app's `/` still gives 307 to sign-in when signed out.
 - **Mail:** Namecheap's mail mode is Email Forwarding, but no forward is defined, so mail to `@nextkin.ai` goes nowhere yet.
 - **Docker:** it now needs `C:\Users\ACER\bin\docker-clean-start.ps1` (desktop shortcut "Docker (clean start)"). The stale inference socket breaks every start otherwise.
 - **Email:** nothing is removed at Namecheap. The `@` and `www` names were empty in public DNS today; MX, SPF and the `app` NS records stay.
