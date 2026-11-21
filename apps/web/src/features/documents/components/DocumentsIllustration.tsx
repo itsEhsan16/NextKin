@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn';
 
 /**
  * The folder of documents (304:683), as the art of the preview's empty states (owner, toreview
- * §234: it no longer rises over the preview card's corner with its "Organize, Prepare, Go Further"
+ * §253: it no longer rises over the preview card's corner with its "Organize, Prepare, Go Further"
  * caption; it sits in the card while there is nothing to preview). A raster on the board, so the
  * WebP; it sizes by width and keeps its own shape.
  */

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
+import { useUnsavedGuard } from '@/navigation/useUnsavedGuard';
 import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import type { ListRowArt } from '@/ui/ListRow';
 import { NoteBar } from '@/ui/NoteBar';
@@ -97,7 +98,9 @@ export function ChipListEditor({
   onClose,
 }: ChipListEditorProps) {
   const { spacing, s } = useTheme();
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  // Every way off the page asks while there are edits: the chevron, Android's back and the iOS
+  // edge swipe. Not while a save is in flight, whose success leaves the page itself.
+  const guard = useUnsavedGuard(dirty && !saving);
 
   // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
   // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
@@ -108,12 +111,8 @@ export function ChipListEditor({
     if (failed && !was) AccessibilityInfo.announceForAccessibility(SAVE_FAILED);
   }, [failed]);
 
-  /**
-   * The one way off this page. Android's hardware back is not intercepted here: `BackHandler` is
-   * owned by `Sheet` alone in this codebase, and the discard sheet already claims it while it is
-   * open. The header chevron is the affordance that asks the question.
-   */
-  const requestBack = () => (dirty ? setConfirmOpen(true) : onClose());
+  /** The header chevron. Hardware back and the swipe reach the same question through the guard. */
+  const requestBack = () => (dirty ? guard.ask(onClose) : onClose());
 
   const page = (children: ReactNode, footer?: ReactNode) => (
     <View style={styles.root}>
@@ -131,18 +130,15 @@ export function ChipListEditor({
 
       {/* A sibling of the page, never a child of its scroller. */}
       <ConfirmSheet
-        open={confirmOpen}
+        open={guard.open}
         title={DISCARD_TITLE}
         message={DISCARD_MESSAGE}
         art={<ConfirmArt kind="discard" />}
         artGap={0}
         confirmLabel="Discard"
         cancelLabel="Keep editing"
-        onConfirm={() => {
-          setConfirmOpen(false);
-          onClose();
-        }}
-        onCancel={() => setConfirmOpen(false)}
+        onConfirm={guard.confirm}
+        onCancel={guard.cancel}
       />
     </View>
   );

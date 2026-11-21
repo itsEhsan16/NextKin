@@ -27,8 +27,10 @@ import { useTailorDownload } from '../hooks/useTailorDownload';
 import { ResumePagePreview } from './ResumePagePreview';
 import { TailorChrome } from './TailorChrome';
 import { TailorProgress } from './TailorProgress';
+import { BuildNextTiles } from './BuildReadyParts';
 import { TailorReady } from './TailorReady';
 import { savedPagesLabel, TailorSavedSheet, type TailorSavedFile } from './TailorSavedSheet';
+import { RESUME_STEPS } from '@/features/create/flow/ResumeSteps';
 
 export type TailorRunViewProps = {
   generation: Generation;
@@ -99,9 +101,6 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
   const edit = () => {
     if (resumeId) actions.openDocument(resumeId);
   };
-  const seeChanges = () => {
-    if (resumeId) actions.openVersions(resumeId);
-  };
   const doc = resumeBody(content.data);
   const name = user.data ? `${user.data.firstName} ${user.data.lastName}`.trim() : '';
 
@@ -110,7 +109,13 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
       <Screen
         scroll
         edges={['top', 'bottom']}
-        header={<TailorChrome step={ready ? 'download' : 'fix'} onClose={close} />}
+        header={
+          <TailorChrome
+            step={ready ? 'download' : 'fix'}
+            stepName={RESUME_STEPS[2]}
+            onClose={close}
+          />
+        }
         headerStyle={{ paddingBottom: s(ready ? STEPS_TO_PREVIEW : STEPS_TO_ART) }}
         contentContainerStyle={{ paddingBottom: spacing[8] }}
         footer={
@@ -134,7 +139,12 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
               <FlowFooter
                 inset
                 note="Nothing is invented — only your resume and answers."
-                primary={{ label: 'Leave and notify me', icon: 'Bell01', variant: 'outline', onPress: close }}
+                primary={{
+                  label: 'Leave and notify me',
+                  icon: 'Bell01',
+                  variant: 'outline',
+                  onPress: close,
+                }}
               />
             )}
           </Reveal>
@@ -145,12 +155,17 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
           {ready ? (
             <>
               <TailorReady
-                preview={<ResumePagePreview content={doc} name={name} score={resume.data?.atsScore} />}
-                run={run}
+                preview={
+                  <ResumePagePreview content={doc} name={name} score={resume.data?.atsScore} />
+                }
                 company={company}
-                domain={domain}
-                score={resume.data?.atsScore}
-                onSeeChanges={seeChanges}
+                next={
+                  // Any finished resume can open a letter; the job comes from it when it has one
+                  // (owner, 2026-11-19, §240: a pasted job showed no tile).
+                  resumeId ? (
+                    <BuildNextTiles onCoverLetter={() => actions.openCoverLetterSetup(resumeId)} />
+                  ) : undefined
+                }
               />
             </>
           ) : (

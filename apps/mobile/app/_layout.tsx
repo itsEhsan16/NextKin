@@ -4,6 +4,7 @@ import { useSessionStore } from '@/features/auth';
 import { ShareHost } from '@/features/create';
 import { ApplyAskHost } from '@/features/jobs';
 import { PushHost, PushPrimerHost } from '@/features/notifications';
+import { AppUpdateHost } from '@/features/system';
 import { AccuracyConfirmHost } from '@/features/resumes';
 import { useStackAnimation } from '@/navigation';
 import { AppProviders, useAppReady } from '@/providers';
@@ -89,7 +90,6 @@ export default function RootLayout() {
           <Stack.Screen name="assistant" />
           <Stack.Screen name="support/help" />
           <Stack.Screen name="support/contact" />
-          <Stack.Screen name="legal/[doc]" />
           <Stack.Screen name="account/email" />
           <Stack.Screen name="account/export" />
           <Stack.Screen name="profile/index" />
@@ -120,6 +120,13 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
 
+        {/*
+          Readable signed in or out: sign-up links to the Terms and the Privacy Policy before an
+          account exists (Play policy). After (auth), never before it, so a signed-out launch still
+          falls back to (auth) and not to a legal page.
+        */}
+        <Stack.Screen name="legal/[doc]" />
+
         {/* Keep last, for the fallback ordering explained above. */}
         <Stack.Protected guard={__DEV__}>
           <Stack.Screen name="dev" />
@@ -131,6 +138,8 @@ export default function RootLayout() {
       {signedIn ? <PushPrimerHost /> : null}
       {signedIn ? <PushHost /> : null}
       {signedIn ? <ShareHost /> : null}
+      {/* Signed in or out: an outdated build must be able to say so before anyone signs in. */}
+      <AppUpdateHost />
     </AppProviders>
   );
 }

@@ -19,9 +19,9 @@ import { useNotificationsStore } from '../notificationsStore';
 import { Icon } from '@/ui/Icon';
 
 const BELL_TILE = 64;
+/** Bell, title and two buttons: no taller than they need. */
+const PRIMER_HEIGHT = 330;
 
-export const PRIMER_LEDE =
-  'Only when a resume is ready, a saved job is closing, or an application needs you.';
 export const primerTitleForApplication = (company: string): string =>
   `Get a reminder to check on ${company}`;
 export const PRIMER_TITLE_FOR_RUN = 'Get told when it’s ready';
@@ -48,10 +48,11 @@ export async function offerPushForRun(): Promise<void> {
  * closes, and the primer may return after a later application because an iOS denial is permanent.
  *
  * The board's copy promised word "when your application is viewed", an employer event no one can
- * tell us (toreview §144.1), so the headline and the line say what actually arrives.
+ * tell us (toreview §144.1). Owner, 2026-11-19 (toreview §236): the bell, the title and two
+ * buttons; the explaining line and the settings footnote are gone.
  */
 export function PushPrimerHost() {
-  const { colors, radii, sizes, spacing, s } = useTheme();
+  const { colors, radii, spacing, s } = useTheme();
   const styles = useStyles();
 
   const open = useNotificationsStore((state) => state.primerOpen);
@@ -64,7 +65,7 @@ export function PushPrimerHost() {
     <Sheet
       open={open}
       onClose={closePrimer}
-      height={sizes.sheetNotifHeight}
+      height={s(PRIMER_HEIGHT)}
       accessibilityLabel="Notification primer"
     >
       <View style={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing[4] }}>
@@ -91,18 +92,10 @@ export function PushPrimerHost() {
           >
             {title}
           </Text>
-          <Text
-            variant="body"
-            color="textSecondary"
-            align="center"
-            style={[styles.lede, { marginTop: spacing[3] }]}
-          >
-            {PRIMER_LEDE}
-          </Text>
         </View>
 
         <Button
-          label="Turn on notifications"
+          label="Turn on"
           size="lg"
           block
           onPress={() => {
@@ -125,21 +118,12 @@ export function PushPrimerHost() {
             Not now
           </Text>
         </Pressable>
-        <Text
-          variant="captionSm"
-          color="textTertiary"
-          align="center"
-          style={{ marginTop: spacing[5] }}
-        >
-          You can change this any time in Profile › Notifications
-        </Text>
       </View>
     </Sheet>
   );
 }
 
-const useStyles = scaledSheet((s) => ({
+const useStyles = scaledSheet(() => ({
   center: { alignItems: 'center' },
-  lede: { maxWidth: s(340) },
   notNow: { alignSelf: 'center' },
 }));

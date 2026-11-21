@@ -13,7 +13,7 @@ import {
   useUpdatePreferences,
 } from '@/data/queries';
 import { useSessionStore } from '@/features/auth';
-import { formatLakh } from '@/lib';
+import { formatSalaryStep } from '@/lib';
 import { ConfirmArt, ConfirmSheet } from '@/ui/ConfirmSheet';
 import { OptionSheet, type SheetOption } from '@/ui/OptionSheet';
 
@@ -78,14 +78,12 @@ const AVAILABILITY_OPTIONS: readonly SheetOption<Availability>[] = (
   ['immediately', '2_weeks', '1_month', 'open_to_offers', 'not_looking'] as const
 ).map((key) => ({ key, label: AVAILABILITY_LABEL[key] }));
 
-/** Annual INR floors offered by the minimum-salary picker; 'none' clears the preference. */
-const SALARY_STEPS = [
-  1_000_000, 1_500_000, 2_000_000, 2_400_000, 3_000_000, 4_000_000, 5_000_000,
-] as const;
+/** Annual USD floors offered by the minimum-salary picker; 'none' clears the preference. */
+const SALARY_STEPS = [40_000, 60_000, 80_000, 100_000, 120_000, 150_000, 200_000] as const;
 
 const SALARY_OPTIONS: readonly SheetOption[] = [
   { key: 'none', label: 'No minimum' },
-  ...SALARY_STEPS.map((amount) => ({ key: String(amount), label: formatLakh(amount) })),
+  ...SALARY_STEPS.map((amount) => ({ key: String(amount), label: formatSalaryStep(amount) })),
 ];
 
 /**
@@ -184,7 +182,7 @@ export function ProfileSheetsHost() {
             const floor = key === 'none' ? undefined : Number(key);
             void savePreferences({
               minSalary:
-                floor == null ? undefined : { min: floor, currency: 'INR', period: 'year' },
+                floor == null ? undefined : { min: floor, currency: 'USD', period: 'year' },
             }).then((saved) => {
               // "Set salary range" on the completeness card is answered by a floor that has
               // landed — not by the chip's tap that opened this sheet, and not by "No minimum".

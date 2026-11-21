@@ -47,6 +47,11 @@ export interface HttpClientOptions {
   timeoutMs?: number;
   /** Called once when the session is gone for good (refresh failed, or the server said 401). */
   onSignedOut?: () => void;
+  /**
+   * Called whenever the server answers 426: this build is below the supported floor, and every
+   * request will keep failing until the app is updated. The app shows its update screen.
+   */
+  onUpgradeRequired?: (minimumVersion: string | null) => void;
   /** Test seam: how long to wait before the one retry. */
   retryDelayMs?: () => number;
 }
@@ -186,6 +191,10 @@ export function createHttpClient(options: HttpClientOptions) {
 
   async function failure(res: Response): Promise<Error> {
     const parsed = errorEnvelopeSchema.safeParse(await res.json().catch(() => null));
+    if (res.status === 426) {
+      const minimum = parsed.success ? (parsed.data.error.details as { minimumVersion?: unknown } | null)?.minimumVersion : null;
+      options.onUpgradeRequired?.(typeof minimum === 'string' ? minimum : null);
+    }
     if (parsed.success) {
       const { code, message, details, request_id } = parsed.data.error;
       return toClientError(code, message, res.status, details, request_id);

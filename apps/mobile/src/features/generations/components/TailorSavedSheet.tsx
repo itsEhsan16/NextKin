@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { View } from 'react-native';
 
 import { a11yButton, a11yHeader, hitSlopFor } from '@/lib';
@@ -38,10 +39,13 @@ export type TailorSavedSheetBodyProps = {
   onDone: () => void;
 };
 
-// TAILOR 06 at 390 (608:483), in artboard units. The IL-T1 slot above the title is not drawn
-// yet, so the title leads and the sheet is that much shorter. A floor: a second file row
-// (COVER 04 613:1742) grows the sheet past it.
-const SHEET_H = (455.5 - 126) / 0.75;
+// TAILOR 06 at 390 (608:483), in artboard units. A floor: a second file row (COVER 04 613:1742)
+// grows the sheet past it.
+/** IL-T1, the board's 150 × 112 slot above the title, holding the clay "applied" art (§211). */
+const ART_W = 150 / 0.75;
+const ART_H = 97.2 / 0.75;
+const ART_TO_TITLE = 12 / 0.75;
+const SHEET_H = (455.5 - 126) / 0.75 + ART_H + ART_TO_TITLE;
 const TOP = 16 / 0.75; // the board's 30 less the handle, as ConfirmSheet measures it
 const BOTTOM = 30 / 0.75;
 const TITLE_TO_LEDE = 8 / 0.75;
@@ -117,11 +121,26 @@ export function TailorSavedSheetBody({
   onApply,
   onDone,
 }: TailorSavedSheetBodyProps) {
-  const { colors, spacing, s } = useTheme();
+  const { colors, motion, spacing, s } = useTheme();
   const styles = useStyles();
 
   return (
     <View style={[styles.body, { paddingHorizontal: spacing.gutter }]}>
+      <Image
+        source={require('../../../../assets/illustrations/tailor/applied.webp')}
+        contentFit="contain"
+        transition={motion.durations.imageFade}
+        cachePolicy="memory-disk"
+        accessible={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{
+          width: s(ART_W),
+          height: s(ART_H),
+          alignSelf: 'center',
+          marginBottom: s(ART_TO_TITLE),
+        }}
+      />
       <Text {...a11yHeader()} variant="confirmTitle" align="center">
         {title ??
           (company ? `Saved. Now apply on ${company}’s site` : 'Saved. Now apply on their site')}

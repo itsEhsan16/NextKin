@@ -4,7 +4,11 @@
   "context": {
     "appDomain": "app.nextkin.ai",
     "appDomainLive": true,
+    "adminDomain": "admin.app.nextkin.ai",
+    "landingDomains": "nextkin.ai,www.nextkin.ai",
+    "landingCertificateArn": "arn:aws:acm:us-east-1:962942593570:certificate/52d9cec3-3bfb-4aab-9b96-41dd2431a5f8",
     "clerkPublishableKey": "pk_test_bmF0aXZlLWJhc2lsaXNrLTk3NDMuY2xlcmsuYWNjb3VudHMuZGV2JA",
+    "pushAndroidArn": "arn:aws:sns:us-east-1:962942593570:app/GCM/NextKinAndroid",
     "@aws-cdk/core:checkSecretUsage": true,
     "@aws-cdk/aws-iam:minimizePolicies": true,
     "@aws-cdk/aws-ecs:arnFormatIncludesClusterName": true,

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { AccessibilityInfo, View, type TextInputInstance } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   backendAuth,
@@ -201,6 +202,7 @@ export function SignInScreen() {
   // 520 board, which is barely half of what this one is drawn at.
   const backGlyph = s(board(SIGN_IN.backGlyph));
   const backInset = (sizes.iconButton - backGlyph) / 2;
+  const insets = useSafeAreaInsets();
 
   return (
     <>
@@ -215,7 +217,8 @@ export function SignInScreen() {
           style={{
             position: 'absolute',
             left: s(board(SIGN_IN.backX)) - backInset,
-            top: s(board(SIGN_IN.backY)) - backInset,
+            // Below the status bar on a phone whose bar is taller than the board's.
+            top: Math.max(s(board(SIGN_IN.backY)) - backInset, insets.top),
             zIndex: 1,
           }}
         >

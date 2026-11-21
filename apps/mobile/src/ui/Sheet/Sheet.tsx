@@ -9,7 +9,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector, ScrollView } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -32,11 +32,14 @@ export type SheetProps = {
   /** Called for every dismiss path: scrim tap, swipe-down, Android back. */
   onClose: () => void;
   /**
-   * Design height in px, excluding the bottom safe-area inset. Treated as a FLOOR: the sheet
-   * grows past it whenever its content is taller (narrow screens wrap text, Dynamic Type
-   * enlarges it), because a fixed height plus overflow:'hidden' would silently clip rows —
-   * and a clipped row is untappable on Android. Changing it morphs the sheet on the UI thread
-   * (the CREATE 01 -> 02 push shrinks 600 -> 520).
+   * A sheet with steps: Android's back goes to the previous step instead of closing. Return true
+   * when it stepped back; false (the first step) lets back close the sheet as usual.
+   */
+  onBackStep?: () => boolean;
+  /**
+   * Design height in px, excluding the bottom safe-area inset: the first frame only. Once its
+   * content is measured the sheet hugs it, shorter or taller (§240), so no empty band sits under
+   * the last row and no row is clipped. Ignored for measurement on a `fill` sheet.
    */
   height: number;
   /**
@@ -80,6 +83,7 @@ export type SheetProps = {
 export function Sheet({
   open,
   onClose,
+  onBackStep,
   height,
   fill = false,
   swipeToDismiss = true,
@@ -92,7 +96,10 @@ export function Sheet({
 }: SheetProps) {
   const { colors, radii, sizes, shadows, spacing, motion, zIndex } = useTheme();
   const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  // A tablet or an unfolded foldable (Android 16 ignores the portrait lock at 600dp and wider):
+  // the sheet keeps the phone column's width, centred, rather than stretching edge to edge.
+  const sideGap = Math.max(0, (windowWidth - sizes.designWidth) / 2);
   const reduced = useReducedMotion();
 
   const internalProgress = useSharedValue(0);
@@ -114,6 +121,11 @@ export function Sheet({
     insetTop: insets.top,
     windowHeight,
   });
+  // Content taller than the screen below the status bar: the sheet stops at that height, so its
+  // column scrolls instead of clipping rows nobody could reach (a short phone, large text, a long
+  // option list). Decided from the measured height, so a sheet that fits is laid out as before.
+  const overflowing =
+    !fill && contentHeight > 0 && contentHeight + insets.bottom > windowHeight - insets.top;
   // Animating the height (rather than re-laying out) keeps the morph on the UI thread and lets
   // the drag maths read the live value.
   const animatedHeight = useSharedValue(targetHeight);
@@ -153,11 +165,12 @@ export function Sheet({
   useEffect(() => {
     if (!open) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (onBackStep?.()) return true;
       onClose();
       return true;
     });
     return () => sub.remove();
-  }, [onClose, open]);
+  }, [onBackStep, onClose, open]);
 
   // `reduced` is JS-thread state, so the config is resolved here and the pan's worklets capture
   // a plain object; the gesture rebuilds off this identity whenever the setting flips.
@@ -185,6 +198,26 @@ export function Sheet({
 
   if (!mounted) return <InSheetLayer node={null} />;
 
+  const column = (
+    <>
+      {showHandle ? (
+        <View
+          style={[
+            styles.handle,
+            {
+              width: sizes.grabHandleWidth,
+              height: sizes.grabHandleHeight,
+              borderRadius: radii.full,
+              backgroundColor: colors.grabHandle,
+              marginTop: spacing[3],
+            },
+          ]}
+        />
+      ) : null}
+      <View style={[fill ? styles.fill : null, contentStyle]}>{children}</View>
+    </>
+  );
+
   // Only this subtree lifts; the transform is outer, so sheetStyle and the drag maths are untouched.
   const sheet = (
     <GestureDetector gesture={pan}>
@@ -194,6 +227,8 @@ export function Sheet({
           styles.sheet,
           {
             bottom: -bleed,
+            left: sideGap,
+            right: sideGap,
             paddingBottom: insets.bottom + bleed,
             backgroundColor: colors.surfaceSheet,
             borderTopLeftRadius: radii.sheet,
@@ -204,26 +239,18 @@ export function Sheet({
         ]}
       >
         {/* Measured column: whatever this reports is the height the sheet must be able to show. */}
-        <View
-          onLayout={fill ? undefined : measureContent}
-          style={fill ? styles.fill : styles.column}
-        >
-          {showHandle ? (
-            <View
-              style={[
-                styles.handle,
-                {
-                  width: sizes.grabHandleWidth,
-                  height: sizes.grabHandleHeight,
-                  borderRadius: radii.full,
-                  backgroundColor: colors.grabHandle,
-                  marginTop: spacing[3],
-                },
-              ]}
-            />
-          ) : null}
-          <View style={[fill ? styles.fill : null, contentStyle]}>{children}</View>
-        </View>
+        {overflowing ? (
+          <ScrollView style={styles.fill} bounces={false} keyboardShouldPersistTaps="handled">
+            <View onLayout={measureContent}>{column}</View>
+          </ScrollView>
+        ) : (
+          <View
+            onLayout={fill ? undefined : measureContent}
+            style={fill ? styles.fill : styles.column}
+          >
+            {column}
+          </View>
+        )}
       </Animated.View>
     </GestureDetector>
   );

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { scaledSheet, useTheme, type ColorToken } from '@/theme';
 import { Button, type ButtonVariant } from '@/ui/Button';
@@ -65,18 +66,21 @@ export function IconTile({
     card: [colors.surfaceCard, colors.ink],
   };
   const look = looks[tone];
+  // Owner, 2026-11-19 (toreview §239): the brand tile is the icon alone, larger, in the same box,
+  // so no row moves; the other tones keep their disc.
+  const bare = tone === 'brand';
   return (
     <View
       style={{
         width: u(size),
         height: u(size),
         borderRadius: u(size / 2),
-        backgroundColor: look[0],
+        backgroundColor: bare ? 'transparent' : look[0],
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Icon name={name} size={u(size * 0.5)} color={look[1]} />
+      <Icon name={name} size={u(size * (bare ? 0.72 : 0.5))} color={look[1]} />
     </View>
   );
 }
@@ -206,10 +210,19 @@ export function FlowFooter({
 }) {
   const { colors, u } = useTheme();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const leading = (action: FlowAction, color: string) =>
     action.icon ? <Icon name={action.icon} size={u(20)} color={color} /> : undefined;
   return (
-    <View style={[styles.footer, inset ? styles.inset : null]}>
+    <View
+      style={[
+        styles.footer,
+        // An inset footer is the page's footer slot, and `Screen` hands that slot the bottom
+        // safe-area inset (it stops padding its own root): without it the buttons sit under the
+        // Android navigation bar or the home indicator.
+        inset ? [styles.inset, { paddingBottom: u(8) + insets.bottom }] : null,
+      ]}
+    >
       <View style={styles.footerRow}>
         {secondary ? (
           <Button
@@ -248,16 +261,19 @@ export function FlowFooter({
   );
 }
 
-/** A section heading with an optional icon and one line under it. */
+/** A section heading with an optional icon (or a small drawing in its place) and one line under it. */
 export function FlowSection({
   title,
   body,
   icon,
+  art,
   children,
 }: {
   title: string;
   body?: string;
   icon?: LineIconName;
+  /** A small decorative drawing beside the title, in place of `icon` (§211). */
+  art?: ReactNode;
   children?: ReactNode;
 }) {
   const { colors } = useTheme();
@@ -265,7 +281,7 @@ export function FlowSection({
   return (
     <View style={styles.section}>
       <View style={styles.sectionHead}>
-        {icon ? <Icon name={icon} size="md" color={colors.brand} /> : null}
+        {art ?? (icon ? <Icon name={icon} size="md" color={colors.brand} /> : null)}
         <Text variant="title3" color="ink" accessibilityRole="header">
           {title}
         </Text>

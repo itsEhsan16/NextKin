@@ -134,7 +134,7 @@ export function DocumentsScreen() {
           </div>
 
           <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
-            {/* The folder art lives in the preview's empty states now (owner, toreview §234). */}
+            {/* The folder art lives in the preview's empty states now (owner, toreview §253). */}
             <DocumentDetailPanel
               document={selected}
               status={detailStatus}

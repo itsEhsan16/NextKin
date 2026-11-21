@@ -23,14 +23,14 @@ const base = {
 };
 
 /** Scaled CREATE 01 height, as CreateSheetHost computes it. */
-const designHeightAt = (width: number) =>
-  layoutScaleFor(width).s(sizes.sheetStep1Height);
+const designHeightAt = (width: number) => layoutScaleFor(width).s(sizes.sheetStep1Height);
 
 describe('resolveSheetHeight', () => {
-  it('uses the design height when the content fits inside it', () => {
+  it('shrinks to its content when the content is shorter than the design (§240)', () => {
     const designHeight = designHeightAt(IPHONE_14);
+    expect(designHeight).toBeGreaterThan(300);
     expect(resolveSheetHeight({ ...base, designHeight, contentHeight: 300 })).toBe(
-      designHeight + INSET_BOTTOM,
+      300 + INSET_BOTTOM,
     );
   });
 

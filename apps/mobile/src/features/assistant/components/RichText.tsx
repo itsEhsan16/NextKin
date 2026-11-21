@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View } from 'react-native';
 
 import { scaledSheet, useTheme } from '@/theme';
@@ -29,7 +30,8 @@ function Inline({ line }: { line: string }) {
  * and the `**bold**` the answers use for a number or a document's name drawn bold, never as
  * asterisks. Plain otherwise: the assistant writes prose, not documents.
  */
-export function RichText({ text }: { text: string }) {
+/** Memoised: a long thread re-renders on every new message, and a reply's text never changes. */
+export const RichText = memo(function RichText({ text }: { text: string }) {
   const { colors } = useTheme();
   const styles = useStyles();
   const blocks = text
@@ -63,7 +65,7 @@ export function RichText({ text }: { text: string }) {
       })}
     </View>
   );
-}
+});
 
 const useStyles = scaledSheet((_s, u) => ({
   root: { gap: u(10) },

@@ -13,6 +13,8 @@ export interface Flags {
   isEnabled(feature: Feature): Promise<boolean>;
   /** Minimum supported client version per platform (P3-07), or null when unset. */
   minimumClientVersion(client: string): Promise<string | null>;
+  /** The newest store version per platform, for the app's optional "update available" prompt. */
+  latestClientVersion(client: string): Promise<string | null>;
   invalidate(): void;
 }
 
@@ -42,6 +44,12 @@ export function createFlags(db: Database, now: () => number = Date.now): Flags {
       const value = (floors as Record<string, unknown>)[client];
       return typeof value === 'string' ? value : null;
     },
+    async latestClientVersion(client) {
+      const latest = (await load()).get('clients.latest_version');
+      if (!latest || typeof latest !== 'object') return null;
+      const value = (latest as Record<string, unknown>)[client];
+      return typeof value === 'string' ? value : null;
+    },
     invalidate() {
       cache = null;
     },
@@ -61,6 +69,10 @@ export function createStaticFlags(values: Record<string, unknown> = {}): Flags {
     async minimumClientVersion(client) {
       const floors = map.get('clients.minimum_version') as Record<string, string> | undefined;
       return floors?.[client] ?? null;
+    },
+    async latestClientVersion(client) {
+      const latest = map.get('clients.latest_version') as Record<string, string> | undefined;
+      return latest?.[client] ?? null;
     },
     invalidate() {},
   };

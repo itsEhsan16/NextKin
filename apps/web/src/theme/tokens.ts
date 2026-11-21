@@ -231,6 +231,32 @@ export const colors = {
   chart3: '#16a34a',
   chart4: '#f59e0b',
   chart5: '#ec4899',
+  /** The marketing landing page (Figma 524:419), apart from the app palette (toreview §250). */
+  lpWhite: '#ffffff',
+  lpPage: '#fbfaff',
+  lpViolet: '#5543ee',
+  lpVioletDeep: '#4a3ae8',
+  lpVioletLight: '#7266f7',
+  lpVioletSoft: '#efedff',
+  lpVioletLine: 'rgba(85, 67, 238, 0.35)',
+  lpInk: '#14162b',
+  lpInk2: '#2a2e45',
+  lpHeading: '#0f1222',
+  lpCopy: '#6b7085',
+  lpTileLine: '#ecebf6',
+  lpTint: '#f6f5ff',
+  lpMuted: '#8a8fa3',
+  lpLine: '#e7e8f0',
+  lpSurface: '#f6f6fb',
+  lpIndigoNight: '#1d1a5c',
+  lpNight: '#0d0b2a',
+  lpNight2: '#1d1a5c',
+  lpGlassLine: 'rgba(85, 67, 238, 0.12)',
+  lpBeam: '#8b7cff',
+  lpBeamHot: '#c4b5fd',
+  lpEmber: '#e879f9',
+  lpOnGlass: '#14162b',
+  lpOnGlassDim: '#6b7085',
 } as const;
 
 export type ColorToken = keyof typeof colors;
@@ -268,6 +294,13 @@ export const typography = {
   adminStat: [28.6, 37.4, -1.5, 600],
   adminH1: [26.4, 32, -1, 600],
   adminPrice: [22, 33, 0, 600],
+  /** The marketing landing page (Figma 524:419, "LP v5" text styles; toreview §250). */
+  lpDisplay: [76, 86, -3, 600],
+  lpH2: [54, 62, -2.5, 600],
+  lpH3: [24, 32, -1, 600],
+  lpBodyL: [19, 30, 0, 400],
+  lpBody: [17, 27, 0, 400],
+  lpEyebrow: [15, 20, 0, 600],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
 export type TypographyRole = keyof typeof typography;

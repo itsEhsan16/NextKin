@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Caveat, Plus_Jakarta_Sans } from 'next/font/google';
+import { Caveat, Instrument_Serif, Plus_Jakarta_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import '@/theme/theme.css';
@@ -32,6 +32,19 @@ const caveat = Caveat({
   preload: false,
 });
 
+/**
+ * The landing page's serif italic accent word (Figma 524:419). On `<html>` like Caveat, because the
+ * `font-serif-accent` token resolves at `:root`; not preloaded, so app routes never fetch it.
+ */
+const instrumentSerif = Instrument_Serif({
+  weight: '400',
+  style: 'italic',
+  subsets: ['latin'],
+  variable: '--font-instrument-serif',
+  display: 'swap',
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: 'NextKin',
   description:
@@ -42,7 +55,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     // `suppressHydrationWarning`: the boot script below may add `data-sidebar` to this element
     // before React hydrates it, which is the point of it.
-    <html lang="en" className={cn(plusJakarta.variable, caveat.variable)} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={cn(plusJakarta.variable, caveat.variable, instrumentSerif.variable)}
+      suppressHydrationWarning
+    >
       <body className="bg-neutral-100 font-sans text-text-primary antialiased">
         {/* First in the body, so it runs before anything paints: the remembered sidebar state,
             for the CSS to draw from (`toreview.md` §84). */}

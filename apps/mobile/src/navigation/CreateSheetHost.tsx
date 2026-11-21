@@ -74,6 +74,12 @@ export function CreateSheetHost() {
     <Sheet
       open={isOpen}
       onClose={close}
+      // Back from "New resume" returns to the first pane, as its own back arrow does.
+      onBackStep={() => {
+        if (step === 'root') return false;
+        setStep('root');
+        return true;
+      }}
       height={height}
       progress={progress}
       accessibilityLabel={step === 'root' ? 'Create' : 'New resume'}

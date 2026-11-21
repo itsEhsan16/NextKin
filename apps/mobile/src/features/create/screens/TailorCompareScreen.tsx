@@ -3,8 +3,6 @@ import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {
-  acceptAll,
-  allAccepted,
   nothingChosen,
   projectedScore,
   tailorRunInput,
@@ -15,32 +13,47 @@ import { isConsentRequired, useKeywordQuestions, useStartGeneration } from '@/da
 import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
+import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
 import { NoResumeCard } from '../components/NoResumeCard';
 import { OnboardingFrame } from '../components/OnboardingFrame';
 import { TailorResumeSheet } from '../components/TailorResumeSheet';
 import { customizeKey, useCustomizeChoices } from '../customizeStore';
-import { FlowCard, FlowFooter, FlowRow, FlowSection } from '../flow/FlowKit';
+import { FlowCard, FlowRow, FlowSection } from '../flow/FlowKit';
 import { KeywordAsks } from '../flow/KeywordAsks';
-import { AiPlanCard, MoreOptionsSheet, ReviewHero, SkillChips } from '../flow/ReviewParts';
+import {
+  AtsEstimateCard,
+  JobResumeRow,
+  KeywordChooser,
+  KeywordFooter,
+  tailorTicks,
+} from '../flow/KeywordStep';
+import { RESUME_STEP_COUNT, StepHelpSheet, stepName } from '../flow/ResumeSteps';
+import { AiPlanCard, MoreOptionsSheet } from '../flow/ReviewParts';
 import { generationsLeftNote, spentNote } from '../generationQuota';
 import { useCreateActions, type CustomizeTarget } from '../hooks/useCreateActions';
 import { useCustomizeData } from '../hooks/useCustomizeData';
 
 export type TailorCompareScreenProps = CustomizeTarget;
 
-export const CUSTOMIZE_CTA = 'Create my resume';
-export const REVIEW_TITLE = 'Ready to tailor';
+/** The button with nothing ticked: the AI's own changes still run. */
+export const CUSTOMIZE_CTA = 'Continue';
+export const addKeywordsCta = (n: number) => `Add ${n} keyword${n === 1 ? '' : 's'}`;
+export const REVIEW_TITLE = 'Choose keywords to add';
+const LEDE =
+  'Tick the keywords from the job that you really have. We’ll add them naturally to lift your ATS score.';
+/** The web's promise line (`NEVER_ADDS_SKILLS`). */
+const NEVER_ADDS =
+  'We add only what you accept. You decide what goes on your resume, and interviewers may ask about any of it.';
 const START_FAILED = 'We couldn’t start it. Check your connection and try again.';
-const NOTHING_CHOSEN = 'Turn on something in the plan, or tap a skill.';
+const NOTHING_CHOSEN = 'Tick a keyword, or turn on something the AI will change.';
 
 /**
- * Build Resume, step 2 of 3 — Review (toreview §173, Figma "Build · 2 Review"). Replaces the old
- * Compare/Fix/Download screen. Nothing has to be answered: the AI's plan is already picked, and
- * one tap creates. The score card says where the plan takes it; the plan rows turn off with a tap;
- * a step that needs a real number shows the AI's guess to accept or edit; missing skills are
- * one-tap chips; the rare settings sit in "More options".
+ * Tailor, "2 of 3 · Choose Keywords" (owner, 2026-11-18, toreview §234): the web's "Choose
+ * keywords to add" step in the app's kit. The job and resume, the ATS card with what the ticked
+ * keywords add, Missing / Optional / All with each keyword's impact, where it all lands, then the
+ * "Did you use these?" questions and what the AI will change. Nothing is pre-ticked (D-25).
  */
 export function TailorCompareScreen(props: TailorCompareScreenProps) {
   const styles = useStyles();
@@ -51,6 +64,7 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
   const [choices, update] = useCustomizeChoices(customizeKey(props, data.resumeId));
   const [pickerOpen, setPickerOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const set = (next: typeof choices) => update(() => next);
 
   const { target, comparison, resume, subscription, resumes } = data;
@@ -68,10 +82,12 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
     <View style={styles.root}>
       <OnboardingFrame
         step={2}
-        total={3}
+        total={RESUME_STEP_COUNT}
+        stepName={stepName(2)}
         title={title}
-        subtitle={subtitle}
+        subtitle={title === REVIEW_TITLE ? LEDE : subtitle}
         onBack={actions.goBack}
+        onHelp={() => setHelpOpen(true)}
         footer={footer}
       >
         {children}
@@ -87,6 +103,7 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
           if (id !== data.resumeId) actions.compareResume(id);
         }}
       />
+      <StepHelpSheet step={2} open={helpOpen} onClose={() => setHelpOpen(false)} />
       <MoreOptionsSheet
         open={optionsOpen}
         onClose={() => setOptionsOpen(false)}
@@ -131,13 +148,12 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
 
   const loading = (
     <View style={styles.stack} accessible accessibilityLabel="Comparing your resume with this job">
-      <Skeleton height={u(170)} radius="cardLg" />
-      <Skeleton height={u(220)} radius="cardLg" />
+      <Skeleton height={u(84)} radius="cardLg" />
+      <Skeleton height={u(140)} radius="cardLg" />
+      <Skeleton height={u(260)} radius="cardLg" />
     </View>
   );
-  const inertFooter = (
-    <FlowFooter primary={{ label: CUSTOMIZE_CTA, onPress: () => {}, disabled: true }} />
-  );
+  const inertFooter = <KeywordFooter label={CUSTOMIZE_CTA} onPress={() => {}} disabled />;
   if (!target || !resumes.data || !subscription.data) return page(loading, inertFooter);
 
   if (data.noResume) {
@@ -171,8 +187,19 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
   const spent = used >= limit;
   const empty = nothingChosen(choices);
   const failed = start.isError && !isConsentRequired(start.error);
-  const jdId = data.jdId;
   const projected = projectedScore(result.plan, choices) ?? result.plan?.target?.ai;
+  // What the candidate's own answers add on top of the AI's steps: the card's estimate (web §166).
+  const withoutAnswers = projectedScore(result.plan, {
+    ...choices,
+    added: [],
+    places: {},
+    figures: {},
+  });
+  const answersGain =
+    projected !== undefined && withoutAnswers !== undefined
+      ? Math.round((projected - withoutAnswers) * 10) / 10
+      : 0;
+  const ticked = choices.added.length;
   const optionsLine = [
     choices.experience === 'quick' ? 'Latest 2 roles' : 'Every role',
     choices.fixes.includes('length') ? 'trimmed' : 'full length',
@@ -200,88 +227,81 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
   return page(
     <View style={styles.stack}>
       <Animated.View entering={enter(0)}>
-        <ReviewHero
-          score={result.score}
-          scored={result.scored !== false}
-          projected={projected}
-          sourceTitle={resume.data.title}
-          onChangeSource={() => setPickerOpen(true)}
-          onViewJob={jdId ? () => actions.openJobDetails(jdId) : undefined}
+        <JobResumeRow
+          job={subtitle ?? target.title}
+          resumeTitle={resume.data.title}
+          onPress={() => setPickerOpen(true)}
         />
       </Animated.View>
       <Animated.View entering={enter(1)}>
-        <FlowSection
-          icon="AiMagic"
-          title="AI’s plan"
-          body="Picked for this job. Tap anything to change it."
-        >
-          <AiPlanCard
-            company={data.company}
-            resumeId={result.resumeId}
-            steps={result.plan?.steps ?? []}
-            choices={choices}
-            onChange={set}
-          />
-        </FlowSection>
+        <AtsEstimateCard
+          score={result.score}
+          scored={result.scored !== false}
+          gain={answersGain}
+          ticked={ticked}
+        />
       </Animated.View>
       {result.keywords.length > 0 ? (
-        <Animated.View entering={enter(2)}>
-          <FlowSection
-            title="Skills it asks for"
-            body="Tap the ones to add. What you accept goes on your resume."
-          >
-            {/* "Accept all suggestions" (owner, D-25, toreview §211): never pre-selected, one tap takes
-                every keyword and answers every question yes. Results stay a line-by-line choice here. */}
-            {result.keywords.some((k) => !k.onResume) && !allAccepted(choices, result, asked) ? (
-              <FlowCard style={styles.optionsCard}>
-                <FlowRow
-                  icon="Stars02"
-                  title="Accept all suggestions"
-                  body="Adds every keyword this job asks for. You can untap any of them."
-                  onPress={() => set(acceptAll(choices, result, { questions: asked }))}
-                />
-              </FlowCard>
-            ) : null}
-            <SkillChips comparison={result} choices={choices} onChange={set} />
-          </FlowSection>
+        <Animated.View entering={enter(2)} style={styles.section}>
+          <KeywordChooser {...tailorTicks(result, choices, set)} />
         </Animated.View>
       ) : null}
       {asked.length > 0 ? (
-        <Animated.View entering={enter(2)}>
+        <Animated.View entering={enter(3)}>
           <KeywordAsks questions={asked} choices={choices} onChange={set} />
         </Animated.View>
       ) : null}
       <Animated.View entering={enter(3)}>
-        <FlowCard style={styles.optionsCard}>
-          <FlowRow
-            icon="Sliders01"
-            title="More options"
-            body={optionsLine}
-            onPress={() => setOptionsOpen(true)}
-          />
-        </FlowCard>
+        <FlowSection
+          icon="AiMagic"
+          title="What the AI will change"
+          body="Picked for this job. Tap anything to change it."
+        >
+          <View style={styles.section}>
+            <AiPlanCard
+              company={data.company}
+              resumeId={result.resumeId}
+              steps={result.plan?.steps ?? []}
+              choices={choices}
+              onChange={set}
+            />
+            <FlowCard style={styles.optionsCard}>
+              <FlowRow
+                icon="Sliders01"
+                title="More options"
+                body={optionsLine}
+                onPress={() => setOptionsOpen(true)}
+              />
+            </FlowCard>
+          </View>
+        </FlowSection>
       </Animated.View>
+      <Text variant="footnote" color="textTertiary" align="center">
+        {NEVER_ADDS}
+      </Text>
     </View>,
-    <FlowFooter
-      note={note}
-      noteTone={failed ? 'danger' : 'neutral'}
-      primary={
-        spent
-          ? { label: 'See Pro plans', onPress: () => actions.openUpgrade('generations') }
-          : {
-              label: CUSTOMIZE_CTA,
-              icon: 'Stars02',
-              loading: start.isPending,
-              disabled: empty,
-              onPress: create,
-            }
-      }
-    />,
+    spent ? (
+      <KeywordFooter
+        label="See Pro plans"
+        note={note}
+        onPress={() => actions.openUpgrade('generations')}
+      />
+    ) : (
+      <KeywordFooter
+        label={ticked > 0 ? addKeywordsCta(ticked) : CUSTOMIZE_CTA}
+        note={note}
+        noteTone={failed || problem ? 'danger' : 'neutral'}
+        loading={start.isPending}
+        disabled={empty}
+        onPress={create}
+      />
+    ),
   );
 }
 
 const useStyles = scaledSheet((_s, u) => ({
   root: { flex: 1 },
-  stack: { gap: u(24), paddingBottom: u(8) },
+  stack: { gap: u(20), paddingBottom: u(8) },
+  section: { gap: u(14) },
   optionsCard: { paddingVertical: u(2) },
 }));

@@ -54,6 +54,8 @@ export const colorsByScheme = {
     surfaceUnread: palette.brand25,
     /** Unread notification card border (Figma 619:44). */
     unreadBorder: palette.brand75,
+    /** Selected text's highlight on Android, where `selectionColor` is painted at full strength (§243). */
+    textSelection: 'rgba(71, 51, 249, 0.24)',
     /** A read notification card's border — a step softer than borderDefault (Figma 619:89). */
     borderSoft: palette.gray120,
     // Notification tile tints and their glyphs (Figma 619:43 / 619:65 / 619:78 / 619:98 /
@@ -196,6 +198,7 @@ export const colorsByScheme = {
     brandBorder: '#2F2A5C',
     surfaceUnread: '#17152E',
     unreadBorder: '#2A2654',
+    textSelection: 'rgba(124, 108, 255, 0.35)',
     borderSoft: palette.dark700,
     tileBrand: '#221E45',
     tileBrandStrong: '#29245A',
@@ -503,11 +506,32 @@ export function buildArtboardShadows(scale: number): Record<ShadowToken, ShadowS
   return built;
 }
 
+/**
+ * The only shadows that keep Android `elevation` (owner, 2026-11-09 §209; made the default
+ * 2026-11-19 §241). Android paints an `elevation` shadow outside the view's own alpha, so while a
+ * card, tile or pill fades in (a reveal, a tab switch, the app coming back) its shadow stays solid
+ * behind the half-clear surface and reads as a thick grey frame. A CSS `boxShadow` is part of the
+ * view and fades with it, so every shadow is CSS unless it is listed here.
+ *
+ * List a token here only for floating chrome that needs elevation's sibling z-ordering to sit
+ * above content drawn after it, and that never fades in with a screen. A new token is CSS by
+ * default, so this bug cannot come back through a new card style.
+ */
+export const ELEVATION_SHADOWS: ReadonlySet<string> = new Set([
+  'fab',
+  'sheet',
+  'dialog',
+  'stickyBarUp',
+  'toast',
+]);
+
 /** Builds the shadow style map at a given scale. Offsets and blur scale; alpha and elevation do not. */
 export function buildShadows(scale: number): Record<ShadowToken, ShadowStyle> {
   const built = { none: {} } as Record<ShadowToken, ShadowStyle>;
   for (const [key, spec] of Object.entries(shadowSpecs)) {
-    built[key as keyof typeof shadowSpecs] = toShadowStyle(spec, scale);
+    built[key as keyof typeof shadowSpecs] = ELEVATION_SHADOWS.has(key)
+      ? toShadowStyle(spec, scale)
+      : toBoxShadow(spec, scale);
   }
   return built;
 }

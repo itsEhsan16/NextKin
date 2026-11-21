@@ -113,7 +113,8 @@ export function JobFilterChipsRow({ filters, onChange, allJobs }: JobFilterChips
       >
         <div className="flex w-64 flex-col gap-3 p-2">
           <label className="flex flex-col gap-1 text-caption-m text-text-secondary">
-            Minimum — ₹{((filters.salaryMin ?? SALARY_FILTER_MIN) / 100_000).toFixed(0)}L/yr
+            {/* US dollars a year: the shared filter's unit (toreview §247). */}
+            Minimum — ${((filters.salaryMin ?? SALARY_FILTER_MIN) / 1000).toFixed(0)}k/yr
             <input
               type="range"
               min={SALARY_FILTER_MIN}
@@ -125,7 +126,7 @@ export function JobFilterChipsRow({ filters, onChange, allJobs }: JobFilterChips
             />
           </label>
           <label className="flex flex-col gap-1 text-caption-m text-text-secondary">
-            Maximum — ₹{((filters.salaryMax ?? SALARY_FILTER_MAX) / 100_000).toFixed(0)}L/yr
+            Maximum — ${((filters.salaryMax ?? SALARY_FILTER_MAX) / 1000).toFixed(0)}k/yr
             <input
               type="range"
               min={SALARY_FILTER_MIN}

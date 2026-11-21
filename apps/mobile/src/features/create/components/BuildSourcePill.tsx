@@ -13,7 +13,9 @@ const shortLabel = (source: BuildFromSource): string =>
     ? 'Your profile'
     : source.kind === 'resume'
       ? source.resume.title
-      : `Reading ${source.fileName}…`;
+      : source.kind === 'scratch'
+        ? 'Scratch with AI'
+        : `Reading ${source.fileName}…`;
 
 /**
  * What the resume is built from, as one tappable pill (§172): "From  Your profile ▾". Replaces
@@ -38,7 +40,13 @@ export function BuildSourcePill({
         { backgroundColor: colors.surfaceCard, borderColor: colors.borderDefault },
       ]}
     >
-      <Icon name={source.kind === 'profile' ? 'User01' : 'File04'} size="sm" color={colors.brand} />
+      <Icon
+        name={
+          source.kind === 'profile' ? 'User01' : source.kind === 'scratch' ? 'Stars02' : 'File04'
+        }
+        size="sm"
+        color={colors.brand}
+      />
       <Text variant="footnote" color="textSecondary">
         From
       </Text>

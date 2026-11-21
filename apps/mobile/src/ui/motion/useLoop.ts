@@ -11,6 +11,8 @@ import {
 import { useReducedMotion } from '@/lib';
 import { motion } from '@/theme';
 
+import { useScreenVisible } from './useScreenVisible';
+
 export type LoopOptions = {
   /** Holds the loop back before its first cycle, so several loops can run out of step. */
   delay?: number;
@@ -25,6 +27,10 @@ export type LoopOptions = {
  *
  * When the work stops, the clock eases back to rest over `fast` rather than freezing mid-cycle,
  * so whatever it drives settles instead of stopping dead. Under Reduce Motion it never starts.
+ *
+ * It also rests while its screen is out of sight (a hidden tab, a screen under a push, the app in
+ * the background) and picks up again on return: nothing visible changes, and the UI thread is
+ * left to the screen that is showing.
  */
 export function useLoop(
   active: boolean,
@@ -32,8 +38,9 @@ export function useLoop(
   { delay = 0, reverse = false }: LoopOptions = {},
 ): SharedValue<number> {
   const reduced = useReducedMotion();
+  const visible = useScreenVisible();
   const clock = useSharedValue(0);
-  const running = active && !reduced;
+  const running = active && !reduced && visible;
 
   useEffect(() => {
     if (!running) {

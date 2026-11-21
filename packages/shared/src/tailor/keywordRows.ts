@@ -86,7 +86,7 @@ function categoryOf(k: TailorKeyword): { bucket: KeywordBucket; tag: string | nu
  * The missing keywords as rows: top ones first, then by worth, then as the job lists them (a
  * stable sort keeps the comparison's order among equals).
  */
-export function keywordRowsOf(comparison: TailorComparison): KeywordRow[] {
+export function keywordRowsOf(comparison: Pick<TailorComparison, 'keywords'> & { plan?: TailorComparison['plan'] }): KeywordRow[] {
   const steps = comparison.plan?.steps ?? [];
   const priced = new Map<string, { worth: number | null; basis: string }>();
   for (const s of steps) {

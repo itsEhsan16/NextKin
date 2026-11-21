@@ -272,7 +272,7 @@ export const MANAGE_CTA = 'Manage on the web';
 export const LOADING_CTA = 'Upgrade to Pro';
 export const MANAGE_NOTE = 'Change or cancel your plan on the web.';
 export const MANAGE_UNAVAILABLE =
-  "We couldn't open the browser. Go to nextkin.ai on any device to manage your plan.";
+  "We couldn't open the browser. Go to app.nextkin.ai on any device to manage your plan.";
 /** The account page the manage action opens; the app never takes payment itself (§13.4). */
 export const BILLING_PATH = '/settings?tab=billing';
 
@@ -282,6 +282,9 @@ export function renewalLine(renewsAt?: string, now: Date = new Date()): string |
   const date = formatShortDate(renewsAt, now);
   return date ? `Renews on ${date}` : undefined;
 }
+
+/** The Android Free hero's line when no limit sent the reader here (storePolicy.ts). */
+export const STORE_FREE_CAPTION = 'What Free includes, and what Pro adds.';
 
 export const PLANS_ERROR_TITLE = "Couldn't load the plans";
 export const PLANS_ERROR_MESSAGE = 'Check your connection and try again.';

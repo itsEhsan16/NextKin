@@ -17,6 +17,12 @@ export interface SupportDeps {
   email: EmailPort;
   inbox: string;
   log: Logger;
+  /**
+   * This deployment's web app (APP_ORIGIN, e.g. https://app.nextkin.ai). A legal document's public
+   * address is built from it, never read from the stored body: the first seeded version carried a
+   * domain we don't own (nextkin.app), and the apps and the Play listing link to whatever is here.
+   */
+  appOrigin?: string;
 }
 
 async function published<T>(db: Database, key: 'faq' | 'terms' | 'privacy'): Promise<T | null> {
@@ -28,10 +34,10 @@ export async function listFaq(db: Database): Promise<FaqItem[]> {
   return (await published<FaqItem[]>(db, 'faq')) ?? [];
 }
 
-export async function getLegal(db: Database, key: LegalDocKey): Promise<LegalDoc> {
+export async function getLegal(db: Database, key: LegalDocKey, appOrigin?: string): Promise<LegalDoc> {
   const doc = await published<LegalDoc>(db, key);
   if (!doc) throw errors.notFound('document');
-  return doc;
+  return appOrigin ? { ...doc, url: `${appOrigin.replace(/\/+$/, '')}/legal/${key}` } : doc;
 }
 
 export async function submitTicket(deps: SupportDeps, identity: Identity, input: TicketInput, requestId: string | null): Promise<SupportTicket> {

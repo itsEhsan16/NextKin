@@ -59,8 +59,8 @@ export const withChosen = (options: readonly string[], chosen: readonly string[]
   ...chosen.filter((value) => !options.includes(value)),
 ];
 
-/** "INR (₹)" (356:77), then the currencies the spec prices in (V2 §13.2). */
-export const CURRENCY_OPTIONS: readonly SalaryCurrency[] = ['INR', 'USD', 'EUR', 'AUD'];
+/** US dollars first (the platform is US-based, toreview §247), then the rest the spec prices in. */
+export const CURRENCY_OPTIONS: readonly SalaryCurrency[] = ['USD', 'EUR', 'AUD', 'INR'];
 
 export const CURRENCY_LABEL: Record<SalaryCurrency, string> = {
   INR: 'INR (₹)',

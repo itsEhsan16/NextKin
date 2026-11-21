@@ -134,6 +134,8 @@ export async function seedReference(db: Database): Promise<{ rubricVersionId: st
       'features.teaser.enabled': true,
       'features.job_search.enabled': true,
       'clients.minimum_version': { web: '0.0.0', ios: '0.0.0', android: '0.0.0' },
+      // Raise a platform's value after a store release: older phones get the optional prompt.
+      'clients.latest_version': { ios: '0.0.0', android: '0.0.0' },
       [ROUTING_KEY]: ROUTING_DEFAULT,
       [PRICES_KEY]: PRICES_DEFAULT,
     };

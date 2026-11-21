@@ -193,6 +193,8 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     <>
       <Screen
         scroll
+        // The checks step has text fields (ZeroCheckForms): the page must lift them over the keys.
+        keyboard
         edges={['top', 'bottom']}
         header={<TailorChrome stepper={stepper} onClose={close} />}
         headerStyle={{ paddingBottom: s(gap) }}

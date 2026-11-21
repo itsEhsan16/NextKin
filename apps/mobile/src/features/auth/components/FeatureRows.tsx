@@ -86,7 +86,8 @@ export function FeatureRows() {
             styles.row,
             artboardShadows.onboardingFeatureCard,
             {
-              height: s(board(ROW.height)),
+              // At least the drawn height; taller when large text wraps the line.
+              minHeight: s(board(ROW.height)),
               borderRadius: s(board(ROW.radius)),
               backgroundColor: colors.surfaceCard,
             },

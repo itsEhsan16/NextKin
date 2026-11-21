@@ -12,6 +12,11 @@ export interface AppDomainProps {
    * delegated at the registrar, because DNS validation waits on it (toreview §165).
    */
   live: boolean;
+  /**
+   * More names inside the same zone, served by the same distribution and certificate: today the
+   * admin portal's admin.app.nextkin.ai (toreview §249). No registrar change: the zone owns them.
+   */
+  extraNames?: readonly string[];
 }
 
 /**
@@ -22,12 +27,14 @@ export interface AppDomainProps {
  */
 export class AppDomain extends Construct {
   readonly name: string;
+  readonly extraNames: readonly string[];
   readonly zone: route53.PublicHostedZone;
   readonly certificate: acm.Certificate | undefined;
 
   constructor(scope: Construct, id: string, props: AppDomainProps) {
     super(scope, id);
     this.name = props.name;
+    this.extraNames = props.extraNames ?? [];
     this.zone = new route53.PublicHostedZone(this, 'Zone', {
       zoneName: props.name,
       comment: `NextKin demo: ${props.name}, delegated from the registrar's nextkin.ai DNS`,
@@ -35,6 +42,7 @@ export class AppDomain extends Construct {
     this.certificate = props.live
       ? new acm.Certificate(this, 'Certificate', {
           domainName: props.name,
+          ...(this.extraNames.length ? { subjectAlternativeNames: [...this.extraNames] } : {}),
           validation: acm.CertificateValidation.fromDns(this.zone),
         })
       : undefined;
@@ -45,5 +53,12 @@ export class AppDomain extends Construct {
     const target = route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution));
     new route53.ARecord(this, 'Alias', { zone: this.zone, target });
     new route53.AaaaRecord(this, 'AliasV6', { zone: this.zone, target });
+    // Each extra name gets its own pair; the construct ids are derived from the name, so adding a
+    // second name later never renames the first.
+    for (const name of this.extraNames) {
+      const id = name.split('.')[0]!.replace(/[^a-z0-9]/gi, '');
+      new route53.ARecord(this, `Alias-${id}`, { zone: this.zone, recordName: `${name}.`, target });
+      new route53.AaaaRecord(this, `AliasV6-${id}`, { zone: this.zone, recordName: `${name}.`, target });
+    }
   }
 }

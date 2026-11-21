@@ -18,7 +18,7 @@ const VIEWS = [
 
 /**
  * The row over the pills (286:2068-2086): the library's search, running up to the list/grid
- * switch with no empty stretch between them (owner, toreview §234), and the switch. The
+ * switch with no empty stretch between them (owner, toreview §253), and the switch. The
  * board also draws a sort here; "Sort by" under the pills is the one sort, as on Resumes and the
  * other lists (redesign R6d, audit DC-03).
  */

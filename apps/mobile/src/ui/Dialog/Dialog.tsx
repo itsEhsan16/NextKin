@@ -112,5 +112,6 @@ export function Dialog({ open, onClose, accessibilityLabel, children }: DialogPr
 
 const useStyles = scaledSheet((s) => ({
   center: { justifyContent: 'center', paddingHorizontal: s(INSET) },
-  card: { borderRadius: s(RADIUS) },
+  // Never wider than the phone column, so a tablet or unfolded foldable gets a dialog, not a banner.
+  card: { borderRadius: s(RADIUS), width: '100%', maxWidth: 520, alignSelf: 'center' },
 }));

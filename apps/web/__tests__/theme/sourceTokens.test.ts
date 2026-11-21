@@ -8,7 +8,8 @@ import { join, relative, sep } from 'node:path';
  * a count, lower its ceiling here in the same change, and the gain can't be lost again.
  *
  * Allowlisted (§5.5): generated art (`ui/icons`, `ui/illustrations`, `ui/animated`), the
- * print-scale resume and letter pages, and the admin charts until chart tokens land.
+ * print-scale resume and letter pages, the admin charts until chart tokens land, and the marketing
+ * landing page.
  */
 const ROOT = join(__dirname, '../..');
 const SCANNED = ['src', 'app'];
@@ -20,6 +21,9 @@ const ALLOW = [
   'src/features/editor/preview/LetterPage.tsx',
   'src/features/admin/charts/',
   'src/theme/',
+  // The marketing landing page (Figma 524:419): transcribed board art with its own `lp-*` palette
+  // in theme.css, outside the app's design system (toreview §250).
+  'src/features/landing/',
 ];
 
 function files(dir: string): string[] {
@@ -95,7 +99,7 @@ const RULES: Rule[] = [
     name: 'other arbitrary values',
     pattern:
       /(?<![\w-])(?!grid-(?:cols|rows)-|(?:group-|peer-)?(?:data|aria|has|nth)-)[a-z][a-z0-9-]*-\[(?!var\()[^\]]+\]/g,
-    ceiling: 430,
+    ceiling: 424,
     fix: 'use a spacing, size or container token; add one if the value repeats',
   },
 ];
