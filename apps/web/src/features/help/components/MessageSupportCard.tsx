@@ -17,7 +17,7 @@ import { MailIcon, SendIcon } from '@/ui/icons';
 import { SettingsEmailIllustration } from '@/ui/illustrations';
 import { SelectField } from '@/ui/SelectField';
 import { StableLabel } from '@/ui/StableLabel';
-import { BUTTON_VARIANT } from '@/ui/buttonStyles';
+import { BUTTON_SIZE, BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 const LABEL = 'text-body-m font-medium text-text-primary';
 const HINT = 'mt-1.5 text-body-s text-text-tertiary';
@@ -152,7 +152,8 @@ export function MessageSupportCard() {
         aria-disabled={submit.isPending}
         className={cn(
           BUTTON_VARIANT.primary,
-          'mt-5 h-control-lg w-full gap-2 rounded-md text-body-m font-semibold aria-disabled:cursor-default aria-disabled:opacity-60',
+          BUTTON_SIZE.lg,
+          'mt-5 w-full aria-disabled:cursor-default aria-disabled:opacity-60',
         )}
       >
         <SendIcon aria-hidden className="size-4" />

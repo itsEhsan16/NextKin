@@ -14,7 +14,6 @@ import { replaceQuery } from '@/lib/replaceQuery';
 import { useReveal } from '@/lib/useReveal';
 import { Reveal } from '@/ui/Reveal';
 import { PageHeader } from '@/navigation/PageHeader';
-import { ChevronRightIcon } from '@/ui/icons';
 import { pageFillMin, pageFrame, stickyBelowTopBar } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -195,15 +194,10 @@ export function SettingsScreen({ initialSection = 'account' }: SettingsScreenPro
   }
 
   return (
-    <div className={cn(pageFrame, 'flex flex-col pb-8')}>
+    <div className={cn(pageFrame, 'flex flex-col pb-10')}>
       <PageHeader
         className="md:pr-80"
-        eyebrow={
-          <span className="flex items-center gap-1.5">
-            Settings
-            <ChevronRightIcon aria-hidden className="size-3.5" />
-          </span>
-        }
+        eyebrow="Settings"
         title={heading.title}
         subtitle={heading.subtitle}
       />

@@ -16,10 +16,9 @@ import {
   SettingsMatchScoreIllustration,
   SettingsResumesIllustration,
 } from '@/ui/illustrations';
-import { pressable } from '@/ui/pressable';
 import { StableLabel } from '@/ui/StableLabel';
 import { Soon, soonControl } from '@/ui/Soon';
-import { BUTTON_VARIANT } from '@/ui/buttonStyles';
+import { BUTTON_SIZE, BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /** What typing unlocks the button (467:628). */
 const CONFIRM_WORD = 'DELETE';
@@ -144,7 +143,8 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
             className={cn(
               soonControl,
               BUTTON_VARIANT['brand-secondary'],
-              'h-control-md shrink-0 rounded-md px-5 text-body-m',
+              BUTTON_SIZE.md,
+              'shrink-0',
             )}
           >
             Deactivate account
@@ -176,7 +176,7 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
             setTyped('');
             onCancel();
           }}
-          className={cn(BUTTON_VARIANT.secondary, 'h-control-lg rounded-md px-6 text-body-m')}
+          className={cn(BUTTON_VARIANT.secondary, BUTTON_SIZE.lg)}
         >
           Cancel
         </button>
@@ -196,10 +196,8 @@ export function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
                 showToast("We couldn't delete your account. Try again.", { tone: 'error' }),
             })
           }
-          className={cn(
-            'inline-flex h-control-lg items-center justify-center rounded-md bg-danger-600 px-6 text-body-m font-semibold text-text-inverse not-disabled:hover:bg-danger-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger-600 disabled:cursor-not-allowed disabled:opacity-50',
-            pressable,
-          )}
+          // The shared danger commit, as every destructive confirmation (toreview §255).
+          className={cn(BUTTON_VARIANT.danger, BUTTON_SIZE.lg)}
         >
           <StableLabel label="Delete my account" busyLabel="Deleting…" busy={remove.isPending} />
         </button>

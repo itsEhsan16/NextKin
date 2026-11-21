@@ -18641,3 +18641,18 @@ The owner asked for the whole web app to be made consistent. Three read-only sur
   - Three list comments said 12px between rows where the code is 16px.
 - **Not changed, and why:** the hand-rolled list rows already equal `cardSurface` to the pixel, so swapping them changes nothing on screen. `PillTabs`' track keeps `rounded-xl`, because a pill-shaped track looks wrong when the tabs wrap to two lines. `FilterChip` and the secondary button keep `neutral-700`/`neutral-800`, as no text token matches that ink.
 - **Tests:** updated for the new wording ("39 jobs", "5 resumes", "Reset", "Sort by: …") and for Create moving to the top bar (the tests send its event). The list, UI and navigation suites pass (173).
+
+## §255 — Consistency pass, phase 3: account and info pages (owner, 2026-11-21)
+- **Eyebrows:** Profile and Settings drop the chevron after their eyebrow ("Profile ›", "Settings ›"), so every page's eyebrow is the plain section name.
+- **Buttons on the shared sizes:**
+  - "Complete Profile" (Profile) and "Send message" (Help) were 44px tall with 14px type. They now use `BUTTON_SIZE.lg`, the size every other large button has (16px, semibold).
+  - Delete account's Cancel and Deactivate rendered at normal weight and now use the shared sizes.
+  - "Delete my account" was a hand-rolled red button; it is now the shared danger commit.
+  - Connected accounts' buttons gain their missing semibold.
+- **Profile's rail** now stacks under the main column below 1024, as Help's and the job page's do. It never stacked before, so the 340px rail squeezed the main column on a tablet.
+- **Settings' bottom space** is `pb-10`, like the other pages (was `pb-8`). Settings still starts under the top bar (`pageFrame`), as the owner left it when the other pages moved into the bar's band (§87).
+- **Left as they are, on purpose:**
+  - The Assistant's asides (`p-5`, `gap-5`, no stacking) are tuned to fit short windows; changing them risks the chat's fixed height.
+  - Settings' and Help's tinted note rows, the Home cards, and onboarding's and auth's own fields and logos keep their boards' own looks. Moving them onto `Callout` and the shared field would be a redesign, not a consistency fix (the owner's readability rule, 2026-09-30).
+  - The Profile name (30px) equals the page title; it doesn't exceed it.
+- **Verified:** typecheck and lint clean; the Settings, Profile, Help and Account suites pass (62).
