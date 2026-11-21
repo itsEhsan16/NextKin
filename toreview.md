@@ -18656,3 +18656,29 @@ The owner asked for the whole web app to be made consistent. Three read-only sur
   - Settings' and Help's tinted note rows, the Home cards, and onboarding's and auth's own fields and logos keep their boards' own looks. Moving them onto `Callout` and the shared field would be a redesign, not a consistency fix (the owner's readability rule, 2026-09-30).
   - The Profile name (30px) equals the page title; it doesn't exceed it.
 - **Verified:** typecheck and lint clean; the Settings, Profile, Help and Account suites pass (62).
+
+## §256 — Consistency pass, phase 4: the create flows (owner, 2026-11-21)
+- **No "Step N of N" on any step.** The owner removed it from Tailor's two steps (§227); now the job step, ATS upload, Cover letter's tone and tailor-first steps, its resume step, Zero's basics and check panel, and Build's keyword step drop it too. `StepHeading` no longer takes `step`/`of`, and the stepper at the top says where you are.
+- **One set of stepper labels for Build and Tailor:** their first step showed "Job · Resume · Enhance", then switched to "Job & Resume · Choose Keywords · Generate Results" once past it. Both now use the second set from the start (`jobFlow.ts`).
+- **The final paid commit is ink everywhere,** per the rule written in `FlowFooter`. "Write my cover letter" and "Write my first draft" were brand indigo; Tailor and Build's already were ink. "See Pro plans", which replaces the button once the allowance is spent, now uses Pro's own colour (`upgradeButton`, the `paid` variant) on the job step, Cover letter and Zero; it was brand indigo.
+- **One frame for every create flow:** ATS check, Cover letter and Zero resume now use `flowPage` like Build and Tailor, and the top bar steps aside on them from 768 up (`TopBar`'s `FOCUS_FLOW`). Their footer now rests at the window's bottom, and "Build Resume" no longer sits over a flow already under way.
+- **Result headers:** Cover letter's "Your letter is ready" and ATS's "Your ATS score for …" use the same title size (`text-h1`) and 40px shadowed back button as "Resume review"; they were 20px titles with a 36px plain back button. Every Download PDF says "Preparing PDF…" while it works (Resume review and the Resumes page said "Preparing…").
+- **Bug fixed:** "Add N keywords & continue" never showed "Starting…" while it started, because its label wasn't a plain string. `Button` gains `trailingIcon` (the arrow after the label, hidden while loading), so the label stays a string and the busy text shows.
+- **Token fixes found by the full suite (from §219/§221):**
+  - The progress fill and upload ring used raw `white`; they now use `neutral-0`.
+  - The upload zone's `rounded-[calc(…)]` is now `rounded-lg`.
+  - The turning ring's `linear` timing is now a token (`--ease-linear`, `motion.easings.linear`).
+  - The token test lists the two new animations, and the arbitrary-value ratchet is lowered to 423.
+- **Not in this pass:**
+  - Dialog heads, close buttons and padding: the Tailor, score and editor dialogs still differ.
+  - The four looks of "Change".
+  - Hand-made tinted tips, which could become `Callout`.
+  - Result-card padding, and the six upload drop zones.
+  - Each is a redesign of its own rather than a token or label fix; listed for the owner to pick.
+- **Verified:**
+  - The whole web suite passes (956 tests, 102 suites); typecheck is clean, and lint and Prettier are clean on every file changed (the remaining warnings are in files this pass didn't touch).
+  - In the browser at 1366×800 (mock), all four list pages measure alike: an eyebrow, a 44px pill search at y 134, pills at y 194, "39 jobs" / "24 applications" / "5 resumes" / "12 documents", and "Sort by: …".
+  - Resumes' preview starts at y 134, level with the search, and the top bar's "Create New Resume" opens the create dialog.
+  - Interview Prep sits in the page column with a 30px title.
+  - Cover letter and Zero show no step label with the top bar stepped aside, and Zero's "Write my first draft" is ink.
+  - Not seen: the 1024 width, the stalled and failed states, and each result screen with real data.

@@ -229,7 +229,7 @@ function UploadDialog({
             if (dropped) pick(dropped);
           }}
           className={cn(
-            'relative flex min-h-44 flex-col items-center justify-center gap-2 rounded-[calc(var(--radius-xl)-2px)] border px-6 py-6 text-center transition-colors duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+            'relative flex min-h-44 flex-col items-center justify-center gap-2 rounded-lg border px-6 py-6 text-center transition-colors duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
             active
               ? 'border-transparent bg-surface-card'
               : 'cursor-pointer border-dashed border-border-brand-strong bg-surface-brand hover:bg-brand-50',
@@ -264,7 +264,7 @@ function UploadDialog({
                   style={{ translate: '-100% 0' }}
                   className="absolute inset-0 rounded-full bg-linear-to-r from-brand-400 to-brand-600"
                 >
-                  <span className="absolute inset-y-0 left-0 w-1/3 animate-sweep bg-linear-to-r from-transparent via-white/30 to-transparent motion-reduce:hidden" />
+                  <span className="absolute inset-y-0 left-0 w-1/3 animate-sweep bg-linear-to-r from-transparent via-neutral-0/30 to-transparent motion-reduce:hidden" />
                   <span className="absolute -right-1 -top-1/2 h-[200%] w-2.5 animate-liquid-edge rounded-full bg-brand-300/70 blur-[2px] motion-reduce:hidden" />
                 </span>
               </span>

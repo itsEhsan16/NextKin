@@ -106,9 +106,10 @@ export function EnhanceStep({
           disabled={spent || choices.fixes.size === 0}
           loading={pending}
           busyLabel="Starting…"
+          // A plain string label, so "Starting…" shows while it starts (it never did, §256).
+          trailingIcon={<ArrowRight aria-hidden className={iconSize.sm} />}
         >
           {ticked > 0 ? `Add ${ticked} keyword${ticked === 1 ? '' : 's'} & continue` : 'Continue'}
-          {!pending && <ArrowRight aria-hidden className={iconSize.sm} />}
         </Button>
       </FlowFooter>
     </div>

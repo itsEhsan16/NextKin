@@ -48,7 +48,7 @@ export function ResumeActions({ resume, className }: { resume: Resume; className
           variant="secondary"
           size="lg"
           loading={download.busy}
-          busyLabel="Preparing…"
+          busyLabel="Preparing PDF…"
           onClick={() => download.start()}
           icon={
             <Download01 aria-hidden className="size-4 shrink-0 text-text-secondary max-xl:hidden" />

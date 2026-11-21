@@ -77,12 +77,14 @@ const uploadAction = cn(
  * the one resume flow (`toreview.md` §203).
  */
 /**
- * The resume flows, Build and Tailor (with Tailor's resume review, the same route): a focused task,
+ * The create flows, Build, Tailor (with its resume review), ATS check, Cover letter and Zero
+ * resume (all of them since toreview §256): a focused task,
  * so from tablet width up the bar steps aside and the flow's own header leads (owner, 2026-11-17).
  * "Build Resume" would start a second resume mid-flow; search and the bell pull away from it. The
  * sidebar stays, so the way out is always there. Below 768 the bar stays: it holds the menu button.
  */
-const FOCUS_FLOW = /^\/(?:create\/build|(?:jobs|jd)\/[^/]+\/tailor)(?:\/|$)/;
+const FOCUS_FLOW =
+  /^\/(?:create\/(?:build|ats-check|cover-letter|zero-resume)|(?:jobs|jd)\/[^/]+\/tailor)(?:\/|$)/;
 
 export function TopBar() {
   const pathname = usePathname();

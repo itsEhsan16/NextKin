@@ -544,6 +544,8 @@
    * overshoot (§196): it used to pass its target and swing back.
    */
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A steady turn with no start or stop: the upload zone's flowing ring (toreview §221). */
+  --ease-linear: linear;
 
   --transition-duration-press: 120ms;
   --transition-duration-fast: 180ms;
@@ -617,7 +619,7 @@
   /* The leading edge of `ProgressButton`'s fill: a soft bulge that sways like a liquid's surface. */
   --animate-liquid-edge: liquid-edge var(--transition-duration-think) var(--ease-standard) infinite;
   /* A drop zone's gradient ring turning while a file is over it or being read (toreview §221). */
-  --animate-ring-flow: ring-flow var(--transition-duration-float) linear infinite;
+  --animate-ring-flow: ring-flow var(--transition-duration-float) var(--ease-linear) infinite;
 
   @keyframes reveal {
     from {

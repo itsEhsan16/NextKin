@@ -46,7 +46,7 @@ export function ResumeStep({
   profileHref,
 }: {
   /** Another flow's words for the same step: the cover letter's, the ATS check's. */
-  copy?: { title: string; lede: string; of: number; note?: string };
+  copy?: { title: string; lede: string; note?: string };
   job: Job;
   resumes: readonly Resume[];
   loading: boolean;
@@ -68,8 +68,6 @@ export function ResumeStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="resume-step"
-            step={2}
-            of={copy?.of ?? 3}
             title={copy?.title ?? 'Choose a starting resume'}
             lede={
               copy?.lede ??

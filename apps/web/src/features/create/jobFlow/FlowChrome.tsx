@@ -12,7 +12,7 @@ import { SparkleIllustration } from '@/ui/illustrations';
 
 import { FlowSteps } from '../components/FlowSteps';
 
-export { backButton, finalButton, primaryButton } from '@/ui/FlowFooter';
+export { backButton, finalButton, primaryButton, upgradeButton } from '@/ui/FlowFooter';
 
 /** The brand tile with the sparkle that leads the header before a job is picked (849:155). */
 export function SparkleTile() {
@@ -74,17 +74,16 @@ export function FlowHeader({
   );
 }
 
-/** A step's heading inside its card (849:194): "STEP 1 OF 4", the question, one line under it. */
+/**
+ * A step's heading inside its card (849:194): the question and one line under it. No "Step N of N"
+ * over it on any step: the stepper at the top already says where you are (owner, toreview §227,
+ * §256).
+ */
 export function StepHeading({
-  step,
-  of,
   title,
   lede,
   id,
 }: {
-  /** "Step 1 of 3" over the title; a step without them shows none (the method step, §227). */
-  step?: number;
-  of?: number;
   title: string;
   /** The line under the title; a step without one shows none (the method step, toreview §224). */
   lede?: string;
@@ -92,11 +91,6 @@ export function StepHeading({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      {step !== undefined && of !== undefined && (
-        <p className="text-caption-m font-semibold uppercase tracking-wide text-text-brand">
-          Step {step} of {of}
-        </p>
-      )}
       <h1 id={id} className="text-h1 font-bold tracking-tight text-text-primary">
         {title}
       </h1>

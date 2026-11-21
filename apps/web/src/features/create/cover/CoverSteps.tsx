@@ -13,10 +13,12 @@ import { StableLabel } from '@/ui/StableLabel';
 
 import {
   backButton,
+  finalButton,
   FlowFooter,
   primaryButton,
-  StepHeading,
   stepCard,
+  StepHeading,
+  upgradeButton,
 } from '../jobFlow/FlowChrome';
 import { DocTile, Radio, rowSurface } from '../jobFlow/FlowRows';
 
@@ -115,8 +117,6 @@ export function CoverToneStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="cover-tone"
-            step={3}
-            of={3}
             title="Pick a tone for your letter"
             lede={`We write it from your tailored resume and ${company} job — no new claims.`}
           />
@@ -191,11 +191,11 @@ export function CoverToneStep({
           Back
         </Link>
         {spent ? (
-          <Link href={'/upgrade' as Route} className={primaryButton}>
+          <Link href={'/upgrade' as Route} className={upgradeButton}>
             See Pro plans
           </Link>
         ) : (
-          <button type="button" onClick={onWrite} disabled={pending} className={primaryButton}>
+          <button type="button" onClick={onWrite} disabled={pending} className={finalButton}>
             <SparkleIllustration aria-hidden className="h-auto w-4" />
             <StableLabel label="Write my cover letter" busyLabel="Starting…" busy={pending} />
           </button>
@@ -230,8 +230,6 @@ export function CoverTailorFirst({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="cover-first"
-            step={2}
-            of={3}
             title="Tailor a resume for this job first"
             lede={`A cover letter repeats what your resume shows for this job. You don’t have one tailored${job.company ? ` for ${job.company}` : ''} yet.`}
           />

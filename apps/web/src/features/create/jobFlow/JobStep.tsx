@@ -18,10 +18,11 @@ import {
   backButton,
   FlowFooter,
   primaryButton,
-  StepHeading,
   stepCard,
+  StepHeading,
   stepShell,
   TrustNote,
+  upgradeButton,
 } from './FlowChrome';
 import { JOB_FLOWS, type JobFlow, type PickedJob } from './jobFlow';
 import { emptyOtherJob, OtherJobBox, otherJobInput, type OtherJob } from './OtherJobBox';
@@ -42,7 +43,6 @@ const FILE_STAGES = ['Reading the file…', 'Analyzing…', 'Almost there…'] a
 export function JobStep({
   flow,
   onPicked,
-  stepNo = 1,
   backHref = '/' as Route,
   note,
   busyLabel,
@@ -50,8 +50,6 @@ export function JobStep({
 }: {
   flow: JobFlow;
   onPicked: (job: PickedJob) => void;
-  /** Where the job comes in this flow: second for the ATS check (863:2). */
-  stepNo?: number;
   backHref?: Route;
   /** The footer's own words; else the two reassurances (toreview §150). */
   note?: string;
@@ -113,13 +111,7 @@ export function JobStep({
     <div className={stepShell}>
       <section aria-labelledby="job-step" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
-          <StepHeading
-            id="job-step"
-            step={stepNo}
-            of={copy.steps.length}
-            title={copy.jobTitle}
-            lede={copy.jobLede}
-          />
+          <StepHeading id="job-step" title={copy.jobTitle} lede={copy.jobLede} />
         </div>
         <div className="grid gap-5 px-8 pb-8 pt-4 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
           {/* Both columns stretch to the row, and each panel fills its column (owner, 2026-11-17). */}
@@ -171,7 +163,7 @@ export function JobStep({
           Back
         </Link>
         {spent ? (
-          <Link href={'/upgrade' as Route} className={primaryButton}>
+          <Link href={'/upgrade' as Route} className={upgradeButton}>
             See Pro plans
           </Link>
         ) : (

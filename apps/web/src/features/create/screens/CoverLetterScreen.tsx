@@ -25,7 +25,7 @@ import { RunProgress } from '../components/RunProgress';
 import { CoverReady } from '../cover/CoverReady';
 import { CoverTailorFirst, CoverToneStep } from '../cover/CoverSteps';
 import { allowanceNote, coverAllowance, START_FAILED } from '../createLibrary';
-import { FlowHeader } from '../jobFlow/FlowChrome';
+import { FlowHeader, flowPage } from '../jobFlow/FlowChrome';
 import { JobStep } from '../jobFlow/JobStep';
 import { coverLines } from '../runLines';
 
@@ -75,7 +75,7 @@ export function CoverLetterScreen({
     );
 
   const frame = (stepIndex: number, body: React.ReactNode, header = true) => (
-    <div className={cn(pageFrame, 'flex flex-col gap-5 pb-8')}>
+    <div className={cn(pageFrame, flowPage)}>
       {header && (
         <FlowHeader
           backHref={'/' as Route}
@@ -260,7 +260,6 @@ export function CoverLetterScreen({
       onContinue={() => value && router.push(coverHref({ target, resumeId: value, step: 'tone' }))}
       backHref={coverHref()}
       copy={{
-        of: 3,
         title: 'Which resume is the letter built from?',
         lede: 'Pick the resume you tailored for this job. The letter repeats only what it shows.',
         note: 'Nothing is spent until you write the letter.',

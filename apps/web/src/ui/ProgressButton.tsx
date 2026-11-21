@@ -78,12 +78,12 @@ export function ProgressButton({
           ref={fill}
           data-testid="progress-fill"
           style={{ translate: '-100% 0' }}
-          className="pointer-events-none absolute inset-0 z-behind bg-linear-to-r from-white/5 via-white/15 to-white/25"
+          className="pointer-events-none absolute inset-0 z-behind bg-linear-to-r from-neutral-0/5 via-neutral-0/15 to-neutral-0/25"
         >
           {busy && (
             <>
-              <span className="absolute inset-y-0 left-0 w-1/3 animate-sweep bg-linear-to-r from-transparent via-white/15 to-transparent motion-reduce:hidden" />
-              <span className="absolute -right-2 -top-1/4 h-[150%] w-4 animate-liquid-edge rounded-full bg-white/30 blur-sm motion-reduce:hidden" />
+              <span className="absolute inset-y-0 left-0 w-1/3 animate-sweep bg-linear-to-r from-transparent via-neutral-0/15 to-transparent motion-reduce:hidden" />
+              <span className="absolute -right-2 -top-1/4 h-[150%] w-4 animate-liquid-edge rounded-full bg-neutral-0/30 blur-sm motion-reduce:hidden" />
             </>
           )}
         </span>
