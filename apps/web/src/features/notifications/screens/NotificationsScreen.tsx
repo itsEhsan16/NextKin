@@ -55,6 +55,7 @@ export function NotificationsScreen() {
   return (
     <div className={cn(pageFrameInBar, 'pb-12')}>
       <PageHeader
+        eyebrow="Notifications"
         title={NOTIFICATIONS_TITLE}
         subtitle="What happened on NextKin, newest first."
         aside={
@@ -87,7 +88,7 @@ export function NotificationsScreen() {
 
       <div className="mt-6 max-w-3xl">
         {status === 'pending' ? (
-          <div aria-label="Loading your notifications" aria-busy className="flex flex-col gap-3">
+          <div aria-label="Loading your notifications" aria-busy className="flex flex-col gap-4">
             {/* Each row traced as its text and time, at the row's height and padding (§196). */}
             {[0, 1, 2].map((key) => (
               <SkeletonListRow key={key} tile={null} trailing className="h-20 p-4" />
@@ -108,7 +109,7 @@ export function NotificationsScreen() {
             message="Finished resumes, saved jobs closing soon and follow-ups on your applications show up here."
           />
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-4">
             {rows.map((row) => (
               <NotificationRow
                 key={row.id}
@@ -152,8 +153,9 @@ function NotificationRow({
   return (
     <li
       className={cn(
-        'flex items-start gap-3 rounded-xl border border-border-subtle p-4 shadow-card transition-colors duration-base ease-standard',
-        row.read ? 'bg-surface-card' : 'bg-brand-50',
+        // The list rows' card (rounded-lg, 20/16 padding) like Jobs, Applications and Documents (§254).
+        'flex items-start gap-3 rounded-lg border border-border-subtle px-5 py-4 shadow-card transition-colors duration-base ease-standard',
+        row.read ? 'bg-surface-card' : 'bg-surface-brand-tint',
       )}
     >
       {!row.read && <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-brand-600" />}

@@ -18622,3 +18622,22 @@ The owner asked for every landing component to be rebuilt with more precision an
   - The search box no longer stops at 384px (`max-w-sm` removed in `DocumentsToolbar.tsx`); it runs up to the list/grid switch, so there is no empty stretch after it.
 - **Judgement call:** the caption was dropped rather than moved; the empty state already has its own title and line.
 - **Verified:** in the browser at 1366×800 (mock): the card is level with the search, the search reaches the switch, and the empty preview ("Select a document", reached by a search with no matches) shows the folder. Typecheck and lint are clean; documents suites pass (14). Not seen: the no-documents-at-all state (same art, same code path).
+
+## §254 — Consistency pass, phases 1–2: shared pieces and the list pages (owner, 2026-11-21)
+The owner asked for the whole web app to be made consistent. Three read-only surveys compared every route (plan: `~/.claude/plans/foamy-churning-canyon.md`). The rule used: where two patterns compete, the shared piece and the owner's most recent choice win. Defaults taken without asking (the owner declined the question; each can be flipped): no "Step N of N" anywhere, the pill search, Resumes like Documents, ink for a flow's final paid commit.
+
+- **One search field** (`ui/SearchField.tsx`): a pill at `h-control-lg` with the card shadow, body-l type, the tertiary glass, a "…" placeholder, and a × whose place is kept while empty. Jobs (with its Search button), Resumes, Documents (with its view switch), Help and now Applications all use it. Before: two shapes (pill and `rounded-md`), two type sizes and three placeholder styles.
+- **Applications gains a search** over the role, company and place, above its pills, so every list reads Search → Pills → Filters → Results.
+- **Eyebrows:** Jobs and Notifications gain theirs ("Jobs", "Notifications"), like the other pages.
+- **Reset:** one look and one rule on every list. It says "Reset", follows the last chip (the owner's 2026-11-13 Applications placement), shows only once something is narrowed, and clears the chips and the search. Jobs gains it; Resumes' "Clear filters" and its `ml-auto` place go. Applications' Reset no longer shows when nothing is narrowed (it used to always show).
+- **Results line:** a plain plural noun ("39 jobs", "5 resumes", was "39 results" and "5 resumes found"), and Jobs' sort says "Sort by: Most relevant" like the others.
+- **Resumes:** chips sit 8px apart (were 6px) and the grid starts `mt-4` (was `mt-6`). The character and the "Create New Resume" button no longer sit above the preview, so it starts level with the list. The character is now the art of the preview's empty states (like Documents' folder, §253). "Create New Resume" is the top bar's primary action on Resumes, as "Upload New Document" is on Documents; it opens the same create dialog through `navigation/topBarEvents.ts`.
+- **Empty lists:** Jobs and Resumes now keep the list's place as one dashed outline with a way on ("Reset filters", "Create your first resume"), as Applications and Documents already did (owner, 2026-11-15). Resumes no longer swaps the whole page for one empty state on a first visit (RS-11 is superseded by the 2026-11-15 rule).
+- **Kept as the owner set them:** Jobs' blank empty detail card (owner 2026-11-13: no art, no copy); Jobs' Search button (its search looks for new jobs).
+- **Status pages** (Interview, Upgrade, 404, error) now sit in the page column with its gutters and top padding (they had none), and their title is PageHeader's size (was 18px, smaller than the card's own heading).
+- **Smaller fixes:**
+  - `fieldBox` hovers on a token (`border-strong`) and also on labels.
+  - Notification rows use the list-row card (`rounded-lg`, 20/16 padding, 16px apart, unread on `surface-brand-tint`); they were `rounded-xl`, `p-4`, 12px apart, raw `brand-50`.
+  - Three list comments said 12px between rows where the code is 16px.
+- **Not changed, and why:** the hand-rolled list rows already equal `cardSurface` to the pixel, so swapping them changes nothing on screen. `PillTabs`' track keeps `rounded-xl`, because a pill-shaped track looks wrong when the tabs wrap to two lines. `FilterChip` and the secondary button keep `neutral-700`/`neutral-800`, as no text token matches that ink.
+- **Tests:** updated for the new wording ("39 jobs", "5 resumes", "Reset", "Sort by: …") and for Create moving to the top bar (the tests send its event). The list, UI and navigation suites pass (173).

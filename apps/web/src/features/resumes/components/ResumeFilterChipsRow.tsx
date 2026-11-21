@@ -59,86 +59,82 @@ export function ResumeFilterChipsRow({
   );
 
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <FilterDropdown
-          trigger={
-            <FilterChip
-              label="Resume type"
-              active={filters.variants.length > 0}
-              {...unavailable(variants.length, 'No resume has a type yet')}
-            />
-          }
-        >
-          {variants.map((variant) => (
-            <FilterCheckboxItem
-              key={variant}
-              checked={filters.variants.includes(variant)}
-              onCheckedChange={() => onChange({ variants: toggleItem(filters.variants, variant) })}
-            >
-              {VARIANT_LABEL[variant]}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
-
-        <FilterDropdown
-          trigger={<FilterChip label="Last updated" active={filters.updatedWithin != null} />}
-        >
-          {/* One window at a time, so radio rows (RS-08); "Any time" is the way back. */}
-          <FilterRadioGroup
-            value={filters.updatedWithin ?? 'any'}
-            onValueChange={(value) =>
-              onChange({ updatedWithin: value === 'any' ? undefined : (value as TimeWindow) })
-            }
-            options={WINDOWS}
+    // One wrapping row, 8px apart, Reset after the last chip, as on the other lists (§254).
+    <div className="flex flex-wrap items-center gap-2">
+      <FilterDropdown
+        trigger={
+          <FilterChip
+            label="Resume type"
+            active={filters.variants.length > 0}
+            {...unavailable(variants.length, 'No resume has a type yet')}
           />
-        </FilterDropdown>
+        }
+      >
+        {variants.map((variant) => (
+          <FilterCheckboxItem
+            key={variant}
+            checked={filters.variants.includes(variant)}
+            onCheckedChange={() => onChange({ variants: toggleItem(filters.variants, variant) })}
+          >
+            {VARIANT_LABEL[variant]}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
 
-        <FilterDropdown
-          trigger={
-            <FilterChip
-              label="Target role"
-              active={filters.roles.length > 0}
-              {...unavailable(roles.length, 'No resume has a target role yet')}
-            />
+      <FilterDropdown
+        trigger={<FilterChip label="Last updated" active={filters.updatedWithin != null} />}
+      >
+        {/* One window at a time, so radio rows (RS-08); "Any time" is the way back. */}
+        <FilterRadioGroup
+          value={filters.updatedWithin ?? 'any'}
+          onValueChange={(value) =>
+            onChange({ updatedWithin: value === 'any' ? undefined : (value as TimeWindow) })
           }
-        >
-          {roles.map((role) => (
-            <FilterCheckboxItem
-              key={role}
-              checked={filters.roles.includes(role)}
-              onCheckedChange={() => onChange({ roles: toggleItem(filters.roles, role) })}
-            >
-              {role}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
+          options={WINDOWS}
+        />
+      </FilterDropdown>
 
-        <FilterDropdown
-          trigger={
-            <FilterChip
-              label="Status"
-              active={filters.states.length > 0}
-              {...unavailable(
-                states.length,
-                'No resume is a draft, archived or format-checked yet',
-              )}
-            />
-          }
-        >
-          {states.map((state) => (
-            <FilterCheckboxItem
-              key={state}
-              checked={filters.states.includes(state)}
-              onCheckedChange={() => onChange({ states: toggleItem(filters.states, state) })}
-            >
-              {STATE_LABEL[state]}
-            </FilterCheckboxItem>
-          ))}
-        </FilterDropdown>
-      </div>
+      <FilterDropdown
+        trigger={
+          <FilterChip
+            label="Target role"
+            active={filters.roles.length > 0}
+            {...unavailable(roles.length, 'No resume has a target role yet')}
+          />
+        }
+      >
+        {roles.map((role) => (
+          <FilterCheckboxItem
+            key={role}
+            checked={filters.roles.includes(role)}
+            onCheckedChange={() => onChange({ roles: toggleItem(filters.roles, role) })}
+          >
+            {role}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
 
-      {active && <ResetButton onClick={onReset} label="Clear filters" />}
+      <FilterDropdown
+        trigger={
+          <FilterChip
+            label="Status"
+            active={filters.states.length > 0}
+            {...unavailable(states.length, 'No resume is a draft, archived or format-checked yet')}
+          />
+        }
+      >
+        {states.map((state) => (
+          <FilterCheckboxItem
+            key={state}
+            checked={filters.states.includes(state)}
+            onCheckedChange={() => onChange({ states: toggleItem(filters.states, state) })}
+          >
+            {STATE_LABEL[state]}
+          </FilterCheckboxItem>
+        ))}
+      </FilterDropdown>
+
+      {active && <ResetButton onClick={onReset} />}
     </div>
   );
 }

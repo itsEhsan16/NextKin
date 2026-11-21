@@ -91,7 +91,7 @@ describe('JobsScreen', () => {
     ).toBeInTheDocument();
     // The header's character and its caption are gone (owner, 2026-11-13).
     expect(screen.queryByText('“Better Opportunities Ahead”')).toBeNull();
-    expect(screen.getByPlaceholderText('Job title, company, or keyword')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Job title, company, or keyword…')).toBeInTheDocument();
     for (const label of [
       'Location',
       'Job type',
@@ -103,7 +103,7 @@ describe('JobsScreen', () => {
       expect(screen.getByRole('button', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
     }
     // The web board's name for the default sort; mobile's board calls the same sort "Relevance".
-    expect(screen.getByRole('button', { name: 'Most relevant' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sort by: Most relevant' })).toBeInTheDocument();
   });
 
   it('shows the loading state before the mock layer settles', () => {
@@ -118,7 +118,7 @@ describe('JobsScreen', () => {
     // The count is its own mock call, and every call waits a seeded 300–900ms drawn in call
     // order, so one second can leave ~100ms to render. The count's waits give it twice that.
     expect(
-      await screen.findByText('39 results', {}, { timeout: SETTLE_MS.normal * 2 }),
+      await screen.findByText('39 jobs', {}, { timeout: SETTLE_MS.normal * 2 }),
     ).toBeInTheDocument();
     await screen.findByRole('button', { name: cardName(BOARD_CARDS[0]) });
     expect(cardNames().slice(0, BOARD_CARDS.length)).toEqual(BOARD_CARDS);
@@ -189,7 +189,7 @@ describe('JobsScreen', () => {
     const user = userEvent.setup();
     renderWithQuery(<JobsScreen />);
 
-    await screen.findByText('39 results', {}, { timeout: SETTLE_MS.normal * 2 });
+    await screen.findByText('39 jobs', {}, { timeout: SETTLE_MS.normal * 2 });
 
     await user.click(screen.getByRole('button', { name: /^Location/ }));
     // Chennai is job_zoho's only listing — a real, data-derived option, not a mocked one.
@@ -201,9 +201,9 @@ describe('JobsScreen', () => {
     await user.keyboard('{Escape}');
 
     // The count and the list are separate calls, and the list keeps its last results on screen
-    // until the new ones land, so the count can read "1 result" over the old list for a moment.
+    // until the new ones land, so the count can read "1 job" over the old list for a moment.
     // Wait for the list itself (`toreview.md` §80.3 recorded this as a flaky failure).
-    expect(await screen.findByText('1 result')).toBeInTheDocument();
+    expect(await screen.findByText('1 job')).toBeInTheDocument();
     expect(
       await screen.findByRole(
         'button',
@@ -348,7 +348,7 @@ describe('JobsScreen', () => {
     expect(
       await within(panel).findByRole('link', { name: 'View application' }, { timeout: 2000 }),
     ).toHaveAttribute('href', '/applications?application=app_web_flipkart');
-    await screen.findByText('39 results', {}, { timeout: SETTLE_MS.normal * 2 });
+    await screen.findByText('39 jobs', {}, { timeout: SETTLE_MS.normal * 2 });
     expect(
       screen.queryByRole('button', { name: cardName('UX Designer at Flipkart, Bengaluru, India') }),
     ).not.toBeInTheDocument();
@@ -387,15 +387,15 @@ describe('JobsScreen', () => {
     const user = userEvent.setup();
     renderWithQuery(<JobsScreen />);
 
-    await screen.findByText('39 results', {}, { timeout: SETTLE_MS.normal * 2 });
+    await screen.findByText('39 jobs', {}, { timeout: SETTLE_MS.normal * 2 });
 
-    await user.click(screen.getByRole('button', { name: 'Most relevant' }));
+    await user.click(screen.getByRole('button', { name: 'Sort by: Most relevant' }));
     for (const label of ['Most relevant', 'Most recent', 'Salary']) {
       expect(await screen.findByRole('menuitemradio', { name: label })).toBeInTheDocument();
     }
 
     await user.click(screen.getByRole('menuitemradio', { name: 'Most recent' }));
     await user.keyboard('{Escape}');
-    expect(await screen.findByRole('button', { name: 'Most recent' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Sort by: Most recent' })).toBeInTheDocument();
   });
 });

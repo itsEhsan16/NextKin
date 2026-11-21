@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 
 import { cn } from '@/lib/cn';
-import { AiSparkIcon, BellIcon, SearchIcon, UploadIcon } from '@/ui/icons';
+import { AiSparkIcon, BellIcon, PlusIcon, SearchIcon, UploadIcon } from '@/ui/icons';
 import { Menu01 } from '@/ui/lineIcons';
 import { pageColumn, topBarHeight } from '@/ui/pageFrame';
 import { pressable } from '@/ui/pressable';
@@ -16,11 +16,15 @@ import { Soon } from '@/ui/Soon';
 import { AccountMenu } from './AccountMenu';
 import { NotificationsPanel } from '@/features/notifications/components/NotificationsPanel';
 
+import { CREATE_RESUME_EVENT } from './topBarEvents';
 import { OPEN_SIDEBAR_EVENT } from './useSidebarRail';
 import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
-/** A primary action with a `null` destination is an inert button. */
-type UploadAction = { label: string; href: Route | null };
+/**
+ * A primary action with a `null` destination is an inert button; one with an `event` opens
+ * something of the page's own (Resumes' create dialog, `topBarEvents`).
+ */
+type UploadAction = { label: string; href: Route | null; event?: string };
 
 /**
  * Every page's primary action unless the page says otherwise: Build Resume, whose first step takes
@@ -41,7 +45,10 @@ const BY_PATH: Record<string, { upload?: UploadAction; inBar?: boolean }> = {
   '/': { inBar: true },
   '/jobs': { inBar: true },
   '/applications': { inBar: true },
-  '/resumes': { inBar: true },
+  '/resumes': {
+    upload: { label: 'Create New Resume', href: null, event: CREATE_RESUME_EVENT },
+    inBar: true,
+  },
   '/documents': { upload: { label: 'Upload New Document', href: null }, inBar: true },
   '/profile': { inBar: true },
   '/help': { inBar: true },
@@ -152,7 +159,17 @@ export function TopBar() {
             <SearchIcon className="size-4" />
           </Link>
 
-          {upload.href ? (
+          {upload.event ? (
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => upload.event && window.dispatchEvent(new Event(upload.event))}
+              className={uploadAction}
+            >
+              <PlusIcon className="size-4" />
+              <span className="max-md:sr-only">{upload.label}</span>
+            </button>
+          ) : upload.href ? (
             <Link href={upload.href} className={uploadAction}>
               <AiSparkIcon className="size-4" />
               <span className="max-md:sr-only">{upload.label}</span>
