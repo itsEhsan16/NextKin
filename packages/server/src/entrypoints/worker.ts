@@ -61,6 +61,7 @@ const worker = buildWorker({
   log,
   concurrency: config.WORKER_CONCURRENCY,
   generationTimeoutSeconds: config.GENERATION_TIMEOUT_SECONDS,
+  generationQueueTimeoutSeconds: config.GENERATION_QUEUE_TIMEOUT_SECONDS,
   files: {
     storage,
     scanner: createClamavScanner({ host: config.CLAMAV_HOST, port: config.CLAMAV_PORT }),

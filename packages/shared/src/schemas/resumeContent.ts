@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CLAIM_TEXT_MAX, MAX_SKILLS, ROLE_BULLETS_MAX, ROLES_MAX } from './limits';
+import { CLAIM_TEXT_MAX, MAX_SKILLS, ROLE_BULLETS_MAX, ROLE_SKILLS_MAX, ROLES_MAX } from './limits';
 
 /**
  * The canonical resume JSON (ImBackendImplementationPlan P9-02, old M2-06): what generation writes,
@@ -41,7 +41,7 @@ export const canonicalRoleSchema = z.object({
   end: isoPartial.nullable(),
   location: z.string().max(200).optional(),
   /** The role's skill tags from the profile: what its technology claims rest on. */
-  skills: z.array(z.string().min(1).max(120)).max(40),
+  skills: z.array(z.string().min(1).max(120)).max(ROLE_SKILLS_MAX),
   bullets: z.array(claimSchema).max(ROLE_BULLETS_MAX),
   /**
    * Client projects inside a role, as the user's file groups them (toreview §111): each names the

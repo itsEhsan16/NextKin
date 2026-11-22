@@ -123,8 +123,12 @@ const schema = z.object({
   // --- Async backbone and AI (P6) ---
   // Jobs one worker process runs at once, across its queues.
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(64).default(4),
-  // A generation still not finished after this many seconds is failed by the sweep (M2-04: 3 min).
-  GENERATION_TIMEOUT_SECONDS: z.coerce.number().int().min(30).max(3600).default(180),
+  // A generation still running this many seconds after a worker started it is failed by the sweep
+  // and its worker stops (owner, 2026-11-22: 8 min; a tailored run with revisions and page fit can
+  // pass 3 min). Waiting in the queue does not count; that has its own limit below.
+  GENERATION_TIMEOUT_SECONDS: z.coerce.number().int().min(30).max(3600).default(480),
+  // A generation still queued (no worker has started it) this long after it was made is failed.
+  GENERATION_QUEUE_TIMEOUT_SECONDS: z.coerce.number().int().min(30).max(7200).default(600),
   // D-23: the developer's own Claude key, for LLM_ROUTE=claudeDirect. Synthetic data only (L4).
   ANTHROPIC_API_KEY: z.string().min(10).optional(),
   // The developer's own OpenRouter key, for LLM_ROUTE=openrouter (toreview §108): the same Claude

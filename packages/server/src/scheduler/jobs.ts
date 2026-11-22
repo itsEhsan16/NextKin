@@ -31,6 +31,8 @@ export interface JobDeps {
   log: Logger;
   publisher: EventPublisher;
   generationTimeoutSeconds: number;
+  /** How long a run may wait in the queue before the sweep fails it; defaults to the run timeout. */
+  generationQueueTimeoutSeconds?: number;
   /** P7: storage for the orphan sweep and the anonymous purge. */
   uploads?: UploadDeps & { anonymousBucket: string };
   /** P9-07: the KB candidates job asks the fast tier. Without it, the job does nothing. */
@@ -49,7 +51,7 @@ export async function runMaintenanceJob(job: MaintenanceJob, deps: JobDeps): Pro
   const { db, log } = deps;
   switch (job) {
     case 'generation_sweep':
-      return sweepStuckGenerations(db, deps.publisher, deps.generationTimeoutSeconds);
+      return sweepStuckGenerations(db, deps.publisher, deps.generationTimeoutSeconds, deps.generationQueueTimeoutSeconds ?? deps.generationTimeoutSeconds, log);
     case 'upload_orphan_sweep':
       return deps.uploads ? sweepOrphanUploads(deps.uploads) : 0;
     case 'anonymous_upload_purge':

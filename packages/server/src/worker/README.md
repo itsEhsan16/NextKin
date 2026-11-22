@@ -57,7 +57,8 @@ GET /api/v1/generations/:id/events (SSE)                       http/routes/gener
 | `LLM_ROUTE=claudeDirect` + `ANTHROPIC_API_KEY` | Live calls with your own key (D-23), synthetic data only, capped at `AI_DAILY_CAP_USD` per `AI_DEVELOPER` per day, tagged `dev` |
 | `AI_RECORD=true` (with `claudeDirect`) | Live calls, each answer written as a fixture |
 | `WORKER_CONCURRENCY` | Runs one worker process takes at once (default 4) |
-| `GENERATION_TIMEOUT_SECONDS` | The sweep's limit (default 180) |
+| `GENERATION_TIMEOUT_SECONDS` | How long a started run may work before the sweep fails it and it stops itself (default 480) |
+| `GENERATION_QUEUE_TIMEOUT_SECONDS` | How long a run may wait in the queue before the sweep fails it (default 600) |
 
 - `pnpm worker` runs the worker with live reload.
 - `pnpm dlq list` shows what is dead-lettered (ids only); `pnpm dlq:replay` is a dry run, `-- --apply` replays. A generation resumes

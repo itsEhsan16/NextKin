@@ -8,6 +8,7 @@ import type { LatexCompiler } from '../../export/latex/compile';
 import type { LatexDensity } from '../../export/latex/types';
 import type { Identity as Who } from '../../export/model';
 import { sourceOf } from '../../services/renders';
+import { checkDeadline } from '../deadline';
 
 /**
  * Fitting a tailored resume to its page budget (toreview §111.6), on the pages the download will
@@ -84,7 +85,11 @@ export async function fitToPages(args: { doc: CanonicalResumeJson; budget: numbe
   const seen = new Map<string, number>();
   const pagesOf = async (k: number, density: LatexDensity) => {
     const key = `${k}:${density}`;
-    if (!seen.has(key)) seen.set(key, await args.measure(at(k), density));
+    // Each compile can take seconds; a run past its deadline stops between them.
+    if (!seen.has(key)) {
+      checkDeadline();
+      seen.set(key, await args.measure(at(k), density));
+    }
     return seen.get(key)!;
   };
   /** The loosest spacing at which `k` dropped bullets fit, or null. */

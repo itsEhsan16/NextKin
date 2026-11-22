@@ -34,6 +34,14 @@ export const MAX_SKILLS = OWN_SKILLS + ACCEPTED_MAX;
 export const PLACES_PER_KEYWORD = 3;
 export const CONFIRMED_MAX = ACCEPTED_MAX * PLACES_PER_KEYWORD;
 
+/** A role's own skill tags, from the profile. */
+export const ROLE_OWN_SKILLS = 40;
+/**
+ * The most skill tags a stored role holds: its own, and every accepted keyword a tailored run
+ * confirmed or placed in that role's lines (tailorMerge), which are never cut (D-25).
+ */
+export const ROLE_SKILLS_MAX = ROLE_OWN_SKILLS + ACCEPTED_MAX;
+
 /** The longest line a stored resume holds: a bullet, a summary. */
 export const CLAIM_TEXT_MAX = 600;
 

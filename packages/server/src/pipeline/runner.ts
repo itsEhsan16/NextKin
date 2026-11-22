@@ -11,6 +11,7 @@ import { activePrompt, promptVersion, type PromptVersion } from '../services/pro
 import { notifyRunFailed, notifyRunReady } from '../services/notifications';
 import { commitRun, releaseRun } from '../services/quotas';
 import { hasAiConsent } from '../services/consent';
+import { withDeadline } from './deadline';
 import { appendEvent, type EventPublisher, type PublishedEvent } from './events';
 import { readCheckpoint, toSnapshot, type GenerationRow } from './snapshot';
 import { PIPELINES } from './pipelines';
@@ -48,6 +49,8 @@ export interface RunnerDeps {
   publisher: EventPublisher;
   log: Logger;
   pipelines?: Record<RunKind, PipelineDef>;
+  /** A run still going this long after a worker started it stops its own work (pipeline/deadline.ts). */
+  timeoutSeconds?: number;
 }
 
 export interface RunMessage {
@@ -75,11 +78,43 @@ const ACTIVITY_KIND: Record<RunKind, string | null> = { section: null, resume: '
 export const FAILURE_MESSAGE = {
   cancelled: 'Cancelled.',
   timed_out: 'This took too long and was stopped. Try again.',
+  queue_timeout: 'We couldn’t get to this in time. Try again.',
   provider: 'We couldn’t reach our writing service. Try again in a moment.',
   dead_lettered: 'We couldn’t finish this. Try again.',
   invalid: 'Something in this request can’t be processed. Check it and try again.',
   consent: 'Agree to how NextKin uses AI, then try again.',
+  invalid_output: 'The writing service returned something we couldn’t use. Try again.',
+  too_large: 'This job or resume is too long to process. Shorten it and try again.',
+  capped: 'The writing service has reached today’s limit. Try again tomorrow.',
+  internal: 'Something went wrong on our side. Try again.',
 } as const;
+
+/**
+ * The code and plain reason a run fails with. A wrong-shaped answer or an oversized input is not an
+ * outage, so each `LlmError` failure gets its own reason; a programming error (TypeError, ZodError)
+ * is permanent and fails at once instead of being retried five times.
+ */
+export function failureOf(error: unknown, transient: boolean): readonly [string, string] {
+  // A stage's own reason is written for the candidate ("Add at least one role…"), so it is shown.
+  if (error instanceof StageError) return [error.code, error.message || FAILURE_MESSAGE.invalid];
+  if (transient) return ['dead_lettered', FAILURE_MESSAGE.dead_lettered];
+  if (error instanceof LlmError) {
+    if (error.failure === 'invalid_output') return ['invalid_output', FAILURE_MESSAGE.invalid_output];
+    if (error.failure === 'bad_request') return ['too_large', FAILURE_MESSAGE.too_large];
+    if (error.failure === 'capped') return ['capped', FAILURE_MESSAGE.capped];
+    return ['provider', FAILURE_MESSAGE.provider];
+  }
+  if (error instanceof ContactDataError) return ['invalid', FAILURE_MESSAGE.invalid];
+  return ['internal', FAILURE_MESSAGE.internal];
+}
+
+/** Whether a failure may pass on a redelivery. Programming errors never do. */
+export function isTransient(error: unknown): boolean {
+  if (error instanceof LlmError) return error.retryable;
+  if (error instanceof StageError || error instanceof ContactDataError) return false;
+  if (error instanceof TypeError || error instanceof RangeError || (error instanceof Error && error.name === 'ZodError')) return false;
+  return true;
+}
 
 export async function lockGeneration(tx: Tx, id: string): Promise<GenerationRow | undefined> {
   return tx.selectFrom('generations').selectAll().where('id', '=', id).forUpdate().executeTakeFirst();
@@ -104,6 +139,8 @@ export async function failGeneration(tx: Tx, row: GenerationRow, code: string, m
 export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
   const { db, log, publisher } = deps;
   const pipelines = deps.pipelines ?? PIPELINES;
+  // Errors handleStageError already dealt with (failed the run or rethrew for redelivery).
+  const handled = new WeakSet<object>();
 
   /** One boundary transaction under RLS as the owner, with the crash hooks around its commit. */
   async function boundary(message: RunMessage, name: string, fn: (tx: Tx) => Promise<PublishedEvent[]>): Promise<void> {
@@ -118,7 +155,7 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
 
   async function run(message: RunMessage): Promise<RunOutcome> {
     // Written inside the claim transaction below; an object so the reads after it are not narrowed away.
-    const claim: { outcome: RunOutcome; pipeline: PipelineDef | null; prompt: PromptVersion | null } = { outcome: 'skipped', pipeline: null, prompt: null };
+    const claim: { outcome: RunOutcome; pipeline: PipelineDef | null; prompt: PromptVersion | null; startedAt: Date | null } = { outcome: 'skipped', pipeline: null, prompt: null, startedAt: null };
 
     // The prompt tables are internal (readable by the system role, not by users), so the versions are
     // read on their own: the ones pinned on the run, else each template's active version. The
@@ -177,11 +214,13 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
         .returningAll()
         .executeTakeFirstOrThrow();
       claim.outcome = 'completed';
+      claim.startedAt = new Date(updated.started_at ?? updated.created_at);
       return started ? [await appendEvent(tx, row.id, row.user_id, 'stage_started', next.name, toSnapshot(updated, pipeline.stages.length))] : [];
     });
     if (claim.outcome !== 'completed' || !claim.pipeline || !claim.prompt) return claim.outcome;
     const def = claim.pipeline;
     const pinned = claim.prompt;
+    const deadline = deps.timeoutSeconds && claim.startedAt ? new Date(claim.startedAt.getTime() + deps.timeoutSeconds * 1000) : null;
 
     // 2. Each incomplete stage, then its checkpoint.
     for (const [index, stage] of def.stages.entries()) {
@@ -192,7 +231,7 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
 
       let result;
       try {
-        result = await stage.run({
+        result = await withDeadline(deadline, () => stage.run({
           generationId: row.id,
           userId: row.user_id,
           kind: row.kind as GenerationKind,
@@ -205,7 +244,7 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
           correlationId: message.correlationId,
           gateway: deps.gateway,
           ...(deps.latex ? { latex: deps.latex } : {}),
-        });
+        }));
       } catch (error) {
         return handleStageError(message, def, stage.name, error);
       }
@@ -286,20 +325,18 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
     return 'completed';
   }
 
-  async function handleStageError(message: RunMessage, def: PipelineDef, stage: string, error: unknown): Promise<RunOutcome> {
-    const transient = error instanceof LlmError ? error.retryable : !(error instanceof StageError || error instanceof ContactDataError);
+  async function handleStageError(message: RunMessage, _def: PipelineDef | null, stage: string | null, error: unknown): Promise<RunOutcome> {
+    const transient = isTransient(error);
     const lastChance = message.receiveCount >= MAX_RECEIVES;
     log.warn({ event: 'pipeline.stage_failed', generationId: message.generationId, stage, transient, receiveCount: message.receiveCount, errorName: error instanceof Error ? error.name : typeof error, failure: error instanceof LlmError ? error.failure : undefined }, 'stage failed');
+    // Marked so the last-chance wrapper rethrows it as is instead of handling it a second time.
+    if (error && typeof error === 'object') handled.add(error);
     if (transient && !lastChance) throw error; // the worker redelivers with backoff
-    const [code, text] = transient
-      ? (['dead_lettered', FAILURE_MESSAGE.dead_lettered] as const)
-      : error instanceof LlmError
-        ? (['provider', FAILURE_MESSAGE.provider] as const)
-        : (['invalid', FAILURE_MESSAGE.invalid] as const);
-    await boundary(message, `fail:${stage}`, async (tx) => {
+    const [code, text] = failureOf(error, transient);
+    await boundary(message, `fail:${stage ?? 'run'}`, async (tx) => {
       const row = await lockGeneration(tx, message.generationId);
       if (!row) return [];
-      const event = await failGeneration(tx, row, error instanceof StageError ? error.code : code, text, def.stages.length);
+      const event = await failGeneration(tx, row, code, text, pipelines[row.kind as RunKind]?.stages.length ?? 0);
       return event ? [event] : [];
     });
     // On the last allowed receive the message is not acknowledged, so it dead-letters for inspection.
@@ -307,5 +344,18 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
     return 'failed';
   }
 
-  return { run };
+  /**
+   * The last-chance wrapper: an error outside a stage (the prompt lookup, the claim, a checkpoint or
+   * the final transaction) goes through the same failure path as a stage's, so on the last receive,
+   * or at once for a permanent error, the run ends as failed instead of staying "in progress".
+   */
+  async function guarded(message: RunMessage): Promise<RunOutcome> {
+    try {
+      return await run(message);
+    } catch (error) {
+      if (error && typeof error === 'object' && handled.has(error)) throw error;
+      return handleStageError(message, null, null, error);
+    }
+  }
+  return { run: guarded };
 }

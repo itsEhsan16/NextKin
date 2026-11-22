@@ -10,12 +10,13 @@ import { nextStepsOf, TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
 import { jobMatchOf, keywordsFrom } from '@nextkin/shared/scoring/tailorComparison';
 import { scoringDocumentOf } from '@nextkin/shared/scoring/canonical';
 import { scoreDocument, type DocumentScore, type ScoringJd } from '@nextkin/shared/scoring/report';
-import type { CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
+import { canonicalResumeSchema, type CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
 
 import type { Tx } from '../../db/database';
 import { CURRENT_RUBRIC_VERSION_ID } from '../../seed/reference';
 import type { LatexDensity } from '../../export/latex/types';
 import { queueRender } from '../../services/renders';
+import { checkDeadline } from '../deadline';
 import { StageError, type StageDef } from '../stages';
 import { profileDocument, readRun, type StageJd } from './common';
 import type { ValidationOutput } from './validate';
@@ -83,7 +84,11 @@ export const contentHashOf = (value: unknown) => createHash('sha256').update(can
 
 /** The run's resume, and its version for this generation if one was already written. */
 async function target(tx: Tx, generationId: string) {
-  const gen = await tx.selectFrom('generations').select(['resume_id']).where('id', '=', generationId).executeTakeFirstOrThrow();
+  // Locked and re-checked in the transaction that writes: a run the sweep failed, or the candidate
+  // cancelled, while its last stage was working must never replace their current document.
+  const gen = await tx.selectFrom('generations').select(['resume_id', 'status', 'cancel_requested_at']).where('id', '=', generationId).forUpdate().executeTakeFirstOrThrow();
+  if (gen.cancel_requested_at) throw new StageError('cancelled', 'Cancelled.');
+  if (gen.status === 'failed') throw new StageError('timed_out', 'This took too long and was stopped. Try again.');
   if (!gen.resume_id) throw new StageError('no_document', 'This run has no document to write to.');
   const existing = await tx.selectFrom('resume_versions').select(['id']).where('generation_id', '=', generationId).executeTakeFirst();
   return { resumeId: gen.resume_id, existing: existing?.id ?? null };
@@ -151,6 +156,10 @@ export const persistStage: StageDef = {
     const result = (ctx.outputs.score as DocumentScore | undefined) ?? null;
     const jd = (ctx.outputs.jd as StageJd | null) ?? null;
     const doc: CanonicalResumeJson = validation.document;
+    checkDeadline();
+    // The document is checked against the stored shape before it is written: a version the editor
+    // and the renderer would refuse later must end the run here, with a reason, instead.
+    if (!canonicalResumeSchema.safeParse(doc).success) throw new StageError('invalid_output', 'The writing service returned something we couldn’t use. Try again.');
     const tailor = validation.tailor;
     const forJob = jd ? `for ${jd.title}${jd.company ? ` at ${jd.company}` : ''}` : '';
     const written = await ctx.db.withUser({ userId: ctx.userId, role: 'user' }, async (tx) => {
