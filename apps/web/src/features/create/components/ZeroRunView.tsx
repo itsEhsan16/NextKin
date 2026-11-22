@@ -1,12 +1,22 @@
 'use client';
 
 import { zeroProgress, type Generation, type ResumeContent } from '@nextkin/shared/models';
-import { useCurrentUser, useResumeContent } from '@nextkin/shared/queries';
+import {
+  isConsentRequired,
+  useCurrentUser,
+  useGenerationWatchProblem,
+  useResumeContent,
+  useRetryGeneration,
+} from '@nextkin/shared/queries';
+import { startErrorLine } from '@nextkin/shared/tailor/customize';
+import Link from 'next/link';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 
 import { ResumeSheet } from '@/features/resumes/components/ResumeSheet';
 import { cn } from '@/lib/cn';
+import { showToast } from '@/lib/toast';
+import { Button, buttonClass } from '@/ui/Button';
 import { stepCard } from '@/features/create/jobFlow/FlowChrome';
 import { cardSurface } from '@/ui/Card';
 import { ZeroResumeIllustration } from '@/ui/illustrations';
@@ -34,15 +44,59 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
     generation.zero?.fullName?.trim() ||
     [user.data?.firstName, user.data?.lastName].filter(Boolean).join(' ');
 
+  const retry = useRetryGeneration();
+  const watch = useGenerationWatchProblem(generation.id);
+
   if (generation.status === 'failed') {
+    return (
+      <div className={cn(cardSurface, 'flex flex-col items-center py-12')}>
+        <StateView
+          tone="danger"
+          title="Your draft didn’t finish"
+          message={`${generation.error ?? 'Something stopped it.'} Nothing was charged.`}
+          className="pb-0"
+        />
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            variant="primary"
+            loading={retry.isPending}
+            onClick={() =>
+              retry.mutate(generation.id, {
+                onError: (error) => {
+                  if (!isConsentRequired(error))
+                    showToast(startErrorLine(error, 'We couldn’t start it again. Try again.'), {
+                      tone: 'error',
+                    });
+                },
+              })
+            }
+          >
+            Try again
+          </Button>
+          {/* The form again with the role it was asked for, not an empty one. */}
+          <Link
+            href={createHref('zero-resume', {
+              role: generation.zero?.targetTitle,
+              jobId: generation.jobId,
+            })}
+            className={buttonClass({ variant: 'secondary', size: 'md' })}
+          >
+            Back to the form
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ready && watch.problem) {
     return (
       <div className={cn(cardSurface, 'py-12')}>
         <StateView
           tone="danger"
-          title="Your draft didn’t finish"
-          message={generation.error ?? 'Nothing was charged. Go back and try again.'}
-          actionLabel="Back to the form"
-          actionHref={createHref('zero-resume')}
+          title={watch.problem.permanent ? 'We can’t follow this draft' : 'Checking on your draft'}
+          message={watch.problem.message}
+          actionLabel="Check again"
+          onAction={watch.restart}
         />
       </div>
     );
@@ -51,6 +105,7 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
   if (!ready) {
     return (
       <RunProgress
+        runId={generation.id}
         art={<ZeroResumeIllustration aria-hidden className="h-30 w-28" />}
         title="Writing your first draft"
         subtitle="About a minute. Leave anytime — we’ll let you know when it’s ready."
@@ -81,6 +136,18 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
 
   const data = content.data;
   const body = data && data.kind !== 'cover_letter' ? (data as ResumeContent) : undefined;
+  // Ready with no document to open, or one that isn't a resume: say so, never a skeleton for ever.
+  if (!resumeId || (data && !body)) {
+    return (
+      <StateView
+        tone="danger"
+        title="Your draft was made, but we couldn’t open it"
+        message="Look for it in Resumes. If it isn’t there, start a new draft."
+        actionLabel="Open Resumes"
+        actionHref={'/resumes' as Route}
+      />
+    );
+  }
   if (content.isError && !body) {
     return (
       <StateView

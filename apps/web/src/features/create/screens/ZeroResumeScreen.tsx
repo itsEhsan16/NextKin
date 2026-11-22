@@ -1,7 +1,7 @@
 'use client';
 
 import { zeroProgress, type ResumeContent } from '@nextkin/shared/models';
-import { useGeneration, useResumeContent } from '@nextkin/shared/queries';
+import { queryPhase, useGeneration, useResumeContent } from '@nextkin/shared/queries';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 
@@ -43,7 +43,7 @@ export function ZeroResumeScreen({ runId, role, jobId }: ZeroResumeScreenProps) 
         onStarted={(id) => router.replace(createHref('zero-resume', { run: id }))}
       />
     );
-  } else if (run.isError) {
+  } else if (queryPhase(run) === 'error') {
     page = (
       <div className={`${cardSurface} py-12`}>
         <StateView

@@ -43,10 +43,18 @@ export function useConfirmedDownload(id: string) {
         },
         onError: (error) => {
           if (!(error instanceof ExportBlockedError)) {
-            showToast('Couldn’t prepare the download.', {
-              tone: 'error',
-              action: { label: 'Try again', onClick: () => retry.current() },
-            });
+            // A plan limit or a file that took too long says so; only a plain failure is generic.
+            const code = (error as { code?: unknown } | null)?.code;
+            const said =
+              code === 'PLAN_LOCKED' ||
+              /longer than it should/.test(error instanceof Error ? error.message : '');
+            showToast(
+              said && error instanceof Error ? error.message : 'Couldn’t prepare the download.',
+              {
+                tone: 'error',
+                action: { label: 'Try again', onClick: () => retry.current() },
+              },
+            );
             return;
           }
           if (error.reason === 'accuracy') setAsking(true);

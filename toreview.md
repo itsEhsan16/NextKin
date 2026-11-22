@@ -17715,3 +17715,90 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
   - lint and typecheck are clean.
 - **Not seen in a browser:** this branch hasn't run in a browser; the measurements above were on the main checkout's dev server.
 - **Watch:** branch `fix/keywords-score-results` (§212, unmerged) also edits the tailor flow; expect conflicts when both merge.
+
+## §217 — Resume generation fails clean: every run ends, every screen can be acted on (owner, 2026-11-22)
+
+Branch `fix/run-fail-clean`, uncommitted. The owner asked for an audit of resume generation, with
+proper errors instead of hangs. The owner chose: server + shared + web (mobile screens later), 8 min
+running / 10 min queued, and a Try again button on web.
+
+### What changed
+- **Server:**
+  - The runner fails a run on any error outside a stage, including the prompt lookup, the claim,
+    the checkpoints and the final transaction.
+  - Failure codes now say what happened: `invalid_output`, `too_large`, `capped`, `internal` and
+    `queue_timeout` sit beside `provider`, `timed_out` and `dead_lettered`. A stage's own message is
+    now shown; before, every stage failure said "Something in this request can't be processed".
+    TypeError and ZodError fail at once instead of being retried 5 times.
+- **The sweep:** a run gets 8 min from the moment a worker starts it (`GENERATION_TIMEOUT_SECONDS`,
+  480; it was 3 min and counted time in the queue). A run still queued gets 10 min
+  (`GENERATION_QUEUE_TIMEOUT_SECONDS`, 600, failed as `queue_timeout`). One row that throws is
+  logged and skipped, so it no longer blocks the rest.
+- **The deadline:** a run stops its own work at its deadline (`pipeline/deadline.ts`, via
+  AsyncLocalStorage). It reaches the gateway, the provider calls and the page-fit compiles. `persist`
+  re-checks status and cancel under a row lock before writing, so a run that was swept or cancelled
+  can't replace the current document.
+- **The worker:**
+  - The generations consumer gives up on a handler after the timeout plus 60 s
+    (`maxHandlerSeconds`).
+  - The Postgres pools set `statement_timeout` to 60 s and `lock_timeout` to 15 s.
+  - A JD still `extracting` after 5 min fails the run as `jd_unreadable`.
+- **Limits:** the stage schemas now take their limits from `limits.ts`. That means `CLAIM_TEXT_MAX`
+  for bullets and review edits, `MAX_SKILLS` for the drafted skills (it was 30), and a role's skill
+  tags at `ROLE_SKILLS_MAX` = 40 + `ACCEPTED_MAX` (it was 40). `persist` checks the final document
+  against `canonicalResumeSchema` and fails the run with `invalid_output` instead of storing a
+  version that the editor and the renderer would refuse. An answer cut off by `max_tokens` is asked
+  again once with twice the room, then fails.
+- **Renders and exports:** a render whose version fails the schema, or whose storage write fails on
+  the last attempt, ends `failed`. An export left `pending` for more than 10 min counts as failed and
+  is made again on the next request.
+- **Shared:**
+  - The poller stops on 404, 403 or an unreadable payload and reports it.
+  - It backs off on other errors and reports them after 60 s.
+  - A run that is ready is shown as ready even if copying in its document fails.
+  - The new `useGenerationWatchProblem` and `restartGenerationWatch` give screens a "Check again".
+  - A start with no answer reuses its idempotency key for 10 min when pressed again with the same
+    choices.
+  - `startErrorLine` now names these causes: plan limit, consent, rate limit, busy, internal, JD not
+    ready, slow answer and connection.
+- **Web:**
+  - A failed run shows its reason, with **Try again** (the same run, `useRetryGeneration`) and Back
+    to my choices. Back keeps `mode=build` and `step=enhance`; Zero keeps the role and the job.
+  - The run view shows the poll problem with Check again.
+  - A ready run with no document shows an error instead of skeletons.
+  - A background refetch that fails no longer blanks a page that already has data (`queryPhase`),
+    and a removed run says so.
+  - The stall note also works when the bar is at 100%.
+  - A preview stuck typesetting turns into the failed state after 5 min.
+  - The start buttons stay disabled until the navigation lands. Consent refusals no longer show a
+    second toast.
+  - A build run shows build steps and copy.
+  - A download refused by a plan limit or a timeout shows the server's reason.
+
+### For the owner to check
+1. The copy of the new failure reasons (`FAILURE_MESSAGE` in `pipeline/runner.ts`,
+   `startErrorLine`, and the watch-problem lines in `useGenerations.ts`).
+2. The Try again button on the failed-run card is new on that state. It uses the existing
+   Button/StateView, with no new visual language.
+3. The build progress steps ("Reading the job description", "Writing from your profile",
+   "Checking every line", "Scoring it against the job") are spec-derived, not from a board.
+4. The 60 s `statement_timeout` applies to every pool, the API included. Raise it if an admin or
+   export query legitimately runs longer.
+
+### Not done / not verified
+- **Integration suites not run:** Docker Desktop was not running. `pipeline.int.test.ts` and
+  `resilience.drill.ts` now expect `queue_timeout` for a run aged while queued. Run
+  `pnpm stack:up && pnpm test:integration` and compare against the baseline of 23 red.
+- **Not tried in the browser on the local stack:** forcing each failure (bad key, worker stopped,
+  low timeout, result deleted) is still to do.
+- **Mobile screens are not changed.** They get the shared poller fix. The stall note, the content
+  error that currently shows a skeleton forever, and the retry wording are still open (audit gaps
+  18–20).
+- **Deferred:**
+  - RunWatcher across reloads.
+  - Moving the tailor planning out of the start transaction (§212.3); an unexpected error there is
+    still a 500 INTERNAL, which `startErrorLine` now words.
+  - A final SSE event when the stream closes.
+  - Stall timers that pause while the tab is hidden.
+- **`/jd` before a listing's run still has no idempotency key.** The client retries
+  POSTs that carry one, and the route may not honour it.

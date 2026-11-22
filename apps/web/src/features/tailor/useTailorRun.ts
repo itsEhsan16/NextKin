@@ -1,5 +1,5 @@
 import type { TailorComparison, TailorExperienceDepth, TailorFix } from '@nextkin/shared/models';
-import { useStartGeneration } from '@nextkin/shared/queries';
+import { isConsentRequired, useStartGeneration } from '@nextkin/shared/queries';
 import {
   acceptAll,
   figureKey,
@@ -96,8 +96,11 @@ export type TailorChoices = ReturnType<typeof useTailorChoices>;
 export function useTailorRun(target: TailorTargetRef) {
   const router = useRouter();
   const start = useStartGeneration();
+  // Held from the press until the run's page opens: `isPending` ends when the server answers, a
+  // moment before the navigation lands, and a second press in that gap started a second run.
+  const [leaving, setLeaving] = useState(false);
   const create = (comparison: TailorComparison, choices: CustomizeChoices) => {
-    if (start.isPending) return;
+    if (start.isPending || leaving) return;
     // Never send a run the server will refuse: say what is in the way instead (toreview §212.5).
     const problem = runProblem(choices);
     if (problem) {
@@ -107,12 +110,17 @@ export function useTailorRun(target: TailorTargetRef) {
     start.mutate(
       tailorRunInput(comparison, choices, target.kind === 'job' ? target.id : undefined),
       {
-        onSuccess: (generation) =>
-          router.replace(tailorPath(target, { run: generation.id, resumeId: comparison.resumeId })),
-        // A refused request names the part that was refused; anything else is the plain retry.
-        onError: (error) => showToast(startErrorLine(error), { tone: 'error' }),
+        onSuccess: (generation) => {
+          setLeaving(true);
+          router.replace(tailorPath(target, { run: generation.id, resumeId: comparison.resumeId }));
+        },
+        // A refused request names the part that was refused, and each other cause says what it is.
+        // Consent has its own dialog (queries/client.ts), so no second message over it.
+        onError: (error) => {
+          if (!isConsentRequired(error)) showToast(startErrorLine(error), { tone: 'error' });
+        },
       },
     );
   };
-  return { create, pending: start.isPending };
+  return { create, pending: start.isPending || leaving };
 }

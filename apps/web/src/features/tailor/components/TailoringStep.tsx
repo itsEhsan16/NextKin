@@ -25,7 +25,18 @@ export function TailoringStep({
   source: Resume | undefined;
   onLeave: () => void;
 }) {
-  const labels = generation.tailor ? tailoringLines(job, generation.tailor) : [];
+  const build = generation.origin === 'build';
+  // A build run has no tailor plan to list: its own steps instead of an empty list.
+  const labels = generation.tailor
+    ? tailoringLines(job, generation.tailor)
+    : build
+      ? [
+          'Reading the job description',
+          'Writing from your profile',
+          'Checking every line',
+          'Scoring it against the job',
+        ]
+      : [];
   // Each line finishes in its share of the bar; the one being worked on spins.
   const active = Math.min(labels.length - 1, Math.floor(generation.progress * labels.length));
   const lines: RunLine[] = labels.map((label, index) => ({
@@ -37,7 +48,12 @@ export function TailoringStep({
     <RunProgress
       art={<AiOrb size="xl" state="writing" />}
       step={{ n: 3, of: 3 }}
-      title={`Tailoring your resume for ${job.company}`}
+      runId={generation.id}
+      title={
+        build
+          ? `Building your resume${job.company ? ` for ${job.company}` : ''}`
+          : `Tailoring your resume${job.company ? ` for ${job.company}` : ''}`
+      }
       subtitle={`${job.title}${source ? ` · from ${source.title}` : ''}`}
       meter="Writing your resume"
       progress={generation.progress}

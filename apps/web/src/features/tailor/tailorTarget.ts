@@ -1,5 +1,11 @@
 import type { Job, TailorComparison } from '@nextkin/shared/models';
-import { useJdComparison, useJdJob, useJob, useTailorComparison } from '@nextkin/shared/queries';
+import {
+  queryPhase,
+  useJdComparison,
+  useJdJob,
+  useJob,
+  useTailorComparison,
+} from '@nextkin/shared/queries';
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { Route } from 'next';
 
@@ -79,7 +85,8 @@ export function useTailorTarget(
   );
   const forJd = useJdComparison(ref.kind === 'jd' ? resumeId : '', ref.kind === 'jd' ? ref.id : '');
   const job = ref.kind === 'jd' ? jd.view?.job : listing.data;
-  const jobError = ref.kind === 'jd' ? jd.draft.isError : listing.isError;
+  // Only when there is nothing to show: a background refetch that fails keeps the cached job.
+  const jobError = queryPhase(ref.kind === 'jd' ? jd.draft : listing) === 'error';
   const comparison = ref.kind === 'jd' ? forJd : forJob;
   const lines =
     ref.kind === 'jd'
