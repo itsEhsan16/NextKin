@@ -6,6 +6,7 @@ import { DocTile } from '@/features/create/jobFlow/FlowRows';
 import { ArrowRight } from '@/ui/lineIcons';
 
 import { Entity, JobLogoTile, jobTitleOf } from './EntityRow';
+import { changeLink } from '@/ui/textLink';
 
 const tile = 'flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-neutral-50 px-4 py-3';
 
@@ -43,7 +44,7 @@ export function EnhanceHeader({
           type="button"
           aria-haspopup="dialog"
           onClick={onChangeResume}
-          className="h-control-sm shrink-0 rounded-md border border-border-default bg-surface-card px-3.5 text-body-m font-semibold text-text-primary transition-[border-color,scale] duration-press ease-standard hover:border-neutral-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 active:scale-(--scale-pressed)"
+          className={changeLink}
         >
           Change
         </button>

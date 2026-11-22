@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn';
 import { cardSurface } from './Card';
 import { ChevronRightIcon, HelpIcon } from './icons';
 import { iconButton } from './iconButton';
-import { pageFillMin } from './pageFrame';
+import { pageFillMin, pageFrame } from './pageFrame';
 
 /**
  * A page that stands in for one (SYS 06–08, 871:718/922/1125): the page's name beside a way
@@ -38,7 +38,8 @@ export function StatusPage({
   alert?: boolean;
 }) {
   return (
-    <div className={cn(pageFillMin, 'flex flex-col gap-6 pb-10')}>
+    // In the page column under the top bar like every page, with its gutters (toreview §254).
+    <div className={cn(pageFrame, pageFillMin, 'flex flex-col gap-6 pb-10')}>
       <div className="flex items-center gap-3">
         <Link
           href={backHref}
@@ -50,7 +51,8 @@ export function StatusPage({
         >
           <ChevronRightIcon aria-hidden className="size-3.5 rotate-180" />
         </Link>
-        <h1 className="text-h2 font-semibold text-text-primary">{name}</h1>
+        {/* The page title at PageHeader's size, so it is never smaller than the card's heading. */}
+        <h1 className="text-h1 text-text-primary sm:text-display-l">{name}</h1>
       </div>
       <div className="flex flex-1 items-center justify-center pb-16">
         <div

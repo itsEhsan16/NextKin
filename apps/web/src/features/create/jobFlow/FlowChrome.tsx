@@ -12,7 +12,7 @@ import { SparkleIllustration } from '@/ui/illustrations';
 
 import { FlowSteps } from '../components/FlowSteps';
 
-export { backButton, finalButton, primaryButton } from '@/ui/FlowFooter';
+export { backButton, finalButton, primaryButton, upgradeButton } from '@/ui/FlowFooter';
 
 /** The brand tile with the sparkle that leads the header before a job is picked (849:155). */
 export function SparkleTile() {
@@ -74,29 +74,27 @@ export function FlowHeader({
   );
 }
 
-/** A step's heading inside its card (849:194): "STEP 1 OF 4", the question, one line under it. */
+/**
+ * A step's heading inside its card (849:194): the question and one line under it. No "Step N of N"
+ * over it on any step: the stepper at the top already says where you are (owner, toreview §227,
+ * §256).
+ */
 export function StepHeading({
-  step,
-  of,
   title,
   lede,
   id,
 }: {
-  step: number;
-  of: number;
   title: string;
-  lede: string;
+  /** The line under the title; a step without one shows none (the method step, toreview §224). */
+  lede?: string;
   id?: string;
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-caption-m font-semibold uppercase tracking-wide text-text-brand">
-        Step {step} of {of}
-      </p>
       <h1 id={id} className="text-h1 font-bold tracking-tight text-text-primary">
         {title}
       </h1>
-      <p className="max-w-prose text-body-l text-text-secondary">{lede}</p>
+      {lede && <p className="max-w-prose text-body-l text-text-secondary">{lede}</p>}
     </div>
   );
 }
@@ -133,7 +131,8 @@ export function ColumnHead({
  * its content leaves and the footer bar rests at the bottom of the window, however short the
  * step is: no band of empty page under the bar.
  */
-export const flowPage = 'flex min-h-page-fill flex-col gap-5 pb-8';
+// The whole window from tablet width up: the top bar steps aside on these flows (`TopBar`).
+export const flowPage = 'flex min-h-page-fill flex-col gap-5 pb-8 md:min-h-dvh';
 
 /** A step: its card, then its footer bar. It takes the rest of the flow page. */
 export const stepShell = 'flex min-w-0 flex-1 flex-col gap-6';

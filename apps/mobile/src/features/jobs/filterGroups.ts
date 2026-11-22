@@ -65,11 +65,11 @@ export const SORT_SEGMENTS: readonly Segment<JobSort>[] = [
  */
 export const sheetSortValue = (sort: JobSort): JobSort => (sort === 'salary' ? 'relevance' : sort);
 
-/** Ends and granularity of the salary slider (Figma 1:799–1:804), all in INR. */
+/** Ends and granularity of the salary slider (Figma 1:799–1:804), all in US dollars a year. */
 export const SALARY_SCALE = {
   min: SALARY_FILTER_MIN,
   max: SALARY_FILTER_MAX,
   step: SALARY_FILTER_STEP,
-  /** Keeps the thumbs a readable ₹5L apart so their labels never collide. */
-  minDistance: 500_000,
+  /** Keeps the thumbs a readable $20k apart so their labels never collide. */
+  minDistance: 20_000,
 } as const;

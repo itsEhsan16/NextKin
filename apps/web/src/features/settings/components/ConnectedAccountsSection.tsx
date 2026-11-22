@@ -34,7 +34,7 @@ import { useReveal } from '@/lib/useReveal';
 import { Soon, soonControl } from '@/ui/Soon';
 import { BUTTON_VARIANT } from '@/ui/buttonStyles';
 
-const ACTION = 'h-control-md min-w-24 shrink-0 rounded-md px-5 text-body-m';
+const ACTION = 'h-control-md min-w-24 shrink-0 rounded-md px-5 text-body-m font-semibold';
 
 const link =
   'rounded-sm text-text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';

@@ -28,6 +28,22 @@ describe('requests', () => {
   });
 });
 
+describe('an outdated build (426)', () => {
+  it('tells the app the floor, and still throws the error to the caller', async () => {
+    const onUpgradeRequired = vi.fn();
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(json(426, envelope('UPGRADE_REQUIRED', 'Update the app to keep going.', { minimumVersion: '1.2.0' })));
+    await expect(web(fetch, { onUpgradeRequired }).request('/me')).rejects.toMatchObject({ code: 'UPGRADE_REQUIRED', status: 426 });
+    expect(onUpgradeRequired).toHaveBeenCalledWith('1.2.0');
+  });
+
+  it('is not called for any other failure', async () => {
+    const onUpgradeRequired = vi.fn();
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(json(409, envelope('CONFLICT', 'No')));
+    await expect(web(fetch, { onUpgradeRequired }).request('/x')).rejects.toBeInstanceOf(ApiError);
+    expect(onUpgradeRequired).not.toHaveBeenCalled();
+  });
+});
+
 describe('retries', () => {
   it('a read is retried once on 503, with the same request id', async () => {
     const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValueOnce(json(503, envelope('UNAVAILABLE', 'Down'))).mockResolvedValueOnce(json(200, { ok: true }));

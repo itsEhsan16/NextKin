@@ -237,16 +237,22 @@ export function OptionSheetBody<K extends string = string>({
 
 export type OptionSheetProps<K extends string = string> = OptionSheetBodyProps<K> & {
   open: boolean;
+  /** A taller sheet for a longer list (the job step's "From", §239); the picker height otherwise. */
+  height?: number;
 };
 
 /** Single-choice picker sheet (Profile → Appearance / Language / Availability / Min salary). */
-export function OptionSheet<K extends string = string>({ open, ...body }: OptionSheetProps<K>) {
+export function OptionSheet<K extends string = string>({
+  open,
+  height,
+  ...body
+}: OptionSheetProps<K>) {
   const { sizes } = useTheme();
   return (
     <Sheet
       open={open}
       onClose={body.onClose}
-      height={sizes.sheetPickerHeight}
+      height={height ?? sizes.sheetPickerHeight}
       accessibilityLabel={body.title}
     >
       <OptionSheetBody {...body} />

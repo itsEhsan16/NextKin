@@ -28,7 +28,7 @@ export function supportRoutes(deps: support.SupportDeps): OpenAPIHono<ApiEnv> {
 
   app.openapi(
     createRoute({ method: 'get', path: '/support/legal/{key}', tags: ['support'], summary: 'A legal document, its published version.', request: { params: z.object({ key: z.enum(['terms', 'privacy']) }) }, responses: { 200: ok('The document.', legalSchema), ...notFoundError, ...commonErrors } }),
-    async (c) => c.json(checked(legalSchema, await support.getLegal(deps.db, c.req.valid('param').key)), 200),
+    async (c) => c.json(checked(legalSchema, await support.getLegal(deps.db, c.req.valid('param').key, deps.appOrigin)), 200),
   );
 
   app.openapi(

@@ -67,8 +67,9 @@ if (USES_BACKEND) {
 
 watchConnection();
 
-// Resumes aren't kept on the phone (toreview §148.1): a copy an earlier build saved goes.
-clearOldResumeCopy();
+// Resumes aren't kept on the phone (toreview §148.1): a copy an earlier build saved goes. A
+// synchronous storage write, so it waits until the first screen is up rather than delaying it.
+setTimeout(clearOldResumeCopy, 3000);
 
 // Usage events leave with the app: the next open may be days away.
 if (USES_BACKEND) {

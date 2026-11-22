@@ -16,10 +16,11 @@ import { useId, useState } from 'react';
 
 import {
   backButton,
+  finalButton,
   FlowFooter,
-  primaryButton,
-  StepHeading,
   stepCard,
+  StepHeading,
+  upgradeButton,
 } from '@/features/create/jobFlow/FlowChrome';
 import { cn } from '@/lib/cn';
 import { Callout } from '@/ui/Callout';
@@ -136,8 +137,6 @@ export function ZeroSetup({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="zero-basics"
-            step={1}
-            of={4}
             title="Tell us the basics"
             lede="Three answers are enough for a first draft. We mark every guess so you can check it before anything is saved."
           />
@@ -213,7 +212,7 @@ export function ZeroSetup({
           Back
         </Link>
         {allowance.spent ? (
-          <Link href={'/upgrade' as Route} className={primaryButton}>
+          <Link href={'/upgrade' as Route} className={upgradeButton}>
             See Pro plans
           </Link>
         ) : (
@@ -221,7 +220,7 @@ export function ZeroSetup({
             type="button"
             onClick={write}
             disabled={user.isPending || start.isPending}
-            className={primaryButton}
+            className={finalButton}
           >
             <SparkleIllustration aria-hidden className="h-auto w-4" />
             <StableLabel

@@ -6,7 +6,10 @@ import { useResumes } from '@/data/queries';
 type BuildSourceState = {
   /** What "Build from" was set to: a resume, the profile (null), or nothing yet (undefined). */
   picked: string | null | undefined;
+  /** "Start from scratch with AI" (owner, 2026-11-19, §238): Zero Resume for the job, no source. */
+  scratch: boolean;
   pick: (source: string | null) => void;
+  pickScratch: () => void;
   reset: () => void;
 };
 
@@ -16,8 +19,10 @@ type BuildSourceState = {
  */
 export const useBuildSourceStore = create<BuildSourceState>((set) => ({
   picked: undefined,
-  pick: (picked) => set({ picked }),
-  reset: () => set({ picked: undefined }),
+  scratch: false,
+  pick: (picked) => set({ picked, scratch: false }),
+  pickScratch: () => set({ picked: null, scratch: true }),
+  reset: () => set({ picked: undefined, scratch: false }),
 }));
 
 /**

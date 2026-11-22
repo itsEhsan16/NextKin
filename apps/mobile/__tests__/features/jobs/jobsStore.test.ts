@@ -20,7 +20,7 @@ describe('jobs filter state', () => {
     expect(chips.map((chip) => chip.label)).toEqual([
       EMPLOYMENT_TYPE_LABEL.full_time,
       'Remote',
-      '₹20L+',
+      '$25k+',
     ]);
   });
 
@@ -61,8 +61,8 @@ describe('jobs filter state', () => {
       postedWithin: '7d',
       employmentTypes: ['full_time'],
       remote: ['onsite'],
-      salaryMin: 2_000_000,
-      salaryMax: 4_500_000,
+      salaryMin: 20_000,
+      salaryMax: 45_000,
       experienceLevels: ['senior', 'lead'],
     });
 
@@ -70,7 +70,7 @@ describe('jobs filter state', () => {
       { key: 'postedWithin', label: 'Past week' },
       { key: 'employmentTypes', label: 'Full-time' },
       { key: 'remote', label: 'On-site' },
-      { key: 'salary', label: '₹20L–₹45L' },
+      { key: 'salary', label: '$20k–$45k' },
       { key: 'experienceLevels', label: 'Senior, Lead' },
     ]);
   });
@@ -140,9 +140,9 @@ describe('filter sheet draft (JOBS 04)', () => {
     expect(useJobsStore.getState().draft?.filters.salaryMin).toBeUndefined();
     expect(useJobsStore.getState().draft?.filters.salaryMax).toBeUndefined();
 
-    useJobsStore.getState().setDraftSalary(2_000_000, 4_500_000);
-    expect(useJobsStore.getState().draft?.filters.salaryMin).toBe(2_000_000);
-    expect(useJobsStore.getState().draft?.filters.salaryMax).toBe(4_500_000);
+    useJobsStore.getState().setDraftSalary(20_000, 45_000);
+    expect(useJobsStore.getState().draft?.filters.salaryMin).toBe(20_000);
+    expect(useJobsStore.getState().draft?.filters.salaryMax).toBe(45_000);
   });
 
   it('"Any" clears the experience group rather than adding a level', () => {

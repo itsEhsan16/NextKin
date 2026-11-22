@@ -1,12 +1,5 @@
-
 import type { Generation } from '@/data/models';
-import {
-  useCurrentUser,
-  useJdDraft,
-  useJob,
-  useResume,
-  useResumeContent,
-} from '@/data/queries';
+import { useCurrentUser, useJdDraft, useJob, useResume, useResumeContent } from '@/data/queries';
 // Deep imports on purpose: the resumes barrel drags its screens in.
 import { ResumeExportHost } from '@/features/resumes/ResumeExportHost';
 import { useResumesStore } from '@/features/resumes/resumesStore';
@@ -22,7 +15,8 @@ import { ResumePagePreview } from './ResumePagePreview';
 import { TailorChrome } from './TailorChrome';
 import { TailorProgress } from './TailorProgress';
 import { TailorReady } from './TailorReady';
-import { resumeBody, siteHost } from './TailorRunView';
+import { resumeBody } from './TailorRunView';
+import { RESUME_STEPS } from '@/features/create/flow/ResumeSteps';
 
 export type BuildRunViewProps = { generation: Generation };
 
@@ -50,14 +44,9 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
   const user = useCurrentUser();
 
   const company = draft.data?.company ?? job.data?.company;
-  const website = jobId ? job.data?.companyWebsite : undefined;
-  const domain = website ? siteHost(website) || undefined : undefined;
   const close = () => actions.closeBuild(jobId);
   const edit = () => {
     if (resumeId) actions.openDocument(resumeId);
-  };
-  const seeChanges = () => {
-    if (resumeId) actions.openVersions(resumeId);
   };
   const download = () => {
     if (resume.data) openExport(resume.data, 'run');
@@ -70,7 +59,7 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
       <Screen
         scroll
         edges={['top', 'bottom']}
-        header={<TailorChrome onClose={close} />}
+        header={<TailorChrome stepName={RESUME_STEPS[2]} onClose={close} />}
         headerStyle={{ paddingBottom: s(ready ? BAR_TO_PREVIEW : BAR_TO_ART) }}
         contentContainerStyle={{ paddingBottom: spacing[8] }}
         footer={
@@ -92,7 +81,12 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
               <FlowFooter
                 inset
                 note="Nothing is invented — only your profile and answers."
-                primary={{ label: 'Leave and notify me', icon: 'Bell01', variant: 'outline', onPress: close }}
+                primary={{
+                  label: 'Leave and notify me',
+                  icon: 'Bell01',
+                  variant: 'outline',
+                  onPress: close,
+                }}
               />
             )}
           </Reveal>
@@ -103,17 +97,16 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
           {ready ? (
             <>
               <TailorReady
-                preview={<ResumePagePreview content={resumeBody(content.data)} name={name} score={score} />}
+                preview={
+                  <ResumePagePreview content={resumeBody(content.data)} name={name} score={score} />
+                }
                 company={company}
-                domain={domain}
-                score={score}
-                onSeeChanges={seeChanges}
                 pill={<BuildBandPill score={score} />}
                 next={
                   <BuildNextTiles
-                    // A letter is written for a job; a pasted or uploaded one is not on NextKin.
+                    // Any finished resume can open a letter (§240); the job comes from it if any.
                     onCoverLetter={
-                      jobId && resumeId ? () => actions.openCoverLetterSetup(resumeId) : undefined
+                      resumeId ? () => actions.openCoverLetterSetup(resumeId) : undefined
                     }
                     onInterview={() => {
                       if (resumeId) actions.openInterviewSetup(resumeId);

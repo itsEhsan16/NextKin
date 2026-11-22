@@ -151,6 +151,10 @@ const schema = z.object({
   // --- API kernel (P3) ---
   // The web app's origin. Cookie-session writes must come from it (CSRF).
   APP_ORIGIN: z.url().default('http://localhost:3000'),
+  // The admin portal's own origin, e.g. https://admin.app.nextkin.ai (toreview §249). Trusted for
+  // cookie writes alongside APP_ORIGIN, and used in links to the portal. Unset, the portal lives at
+  // APP_ORIGIN/admin, as it did before.
+  ADMIN_ORIGIN: z.url().optional(),
   // Local only (toreview §131.10): more browser origins to trust, comma-separated; one `*` per
   // pattern stands for a DNS label, e.g. https://*.trycloudflare.com for a quick tunnel.
   APP_EXTRA_ORIGINS: z

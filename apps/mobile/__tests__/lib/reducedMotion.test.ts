@@ -1,4 +1,4 @@
-import { formatLakh, withReducedMotion } from '@/lib';
+import { formatSalaryStep, withReducedMotion } from '@/lib';
 
 /**
  * The crash that took the job detail screen down on mount.
@@ -21,7 +21,7 @@ describe('lib helpers a worklet is allowed to call', () => {
    * starts calling a new one — the directive is invisible at the call site, and its absence is a
    * runtime crash rather than a type error.
    */
-  const WORKLET_HELPERS: Record<string, unknown> = { formatLakh, withReducedMotion };
+  const WORKLET_HELPERS: Record<string, unknown> = { formatSalaryStep, withReducedMotion };
 
   it.each(Object.keys(WORKLET_HELPERS))('%s is workletised by the babel plugin', (name) => {
     const fn = WORKLET_HELPERS[name] as Record<string, unknown>;

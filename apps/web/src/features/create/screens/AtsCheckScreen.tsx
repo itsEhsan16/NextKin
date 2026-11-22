@@ -24,7 +24,7 @@ import { AtsResult } from '../ats/AtsResult';
 import { AtsUploadStep } from '../ats/AtsUploadStep';
 import { RunProgress } from '../components/RunProgress';
 import { allowanceNote, atsAllowance, START_FAILED } from '../createLibrary';
-import { FlowHeader } from '../jobFlow/FlowChrome';
+import { FlowHeader, flowPage } from '../jobFlow/FlowChrome';
 import { JOB_FLOWS, type PickedJob } from '../jobFlow/jobFlow';
 import { JobStep } from '../jobFlow/JobStep';
 import { atsLines } from '../runLines';
@@ -61,7 +61,7 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
   const steps = JOB_FLOWS['ats-check'].steps;
 
   const frame = (index: number, body: React.ReactNode, header = true) => (
-    <div className={cn(pageFrame, 'flex flex-col gap-5 pb-8')}>
+    <div className={cn(pageFrame, flowPage)}>
       {header && (
         <FlowHeader
           backHref={'/' as Route}
@@ -189,7 +189,6 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
       1,
       <JobStep
         flow="ats-check"
-        stepNo={2}
         backHref={atsHref({ resumeId })}
         note={
           failed

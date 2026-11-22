@@ -8,7 +8,6 @@ import { useJob, useJobFit, useSimilarJobs } from '@/data/queries';
 import { TailorResumeSheet } from '@/features/create/components/TailorResumeSheet';
 import { useTheme } from '@/theme';
 import { JdSectionCard } from '@/features/create/components/jd/JdSectionCard';
-import { GradientWash } from '@/ui/GradientWash';
 import { StatusBarScrim } from '@/ui/Screen/StatusBarScrim';
 import { IconButton } from '@/ui/IconButton';
 import { SectionHeader } from '@/ui/SectionHeader';
@@ -38,7 +37,7 @@ export type JobDetailScreenProps = { id: string };
  * reachable through the platform gesture and the Android hardware button once it scrolls away.
  */
 export function JobDetailScreen({ id }: JobDetailScreenProps) {
-  const { colors, spacing, s, u } = useTheme();
+  const { colors, sizes, spacing, s } = useTheme();
   const insets = useSafeAreaInsets();
   const actions = useJobsActions();
 
@@ -129,11 +128,14 @@ export function JobDetailScreen({ id }: JobDetailScreenProps) {
           paddingTop: spacing.headerTopPushed + insets.top,
           paddingBottom: spacing[8],
           gap: spacing[6],
+          // The phone column on a tablet or unfolded foldable, as `Screen` centres every other page.
+          width: '100%',
+          maxWidth: sizes.designWidth,
+          alignSelf: 'center',
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* The lavender wash behind the job's top (owner, 2026-11-08: Home and the job only). */}
-        <GradientWash height={u(360) + insets.top} />
+        {/* No lavender wash: Home alone keeps it (owner, 2026-11-19, §240). */}
         <View style={styles.headerRow}>
           <IconButton icon="ArrowLeft" label="Back" onPress={actions.goBack} />
           <View style={[styles.headerRight, { gap: spacing[3] }]}>

@@ -1,3 +1,5 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { board } from '../board';
 import { hitSlopFor } from '@/lib';
 import { scaledSheet, useTheme } from '@/theme';
@@ -35,6 +37,8 @@ export function AuthFooterLink({
 }: AuthFooterLinkProps) {
   const { s } = useTheme();
   const styles = useStyles();
+  // The board's floor covers a gesture bar; a 3-button navigation bar can be taller than it.
+  const insets = useSafeAreaInsets();
 
   return (
     <Pressable
@@ -46,7 +50,11 @@ export function AuthFooterLink({
       onPress={onPress}
       style={[
         styles.footer,
-        { marginTop: s(board(top)), marginBottom: s(board(floor)), gap: s(board(gap)) },
+        {
+          marginTop: s(board(top)),
+          marginBottom: Math.max(s(board(floor)), insets.bottom + s(16)),
+          gap: s(board(gap)),
+        },
       ]}
     >
       <Text variant="callout" color="textTertiary">

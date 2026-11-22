@@ -16,3 +16,4 @@ export {
   type UsageMeterKey,
 } from './upgradeCopy';
 export { isUpgradeReason, UPGRADE_REASONS, type UpgradeReason } from './upgradeReasons';
+export { sellsInApp, upgradeLinkLabel } from './storePolicy';

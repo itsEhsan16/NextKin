@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 
-import { formatLakh } from '@/lib';
+import { formatSalaryStep } from '@/lib';
 import { useTheme } from '@/theme';
 import { RangeSlider, RangeValueLabel } from '@/ui/RangeSlider';
 import { Text } from '@/ui/Text';
@@ -15,10 +15,10 @@ export type SalaryRangeGroupProps = {
   onChange: (min: number, max: number) => void;
 };
 
-/** The top stop is open-ended: "₹80L+" means no upper bound at all. Runs on the UI thread. */
+/** The top stop is open-ended: "$300k+" means no upper bound at all. Runs on the UI thread. */
 const formatBound = (value: number): string => {
   'worklet';
-  return formatLakh(value, { plus: value >= SALARY_SCALE.max });
+  return formatSalaryStep(value, { plus: value >= SALARY_SCALE.max });
 };
 
 /**
@@ -60,10 +60,10 @@ export function SalaryRangeGroup({ value, onChange }: SalaryRangeGroupProps) {
       {/* The thumbs already announce the range, so the static ends are decoration. */}
       <View style={styles.headingRow} importantForAccessibility="no-hide-descendants">
         <Text variant="captionSm" color="textSecondary">
-          {formatLakh(SALARY_SCALE.min)}
+          {formatSalaryStep(SALARY_SCALE.min)}
         </Text>
         <Text variant="captionSm" color="textSecondary">
-          {formatLakh(SALARY_SCALE.max, { plus: true })}
+          {formatSalaryStep(SALARY_SCALE.max, { plus: true })}
         </Text>
       </View>
     </View>

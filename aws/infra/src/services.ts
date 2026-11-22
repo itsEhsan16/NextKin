@@ -25,6 +25,13 @@ export interface ServicesProps {
   appOrigin: string;
   /** More origins the server trusts: the cloudfront.net address once the own domain is live. */
   extraOrigins?: readonly string[];
+  /** The admin portal's own host (toreview §249), e.g. admin.app.nextkin.ai. */
+  adminHost?: string;
+  /**
+   * The marketing hosts (owner, 2026-11-21), e.g. nextkin.ai and www.nextkin.ai, and the app host
+   * their app paths move to. The web proxy serves the landing page at `/` on them.
+   */
+  landing?: { hosts: readonly string[]; appHost: string };
   /** NEXT_PUBLIC_DATA_SOURCE baked into the web build: '' (mock) or 'http'. */
   webDataSource: string;
   /** NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY baked into the web build, when sign-in uses Clerk. */
@@ -97,7 +104,17 @@ export class Services extends Construct {
       },
     });
 
-    const environment = appEnvironment(data, appOrigin, extraOrigins);
+    const environment = {
+      ...appEnvironment(data, appOrigin, extraOrigins),
+      // The server trusts the portal's origin and links staff there; the web proxy serves the
+      // portal only on that host and moves /admin there from every other (toreview §249).
+      ...(props.adminHost
+        ? { ADMIN_ORIGIN: `https://${props.adminHost}`, ADMIN_HOST: props.adminHost }
+        : {}),
+      ...(props.landing
+        ? { LANDING_HOST: props.landing.hosts.join(','), APP_HOST: props.landing.appHost }
+        : {}),
+    };
     const secrets = appSecrets(data);
     const runtimeRoles = ['app', 'maintenance', 'readonly'] as const;
     const grantApp = (definition: ecs.FargateTaskDefinition) => {
@@ -128,13 +145,31 @@ export class Services extends Construct {
       healthCheckGracePeriod: Duration.seconds(120),
     });
 
+    // Push (aws/setup/07-push.md, toreview §246): on once `pushAndroidArn` (and later `pushIosArn`)
+    // names an SNS platform application in cdk.json. Only the worker sends, so only it is granted.
+    const pushAndroidArn = this.node.tryGetContext('pushAndroidArn') as string | undefined;
+    const pushIosArn = this.node.tryGetContext('pushIosArn') as string | undefined;
+    const pushArns = [pushAndroidArn, pushIosArn].filter((arn): arn is string => Boolean(arn));
+    const pushEnvironment: Record<string, string> = pushArns.length
+      ? {
+          PUSH_ADAPTER: 'sns',
+          ...(pushAndroidArn ? { PUSH_SNS_ANDROID_ARN: pushAndroidArn } : {}),
+          ...(pushIosArn ? { PUSH_SNS_IOS_ARN: pushIosArn } : {}),
+        }
+      : {};
+
     // --- worker: queues, parsing, generation, PDF export. Spot: an interruption only delays jobs.
     // It typesets resumes on the LaTeX service (§137): the URL and its bearer token.
     const workerDef = taskDef('worker', 1024, 2048);
     workerDef.addContainer('worker', {
       image: appImage('worker', webDataSource),
       command: withDatabaseUrls([...runtimeRoles], 'node dist/worker.mjs'),
-      environment: { ...environment, LATEX_COMPILER_URL: `http://latex.${DEMO.namespace}:8790`, LINK_READER_URL: `http://links.${DEMO.namespace}:8791` },
+      environment: {
+        ...environment,
+        ...pushEnvironment,
+        LATEX_COMPILER_URL: `http://latex.${DEMO.namespace}:8790`,
+        LINK_READER_URL: `http://links.${DEMO.namespace}:8791`,
+      },
       secrets: {
         ...secrets,
         ...roleSecrets(data, [...runtimeRoles]),
@@ -144,6 +179,21 @@ export class Services extends Construct {
       logging: logging('worker'),
     });
     grantApp(workerDef);
+    if (pushArns.length) {
+      // Register a phone (an endpoint under the platform application), then send to it.
+      workerDef.addToTaskRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['sns:CreatePlatformEndpoint', 'sns:GetPlatformApplicationAttributes'],
+          resources: pushArns,
+        }),
+      );
+      workerDef.addToTaskRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['sns:Publish', 'sns:DeleteEndpoint', 'sns:GetEndpointAttributes', 'sns:SetEndpointAttributes'],
+          resources: pushArns.map((arn) => `${arn.replace(':app/', ':endpoint/')}/*`),
+        }),
+      );
+    }
     service('worker', workerDef, network.appSg, {
       capacityProviderStrategies: spot,
       minHealthyPercent: 100,

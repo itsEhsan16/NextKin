@@ -6,6 +6,7 @@ import { scaledSheet, useTheme } from '@/theme';
 import { Icon } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { Text } from '@/ui/Text';
+import { useSelectionColors } from '@/ui/TextField';
 
 export type AssistantComposerProps = {
   value: string;
@@ -48,6 +49,7 @@ export function AssistantComposer({
   onClearContext,
 }: AssistantComposerProps) {
   const { colors, opacity, radii, shadows, sizes, spacing, typography, s, u } = useTheme();
+  const selection = useSelectionColors();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const ready = value.trim().length > 0 && !busy && !disabled;
@@ -121,8 +123,7 @@ export function AssistantComposer({
           onChangeText={onChange}
           placeholder={PLACEHOLDER}
           placeholderTextColor={colors.textTertiary}
-          selectionColor={colors.textPrimary}
-          cursorColor={colors.textPrimary}
+          {...selection}
           accessibilityLabel="Message"
           accessibilityState={{ disabled }}
           multiline

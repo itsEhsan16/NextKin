@@ -16,7 +16,7 @@ import { Icon, type LineIconName } from '@/ui/Icon';
 import { Pressable } from '@/ui/Pressable';
 import { useRevealOnFocus } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
-import { useFieldChrome } from '@/ui/TextField';
+import { useFieldChrome, useSelectionColors } from '@/ui/TextField';
 
 /**
  * The drawn box, as the using screen's board draws it. `SIGN_UP` and `SIGN_IN` both satisfy this
@@ -80,6 +80,7 @@ export function AuthField({
   ref,
 }: AuthFieldProps) {
   const { colors, typography, s } = useTheme();
+  const selection = useSelectionColors();
   const styles = useStyles();
   const [revealed, setRevealed] = useState(false);
   // The page scrolls a focused field clear of the keyboard, exactly as it does for TextField.
@@ -130,8 +131,7 @@ export function AuthField({
           returnKeyType={returnKeyType}
           onSubmitEditing={onSubmit}
           submitBehavior={returnKeyType === 'next' ? 'submit' : 'blurAndSubmit'}
-          selectionColor={colors.textPrimary}
-          cursorColor={colors.textPrimary}
+          {...selection}
           maxFontSizeMultiplier={maxFontScale.body}
           style={[styles.input, typography.bodyLg, { color: colors.textPrimary }]}
         />

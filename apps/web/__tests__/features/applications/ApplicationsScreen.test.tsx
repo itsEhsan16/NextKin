@@ -65,7 +65,8 @@ describe('ApplicationsScreen', () => {
     for (const label of ['Time period', 'Job type', 'Company', 'Location', 'More filters']) {
       expect(screen.getByRole('button', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
     }
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+    // Nothing narrowed yet, so nothing to reset (toreview §254).
+    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sort by: Most recent' })).toBeInTheDocument();
   });
 

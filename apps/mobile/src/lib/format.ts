@@ -72,7 +72,7 @@ const compact = (n: number): string => {
 
 /** Indian salaries are quoted in lakh: 2_800_000 → "28L", 2_850_000 → "28.5L". */
 const lakh = (n: number): string => {
-  'worklet'; // formatLakh feeds the salary slider's UI-thread readout (RangeValueLabel).
+  'worklet'; // the INR listing format may run on the UI thread too.
   const value = n / 100_000;
   return `${Number.isInteger(value) ? value : value.toFixed(1)}L`;
 };
@@ -122,19 +122,21 @@ export function formatSalaryLong(range: SalaryRange): string {
 }
 
 /**
- * "₹20L", "₹0", "₹80L+" — the salary slider's scale labels. A worklet: the slider's live
- * readout calls it per frame on the UI runtime, where a plain JS closure would throw
+ * "$80k", "$0", "$300k+" — the salary slider's scale labels and the minimum-salary picker, in US
+ * dollars a year (owner, 2026-11-20, toreview §247; they were ₹ lakh). A worklet: the slider's
+ * live readout calls it per frame on the UI runtime, where a plain JS closure would throw
  * "Tried to synchronously call a Remote Function".
  */
-export function formatLakh(amount: number, opts: { plus?: boolean } = {}): string {
+export function formatSalaryStep(amount: number, opts: { plus?: boolean } = {}): string {
   'worklet';
-  if (amount <= 0) return '₹0';
-  return `₹${lakh(amount)}${opts.plus ? '+' : ''}`;
+  if (amount <= 0) return '$0';
+  const k = amount / 1000;
+  return `$${Number.isInteger(k) ? k : k.toFixed(1)}k${opts.plus ? '+' : ''}`;
 }
 
 /**
  * Salary band copy shared by the filter slider and its applied chip (Figma 1:798 / 1:659):
- * "₹20L – ₹45L", "₹20L+" once the upper thumb sits at the ceiling, "Up to ₹45L" with no floor.
+ * "$50k – $120k", "$50k+" once the upper thumb sits at the ceiling, "Up to $120k" with no floor.
  * The chip passes a tighter separator than the slider's readout.
  */
 export function formatSalaryBand(
@@ -145,9 +147,10 @@ export function formatSalaryBand(
 ): string {
   const low = min != null && min > 0 ? min : undefined;
   const high = max != null && max < ceiling ? max : undefined;
-  if (low != null && high != null) return `${formatLakh(low)}${separator}${formatLakh(high)}`;
-  if (low != null) return formatLakh(low, { plus: true });
-  if (high != null) return `Up to ${formatLakh(high)}`;
+  if (low != null && high != null)
+    return `${formatSalaryStep(low)}${separator}${formatSalaryStep(high)}`;
+  if (low != null) return formatSalaryStep(low, { plus: true });
+  if (high != null) return `Up to ${formatSalaryStep(high)}`;
   return 'Any salary';
 }
 

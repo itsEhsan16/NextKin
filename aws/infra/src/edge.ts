@@ -1,4 +1,5 @@
 import { Duration } from 'aws-cdk-lib';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
@@ -62,7 +63,7 @@ export class Edge extends Construct {
 
     const own = domain?.certificate
       ? {
-          domainNames: [domain.name],
+          domainNames: [domain.name, ...domain.extraNames],
           certificate: domain.certificate,
           minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
         }
@@ -91,9 +92,48 @@ export class Edge extends Construct {
         },
       },
     });
+    this.origin = origin;
     this.defaultOrigin = `https://${this.distribution.distributionDomainName}`;
     this.appOrigin = domain?.certificate ? `https://${domain.name}` : this.defaultOrigin;
     if (domain?.certificate) domain.pointAt(this.distribution);
+  }
+
+  private readonly origin: origins.HttpOrigin;
+
+  /**
+   * The marketing site's front door (owner, 2026-11-21): nextkin.ai and www.nextkin.ai on a second
+   * distribution with the same origin and the same route classes, so the app's distribution and
+   * its certificate stay untouched. The web proxy (LANDING_HOST) serves the landing page at `/`
+   * there and moves app paths to the app host. nextkin.ai's DNS stays at Namecheap, so the
+   * certificate is requested and validated outside the stack and only its ARN comes in here; the
+   * apex and www records point at this distribution's domain by hand (aws/infra/README.md).
+   */
+  addLanding(names: readonly string[], certificateArn: string): cloudfront.Distribution {
+    const certificate = acm.Certificate.fromCertificateArn(this, 'LandingCertificate', certificateArn);
+    return new cloudfront.Distribution(this, 'LandingCdn', {
+      comment: 'NextKin landing (nextkin.ai)',
+      domainNames: [...names],
+      certificate,
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
+      defaultBehavior: {
+        origin: this.origin,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_AND_CLOUDFRONT_2022,
+        compress: false,
+      },
+      additionalBehaviors: {
+        '/_next/static/*': {
+          origin: this.origin,
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+          compress: true,
+        },
+      },
+    });
   }
 
   /** Sends CloudFront's requests (and only those) to the web service. */

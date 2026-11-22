@@ -1,7 +1,14 @@
 'use client';
 
 import { useCreateResume, useCurrentUser, useProfile } from '@nextkin/shared/queries';
-import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogDescription,
+  DialogTitle,
+  DialogCloseButton,
+  dialogFooter,
+} from '@/ui/Dialog';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
@@ -12,8 +19,7 @@ import { Radio, rowSurface } from '@/features/create/jobFlow/FlowRows';
 import { DropZone } from '@/features/tailor/flow/ResumeStep';
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
-import { iconButton } from '@/ui/iconButton';
-import { ArrowRight, ChevronRight, XClose } from '@/ui/lineIcons';
+import { ArrowRight, ChevronRight } from '@/ui/lineIcons';
 import {
   JdArtUploadFileIllustration,
   NavDocumentsIllustration,
@@ -81,7 +87,7 @@ const COPY: Record<Step, { title: string; lede: string }> = {
 
 function Footer({ note, children }: { note?: ReactNode; children: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border-default px-7 py-4">
+    <div className={dialogFooter}>
       {note && <p className="mr-auto text-body-m text-text-tertiary">{note}</p>}
       {children}
     </div>
@@ -142,7 +148,7 @@ export function CreateResumeDialog({
 
   return (
     <Dialog open={open} onOpenChange={close} size="xl">
-      <div className="flex items-start gap-3 px-7 pb-2 pt-6">
+      <div className="flex items-start gap-3 px-7 pb-2 pr-16 pt-7">
         <div className="min-w-0 flex-1">
           {step !== 'choose' && (
             <button
@@ -161,15 +167,7 @@ export function CreateResumeDialog({
             {COPY[step].lede}
           </DialogDescription>
         </div>
-        <DialogClose
-          aria-label="Close"
-          className={cn(
-            iconButton,
-            'size-9 rounded-full border border-border-default text-text-primary',
-          )}
-        >
-          <XClose aria-hidden className="size-4" />
-        </DialogClose>
+        <DialogCloseButton />
       </div>
 
       {step === 'choose' && (
@@ -177,7 +175,7 @@ export function CreateResumeDialog({
           <div
             role="radiogroup"
             aria-label="How to start"
-            className="grid min-h-0 gap-3.5 overflow-y-auto px-6 py-4 sm:grid-cols-2"
+            className="grid min-h-0 gap-3.5 overflow-y-auto px-7 py-4 sm:grid-cols-2"
           >
             {WAYS.map((w) => {
               const on = w.key === way;

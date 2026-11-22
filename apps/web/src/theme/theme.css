@@ -1,6 +1,8 @@
 /* Clerk's styles sit below the utilities, so its elements take our classes (toreview §169). */
 @layer theme, base, clerk, components, utilities;
 @import 'tailwindcss';
+/* The marketing landing page's own styles (Figma 524:419); its tokens are at the end. */
+@import '../features/landing/landing.css';
 
 /**
  * NextKin web design tokens.
@@ -542,6 +544,8 @@
    * overshoot (§196): it used to pass its target and swing back.
    */
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A steady turn with no start or stop: the upload zone's flowing ring (toreview §221). */
+  --ease-linear: linear;
 
   --transition-duration-press: 120ms;
   --transition-duration-fast: 180ms;
@@ -612,6 +616,10 @@
   /* A soft light gliding across an AI action ("Tailor with AI"), then resting before the next. */
   --animate-glint: glint var(--transition-duration-glint) var(--ease-standard) infinite;
   --animate-ring-draw: ring-draw var(--transition-duration-think) var(--ease-standard) infinite;
+  /* The leading edge of `ProgressButton`'s fill: a soft bulge that sways like a liquid's surface. */
+  --animate-liquid-edge: liquid-edge var(--transition-duration-think) var(--ease-standard) infinite;
+  /* A drop zone's gradient ring turning while a file is over it or being read (toreview §221). */
+  --animate-ring-flow: ring-flow var(--transition-duration-float) var(--ease-linear) infinite;
 
   @keyframes reveal {
     from {
@@ -723,6 +731,22 @@
       translate: 200% 0;
     }
   }
+  @keyframes ring-flow {
+    to {
+      --ring-angle: 360deg;
+    }
+  }
+  @keyframes liquid-edge {
+    0%,
+    100% {
+      translate: 0 -12%;
+      scale: 1 1.15;
+    }
+    50% {
+      translate: 0 12%;
+      scale: 0.8 1;
+    }
+  }
   @keyframes ring-draw {
     0% {
       stroke-dasharray: 1, 200;
@@ -780,6 +804,27 @@
  * - It fades in after `skeleton-delay`, so a quick load goes from nothing to content.
  * - Under reduced motion the global rule runs both animations once: a still block.
  */
+/*
+ * The gradient ring of an active drop zone (toreview §221): brand stops around a conic gradient
+ * whose angle is a registered property, so `animate-ring-flow` can turn it smoothly. Reduced
+ * motion runs the turn once in an instant (the global rule), leaving a still gradient.
+ */
+@property --ring-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@utility gradient-ring {
+  background: conic-gradient(
+    from var(--ring-angle),
+    var(--color-brand-200),
+    var(--color-brand-500),
+    var(--color-brand-300),
+    var(--color-brand-600),
+    var(--color-brand-200)
+  );
+}
+
 @utility skeleton {
   display: block;
   background-color: var(--color-skeleton);
@@ -1277,4 +1322,72 @@ body:has([data-admin-signin]) {
   transition-property: background-color, border-color, box-shadow, translate;
   transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
   transition-duration: var(--tw-duration, var(--default-transition-duration));
+}
+
+/*
+ * Landing page tokens (Figma 524:419, "Landing v5 · Show your work"). The board binds no colour
+ * variables, so the palette is read off its fills: one violet accent and ink text, deliberately
+ * apart from the app's indigo brand above. Only the marketing page (src/features/landing) uses
+ * them. Here, not in landing.css, because they must follow `--color-*: initial`.
+ */
+@theme {
+  --color-lp-white: #ffffff;
+  --color-lp-page: #fbfaff;
+  --color-lp-violet: #5543ee;
+  --color-lp-violet-deep: #4a3ae8;
+  --color-lp-violet-light: #7266f7;
+  --color-lp-violet-soft: #efedff;
+  --color-lp-violet-line: rgba(85, 67, 238, 0.35);
+  --color-lp-ink: #14162b;
+  --color-lp-ink-2: #2a2e45;
+  /* Board text greys and tile hairline, used across most sections. */
+  --color-lp-heading: #0f1222;
+  --color-lp-copy: #6b7085;
+  --color-lp-tile-line: #ecebf6;
+  --color-lp-tint: #f6f5ff;
+  --color-lp-muted: #8a8fa3;
+  --color-lp-line: #e7e8f0;
+  --color-lp-surface: #f6f6fb;
+  --color-lp-indigo-night: #1d1a5c;
+  /* Landing v2 dark glass cards (owner, 2026-11-20, toreview §251). */
+  --color-lp-night: #0d0b2a;
+  --color-lp-night-2: #1d1a5c;
+  --color-lp-glass-line: rgba(85, 67, 238, 0.12);
+  --color-lp-beam: #8b7cff;
+  --color-lp-beam-hot: #c4b5fd;
+  --color-lp-ember: #e879f9;
+  --color-lp-on-glass: #14162b;
+  --color-lp-on-glass-dim: #6b7085;
+
+  --font-serif-accent: var(--font-instrument-serif), 'Times New Roman', serif;
+
+  --text-lp-display: 76px;
+  --text-lp-display--line-height: 86px;
+  --text-lp-display--letter-spacing: -0.03em;
+  --text-lp-display--font-weight: 600;
+  --text-lp-h2: 54px;
+  --text-lp-h2--line-height: 62px;
+  --text-lp-h2--letter-spacing: -0.025em;
+  --text-lp-h2--font-weight: 600;
+  --text-lp-h3: 24px;
+  --text-lp-h3--line-height: 32px;
+  --text-lp-h3--letter-spacing: -0.01em;
+  --text-lp-h3--font-weight: 600;
+  --text-lp-body-l: 19px;
+  --text-lp-body-l--line-height: 30px;
+  --text-lp-body-l--letter-spacing: 0px;
+  --text-lp-body-l--font-weight: 400;
+  --text-lp-body: 17px;
+  --text-lp-body--line-height: 27px;
+  --text-lp-body--letter-spacing: 0px;
+  --text-lp-body--font-weight: 400;
+  --text-lp-eyebrow: 15px;
+  --text-lp-eyebrow--line-height: 20px;
+  --text-lp-eyebrow--letter-spacing: 0px;
+  --text-lp-eyebrow--font-weight: 600;
+
+  --shadow-lp-tag: 0 6px 16px 0 rgba(59, 47, 201, 0.12);
+  --shadow-lp-field: 0 14px 36px 0 rgba(59, 47, 201, 0.3);
+  --shadow-lp-mock: 0 30px 60px 0 rgba(42, 31, 168, 0.25);
+  --shadow-lp-card: 0 12px 32px 0 rgba(20, 22, 43, 0.06);
 }

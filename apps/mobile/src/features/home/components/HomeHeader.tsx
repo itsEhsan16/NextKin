@@ -124,7 +124,8 @@ export function HomeHeader({
 }
 
 const useStyles = scaledSheet((_s, u) => ({
-  wrap: { paddingTop: u(8), paddingBottom: u(4), gap: u(16) },
+  // Less air above the greeting (owner, 2026-11-19, §239): 24 → 12 with the page's own top.
+  wrap: { paddingTop: u(4), paddingBottom: u(4), gap: u(16) },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   who: { flex: 1, gap: u(12), justifyContent: 'flex-start' },
   actions: { gap: u(10) },

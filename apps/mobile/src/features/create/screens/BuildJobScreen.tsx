@@ -33,6 +33,8 @@ import { OnboardingFrame } from '../components/OnboardingFrame';
 import { useBuildSourceUpload } from '../hooks/useBuildSourceUpload';
 import { useBuildActions } from '../hooks/useStartBuild';
 import { buildAddInput } from '../buildInput';
+import { ProgressButton } from '../flow/ProgressButton';
+import { stepName } from '../flow/ResumeSteps';
 
 export const BUILD_STEPS = 3;
 export const BUILD_JOB_TITLE = 'Which job is it for?';
@@ -81,6 +83,8 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
   const resumes = useResumes();
   const resumeId = useBuildSource();
   const pick = useBuildSourceStore((state) => state.pick);
+  const scratch = useBuildSourceStore((state) => state.scratch);
+  const pickScratch = useBuildSourceStore((state) => state.pickScratch);
   const reset = useBuildSourceStore((state) => state.reset);
   const [sourceOpen, setSourceOpen] = useState(false);
   const sourceUpload = useBuildSourceUpload();
@@ -208,6 +212,7 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
     <OnboardingFrame
       step={1}
       total={BUILD_STEPS}
+      stepName={stepName(1)}
       title={BUILD_JOB_TITLE}
       subtitle={LEDE}
       onBack={actions.goBack}
@@ -217,9 +222,11 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
             source={
               sourceUpload.reading
                 ? { kind: 'reading', fileName: sourceUpload.reading }
-                : picked
-                  ? { kind: 'resume', resume: picked }
-                  : { kind: 'profile', ...profileSource }
+                : scratch
+                  ? { kind: 'scratch' }
+                  : picked
+                    ? { kind: 'resume', resume: picked }
+                    : { kind: 'profile', ...profileSource }
             }
             onPress={() => setSourceOpen(true)}
           />
@@ -228,11 +235,10 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
       footer={
         input ? (
           <Animated.View entering={reduced ? undefined : FadeIn.duration(motion.durations.fast)}>
-            <Button
-              label={reading ? 'Reading the job…' : closedId ? 'Continue anyway' : 'Continue'}
-              size="xl"
-              block
-              loading={reading}
+            {/* The web's staged Continue (toreview §235): the pill fills while the job is read. */}
+            <ProgressButton
+              label={closedId ? 'Continue anyway' : 'Continue'}
+              working={reading}
               onPress={() => void readPasted()}
             />
           </Animated.View>
@@ -314,7 +320,9 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
           profile={profileSource}
           resumes={resumes.data}
           resumeId={picked ? picked.id : null}
+          scratch={scratch}
           onPick={pick}
+          onScratch={pickScratch}
           onUpload={() => void sourceUpload.upload()}
         />
       ) : null}

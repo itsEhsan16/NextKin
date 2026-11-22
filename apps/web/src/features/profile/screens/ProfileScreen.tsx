@@ -7,7 +7,6 @@ import { cn } from '@/lib/cn';
 import { replaceQuery } from '@/lib/replaceQuery';
 import { useReveal } from '@/lib/useReveal';
 import { PageHeader } from '@/navigation/PageHeader';
-import { ChevronRightIcon } from '@/ui/icons';
 import { pageFillMin, pageFrameInBar } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -78,19 +77,14 @@ export function ProfileScreen({ initialTab = 'overview' }: ProfileScreenProps) {
   return (
     <div className={cn(pageFrameInBar, 'flex flex-col gap-6 pb-10')}>
       <PageHeader
-        eyebrow={
-          <span className="flex items-center gap-1.5">
-            Profile
-            <ChevronRightIcon aria-hidden className="size-3.5" />
-          </span>
-        }
+        eyebrow="Profile"
         title="Your profile"
         subtitle="Showcase your skills, experience, and aspirations. A stronger profile leads to better opportunities."
       />
 
       <ProfileTabs active={tab} onChange={setTab} />
 
-      <div className="grid grid-cols-[minmax(0,1fr)_var(--spacing-aside-rail)] items-start gap-6">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_var(--spacing-aside-rail)]">
         {/* Keyed by tab: after the first switch, each tab fades in (`toreview.md` §84). */}
         <div
           key={tab}

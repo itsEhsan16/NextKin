@@ -2,25 +2,22 @@
 
 import type { Resume, ResumeSort } from '@nextkin/shared/models';
 import { queryPhase, useResumes } from '@nextkin/shared/queries';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 import { PageHeader } from '@/navigation/PageHeader';
 import { replaceQuery } from '@/lib/replaceQuery';
-import { Button } from '@/ui/Button';
-import { PlusIcon } from '@/ui/icons';
+import { CREATE_RESUME_EVENT } from '@/navigation/topBarEvents';
 import { pageFillInBar, pageFrameInBar } from '@/ui/pageFrame';
 import { PillTabs } from '@/ui/PillTabs';
 import { ResultsBar } from '@/ui/ResultsBar';
 import { StateView } from '@/ui/StateView';
-import { EmptyStateArt } from '@/ui/illustrations';
 
 import { CreateResumeDialog } from '../components/CreateResumeDialog';
 import { ResumeDetailPanel } from '../components/ResumeDetailPanel';
 import { ResumeFilterChipsRow } from '../components/ResumeFilterChipsRow';
 import { ResumeList } from '../components/ResumeList';
 import { ResumeSearchBar } from '../components/ResumeSearchBar';
-import { ResumesIllustration } from '../components/ResumesIllustration';
 import {
   EMPTY_RESUME_FILTERS,
   matchesResumeFilters,
@@ -43,7 +40,7 @@ const NONE: Resume[] = [];
  * than Jobs and Applications give their cards.
  *
  * The pills, chips and count sit over a list that is the page's one scroller. The right column
- * opens with "Create New Resume" and the character, then the selected document's card. The
+ * is the selected resume's card; "Create New Resume" is the top bar's action (toreview §254). The
  * library's search and sort head the list they narrow. The pills count what the chips and the search leave, so a
  * pill and the count under it always agree. Selection works as on the other lists: an explicit
  * pick while it is in view, otherwise the list's first row, derived during render.
@@ -91,7 +88,7 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
   const selected = visible.find((resume) => resume.id === selectedId) ?? visible[0];
   const detailStatus = listStatus === 'success' ? (selected ? 'success' : 'empty') : listStatus;
 
-  // "Clear filters" clears the chips and the search and keeps the group (RS-07).
+  // "Reset" clears the chips and the search and keeps the group (RS-07).
   const narrowed =
     search.trim() !== '' ||
     filters.variants.length > 0 ||
@@ -102,13 +99,17 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
     setFilters(EMPTY_RESUME_FILTERS);
     setSearch('');
   };
-  // A first visit has nothing to search or filter: one empty state, one way on (RS-11).
-  const firstRun = listStatus === 'success' && all.length === 0;
   // A list that never loaded is one error with one retry, not one per column.
   const failed = listStatus === 'error' && all.length === 0;
 
   // Four ways to a resume, and nothing is created until one is picked (toreview §124).
   const create = () => setCreating(true);
+  // The top bar's "Create New Resume" asks for the same dialog (toreview §254).
+  useEffect(() => {
+    const open = () => setCreating(true);
+    window.addEventListener(CREATE_RESUME_EVENT, open);
+    return () => window.removeEventListener(CREATE_RESUME_EVENT, open);
+  }, []);
 
   return (
     <div className={cn(pageFrameInBar, pageFillInBar, 'flex flex-col')}>
@@ -128,18 +129,8 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
             onAction={() => void resumes.refetch()}
           />
         </div>
-      ) : firstRun ? (
-        <div className="mt-6 flex flex-1 items-center justify-center">
-          <StateView
-            art={<EmptyStateArt object="palette" />}
-            title="No resumes yet"
-            message="Tailor one to a job, build one from your profile, upload the one you have, or start from a blank page."
-            actionLabel="Create your first resume"
-            onAction={create}
-          />
-        </div>
       ) : (
-        <div className="mt-6 grid min-h-0 flex-1 gap-6 md:grid-cols-[53fr_47fr]">
+        <div className="mt-4 grid min-h-0 flex-1 gap-6 md:grid-cols-[53fr_47fr]">
           <div className="flex min-h-0 min-w-0 flex-col gap-4">
             <ResumeSearchBar search={search} onSearchChange={setSearch} />
             <PillTabs
@@ -159,7 +150,7 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
             <ResultsBar
               count={listStatus === 'success' ? visible.length : undefined}
               loading={listStatus === 'pending'}
-              noun={{ one: 'resume found', other: 'resumes found' }}
+              noun={{ one: 'resume', other: 'resumes' }}
               sort={sort}
               sortOptions={RESUME_SORT_OPTIONS}
               onSortChange={setSort}
@@ -184,29 +175,9 @@ export function ResumesScreen({ initialId }: { initialId?: string } = {}) {
           </div>
 
           <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
-            {/* Where the board puts the character (307:4012): over the panel's top-left corner,
-              rising out of the header band, its feet a few px under the panel's top edge and
-              "Create New Resume" to its right. Anchored to this column, like the other pages'
-              art, so it holds its place at every width with the sidebar open or shut. Painted
-              first: the button row and the panel sit above it. */}
-            <ResumesIllustration className="absolute -left-1 -top-6" />
-
-            <div className="relative flex justify-end">
-              {/* The shared button, demoted beside the card's "Edit Resume" so the work area has one
-                primary (redesign R6a, audit RS-15). */}
-              <Button
-                variant="brand-secondary"
-                size="lg"
-                onClick={create}
-                aria-haspopup="dialog"
-                icon={<PlusIcon className="size-4" />}
-              >
-                Create New Resume
-              </Button>
-            </div>
-
+            {/* The panel starts level with the list, as on the other lists: the character moved
+              into its empty states and "Create New Resume" into the top bar (toreview §254). */}
             <ResumeDetailPanel
-              className="relative mt-4"
               resume={selected}
               status={detailStatus}
               hasAny={all.length > 0}

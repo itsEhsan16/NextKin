@@ -1,6 +1,15 @@
 'use client';
 
-import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogCloseButton,
+  DialogDescription,
+  DialogTitle,
+  dialogFooter,
+  dialogLine,
+  dialogTitle,
+} from '@/ui/Dialog';
 import type { Resume } from '@nextkin/shared/models';
 import type { QueryPhase } from '@nextkin/shared/queries';
 import type { Route } from 'next';
@@ -68,15 +77,14 @@ export function TailorResumeDialog({
       size="lg"
       className="max-h-[min(640px,calc(100dvh-2rem))]"
     >
-      <div className="px-7 pb-4 pt-7">
-        <DialogTitle className="text-h2 font-bold text-text-primary">
-          Which resume should we tailor?
-        </DialogTitle>
-        <DialogDescription className="mt-1 text-body-l text-text-secondary">
+      <div className="px-7 pb-4 pr-16 pt-7">
+        <DialogTitle className={dialogTitle}>Which resume should we tailor?</DialogTitle>
+        <DialogDescription className={cn(dialogLine, 'mt-1')}>
           For {target.title}
           {target.company ? ` · ${target.company}` : ''}. Your original stays as it is.
         </DialogDescription>
       </div>
+      <DialogCloseButton />
       {/* The content mounts with each opening, so the pick starts from the resume in use. */}
       <DialogBody
         resumes={resumes}
@@ -107,7 +115,7 @@ function DialogBody({
   const setPicked = setChoice;
   return (
     <>
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-5">
         {phase === 'pending' ? (
           <div role="status" aria-label="Loading your resumes" className="flex flex-col gap-2">
             <Skeleton className="h-14 w-full rounded-md" />
@@ -191,7 +199,7 @@ function DialogBody({
         {upload && <div className="mt-3">{upload(setPicked)}</div>}
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border-default px-5 py-4">
+      <div className={dialogFooter}>
         <p className="mr-auto text-body-m text-text-tertiary">
           We compare again with the one you pick.
         </p>

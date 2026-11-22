@@ -37,6 +37,29 @@ describe('TopBar', () => {
     expect(screen.queryByRole('link', { name: 'Back to Jobs' })).not.toBeInTheDocument();
   });
 
+  it('steps aside on every create flow from tablet width up, and stays elsewhere (owner, 2026-11-17; §256)', () => {
+    for (const path of [
+      '/create/build',
+      '/create/ats-check',
+      '/create/cover-letter',
+      '/create/zero-resume',
+      '/jobs/job_google/tailor',
+      '/jd/jd_1/tailor',
+    ]) {
+      onPage(path);
+      const { container, unmount } = renderWithQuery(<TopBar />);
+      // Hidden from 768 up; below it the bar keeps the menu button that opens the sidebar.
+      expect(container.querySelector('header')).toHaveClass('md:hidden');
+      unmount();
+    }
+    for (const path of ['/', '/jobs', '/jobs/job_google', '/resumes']) {
+      onPage(path);
+      const { container, unmount } = renderWithQuery(<TopBar />);
+      expect(container.querySelector('header')).not.toHaveClass('md:hidden');
+      unmount();
+    }
+  });
+
   it('opens the account menu from the avatar: who is signed in, Profile, Settings, Sign out (§164)', async () => {
     const user = userEvent.setup();
     onPage('/');

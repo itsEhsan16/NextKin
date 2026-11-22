@@ -2,7 +2,7 @@
 
 import type { ApplicationStatus, ApplicationWithJob } from '@nextkin/shared/models';
 import { queryPhase, useApplications, useUpdateApplicationStatus } from '@nextkin/shared/queries';
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 import { showToast } from '@/lib/toast';
@@ -10,6 +10,7 @@ import { PageHeader } from '@/navigation/PageHeader';
 import { pageFillInBar, pageFrameInBar } from '@/ui/pageFrame';
 import { PillTabs } from '@/ui/PillTabs';
 import { ResultsBar } from '@/ui/ResultsBar';
+import { SearchField } from '@/ui/SearchField';
 import { StateView } from '@/ui/StateView';
 
 import {
@@ -49,14 +50,25 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
   const [filters, setFilters] = useState<ApplicationFilters>(EMPTY_APPLICATION_FILTERS);
   const [sort, setSort] = useState<ApplicationSort>('recent');
   const [selectedId, setSelectedId] = useState<string | undefined>(initialId);
+  // The list's search, as on the other lists (toreview §254): over the role, company and place.
+  const [search, setSearch] = useState('');
+  const query = useDeferredValue(search).trim().toLowerCase();
 
   const applications = useApplications();
   const updateStatus = useUpdateApplicationStatus();
 
   const all = applications.data ?? NONE;
   const filtered = useMemo(
-    () => all.filter((row) => matchesApplicationFilters(row, filters)),
-    [all, filters],
+    () =>
+      all.filter(
+        (row) =>
+          matchesApplicationFilters(row, filters) &&
+          (query === '' ||
+            [row.job.title, row.job.company, row.job.location].some((field) =>
+              field.toLowerCase().includes(query),
+            )),
+      ),
+    [all, filters, query],
   );
   const counts = useMemo(() => countByTab(filtered), [filtered]);
   const visible = useMemo(
@@ -71,8 +83,17 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
 
   const reset = () => {
     setFilters(EMPTY_APPLICATION_FILTERS);
+    setSearch('');
     setTab('all');
   };
+  const narrowed =
+    search.trim() !== '' ||
+    tab !== 'all' ||
+    filters.appliedWithin != null ||
+    filters.employmentTypes.length > 0 ||
+    filters.companies.length > 0 ||
+    filters.locations.length > 0 ||
+    filters.remote.length > 0;
 
   // Where it moved, with the way back; a failure says so and the badge goes back (AP-08).
   const changeStatus = (row: ApplicationWithJob, status: ApplicationStatus) => {
@@ -114,8 +135,15 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
           />
         </div>
       ) : (
-        <div className="mt-4 grid min-h-0 flex-1 grid-cols-[56fr_44fr] gap-6">
+        <div className="mt-4 grid min-h-0 flex-1 gap-6 md:grid-cols-[56fr_44fr]">
           <div className="flex min-h-0 min-w-0 flex-col gap-4">
+            <SearchField
+              value={search}
+              onChange={setSearch}
+              placeholder="Search applications…"
+              label="Search applications"
+              className="w-full flex-none"
+            />
             <PillTabs
               tabs={STAGE_TABS}
               active={tab}
@@ -128,6 +156,7 @@ export function ApplicationsScreen({ initialId }: { initialId?: string } = {}) {
               filters={filters}
               onChange={(patch) => setFilters((current) => ({ ...current, ...patch }))}
               onReset={reset}
+              active={narrowed}
               rows={all}
             />
             <ResultsBar

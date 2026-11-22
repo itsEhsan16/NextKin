@@ -78,10 +78,6 @@ export function EnhanceStep({
             </h1>
             <EnhanceHeader job={job} resume={resume} onChangeResume={onChangeResume} />
             <RaiseScorePanel comparison={comparison} choices={choices} />
-            <p className="flex items-start gap-2 text-body-s font-medium text-text-tertiary">
-              <ShieldTick aria-hidden className="mt-px size-4 shrink-0" />
-              {NEVER_ADDS_SKILLS}
-            </p>
           </div>
           <EnhanceAside
             job={job}
@@ -92,6 +88,11 @@ export function EnhanceStep({
             projected={projected}
           />
         </div>
+        {/* The promise closes the card, across both columns (owner, toreview §230). */}
+        <p className="mt-auto flex items-start gap-2 border-t border-border-subtle pt-5 text-body-s font-medium text-text-tertiary">
+          <ShieldTick aria-hidden className="mt-px size-4 shrink-0" />
+          {NEVER_ADDS_SKILLS}
+        </p>
       </section>
 
       <FlowFooter note={allowanceNote} noteIcon={false}>
@@ -105,9 +106,10 @@ export function EnhanceStep({
           disabled={spent || choices.fixes.size === 0}
           loading={pending}
           busyLabel="Starting…"
+          // A plain string label, so "Starting…" shows while it starts (it never did, §256).
+          trailingIcon={<ArrowRight aria-hidden className={iconSize.sm} />}
         >
           {ticked > 0 ? `Add ${ticked} keyword${ticked === 1 ? '' : 's'} & continue` : 'Continue'}
-          {!pending && <ArrowRight aria-hidden className={iconSize.sm} />}
         </Button>
       </FlowFooter>
     </div>

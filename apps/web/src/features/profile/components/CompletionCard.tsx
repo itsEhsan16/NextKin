@@ -8,7 +8,7 @@ import { completionItems } from '@/features/account/accountLibrary';
 import { cardPad, cardSurface } from '@/ui/Card';
 
 import type { ProfileTab } from '../profileLibrary';
-import { BUTTON_VARIANT } from '@/ui/buttonStyles';
+import { BUTTON_SIZE, BUTTON_VARIANT } from '@/ui/buttonStyles';
 
 /** Where each checklist item is filled in. */
 const ITEM_TAB: Record<string, ProfileTab> = {
@@ -88,10 +88,7 @@ export function CompletionCard({
 
       <button
         type="button"
-        className={cn(
-          BUTTON_VARIANT.primary,
-          'mt-6 h-control-lg w-full gap-2 rounded-md text-body-m font-semibold',
-        )}
+        className={cn(BUTTON_VARIANT.primary, BUTTON_SIZE.lg, 'mt-6 w-full')}
         onClick={() => {
           const next = items.find((item) => !item.done);
           onOpenTab(next ? (ITEM_TAB[next.label] ?? 'overview') : 'overview');

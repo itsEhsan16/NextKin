@@ -27,6 +27,8 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
   }),
   Link: ({ children }: PropsWithChildren) => children,
+  // The unsaved-edits guard (useUnsavedGuard): back is driven by the chevron in these tests.
+  usePreventRemove: () => () => {},
 }));
 
 // Partial mock: the screens use `useReducedMotion`, `a11yButton` and `formatMonthYear` from the

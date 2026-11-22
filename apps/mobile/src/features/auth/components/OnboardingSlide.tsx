@@ -75,6 +75,8 @@ export function OnboardingSlide({
             accessibilityRole="button"
             accessibilityLabel="Skip"
             accessibilityHint="Goes straight to creating an account"
+            // The word is about 21dp tall: the slop makes it a full-size target.
+            hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
             onPress={onSkip}
           >
             <Text variant="bodyLg" color="textTertiary">

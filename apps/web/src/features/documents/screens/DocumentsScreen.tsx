@@ -13,7 +13,6 @@ import { StateView } from '@/ui/StateView';
 
 import { DocumentDetailPanel } from '../components/DocumentDetailPanel';
 import { DocumentList } from '../components/DocumentList';
-import { DocumentsIllustration } from '../components/DocumentsIllustration';
 import { DocumentsToolbar } from '../components/DocumentsToolbar';
 import {
   countByTab,
@@ -135,15 +134,8 @@ export function DocumentsScreen() {
           </div>
 
           <div className="relative flex min-h-0 min-w-0 flex-col pb-5">
-            {/* Where the board puts the character (304:683): over the card's top-left corner, rising
-              out of the header band with its feet 8px under the card's top edge, the caption to its
-              right. The card starts 36px down this column to give it that room. Anchored to the
-              column, like the other pages' art, so it holds at every width with the sidebar open
-              or shut. Painted first: the card sits above it. */}
-            <DocumentsIllustration className="absolute -left-1 -top-12" />
-
+            {/* The folder art lives in the preview's empty states now (owner, toreview §253). */}
             <DocumentDetailPanel
-              className="relative mt-9"
               document={selected}
               status={detailStatus}
               hasAny={all.length > 0}
