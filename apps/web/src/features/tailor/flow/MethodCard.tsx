@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 
 import { Radio } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
-import { textLink } from '@/ui/textLink';
+import { changeLink } from '@/ui/textLink';
 
 import { METHOD_ART, METHOD_TITLE, type Method } from './methods';
 
@@ -92,7 +92,7 @@ export function Selection({
 }) {
   const edit = {
     'aria-label': `Edit ${label.toLowerCase()}`,
-    className: cn(textLink, 'shrink-0 text-body-m'),
+    className: changeLink,
   };
   return (
     <div className="flex items-center gap-3.5 rounded-lg border border-border-subtle px-4 py-3.5">

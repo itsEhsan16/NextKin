@@ -1,14 +1,21 @@
 'use client';
 
-import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import {
+  Dialog,
+  DialogCloseButton,
+  DialogDescription,
+  DialogTitle,
+  dialogBody,
+  dialogFooter,
+  dialogLine,
+  dialogTitle,
+} from '@/ui/Dialog';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
 import { primaryButton } from '@/features/create/jobFlow/FlowChrome';
-import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
-import { iconButton } from '@/ui/iconButton';
-import { ArrowRight, XClose } from '@/ui/lineIcons';
+import { ArrowRight } from '@/ui/lineIcons';
 import { StableLabel } from '@/ui/StableLabel';
 
 /** A tinted row inside the popup: an icon tile, two lines and an action on the right. */
@@ -44,7 +51,7 @@ export function DialogFact({
  * The popup each way to start opens (owner mockup 2026-11-02, toreview §151): its picture, title
  * and line, one fact or field, then Cancel and the way forward. The ticked "what it does" list
  * went (owner, toreview §223); the upload popup has no buttons either (a dropped file is read at
- * once, toreview §221).
+ * once, toreview §221). Its body, × and button row are every dialog's (`ui/Dialog`, §257).
  */
 export function MethodDialog({
   open,
@@ -73,37 +80,28 @@ export function MethodDialog({
   busyLabel?: string;
 }) {
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => !next && !busy && onClose()}
-      size="lg"
-      className="gap-5 overflow-y-auto p-7"
-    >
-      <div className="flex items-start gap-5 pr-8">
-        <Image
-          src={art}
-          alt=""
-          width={250}
-          height={168}
-          className="h-auto w-30 shrink-0 object-contain"
-        />
-        <div className="flex min-w-0 flex-col gap-1.5 pt-2">
-          <DialogTitle className="text-h2 font-bold text-text-primary">{title}</DialogTitle>
-          <DialogDescription className="text-body-l text-text-secondary">{line}</DialogDescription>
+    <Dialog open={open} onOpenChange={(next) => !next && !busy && onClose()} size="lg">
+      <div className={dialogBody}>
+        <div className="flex items-start gap-5 pr-12">
+          <Image
+            src={art}
+            alt=""
+            width={250}
+            height={168}
+            className="h-auto w-30 shrink-0 object-contain"
+          />
+          <div className="flex min-w-0 flex-col gap-1.5 pt-2">
+            <DialogTitle className={dialogTitle}>{title}</DialogTitle>
+            <DialogDescription className={dialogLine}>{line}</DialogDescription>
+          </div>
         </div>
+        {/* The rest of the body keeps the popup's own 20px rhythm under its head. */}
+        {children && <div className="mt-2 flex flex-col gap-5">{children}</div>}
       </div>
-      <DialogClose
-        aria-label="Close"
-        disabled={busy}
-        className={cn(iconButton, 'absolute right-5 top-5 size-9 rounded-md')}
-      >
-        <XClose aria-hidden className="size-5 text-text-secondary" />
-      </DialogClose>
-
-      {children}
+      {!busy && <DialogCloseButton />}
 
       {confirmLabel && onConfirm && (
-        <div className="flex flex-wrap justify-end gap-3">
+        <div className={dialogFooter}>
           <button
             type="button"
             disabled={busy}

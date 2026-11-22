@@ -11,6 +11,7 @@ import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
 import { PAGE_HEIGHT, PAGE_WIDTH, ResumePage } from './ResumePage';
+import { Callout } from '@/ui/Callout';
 
 /**
  * The right half of the editor (toreview §124; EDIT 01, 866:392). "Live preview" redraws the page on every keystroke and
@@ -113,25 +114,25 @@ function PdfPages({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
       {(saving || data?.status === 'pending') && (
-        <p className="mb-3 rounded-md bg-surface-brand px-3 py-2 text-body-s text-text-brand">
+        // The app's one note look (`Callout`, toreview §257).
+        <Callout tone="info" className="mb-3">
           {saving
             ? 'Saving your latest changes — the typeset pages follow.'
             : 'Typesetting your latest save…'}
-        </p>
+        </Callout>
       )}
       {data?.status === 'failed' && (
-        <p
-          role="alert"
-          className="mb-3 rounded-md bg-warning-50 px-3 py-2 text-body-s text-warning-text"
-        >
-          We couldn’t typeset this version. The live view is still accurate; try again after your
-          next change.
-        </p>
+        <div role="alert" className="mb-3">
+          <Callout tone="warning">
+            We couldn’t typeset this version. The live view is still accurate; try again after your
+            next change.
+          </Callout>
+        </div>
       )}
       {data?.status === 'structured' && (
-        <p className="mb-3 rounded-md bg-warning-50 px-3 py-2 text-body-s text-warning-text">
+        <Callout tone="warning" className="mb-3">
           This resume has guesses to check first, so there are no typeset pages yet.
-        </p>
+        </Callout>
       )}
       {data && data.pages.length > 0 ? (
         <div className="mx-auto max-w-reading">

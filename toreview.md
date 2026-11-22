@@ -18682,3 +18682,51 @@ The owner asked for the whole web app to be made consistent. Three read-only sur
   - Interview Prep sits in the page column with a 30px title.
   - Cover letter and Zero show no step label with the top bar stepped aside, and Zero's "Write my first draft" is ink.
   - Not seen: the 1024 width, the stalled and failed states, and each result screen with real data.
+
+## §257 — Consistency pass, phase 5: popups, "Change", notes and the drop zone (owner, 2026-11-22)
+The owner said yes to the follow-ups listed in §256.
+
+### Popups
+One inside for every popup, from shared parts in `ui/Dialog.tsx`:
+- `dialogBody`: 28px in from the sides and top.
+- `dialogTitle` and `dialogLine`.
+- `dialogFooter`: the button row, under a rule, 28px in, buttons right, an optional note on the left.
+- `DialogCloseButton`: a 36px × set 20px into the top-right corner, on every popup that isn't a yes-or-no question.
+
+Moved onto these parts: the four method popups, "Which resume should we tailor?", "Where did you use …?" and "Add the result", the editor's "A few things before you download", Create a resume, AI consent, the profile-sync question, the accuracy question, Verify email and `ConfirmDialog`.
+
+What they drew before:
+- side padding of 20, 24, 26 or 28px;
+- button rows with or without a rule, and 10 or 12px between buttons;
+- three different ×: an absolute 36px square, an inline icon button, and a bordered round one.
+
+"Which resume should we tailor?" had no × at all and now has one. The editor's warning drops its tinted tile for the bare icon beside the title, as the owner set for the tailor dialogs (2026-11-15). `ConfirmDialog` keeps its red bin tile (RES 04's board).
+
+### "Change"
+One look (`changeLink` in `ui/textLink.ts`): the brand text link the method popups and cards already used. Before: a bordered small button on the keyword step's resume row, and a round outlined pill on Cover letter's chosen job and resume.
+
+### Notes
+The editor's one-line notes and the JD page's "doesn't name the job title" are now `Callout`s; they were five hand-made tinted boxes:
+- typesetting;
+- typeset failed;
+- guesses to check;
+- download blocked in the letter editor (it was also `rounded-xl` with a border);
+- Zero's guessed role.
+
+### One drop zone
+The owner's §221 zone (read on drop, the flowing ring, the fill and stages, "Try another file") is now its own component, `features/create/components/ResumeDropArea.tsx`. Tailor's upload popup and Create a resume's upload (`DropZone`) both use it. Create a resume's zone used to show a spinner, an "Upload a file" button and "Saved to Resumes and picked".
+
+### Not changed, on purpose
+- ATS check's upload: a large hero with its own picture, a file summary and "Replace", from its board.
+- The one-line "Upload another resume" rows.
+- Onboarding's drop zone, which has its own board.
+- Settings' brand-tinted notes (from the Settings board; `Callout`'s tip tint and lightbulb would change them).
+- The JD page's "Worth knowing" section (a heading and a list, not a note).
+- The job step's tip line (the owner set it in §220).
+- The method step's "What happens next?" (the owner's connected steps, §228).
+
+### Verified
+- In the browser (mock), the upload popup's body pads 28/28/20 and its × is 36px, 20px from the corner, with the shared zone inside.
+- "Create from my profile" has its button row 28px in, under a rule.
+- The dialog suites passed (165); see the full-suite line under this entry.
+- **Full suite:** 956 tests pass (102 suites); the arbitrary-value ratchet is lowered to 422. Typecheck and lint are clean.

@@ -1,7 +1,14 @@
 'use client';
 
 import { useCurrentUser } from '@nextkin/shared/queries';
-import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogDescription,
+  DialogTitle,
+  dialogBody,
+  dialogFooter,
+} from '@/ui/Dialog';
 import { useState } from 'react';
 
 import { auth } from '@/lib/dataSource';
@@ -39,7 +46,7 @@ export function VerifyEmailDialog({
   };
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()} size="md">
-      <div className="flex flex-col gap-3 px-5 pb-4 pt-5">
+      <div className={dialogBody}>
         <span
           aria-hidden
           className="flex size-11 items-center justify-center rounded-md bg-brand-50 text-text-brand"
@@ -79,7 +86,7 @@ export function VerifyEmailDialog({
           </p>
         )}
       </div>
-      <div className="flex justify-end gap-2.5 border-t border-border-default px-4 py-3.5">
+      <div className={dialogFooter}>
         <DialogClose className={buttonClass({ variant: 'secondary', size: 'lg' })}>
           Close
         </DialogClose>

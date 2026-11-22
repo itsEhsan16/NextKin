@@ -21,6 +21,7 @@ import {
   upgradeButton,
 } from '../jobFlow/FlowChrome';
 import { DocTile, Radio, rowSurface } from '../jobFlow/FlowRows';
+import { changeLink } from '@/ui/textLink';
 
 /** COVER 01's tones (862:225): what each sounds like, in a line, and a sample of it. */
 export const TONE_COPY: Record<
@@ -70,11 +71,7 @@ function BuiltFromRow({
         <p className="text-caption-m text-text-tertiary">{label}</p>
         <p className="truncate text-title-l font-bold text-text-primary">{title}</p>
       </div>
-      <Link
-        href={change}
-        aria-label={`Change ${label.toLowerCase()}`}
-        className="flex h-8 items-center rounded-full border border-border-default bg-surface-card px-3.5 text-body-s font-semibold text-text-primary transition-colors duration-fast ease-standard hover:border-border-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-      >
+      <Link href={change} aria-label={`Change ${label.toLowerCase()}`} className={changeLink}>
         Change
       </Link>
     </div>

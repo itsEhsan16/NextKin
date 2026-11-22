@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import { Dialog, DialogDescription, DialogTitle, dialogBody, dialogFooter } from '@/ui/Dialog';
 import type { ReactNode } from 'react';
 
 import { TrashIcon } from '@/ui/icons';
@@ -40,7 +40,7 @@ export function ConfirmDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && !busy && onCancel()} size="sm">
-      <div className="flex flex-col gap-3 px-7 pb-4 pt-7">
+      <div className={dialogBody}>
         {tone === 'danger' && (
           <span
             aria-hidden
@@ -53,7 +53,7 @@ export function ConfirmDialog({
         <DialogDescription className="text-body-l text-text-secondary">{message}</DialogDescription>
         {children}
       </div>
-      <div className="flex flex-wrap justify-end gap-3 px-7 pb-7 pt-3">
+      <div className={dialogFooter}>
         <Button autoFocus variant="secondary" size="lg" disabled={busy} onClick={onCancel}>
           {cancelLabel}
         </Button>
