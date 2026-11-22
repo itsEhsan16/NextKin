@@ -295,10 +295,33 @@ const REFUSED: [RegExp, string][] = [
 
 /**
  * Why a run did not start, as a line for the user. A refused request (400) says which part was
- * refused; anything else is the plain retry line. Never the server's own wording.
+ * refused; a spent allowance, a busy service, a rate limit, a slow answer and a lost connection
+ * each say so, since "Try again" is the wrong advice for most of them. Never the server's own
+ * wording, except a plan limit's, which names the limit.
  */
 export function startErrorLine(error: unknown, fallback = 'We couldn’t start tailoring. Try again.'): string {
-  const e = error as { code?: unknown; details?: unknown } | null;
+  const e = error as { code?: unknown; details?: unknown; status?: unknown; message?: unknown } | null;
+  switch (e?.code) {
+    case 'PLAN_LOCKED':
+      // The server's message names the limit; the mock's stand-in ("x" needs NextKin Pro) does not.
+      return typeof e.message === 'string' && e.message && !/^".*" needs NextKin Pro$/.test(e.message)
+        ? e.message
+        : 'You’ve used this month’s runs on your plan. Upgrade, or wait for it to reset.';
+    case 'CONSENT_REQUIRED':
+      return 'Agree to how NextKin uses AI, then try again.';
+    case 'RATE_LIMITED':
+      return 'That’s a lot of runs in a short time. Wait a minute, then try again.';
+    case 'UNAVAILABLE':
+      return 'NextKin is busy right now. Try again in a minute.';
+    case 'INTERNAL':
+      return 'Something went wrong on our side. Try again; tell us if it keeps happening.';
+    case 'CONFLICT':
+      return 'The job description is still being read. Wait a moment, then try again.';
+    case 'NETWORK':
+      return typeof e.message === 'string' && /too long/.test(e.message)
+        ? 'NextKin took too long to answer. Check Generations before trying again: it may have started.'
+        : 'We couldn’t reach NextKin. Check your connection and try again.';
+  }
   if (e?.code !== 'VALIDATION_FAILED' || !Array.isArray(e.details)) return fallback;
   const paths = e.details.flatMap((d) => (typeof (d as { path?: unknown })?.path === 'string' ? [(d as { path: string }).path] : []));
   for (const [pattern, line] of REFUSED) if (paths.some((path) => pattern.test(path))) return line;

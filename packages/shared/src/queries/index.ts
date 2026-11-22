@@ -70,11 +70,14 @@ export {
 export { useDocuments } from './useDocuments';
 export { STALL_FAIL_MS, STALL_SLOW_MS, useStall, type Stall } from './useStall';
 export {
+  restartGenerationWatch,
   useCancelGeneration,
   useGeneration,
   useGenerations,
+  useGenerationWatchProblem,
   useRetryGeneration,
   useStartGeneration,
+  type GenerationWatchProblem,
 } from './useGenerations';
 export {
   useInterviewSet,

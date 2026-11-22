@@ -6,6 +6,7 @@ import { generationResultSchema, generationSchema, type GenerationRequest, type 
 import { jdDraftSchema } from '../../schemas/jd';
 import type { AdoptedDocument } from '../adopt';
 import type { GenerationsRepo } from '../types';
+import { NotFoundError } from '../state';
 import { ApiError, type HttpClient } from './client';
 import { isServerId } from './jdRepo';
 import { fetchDocument } from './serverDocs';
@@ -76,6 +77,10 @@ export function createHttpGenerationsRepo(
   options: { everyMs?: number; strict?: boolean } = {},
 ): GenerationsRepo {
   const adopted = new Set<string>();
+  // A start that got no answer (a timeout, a dropped connection) may have started on the server.
+  // Pressing again with the same choices reuses its idempotency key, so the server hands back that
+  // run instead of making, and charging for, a second one.
+  const unanswered = new Map<string, { key: string; at: number }>();
   const finish = async (generation: Generation) => {
     if (generation.status !== 'ready' || adopted.has(generation.id) || generation.kind === 'interview') return;
     const result = generationResultSchema.parse(await http.request(`/generations/${generation.id}/result`));
@@ -109,7 +114,18 @@ export function createHttpGenerationsRepo(
       const body: GenerationRequest = { ...rest, ...(tailor ? { tailoring: toTailoring(tailor) } : {}) };
       // A listing the server serves: its JD first (made from the listing, no model call), then the run.
       if (body.jobId && !body.jdId) body.jdId = (jdDraftSchema.parse(await http.request('/jd', { body: { source: 'job', jobId: body.jobId } })) as { id: string }).id;
-      return parse(await http.request('/generations', { body, idempotencyKey: uuid() }));
+      const signature = JSON.stringify(body);
+      const earlier = unanswered.get(signature);
+      const key = earlier && Date.now() - earlier.at < UNANSWERED_REUSE_MS ? earlier.key : uuid();
+      try {
+        const started = parse(await http.request('/generations', { body, idempotencyKey: key }));
+        unanswered.delete(signature);
+        return started;
+      } catch (error) {
+        if (error instanceof ApiError && error.code === 'NETWORK') unanswered.set(signature, { key, at: earlier?.key === key ? earlier.at : Date.now() });
+        else unanswered.delete(signature);
+        throw error;
+      }
     },
     async retry(id) {
       return isServerId(id) ? parse(await http.request(`/generations/${id}/retry`, { method: 'POST' })) : mock.retry(id);
@@ -117,23 +133,48 @@ export function createHttpGenerationsRepo(
     async cancel(id) {
       return isServerId(id) ? parse(await http.request(`/generations/${id}/cancel`, { method: 'POST' })) : mock.cancel(id);
     },
-    subscribe(id, onChange) {
+    subscribe(id, onChange, onError) {
       if (!isServerId(id)) return mock.subscribe(id, onChange);
       let stopped = false;
+      const every = options.everyMs ?? 1000;
       const tick = async () => {
+        let failures = 0;
+        let failingSince = 0;
+        let reported = false;
         while (!stopped) {
-          await whileAway(() => stopped, options.everyMs ?? 1000);
+          await whileAway(() => stopped, every);
           if (stopped) return;
+          let generation: Generation;
           try {
-            const generation = parse(await http.request(`/generations/${id}`));
-            if (generation.status === 'ready') await finish(generation);
-            if (stopped) return;
-            onChange(generation);
-            if (generation.status === 'ready' || generation.status === 'failed') return;
-          } catch {
-            // A dropped poll is retried on the next tick; the run itself is unaffected.
+            generation = parse(await http.request(`/generations/${id}`));
+          } catch (error) {
+            // A run that is gone, not this user's, or in a shape this build can't read will not
+            // come right by asking again: say so and stop, instead of polling for ever in silence.
+            if (isPermanentPollError(error)) {
+              onError?.({ permanent: true, error });
+              return;
+            }
+            // A dropped poll is retried with a growing wait; after a minute of them, the screen hears.
+            failures++;
+            failingSince ||= Date.now();
+            if (!reported && Date.now() - failingSince >= POLL_PATIENCE_MS) {
+              reported = true;
+              onError?.({ permanent: false, error });
+            }
+            await new Promise((resolve) => setTimeout(resolve, every * BACKOFF[Math.min(failures, BACKOFF.length) - 1]!));
+            continue;
           }
-          await new Promise((resolve) => setTimeout(resolve, options.everyMs ?? 1000));
+          failures = 0;
+          failingSince = 0;
+          reported = false;
+          // The document is copied in before the final tick, so the ready screen opens it at once.
+          // If that copy fails the run is still ready: the screen loads the document itself, and is
+          // never left at its last percentage waiting on a copy that keeps failing.
+          if (generation.status === 'ready') await finish(generation).catch(() => finish(generation)).catch(() => {});
+          if (stopped) return;
+          onChange(generation);
+          if (generation.status === 'ready' || generation.status === 'failed') return;
+          await new Promise((resolve) => setTimeout(resolve, every));
         }
       };
       void tick();
@@ -142,6 +183,22 @@ export function createHttpGenerationsRepo(
       };
     },
   };
+}
+
+/** How long a start that got no answer keeps its key for the next press with the same choices. */
+const UNANSWERED_REUSE_MS = 10 * 60_000;
+
+/** Waits between failed polls, as multiples of the tick: 1, 2, 5, then 10 for as long as it lasts. */
+const BACKOFF = [1, 2, 5, 10];
+/** How long polls may keep failing before the screen is told. */
+export const POLL_PATIENCE_MS = 60_000;
+
+/** A poll error that asking again won't fix: the run is gone or forbidden, or its shape unreadable. */
+export function isPermanentPollError(error: unknown): boolean {
+  if (error instanceof NotFoundError) return true;
+  if (error instanceof Error && error.name === 'ZodError') return true;
+  if (error instanceof ApiError) return error.status === 403 || error.status === 404 || error.status === 410;
+  return false;
 }
 
 /**

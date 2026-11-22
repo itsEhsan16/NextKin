@@ -75,6 +75,31 @@ export function useGeneration(id: string) {
  */
 const watches = new WeakMap<QueryClient, Map<string, { holders: number; stop: () => void }>>();
 
+/** What a screen shows when a run's progress can't be read: whether polling has given up, and why. */
+export type GenerationWatchProblem = { permanent: boolean; message: string };
+
+function subscribeTo(queryClient: QueryClient, id: string): () => void {
+  return repos.generations.subscribe(
+    id,
+    (generation) => {
+      queryClient.setQueryData(qk.generations.watchProblem(id), null);
+      queryClient.setQueryData(qk.generations.detail(id), generation);
+      queryClient.setQueryData(qk.generations.active(), generation);
+      if (isGenerationTerminal(generation.status)) sweepFinishEffects(queryClient, generation);
+    },
+    ({ permanent, error }) => {
+      const missing = (error as { code?: unknown } | null)?.code === 'NOT_FOUND';
+      const message = missing
+        ? 'This run has finished or was removed.'
+        : permanent
+          ? 'We can’t show this run’s progress.'
+          : 'We can’t reach NextKin to check on this run. It keeps going while we try again.';
+      const problem: GenerationWatchProblem = { permanent, message };
+      queryClient.setQueryData(qk.generations.watchProblem(id), () => problem);
+    },
+  );
+}
+
 export function watchGeneration(queryClient: QueryClient, id: string): () => void {
   let byId = watches.get(queryClient);
   if (!byId) {
@@ -85,12 +110,7 @@ export function watchGeneration(queryClient: QueryClient, id: string): () => voi
   if (existing) {
     existing.holders += 1;
   } else {
-    const stop = repos.generations.subscribe(id, (generation) => {
-      queryClient.setQueryData(qk.generations.detail(id), generation);
-      queryClient.setQueryData(qk.generations.active(), generation);
-      if (isGenerationTerminal(generation.status)) sweepFinishEffects(queryClient, generation);
-    });
-    byId.set(id, { holders: 1, stop });
+    byId.set(id, { holders: 1, stop: subscribeTo(queryClient, id) });
   }
   const map = byId;
   return () => {
@@ -101,6 +121,35 @@ export function watchGeneration(queryClient: QueryClient, id: string): () => voi
     watch.stop();
     map.delete(id);
   };
+}
+
+/**
+ * Starts a run's live watch again: "Check again" after its poll gave up or kept failing. The
+ * screens holding the watch keep holding it; only the poll underneath is replaced.
+ */
+export function restartGenerationWatch(queryClient: QueryClient, id: string): void {
+  queryClient.setQueryData(qk.generations.watchProblem(id), null);
+  void queryClient.invalidateQueries({ queryKey: qk.generations.detail(id) });
+  const watch = watches.get(queryClient)?.get(id);
+  if (!watch) return;
+  watch.stop();
+  watch.stop = subscribeTo(queryClient, id);
+}
+
+/**
+ * Why a run's progress can't be read, or null, with the "Check again" that starts the poll again.
+ * Read beside `useGeneration` on a run's own screen.
+ */
+export function useGenerationWatchProblem(id: string): { problem: GenerationWatchProblem | null; restart: () => void } {
+  const queryClient = useQueryClient();
+  const { data } = useQuery<GenerationWatchProblem | null>({
+    queryKey: qk.generations.watchProblem(id),
+    queryFn: () => null,
+    enabled: false,
+    initialData: null,
+    staleTime: Infinity,
+  });
+  return { problem: data ?? null, restart: () => restartGenerationWatch(queryClient, id) };
 }
 
 /**
