@@ -2,11 +2,13 @@
 
 import { ZERO_YEARS, ZERO_YEARS_LABEL, type ZeroYears } from '@nextkin/shared/models';
 import {
+  isConsentRequired,
   useCurrentUser,
   useJob,
   useStartGeneration,
   useSubscription,
 } from '@nextkin/shared/queries';
+import { startErrorLine } from '@nextkin/shared/tailor/customize';
 import type { Route } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -121,12 +123,14 @@ export function ZeroSetup({
     );
   };
 
-  const note = start.isError
-    ? START_FAILED
-    : allowance.spent
-      ? allowanceNote(allowance, 'generation', 'generations')
-      : // What is true (CR-43): the draft is kept in Resumes; the download waits on the check.
-        'Your draft is kept in Resumes. You can download it once every guess is checked.';
+  // Consent has its own dialog, so its refusal adds no note; every other refusal says what it was.
+  const note =
+    start.isError && !isConsentRequired(start.error)
+      ? startErrorLine(start.error, START_FAILED)
+      : allowance.spent
+        ? allowanceNote(allowance, 'generation', 'generations')
+        : // What is true (CR-43): the draft is kept in Resumes; the download waits on the check.
+          'Your draft is kept in Resumes. You can download it once every guess is checked.';
   return (
     <div className="flex flex-col gap-6">
       <section aria-labelledby="zero-basics" className={stepCard}>

@@ -1,7 +1,15 @@
 'use client';
 
 import { compareProfileToJob } from '@nextkin/shared/models';
-import { useJdDraft, useJobJd, useProfile, useStartGeneration } from '@nextkin/shared/queries';
+import {
+  isConsentRequired,
+  queryPhase,
+  useJdDraft,
+  useJobJd,
+  useProfile,
+  useStartGeneration,
+} from '@nextkin/shared/queries';
+import { startErrorLine } from '@nextkin/shared/tailor/customize';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
@@ -22,6 +30,8 @@ export function useBuildFlow(target: TailorTargetRef, on: boolean) {
   const draft = target.kind === 'jd' ? pasted.data : listingJd.data;
   const start = useStartGeneration();
   const [added, setAdded] = useState<string[]>([]);
+  // Held until the run's page opens, so a second press in that gap can't start a second run.
+  const [leaving, setLeaving] = useState(false);
 
   const comparison = useMemo(
     () => (draft && profile.data ? compareProfileToJob(draft, profile.data) : undefined),
@@ -29,7 +39,7 @@ export function useBuildFlow(target: TailorTargetRef, on: boolean) {
   );
 
   const create = () => {
-    if (!draft || !comparison || start.isPending) return;
+    if (!draft || !comparison || start.isPending || leaving) return;
     const skipped = comparison.keywords
       .filter((k) => !k.onResume && !added.includes(k.label))
       .map((k) => k.label);
@@ -42,9 +52,17 @@ export function useBuildFlow(target: TailorTargetRef, on: boolean) {
         ...(target.kind === 'job' ? { jobId: target.id } : {}),
       },
       {
-        onSuccess: (generation) =>
-          router.replace(tailorPath(target, { run: generation.id, mode: 'build' })),
-        onError: () => showToast("We couldn't start building it. Try again.", { tone: 'error' }),
+        onSuccess: (generation) => {
+          setLeaving(true);
+          router.replace(tailorPath(target, { run: generation.id, mode: 'build' }));
+        },
+        // Consent has its own dialog; every other refusal says what it was.
+        onError: (error) => {
+          if (!isConsentRequired(error))
+            showToast(startErrorLine(error, "We couldn't start building it. Try again."), {
+              tone: 'error',
+            });
+        },
       },
     );
   };
@@ -55,7 +73,10 @@ export function useBuildFlow(target: TailorTargetRef, on: boolean) {
     added,
     setAdded,
     create,
-    pending: start.isPending,
-    failed: pasted.isError || listingJd.isError || profile.isError,
+    pending: start.isPending || leaving,
+    // Only when there is nothing to show: a background refetch that fails keeps the page.
+    failed:
+      (target.kind === 'jd' ? queryPhase(pasted) : queryPhase(listingJd)) === 'error' ||
+      queryPhase(profile) === 'error',
   };
 }

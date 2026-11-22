@@ -138,8 +138,8 @@ describe('resilience drills (P13-02)', () => {
     await h.db.withSystem('drill: age the lost run', (tx) => tx.updateTable('generations').set({ created_at: sql`now() - interval '10 minutes'` }).where('id', '=', id).execute());
     await generations.sweepStuckGenerations(h.db, capturingPublisher(), 180);
     const lost = await h.db.withUser({ userId, role: 'user' }, (tx) => tx.selectFrom('generations').select(['status', 'error_code', 'quota_released_at']).where('id', '=', id).executeTakeFirstOrThrow());
-    expect(lost).toMatchObject({ status: 'failed', error_code: 'timed_out' });
+    expect(lost).toMatchObject({ status: 'failed', error_code: 'queue_timeout' });
     expect(lost.quota_released_at).not.toBeNull();
-    console.log(`DRILL elasticmq-restart: ${ms} ms to healthy; outbox republished ${relay.published}; the lost message's run failed as timed_out, quota released`);
+    console.log(`DRILL elasticmq-restart: ${ms} ms to healthy; outbox republished ${relay.published}; the lost message's run failed as queue_timeout, quota released`);
   }, 180_000);
 });

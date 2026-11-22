@@ -35,7 +35,8 @@ import { addProfileSkills, prepareTailor } from "./tailorStart";
  *   exists without the other. Pro runs go to the priority queue, which workers drain first.
  * - **retry** resumes a failed run from its first incomplete stage (the checkpoint is kept).
  * - **cancel** ends a queued run at once; a running one at its next stage boundary.
- * - **sweep** fails anything still unfinished after GENERATION_TIMEOUT_SECONDS (3 minutes).
+ * - **sweep** fails anything still unfinished after GENERATION_TIMEOUT_SECONDS of running (8 minutes),
+ *   or GENERATION_QUEUE_TIMEOUT_SECONDS of waiting in the queue (10 minutes).
  */
 
 /** Kinds that produce a document, and how it is filed (V2 §7.11). */
@@ -390,14 +391,19 @@ export function cancelGeneration(
 }
 
 /**
- * The maintenance sweep (M2-04, R-10): any run still unfinished `timeoutSeconds` after it started
- * (or was retried) is failed with a plain reason and its event, so nothing hangs and the client can
- * offer a retry. Runs as the system role across all users.
+ * The maintenance sweep (M2-04, R-10): a run still unfinished `timeoutSeconds` after a worker
+ * started it, or still queued `queueTimeoutSeconds` after it was made, is failed with a plain reason
+ * and its event, so nothing hangs and the client can offer a retry. Time spent waiting in the queue
+ * does not count against a started run (owner, 2026-11-22: 8 min running, 10 min queued). One row
+ * that fails to update is logged and skipped, so it never holds back the rest. Runs as the system
+ * role across all users.
  */
 export async function sweepStuckGenerations(
   db: Database,
   publisher: EventPublisher,
   timeoutSeconds: number,
+  queueTimeoutSeconds: number = timeoutSeconds,
+  log?: { warn(obj: object, msg?: string): void },
 ): Promise<number> {
   // Found as the system (across users), then failed one by one as each run's owner, under RLS:
   // the system role may read and update user rows but never writes their events.
@@ -409,7 +415,8 @@ export async function sweepStuckGenerations(
         .select(["id", "user_id"])
         .where("status", "not in", ["ready", "failed"])
         .where(
-          sql<boolean>`coalesce(started_at, created_at) < now() - make_interval(secs => ${timeoutSeconds})`,
+          sql<boolean>`(started_at is not null and started_at < now() - make_interval(secs => ${timeoutSeconds}))
+            or (started_at is null and created_at < now() - make_interval(secs => ${queueTimeoutSeconds}))`,
         )
         .orderBy("created_at")
         .limit(500)
@@ -417,27 +424,32 @@ export async function sweepStuckGenerations(
   );
   let failed = 0;
   for (const { id, user_id } of stuck) {
-    const event = await db.withUser(
-      { userId: user_id, role: "user" },
-      async (tx) => {
-        const row = await lockGeneration(tx, id);
-        // Re-checked under the lock: it may have finished since it was found.
-        if (!row || row.status === "ready" || row.status === "failed")
-          return null;
-        const started = new Date(row.started_at ?? row.created_at).getTime();
-        if (Date.now() - started < timeoutSeconds * 1000) return null;
-        return failGeneration(
-          tx,
-          row,
-          "timed_out",
-          FAILURE_MESSAGE.timed_out,
-          stagesOf(row.kind),
-        );
-      },
-    );
-    if (event) {
-      failed++;
-      await publisher.publish(id, event);
+    try {
+      const event = await db.withUser(
+        { userId: user_id, role: "user" },
+        async (tx) => {
+          const row = await lockGeneration(tx, id);
+          // Re-checked under the lock: it may have finished, or been picked up, since it was found.
+          if (!row || row.status === "ready" || row.status === "failed")
+            return null;
+          const queued = row.started_at === null;
+          const since = new Date(row.started_at ?? row.created_at).getTime();
+          const limit = (queued ? queueTimeoutSeconds : timeoutSeconds) * 1000;
+          if (Date.now() - since < limit) return null;
+          return queued
+            ? failGeneration(tx, row, "queue_timeout", FAILURE_MESSAGE.queue_timeout, stagesOf(row.kind))
+            : failGeneration(tx, row, "timed_out", FAILURE_MESSAGE.timed_out, stagesOf(row.kind));
+        },
+      );
+      if (event) {
+        failed++;
+        await publisher.publish(id, event);
+      }
+    } catch (error) {
+      log?.warn(
+        { event: "generations.sweep_row_failed", generationId: id, errorName: error instanceof Error ? error.name : typeof error },
+        "could not fail a stuck run; skipped",
+      );
     }
   }
   return failed;

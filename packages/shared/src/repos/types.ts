@@ -449,6 +449,9 @@ export type JdRepo = {
 
 export type Unsubscribe = () => void;
 
+/** Why a run's progress can't be read (the shared poller, owner 2026-11-22). */
+export type WatchProblem = { permanent: boolean; error: unknown };
+
 /**
  * V2 §7.15 — practice sets once they exist. There is no `create`: a set is produced by
  * `GenerationsRepo.start({ kind: 'interview' })` finishing, so both modes run as the async job
@@ -521,8 +524,12 @@ export type GenerationsRepo = {
    * took is handed back and any document it opened for itself is removed.
    */
   cancel(id: string): Promise<Generation>;
-  /** Emits on every progress tick until the generation reaches a terminal status. */
-  subscribe(id: string, onChange: (generation: Generation) => void): Unsubscribe;
+  /**
+   * Emits on every progress tick until the generation reaches a terminal status. `onError` hears
+   * a poll that cannot go on (`permanent`: the run is gone or unreadable, and polling has stopped)
+   * or one that keeps failing (polling goes on, and the next tick that lands clears it).
+   */
+  subscribe(id: string, onChange: (generation: Generation) => void, onError?: (problem: WatchProblem) => void): Unsubscribe;
 };
 
 /**

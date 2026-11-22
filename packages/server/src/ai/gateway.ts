@@ -7,6 +7,7 @@ import { costMicros, type AiSettings, type RouteStep } from './routing';
 import { describeIssues, strictJsonSchema } from './schema';
 import type { AiTrace, TraceRow } from './trace';
 import { LlmError, type LlmProvider, type LlmRequest, type LlmResponse, type ProviderName, type SystemBlock } from './types';
+import { checkDeadline, currentDeadline } from '../pipeline/deadline';
 
 /**
  * The AI gateway (ImBackendImplementationPlan P6-07 to P6-12): the only way a stage calls a model.
@@ -122,6 +123,7 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
       };
 
       let corrective = false;
+      let roomy = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         attempts++;
         if (developerKey && options.dailyCapUsd >= 0 && (await spentTodayMicros()) >= options.dailyCapUsd * 1_000_000) {
@@ -129,13 +131,25 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
           await trace.record({ ...base(call, provider, step, tag, truncated), outcome: 'capped', error_code: 'capped' });
           throw last;
         }
+        // A run past its deadline stops here (pipeline/deadline.ts); the runner fails it as timed out.
+        checkDeadline();
+        const signal = currentDeadline();
         const started = Date.now();
         let response: LlmResponse | null = null;
         try {
           response = await withSpan('ai.call', { 'ai.stage': call.stage, 'ai.provider': provider.name, 'ai.model': step.model }, () =>
-            mode.onText && provider.stream ? provider.stream(request, mode.onText) : provider.messages(request),
+            mode.onText && provider.stream ? provider.stream(request, mode.onText, signal) : provider.messages(request, signal),
           );
           if (response.stopReason === 'refusal') throw new LlmError('refusal', 'The model declined to answer.', true);
+          // An answer cut off by the token limit is never accepted half-written: asked once more with
+          // twice the room, then failed as an answer we could not use.
+          if (response.stopReason === 'max_tokens') {
+            if (roomy) throw new LlmError('invalid_output', 'The answer ran past the token limit.', false);
+            roomy = true;
+            request.maxTokens = request.maxTokens * 2;
+            await trace.record({ ...base(call, provider, step, tag, truncated), ...usage(response, prices, step), latency_ms: Date.now() - started, outcome: 'invalid_output', error_code: 'max_tokens' });
+            continue;
+          }
           let value: unknown = response.text;
           if (mode.schema) {
             const parsed = mode.schema.safeParse(response.data);
@@ -160,6 +174,8 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
           if ((call.context.tag ?? 'product') !== 'eval') options.onAvailability?.(true);
           return { value: value as T, meta: { provider: provider.name, model: step.model, attempts, failedOver: index > 0, truncated, costMicros: cost } satisfies CallMeta };
         } catch (error) {
+          // Aborted by the run's deadline: not the provider's fault, so no retry and no failover.
+          if (signal?.aborted) checkDeadline();
           last = error instanceof LlmError ? error : new LlmError('error', error instanceof Error ? error.message : 'unknown', false);
           await trace.record({
             ...base(call, provider, step, tag, truncated),

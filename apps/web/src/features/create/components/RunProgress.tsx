@@ -1,6 +1,6 @@
 'use client';
 
-import { qk, useStall } from '@nextkin/shared/queries';
+import { qk, restartGenerationWatch, useStall } from '@nextkin/shared/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 
@@ -35,6 +35,7 @@ export function RunProgress({
   lines,
   note,
   action,
+  runId,
 }: {
   art: ReactNode;
   /** The pill over the title; the brand by default, as in the owner's reference. */
@@ -47,13 +48,18 @@ export function RunProgress({
   lines: readonly RunLine[];
   note: string;
   action?: ReactNode;
+  /** The run shown: "Check again" starts its live watch again, not only a refetch. */
+  runId?: string;
 }) {
   const percent = Math.round(progress * 100);
   const queryClient = useQueryClient();
   const [checks, setChecks] = useState(0);
-  const stall = useStall(progress < 1, `${progress}:${checks}`);
+  // This only shows while the run is unfinished, so it watches at 100% too: a run that reports
+  // every stage done but never turns ready used to sit at a full bar with no word and no button.
+  const stall = useStall(true, `${progress}:${checks}`);
   const checkAgain = () => {
     setChecks((n) => n + 1);
+    if (runId) restartGenerationWatch(queryClient, runId);
     void queryClient.invalidateQueries({ queryKey: qk.generations.all });
   };
   return (

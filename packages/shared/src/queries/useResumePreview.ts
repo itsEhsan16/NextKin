@@ -6,6 +6,12 @@ import { qk } from './keys';
 
 /** How often a version still being typeset is asked about again. */
 const PENDING_POLL_MS = 2_000;
+/**
+ * How many times a pending version is asked about before the poll stops (about five minutes): a
+ * typeset job that died must not be polled for as long as the page stays open. The screen says it
+ * is taking too long (`useStall`) and offers to try again, which asks once more.
+ */
+const PENDING_POLLS_MAX = 150;
 /** Page links last 15 minutes on the server; refetch well before they stop working. */
 const LINKS_FRESH_MS = 10 * 60_000;
 
@@ -21,6 +27,7 @@ export function useResumePreview(id: string, versionId?: string) {
     queryFn: () => repos.resumes.preview(id, versionId),
     enabled: id.length > 0,
     staleTime: LINKS_FRESH_MS,
-    refetchInterval: (query) => (query.state.data?.status === 'pending' ? PENDING_POLL_MS : false),
+    refetchInterval: (query) =>
+      query.state.data?.status === 'pending' && query.state.dataUpdateCount < PENDING_POLLS_MAX ? PENDING_POLL_MS : false,
   });
 }

@@ -8,6 +8,8 @@ import { applyUrl, siteLabel } from '@/features/jobs/jobPageLibrary';
 import { DownloadPrompts } from '@/features/resumes/components/DownloadPrompts';
 import { useConfirmedDownload } from '@/features/resumes/useConfirmedDownload';
 import { cn } from '@/lib/cn';
+import { cardSurface } from '@/ui/Card';
+import { StateView } from '@/ui/StateView';
 
 import { resumeFileName } from '../tailorLibrary';
 import { ResumeAssistantPanel } from './ResumeAssistantPanel';
@@ -50,6 +52,22 @@ export function ReviewStep({
   const file = user ? resumeFileName(user.firstName, user.lastName, job.company) : '';
   // A pasted JD has no page to apply on.
   const apply = job.applyUrl || job.sourceUrl || job.companyWebsite ? applyUrl(job) : null;
+
+  // A finished run that names no document: an error that says where to look, not a page of
+  // skeletons that never fill and links to /resumes//edit.
+  if (!resumeId) {
+    return (
+      <div className={cn(cardSurface, 'py-12')}>
+        <StateView
+          tone="danger"
+          title="Your resume was made, but we couldn’t open it"
+          message="Look for it in Resumes. If it isn’t there, try this job again."
+          actionLabel="Open Resumes"
+          actionHref={'/resumes' as Route}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={cn('flex flex-col gap-6', WORKSPACE)}>

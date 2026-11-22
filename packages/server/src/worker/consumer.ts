@@ -25,6 +25,19 @@ export interface ConsumerOptions {
   log: Logger;
   visibilitySeconds?: number;
   waitSeconds?: number;
+  /**
+   * A handler still running after this long is given up on: its visibility is no longer extended,
+   * its slot is freed and the message comes back like any failure. Without it a hung stage held its
+   * worker slot and its user's FIFO group for ever. Unset: no cap.
+   */
+  maxHandlerSeconds?: number;
+}
+
+export class HandlerTimeoutError extends Error {
+  constructor(seconds: number) {
+    super(`The handler ran past ${seconds} s and was given up on.`);
+    this.name = 'HandlerTimeoutError';
+  }
 }
 
 export interface ConsumerMetrics {
@@ -51,7 +64,11 @@ export function createConsumer(options: ConsumerOptions) {
   const groupTail = new Map<string, Promise<void>>();
 
   function process(message: Received): void {
+    const cap = options.maxHandlerSeconds;
+    let started = 0;
     const heartbeat = setInterval(() => {
+      // Past the cap the heartbeat stops, so the message is not held for ever.
+      if (cap && started && Date.now() - started > cap * 1000) return;
       queue.setVisibility(message, visibility).catch(() => {});
     }, Math.max(1000, (visibility * 1000) / 3));
     const previous = groupTail.get(message.groupId);
@@ -64,7 +81,20 @@ export function createConsumer(options: ConsumerOptions) {
           await queue.setVisibility(message, 0);
           return;
         }
-        await options.handler(message);
+        started = Date.now();
+        if (cap) {
+          let timer: NodeJS.Timeout | undefined;
+          try {
+            await Promise.race([
+              options.handler(message),
+              new Promise<never>((_, reject) => (timer = setTimeout(() => reject(new HandlerTimeoutError(cap)), cap * 1000))),
+            ]);
+          } finally {
+            clearTimeout(timer);
+          }
+        } else {
+          await options.handler(message);
+        }
         await queue.ack(message);
         metrics.processed++;
       } catch (error) {

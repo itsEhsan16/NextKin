@@ -1,3 +1,4 @@
+import { CLAIM_TEXT_MAX } from '@nextkin/shared/schemas/limits';
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import type { ProfileFacts } from '@nextkin/engines/facts';
 import { leftOutChecker } from '@nextkin/engines/leftOut';
@@ -30,7 +31,7 @@ export const reviewEditSchema = z.object({
   /** A bullet id, a skill, a line's label, a role or project id, or a header statement's index. */
   target: z.string().trim().max(200).nullable(),
   /** The new summary or bullet; the line a skill moves to; a line's new label. */
-  text: z.string().trim().max(400).nullable(),
+  text: z.string().trim().max(CLAIM_TEXT_MAX).nullable(),
   evidence: z.array(z.string().max(80)).max(8).nullable(),
   order: z.array(z.string().max(80)).max(16).nullable(),
   /** For a duplicate skill: the one that stays. */

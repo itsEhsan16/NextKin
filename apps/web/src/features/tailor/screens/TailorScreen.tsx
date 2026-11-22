@@ -123,25 +123,40 @@ export function TailorScreen({
   });
 
   // Each failure names what didn't load (toreview §131); one retry fetches everything again.
+  // Only what has nothing to show fails the page: a refetch that fails after a run finished (or
+  // after "Check again") used to replace the finished review with this error.
+  const runMissing =
+    runId != null &&
+    queryPhase(run) === 'error' &&
+    (run.error as { code?: unknown } | null)?.code === 'NOT_FOUND';
   const failure = jobError
     ? 'We couldn’t load this job'
-    : resumes.isError
+    : queryPhase(resumes) === 'error'
       ? 'We couldn’t load your resumes'
       : queryPhase(comparison) === 'error'
         ? 'We couldn’t compare your resume with this job'
-        : run.isError
-          ? 'We couldn’t load this tailoring run'
-          : builder.failed
-            ? 'We couldn’t prepare your new resume'
-            : null;
+        : runMissing
+          ? 'This run has finished or was removed'
+          : runId && queryPhase(run) === 'error'
+            ? 'We couldn’t load this tailoring run'
+            : builder.failed
+              ? 'We couldn’t prepare your new resume'
+              : null;
   if (failure) {
     return (
       <div className={cn(pageFillMin, 'flex items-center justify-center')}>
         <StateView
           tone="danger"
           title={failure}
-          message="Check your connection and try again."
+          message={
+            runMissing
+              ? 'Your resumes are in Resumes. Start again from this job for a new one.'
+              : 'Check your connection and try again.'
+          }
           actionLabel="Try again"
+          {...(runMissing
+            ? { actionHref: tailorPath(target, {}), actionLabel: 'Start again' }
+            : {})}
           onAction={() => {
             refetch();
             void resumes.refetch();

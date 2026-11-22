@@ -82,6 +82,8 @@ export const qk = {
     active: () => ['generations', 'active'] as const,
     list: () => ['generations', 'list'] as const,
     detail: (id: string) => ['generations', 'detail', id] as const,
+    /** Why a run's progress can't be read right now, or null (set by the live watch). */
+    watchProblem: (id: string) => ['generations', 'watch-problem', id] as const,
   },
   support: {
     all: ['support'] as const,

@@ -73,6 +73,8 @@ describe('a run that cannot be sent says why (toreview §212.5)', () => {
     expect(startErrorLine(refused('tailoring.somethingNew'))).toMatch(/part of the request wasn’t accepted \(tailoring\.somethingNew\)/);
     // Anything that is not a refusal keeps the plain line.
     expect(startErrorLine(new Error('network'))).toBe('We couldn’t start tailoring. Try again.');
-    expect(startErrorLine({ code: 'UNAVAILABLE', details: null }, 'Custom')).toBe('Custom');
+    expect(startErrorLine({ code: 'UNKNOWN_CODE', details: null }, 'Custom')).toBe('Custom');
+    // A busy service says so instead of the plain line (owner, 2026-11-22).
+    expect(startErrorLine({ code: 'UNAVAILABLE', details: null }, 'Custom')).toMatch(/busy/);
   });
 });

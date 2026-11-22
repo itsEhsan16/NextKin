@@ -92,7 +92,9 @@ export async function requestExport(deps: ExportDeps, identity: Identity, resume
       .where('resume_version_id', '=', row.version_id)
       .where('format', '=', format)
       .where('template_slug', '=', template.slug)
-      .where('status', 'in', ['pending', 'ready'])
+      // A pending file is reused only while it can still be made: one stuck past the window (its
+      // job dead-lettered) is skipped, so a new one is queued instead of waiting on it for ever.
+      .where((eb) => eb.or([eb('status', '=', 'ready'), eb.and([eb('status', '=', 'pending'), eb('created_at', '>', new Date(Date.now() - EXPORT_PENDING_MS))])]))
       .orderBy('created_at', 'desc')
       .executeTakeFirst();
     if (reusable) return { row: reusable, fresh: false };
@@ -111,12 +113,17 @@ export async function requestExport(deps: ExportDeps, identity: Identity, resume
   return statusOf(deps, created.row);
 }
 
-type EventRow = { parse_back: unknown; id: string; status: string; format: string; file_name: string; object_key: string | null; ats_safe: boolean | null; error_message: string | null };
+type EventRow = { parse_back: unknown; id: string; status: string; format: string; file_name: string; object_key: string | null; ats_safe: boolean | null; error_message: string | null; created_at?: Date | string };
+
+/** How long an export may stay pending before it counts as failed (its job will not come back). */
+export const EXPORT_PENDING_MS = 10 * 60_000;
 
 async function statusOf(deps: ExportDeps, row: EventRow): Promise<ExportStatus> {
   const format = row.format as ExportFormat;
   const base = { id: row.id, format, fileName: row.file_name, mimeType: MIME[format] };
   if (row.status === 'failed') return { ...base, status: 'failed', message: row.error_message ?? 'We could not make that file. Try again.' };
+  const stale = row.status === 'pending' && row.created_at !== undefined && Date.now() - new Date(row.created_at).getTime() > EXPORT_PENDING_MS;
+  if (stale) return { ...base, status: 'failed', message: 'We could not make that file. Try again.' };
   if (row.status !== 'ready' || !row.object_key) return { ...base, status: 'pending' };
   const url = await deps.storage.presignGet(deps.bucket, row.object_key, { seconds: MAX_PRESIGN_GET_SECONDS, downloadName: row.file_name });
   const receipt = (row.parse_back as { receipt?: ExportReceipt } | null)?.receipt;

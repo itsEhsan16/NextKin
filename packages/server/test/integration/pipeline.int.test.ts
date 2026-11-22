@@ -191,7 +191,7 @@ describe('the lifecycle (P6-05)', () => {
     const publisher = capturingPublisher();
     expect(await generations.sweepStuckGenerations(db, publisher, 180)).toBeGreaterThanOrEqual(1);
     const s = await state(userId, id);
-    expect(s.row).toMatchObject({ status: 'failed', error_code: 'timed_out' });
+    expect(s.row).toMatchObject({ status: 'failed', error_code: 'queue_timeout' });
     expect(s.events.at(-1)).toMatchObject({ event: 'failed' });
     expect(publisher.events.some((e) => e.generationId === id && e.event.event === 'failed')).toBe(true);
   });

@@ -138,7 +138,11 @@ export async function runRender(deps: RenderDeps & { latex: LatexCompiler; log: 
     return failRender(deps.db, payload, code);
   };
 
-  const doc = canonicalResumeSchema.parse(job.version.content);
+  // A version the stored shape refuses can never render: fail it with a code instead of letting the
+  // parse error dead-letter the message and leave the render `pending` for good.
+  const parsedDoc = canonicalResumeSchema.safeParse(job.version.content);
+  if (!parsedDoc.success) return fail('invalid');
+  const doc = parsedDoc.data;
   const now = new Date();
   const budget = pageBudget(doc, { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 }, job.sourcePages);
   // The density ladder: the template as designed, then tighter spacing, until the pages fit the
@@ -171,12 +175,18 @@ export async function runRender(deps: RenderDeps & { latex: LatexCompiler; log: 
 
   const prefix = renderPrefix(payload.userId, render.resume_version_id);
   const pdfKey = `${prefix}${render.id}.pdf`;
-  await deps.storage.write(deps.bucket, pdfKey, result.pdf, 'application/pdf');
   const pages: PageImage[] = [];
-  for (const [i, png] of result.pngs.entries()) {
-    const key = `${prefix}${render.id}-p${i + 1}.png`;
-    await deps.storage.write(deps.bucket, key, png, 'image/png');
-    pages.push({ key, ...pngSize(png) });
+  try {
+    await deps.storage.write(deps.bucket, pdfKey, result.pdf, 'application/pdf');
+    for (const [i, png] of result.pngs.entries()) {
+      const key = `${prefix}${render.id}-p${i + 1}.png`;
+      await deps.storage.write(deps.bucket, key, png, 'image/png');
+      pages.push({ key, ...pngSize(png) });
+    }
+  } catch (error) {
+    // Storage that is down is retried; on the last attempt the render ends failed, never pending.
+    if (!lastAttempt) throw error;
+    return fail('storage');
   }
   await deps.db.withUser(identity, (tx) =>
     tx

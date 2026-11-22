@@ -1,7 +1,13 @@
 'use client';
 
 import type { ResumeContent } from '@nextkin/shared/models';
-import { useResume, useResumeContent, useResumePreview } from '@nextkin/shared/queries';
+import {
+  queryPhase,
+  useResume,
+  useResumeContent,
+  useResumePreview,
+  useStall,
+} from '@nextkin/shared/queries';
 import { resumeTextView } from '@nextkin/shared/scoring/resumeDiff';
 import { useMemo, useRef, useState } from 'react';
 
@@ -53,7 +59,16 @@ export function ResumePreview({
   // from its content. A resume still being typeset, or one that failed, never falls back to that
   // plain page (owner, 2026-11-15): it waits, or says it failed and offers to try again.
   const drawn = preview.data?.status === 'structured';
-  const typesetFailed = preview.data?.status === 'failed' || preview.isError;
+  // Typesetting that never finishes counts as failed once it is far past usual, with the same Try again.
+  const [checks, setChecks] = useState(0);
+  const typesetStall = useStall(
+    preview.data?.status === 'pending',
+    `${resume.data?.currentVersionId}:${checks}`,
+  );
+  const typesetFailed =
+    preview.data?.status === 'failed' ||
+    queryPhase(preview) === 'error' ||
+    typesetStall === 'stalled';
   const pages = typeset?.pageCount ?? estimated;
   const [view, setView] = useState<View>('preview');
   const [zoom, setZoom] = useState<(typeof ZOOMS)[number]>(100);
@@ -167,7 +182,10 @@ export function ResumePreview({
               title="We couldn’t typeset this resume"
               message="Your resume is saved. Try again to see its pages."
               actionLabel="Try again"
-              onAction={() => void preview.refetch()}
+              onAction={() => {
+                setChecks((n) => n + 1);
+                void preview.refetch();
+              }}
             />
           ) : content.isError ? (
             <StateView

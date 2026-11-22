@@ -44,6 +44,7 @@ export interface WorkerDeps {
   log: Logger;
   concurrency: number;
   generationTimeoutSeconds: number;
+  generationQueueTimeoutSeconds?: number;
   visibilitySeconds?: number;
   hooks?: RunnerHooks;
   /** Tests: instrumented or slow pipelines in place of the real ones. */
@@ -93,7 +94,7 @@ export function buildWorker(deps: WorkerDeps) {
     return { db: deps.db, storage: f.storage, anonymousBucket: f.anonymousBucket, uploadsBucket: f.uploadsBucket, maxBytes: f.limits.documentBytes, perIpPerHour: f.teaser.perIpPerHour, ipSalt: f.teaser.ipSalt };
   };
   const cache = deps.cache ?? createMemoryKv();
-  const runner = createRunner({ db: deps.db, gateway: deps.gateway, publisher: deps.publisher, log, pipelines: deps.pipelines, ...(deps.documents?.latex ? { latex: deps.documents.latex } : {}) }, deps.hooks);
+  const runner = createRunner({ db: deps.db, gateway: deps.gateway, publisher: deps.publisher, log, pipelines: deps.pipelines, timeoutSeconds: deps.generationTimeoutSeconds, ...(deps.documents?.latex ? { latex: deps.documents.latex } : {}) }, deps.hooks);
 
   const generations = createConsumer({
     name: 'generations',
@@ -101,6 +102,8 @@ export function buildWorker(deps: WorkerDeps) {
     sources: ['generation-priority', 'generation-standard'],
     concurrency: deps.concurrency,
     visibilitySeconds: deps.visibilitySeconds,
+    // The run stops itself at its deadline (pipeline/deadline.ts); a minute past it, the slot is freed.
+    maxHandlerSeconds: deps.generationTimeoutSeconds + 60,
     log,
     handler: async (message) => {
       const envelope = message.envelope;
@@ -194,6 +197,7 @@ export function buildWorker(deps: WorkerDeps) {
         log,
         publisher: deps.publisher,
         generationTimeoutSeconds: deps.generationTimeoutSeconds,
+        ...(deps.generationQueueTimeoutSeconds ? { generationQueueTimeoutSeconds: deps.generationQueueTimeoutSeconds } : {}),
         uploads: deps.files ? { ...files(), anonymousBucket: deps.files.anonymousBucket } : undefined,
         gateway: deps.gateway,
         ...(deps.documents ? { documents: { storage: deps.documents.storage, exportsBucket: deps.documents.exportsBucket } } : {}),

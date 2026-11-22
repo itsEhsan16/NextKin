@@ -1,3 +1,4 @@
+import { CLAIM_TEXT_MAX, MAX_SKILLS } from '@nextkin/shared/schemas/limits';
 import { KB } from '@nextkin/engines/datasets/kb';
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { evidenceOf } from '@nextkin/engines/document';
@@ -31,6 +32,8 @@ export const RESUME_TEMPLATE = 'resume.generate';
 export const REVISE_TEMPLATE = 'resume.revise';
 
 const FULL_JD_WORDS = 80;
+/** How long a job description may stay `extracting` before a run waiting on it gives up. */
+const JD_READ_STALL_MS = 5 * 60_000;
 
 export const jdStage: StageDef = {
   name: 'jd',
@@ -40,14 +43,19 @@ export const jdStage: StageDef = {
     if (!run.jdId) return { output: null };
     const row = await ctx.db.withUser({ userId: ctx.userId, role: 'user' }, (tx) => readJdRow(tx, run.jdId!));
     if (!row) throw new StageError('jd_missing', 'The job description for this run is gone.');
-    if (row.status === 'extracting') throw new Error('the job description is still being read'); // transient: redelivered
+    if (row.status === 'extracting') {
+      // Still being read: wait for it through redeliveries, but not for ever. A reading that has not
+      // finished in this long has stalled, and the run says so instead of a vague "couldn't finish".
+      if (Date.now() - new Date(row.updated_at).getTime() > JD_READ_STALL_MS) throw new StageError('jd_unreadable', 'The job description could not be read.');
+      throw new Error('the job description is still being read'); // transient: redelivered
+    }
     if (row.status === 'failed') throw new StageError('jd_unreadable', 'The job description could not be read.');
     return { output: stageJdOf(row) };
   },
 };
 
 export const readJdRow = (tx: Tx, id: string) =>
-  tx.selectFrom('job_descriptions').select(['id', 'raw_text', 'extracted', 'edited', 'status', 'language']).where('id', '=', id).executeTakeFirst();
+  tx.selectFrom('job_descriptions').select(['id', 'raw_text', 'extracted', 'edited', 'status', 'language', 'updated_at']).where('id', '=', id).executeTakeFirst();
 
 /** A JD row as generation and scoring read it: the user's corrections on top of the extraction. */
 export function stageJdOf(row: NonNullable<Awaited<ReturnType<typeof readJdRow>>>): StageJd {
@@ -169,7 +177,8 @@ export const planStage: StageDef = {
 };
 
 const cited = z.object({
-  text: z.string().trim().min(1).max(400),
+  // As long as a stored line (limits.ts): a model that keeps a long figure line must not fail the run.
+  text: z.string().trim().min(1).max(CLAIM_TEXT_MAX),
   evidence: z.array(z.string().max(80)).min(1).max(8),
 });
 
@@ -184,7 +193,8 @@ export const resumeDraftSchema = z.object({
         evidence: z.array(z.string().max(80)).min(1).max(5),
       }),
     )
-    .max(30),
+    // Every skill a stored resume can hold: a run may ask for all of a job's keywords (limits.ts).
+    .max(MAX_SKILLS),
   roles: z.array(z.object({ roleId: z.string().max(80), bullets: z.array(cited).max(6) })).max(20),
   /** A tailored run's projects (toreview §113): each project's bullets, citing its own lines. */
   projects: z.array(z.object({ projectId: z.string().max(80), bullets: z.array(cited).max(6) })).max(10),

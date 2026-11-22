@@ -68,6 +68,10 @@ function connect(url: string, poolMax: number, applicationName: string): Kysely<
     // Fail fast instead of queueing forever when the pool is exhausted (R-12).
     connectionTimeoutMillis: 5_000,
     idleTimeoutMillis: 30_000,
+    // No query or row lock may wait for ever: a `FOR UPDATE` behind a stuck transaction used to hold
+    // a run (and its worker slot) indefinitely. Both are far above any normal query.
+    statement_timeout: 60_000,
+    lock_timeout: 15_000,
   });
   // An idle client whose server went away (a restart, a failover) emits 'error'. Unhandled, that
   // event crashes the process; handled, the pool drops the client and the next query reconnects
