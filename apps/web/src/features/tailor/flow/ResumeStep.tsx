@@ -3,7 +3,7 @@
 import type { Job, Resume } from '@nextkin/shared/models';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { useRef, useState, type DragEvent } from 'react';
+import { useRef } from 'react';
 
 import {
   backButton,
@@ -16,15 +16,12 @@ import {
 } from '@/features/create/jobFlow/FlowChrome';
 import { useResumeUpload } from '@/features/create/jobFlow/useResumeUpload';
 import { RESUME_INPUT_ACCEPT } from '@/features/onboarding/resumeUpload';
-import { cn } from '@/lib/cn';
-import { AiLoader } from '@/ui/AiLoader';
-import { Button } from '@/ui/Button';
-import { ArrowRight, UploadCloud02, iconSize } from '@/ui/lineIcons';
-import { Spinner } from '@/ui/Spinner';
+import { ArrowRight } from '@/ui/lineIcons';
 import { JdArtUploadFileIllustration } from '@/ui/illustrations';
 
 import { OtherWays } from './OtherWays';
 import { ResumePicker } from './ResumePicker';
+import { ResumeDropArea } from '@/features/create/components/ResumeDropArea';
 
 /**
  * W-FLOW 02 (849:318, redesigned in toreview §150), step 2: which resume to start from — yours on
@@ -46,7 +43,7 @@ export function ResumeStep({
   profileHref,
 }: {
   /** Another flow's words for the same step: the cover letter's, the ATS check's. */
-  copy?: { title: string; lede: string; of: number; note?: string };
+  copy?: { title: string; lede: string; note?: string };
   job: Job;
   resumes: readonly Resume[];
   loading: boolean;
@@ -68,8 +65,6 @@ export function ResumeStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="resume-step"
-            step={2}
-            of={copy?.of ?? 3}
             title={copy?.title ?? 'Choose a starting resume'}
             lede={
               copy?.lede ??
@@ -113,83 +108,8 @@ export function ResumeStep({
 
 /** W-FLOW 02's drop zone (849:606): drag a file here or browse; reading, then picked. */
 export function DropZone({ onRead }: { onRead: (resumeId: string) => void }) {
-  const upload = useResumeUpload(onRead);
-  const input = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const drop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setDragging(false);
-    const file = event.dataTransfer.files[0];
-    if (file) upload.pick(file);
-  };
-  return (
-    <div
-      onDragOver={(event) => {
-        event.preventDefault();
-        if (!upload.reading) setDragging(true);
-      }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={drop}
-      aria-busy={upload.reading || undefined}
-      className={cn(
-        'flex min-h-56 min-w-0 flex-1 flex-col items-center justify-center gap-2.5 rounded-lg border border-dashed px-5 py-6 text-center transition-colors duration-press ease-standard',
-        dragging ? 'border-brand-600 bg-brand-50' : 'border-border-brand-strong bg-surface-brand',
-      )}
-    >
-      <span
-        aria-hidden
-        className="flex size-13 items-center justify-center rounded-full bg-surface-card text-text-brand"
-      >
-        {upload.reading ? (
-          <Spinner className="size-5" />
-        ) : (
-          <UploadCloud02 className={iconSize.md} />
-        )}
-      </span>
-      <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
-        <p className="text-body-l font-semibold text-text-primary">
-          {upload.reading
-            ? 'Reading your resume…'
-            : upload.name && !upload.error
-              ? 'Saved to Resumes and picked'
-              : 'Drag and drop your resume here'}
-        </p>
-        {upload.name && (upload.reading || !upload.error) && (
-          <p title={upload.name} className="max-w-full truncate text-body-m text-text-secondary">
-            {upload.name}
-          </p>
-        )}
-        {upload.reading && <AiLoader variant="loading-line" silent className="mt-1.5 w-40" />}
-      </div>
-      <Button
-        variant="secondary"
-        disabled={upload.reading}
-        icon={<UploadCloud02 aria-hidden className={cn(iconSize.sm, 'text-text-brand')} />}
-        onClick={() => input.current?.click()}
-      >
-        Upload a file
-      </Button>
-      <p className="text-body-s font-medium text-text-tertiary">PDF or DOCX</p>
-      {upload.error && (
-        <p role="alert" className="text-body-m text-danger-600">
-          {upload.error}
-        </p>
-      )}
-      <input
-        ref={input}
-        type="file"
-        accept={RESUME_INPUT_ACCEPT}
-        className="sr-only"
-        tabIndex={-1}
-        aria-label="Resume file"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) upload.pick(file);
-          event.target.value = '';
-        }}
-      />
-    </div>
-  );
+  // The one drop zone every upload uses (owner's §221 design, toreview §257).
+  return <ResumeDropArea className="min-h-56" onUploaded={({ resumeId }) => onRead(resumeId)} />;
 }
 
 /** W-FLOW 03a's "Upload another resume" (852:349): a dashed row, read on pick, then chosen. */

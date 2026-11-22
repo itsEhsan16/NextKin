@@ -13,12 +13,15 @@ import { StableLabel } from '@/ui/StableLabel';
 
 import {
   backButton,
+  finalButton,
   FlowFooter,
   primaryButton,
-  StepHeading,
   stepCard,
+  StepHeading,
+  upgradeButton,
 } from '../jobFlow/FlowChrome';
 import { DocTile, Radio, rowSurface } from '../jobFlow/FlowRows';
+import { changeLink } from '@/ui/textLink';
 
 /** COVER 01's tones (862:225): what each sounds like, in a line, and a sample of it. */
 export const TONE_COPY: Record<
@@ -68,11 +71,7 @@ function BuiltFromRow({
         <p className="text-caption-m text-text-tertiary">{label}</p>
         <p className="truncate text-title-l font-bold text-text-primary">{title}</p>
       </div>
-      <Link
-        href={change}
-        aria-label={`Change ${label.toLowerCase()}`}
-        className="flex h-8 items-center rounded-full border border-border-default bg-surface-card px-3.5 text-body-s font-semibold text-text-primary transition-colors duration-fast ease-standard hover:border-border-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-      >
+      <Link href={change} aria-label={`Change ${label.toLowerCase()}`} className={changeLink}>
         Change
       </Link>
     </div>
@@ -115,8 +114,6 @@ export function CoverToneStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="cover-tone"
-            step={3}
-            of={3}
             title="Pick a tone for your letter"
             lede={`We write it from your tailored resume and ${company} job — no new claims.`}
           />
@@ -191,11 +188,11 @@ export function CoverToneStep({
           Back
         </Link>
         {spent ? (
-          <Link href={'/upgrade' as Route} className={primaryButton}>
+          <Link href={'/upgrade' as Route} className={upgradeButton}>
             See Pro plans
           </Link>
         ) : (
-          <button type="button" onClick={onWrite} disabled={pending} className={primaryButton}>
+          <button type="button" onClick={onWrite} disabled={pending} className={finalButton}>
             <SparkleIllustration aria-hidden className="h-auto w-4" />
             <StableLabel label="Write my cover letter" busyLabel="Starting…" busy={pending} />
           </button>
@@ -230,8 +227,6 @@ export function CoverTailorFirst({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="cover-first"
-            step={2}
-            of={3}
             title="Tailor a resume for this job first"
             lede={`A cover letter repeats what your resume shows for this job. You don’t have one tailored${job.company ? ` for ${job.company}` : ''} yet.`}
           />

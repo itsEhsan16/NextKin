@@ -23,7 +23,7 @@ export type DocumentListProps = {
   onReset: () => void;
 };
 
-/** The list, 12px between rows, or a two-up grid; `DocumentsScreen` puts it in the one scroller. */
+/** The list, 16px between rows (gap-4), or a two-up grid; `DocumentsScreen` puts it in the one scroller. */
 export function DocumentList({
   documents,
   status,

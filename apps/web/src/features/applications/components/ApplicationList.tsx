@@ -22,7 +22,7 @@ export type ApplicationListProps = {
 };
 
 /**
- * The list, 12px between rows; `ApplicationsScreen` puts it in the page's one scroll container.
+ * The list, 16px between rows (gap-4); `ApplicationsScreen` puts it in the page's one scroll container.
  * Every application arrives in one call, so unlike the job list there is nothing to page.
  */
 export function ApplicationList({

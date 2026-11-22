@@ -2,6 +2,7 @@ import type { Job } from '@nextkin/shared/models';
 
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
+import { emptyList } from '@/ui/EmptyPanel';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 import { EmptyStateArt } from '@/ui/illustrations';
@@ -20,10 +21,12 @@ export type JobListProps = {
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
   onRetry: () => void;
+  /** Clears the chips and the search, from the empty list (toreview §254). */
+  onReset: () => void;
 };
 
 /**
- * The job list, 12px between cards. `JobsScreen` puts it in the page's only scroll container.
+ * The job list, 16px between cards (gap-4). `JobsScreen` puts it in the page's only scroll container.
  * Pagination has no equivalent drawn on the board (only 5 of "124 results" fit, with no page
  * numbers or infinite-scroll affordance) — mobile's `onEndReached` has no clean web analogue
  * here, so a "Load more" button is the pragmatic substitute: existing primitives, no new visual
@@ -40,6 +43,7 @@ export function JobList({
   isFetchingNextPage,
   onLoadMore,
   onRetry,
+  onReset,
 }: JobListProps) {
   // Whatever replaces the skeleton fades in; a list already cached on arrival shows at once.
   const reveal = useReveal(status !== 'pending');
@@ -72,12 +76,16 @@ export function JobList({
 
   if (jobs.length === 0) {
     return (
-      <StateView
-        art={<EmptyStateArt object="monitor" />}
-        className={reveal ? 'animate-reveal' : undefined}
-        title="No jobs match your filters"
-        message="Try widening your search or clearing a filter."
-      />
+      // The list keeps its place as one outline, with the way on, as on the other lists (§254).
+      <div className={cn(emptyList, reveal && 'animate-reveal')}>
+        <StateView
+          art={<EmptyStateArt object="monitor" />}
+          title="No jobs match your filters"
+          message="Try widening your search or clearing a filter."
+          actionLabel="Reset filters"
+          onAction={onReset}
+        />
+      </div>
     );
   }
 

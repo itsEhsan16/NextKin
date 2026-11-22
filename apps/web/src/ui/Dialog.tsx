@@ -4,6 +4,7 @@ import * as Radix from '@radix-ui/react-dialog';
 import { useRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
+import { XClose } from '@/ui/lineIcons';
 
 /**
  * The one modal shell (redesign R3a, `doc/redesign/02-tokens.md` §4.9): root, portal, scrim and
@@ -91,3 +92,40 @@ export function Dialog({
 export const DialogTitle = Radix.Title;
 export const DialogDescription = Radix.Description;
 export const DialogClose = Radix.Close;
+
+/*
+ * One inside for every popup (owner, toreview §257: ten dialogs drew ten). The body sits 28px in
+ * from the sides and top; the button row is under a rule, 28px in, buttons to the right; the ×
+ * sits 20px into the top-right corner. A dialog uses the parts it has.
+ */
+
+/** The body: title, line and content, 28px in. Scrolls when the window is short. */
+export const dialogBody = 'flex min-h-0 flex-col gap-3 overflow-y-auto px-7 pb-5 pt-7';
+
+/** The title's look, the same in every dialog. */
+export const dialogTitle = 'text-h2 font-bold text-text-primary';
+
+/** The line under the title. */
+export const dialogLine = 'text-body-l text-text-secondary';
+
+/** The button row: under a rule, buttons to the right; a note, if any, takes the left. */
+export const dialogFooter =
+  'flex flex-wrap items-center justify-end gap-3 border-t border-border-default px-7 py-4';
+
+/**
+ * The × in the top-right corner, for a dialog that is not a yes-or-no question (a confirmation
+ * answers with its buttons). Leave room for it with `pr-12` on the title row.
+ */
+export function DialogCloseButton({ className }: { className?: string }) {
+  return (
+    <Radix.Close
+      aria-label="Close"
+      className={cn(
+        'absolute right-5 top-5 flex size-9 items-center justify-center rounded-md text-text-tertiary transition-colors duration-press ease-standard hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+        className,
+      )}
+    >
+      <XClose aria-hidden className="size-5" />
+    </Radix.Close>
+  );
+}

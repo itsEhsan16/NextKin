@@ -544,6 +544,8 @@
    * overshoot (§196): it used to pass its target and swing back.
    */
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A steady turn with no start or stop: the upload zone's flowing ring (toreview §221). */
+  --ease-linear: linear;
 
   --transition-duration-press: 120ms;
   --transition-duration-fast: 180ms;
@@ -614,6 +616,10 @@
   /* A soft light gliding across an AI action ("Tailor with AI"), then resting before the next. */
   --animate-glint: glint var(--transition-duration-glint) var(--ease-standard) infinite;
   --animate-ring-draw: ring-draw var(--transition-duration-think) var(--ease-standard) infinite;
+  /* The leading edge of `ProgressButton`'s fill: a soft bulge that sways like a liquid's surface. */
+  --animate-liquid-edge: liquid-edge var(--transition-duration-think) var(--ease-standard) infinite;
+  /* A drop zone's gradient ring turning while a file is over it or being read (toreview §221). */
+  --animate-ring-flow: ring-flow var(--transition-duration-float) var(--ease-linear) infinite;
 
   @keyframes reveal {
     from {
@@ -725,6 +731,22 @@
       translate: 200% 0;
     }
   }
+  @keyframes ring-flow {
+    to {
+      --ring-angle: 360deg;
+    }
+  }
+  @keyframes liquid-edge {
+    0%,
+    100% {
+      translate: 0 -12%;
+      scale: 1 1.15;
+    }
+    50% {
+      translate: 0 12%;
+      scale: 0.8 1;
+    }
+  }
   @keyframes ring-draw {
     0% {
       stroke-dasharray: 1, 200;
@@ -782,6 +804,27 @@
  * - It fades in after `skeleton-delay`, so a quick load goes from nothing to content.
  * - Under reduced motion the global rule runs both animations once: a still block.
  */
+/*
+ * The gradient ring of an active drop zone (toreview §221): brand stops around a conic gradient
+ * whose angle is a registered property, so `animate-ring-flow` can turn it smoothly. Reduced
+ * motion runs the turn once in an instant (the global rule), leaving a still gradient.
+ */
+@property --ring-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@utility gradient-ring {
+  background: conic-gradient(
+    from var(--ring-angle),
+    var(--color-brand-200),
+    var(--color-brand-500),
+    var(--color-brand-300),
+    var(--color-brand-600),
+    var(--color-brand-200)
+  );
+}
+
 @utility skeleton {
   display: block;
   background-color: var(--color-skeleton);

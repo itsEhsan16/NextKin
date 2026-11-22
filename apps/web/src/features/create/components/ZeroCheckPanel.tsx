@@ -101,9 +101,6 @@ export function ZeroCheckPanel({
 
   return (
     <aside aria-labelledby="zero-check" className={cn(stepCard, 'flex flex-col gap-4 px-6 py-5.5')}>
-      <p className="text-micro font-bold uppercase tracking-wider text-text-brand">
-        Step {done ? 4 : 3} of 4
-      </p>
       <h1 id="zero-check" className="text-h1 font-bold text-text-primary">
         {done
           ? 'Your resume is ready'

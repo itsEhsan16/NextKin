@@ -17754,6 +17754,174 @@ job against 2, and 4 measured results. "Add the result" opened on an empty box. 
 - **Not checked:** dark theme, widths under 1024, and the backend (real `planId`, invoice numbers, paused state) — only the mock.
 - **Noticed, not changed:** on a Pro account the sidebar still shows the "Upgrade to Pro" card.
 
+## §217 — "Add a new job": one size on all three tabs (owner, 2026-11-17)
+- **What changed:** in `OtherJobBox.tsx`, the input area is one fixed slot (`h-44`), the same on Paste job description, Paste job link and Upload file:
+  - the description textarea fills it;
+  - the link field sits at the top, with a help line under it inside the slot;
+  - the drop zone fills it.
+  - The "0 / 10,000" counter's row is kept on every tab and left blank off the description tab.
+- **Result:** the panel, the tip, "Try a sample job" and Analyze job stay in place as the tabs change.
+- **Judgement call:** the link tab's new help line reads "Paste the link to the job posting and we'll read the description from it. If the site can't be read, paste the description instead." It fills the gap and tells the truth about the link reader.
+- **Verified:**
+  - In the browser at 1366×900 (mock), switching through all three tabs left the Analyze button's top (753.6px), the tip's top and the panel height (557.6px) the same.
+  - create-flow Jest pass (18); lint and typecheck are clean.
+- **Not checked:** widths under 1024, where the panels stack.
+
+## §218 — "Add a new job" loses its Analyze job button, keeps its height (owner, 2026-11-17)
+- **What changed:** the box's own "Analyze job" button is gone from all three tabs (`OtherJobBox.tsx`, and its `onAnalyze` prop in `JobStep.tsx`).
+- **Height:** its room (the button's height plus one gap) went to the fixed input slot, now `h-60` instead of `h-44`. The textarea, the link slot and the drop zone are taller, and the panel keeps its height.
+- **How a new job is read now:** the step's footer Continue already did it. Writing, pasting or uploading in the box makes it the chosen source, and Continue then calls `readOther`.
+  - The footer says "Reading the job…" while busy, and "Continue anyway" when the posting has closed.
+  - The `problem` line in the box and the closed-posting callout are unchanged.
+  - The "Try a sample job" link stays.
+- **Verified:**
+  - In the browser at 1366×900 (mock), on all three tabs: the panel was 558px (557.6 before), equal to "Your saved jobs" beside it; the tip didn't move; no Analyze job button.
+  - create-flow Jest pass (18). The link test now reads the job through the footer Continue and checks the box has no Analyze job.
+  - Lint and typecheck are clean.
+- **Not checked:** widths under 1024, where the panels stack.
+
+## §219 — Continue shows its progress: stage labels and a liquid fill (owner, 2026-11-17)
+- **What changed:** a new `ProgressButton` (`apps/web/src/ui/ProgressButton.tsx`), wired only to the job step's footer Continue (`JobStep.tsx`).
+  - **Labels:** while the step reads a new job, the button walks "Reading the job…" → "Analyzing…" (1.5 s) → "Almost there…" (5 s). An uploaded file starts with "Reading the file…" instead. The labels cross-fade in one grid cell, so the button keeps its width.
+  - **Fill:** a white-tint gradient over the brand pill grows left to right, so the label stays readable on brand (no light brand tint behind white text). A soft sheen (`animate-sweep`) runs inside it, and its leading edge sways (new `--animate-liquid-edge` motion token in `theme.css`).
+- **Honest progress:**
+  - Nothing reports a real percentage, so the fill eases on a timer toward 90% (fast at first, then slower) and never claims to be finished.
+  - When the read resolves, the fill runs to 100% over `duration-meter`, then the step moves on. So `onPicked` now waits about 0.8 s for a full pill.
+  - On an error it drains back, and the existing error line shows in the box.
+  - If the posting has closed, the fill drains, the button says "Continue anyway", and the callout shows as before.
+  - The caller's own `busyLabel` (ATS check: "Starting the check…") shows as a single stage, still with the fill.
+- **Accessibility:**
+  - `aria-busy` and `aria-disabled` while working; presses are refused in code, and the button isn't greyed out.
+  - The stage is announced politely (`role="status"`).
+  - Reduced motion drops the edge and the sheen and steps the fill by stage (30/60/90%), with no transitions (the global rule).
+- **Smoothness:** every frame of the creep is written straight to the fill's `translate`, with no React re-render per frame.
+- **To adopt later:** the keyword step's Continue and the generate/create steps run long and could use `ProgressButton` the same way (`phase`, `stages`, `onFilled`). Not wired yet.
+- **Verified:**
+  - `__tests__/ui/ProgressButton.test.tsx` (5) covers idle, working, done → `onFilled`, failed → drain, and the caller's stage.
+  - The create and ui suites pass (69); lint and typecheck are clean.
+  - In the browser at 1366×900 (mock): a sample job grew from 0% through "Reading the job…" and "Analyzing…" to 100% with no backward step, the button stayed 164px wide, and the step then opened the tailor page.
+- **Not verified frame by frame:** the Browser pane was hidden, so it rendered at 2–16 fps. The owner should watch it once in a real window, for snapping.
+
+## §220 — "Add a new job" keeps one height, empty or filled (owner, 2026-11-17)
+- **What changed (`OtherJobBox.tsx`):** the line under the input is one message row. It reserves two lines (`min-h-11`, two body-m lines) and stacks its three possible contents in one grid cell:
+  - the tip;
+  - an error (`role="alert"`);
+  - the closed-posting notice (`role="status"`).
+  - Whichever shows, the row and the panel keep their height.
+- **Clear instead of a vanishing link (judgement call):** the "Try a sample job" link used to disappear once the box had something in it. That slot now says **Clear** instead, which empties the box (text, link or file) and clears a file error. "Clear" reads better than a blank gap and gives the filled state a useful action.
+- **Closed-posting notice:** the "This posting has closed" warning used to be a `Callout` under the panel, which made the row taller. It now shows in the message row, in the warning colour. The footer still says "Continue anyway".
+- **Unchanged:** the counter row (already reserved on every tab, §217) and the fixed input slot (§218).
+- **Verified:**
+  - In the browser at 1366×900 (mock), the panel measured 545.6px and the row 593.6px in every state:
+    - empty;
+    - a long pasted description;
+    - the link tab, empty and with a link typed;
+    - the upload tab with a PDF chosen;
+    - an unsupported-file error.
+  - That is the same height as "Your saved jobs" beside it.
+  - create-flow Jest pass (18); lint and typecheck are clean.
+- **Limits:** an error longer than two lines at this width would still add a line. Today's messages fit in two at laptop width. The closed-posting state was not seen in the browser (the mock doesn't serve a closed posting from a paste).
+
+## §221 — "Upload a resume" popup: no buttons, reads on drop, a flowing gradient ring (owner, 2026-11-17)
+- **Where:** the only place this popup is used is the Tailor/Build flow's "How would you like to create your resume?" step (`features/tailor/flow/MethodDialogs.tsx` → `UploadDialog`). Onboarding's `ResumeDropZone`, the ATS upload step and `TailorResumeDialog` are different components and are untouched.
+- **What changed:**
+  - **Removed:** Cancel, Upload and the three feature lines. `MethodDialog` now leaves out its button row when there is no `confirmLabel`. ✕, Escape and the backdrop close it, but not while a file is being read.
+  - **Reads at once:** a file picked (browse, or Enter/Space on the zone) or dropped is read straight away. A wrong type or too-large file says why under the zone, offers "Try another file", and the zone stays usable.
+  - **Drag-over:** the dashed border gives way to a brand conic-gradient ring that turns, with a gentle lift. The text says "Drop to upload", and it eases back on drag-leave (leaving into the zone's own children doesn't count).
+  - **While reading:** the zone shows the file's name and type, a brand-gradient fill with the same sheen and swaying edge as Continue's, and "Uploading…" → "Reading your resume…" → "Almost there…", cross-faded. The ring keeps turning.
+  - **At 100%:** the read resume becomes the choice, as Upload did before. A failure drains the fill and shows the error with "Try another file".
+- **Progress is the honest timed kind:** `useImportResume` reports no upload progress, so the fill eases toward 90% and runs to 100% only when the read resolves. The logic moved into `ui/useProgressFill.ts`, shared with `ProgressButton` (§219), so both move alike.
+- **New tokens (`theme.css`):** `@property --ring-angle`, the `gradient-ring` utility (brand-200/500/300/600) and `--animate-ring-flow` (the `float` duration, linear).
+- **Accessibility:**
+  - The zone is `role="button"`, Enter/Space opens the picker, and it has `aria-busy` and `aria-disabled` while reading.
+  - The stage is announced politely.
+  - Reduced motion: the global rule runs the ring's turn once, instantly (a still gradient), `motion-reduce` cancels the lift, and the fill steps by stage.
+- **Verified:**
+  - In the browser at 1366×900 (mock), with a drag-over, drag-leave and a PDF drop dispatched by script:
+    - the text changed to "Drop to upload" and back;
+    - the ring faded in and turned (angle 43° → 120° → 223°) with a 2px lift;
+    - the fill went 18% → 34% → 49% as the stage moved to "Reading your resume…";
+    - then the popup closed with "Upload a resume" chosen;
+    - the popup stayed 440px tall throughout (it was taller with the feature lines and buttons).
+  - `MethodStep.test.tsx` has two new tests (reads on pick with no Upload/Cancel; a refused file says why and offers another). The tailor, create and ui suites pass (137); lint and typecheck are clean.
+- **Not verified:** a real mouse drag, and smoothness frame by frame. The session window wasn't open, so the pane ran as a background page with throttled frames. The owner should drag a file over it once in a real window.
+
+## §222 — Method cards: no ticked lines, art 30% smaller, one height (owner, 2026-11-17)
+- **What changed (`features/tailor/flow/MethodCard.tsx`, `methods.ts`):** on the four "How would you like to create your resume?" cards (Tailor my selected resume, Create from my profile, Start from scratch with AI, Upload a resume):
+  - the ticked feature lines are gone, and so is their copy (`METHOD_POINTS`);
+  - every card draws its art in one 90×60 box, 70% of the old 128×86;
+  - the line keeps two lines' room (`min-h-11`, `line-clamp-2`), so all four cards are one height whatever the line's length.
+  - Padding, gaps and the Recommended pill beside the title were already shared, and they still are.
+- **Judgement call: the popups keep their ticked lists.** The popups each card opens (`MethodDialogs.tsx`) still have their own ticked "what it does" lists for Tailor, Profile and Start from scratch. The owner's screenshot and words were about the cards; say if those lists should go too. The upload popup already lost its feature lines in §221.
+- **Verified:**
+  - In the browser at 1366×900 (mock), before → after:
+    - card heights 186 / 162 / 162 / 162px → 107.6px each;
+    - drawn art box 128×86 → 90×60 on every card. The clay art is portrait, so its drawn height went from 86 to 60px, 70%.
+  - The radio, the art and the text block are centred at the same point (53.8px) on every card.
+  - The tailor and create suites pass (86; no test read the removed lines). Lint and typecheck are clean.
+
+## §223 — Method popups lose their ticked lists too (owner, 2026-11-17)
+- **What changed:** the owner confirmed the popups should match the cards (§222). The ticked "what it does" lists are gone from the Tailor, Profile and Start-from-scratch popups:
+  - their copy is deleted from `MethodDialogs.tsx`;
+  - `MethodDialog` no longer takes `points`.
+  - The upload popup had already lost its lines (§221).
+- **Spacing:** each popup is now its art, title and line, its one fact row, then Cancel and the way forward. They keep the existing `gap-5` / `p-7`, so the height drops with the list and nothing is left empty. There was no new spacing to tighten.
+- **Verified:**
+  - In the browser at 1366×900 (mock), opening each popup: Tailor 294px, Profile 327px, Start from scratch 352px, Upload 440px, none with a list.
+  - The tailor and create suites pass (86; no test read the removed lines). Lint and typecheck are clean.
+
+## §224 — Method step: no line under the title (owner, 2026-11-17)
+- **What changed:** "How would you like to create your resume?" no longer has the line under it ("Choose how to create your resume for the … role. You can start from your selected resume, …") in `MethodStep.tsx`.
+- **`StepHeading`:** its `lede` is now optional, and it renders no paragraph without one. So nothing is left behind: no empty line, no extra gap. Every other step still passes its lede.
+- **Verified:** the tailor and create suites plus `FlowChrome` pass (90; no test read the line). Lint and typecheck are clean. Not looked at in the browser: the change is one removed paragraph.
+
+## §225 — Method card art 15% larger (owner, 2026-11-17)
+- **What changed:** after seeing §222 live, the owner asked for the cards' art 15% bigger. The one art box in `MethodCard.tsx` goes from 90×60 to 104×69 (`w-26 h-17.25`), so it is now about 80% of the original 128×86.
+- **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 104×69, and they stay one height (107.6px, unchanged: the title and its two-line description are still the tallest part). Lint is clean.
+
+## §226 — Method card art 10% larger again (owner, 2026-11-17)
+- **What changed:** the art box in `MethodCard.tsx` goes from 104×69 to 114×76 (`w-28.5 h-19`), about 89% of the original 128×86.
+- **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 114×76 and stay one height. They grew 2px, 107.6 → 109.6px, because the art is now the tallest part of the card. Prettier is clean.
+
+## §227 — Method step: no "Step 1 of 3" (owner, 2026-11-17)
+- **What changed:** the "STEP 1 OF 3" label over "How would you like to create your resume?" is gone (`MethodStep.tsx`), because the next step (keywords) shows none. `StepHeading`'s `step`/`of` are now optional and the label renders only with both.
+- **Left alone:** the other flows that use `StepHeading` still show their labels: Choose a job, ATS, Zero, Cover letter, and the Build flow's later steps. Say if those should go too.
+- **Verified:**
+  - In the browser (mock), the heading reads only its title.
+  - `MethodStep.test.tsx` now checks the label is absent. The tailor and create suites plus `FlowChrome` pass (90); lint and typecheck are clean.
+
+## §228 — "What happens next?": a line joins the three steps (owner, 2026-11-17)
+- **What changed:** in the method step's aside (`MethodStep.tsx`), a 2px rounded line in `border-brand-strong` runs from each numbered circle down to the next, like a stepper. The line is decorative (`aria-hidden`); the list is still an `<ol>`.
+- **Verified:**
+  - In the browser at 1366×900 (mock), both lines sit on the circles' centre line. Each starts at one circle's bottom edge and ends at the next one's top, with no gap or overlap.
+  - `MethodStep` and `TailorFlow` tests pass; lint and typecheck are clean.
+
+## §229 — Method card art 10% larger once more (owner, 2026-11-17)
+- **What changed:** the art box in `MethodCard.tsx` goes from 114×76 to 126×84 (`w-31.5 h-21`), about 98% of the original 128×86. The four §222–§228 changes are kept: no ticked lines, one box for all four cards, one height.
+- **Verified:** in the browser at 1366×900 (mock), all four cards draw their art at 126×84 and stay one height, 109.6 → 117.6px. Prettier is clean.
+
+## §230 — "We add only what you accept" at the bottom of the keyword card (owner, 2026-11-17)
+- **What changed:** on "Choose keywords to add" (`EnhanceStep.tsx`), the promise line ("We add only what you accept. You decide what goes on your resume, and interviewers may ask about any of it.") no longer sits in the page body under the score panel. It now rides in the step's footer, which is already pinned to the bottom of the window, under the credit and time note and beside Back and Continue. It is always in view when you choose.
+- **Not changed:** Build's own copy of the line (a `Callout` in `BuildSteps.tsx`) stays where it is; the owner's screenshot was the keyword step.
+- **Verified:**
+  - In the browser at 1366×900 (mock), the line is inside the sticky footer, 16px off the window's bottom (73.6px tall), and shows once.
+  - Tailor suites pass; lint and typecheck are clean.
+- **Corrected the same day (owner):** "not in this, but in the Choose keywords to add card". The footer is back to the credit note alone; the line now closes the card itself, as its last row across both columns, above a faint `border-border-subtle` divider. Measured at 1366×900: the line spans the card's width (987px) and sits 32px above the card's bottom (the card's padding). Tailor suites (68) pass; lint and typecheck are clean.
+
+## §231 — The run screen, one centred column (owner, 2026-11-17)
+- **What changed:** the screen a run shows while it works (`RunProgress.tsx`) is redesigned from the owner's reference (the mobile "Tailoring your resume for Zycus" screen). Inside the step's card, one centred column: the art on top (no grey panel beside the list), a small brand pill ("NEXTKIN"), the title, the job and the starting resume on two lines, then the meter with its percentage, a thicker bar, and the run's steps with the one being worked on on a brand tint. The note (with an info icon) and "Leave and notify me" sit centred under the list. The footer bar under the card is gone from this screen.
+- **Judgement calls:**
+  - It is the shared run screen, so cover letter, ATS check and Zero resume runs change too; they all looked like the tailoring one before and still do. This reverses the 2026-11-15 note in this file's comment ("the narrow centred card did not match"), on the owner's new reference.
+  - "Step 3 of 3" is dropped (the owner dropped step labels on the method step, §227); the `step` prop is gone.
+  - The pill says "NextKin" by default, as in the reference; a flow can pass its own `eyebrow`.
+  - Type stays on the app's tokens (title 22px `text-h1`, steps 15px `text-body-l`), not the reference's phone pixels.
+- **Verified:** in the browser at 1366×900 (mock), a tailor run on job_google shows the new layout and fits the window with no scroll (card 96–868px; column 672px). Typecheck and lint are clean; tailor and create suites pass (86). Not seen: the stalled state (Check again) and the other three flows' runs, which share the same code.
+
+## §232 — The big orb drawn sharp (owner, 2026-11-17)
+- **What was wrong:** the run screen's large orb (`AiOrb size="xl"`, 160px) was the library's 64px canvas stretched 2.5× with CSS, so its dots were a blurred enlargement of an 80×80 bitmap (on a 1.25× screen).
+- **What changed:** `xl` now uses `SharpOrb` in `AiOrb.tsx`. It takes the library's own engine from `thinking-orbs/engine` (the same 64px preset, frames and painter, so the orb looks the same) and paints on a canvas as large as the box times the pixel ratio (up to 3), with the drawing scaled up. Like the library, it pauses while off screen or in a hidden tab, and holds a still frame under reduced motion. The small orbs (20/32/64) still use `ThinkingOrb` unchanged.
+- **Verified:** in the browser on a tailor run (mock), the big canvas is 200×200 for its 160px box at a pixel ratio of 1.25 (it was 80×80), and a zoomed screenshot shows crisp round dots. Typecheck and lint are clean; tailor, create and ui suites pass (137). Not seen on a 2× or 3× screen.
+
 ## §233 — The clay illustrations from Seedream 5.5, in the app (owner, 2026-11-11; ported 2026-11-18)
 - **Ported** from `claude/app-ui-ux-redesign-1a1793` (`12f1ce5`, §211 there) onto `claude/mobile-tailor-flow`. The Assistant Chats sheet keeps main's text-only empty state (its layout commit `473dca0` was not ported), so `assistant/no-chats.webp` is in the tree but unused. PlanQuestions was not ported (see §234).
 - **Source:** 27 images generated on ElevenLabs with `bytedance-seedream-5.5`, from `asset-prompts.md`. The owner picked Seedream over GPT Image 2.6 after a head-to-head.
@@ -18471,3 +18639,123 @@ The owner asked for every landing component to be rebuilt with more precision an
 - **Hero eyebrow on phones:**
   - The icon chip was squeezed into an oval because it could shrink while the label couldn't wrap. `Eyebrow` now keeps the chip at 28px (`shrink-0`) and lets other eyebrows truncate, as a fallback that is never needed today.
   - The hero eyebrow is 12px with tighter spacing on phones. It fits on one line at 375px and wraps onto two lines at 320px (50px tall) instead of ending in an ellipsis. Tablet and desktop are unchanged.
+
+## §252 — The sign-in logo on a glowing white sphere (owner, 2026-11-20; was §233 on its branch, superseded)
+- **What changed:** on the sign-in/sign-up brand panel (`AuthBrandPanel.tsx`, shared by sign-in, the Clerk sign-up and the session bridge), the mark no longer sits on a white rounded square. It sits on a white sphere (44px): a radial gradient lit from the upper left, white into a light lavender rim (`brand-100`/`brand-200`), a soft inner shade (`brand-300`), and an outer white and lavender halo, so it glows on the indigo. Tokens only (`surface-card`, brand ramp).
+- **Verified:** in the browser at 1366×800 on /sign-in (mock), with a zoomed screenshot. The Clerk sign-up page (app.nextkin.ai/sign-up in the owner's screenshot) uses the same panel but 404s locally without Clerk keys, so it was not seen there.
+- **Superseded on merge (2026-11-22):** main had already replaced this mark with the landing nav's glowing logo art (`/landing/logo-mark-glow.svg`, owner 2026-11-21), so the merge keeps main's version and this sphere is gone.
+
+## §253 — Documents: the folder art moves into the empty preview; search fills its row (owner, 2026-11-21)
+- **What changed:**
+  - The folder illustration and its handwritten "Organize, Prepare, Go Further" caption no longer rise over the preview card's top-left corner. The folder (no caption) is now the art of the preview's two empty states, "Nothing to preview yet" and "Select a document", in place of the small file icon (`DocumentsIllustration.tsx`, `DocumentDetailPanel.tsx`). It loads with the page, so it never pops in late. With the art gone from above it, the preview card starts level with the search row (the 36px offset is removed from `DocumentsScreen.tsx`).
+  - The search box no longer stops at 384px (`max-w-sm` removed in `DocumentsToolbar.tsx`); it runs up to the list/grid switch, so there is no empty stretch after it.
+- **Judgement call:** the caption was dropped rather than moved; the empty state already has its own title and line.
+- **Verified:** in the browser at 1366×800 (mock): the card is level with the search, the search reaches the switch, and the empty preview ("Select a document", reached by a search with no matches) shows the folder. Typecheck and lint are clean; documents suites pass (14). Not seen: the no-documents-at-all state (same art, same code path).
+
+## §254 — Consistency pass, phases 1–2: shared pieces and the list pages (owner, 2026-11-21)
+The owner asked for the whole web app to be made consistent. Three read-only surveys compared every route (plan: `~/.claude/plans/foamy-churning-canyon.md`). The rule used: where two patterns compete, the shared piece and the owner's most recent choice win. Defaults taken without asking (the owner declined the question; each can be flipped): no "Step N of N" anywhere, the pill search, Resumes like Documents, ink for a flow's final paid commit.
+
+- **One search field** (`ui/SearchField.tsx`): a pill at `h-control-lg` with the card shadow, body-l type, the tertiary glass, a "…" placeholder, and a × whose place is kept while empty. Jobs (with its Search button), Resumes, Documents (with its view switch), Help and now Applications all use it. Before: two shapes (pill and `rounded-md`), two type sizes and three placeholder styles.
+- **Applications gains a search** over the role, company and place, above its pills, so every list reads Search → Pills → Filters → Results.
+- **Eyebrows:** Jobs and Notifications gain theirs ("Jobs", "Notifications"), like the other pages.
+- **Reset:** one look and one rule on every list. It says "Reset", follows the last chip (the owner's 2026-11-13 Applications placement), shows only once something is narrowed, and clears the chips and the search. Jobs gains it; Resumes' "Clear filters" and its `ml-auto` place go. Applications' Reset no longer shows when nothing is narrowed (it used to always show).
+- **Results line:** a plain plural noun ("39 jobs", "5 resumes", was "39 results" and "5 resumes found"), and Jobs' sort says "Sort by: Most relevant" like the others.
+- **Resumes:** chips sit 8px apart (were 6px) and the grid starts `mt-4` (was `mt-6`). The character and the "Create New Resume" button no longer sit above the preview, so it starts level with the list. The character is now the art of the preview's empty states (like Documents' folder, §253). "Create New Resume" is the top bar's primary action on Resumes, as "Upload New Document" is on Documents; it opens the same create dialog through `navigation/topBarEvents.ts`.
+- **Empty lists:** Jobs and Resumes now keep the list's place as one dashed outline with a way on ("Reset filters", "Create your first resume"), as Applications and Documents already did (owner, 2026-11-15). Resumes no longer swaps the whole page for one empty state on a first visit (RS-11 is superseded by the 2026-11-15 rule).
+- **Kept as the owner set them:** Jobs' blank empty detail card (owner 2026-11-13: no art, no copy); Jobs' Search button (its search looks for new jobs).
+- **Status pages** (Interview, Upgrade, 404, error) now sit in the page column with its gutters and top padding (they had none), and their title is PageHeader's size (was 18px, smaller than the card's own heading).
+- **Smaller fixes:**
+  - `fieldBox` hovers on a token (`border-strong`) and also on labels.
+  - Notification rows use the list-row card (`rounded-lg`, 20/16 padding, 16px apart, unread on `surface-brand-tint`); they were `rounded-xl`, `p-4`, 12px apart, raw `brand-50`.
+  - Three list comments said 12px between rows where the code is 16px.
+- **Not changed, and why:** the hand-rolled list rows already equal `cardSurface` to the pixel, so swapping them changes nothing on screen. `PillTabs`' track keeps `rounded-xl`, because a pill-shaped track looks wrong when the tabs wrap to two lines. `FilterChip` and the secondary button keep `neutral-700`/`neutral-800`, as no text token matches that ink.
+- **Tests:** updated for the new wording ("39 jobs", "5 resumes", "Reset", "Sort by: …") and for Create moving to the top bar (the tests send its event). The list, UI and navigation suites pass (173).
+
+## §255 — Consistency pass, phase 3: account and info pages (owner, 2026-11-21)
+- **Eyebrows:** Profile and Settings drop the chevron after their eyebrow ("Profile ›", "Settings ›"), so every page's eyebrow is the plain section name.
+- **Buttons on the shared sizes:**
+  - "Complete Profile" (Profile) and "Send message" (Help) were 44px tall with 14px type. They now use `BUTTON_SIZE.lg`, the size every other large button has (16px, semibold).
+  - Delete account's Cancel and Deactivate rendered at normal weight and now use the shared sizes.
+  - "Delete my account" was a hand-rolled red button; it is now the shared danger commit.
+  - Connected accounts' buttons gain their missing semibold.
+- **Profile's rail** now stacks under the main column below 1024, as Help's and the job page's do. It never stacked before, so the 340px rail squeezed the main column on a tablet.
+- **Settings' bottom space** is `pb-10`, like the other pages (was `pb-8`). Settings still starts under the top bar (`pageFrame`), as the owner left it when the other pages moved into the bar's band (§87).
+- **Left as they are, on purpose:**
+  - The Assistant's asides (`p-5`, `gap-5`, no stacking) are tuned to fit short windows; changing them risks the chat's fixed height.
+  - Settings' and Help's tinted note rows, the Home cards, and onboarding's and auth's own fields and logos keep their boards' own looks. Moving them onto `Callout` and the shared field would be a redesign, not a consistency fix (the owner's readability rule, 2026-09-30).
+  - The Profile name (30px) equals the page title; it doesn't exceed it.
+- **Verified:** typecheck and lint clean; the Settings, Profile, Help and Account suites pass (62).
+
+## §256 — Consistency pass, phase 4: the create flows (owner, 2026-11-21)
+- **No "Step N of N" on any step.** The owner removed it from Tailor's two steps (§227); now the job step, ATS upload, Cover letter's tone and tailor-first steps, its resume step, Zero's basics and check panel, and Build's keyword step drop it too. `StepHeading` no longer takes `step`/`of`, and the stepper at the top says where you are.
+- **One set of stepper labels for Build and Tailor:** their first step showed "Job · Resume · Enhance", then switched to "Job & Resume · Choose Keywords · Generate Results" once past it. Both now use the second set from the start (`jobFlow.ts`).
+- **The final paid commit is ink everywhere,** per the rule written in `FlowFooter`. "Write my cover letter" and "Write my first draft" were brand indigo; Tailor and Build's already were ink. "See Pro plans", which replaces the button once the allowance is spent, now uses Pro's own colour (`upgradeButton`, the `paid` variant) on the job step, Cover letter and Zero; it was brand indigo.
+- **One frame for every create flow:** ATS check, Cover letter and Zero resume now use `flowPage` like Build and Tailor, and the top bar steps aside on them from 768 up (`TopBar`'s `FOCUS_FLOW`). Their footer now rests at the window's bottom, and "Build Resume" no longer sits over a flow already under way.
+- **Result headers:** Cover letter's "Your letter is ready" and ATS's "Your ATS score for …" use the same title size (`text-h1`) and 40px shadowed back button as "Resume review"; they were 20px titles with a 36px plain back button. Every Download PDF says "Preparing PDF…" while it works (Resume review and the Resumes page said "Preparing…").
+- **Bug fixed:** "Add N keywords & continue" never showed "Starting…" while it started, because its label wasn't a plain string. `Button` gains `trailingIcon` (the arrow after the label, hidden while loading), so the label stays a string and the busy text shows.
+- **Token fixes found by the full suite (from §219/§221):**
+  - The progress fill and upload ring used raw `white`; they now use `neutral-0`.
+  - The upload zone's `rounded-[calc(…)]` is now `rounded-lg`.
+  - The turning ring's `linear` timing is now a token (`--ease-linear`, `motion.easings.linear`).
+  - The token test lists the two new animations, and the arbitrary-value ratchet is lowered to 423.
+- **Not in this pass:**
+  - Dialog heads, close buttons and padding: the Tailor, score and editor dialogs still differ.
+  - The four looks of "Change".
+  - Hand-made tinted tips, which could become `Callout`.
+  - Result-card padding, and the six upload drop zones.
+  - Each is a redesign of its own rather than a token or label fix; listed for the owner to pick.
+- **Verified:**
+  - The whole web suite passes (956 tests, 102 suites); typecheck is clean, and lint and Prettier are clean on every file changed (the remaining warnings are in files this pass didn't touch).
+  - In the browser at 1366×800 (mock), all four list pages measure alike: an eyebrow, a 44px pill search at y 134, pills at y 194, "39 jobs" / "24 applications" / "5 resumes" / "12 documents", and "Sort by: …".
+  - Resumes' preview starts at y 134, level with the search, and the top bar's "Create New Resume" opens the create dialog.
+  - Interview Prep sits in the page column with a 30px title.
+  - Cover letter and Zero show no step label with the top bar stepped aside, and Zero's "Write my first draft" is ink.
+  - Not seen: the 1024 width, the stalled and failed states, and each result screen with real data.
+
+## §257 — Consistency pass, phase 5: popups, "Change", notes and the drop zone (owner, 2026-11-22)
+The owner said yes to the follow-ups listed in §256.
+
+### Popups
+One inside for every popup, from shared parts in `ui/Dialog.tsx`:
+- `dialogBody`: 28px in from the sides and top.
+- `dialogTitle` and `dialogLine`.
+- `dialogFooter`: the button row, under a rule, 28px in, buttons right, an optional note on the left.
+- `DialogCloseButton`: a 36px × set 20px into the top-right corner, on every popup that isn't a yes-or-no question.
+
+Moved onto these parts: the four method popups, "Which resume should we tailor?", "Where did you use …?" and "Add the result", the editor's "A few things before you download", Create a resume, AI consent, the profile-sync question, the accuracy question, Verify email and `ConfirmDialog`.
+
+What they drew before:
+- side padding of 20, 24, 26 or 28px;
+- button rows with or without a rule, and 10 or 12px between buttons;
+- three different ×: an absolute 36px square, an inline icon button, and a bordered round one.
+
+"Which resume should we tailor?" had no × at all and now has one. The editor's warning drops its tinted tile for the bare icon beside the title, as the owner set for the tailor dialogs (2026-11-15). `ConfirmDialog` keeps its red bin tile (RES 04's board).
+
+### "Change"
+One look (`changeLink` in `ui/textLink.ts`): the brand text link the method popups and cards already used. Before: a bordered small button on the keyword step's resume row, and a round outlined pill on Cover letter's chosen job and resume.
+
+### Notes
+The editor's one-line notes and the JD page's "doesn't name the job title" are now `Callout`s; they were five hand-made tinted boxes:
+- typesetting;
+- typeset failed;
+- guesses to check;
+- download blocked in the letter editor (it was also `rounded-xl` with a border);
+- Zero's guessed role.
+
+### One drop zone
+The owner's §221 zone (read on drop, the flowing ring, the fill and stages, "Try another file") is now its own component, `features/create/components/ResumeDropArea.tsx`. Tailor's upload popup and Create a resume's upload (`DropZone`) both use it. Create a resume's zone used to show a spinner, an "Upload a file" button and "Saved to Resumes and picked".
+
+### Not changed, on purpose
+- ATS check's upload: a large hero with its own picture, a file summary and "Replace", from its board.
+- The one-line "Upload another resume" rows.
+- Onboarding's drop zone, which has its own board.
+- Settings' brand-tinted notes (from the Settings board; `Callout`'s tip tint and lightbulb would change them).
+- The JD page's "Worth knowing" section (a heading and a list, not a note).
+- The job step's tip line (the owner set it in §220).
+- The method step's "What happens next?" (the owner's connected steps, §228).
+
+### Verified
+- In the browser (mock), the upload popup's body pads 28/28/20 and its × is 36px, 20px from the corner, with the shared zone inside.
+- "Create from my profile" has its button row 28px in, under a rule.
+- The dialog suites passed (165); see the full-suite line under this entry.
+- **Full suite:** 956 tests pass (102 suites); the arbitrary-value ratchet is lowered to 422. Typecheck and lint are clean.

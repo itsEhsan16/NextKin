@@ -73,8 +73,6 @@ export function AtsUploadStep({
         <div className="px-8 pb-2 pt-8">
           <StepHeading
             id="ats-resume"
-            step={1}
-            of={3}
             title="Which resume should we check?"
             lede="Upload one made outside NextKin. Resumes you made here are checked as you build them."
           />

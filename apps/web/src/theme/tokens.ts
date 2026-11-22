@@ -388,6 +388,8 @@ export const motion = {
     decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
     // A quick settle with no overshoot (§196); it used to pass its target and swing back.
     spring: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    // A steady turn with no start or stop (the upload zone's ring, toreview §221).
+    linear: 'linear',
   },
   /** What a held button or card settles to, and what menus and tooltips grow from. */
   pressedScale: 0.98,

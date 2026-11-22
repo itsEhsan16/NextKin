@@ -22,6 +22,7 @@ import { EditorIdentity } from '../components/EditorIdentity';
 import { LetterForm } from '../components/LetterForm';
 import { LetterPreview } from '../preview/LetterPreview';
 import { useLetterDraft } from '../useLetterDraft';
+import { Callout } from '@/ui/Callout';
 
 /**
  * A cover letter's editor (EDIT 04, 867:636): the way back to Documents, the letter's name and
@@ -129,14 +130,7 @@ export function LetterEditorScreen({ id }: { id: string }) {
           </button>
         </div>
       </div>
-      {download.blocked && (
-        <p
-          role="status"
-          className="rounded-xl border border-warning-text/30 bg-warning-50 px-4 py-3 text-body-m text-warning-text"
-        >
-          {download.blocked}
-        </p>
-      )}
+      {download.blocked && <Callout tone="warning">{download.blocked}</Callout>}
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
         <div className={cn(cardSurface, 'rounded-xl p-5 shadow-card')}>

@@ -144,7 +144,7 @@ export function ReviewHeader({
         className={cn(BUTTON_VARIANT.primary, BUTTON)}
       >
         <Download01 aria-hidden className="size-4" />
-        <StableLabel label="Download PDF" busyLabel="Preparing…" busy={downloading} />
+        <StableLabel label="Download PDF" busyLabel="Preparing PDF…" busy={downloading} />
       </button>
     </header>
   );

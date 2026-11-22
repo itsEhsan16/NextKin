@@ -5,7 +5,7 @@ import type { Route } from 'next';
 import { Skeleton } from '@/ui/Skeleton';
 import { Callout } from '@/ui/Callout';
 import { textLink } from '@/ui/textLink';
-import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import { Dialog, DialogClose, DialogDescription, DialogTitle, dialogFooter } from '@/ui/Dialog';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
@@ -53,7 +53,7 @@ export function AiConsentGate() {
       size="md"
     >
       {/* Scrolls on a short window instead of running off it (AU-18). */}
-      <div className="flex min-h-0 flex-col gap-3.5 overflow-y-auto px-6.5 pb-5 pt-5.5">
+      <div className="flex min-h-0 flex-col gap-3.5 overflow-y-auto px-7 pb-5 pt-7">
         <Image
           src="/illustrations/v2/ai-consent.webp"
           alt=""
@@ -116,7 +116,7 @@ export function AiConsentGate() {
           .
         </p>
       </div>
-      <div className="flex flex-wrap justify-end gap-2.5 border-t border-border-default pb-4 pl-6 pr-5 pt-3.5">
+      <div className={dialogFooter}>
         <DialogClose className={buttonClass({ variant: 'secondary', size: 'lg' })}>
           Not now
         </DialogClose>

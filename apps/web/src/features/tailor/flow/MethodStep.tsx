@@ -81,13 +81,7 @@ export function MethodStep({
     <div className={stepShell}>
       <section aria-labelledby="method-step" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
-          <StepHeading
-            id="method-step"
-            step={1}
-            of={3}
-            title="How would you like to create your resume?"
-            lede={`Choose how to create your resume for the ${job.title} role. You can start from your selected resume, build from your profile, or create a new one.`}
-          />
+          <StepHeading id="method-step" title="How would you like to create your resume?" />
         </div>
         <div className="grid gap-6 px-8 pb-8 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
           <div
@@ -141,10 +135,20 @@ export function MethodStep({
               </h2>
               <ol className="flex flex-col gap-3">
                 {NEXT.map((line, i) => (
-                  <li key={line} className="flex items-start gap-3 text-body-m text-text-primary">
+                  <li
+                    key={line}
+                    className="relative flex items-start gap-3 text-body-m text-text-primary"
+                  >
+                    {/* A line from this number down to the next, joining the three (§228). */}
+                    {i < NEXT.length - 1 && (
+                      <span
+                        aria-hidden
+                        className="absolute -bottom-3 left-3.5 top-7 w-0.5 -translate-x-1/2 rounded-full bg-border-brand-strong"
+                      />
+                    )}
                     <span
                       aria-hidden
-                      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-caption-m font-bold text-text-brand"
+                      className="relative flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-caption-m font-bold text-text-brand"
                     >
                       {i + 1}
                     </span>

@@ -3,22 +3,21 @@ import Image from 'next/image';
 import { cn } from '@/lib/cn';
 
 /**
- * The character holding up a resume (307:4012), at 220×82: the board's 294×109 at the three
- * quarters the Jobs character is drawn at. It is a raster on the board, so it ships as a PNG, cut to
- * 660×245 from the 2058×764 export. The board gives it no caption. The screen places it.
+ * The character holding up a resume (307:4012), as the art of the preview's empty states, as
+ * Documents' folder is (toreview §254: it no longer rises over the preview card's corner). A
+ * raster on the board, so the WebP; it sizes by width and keeps its own shape, and loads with the
+ * page so the empty card never shows without it.
  */
 export function ResumesIllustration({ className }: { className?: string }) {
   return (
-    <div aria-hidden className={cn('pointer-events-none h-[82px] w-[220px]', className)}>
-      <Image
-        // Above the fold and the page's largest paint: fetched with the page, not lazily (§84).
-        loading="eager"
-        src="/illustrations/v2/resumes.webp"
-        alt=""
-        width={560}
-        height={462}
-        className="size-full object-contain"
-      />
-    </div>
+    <Image
+      aria-hidden
+      loading="eager"
+      src="/illustrations/v2/resumes.webp"
+      alt=""
+      width={560}
+      height={462}
+      className={cn('pointer-events-none h-auto w-44 object-contain', className)}
+    />
   );
 }

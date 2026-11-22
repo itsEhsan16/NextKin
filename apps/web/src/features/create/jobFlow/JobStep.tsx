@@ -11,17 +11,18 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { Callout } from '@/ui/Callout';
+import { ProgressButton, type ProgressPhase } from '@/ui/ProgressButton';
 import { ArrowRight } from '@/ui/lineIcons';
 
 import {
   backButton,
   FlowFooter,
   primaryButton,
-  StepHeading,
   stepCard,
+  StepHeading,
   stepShell,
   TrustNote,
+  upgradeButton,
 } from './FlowChrome';
 import { JOB_FLOWS, type JobFlow, type PickedJob } from './jobFlow';
 import { emptyOtherJob, OtherJobBox, otherJobInput, type OtherJob } from './OtherJobBox';
@@ -34,10 +35,14 @@ const READ_FAILED = 'We couldn’t read that job. Check your connection and try 
  * a job from anywhere on the right, then the footer bar. The newest saved job starts picked;
  * typing in the other box picks that instead. Nothing is spent here.
  */
+/** What Continue says while it reads a pasted description or a link (toreview §219). */
+const READ_STAGES = ['Reading the job…', 'Analyzing…', 'Almost there…'] as const;
+/** The same, for an uploaded file. */
+const FILE_STAGES = ['Reading the file…', 'Analyzing…', 'Almost there…'] as const;
+
 export function JobStep({
   flow,
   onPicked,
-  stepNo = 1,
   backHref = '/' as Route,
   note,
   busyLabel,
@@ -45,8 +50,6 @@ export function JobStep({
 }: {
   flow: JobFlow;
   onPicked: (job: PickedJob) => void;
-  /** Where the job comes in this flow: second for the ATS check (863:2). */
-  stepNo?: number;
   backHref?: Route;
   /** The footer's own words; else the two reassurances (toreview §150). */
   note?: string;
@@ -65,11 +68,12 @@ export function JobStep({
   const [problem, setProblem] = useState<string | null>(null);
   // A posting that was read but has closed (toreview §206): said here, before anything is built.
   const [closedId, setClosedId] = useState<string | null>(null);
+  // How Continue's fill stands while it reads a new job; the read job waits for a full pill.
+  const [readPhase, setReadPhase] = useState<ProgressPhase>('idle');
+  const [readId, setReadId] = useState<string | null>(null);
 
   const pickedSaved = savedId ?? jobs[0]?.id ?? null;
   const using = source ?? (saved.data && jobs.length === 0 ? 'other' : 'saved');
-  const busy =
-    extract.isPending || (extract.isSuccess && closedId == null) || busyLabel !== undefined;
   const failed = extract.isError && !isConsentRequired(extract.error);
   const ready =
     using === 'saved' ? pickedSaved != null : other.file != null || other.text.trim().length > 0;
@@ -83,15 +87,23 @@ export function JobStep({
     }
     readOther();
   };
-  // Analyze job reads the new job straight away, whatever was picked on the left.
+  // Continue reads the new job when it is the chosen source (writing in the box chooses it).
   const readOther = () => {
     setSource('other');
     const read = otherJobInput(other);
     if (!read) return setProblem('Paste the job description or its link, or upload a file.');
     if ('problem' in read) return setProblem(read.problem);
+    setReadPhase('working');
     extract.mutate(read.input, {
-      onSuccess: (draft) =>
-        jdHasClosed(draft) ? setClosedId(draft.id) : onPicked({ kind: 'jd', id: draft.id }),
+      onSuccess: (draft) => {
+        if (jdHasClosed(draft)) {
+          setClosedId(draft.id);
+          return setReadPhase('idle');
+        }
+        setReadId(draft.id);
+        setReadPhase('done');
+      },
+      onError: () => setReadPhase('failed'),
     });
   };
 
@@ -99,13 +111,7 @@ export function JobStep({
     <div className={stepShell}>
       <section aria-labelledby="job-step" className={stepCard}>
         <div className="px-8 pb-2 pt-8">
-          <StepHeading
-            id="job-step"
-            step={stepNo}
-            of={copy.steps.length}
-            title={copy.jobTitle}
-            lede={copy.jobLede}
-          />
+          <StepHeading id="job-step" title={copy.jobTitle} lede={copy.jobLede} />
         </div>
         <div className="grid gap-5 px-8 pb-8 pt-4 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
           {/* Both columns stretch to the row, and each panel fills its column (owner, 2026-11-17). */}
@@ -127,8 +133,15 @@ export function JobStep({
             <OtherJobBox
               value={other}
               selected={using === 'other'}
-              busy={extract.isPending}
-              onAnalyze={readOther}
+              busy={extract.isPending || readPhase === 'done'}
+              // Said inside the box, so the panel and the row keep their height (toreview §220).
+              notice={
+                closedId && using === 'other' ? (
+                  <>
+                    <span className="font-semibold">{JD_CLOSED_TITLE}.</span> {JD_CLOSED_NOTE}
+                  </>
+                ) : undefined
+              }
               problem={
                 problem ?? (failed ? (jdFailureMessage(extract.error) ?? READ_FAILED) : null)
               }
@@ -137,14 +150,10 @@ export function JobStep({
                 setSource(value.text || value.file ? 'other' : 'saved');
                 setProblem(null);
                 setClosedId(null);
+                setReadPhase('idle');
                 extract.reset();
               }}
             />
-            {closedId && using === 'other' && (
-              <Callout tone="warning" className="mt-3">
-                <span className="font-semibold">{JD_CLOSED_TITLE}.</span> {JD_CLOSED_NOTE}
-              </Callout>
-            )}
           </div>
         </div>
       </section>
@@ -154,19 +163,22 @@ export function JobStep({
           Back
         </Link>
         {spent ? (
-          <Link href={'/upgrade' as Route} className={primaryButton}>
+          <Link href={'/upgrade' as Route} className={upgradeButton}>
             See Pro plans
           </Link>
         ) : (
-          <button type="button" onClick={next} disabled={!ready || busy} className={primaryButton}>
-            {busyLabel ??
-              (busy
-                ? 'Reading the job…'
-                : closedId && using === 'other'
-                  ? 'Continue anyway'
-                  : 'Continue')}
+          <ProgressButton
+            onClick={next}
+            disabled={!ready && readPhase === 'idle' && busyLabel === undefined}
+            className={primaryButton}
+            phase={busyLabel !== undefined && readPhase !== 'done' ? 'working' : readPhase}
+            stages={other.file ? FILE_STAGES : READ_STAGES}
+            {...(busyLabel !== undefined && readPhase !== 'done' ? { stage: busyLabel } : {})}
+            onFilled={() => readId && onPicked({ kind: 'jd', id: readId })}
+          >
+            {closedId && using === 'other' ? 'Continue anyway' : 'Continue'}
             <ArrowRight aria-hidden className="size-4.5" />
-          </button>
+          </ProgressButton>
         )}
       </FlowFooter>
     </div>

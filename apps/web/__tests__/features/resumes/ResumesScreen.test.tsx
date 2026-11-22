@@ -1,10 +1,11 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ATS_BAND_LABEL } from '@nextkin/shared/models';
 import { mockStore, resetMockRepos } from '@nextkin/shared/repos';
 
 import { ResumesScreen } from '@/features/resumes/screens/ResumesScreen';
+import { CREATE_RESUME_EVENT } from '@/navigation/topBarEvents';
 import { printDocument } from '@/lib/printDocument';
 import { renderWithQuery, SETTLE_MS } from '../../../testSupport/render';
 
@@ -40,7 +41,9 @@ const row = (name: string) => {
   return within(container as HTMLElement);
 };
 
-const settle = () => screen.findByText('5 resumes found', {}, { timeout: SETTLE_MS.normal });
+const settle = () => screen.findByText('5 resumes', {}, { timeout: SETTLE_MS.normal });
+// "Create New Resume" is the top bar's action now (toreview §254); it asks the page for its dialog.
+const openCreate = () => act(() => void window.dispatchEvent(new Event(CREATE_RESUME_EVENT)));
 
 const panelFor = (name: string) => screen.findByRole('region', { name }, { timeout: 3000 });
 
@@ -64,17 +67,16 @@ describe('ResumesScreen', () => {
       expect(screen.getByRole('button', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
     }
     // Nothing to clear yet (redesign R6a, RS-07), and one sort control (RS-06).
-    expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sort by: Last updated' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Sort resumes/ })).not.toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: 'Search resumes' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create New Resume' })).toBeInTheDocument();
   });
 
   it('shows the loading state before the mock layer settles', () => {
     renderWithQuery(<ResumesScreen />);
 
-    expect(screen.queryByText(/resumes found$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^\d+ resumes$/)).not.toBeInTheDocument();
     expect(screen.queryByText('Software Engineer Resume')).not.toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'All Resumes', selected: true })).toBeInTheDocument();
   });
@@ -155,7 +157,7 @@ describe('ResumesScreen', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Drafts (1)' }));
 
-    expect(screen.getByText('1 resume found')).toBeInTheDocument();
+    expect(screen.getByText('1 resume')).toBeInTheDocument();
     expect(rowNames()).toEqual(['Data Analyst Resume']);
     // The open card follows the list.
     const panel = await panelFor('Data Analyst Resume');
@@ -174,14 +176,14 @@ describe('ResumesScreen', () => {
     // Radix hides the rest of the page from the accessibility tree while its menu is open.
     await user.keyboard('{Escape}');
 
-    expect(await screen.findByText('2 resumes found')).toBeInTheDocument();
+    expect(await screen.findByText('2 resumes')).toBeInTheDocument();
     expect(rowNames()).toEqual(['Product Designer Resume', 'General Resume']);
     expect(screen.getByRole('tab', { name: 'All Resumes (2)' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Tailored (0)' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(await screen.findByText('5 resumes found')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    expect(await screen.findByText('5 resumes')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
   });
 
   it('searches from the panel', async () => {
@@ -191,7 +193,7 @@ describe('ResumesScreen', () => {
 
     await user.type(screen.getByRole('searchbox', { name: 'Search resumes' }), 'marketing');
 
-    expect(await screen.findByText('1 resume found')).toBeInTheDocument();
+    expect(await screen.findByText('1 resume')).toBeInTheDocument();
     expect(rowNames()).toEqual(['Marketing Manager Resume']);
     expect(await panelFor('Marketing Manager Resume')).toBeInTheDocument();
   });
@@ -294,7 +296,7 @@ describe('ResumesScreen', () => {
     renderWithQuery(<ResumesScreen />);
     await settle();
 
-    await user.click(screen.getByRole('button', { name: 'Create New Resume' }));
+    openCreate();
     const dialog = await screen.findByRole('dialog', { name: 'Create a new resume' });
     const ways = within(dialog).getByRole('radiogroup', { name: 'How to start' });
     for (const option of [
@@ -315,14 +317,14 @@ describe('ResumesScreen', () => {
     expect(push).toHaveBeenCalledWith('/create/build');
 
     // Cancel makes nothing either.
-    await user.click(screen.getByRole('button', { name: 'Create New Resume' }));
+    openCreate();
     let again = await screen.findByRole('dialog', { name: 'Create a new resume' });
     await user.click(within(again).getByRole('radio', { name: /Start from scratch/ }));
     await user.click(within(again).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(mockStore.state.resumes).toHaveLength(5);
 
-    await user.click(screen.getByRole('button', { name: 'Create New Resume' }));
+    openCreate();
     again = await screen.findByRole('dialog', { name: 'Create a new resume' });
     await user.click(within(again).getByRole('radio', { name: /Start from scratch/ }));
     await user.click(within(again).getByRole('button', { name: 'Continue' }));
@@ -341,7 +343,7 @@ describe('ResumesScreen', () => {
     push.mockClear();
     renderWithQuery(<ResumesScreen />);
     await settle();
-    await user.click(screen.getByRole('button', { name: 'Create New Resume' }));
+    openCreate();
     const choose = await screen.findByRole('dialog', { name: 'Create a new resume' });
     await user.click(within(choose).getByRole('radio', { name: /Build from my profile/ }));
     await user.click(within(choose).getByRole('button', { name: 'Continue' }));
@@ -479,10 +481,10 @@ describe('ResumesScreen', () => {
     expect(
       await screen.findByText('No resumes yet', {}, { timeout: SETTLE_MS.empty }),
     ).toBeInTheDocument();
-    // One empty state with one way on: nothing to search, filter or preview yet (RS-11).
+    // The page keeps its two columns empty, as the other lists do (toreview §254): the list's
+    // outline with one way on, and the preview card waiting.
     expect(screen.getByRole('button', { name: 'Create your first resume' })).toBeInTheDocument();
-    expect(screen.queryByRole('searchbox', { name: 'Search resumes' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Nothing to preview yet')).not.toBeInTheDocument();
+    expect(screen.getByText('Nothing to preview yet')).toBeInTheDocument();
   });
 
   it('says the list failed, and offers to try again', async () => {

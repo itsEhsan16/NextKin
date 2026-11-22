@@ -30,6 +30,7 @@ import { JdBody } from '../structured/JdBody';
 import { JdTop } from '../structured/JdTop';
 import { useTailorDialog } from '../../tailor/useTailorDialog';
 import { jdTailorHref } from '../jdHref';
+import { Callout } from '@/ui/Callout';
 
 /**
  * A job description's own page (toreview §110, §129): what Upload a JD opens once a pasted,
@@ -169,12 +170,9 @@ export function JdPageScreen({ id }: { id: string }) {
             ) : (
               <div className="animate-reveal">
                 {draft.data.title === UNTITLED_JD && (
-                  <p
-                    role="status"
-                    className="mx-8 mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-warning-50 px-4 py-3 text-body-s text-warning-text"
-                  >
+                  <Callout tone="warning" className="mx-8 mb-4">
                     The listing doesn’t name the job title.
-                  </p>
+                  </Callout>
                 )}
                 {draft.data.structured ? (
                   <>

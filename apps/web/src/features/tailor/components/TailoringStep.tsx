@@ -10,8 +10,8 @@ import type { RunLine } from '@/features/create/runLines';
 import { tailoringLines } from '../tailorLibrary';
 
 /**
- * Step 3 while the run works (734:1356): the step's own card, like the two before it, with the bar
- * and the run's own steps (only the work the user asked for) ticking off as it goes. Leaving is fine; the run carries on
+ * Step 3 while the run works (owner's reference, toreview §231): the orb, the job and the resume
+ * it starts from, the bar and the run's own steps (only the work the user asked for) ticking off. Leaving is fine; the run carries on
  * and the reader is told when it is ready.
  */
 export function TailoringStep({
@@ -36,9 +36,13 @@ export function TailoringStep({
   return (
     <RunProgress
       art={<AiOrb size="xl" state="writing" />}
-      step={{ n: 3, of: 3 }}
       title={`Tailoring your resume for ${job.company}`}
-      subtitle={`${job.title}${source ? ` · from ${source.title}` : ''}`}
+      subtitle={
+        <>
+          <span className="block">{job.title}</span>
+          {source && <span className="block">from {source.title}</span>}
+        </>
+      }
       meter="Writing your resume"
       progress={generation.progress}
       lines={lines}

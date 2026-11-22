@@ -11,7 +11,7 @@ import { pageFrame } from '@/ui/pageFrame';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
 
-import { FlowHeader } from '../jobFlow/FlowChrome';
+import { FlowHeader, flowPage } from '../jobFlow/FlowChrome';
 import { ZeroRunView } from '../components/ZeroRunView';
 import { ZeroSetup } from '../components/ZeroSetup';
 import { createHref } from '../createLibrary';
@@ -62,7 +62,7 @@ export function ZeroResumeScreen({ runId, role, jobId }: ZeroResumeScreenProps) 
   }
 
   return (
-    <div className={cn(pageFrame, 'flex flex-col gap-5 pb-8')}>
+    <div className={cn(pageFrame, flowPage)}>
       <FlowHeader
         backHref={'/' as Route}
         backLabel="Back to Home"

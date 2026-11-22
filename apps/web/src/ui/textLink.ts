@@ -5,3 +5,9 @@
  */
 export const textLink =
   'rounded-sm font-semibold text-text-brand underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60 disabled:hover:no-underline';
+
+/**
+ * "Change" or "Edit" beside a chosen job, resume or starting point: the one look every flow
+ * uses for it (toreview §257; it was a link, a bordered button, a pill and a link).
+ */
+export const changeLink = `${textLink} shrink-0 text-body-m`;

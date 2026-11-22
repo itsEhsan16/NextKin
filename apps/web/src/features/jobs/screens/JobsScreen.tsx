@@ -87,6 +87,19 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
     if (scroller) scroller.scrollTop = 0;
   }, [effectiveFilters, sort]);
 
+  // Anything narrowed, so the filter row offers Reset (toreview §254).
+  const narrowed =
+    searchInput.trim() !== '' ||
+    JSON.stringify({ ...filters, query: undefined }) !==
+      JSON.stringify({ ...EMPTY_JOB_FILTERS, query: undefined });
+
+  const resetJobs = () => {
+    unpin();
+    setFilters(EMPTY_JOB_FILTERS);
+    setSearchInput('');
+    setSubmitted('');
+  };
+
   const user = useCurrentUser();
   const applications = useApplications();
   const save = useSaveJob();
@@ -152,6 +165,7 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
   return (
     <div className={cn(pageFrameInBar, pageFillInBar, 'flex flex-col')}>
       <PageHeader
+        eyebrow="Jobs"
         title="Find the right opportunities"
         subtitle="Discover jobs that match your skills and career goals."
       />
@@ -175,13 +189,16 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
               setFilters((current) => ({ ...current, ...patch }));
             }}
             allJobs={allJobs}
+            active={narrowed}
+            onReset={resetJobs}
           />
           <ResultsBar
             count={countQuery.data}
             loading={countQuery.isPending}
-            noun={{ one: 'result', other: 'results' }}
+            noun={{ one: 'job', other: 'jobs' }}
             sort={sort}
             sortOptions={WEB_JOB_SORT_LABEL}
+            sortLabel={`Sort by: ${WEB_JOB_SORT_LABEL[sort]}`}
             onSortChange={(next) => {
               unpin();
               setSort(next);
@@ -215,6 +232,7 @@ export function JobsScreen({ initialJobId, initialQuery }: JobsScreenProps) {
               isFetchingNextPage={jobsQuery.isFetchingNextPage}
               onLoadMore={() => void jobsQuery.fetchNextPage()}
               onRetry={() => void jobsQuery.refetch()}
+              onReset={resetJobs}
             />
           </div>
         </div>
