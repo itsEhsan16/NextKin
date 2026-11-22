@@ -18611,6 +18611,35 @@ The owner asked for every landing component to be rebuilt with more precision an
 - **Email:** nothing is removed at Namecheap. The `@` and `www` names were empty in public DNS today; MX, SPF and the `app` NS records stay.
 - **To decide later:** whether `www` should redirect to the bare domain. Today both names serve the page.
 
+### §251.13 — Phone layouts for integrations and the CTA field (owner, 2026-11-21)
+
+- **Integrations on phones (owner: "what we have done in web, just scale it down for mobile"):**
+  - Phones show the desktop web itself, with wires, beams, hub glow and all five files. The separate stacked column, and a brief connected-column redesign of it, are removed.
+  - The web is sized so its content (board x 200–900 of 1100) fills the screen: 157% wide, shifted left by 18.18% of itself, with the empty margins clipped by the section.
+  - Then 10% larger (owner): 172.7% wide, shifted left by 23.6% of itself so the logo spread (board x 222–934) is centred. At 375px the tiles are 29px and the hub 48px, the content spans 0–345px (edge to edge), and there is no sideways scroll. Trade-off: the hub sits about 14px left of centre; centring on the hub would cut Greenhouse.
+  - Desktop is unchanged (1100px wide, no transform).
+  - The bottom padding on phones is now `pb-12`.
+- **CTA email form on phones:** a stacked card, the mail icon and full-width field on top and a full-width "Get started" button below. The placeholder now fits (measured at 375px). From `sm` up it is the board's single pill, unchanged (checked at 768 and 1440).
+
+### §251.14 — Board chips, "One resume", How it works timing, Match tag (owner, 2026-11-22)
+
+- **Job boards:**
+  - Every capsule now has padding on both sides, so its logo sits inside it (it used to be half the card wide, which cut Glassdoor and let Indeed's arc poke out).
+  - On phones the capsules sit in a right-to-left `Marquee` with faded edges, sized to their content. From `sm` up it is the board's row of fixed 240px chips.
+- **"One resume for every job"** (`DealScene`), rebuilt:
+  - **Layout:** a 3×3 grid (three cards, the résumé across the middle row, three cards). No absolute positions, so nothing overlaps or truncates; the logo sits over the name on narrow cards.
+  - **Motion:** copies arc out (x and y on different eases), each card nudges as one lands, and its "Sent" chip ticks in. Flight offsets are functions of the live layout and are re-measured on every repeat; after a resize, all six landed on their cards in the next loop.
+  - **Logo choice (legal caution, not legal advice):** the owner asked for real logos "if it will not create legal issues". Showing a named real employer next to "No reply" says that company ignored applicants. So the cards use the **job boards' own logos** the page already names (LinkedIn, Indeed, Naukri, Glassdoor, Wellfound, Greenhouse) and say only **"Sent"**. The silence lives in the total "40 sent · 0 replies". Swap to employers only after a legal check.
+- **How it works on wide screens:** the scrubbed path becomes a time-based timeline that starts at `top 75%`, 0.45s per step. All five steps are awake about 2.5s after the row arrives; it was about 50% scrolled past before. The narrow, vertical path stays scrubbed.
+- **Match overview:**
+  - The Basis tag stands **above** the current bar with a vertical leader onto its spark (`AnnotationTag vertical`). It was left of the bar and clipped by the card.
+  - The chart has headroom for it. The label is "18 of 21 found on the page", or "18 of 21 found" below `sm`.
+  - It now shows at every width, and stays inside the card at 375, 768 and 1440.
+- **Still uncommitted from earlier:** the phone hero picture (`HeroPicture`, `hero-mobile-home.webp`) shows the **old** mobile Home board. The owner asked for the latest app design; that capture (Expo web + Playwright) was interrupted, so leave it out or finish it before shipping.
+- **Hero eyebrow on phones:**
+  - The icon chip was squeezed into an oval because it could shrink while the label couldn't wrap. `Eyebrow` now keeps the chip at 28px (`shrink-0`) and lets other eyebrows truncate, as a fallback that is never needed today.
+  - The hero eyebrow is 12px with tighter spacing on phones. It fits on one line at 375px and wraps onto two lines at 320px (50px tall) instead of ending in an ellipsis. Tablet and desktop are unchanged.
+
 ## §252 — The sign-in logo on a glowing white sphere (owner, 2026-11-20; was §233 on its branch, superseded)
 - **What changed:** on the sign-in/sign-up brand panel (`AuthBrandPanel.tsx`, shared by sign-in, the Clerk sign-up and the session bridge), the mark no longer sits on a white rounded square. It sits on a white sphere (44px): a radial gradient lit from the upper left, white into a light lavender rim (`brand-100`/`brand-200`), a soft inner shade (`brand-300`), and an outer white and lavender halo, so it glows on the indigo. Tokens only (`surface-card`, brand ramp).
 - **Verified:** in the browser at 1366×800 on /sign-in (mock), with a zoomed screenshot. The Clerk sign-up page (app.nextkin.ai/sign-up in the owner's screenshot) uses the same panel but 404s locally without Clerk keys, so it was not seen there.

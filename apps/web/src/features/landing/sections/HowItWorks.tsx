@@ -111,21 +111,24 @@ export function HowItWorks() {
     const lines = layout.querySelectorAll<HTMLElement>('[data-how-progress]');
     const wide = layout.hasAttribute('data-how-wide');
 
+    // Wide (one row of five): plays in time once the path is in view, so all five steps are
+    // awake while the row is on screen (owner, 2026-11-22: scrubbed, steps 4–5 waited until the
+    // section was half scrolled past). Narrow (a column): stays scrubbed to the scroll, which
+    // matches walking down the path. Never `once: true` (the reload crash, §250.1).
     const tl = gsap.timeline({
       defaults: { ease: 'power2.out' },
-      scrollTrigger: {
-        trigger: layout,
-        start: wide ? 'top 78%' : 'top 70%',
-        end: wide ? 'bottom 62%' : 'bottom 55%',
-        scrub: 0.8,
-      },
+      scrollTrigger: wide
+        ? { trigger: layout, start: 'top 75%', toggleActions: 'play none none none' }
+        : { trigger: layout, start: 'top 70%', end: 'bottom 55%', scrub: 0.8 },
     });
-    const at = (i: number) => i; // one unit of timeline per step
+    // One unit per step when scrubbed; 0.45s per step when played in time.
+    const beat = wide ? 0.45 : 1;
+    const at = (i: number) => i * beat;
     if (wide) {
       tl.fromTo(
         lines[0]!,
         { scaleX: 0 },
-        { scaleX: 1, ease: 'none', duration: steps.length - 1 },
+        { scaleX: 1, ease: 'power1.inOut', duration: (steps.length - 1) * beat },
         0,
       );
     }
@@ -148,8 +151,22 @@ export function HowItWorks() {
         },
         at(i),
       )
-        .from(text, { y: 24, opacity: 0.15, duration: 0.5, stagger: 0.08 }, at(i) + 0.05)
-        .from(frag, { y: 36, opacity: 0, scale: 0.94, duration: 0.6 }, at(i) + 0.15);
+        .from(
+          text,
+          { y: 24, opacity: 0.15, duration: wide ? 0.6 : 0.5, stagger: 0.08 },
+          at(i) + 0.05,
+        )
+        .from(
+          frag,
+          {
+            y: 36,
+            opacity: 0,
+            scale: 0.94,
+            duration: wide ? 0.8 : 0.6,
+            ease: wide ? 'expo.out' : 'power2.out',
+          },
+          at(i) + (wide ? 0.1 : 0.15),
+        );
     });
   });
 

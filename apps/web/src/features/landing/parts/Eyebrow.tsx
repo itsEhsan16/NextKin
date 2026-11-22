@@ -32,14 +32,16 @@ export function Eyebrow({
       {icon ? (
         <span
           className={cn(
-            'flex size-7 items-center justify-center rounded-[14px]',
+            // shrink-0: a long label on a phone squeezed the round chip into an oval (2026-11-22).
+            'flex size-7 shrink-0 items-center justify-center rounded-full',
             tone === 'onViolet' ? 'bg-lp-white/25' : 'bg-lp-white',
           )}
         >
           {icon}
         </span>
       ) : null}
-      <span className="whitespace-nowrap">{children}</span>
+      {/* On the narrowest phones the label ends in an ellipsis rather than pushing the pill wide. */}
+      <span className="min-w-0 truncate">{children}</span>
     </div>
   );
 }
