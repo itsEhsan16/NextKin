@@ -3,6 +3,7 @@ import type { Resume } from '@nextkin/shared/models';
 import { cn } from '@/lib/cn';
 import { useReveal } from '@/lib/useReveal';
 import { Skeleton } from '@/ui/Skeleton';
+import { emptyList } from '@/ui/EmptyPanel';
 import { StateView } from '@/ui/StateView';
 import { EmptyStateArt } from '@/ui/illustrations';
 
@@ -68,25 +69,28 @@ export function ResumeList({
 
   if (!hasAny) {
     return (
-      <StateView
-        art={<EmptyStateArt object="palette" />}
-        className={reveal ? 'animate-reveal' : undefined}
-        title="No resumes yet"
-        message="Tailor one to a job, build one from your profile, upload the one you have, or start from a blank page."
-        {...(onCreate ? { actionLabel: 'Create your first resume', onAction: onCreate } : {})}
-      />
+      // The list keeps its place as one outline, as on the other lists (toreview §254).
+      <div className={cn(emptyList, reveal && 'animate-reveal')}>
+        <StateView
+          art={<EmptyStateArt object="palette" />}
+          title="No resumes yet"
+          message="Tailor one to a job, build one from your profile, upload the one you have, or start from a blank page."
+          {...(onCreate ? { actionLabel: 'Create your first resume', onAction: onCreate } : {})}
+        />
+      </div>
     );
   }
 
   if (resumes.length === 0) {
     return (
-      <StateView
-        className={reveal ? 'animate-reveal' : undefined}
-        title="No resumes match"
-        message="Try another group, or clear the filters and the search."
-        actionLabel="Clear filters"
-        onAction={onReset}
-      />
+      <div className={cn(emptyList, reveal && 'animate-reveal')}>
+        <StateView
+          title="No resumes match"
+          message="Try another group, or clear the filters and the search."
+          actionLabel="Reset filters"
+          onAction={onReset}
+        />
+      </div>
     );
   }
 

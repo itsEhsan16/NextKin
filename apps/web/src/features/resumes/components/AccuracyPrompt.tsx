@@ -4,7 +4,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { buttonClass } from '@/ui/Button';
-import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import { Dialog, DialogDescription, DialogTitle, dialogBody, dialogFooter } from '@/ui/Dialog';
 import { AiSparkIcon, ShieldCheckIcon } from '@/ui/icons';
 
 export const ACCURACY_TITLE = 'Is everything here true?';
@@ -42,7 +42,7 @@ export function AccuracyPrompt({
       }}
       size="md"
     >
-      <div className="flex flex-col gap-3 px-5 pb-4 pt-5">
+      <div className={dialogBody}>
         <span
           aria-hidden
           className="flex size-11 items-center justify-center rounded-md bg-brand-50 text-text-brand"
@@ -67,7 +67,7 @@ export function AccuracyPrompt({
           </div>
         )}
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-border-default px-4 py-3.5">
+      <div className={dialogFooter}>
         {editHref && (
           <Link
             href={editHref}

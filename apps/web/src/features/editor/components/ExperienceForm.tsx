@@ -13,6 +13,7 @@ import { FieldRow, TextField } from './fields';
 import { AddButton } from './AddButton';
 import { cn } from '@/lib/cn';
 import { removeButton, toolIcon } from './controls';
+import { Callout } from '@/ui/Callout';
 
 /**
  * Experience (toreview §124): each role with its employer, title, place, dates and bullets, and
@@ -70,9 +71,9 @@ export function ExperienceForm({
           }
         >
           {role.assumed && (
-            <p className="rounded-md bg-warning-50 px-3 py-2 text-caption-m text-warning-text">
+            <Callout tone="warning">
               Zero Resume guessed this role. Check every detail before you download.
-            </p>
+            </Callout>
           )}
           <FieldRow>
             <TextField

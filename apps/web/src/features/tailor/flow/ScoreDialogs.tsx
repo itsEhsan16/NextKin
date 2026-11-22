@@ -6,9 +6,17 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
-import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog';
-import { iconButton } from '@/ui/iconButton';
-import { Briefcase01, XClose, Zap } from '@/ui/lineIcons';
+import {
+  Dialog,
+  DialogCloseButton,
+  DialogDescription,
+  DialogTitle,
+  dialogBody,
+  dialogFooter,
+  dialogLine,
+  dialogTitle,
+} from '@/ui/Dialog';
+import { Briefcase01, Zap } from '@/ui/lineIcons';
 
 import { LineResult } from './LineResult';
 
@@ -18,24 +26,20 @@ type Bullet = NonNullable<PlanStep['bullet']>;
 export const quoteOf = (need: string) => need.replace(/^[\s\-–—•*]+/, '');
 
 /**
- * The dialogs' shared head: an icon, the question, one line under it, and a close button. The icon
- * sits bare beside the title (owner, 2026-11-15: no tinted tile behind it).
+ * The dialogs' shared head: an icon, the question, one line under it, and every dialog's × (§257).
+ * The icon sits bare beside the title (owner, 2026-11-15: no tinted tile behind it).
  */
 function Head({ icon, title, line }: { icon: ReactNode; title: string; line: ReactNode }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3 pr-12">
       <span aria-hidden className="flex h-7 shrink-0 items-center text-text-brand">
         {icon}
       </span>
       <div className="min-w-0">
-        <DialogTitle className="text-h2 font-bold text-text-primary">{title}</DialogTitle>
-        <DialogDescription className="mt-1 text-body-m text-text-secondary">
-          {line}
-        </DialogDescription>
+        <DialogTitle className={dialogTitle}>{title}</DialogTitle>
+        <DialogDescription className={cn(dialogLine, 'mt-1')}>{line}</DialogDescription>
       </div>
-      <DialogClose aria-label="Close" className={cn(iconButton, '-mr-1 -mt-1 ml-auto')}>
-        <XClose aria-hidden className="size-5 text-text-tertiary" />
-      </DialogClose>
+      <DialogCloseButton />
     </div>
   );
 }
@@ -76,7 +80,7 @@ export function PlaceDialog({
   const ordered = [...places.filter((p) => fits(p.id)), ...places.filter((p) => !fits(p.id))];
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="md">
-      <div className="flex min-h-0 flex-col gap-4 px-6 pb-5 pt-6">
+      <div className={cn(dialogBody, 'gap-4 overflow-y-visible')}>
         <Head
           icon={<Briefcase01 className="size-5" />}
           title={`Where did you use ${keyword}?`}
@@ -142,7 +146,7 @@ export function PlaceDialog({
           </li>
         </ul>
       </div>
-      <div className="flex justify-end border-t border-border-default px-5 py-3.5">
+      <div className={dialogFooter}>
         <button
           type="button"
           onClick={() => onOpenChange(false)}
@@ -180,7 +184,7 @@ export function ResultDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="lg">
-      <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-6 pb-6 pt-6">
+      <div className={cn(dialogBody, 'gap-5 pb-7')}>
         <Head
           icon={<Zap className="size-5" />}
           title={saved ? 'Edit your result' : 'Add the result'}

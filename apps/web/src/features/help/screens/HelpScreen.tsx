@@ -8,8 +8,7 @@ import { SettingsIllustration } from '@/features/settings/components/SettingsIll
 import { cn } from '@/lib/cn';
 import { cardPad, cardSurface } from '@/ui/Card';
 import { PageHeader } from '@/navigation/PageHeader';
-import { fieldBox } from '@/ui/fieldBox';
-import { SearchIcon } from '@/ui/icons';
+import { SearchField } from '@/ui/SearchField';
 import { HelpFaqIllustration, SettingsLightbulbIllustration } from '@/ui/illustrations';
 import { pageFrameInBar } from '@/ui/pageFrame';
 import { PillTabs } from '@/ui/PillTabs';
@@ -85,22 +84,13 @@ export function HelpScreen() {
                 <p className="text-body-s text-text-tertiary">{answerCount(items.length)}</p>
               </div>
             </div>
-            <label
-              className={cn(
-                fieldBox,
-                'mt-5 h-control-lg gap-2.5 px-3.5 focus-within:border-border-selected focus-within:ring-4 focus-within:ring-brand-100',
-              )}
-            >
-              <SearchIcon aria-hidden className="size-4 shrink-0 text-text-tertiary" />
-              <input
-                type="search"
-                aria-label="Search help"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search help"
-                className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-text-tertiary"
-              />
-            </label>
+            <SearchField
+              value={query}
+              onChange={setQuery}
+              placeholder="Search help…"
+              label="Search help"
+              className="mt-5 w-full"
+            />
             <PillTabs
               tabs={FILTERS}
               active={filter}

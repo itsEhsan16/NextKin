@@ -90,7 +90,8 @@ export function CoverReady({
           aria-label="Back"
           className={cn(
             iconButton,
-            'size-9 rounded-full border border-border-default bg-surface-card',
+            // The flows' back button, as on Resume review (toreview §256).
+            'size-10 shrink-0 rounded-full border border-border-subtle bg-surface-card shadow-card',
           )}
         >
           <ChevronRight aria-hidden className="size-4.5 rotate-180 text-text-primary" />
@@ -100,7 +101,9 @@ export function CoverReady({
           <p className="truncate text-caption-m text-text-tertiary">
             Cover letter · {job.company ? `${job.title} · ${job.company}` : job.title}
           </p>
-          <h1 className="text-title-l font-bold text-text-primary">Your letter is ready</h1>
+          <h1 className="text-h1 font-bold tracking-tight text-text-primary">
+            Your letter is ready
+          </h1>
         </div>
         <span className="flex items-center gap-1.5 rounded-full bg-success-surface px-2.5 py-0.5 text-caption-m font-semibold text-success-text">
           <Check aria-hidden className="size-4" />

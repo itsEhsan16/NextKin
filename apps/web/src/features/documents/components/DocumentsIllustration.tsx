@@ -3,28 +3,22 @@ import Image from 'next/image';
 import { cn } from '@/lib/cn';
 
 /**
- * The character with a folder of documents (304:683), at 248×92: the Jobs and Applications
- * characters' height, the board's 354×131 at seven tenths. A raster on the board, so a PNG, cut to
- * 744×276 from the 2059×764 export. The caption (307:4007) is live text in the handwritten face,
- * where the board sets it: to the character's right, just above the card. The board opens its
- * quote and never closes it; this closes it. Its three lines start at the top of the box and set
- * 24px apart, so the last one clears the card's top edge (it used to run under it).
+ * The folder of documents (304:683), as the art of the preview's empty states (owner, toreview
+ * §253: it no longer rises over the preview card's corner with its "Organize, Prepare, Go Further"
+ * caption; it sits in the card while there is nothing to preview). A raster on the board, so the
+ * WebP; it sizes by width and keeps its own shape.
  */
 export function DocumentsIllustration({ className }: { className?: string }) {
   return (
-    <div aria-hidden className={cn('pointer-events-none relative h-[92px] w-[248px]', className)}>
-      <Image
-        // Above the fold and the page's largest paint: fetched with the page, not lazily (§84).
-        loading="eager"
-        src="/illustrations/v2/documents.webp"
-        alt=""
-        width={560}
-        height={494}
-        className="size-full object-contain"
-      />
-      <span className="absolute left-[232px] top-0 whitespace-pre text-center font-caveat text-title-l font-semibold leading-6 text-text-caveat">
-        {'“Organize\nPrepare\nGo Further”'}
-      </span>
-    </div>
+    <Image
+      aria-hidden
+      // Fetched with the page, so the empty card never shows without its art.
+      loading="eager"
+      src="/illustrations/v2/documents.webp"
+      alt=""
+      width={560}
+      height={494}
+      className={cn('pointer-events-none h-auto w-44 object-contain', className)}
+    />
   );
 }

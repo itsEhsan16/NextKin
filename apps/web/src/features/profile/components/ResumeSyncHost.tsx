@@ -10,7 +10,7 @@ import { useEffect, useRef, useState, type ComponentType } from 'react';
 
 import { showToast } from '@/lib/toast';
 import { Button } from '@/ui/Button';
-import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import { Dialog, DialogDescription, DialogTitle, dialogFooter } from '@/ui/Dialog';
 import {
   BriefcaseIcon,
   DocumentIcon,
@@ -182,7 +182,7 @@ export function ResumeSyncHost() {
             className="h-40 w-auto object-contain max-sm:h-28"
           />
         </div>
-        <div className="flex flex-col gap-3 px-6.5 pb-5 pt-5">
+        <div className="flex flex-col gap-3 px-7 pb-5 pt-7">
           <DialogTitle className="text-h2 font-bold text-text-primary">
             Add your resume updates to your profile?
           </DialogTitle>
@@ -224,7 +224,7 @@ export function ResumeSyncHost() {
           </p>
         </div>
       </div>
-      <div className="flex flex-wrap justify-end gap-2.5 border-t border-border-default pb-4 pl-6 pr-5 pt-3.5">
+      <div className={dialogFooter}>
         <Button
           variant="secondary"
           size="lg"

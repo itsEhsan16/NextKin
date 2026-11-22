@@ -44,6 +44,8 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
   /** What a text label says while `loading`: "Saving…". */
   busyLabel?: string;
+  /** An icon after the label (Continue's arrow); hidden while `loading` (toreview §256). */
+  trailingIcon?: ReactNode;
   /** Fully round ends: the reference shots' pill CTAs (toreview §132). */
   pill?: boolean;
   /** A square button holding only `icon`; it must carry an `aria-label`. */
@@ -58,6 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     icon,
     loading = false,
     busyLabel,
+    trailingIcon,
     pill = false,
     iconOnly = false,
     disabled,
@@ -85,6 +88,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     >
       {loading ? <Spinner /> : icon}
       {label}
+      {!loading && trailingIcon}
     </button>
   );
 });

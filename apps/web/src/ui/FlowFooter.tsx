@@ -13,6 +13,8 @@ export const primaryButton = buttonClass({ size: 'lg' });
  * different from the steps that lead to it (redesign R3d; Jobright §2.3's final step, adopted).
  */
 export const finalButton = buttonClass({ variant: 'inverse', size: 'lg' });
+/** "See Pro plans" in a flow's footer once its allowance is spent: Pro's own colour (§256). */
+export const upgradeButton = buttonClass({ variant: 'paid', size: 'lg' });
 
 /**
  * The bar under a flow step (849:138), promoted to a primitive (redesign R3d): what the press

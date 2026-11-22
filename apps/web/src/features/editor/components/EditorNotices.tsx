@@ -1,7 +1,15 @@
 'use client';
 
 import type { DocProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
-import { Dialog, DialogDescription, DialogTitle } from '@/ui/Dialog';
+import {
+  Dialog,
+  DialogDescription,
+  DialogTitle,
+  dialogBody,
+  dialogFooter,
+  dialogLine,
+  dialogTitle,
+} from '@/ui/Dialog';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
@@ -159,19 +167,16 @@ export function ProblemsDialog({
   };
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()} size="md">
-      <div className="flex flex-col gap-4 px-6 pb-5 pt-6">
-        <div className="flex items-start gap-3.5">
-          <span
-            aria-hidden
-            className="flex size-11 shrink-0 items-center justify-center rounded-md bg-warning-50 text-warning-text"
-          >
+      {/* Every dialog's body and button row; the icon bare beside the title, as the tailor
+          flow's dialogs draw it (owner, 2026-11-15; toreview §257). */}
+      <div className={cn(dialogBody, 'gap-4')}>
+        <div className="flex items-start gap-3">
+          <span aria-hidden className="flex h-7 shrink-0 items-center text-warning-text">
             <AlertTriangle className="size-5" />
           </span>
           <div className="min-w-0">
-            <DialogTitle className="text-h2 font-bold text-text-primary">
-              A few things before you download
-            </DialogTitle>
-            <DialogDescription className="mt-1 text-body-l text-text-secondary">
+            <DialogTitle className={dialogTitle}>A few things before you download</DialogTitle>
+            <DialogDescription className={cn(dialogLine, 'mt-1')}>
               We can’t make the PDF until these are filled in. Each one opens its field.
             </DialogDescription>
           </div>
@@ -201,7 +206,7 @@ export function ProblemsDialog({
           ))}
         </ul>
       </div>
-      <div className="flex justify-end border-t border-border-default px-5 py-3.5">
+      <div className={dialogFooter}>
         <button type="button" autoFocus onClick={onClose} className={primaryButton}>
           Keep editing
         </button>

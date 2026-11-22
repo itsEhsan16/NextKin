@@ -77,7 +77,8 @@ export function AtsResult({
           aria-label="Back"
           className={cn(
             iconButton,
-            'size-9 rounded-full border border-border-default bg-surface-card',
+            // The flows' back button, as on Resume review (toreview §256).
+            'size-10 shrink-0 rounded-full border border-border-subtle bg-surface-card shadow-card',
           )}
         >
           <ChevronRight aria-hidden className="size-4.5 rotate-180 text-text-primary" />
@@ -87,7 +88,7 @@ export function AtsResult({
           <p className="truncate text-caption-m text-text-tertiary">
             ATS check{resume.data ? ` · ${resume.data.title}` : ''}
           </p>
-          <h1 className="truncate text-title-l font-bold text-text-primary">
+          <h1 className="truncate text-h1 font-bold tracking-tight text-text-primary">
             Your ATS score for {job.company ? `${job.title} · ${job.company}` : job.title}
           </h1>
         </div>

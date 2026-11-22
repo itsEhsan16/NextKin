@@ -14,15 +14,7 @@ import {
 } from '@/features/upload/uploadLibrary';
 import { cn } from '@/lib/cn';
 import { Button } from '@/ui/Button';
-import {
-  File06,
-  Lightbulb02,
-  Link01,
-  Plus,
-  Stars02,
-  UploadCloud02,
-  iconSize,
-} from '@/ui/lineIcons';
+import { File06, Lightbulb02, Link01, Plus, UploadCloud02, iconSize } from '@/ui/lineIcons';
 import { SegmentedControl, type Segment } from '@/ui/SegmentedControl';
 import { textLink } from '@/ui/textLink';
 
@@ -78,7 +70,7 @@ function TabPane({ on, children }: { on: boolean; children: ReactNode }) {
     <div
       aria-hidden={!on}
       inert={!on}
-      className={cn('col-start-1 row-start-1 flex flex-col', !on && 'invisible')}
+      className={cn('col-start-1 row-start-1 flex min-h-0 flex-col', !on && 'invisible')}
     >
       {children}
     </div>
@@ -87,7 +79,8 @@ function TabPane({ on, children }: { on: boolean; children: ReactNode }) {
 
 /**
  * W-FLOW 01's "Add a new job" (849:289, redesigned in toreview §150): paste the description, paste
- * its link, or upload a file, one tab each, then Analyze job. Writing here picks it over a saved job.
+ * its link, or upload a file, one tab each. Writing here picks it over a saved job, and the step's
+ * Continue reads it (the box's own Analyze job went, owner, toreview §218).
  * While the step reads it (`busy`) the box is held as it is (toreview §131).
  */
 export function OtherJobBox({
@@ -96,15 +89,15 @@ export function OtherJobBox({
   selected,
   problem,
   busy = false,
-  onAnalyze,
+  notice,
 }: {
   value: OtherJob;
   onChange: (next: OtherJob) => void;
   selected: boolean;
   problem?: string | null;
   busy?: boolean;
-  /** Reads the job now, as Continue would. */
-  onAnalyze: () => void;
+  /** A warning about the job the box read (it has closed), said in the message row. */
+  notice?: ReactNode;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -126,6 +119,7 @@ export function OtherJobBox({
   const ready = value.file != null || value.text.trim().length > 0;
   const border = selected || dragging ? 'border-border-brand-strong' : 'border-border-default';
   const typed = value.file ? '' : value.text;
+  const said = (fileError ?? problem) ? 'error' : notice ? 'notice' : 'tip';
 
   return (
     <div className={cn(panel, 'flex-1')}>
@@ -142,26 +136,23 @@ export function OtherJobBox({
         fill
       />
 
-      {/* Every tab's body in one grid cell: the box is as tall as the tallest, so switching tabs
-          never resizes the step (owner, toreview §156). */}
-      <div className="grid">
+      {/* Every tab's body in one fixed slot, stacked in one grid cell: the textarea, the link field
+          and the drop zone all take the same room, so the panel and the tip stay put as the tabs
+          change. The slot keeps the room Analyze job had, so the panel stays as tall (owner,
+          toreview §156, §217, §218). */}
+      <div className="grid h-60 grid-rows-1">
         <TabPane on={tab === 'paste'}>
-          <div className="flex flex-col gap-1.5">
-            <div className={cn(box, border, 'flex min-h-44 p-4')}>
-              <textarea
-                aria-label="Job description or link"
-                value={typed}
-                maxLength={MAX_JD_CHARS}
-                readOnly={busy}
-                aria-busy={busy || undefined}
-                onChange={(event) => onChange({ text: event.target.value, file: null })}
-                placeholder="Paste the full job description here…"
-                className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
-              />
-            </div>
-            <p className="self-end text-body-s font-medium text-text-tertiary">
-              {typed.length.toLocaleString('en-US')} / {MAX_JD_CHARS.toLocaleString('en-US')}
-            </p>
+          <div className={cn(box, border, 'flex flex-1 p-4')}>
+            <textarea
+              aria-label="Job description or link"
+              value={typed}
+              maxLength={MAX_JD_CHARS}
+              readOnly={busy}
+              aria-busy={busy || undefined}
+              onChange={(event) => onChange({ text: event.target.value, file: null })}
+              placeholder="Paste the full job description here…"
+              className="min-h-0 w-full flex-1 resize-none bg-transparent text-prose text-text-primary outline-none placeholder:text-text-tertiary"
+            />
           </div>
         </TabPane>
 
@@ -178,6 +169,10 @@ export function OtherJobBox({
               className="min-w-0 flex-1 bg-transparent text-body-l text-text-primary outline-none placeholder:text-text-tertiary"
             />
           </label>
+          <p className="mt-2.5 text-body-s text-text-tertiary">
+            Paste the link to the job posting and we&apos;ll read the description from it. If the
+            site can&apos;t be read, paste the description instead.
+          </p>
         </TabPane>
 
         <TabPane on={tab === 'file'}>
@@ -191,7 +186,7 @@ export function OtherJobBox({
             className={cn(
               box,
               border,
-              'flex min-h-44 flex-1 flex-col items-center justify-center gap-2.5 border-dashed p-4 text-center',
+              'flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 border-dashed p-4 text-center',
               dragging && 'bg-surface-brand',
             )}
           >
@@ -223,6 +218,17 @@ export function OtherJobBox({
           </div>
         </TabPane>
       </div>
+      {/* The counter's row is kept on every tab, blank off the description, so nothing below it
+          moves when the tabs change. */}
+      <p
+        aria-hidden={tab !== 'paste'}
+        className={cn(
+          '-mt-2.5 self-end text-body-s font-medium text-text-tertiary',
+          tab !== 'paste' && 'invisible',
+        )}
+      >
+        {typed.length.toLocaleString('en-US')} / {MAX_JD_CHARS.toLocaleString('en-US')}
+      </p>
       <input
         ref={fileInput}
         type="file"
@@ -237,42 +243,54 @@ export function OtherJobBox({
         }}
       />
 
-      {(fileError ?? problem) ? (
-        <p role="alert" className="text-body-m text-danger-600">
-          {fileError ?? problem}
-        </p>
-      ) : (
-        <p className="flex flex-wrap items-center gap-1.5 text-body-m text-text-tertiary">
+      {/* The message row, one cell for all three things it can say (owner, toreview §220): the
+          tip, an error, or the closed-posting notice, stacked so the row is as tall whichever
+          shows. It keeps two lines' room, so the panel is the same height empty or filled. */}
+      <div className="grid min-h-11 text-body-m">
+        <p
+          aria-hidden={said !== 'tip' || undefined}
+          className={cn(
+            'col-start-1 row-start-1 flex flex-wrap items-center gap-x-1.5 text-text-tertiary',
+            said !== 'tip' && 'invisible',
+          )}
+        >
           <Lightbulb02 aria-hidden className={iconSize.sm} />
           <span>
             <span className="font-semibold text-text-secondary">Tip:</span> Include the complete job
             description for better suggestions.
           </span>
-          {!ready && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                setTab('paste');
-                onChange({ text: SAMPLE_JD, file: null });
-              }}
-              className={textLink}
-            >
-              Try a sample job
-            </button>
-          )}
+          {/* One slot for both: a sample while the box is empty, Clear once it holds something. */}
+          <button
+            type="button"
+            disabled={busy}
+            tabIndex={said !== 'tip' ? -1 : undefined}
+            onClick={() => {
+              setFileError(null);
+              if (ready) return onChange(emptyOtherJob);
+              setTab('paste');
+              onChange({ text: SAMPLE_JD, file: null });
+            }}
+            className={textLink}
+          >
+            {ready ? 'Clear' : 'Try a sample job'}
+          </button>
         </p>
-      )}
-
-      <button
-        type="button"
-        disabled={!ready || busy}
-        onClick={onAnalyze}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border-brand-strong bg-brand-50 text-body-l font-semibold text-text-brand transition-colors duration-press ease-standard hover:bg-brand-100 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-      >
-        <Stars02 aria-hidden className={iconSize.sm} />
-        {busy ? 'Reading the job…' : 'Analyze job'}
-      </button>
+        <p
+          role="alert"
+          className={cn('col-start-1 row-start-1 text-danger-600', said !== 'error' && 'invisible')}
+        >
+          {said === 'error' ? (fileError ?? problem) : null}
+        </p>
+        <p
+          role="status"
+          className={cn(
+            'col-start-1 row-start-1 text-feedback-warning-text',
+            said !== 'notice' && 'invisible',
+          )}
+        >
+          {said === 'notice' ? notice : null}
+        </p>
+      </div>
     </div>
   );
 }

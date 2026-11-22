@@ -7,12 +7,16 @@ import type { ReactNode } from 'react';
 
 import { Radio } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
-import { Check } from '@/ui/lineIcons';
-import { textLink } from '@/ui/textLink';
+import { changeLink } from '@/ui/textLink';
 
-import { METHOD_ART, METHOD_POINTS, METHOD_TITLE, type Method } from './methods';
+import { METHOD_ART, METHOD_TITLE, type Method } from './methods';
 
-/** One way to make the resume, as a radio card: its picture, title, line and points (§151). */
+/**
+ * One way to make the resume, as a radio card: its picture, title and line (§151). Every card is
+ * the same shape (owner, toreview §222, §225–§226, §229): one 126×84 art box (the old art at
+ * 70%, then 15%, 10% and 10% larger), the line keeping two lines' room, so all four are the same height with art, text and
+ * radio centred alike.
+ */
 export function MethodCard({
   method,
   on,
@@ -55,7 +59,7 @@ export function MethodCard({
         alt=""
         width={250}
         height={168}
-        className="pointer-events-none hidden h-auto w-32 shrink-0 object-contain sm:block"
+        className="pointer-events-none hidden h-21 w-31.5 shrink-0 object-contain sm:block"
       />
       <div className="pointer-events-none flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-2.5">
@@ -66,15 +70,7 @@ export function MethodCard({
             </span>
           )}
         </div>
-        <p className="text-body-m text-text-secondary">{line}</p>
-        <ul className="mt-1 flex flex-wrap gap-x-6 gap-y-1">
-          {METHOD_POINTS[method].map((point) => (
-            <li key={point} className="flex items-center gap-1.5 text-body-s text-text-secondary">
-              <Check aria-hidden className="size-3.5 shrink-0 text-text-primary" />
-              {point}
-            </li>
-          ))}
-        </ul>
+        <p className="line-clamp-2 min-h-11 text-body-m text-text-secondary">{line}</p>
       </div>
     </div>
   );
@@ -96,7 +92,7 @@ export function Selection({
 }) {
   const edit = {
     'aria-label': `Edit ${label.toLowerCase()}`,
-    className: cn(textLink, 'shrink-0 text-body-m'),
+    className: changeLink,
   };
   return (
     <div className="flex items-center gap-3.5 rounded-lg border border-border-subtle px-4 py-3.5">

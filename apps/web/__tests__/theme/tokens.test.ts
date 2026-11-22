@@ -140,6 +140,8 @@ describe('theme tokens', () => {
       'sweep',
       'glint',
       'ring-draw',
+      'liquid-edge',
+      'ring-flow',
     ]);
     for (const [, , value] of animations) {
       expect(value).toMatch(/var\(--transition-duration-[a-z]+\)/);

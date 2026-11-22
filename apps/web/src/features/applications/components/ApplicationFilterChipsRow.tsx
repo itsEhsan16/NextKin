@@ -15,6 +15,8 @@ export type ApplicationFilterChipsRowProps = {
   filters: ApplicationFilters;
   onChange: (patch: Partial<ApplicationFilters>) => void;
   onReset: () => void;
+  /** Whether anything is narrowed (a chip, the search or a pill): Reset shows only then. */
+  active: boolean;
   /**
    * Every application, unfiltered, so each menu offers what exists rather than what survives the
    * other filters.
@@ -31,6 +33,7 @@ export function ApplicationFilterChipsRow({
   filters,
   onChange,
   onReset,
+  active,
   rows,
 }: ApplicationFilterChipsRowProps) {
   const types = useMemo(() => distinct(rows.map((row) => row.job.employmentType)), [rows]);
@@ -124,7 +127,7 @@ export function ApplicationFilterChipsRow({
         ))}
       </FilterDropdown>
 
-      <ResetButton onClick={onReset} className="ml-1" />
+      {active && <ResetButton onClick={onReset} />}
     </div>
   );
 }

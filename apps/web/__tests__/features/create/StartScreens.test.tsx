@@ -48,12 +48,12 @@ describe('the redesigned start screens (toreview §150)', () => {
     expect(screen.getByText(/^Showing \d+ of \d+ jobs$/)).toBeInTheDocument();
   });
 
-  it('adds a job from its link with Analyze job', async () => {
+  it('adds a job from its link with the footer Continue (no Analyze job in the box)', async () => {
     const user = userEvent.setup();
     renderWithQuery(<JobFlowScreen flow="tailor" />);
     await screen.findByRole('radiogroup', { name: 'Your saved jobs' }, wait);
-    const analyze = screen.getByRole('button', { name: /Analyze job/ });
-    expect(analyze).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Analyze job/ })).toBeNull();
+    const analyze = screen.getByRole('button', { name: /^Continue/ });
     await user.click(screen.getByRole('tab', { name: /Paste job link/ }));
     await user.type(
       screen.getByRole('textbox', { name: 'Job link' }),

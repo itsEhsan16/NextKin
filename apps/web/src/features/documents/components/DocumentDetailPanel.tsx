@@ -3,17 +3,18 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
-import { ArrowRight, File06 } from '@/ui/lineIcons';
+import { ArrowRight } from '@/ui/lineIcons';
 import { useReveal } from '@/lib/useReveal';
 import { AiCallout } from '@/ui/AiCallout';
 import { DownloadIcon, EllipsisIcon, LinkIcon, MoreVerticalIcon, SendIcon } from '@/ui/icons';
 import { iconButton } from '@/ui/iconButton';
 import { Skeleton } from '@/ui/Skeleton';
-import { EmptyMark, emptyDetail } from '@/ui/EmptyPanel';
+import { emptyDetail } from '@/ui/EmptyPanel';
 import { StateView } from '@/ui/StateView';
 
 import { documentMeta } from '../documentLibrary';
 import { DocumentPreview } from './DocumentPreview';
+import { DocumentsIllustration } from './DocumentsIllustration';
 import { FileTypeTile } from './FileTypeTile';
 import { applyCopy, useLetterJob } from '../useLetterJob';
 import { cardSurface, cardSurfaceLoading } from '@/ui/Card';
@@ -62,13 +63,13 @@ export function DocumentDetailPanel({
         <div className={emptyDetail}>
           {hasAny ? (
             <StateView
-              art={<EmptyMark icon={File06} />}
+              art={<DocumentsIllustration />}
               title="Select a document"
               message="Choose one from the list to preview it."
             />
           ) : (
             <StateView
-              art={<EmptyMark icon={File06} />}
+              art={<DocumentsIllustration />}
               title="Nothing to preview yet"
               message="When a document is here, its preview shows here."
             />
