@@ -59,6 +59,24 @@ describe('LandingScreen', () => {
     expect(document.querySelector('[data-public-page]')).not.toBeNull();
   });
 
+  it('names the job boards and deals the one resume out to six of them', () => {
+    render(<LandingScreen />);
+    const boards = document.getElementById('job-boards')!;
+    for (const name of ['LinkedIn', 'Indeed', 'Naukri', 'Glassdoor', 'Wellfound']) {
+      expect(within(boards).getAllByText(name).length).toBeGreaterThan(0);
+    }
+    expect(document.querySelectorAll('[data-deal-job]')).toHaveLength(6);
+    expect(document.querySelectorAll('[data-deal-job] img')).toHaveLength(6);
+    expect(screen.getByText(/sent ·/).textContent).toMatch(/40\s*sent · 0 replies/);
+  });
+
+  it('pins the Basis tag above the Match overview’s current bar', () => {
+    render(<LandingScreen />);
+    const tag = document.querySelector('[data-score-tag]')!;
+    expect(tag).not.toBeNull();
+    expect(tag.textContent).toContain('18 of 21 found');
+  });
+
   it('labels the job-link field', () => {
     render(<LandingScreen />);
     expect(screen.getByLabelText('Job link')).toBeInTheDocument();

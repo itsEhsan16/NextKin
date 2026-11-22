@@ -113,8 +113,6 @@ const FORMATS = [
 /** A board's box: no fill, border or shadow, just the icon (owner, 2026-11-20), now on light glass. */
 const TILE = 'absolute';
 
-const px = (n: number) => `${n}px`;
-
 /** A board's face; `u` turns board pixels into the unit of the place it is drawn. */
 function MarkFace({ mark, u = cq }: { mark: Mark; u?: (n: number) => string }) {
   if (mark.kind === 'wordmark') {
@@ -134,10 +132,19 @@ function MarkFace({ mark, u = cq }: { mark: Mark; u?: (n: number) => string }) {
   );
 }
 
-/** The web as the board draws it, scaled to its container (≥640px). */
+/**
+ * The web as the board draws it, scaled to its container. On phones (owner, 2026-11-21: "what we
+ * have done in web, just scale it down for mobile") it is the same web, sized so its content
+ * (board x 222–934 of 1100, centred on x 578) fills the screen, 10% larger than first built (owner,
+ * 2026-11-21): 172.7% wide, shifted left by 23.6% of itself; the section clips the empty margins.
+ * Tiles come out near 30px at 375px.
+ */
 function IntegrationWeb() {
   return (
-    <div data-int-web className="@container relative mx-auto hidden w-full max-w-[1100px] sm:block">
+    <div
+      data-int-web
+      className="@container relative mx-auto w-full max-w-[1100px] max-sm:w-[172.7%] max-sm:max-w-none max-sm:-translate-x-[23.6%]"
+    >
       <div className="relative aspect-[1100/520] w-full">
         {/* Connector wires: revealed outward from the hub by a growing circular mask. */}
         <img
@@ -229,44 +236,13 @@ function IntegrationWeb() {
   );
 }
 
-/** Phones: the same pieces stacked, since the web would shrink its tiles to ~17px. */
-function IntegrationStack() {
-  return (
-    <div className="flex flex-col items-center gap-6 sm:hidden">
-      <ul className="grid grid-cols-4 gap-3">
-        {BOARDS.map((mark) => (
-          <li key={mark.id} data-int-node className="relative size-14">
-            <span className="sr-only">{mark.label}</span>
-            <MarkFace mark={mark} u={px} />
-          </li>
-        ))}
-      </ul>
-      <div className="relative size-[76px]">
-        <span
-          data-int-pulse
-          className="absolute inset-0 rounded-full border-2 border-lp-beam opacity-0"
-        />
-        <div className="absolute inset-0 flex items-center justify-center rounded-full border-[3px] border-lp-violet bg-lp-white shadow-[0_10px_30px_0_rgba(85,67,238,0.22)]">
-          <img src="/landing/integrations-nextkin-mark.svg" alt="NextKin" width={34} height={36} />
-        </div>
-      </div>
-      <ul className="flex gap-3">
-        {FORMATS.map((f) => (
-          <li key={f.id} data-int-node className="relative size-14">
-            <f.Icon className="absolute inset-1 size-12" />
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 /**
  * 09 Works with what you have (Figma 528:1073). The job boards NextKin reads and the file
  * formats it takes in and gives back, wired into one hub.
  *
  * Landing v2 (toreview §251): the web sits on a large light glass panel with beams, halftone and
- * an orbital glow circling the hub; the logos stand on their own, without tiles.
+ * an orbital glow circling the hub; the logos stand on their own, without tiles. Phones show the
+ * same web, scaled to its content (see IntegrationWeb).
  *
  * Motion: the wires draw outward from the hub, tiles pop in after them, the beams pulse along the
  * wires, the hub sends out slow pulses, the orbit turns while on screen, every tile drifts on its
@@ -370,7 +346,7 @@ export function Integrations() {
     <section
       id="integrations"
       ref={root}
-      className="mt-12 overflow-x-clip px-5 pt-16 pb-20 lg:mt-[70px] lg:px-10 lg:pt-[104px] lg:pb-[112px]"
+      className="mt-12 overflow-x-clip px-5 pt-16 pb-12 sm:pb-20 lg:mt-[70px] lg:px-10 lg:pt-[104px] lg:pb-[112px]"
     >
       <div className="mx-auto flex max-w-[1360px] flex-col items-center text-center">
         <Reveal
@@ -405,7 +381,6 @@ export function Integrations() {
         {/* No container (owner, 2026-11-21): the web sits straight on the page. */}
         <div className="relative mt-10 w-full">
           <IntegrationWeb />
-          <IntegrationStack />
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useAnimationControls } from 'motion/react';
-import Image from 'next/image';
+import { getImageProps } from 'next/image';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { AccentWord } from '../parts/AccentWord';
@@ -59,6 +59,32 @@ function useTypedPlaceholder(paused: boolean) {
 }
 
 /** The "Paste a job link" field (525:423): carries the link to sign-up. */
+/**
+ * The hero's app picture, art-directed: the mobile app's Home below 640px, the web dashboard above.
+ * `getImageProps` gives each its own optimised srcset, so a phone downloads only its own picture.
+ */
+function HeroPicture() {
+  const common = {
+    alt: 'NextKin Home: quick start, top job matches with their match score, and your resume progress',
+    fill: true,
+    priority: true,
+  } as const;
+  const {
+    props: { srcSet: phone },
+  } = getImageProps({ ...common, src: '/landing/hero-mobile-home.webp', sizes: '72vw' });
+  const { props: desktop } = getImageProps({
+    ...common,
+    src: '/landing/hero-dashboard.png',
+    sizes: '(min-width: 1440px) 1290px, 92vw',
+  });
+  return (
+    <picture>
+      <source media="(max-width: 639px)" srcSet={phone} />
+      <img {...desktop} alt={common.alt} className="object-cover object-top" />
+    </picture>
+  );
+}
+
 function JobLinkForm() {
   const [value, setValue] = useState('');
   const [focused, setFocused] = useState(false);
@@ -220,7 +246,9 @@ export function Hero() {
           <Eyebrow
             tone="onViolet"
             icon={<img src="/landing/icon-sparkle-white.svg" alt="" width={14} height={14} />}
-            className="max-w-full text-[13px] sm:text-lp-eyebrow"
+            // Phones (2026-11-22): 12px and tighter spacing keep it on one line at 375; on the
+            // narrowest phones the label wraps rather than ending in an ellipsis.
+            className="max-w-full gap-2 pr-3.5 text-[12px] sm:gap-2.5 sm:pr-4 sm:text-lp-eyebrow [&>span:last-child]:overflow-visible [&>span:last-child]:text-left [&>span:last-child]:whitespace-normal"
           >
             Show your work · every number has a basis
           </Eyebrow>
@@ -253,25 +281,21 @@ export function Hero() {
           </p>
         </div>
 
-        {/* Dashboard mock (525:436): the app's own Home, clipped by the hero's bottom edge. */}
+        {/* Dashboard mock (525:436): the app's own Home, clipped by the hero's bottom edge. On
+            phones (owner, 2026-11-21) it is the mobile app's Home instead (NEXKTKIN-PVT "Home
+            Screen New" 414:1105) in a portrait glass frame, its lower half under the hero's edge.
+            One <picture> serves the right file per width, so phones never fetch the dashboard. */}
         <div
           data-hero-mock
           data-nav-light
-          className="relative mx-[2.8%] mt-12 aspect-[1321/616] min-h-0 [perspective:1800px] sm:mt-16"
+          className="relative mx-[2.8%] mt-12 aspect-[5/6] min-h-0 [perspective:1800px] sm:mt-16 sm:aspect-[1321/616]"
         >
           <div
             data-hero-tilt
-            className="relative aspect-[1321/837] w-full rounded-[18px] border-[1.5px] border-lp-white/50 bg-lp-white/28 p-[1.06%] shadow-lp-mock sm:rounded-[32px]"
+            className="relative mx-auto aspect-[390/1111] w-[72%] max-w-[300px] rounded-[38px] border-[1.5px] border-lp-white/50 bg-lp-white/28 p-[3%] shadow-lp-mock sm:aspect-[1321/837] sm:w-full sm:max-w-none sm:rounded-[32px] sm:p-[1.06%]"
           >
-            <div className="relative size-full overflow-hidden rounded-[12px] sm:rounded-[22px]">
-              <Image
-                src="/landing/hero-dashboard.png"
-                alt="NextKin Home: quick start, top job matches with their match score, and your resume progress"
-                fill
-                priority
-                sizes="(min-width: 1440px) 1290px, 92vw"
-                className="object-cover"
-              />
+            <div className="relative size-full overflow-hidden rounded-[30px] sm:rounded-[22px]">
+              <HeroPicture />
             </div>
             <div data-hero-tag className="absolute top-[56.56%] left-[30.24%] hidden md:block">
               <AnnotationTag note="Matched against the job’s own requirements" />

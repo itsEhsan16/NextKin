@@ -148,26 +148,30 @@ export function FinalCta() {
           data-cta-rise
           data-nav-light
           onSubmit={submit}
-          className="relative mt-10 flex w-full max-w-[730px] items-center gap-3 rounded-full bg-lp-white p-2 shadow-lp-field sm:gap-4"
+          // Phones (owner, 2026-11-21): a stacked card, the field with its icon on top and the
+          // button full width below, so the placeholder fits. From sm up, the board's single pill.
+          className="relative mt-10 flex w-full max-w-[730px] flex-col gap-2 rounded-[26px] bg-lp-white p-2 shadow-lp-field sm:flex-row sm:items-center sm:gap-4 sm:rounded-full"
         >
-          <span className="hidden size-[52px] shrink-0 items-center justify-center rounded-[26px] border-[1.2px] border-[#e4e2f0] sm:flex">
-            <img src="/landing/cta-icon-mail.svg" alt="" width={22} height={22} />
+          <span className="flex min-w-0 flex-1 items-center gap-3 px-2 sm:px-0">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full border-[1.2px] border-[#e4e2f0] sm:size-[52px]">
+              <img src="/landing/cta-icon-mail.svg" alt="" width={20} height={20} />
+            </span>
+            <label htmlFor="lp-cta-email" className="sr-only">
+              Email address
+            </label>
+            <input
+              id="lp-cta-email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address"
+              className="h-12 min-w-0 flex-1 bg-transparent text-[16px] text-lp-ink outline-none placeholder:text-lp-muted sm:h-auto sm:text-[17px]"
+            />
           </span>
-          <label htmlFor="lp-cta-email" className="sr-only">
-            Email address
-          </label>
-          <input
-            id="lp-cta-email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email address"
-            className="min-w-0 flex-1 bg-transparent pl-4 text-[15px] text-lp-ink outline-none placeholder:text-lp-muted sm:pl-0 sm:text-[17px]"
-          />
           <MagneticButton
             type="submit"
-            className="shrink-0 rounded-full bg-lp-ink px-6 py-[15px] text-[15px] font-semibold whitespace-nowrap text-lp-white sm:px-9 sm:py-[17px] sm:text-[17px]"
+            className="w-full shrink-0 rounded-[20px] bg-lp-ink px-6 py-[15px] text-[16px] font-semibold whitespace-nowrap text-lp-white sm:w-auto sm:rounded-full sm:px-9 sm:py-[17px] sm:text-[17px]"
           >
             Get started
           </MagneticButton>

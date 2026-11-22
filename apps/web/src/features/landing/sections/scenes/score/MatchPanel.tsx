@@ -37,16 +37,17 @@ export function MatchPanel() {
         '-=0.25',
       )
       .from(q('[data-bar-beam]'), { opacity: 0, duration: 0.8 }, '-=0.6')
+      // The tag grows up out of the bar: pin, leader upward, then the pill drops onto it.
       .from(q('.lp-tag-pin'), { scale: 0, duration: 0.35, ease: 'back.out(3)' }, '-=0.4')
       .from(q('.lp-tag-leader'), {
-        scaleX: 0,
-        transformOrigin: '100% 50%',
-        duration: 0.45,
+        scaleY: 0,
+        transformOrigin: '50% 100%',
+        duration: 0.4,
         ease: 'power2.out',
       })
       .from(
         q('.lp-tag-label'),
-        { x: 24, opacity: 0, duration: 0.55, ease: 'back.out(2)' },
+        { y: 12, opacity: 0, scale: 0.92, duration: 0.55, ease: 'back.out(2)' },
         '-=0.15',
       );
   });
@@ -90,7 +91,8 @@ export function MatchPanel() {
               <Counter to={18} duration={1.8} delay={0.4} /> of 21{' '}
               <span className="font-normal text-lp-on-glass-dim">required</span>
             </p>
-            <div className="h-2" />
+            {/* Headroom for the Basis tag above the tallest bar. */}
+            <div className="h-11 sm:h-12" />
             <div className="relative flex h-[200px] items-end gap-2 sm:h-[260px] sm:gap-4">
               <span
                 aria-hidden
@@ -132,13 +134,19 @@ export function MatchPanel() {
                           />
                         </span>
                       </span>
+                      {/* The Basis tag stands above the bar, its pin on the bar's spark, so it never
+                          reaches the card's edges (owner, 2026-11-22: it was clipped on the left). */}
                       <div
                         data-score-tag
-                        className="absolute top-[11%] right-1/2 z-[2] hidden translate-x-[5px] xl:block"
+                        className="absolute bottom-full left-1/2 z-[3] mb-[-6px] -translate-x-1/2"
                       >
                         <AnnotationTag
-                          note="18 of 21 requirements found on the page"
-                          className="flex-row-reverse [&_.lp-tag-leader]:w-8"
+                          vertical
+                          note={
+                            <>
+                              18 of 21 found<span className="hidden sm:inline"> on the page</span>
+                            </>
+                          }
                         />
                       </div>
                     </>

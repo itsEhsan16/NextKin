@@ -4,9 +4,16 @@ import { useRef, type ReactNode } from 'react';
 
 import { gsap, useLandingMotion } from '../motion/gsap';
 import { AccentWord } from '../parts/AccentWord';
+import { Marquee } from '../parts/Marquee';
 
 const imgMark = (src: string) => (
-  <img src={src} alt="" width={36} height={36} className="size-9 shrink-0" />
+  <img
+    src={src}
+    alt=""
+    width={36}
+    height={36}
+    className="size-7 shrink-0 object-contain sm:size-9"
+  />
 );
 
 /**
@@ -22,14 +29,28 @@ const BOARDS: { name: string; mark: ReactNode }[] = [
   { name: 'Wellfound', mark: imgMark('/landing/boards-wellfound.svg') },
 ];
 
-function BoardChip({ name, mark }: { name: string; mark: ReactNode }) {
+/**
+ * A board capsule. On phones it is sized to its content (padding on both sides keeps the logo
+ * inside the pill: owner, 2026-11-22); from sm up it is the board's fixed 240px chip.
+ */
+function BoardChip({
+  name,
+  mark,
+  entry = true,
+}: {
+  name: string;
+  mark: ReactNode;
+  entry?: boolean;
+}) {
   return (
     <div
-      data-board-chip
-      className="flex h-16 w-[calc(50%-8px)] shrink-0 items-center justify-center gap-3.5 rounded-full border-[1.5px] border-[#e7e6f3] bg-lp-white drop-shadow-[0_6px_9px_rgba(27,22,80,0.06)] sm:h-20 sm:w-[240px]"
+      {...(entry ? { 'data-board-chip': '' } : {})}
+      className="flex h-14 shrink-0 items-center justify-center gap-3 rounded-full border-[1.5px] border-[#e7e6f3] bg-lp-white px-5 shadow-[0_6px_14px_-6px_rgba(27,22,80,0.1)] sm:h-20 sm:w-[240px] sm:gap-3.5 sm:px-7"
     >
       {mark}
-      <span className="text-[18px] font-bold text-lp-heading sm:text-[22px]">{name}</span>
+      <span className="text-[17px] font-bold whitespace-nowrap text-lp-heading sm:text-[22px]">
+        {name}
+      </span>
     </div>
   );
 }
@@ -87,7 +108,18 @@ export function JobBoards() {
             <AccentWord className="text-lp-violet">already</AccentWord> use
           </span>
         </h2>
-        <div className="flex w-full flex-wrap justify-center gap-4 sm:gap-[22px]">
+        {/* Phones: the capsules drift right to left, endlessly (owner, 2026-11-22). The card's
+            own entry brings them in; the strip fades at both edges. */}
+        <Marquee
+          speed={36}
+          className="-mx-5 w-[calc(100%+40px)] py-2 [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] sm:hidden"
+          trackClassName="gap-3 pr-3"
+        >
+          {BOARDS.map((board) => (
+            <BoardChip key={board.name} {...board} entry={false} />
+          ))}
+        </Marquee>
+        <div className="hidden w-full flex-wrap justify-center gap-[22px] sm:flex">
           {BOARDS.map((board) => (
             <BoardChip key={board.name} {...board} />
           ))}
