@@ -16,6 +16,7 @@ import {
   atsProgressRows,
 } from './atsRun';
 import { TailorChrome } from './TailorChrome';
+import { showAppToast } from '@/ui/Toast';
 import { TailorProgress } from './TailorProgress';
 
 // The ✕ bar → first block at 390: the drawing on ATS 02 (646:6), the verdict on ATS 03 (646:55).
@@ -72,7 +73,16 @@ export function AtsRunView({ generation }: { generation: Generation }) {
           label: 'Cancel',
           variant: 'outline',
           loading: cancel.isPending,
-          onPress: () => cancel.mutate(generation.id, { onSuccess: actions.goBack }),
+          onPress: () =>
+            cancel.mutate(generation.id, {
+              onSuccess: actions.goBack,
+              // Said, not silent (toreview §262).
+              onError: () =>
+                showAppToast(
+                  'We couldn’t cancel the check. It may have finished; try again.',
+                  'error',
+                ),
+            }),
         }}
       />
     );

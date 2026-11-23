@@ -9,7 +9,14 @@ import {
   type ResumeContent,
   type ZeroResolution,
 } from '@/data/models';
-import { useCurrentUser, useJob, useResolveZeroCheck, useResumeContent } from '@/data/queries';
+import {
+  queryPhase,
+  useCurrentUser,
+  useJob,
+  useResolveZeroCheck,
+  useResumeContent,
+} from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
 import { FLOW_ART } from '@/features/create/components/FlowHero';
 import { FlowStepper, ZERO_STEPS } from '@/features/create/components/TailorStepper';
 import { useTheme } from '@/theme';
@@ -23,6 +30,7 @@ import { Reveal } from '@/ui/motion';
 import { useGenerationsActions } from '../hooks/useGenerationsActions';
 import { useTailorDownload } from '../hooks/useTailorDownload';
 import { TailorChrome } from './TailorChrome';
+import { ReadyDocumentProblem, readyDocumentIssue } from './ReadyDocumentProblem';
 import { TailorProgress } from './TailorProgress';
 import { ZeroReview } from './ZeroReview';
 import { ZeroDraftPreview } from './ZeroDraftPreview';
@@ -49,8 +57,8 @@ const SAVE_FAILED = "We couldn't save that. Check your connection and try again.
 const resumeBody = (content: DocumentContent | undefined): ResumeContent | undefined =>
   content?.kind === 'resume' ? content : undefined;
 
-const messageOf = (error: unknown): string =>
-  error instanceof Error && error.message ? error.message : SAVE_FAILED;
+// A fixed sentence, never the server's or the HTTP client's own text (toreview §262).
+const messageOf = (error: unknown): string => startErrorLine(error, SAVE_FAILED);
 
 /**
  * ZERO 02–05 (toreview §72): a Zero Resume run, written, checked and delivered. While the pipeline
@@ -134,7 +142,14 @@ export function ZeroRunView({ generation }: { generation: Generation }) {
         }}
       />
     );
-  } else if (content.isError) {
+  } else if (readyDocumentIssue(resumeId, content, body != null) === 'missing') {
+    // A ready draft that names no document, or one that isn't a resume: said, never a skeleton.
+    view = 'error';
+    page = (
+      <ReadyDocumentProblem issue="missing" what="draft" onRetry={() => void content.refetch()} />
+    );
+  } else if (queryPhase(content) === 'error') {
+    // Only when nothing is cached: a refetch that fails keeps the draft being checked (§262).
     view = 'error';
     page = (
       <StateView

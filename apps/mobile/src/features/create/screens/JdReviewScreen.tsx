@@ -1,12 +1,16 @@
 import { useState, type ReactNode } from 'react';
 
-import { useJdDraft, useUpdateJdDraft } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import { queryPhase, useJdDraft, useUpdateJdDraft } from '@/data/queries';
+import { showAppToast } from '@/ui/Toast';
+import { Text } from '@/ui/Text';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
 import { StateView } from '@/ui/StateView';
 import { StickyActionBar } from '@/ui/StickyActionBar';
 
+import { jdFailedLede } from '../jdFailure';
 import { JdReviewForm } from '../components/JdReviewForm';
 import { JdReviewSkeleton } from '../components/JdReviewSkeleton';
 import type { SkillGroupKey } from '../components/JdSkillGroup';
@@ -39,7 +43,13 @@ export function JdReviewScreen({ draftId }: JdReviewScreenProps) {
   const actions = useJdReviewActions();
 
   const draft = useJdDraft(draftId);
-  const { mutate: patchDraft } = useUpdateJdDraft(draftId);
+  const { mutate: mutateDraft } = useUpdateJdDraft(draftId);
+  // A refused or offline edit snaps back; it now also says why (toreview §262).
+  const patchDraft = (patch: Parameters<typeof mutateDraft>[0]) =>
+    mutateDraft(patch, {
+      onError: (error) =>
+        showAppToast(startErrorLine(error, 'That change didn’t save. Try again.'), 'error'),
+    });
 
   // The selection outlives the dismissal: `Sheet` keeps its subtree mounted through the exit
   // animation, so a menu nulled on close would blank its own title and drop both rows mid-slide.
@@ -106,7 +116,8 @@ export function JdReviewScreen({ draftId }: JdReviewScreenProps) {
     return body(<JdReviewSkeleton />, <StickyActionBar primary={{ label: CTA, disabled: true }} />);
   }
 
-  if (draft.isError) {
+  // Only when nothing is cached: a refetch that fails keeps the form (toreview §262).
+  if (queryPhase(draft) === 'error') {
     return body(
       <StateView
         tone="danger"
@@ -138,6 +149,16 @@ export function JdReviewScreen({ draftId }: JdReviewScreenProps) {
       {body(
         <JdReviewForm
           draft={data}
+          // A reading that failed says why above the form the details are entered in (§262).
+          {...(data.status === 'failed'
+            ? {
+                banner: (
+                  <Text variant="callout" color="danger">
+                    {`${jdFailedLede(data)} Enter its details here.`}
+                  </Text>
+                ),
+              }
+            : {})}
           onPatch={patchDraft}
           onAddSkill={addSkill}
           onPressSkill={(group, skill) => {

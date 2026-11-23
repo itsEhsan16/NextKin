@@ -13,7 +13,7 @@ import {
   type CustomizeChoices,
   type PlanStep,
 } from '@/data/models/customize';
-import { useDraftFigure } from '@/data/queries';
+import { useAiConsent, useDraftFigure } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { ChoiceChip } from '@/ui/ChoiceChip';
@@ -243,13 +243,17 @@ function NumberStep({
   const [editing, setEditing] = useState(false);
 
   const { mutate, isIdle } = draftFigure;
+  // Drafted ahead only once AI use is agreed: without it, every row's background ask raised the
+  // consent dialog while the user was only looking (toreview §262). The editor still asks when
+  // they open it, which is a tap of theirs.
+  const consented = useAiConsent().data?.granted === true;
   useEffect(() => {
-    if (saved || !isIdle) return;
+    if (saved || !isIdle || !consented) return;
     mutate(
       { resumeId, roleId: bullet.roleId, line: bullet.index, text: bullet.text },
       { onSuccess: setDraft },
     );
-  }, [bullet, isIdle, mutate, resumeId, saved]);
+  }, [bullet, consented, isIdle, mutate, resumeId, saved]);
 
   const save = (text: string | null) =>
     onChange(setFigure(choices, bullet.roleId, bullet.index, text));

@@ -1,5 +1,6 @@
 import type { CoverLetterTone, Generation } from '@/data/models';
-import { useStartGeneration, useSubscription } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import { isConsentRequired, useStartGeneration, useSubscription } from '@/data/queries';
 
 import { otherTones, runTone } from '../components/coverRun';
 import { useGenerationsActions } from './useGenerationsActions';
@@ -28,7 +29,10 @@ export function useCoverTone(generation: Generation, onError: (message: string) 
       { kind: 'cover_letter', sourceResumeId, ...(jobId ? { jobId } : {}), tone },
       {
         onSuccess: (next) => actions.openRun(next.id),
-        onError: () => onError(COVER_TONE_START_FAILED),
+        // Consent has its own dialog; any other refusal says what it was (toreview §262).
+        onError: (error) => {
+          if (!isConsentRequired(error)) onError(startErrorLine(error, COVER_TONE_START_FAILED));
+        },
       },
     );
   };

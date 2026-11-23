@@ -25,7 +25,9 @@ describe('a mutation refused for consent', () => {
   it('is re-run after consent, unless it opted out', async () => {
     const client = createQueryClient();
     const retries: (() => void)[] = [];
-    const off = onConsentRequired((retry) => retries.push(retry));
+    const off = onConsentRequired((retry) => {
+      if (retry) retries.push(retry);
+    });
     let runs = 0;
     const refuse = async () => {
       runs++;

@@ -99,6 +99,24 @@ export function useAssistantReply(messageId: string) {
     });
   }, [liveId, queryClient]);
 
+  // The reply's own fetch failed with nothing to show: the conversation still says it is
+  // streaming, which locked the composer for good. It is marked failed there, so the screen draws
+  // a failed reply with Try again and the composer comes back (toreview §262).
+  const lost = query.isError && query.data === undefined;
+  useEffect(() => {
+    if (!lost || !messageId) return;
+    queryClient.setQueryData<AssistantConversation>(qk.assistant.conversation(), (old) =>
+      old
+        ? {
+            ...old,
+            messages: old.messages.map((item) =>
+              item.id === messageId && item.status === 'streaming' ? { ...item, status: 'failed' } : item,
+            ),
+          }
+        : old,
+    );
+  }, [lost, messageId, queryClient]);
+
   return query;
 }
 

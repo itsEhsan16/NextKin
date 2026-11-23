@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import type { ExportReceipt } from '@/data/models';
+import { startErrorLine } from '@/data/models/customize';
 import { EXPORT_BLOCK_MESSAGE, ExportBlockedError, type ResumeExport } from '@/data/queries';
 import { ExportCancelledError, materialize, useConfirmedExport } from '@/features/resumes';
 import { shareFile } from '@/lib';
@@ -25,12 +26,15 @@ export function useTailorDownload(
 ) {
   const exportDoc = useConfirmedExport(resumeId);
   const [busy, setBusy] = useState(false);
+  // Read at the press, not from the render: two taps in one frame both saw `busy` false (§262).
+  const inFlight = useRef(false);
   // An unverified address is not a failure to toast: the bar says so in place, with a resend
   // and the retry (toreview §114).
   const [emailBlocked, setEmailBlocked] = useState(false);
 
   const download = useCallback(() => {
-    if (resumeId.length === 0 || busy) return;
+    if (resumeId.length === 0 || busy || inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     setEmailBlocked(false);
     void (async () => {
@@ -43,23 +47,33 @@ export function useTailorDownload(
           setEmailBlocked(true);
           return;
         }
+        // A plan limit, the day's cap or a busy service says so, not "check your connection".
         onError(
           error instanceof ExportBlockedError
             ? EXPORT_BLOCK_MESSAGE[error.reason]
-            : TAILOR_DOWNLOAD_FAILED,
+            : startErrorLine(error, TAILOR_DOWNLOAD_FAILED),
         );
         return;
       }
-      const { file } = await materialize(result, result.fileName);
-      if (!file) return onError(TAILOR_BUILD_FAILED);
-      const shared = await shareFile(file.uri, {
-        mimeType: result.mimeType,
-        dialogTitle: `Save ${file.name}`,
-      });
-      if (shared === 'unavailable') return onError(TAILOR_SHARE_UNAVAILABLE);
-      markExported(resumeId, file.name);
-      onSaved(file.name, result.delivery === 'file' ? result.receipt : undefined);
-    })().finally(() => setBusy(false));
+      // Making and handing over the file can fail on the phone itself: said, never a spinner that
+      // just stops (toreview §262).
+      try {
+        const { file } = await materialize(result, result.fileName);
+        if (!file) return onError(TAILOR_BUILD_FAILED);
+        const shared = await shareFile(file.uri, {
+          mimeType: result.mimeType,
+          dialogTitle: `Save ${file.name}`,
+        });
+        if (shared === 'unavailable') return onError(TAILOR_SHARE_UNAVAILABLE);
+        markExported(resumeId, file.name);
+        onSaved(file.name, result.delivery === 'file' ? result.receipt : undefined);
+      } catch {
+        onError(TAILOR_BUILD_FAILED);
+      }
+    })().finally(() => {
+      inFlight.current = false;
+      setBusy(false);
+    });
   }, [busy, exportDoc, onError, onSaved, resumeId]);
 
   return { download, busy, emailBlocked };

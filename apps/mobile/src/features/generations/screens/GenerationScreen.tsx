@@ -2,8 +2,12 @@ import { useEffect, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { GENERATION_KIND_LABEL, type Generation, type GenerationKind } from '@/data/models';
+import { startErrorLine } from '@/data/models/customize';
 import {
+  isConsentRequired,
+  queryPhase,
   useGeneration,
+  useGenerationWatchProblem,
   useInterviewSetForGeneration,
   useResume,
   useRetryGeneration,
@@ -70,6 +74,7 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
   const actions = useGenerationsActions();
 
   const generation = useGeneration(id);
+  const watch = useGenerationWatchProblem(id);
   const retry = useRetryGeneration();
   const run: Generation | undefined = generation.data;
   const status = run?.status;
@@ -142,7 +147,9 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
     );
   }
 
-  if (generation.isError && !isMissing(generation.error)) {
+  // Only a run there is nothing to show of failed to load: a refetch that fails keeps the live or
+  // finished run on screen (toreview §262).
+  if (queryPhase(generation) === 'error' && !isMissing(generation.error)) {
     return page(
       <StateView
         tone="danger"
@@ -163,6 +170,24 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
         message="Whatever it produced is in your documents."
         actionLabel="Go to Resumes"
         onAction={actions.openResumes}
+      />,
+    );
+  }
+
+  // The run's progress can't be read (gone, unreadable, or the poll keeps failing): said, with a way
+  // to look again, instead of steps that never move (toreview §262).
+  if (run.status !== 'ready' && run.status !== 'failed' && watch.problem) {
+    return page(
+      <StateView
+        tone="danger"
+        icon="AlertTriangle"
+        title={watch.problem.permanent ? 'We can’t follow this run' : 'Checking on your run'}
+        message={watch.problem.message}
+        actionLabel="Check again"
+        onAction={() => {
+          watch.restart();
+          void generation.refetch();
+        }}
       />,
     );
   }
@@ -218,7 +243,15 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
             actions.backToCustomize(
               jobId ? { jobId, resumeId: tailorSource } : { jdId, resumeId: tailorSource },
             )
-        : undefined;
+        : // A failed build goes back to its keywords, for the same job (toreview §262).
+          run.origin === 'build' && (jobId || jdId)
+          ? () => actions.backToBuildCompare(jobId ? { jobId } : { jdId })
+          : undefined;
+    // Why the retry didn't start, in words that say what to do; consent has its own dialog.
+    const retryLine =
+      retry.isError && !isConsentRequired(retry.error)
+        ? startErrorLine(retry.error, 'We couldn’t start it again. Press Try again.')
+        : null;
 
     return page(
       // Fades in over the progress it replaces rather than cutting to it (§85).
@@ -245,9 +278,9 @@ export function GenerationScreen({ id }: GenerationScreenProps) {
           }
           onSecondary={changeChoices ?? fixInput}
         />
-        {retry.isError ? (
+        {retryLine ? (
           <Text variant="caption" color="danger" align="center" accessibilityLiveRegion="polite">
-            {"We couldn't start it again. Press Try again."}
+            {retryLine}
           </Text>
         ) : null}
       </Reveal>,

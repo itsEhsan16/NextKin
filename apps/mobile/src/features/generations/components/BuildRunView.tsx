@@ -13,6 +13,7 @@ import { BuildBandPill, BuildNextTiles } from './BuildReadyParts';
 import { BUILD_CARD_TITLE, BUILD_LEDE, buildProgressRows, buildProgressTitle } from './buildRun';
 import { ResumePagePreview } from './ResumePagePreview';
 import { TailorChrome } from './TailorChrome';
+import { ReadyDocumentProblem, readyDocumentIssue } from './ReadyDocumentProblem';
 import { TailorProgress } from './TailorProgress';
 import { TailorReady } from './TailorReady';
 import { resumeBody } from './TailorRunView';
@@ -42,6 +43,9 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
   const resume = useResume(resumeId);
   const content = useResumeContent(ready ? resumeId : '');
   const user = useCurrentUser();
+  const issue = ready
+    ? readyDocumentIssue(resumeId, content, resumeBody(content.data) != null)
+    : null;
 
   const company = draft.data?.company ?? job.data?.company;
   const close = () => actions.closeBuild(jobId);
@@ -94,7 +98,9 @@ export function BuildRunView({ generation }: BuildRunViewProps) {
       >
         {/* The finished resume fades in over the progress card instead of cutting to it. */}
         <Reveal stateKey={ready ? 'ready' : 'writing'}>
-          {ready ? (
+          {ready && issue ? (
+            <ReadyDocumentProblem issue={issue} onRetry={() => void content.refetch()} />
+          ) : ready ? (
             <>
               <TailorReady
                 preview={

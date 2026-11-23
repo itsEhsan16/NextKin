@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import { View } from 'react-native';
+
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Image } from 'expo-image';
 
 import { generationStepIndex, type Generation } from '@/data/models';
+import { qk, restartGenerationWatch, useStall } from '@/data/queries';
 import type { FlowArt } from '@/features/create/components/FlowHero';
 import type { LiveMotif } from '@/features/create/components/LiveArt';
 import { FlowCard } from '@/features/create/flow/FlowKit';
 import { formatPercent } from '@/lib';
 import { motion, scaledSheet } from '@/theme';
+import { Button } from '@/ui/Button';
 import { AnimatedNumber, ProgressBar } from '@/ui/Progress';
 import { Text } from '@/ui/Text';
 
@@ -95,6 +100,16 @@ export function TailorProgress({
   const styles = useStyles();
   const percent = formatPercent(generation.progress);
   const working = generation.status !== 'ready';
+  const queryClient = useQueryClient();
+  // A run that stops moving says so, at 100% too, with a way to look again (toreview §262): it
+  // used to sit on its last step for ever, saying only that the user could leave.
+  const [checks, setChecks] = useState(0);
+  const stall = useStall(working, `${generation.progress}:${generation.status}:${checks}`);
+  const checkAgain = () => {
+    setChecks((n) => n + 1);
+    restartGenerationWatch(queryClient, generation.id);
+    void queryClient.invalidateQueries({ queryKey: qk.generations.detail(generation.id) });
+  };
 
   return (
     <View style={styles.wrap}>
@@ -152,7 +167,23 @@ export function TailorProgress({
         ))}
       </FlowCard>
 
-      {footnote ? (
+      {stall === 'stalled' ? (
+        <View style={styles.stall} accessibilityLiveRegion="polite">
+          <Text variant="footnote" color="danger" align="center">
+            This is taking much longer than it should.
+          </Text>
+          <Button label="Check again" variant="secondary" size="md" onPress={checkAgain} />
+        </View>
+      ) : stall === 'slow' ? (
+        <Text
+          variant="footnote"
+          color="textSecondary"
+          align="center"
+          accessibilityLiveRegion="polite"
+        >
+          Taking longer than usual. You can leave; it carries on.
+        </Text>
+      ) : footnote ? (
         <Text variant="footnote" color="textTertiary" align="center">
           {footnote}
         </Text>
@@ -169,4 +200,5 @@ const useStyles = scaledSheet((_s, u) => ({
   header: { flexDirection: 'row', alignItems: 'center', gap: u(8) },
   headerTitle: { flex: 1 },
   bar: { marginTop: u(8), marginBottom: u(8) },
+  stall: { gap: u(10), alignItems: 'center' },
 }));

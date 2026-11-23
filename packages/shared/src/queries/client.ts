@@ -11,7 +11,11 @@ const MINUTE = 60 * SECOND;
  * which runs the refused mutation again with the same input, so once the person agrees the action
  * they asked for carries on — the screen's own callbacks included (toreview §114).
  */
-type ConsentListener = (retry: () => void) => void;
+/**
+ * `retry` re-runs the refused request after consent; null when the screen opted out of that
+ * (`meta.consentRetry: false`), so the dialog can say "try that again now" instead (§262).
+ */
+type ConsentListener = (retry: (() => void) | null) => void;
 const consentListeners = new Set<ConsentListener>();
 
 export function onConsentRequired(listener: ConsentListener): () => void {
@@ -45,7 +49,7 @@ export function createQueryClient(): QueryClient {
         // no before/after to undo it (toreview §260). The dialog still opens; they ask again.
         const retry =
           mutation.options.meta?.consentRetry === false
-            ? () => undefined
+            ? null
             : () => void mutation.execute(variables).catch(() => undefined);
         consentListeners.forEach((listener) => listener(retry));
       },

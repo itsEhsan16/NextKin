@@ -3,7 +3,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { blockedSiteNotice, sharedJobOf, type JdInput } from '@/data/models';
-import { jdFailureReason, track, unreadableLinkMessage, useExtractJd } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import {
+  isConsentRequired,
+  jdFailureMessage,
+  jdFailureReason,
+  track,
+  unreadableLinkMessage,
+  useExtractJd,
+} from '@/data/queries';
 import { useTheme } from '@/theme';
 import { Screen } from '@/ui/Screen';
 import { ScreenHeader } from '@/ui/ScreenHeader';
@@ -27,35 +35,53 @@ export function ShareScreen() {
   const router = useRouter();
   const text = useShareStore((state) => state.text);
   const extract = useExtractJd();
-  const [failed, setFailed] = useState(false);
+  // Why the shared job couldn't be read, said for what it was (toreview §262).
+  const [failure, setFailure] = useState<string | null>(null);
   const shared = useMemo(() => sharedJobOf(text), [text]);
 
-  const read = useCallback(
-    async (input: JdInput) => {
-      setFailed(false);
-      try {
-        const draft = await extract.mutateAsync(input);
-        router.replace({ pathname: '/create/build/review', params: { jdId: draft.id } });
-      } catch (error) {
-        const refused = input.source === 'link' ? unreadableLinkMessage(error) : null;
-        const reason = jdFailureReason(error);
-        const said = reason === 'listing' || reason === 'removed' || reason === 'gone';
-        if (!refused || input.source !== 'link') {
-          setFailed(true);
-          return;
-        }
-        router.replace({
-          pathname: '/create/build/add',
-          params: {
-            mode: 'paste',
-            at: String(Date.now()),
-            // A list of jobs or a posting that is gone is not the site blocking us (§206).
-            notice: (said ? null : blockedSiteNotice(input.url)) ?? refused,
-          },
-        });
+  // What a failed read says: consent's own line, the reading's sentence (busy, too long, not a
+  // job…), or a site that refuses, which goes on to the paste box with its notice (§206, §262).
+  const onFailed = useCallback(
+    (input: JdInput, error: unknown) => {
+      if (isConsentRequired(error)) {
+        setFailure('Agree to how NextKin uses AI to read this job, then try again.');
+        return;
       }
+      const refused = input.source === 'link' ? unreadableLinkMessage(error) : null;
+      const reason = jdFailureReason(error);
+      const said = reason === 'listing' || reason === 'removed' || reason === 'gone';
+      if (!refused || input.source !== 'link') {
+        setFailure(
+          jdFailureMessage(error) ?? startErrorLine(error, 'Check your connection and try again.'),
+        );
+        return;
+      }
+      router.replace({
+        pathname: '/create/build/add',
+        params: {
+          mode: 'paste',
+          at: String(Date.now()),
+          // A list of jobs or a posting that is gone is not the site blocking us (§206).
+          notice: (said ? null : blockedSiteNotice(input.url)) ?? refused,
+        },
+      });
     },
-    [extract, router],
+    [router],
+  );
+
+  const { mutate: extractJd } = extract;
+  const read = useCallback(
+    (input: JdInput) => {
+      setFailure(null);
+      // `mutate` with its own callbacks: after the consent dialog the read runs again, and these
+      // still open the job (awaiting the first refusal lost that run).
+      extractJd(input, {
+        onSuccess: (draft) =>
+          router.replace({ pathname: '/create/build/review', params: { jdId: draft.id } }),
+        onError: (error) => onFailed(input, error),
+      });
+    },
+    [extractJd, onFailed, router],
   );
 
   const started = useRef(false);
@@ -87,13 +113,13 @@ export function ShareScreen() {
     );
   }
 
-  if (failed) {
+  if (failure) {
     return page(
       <StateView
         tone="danger"
         icon="AlertTriangle"
         title={SHARE_FAILED}
-        message="Check your connection and try again."
+        message={failure}
         actionLabel="Try again"
         onAction={() => void read(shared)}
       />,

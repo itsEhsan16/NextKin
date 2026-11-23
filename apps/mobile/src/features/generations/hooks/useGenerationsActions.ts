@@ -91,6 +91,12 @@ export function useGenerationsActions() {
        */
       backToCustomize: (target: { jobId?: string; jdId?: string; resumeId?: string }) =>
         router.replace({ pathname: '/create/tailor', params: customizeParams(target) }),
+      /** A failed build goes back to its keywords (BUILD 04b), for the same job (toreview §262). */
+      backToBuildCompare: ({ jobId, jdId }: { jobId?: string; jdId?: string }) =>
+        router.replace({
+          pathname: '/create/build/compare',
+          params: { ...(jobId ? { jobId } : {}), ...(jdId ? { jdId } : {}) },
+        }),
     }),
     [router],
   );

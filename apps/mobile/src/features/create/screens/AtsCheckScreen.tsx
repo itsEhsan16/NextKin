@@ -3,7 +3,9 @@ import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { defaultTailorPick, tailorableResumes, type JdInput } from '@/data/models';
+import { startErrorLine } from '@/data/models/customize';
 import {
+  isConsentRequired,
   useExtractJd,
   useResumes,
   useSavedJobs,
@@ -79,7 +81,9 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
   const [jobSheet, setJobSheet] = useState(false);
   const [resumeSheet, setResumeSheet] = useState(false);
   const [refused, setRefused] = useState(false);
-  const [failed, setFailed] = useState(false);
+  // Why the check didn't start, kept whole so the note can say what it was (toreview §262).
+  const [failure, setFailure] = useState<unknown>(null);
+  const failed = failure != null;
 
   const offered = useMemo(() => tailorableResumes(resumes.data ?? []), [resumes.data]);
   const resume =
@@ -124,7 +128,7 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
         onCompare={(id) => {
           setPickedResumeId(id);
           setResumeSheet(false);
-          setFailed(false);
+          setFailure(null);
         }}
       />
     </View>
@@ -149,18 +153,20 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
       />,
     );
   // An allowance that could not be read is unknown, not unlimited (§13.5).
-  if (subscription.isError)
+  // Only what has nothing to show fails the screen: a refetch that fails keeps the form (§262).
+  // Past the pending check, no data means the load failed.
+  if (!subscription.data)
     return retry('Couldn’t load your plan', () => void subscription.refetch());
-  if (savedJobs.isError)
+  if (!savedJobs.data)
     return retry('Couldn’t load your saved jobs', () => void savedJobs.refetch());
-  if (resumes.isError) return retry('Couldn’t load your resumes', () => void resumes.refetch());
+  if (!resumes.data) return retry('Couldn’t load your resumes', () => void resumes.refetch());
 
   const allowance = atsCheckAllowance(subscription.data.usage);
   const blocker = atsBlocker({ hasFile: resume != null, mode, hasJob: job != null, pasted });
   const busy = extract.isPending || start.isPending;
 
   const check = () => {
-    setFailed(false);
+    setFailure(null);
     if (blocker || !resume) {
       setRefused(true);
       return;
@@ -178,22 +184,24 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
           },
           {
             onSuccess: (generation) => actions.openGeneration(generation.id),
-            onError: () => setFailed(true),
+            onError: (error) => setFailure(error),
           },
         ),
-      onError: () => setFailed(true),
+      onError: (error) => setFailure(error),
     });
   };
 
-  const note = failed
-    ? CHECK_FAILED
-    : allowance.spent
-      ? atsChecksSpentNote(allowance.limit)
-      : refused && blocker
-        ? blocker
-        : allowance.known
-          ? atsChecksLeftNote(allowance.used, allowance.limit)
-          : undefined;
+  // Consent has its own dialog, so its refusal adds no line; every other refusal says what it was.
+  const note =
+    failed && !isConsentRequired(failure)
+      ? startErrorLine(failure, CHECK_FAILED)
+      : allowance.spent
+        ? atsChecksSpentNote(allowance.limit)
+        : refused && blocker
+          ? blocker
+          : allowance.known
+            ? atsChecksLeftNote(allowance.used, allowance.limit)
+            : undefined;
 
   return page(
     <View style={styles.stack}>
@@ -284,9 +292,13 @@ export function AtsCheckScreen({ jobId }: AtsCheckScreenProps) {
             onChangeText={setPasted}
             multiline
             minLines={5}
-            maxLength={JD_MAX}
+            // No maxLength: a paste is never cut short; an over-long one says so (toreview §262).
             helper={PASTE_TIP}
-            error={refused && mode === 'paste' ? (blocker ?? undefined) : undefined}
+            error={
+              mode === 'paste' && (refused || pasted.trim().length > JD_MAX)
+                ? (blocker ?? undefined)
+                : undefined
+            }
           />
         )}
         {mode === 'job' && jobs.length > 1 ? (

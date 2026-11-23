@@ -124,7 +124,7 @@ describe('UploadResumeScreen (V2 §7.4 — no artboard)', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it('names the OCR cause when the parse fails, and keeps the picker live', async () => {
+  it('says a failed upload for what it was, and keeps the picker live', async () => {
     useMockModeStore.setState({ mode: 'error' });
     pick.mockResolvedValue(FILE);
     await renderUpload();
@@ -132,10 +132,10 @@ describe('UploadResumeScreen (V2 §7.4 — no artboard)', () => {
     await choose();
     await settle();
 
-    // §7.4's wording: an image-only scan is the common real cause, so the fix is named.
-    expect(
-      screen.getByText("We couldn't read that file — try a text-based PDF."),
-    ).toBeOnTheScreen();
+    // The mock's error mode is a request that failed, not a file with no text: it is said as that,
+    // not as "try a text-based PDF", which is kept for an unreadable file (toreview §262).
+    expect(screen.getByText(/didn’t go through|couldn’t reach|Check your connection/)).toBeOnTheScreen();
+    expect(screen.queryByText("We couldn't read that file — try a text-based PDF.")).toBeNull();
     expect(useImportStore.getState().draft).toBeNull();
     expect(mockReplace).not.toHaveBeenCalled();
 

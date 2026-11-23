@@ -7,6 +7,7 @@ import { Disclosure } from '@/ui/Disclosure';
 import { IconButton } from '@/ui/IconButton';
 import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
+import { JD_DUTIES_MAX, JD_DUTY_TEXT_MAX } from '@/data/models/limits';
 
 /** Responsibilities past this fold away; §7.5 keeps every one of them reachable and editable. */
 const VISIBLE = 3;
@@ -29,6 +30,9 @@ export function JdResponsibilities({ lines, onChange }: JdResponsibilitiesProps)
   const { spacing } = useTheme();
   const [showRest, setShowRest] = useState(false);
   const [entry, setEntry] = useState('');
+  // Said, never refused in silence: the server takes 40 lines of 400 characters, and a save it
+  // refused used to snap the list back with no word (toreview §262).
+  const [problem, setProblem] = useState<string | undefined>();
 
   const replace = (index: number, line: string) =>
     onChange(lines.map((current, at) => (at === index ? line : current)));
@@ -38,6 +42,13 @@ export function JdResponsibilities({ lines, onChange }: JdResponsibilitiesProps)
   const add = () => {
     const line = entry.trim();
     if (!line) return;
+    if (lines.length >= JD_DUTIES_MAX)
+      return setProblem(`Up to ${JD_DUTIES_MAX} responsibilities fit. Remove one to add another.`);
+    if (line.length > JD_DUTY_TEXT_MAX)
+      return setProblem(
+        `That’s ${line.length} characters; up to ${JD_DUTY_TEXT_MAX} fit. Shorten it.`,
+      );
+    setProblem(undefined);
     setEntry('');
     onChange([...lines, line]);
   };
@@ -85,7 +96,11 @@ export function JdResponsibilities({ lines, onChange }: JdResponsibilitiesProps)
       <View style={[styles.addRow, { gap: spacing[3] }]}>
         <TextField
           value={entry}
-          onChangeText={setEntry}
+          onChangeText={(text) => {
+            setEntry(text);
+            setProblem(undefined);
+          }}
+          error={problem}
           placeholder="Add a responsibility"
           accessibilityLabel="Add a responsibility"
           returnKeyType="done"

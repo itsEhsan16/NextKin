@@ -10,7 +10,7 @@ import {
   payLabel,
   type JdReading,
 } from '@/data/models/jd';
-import { useJdJob, useStall } from '@/data/queries';
+import { queryPhase, useJdJob, useStall } from '@/data/queries';
 import { JobAboutSection } from '@/features/jobs/components/JobAboutSection';
 import { useTheme } from '@/theme';
 import { Disclosure } from '@/ui/Disclosure';
@@ -21,6 +21,7 @@ import { FlowCard } from '@/ui/kit';
 import { Text } from '@/ui/Text';
 import { useRevealStagger } from '@/ui/motion';
 
+import { jdFailedLede } from '../jdFailure';
 import { BuildReviewCard, type JdHeroFact } from '../components/BuildReviewCard';
 import { JdSectionCard } from '../components/jd/JdSectionCard';
 import { BuildReviewSkeleton } from '../components/BuildReviewSkeleton';
@@ -72,7 +73,8 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
   const { draft, view } = useJdJob(draftId);
   const reading = draft.data?.status === 'extracting';
   // The draft is fetched again while it is read (useJdDraft); a reading that never lands says so.
-  const stall = useStall(reading, draftId);
+  // Keyed on the stage too, so Check again clears it once the reading moves (toreview §262).
+  const stall = useStall(reading, `${draftId}:${draft.data?.stage ?? ''}`);
   const [fullOpen, setFullOpen] = useState(false);
   const enter = useRevealStagger(!!view && !reading);
 
@@ -88,7 +90,8 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
     </Screen>
   );
 
-  if (draft.isError) {
+  // Only when nothing is cached: one failed poll during the reading kept replacing the page (§262).
+  if (queryPhase(draft) === 'error') {
     return isNotFound(draft.error)
       ? page(
           <StateView
@@ -109,6 +112,22 @@ export function JdPageScreen({ draftId }: JdPageScreenProps) {
             onAction={() => void draft.refetch()}
           />,
         );
+  }
+
+  // A reading that failed says why, and the way on: enter the job's details by hand (§262).
+  if (draft.data?.status === 'failed') {
+    return page(
+      <StateView
+        tone="danger"
+        icon="AlertTriangle"
+        title="We couldn't read this job"
+        message={`${jdFailedLede(draft.data)} You can enter its details yourself.`}
+        actionLabel="Enter it yourself"
+        onAction={() => router.push({ pathname: '/create/jd-review', params: { draftId } })}
+        secondaryLabel="Back"
+        onSecondary={() => router.back()}
+      />,
+    );
   }
 
   if (reading && stall === 'stalled') {

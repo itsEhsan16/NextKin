@@ -6,7 +6,15 @@ import { Image } from 'expo-image';
 import { usePreventRemove } from 'expo-router';
 
 import { ZERO_YEARS, ZERO_YEARS_LABEL, type ZeroYears } from '@/data/models';
-import { useCurrentUser, useJob, useStartGeneration, useSubscription } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import {
+  queryPhase,
+  isConsentRequired,
+  useCurrentUser,
+  useJob,
+  useStartGeneration,
+  useSubscription,
+} from '@/data/queries';
 import { motion, scaledSheet } from '@/theme';
 import { ChoiceChip } from '@/ui/ChoiceChip';
 import { Skeleton } from '@/ui/Skeleton';
@@ -107,7 +115,9 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
 
   // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
   // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
-  const failed = start.isError;
+  // Consent has its own dialog, so its refusal adds no line; any other refusal says what it was
+  // (a used-up plan, a busy service) instead of "check your connection" (toreview §262).
+  const failed = start.isError && !isConsentRequired(start.error);
   const announced = useRef(false);
   useEffect(() => {
     const was = announced.current;
@@ -170,7 +180,7 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
 
   // An allowance that could not be read is unknown, not unlimited: §13.5 wants the cap in front
   // of the reader before the work. A user that failed to load costs only the name prefill.
-  if (subscription.isError) {
+  if (queryPhase(subscription) === 'error' || !subscription.data) {
     return page(
       <StateView
         tone="danger"
@@ -288,7 +298,9 @@ export function ZeroResumeScreen({ jobId, role }: ZeroResumeScreenProps) {
       />
     ) : last ? (
       <FlowFooter
-        note={failed ? ZERO_START_FAILED : generationsLeftNote(used, limit)}
+        note={
+          failed ? startErrorLine(start.error, ZERO_START_FAILED) : generationsLeftNote(used, limit)
+        }
         noteTone={failed ? 'danger' : 'neutral'}
         primary={{ label: ZERO_CTA, icon: 'Stars02', loading: start.isPending, onPress: next }}
       />

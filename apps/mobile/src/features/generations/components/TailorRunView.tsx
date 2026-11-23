@@ -26,6 +26,7 @@ import { useGenerationsActions } from '../hooks/useGenerationsActions';
 import { useTailorDownload } from '../hooks/useTailorDownload';
 import { ResumePagePreview } from './ResumePagePreview';
 import { TailorChrome } from './TailorChrome';
+import { ReadyDocumentProblem, readyDocumentIssue } from './ReadyDocumentProblem';
 import { TailorProgress } from './TailorProgress';
 import { BuildNextTiles } from './BuildReadyParts';
 import { TailorReady } from './TailorReady';
@@ -102,6 +103,7 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
     if (resumeId) actions.openDocument(resumeId);
   };
   const doc = resumeBody(content.data);
+  const issue = ready ? readyDocumentIssue(resumeId, content, doc != null) : null;
   const name = user.data ? `${user.data.firstName} ${user.data.lastName}`.trim() : '';
 
   return (
@@ -152,7 +154,9 @@ export function TailorRunView({ generation, run }: TailorRunViewProps) {
       >
         {/* The finished resume fades in over the progress card instead of cutting to it. */}
         <Reveal stateKey={ready ? 'ready' : 'writing'}>
-          {ready ? (
+          {ready && issue ? (
+            <ReadyDocumentProblem issue={issue} onRetry={() => void content.refetch()} />
+          ) : ready ? (
             <>
               <TailorReady
                 preview={

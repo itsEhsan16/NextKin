@@ -52,6 +52,17 @@ export function AssistantHistorySheet({
             <SkeletonListRow height={u(64)} thumb={0} trailing divider />
             <SkeletonListRow height={u(64)} thumb={0} trailing divider />
           </>
+        ) : threads.isError && !threads.data ? (
+          // A list that failed to load is not an empty one (toreview §262).
+          <Pressable
+            feedback="subtle"
+            {...a11yButton('Couldn’t load your chats. Try again')}
+            onPress={() => void threads.refetch()}
+          >
+            <Text variant="callout" color="danger" align="center" style={styles.empty}>
+              Couldn’t load your chats. Tap to try again.
+            </Text>
+          </Pressable>
         ) : rows.length === 0 ? (
           <Text variant="callout" color="textSecondary" align="center" style={styles.empty}>
             No earlier chats yet. Each new chat is kept here.

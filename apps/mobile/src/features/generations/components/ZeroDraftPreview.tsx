@@ -67,7 +67,7 @@ function EducationLine({ entry }: { entry: ContentEducation }) {
 
 function PageBody({ content, name }: { content: ResumeContent; name: string }) {
   const styles = useStyles();
-  const roles = content.experience.slice(0, ROLES_SHOWN);
+  const roles = (content.experience ?? []).slice(0, ROLES_SHOWN);
 
   return (
     <>
@@ -115,7 +115,7 @@ function PageBody({ content, name }: { content: ResumeContent; name: string }) {
                   </Text>
                 )}
               </View>
-              {role.bullets[0] ? (
+              {role.bullets?.[0] ? (
                 <Text variant="tiny" color="textSecondary" numberOfLines={1}>
                   {`• ${role.bullets[0]}`}
                 </Text>

@@ -2,7 +2,11 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View, type ScrollViewInstance } from 'react-native';
 
 import { atsQuickWins, type AssistantMessage, type Resume } from '@/data/models';
+import { startErrorLine } from '@/data/models/customize';
+import { showAppToast } from '@/ui/Toast';
 import {
+  isConsentRequired,
+  queryPhase,
   useAssistantConversation,
   useCurrentUser,
   useOpenAssistantThread,
@@ -144,10 +148,14 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
     );
   };
 
+  // Not while a reply is being written, and never silent when it fails (toreview §262).
+  const chatFailed = (error: unknown) =>
+    showAppToast(startErrorLine(error, 'We couldn’t open that chat. Try again.'), 'error');
   const newChat = () => {
+    if (busy || startNew.isPending) return;
     setHistoryOpen(false);
     setDraft('');
-    if (!firstRun) startNew.mutate();
+    if (!firstRun) startNew.mutate(undefined, { onError: chatFailed });
   };
 
   const header = (
@@ -213,8 +221,9 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
         onClose={() => setHistoryOpen(false)}
         onNewChat={newChat}
         onOpen={(id) => {
+          if (busy || openThread.isPending) return;
           setHistoryOpen(false);
-          openThread.mutate(id);
+          openThread.mutate(id, { onError: chatFailed });
         }}
       />
     </>
@@ -243,7 +252,8 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
     );
   }
 
-  if (conversation.isError || subscription.isError) {
+  // Only when nothing is cached: a refetch that fails keeps the chat on screen (toreview §262).
+  if (queryPhase(conversation) === 'error' || queryPhase(subscription) === 'error') {
     return page(
       <StateView
         tone="danger"
@@ -278,7 +288,14 @@ export function AssistantScreen({ resumeId }: AssistantScreenProps) {
     <DraftComposer
       onSend={ask}
       busy={busy}
-      failed={send.isError}
+      // Consent has its own dialog; any other refusal says what it was (the day's cap, a busy
+      // service) instead of "check your connection" (toreview §262).
+      failed={send.isError && !isConsentRequired(send.error)}
+      failure={
+        send.isError
+          ? startErrorLine(send.error, "That didn't send. Check your connection and try again.")
+          : undefined
+      }
       onPickContext={documents.length > 0 ? () => setPickerOpen(true) : undefined}
       contextTitle={attached?.title}
       onClearContext={() => setChoice(null)}

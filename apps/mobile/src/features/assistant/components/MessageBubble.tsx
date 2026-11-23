@@ -35,6 +35,8 @@ const replyIn = FadeInDown.duration(motion.durations.base);
 const statusIn = FadeIn.duration(motion.durations.fast);
 
 const STOPPED_LINE = 'That answer stopped part-way.';
+/** A reply that failed before any of it came: there is no "part" to speak of (toreview §262). */
+const NO_ANSWER_LINE = 'No answer came back. Ask again.';
 
 /** The assistant's mark: the sparkle on a brand disc. Decorative; the row says who spoke. */
 export function AssistantAvatar({ size = 30 }: { size?: number }) {
@@ -78,7 +80,8 @@ export const MessageBubble = memo(function MessageBubble({
   const failed = message.status === 'failed';
   const done = message.status === 'complete' && !refusal && message.text.length > 0;
 
-  const label = `${user ? 'You' : 'Assistant'}${refusal ? ', out of scope' : ''}: ${plainText(message.text)}${failed ? ` ${STOPPED_LINE}` : ''}`;
+  const failedLine = message.text.length > 0 ? STOPPED_LINE : NO_ANSWER_LINE;
+  const label = `${user ? 'You' : 'Assistant'}${refusal ? ', out of scope' : ''}: ${plainText(message.text)}${failed ? ` ${failedLine}` : ''}`;
 
   if (user) {
     return (
@@ -113,7 +116,7 @@ export const MessageBubble = memo(function MessageBubble({
         {failed ? (
           <View style={styles.failed}>
             <Text variant="footnote" color="textSecondary">
-              {STOPPED_LINE}
+              {failedLine}
             </Text>
             {onRetry ? (
               <Button

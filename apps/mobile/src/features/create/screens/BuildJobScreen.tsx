@@ -3,7 +3,10 @@ import { AccessibilityInfo, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { JD_CLOSED_NOTE, JD_CLOSED_TITLE, jdHasClosed, type Job, type JdFile } from '@/data/models';
+import { startErrorLine } from '@/data/models/customize';
+import { JD_TEXT_MIN } from '@/data/models/limits';
 import {
+  isConsentRequired,
   isUnreadableLinkError,
   jdFailureMessage,
   jdFailureReason,
@@ -32,6 +35,7 @@ import { BuildSourceSheet } from '../components/BuildSourceSheet';
 import { OnboardingFrame } from '../components/OnboardingFrame';
 import { useBuildSourceUpload } from '../hooks/useBuildSourceUpload';
 import { useBuildActions } from '../hooks/useStartBuild';
+import { JD_MAX, PASTE_SHORT, pasteTooLong } from '../atsCheckSetup';
 import { buildAddInput } from '../buildInput';
 import { ProgressButton } from '../flow/ProgressButton';
 import { stepName } from '../flow/ResumeSteps';
@@ -121,31 +125,46 @@ export function BuildJobScreen({ resumeId: requested, paste, notice }: BuildJobS
     setText('');
   };
 
-  const readPasted = async () => {
+  const readPasted = () => {
     if (!input || busy.current) return;
     if (closedId) return actions.openCompare({ jdId: closedId });
+    // Said before anything is sent: a paste is never cut, and one the server would refuse never
+    // goes (owner, 2026-11-23; toreview §262).
+    if (input.source === 'paste') {
+      if (input.text.length > JD_MAX) return fail(pasteTooLong(input.text.length));
+      if (input.text.length < JD_TEXT_MIN) return fail(PASTE_SHORT);
+    }
     busy.current = true;
     setFailure(undefined);
-    try {
-      const draft = await extract.mutateAsync(input);
-      if (jdHasClosed(draft)) {
-        setClosedId(draft.id);
-        fail(CLOSED);
-        return;
-      }
-      actions.openCompare({ jdId: draft.id });
-    } catch (error) {
-      // A list of jobs or a posting that is gone is said in the server's words; a site that
-      // refuses keeps the short line this screen has always shown.
-      const reason = jdFailureReason(error);
-      const said =
-        reason && reason !== 'refused' && reason !== 'robots' ? jdFailureMessage(error) : null;
-      fail(
-        said ?? (input.source === 'link' && isUnreadableLinkError(error) ? BLOCKED : READ_FAILED),
-      );
-    } finally {
-      busy.current = false;
-    }
+    // `mutate` with its own callbacks, not `mutateAsync`: after the consent dialog the read runs
+    // again, and these callbacks still open the job; awaiting the first refusal lost that run.
+    extract.mutate(input, {
+      onSuccess: (draft) => {
+        busy.current = false;
+        if (jdHasClosed(draft)) {
+          setClosedId(draft.id);
+          fail(CLOSED);
+          return;
+        }
+        actions.openCompare({ jdId: draft.id });
+      },
+      onError: (error) => {
+        busy.current = false;
+        // Consent has its own dialog; nothing to add under it.
+        if (isConsentRequired(error)) return;
+        // What the reading said, in the server's words; a site that refuses keeps the short line
+        // this screen has always shown; anything else is named by its cause.
+        const reason = jdFailureReason(error);
+        const said =
+          reason && reason !== 'refused' && reason !== 'robots' ? jdFailureMessage(error) : null;
+        fail(
+          said ??
+            (input.source === 'link' && isUnreadableLinkError(error)
+              ? BLOCKED
+              : startErrorLine(error, READ_FAILED)),
+        );
+      },
+    });
   };
 
   const source = tab === 'saved' ? saved : picks;

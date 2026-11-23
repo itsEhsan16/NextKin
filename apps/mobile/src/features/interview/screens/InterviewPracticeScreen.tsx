@@ -6,7 +6,7 @@ import {
   INTERVIEW_PRACTICE_FILTERS,
   type InterviewMark,
 } from '@/data/models';
-import { useInterviewSet, useMarkInterviewQuestion } from '@/data/queries';
+import { queryPhase, useInterviewSet, useMarkInterviewQuestion } from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { FilterChip } from '@/ui/Chip';
@@ -127,9 +127,10 @@ export function InterviewPracticeScreen({ id }: InterviewPracticeScreenProps) {
   }
 
   // A set that is gone is not an outage: it gets the library, not a retry that cannot succeed.
-  if (set.isError || !set.data) {
+  if (queryPhase(set) === 'error' || !set.data) {
     return page(
-      (set.isError && isMissing(set.error)) || (!set.isError && !set.data) ? (
+      (queryPhase(set) === 'error' && isMissing(set.error)) ||
+        (queryPhase(set) !== 'error' && !set.data) ? (
         <StateView
           art="interview"
           icon="MessageChatSquare"
