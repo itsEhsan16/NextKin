@@ -18846,3 +18846,57 @@ running / 10 min queued, and a Try again button on web.
   - Stall timers that pause while the tab is hidden.
 - **`/jd` before a listing's run still has no idempotency key.** The client retries
   POSTs that carry one, and the route may not honour it.
+
+## §259 — A job description that can't be read says why; a long one is read (owner, 2026-11-23)
+
+Branch `fix/jd-reading-errors`, uncommitted. The owner pasted a long QA job description on the
+demo and got "We couldn't read this job description right now. Try again in a moment." That told
+the customer nothing they could act on. §258 had fixed resume runs but not JD reading.
+
+### What happened on the demo
+- **The paste was cut to 10,000 characters with no word said.** The web box's limit was 10,000;
+  the server takes 20,000.
+- **The key and balance were fine.** The model failed with a non-retryable error 21 s in, with no
+  redeliveries. OpenRouter, asked from inside AWS: key valid, $6.56 of its $10 limit left.
+- **The cause was the reading schema.** It allowed at most 40 responsibilities (and 10 experience
+  lines, 20 extras…). A posting made of many short duty lines exceeds that. The model listed them
+  all, and both its answers were refused (`invalid_output`).
+- **Why the line said nothing useful:** every model failure was filed as `provider`, "Try again in
+  a moment". The logs redacted `failure`, so the cause wasn't visible there either.
+
+### What changed
+- **The model may list more.** It may return up to five times each stored size, and code keeps the
+  first of each list up to the sizes the structure and the stored JD were built for (`KEPT` in
+  `extractJd.ts`). A posting with 150 duties now keeps its first 40.
+- **Each failure has its own reason** (`readingFailureOf` in `services/jd.ts`, migration 0057
+  widens the check):
+  - `busy` (overloaded, timeout, rate limited): "wait a minute, then try again".
+  - `service_down` (key, balance, cap): "our problem to fix, not yours: try again later, or choose
+    a saved job".
+  - `too_long`: "remove the company introduction and the benefits".
+  - `unclear`: "check that it is a single job's full description".
+  - `internal`.
+
+  A code bug fails at once instead of five redeliveries. Each failure is logged as
+  `jd.read_failed`, with its reason and failure code. `service_down` and `internal` are logged at
+  error level.
+- **The logs keep the codes now.** The allowlist gains `failure`, `from`, `reason`, `outcome`,
+  `jdId`, `receiveCount`, `transient`, `provider` and `model`: codes and ids, never content.
+- **One limit, `JD_TEXT_MAX` = 20,000** (`limits.ts`), shared by the schema, the server and the web
+  box. The box no longer cuts a paste. Over the limit, the counter turns red and the box says how
+  long the text is and what to remove. Under 40 characters, it says the text is too short.
+  Continue sends nothing in either case.
+
+### For the owner to check
+1. The new wording (`JD_FAILURE` in `services/jd.ts`, `FAILED_LEDE` in `JdEditPanel.tsx`, the box's
+   two lines).
+2. Keeping 40 duties of a longer list: the page still shows the full text, but tailoring reads only
+   the first 40.
+3. The `service_down` line has no alert behind it yet; the error-level log is where an SNS alarm
+   would hang.
+
+### Not done
+- **The mobile paste screen:** it shows the server's sentence, so it gets the new wording, but its
+  own limit and copy were not changed.
+- **Migration 0057 must run on the demo** (`task migrate`) right after the deploy. Code that writes
+  a new reason without it would be refused by the old check, and that JD would stay "reading".

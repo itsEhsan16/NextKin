@@ -33,6 +33,32 @@ const said = z.object({ text: z.string().trim().min(1).max(600), quote });
 const importance = z.enum(['required', 'preferred']);
 
 /**
+ * How many of each list a reading keeps (owner, 2026-11-23). The model may return more: a long
+ * posting can list a hundred duties, and refusing the whole answer for that left the candidate
+ * with "couldn't read this job description" and nothing to do. So the answer the model fills
+ * allows `MODEL_LIST_ROOM` times these, and code keeps the first of each list up to these sizes,
+ * the sizes every reader after this one (the structure, the stored JD) was built for.
+ */
+export const KEPT = {
+  locations: 10,
+  workModes: 6,
+  schedule: 12,
+  pay: 8,
+  experience: 10,
+  responsibilities: 40,
+  education: 10,
+  languages: 8,
+  benefits: 30,
+  eligibility: 12,
+  companyAbout: 12,
+  application: 12,
+  extras: 20,
+  issues: 10,
+} as const;
+const MODEL_LIST_ROOM = 5;
+const room = (list: keyof typeof KEPT) => KEPT[list] * MODEL_LIST_ROOM;
+
+/**
  * What the model returns (toreview §153): the posting in its canonical places, every item quoting
  * the words it came from. Code then checks each quote against the text, reads the numbers from the
  * quotes itself, merges repeats and flags contradictions (`@nextkin/shared/jobs/jdStructure`).
@@ -48,23 +74,23 @@ export const jdExtractionSchema = z.object({
   openings: z.object({ value: z.number().int(), quote }).nullable(),
   referenceId: said.nullable(),
   summary: z.string().trim().max(600).nullable(),
-  locations: z.array(said.extend({ city: z.string().max(120).nullable(), region: z.string().max(120).nullable(), country: z.string().max(120).nullable() })).max(10),
-  workModes: z.array(z.object({ value: z.enum(['onsite', 'remote', 'hybrid', 'field', 'flexible']), quote })).max(6),
-  schedule: z.array(said.extend({ kind: z.enum(['days', 'hours', 'shift', 'weekends', 'overtime', 'travel', 'joining', 'other']) })).max(12),
-  pay: z.array(z.object({ component: z.enum(['base', 'fixed', 'variable', 'incentive', 'bonus', 'total', 'unknown']), quote })).max(8),
+  locations: z.array(said.extend({ city: z.string().max(120).nullable(), region: z.string().max(120).nullable(), country: z.string().max(120).nullable() })).max(room('locations')),
+  workModes: z.array(z.object({ value: z.enum(['onsite', 'remote', 'hybrid', 'field', 'flexible']), quote })).max(room('workModes')),
+  schedule: z.array(said.extend({ kind: z.enum(['days', 'hours', 'shift', 'weekends', 'overtime', 'travel', 'joining', 'other']) })).max(room('schedule')),
+  pay: z.array(z.object({ component: z.enum(['base', 'fixed', 'variable', 'incentive', 'bonus', 'total', 'unknown']), quote })).max(room('pay')),
   negotiable: z.object({ quote }).nullable(),
-  experience: z.array(said).max(10),
-  responsibilities: z.array(said.extend({ group: z.string().max(80).nullable() })).max(40),
+  experience: z.array(said).max(room('experience')),
+  responsibilities: z.array(said.extend({ group: z.string().max(80).nullable() })).max(room('responsibilities')),
   skills: z.array(z.object({ name: z.string().trim().min(1).max(120), quote, category: z.enum(['language', 'framework', 'database', 'cloud', 'tool', 'api', 'domain', 'soft', 'other']), importance })).max(JD_SKILLS_MAX),
-  education: z.array(said.extend({ importance })).max(10),
-  languages: z.array(z.object({ name: z.string().trim().min(1).max(60), quote, importance, level: z.enum(['basic', 'intermediate', 'advanced', 'fluent', 'native']).nullable() })).max(8),
-  benefits: z.array(said).max(30),
-  eligibility: z.array(said.extend({ kind: z.enum(['age', 'work_authorization', 'location', 'gender', 'background_check', 'other']), sensitive: z.boolean() })).max(12),
-  companyAbout: z.array(said).max(12),
+  education: z.array(said.extend({ importance })).max(room('education')),
+  languages: z.array(z.object({ name: z.string().trim().min(1).max(60), quote, importance, level: z.enum(['basic', 'intermediate', 'advanced', 'fluent', 'native']).nullable() })).max(room('languages')),
+  benefits: z.array(said).max(room('benefits')),
+  eligibility: z.array(said.extend({ kind: z.enum(['age', 'work_authorization', 'location', 'gender', 'background_check', 'other']), sensitive: z.boolean() })).max(room('eligibility')),
+  companyAbout: z.array(said).max(room('companyAbout')),
   website: said.nullable(),
-  application: z.array(said.extend({ kind: z.enum(['method', 'url', 'email', 'deadline', 'documents', 'process']) })).max(12),
-  extras: z.array(said).max(20),
-  issues: z.array(z.object({ kind: z.enum(['conflict', 'ambiguous']), field: z.string().max(40), note: z.string().max(400), quotes: z.array(quote).min(1).max(4) })).max(10),
+  application: z.array(said.extend({ kind: z.enum(['method', 'url', 'email', 'deadline', 'documents', 'process']) })).max(room('application')),
+  extras: z.array(said).max(room('extras')),
+  issues: z.array(z.object({ kind: z.enum(['conflict', 'ambiguous']), field: z.string().max(40), note: z.string().max(400), quotes: z.array(quote).min(1).max(4) })).max(room('issues')),
   // Version 7 (toreview §206): what the text is, before anything is taken from it. Optional, so a
   // reading made by an earlier prompt still validates.
   page: z
@@ -252,7 +278,18 @@ export const jdRecallSchema = z.object({ skills: jdExtractionSchema.shape.skills
  * Keeps only what the text says (toreview §153): the structure is built from the quotes found in
  * it, and the flat lists every consumer reads are derived from that structure.
  */
-export function verify(raw: string, extraction: JdExtraction, options: { closesAt?: string; today?: string; closedNote?: string } = {}): VerifiedJd {
+/** The first of each list, up to what a reading keeps (`KEPT`); the rest is counted as dropped. */
+export function keptLists(extraction: JdExtraction): JdExtraction {
+  const out = { ...extraction } as Record<string, unknown>;
+  for (const [list, size] of Object.entries(KEPT)) {
+    const items = out[list];
+    if (Array.isArray(items) && items.length > size) out[list] = items.slice(0, size);
+  }
+  return out as JdExtraction;
+}
+
+export function verify(raw: string, read: JdExtraction, options: { closesAt?: string; today?: string; closedNote?: string } = {}): VerifiedJd {
+  let extraction = keptLists(read);
   const page = pageVerdict(raw, extraction.page);
   // Code's own read for skills it knows by name, on top of the model's list (toreview §212).
   extraction = { ...extraction, skills: mergeSkills(extraction.skills, page && page.kind !== 'closed' ? [] : sweepKnownSkills(raw, extraction.skills)) };

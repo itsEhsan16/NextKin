@@ -4,8 +4,14 @@
  * 2026-11-12, toreview §203); its box lives on in that step.
  */
 
-/** The paste box's limit, from the board's "0/10,000". V2 §7.5 asks for a generous one. */
-export const MAX_JD_CHARS = 10_000;
+import { JD_TEXT_MAX } from '@nextkin/shared/schemas/limits';
+
+/**
+ * The paste box's limit: the server's own (`limits.ts`), one number, so a paste is never cut short
+ * here (owner, 2026-11-23; the board's "0/10,000" was half what the server reads). V2 §7.5 asks
+ * for a generous one.
+ */
+export const MAX_JD_CHARS = JD_TEXT_MAX;
 
 /**
  * The board's "Max 5MB", and its four formats. V2 §7.4 lists only PDF, DOCX and TXT; DOC is the

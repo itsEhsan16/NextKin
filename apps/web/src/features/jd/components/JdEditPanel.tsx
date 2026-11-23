@@ -38,6 +38,12 @@ const FAILED_LEDE: Partial<Record<JdFailureReason, string>> = {
   removed: 'This posting is no longer available.',
   gone: 'This posting is no longer available.',
   not_a_job: 'We couldn’t find a job description in what you gave us.',
+  // Model failures, each said for what it was (owner, 2026-11-23).
+  busy: 'Our reading service was busy when you added this.',
+  service_down: 'Reading job descriptions isn’t working on our side right now.',
+  too_long: 'This description was too long to read in one go.',
+  unclear: 'We couldn’t make sense of this as one job’s description.',
+  internal: 'Something went wrong on our side while reading this.',
 };
 
 const LEVELS = Object.keys(EXPERIENCE_LEVEL_LABEL) as ExperienceLevel[];

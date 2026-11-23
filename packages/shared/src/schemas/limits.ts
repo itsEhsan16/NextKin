@@ -12,6 +12,14 @@
  * next step must accept. Change a number here, never at the place that checks it.
  */
 
+/**
+ * The longest pasted job description the server reads, and the box takes (owner, 2026-11-23). The
+ * web box used to stop at 10,000 while the server took 20,000, so a long paste was cut mid-word
+ * with no word said. The shortest is what can be a description at all.
+ */
+export const JD_TEXT_MAX = 20_000;
+export const JD_TEXT_MIN = 40;
+
 /** The most keywords one reading of a job description lists (`extractJd`). */
 export const JD_SKILLS_MAX = 100;
 

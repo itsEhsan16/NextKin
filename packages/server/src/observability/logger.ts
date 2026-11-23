@@ -13,6 +13,9 @@ export const ALLOWED_FIELDS = new Set([
   'client', 'clientVersion', 'routeClass', 'userId', 'authVia', 'errorCode', 'errorName',
   'dependency', 'dependencies', 'degraded', 'appEnv', 'signal', 'purpose', 'kind', 'role',
   'limit', 'remaining', 'queue', 'attempt', 'generationId', 'stage', 'inFlight', 'feature',
+  // Codes and ids, never content (owner, 2026-11-23): without them a failed reading could not be
+  // diagnosed from the logs, because the line said only that something had failed.
+  'failure', 'from', 'reason', 'outcome', 'jdId', 'receiveCount', 'transient', 'provider', 'model',
 ]);
 
 const EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;

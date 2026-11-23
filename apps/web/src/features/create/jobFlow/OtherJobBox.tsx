@@ -1,6 +1,7 @@
 'use client';
 
 import type { JdInput } from '@nextkin/shared/models';
+import { JD_TEXT_MIN } from '@nextkin/shared/schemas/limits';
 import { useRef, useState, type DragEvent, type ReactNode } from 'react';
 
 import { PickedFile } from '@/features/upload/components/PickedFile';
@@ -46,6 +47,14 @@ export function otherJobInput(job: OtherJob): { input: JdInput } | { problem: st
     const why = linkProblem(text);
     return why ? { problem: why } : { input: { source: 'link', url: text } };
   }
+  // Said before anything is sent: a paste is never cut short, and one the server would refuse
+  // never goes (owner, 2026-11-23).
+  if (text.length > MAX_JD_CHARS)
+    return {
+      problem: `This is ${text.length.toLocaleString('en-US')} characters; up to ${MAX_JD_CHARS.toLocaleString('en-US')} fit. Remove the company introduction or the benefits, then continue.`,
+    };
+  if (text.length < JD_TEXT_MIN)
+    return { problem: 'That’s too short to be a job description. Paste the whole description.' };
   return { input: { source: 'paste', text: job.text } };
 }
 
@@ -146,7 +155,6 @@ export function OtherJobBox({
             <textarea
               aria-label="Job description or link"
               value={typed}
-              maxLength={MAX_JD_CHARS}
               readOnly={busy}
               aria-busy={busy || undefined}
               onChange={(event) => onChange({ text: event.target.value, file: null })}
@@ -224,6 +232,7 @@ export function OtherJobBox({
         aria-hidden={tab !== 'paste'}
         className={cn(
           '-mt-2.5 self-end text-body-s font-medium text-text-tertiary',
+          typed.trim().length > MAX_JD_CHARS && 'text-danger-600',
           tab !== 'paste' && 'invisible',
         )}
       >
