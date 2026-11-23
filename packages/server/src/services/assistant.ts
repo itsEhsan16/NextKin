@@ -1,3 +1,4 @@
+import { LlmError } from '../ai/types';
 import { greetingAnswer } from '@nextkin/shared/assistant/answers';
 import { greetingKind, REFUSAL_LINE, type GreetingKind } from '@nextkin/shared/assistant/domain';
 import type { AssistantAttachment, AssistantMessage } from '@nextkin/shared/models/assistant';
@@ -211,19 +212,30 @@ async function streamReply(deps: AssistantDeps, identity: Identity, id: string, 
   const write = (status: 'streaming' | 'complete' | 'failed') =>
     deps.db.withUser(identity, (tx) => tx.updateTable('chat_messages').set({ content: text.slice(0, 20_000), status }).where('id', '=', id).execute());
   try {
-    await deps.brain.reply(input, (delta) => {
-      text += delta;
-      if (Date.now() - last >= FLUSH_MS && text.length > flushed) {
-        last = Date.now();
-        flushed = text.length;
-        writing = writing.then(() => write('streaming')).catch(() => undefined);
-      }
-    });
+    const final = await deps.brain.reply(
+      input,
+      (delta) => {
+        text += delta;
+        if (Date.now() - last >= FLUSH_MS && text.length > flushed) {
+          last = Date.now();
+          flushed = text.length;
+          writing = writing.then(() => write('streaming')).catch(() => undefined);
+        }
+      },
+      // A retried attempt streams its answer from the start: what the first one showed goes, so
+      // the saved reply is never the first half-answer followed by the second (toreview §260).
+      () => {
+        text = '';
+        flushed = 0;
+      },
+    );
     await writing;
+    // The answer the call finished with is the reply, whatever streamed on the way.
+    if (final.text.trim()) text = final.text;
     await write(text.trim() ? 'complete' : 'failed');
   } catch (error) {
     await writing;
-    deps.log.warn({ event: 'assistant.reply_failed', errorName: error instanceof Error ? error.name : typeof error }, 'assistant reply failed');
+    deps.log.warn({ event: 'assistant.reply_failed', errorName: error instanceof Error ? error.name : typeof error, failure: error instanceof LlmError ? error.failure : undefined }, 'assistant reply failed');
     await write('failed').catch(() => undefined);
   }
 }

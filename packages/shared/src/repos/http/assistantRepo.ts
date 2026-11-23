@@ -4,6 +4,10 @@ import type { AssistantConversation, AssistantMessage } from '../../models/assis
 import { assistantConversationSchema, assistantMessageSchema, assistantSendResultSchema, assistantThreadListSchema } from '../../schemas/assistant';
 import type { AssistantRepo } from '../types';
 import type { HttpClient } from './client';
+import { isPermanentPollError } from './generationsRepo';
+
+/** The server's 3 minutes for a streaming reply, and a margin for the last poll. */
+const REPLY_PATIENCE_MS = 3.5 * 60_000;
 
 /**
  * `AssistantRepo` over `/api/v1/assistant` (ImBackendImplementationPlan P11-09). Every method is
@@ -21,26 +25,44 @@ export function createHttpAssistantRepo(http: HttpClient, options: { everyMs?: n
       const sent = assistantSendResultSchema.parse(await http.request('/assistant/messages', { body: input }));
       return sent as { user: AssistantMessage; reply: AssistantMessage };
     },
-    subscribe(messageId, onChange) {
+    subscribe(messageId, onChange, onGiveUp) {
       let stopped = false;
       let last = '';
+      const every = options.everyMs ?? 400;
+      const began = Date.now();
       const tick = async () => {
+        let failures = 0;
         while (!stopped) {
-          await whileAway(() => stopped, options.everyMs ?? 400);
+          await whileAway(() => stopped, every);
           if (stopped) return;
+          // The server calls a reply still streaming after 3 minutes failed; past that and a
+          // margin, the screen stops waiting too, instead of "Thinking…" for ever (toreview §260).
+          if (Date.now() - began > REPLY_PATIENCE_MS) {
+            onGiveUp?.();
+            return;
+          }
           try {
             const next = message(await http.request(`/assistant/messages/${messageId}`));
             if (stopped) return;
+            failures = 0;
             const seen = `${next.status}:${next.text.length}`;
             if (seen !== last) {
               last = seen;
               onChange(next);
             }
             if (next.status !== 'streaming') return;
-          } catch {
-            // A dropped poll is retried on the next tick; the reply itself is unaffected.
+          } catch (error) {
+            // A reply that is gone or unreadable won't come right by asking again.
+            if (isPermanentPollError(error)) {
+              onGiveUp?.();
+              return;
+            }
+            // A dropped poll is retried, with a growing wait.
+            failures++;
+            await new Promise((resolve) => setTimeout(resolve, every * Math.min(2 ** failures, 25)));
+            continue;
           }
-          await new Promise((resolve) => setTimeout(resolve, options.everyMs ?? 400));
+          await new Promise((resolve) => setTimeout(resolve, every));
         }
       };
       void tick();

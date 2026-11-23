@@ -14,6 +14,8 @@ import { withFigures } from '@nextkin/shared/scoring/documentFacts';
 import { z } from 'zod';
 
 import type { AiGateway, CallContext } from '../../ai/gateway';
+import { LlmError } from '../../ai/types';
+import { CLAIM_TEXT_MAX } from '@nextkin/shared/schemas/limits';
 import type { Database } from '../../db/database';
 import type { LatexDensity } from '../../export/latex/types';
 import type { PromptVersion } from '../../services/prompts';
@@ -34,10 +36,11 @@ import { mergeTailored, strippedInUse, tailorOf, type TailorRunInput } from './t
 
 export const MAX_REVISIONS = 2;
 
-const cited = z.object({ text: z.string().trim().min(1).max(400), evidence: z.array(z.string().max(80)).min(1).max(8) });
+// As long as a stored line (limits.ts; toreview §260): a revision that keeps a long line must not fail the run.
+const cited = z.object({ text: z.string().trim().min(1).max(CLAIM_TEXT_MAX), evidence: z.array(z.string().max(80)).min(1).max(8) });
 export const revisionSchema = z.object({
   summary: cited.nullable(),
-  skills: z.array(z.object({ name: z.string().trim().min(1).max(80), evidence: z.array(z.string().max(80)).min(1).max(5) })).nullable(),
+  skills: z.array(z.object({ name: z.string().trim().min(1).max(120), evidence: z.array(z.string().max(80)).min(1).max(5) })).nullable(),
   roles: z.array(z.object({ roleId: z.string().max(80), bullets: z.array(cited).max(6) })),
 });
 
@@ -136,7 +139,11 @@ export async function validateDocument(args: ValidateArgs): Promise<ValidationOu
     const wanted = violatingSections(ledger);
     const failures = ledger.results.filter((r) => r.status === 'violation').map((r) => ({ claimId: r.claimId, issues: r.issues.filter((i) => i.severity === 'hard').map((i) => i.detail) }));
     const claimText = (id: string) => claimTextOf(doc, id);
-    const { data } = await args.gateway.extract({
+    // A revision is a second chance, not a requirement: one the model cannot answer in shape ends the
+    // rewrites, and what is still invented is stripped below, instead of the whole run failing.
+    let data: z.infer<typeof revisionSchema>;
+    try {
+      ({ data } = await args.gateway.extract({
       stage: 'resume_revise',
       system: args.prompt.body.system.map((text) => ({ text })),
       input: {
@@ -148,7 +155,11 @@ export async function validateDocument(args: ValidateArgs): Promise<ValidationOu
       name: 'revision',
       description: 'Rewrites of only the sections named in `rewrite`, every claim citing the facts it rests on.',
       context: args.context,
-    });
+    }));
+    } catch (error) {
+      if (error instanceof LlmError && (error.failure === 'invalid_output' || error.failure === 'refusal')) break;
+      throw error;
+    }
     doc = merge(doc, data, wanted, revisions);
     ledger = ledgerOf(doc, facts, asOf, leftOut);
   }

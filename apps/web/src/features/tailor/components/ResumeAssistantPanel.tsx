@@ -9,6 +9,7 @@ import {
   type ResumeSectionKey,
 } from '@nextkin/shared/models';
 import {
+  isConsentRequired,
   useAssistantConversation,
   useResumeContent,
   useRewriteSection,
@@ -16,6 +17,7 @@ import {
   useStall,
   useUpdateResumeSection,
 } from '@nextkin/shared/queries';
+import { startErrorLine } from '@nextkin/shared/tailor/customize';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { MessageBubble } from '@/features/assistant/components/MessageBubble';
@@ -70,7 +72,7 @@ type EditState =
   /** One of several parts a request named, waiting for the one before it. */
   | { state: 'queued' }
   | { state: 'working' }
-  | { state: 'failed' }
+  | { state: 'failed'; why?: string }
   | { state: 'done'; before: DocumentContent | undefined; decided?: 'kept' | 'undone' | 'undoing' };
 
 type Turn = { id: string; question: string } & (
@@ -167,8 +169,14 @@ export function ResumeAssistantPanel({
       try {
         await rewrite.mutateAsync({ section, instruction: question });
         update(ids[k]!, { state: 'done', before });
-      } catch {
-        update(ids[k]!, { state: 'failed' });
+      } catch (error) {
+        // Says what stopped it: consent (its dialog is open), a used-up plan, a busy service…
+        update(ids[k]!, {
+          state: 'failed',
+          why: isConsentRequired(error)
+            ? 'Agree to how NextKin uses AI, then ask again.'
+            : startErrorLine(error, ''),
+        });
       }
     }
     setBatch(false);
@@ -227,7 +235,9 @@ export function ResumeAssistantPanel({
         return local(
           `${turn.id}-r`,
           'assistant',
-          `I couldn’t rewrite your ${label}. Try again, or ask in other words.`,
+          turn.why
+            ? `I couldn’t rewrite your ${label}. ${turn.why}`
+            : `I couldn’t rewrite your ${label}. Try again, or ask in other words.`,
           'failed',
         );
       if (turn.decided === 'undone')

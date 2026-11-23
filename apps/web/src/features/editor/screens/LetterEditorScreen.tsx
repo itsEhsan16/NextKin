@@ -1,7 +1,13 @@
 'use client';
 
 import type { CoverLetterContent } from '@nextkin/shared/models';
-import { useCurrentUser, useProfile, useResume, useResumeContent } from '@nextkin/shared/queries';
+import {
+  queryPhase,
+  useCurrentUser,
+  useProfile,
+  useResume,
+  useResumeContent,
+} from '@nextkin/shared/queries';
 import type { Route } from 'next';
 
 import { DownloadPrompts } from '@/features/resumes/components/DownloadPrompts';
@@ -43,7 +49,8 @@ export function LetterEditorScreen({ id }: { id: string }) {
   const draft = useLetterDraft(id, letter);
   const shown = draft.shown;
 
-  if (content.isError || (content.data && !letter)) {
+  // A background refetch that fails keeps the letter being edited on screen (toreview §260).
+  if (queryPhase(content) === 'error' || (content.data && !letter)) {
     return (
       <div className={cn(pageColumn, 'flex min-h-[60vh] items-center justify-center')}>
         <StateView

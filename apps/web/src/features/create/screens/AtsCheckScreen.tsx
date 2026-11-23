@@ -1,12 +1,17 @@
 'use client';
 
 import {
+  isConsentRequired,
+  queryPhase,
   useCancelGeneration,
   useExtractJd,
   useGeneration,
+  useGenerationWatchProblem,
   useStartGeneration,
   useSubscription,
 } from '@nextkin/shared/queries';
+import { startErrorLine } from '@nextkin/shared/tailor/customize';
+import { showToast } from '@/lib/toast';
 import type { Route } from 'next';
 
 import { useGuardedRouter } from '@/navigation/guardedRouter';
@@ -56,7 +61,8 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
   const ref = g?.jobId
     ? ({ kind: 'job', id: g.jobId } as const)
     : ({ kind: 'jd', id: g?.jdId ?? '' } as const);
-  const { job } = useTailorTarget(ref, '');
+  const { job, jobError, refetch: refetchJob } = useTailorTarget(ref, '');
+  const watch = useGenerationWatchProblem(runId ?? '');
   const allowance = atsAllowance(subscription.data?.usage);
   const steps = JOB_FLOWS['ats-check'].steps;
 
@@ -103,7 +109,9 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
   };
 
   if (runId) {
-    if (run.isError || g?.status === 'failed')
+    // Only a run there is nothing to show of has failed to load: a background refetch that fails
+    // keeps the live check on screen (toreview §260).
+    if (queryPhase(run) === 'error' || g?.status === 'failed')
       return frame(
         2,
         <StateView
@@ -112,6 +120,29 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
           message={g?.error ?? 'Nothing was charged. Go back and try again.'}
           actionLabel="Back to the job"
           actionHref={atsHref({ ...(resumeId ? { resumeId } : {}), step: 'job' })}
+        />,
+      );
+    // The job the check is against couldn't load: said, with a retry, not a skeleton for ever.
+    if (g && !job && (jobError || (!g.jobId && !g.jdId)))
+      return frame(
+        2,
+        <StateView
+          tone="danger"
+          title="We couldn’t load the job for this check"
+          message="Check your connection and try again. Your check carries on."
+          actionLabel="Try again"
+          onAction={refetchJob}
+        />,
+      );
+    if (g && g.status !== 'ready' && watch.problem)
+      return frame(
+        2,
+        <StateView
+          tone="danger"
+          title={watch.problem.permanent ? 'We can’t follow this check' : 'Checking on your check'}
+          message={watch.problem.message}
+          actionLabel="Check again"
+          onAction={watch.restart}
         />,
       );
     if (!g || !job) return frame(2, <Skeleton className="h-140 rounded-xl" />);
@@ -154,6 +185,7 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
     return frame(
       2,
       <RunProgress
+        runId={g.id}
         art={<AtsCheckIllustration aria-hidden className="h-auto w-24" />}
         title="Checking your resume"
         subtitle={job.company ? `Against ${job.company}’s job` : 'Against the job description'}
@@ -169,6 +201,10 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
               cancel.mutate(g.id, {
                 onSuccess: () =>
                   router.replace(atsHref({ ...(resumeId ? { resumeId } : {}), step: 'job' })),
+                onError: () =>
+                  showToast('We couldn’t cancel the check. It may have finished; try again.', {
+                    tone: 'error',
+                  }),
               })
             }
             className={cn(
@@ -185,14 +221,19 @@ export function AtsCheckScreen({ resumeId, step, runId }: AtsCheckScreenProps) {
 
   if (step === 'job' && resumeId) {
     const failed = start.isError || (extract.isError && !extract.isPending);
+    const failure = start.error ?? extract.error;
+    // Consent has its own dialog; every other refusal says what it was (toreview §260).
+    const failedLine =
+      failed && !isConsentRequired(failure) ? startErrorLine(failure, START_FAILED) : null;
     return frame(
       1,
       <JobStep
         flow="ats-check"
         backHref={atsHref({ resumeId })}
+        pickFailed={failed}
         note={
-          failed
-            ? START_FAILED
+          failedLine
+            ? failedLine
             : allowance.spent
               ? (allowanceNote(allowance, 'check', 'ATS checks') ?? '')
               : (allowanceNote(allowance, 'check', 'ATS checks') ??

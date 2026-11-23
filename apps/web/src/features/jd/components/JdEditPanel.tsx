@@ -1,5 +1,6 @@
 'use client';
 
+import { JD_DUTIES_MAX, JD_DUTY_TEXT_MAX } from '@nextkin/shared/schemas/limits';
 import {
   EMPLOYMENT_TYPE_LABEL,
   EXPERIENCE_LEVEL_LABEL,
@@ -125,11 +126,18 @@ export function JdEditPanel({
 
   const save = () => {
     if (update.isPending) return;
-    const kept = duties
-      .map((d) => d.trim())
-      .filter(Boolean)
-      .slice(0, 30);
+    const kept = duties.map((d) => d.trim()).filter(Boolean);
     if (!title.trim()) return setProblem('Give the job a title.');
+    // Said, never cut: the save used to keep the first 30 and drop the rest without a word.
+    if (kept.length > JD_DUTIES_MAX)
+      return setProblem(
+        `That’s ${kept.length} responsibilities; up to ${JD_DUTIES_MAX} fit. Remove ${kept.length - JD_DUTIES_MAX}.`,
+      );
+    const long = kept.find((d) => d.length > JD_DUTY_TEXT_MAX);
+    if (long)
+      return setProblem(
+        `One responsibility is ${long.length} characters; up to ${JD_DUTY_TEXT_MAX} fit. Shorten “${long.slice(0, 40)}…”.`,
+      );
     if (failed && !required.length && !preferred.length && !kept.length)
       return setProblem(
         'Add at least one skill or responsibility, so there is something to match.',

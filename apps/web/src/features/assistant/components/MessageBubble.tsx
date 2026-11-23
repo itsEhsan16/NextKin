@@ -78,12 +78,14 @@ function AnswerBody({ message }: { message: AssistantMessage }) {
     <div className={`${ANSWER} border border-border-default bg-neutral-50 text-text-primary`}>
       {message.text.length > 0 ? (
         <p>{withBold(message.text)}</p>
-      ) : (
+      ) : message.status === 'failed' ? null : (
         <AiLoader variant="dots" text="Thinking…" />
       )}
       {message.status === 'failed' && (
         <p role="alert" className="mt-1.5 animate-reveal text-body-s text-danger-text">
-          That answer stopped part-way. Ask again to get the rest.
+          {message.text.length > 0
+            ? 'That answer stopped part-way. Ask again to get the rest.'
+            : 'No answer came back. Ask again.'}
         </p>
       )}
     </div>

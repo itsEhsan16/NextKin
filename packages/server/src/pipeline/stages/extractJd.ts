@@ -9,7 +9,7 @@ import { haystackOf, locate } from '@nextkin/shared/jobs/jdLocate';
 import { structureJd } from '@nextkin/shared/jobs/jdStructure';
 import type { JdStructured } from '@nextkin/shared/models/jdStructured';
 import { jdStructuredSchema } from '@nextkin/shared/schemas/jdStructured';
-import { JD_SKILLS_MAX } from '@nextkin/shared/schemas/limits';
+import { JD_DUTIES_MAX, JD_SKILLS_MAX } from '@nextkin/shared/schemas/limits';
 import { z } from 'zod';
 
 import type { AiGateway, CallContext, CallMeta } from '../../ai/gateway';
@@ -45,7 +45,7 @@ export const KEPT = {
   schedule: 12,
   pay: 8,
   experience: 10,
-  responsibilities: 40,
+  responsibilities: JD_DUTIES_MAX,
   education: 10,
   languages: 8,
   benefits: 30,

@@ -145,6 +145,9 @@ export function useRewriteSection(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ section, instruction }: { section: ResumeSectionKey; instruction: string }) => repos.resumes.rewriteSection(id, section, instruction),
+    // The caller says "couldn't rewrite" on a refusal; a quiet re-run after consent would change
+    // the section behind that message (toreview §260).
+    meta: { consentRetry: false },
     onSuccess: (content) => {
       queryClient.setQueryData(qk.resumes.content(id), content);
     },

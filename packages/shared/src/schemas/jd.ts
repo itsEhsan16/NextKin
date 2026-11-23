@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { jobSchema } from './job';
 import { jdStructuredSchema } from './jdStructured';
-import { JD_TEXT_MAX, JD_TEXT_MIN } from './limits';
+import { JD_DUTIES_MAX, JD_DUTY_TEXT_MAX, JD_TEXT_MAX, JD_TEXT_MIN } from './limits';
 
 /**
  * Job descriptions over the wire (spec §11 `/api/v1/jd`; ImBackendImplementationPlan P9-01).
@@ -26,7 +26,7 @@ export const jdPatchSchema = z
     requiredSkills: list,
     preferredSkills: list,
     tools: list,
-    responsibilities: z.array(z.string().trim().min(1).max(400)).max(40),
+    responsibilities: z.array(z.string().trim().min(1).max(JD_DUTY_TEXT_MAX)).max(JD_DUTIES_MAX),
     savedToJobs: z.boolean(),
     /** The listing a draft came from, when the client made it from one (P11 serves listings). */
     jobId: z.string().max(200),

@@ -20,6 +20,14 @@
 export const JD_TEXT_MAX = 20_000;
 export const JD_TEXT_MIN = 40;
 
+/**
+ * The responsibilities a job description keeps, and how long one may be: the reading keeps this
+ * many (`KEPT` in extractJd) and the JD page's editor saves this many (owner, 2026-11-23; the
+ * editor used to cut at 30 with no word, dropping duties 31-40 the reading had found).
+ */
+export const JD_DUTIES_MAX = 40;
+export const JD_DUTY_TEXT_MAX = 400;
+
 /** The most keywords one reading of a job description lists (`extractJd`). */
 export const JD_SKILLS_MAX = 100;
 

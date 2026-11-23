@@ -89,9 +89,16 @@ export function createLinkService(options: LinkServiceOptions): Server {
       log({ msg: 'read', outcome: 'ok', host: new URL(reading.url).hostname, structured: reading.structured, words: reading.words, ms: Date.now() - started });
       send(res, 200, { reading });
     } catch (error) {
-      const reason = error instanceof LinkError ? error.reason : 'unreachable';
-      log({ msg: 'read', outcome: reason, ms: Date.now() - started });
-      send(res, 422, { reason });
+      // Only the site's own answer is final (422). Our reader failing (a crashed browser, a bug) is
+      // ours: 503, so the caller retries and never tells the candidate their link is at fault
+      // (toreview §260).
+      if (!(error instanceof LinkError)) {
+        log({ msg: 'read', outcome: 'reader_error', errorName: error instanceof Error ? error.name : typeof error, ms: Date.now() - started });
+        send(res, 503, { reason: 'reader_error' });
+        return;
+      }
+      log({ msg: 'read', outcome: error.reason, ms: Date.now() - started });
+      send(res, 422, { reason: error.reason });
     } finally {
       release();
     }

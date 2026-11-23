@@ -75,7 +75,11 @@ export function createPageRenderer(options: RendererOptions = {}): PageRenderer 
         return readRendered({ url: page.url(), ...seen }, read);
       } catch (error) {
         if (error instanceof LinkError) throw error;
-        throw new LinkError(error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'unreachable');
+        if (error instanceof Error && error.name === 'TimeoutError') throw new LinkError('timeout');
+        // The site could not be reached (a name that doesn't resolve, a refused connection): the
+        // site's answer. Anything else is our browser failing, and is passed on as ours (503).
+        if (error instanceof Error && /net::ERR_|NS_ERROR_|ERR_NAME_NOT_RESOLVED|ECONNREFUSED/.test(error.message)) throw new LinkError('unreachable');
+        throw error;
       } finally {
         await context.close().catch(() => undefined);
       }

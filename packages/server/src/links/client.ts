@@ -57,7 +57,14 @@ export function createLinkReader(config: LinkReaderConfig, options: { fetch?: ty
   const tokenOf = (): Promise<string> => {
     if (config.LINK_READER_TOKEN) return Promise.resolve(config.LINK_READER_TOKEN);
     if (!config.LINK_READER_TOKEN_FILE) return Promise.reject(new LinkReaderUnavailableError('no link reader token'));
-    token ??= readFile(config.LINK_READER_TOKEN_FILE, 'utf8').then((text) => text.trim());
+    // A failed read is not kept: the next call reads the file again, instead of every link failing
+    // until a restart.
+    token ??= readFile(config.LINK_READER_TOKEN_FILE, 'utf8')
+      .then((text) => text.trim())
+      .catch((error: unknown) => {
+        token = null;
+        throw error;
+      });
     return token;
   };
 

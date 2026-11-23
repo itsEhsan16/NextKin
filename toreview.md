@@ -18900,3 +18900,164 @@ the customer nothing they could act on. §258 had fixed resume runs but not JD r
   own limit and copy were not changed.
 - **Migration 0057 must run on the demo** (`task migrate`) right after the deploy. Code that writes
   a new reason without it would be refused by the old check, and that JD would stay "reading".
+
+## §260 — Audit: the other AI features fail the way JD reading did (owner, 2026-11-23)
+
+The owner asked for every other AI feature to be checked for the defects behind §258 and §259:
+- limits that disagree;
+- an answer refused whole for one item too many;
+- every failure collapsed into one "try again" line;
+- bugs retried as if they were outages;
+- errors swallowed with no sign;
+- waits with no end;
+- logs without the failure code.
+
+Two read-only audits (server, web) found them; the top findings below were checked by hand. Nothing
+is fixed yet.
+
+### Fix first: a customer is stuck, loses data, or is told something false
+Server:
+1. **A resume upload fails whole on one long bullet.** `parsing/extract.ts:16` caps a line at 400;
+   storage holds 600. Fix: `CLAIM_TEXT_MAX`; let `crossCheck` cut and report.
+2. **Upload parsing collapses every failure into "Try again in a moment"** and retries bugs five
+   times (`services/resumeParse.ts:141-146`). It also has no sweep, so a row can stay
+   reading/extracting for ever. Fix: per-failure reasons as `readingFailureOf` does; bugs fail at
+   once; add a sweep.
+3. **The revise step caps a line at 400** (`stages/validate.ts:37`), while generate and storage take
+   600. One kept long line fails the whole resume run as `invalid_output`. Fix: `CLAIM_TEXT_MAX`,
+   and on a failed revision, strip instead of failing.
+4. **A cover letter paragraph may be 900 characters** (`stages/kinds.ts:124`), but a stored claim
+   is 600, and the letter is never checked before it is saved. A letter can land "ready" and then
+   fail to open, edit or export. Fix: cap at 600 and parse it before saving.
+5. **A retried assistant reply is saved twice.** The gateway re-streams into the same callback on a
+   retry, a `max_tokens` retry or a failover (`ai/gateway.ts:141,151,188`), so the saved reply is the
+   first partial answer followed by the second. The `max_tokens` retry came from §258 and made this
+   more likely. Fix: reset the buffer before each streamed attempt.
+6. **The link reader reports its own crash as the site's fault.** `links/server.ts:91-94` and
+   `render.ts:76` answer a non-LinkError as final `unreachable`. Fix: 503, so the client retries;
+   log the error name.
+7. **The AI review hides every error** (`stages/review.ts:86-89`), including bugs, with nothing
+   logged. Fix: rethrow non-LlmErrors; log the failure code when it falls back.
+
+Web:
+8. **ATS check with a pasted job:** a failed start leaves Continue and the box locked until reload
+   (`AtsCheckScreen.tsx:90-96`, `JobStep.tsx:104/136/174`).
+9. **The assistant can sit on "Thinking…" for ever with the composer locked.** The poll swallows
+   every error, including NOT_FOUND, and has no deadline (`repos/http/assistantRepo.ts:24-49`,
+   `AssistantScreen.tsx:81`).
+10. **A live cover letter or ATS check is shown as failed when a background refetch fails**
+    (`run.isError`, `CoverLetterScreen.tsx:139`, `AtsCheckScreen.tsx:106`).
+11. **The ATS skeleton never ends when the job fails to load:** `jobError` is ignored
+    (`AtsCheckScreen.tsx:59/117`).
+12. **The cover letter card in the review can say "Writing your letter…" for ever**
+    (`CoverLetterCard.tsx:40-46`).
+13. **The assistant panel rewrites a section after a consent prompt** while still showing "couldn't
+    rewrite", with no Undo (`ResumeAssistantPanel.tsx:165-172`).
+14. **Saving the JD page silently drops duties 31–40** (`JdEditPanel.tsx:131`, `slice(0, 30)`; the
+    server takes 40).
+15. **The letter editor blanks mid-edit on a failed refetch** (`LetterEditorScreen.tsx:46`).
+
+### Next: wrong or generic messages, double consent prompts
+- **Start errors ignore the server's code.** Cover letter, ATS, re-tone, the cover letter card, the
+  assistant send, Fit to one page and the job read in JobStep all show one fixed line, and a consent
+  refusal also shows the dialog. Fix: `!isConsentRequired(e) && startErrorLine(e, …)`.
+- **Resume upload messages ignore the server's sentence.** There is no client size check, so an
+  oversized file is called "not a resume".
+- **The assistant (classify) answers 503 "try again in a moment" for every error**, including the
+  cap, a refusal and a missing prompt. "Add the result", keyword questions, JD sections grouping and
+  JD recall each fall back silently with no code logged.
+- **HTTP model calls have no time limit of their own.** Worst case is about 6 minutes:
+  `/tailor/figure-draft`, `/tailor/keyword-questions`, the assistant. Fix: `withDeadline`, about
+  20 s.
+- **Model schemas still refuse whole answers for one item too many:**
+  - Zero Resume: `startYearsAgo` up to 50 against a 60-year seed; 6 roles.
+  - Interview: 8 talking points.
+  - The review: 40 edits.
+  - Keyword questions: 16 answers asked of 25 keywords.
+  - JD sections: 40 lines.
+  - Uploads: 4 extra sections.
+  - Generate: a headline of 120 against 200, a skill name of 80 against 120.
+- **KB candidates mark an item failed for good on any outage**, and the link client keeps a failed
+  token read until restart.
+- **Smaller web issues:**
+  - The assistant composer cuts at 500 (the server takes 4000).
+  - The panel's question box cuts at 300.
+  - Keyword questions vanish for the session after one failure.
+  - The JD page says "removed" on a network error.
+  - The JD page has no Read again for `busy`, `service_down` or `internal`.
+  - Assistant attachments are sent as a file name only.
+
+### Owner's call
+- **Interview practice and section regenerate are not on web** ("Coming soon" / not wired), so only
+  their server sides were checked.
+- **Mobile was not audited.**
+
+## §261 — The 15 serious findings of §260, fixed (owner, 2026-11-23)
+
+Branch `fix/ai-serious-15`, uncommitted.
+
+### Server
+1. **Upload: one long bullet no longer fails the whole upload.** A line the model returns may be any
+   length (`parsing/extract.ts`). The cross-check keeps up to 600 characters and leaves out, with a
+   reason, any longer line.
+2. **Upload: each failure has a reason** (`parseFailureOf` in `services/resumeParse.ts`): `busy`,
+   `service_down`, `too_long`, `unclear`, `internal`. Bugs fail at once and the failure code is
+   logged. `sweepStuckParses` runs with the generation sweep, under the same 8/10-minute limits, so a
+   parse can't stay "reading" for ever.
+3. **Revise step:** lines may be 600 characters (`CLAIM_TEXT_MAX`), skill names 120. A revision the
+   model can't give in shape ends the rewrites, and what is still invented is stripped, instead of
+   failing the run.
+4. **Cover letter:**
+   - A paragraph is capped at 600 characters and a letter at 8 paragraphs, the stored sizes.
+   - A rewrite that fails keeps the first letter's backed paragraphs.
+   - The letter is checked against `canonicalLetterSchema` before it is saved, so it can't land
+     "ready" and unreadable.
+5. **Assistant replies are never two answers glued together.** `gateway.stream` calls `onRestart`
+   before a retried attempt (a retry, the `max_tokens` retry from §258, a failover). The saved reply
+   is the call's final answer, and a failed reply logs its failure code.
+6. **The link reader tells its own failures from the site's.** A crash or bug answers 503, so the
+   client retries, and is logged with its error name. The renderer keeps "unreachable" for network
+   errors only. When the reader stays down, the JD says "Reading links isn't working on our side
+   right now. Paste the job description instead." (`service_down`). A failed token read is no
+   longer cached until a restart.
+7. **AI review:** the run still goes on without it, but every fallback is logged as `review.skipped`
+   with its cause, our own bugs at error level. A failed page-fit compile is logged too, and the run
+   deadline is no longer swallowed by that fallback. Stages now get `log`.
+
+### Web
+8. **ATS check:**
+   - A failed start releases Continue and the job box (`JobStep` `pickFailed`).
+   - Start errors say what they were (`startErrorLine`); consent shows only its dialog.
+   - A failed Cancel says so.
+9. **The assistant gives up on a dead reply.** A gone or unreadable reply, or one past the server's
+   3 minutes plus a margin, is shown failed and the composer comes back. Polls that fail back off. A
+   reply that failed with no text says "No answer came back. Ask again." instead of "Thinking…"
+   beside an error.
+10. **Cover letter and ATS:**
+    - A failed background refetch keeps the live run (`queryPhase`).
+    - Watch problems show with Check again.
+    - `RunProgress` gets `runId`.
+    - The cover letter button holds until the page changes.
+11. **ATS:** a job that won't load shows an error with Try again, not a skeleton for ever.
+12. **The cover letter card** shows a stuck letter (a run it can't read or follow, or far past
+    usual) with Check again. Start errors say what they were.
+13. **Assistant panel:** a rewrite refused for consent is no longer re-run after the dialog
+    (`meta.consentRetry: false`, honoured by the shared query client). The turn says why it failed:
+    consent, plan, busy and so on.
+14. **The JD page saves up to 40 duties** (`JD_DUTIES_MAX`, shared with the schema and the reading).
+    More than 40, or one over 400 characters, is said, not cut.
+15. **The letter editor** keeps the letter on a failed background refetch.
+
+### For the owner to check
+- **The new wording:**
+  - Upload reasons (`FAILURE` in `resumeParse.ts`).
+  - The link-reader-down line.
+  - The cover letter card's stuck line.
+  - The assistant's "No answer came back".
+- **Behaviour change:** after the consent dialog, a panel rewrite is not run on its own any more;
+  the user asks again. This applies on mobile too, since the hook is shared.
+
+### Not verified
+- **Integration suites not run.** Docker was up, but the suites were not run for this change.
+- **No browser check** of the new web states.
+- **Mobile screens unchanged** beyond the shared hooks.
