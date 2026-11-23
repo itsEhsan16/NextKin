@@ -1,6 +1,7 @@
 import type { JdDraft, JdDraftPatch, JdFailureReason } from '@nextkin/shared/models/jd';
 import { readJdSections } from '@nextkin/shared/jobs/jdSections';
 import type { JdCreate } from '@nextkin/shared/schemas/jd';
+import { JD_TEXT_MAX } from '@nextkin/shared/schemas/limits';
 import { sql } from 'kysely';
 
 import type { AiGateway } from '../ai/gateway';
@@ -50,12 +51,43 @@ export const JD_RECALL_TEMPLATE = 'jd.recall';
  */
 export const JD_READING_VERSION = 3;
 const QUEUED_FOR_REREAD = 1;
-const MAX_TEXT = 20000;
+const MAX_TEXT = JD_TEXT_MAX;
 
 export const JD_FAILURE = {
   unreadable: 'We couldn’t read text in this file. Paste the description instead.',
   provider: 'We couldn’t read this job description right now. Try again in a moment.',
+  busy: 'Our reading service is busy right now. Wait a minute, then try again.',
+  service_down: 'Reading job descriptions isn’t working on our side right now. It’s our problem to fix, not yours: try again later, or choose a saved job.',
+  too_long: 'This description is too long to read in one go. Remove the company introduction and the benefits, then try again.',
+  unclear: 'We couldn’t make sense of this as one job’s description. Check that it is a single job’s full description, then try again.',
+  internal: 'Something went wrong on our side while reading this. Try again; if it happens again, tell us.',
 } as const;
+
+/**
+ * Why a reading failed, from what the model call or our code threw (owner, 2026-11-23). Every model
+ * failure used to be "Try again in a moment", which was wrong advice for most of them: a refused
+ * key does not come right in a moment, and an answer that cannot be used will not either.
+ */
+export function readingFailureOf(error: unknown): { reason: JdFailureReason; text: string } {
+  if (error instanceof LlmError) {
+    switch (error.failure) {
+      case 'overloaded':
+      case 'timeout':
+      case 'unavailable':
+      case 'rate_limited':
+        return { reason: 'busy', text: JD_FAILURE.busy };
+      case 'bad_request':
+        return { reason: 'too_long', text: JD_FAILURE.too_long };
+      case 'invalid_output':
+      case 'refusal':
+        return { reason: 'unclear', text: JD_FAILURE.unclear };
+      default:
+        // auth, capped, a 402 balance, anything else the provider refuses us for.
+        return { reason: 'service_down', text: JD_FAILURE.service_down };
+    }
+  }
+  return { reason: 'internal', text: JD_FAILURE.internal };
+}
 
 const CHECK_LINK = 'We can’t read that address. Check the link, or paste the description instead.';
 const SITE_REFUSED = 'This site doesn’t let us read its pages. Open the job and paste its description here.';
@@ -388,9 +420,20 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
       if (lastAttempt) return fail(NO_ANSWER, 'unreachable');
       throw error;
     }
-    const transient = error instanceof LlmError ? error.retryable : true;
-    if (transient && !lastAttempt) throw error;
-    return fail(JD_FAILURE.provider, 'provider');
+    // A model error says whether another try may pass; our own bugs (a TypeError, a bad shape) will
+    // not, so they fail at once instead of five redeliveries.
+    const bug = error instanceof TypeError || error instanceof RangeError || (error instanceof Error && error.name === 'ZodError');
+    const transient = error instanceof LlmError ? error.retryable : !bug;
+    const failure = error instanceof LlmError ? error.failure : error instanceof Error ? error.name : typeof error;
+    if (transient && !lastAttempt) {
+      deps.log.warn({ event: 'jd.read_retry', jdId: message.jdId, failure }, 'job description reading failed; it will be retried');
+      throw error;
+    }
+    const { reason, text } = readingFailureOf(error);
+    const line = { event: 'jd.read_failed', jdId: message.jdId, reason, failure, errorName: error instanceof Error ? error.name : typeof error };
+    if (reason === 'service_down' || reason === 'internal') deps.log.error(line, 'job description reading failed');
+    else deps.log.warn(line, 'job description reading failed');
+    return fail(text, reason);
   }
 }
 

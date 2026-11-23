@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { jobSchema } from './job';
 import { jdStructuredSchema } from './jdStructured';
+import { JD_TEXT_MAX, JD_TEXT_MIN } from './limits';
 
 /**
  * Job descriptions over the wire (spec §11 `/api/v1/jd`; ImBackendImplementationPlan P9-01).
@@ -35,7 +36,7 @@ export const jdPatchSchema = z
 
 export const jdCreateSchema = z.discriminatedUnion('source', [
   // Server cap 20,000 characters (P0's default on silence; web already caps at 10,000).
-  z.object({ source: z.literal('paste'), text: z.string().trim().min(40).max(20000), details: jdPatchSchema.optional() }).strict(),
+  z.object({ source: z.literal('paste'), text: z.string().trim().min(JD_TEXT_MIN).max(JD_TEXT_MAX), details: jdPatchSchema.optional() }).strict(),
   z.object({ source: z.literal('file'), uploadId: z.uuid(), details: jdPatchSchema.optional() }).strict(),
   // P11: a listing on NextKin, by the id it carries. Read from the listing itself, no model call.
   // A link: the reader service reads the page, and what it says goes through the same extraction.

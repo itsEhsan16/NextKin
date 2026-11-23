@@ -139,7 +139,18 @@ export const JD_FAILURE_REASONS = [
   /** Text that is not a job posting at all. */
   'not_a_job',
   'unreadable',
+  /** Kept for readings made before 0057; new failures use one of the five below. */
   'provider',
+  /** The reading service is overloaded or slow, after its retries: try again in a minute. */
+  'busy',
+  /** The reading service refuses us (key, balance, daily cap): ours to fix, not the candidate's. */
+  'service_down',
+  /** The text is more than the reading service takes in one go. */
+  'too_long',
+  /** The answers came back in a shape we could not use, twice: often not one job's description. */
+  'unclear',
+  /** Our own code failed. */
+  'internal',
 ] as const;
 export type JdFailureReason = (typeof JD_FAILURE_REASONS)[number];
 
