@@ -34,7 +34,78 @@ const FAILURE = {
   unreadable: 'We couldn’t read this file. Upload a PDF, Word (DOCX) or plain-text resume.',
   no_text: 'We couldn’t find any text in this file. If it is a photo or scan, try a clearer copy.',
   provider: 'We couldn’t finish reading your resume. Try again in a moment.',
+  busy: 'Our reading service is busy right now. Wait a minute, then upload it again.',
+  service_down: 'Reading resumes isn’t working on our side right now. It’s our problem to fix, not yours: try again later.',
+  too_long: 'This resume is too long to read in one go. Upload a shorter version, two or three pages.',
+  unclear: 'We couldn’t make sense of this file as a resume. Check it is your resume, then upload it again.',
+  internal: 'Something went wrong on our side while reading this. Upload it again; if it happens again, tell us.',
+  timed_out: 'Reading this resume took too long and was stopped. Upload it again.',
 } as const;
+
+/**
+ * Why a parse failed, from what was thrown (owner, 2026-11-23; toreview §260). Every failure used to
+ * be "Try again in a moment", which is the wrong advice for most of them.
+ */
+export function parseFailureOf(error: unknown): { code: keyof typeof FAILURE; text: string } {
+  if (error instanceof LlmError) {
+    switch (error.failure) {
+      case 'overloaded':
+      case 'timeout':
+      case 'unavailable':
+      case 'rate_limited':
+        return { code: 'busy', text: FAILURE.busy };
+      case 'bad_request':
+        return { code: 'too_long', text: FAILURE.too_long };
+      case 'invalid_output':
+      case 'refusal':
+        return { code: 'unclear', text: FAILURE.unclear };
+      default:
+        return { code: 'service_down', text: FAILURE.service_down };
+    }
+  }
+  return { code: 'internal', text: FAILURE.internal };
+}
+
+/** Our own bugs: another delivery will fail the same way, so they fail at once. */
+const isBug = (error: unknown) => error instanceof TypeError || error instanceof RangeError || (error instanceof Error && error.name === 'ZodError');
+
+/**
+ * The parse sweep (owner, 2026-11-23): a parse still reading this long after it started, or still
+ * queued this long after it was made, is failed with a plain reason. A worker that crashed, or a
+ * handler given up on, used to leave the row reading for ever and the upload screen waiting on it.
+ */
+export async function sweepStuckParses(db: Database, timeoutSeconds: number, queueTimeoutSeconds: number, log?: Pick<Logger, 'warn'>): Promise<number> {
+  const stuck = await db.withSystem('resume parses: find parses past the timeout', (tx) =>
+    tx
+      .selectFrom('resume_parses')
+      .select(['id', 'user_id'])
+      .where('status', 'in', ['queued', 'reading', 'extracting', 'verifying'])
+      .where(
+        sql<boolean>`(started_at is not null and started_at < now() - make_interval(secs => ${timeoutSeconds}))
+          or (started_at is null and created_at < now() - make_interval(secs => ${queueTimeoutSeconds}))`,
+      )
+      .orderBy('created_at')
+      .limit(500)
+      .execute(),
+  );
+  let failed = 0;
+  for (const { id, user_id } of stuck) {
+    try {
+      const done = await db.withUser({ userId: user_id, role: 'user' }, (tx) =>
+        tx
+          .updateTable('resume_parses')
+          .set({ status: 'failed', error_code: 'timed_out', error_message: FAILURE.timed_out, finished_at: sql`now()` })
+          .where('id', '=', id)
+          .where('status', 'in', ['queued', 'reading', 'extracting', 'verifying'])
+          .executeTakeFirst(),
+      );
+      if (Number(done.numUpdatedRows) > 0) failed++;
+    } catch (error) {
+      log?.warn({ event: 'resume_parse.sweep_row_failed', errorName: error instanceof Error ? error.name : typeof error }, 'could not fail a stuck parse; skipped');
+    }
+  }
+  return failed;
+}
 
 export const toParse = (row: ParseRow): ResumeParse => ({
   id: row.id,
@@ -110,7 +181,7 @@ export async function runParse(deps: ParseRunDeps, message: { parseId: string; u
 
   const fail = async (code: string, text: string) => {
     await setStatus(deps.db, identity, message.parseId, 'failed', { error_code: code, error_message: text, finished_at: sql`now()` });
-    deps.log.info({ event: 'resume_parse.finished', outcome: 'failed', code }, 'resume parse failed');
+    deps.log.info({ event: 'resume_parse.finished', outcome: 'failed', reason: code }, 'resume parse failed');
     return 'failed' as const;
   };
 
@@ -140,8 +211,16 @@ export async function runParse(deps: ParseRunDeps, message: { parseId: string; u
     return 'ready';
   } catch (error) {
     if (error instanceof UnreadableError) return fail('unreadable', error.code === 'timeout' ? error.message : FAILURE.unreadable);
-    const transient = error instanceof LlmError ? error.retryable : true;
-    if (transient && !lastAttempt) throw error;
-    return fail('provider', FAILURE.provider);
+    const transient = error instanceof LlmError ? error.retryable : !isBug(error);
+    const failure = error instanceof LlmError ? error.failure : error instanceof Error ? error.name : typeof error;
+    if (transient && !lastAttempt) {
+      deps.log.warn({ event: 'resume_parse.retry', failure }, 'resume parse failed; it will be retried');
+      throw error;
+    }
+    const { code, text } = parseFailureOf(error);
+    const line = { event: 'resume_parse.failed', reason: code, failure };
+    if (code === 'service_down' || code === 'internal') deps.log.error(line, 'resume parse failed');
+    else deps.log.warn(line, 'resume parse failed');
+    return fail(code, text);
   }
 }

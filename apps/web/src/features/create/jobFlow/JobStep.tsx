@@ -47,6 +47,7 @@ export function JobStep({
   note,
   busyLabel,
   spent = false,
+  pickFailed = false,
 }: {
   flow: JobFlow;
   onPicked: (job: PickedJob) => void;
@@ -57,6 +58,11 @@ export function JobStep({
   busyLabel?: string;
   /** This month's allowance is used: the primary becomes the way to more (CR-19, V2 §13.5). */
   spent?: boolean;
+  /**
+   * What the caller did with the pick failed (the ATS check didn't start): the read job is let go,
+   * so Continue and the box come back instead of staying locked until a reload (toreview §260).
+   */
+  pickFailed?: boolean;
 }) {
   const copy = JOB_FLOWS[flow];
   const saved = useSavedJobs();
@@ -71,6 +77,15 @@ export function JobStep({
   // How Continue's fill stands while it reads a new job; the read job waits for a full pill.
   const [readPhase, setReadPhase] = useState<ProgressPhase>('idle');
   const [readId, setReadId] = useState<string | null>(null);
+  // Adjusted while rendering (React's pattern for state that follows a prop), not in an effect.
+  const [seenPickFailed, setSeenPickFailed] = useState(pickFailed);
+  if (pickFailed !== seenPickFailed) {
+    setSeenPickFailed(pickFailed);
+    if (pickFailed) {
+      if (readPhase === 'done') setReadPhase('idle');
+      setReadId(null);
+    }
+  }
 
   const pickedSaved = savedId ?? jobs[0]?.id ?? null;
   const using = source ?? (saved.data && jobs.length === 0 ? 'other' : 'saved');

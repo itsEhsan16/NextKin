@@ -75,7 +75,7 @@ export function useAssistantReply(messageId: string) {
 
   useEffect(() => {
     if (!liveId) return undefined;
-    return repos.assistant.subscribe(liveId, (message) => {
+    const settle = (message: AssistantMessage) => {
       queryClient.setQueryData(qk.assistant.message(liveId), message);
       if (message.status !== 'streaming') {
         queryClient.setQueryData<AssistantConversation>(qk.assistant.conversation(), (old) =>
@@ -90,6 +90,12 @@ export function useAssistantReply(messageId: string) {
         // The History previews a chat's first answer, which has only now arrived.
         void queryClient.invalidateQueries({ queryKey: qk.assistant.threads() });
       }
+    };
+    return repos.assistant.subscribe(liveId, settle, () => {
+      // The reply can't be followed any more: shown as failed, so the composer comes back and the
+      // bubble says to ask again (toreview §260).
+      const current = queryClient.getQueryData<AssistantMessage>(qk.assistant.message(liveId));
+      if (current) settle({ ...current, status: 'failed' });
     });
   }, [liveId, queryClient]);
 

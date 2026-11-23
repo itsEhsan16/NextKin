@@ -17,6 +17,7 @@ import type { MaintenanceJob } from '../queue/envelope';
 import type { PushPort } from '../push/push';
 import type { StoragePort } from '../storage/storage';
 import { sweepStuckGenerations } from '../services/generations';
+import { sweepStuckParses } from '../services/resumeParse';
 import { purgeDocuments, TRASH_DAYS } from '../services/resumes';
 import { purgeTeasers } from '../services/teaser';
 import { sweepOrphanUploads, type UploadDeps } from '../services/uploads';
@@ -51,7 +52,12 @@ export async function runMaintenanceJob(job: MaintenanceJob, deps: JobDeps): Pro
   const { db, log } = deps;
   switch (job) {
     case 'generation_sweep':
-      return sweepStuckGenerations(db, deps.publisher, deps.generationTimeoutSeconds, deps.generationQueueTimeoutSeconds ?? deps.generationTimeoutSeconds, log);
+      {
+      const queued = deps.generationQueueTimeoutSeconds ?? deps.generationTimeoutSeconds;
+      // Resume parses ride the same sweep and limits: a crashed parse must not read for ever.
+      const parses = await sweepStuckParses(db, deps.generationTimeoutSeconds, queued, log).catch(() => 0);
+      return parses + (await sweepStuckGenerations(db, deps.publisher, deps.generationTimeoutSeconds, queued, log));
+    }
     case 'upload_orphan_sweep':
       return deps.uploads ? sweepOrphanUploads(deps.uploads) : 0;
     case 'anonymous_upload_purge':

@@ -75,7 +75,12 @@ export interface GatewayOptions {
 export interface AiGateway {
   extract<T>(call: StageCall & { schema: z.ZodType<T>; name: string; description: string }): Promise<{ data: T; meta: CallMeta }>;
   generate(call: StageCall): Promise<{ text: string; meta: CallMeta }>;
-  stream(call: StageCall, onText: (delta: string) => void): Promise<{ text: string; meta: CallMeta }>;
+  /**
+   * `onRestart` is called before a retried attempt (a dropped connection, a cut-off answer, the
+   * next provider) once text has already streamed: the caller drops what it showed, since the next
+   * attempt streams its answer from the start (toreview §260). The returned text is the final one.
+   */
+  stream(call: StageCall, onText: (delta: string) => void, onRestart?: () => void): Promise<{ text: string; meta: CallMeta }>;
 }
 
 /** Failures that mean the AI is unavailable, as opposed to one bad answer. */
@@ -101,7 +106,16 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
     return trace.developerSpendTodayMicros(options.developer);
   }
 
-  async function run<T>(call: StageCall, mode: { schema?: z.ZodType<T>; name?: string; description?: string; onText?: (d: string) => void }) {
+  async function run<T>(call: StageCall, mode: { schema?: z.ZodType<T>; name?: string; description?: string; onText?: (d: string) => void; onRestart?: () => void }) {
+    // Whether the current attempt has streamed anything yet: a retry after it has must start the
+    // caller's text again, or the second answer is appended to the first.
+    let emitted = false;
+    const onText = mode.onText
+      ? (delta: string) => {
+          emitted = true;
+          mode.onText!(delta);
+        }
+      : undefined;
     const route = await settings.routeFor(call.stage);
     const prices = await settings.prices();
     let last: LlmError = new LlmError('unavailable', `No provider is configured for stage "${call.stage}".`, false);
@@ -133,12 +147,16 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
         }
         // A run past its deadline stops here (pipeline/deadline.ts); the runner fails it as timed out.
         checkDeadline();
+        if (emitted) {
+          emitted = false;
+          mode.onRestart?.();
+        }
         const signal = currentDeadline();
         const started = Date.now();
         let response: LlmResponse | null = null;
         try {
           response = await withSpan('ai.call', { 'ai.stage': call.stage, 'ai.provider': provider.name, 'ai.model': step.model }, () =>
-            mode.onText && provider.stream ? provider.stream(request, mode.onText, signal) : provider.messages(request, signal),
+            onText && provider.stream ? provider.stream(request, onText, signal) : provider.messages(request, signal),
           );
           if (response.stopReason === 'refusal') throw new LlmError('refusal', 'The model declined to answer.', true);
           // An answer cut off by the token limit is never accepted half-written: asked once more with
@@ -232,8 +250,8 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
       const { value, meta } = await run<string>(call, {});
       return { text: value, meta };
     },
-    async stream(call, onText) {
-      const { value, meta } = await run<string>(call, { onText });
+    async stream(call, onText, onRestart) {
+      const { value, meta } = await run<string>(call, { onText, ...(onRestart ? { onRestart } : {}) });
       return { text: value, meta };
     },
   };

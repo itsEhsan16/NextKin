@@ -3,6 +3,7 @@ import type { AiGateway, CallMeta } from '../ai/gateway';
 import type { LatexCompiler } from '../export/latex/compile';
 import type { StageInput } from '../ai/pii';
 import type { Database } from '../db/database';
+import type { Logger } from '../observability/logger';
 import type { PromptVersion } from '../services/prompts';
 
 /**
@@ -38,6 +39,8 @@ export interface StageContext {
   gateway: AiGateway;
   /** The sealed LaTeX compiler, when this worker has one: a tailored run fits compiled pages (§111.6). */
   latex?: LatexCompiler;
+  /** For a stage that falls back on a failure: the fallback is logged with its cause (toreview §260). */
+  log?: Pick<Logger, 'warn' | 'error'>;
 }
 
 export interface StageResult {

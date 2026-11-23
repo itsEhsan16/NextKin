@@ -495,7 +495,11 @@ export type AssistantRepo = {
    */
   send(input: AssistantSendInput): Promise<{ user: AssistantMessage; reply: AssistantMessage }>;
   /** Emits the reply as it grows, until it reaches a terminal status. */
-  subscribe(messageId: string, onChange: (message: AssistantMessage) => void): Unsubscribe;
+  /**
+   * `onGiveUp`: the reply can no longer be followed (gone, unreadable, or still streaming long past
+   * the server's own limit). Polling has stopped; the screen shows it as failed (toreview §260).
+   */
+  subscribe(messageId: string, onChange: (message: AssistantMessage) => void, onGiveUp?: () => void): Unsubscribe;
   clear(): Promise<AssistantConversation>;
   /** The web History (767:2): the current chat and the earlier ones, newest first. */
   listThreads(): Promise<AssistantThreadSummary[]>;

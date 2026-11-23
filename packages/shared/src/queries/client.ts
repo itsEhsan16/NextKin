@@ -40,7 +40,13 @@ export function createQueryClient(): QueryClient {
     mutationCache: new MutationCache({
       onError: (error, variables, _result, mutation) => {
         if (!(error instanceof ConsentRequiredError)) return;
-        const retry = () => void mutation.execute(variables).catch(() => undefined);
+        // A screen that has already told the user the request failed opts out of the quiet re-run
+        // (`meta.consentRetry: false`): otherwise the change lands after "it failed" was said, with
+        // no before/after to undo it (toreview §260). The dialog still opens; they ask again.
+        const retry =
+          mutation.options.meta?.consentRetry === false
+            ? () => undefined
+            : () => void mutation.execute(variables).catch(() => undefined);
         consentListeners.forEach((listener) => listener(retry));
       },
     }),

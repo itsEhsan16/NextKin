@@ -14,7 +14,10 @@ import type { AiGateway, CallContext } from '../ai/gateway';
  */
 
 const yearMonth = z.string().regex(/^\d{4}(-\d{2})?$/);
-const line = z.string().min(1).max(400);
+// A line as printed, however long (owner, 2026-11-23; toreview §260). This was 400 while a stored
+// line holds 600, so one long bullet refused the whole upload. The cross-check keeps a line up to
+// 600 and leaves a longer one out, saying so, instead of the schema refusing everything.
+const line = z.string().min(1).max(4000);
 
 export const extractionSchema = z.object({
   headline: z.string().max(200).nullable(),

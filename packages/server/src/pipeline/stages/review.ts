@@ -7,6 +7,7 @@ import { headerStatements } from '@nextkin/shared/scoring/headerChecks';
 import { EXPERIENCED_MONTHS, pageBudget } from '@nextkin/shared/scoring/pageBudget';
 
 import { userPaper } from '../../services/renders';
+import { LlmError } from '../../ai/types';
 import { StageError, type StageContext, type StageDef } from '../stages';
 import { periodOf, readRun, type RunInput, type StageJd } from './common';
 import { compiledMeasure, dropOrder, estimateMeasure, fitToPages } from './pageFit';
@@ -85,6 +86,11 @@ export const reviewStage: StageDef = {
         ({ doc, record } = applyReview(doc, answer.data, { base, facts: run.snapshot.facts, tailor, asOf: run.asOf }));
       } catch (error) {
         if (error instanceof StageError) throw error;
+        // The run goes on without the review, as before, but never silently: the cause is logged,
+        // and our own bug at error level so it is seen and fixed (toreview §260).
+        const line = { event: 'review.skipped', generationId: ctx.generationId, failure: error instanceof LlmError ? error.failure : undefined, errorName: error instanceof Error ? error.name : typeof error };
+        if (error instanceof LlmError) ctx.log?.warn(line, 'the AI review failed; the run goes on without it');
+        else ctx.log?.error(line, 'the AI review failed on our side; the run goes on without it');
         record = emptyReview('model_error');
       }
     }
@@ -131,8 +137,11 @@ async function fitTailored(ctx: StageContext, run: RunInput, tailor: TailorRunIn
       const paper = await ctx.db.withUser({ userId: ctx.userId, role: 'user' }, (tx) => userPaper(tx, ctx.userId));
       const fit = await fitToPages({ ...args, mayTrim: fresher || tailor.fixes.includes('length'), measure: compiledMeasure(ctx.latex, jd?.location ?? null, paper), compiled: true });
       return { ...fit, basis: budget.basis };
-    } catch {
+    } catch (error) {
+      // A run past its deadline stops; it is not fitted by estimate (pipeline/deadline.ts).
+      if (error instanceof StageError) throw error;
       // The service is down or busy: the estimate below, which trims only with the length fix.
+      ctx.log?.warn({ event: 'review.page_fit_estimated', generationId: ctx.generationId, errorName: error instanceof Error ? error.name : typeof error }, 'compiled page fit failed; estimating');
     }
   }
   const fit = await fitToPages({ ...args, mayTrim: tailor.fixes.includes('length'), measure: estimateMeasure, compiled: false });

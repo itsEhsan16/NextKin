@@ -7,7 +7,9 @@ import { PARSE_SAFE_TEMPLATE } from '@nextkin/shared/scoring/adapters';
 import { scoringDocumentOf } from '@nextkin/shared/scoring/canonical';
 import { scoreDocument, type DocumentScore } from '@nextkin/shared/scoring/report';
 import type { ProfileFacts } from '@nextkin/engines/facts';
-import { CANONICAL_SCHEMA_VERSION, canonicalResumeSchema, type CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
+import { CANONICAL_SCHEMA_VERSION, canonicalLetterSchema, canonicalResumeSchema, type CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
+import { CLAIM_TEXT_MAX } from '@nextkin/shared/schemas/limits';
+import { LlmError } from '../../ai/types';
 import { z } from 'zod';
 
 import { StageError, type StageDef } from '../stages';
@@ -121,7 +123,10 @@ export const sourceStage: StageDef = {
   },
 };
 
-const coverSchema = z.object({ greeting: z.string().trim().min(1).max(120), paragraphs: z.array(z.object({ text: z.string().trim().min(1).max(900), evidence: z.array(z.string().max(80)).min(1).max(10) })).min(1).max(5) });
+// A paragraph is a stored claim, so it may be as long as one and no longer (limits.ts; toreview
+// §260): at 900 a letter could finish "ready" and then fail to open, edit or download. As many
+// paragraphs as a stored letter holds, so one more than asked never refuses the whole answer.
+const coverSchema = z.object({ greeting: z.string().trim().min(1).max(120), paragraphs: z.array(z.object({ text: z.string().trim().min(1).max(CLAIM_TEXT_MAX), evidence: z.array(z.string().max(80)).min(1).max(10) })).min(1).max(8) });
 
 /**
  * The facts a letter may draw on (P10-09, §7.10): only what its source resume shows. Roles the resume
@@ -180,8 +185,14 @@ export const coverStage: StageDef = {
     let revised = false;
     if (checked.some((c) => !c.ok)) {
       revised = true;
-      ({ data, meta } = await call({ failures: checked.filter((c) => !c.ok).map((c) => ({ text: c.paragraph.text, issues: c.issues })) }));
-      checked = check(data.paragraphs);
+      // The rewrite is a second chance: an answer it can't give in shape keeps the first letter's
+      // backed paragraphs instead of failing a letter that was mostly written.
+      try {
+        ({ data, meta } = await call({ failures: checked.filter((c) => !c.ok).map((c) => ({ text: c.paragraph.text, issues: c.issues })) }));
+        checked = check(data.paragraphs);
+      } catch (error) {
+        if (!(error instanceof LlmError && (error.failure === 'invalid_output' || error.failure === 'refusal'))) throw error;
+      }
     }
     const kept = checked.filter((c) => c.ok).map((c, i) => ({ id: `p${i}`, text: c.paragraph.text, evidence: c.paragraph.evidence, origin: 'generated' as const }));
     if (kept.length === 0) throw new StageError('letter_unbacked', 'We could not write a letter your profile backs. Add more detail to your roles and try again.');
@@ -197,6 +208,9 @@ export const coverPersistStage: StageDef = {
     const out = ctx.outputs.letter as { letter: { tone: string } };
     const source = ctx.outputs.source as { resumeId: string; versionId: string };
     const jd = (ctx.outputs.jd as StageJd | null) ?? null;
+    // Checked against the stored shape before it is written: a letter the editor and the export
+    // would refuse ends the run here, with a reason, instead of landing "ready" and unreadable.
+    if (!canonicalLetterSchema.safeParse(out.letter).success) throw new StageError('invalid_output', 'The writing service returned a letter we couldn’t use. Try again.');
     const written = await ctx.db.withUser({ userId: ctx.userId, role: 'user' }, async (tx) => {
       const v = await writeVersion(tx, { generationId: ctx.generationId, userId: ctx.userId, content: out.letter, note: 'Cover letter' });
       if (v.created) {

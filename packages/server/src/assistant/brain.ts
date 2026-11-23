@@ -47,7 +47,8 @@ export interface ReplyInput extends ClassifyInput {
 export interface AssistantBrain {
   readonly kind: 'model' | 'stand-in';
   classify(input: ClassifyInput): Promise<{ inScope: boolean; topic: AssistantTopic | null }>;
-  reply(input: ReplyInput, onText: (delta: string) => void): Promise<{ text: string }>;
+  /** `onRestart`: a retried attempt streams from the start; drop what was shown (toreview §260). */
+  reply(input: ReplyInput, onText: (delta: string) => void, onRestart?: () => void): Promise<{ text: string }>;
 }
 
 export const CLASSIFY_TEMPLATE = 'assistant.classify';
@@ -88,7 +89,7 @@ export function createModelBrain(gateway: AiGateway, prompt: PromptSource): Assi
       });
       return { inScope: data.inScope && data.topic !== 'other', topic: data.topic === 'other' ? null : data.topic };
     },
-    async reply({ text, previous, context, userId }, onText) {
+    async reply({ text, previous, context, userId }, onText, onRestart) {
       const p = await prompt(REPLY_TEMPLATE);
       const { text: answer } = await gateway.stream(
         {
@@ -99,6 +100,7 @@ export function createModelBrain(gateway: AiGateway, prompt: PromptSource): Assi
           context: { userId, promptVersionId: p.id },
         },
         onText,
+        onRestart,
       );
       return { text: answer };
     },

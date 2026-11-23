@@ -92,6 +92,7 @@ export function readingFailureOf(error: unknown): { reason: JdFailureReason; tex
 const CHECK_LINK = 'We can’t read that address. Check the link, or paste the description instead.';
 const SITE_REFUSED = 'This site doesn’t let us read its pages. Open the job and paste its description here.';
 const NO_ANSWER = 'We couldn’t reach that page. Try again, or paste the description instead.';
+const LINK_READER_DOWN = 'Reading links isn’t working on our side right now. Paste the job description instead.';
 const NOT_A_JOB = 'We couldn’t find a job on that page. It may be behind a sign-in. Paste the description instead.';
 /** The posting is not there to read (toreview §206). Said plainly: nothing is read in its place. */
 const POSTING_GONE = 'This posting is no longer available. If you saved its description, paste it here.';
@@ -417,7 +418,11 @@ export async function runJdExtract(deps: JdExtractDeps, message: { jdId: string;
     if (error instanceof UnreadableError) return fail(JD_FAILURE.unreadable, 'unreadable');
     if (error instanceof LinkError) return fail(LINK_FAILURE[error.reason] ?? NO_ANSWER, error.reason in LINK_FAILURE ? error.reason : 'unreachable');
     if (error instanceof LinkReaderUnavailableError) {
-      if (lastAttempt) return fail(NO_ANSWER, 'unreachable');
+      // Our link reader is down, not the candidate's link: said as ours (toreview §260).
+      if (lastAttempt) {
+        deps.log.error({ event: 'jd.read_failed', jdId: message.jdId, reason: 'service_down', failure: 'link_reader' }, 'the link reader is unavailable');
+        return fail(LINK_READER_DOWN, 'service_down');
+      }
       throw error;
     }
     // A model error says whether another try may pass; our own bugs (a TypeError, a bad shape) will

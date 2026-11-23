@@ -6,7 +6,16 @@ import {
   type CoverLetterTone,
   type Generation,
 } from '@nextkin/shared/models';
-import { useGeneration, useResumeContent, useStartGeneration } from '@nextkin/shared/queries';
+import {
+  isConsentRequired,
+  queryPhase,
+  useGeneration,
+  useGenerationWatchProblem,
+  useResumeContent,
+  useStall,
+  useStartGeneration,
+} from '@nextkin/shared/queries';
+import { startErrorLine } from '@nextkin/shared/tailor/customize';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -43,7 +52,14 @@ export function CoverLetterCard({
   const content = useResumeContent(letterId);
   const body =
     content.data?.kind === 'cover_letter' ? (content.data as CoverLetterContent) : undefined;
-  const writing = start.isPending || (runId !== '' && status !== 'ready' && status !== 'failed');
+  const watch = useGenerationWatchProblem(runId);
+  const running = runId !== '' && status !== 'ready' && status !== 'failed';
+  // A letter whose run can't be read or followed, or that is far past usual, is said to be stuck,
+  // with Check again, instead of "Writing your letter…" for ever (toreview §260).
+  const stall = useStall(running, `${runId}:${letter.data?.progress ?? 0}`);
+  const lost =
+    running && (queryPhase(letter) === 'error' || watch.problem != null || stall === 'stalled');
+  const writing = start.isPending || (running && !lost);
 
   const write = () => {
     if (writing || !generation.resumeId) return;
@@ -57,7 +73,13 @@ export function CoverLetterCard({
       },
       {
         onSuccess: (run) => setRunId(run.id),
-        onError: () => showToast("We couldn't start the letter. Try again.", { tone: 'error' }),
+        // Consent has its own dialog; every other refusal says what it was.
+        onError: (error) => {
+          if (!isConsentRequired(error))
+            showToast(startErrorLine(error, "We couldn't start the letter. Try again."), {
+              tone: 'error',
+            });
+        },
       },
     );
   };
@@ -126,6 +148,21 @@ export function CoverLetterCard({
             busy={writing}
           />
         </button>
+        {lost && (
+          <p role="alert" className="text-body-m text-danger-600">
+            {watch.problem?.message ?? 'Your letter is taking much longer than it should.'}{' '}
+            <button
+              type="button"
+              onClick={() => {
+                watch.restart();
+                void letter.refetch();
+              }}
+              className="font-semibold underline underline-offset-2"
+            >
+              Check again
+            </button>
+          </p>
+        )}
         {status === 'failed' && (
           <p role="alert" className="text-body-m text-danger-600">
             {letter.data?.error ?? 'The letter didn’t finish. Nothing was charged.'} Try again.

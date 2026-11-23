@@ -244,6 +244,7 @@ export function createRunner(deps: RunnerDeps, hooks: RunnerHooks = {}) {
           correlationId: message.correlationId,
           gateway: deps.gateway,
           ...(deps.latex ? { latex: deps.latex } : {}),
+          log,
         }));
       } catch (error) {
         return handleStageError(message, def, stage.name, error);

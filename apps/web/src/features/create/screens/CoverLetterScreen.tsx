@@ -2,11 +2,15 @@
 
 import { tailorableResumes, type CoverLetterTone } from '@nextkin/shared/models';
 import {
+  isConsentRequired,
+  queryPhase,
   useGeneration,
+  useGenerationWatchProblem,
   useResumes,
   useStartGeneration,
   useSubscription,
 } from '@nextkin/shared/queries';
+import { startErrorLine } from '@nextkin/shared/tailor/customize';
 import type { Route } from 'next';
 import { useState } from 'react';
 
@@ -66,7 +70,10 @@ export function CoverLetterScreen({
   const resumes = useResumes();
   const subscription = useSubscription();
   const start = useStartGeneration();
+  // Consent has its own dialog, so its refusal adds no red note (toreview §260).
+  const startFailed = start.isError && !isConsentRequired(start.error);
   const run = useGeneration(runId ?? '');
+  const watch = useGenerationWatchProblem(runId ?? '');
   const [tone, setTone] = useState<CoverLetterTone>('professional');
   const allowance = coverAllowance(subscription.data?.usage);
   const open = (id: string) =>
@@ -118,7 +125,8 @@ export function CoverLetterScreen({
       />,
     );
   // A failed load says what failed and retries it, rather than holding the placeholder (§131).
-  if (jobError || resumes.isError)
+  // Only what has nothing to show fails the page; a background refetch that fails keeps it (§260).
+  if (jobError || queryPhase(resumes) === 'error')
     return frame(
       1,
       <StateView
@@ -136,7 +144,7 @@ export function CoverLetterScreen({
 
   if (runId) {
     const g = run.data;
-    if (run.isError || g?.status === 'failed')
+    if (queryPhase(run) === 'error' || g?.status === 'failed')
       return frame(
         2,
         <StateView
@@ -148,6 +156,19 @@ export function CoverLetterScreen({
         />,
       );
     if (!g) return frame(2, <Skeleton className="h-140 rounded-xl" />);
+    if (g.status !== 'ready' && watch.problem)
+      return frame(
+        2,
+        <StateView
+          tone="danger"
+          title={
+            watch.problem.permanent ? 'We can’t follow this letter' : 'Checking on your letter'
+          }
+          message={watch.problem.message}
+          actionLabel="Check again"
+          onAction={watch.restart}
+        />,
+      );
     if (g.status === 'ready')
       return frame(
         3,
@@ -163,6 +184,7 @@ export function CoverLetterScreen({
     return frame(
       2,
       <RunProgress
+        runId={g.id}
         art={<CoverLetterIllustration aria-hidden className="h-auto w-28" />}
         title="Writing your cover letter"
         subtitle={job.company ? `${job.title} · ${job.company}` : job.title}
@@ -207,8 +229,8 @@ export function CoverLetterScreen({
         changeJob={coverHref()}
         changeResume={coverHref({ target, resumeId: picked.id, step: 'resume' })}
         note={
-          start.isError
-            ? START_FAILED
+          startFailed
+            ? startErrorLine(start.error, START_FAILED)
             : allowance.spent
               ? (allowanceNote(allowance, 'cover letter', 'cover letters') ?? '')
               : // What it costs, before it is spent (V2 §13.5; redesign R6e, audit CR-32).
@@ -219,9 +241,11 @@ export function CoverLetterScreen({
                   .filter(Boolean)
                   .join(' · ')
         }
-        noteTone={start.isError ? 'danger' : 'neutral'}
+        noteTone={startFailed ? 'danger' : 'neutral'}
         spent={allowance.spent}
-        pending={start.isPending}
+        // Held until the letter's page opens: a second press in that gap wrote (and spent) a
+        // second letter (toreview §260).
+        pending={start.isPending || start.isSuccess}
         onWrite={() =>
           start.mutate(
             {
