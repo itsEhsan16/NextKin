@@ -3,6 +3,7 @@ import {
   codeComplete,
   CONFIRM_FIRST,
   confirmErrorMessage,
+  EMAIL_HAS_ACCOUNT,
   SIGN_IN_FAILED,
   signInErrorMessage,
   signUpErrorMessage,
@@ -30,6 +31,11 @@ describe('auth error copy', () => {
     );
     expect(signInErrorMessage(new Error('boom'))).toMatch(/Try again/);
     expect(signInErrorMessage(undefined)).toMatch(/Try again/);
+  });
+
+  it('an email that already has an account says how to get in (Google sign-in, email_in_use)', () => {
+    expect(signInErrorMessage({ code: 'CONFLICT' })).toBe(EMAIL_HAS_ACCOUNT);
+    expect(signUpErrorMessage({ code: 'CONFLICT' })).toBe(EMAIL_HAS_ACCOUNT);
   });
 
   it('sign-up names the field the server refused', () => {

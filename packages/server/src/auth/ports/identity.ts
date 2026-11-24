@@ -70,7 +70,9 @@ export type AuthFailure =
   | 'token_reused'
   | 'federation_failed'
   /** Unlinking would leave the account with no way to sign in. */
-  | 'last_sign_in_method';
+  | 'last_sign_in_method'
+  /** The email has an account that a new sign-in may not take over (unverified email, staff, or deleted). */
+  | 'email_in_use';
 
 export class AuthError extends Error {
   constructor(

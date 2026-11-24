@@ -19061,3 +19061,55 @@ Branch `fix/ai-serious-15`, uncommitted.
 - **Integration suites not run.** Docker was up, but the suites were not run for this change.
 - **No browser check** of the new web states.
 - **Mobile screens unchanged** beyond the shared hooks.
+
+## §263 — Google sign-in on Clerk production, linking by verified email (owner, 2026-11-24)
+
+The owner chose a **Clerk production instance with our own Google Cloud OAuth client**, on web and
+mobile. The Google code was already built (web `<SignIn/>`, mobile `useSSO` `oauth_google`, §169,
+§173b). What was missing was setup, plus one server gap.
+
+**Built (unverified against real Clerk and Google):**
+- `resolveUser` (`packages/server/src/auth/users.ts`) now **links by verified email**. The owner
+  picked this, as V2 §7.1 asks. A sub we have never seen whose email already has an account moves
+  that account to the new sub, and a `provider_linked` security event is recorded. This is also what
+  carries every demo user across the dev → prod Clerk switch, since every Clerk user id changes.
+  It refuses (`email_in_use` → 409 "This email already has a NextKin account. Sign in the way you
+  did before.") in four cases:
+  - the email is unverified;
+  - the existing account is staff;
+  - the admins pool;
+  - the account is deleted.
+- The web session bridge shows that message and drops the pointless "Try again"; mobile sign-in
+  and sign-up say the same.
+- Tests: `test/integration/resolveUser.int.test.ts` (5 cases) and one mobile copy test.
+
+**Judgement calls:**
+- A deleted or pending-deletion account refuses rather than reviving. The person waits for the
+  purge, or support restores the account.
+- Within Clerk itself, Google and email sign-ups for one email are merged by Clerk (same Clerk
+  user), so the link above mostly fires on the instance switch and for pre-Clerk local accounts.
+
+**Owner steps left (in order):**
+1. **Google Cloud:**
+   - Create project NextKin and an OAuth consent screen: External, authorised domain `nextkin.ai`.
+   - Create a Web OAuth client with the redirect URI Clerk shows.
+   - Stay in **Testing** mode with listed test users until there is a privacy-policy page.
+2. **Clerk:**
+   - Create the production instance for `nextkin.ai`.
+   - Google → custom credentials.
+   - Native applications → allowlist `nextkin://sso-callback`.
+3. **Namecheap:** add the CNAMEs Clerk lists, then wait for them to verify.
+4. **AWS:** `put-secret-value` `nextkin-demo/clerk-secret-key` = `sk_live_…`, set `cdk.json`
+   `clerkPublishableKey` = `pk_live_…`, then deploy, **after** this server change is deployed.
+5. **Mobile:** set `apps/mobile/eas.json` `staging` → `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` to the
+   same `pk_live_…`, since it talks to the demo server and dev tokens stop verifying there. Local
+   Expo Go keeps `pk_test_` against a local stack on the dev instance. Production Clerk may refuse
+   `exp://` redirects.
+
+**Open:**
+- **No privacy-policy or terms page exists** in `apps/web`. Google needs one to leave Testing mode,
+  and verification then takes 1–4 weeks (§34.6.4). The copy is the owner's, or legal's.
+- Clerk prod does not allow `localhost`, so the Google flow can only be checked on the demo after
+  deploy.
+- Mobile Google sign-in has never run on a phone (§173b), so it needs the owner's phone pass.
+
