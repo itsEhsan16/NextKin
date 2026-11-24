@@ -10,7 +10,7 @@ import { Capsule } from '@/features/create/jobFlow/FlowRows';
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
 import { iconButton } from '@/ui/iconButton';
-import { Check, Edit05, Stars02 } from '@/ui/lineIcons';
+import { ArrowRight, Check, Edit05, InfoCircle, Stars02 } from '@/ui/lineIcons';
 import { Skeleton } from '@/ui/Skeleton';
 
 const field =
@@ -134,47 +134,59 @@ export function LineResult({
         </div>
       ) : (
         <div className="flex animate-reveal flex-col gap-4">
-          {/* The line as it will read, the gap filled live; the pencil rewrites it whole. */}
-          <div className="flex items-start gap-2 rounded-lg border-l-4 border-border-brand-strong bg-neutral-50 py-2 pl-4 pr-2">
-            <p
-              aria-live="polite"
-              className="min-w-0 flex-1 py-1 text-body-m leading-relaxed text-text-primary"
-            >
-              {showLine ? (
-                <>
-                  {shape!.before}{' '}
-                  <span
-                    className={cn(
-                      'rounded-sm px-1 font-semibold',
-                      figure.trim()
-                        ? 'bg-brand-50 text-text-brand'
-                        : 'bg-warning-50 text-warning-text',
-                    )}
-                  >
-                    {figure.trim() || (chosen ? chosen.what.toLowerCase() : draft.hint)}
-                  </span>
-                  {shape!.after}
-                </>
-              ) : (
-                bullet.text
-              )}
-            </p>
-            <button
-              type="button"
-              aria-label="Edit this line"
-              title="Edit this line"
-              onClick={() => setOwn(line || bullet.text)}
-              className={cn(iconButton, 'size-control-sm shrink-0')}
-            >
-              <Edit05 aria-hidden className="size-4" />
-            </button>
+          {/* The line as it will read, the gap filled live; the pencil rewrites it whole. The
+              AI's own wording is labelled as its suggestion, to keep only if it is true (G13). */}
+          <div className="flex flex-col rounded-xl bg-surface-brand px-5 py-4">
+            {fromAi && (
+              <span className="mb-2.5 inline-flex items-center gap-1.5 self-start rounded-full bg-surface-brand-tint px-3 py-1 text-body-s font-semibold text-text-brand">
+                <Stars02 aria-hidden className="size-4 shrink-0" />
+                AI assistance
+              </span>
+            )}
+            <div className="flex items-start gap-3">
+              <p
+                aria-live="polite"
+                className="min-w-0 flex-1 text-body-l leading-relaxed font-medium text-text-primary"
+              >
+                {showLine ? (
+                  <>
+                    {shape!.before}{' '}
+                    <span
+                      className={cn(
+                        'rounded-md px-1.5 py-0.5 font-bold box-decoration-clone',
+                        figure.trim()
+                          ? 'bg-surface-brand-tint text-text-brand'
+                          : 'bg-warning-50 text-warning-text',
+                      )}
+                    >
+                      {figure.trim() || (chosen ? chosen.what.toLowerCase() : draft.hint)}
+                    </span>
+                    {shape!.after}
+                  </>
+                ) : (
+                  bullet.text
+                )}
+              </p>
+              <button
+                type="button"
+                aria-label="Edit this line"
+                title="Edit this line"
+                onClick={() => setOwn(line || bullet.text)}
+                className={cn(
+                  iconButton,
+                  'size-control-md shrink-0 border border-border-default bg-surface-card',
+                )}
+              >
+                <Edit05 aria-hidden className="size-5" />
+              </button>
+            </div>
+            {fromAi && (
+              <p className="mt-3.5 flex items-center gap-2 border-t border-border-brand pt-3 text-body-m font-medium text-text-secondary">
+                <InfoCircle aria-hidden className="size-5 shrink-0 text-text-tertiary" />
+                AI suggestion — keep it only if it’s true, or change it.
+              </p>
+            )}
           </div>
-          {fromAi && (
-            <p className="-mt-2 flex items-center gap-1.5 text-body-s font-medium text-text-brand">
-              <Stars02 aria-hidden className="size-4 shrink-0" />
-              The AI’s suggestion. Keep it only if it’s true, or change it.
-            </p>
-          )}
 
           {why ? (
             <div className="flex flex-col gap-3">
@@ -213,6 +225,7 @@ export function LineResult({
                 <div className="flex flex-wrap gap-2">
                   {options.map((option, index) => (
                     <Capsule
+                      plain
                       key={option.what}
                       label={option.what}
                       state={pick === index ? 'on' : 'off'}
@@ -229,6 +242,7 @@ export function LineResult({
                   <div className="flex flex-wrap gap-2">
                     {chosen.amounts.map((amount) => (
                       <Capsule
+                        plain
                         key={amount}
                         label={amount}
                         state={!typing && figure === amount ? 'on' : 'off'}
@@ -239,6 +253,7 @@ export function LineResult({
                       />
                     ))}
                     <Capsule
+                      plain
                       label="Another amount"
                       state={typing ? 'on' : 'off'}
                       onToggle={() => {
@@ -292,11 +307,13 @@ export function LineResult({
 
       <p
         className={cn(
-          'flex items-center gap-1.5 text-body-s font-medium',
-          counts ? 'text-success-text' : 'text-text-tertiary',
+          'flex items-center gap-2 font-semibold',
+          counts
+            ? 'self-start rounded-full bg-success-surface px-3.5 py-1.5 text-body-m text-success-text'
+            : 'text-body-s font-medium text-text-tertiary',
         )}
       >
-        {counts && <Check aria-hidden className="size-4" />}
+        {counts && <Check aria-hidden className="size-5" />}
         {counts
           ? 'Counts as a measured result'
           : !fits
@@ -312,9 +329,10 @@ export function LineResult({
             type="button"
             disabled={!counts}
             onClick={save}
-            className={buttonClass({ size: 'md' })}
+            className={buttonClass({ size: 'lg' })}
           >
             Use this line
+            <ArrowRight aria-hidden className="size-5" />
           </button>
         )}
         {saved !== undefined && (
@@ -324,7 +342,7 @@ export function LineResult({
               onSave(null);
               onDone();
             }}
-            className={buttonClass({ variant: 'secondary', size: 'md' })}
+            className={buttonClass({ variant: 'secondary', size: 'lg' })}
           >
             Keep the original
           </button>

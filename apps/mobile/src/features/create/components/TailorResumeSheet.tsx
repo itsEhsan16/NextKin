@@ -102,12 +102,13 @@ export function TailorResumeSheetBody({
     if (!file) return;
     setUpload({ file, status: 'reading' });
     setPick({ kind: 'upload' });
-    try {
-      const { resume } = await importResume.mutateAsync(file);
-      setUpload({ file, status: 'ready', resume });
-    } catch (error) {
-      setUpload({ file, status: isUnreadableFileError(error) ? 'unreadable' : 'failed' });
-    }
+    // `mutate` with its own callbacks: after the consent dialog the import runs again and this
+    // row becomes ready, instead of saying "failed" while the import went through (§262).
+    importResume.mutate(file, {
+      onSuccess: ({ resume }) => setUpload({ file, status: 'ready', resume }),
+      onError: (error) =>
+        setUpload({ file, status: isUnreadableFileError(error) ? 'unreadable' : 'failed' }),
+    });
   };
 
   const enter = (index: number) =>

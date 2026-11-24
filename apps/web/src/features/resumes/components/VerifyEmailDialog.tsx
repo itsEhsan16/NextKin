@@ -1,19 +1,12 @@
 'use client';
 
 import { useCurrentUser } from '@nextkin/shared/queries';
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-  dialogBody,
-  dialogFooter,
-} from '@/ui/Dialog';
+import { Dialog, DialogClose, DialogHead, dialogBody, dialogFooter, dialogWash } from '@/ui/Dialog';
 import { useState } from 'react';
 
 import { auth } from '@/lib/dataSource';
 import { buttonClass } from '@/ui/Button';
-import { Mail01 } from '@/ui/lineIcons';
+import { Download01, InfoCircle, Mail01 } from '@/ui/lineIcons';
 
 /**
  * SYS 03 (868:469): a download refused because the email address isn't confirmed yet (V2 §7.1).
@@ -45,31 +38,40 @@ export function VerifyEmailDialog({
       .finally(() => setSending(false));
   };
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()} size="md">
+    <Dialog
+      open={open}
+      onOpenChange={(next) => !next && onClose()}
+      size="md"
+      className={dialogWash}
+    >
       <div className={dialogBody}>
-        <span
-          aria-hidden
-          className="flex size-11 items-center justify-center rounded-md bg-brand-50 text-text-brand"
-        >
-          <Mail01 className="size-5" />
-        </span>
-        <DialogTitle className="text-h2 font-bold text-text-primary">
-          Verify your email first
-        </DialogTitle>
-        <DialogDescription className="text-body-l text-text-secondary">
-          Downloads need a confirmed email address. We sent a message to{' '}
-          {email ?? 'your email address'} — open it, then download again.
-        </DialogDescription>
-        <p className="text-body-m text-text-tertiary">
-          Didn’t get it?{' '}
-          <button
-            type="button"
-            disabled={sending || !email}
-            onClick={resend}
-            className="rounded-sm font-semibold text-text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60"
-          >
-            {sending ? 'Sending…' : 'Resend email'}
-          </button>
+        <DialogHead
+          stacked
+          icon={<Mail01 />}
+          title="Verify your email first"
+          line={
+            <>
+              Downloads need a confirmed email address. We sent a message to{' '}
+              <span className="font-semibold text-text-primary">
+                {email ?? 'your email address'}
+              </span>{' '}
+              — open it, then download again.
+            </>
+          }
+        />
+        <p className="flex items-center gap-2.5 text-body-m text-text-tertiary">
+          <InfoCircle aria-hidden className="size-5 shrink-0 text-text-brand" />
+          <span>
+            Didn’t get it?{' '}
+            <button
+              type="button"
+              disabled={sending || !email}
+              onClick={resend}
+              className="rounded-sm font-semibold text-text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-60"
+            >
+              {sending ? 'Sending…' : 'Resend email'}
+            </button>
+          </span>
         </p>
         {sent && (
           <p
@@ -100,6 +102,7 @@ export function VerifyEmailDialog({
             }}
             className={buttonClass({ size: 'lg' })}
           >
+            <Download01 aria-hidden className="size-5" />
             I’ve verified, download
           </button>
         )}

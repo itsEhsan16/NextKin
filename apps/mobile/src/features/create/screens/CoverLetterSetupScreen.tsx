@@ -9,7 +9,16 @@ import {
   type Job,
   type Resume,
 } from '@/data/models';
-import { useJob, useResume, useResumes, useStartGeneration, useSubscription } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import {
+  queryPhase,
+  isConsentRequired,
+  useJob,
+  useResume,
+  useResumes,
+  useStartGeneration,
+  useSubscription,
+} from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { ChoiceChip } from '@/ui/ChoiceChip';
 import { Icon } from '@/ui/Icon';
@@ -124,7 +133,9 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
   const [pickerOpen, setPickerOpen] = useState(false);
 
   // `accessibilityLiveRegion` on the note is Android-only, so the failure is announced as well.
-  const failed = start.isError;
+  // Consent has its own dialog, so its refusal adds no line; any other refusal says what it was
+  // (a used-up plan, a busy service) instead of "check your connection" (toreview §262).
+  const failed = start.isError && !isConsentRequired(start.error);
   const announced = useRef(false);
   useEffect(() => {
     const was = announced.current;
@@ -178,7 +189,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     />
   );
 
-  if (resumeId == null && resumes.isError) {
+  if (resumeId == null && queryPhase(resumes) === 'error') {
     return page(retryState('Couldn’t load your resumes', () => void resumes.refetch()));
   }
 
@@ -195,7 +206,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     );
   }
 
-  if (sourceId != null && resume.isError) {
+  if (sourceId != null && queryPhase(resume) === 'error') {
     return isNotFound(resume.error)
       ? page(
           <StateView
@@ -210,11 +221,11 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
   }
 
   // An allowance that could not be read is unknown, not unlimited (§13.5).
-  if (subscription.isError) {
+  if (queryPhase(subscription) === 'error') {
     return page(retryState('Couldn’t load your plan', () => void subscription.refetch()));
   }
 
-  if (jobId != null && job.isError && !isNotFound(job.error)) {
+  if (jobId != null && queryPhase(job) === 'error' && !isNotFound(job.error)) {
     return page(retryState('Couldn’t load this job', () => void job.refetch()));
   }
 
@@ -270,7 +281,7 @@ export function CoverLetterSetupScreen({ resumeId }: CoverLetterSetupScreenProps
     <FlowFooter
       note={
         failed
-          ? COVER_LETTER_START_FAILED
+          ? startErrorLine(start.error, COVER_LETTER_START_FAILED)
           : spent
             ? coverLetterSpentNote(limit)
             : coverLetterQuotaNote(used, limit)

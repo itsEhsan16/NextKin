@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { onConsentRequired, useAiConsent, useGrantAiConsent } from '@/data/queries';
+import { onConsentRequired, queryPhase, useAiConsent, useGrantAiConsent } from '@/data/queries';
 import { ConfirmSheet } from '@/ui/ConfirmSheet';
 import { showAppToast } from '@/ui/Toast';
 
@@ -28,6 +28,9 @@ export function AiConsentGate() {
   );
 
   const list = consent.data?.current;
+  // The providers' list failed to load: said, with a retry, instead of a button that spins for
+  // ever (toreview §262).
+  const listFailed = !list && queryPhase(consent) === 'error';
   const providers = list?.providers.map((p) => `${p.name}: ${p.purpose}`).join('\n') ?? '';
 
   return (
@@ -35,13 +38,21 @@ export function AiConsentGate() {
       open={open}
       tone="neutral"
       title="Before NextKin uses AI"
-      message={`AI reads and writes your documents through:
+      message={
+        listFailed
+          ? 'We couldn’t load who NextKin’s AI works with. Check your connection and try again.'
+          : `AI reads and writes your documents through:
 ${providers}
-Your name and contact details are never sent.`}
-      confirmLabel="Agree and continue"
+Your name and contact details are never sent.`
+      }
+      confirmLabel={listFailed ? 'Try again' : 'Agree and continue'}
       cancelLabel="Not now"
-      busy={grant.isPending || !list}
+      busy={grant.isPending || (!list && !listFailed)}
       onConfirm={() => {
+        if (listFailed) {
+          void consent.refetch();
+          return;
+        }
         if (!list) return;
         grant.mutate(list.version, {
           onSuccess: () => {

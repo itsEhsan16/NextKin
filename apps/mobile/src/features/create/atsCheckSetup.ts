@@ -1,5 +1,6 @@
 import type { SubscriptionUsage } from '@/data/models';
 import { pluralize } from '@/lib';
+import { JD_TEXT_MAX, JD_TEXT_MIN } from '@/data/models/limits';
 
 /**
  * The rules and the copy behind ATS 01 / 01b (V2 §7.8, toreview §73): a resume made outside
@@ -50,9 +51,17 @@ export const atsChecksSpentNote = (limit: number): string =>
     ? `You’ve used this month’s ${pluralize(limit, 'check')}. Pro raises the monthly cap.`
     : 'Your plan has no ATS checks this month. Pro raises the monthly cap.';
 
-/** The pasted description's cap and the least that is worth reading (645:80 "284 / 2000"). */
-export const JD_MAX = 2000;
-export const JD_MIN = 80;
+/**
+ * The pasted description's cap and the least that is worth reading: the server's own (owner,
+ * 2026-11-23; toreview §262). The board's "284 / 2000" cut every longer description short
+ * without a word, while the server reads 20,000.
+ */
+export const JD_MAX = JD_TEXT_MAX;
+export const JD_MIN = JD_TEXT_MIN;
+
+/** A paste over the limit: how long it is and what to take out. Nothing is cut. */
+export const pasteTooLong = (length: number): string =>
+  `This is ${length.toLocaleString('en-US')} characters; up to ${JD_MAX.toLocaleString('en-US')} fit. Remove the company introduction or the benefits, then check.`;
 
 /** The tip under the pasted description (645:89). */
 export const PASTE_TIP =
@@ -72,5 +81,7 @@ export function atsBlocker(input: {
 }): string | undefined {
   if (!input.hasFile) return NEED_FILE;
   if (input.mode === 'job') return input.hasJob ? undefined : NEED_JOB;
-  return input.pasted.trim().length < JD_MIN ? PASTE_SHORT : undefined;
+  const length = input.pasted.trim().length;
+  if (length > JD_MAX) return pasteTooLong(length);
+  return length < JD_MIN ? PASTE_SHORT : undefined;
 }

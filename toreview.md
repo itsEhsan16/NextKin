@@ -19057,10 +19057,132 @@ Branch `fix/ai-serious-15`, uncommitted.
 - **Behaviour change:** after the consent dialog, a panel rewrite is not run on its own any more;
   the user asks again. This applies on mobile too, since the hook is shared.
 
+### Integration tests (2026-11-23, with ClamAV, LaTeX and the Stripe mock running)
+- **No new failures:** 1,621 passed and 24 failed on the core stack. With the extra services up, every
+  upload, file-scan and payment test passes, including the upload tests that reach the new parsing.
+- **Seven failures remain, all also failing on main's code:**
+  - `authzMatrix`;
+  - `generationP9` (JD intake);
+  - three library tests (`libraryApi`, `libraryP10` ×2);
+  - two render page-count tests (`renders`).
+
+  They are older, unrelated failures to be worked through on their own.
+
 ### Not verified
-- **Integration suites not run.** Docker was up, but the suites were not run for this change.
 - **No browser check** of the new web states.
 - **Mobile screens unchanged** beyond the shared hooks.
+
+## §262 — Mobile: every AI failure says why, nothing hangs (owner, 2026-11-23)
+
+Branch `fix/mobile-ai-errors`, uncommitted. The owner asked for the same fixes as §258–§261 on
+mobile. Two audits found about 60 issues; this fixes the serious and the middling ones. It reuses
+the shared helpers: `startErrorLine`, `isConsentRequired`, `queryPhase`, `useStall`,
+`useGenerationWatchProblem`/`restartGenerationWatch`, and the limits through the new
+`@/data/models/limits` shim.
+
+### Runs (generations/)
+- **`TailorProgress`**, the one progress card for Tailor, Build, Zero, Cover and ATS: "Taking
+  longer than usual", then "This is taking much longer than it should" with **Check again**, which
+  restarts the live watch. It also covers a run stuck at 100%.
+- **`GenerationScreen`:**
+  - A run whose progress can't be read (gone, unreadable, polls failing) says so with Check again.
+  - A refetch that fails keeps the run (`queryPhase`).
+  - Retry errors say what they were; consent adds no line.
+  - A failed build goes "Back to my choices" (build compare).
+- **Ready views** (Tailor, Build, Zero, Cover): a run with no document, or the wrong kind of
+  document, or one that fails to load with nothing cached, shows `ReadyDocumentProblem` instead
+  of a skeleton for ever. Zero's sheet errors are fixed sentences, never raw server text.
+- **Smaller fixes:**
+  - ATS Cancel failing shows a toast.
+  - Preview guards against partial content.
+  - Duplicate bullet keys are fixed.
+
+### Job reading (create/)
+- **ATS check paste:** the limit is the server's 20,000 (it was 2,000 with `maxLength`, cutting
+  silently) and the minimum is 40 (it was 80).
+  - Over the limit, the field says how long the text is and what to remove.
+  - Start errors are named.
+  - The form survives a failed refetch.
+- **`BuildJobScreen`** checks the same limits before reading. Its read uses `mutate` callbacks, so
+  the read that follows consent still opens the job. Failures say what they were.
+- **`useStartBuild`, `ShareScreen`, `useBuildSourceUpload`, `TailorResumeSheet`:** `mutateAsync`
+  is replaced by `mutate` with per-call callbacks. Before, a request re-run after the consent
+  dialog went on unseen: a build started that nobody opened, and an import went through while the
+  row said "failed".
+- **`JdPageScreen`:**
+  - A failed reading says why (`jdFailure.ts`, the web's lede map with busy, service_down,
+    too_long, unclear and internal) and offers "Enter it yourself".
+  - One failed poll no longer replaces the page.
+  - The stall is keyed on the stage.
+- **JD review:**
+  - Duties are capped at 40 and lines at 400, said in the field.
+  - A refused save says why (toast).
+  - A failed reading shows its lede above the form.
+- **`JdIntakeSection`** (exported but unused) takes the shared 20,000.
+
+### Assistant (assistant/, consent/, shared useAssistant)
+- **A reply whose own fetch fails** is marked failed in the conversation (shared
+  `useAssistantReply`, so web too). The composer no longer locks for good.
+- **A failed reply with no text** says "No answer came back. Ask again."
+- **Send errors say what they were** (the day's cap, busy, plan); consent adds no line.
+- **New chat and opening a chat** are guarded while a reply is written and toast on failure. The
+  history sheet shows a retry instead of "No earlier chats" when the list fails to load.
+- **Consent dialog:**
+  - A failed providers list shows a retry instead of an endless spinner.
+  - A request that opted out of the quiet re-run gets "Thanks. Try that again now." (shared
+    `onConsentRequired` now passes `null` for those).
+
+### Other AI features
+- **Named start errors, and consent adds no line,** on:
+  - Cover letter setup;
+  - Interview;
+  - Zero Resume;
+  - Cover tone change;
+  - Fix with AI.
+- **`isError` → `queryPhase`** on CoverLetterSetup, NewInterviewSet, InterviewPractice,
+  TailorCompare, BuildCompare and ZeroResume.
+- **Section regenerate** runs one at a time (every AI pill waits) and a failure says why.
+- **Upload:** a file with no text keeps V2 §7.4's line; any other failure says what it was.
+- **Tailor download:**
+  - guarded against double taps;
+  - file and share failures are said;
+  - a plan limit is named.
+- **Figure drafts** are drafted ahead only once AI use is agreed, so the consent dialog no longer
+  pops up while the user is only looking.
+
+### For the owner to check
+- **Every new line of copy:** the stall lines, `ReadyDocumentProblem`, the JD ledes, the paste
+  limit line, "No answer came back", and the consent dialog's list error.
+- **Device check in Expo Go** (CLAUDE.md definition of done):
+  - a 15,000-character JD paste in ATS check;
+  - a run stalled or failed, with Try again and Check again;
+  - an assistant reply;
+  - a section regenerate in airplane mode.
+- **Release:** these reach users only in a new app build.
+
+### Deferred
+- **Low items:**
+  - Zero name, role and figure `maxLength` against their own messages;
+  - the interview role title limit;
+  - an assistant composer counter (500 against the server's 4000);
+  - the sticky mark error;
+  - cover paragraph and chip key collisions;
+  - DataExport `isError`;
+  - the figure editor asking again while the row's draft is still pending.
+- **Mobile has no instruction-rewrite panel**, so `consentRetry: false` has no effect there.
+- **Deploy of #18 is not done yet:** the AWS sign-in for the `nextkin` profile had expired.
+
+### Checks (2026-11-23)
+- **Gates:** typecheck and lint pass (lint's 33 web warnings were there before).
+- **Tests:**
+  - server 440 passed;
+  - shared 519 of 520;
+  - web 963 of 964;
+  - mobile 1,986 of 1,987, plus 9 new tests.
+- **`UploadResumeScreen` test updated:** it asserted that a failed request said "try a text-based
+  PDF", the misleading line this change removes. It now expects the request's own reason.
+- **Two flaky timeouts, not caused by this branch:** shared `adminContent` (5 s) and web
+  `ResumeEditor`. Both pass alone (3/3 and 6/6). They time out only when every suite runs at once.
 
 ## §263 — Google sign-in on Clerk production, linking by verified email (owner, 2026-11-24)
 
@@ -19152,3 +19274,30 @@ the text was placeholder.
 - Web sign-up shows no consent line. Turn on Clerk's "Require express consent to legal documents"
   with the two URLs (a dashboard setting, no code).
 - The landing ContactCard's placeholder email (`ContactCard.tsx:137`) is untouched.
+
+## §265 — Web popups redesigned from the owner's eight boards (owner, 2026-11-25)
+
+Eight popups rebuilt to the boards: "Where did you use …?", "Add the result", "Did you apply?", "Before NextKin uses AI", "Add your resume updates to your profile?", "Verify your email first", "A few things before you download" and "Cancel your subscription?". New shared parts in `apps/web/src/ui/Dialog.tsx` (`DialogHead`, `DialogHero`, `dialogWash`, `dialogQuote`); `ConfirmDialog` gained `icon`, `art`, `aside` and `confirmIcon`, and an × on every confirm. All of it can be opened at `/dev/components` → Popups (consent and profile sync open from app state only).
+
+**Owner answers (2026-11-25)**
+1. "Did you apply?" keeps that title; the board's "Did you apply this result?" doesn't fit a job.
+2. "Add the result" keeps "Keep the original" beside "Use this line" (the board shows only the latter).
+3. The page behind every web dialog is now blurred (`backdrop-blur-sm` on the one scrim).
+4. No tinted square behind any icon in any web dialog: the eight, plus `ConfirmDialog`'s red bin (now a bare red bin), `AccuracyPrompt`'s shield and `MethodDialog`'s `DialogFact`. Icons come from the existing Hugeicons sets.
+
+**Judgement calls**
+5. `ConfirmDialog` with `tone="brand"` is now the `md` width (the boards' yes/no popups are wide); delete confirms stay `sm`. Rename, version and history confirms pick up the corner wash too.
+6. The corner wash is a CSS radial gradient on tokens (`@utility dialog-wash` in `theme.css`), not an image; the boards' curve is approximated by a hard-edged ellipse.
+7. "Add the result" chips lost their "+" here only (`Capsule plain`); the Build flow keeps it.
+8. "A few things before you download": each problem row shows its section's icon (experience → briefcase, skills → star, …); custom sections fall back to a document.
+9. "Cancel your subscription?": the facts list ("Your plan stays active until …") is `CancelFacts` in `PlanOverview.tsx`. With no renewal date it says "Your plan stays active to the end of this period".
+10. Out of scope: icon tiles on pages and cards (not dialogs), the editor banners, and the admin portal's `AdminDialog`.
+
+**Illustrations (Weave, GPT Image 2.6 Flare, 1024², quality medium, transparent; 2 credits each, 4 in all)**
+11. `public/illustrations/v2/download-blocked.webp` (560×512): "A lavender clay document sheet with a folded top-right corner and three rounded indigo text bars, with a rounded gold warning triangle with an indigo exclamation mark leaning against its lower right corner and three small gold spark strokes beside it."
+12. `public/illustrations/v2/plan-cancel.webp` (560×467): "Two rounded clay plan cards slightly overlapping and tilted: a larger lavender card in front-left with a small indigo crown on it and two rounded violet bars, and a smaller pale lavender card behind on the right with two short bars; a thick curved soft violet arrow arcs from the top of the left card down to the right card; three small gold spark strokes near the top-left corner."
+13. Both prompts end with the set's shared style suffix from `doc/redesign/illustrations-v2.md` (in the jobright worktree), and were cropped to the art + 4% and saved as WebP q90 at 560px like the rest. No style reference image was attached: Weave's upload only takes a file picked by hand. The boards' lettering ("PDF", "Pro", "Free") is left out, as the style forbids text. The scene table in `illustrations-v2.md` lives in another worktree and was not edited; add rows 48–49 there when that branch is next touched.
+
+**Not verified**
+14. Checked by eye in the browser pane at 800px wide against the boards (all six showcase popups); consent and profile sync were not opened live. Phone width and the app's dark theme were not checked by eye.
+15. `ResumeEditor.test.tsx` failed once in the full `pnpm test` run and passed alone (jest contention under load).

@@ -4,7 +4,14 @@ import Animated from 'react-native-reanimated';
 
 import { compareProfileToJob } from '@/data/models';
 import { keywordRowsOf } from '@/data/models/keywordRows';
-import { useJdDraft, useJob, useJobJd, useProfile, useSubscription } from '@/data/queries';
+import {
+  queryPhase,
+  useJdDraft,
+  useJob,
+  useJobJd,
+  useProfile,
+  useSubscription,
+} from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -79,7 +86,10 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
     </View>
   );
 
-  const failed = draft.isError || profile.isError || subscription.isError;
+  const failed =
+    queryPhase(draft) === 'error' ||
+    queryPhase(profile) === 'error' ||
+    queryPhase(subscription) === 'error';
   if (failed || (jdId == null && jobId == null)) {
     return frame(
       <StateView
@@ -89,9 +99,9 @@ export function BuildCompareScreen({ jobId, jdId }: BuildCompareScreenProps) {
         message="Check your connection and try again."
         actionLabel="Try again"
         onAction={() => {
-          if (draft.isError) void draft.refetch();
-          if (profile.isError) void profile.refetch();
-          if (subscription.isError) void subscription.refetch();
+          if (queryPhase(draft) === 'error') void draft.refetch();
+          if (queryPhase(profile) === 'error') void profile.refetch();
+          if (queryPhase(subscription) === 'error') void subscription.refetch();
         }}
       />,
     );

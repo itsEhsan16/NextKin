@@ -9,7 +9,10 @@ import {
   useResume,
   useResumeContent,
   useResumeScore,
+  isConsentRequired,
 } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import { showAppToast } from '@/ui/Toast';
 import { useTheme } from '@/theme';
 import { IconButton } from '@/ui/IconButton';
 import { Screen } from '@/ui/Screen';
@@ -228,8 +231,22 @@ export function ResumeEditorScreen({ id }: ResumeEditorScreenProps) {
               section={section}
               index={index}
               regenerating={regenerating === section}
+              aiBusy={regenerate.isPending}
               onEdit={() => actions.openSection(id, section)}
-              onRegenerate={() => regenerate.mutate(section)}
+              onRegenerate={() => {
+                // One rewrite at a time; a refused one says why instead of quietly putting the old
+                // text back (toreview §262). Consent has its own dialog.
+                if (regenerate.isPending) return;
+                regenerate.mutate(section, {
+                  onError: (error) => {
+                    if (!isConsentRequired(error))
+                      showAppToast(
+                        startErrorLine(error, 'We couldn’t rewrite that section. Try again.'),
+                        'error',
+                      );
+                  },
+                });
+              }}
             />
           ))}
         </LineSourceContext.Provider>

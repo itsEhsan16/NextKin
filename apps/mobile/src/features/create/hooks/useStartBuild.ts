@@ -2,7 +2,14 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import type { TailorChoices } from '@/data/models';
-import { useExtractJd, useProfile, useStartGeneration, useSubscription } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import {
+  isConsentRequired,
+  useExtractJd,
+  useProfile,
+  useStartGeneration,
+  useSubscription,
+} from '@/data/queries';
 
 import { useBuildSource, useBuildSourceStore } from '../buildSourceStore';
 import { buildCostNote, spentNote } from '../generationQuota';
@@ -70,8 +77,8 @@ export function useStartBuild(): StartBuild {
   const busy = useRef(false);
   const last = useRef<StartBuildInput | undefined>(undefined);
 
-  const { mutateAsync: extractJd } = extract;
-  const { mutateAsync: startGeneration } = generate;
+  const { mutate: extractJd } = extract;
+  const { mutate: startGeneration } = generate;
   const { openGeneration, openUpgrade } = actions;
 
   const start = useCallback(
@@ -86,24 +93,42 @@ export function useStartBuild(): StartBuild {
       busy.current = true;
       setPending(true);
       setError(undefined);
-      void (async () => {
-        try {
-          const id = jdId ?? (await extractJd({ source: 'job', jobId: jobId ?? '' })).id;
-          const generation = await startGeneration({
+      const settle = () => {
+        busy.current = false;
+        setPending(false);
+      };
+      // Consent has its own dialog, so its refusal adds nothing; every other refusal says what it
+      // was (a used-up plan, a busy service), not "check your connection" (toreview §262).
+      const failed = (failure: unknown) => {
+        settle();
+        if (!isConsentRequired(failure)) setError(startErrorLine(failure, BUILD_START_FAILED));
+      };
+      // `mutate` with its own callbacks, not `mutateAsync`: after the consent dialog the start runs
+      // again, and these callbacks still open its screen. Awaiting the first refusal lost that run,
+      // which then went on unseen (a second tap started another).
+      const run = (id: string) =>
+        startGeneration(
+          {
             kind: 'resume',
             jdId: id,
             ...(jobId != null ? { jobId } : {}),
             ...(build ? { build } : {}),
             origin: 'build',
-          });
-          openGeneration(generation.id);
-        } catch {
-          setError(BUILD_START_FAILED);
-        } finally {
-          busy.current = false;
-          setPending(false);
-        }
-      })();
+          },
+          {
+            onSuccess: (generation) => {
+              settle();
+              openGeneration(generation.id);
+            },
+            onError: failed,
+          },
+        );
+      if (jdId != null) run(jdId);
+      else
+        extractJd(
+          { source: 'job', jobId: jobId ?? '' },
+          { onSuccess: (draft) => run(draft.id), onError: failed },
+        );
     },
     [extractJd, openGeneration, openUpgrade, quotaSpent, startGeneration],
   );

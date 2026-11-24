@@ -15,6 +15,7 @@ import { Text } from '@/ui/Text';
 import { TextField } from '@/ui/TextField';
 
 import { useCreateStore } from '../createStore';
+import { JD_TEXT_MAX } from '@/data/models/limits';
 
 /**
  * These props are HALF the component. The screen must also mount `<JdIntakeSheets value onChange />`
@@ -31,8 +32,8 @@ export type JdIntakeSectionProps = {
   pasteError?: string;
 };
 
-/** Long enough for the longest posting anyone pastes; the counter shows the ceiling. */
-const MAX_JD = 12000;
+/** The server's own limit (toreview §262): 12,000 here cut pastes the server would read. */
+const MAX_JD = JD_TEXT_MAX;
 const MIN_LINES = 6;
 const TITLE_SKELETON = 18;
 const CAPTION_SKELETON = 14;

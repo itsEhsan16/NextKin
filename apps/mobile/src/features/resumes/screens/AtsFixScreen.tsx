@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { View, type ScrollViewInstance } from 'react-native';
 
 import { SCORE_LABEL, type AtsCheckItem } from '@/data/models';
-import { useApplyAtsFix, useResume, useResumeScore } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import { isConsentRequired, useApplyAtsFix, useResume, useResumeScore } from '@/data/queries';
 import AtsCheckArt from '../../../../assets/icons/create/ats-check.svg';
 import SparkleIcon from '../../../../assets/icons/ai-sparkle-trio.svg';
 import { a11yHeader, useReducedMotion } from '@/lib';
@@ -140,12 +141,13 @@ export function AtsFixScreen({ id, itemId }: AtsFixScreenProps) {
           setApplied((prev) => ({ ...prev, [item.id]: item }));
           setApplyingId(undefined);
         },
-        onError: () => {
+        onError: (error) => {
           // The row goes back to 'todo' with its button live, so pressing it again IS the retry.
           queue.current = [];
           setApplyingId(undefined);
           setRun(null);
-          setFailure(APPLY_FAILED);
+          // Consent has its own dialog; any other refusal says what it was (toreview §262).
+          if (!isConsentRequired(error)) setFailure(startErrorLine(error, APPLY_FAILED));
         },
       });
     },

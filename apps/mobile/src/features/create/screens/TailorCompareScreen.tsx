@@ -9,7 +9,12 @@ import {
   runProblem,
   startErrorLine,
 } from '@/data/models/customize';
-import { isConsentRequired, useKeywordQuestions, useStartGeneration } from '@/data/queries';
+import {
+  queryPhase,
+  isConsentRequired,
+  useKeywordQuestions,
+  useStartGeneration,
+} from '@/data/queries';
 import { scaledSheet, useTheme } from '@/theme';
 import { Skeleton } from '@/ui/Skeleton';
 import { StateView } from '@/ui/StateView';
@@ -139,10 +144,10 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
   if (data.targetQuery.isError) {
     return retry('Couldn’t load this job', () => void data.targetQuery.refetch());
   }
-  if (resumes.isError || subscription.isError) {
+  if (queryPhase(resumes) === 'error' || queryPhase(subscription) === 'error') {
     return retry('Couldn’t load your resumes', () => {
-      if (resumes.isError) void resumes.refetch();
-      if (subscription.isError) void subscription.refetch();
+      if (queryPhase(resumes) === 'error') void resumes.refetch();
+      if (queryPhase(subscription) === 'error') void subscription.refetch();
     });
   }
 
@@ -174,10 +179,10 @@ export function TailorCompareScreen(props: TailorCompareScreenProps) {
     );
   }
 
-  if (resume.isError || comparison.isError) {
+  if (queryPhase(resume) === 'error' || queryPhase(comparison) === 'error') {
     return retry('Couldn’t compare your resume', () => {
-      if (resume.isError) void resume.refetch();
-      if (comparison.isError) void comparison.refetch();
+      if (queryPhase(resume) === 'error') void resume.refetch();
+      if (queryPhase(comparison) === 'error') void comparison.refetch();
     });
   }
   if (!resume.data || !comparison.data) return page(loading, inertFooter);

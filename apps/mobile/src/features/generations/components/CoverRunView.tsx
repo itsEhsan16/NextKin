@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import type { CoverLetterContent, DocumentContent, Generation } from '@/data/models';
-import { useJob, useResume, useResumeContent } from '@/data/queries';
+import { queryPhase, useJob, useResume, useResumeContent } from '@/data/queries';
 import { EXPORT_BLOCK_MESSAGE } from '@/data/models';
 import { FlowFooter } from '@/features/create/flow/FlowKit';
 import { useTheme } from '@/theme';
@@ -14,6 +14,7 @@ import { useGenerationsActions } from '../hooks/useGenerationsActions';
 import { useTailorDownload } from '../hooks/useTailorDownload';
 import { CoverReady } from './CoverReady';
 import { TailorChrome } from './TailorChrome';
+import { ReadyDocumentProblem, readyDocumentIssue } from './ReadyDocumentProblem';
 import { TailorProgress } from './TailorProgress';
 import {
   COVER_CARD_TITLE,
@@ -51,6 +52,9 @@ export function CoverRunView({ generation }: CoverRunViewProps) {
   const job = useJob(generation.jobId ?? '');
   const source = useResume(generation.sourceResumeId ?? '');
   const content = useResumeContent(ready ? letterId : '');
+  const issue = ready
+    ? readyDocumentIssue(letterId, content, letterBody(content.data) != null)
+    : null;
 
   const [notice, setNotice] = useState<string | null>(null);
   const onSaved = useCallback(() => setNotice(COVER_SAVED_NOTICE), []);
@@ -103,10 +107,17 @@ export function CoverRunView({ generation }: CoverRunViewProps) {
       >
         {/* The letter fades in over the progress card instead of cutting to it. */}
         <Reveal stateKey={ready ? 'ready' : 'writing'}>
-          {ready ? (
+          {ready && issue === 'missing' ? (
+            <ReadyDocumentProblem
+              issue="missing"
+              what="letter"
+              onRetry={() => void content.refetch()}
+            />
+          ) : ready ? (
             <CoverReady
               letter={letterBody(content.data)}
-              letterError={content.isError}
+              // Only when nothing is cached: a refetch that fails keeps the letter (toreview §262).
+              letterError={queryPhase(content) === 'error'}
               onRetryLetter={() => void content.refetch()}
               onEdit={edit}
               job={job.data}

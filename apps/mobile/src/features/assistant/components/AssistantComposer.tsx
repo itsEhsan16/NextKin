@@ -16,6 +16,8 @@ export type AssistantComposerProps = {
   busy: boolean;
   /** The last send did not reach the assistant at all (distinct from a reply that stopped). */
   failed: boolean;
+  /** Why, when it is known (a used-up day, a busy service); else the connection line (§262). */
+  failure?: string;
   disabled?: boolean;
   /** The paperclip: picks which resume the answers use. Absent when there is none to pick. */
   onPickContext?: () => void;
@@ -43,6 +45,7 @@ export function AssistantComposer({
   onSend,
   busy,
   failed,
+  failure,
   disabled = false,
   onPickContext,
   contextTitle,
@@ -155,7 +158,7 @@ export function AssistantComposer({
 
       {failed ? (
         <Text variant="caption" color="danger" align="center" accessibilityLiveRegion="polite">
-          {SEND_FAILED}
+          {failure ?? SEND_FAILED}
         </Text>
       ) : null}
       <AssistantLabel />

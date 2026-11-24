@@ -303,6 +303,7 @@ export function PlanOverview({ subscription, plan, invoices }: PlanOverviewProps
       <ConfirmDialog
         open={asking}
         title="Cancel your subscription?"
+        art={{ src: '/illustrations/v2/plan-cancel.webp', width: 560, height: 467 }}
         message={
           renewsAt
             ? `You keep Pro until ${longDate(renewsAt)}, then move to the Free plan. Nothing more is charged.`
@@ -316,7 +317,36 @@ export function PlanOverview({ subscription, plan, invoices }: PlanOverviewProps
         busy={cancel.isPending}
         onConfirm={() => cancel.mutate(undefined, { onSettled: () => setAsking(false) })}
         onCancel={() => setAsking(false)}
-      />
+      >
+        <CancelFacts until={renewsAt ? longDate(renewsAt) : undefined} />
+      </ConfirmDialog>
     </section>
+  );
+}
+
+/** What cancelling means, one fact a row (billing popup board, 2026-11-25). */
+export function CancelFacts({ until }: { until: string | undefined }) {
+  const facts = [
+    {
+      Icon: Calendar,
+      text: until
+        ? `Your plan stays active until ${until}`
+        : 'Your plan stays active to the end of this period',
+    },
+    { Icon: SwitchHorizontal01, text: 'Then switches to Free automatically' },
+    { Icon: CreditCard02, text: 'No further charges' },
+  ];
+  return (
+    <ul className="mt-1 flex flex-col divide-y divide-border-default rounded-xl bg-surface-brand px-5">
+      {facts.map(({ Icon, text }) => (
+        <li
+          key={text}
+          className="flex items-center gap-3.5 py-3.5 text-body-l font-semibold text-text-primary"
+        >
+          <Icon aria-hidden className="size-5 shrink-0 text-text-brand" />
+          {text}
+        </li>
+      ))}
+    </ul>
   );
 }

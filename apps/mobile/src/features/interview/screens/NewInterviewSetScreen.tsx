@@ -4,7 +4,15 @@ import Animated from 'react-native-reanimated';
 
 import SparkleWhite from '../../../../assets/icons/ai-sparkle-white.svg';
 import type { Resume } from '@/data/models';
-import { useInterviewSets, useResumes, useStartGeneration, useSubscription } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import {
+  queryPhase,
+  isConsentRequired,
+  useInterviewSets,
+  useResumes,
+  useStartGeneration,
+  useSubscription,
+} from '@/data/queries';
 // Deep imports on purpose: those barrels drag their screens in. These are plain pieces.
 import { FLOW_ART, FlowHero } from '@/features/create/components/FlowHero';
 import { AiPill } from '@/features/resumes/components/AiPill';
@@ -109,7 +117,9 @@ export function NewInterviewSetScreen({
       : undefined;
   const ready = resumeMode ? resume != null : trimmedRole.length >= ROLE_MIN;
 
-  const failed = start.isError;
+  // Consent has its own dialog, so its refusal adds no line; any other refusal says what it was
+  // (a used-up plan, a busy service) instead of "check your connection" (toreview §262).
+  const failed = start.isError && !isConsentRequired(start.error);
   const announced = useRef(false);
   useEffect(() => {
     const was = announced.current;
@@ -226,7 +236,7 @@ export function NewInterviewSetScreen({
     );
   }
 
-  if (resumes.isError || sets.isError) {
+  if (queryPhase(resumes) === 'error' || queryPhase(sets) === 'error') {
     return page(
       <StateView
         tone="danger"
@@ -243,7 +253,7 @@ export function NewInterviewSetScreen({
   }
 
   // An allowance that could not be read is unknown, not unlimited (§13.5).
-  if (subscription.isError) {
+  if (queryPhase(subscription) === 'error') {
     return page(
       <StateView
         tone="danger"
@@ -257,7 +267,7 @@ export function NewInterviewSetScreen({
   }
 
   const note = failed
-    ? INTERVIEW_START_FAILED
+    ? startErrorLine(start.error, INTERVIEW_START_FAILED)
     : allowance.spent
       ? interviewSpentNote(allowance.perTarget, resumeMode ? 'resume' : 'standalone')
       : INTERVIEW_COST_NOTE;

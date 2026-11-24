@@ -231,10 +231,13 @@ export function Capsule({
   label,
   state,
   onToggle,
+  plain = false,
 }: {
   label: string;
   state: 'on' | 'off' | 'have';
   onToggle?: () => void;
+  /** No "+" on an unpicked chip: a pick-one choice, not an add (result popup board). */
+  plain?: boolean;
 }) {
   const className = cn(
     'flex items-center gap-2 rounded-full border py-2 pl-4 pr-3.5 text-body-m transition-[background-color,border-color,color] duration-base ease-standard',
@@ -248,9 +251,11 @@ export function Capsule({
     state === 'on' ? (
       <CheckMark aria-hidden className="size-4 text-text-brand" />
     ) : state === 'off' ? (
-      <span aria-hidden className="text-body-l leading-none text-neutral-400">
-        +
-      </span>
+      plain ? null : (
+        <span aria-hidden className="text-body-l leading-none text-neutral-400">
+          +
+        </span>
+      )
     ) : (
       <CheckCircle aria-hidden className="size-4.5 text-success-600" />
     );

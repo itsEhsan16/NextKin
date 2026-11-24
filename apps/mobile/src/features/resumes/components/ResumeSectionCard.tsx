@@ -21,6 +21,8 @@ export type ResumeSectionCardProps = {
   index: number;
   /** The AI rewrite is running over THIS section — its body shimmers until the copy lands. */
   regenerating: boolean;
+  /** A rewrite is running over another section: one at a time, so this one waits (§262). */
+  aiBusy?: boolean;
   onEdit: () => void;
   onRegenerate: () => void;
 };
@@ -95,6 +97,7 @@ export function ResumeSectionCard({
   section,
   index,
   regenerating,
+  aiBusy = false,
   onEdit,
   onRegenerate,
 }: ResumeSectionCardProps) {
@@ -122,7 +125,7 @@ export function ResumeSectionCard({
           <View style={[styles.header, { gap: s(ACTIONS_GAP) }]}>
             <AiPill
               actionLabel={`Rewrite ${label} with AI`}
-              disabled={regenerating}
+              disabled={regenerating || aiBusy}
               working={regenerating}
               onPress={onRegenerate}
             />

@@ -53,7 +53,7 @@ function PageBody({ content, name }: { content: ResumeContent; name: string }) {
     .map(bareLink)
     .join(' · ');
   // As drawn: the latest role with two bullets, the one before it with one.
-  const roles = content.experience.slice(0, 2);
+  const roles = (content.experience ?? []).slice(0, 2);
 
   return (
     <>
@@ -96,20 +96,20 @@ function PageBody({ content, name }: { content: ResumeContent; name: string }) {
           <Text variant="tiny" color="textSecondary">
             {role.period}
           </Text>
-          {role.bullets.slice(0, index === 0 ? 2 : 1).map((bullet) => (
-            <Text key={bullet} variant="tiny" color="textBody" numberOfLines={2}>
+          {(role.bullets ?? []).slice(0, index === 0 ? 2 : 1).map((bullet, b) => (
+            <Text key={`${b}:${bullet}`} variant="tiny" color="textBody" numberOfLines={2}>
               {`• ${bullet}`}
             </Text>
           ))}
         </View>
       ))}
-      {content.skills.length > 0 ? (
+      {(content.skills ?? []).length > 0 ? (
         <>
           <Text variant="microOverline" color="brand">
             SKILLS
           </Text>
           <Text variant="tiny" color="textBody" numberOfLines={2}>
-            {content.skills.join(' · ')}
+            {(content.skills ?? []).join(' · ')}
           </Text>
         </>
       ) : null}

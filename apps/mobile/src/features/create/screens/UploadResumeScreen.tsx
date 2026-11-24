@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useImportResume } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import { isConsentRequired, isUnreadableFileError, useImportResume } from '@/data/queries';
 import { pickDocument, useReducedMotion, type PickedDocument } from '@/lib';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
@@ -83,13 +84,25 @@ export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenPr
 
   // `accessibilityLiveRegion` on the bar's note is Android-only, so the failure is announced
   // explicitly as well — once per falsy→truthy turn, the way TextField announces its error.
-  const failed = importResume.isError;
+  // What went wrong, for what it was (toreview §262): a file with no text keeps V2 §7.4's line;
+  // a refused or failed request (a used-up plan, a busy service, the connection) says so instead
+  // of telling the user to try a text-based PDF. Consent has its own dialog.
+  const failure = importResume.error;
+  const failed = importResume.isError && !isConsentRequired(failure);
+  const failedLine = !failed
+    ? undefined
+    : isUnreadableFileError(failure)
+      ? PARSE_FAILED
+      : startErrorLine(
+          failure,
+          'That upload didn’t go through. Check your connection and try again.',
+        );
   const announced = useRef(false);
   useEffect(() => {
     const was = announced.current;
     announced.current = failed;
-    if (failed && !was) AccessibilityInfo.announceForAccessibility(PARSE_FAILED);
-  }, [failed]);
+    if (failed && !was && failedLine) AccessibilityInfo.announceForAccessibility(failedLine);
+  }, [failed, failedLine]);
 
   const parsing = importResume.isPending;
 
@@ -103,7 +116,7 @@ export function UploadResumeScreen({ thenPickJob = false }: UploadResumeScreenPr
       footer={
         <StickyActionBar
           // The failure leaves the button live, so pressing it again is the retry.
-          note={failed ? PARSE_FAILED : undefined}
+          note={failedLine}
           noteTone="danger"
           primary={{
             label: file && !parsing ? 'Choose another file' : 'Choose a file',

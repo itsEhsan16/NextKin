@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { showToast } from '@/lib/toast';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
+import { Briefcase01, Check } from '@/ui/lineIcons';
 import { textLink } from '@/ui/textLink';
 
 import { useApplyAskStore } from '../applyAsk';
@@ -52,15 +53,23 @@ export function ApplyAskHost() {
       open={ask != null}
       tone="brand"
       title="Did you apply?"
-      message={shown ? `${shown.title} at ${shown.company}` : ''}
+      icon={<Check />}
+      message={
+        <span className="mb-6 mt-5 flex items-center gap-3 text-text-secondary">
+          <Briefcase01 aria-hidden className="size-6 shrink-0 text-text-tertiary" />
+          {shown ? `${shown.title} at ${shown.company}` : ''}
+        </span>
+      }
       confirmLabel="Yes, I applied"
+      confirmIcon={<Check aria-hidden className="size-5" />}
       cancelLabel="Not yet"
       onConfirm={() => answer('yes')}
       onCancel={() => answer('not_yet')}
-    >
-      <button type="button" onClick={() => answer('no')} className={`${textLink} self-start`}>
-        I won’t apply
-      </button>
-    </ConfirmDialog>
+      aside={
+        <button type="button" onClick={() => answer('no')} className={textLink}>
+          I won’t apply
+        </button>
+      }
+    />
   );
 }

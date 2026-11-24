@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import { isUnreadableFileError, useImportResume } from '@/data/queries';
+import { startErrorLine } from '@/data/models/customize';
+import { isConsentRequired, isUnreadableFileError, useImportResume } from '@/data/queries';
 import { pickDocument } from '@/lib';
 import { showAppToast } from '@/ui/Toast';
 
@@ -21,19 +22,28 @@ export function useBuildSourceUpload() {
     const file = await pickDocument(['pdf', 'docx']);
     if (!file) return;
     setReading(file.name);
-    try {
-      const { resume } = await importResume.mutateAsync(file);
-      pick(resume.id);
-    } catch (error) {
-      showAppToast(
-        isUnreadableFileError(error)
-          ? 'We couldn’t read that file. Use a PDF or DOCX with text you can select.'
-          : 'That upload didn’t go through. Check your connection and try again.',
-        'error',
-      );
-    } finally {
-      setReading(null);
-    }
+    // `mutate` with its own callbacks: after the consent dialog the import runs again, and these
+    // still pick the resume it made; awaiting the first refusal left it unpicked (toreview §262).
+    importResume.mutate(file, {
+      onSuccess: ({ resume }) => {
+        setReading(null);
+        pick(resume.id);
+      },
+      onError: (error) => {
+        setReading(null);
+        // Consent has its own dialog; every other refusal says what it was.
+        if (isConsentRequired(error)) return;
+        showAppToast(
+          isUnreadableFileError(error)
+            ? 'We couldn’t read that file. Use a PDF or DOCX with text you can select.'
+            : startErrorLine(
+                error,
+                'That upload didn’t go through. Check your connection and try again.',
+              ),
+          'error',
+        );
+      },
+    });
   };
 
   return { reading, upload };

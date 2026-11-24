@@ -9,6 +9,8 @@ import { Dialog, DialogClose, DialogDescription, DialogTitle } from '@/ui/Dialog
 import { backButton, finalButton, FlowFooter, primaryButton } from '@/ui/FlowFooter';
 import { InfoTip } from '@/ui/InfoTip';
 import { Plus, XClose } from '@/ui/lineIcons';
+
+import { PopupShowcase } from './PopupShowcase';
 import { ScoreRing } from '@/ui/ScoreRing';
 import { ScoreVerdict } from '@/ui/ScoreVerdict';
 import { Soon, soonControl, SoonTag } from '@/ui/Soon';
@@ -115,6 +117,10 @@ export function ComponentShowcase() {
             </button>
           </DialogClose>
         </Dialog>
+      </Section>
+
+      <Section title="Popups">
+        <PopupShowcase />
       </Section>
 
       <Section title="Scores">
