@@ -80,10 +80,10 @@ describe('SettingsScreen — Connected accounts (from the mockup, Google only)',
     expect(within(how).getByText('You stay in control')).toBeInTheDocument();
     expect(
       within(how).getByRole('link', { name: 'Learn more about how we use your data.' }),
-    ).toHaveAttribute('href', '/help');
+    ).toHaveAttribute('href', '/legal/privacy');
     expect(within(how).getByRole('link', { name: 'View privacy policy' })).toHaveAttribute(
       'href',
-      '/help',
+      '/legal/privacy',
     );
   });
 

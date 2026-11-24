@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
+import { ApiError } from '@nextkin/shared/repos';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
@@ -36,6 +37,9 @@ export function SessionBridgeScreen() {
     },
   });
   const { mutate } = exchange;
+  // The email already has an account this sign-in may not take over (server: email_in_use). A
+  // retry gives the same answer, so only "another account" is offered.
+  const emailTaken = exchange.error instanceof ApiError && exchange.error.code === 'CONFLICT';
 
   useEffect(() => {
     if (!isLoaded || started.current) return;
@@ -56,12 +60,16 @@ export function SessionBridgeScreen() {
           <div role="alert" className="flex w-full max-w-md animate-reveal flex-col gap-5">
             <h1 className="text-h1 font-bold text-text-primary">We couldn’t sign you in</h1>
             <p className="text-body-l text-text-secondary">
-              We couldn’t finish signing you in. Check your connection and try again.
+              {emailTaken
+                ? exchange.error?.message
+                : 'We couldn’t finish signing you in. Check your connection and try again.'}
             </p>
             <div className="flex flex-col gap-3">
-              <Button size="xl" pill className="w-full" onClick={() => mutate()}>
-                Try again
-              </Button>
+              {emailTaken ? null : (
+                <Button size="xl" pill className="w-full" onClick={() => mutate()}>
+                  Try again
+                </Button>
+              )}
               <Button
                 size="xl"
                 pill

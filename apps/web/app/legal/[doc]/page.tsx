@@ -1,3 +1,4 @@
+import { LEGAL_DOCS } from '@nextkin/shared/legal';
 import { isLegalDocKey, LEGAL_DOC_TITLE } from '@nextkin/shared/models';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -11,7 +12,8 @@ export async function generateMetadata({
   params: Promise<{ doc: string }>;
 }): Promise<Metadata> {
   const { doc } = await params;
-  return { title: isLegalDocKey(doc) ? `${LEGAL_DOC_TITLE[doc]} · NextKin` : 'NextKin' };
+  if (!isLegalDocKey(doc)) return { title: 'NextKin' };
+  return { title: `${LEGAL_DOC_TITLE[doc]} · NextKin`, description: LEGAL_DOCS[doc].intro };
 }
 
 export default async function LegalPage({ params }: { params: Promise<{ doc: string }> }) {

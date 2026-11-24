@@ -19061,3 +19061,94 @@ Branch `fix/ai-serious-15`, uncommitted.
 - **Integration suites not run.** Docker was up, but the suites were not run for this change.
 - **No browser check** of the new web states.
 - **Mobile screens unchanged** beyond the shared hooks.
+
+## §263 — Google sign-in on Clerk production, linking by verified email (owner, 2026-11-24)
+
+The owner chose a **Clerk production instance with our own Google Cloud OAuth client**, on web and
+mobile. The Google code was already built (web `<SignIn/>`, mobile `useSSO` `oauth_google`, §169,
+§173b). What was missing was setup, plus one server gap.
+
+**Built (unverified against real Clerk and Google):**
+- `resolveUser` (`packages/server/src/auth/users.ts`) now **links by verified email**. The owner
+  picked this, as V2 §7.1 asks. A sub we have never seen whose email already has an account moves
+  that account to the new sub, and a `provider_linked` security event is recorded. This is also what
+  carries every demo user across the dev → prod Clerk switch, since every Clerk user id changes.
+  It refuses (`email_in_use` → 409 "This email already has a NextKin account. Sign in the way you
+  did before.") in four cases:
+  - the email is unverified;
+  - the existing account is staff;
+  - the admins pool;
+  - the account is deleted.
+- The web session bridge shows that message and drops the pointless "Try again"; mobile sign-in
+  and sign-up say the same.
+- Tests: `test/integration/resolveUser.int.test.ts` (5 cases) and one mobile copy test.
+
+**Judgement calls:**
+- A deleted or pending-deletion account refuses rather than reviving. The person waits for the
+  purge, or support restores the account.
+- Within Clerk itself, Google and email sign-ups for one email are merged by Clerk (same Clerk
+  user), so the link above mostly fires on the instance switch and for pre-Clerk local accounts.
+
+**Owner steps left (in order):**
+1. **Google Cloud:**
+   - Create project NextKin and an OAuth consent screen: External, authorised domain `nextkin.ai`.
+   - Create a Web OAuth client with the redirect URI Clerk shows.
+   - Stay in **Testing** mode with listed test users until there is a privacy-policy page.
+2. **Clerk:**
+   - Create the production instance for `nextkin.ai`.
+   - Google → custom credentials.
+   - Native applications → allowlist `nextkin://sso-callback`.
+3. **Namecheap:** add the CNAMEs Clerk lists, then wait for them to verify.
+4. **AWS:** `put-secret-value` `nextkin-demo/clerk-secret-key` = `sk_live_…`, set `cdk.json`
+   `clerkPublishableKey` = `pk_live_…`, then deploy, **after** this server change is deployed.
+5. **Mobile:** set `apps/mobile/eas.json` `staging` → `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` to the
+   same `pk_live_…`, since it talks to the demo server and dev tokens stop verifying there. Local
+   Expo Go keeps `pk_test_` against a local stack on the dev instance. Production Clerk may refuse
+   `exp://` redirects.
+
+**Open:**
+- **No privacy-policy or terms page exists** in `apps/web`. Google needs one to leave Testing mode,
+  and verification then takes 1–4 weeks (§34.6.4). The copy is the owner's, or legal's.
+- Clerk prod does not allow `localhost`, so the Google flow can only be checked on the demo after
+  deploy.
+- Mobile Google sign-in has never run on a phone (§173b), so it needs the owner's phone pass.
+
+## §264 — Real privacy policy and terms of service, version 2 (owner, 2026-11-25)
+
+Built because Google's OAuth consent screen needs a public privacy-policy URL on `nextkin.ai`
+(§263). The pages already existed (`/legal/privacy`, `/legal/terms`, public on both hosts); only
+the text was placeholder.
+
+**Owner decisions:**
+- Nextkinlife LLC is named as controller and contracting party (name only).
+- Contact is `support@nextkin.ai`.
+- Published as final with effective date 2026-11-25.
+- Governing law is Maryland, with consumers' mandatory local rights kept.
+
+**Built:**
+- Text in `packages/shared/src/legal` (`@nextkin/shared/legal`). The mock fixture re-exports it.
+- `seedContent` writes it as **version 2** (version 1 stays as history) and now also runs in
+  `seed --reference-only`, so the demo gets it without its accounts being touched.
+- The web page renders the shipped text first, so it's in the server HTML for Google's reviewer
+  without JavaScript, then swaps to the API's published version. The skeleton and error states
+  are gone because the text is always there. It also gained a meta description.
+- The Settings → Connected accounts "privacy policy" links now go to `/legal/privacy` (they went
+  to `/help`).
+
+**For counsel / unverified:**
+- **No lawyer has reviewed the text.** The German version V2 §8.5 asks for is deferred.
+- Limitation of liability (greater of 12 months' fees or US$100), the 30-day notice of changes,
+  and the 30-day response window are my drafting, not code.
+- Stated as conditional because they aren't live: paid plans and Stripe (`PAYMENT_ADAPTER=fake`
+  on the demo), push via Google/Apple (push off), and SES email (the demo uses SMTP).
+- AI is named as Anthropic "through Amazon Web Services or through OpenRouter", because the demo
+  uses OpenRouter (`LLM_ROUTE=openrouter`). Drop OpenRouter once production is on Claude via AWS.
+- "Server logs up to 90 days" covers CloudWatch at 2 weeks today. Backups are "up to 35 days"
+  (X-05 not set yet).
+- Job-listing providers aren't named: I didn't find user data sent to them. Check before launch.
+- `support@nextkin.ai` must exist and be read before Google's review.
+- The mobile LEGAL boards' copy (577:8876, 580:2) is superseded by this text, and their sections
+  are now longer.
+- Web sign-up shows no consent line. Turn on Clerk's "Require express consent to legal documents"
+  with the two URLs (a dashboard setting, no code).
+- The landing ContactCard's placeholder email (`ContactCard.tsx:137`) is untouched.
