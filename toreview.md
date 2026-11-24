@@ -19113,3 +19113,42 @@ mobile. The Google code was already built (web `<SignIn/>`, mobile `useSSO` `oau
   deploy.
 - Mobile Google sign-in has never run on a phone (§173b), so it needs the owner's phone pass.
 
+## §264 — Real privacy policy and terms of service, version 2 (owner, 2026-11-25)
+
+Built because Google's OAuth consent screen needs a public privacy-policy URL on `nextkin.ai`
+(§263). The pages already existed (`/legal/privacy`, `/legal/terms`, public on both hosts); only
+the text was placeholder.
+
+**Owner decisions:**
+- Nextkinlife LLC is named as controller and contracting party (name only).
+- Contact is `support@nextkin.ai`.
+- Published as final with effective date 2026-11-25.
+- Governing law is Maryland, with consumers' mandatory local rights kept.
+
+**Built:**
+- Text in `packages/shared/src/legal` (`@nextkin/shared/legal`). The mock fixture re-exports it.
+- `seedContent` writes it as **version 2** (version 1 stays as history) and now also runs in
+  `seed --reference-only`, so the demo gets it without its accounts being touched.
+- The web page renders the shipped text first, so it's in the server HTML for Google's reviewer
+  without JavaScript, then swaps to the API's published version. The skeleton and error states
+  are gone because the text is always there. It also gained a meta description.
+- The Settings → Connected accounts "privacy policy" links now go to `/legal/privacy` (they went
+  to `/help`).
+
+**For counsel / unverified:**
+- **No lawyer has reviewed the text.** The German version V2 §8.5 asks for is deferred.
+- Limitation of liability (greater of 12 months' fees or US$100), the 30-day notice of changes,
+  and the 30-day response window are my drafting, not code.
+- Stated as conditional because they aren't live: paid plans and Stripe (`PAYMENT_ADAPTER=fake`
+  on the demo), push via Google/Apple (push off), and SES email (the demo uses SMTP).
+- AI is named as Anthropic "through Amazon Web Services or through OpenRouter", because the demo
+  uses OpenRouter (`LLM_ROUTE=openrouter`). Drop OpenRouter once production is on Claude via AWS.
+- "Server logs up to 90 days" covers CloudWatch at 2 weeks today. Backups are "up to 35 days"
+  (X-05 not set yet).
+- Job-listing providers aren't named: I didn't find user data sent to them. Check before launch.
+- `support@nextkin.ai` must exist and be read before Google's review.
+- The mobile LEGAL boards' copy (577:8876, 580:2) is superseded by this text, and their sections
+  are now longer.
+- Web sign-up shows no consent line. Turn on Clerk's "Require express consent to legal documents"
+  with the two URLs (a dashboard setting, no code).
+- The landing ContactCard's placeholder email (`ContactCard.tsx:137`) is untouched.

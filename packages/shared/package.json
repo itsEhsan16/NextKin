@@ -20,6 +20,7 @@
     "./schemas": "./src/schemas/index.ts",
     "./schemas/*": "./src/schemas/*.ts",
     "./auth": "./src/auth/index.ts",
+    "./legal": "./src/legal/index.ts",
     "./scoring/*": "./src/scoring/*.ts",
     "./jobs/*": "./src/jobs/*.ts",
     "./interview/*": "./src/interview/*.ts",
