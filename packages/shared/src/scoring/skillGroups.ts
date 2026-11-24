@@ -105,8 +105,13 @@ export function placeInGroups(groups: Groups, added: readonly string[], taxonomy
     if (!soft.has(phraseKey(keyword)) && (out[at]!.label === SOFT_LINE || SOFT_LABEL.test(out[at]!.label))) at = lineNamed(OVERFLOW_LINE);
     // A line holds at most 40 skills (the schema's cap), and takes only so many new ones.
     if (out[at]!.names.length >= 40 || (addedTo.get(at) ?? 0) >= ADDED_PER_LINE) {
-      if (out.length >= 12) continue;
-      at = lineNamed(OVERFLOW_LINE);
+      // No room for a thirteenth line (the schema's cap): the keyword joins a line that is already
+      // there, not a one-keyword "Also" line the renderer would add for it (owner, 2026-11-25).
+      const open = (i: number) => i >= 0 && out[i]!.names.length < 40;
+      const overflow = out.findIndex((g) => phraseKey(g.label).startsWith(phraseKey(OVERFLOW_LINE)) && g.names.length < 40);
+      if (out.length < 12) at = lineNamed(OVERFLOW_LINE);
+      else if (open(overflow)) at = overflow;
+      else if (!open(at)) continue;
     }
     out[at]!.names.push(keyword);
     addedTo.set(at, (addedTo.get(at) ?? 0) + 1);

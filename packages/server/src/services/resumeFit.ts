@@ -8,7 +8,9 @@ import type { LatexCompiler } from '../export/latex/compile';
 import { errors } from '../http/errors';
 import type { Logger } from '../observability/logger';
 import { enqueue } from '../outbox/outbox';
-import { compiledMeasure, dropOrder, fitToPages } from '../pipeline/stages/pageFit';
+import { loadFacts } from '../pipeline/facts';
+import { compiledMeasure, fitToPages, removalOrder, removedLabel, safeRemovals } from '../pipeline/stages/pageFit';
+import { worthGuard } from '../pipeline/stages/persist';
 import { readJdRow, stageJdOf } from '../pipeline/stages/resume';
 import { recentRoleIds } from '../pipeline/stages/tailorMerge';
 import { userPaper } from './renders';
@@ -16,9 +18,11 @@ import { writeResumeVersion } from './versions';
 
 /**
  * "Fit to one page" on the tailor ready screen (toreview §113, Jobright's button). The worker
- * typesets the current version, tightens the spacing, then drops whole bullets — those naming none
- * of the job's skills first, oldest role first, never below a role's floor — until it is one page,
- * and writes that as a new version. Nothing is reworded. The outcome waits in the cache an hour.
+ * typesets the current version, tightens the spacing, then leaves out whole items — own skills
+ * nothing needs, then lines naming none of the job's skills, oldest first, never below a role's or
+ * project's floor (`pageFit.ts`) — until it is one page, and writes that as a new version. Nothing
+ * is reworded, and nothing goes that would lower the score (owner, 2026-11-25): when one page
+ * cannot be reached that way, the answer is `cannot_fit`. The outcome waits in the cache an hour.
  */
 
 export type FitStatus =
@@ -67,18 +71,21 @@ export async function runFit(
     const version = await tx.selectFrom('resume_versions').select('content').where('id', '=', payload.versionId).executeTakeFirstOrThrow();
     const jdRow = resume.job_description_id ? await readJdRow(tx, resume.job_description_id) : undefined;
     const jd = jdRow && jdRow.status === 'ready' ? stageJdOf(jdRow) : null;
-    return { doc: canonicalResumeSchema.parse(version.content), jd, jdId: resume.job_description_id, paper: await userPaper(tx, payload.userId) };
+    return { doc: canonicalResumeSchema.parse(version.content), jd, jdId: resume.job_description_id, paper: await userPaper(tx, payload.userId), snapshot: await loadFacts(tx, payload.userId) };
   });
   if (!job) return done({ status: 'failed', reason: 'changed_meanwhile' });
 
   const { doc, jd } = job;
+  const now = new Date();
+  const jobSkills = jd ? [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools, ...(jd.softSkills ?? [])] : [];
   let fit;
   try {
     fit = await fitToPages({
       doc,
       budget: 1,
       mayTrim: true,
-      order: dropOrder(doc, recentRoleIds(doc), jd ? [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools] : []),
+      order: () =>
+        safeRemovals(doc, removalOrder(doc, recentRoleIds(doc), jobSkills), worthGuard({ document: doc, facts: job.snapshot.facts, contact: job.snapshot.contact, jd, asOf: { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 } })),
       measure: compiledMeasure(deps.latex, jd?.location ?? null, job.paper),
       compiled: true,
     });
@@ -93,7 +100,7 @@ export async function runFit(
       resumeId: payload.resumeId,
       jdId: job.jdId,
       doc: fit.doc,
-      note: fit.dropped > 0 ? `Fitted to one page: ${fit.dropped} ${fit.dropped === 1 ? 'bullet' : 'bullets'} left out` : 'Fitted to one page: tighter spacing',
+      note: fit.dropped > 0 ? `Fitted to one page: ${removedLabel(fit.removed)} left out` : 'Fitted to one page: tighter spacing',
       createdBy: 'user',
       density: fit.density,
       inheritAccuracy: true,

@@ -71,6 +71,17 @@ describe('the tailored merge', () => {
     expect(doc.skillGroups!.length).toBeLessThanOrEqual(12);
   });
 
+  it('keeps the resume’s own skills when 80 keywords are accepted and the job’s skills move first (owner, 2026-11-25)', () => {
+    const own = ['Python', 'React', 'PostgreSQL', 'TypeScript'].map((name, i) => ({ id: `k${i}`, name, evidence: [], origin: 'user' as const }));
+    const added = Array.from({ length: 80 }, (_, i) => `accepted keyword ${i}`);
+    const base = { ...BASE, skills: own, skillGroups: [{ label: 'Languages', names: own.map((k) => k.name) }] };
+    const doc = mergeTailored({ base, generated: GENERATED, request: request({ added, fixes: ['skills'] }), job: { title: 'Product Manager', skills: added } });
+    const names = doc.skills.map((k) => k.name);
+    expect(names).toEqual(expect.arrayContaining(['Python', 'React', 'PostgreSQL', 'TypeScript']));
+    expect(added.every((k) => names.includes(k))).toBe(true);
+    expect(doc.skillGroups!.find((g) => g.label === 'Languages')!.names).toEqual(expect.arrayContaining(['Python', 'React']));
+  });
+
   it('a quick edit rewrites the two most recent dated roles and keeps the rest verbatim', () => {
     const asked = request({ experience: 'quick', fixes: ['headline', 'skills', 'experience'] });
     const doc = mergeTailored({ base: BASE, generated: GENERATED, request: asked, job: JOB });

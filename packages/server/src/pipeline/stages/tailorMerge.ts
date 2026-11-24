@@ -285,10 +285,13 @@ export function mergeTailored(args: {
   delete rest.summary;
   // The header as the user answered its checks in Enhance (toreview §170); otherwise as the file had it.
   const header = withHeaderChoices(base.header, request.header ?? []);
-  // Sixty skills is the list's length, but nothing the candidate accepted is ever cut to keep it
-  // (toreview §211: accepted keywords used to sit last, and were the first to go).
+  // Sixty of the resume's own skills is the list's length. Nothing the candidate accepted is ever
+  // cut to keep it (toreview §211), and accepted keywords do not count toward the sixty: with 80
+  // accepted and the job's skills moved first, a graduate's own Python, React and PostgreSQL used
+  // to fall past the cut while their projects still named them (owner, 2026-11-25).
   const accepted = new Set(request.added.map(skillKey));
-  const all = skillsFor(base, request, job, fixes.has('skills')).filter((s, i) => i < OWN_SKILLS || accepted.has(skillKey(s.name))).slice(0, MAX_SKILLS);
+  let own = 0;
+  const all = skillsFor(base, request, job, fixes.has('skills')).filter((s) => accepted.has(skillKey(s.name)) || own++ < OWN_SKILLS).slice(0, MAX_SKILLS);
   // Lines of the same name become one, and a skill is listed once (toreview §170).
   const skillGroups = base.skillGroups ? tidyGroups(placeInGroups(groupsFor(base.skillGroups, all, fixes.has('skills')), request.added, TAXONOMY, { soft: job?.soft ?? [] }), TAXONOMY) : undefined;
   const skills = skillGroups ? listedOnce(all, skillGroups) : all;

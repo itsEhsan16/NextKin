@@ -236,11 +236,22 @@ export function fallbackFigureDraft(line: string): FigureDraft {
   return { before: `${line.trim().replace(/[.;,\s]+$/, '')}, improving`, after: '.', hint: 'what improved, and by how much', by: 'rules' };
 }
 
+/**
+ * The amount without its unit noun, when the words after the gap already say it: "100,000 records"
+ * before "data records" is "100,000", so the line never reads "records data records".
+ */
+function withoutRepeatedUnit(figure: string, after: string): string {
+  const parts = /^(.*\d.*?)\s+([A-Za-z][A-Za-z-]*)$/.exec(figure);
+  if (!parts) return figure;
+  const next = (after.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).slice(0, 3);
+  return next.includes(parts[2]!.toLowerCase()) ? parts[1]! : figure;
+}
+
 /** The finished line: the draft with the user's figure in its gap. */
 export function figureLine(draft: Pick<FigureDraft, 'before' | 'after'>, figure: string): string {
   const after = draft.after.trim();
   const glue = after === '' || /^[.,;:!?)]/.test(after) ? '' : ' ';
-  return `${draft.before.trim()} ${figure.trim()}${glue}${after}`;
+  return `${draft.before.trim()} ${withoutRepeatedUnit(figure.trim(), after)}${glue}${after}`;
 }
 
 /**
@@ -297,7 +308,7 @@ export type TailorRun = TailorChoices & {
   baselineJobMatch?: JobMatch;
   /** How many pages the new version runs to: compiled when `pageBasis` does not say "estimated". */
   pages?: number;
-  /** Why it has that length (G17), e.g. "Fitted to 1 page: under 5 years of experience". */
+  /** Why it has that length (G17), e.g. "Fitted to 1 page: under 3 years of experience". */
   pageBasis?: string;
   /**
    * What would raise the new version's score further (toreview §206.3): the steps only the

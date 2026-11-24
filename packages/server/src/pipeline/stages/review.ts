@@ -10,7 +10,8 @@ import { userPaper } from '../../services/renders';
 import { LlmError } from '../../ai/types';
 import { StageError, type StageContext, type StageDef } from '../stages';
 import { periodOf, readRun, type RunInput, type StageJd } from './common';
-import { compiledMeasure, dropOrder, estimateMeasure, fitToPages } from './pageFit';
+import { compiledMeasure, estimateMeasure, fitToPages, removalOrder, safeRemovals } from './pageFit';
+import { worthGuard } from './persist';
 import { generationInput, type ResumePlan } from './resume';
 import { applyReview, emptyReview, reviewSchema, type ReviewRecord } from './reviewEdits';
 import { changesOf } from './tailorChanges';
@@ -123,20 +124,26 @@ async function finish(ctx: StageContext, run: RunInput, tailor: TailorRunInput, 
 }
 
 /**
- * The page budget (toreview §111.1): one page under five years of experience, else the uploaded
+ * The page budget (toreview §111.1): one page under three years of experience, else the uploaded
  * file's own count, at most two. Trimming is allowed with the length fix, and for a fresher, whose
  * resume is one page by the owner's rule; a compile outage falls back to the estimate.
+ * Whatever is left out costs the score nothing (`worthGuard`; owner, 2026-11-25): when the page
+ * cannot be reached that way, every line stays and the basis says so.
  */
 async function fitTailored(ctx: StageContext, run: RunInput, tailor: TailorRunInput, jd: StageJd | null, base: CanonicalResumeJson, merged: CanonicalResumeJson) {
   const budget = pageBudget(merged, { year: run.asOf.year, month: run.asOf.month ?? 12 }, tailor.sourceMeasured ? tailor.sourcePages : null);
   const fresher = budget.months < EXPERIENCED_MONTHS;
-  const order = dropOrder(merged, recentRoleIds(base), jd ? [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools] : []);
+  const jobSkills = jd ? [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools, ...(jd.softSkills ?? [])] : [];
+  // Asked for only when the spacing alone does not fit: each candidate is scored once.
+  const order = () => safeRemovals(merged, removalOrder(merged, recentRoleIds(base), jobSkills), worthGuard({ document: merged, facts: run.snapshot.facts, contact: run.snapshot.contact, jd, asOf: run.asOf }));
   const args = { doc: merged, budget: budget.pages, order };
+  const over = (pages: number) => (pages > budget.pages ? `Kept every line: ${budget.pages === 1 ? '1 page' : `${budget.pages} pages`} could not be reached without lowering the score` : null);
   if (ctx.latex) {
     try {
       const paper = await ctx.db.withUser({ userId: ctx.userId, role: 'user' }, (tx) => userPaper(tx, ctx.userId));
-      const fit = await fitToPages({ ...args, mayTrim: fresher || tailor.fixes.includes('length'), measure: compiledMeasure(ctx.latex, jd?.location ?? null, paper), compiled: true });
-      return { ...fit, basis: budget.basis };
+      const mayTrim = fresher || tailor.fixes.includes('length');
+      const fit = await fitToPages({ ...args, mayTrim, measure: compiledMeasure(ctx.latex, jd?.location ?? null, paper), compiled: true });
+      return { ...fit, basis: (mayTrim ? over(fit.pages) : null) ?? budget.basis };
     } catch (error) {
       // A run past its deadline stops; it is not fitted by estimate (pipeline/deadline.ts).
       if (error instanceof StageError) throw error;

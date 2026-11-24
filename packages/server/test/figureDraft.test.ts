@@ -25,6 +25,14 @@ describe('figure drafts', () => {
     expect(figureLine({ before: 'Served', after: ' shops a month.' }, ' 12,000 ')).toBe('Served 12,000 shops a month.');
   });
 
+  it('does not say the unit twice when the line already names it (owner, 2026-11-25)', () => {
+    expect(figureLine({ before: 'Verified application data across', after: 'data records.' }, '100,000 records')).toBe('Verified application data across 100,000 data records.');
+    expect(figureLine({ before: 'Supported improvements that prevented', after: 'defects in production.' }, '10+ defects')).toBe('Supported improvements that prevented 10+ defects in production.');
+    expect(figureLine({ before: 'Kept', after: 'teams aligned on each release.' }, '5 teams')).toBe('Kept 5 teams aligned on each release.');
+    // A unit the line does not repeat stays.
+    expect(figureLine({ before: 'Listed products for', after: '.' }, '1,000+ sellers')).toBe('Listed products for 1,000+ sellers.');
+  });
+
   it('keeps a suggestion only when it is a short figure (toreview §173)', () => {
     expect(fitsSuggestion('about 20%')).toBe(true);
     expect(fitsSuggestion('5,000 users')).toBe(true);
