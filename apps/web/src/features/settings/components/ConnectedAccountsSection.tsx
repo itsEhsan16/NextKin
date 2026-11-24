@@ -184,7 +184,7 @@ const POINTS: readonly {
   {
     title: 'We only access the information you permit.',
     line: (
-      <Link href="/help" className={link}>
+      <Link href="/legal/privacy" className={link}>
         Learn more about how we use your data.
       </Link>
     ),
@@ -242,7 +242,7 @@ function HowItWorksCard() {
           ))}
         </ul>
         <Link
-          href="/help"
+          href="/legal/privacy"
           className={cn(link, 'mt-4 inline-flex items-center gap-1.5 text-body-s')}
         >
           View privacy policy

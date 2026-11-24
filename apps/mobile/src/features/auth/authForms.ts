@@ -96,8 +96,13 @@ const fallback = (error: ServerError, otherwise: string): string =>
     ? error.message
     : otherwise;
 
+/** The server's email_in_use: the email has an account a Google sign-in may not take over. */
+export const EMAIL_HAS_ACCOUNT =
+  'This email already has a NextKin account. Sign in the way you did before.';
+
 export function signInErrorMessage(error: unknown): string {
   const e = asServerError(error);
+  if (e.code === 'CONFLICT') return EMAIL_HAS_ACCOUNT;
   if (e.code === 'UNAUTHENTICATED') return SIGN_IN_FAILED;
   if (e.code === 'FORBIDDEN' && detail(e, 'notConfirmed')) return CONFIRM_FIRST;
   if (e.code === 'RATE_LIMITED') return TOO_MANY_TRIES;
@@ -106,6 +111,7 @@ export function signInErrorMessage(error: unknown): string {
 
 export function signUpErrorMessage(error: unknown): string {
   const e = asServerError(error);
+  if (e.code === 'CONFLICT') return EMAIL_HAS_ACCOUNT;
   if (e.code === 'VALIDATION_FAILED' && detail(e, 'password'))
     return 'Choose a longer or less common password.';
   if (e.code === 'VALIDATION_FAILED' && detail(e, 'email')) return 'Check the email address.';

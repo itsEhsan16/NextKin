@@ -95,7 +95,8 @@ if (args.includes('--staff-create')) {
 if (args.includes('--reference-only')) {
   try {
     await seedReference(db);
-    console.log('seed: reference data only (plans, prompts, routing, settings); accounts untouched');
+    await seedContent(db);
+    console.log('seed: reference data only (plans, prompts, routing, settings, support and legal content); accounts untouched');
   } finally {
     await db.destroy();
   }
@@ -106,7 +107,7 @@ try {
   await seedReference(db);
   console.log('seed: reference data (plans, rubric v1, dataset versions, settings)');
   await seedContent(db);
-  console.log('seed: support content v1 (FAQ, terms, privacy)');
+  console.log('seed: support content (FAQ v1, terms and privacy v2)');
   const kb = await importKbForReview(db);
   console.log(`seed: starter KB for curator review, unpublished (${kb.inserted} new entries, ${kb.related} links)`);
   const accounts = await seedAccounts(db);

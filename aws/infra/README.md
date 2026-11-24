@@ -144,3 +144,25 @@ Off until `clerkPublishableKey` is set. To turn it on:
 To change the key later: `put-secret-value` on the same secret, then `--force-new-deployment` on
 web and worker. To turn Clerk off: remove `clerkPublishableKey` and deploy.
 
+### Moving to Clerk's production instance (Google sign-in, toreview §263)
+
+The demo runs `APP_ENV=dev`, so a `sk_live_` key is accepted. The page CSP reads the Clerk frontend
+host from the publishable key, so `clerk.nextkin.ai` needs no change.
+
+1. **Google Cloud Console:**
+   - Create an OAuth consent screen: External, app name NextKin, authorised domain `nextkin.ai`.
+     Keep it in Testing with listed test users until there is a privacy-policy page.
+   - Create an OAuth client of type Web application.
+2. **Clerk Dashboard:**
+   - Create the production instance for `nextkin.ai`.
+   - SSO connections → Google → custom credentials: paste the client id and secret, and copy
+     Clerk's redirect URI into the Google client.
+   - Native applications: allowlist `nextkin://sso-callback`.
+3. **Namecheap:** add the CNAME records Clerk lists, and wait until Clerk shows them verified.
+4. **Deploy the server first:** the build that links accounts by verified email (every Clerk user
+   id changes with the new instance).
+5. **Swap the keys and deploy:**
+   - `aws secretsmanager put-secret-value --secret-id nextkin-demo/clerk-secret-key --secret-string sk_live_… --profile nextkin --region us-east-1`
+   - Set `clerkPublishableKey` to `pk_live_…`, then `cdk deploy`.
+6. **Mobile:** put the same `pk_live_…` in `apps/mobile/eas.json` → `staging`, and rebuild.
+

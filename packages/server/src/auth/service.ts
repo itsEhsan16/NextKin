@@ -82,6 +82,7 @@ export function createAuthService(deps: { db: Database; idp: IdentityProvider; s
       // session is keyed by the provider's sessionRef, which its access token carries as `sid`.
       const id = client === 'web' ? newSessionId() : result.tokens.sessionRef;
       await sessions.create(id, base, meta);
+      if (resolved.linked) await securityEvent(resolved.userId, 'provider_linked', meta);
       await securityEvent(resolved.userId, resolved.created ? 'sign_up' : 'sign_in', meta);
       const user = await userFor(resolved.userId);
       return client === 'web'
@@ -114,6 +115,8 @@ export function authErrorToApp(error: unknown): never {
       throw new AppError('FORBIDDEN', 'Confirm your email address first: we sent you a code.', { notConfirmed: true });
     case 'mfa_required':
       throw new AppError('UNAUTHENTICATED', 'Enter the code from your authenticator app.', { mfaRequired: true });
+    case 'email_in_use':
+      throw errors.conflict('This email already has a NextKin account. Sign in the way you did before.');
     case 'last_sign_in_method':
       throw errors.conflict('Set a password before you unlink your only sign-in method.');
     case 'federation_failed':
