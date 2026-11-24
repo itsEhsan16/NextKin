@@ -825,6 +825,16 @@
   );
 }
 
+/* The popups' soft lavender wash in the top-right corner (owner boards, 2026-11-25). */
+@utility dialog-wash {
+  background-image: radial-gradient(
+    70% 75% at 100% 0%,
+    var(--color-surface-brand-tint) 0%,
+    var(--color-surface-brand-tint) 45%,
+    transparent 46%
+  );
+}
+
 @utility skeleton {
   display: block;
   background-color: var(--color-skeleton);

@@ -43,12 +43,7 @@ export function AccuracyPrompt({
       size="md"
     >
       <div className={dialogBody}>
-        <span
-          aria-hidden
-          className="flex size-11 items-center justify-center rounded-md bg-brand-50 text-text-brand"
-        >
-          <ShieldCheckIcon className="size-5" />
-        </span>
+        <ShieldCheckIcon aria-hidden className="size-8 text-text-brand" />
         <DialogTitle className="text-h2 font-bold text-text-primary">{ACCURACY_TITLE}</DialogTitle>
         <DialogDescription className="text-body-l text-text-secondary">
           {ACCURACY_MESSAGE}

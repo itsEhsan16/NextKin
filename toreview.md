@@ -19183,3 +19183,30 @@ the shared helpers: `startErrorLine`, `isConsentRequired`, `queryPhase`, `useSta
   PDF", the misleading line this change removes. It now expects the request's own reason.
 - **Two flaky timeouts, not caused by this branch:** shared `adminContent` (5 s) and web
   `ResumeEditor`. Both pass alone (3/3 and 6/6). They time out only when every suite runs at once.
+
+## §265 — Web popups redesigned from the owner's eight boards (owner, 2026-11-25)
+
+Eight popups rebuilt to the boards: "Where did you use …?", "Add the result", "Did you apply?", "Before NextKin uses AI", "Add your resume updates to your profile?", "Verify your email first", "A few things before you download" and "Cancel your subscription?". New shared parts in `apps/web/src/ui/Dialog.tsx` (`DialogHead`, `DialogHero`, `dialogWash`, `dialogQuote`); `ConfirmDialog` gained `icon`, `art`, `aside` and `confirmIcon`, and an × on every confirm. All of it can be opened at `/dev/components` → Popups (consent and profile sync open from app state only).
+
+**Owner answers (2026-11-25)**
+1. "Did you apply?" keeps that title; the board's "Did you apply this result?" doesn't fit a job.
+2. "Add the result" keeps "Keep the original" beside "Use this line" (the board shows only the latter).
+3. The page behind every web dialog is now blurred (`backdrop-blur-sm` on the one scrim).
+4. No tinted square behind any icon in any web dialog: the eight, plus `ConfirmDialog`'s red bin (now a bare red bin), `AccuracyPrompt`'s shield and `MethodDialog`'s `DialogFact`. Icons come from the existing Hugeicons sets.
+
+**Judgement calls**
+5. `ConfirmDialog` with `tone="brand"` is now the `md` width (the boards' yes/no popups are wide); delete confirms stay `sm`. Rename, version and history confirms pick up the corner wash too.
+6. The corner wash is a CSS radial gradient on tokens (`@utility dialog-wash` in `theme.css`), not an image; the boards' curve is approximated by a hard-edged ellipse.
+7. "Add the result" chips lost their "+" here only (`Capsule plain`); the Build flow keeps it.
+8. "A few things before you download": each problem row shows its section's icon (experience → briefcase, skills → star, …); custom sections fall back to a document.
+9. "Cancel your subscription?": the facts list ("Your plan stays active until …") is `CancelFacts` in `PlanOverview.tsx`. With no renewal date it says "Your plan stays active to the end of this period".
+10. Out of scope: icon tiles on pages and cards (not dialogs), the editor banners, and the admin portal's `AdminDialog`.
+
+**Illustrations (Weave, GPT Image 2.6 Flare, 1024², quality medium, transparent; 2 credits each, 4 in all)**
+11. `public/illustrations/v2/download-blocked.webp` (560×512): "A lavender clay document sheet with a folded top-right corner and three rounded indigo text bars, with a rounded gold warning triangle with an indigo exclamation mark leaning against its lower right corner and three small gold spark strokes beside it."
+12. `public/illustrations/v2/plan-cancel.webp` (560×467): "Two rounded clay plan cards slightly overlapping and tilted: a larger lavender card in front-left with a small indigo crown on it and two rounded violet bars, and a smaller pale lavender card behind on the right with two short bars; a thick curved soft violet arrow arcs from the top of the left card down to the right card; three small gold spark strokes near the top-left corner."
+13. Both prompts end with the set's shared style suffix from `doc/redesign/illustrations-v2.md` (in the jobright worktree), and were cropped to the art + 4% and saved as WebP q90 at 560px like the rest. No style reference image was attached: Weave's upload only takes a file picked by hand. The boards' lettering ("PDF", "Pro", "Free") is left out, as the style forbids text. The scene table in `illustrations-v2.md` lives in another worktree and was not edited; add rows 48–49 there when that branch is next touched.
+
+**Not verified**
+14. Checked by eye in the browser pane at 800px wide against the boards (all six showcase popups); consent and profile sync were not opened live. Phone width and the app's dark theme were not checked by eye.
+15. `ResumeEditor.test.tsx` failed once in the full `pnpm test` run and passed alone (jest contention under load).

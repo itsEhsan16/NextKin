@@ -2,21 +2,11 @@
 
 import type { FigureDraft, TailorPlace } from '@nextkin/shared/models';
 import type { PlanStep } from '@nextkin/shared/scoring/fixPlan';
-import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
-import {
-  Dialog,
-  DialogCloseButton,
-  DialogDescription,
-  DialogTitle,
-  dialogBody,
-  dialogFooter,
-  dialogLine,
-  dialogTitle,
-} from '@/ui/Dialog';
-import { Briefcase01, Zap } from '@/ui/lineIcons';
+import { Dialog, DialogHead, dialogBody, dialogFooter, dialogQuote } from '@/ui/Dialog';
+import { Briefcase01, Stars02 } from '@/ui/lineIcons';
 
 import { LineResult } from './LineResult';
 
@@ -25,27 +15,8 @@ type Bullet = NonNullable<PlanStep['bullet']>;
 /** A job's line as quoted: without the list mark the listing gave it ("- Strong Figma …"). */
 export const quoteOf = (need: string) => need.replace(/^[\s\-–—•*]+/, '');
 
-/**
- * The dialogs' shared head: an icon, the question, one line under it, and every dialog's × (§257).
- * The icon sits bare beside the title (owner, 2026-11-15: no tinted tile behind it).
- */
-function Head({ icon, title, line }: { icon: ReactNode; title: string; line: ReactNode }) {
-  return (
-    <div className="flex items-start gap-3 pr-12">
-      <span aria-hidden className="flex h-7 shrink-0 items-center text-text-brand">
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <DialogTitle className={dialogTitle}>{title}</DialogTitle>
-        <DialogDescription className={cn(dialogLine, 'mt-1')}>{line}</DialogDescription>
-      </div>
-      <DialogCloseButton />
-    </div>
-  );
-}
-
 const row =
-  'flex min-h-control-lg cursor-pointer items-center gap-3 rounded-lg border px-4 py-2.5 transition-colors duration-fast ease-standard has-focus-visible:outline-2 has-focus-visible:outline-brand-600';
+  'flex min-h-control-xl cursor-pointer items-center gap-4 rounded-xl border px-5 py-3.5 transition-colors duration-fast ease-standard has-focus-visible:outline-2 has-focus-visible:outline-brand-600';
 
 /**
  * "Where did you use Git?" (owner, 2026-11-14: user input in a proper pop-up): the resume's own
@@ -81,13 +52,18 @@ export function PlaceDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="md">
       <div className={cn(dialogBody, 'gap-4 overflow-y-visible')}>
-        <Head
-          icon={<Briefcase01 className="size-5" />}
+        <DialogHead
+          icon={<Briefcase01 />}
           title={`Where did you use ${keyword}?`}
           line={
-            need
-              ? `The job asks for it: “${quoteOf(need)}” Tick every role or project that really shows it.`
-              : 'Tick every role or project that really shows it.'
+            need ? (
+              <>
+                The job asks for it: <q className={dialogQuote}>{quoteOf(need)}</q>. Tick every role
+                or project that really shows it.
+              </>
+            ) : (
+              'Tick every role or project that really shows it.'
+            )
           }
         />
         <ul className="flex min-h-0 flex-col gap-2 overflow-y-auto">
@@ -107,9 +83,9 @@ export function PlaceDialog({
                     type="checkbox"
                     checked={on}
                     onChange={(e) => onToggle(place.id, e.target.checked)}
-                    className="size-4 shrink-0 accent-brand-600 outline-none"
+                    className="size-5 shrink-0 accent-brand-600 outline-none"
                   />
-                  <span className="min-w-0 flex-1 text-body-l font-medium text-text-primary">
+                  <span className="min-w-0 flex-1 text-body-l font-semibold text-text-primary">
                     {place.label}
                   </span>
                   {fits(place.id) && (
@@ -134,11 +110,13 @@ export function PlaceDialog({
                 type="checkbox"
                 checked={none}
                 onChange={() => !none && onClear()}
-                className="size-4 shrink-0 accent-brand-600 outline-none"
+                className="size-5 shrink-0 accent-brand-600 outline-none"
               />
               <span className="min-w-0 flex-1">
-                <span className="block text-body-l font-medium text-text-primary">Skills only</span>
-                <span className="block text-body-s font-medium text-text-tertiary">
+                <span className="block text-body-l font-semibold text-text-primary">
+                  Skills only
+                </span>
+                <span className="block text-body-m font-medium text-text-secondary">
                   Listed in Skills, not in a role. It counts half.
                 </span>
               </span>
@@ -185,8 +163,8 @@ export function ResultDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="lg">
       <div className={cn(dialogBody, 'gap-5 pb-7')}>
-        <Head
-          icon={<Zap className="size-5" />}
+        <DialogHead
+          icon={<Stars02 />}
           title={saved ? 'Edit your result' : 'Add the result'}
           line="Pick what came of this work and about how much. Only what’s true."
         />

@@ -4,13 +4,20 @@ import type { ResumeSyncChanges, ResumeSyncStatus } from '@nextkin/shared/models
 import { qk, useDecideResumeSync, useResumeSync } from '@nextkin/shared/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Route } from 'next';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ComponentType } from 'react';
 
 import { showToast } from '@/lib/toast';
 import { Button } from '@/ui/Button';
-import { Dialog, DialogDescription, DialogTitle, dialogFooter } from '@/ui/Dialog';
+import {
+  Dialog,
+  DialogCloseButton,
+  DialogHead,
+  DialogHero,
+  dialogBody,
+  dialogFooter,
+} from '@/ui/Dialog';
+import { cn } from '@/lib/cn';
 import {
   BriefcaseIcon,
   DocumentIcon,
@@ -172,31 +179,25 @@ export function ResumeSyncHost() {
       size="md"
     >
       <div className="flex min-h-0 flex-col overflow-y-auto">
-        <div className="relative flex justify-center bg-linear-to-br from-brand-50 via-surface-raised to-brand-100 px-6 pt-6">
-          <Image
-            src="/illustrations/v2/profile.webp"
-            alt=""
-            width={470}
-            height={560}
-            priority
-            className="h-40 w-auto object-contain max-sm:h-28"
-          />
-        </div>
-        <div className="flex flex-col gap-3 px-7 pb-5 pt-7">
-          <DialogTitle className="text-h2 font-bold text-text-primary">
-            Add your resume updates to your profile?
-          </DialogTitle>
-          <DialogDescription className="text-body-l text-text-secondary">
-            {shown?.resumeTitle ? (
+        <DialogHero src="/illustrations/v2/profile.webp" width={470} height={560} />
+        <div className={cn(dialogBody, 'overflow-y-visible pt-5')}>
+          <DialogHead
+            close={false}
+            title="Add your resume updates to your profile?"
+            line={
               <>
-                <span className="font-semibold text-text-primary">{shown.resumeTitle}</span> has
-                something your profile doesn’t.
+                {shown?.resumeTitle ? (
+                  <>
+                    <span className="font-semibold text-text-primary">{shown.resumeTitle}</span> has
+                    something your profile doesn’t.
+                  </>
+                ) : (
+                  'Your resume has something your profile doesn’t.'
+                )}{' '}
+                Job matches and the resumes you build read your profile.
               </>
-            ) : (
-              'Your resume has something your profile doesn’t.'
-            )}{' '}
-            Job matches and the resumes you build read your profile.
-          </DialogDescription>
+            }
+          />
           {rows.length > 0 && (
             <ul
               aria-label="What would be added"
@@ -205,25 +206,21 @@ export function ResumeSyncHost() {
               {rows.map(({ Icon, label }) => (
                 <li
                   key={label}
-                  className="flex items-center gap-2.5 rounded-lg bg-neutral-50 px-3 py-2.5 text-body-m font-semibold text-text-primary"
+                  className="flex items-center gap-3 rounded-lg border border-border-default bg-surface-card px-4 py-3 text-body-l font-semibold text-text-primary"
                 >
-                  <span
-                    aria-hidden
-                    className="flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-card text-text-brand"
-                  >
-                    <Icon className="size-3.5" aria-hidden />
-                  </span>
+                  <Icon className="size-5 shrink-0 text-text-brand" aria-hidden />
                   {label}
                 </li>
               ))}
             </ul>
           )}
-          <p className="flex items-center gap-2 text-body-m font-medium text-success-text">
-            <ShieldCheckIcon aria-hidden className="size-4 shrink-0 text-success-600" />
+          <p className="flex items-center gap-2.5 text-body-l font-semibold text-success-text">
+            <ShieldCheckIcon aria-hidden className="size-6 shrink-0 text-success-600" />
             Nothing you’ve typed is changed. We only add and fill blanks.
           </p>
         </div>
       </div>
+      <DialogCloseButton />
       <div className={dialogFooter}>
         <Button
           variant="secondary"

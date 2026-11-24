@@ -1,21 +1,22 @@
 'use client';
 
 import type { DocProblem } from '@nextkin/shared/scoring/resumeDocumentCheck';
-import {
-  Dialog,
-  DialogDescription,
-  DialogTitle,
-  dialogBody,
-  dialogFooter,
-  dialogLine,
-  dialogTitle,
-} from '@/ui/Dialog';
-import type { ReactNode } from 'react';
+import { Dialog, DialogHead, DialogHero, dialogBody, dialogFooter } from '@/ui/Dialog';
+import type { ComponentType, ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import { buttonClass } from '@/ui/Button';
-import { HistoryIcon, SyncIcon } from '@/ui/icons';
-import { AlertTriangle, ArrowRight } from '@/ui/lineIcons';
+import {
+  BriefcaseIcon,
+  DocumentIcon,
+  HistoryIcon,
+  LayersIcon,
+  PersonIcon,
+  SchoolIcon,
+  StarIcon,
+  SyncIcon,
+} from '@/ui/icons';
+import { ArrowRight, File06 } from '@/ui/lineIcons';
 
 import type { EditorBackup } from '../editorBackup';
 import { formatClock } from '../formatClock';
@@ -143,6 +144,24 @@ export function NoticeBanner({ message }: { message: string }) {
   );
 }
 
+type SectionIcon = ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+
+/** Each problem's section as an icon, the same ones the profile uses for them. */
+const SECTION_ICON: Record<string, SectionIcon> = {
+  header: PersonIcon,
+  summary: File06,
+  skills: StarIcon,
+  experience: BriefcaseIcon,
+  projects: LayersIcon,
+  education: SchoolIcon,
+  certifications: DocumentIcon,
+};
+
+function SectionGlyph({ section }: { section: DocProblem['section'] }) {
+  const Icon = SECTION_ICON[section] ?? File06;
+  return <Icon aria-hidden className="size-6 shrink-0 text-text-brand" />;
+}
+
 /**
  * EDIT 02 (867:2), "A few things before you download": every problem under its section's name,
  * each one a jump that opens the field to fix.
@@ -167,33 +186,26 @@ export function ProblemsDialog({
   };
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()} size="md">
-      {/* Every dialog's body and button row; the icon bare beside the title, as the tailor
-          flow's dialogs draw it (owner, 2026-11-15; toreview §257). */}
-      <div className={cn(dialogBody, 'gap-4')}>
-        <div className="flex items-start gap-3">
-          <span aria-hidden className="flex h-7 shrink-0 items-center text-warning-text">
-            <AlertTriangle className="size-5" />
-          </span>
-          <div className="min-w-0">
-            <DialogTitle className={dialogTitle}>A few things before you download</DialogTitle>
-            <DialogDescription className={cn(dialogLine, 'mt-1')}>
-              We can’t make the PDF until these are filled in. Each one opens its field.
-            </DialogDescription>
-          </div>
-        </div>
+      <DialogHero src="/illustrations/v2/download-blocked.webp" width={560} height={512} />
+      <div className={cn(dialogBody, 'gap-4 pt-5')}>
+        <DialogHead
+          title="A few things before you download"
+          line="We can’t make the PDF until these are filled in. Each one opens its field."
+        />
         <ul className="flex max-h-[50vh] flex-col gap-2.5 overflow-y-auto">
           {problems.map((problem, i) => (
             <li key={`${problem.section}-${problem.entryId ?? ''}-${i}`}>
               <button
                 type="button"
                 onClick={() => go(problem)}
-                className="flex w-full items-center gap-3 rounded-lg border border-border-default px-4 py-3 text-left transition-colors duration-press ease-standard hover:border-border-brand hover:bg-surface-brand focus-visible:outline-2 focus-visible:outline-brand-600"
+                className="flex w-full items-center gap-4 rounded-xl border border-border-brand px-5 py-4 text-left transition-colors duration-press ease-standard hover:border-border-brand-strong hover:bg-surface-brand focus-visible:outline-2 focus-visible:outline-brand-600"
               >
+                <SectionGlyph section={problem.section} />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-body-m font-medium text-text-tertiary">
+                  <span className="block text-body-l font-bold text-text-primary">
                     {headingOf(problem.section)}
                   </span>
-                  <span className="block text-body-l font-medium text-text-primary">
+                  <span className="block text-body-m font-medium text-text-secondary">
                     {problem.message}
                   </span>
                 </span>

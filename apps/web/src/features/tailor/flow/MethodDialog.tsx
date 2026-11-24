@@ -18,7 +18,7 @@ import { buttonClass } from '@/ui/Button';
 import { ArrowRight } from '@/ui/lineIcons';
 import { StableLabel } from '@/ui/StableLabel';
 
-/** A tinted row inside the popup: an icon tile, two lines and an action on the right. */
+/** A tinted row inside the popup: a bare icon, two lines and an action on the right. */
 export function DialogFact({
   icon,
   label,
@@ -32,10 +32,7 @@ export function DialogFact({
 }) {
   return (
     <div className="flex items-center gap-3.5 rounded-lg bg-surface-brand px-4 py-3.5">
-      <span
-        aria-hidden
-        className="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-card text-text-brand"
-      >
+      <span aria-hidden className="flex shrink-0 items-center text-text-brand [&_svg]:size-6">
         {icon}
       </span>
       <div className="min-w-0 flex-1">

@@ -45,13 +45,13 @@ describe('Add real results (toreview §149)', () => {
     const use = within(dialog).getByRole('button', { name: 'Use this line' });
     expect(dialog).toHaveTextContent('Built feature 1, saving 2 hours of manual work a week.');
     expect(dialog).toHaveTextContent(
-      'The AI’s suggestion. Keep it only if it’s true, or change it.',
+      'AI suggestion — keep it only if it’s true, or change it.',
     );
     expect(use).toBeEnabled();
     expect(onFigure).not.toHaveBeenCalled();
     // Changing it is one tap, and the label goes: it is the user's choice now.
     await user.click(within(dialog).getByRole('button', { name: /5 hours/ }));
-    expect(dialog).not.toHaveTextContent('The AI’s suggestion');
+    expect(dialog).not.toHaveTextContent('AI suggestion');
     expect(dialog).toHaveTextContent('Built feature 1, saving 5 hours of manual work a week.');
     await user.click(use);
     expect(onFigure).toHaveBeenCalledWith(
