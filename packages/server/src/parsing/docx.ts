@@ -98,6 +98,24 @@ function runHidden(props: Node[] | undefined): HiddenRun['reason'] | null {
   return null;
 }
 
+/**
+ * A text node's characters (owner, 2026-11-25). The parser expands no entities, which is what keeps
+ * a hostile file from defining its own; but XML's five built-in ones and numeric references are
+ * not definitions, and Word writes every "&" as `&amp;`. Left undecoded, "Cloud Platforms &amp;
+ * Infrastructure" reached the reader and the model, and every skills line with an ampersand in its
+ * label was refused as "the document does not print this label". `&amp;` is decoded last, so
+ * `&amp;lt;` stays the four characters the author typed.
+ */
+const NAMED: Record<string, string> = { lt: '<', gt: '>', quot: '"', apos: "'" };
+export const xmlText = (raw: string): string =>
+  raw
+    .replace(/&#(x[0-9a-fA-F]{1,6}|[0-9]{1,7});/g, (whole, code: string) => {
+      const point = code.startsWith('x') ? Number.parseInt(code.slice(1), 16) : Number.parseInt(code, 10);
+      return point > 0 && point <= 0x10ffff && !(point >= 0xd800 && point <= 0xdfff) ? String.fromCodePoint(point) : whole;
+    })
+    .replace(/&(lt|gt|quot|apos);/g, (_whole, name: string) => NAMED[name]!)
+    .replace(/&amp;/g, '&');
+
 function walk(nodes: Node[], paragraphs: string[], hidden: HiddenRun[]): void {
   for (const node of nodes) {
     const tag = tagOf(node);
@@ -126,7 +144,7 @@ function collectRuns(nodes: Node[], emit: (text: string, reason: HiddenRun['reas
       let text = '';
       for (const child of children) {
         const t = tagOf(child);
-        if (t === 'w:t') text += childrenOf(child).map((c) => String((c as { '#text'?: unknown })['#text'] ?? '')).join('');
+        if (t === 'w:t') text += xmlText(childrenOf(child).map((c) => String((c as { '#text'?: unknown })['#text'] ?? '')).join(''));
         else if (t === 'w:tab') text += '\t';
         else if (t === 'w:br' || t === 'w:cr') text += '\n';
       }

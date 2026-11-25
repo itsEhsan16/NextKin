@@ -19487,3 +19487,44 @@ The owner reported that §269's repair had not fixed it: resumes were still refu
 12. §269's rule that a field left out becomes `[]` is still there. Item 7 is what stops it from producing an empty resume; other stages that rely on a required list were not audited.
 13. A role keeps 12 bullets on upload; these resumes have up to 26 in one role. The rest are listed as left out.
 14. Not deployed. The integration parse suite was not run.
+
+**Deployed to the AWS demo (2026-11-25)**
+15. Branch `fix/resume-extract-repair` at e96e57f (main + c65013a + this fix) was deployed with `cdk deploy` (560 seconds, images only). No migration or seed was needed. All four services finished rolling out and `app.nextkin.ai/api/v1/health/deep` answers ok. `main` does not have these two commits until the pull request is merged.
+16. Not checked on the demo: the failing resume was not uploaded there after the deploy.
+
+
+## §271 — One resume, four faults: the writer out of room, a dropped summary, "&amp;", no skills (owner, 2026-11-25)
+
+After §270's deploy the same resume uploaded, then its tailor failed with "The writing service returned something we couldn't use". The owner also asked for long summaries to be kept on upload. Reproduced locally with the owner's file and a synthetic Java job description.
+
+**The tailor failure**
+1. The demo's log: `resume_generate` failed with "The answer ran past the token limit" on the first try and on the retry with double the room.
+2. Cause, from the provider's usage figures: thinking is on by default on Sonnet 5.5 and is paid for out of `max_tokens`. On this resume (four jobs, sixty keywords, about 12,000 input tokens) the model spent 6,000 of 6,000 tokens thinking, then 12,000 of 12,000, and wrote nothing either time.
+3. Not caused by a deploy as such, but today's changes made it reachable: the bullet cap raised in §268 and the larger keyword lists make the writer's task bigger. Smaller resumes never hit it.
+4. Fix (`ai/gateway.ts`, `ai/providers/messages.ts`): the second try after an answer runs out of room is sent with thinking off (`between_tools` on Sonnet 5.5, `disabled` on Haiku 5.5 and earlier models, nothing on a model that cannot). The effort setting, which was in the routing schema and never sent, now goes out as `output_config.effort`; a route may also set `thinking: 'off'`.
+5. Routing v11: the writer has 8,000 tokens, was 6,000. Nothing else changed.
+6. Measured and not taken: effort `medium` for the writer (a twelve-line role came back as four lines, score 88) and thinking off from the first try (six and five lines, score 88). With thinking on, the same case gave eight and eight and scored 90 to 92 in §268.
+7. Measured with the fix (first try 6,000 with thinking, second try 12,000 without): the failing tailor completed in 143 seconds, score 95, 98 of 98 keywords. The review stage hit the same limit in that run and recovered the same way.
+
+**Upload: the summary**
+8. A summary longer than a stored line (600 characters) was left out, with the note "not in your file word for word". Now the summary has its own limit, 4,000 characters (`SUMMARY_TEXT_MAX`, the profile summary's limit), and is kept whole when the file states it. When part of it does not match, the lines that do are kept. A bullet over 600 characters now says it is too long.
+
+**Upload: "&amp;" in DOCX text**
+9. The DOCX reader expands no XML entities (the XXE guard), so every "&" arrived as "&amp;". Text with an ampersand reached the model wrong, and every skills line whose label has one was refused as "the document does not print this label": 9 of 11 lines on this resume. `xmlText` (`parsing/docx.ts`) now decodes XML's five built-in entities and numeric references in text nodes. No entity a file defines is expanded; a DOCTYPE is still refused.
+
+**Upload: no skills**
+10. The stored skills came only from the model's flat list. When the model fills only the skill lines ("Backend Development: Java, Spring Boot") the list is empty, and the lines, which may name only listed skills, were dropped later: the resume was stored with no skills at all. The skills are now the flat list and every skill a kept line names (`crossCheck.ts`).
+
+**Measured on the owner's two real resumes, local, real model**
+11. Failing DOCX: summary 2,411 of 2,411 characters kept (was 0); skills 60 (was 0); all 11 skill lines kept (was 2); tailor completed.
+12. The other resume's DOCX: summary 841 of 841 kept (was 0), 60 skills, 7 lines; tailor completed.
+
+**Judgement calls made without the owner**
+13. 4,000 characters for a stored summary, and the writer's 8,000 tokens, are my numbers.
+14. A resume keeps 60 of its own skills; the failing one states about 145, so its later skill lines lose names. Left as is.
+
+**Not verified**
+15. The final routing (8,000 then 16,000 without thinking) was not rerun end to end; item 7 was measured at 6,000 then 12,000.
+16. Whether every screen shows a 2,400-character summary well (web and mobile editors, the PDF, where it prints as one paragraph) was not looked at.
+17. Thinking off was tried only through OpenRouter. The direct Claude API and Bedrock were not.
+18. The integration parse suite was not run. Not committed, not deployed; a deploy needs `task seed-reference` for routing v11.

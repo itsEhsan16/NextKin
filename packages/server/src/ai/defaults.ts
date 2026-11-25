@@ -22,16 +22,23 @@ import type { Prices, Routing } from './routing';
 // draft failed. 1200 out, and room in for the longer prompt.
 // Version 10 (owner, 2026-11-25): the resume writer at 0.1, was 0.3. Two runs of one resume for
 // one job wrote different summaries, and an outside checker scored them 84 and 74.
+// Version 11 (owner, 2026-11-25): the writer has 8,000 tokens of room, was 6,000. Thinking is on
+// by default on Sonnet 5.5 and is paid for out of the answer's allowance: on a four-job resume with
+// sixty keywords the writer spent all 6,000 tokens thinking and wrote nothing, did the same with
+// 12,000, and the run failed. The gateway's second try now answers without thinking (`gateway.ts`),
+// which is what makes such a run finish. Two cheaper settings were measured and not taken: effort
+// `medium` and thinking off from the start both made the writer terse (a role of twelve lines came
+// back as four to six, where it is eight with thinking on) and scored two to four points lower.
 export const ROUTING_DEFAULT: Routing = {
-  version: 10,
+  version: 11,
   stages: {
     default: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
       { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
     ],
     resume_generate: [
-      { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 6000, inputBudgetTokens: 24000, temperature: 0.1 },
-      { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 6000, inputBudgetTokens: 24000, temperature: 0.1 },
+      { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 8000, inputBudgetTokens: 24000, temperature: 0.1 },
+      { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 8000, inputBudgetTokens: 24000, temperature: 0.1 },
     ],
     resume_revise: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 24000, temperature: 0.2 },

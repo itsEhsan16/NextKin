@@ -1,5 +1,6 @@
 import type { ProfileDraft } from '@nextkin/shared/models/profile';
 import { CANONICAL_SCHEMA_VERSION, type CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
+import { SUMMARY_TEXT_MAX } from '@nextkin/shared/schemas/limits';
 
 import { extraSectionsOf, layoutOf, roleEntries, skillGroupsOf, type CheckContext } from './crossCheckStructure';
 import type { Extraction } from './extract';
@@ -29,6 +30,7 @@ export interface Verified {
 /** The longest line the document keeps as one (a summary longer is left out, not cut). */
 const MAX_LINE = 600;
 const NOT_IN_FILE = 'This line is not in your file word for word, so it was left out.';
+const TOO_LONG = `This line is longer than ${MAX_LINE} characters, so it was left out.`;
 
 const userLine = (id: string, text: string) => ({ id, text: text.trim(), evidence: [] as string[], origin: 'user' as const });
 
@@ -95,7 +97,7 @@ export function crossCheck(extraction: Extraction, text: string): Verified {
     lines.filter((line) => {
       const key = normalise(line);
       if (!key || line.trim().length > MAX_LINE || !source.includes(key)) {
-        rejected.push({ section, item: line.slice(0, 120), reason: NOT_IN_FILE });
+        rejected.push({ section, item: line.slice(0, 120), reason: key && line.trim().length > MAX_LINE ? TOO_LONG : NOT_IN_FILE });
         return false;
       }
       if (placed.has(key)) {
@@ -105,6 +107,32 @@ export function crossCheck(extraction: Extraction, text: string): Verified {
       placed.add(key);
       return true;
     });
+  /**
+   * The summary, kept whole when the file states it (owner, 2026-11-25). It has its own length: a
+   * summary written as a dozen lines is one summary, not a line too long to keep. When the whole
+   * does not match word for word, the lines of it that do are kept, in order.
+   */
+  const summaryOf = (text: string): string | undefined => {
+    const whole = text.trim();
+    const fits = (t: string) => Boolean(normalise(t)) && source.includes(normalise(t));
+    const BREAK = String.fromCharCode(10);
+    const lines = whole.split(/[\r\n]+/).map((l) => l.trim()).filter(Boolean);
+    const kept = fits(whole) ? whole : lines.filter(fits).join(BREAK);
+    if (!kept) {
+      rejected.push({ section: 'summary', item: whole.slice(0, 120), reason: NOT_IN_FILE });
+      return undefined;
+    }
+    if (kept.length > SUMMARY_TEXT_MAX) {
+      // Whole lines up to the limit: a summary is never cut in the middle of a sentence.
+      let room = SUMMARY_TEXT_MAX;
+      const head = lines.filter(fits).filter((l) => (room -= l.length + 1) >= 0);
+      rejected.push({ section: 'summary', item: whole.slice(0, 120), reason: `Only the first ${head.length} lines of the summary are kept: it is longer than ${SUMMARY_TEXT_MAX} characters.` });
+      return head.join(BREAK) || undefined;
+    }
+    if (kept !== whole) rejected.push({ section: 'summary', item: whole.slice(0, 120), reason: 'Part of the summary is not in your file word for word, so that part was left out.' });
+    placed.add(normalise(kept));
+    return kept;
+  };
   const ctx: CheckContext = { found: (phrase, coverage) => found(phrase, source, sourceTokens, coverage), verbatim: (text) => Boolean(normalise(text)) && source.includes(normalise(text)), keepLines, rejected };
 
   /** A role's own lines, then its client projects' lines grouped as `entries`. */
@@ -192,14 +220,19 @@ export function crossCheck(extraction: Extraction, text: string): Verified {
     certifications.push({ id: '', name: cert.name.trim(), issuer: cert.issuer?.trim() || 'Not stated', issuedOn: cert.issued && dateStated(cert.issued, source) ? iso(cert.issued) : undefined });
   }
 
-  const skills = [...new Map(extraction.skills.filter((s) => {
+  const skillGroups = skillGroupsOf(ctx, extraction.skillGroups, skillFound);
+  // The skills are the flat list and every skill a skills line names (owner, 2026-11-25). A model
+  // that fills only the lines ("Backend Development: Java, Spring Boot") returns an empty list, and
+  // the resume was stored with no skills at all: the lines name skills of the list, so they went too.
+  const stated = extraction.skills.filter((s) => {
     if (skillFound(s)) return true;
     rejected.push({ section: 'skills', item: s, reason: 'The document does not mention this skill.' });
     return false;
-  }).map((s) => [normalise(s), s.trim()])).values()];
+  });
+  const skills = [...new Map([...stated, ...skillGroups.flatMap((g) => g.names)].map((s) => [normalise(s), s.trim()])).values()];
 
   const headline = extraction.headline && found(extraction.headline, source, sourceTokens, 0.6) ? extraction.headline.trim() : undefined;
-  const summary = extraction.summary ? keepLines([extraction.summary], 'summary')[0] : undefined;
+  const summary = extraction.summary ? summaryOf(extraction.summary) : undefined;
 
   const projects: CanonicalResumeJson['projects'] = [];
   for (const project of extraction.projects) {
@@ -222,7 +255,6 @@ export function crossCheck(extraction: Extraction, text: string): Verified {
     });
   }
 
-  const skillGroups = skillGroupsOf(ctx, extraction.skillGroups, skillFound);
   const sections = extraSectionsOf(ctx, extraction.extraSections);
   const layout = layoutOf(ctx, extraction.sectionOrder, sections);
   const document: CanonicalResumeJson = {
