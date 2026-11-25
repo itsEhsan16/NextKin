@@ -1,0 +1,115 @@
+{
+  "key": "791df28ef9a6457194122a4595bcfb6a",
+  "recordedAt": "2026-11-25T00:58:10.474Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "QA Engineer",
+        "quote": "QA Engineer — Brightpath Systems"
+      },
+      "company": {
+        "text": "Brightpath Systems",
+        "quote": "QA Engineer — Brightpath Systems"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a QA Engineer position at Brightpath Systems. The posting asks the engineer to write automated tests with Selenium and Java and states 2-4 years of experience.",
+      "locations": [
+        {
+          "text": "Bengaluru",
+          "quote": "Bengaluru, Pune, Hyderabad (any one)",
+          "city": "Bengaluru",
+          "region": null,
+          "country": null
+        },
+        {
+          "text": "Pune",
+          "quote": "Bengaluru, Pune, Hyderabad (any one)",
+          "city": "Pune",
+          "region": null,
+          "country": null
+        },
+        {
+          "text": "Hyderabad",
+          "quote": "Bengaluru, Pune, Hyderabad (any one)",
+          "city": "Hyderabad",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "2-4 years of experience",
+          "quote": "2-4 years of experience"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Write automated tests with Selenium and Java.",
+          "quote": "Write automated tests with Selenium and Java.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Selenium",
+          "category": "tool",
+          "importance": "required",
+          "quote": "Write automated tests with Selenium and Java."
+        },
+        {
+          "name": "Java",
+          "category": "language",
+          "importance": "required",
+          "quote": "Write automated tests with Selenium and Java."
+        },
+        {
+          "name": "Automated Testing",
+          "category": "other",
+          "importance": "required",
+          "quote": "Write automated tests with Selenium and Java."
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "quote": "QA Engineer — Brightpath Systems",
+        "jobTitles": [
+          "QA Engineer"
+        ]
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 316,
+      "outputTokens": 1210,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

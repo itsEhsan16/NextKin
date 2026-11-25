@@ -20,16 +20,18 @@ import type { Prices, Routing } from './routing';
 // Version 9 (toreview §212.2): "Add the result" answers with up to three rewrites of the bullet
 // since its prompt's v3, not one; 300 tokens cut a long bullet's answer off mid-way and the
 // draft failed. 1200 out, and room in for the longer prompt.
+// Version 10 (owner, 2026-11-25): the resume writer at 0.1, was 0.3. Two runs of one resume for
+// one job wrote different summaries, and an outside checker scored them 84 and 74.
 export const ROUTING_DEFAULT: Routing = {
-  version: 9,
+  version: 10,
   stages: {
     default: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
       { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 16000, temperature: 0.3 },
     ],
     resume_generate: [
-      { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 6000, inputBudgetTokens: 24000, temperature: 0.3 },
-      { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 6000, inputBudgetTokens: 24000, temperature: 0.3 },
+      { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 6000, inputBudgetTokens: 24000, temperature: 0.1 },
+      { provider: 'bedrock', model: 'us.anthropic.claude-sonnet-5-5', maxTokens: 6000, inputBudgetTokens: 24000, temperature: 0.1 },
     ],
     resume_revise: [
       { provider: 'claude', model: 'claude-sonnet-5-5', maxTokens: 4000, inputBudgetTokens: 24000, temperature: 0.2 },

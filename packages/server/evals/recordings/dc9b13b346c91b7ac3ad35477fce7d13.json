@@ -1,0 +1,55 @@
+{
+  "key": "dc9b13b346c91b7ac3ad35477fce7d13",
+  "recordedAt": "2026-11-25T00:59:31.889Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": null,
+      "company": null,
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "closed",
+        "jobTitles": [],
+        "quote": "Sorry, this position has been filled."
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 316,
+      "outputTokens": 687,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

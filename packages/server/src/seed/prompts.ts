@@ -104,7 +104,11 @@ export const PROMPTS: SeedPrompt[] = [
     // Version 8 (owner, D-25, toreview §211): the posting's own phrases, letter for letter. A resume
     // checker reported "Data analysis tools", "Customer calls", "Market Analysis" and eight soft skills
     // missing from a resume our reading had never offered them for.
-    version: 8,
+    // Version 9 (owner, 2026-11-25): phrases a checker counts that v8 flattened or skipped. "Python &
+    // Java Programming" was read as "Python" and "Java", and a duty's "browser UI" was not read at
+    // all; a checker then reported "Java programming" and "UI" missing from a resume we had scored
+    // as matching every keyword.
+    version: 9,
     description: 'P9-01 / §153: read a job posting into its canonical fields; every item quotes the text.',
     body: {
       system: [
@@ -115,6 +119,7 @@ export const PROMPTS: SeedPrompt[] = [
         'Leave out page furniture that is not part of the job: buttons and links ("Apply for job", "Share", "Save"), applicant counts ("95 applicants"), view counts, posted-ago labels, navigation, cookie notices, ads, similar-job lists and footers.',
         'Skills: each one named skill, technology, method, standard or field of one to four words ("TypeScript", "REST APIs", "unit testing", "KYC"), with its category. Split a line that names several, each quoting that line. List every term a candidate could show on a resume, including practices, concepts and domain knowledge (UPI, payments, reconciliation). Also list, as skills in the posting’s own words, the kinds of work and themes it keeps coming back to — what the role builds or does, such as "workflow automation", "internal tools", "AI agents", "dashboards", "report generation", "front end", "integrations", "e-commerce" — and each named product or platform in a list on its own ("Claude", "OpenAI", "Gemini", "Google Workspace"). A theme that is the main work of the role is required. A short posting may name ten; a long one forty or more: list them all, once each. Importance is "required" when the posting says must, required, essential, or names it as part of the main work; "preferred" for nice to have, preferred, bonus, plus, exposure to, or good to have. Traits (communication, teamwork, ownership) are category "soft". A degree, years of experience, a spoken language or work authorisation is not a skill.',
         'Keywords in the posting’s own words: a resume checker matches a posting’s phrases letter for letter, so list each phrase a candidate would be matched on exactly as the posting writes it, keeping its wording. Besides named skills, that means the activities and methods the role involves ("customer calls", "market analysis", "product analytics", "software development", "product design", "user research") and the kinds of tools it names ("data analysis tools", "analytics tools"), each as its own skill quoting the text, even when a named tool or a broader skill is already listed. When the posting writes one thing two ways ("product analytics" and "analytics tools"), list both. Soft skills: list every trait, interpersonal skill and way of working the posting asks for, each once, in its words and as short as still says it ("stakeholder management", "problem-solving", "attention to detail", "curiosity", "collaboration"), with category "soft".',
+        'Joined and embedded phrases: when a line joins several skills to one shared word ("Python & Java Programming", "Manual & Automated Testing", "AWS / GCP Cloud Platforms"), list each skill with that word as the posting implies it ("Python Programming", "Java Programming", "Manual Testing", "Automated Testing"), each quoting the line, as well as the bare names ("Python", "Java"). When a duty names what the work is done on or with, in two or three words a candidate could put on a resume ("browser UI", "backend services", "data pipelines", "distributed systems", "manual test scenarios", "reproduction steps"), list each as a skill in those words, quoting the duty, even though the duty itself is also a responsibility.',
         'Responsibilities: every duty the job involves, each as the whole line or sentence it is written as, not shortened or reworded. Give a short group name ("Payments", "Integrations") only when several duties clearly belong together; otherwise null. A skill list is not a responsibility.',
         'Experience: the lines that say how much experience a candidate needs ("Min. 1 year", "1-3 years", "Freshers can apply"). Years mentioned inside a duty or about the company are not a requirement. Seniority only when the posting states or clearly implies it; quote it when stated, otherwise quote null.',
         'Pay: each line that states pay, with what it is — "base" or "fixed" pay, "variable", "incentive", "bonus", "total" (earning potential, CTC) or "unknown". Do not compute, convert or combine figures; quote each line as written. Mark negotiable only when the posting says so.',
@@ -170,7 +175,11 @@ export const PROMPTS: SeedPrompt[] = [
     // Version 10 (owner, toreview §212): the terms the job repeats are said twice, and the job's
     // spelling is used for everything. A checker counted "Product Management" 9 times in a job and
     // twice on the resume, and "market research" did not count for "Market Analysis".
-    version: 10,
+    // Version 11 (owner, 2026-11-25): the summary does not open with a job title of its own. One run
+    // opened "Software Engineer in Device Testing and Test Automation who…" under the headline
+    // "Software Engineer – Device Testing", and a checker that had matched the job title on the
+    // earlier run reported it missing.
+    version: 11,
     description: 'P9-03: write a resume from profile facts, citing a fact id for every claim.',
     body: {
       system: [
@@ -190,7 +199,7 @@ export const PROMPTS: SeedPrompt[] = [
         'Keep every measured result: when a fact a bullet cites states a number, a percentage, a time, an amount of money or a count, the bullet states it too. Never shorten a line by dropping its result. A fact the user wrote with its result is theirs: keep its figure exactly.',
         'A role or project whose facts include a "Used <skill>" line is where the user said they used that skill: name it in the one bullet of that role or project about the work it was used for, citing both lines. When no other fact there describes that work, work it into the bullet of that role or project closest to it.',
         'The headline is the candidate’s professional title in a few words. The summary is two or three sentences, at least 15 words, aimed at the target job: what the candidate does in the job’s words, the backed requirements that matter most to it, and the kind of work or domain the facts show that the job also names. When the facts show the candidate leading or coordinating people (a team, an event, volunteers), say so plainly. No adjectives about the candidate. Without a target job, keep it to what the facts show, or null when they give nothing concrete.',
-        'When target.headline is given, the resume prints it as the headline: the summary opens by describing the candidate in that same line of work and stack, in words the facts support ("Java full-stack developer who…"), never claiming its seniority or a title the facts do not give them.',
+        'When target.headline is given, the resume prints it as the headline: the summary opens by describing the candidate in that same line of work and stack, in words the facts support ("Java full-stack developer who…"), never claiming its seniority or a title the facts do not give them. The headline line already states the title: when the summary names a job title it is target.headline word for word, never a longer or reworded one ("Software Engineer in Device Testing and Test Automation" under the headline "Software Engineer – Device Testing" reads to a checker as a different title); otherwise open with the line of work in plain lower-case words ("Software engineer in device testing who…").',
       ],
     },
   },

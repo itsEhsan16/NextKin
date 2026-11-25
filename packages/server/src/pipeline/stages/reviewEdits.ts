@@ -76,6 +76,11 @@ interface Ctx {
   facts: ProfileFacts;
   tailor: TailorRunInput;
   asOf: { year: number; month?: number };
+  /**
+   * Whether a rewritten summary or bullet leaves the resume worth as much to the score, and holding
+   * as many of the job's phrases (owner, 2026-11-25: never lower the score). Absent, nothing is asked.
+   */
+  holds?: (before: Doc, after: Doc) => boolean;
 }
 
 type Outcome = { doc: Doc } | { why: string };
@@ -91,7 +96,7 @@ function applyOne(doc: Doc, edit: ReviewEdit, ctx: Ctx): Outcome {
       if (!edit.text || !edit.evidence?.length) return { why: 'no_text_or_evidence' };
       if (doc.summary && !keepsNumbers(doc.summary.text, edit.text)) return { why: 'dropped_a_number' };
       const next = { ...doc, summary: { id: 's', text: edit.text, evidence: edit.evidence, origin: 'generated' as const } };
-      return verdict(next, 's', ctx);
+      return held(doc, verdict(next, 's', ctx), ctx);
     }
     case 'bullet':
       return rewriteBullet(doc, edit, ctx, fixes);
@@ -164,7 +169,7 @@ function rewriteBullet(doc: Doc, edit: ReviewEdit, ctx: Ctx, fixes: Set<string>)
     const old = role.bullets.find((b) => b.id === id)!;
     if (!keepsNumbers(old.text, edit.text)) return { why: 'dropped_a_number' };
     const bullets = role.bullets.map((b) => (b.id === id ? { id, text: edit.text!, evidence: edit.evidence!, origin: 'generated' as const } : b));
-    return verdict({ ...doc, roles: doc.roles.map((r) => (r === role ? { ...r, bullets } : r)) }, id, ctx);
+    return held(doc, verdict({ ...doc, roles: doc.roles.map((r) => (r === role ? { ...r, bullets } : r)) }, id, ctx), ctx);
   }
   const project = doc.projects.find((p) => p.bullets.some((b) => b.id === id));
   if (!project) return { why: 'no_such_line' };
@@ -175,8 +180,11 @@ function rewriteBullet(doc: Doc, edit: ReviewEdit, ctx: Ctx, fixes: Set<string>)
   const issues = checkProjectBullets({ id: own.id, name: own.name, lines: own.lines ?? [], skills: own.skills ?? [] }, [{ text: edit.text, evidence: edit.evidence }], TAXONOMY, leftOutChecker(TAXONOMY, ctx.tailor.skipped));
   if (issues.length) return { why: issues[0]!.code };
   const bullets = project.bullets.map((b) => (b.id === id ? { id, text: edit.text!, evidence: edit.evidence!, origin: 'generated' as const } : b));
-  return { doc: { ...doc, projects: doc.projects.map((p) => (p === project ? { ...p, bullets } : p)) } };
+  return held(doc, { doc: { ...doc, projects: doc.projects.map((p) => (p === project ? { ...p, bullets } : p)) } }, ctx);
 }
+
+/** A rewrite that passed its own checks, refused when it costs the score or one of the job's phrases. */
+const held = (before: Doc, outcome: Outcome, ctx: Ctx): Outcome => ('doc' in outcome && ctx.holds && !ctx.holds(before, outcome.doc) ? { why: 'lowers_score' } : outcome);
 
 function orderBullets(doc: Doc, where: string, order: readonly string[] | null): Outcome {
   if (!order) return { why: 'not_a_permutation' };

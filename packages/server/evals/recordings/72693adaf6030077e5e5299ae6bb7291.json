@@ -1,0 +1,43 @@
+{
+  "key": "72693adaf6030077e5e5299ae6bb7291",
+  "recordedAt": "2026-11-25T00:57:46.712Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"we"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "Full-stack Development",
+          "quote": "Full-stack Developer",
+          "category": "role",
+          "importance": "required"
+        },
+        {
+          "name": "API Integration",
+          "quote": "Integrate partner bank APIs",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "Fintech",
+          "quote": "Paylane Fintech Private Limited",
+          "category": "domain",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 481,
+      "outputTokens": 162,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

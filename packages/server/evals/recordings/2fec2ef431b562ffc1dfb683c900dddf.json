@@ -1,0 +1,31 @@
+{
+  "key": "2fec2ef431b562ffc1dfb683c900dddf",
+  "recordedAt": "2026-11-25T00:59:02.992Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"Mi"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "Deutsch",
+          "quote": "Gute Deutschkenntnisse",
+          "category": "language",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 430,
+      "outputTokens": 78,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

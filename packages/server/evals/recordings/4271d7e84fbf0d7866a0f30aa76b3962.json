@@ -1,0 +1,62 @@
+{
+  "key": "4271d7e84fbf0d7866a0f30aa76b3962",
+  "recordedAt": "2026-11-25T00:59:22.759Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": null,
+      "company": null,
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": null,
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [],
+      "skills": [],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "several_jobs",
+        "quote": null,
+        "jobTitles": [
+          "Operations Analyst",
+          "Senior Backend Engineer",
+          "Customer Success Manager",
+          "Warehouse Shift Lead",
+          "Payroll Specialist",
+          "Data Engineer"
+        ]
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 488,
+      "outputTokens": 741,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "key": "72b70b4a089d57e2884ab7ad75b0fba4",
+  "recordedAt": "2026-11-25T00:58:50.798Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Field Sales Executive",
+        "quote": "Field Sales Executive — Crestline Foods"
+      },
+      "company": {
+        "text": "Crestline Foods",
+        "quote": "Field Sales Executive — Crestline Foods"
+      },
+      "page": {
+        "kind": "single_job",
+        "quote": "Field Sales Executive — Crestline Foods",
+        "jobTitles": [
+          "Field Sales Executive"
+        ]
+      },
+      "responsibilities": [
+        {
+          "text": "Visit retail stores and grow distribution in your territory.",
+          "quote": "Visit retail stores and grow distribution in your territory.",
+          "group": null
+        }
+      ],
+      "eligibility": [
+        {
+          "text": "Male candidates only",
+          "quote": "Male candidates only.",
+          "kind": "gender",
+          "sensitive": true
+        },
+        {
+          "text": "Age 21-30 years",
+          "quote": "Age 21-30 years.",
+          "kind": "age",
+          "sensitive": true
+        },
+        {
+          "text": "Must have a two-wheeler and valid driving licence",
+          "quote": "Must have a two-wheeler and valid driving licence.",
+          "kind": "other",
+          "sensitive": false
+        }
+      ],
+      "skills": [
+        {
+          "name": "retail store visits",
+          "quote": "Visit retail stores and grow distribution in your territory.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "distribution growth",
+          "quote": "grow distribution in your territory",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "field sales",
+          "quote": "Field Sales Executive — Crestline Foods",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "summary": "Field Sales Executive role at Crestline Foods. The job involves visiting retail stores and growing distribution in the assigned territory. The posting also sets gender, age and vehicle requirements.",
+      "workModes": [],
+      "extras": [],
+      "issues": [],
+      "application": [],
+      "industry": null,
+      "department": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "website": null,
+      "locations": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "companyAbout": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 320,
+      "outputTokens": 1232,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

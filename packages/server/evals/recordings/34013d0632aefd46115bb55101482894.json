@@ -1,0 +1,43 @@
+{
+  "key": "34013d0632aefd46115bb55101482894",
+  "recordedAt": "2026-11-25T00:59:41.499Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"Ja"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "search services",
+          "quote": "build the document search service",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "query optimization",
+          "quote": "Tune PostgreSQL queries and indexes",
+          "category": "skill",
+          "importance": "required"
+        },
+        {
+          "name": "indexing",
+          "quote": "Tune PostgreSQL queries and indexes",
+          "category": "skill",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 572,
+      "outputTokens": 152,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

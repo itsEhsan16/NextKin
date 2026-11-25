@@ -1,0 +1,107 @@
+{
+  "key": "7a652a63b24d72b3e18efd2e8c5936f8",
+  "recordedAt": "2026-11-25T00:58:05.176Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Java Developer",
+        "quote": "Java Developer at Orbitstack"
+      },
+      "company": {
+        "text": "Orbitstack",
+        "quote": "Java Developer at Orbitstack"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a Java Developer position at Orbitstack that builds order-processing services. The posting requires Java, Spring Boot and MySQL, with Kafka and Docker as good-to-have skills.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "You will build order-processing services.",
+          "quote": "You will build order-processing services.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Java",
+          "quote": "Must have: Java, Spring Boot, MySQL.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Spring Boot",
+          "quote": "Must have: Java, Spring Boot, MySQL.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "MySQL",
+          "quote": "Must have: Java, Spring Boot, MySQL.",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Kafka",
+          "quote": "Good to have: Kafka, Docker.",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "Docker",
+          "quote": "Good to have: Kafka, Docker.",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "order-processing services",
+          "quote": "You will build order-processing services.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "jobTitles": [
+          "Java Developer"
+        ],
+        "quote": "Java Developer at Orbitstack"
+      },
+      "requirement": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 306,
+      "outputTokens": 1208,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "key": "3bd725a5a2443c59a62c3d4288ffcf08",
+  "recordedAt": "2026-11-25T00:59:08.555Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"ET"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "Data Engineering",
+          "quote": "Contract Data Engineer",
+          "category": "domain",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 369,
+      "outputTokens": 76,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

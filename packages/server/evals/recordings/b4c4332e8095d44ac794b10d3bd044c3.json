@@ -1,0 +1,112 @@
+{
+  "key": "b4c4332e8095d44ac794b10d3bd044c3",
+  "recordedAt": "2026-11-25T00:58:40.277Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Junior Web Developer",
+        "quote": "Junior Web Developer"
+      },
+      "company": {
+        "text": "Pixelnest Studio",
+        "quote": "Pixelnest Studio"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": "Freshers can also apply."
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "A junior web developer role at Pixelnest Studio that builds landing pages for client campaigns. The posting asks for at least one year of experience in HTML, CSS and JavaScript, and freshers may also apply.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Minimum 1 year experience in HTML, CSS and JavaScript.",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript."
+        },
+        {
+          "text": "Freshers can also apply.",
+          "quote": "Freshers can also apply."
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Build landing pages for client campaigns.",
+          "quote": "Build landing pages for client campaigns.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "HTML",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "CSS",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "JavaScript",
+          "quote": "Minimum 1 year experience in HTML, CSS and JavaScript.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "landing pages",
+          "quote": "Build landing pages for client campaigns.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "client campaigns",
+          "quote": "Build landing pages for client campaigns.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "quote": "Junior Web Developer — Pixelnest Studio",
+        "jobTitles": [
+          "Junior Web Developer"
+        ]
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 317,
+      "outputTokens": 1245,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

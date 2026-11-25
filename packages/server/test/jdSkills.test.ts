@@ -78,6 +78,9 @@ describe('the skill lists', () => {
   it('knows a skill name when it sees one', () => {
     for (const name of ['TypeScript', 'REST APIs', 'unit testing', 'CI/CD pipelines', 'Machine learning']) expect(isSkillName(name)).toBe(true);
     for (const name of ["Master's degree", '5+ years Java', 'Ability to work independently in a fast moving team environment']) expect(isSkillName(name)).toBe(false);
+    // A line that grades skills names none of its own; the phrases a checker counts stay.
+    for (const name of ['Strong Python + Java Skills', 'Hands-on Device Testing']) expect(isSkillName(name)).toBe(false);
+    for (const name of ['Java Programming', 'browser UI', 'C++', 'Strong communication skills']) expect(isSkillName(name)).toBe(true);
   });
 
   it('a category is not a skill: "backend technologies", a bare "APIs" (toreview §110.5)', () => {
@@ -114,7 +117,7 @@ describe('the stored text and the extra lists (toreview §112)', () => {
       ],
     });
     expect(jd.requiredSkills).toEqual(['WCAG']);
-    expect(jd.preferredSkills).toEqual(['KYC']); // "Payments" is not quoted from this text
+    expect(jd.preferredSkills).toEqual(['KYC', 'UI']); // "Payments" is not quoted from this text
     expect(jd.softSkills).toEqual(['communication', 'teamwork']);
   });
 });
@@ -179,6 +182,13 @@ describe('nothing the job names is missed (toreview §212)', () => {
     const jd = verify(raw, { ...none, skills: [skill('SQL', 'We need strong SQL and PostgreSQL skills for this role')] });
     expect(jd.requiredSkills).toEqual(['SQL']);
     expect(jd.preferredSkills).toEqual(expect.arrayContaining(['PostgreSQL']));
+  });
+
+  it('code offers an acronym the posting writes in capitals, in its letters (owner, 2026-11-25)', () => {
+    const duty = 'Execute E2E testing across devices, backend services, data pipelines and browser UI.';
+    expect(sweepKnownSkills(duty, []).map((k) => k.name)).toContain('UI');
+    // Not when the model already listed it.
+    expect(sweepKnownSkills(duty, [skill('UI design', duty)]).map((k) => k.name)).not.toContain('UI');
   });
 
   it('a second pass adds only what the first reading missed, once each', () => {

@@ -19371,3 +19371,57 @@ The owner sent real downloads. Six tailored copies of a graduate's resume all ra
 
 **The cost, for the owner to weigh**
 35. One page for a graduate with 55 or more accepted keywords is reached only by leaving out much of their own content (item 25). The alternative is to let Skills grow less: fewer accepted keywords, or a keyword line budget, which D-25 rules out today.
+
+**Deployed to the AWS demo (2026-11-25)**
+36. `main` at 74b30d4 (PR #21 merged, with #19 and #20) was deployed with `cdk deploy`: new web, worker, LaTeX and link-reader images, 499 seconds. Then `task migrate` and `task seed-reference` (accounts untouched), both exit 0. All four services finished rolling out; `app.nextkin.ai/api/v1/health/deep` answers ok and `nextkin.ai` answers 200.
+37. Not checked on the demo: no tailor run or PDF download was made there after the deploy, so the new page fit and the rebuilt LaTeX image have not been seen working on AWS.
+
+
+## §268 — The same resume and job scored 84, then 74, on an outside checker (owner, 2026-11-25)
+
+After the §267 deploy the owner re-tailored one resume for one job. Jobscan gave the earlier download 84 and the new one 74.
+
+**What the two downloads show**
+1. The page fit removed nothing. Both have 8 + 5 bullets. The new one is two pages (the 3-year rule) and kept its own skills.
+2. **Correction to §267:** I wrote that the page fit cut that resume from 34 bullets to 13. It did not. The writer returns at most six bullets a role (`resume.ts` `bulletCap`, the draft schema's `max(6)`), and a rewritten role keeps only those. The 3-year rule stays, but it was not what cut her resume.
+3. The checker lost two things: the hard skill "UI" (the 84 summary said "browser UI", the 74 summary did not) and its job-title match.
+4. The title line is byte-identical in both PDFs (pdf.js and pdftotext). The flip is not explained by the file. One difference: the 74 summary opens with a job title of its own, "Software Engineer in Device Testing and Test Automation". That it confused the checker is my guess, not a finding.
+5. Our rubric scored both downloads the same: 9800 points, 29 of 29 keywords (`test/keywordHoldRuns.test.ts`). It could not see the drop, because "UI" and "Java Programming" were never in our reading of the job.
+
+**Built**
+6. **Job reading** (`jd.extract` v9): a joined line keeps each skill's wording ("Java Programming" from "Python & Java Programming"), and a duty's named surface ("browser UI") is read as a keyword.
+7. **Acronyms from the posting, by code** (`extractJd.ts` `sweepKnownSkills`): an acronym the posting writes in capitals ("UI") is offered in its letters when the model left it out. This reverses part of §212's "a short alias is the model's call"; the candidate still decides (D-25).
+8. **Graded lines are not keywords** (`isSkillName`): "Strong Python + Java Skills" and "Hands-on Device Testing" were being read as skills, and a summary said "with Strong Python + Java Skills".
+9. **Keyword hold** (`shared/scoring/keywordHold.ts`): the job's phrases counted letter for letter, wanted as often as the job says them, at most twice.
+10. **Review edits are guarded** (`reviewEdits.ts`, refusal `lowers_score`): a rewritten summary or bullet is refused when the score or the hold falls.
+11. **A rewritten role keeps a line it would lose something by dropping** (`tailorMerge.ts` `ownLinesKept`): an uncited base line stays when it holds a number or names a job phrase the written bullets lack.
+12. **Writer** (`resume.generate` v11): the summary names no job title but the headline's own; otherwise it opens with the line of work in lower case.
+13. **Writer temperature** 0.3 to 0.1 (routing v10).
+14. **Doubled word on the server** (`documentFacts.ts` `withoutDoubledWord`): the new download said "10 manual manual steps". The §267 fix runs in the client only.
+
+**Planned and left out, with the reason**
+15. A corrective rewrite pass and a summary fallback across runs. The checker's own table shows every phrase we already knew was still said as often as the job says it in the 74 file. Neither step would have changed its score.
+
+**Measured**
+16. `pnpm eval:jd -- --openrouter`: 28 postings, 137 checks, 97.1%, PASS, $0.26. Recordings were written to `evals/recordings`.
+17. Six real tailored runs of this resume and this job on a throwaway user (local stack, real model, sealed compiler), every missing keyword accepted: all completed; score 90 to 92; every job keyword matched; every phrase held; no doubled word; two pages.
+18. "Java Programming" was on the page in all six. "UI" was on the page in four: the two misses were from a reading that had skipped "browser UI", which is what item 7 was then added for; the run after item 7 had it.
+19. The role was still written as 6 + 5 or 6 + 6 bullets from 12 + 12. Item 11 kept no extra line in these runs: once every keyword is accepted and placed, no uncited line names a phrase the rewrite lacks, and the base has no numbers.
+
+**Judgement calls made without the owner**
+20. Item 7 changes a §212 decision.
+21. Item 11's rule (a number, or a job phrase the rewrite lacks) is mine. It does not answer the owner's first complaint, that a long role is condensed: that needs a decision on the six-bullet cap.
+22. Temperature 0.1 is my number.
+
+**Not verified**
+23. Jobscan was not run on any new output. I cannot run it.
+24. The reading of a job is not stable between calls even at temperature 0: two readings of this posting differed. In production the same text returns its cached reading.
+25. Nothing here is committed or deployed. The prompts and routing need `task seed-reference` on the demo after a deploy; jobs already read keep their old reading.
+26. Mobile and web suites were not rerun; no file of theirs changed.
+
+**The six-bullet cap, raised (owner, 2026-11-25: "Yes, raise it")**
+27. `bulletCap` (`resume.ts`): a role of up to six lines keeps its count; a longer one may be written with two in three of its lines, at most ten (`ROLE_WRITTEN_MAX`). Fifteen lines may be ten, twelve eight, nine six. The draft and revision schemas take ten for a role; a project stays at six.
+28. The two-in-three ratio and the ten are my numbers.
+29. Two real runs after the change: both roles went 12 + 12 to 8 + 8 (was 6 + 5 or 6 + 6), score 90, 37 of 37 keywords, every phrase held, two pages ("Up to 2 pages: 4 years of experience").
+30. Seen in those runs, not fixed: with every keyword accepted, some are worked into lines where they read oddly ("issue tracking around JavaScript Test Frameworks"). That is the accept-all case under D-25.
+31. The golden eval ran only on the reference model (inside the unit suite). A live `pnpm eval` on the longer cap was not run.

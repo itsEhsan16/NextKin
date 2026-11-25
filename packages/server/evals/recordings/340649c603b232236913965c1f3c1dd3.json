@@ -1,0 +1,31 @@
+{
+  "key": "340649c603b232236913965c1f3c1dd3",
+  "recordedAt": "2026-11-25T00:58:46.304Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"Py"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "data team",
+          "quote": "Python developer for our data team",
+          "category": "domain",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 291,
+      "outputTokens": 71,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -177,8 +177,14 @@ function isCategory(text: string): boolean {
   const noun = words.pop() ?? '';
   return CATEGORY_NOUN.test(noun) && words.every((w) => GENERIC.test(w));
 }
+/**
+ * A line that grades skills and names none of its own (owner, 2026-11-25): "Strong Python + Java
+ * Skills" and "Hands-on Device Testing" were read as keywords, and the writer put "with Strong
+ * Python + Java Skills" into a summary. The skills inside such a line are listed on their own.
+ */
+const GRADED = /\s\+\s|^hands[- ]on\b/i;
 export const isSkillName = (text: string): boolean =>
-  text.trim().split(/\s+/).length <= 6 && !NOT_A_SKILL.test(text) && (resolveSkill(TAXONOMY, text).known || !isCategory(text));
+  text.trim().split(/\s+/).length <= 6 && !NOT_A_SKILL.test(text) && !GRADED.test(text.trim()) && (resolveSkill(TAXONOMY, text).known || !isCategory(text));
 
 /** "Job title: Frontend Developer", "Position – Data Analyst": a title the text labels as one. */
 const TITLE_LINE = /^\s*(?:job\s*title|position|role|designation|job\s*role|opening)\s*[:\-–—]\s*(.{3,120}?)\s*$/im;
@@ -248,7 +254,11 @@ export function sweepKnownSkills(raw: string, listed: readonly ReadSkill[]): Rea
     // design) is the model's call, with the sentence in front of it.
     const def = skillById(TAXONOMY, mention.skillId);
     const byName = def !== undefined && normalise(mention.surface) === normalise(def.name);
-    if (!def || def.category === 'domain' || (!byName && mention.surface.length <= SWEEP_MIN_ALIAS)) continue;
+    // An acronym the posting writes in capitals ("browser UI", "ETL") is the exception (owner,
+    // 2026-11-25): a checker reported "UI" missing where one reading of the posting had skipped it and
+    // another had not. It is offered in the posting's letters; the candidate decides (D-25).
+    const acronym = mention.surface.length >= 2 && mention.surface === mention.surface.toUpperCase() && /^[A-Z]/.test(mention.surface);
+    if (!def || def.category === 'domain' || (!byName && !acronym && mention.surface.length <= SWEEP_MIN_ALIAS)) continue;
     const line = lines.find((r) => mention.start >= r.start && mention.end <= r.end);
     const sentence = line ? raw.slice(line.start, line.end).trim() : '';
     if (sentence.split(/\s+/).length < SWEEP_MIN_WORDS) continue;

@@ -1,0 +1,129 @@
+{
+  "key": "125f668fc44f890ab420752af43aef02",
+  "recordedAt": "2026-11-25T00:59:01.580Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "de",
+      "title": {
+        "text": "Backend-Entwickler (m/w/d)",
+        "quote": "Backend-Entwickler (m/w/d) bei Falkentech GmbH, Hamburg"
+      },
+      "company": {
+        "text": "Falkentech GmbH",
+        "quote": "bei Falkentech GmbH, Hamburg"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Falkentech GmbH in Hamburg is hiring a Backend-Entwickler (m/w/d) to build microservices with Python and Django. The profile asks for PostgreSQL experience and good German skills.",
+      "locations": [
+        {
+          "text": "Hamburg",
+          "quote": "bei Falkentech GmbH, Hamburg",
+          "city": "Hamburg",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Erfahrung mit PostgreSQL",
+          "quote": "Erfahrung mit PostgreSQL"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Entwicklung von Microservices mit Python und Django.",
+          "quote": "Entwicklung von Microservices mit Python und Django.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Microservices",
+          "quote": "Entwicklung von Microservices mit Python und Django.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "Python",
+          "quote": "Entwicklung von Microservices mit Python und Django.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Django",
+          "quote": "Entwicklung von Microservices mit Python und Django.",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "PostgreSQL",
+          "quote": "Erfahrung mit PostgreSQL",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Backend development",
+          "quote": "Backend-Entwickler (m/w/d)",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [
+        {
+          "name": "German",
+          "quote": "Gute Deutschkenntnisse.",
+          "importance": "required",
+          "level": null
+        }
+      ],
+      "benefits": [
+        {
+          "text": "30 Tage Urlaub",
+          "quote": "30 Tage Urlaub"
+        },
+        {
+          "text": "Jobticket",
+          "quote": "Jobticket"
+        }
+      ],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "jobTitles": [
+          "Backend-Entwickler (m/w/d)"
+        ],
+        "quote": "Backend-Entwickler (m/w/d) bei Falkentech GmbH, Hamburg"
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 376,
+      "outputTokens": 1386,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

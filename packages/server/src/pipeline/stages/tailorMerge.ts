@@ -1,10 +1,12 @@
 import { TAXONOMY } from '@nextkin/engines/datasets/taxonomy';
 import { leftOutChecker } from '@nextkin/engines/leftOut';
 import { resolveSkill } from '@nextkin/engines/normalizer';
-import { isToolUseLine } from '@nextkin/engines/quantified';
+import { isQuantified, isToolUseLine } from '@nextkin/engines/quantified';
 import { checkProjectBullets } from '@nextkin/engines/projectClaims';
 import { toResumeContent } from '@nextkin/shared/scoring/canonical';
 import { factsOfDocument, undatedRoleIds } from '@nextkin/shared/scoring/documentFacts';
+import { mentionsOf } from '@nextkin/shared/scoring/keywordHold';
+import { ROLE_BULLETS_MAX } from '@nextkin/shared/schemas/limits';
 import { estimatePages } from '@nextkin/shared/scoring/pages';
 import { withHeaderChoices } from '@nextkin/shared/scoring/headerChecks';
 import { placeInGroups, tidyGroups } from '@nextkin/shared/scoring/skillGroups';
@@ -84,6 +86,27 @@ const lineOf = (roleId: string, factId: string): number | undefined => {
   const n = Number(factId.slice(prefix.length));
   return Number.isInteger(n) ? n : undefined;
 };
+
+/**
+ * The base lines a rewrite of the role would lose (owner, 2026-11-25): the writer returns at most
+ * six bullets, and a role that had fifteen came back with five. A line no written bullet cites
+ * stays, word for word, when losing it would cost something a checker counts: it holds a number,
+ * or it names one of the job's phrases that the written bullets do not. Lines that say nothing the
+ * rewrite lacks still go, so the role is not padded back to its old length. A line the candidate
+ * wrote a result into is `keepFigures`' to place.
+ */
+function ownLinesKept(role: CanonicalRoleJson, written: CanonicalRoleJson['bullets'], ri: number, request: TailorRunInput, job: TailorJob | null): CanonicalRoleJson['bullets'] {
+  const cited = new Set(written.flatMap((b) => b.evidence));
+  const figured = new Set((request.figures ?? []).filter((f) => f.where === role.roleId).map((f) => f.line));
+  const said = written.map((b) => b.text).join(' | ');
+  const terms = job ? [...job.skills, ...(job.soft ?? [])] : [];
+  const adds = (text: string) => isQuantified(text, TAXONOMY) || terms.some((t) => mentionsOf(text, t) > 0 && mentionsOf(said, t) === 0);
+  return role.bullets
+    .map((b, bi) => ({ b, bi, fact: `${role.roleId}#r${bi}` }))
+    .filter((x) => !cited.has(x.fact) && !figured.has(x.bi) && adds(x.b.text))
+    .slice(0, Math.max(0, ROLE_BULLETS_MAX - written.length - figured.size))
+    .map((x) => kept(x.b, `kept-${ri}-${x.bi}`, x.fact));
+}
 
 /**
  * A rewritten role keeps the file's client projects: each new bullet joins the project of the base
@@ -270,7 +293,7 @@ export function mergeTailored(args: {
     // The header is the base's: employers, titles and dates are facts, never rewritten.
     const written = (rewritten?.bullets ?? []).filter((b) => !isBoltOn(b.text, ticked));
     const fresh = rewrites.has(role.roleId) && written.length > 0;
-    const next = fresh ? keepFigures(role, rewrittenRole(role, written), request.figures ?? [], ri) : keptRole(role, ri);
+    const next = fresh ? keepFigures(role, rewrittenRole(role, [...written, ...ownLinesKept(role, written, ri, request, job)]), request.figures ?? [], ri) : keptRole(role, ri);
     // A keyword the user confirmed here, or one the AI placed in its lines (toreview §112, §116), is
     // one of the role's skills from now on — only where a line of the role says it.
     const placed = rewrites.has(role.roleId) ? ticked(next.bullets.map((b) => b.text).join('\n')) : [];

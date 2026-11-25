@@ -1,0 +1,37 @@
+{
+  "key": "90fe1c2830943abc1a9ecb7bad88638f",
+  "recordedAt": "2026-11-25T00:59:49.945Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"AW"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "Cloud Engineering",
+          "quote": "Cloud Engineer",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "Computer Science",
+          "quote": "Bachelor's degree in Computer Science",
+          "category": "other",
+          "importance": "preferred"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 540,
+      "outputTokens": 125,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

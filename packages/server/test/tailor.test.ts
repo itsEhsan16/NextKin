@@ -232,7 +232,8 @@ describe('the user’s figures (toreview §129)', () => {
   it('leave a rewrite alone when it kept the figure', () => {
     const keptIt: CanonicalResumeJson = { ...GENERATED, roles: GENERATED.roles.map((r) => (r.roleId === 'pay' ? { ...r, bullets: [line('n1', 'Cut ledger API p99 latency by 45% with new PostgreSQL indexes', 'generated', ['pay#r1'])] } : r)) };
     const merged = mergeTailored({ base, generated: keptIt, request: request({ figures: [figure] }), job: JOB });
-    expect(texts(merged, 'pay')).toEqual(['Cut ledger API p99 latency by 45% with new PostgreSQL indexes']);
+    // The role's other line stays too: no written bullet cites it, and it names Go, which the job asks for.
+    expect(texts(merged, 'pay')).toEqual(['Cut ledger API p99 latency by 45% with new PostgreSQL indexes', 'Built the settlement service in Go']);
   });
 
   it('come back as written when a rewrite changed what was measured (§167)', () => {
@@ -240,7 +241,7 @@ describe('the user’s figures (toreview §129)', () => {
     const withTime = withFigures(BASE, [time]);
     const changed: CanonicalResumeJson = { ...GENERATED, roles: GENERATED.roles.map((r) => (r.roleId === 'pay' ? { ...r, bullets: [line('n1', 'Cut build time by about 10% with new PostgreSQL indexes', 'generated', ['pay#r1'])] } : r)) };
     const merged = mergeTailored({ base: withTime, generated: changed, request: request({ figures: [time] }), job: JOB });
-    expect(texts(merged, 'pay')).toEqual([time.text]);
+    expect(texts(merged, 'pay')).toEqual([time.text, 'Built the settlement service in Go']);
   });
 
   it('join the role when no rewritten line cites them', () => {
