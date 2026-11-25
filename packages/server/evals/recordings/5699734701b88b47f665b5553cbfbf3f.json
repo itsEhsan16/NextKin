@@ -1,0 +1,147 @@
+{
+  "key": "5699734701b88b47f665b5553cbfbf3f",
+  "recordedAt": "2026-11-25T00:57:31.336Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Data Analyst",
+        "quote": "Data Analyst at Northwind Retail Analytics"
+      },
+      "company": {
+        "text": "Northwind Retail Analytics",
+        "quote": "Data Analyst at Northwind Retail Analytics"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "A Data Analyst role at Northwind Retail Analytics involving daily SQL and Python work, building weekly sales dashboards in Power BI, and presenting findings to store managers. The posting asks for 2+ years in analytics and is remote within India.",
+      "locations": [
+        {
+          "text": "Remote within India",
+          "quote": "Remote within India",
+          "city": null,
+          "region": null,
+          "country": "India"
+        }
+      ],
+      "workModes": [
+        {
+          "value": "remote",
+          "quote": "Remote within India"
+        }
+      ],
+      "schedule": [
+        {
+          "text": "SQL and Python every day",
+          "quote": "SQL and Python every day",
+          "kind": "days"
+        }
+      ],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "2+ years in analytics",
+          "quote": "2+ years in analytics"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "SQL and Python every day",
+          "quote": "SQL and Python every day",
+          "group": null
+        },
+        {
+          "text": "Build weekly sales dashboards in Power BI",
+          "quote": "Build weekly sales dashboards in Power BI",
+          "group": null
+        },
+        {
+          "text": "Present findings to store managers",
+          "quote": "Present findings to store managers",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "SQL",
+          "quote": "SQL and Python every day",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Python",
+          "quote": "SQL and Python every day",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Power BI",
+          "quote": "Build weekly sales dashboards in Power BI",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "dashboards",
+          "quote": "Build weekly sales dashboards in Power BI",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "sales dashboards",
+          "quote": "Build weekly sales dashboards in Power BI",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "presenting findings",
+          "quote": "Present findings to store managers",
+          "category": "soft",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [
+        {
+          "text": "Remote within India",
+          "quote": "Remote within India",
+          "kind": "location",
+          "sensitive": false
+        }
+      ],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "quote": null,
+        "jobTitles": [
+          "Data Analyst"
+        ]
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 323,
+      "outputTokens": 1380,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "key": "931f6d83c9eab7a89f3cdf9d7b4aff54",
+  "recordedAt": "2026-11-25T00:58:52.080Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"re"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "two-wheeler",
+          "quote": "Must have a two-wheeler and valid driving licence.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "driving licence",
+          "quote": "Must have a two-wheeler and valid driving licence.",
+          "category": "other",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 360,
+      "outputTokens": 126,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

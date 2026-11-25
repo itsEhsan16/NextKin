@@ -1,0 +1,108 @@
+{
+  "key": "57e4f512600f4a4ed27b8f6bd6da7bcb",
+  "recordedAt": "2026-11-25T00:59:07.386Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Contract Data Engineer (6 months)",
+        "quote": "Contract Data Engineer (6 months)"
+      },
+      "company": {
+        "text": "Brookvale Analytics",
+        "quote": "Brookvale Analytics"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": {
+        "value": "contract",
+        "quote": "Contract Data Engineer (6 months)"
+      },
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "Six-month contract role for a data engineer to build ETL pipelines in Airflow and dbt on Snowflake, working remotely in US time zones.",
+      "locations": [],
+      "workModes": [
+        {
+          "value": "remote",
+          "quote": "Remote (US time zones)."
+        }
+      ],
+      "schedule": [],
+      "pay": [
+        {
+          "component": "fixed",
+          "quote": "Rate: $45/hr."
+        }
+      ],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "Build ETL pipelines in Airflow and dbt on Snowflake.",
+          "quote": "Build ETL pipelines in Airflow and dbt on Snowflake.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "ETL pipelines",
+          "quote": "Build ETL pipelines in Airflow and dbt on Snowflake.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "Airflow",
+          "quote": "Build ETL pipelines in Airflow and dbt on Snowflake.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "dbt",
+          "quote": "Build ETL pipelines in Airflow and dbt on Snowflake.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Snowflake",
+          "quote": "Build ETL pipelines in Airflow and dbt on Snowflake.",
+          "category": "cloud",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "quote": "Contract Data Engineer (6 months)",
+        "jobTitles": [
+          "Contract Data Engineer (6 months)"
+        ]
+      },
+      "company_quote": "Brookvale Analytics"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 319,
+      "outputTokens": 1230,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

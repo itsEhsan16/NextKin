@@ -1,0 +1,89 @@
+{
+  "key": "ce492705447d0ec9d008cba349452b28",
+  "recordedAt": "2026-11-25T01:00:00.341Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Go Developer",
+        "quote": "Go Developer"
+      },
+      "company": {
+        "text": "Ferncrest Systems",
+        "quote": "Ferncrest Systems"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a Go Developer position at Ferncrest Systems that builds payment services in Go and gRPC.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [],
+      "responsibilities": [
+        {
+          "text": "Build payment services in Go and gRPC.",
+          "quote": "Build payment services in Go and gRPC.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Go",
+          "quote": "Build payment services in Go and gRPC.",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "gRPC",
+          "quote": "Build payment services in Go and gRPC.",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "payment services",
+          "quote": "Build payment services in Go and gRPC.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "quote": "Go Developer — Ferncrest Systems",
+        "jobTitles": [
+          "Go Developer"
+        ]
+      },
+      "deal": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 330,
+      "outputTokens": 984,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

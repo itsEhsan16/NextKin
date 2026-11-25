@@ -1,0 +1,91 @@
+{
+  "key": "5ff4de495fec4d2a263e3001d67e9c6c",
+  "recordedAt": "2026-11-25T00:59:18.564Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Graduate Trainee",
+        "quote": "Graduate Trainee — Stonebridge Logistics"
+      },
+      "company": {
+        "text": "Stonebridge Logistics",
+        "quote": "Graduate Trainee — Stonebridge Logistics"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "entry",
+        "quote": "Freshers welcome."
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "Graduate trainee role at Stonebridge Logistics for freshers, aimed at learning route planning and warehouse operations.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "Freshers welcome",
+          "quote": "Freshers welcome."
+        }
+      ],
+      "responsibilities": [],
+      "skills": [
+        {
+          "name": "route planning",
+          "quote": "Learn route planning and warehouse operations.",
+          "category": "domain",
+          "importance": "preferred"
+        },
+        {
+          "name": "warehouse operations",
+          "quote": "Learn route planning and warehouse operations.",
+          "category": "domain",
+          "importance": "preferred"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [
+        {
+          "text": "Apply by 15 Oct 2026",
+          "quote": "Apply by 15 Oct 2026.",
+          "kind": "deadline"
+        }
+      ],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "quote": "Graduate Trainee — Stonebridge Logistics",
+        "jobTitles": [
+          "Graduate Trainee"
+        ]
+      },
+      "responsibilities_placeholder": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 306,
+      "outputTokens": 1049,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

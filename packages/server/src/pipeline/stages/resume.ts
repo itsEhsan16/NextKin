@@ -82,6 +82,10 @@ export function stageJdOf(row: NonNullable<Awaited<ReturnType<typeof readJdRow>>
   return jd;
 }
 
+/** The bullets a role is written with: six, and for a longer role up to ten (`bulletCap`). */
+const ROLE_WRITTEN_BASE = 6;
+export const ROLE_WRITTEN_MAX = 10;
+
 /** How often a job must say a term for the writer to say it twice, and how many such terms it is given. */
 const REPEATED_MIN = 3;
 const REPEATED_MAX = 8;
@@ -195,19 +199,27 @@ export const resumeDraftSchema = z.object({
     )
     // Every skill a stored resume can hold: a run may ask for all of a job's keywords (limits.ts).
     .max(MAX_SKILLS),
-  roles: z.array(z.object({ roleId: z.string().max(80), bullets: z.array(cited).max(6) })).max(20),
+  roles: z.array(z.object({ roleId: z.string().max(80), bullets: z.array(cited).max(ROLE_WRITTEN_MAX) })).max(20),
   /** A tailored run's projects (toreview §113): each project's bullets, citing its own lines. */
   projects: z.array(z.object({ projectId: z.string().max(80), bullets: z.array(cited).max(6) })).max(10),
 });
 export type ResumeDraft = z.infer<typeof resumeDraftSchema>;
 
 /**
- * How many bullets a role may have: one per stated line, at most 6; a role known only by its
+ * How many bullets a role may have: one per stated line up to six; a role known only by its
  * description gets 3. A tailored run's facts are the base's own bullets, so it is never padded
  * past the original (toreview §111.6: a one-page resume came back two pages of filler).
+ *
+ * A role with more than six lines may keep two in three of them, at most `ROLE_WRITTEN_MAX`
+ * (owner, 2026-11-25: "resume generation compresses all those important details"; a role of
+ * fifteen lines came back as five). Fifteen lines may be ten, twelve eight, nine six. The writer
+ * still writes fewer when facts overlap, and the page fit still trims when the page needs it.
  */
-export const bulletCap = (r: ProfileFacts['roles'][number]): number =>
-  Math.min(6, r.responsibilities.length > 0 ? r.responsibilities.length : r.description ? 3 : 0);
+export const bulletCap = (r: ProfileFacts['roles'][number]): number => {
+  const lines = r.responsibilities.length;
+  if (lines === 0) return r.description ? 3 : 0;
+  return lines <= ROLE_WRITTEN_BASE ? lines : Math.min(ROLE_WRITTEN_MAX, Math.max(ROLE_WRITTEN_BASE, Math.ceil((lines * 2) / 3)));
+};
 
 /** The generator's input: facts with ids, the plan, the JD's requirements. No contact field (G5). */
 export function generationInput(

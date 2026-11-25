@@ -1,0 +1,168 @@
+{
+  "key": "d69f219fee3f75858dfd3613c9bbbcc1",
+  "recordedAt": "2026-11-25T00:59:48.652Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Cloud Engineer",
+        "quote": "Cloud Engineer — Northgate Insurance"
+      },
+      "company": {
+        "text": "Northgate Insurance",
+        "quote": "Cloud Engineer — Northgate Insurance"
+      },
+      "department": null,
+      "industry": {
+        "text": "Insurance",
+        "quote": "Experience in insurance is a plus"
+      },
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a cloud engineering position based in Leeds, UK, hybrid. The engineer runs the AWS estate and its Terraform modules, builds deployment pipelines in GitHub Actions, and works with underwriting teams on data platforms.",
+      "locations": [
+        {
+          "text": "Leeds, UK",
+          "quote": "Leeds, UK · Hybrid",
+          "city": "Leeds",
+          "region": null,
+          "country": "UK"
+        }
+      ],
+      "workModes": [
+        {
+          "value": "hybrid",
+          "quote": "Leeds, UK · Hybrid"
+        }
+      ],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "4+ years of AWS in production",
+          "quote": "4+ years of AWS in production"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Run our AWS estate and its Terraform modules",
+          "quote": "Run our AWS estate and its Terraform modules",
+          "group": null
+        },
+        {
+          "text": "Build deployment pipelines in GitHub Actions",
+          "quote": "Build deployment pipelines in GitHub Actions",
+          "group": null
+        },
+        {
+          "text": "Work with Northgate Insurance underwriting teams on data platforms",
+          "quote": "Work with Northgate Insurance underwriting teams on data platforms",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "AWS",
+          "category": "cloud",
+          "importance": "required",
+          "quote": "4+ years of AWS in production"
+        },
+        {
+          "name": "Terraform",
+          "category": "tool",
+          "importance": "required",
+          "quote": "Terraform and Kubernetes"
+        },
+        {
+          "name": "Terraform modules",
+          "category": "tool",
+          "importance": "required",
+          "quote": "Run our AWS estate and its Terraform modules"
+        },
+        {
+          "name": "Kubernetes",
+          "category": "tool",
+          "importance": "required",
+          "quote": "Terraform and Kubernetes"
+        },
+        {
+          "name": "GitHub Actions",
+          "category": "tool",
+          "importance": "required",
+          "quote": "Build deployment pipelines in GitHub Actions"
+        },
+        {
+          "name": "deployment pipelines",
+          "category": "other",
+          "importance": "required",
+          "quote": "Build deployment pipelines in GitHub Actions"
+        },
+        {
+          "name": "AWS Certified Solutions Architect",
+          "category": "other",
+          "importance": "preferred",
+          "quote": "AWS Certified Solutions Architect is preferred"
+        },
+        {
+          "name": "data platforms",
+          "category": "domain",
+          "importance": "required",
+          "quote": "Work with Northgate Insurance underwriting teams on data platforms"
+        },
+        {
+          "name": "underwriting",
+          "category": "domain",
+          "importance": "preferred",
+          "quote": "Work with Northgate Insurance underwriting teams on data platforms"
+        },
+        {
+          "name": "insurance",
+          "category": "domain",
+          "importance": "preferred",
+          "quote": "Experience in insurance is a plus"
+        }
+      ],
+      "education": [
+        {
+          "text": "Bachelor's degree in Computer Science or a related field",
+          "quote": "Bachelor's degree in Computer Science or a related field",
+          "importance": "required"
+        }
+      ],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "single_job",
+        "jobTitles": [
+          "Cloud Engineer"
+        ],
+        "quote": null
+      },
+      "benefits_placeholder": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 428,
+      "outputTokens": 1725,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "key": "1d726bd0ac35c98611d843e6426e22ea",
+  "recordedAt": "2026-11-25T00:57:38.983Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"Go"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "Backend Development",
+          "quote": "Backend Developer",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "schema design",
+          "quote": "design and maintain Go services and PostgreSQL schemas",
+          "category": "domain",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 421,
+      "outputTokens": 115,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

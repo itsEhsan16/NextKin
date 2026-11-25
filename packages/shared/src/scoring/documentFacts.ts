@@ -105,6 +105,13 @@ export function factsOfDocument(
  * isn't there is dropped.
  * The run's facts and its merge both read the base through this, so they agree.
  */
+/**
+ * A result line with a word said twice in a row made one ("removed 10 manual manual steps"): the
+ * client joins the amount to the line, and an older client build still doubles the unit (owner,
+ * 2026-11-25). Words of three letters or more only, so "1 in 10 10-minute calls" is left alone.
+ */
+export const withoutDoubledWord = (text: string): string => text.replace(/(?<![\p{L}\p{N}])([\p{L}]{3,})(?:\s+\1)+(?![\p{L}\p{N}])/giu, '$1');
+
 export function withFigures(doc: CanonicalResumeJson, figures: readonly { where: string; line: number; text: string }[] = []): CanonicalResumeJson {
   if (figures.length === 0) return doc;
   return {
@@ -117,7 +124,7 @@ export function withFigures(doc: CanonicalResumeJson, figures: readonly { where:
         ...project,
         bullets: project.bullets.map((b, i) => {
           const figure = mine.find((f) => f.line === i);
-          return figure ? { ...b, text: figure.text.trim(), origin: 'user' as const, evidence: [] } : b;
+          return figure ? { ...b, text: withoutDoubledWord(figure.text.trim()), origin: 'user' as const, evidence: [] } : b;
         }),
       };
     }),
@@ -128,7 +135,7 @@ export function withFigures(doc: CanonicalResumeJson, figures: readonly { where:
         ...role,
         bullets: role.bullets.map((b, i) => {
           const figure = mine.find((f) => f.line === i);
-          return figure ? { ...b, text: figure.text.trim(), origin: 'user' as const, evidence: [] } : b;
+          return figure ? { ...b, text: withoutDoubledWord(figure.text.trim()), origin: 'user' as const, evidence: [] } : b;
         }),
       };
     }),

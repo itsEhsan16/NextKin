@@ -1,0 +1,40 @@
+{
+  "key": "05934164a3b886ed9e11d284eb44f9be",
+  "recordedAt": "2026-11-25T00:58:53.770Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Android Developer",
+        "quote": "Android Developer"
+      },
+      "company": {
+        "text": "Mintcove Apps",
+        "quote": "Mintcove Apps · Kochi"
+      },
+      "page": {
+        "kind": "single_job",
+        "quote": "Android Developer",
+        "jobTitles": [
+          "Android Developer"
+        ]
+      },
+      "summary": "The posting is for an Android Developer role at Mintcove Apps in Kochi. It asks for building Android apps in Kotlin with Jetpack Compose and at least 3 years of Android experience."
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 389,
+      "outputTokens": 272,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

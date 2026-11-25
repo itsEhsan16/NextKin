@@ -1,31 +1,31 @@
 {
   "mode": "recorded",
-  "golden": "jd-structure-0.1.0",
-  "cases": 22,
+  "golden": "jd-structure-0.2.0",
+  "cases": 28,
   "checks": [
     {
       "caseId": "formatted",
       "check": "required:React",
       "pass": true,
-      "detail": "React, TypeScript, REST APIs, UI components"
+      "detail": "React, TypeScript, REST APIs, accessible UI components"
     },
     {
       "caseId": "formatted",
       "check": "required:TypeScript",
       "pass": true,
-      "detail": "React, TypeScript, REST APIs, UI components"
+      "detail": "React, TypeScript, REST APIs, accessible UI components"
     },
     {
       "caseId": "formatted",
       "check": "preferred:GraphQL",
       "pass": true,
-      "detail": "GraphQL, Storybook"
+      "detail": "GraphQL, Storybook, UI"
     },
     {
       "caseId": "formatted",
       "check": "notRequired:GraphQL",
       "pass": true,
-      "detail": "React, TypeScript, REST APIs, UI components"
+      "detail": "React, TypeScript, REST APIs, accessible UI components"
     },
     {
       "caseId": "formatted",
@@ -69,16 +69,21 @@
       "detail": "4"
     },
     {
+      "caseId": "formatted",
+      "check": "noPage",
+      "pass": true
+    },
+    {
       "caseId": "one-paragraph",
       "check": "required:React",
       "pass": true,
-      "detail": "React, Node.js, REST APIs, dashboards, reconciliation modules"
+      "detail": "React, Node.js, REST APIs, secure payment APIs, dashboards, reconciliation modules"
     },
     {
       "caseId": "one-paragraph",
       "check": "required:Node.js",
       "pass": true,
-      "detail": "React, Node.js, REST APIs, dashboards, reconciliation modules"
+      "detail": "React, Node.js, REST APIs, secure payment APIs, dashboards, reconciliation modules"
     },
     {
       "caseId": "one-paragraph",
@@ -124,13 +129,13 @@
       "caseId": "no-headings-bullets",
       "check": "required:SQL",
       "pass": true,
-      "detail": "SQL, Python, Power BI, dashboards, sales dashboards"
+      "detail": "SQL, Python, Power BI, dashboards, sales dashboards, Data Analyst, analytics"
     },
     {
       "caseId": "no-headings-bullets",
       "check": "required:Python",
       "pass": true,
-      "detail": "SQL, Python, Power BI, dashboards, sales dashboards"
+      "detail": "SQL, Python, Power BI, dashboards, sales dashboards, Data Analyst, analytics"
     },
     {
       "caseId": "no-headings-bullets",
@@ -154,13 +159,13 @@
       "caseId": "repeated",
       "check": "required:Go",
       "pass": true,
-      "detail": "Go, PostgreSQL, Go services"
+      "detail": "Go, PostgreSQL, Go services, PostgreSQL schemas"
     },
     {
       "caseId": "repeated",
       "check": "required:PostgreSQL",
       "pass": true,
-      "detail": "Go, PostgreSQL, Go services"
+      "detail": "Go, PostgreSQL, Go services, PostgreSQL schemas"
     },
     {
       "caseId": "repeated",
@@ -220,13 +225,13 @@
       "caseId": "years-conflict",
       "check": "required:Kubernetes",
       "pass": true,
-      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation, production infrastructure"
+      "detail": "Kubernetes, Terraform, AWS, production infrastructure, CI/CD pipelines, on-call rotation, DevOps"
     },
     {
       "caseId": "years-conflict",
       "check": "required:Terraform",
       "pass": true,
-      "detail": "Kubernetes, Terraform, AWS, CI/CD pipelines, on-call rotation, production infrastructure"
+      "detail": "Kubernetes, Terraform, AWS, production infrastructure, CI/CD pipelines, on-call rotation, DevOps"
     },
     {
       "caseId": "years-conflict",
@@ -238,13 +243,13 @@
       "caseId": "duties-and-skills",
       "check": "required:Python",
       "pass": true,
-      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models, Machine Learning Engineer"
     },
     {
       "caseId": "duties-and-skills",
       "check": "required:PyTorch",
       "pass": true,
-      "detail": "Python, PyTorch, Docker, FastAPI, ranking models"
+      "detail": "Python, PyTorch, Docker, FastAPI, ranking models, Machine Learning Engineer"
     },
     {
       "caseId": "duties-and-skills",
@@ -315,8 +320,8 @@
     {
       "caseId": "many-locations",
       "check": "locations",
-      "pass": false,
-      "detail": "1"
+      "pass": true,
+      "detail": "3"
     },
     {
       "caseId": "remote-vs-office",
@@ -334,31 +339,31 @@
       "caseId": "big-stack",
       "check": "required:TypeScript",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed, reliability"
     },
     {
       "caseId": "big-stack",
       "check": "required:Node.js",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed, reliability"
     },
     {
       "caseId": "big-stack",
       "check": "required:PostgreSQL",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed, reliability"
     },
     {
       "caseId": "big-stack",
       "check": "required:Kubernetes",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed, reliability"
     },
     {
       "caseId": "big-stack",
       "check": "required:AWS",
       "pass": true,
-      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus"
+      "detail": "TypeScript, Node.js, React, Next.js, PostgreSQL, Redis, Kafka, Docker, Kubernetes, Terraform, AWS, GitHub Actions, Grafana, Prometheus, deployment speed, reliability"
     },
     {
       "caseId": "table",
@@ -405,7 +410,7 @@
       "caseId": "incomplete",
       "check": "required:Python",
       "pass": true,
-      "detail": "Python"
+      "detail": "Python, data team"
     },
     {
       "caseId": "incomplete",
@@ -433,8 +438,7 @@
     {
       "caseId": "eligibility",
       "check": "workMode",
-      "pass": true,
-      "detail": "field"
+      "pass": false
     },
     {
       "caseId": "eligibility",
@@ -445,50 +449,45 @@
     {
       "caseId": "scraped-chrome",
       "check": "required:Kotlin",
-      "pass": true,
-      "detail": "Android, Kotlin, Jetpack Compose"
+      "pass": false
     },
     {
       "caseId": "scraped-chrome",
       "check": "minYears",
-      "pass": true,
-      "detail": "3"
+      "pass": false,
+      "detail": "undefined"
     },
     {
       "caseId": "scraped-chrome",
       "check": "chrome:applicants",
-      "pass": true,
-      "detail": "build android apps in kotlin with jetpack compose."
+      "pass": true
     },
     {
       "caseId": "scraped-chrome",
       "check": "chrome:Apply for job",
-      "pass": true,
-      "detail": "build android apps in kotlin with jetpack compose."
+      "pass": true
     },
     {
       "caseId": "scraped-chrome",
       "check": "chrome:Similar jobs",
-      "pass": true,
-      "detail": "build android apps in kotlin with jetpack compose."
+      "pass": true
     },
     {
       "caseId": "scraped-chrome",
       "check": "chrome:Cookie",
-      "pass": true,
-      "detail": "build android apps in kotlin with jetpack compose."
+      "pass": true
     },
     {
       "caseId": "german",
       "check": "required:Python",
       "pass": true,
-      "detail": "Python, Django, PostgreSQL, Microservices"
+      "detail": "Microservices, Python, Django, PostgreSQL"
     },
     {
       "caseId": "german",
       "check": "required:Django",
       "pass": true,
-      "detail": "Python, Django, PostgreSQL, Microservices"
+      "detail": "Microservices, Python, Django, PostgreSQL"
     },
     {
       "caseId": "german",
@@ -512,7 +511,7 @@
       "caseId": "hourly-contract",
       "check": "pay",
       "pass": true,
-      "detail": "{\"component\":\"unknown\",\"min\":45,\"max\":45,\"currency\":\"USD\",\"period\":\"hour\"}"
+      "detail": "{\"component\":\"fixed\",\"min\":45,\"max\":45,\"currency\":\"USD\",\"period\":\"hour\"}"
     },
     {
       "caseId": "hourly-contract",
@@ -554,6 +553,220 @@
       "check": "issue:application",
       "pass": true,
       "detail": "application"
+    },
+    {
+      "caseId": "listing-page",
+      "check": "page",
+      "pass": true,
+      "detail": "several_jobs"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "required:Python",
+      "pass": true,
+      "detail": "Python, pytest, Selenium, automated tests, regression suites, software testing"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "required:Selenium",
+      "pass": true,
+      "detail": "Python, pytest, Selenium, automated tests, regression suites, software testing"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "minYears",
+      "pass": true,
+      "detail": "2"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "issue:application",
+      "pass": true,
+      "detail": "application"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "4"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "title",
+      "pass": true,
+      "detail": "QA Engineer"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "company",
+      "pass": true,
+      "detail": "Marlowe Robotics"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "notSkill:Marlowe Robotics",
+      "pass": true,
+      "detail": "Python, pytest, Selenium, automated tests, regression suites, software testing, Jira, CI pipelines"
+    },
+    {
+      "caseId": "closed-with-text",
+      "check": "page",
+      "pass": true,
+      "detail": "closed"
+    },
+    {
+      "caseId": "removed-page",
+      "check": "noPay",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "caseId": "removed-page",
+      "check": "noYears",
+      "pass": true,
+      "detail": "undefined"
+    },
+    {
+      "caseId": "removed-page",
+      "check": "page",
+      "pass": true,
+      "detail": "closed"
+    },
+    {
+      "caseId": "sign-in-page",
+      "check": "noPay",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "caseId": "sign-in-page",
+      "check": "noYears",
+      "pass": true,
+      "detail": "undefined"
+    },
+    {
+      "caseId": "sign-in-page",
+      "check": "page",
+      "pass": true,
+      "detail": "not_a_job"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "required:Java",
+      "pass": true,
+      "detail": "Java, SQL, Spring Boot, REST APIs, PostgreSQL, on-call"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "required:SQL",
+      "pass": true,
+      "detail": "Java, SQL, Spring Boot, REST APIs, PostgreSQL, on-call"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "preferred:Kafka",
+      "pass": true,
+      "detail": "Kafka"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "title",
+      "pass": true,
+      "detail": "Software Engineer I / Software Engineer II"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "company",
+      "pass": true,
+      "detail": "Quillmark Systems"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "notSkill:Quillmark Systems",
+      "pass": true,
+      "detail": "Java, SQL, Spring Boot, REST APIs, PostgreSQL, on-call, Kafka"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "notSkill:Frontend Engineer",
+      "pass": true,
+      "detail": "Java, SQL, Spring Boot, REST APIs, PostgreSQL, on-call, Kafka"
+    },
+    {
+      "caseId": "two-levels",
+      "check": "noPage",
+      "pass": true
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "required:AWS",
+      "pass": true,
+      "detail": "AWS, Terraform, Terraform modules, Kubernetes, GitHub Actions, deployment pipelines, data platforms"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "required:Terraform",
+      "pass": true,
+      "detail": "AWS, Terraform, Terraform modules, Kubernetes, GitHub Actions, deployment pipelines, data platforms"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "required:Kubernetes",
+      "pass": true,
+      "detail": "AWS, Terraform, Terraform modules, Kubernetes, GitHub Actions, deployment pipelines, data platforms"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "workMode",
+      "pass": true,
+      "detail": "hybrid"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "responsibilities",
+      "pass": true,
+      "detail": "3"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "title",
+      "pass": true,
+      "detail": "Cloud Engineer"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "company",
+      "pass": true,
+      "detail": "Northgate Insurance"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "notSkill:Northgate Insurance",
+      "pass": true,
+      "detail": "AWS, Terraform, Terraform modules, Kubernetes, GitHub Actions, deployment pipelines, data platforms, AWS Certified Solutions Architect, underwriting, insurance, Computer Science"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "education:Bachelor",
+      "pass": true,
+      "detail": "Bachelor's degree in Computer Science or a related field"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "education:Certified",
+      "pass": false,
+      "detail": "Bachelor's degree in Computer Science or a related field"
+    },
+    {
+      "caseId": "degree-and-certificate",
+      "check": "noPage",
+      "pass": true
     },
     {
       "caseId": "perks-vs-schedule",
@@ -598,8 +811,9 @@
       "detail": "null"
     }
   ],
-  "passRate": 0.99,
+  "passRate": 0.9708029197080292,
   "invented": [],
+  "keywordRecall": 0.975609756097561,
   "verdict": {
     "pass": true,
     "failures": []

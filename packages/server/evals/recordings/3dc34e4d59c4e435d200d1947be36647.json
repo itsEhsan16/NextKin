@@ -1,0 +1,107 @@
+{
+  "key": "3dc34e4d59c4e435d200d1947be36647",
+  "recordedAt": "2026-11-25T00:58:30.522Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Accounts Executive",
+        "quote": "Accounts Executive — Greenmark Traders"
+      },
+      "company": {
+        "text": "Greenmark Traders",
+        "quote": "Accounts Executive — Greenmark Traders"
+      },
+      "experience": [
+        {
+          "text": "2-4 years",
+          "quote": "2-4 years"
+        }
+      ],
+      "pay": [
+        {
+          "component": "unknown",
+          "quote": "₹6-9 LPA"
+        }
+      ],
+      "locations": [
+        {
+          "text": "Ahmedabad",
+          "quote": "Ahmedabad",
+          "city": "Ahmedabad",
+          "region": null,
+          "country": null
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Handle invoicing, GST returns and vendor reconciliation.",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Tally",
+          "quote": "Tally, GST filing, Excel",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "GST filing",
+          "quote": "Tally, GST filing, Excel",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "Excel",
+          "quote": "Tally, GST filing, Excel",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "invoicing",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "GST returns",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "vendor reconciliation",
+          "quote": "Handle invoicing, GST returns and vendor reconciliation.",
+          "category": "domain",
+          "importance": "required"
+        }
+      ],
+      "page": {
+        "kind": "single_job",
+        "jobTitles": [
+          "Accounts Executive"
+        ],
+        "quote": null
+      },
+      "application": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 359,
+      "outputTokens": 814,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

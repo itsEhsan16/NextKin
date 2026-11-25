@@ -1,0 +1,172 @@
+{
+  "key": "b55953eaad7c4279cb5a23f0a678d594",
+  "recordedAt": "2026-11-25T00:59:29.196Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "QA Engineer",
+        "quote": "QA Engineer — Marlowe Robotics"
+      },
+      "company": {
+        "text": "Marlowe Robotics",
+        "quote": "QA Engineer — Marlowe Robotics"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": {
+        "value": "full_time",
+        "quote": "Pune, India · Full-time"
+      },
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a QA Engineer position at Marlowe Robotics in Pune, India, testing firmware and the mobile app for warehouse robots. The work includes writing automated Python/pytest tests, running regression suites before releases, and reporting defects in Jira. The posting is marked as no longer accepting applications.",
+      "locations": [
+        {
+          "text": "Pune, India",
+          "quote": "Pune, India · Full-time",
+          "city": "Pune",
+          "region": null,
+          "country": "India"
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "2+ years of software testing experience",
+          "quote": "2+ years of software testing experience"
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "You will test the firmware and the mobile app for our warehouse robots.",
+          "quote": "You will test the firmware and the mobile app for our warehouse robots.",
+          "group": null
+        },
+        {
+          "text": "Write automated tests in Python with pytest",
+          "quote": "Write automated tests in Python with pytest",
+          "group": null
+        },
+        {
+          "text": "Run regression suites before every release",
+          "quote": "Run regression suites before every release",
+          "group": null
+        },
+        {
+          "text": "Report defects in Jira and follow them to closure",
+          "quote": "Report defects in Jira and follow them to closure",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Python",
+          "quote": "Write automated tests in Python with pytest",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "pytest",
+          "quote": "Write automated tests in Python with pytest",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Selenium",
+          "quote": "Python and Selenium are required",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Jira",
+          "quote": "Report defects in Jira and follow them to closure",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "CI pipelines",
+          "quote": "Experience with CI pipelines is a plus",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "automated tests",
+          "quote": "Write automated tests in Python with pytest",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "regression suites",
+          "quote": "Run regression suites before every release",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "defect reporting",
+          "quote": "Report defects in Jira and follow them to closure",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "firmware testing",
+          "quote": "You will test the firmware and the mobile app for our warehouse robots.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "mobile app testing",
+          "quote": "You will test the firmware and the mobile app for our warehouse robots.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "software testing",
+          "quote": "2+ years of software testing experience",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "company_website": null,
+      "application": [
+        {
+          "kind": "deadline",
+          "text": "This job is no longer accepting applications.",
+          "quote": "This job is no longer accepting applications."
+        }
+      ],
+      "extras": [],
+      "issues": [],
+      "page": {
+        "kind": "closed",
+        "jobTitles": [],
+        "quote": "This job is no longer accepting applications."
+      },
+      "website": null
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 400,
+      "outputTokens": 1838,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

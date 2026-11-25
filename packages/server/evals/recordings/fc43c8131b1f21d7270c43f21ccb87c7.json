@@ -1,0 +1,31 @@
+{
+  "key": "fc43c8131b1f21d7270c43f21ccb87c7",
+  "recordedAt": "2026-11-25T00:58:00.854Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"Py"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "Machine Learning Engineer",
+          "quote": "Machine Learning Engineer, Tallyhawk AI",
+          "category": "other",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 428,
+      "outputTokens": 87,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

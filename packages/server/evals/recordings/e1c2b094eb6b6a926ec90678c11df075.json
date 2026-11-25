@@ -1,0 +1,74 @@
+{
+  "key": "e1c2b094eb6b6a926ec90678c11df075",
+  "recordedAt": "2026-11-25T00:58:44.871Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "page": {
+        "kind": "single_job",
+        "quote": "We need a Python developer for our data team.",
+        "jobTitles": []
+      },
+      "language": "en",
+      "title": {
+        "text": "Python developer",
+        "quote": "We need a Python developer for our data team."
+      },
+      "department": {
+        "text": "data team",
+        "quote": "We need a Python developer for our data team."
+      },
+      "summary": "The posting seeks a Python developer for the company's data team. No further duties or requirements are stated.",
+      "application": [
+        {
+          "kind": "method",
+          "text": "Send your CV to [email]",
+          "quote": "Send your CV to [email]."
+        }
+      ],
+      "skills": [
+        {
+          "name": "Python",
+          "category": "language",
+          "importance": "required",
+          "quote": "We need a Python developer for our data team."
+        }
+      ],
+      "employmentType": null,
+      "seniority": null,
+      "openings": null,
+      "referenceId": null,
+      "company": null,
+      "industry": null,
+      "website": null,
+      "negotiable": null,
+      "workModes": [],
+      "locations": [],
+      "responsibilities": [],
+      "pay": [],
+      "schedule": [],
+      "experience": [],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "extras": [],
+      "issues": []
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 270,
+      "outputTokens": 846,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

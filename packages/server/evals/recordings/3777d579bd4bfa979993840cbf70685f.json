@@ -1,0 +1,130 @@
+{
+  "key": "3777d579bd4bfa979993840cbf70685f",
+  "recordedAt": "2026-11-25T00:57:53.452Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Senior DevOps Engineer",
+        "quote": "Senior DevOps Engineer — Harbor Cloud"
+      },
+      "company": {
+        "text": "Harbor Cloud",
+        "quote": "Senior DevOps Engineer — Harbor Cloud"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": null,
+      "seniority": {
+        "value": "senior",
+        "quote": "Senior DevOps Engineer"
+      },
+      "openings": null,
+      "referenceId": null,
+      "summary": "The role is a senior DevOps engineer position that requires experience running production infrastructure on AWS, Kubernetes and Terraform. The engineer will own the CI/CD pipelines and the on-call rotation.",
+      "locations": [],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "3+ years of experience with Kubernetes and Terraform",
+          "quote": "3+ years of experience with Kubernetes and Terraform."
+        },
+        {
+          "text": "5-7 years of experience running production infrastructure on AWS",
+          "quote": "you bring 5-7 years of experience running production infrastructure on AWS."
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "You will own our CI/CD pipelines and on-call rotation.",
+          "quote": "You will own our CI/CD pipelines and on-call rotation.",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Kubernetes",
+          "quote": "3+ years of experience with Kubernetes and Terraform.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "Terraform",
+          "quote": "3+ years of experience with Kubernetes and Terraform.",
+          "category": "tool",
+          "importance": "required"
+        },
+        {
+          "name": "AWS",
+          "quote": "you bring 5-7 years of experience running production infrastructure on AWS.",
+          "category": "cloud",
+          "importance": "required"
+        },
+        {
+          "name": "production infrastructure",
+          "quote": "you bring 5-7 years of experience running production infrastructure on AWS.",
+          "category": "domain",
+          "importance": "required"
+        },
+        {
+          "name": "CI/CD pipelines",
+          "quote": "You will own our CI/CD pipelines and on-call rotation.",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "on-call rotation",
+          "quote": "You will own our CI/CD pipelines and on-call rotation.",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "conflict",
+          "field": "experience",
+          "note": "Two different experience requirements: 3+ years with Kubernetes and Terraform, and 5-7 years running production infrastructure on AWS.",
+          "quotes": [
+            "3+ years of experience with Kubernetes and Terraform.",
+            "you bring 5-7 years of experience running production infrastructure on AWS."
+          ]
+        }
+      ],
+      "page": {
+        "kind": "single_job",
+        "quote": null,
+        "jobTitles": [
+          "Senior DevOps Engineer"
+        ]
+      },
+      "summaryNote": "Summary is written from the posting only.",
+      "dummy": "x"
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 346,
+      "outputTokens": 1542,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

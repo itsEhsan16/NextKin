@@ -4,14 +4,16 @@ import { lint } from '@nextkin/engines/lint';
 import type { CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
 import { scoringDocumentOf } from '@nextkin/shared/scoring/canonical';
 import { headerStatements } from '@nextkin/shared/scoring/headerChecks';
+import { holdOf, holdTerms } from '@nextkin/shared/scoring/keywordHold';
 import { EXPERIENCED_MONTHS, pageBudget } from '@nextkin/shared/scoring/pageBudget';
+import { holdsWorth } from '@nextkin/shared/scoring/worth';
 
 import { userPaper } from '../../services/renders';
 import { LlmError } from '../../ai/types';
 import { StageError, type StageContext, type StageDef } from '../stages';
 import { periodOf, readRun, type RunInput, type StageJd } from './common';
 import { compiledMeasure, estimateMeasure, fitToPages, removalOrder, safeRemovals } from './pageFit';
-import { worthGuard } from './persist';
+import { scoringJdOfStage, worthAgainst, worthGuard } from './persist';
 import { generationInput, type ResumePlan } from './resume';
 import { applyReview, emptyReview, reviewSchema, type ReviewRecord } from './reviewEdits';
 import { changesOf } from './tailorChanges';
@@ -84,7 +86,7 @@ export const reviewStage: StageDef = {
           context: { userId: ctx.userId, generationId: ctx.generationId, correlationId: ctx.correlationId, promptVersionId: prompt.id },
         });
         meta = answer.meta;
-        ({ doc, record } = applyReview(doc, answer.data, { base, facts: run.snapshot.facts, tailor, asOf: run.asOf }));
+        ({ doc, record } = applyReview(doc, answer.data, { base, facts: run.snapshot.facts, tailor, asOf: run.asOf, holds: editGuard(run, jd) }));
       } catch (error) {
         if (error instanceof StageError) throw error;
         // The run goes on without the review, as before, but never silently: the cause is logged,
@@ -121,6 +123,19 @@ async function finish(ctx: StageContext, run: RunInput, tailor: TailorRunInput, 
       changes: changesOf({ base, final: document, request: tailor, stripped: validated.stripped.length, pages: fit.pages, review }),
     },
   };
+}
+
+/**
+ * The check on each rewrite the review proposes (owner, 2026-11-25): the resume is worth no less to
+ * the score, and says no fewer of the job's phrases in the job's own words. One run's summary named
+ * "Log Analysis" and "browser UI"; the next said "analyzes logs", and an outside checker took ten
+ * points off while the rubric saw no change.
+ */
+function editGuard(run: RunInput, jd: StageJd): (before: CanonicalResumeJson, after: CanonicalResumeJson) => boolean {
+  const terms = holdTerms({ skills: [...jd.requiredSkills, ...jd.preferredSkills, ...jd.tools, ...(jd.softSkills ?? [])], rawText: jd.rawText });
+  const scoringJd = scoringJdOfStage(jd);
+  const worth = (document: CanonicalResumeJson) => worthAgainst({ document, facts: run.snapshot.facts, contact: run.snapshot.contact, jd: scoringJd, asOf: run.asOf });
+  return (before, after) => holdsWorth(worth(before), worth(after)) && holdOf(after, terms).held >= holdOf(before, terms).held;
 }
 
 /**

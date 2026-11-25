@@ -22,7 +22,7 @@ import type { PromptVersion } from '../../services/prompts';
 import type { ContactPresence } from '@nextkin/shared/scoring/adapters';
 import { StageError, type StageContext, type StageDef } from '../stages';
 import { readRun, type StageJd } from './common';
-import { generationInput, REVISE_TEMPLATE, type ResumePlan } from './resume';
+import { generationInput, REVISE_TEMPLATE, ROLE_WRITTEN_MAX, type ResumePlan } from './resume';
 import type { ReviewRecord } from './reviewEdits';
 import { mergeTailored, strippedInUse, tailorOf, type TailorRunInput } from './tailorMerge';
 
@@ -41,7 +41,7 @@ const cited = z.object({ text: z.string().trim().min(1).max(CLAIM_TEXT_MAX), evi
 export const revisionSchema = z.object({
   summary: cited.nullable(),
   skills: z.array(z.object({ name: z.string().trim().min(1).max(120), evidence: z.array(z.string().max(80)).min(1).max(5) })).nullable(),
-  roles: z.array(z.object({ roleId: z.string().max(80), bullets: z.array(cited).max(6) })),
+  roles: z.array(z.object({ roleId: z.string().max(80), bullets: z.array(cited).max(ROLE_WRITTEN_MAX) })),
 });
 
 export interface ValidationOutput {

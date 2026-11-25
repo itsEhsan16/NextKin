@@ -1,0 +1,31 @@
+{
+  "key": "f9e5b4524a3da541202bda30e515b2fd",
+  "recordedAt": "2026-11-25T00:59:14.199Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"pr"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "variable pay",
+          "quote": "includes 20% variable pay",
+          "category": "other",
+          "importance": "preferred"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 372,
+      "outputTokens": 72,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

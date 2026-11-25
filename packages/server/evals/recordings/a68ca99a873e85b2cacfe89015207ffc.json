@@ -1,0 +1,154 @@
+{
+  "key": "a68ca99a873e85b2cacfe89015207ffc",
+  "recordedAt": "2026-11-25T00:59:40.063Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"read this job posting into its canonical fields, quoting the text for every item\"\n}\n</input>\n<docume"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "language": "en",
+      "title": {
+        "text": "Software Engineer I / Software Engineer II",
+        "quote": "Software Engineer I / Software Engineer II — Quillmark Systems"
+      },
+      "company": {
+        "text": "Quillmark Systems",
+        "quote": "Software Engineer I / Software Engineer II — Quillmark Systems"
+      },
+      "department": null,
+      "industry": null,
+      "employmentType": {
+        "value": "full_time",
+        "quote": "Bengaluru · Full-time · 4 openings"
+      },
+      "seniority": null,
+      "openings": {
+        "value": 4,
+        "quote": "4 openings"
+      },
+      "referenceId": null,
+      "summary": "Quillmark Systems is hiring Software Engineer I and II engineers at two levels for one team to build the document search service. The work includes designing and shipping REST APIs in Java and Spring Boot, tuning PostgreSQL queries and indexes, and taking part in on-call for owned services.",
+      "locations": [
+        {
+          "text": "Bengaluru",
+          "quote": "Bengaluru · Full-time · 4 openings",
+          "city": "Bengaluru",
+          "region": null,
+          "country": null
+        }
+      ],
+      "workModes": [],
+      "schedule": [],
+      "pay": [],
+      "negotiable": null,
+      "experience": [
+        {
+          "text": "SE I: 1-2 years of backend experience",
+          "quote": "SE I: 1-2 years of backend experience."
+        },
+        {
+          "text": "SE II: 3-5 years",
+          "quote": "SE II: 3-5 years."
+        }
+      ],
+      "responsibilities": [
+        {
+          "text": "Design and ship REST APIs in Java and Spring Boot",
+          "quote": "Design and ship REST APIs in Java and Spring Boot",
+          "group": null
+        },
+        {
+          "text": "Tune PostgreSQL queries and indexes",
+          "quote": "Tune PostgreSQL queries and indexes",
+          "group": null
+        },
+        {
+          "text": "Take part in on-call for the services you own",
+          "quote": "Take part in on-call for the services you own",
+          "group": null
+        }
+      ],
+      "skills": [
+        {
+          "name": "Java",
+          "quote": "Java and SQL are a must",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "SQL",
+          "quote": "Java and SQL are a must",
+          "category": "language",
+          "importance": "required"
+        },
+        {
+          "name": "Spring Boot",
+          "quote": "Design and ship REST APIs in Java and Spring Boot",
+          "category": "framework",
+          "importance": "required"
+        },
+        {
+          "name": "REST APIs",
+          "quote": "Design and ship REST APIs in Java and Spring Boot",
+          "category": "api",
+          "importance": "required"
+        },
+        {
+          "name": "PostgreSQL",
+          "quote": "Tune PostgreSQL queries and indexes",
+          "category": "database",
+          "importance": "required"
+        },
+        {
+          "name": "Kafka",
+          "quote": "Kafka is good to have",
+          "category": "tool",
+          "importance": "preferred"
+        },
+        {
+          "name": "on-call",
+          "quote": "Take part in on-call for the services you own",
+          "category": "other",
+          "importance": "required"
+        }
+      ],
+      "education": [],
+      "languages": [],
+      "benefits": [],
+      "eligibility": [],
+      "companyAbout": [],
+      "website": null,
+      "application": [],
+      "extras": [],
+      "issues": [
+        {
+          "kind": "ambiguous",
+          "field": "title",
+          "note": "The posting lists two levels (SE I and SE II) with different experience asks; the title line names both.",
+          "quotes": [
+            "Software Engineer I / Software Engineer II — Quillmark Systems"
+          ]
+        }
+      ],
+      "page": {
+        "kind": "single_job",
+        "quote": null,
+        "jobTitles": [
+          "Software Engineer I / Software Engineer II"
+        ]
+      }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 499,
+      "outputTokens": 1616,
+      "cacheReadTokens": 6750,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}

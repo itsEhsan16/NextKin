@@ -1,0 +1,49 @@
+{
+  "key": "bb9e906df4917fb7b66067f07cfc9925",
+  "recordedAt": "2026-11-25T00:57:20.016Z",
+  "source": "openrouter",
+  "request": {
+    "model": "claude-haiku-5-5",
+    "firstUserChars": "<input>\n{\n \"task\": \"list only the keywords of this job posting that the first reading missed\",\n \"alreadyListed\": [\n  \"Re"
+  },
+  "response": {
+    "text": "",
+    "data": {
+      "skills": [
+        {
+          "name": "Hybrid work",
+          "quote": "Hybrid, 3 days in office",
+          "category": "soft",
+          "importance": "preferred"
+        },
+        {
+          "name": "Sprint delivery",
+          "quote": "ship new dashboard features every sprint",
+          "category": "other",
+          "importance": "required"
+        },
+        {
+          "name": "Collaboration with designers",
+          "quote": "Work with designers",
+          "category": "soft",
+          "importance": "required"
+        },
+        {
+          "name": "Pull request review",
+          "quote": "review pull requests",
+          "category": "other",
+          "importance": "required"
+        }
+      ]
+    },
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 888,
+      "outputTokens": 190,
+      "cacheReadTokens": 1113,
+      "cacheWriteTokens": 0
+    },
+    "model": "anthropic/claude-haiku-5.5",
+    "endpoint": "openrouter.ai/api/v1/messages"
+  }
+}
