@@ -32,6 +32,7 @@
     "dlq:replay": "pnpm --filter @nextkin/server dlq replay",
     "perf:smoke": "tsx --env-file-if-exists=.env packages/server/src/entrypoints/perf-smoke.ts",
     "eval": "pnpm --filter @nextkin/server eval",
+    "check:flow": "pnpm --filter @nextkin/server check:flow",
     "dlq": "pnpm --filter @nextkin/server dlq",
     "drills": "pnpm --filter @nextkin/server drills",
     "load:users": "pnpm --filter @nextkin/server load:users",

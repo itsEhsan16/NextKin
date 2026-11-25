@@ -172,6 +172,7 @@ export {
 export {
   isUnreadableFileError,
   unreadableReason,
+  readStalledReason,
   useConfirmAccuracy,
   useExportResume,
   useImportResume,

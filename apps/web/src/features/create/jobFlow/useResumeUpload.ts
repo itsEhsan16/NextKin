@@ -3,6 +3,7 @@
 import {
   isConsentRequired,
   isUnreadableFileError,
+  readStalledReason,
   unreadableReason,
   useImportResume,
 } from '@nextkin/shared/queries';
@@ -56,7 +57,7 @@ export function useResumeUpload(onRead: (resumeId: string) => void) {
       ? NEEDS_CONSENT
       : isUnreadableFileError(importResume.error)
         ? (unreadableReason(importResume.error) ?? UNREADABLE)
-        : FAILED
+        : (readStalledReason(importResume.error) ?? FAILED)
     : problem;
   return { pick, name, summary, reading: importResume.isPending, error };
 }

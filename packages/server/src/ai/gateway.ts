@@ -4,7 +4,7 @@ import { withSpan } from '../observability/tracing';
 import { estimateTokens, fitToBudget } from './budget';
 import { assertNoContact, redactContact } from './pii';
 import { costMicros, type AiSettings, type RouteStep } from './routing';
-import { describeIssues, repairToSchema, strictJsonSchema } from './schema';
+import { describeIssues, repairToSchema, strictJsonSchema, unfinished } from './schema';
 import type { AiTrace, TraceRow } from './trace';
 import { LlmError, type LlmProvider, type LlmRequest, type LlmResponse, type ProviderName, type SystemBlock } from './types';
 import { checkDeadline, currentDeadline } from '../pipeline/deadline';
@@ -140,6 +140,7 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
       };
 
       let corrective = false;
+      let asked = false;
       let roomy = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         attempts++;
@@ -177,6 +178,15 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
           let value: unknown = response.text;
           if (mode.schema && jsonSchema) {
             // The tool schema is not enforced on the wire: mend a slip before judging the answer (§269).
+            // An answer that stopped after a field or two is asked once more, as it was asked: the
+            // same request answers in full the second time. Twice the same is taken as the answer.
+            const missing = asked ? [] : unfinished(jsonSchema, response.data);
+            if (missing.length > 0) {
+              asked = true;
+              await trace.record({ ...base(call, provider, step, tag, truncated), ...usage(response, prices, step), latency_ms: Date.now() - started, outcome: 'invalid_output', error_code: 'unfinished' });
+              log.warn({ event: 'ai.unfinished', stage: call.stage, provider: provider.name, model: step.model, missing, tokensOut: response.usage.outputTokens }, 'the answer left out most of its fields; asking again');
+              continue;
+            }
             const data = repairToSchema(jsonSchema, response.data);
             const parsed = mode.schema.safeParse(data);
             if (!parsed.success) {
