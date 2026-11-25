@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CLAIM_TEXT_MAX, MAX_SKILLS, ROLE_BULLETS_MAX, ROLE_SKILLS_MAX, ROLES_MAX } from './limits';
+import { CLAIM_TEXT_MAX, MAX_SKILLS, ROLE_BULLETS_MAX, ROLE_SKILLS_MAX, ROLES_MAX, SUMMARY_TEXT_MAX } from './limits';
 
 /**
  * The canonical resume JSON (ImBackendImplementationPlan P9-02, old M2-06): what generation writes,
@@ -25,6 +25,19 @@ export const claimSchema = z
   .object({
     id: z.string().min(1).max(64),
     text: z.string().trim().min(1).max(CLAIM_TEXT_MAX),
+    evidence: z.array(factId).max(20),
+    origin: z.enum(['generated', 'user', 'assumed']),
+  })
+  .refine((claim) => claim.origin !== 'generated' || claim.evidence.length > 0, {
+    message: 'A generated claim cites the facts it rests on.',
+    path: ['evidence'],
+  });
+
+/** The summary: a claim like any line, with room for a summary written as a dozen lines. */
+export const summaryClaimSchema = z
+  .object({
+    id: z.string().min(1).max(64),
+    text: z.string().trim().min(1).max(SUMMARY_TEXT_MAX),
     evidence: z.array(factId).max(20),
     origin: z.enum(['generated', 'user', 'assumed']),
   })
@@ -104,7 +117,7 @@ export const zeroReviewSchema = z.object({
 export const canonicalResumeSchema = z.object({
   schemaVersion: z.literal(CANONICAL_SCHEMA_VERSION),
   headline: z.string().trim().max(200).optional(),
-  summary: claimSchema.optional(),
+  summary: summaryClaimSchema.optional(),
   skills: z
     .array(z.object({ name: z.string().trim().min(1).max(120), id: z.string().min(1).max(64), evidence: z.array(factId).max(20), origin: z.enum(['generated', 'user', 'assumed']) }))
     .max(MAX_SKILLS),

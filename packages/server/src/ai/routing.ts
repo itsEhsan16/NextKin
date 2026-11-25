@@ -21,6 +21,8 @@ export const routeStepSchema = z.object({
   inputBudgetTokens: z.number().int().min(100).max(200_000),
   temperature: z.number().min(0).max(1).optional(),
   effort: z.enum(['low', 'medium', 'high']).optional(),
+  /** `off`: the stage answers without thinking first, so its whole token allowance is for the answer. */
+  thinking: z.enum(['off']).optional(),
   geography: z.enum(['us', 'eu', 'global']).optional(),
 });
 export type RouteStep = z.infer<typeof routeStepSchema>;

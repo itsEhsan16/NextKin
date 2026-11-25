@@ -132,6 +132,8 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
         model: step.model,
         maxTokens: step.maxTokens,
         temperature: step.temperature,
+        ...(step.effort ? { effort: step.effort } : {}),
+        ...(step.thinking ? { thinking: step.thinking } : {}),
         system: call.system.map((block, i) => ({ ...block, cache: block.cache ?? i === call.system.length - 1 })),
         messages: [{ role: 'user', content }],
         output: jsonSchema ? { name: mode.name!, description: mode.description!, schema: jsonSchema } : undefined,
@@ -166,6 +168,9 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
             if (roomy) throw new LlmError('invalid_output', 'The answer ran past the token limit.', false);
             roomy = true;
             request.maxTokens = request.maxTokens * 2;
+            // Twice the room, and none of it for thinking: the first try may have spent its whole
+            // allowance thinking and written nothing (owner, 2026-11-25).
+            request.thinking = 'off';
             await trace.record({ ...base(call, provider, step, tag, truncated), ...usage(response, prices, step), latency_ms: Date.now() - started, outcome: 'invalid_output', error_code: 'max_tokens' });
             continue;
           }

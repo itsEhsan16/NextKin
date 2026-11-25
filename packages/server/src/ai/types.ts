@@ -20,6 +20,14 @@ export interface LlmRequest {
   messages: { role: 'user' | 'assistant'; content: string }[];
   /** Structured output: the model must answer by filling this schema (a forced tool call). */
   output?: { name: string; description: string; schema: JsonSchema };
+  /** How hard the model works on the answer, thinking included; the model's own default when absent. */
+  effort?: 'low' | 'medium' | 'high';
+  /**
+   * `off`: answer without thinking first. The gateway sets it on the second try after an answer ran
+   * past its token limit: thinking is paid for out of that limit, and a model can spend all of it
+   * and write nothing (owner, 2026-11-25).
+   */
+  thinking?: 'off';
 }
 
 export interface LlmUsage {

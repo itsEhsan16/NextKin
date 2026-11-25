@@ -19,6 +19,19 @@ type Params = Anthropic.MessageCreateParamsNonStreaming;
 /** Models seen to take a forced tool call. Anything else is asked in words (see above). */
 export const forcesToolChoice = (model: string): boolean => /haiku/.test(model);
 
+/**
+ * How a model is asked to answer without thinking first (owner, 2026-11-25). Thinking is on by
+ * default on the current models and is billed out of `max_tokens`: on a long resume the writer
+ * spent 6,000 of 6,000 tokens thinking, then 12,000 of 12,000, and wrote no answer either time.
+ * Claude Sonnet 5.5 refuses `disabled` and takes `between_tools`; Haiku 5.5 and the earlier models
+ * take `disabled`; a model that can do neither (Opus 5.5, Fable) is left to its effort setting.
+ */
+export function withoutThinking(model: string): { type: 'between_tools' | 'disabled' } | null {
+  if (/sonnet-5[-.]5/.test(model)) return { type: 'between_tools' };
+  if (/opus-5[-.]5|fable|mythos/.test(model)) return null;
+  return { type: 'disabled' };
+}
+
 const answerWith = (name: string) => `Answer only by calling the ${name} tool.`;
 
 export function toParams(request: LlmRequest): Params {
@@ -35,6 +48,14 @@ export function toParams(request: LlmRequest): Params {
     messages: request.messages.map((m) => ({ role: m.role, content: m.content })),
   };
   if (request.temperature !== undefined) params.temperature = request.temperature;
+  // Newer than the pinned SDK's types: effort sits in output_config, and a model that cannot have
+  // thinking disabled takes `between_tools` instead (see `withoutThinking`).
+  const extra = params as unknown as { output_config?: { effort: string }; thinking?: { type: string } };
+  if (request.effort) extra.output_config = { effort: request.effort };
+  if (request.thinking === 'off') {
+    const off = withoutThinking(request.model);
+    if (off) extra.thinking = off;
+  }
   if (request.output) {
     const { name } = request.output;
     params.tools = [{ name, description: request.output.description, input_schema: request.output.schema as Anthropic.Tool.InputSchema }];

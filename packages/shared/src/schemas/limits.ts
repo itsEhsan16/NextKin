@@ -58,8 +58,15 @@ export const ROLE_OWN_SKILLS = 40;
  */
 export const ROLE_SKILLS_MAX = ROLE_OWN_SKILLS + ACCEPTED_MAX;
 
-/** The longest line a stored resume holds: a bullet, a summary. */
+/** The longest line a stored resume holds: a bullet, a line of a section. */
 export const CLAIM_TEXT_MAX = 600;
+
+/**
+ * The longest summary a stored resume holds (owner, 2026-11-25): as long as the profile's own
+ * summary. A "Professional Summary" of a dozen lines runs to 2,400 characters; at the 600 of a
+ * line it was left out of every upload that had one.
+ */
+export const SUMMARY_TEXT_MAX = 4000;
 
 /** A figure and its unit, as the AI offers it: "about 20%", "1,000+ sellers". */
 export const FIGURE_AMOUNT_MAX = 24;
