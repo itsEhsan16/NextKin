@@ -19425,3 +19425,65 @@ After the §267 deploy the owner re-tailored one resume for one job. Jobscan gav
 29. Two real runs after the change: both roles went 12 + 12 to 8 + 8 (was 6 + 5 or 6 + 6), score 90, 37 of 37 keywords, every phrase held, two pages ("Up to 2 pages: 4 years of experience").
 30. Seen in those runs, not fixed: with every keyword accepted, some are worked into lines where they read oddly ("issue tracking around JavaScript Test Frameworks"). That is the accept-all case under D-25.
 31. The golden eval ran only on the reference model (inside the unit suite). A live `pnpm eval` on the longer cap was not run.
+
+**Deployed to the AWS demo (2026-11-25)**
+32. `main` at 84c825c (PR #22 merged) was deployed with `cdk deploy` (518 seconds, images only), then `task migrate` and `task seed-reference`, both exit 0; accounts untouched. All four services finished rolling out, `app.nextkin.ai/api/v1/health/deep` answers ok, `nextkin.ai` answers 200. Routing is re-read within 30 seconds (`ai/routing.ts`), so no restart was needed for the new versions.
+33. Not checked on the demo: no job was read and no tailor was run there after the deploy. Jobs read before it keep their old keyword list; paste the posting again to get the new reading.
+
+## §269 — Resume uploads refused as "couldn't find a resume" on the demo (owner, 2026-11-25)
+
+The owner's resume, as PDF and as DOCX, was refused on app.nextkin.ai with "We couldn’t find a
+resume in this file". The demo's worker logs show the file was read; the AI's extraction answer
+(`resume_extract`, Haiku 5.5 through OpenRouter) failed the server's schema check, then failed the
+one corrective retry, ~23 s in, so the parse ended `unclear` and the app called it unreadable. Other
+resumes parsed fine the same day, so it was something in this resume's answer.
+
+1. **Fix: the gateway mends small slips before judging an answer** (`ai/schema.ts`
+   `repairToSchema`, used in `ai/gateway.ts` for every structured stage). The tool schema is not
+   enforced on the wire (`messages.ts`), so the model can send a list as a JSON string, run past a
+   list cap, write `2021-03-15` or "Present" where a month is asked, or leave out an empty field.
+   Each is now mended from the same JSON schema the model was given; nothing is invented. A list past
+   its cap keeps its first items (e.g. a 5th "extra section" is dropped instead of the whole resume);
+   a list item missing a required value (a role with no company) is left out. Judgement call: losing
+   the tail of an over-long list beats refusing the file. Tests: `test/schemaRepair.test.ts`.
+2. **Not verified against the owner's file.** The worker never logged which field failed, and the
+   demo database can't be queried from this laptop (no Session Manager plugin; `pg` is bundled in the
+   image). The repair covers the common slips, not a proven cause. The failover log line now carries
+   `reason` (schema paths only, never document text), so if it still fails after the deploy the
+   worker log says exactly why.
+3. **Other demo errors in the last 24 h:** one `auth` failure each on `assistant_classify` and
+   `jd_extract` (OpenRouter), before 2026-11-24 22:24 UTC; every AI call since succeeded. No action.
+4. **Deployed to the AWS demo 2026-11-25** from branch `fix/resume-extract-repair` (c65013a = origin/main + the fix) with `cdk deploy` (227 s); health/deep ok, worker and web on task definition 38. The PR is not opened (no GitHub CLI here), so `main` does not have the fix yet: open and merge it from GitHub. No migration or seed was needed. Not yet confirmed with the owner's resume.
+5. **OpenRouter logs (owner's screenshot, 2026-11-25) rule out the balance.** The 09:24 IST upload
+   was two calls: 9,363 in / 6,269 out (a full answer, under the 8,000 cap, so not cut off), then the
+   corrective retry, 15,514 in / 497 out. The first answer failed the schema; the retry sent back
+   only a scrap of the answer, which failed again. Each call cost under half a cent, so the $0.78
+   balance was not the cause (it still needs a top-up). Second fix: the corrective message now asks
+   for the whole answer, never only the corrected part (`ai/gateway.ts`).
+
+
+## §270 — The real cause of the refused uploads: a long summary swallowed the job history (owner, 2026-11-25)
+
+The owner reported that §269's repair had not fixed it: resumes were still refused as "couldn't find a resume in this file". Reproduced locally with the two files from the owner's Downloads that match the demo's failures (a DOCX and its PDF, uploaded 03:49 and 03:53 UTC).
+
+**Cause, seen in the model's raw answer**
+1. The answer for the DOCX was `{ headline, summary }` and nothing else. The summary's text ran on with `">` and `<parameter name="roles">[…]`: the whole job history sat inside the summary string, and there was no `roles` field. The model (Haiku 5.5 through OpenRouter) breaks its own tool-call format on a long text field.
+2. Before §269 that answer failed the schema twice and the parse ended `unclear`. After §269's deploy, the repair filled the missing lists with `[]`, so the same answer passed as a resume with no jobs, no schools and no skills. The parse was stored as `ready` in 4 to 6 seconds, and the import then refused it as empty. That is why it looked as if every resume was being rejected.
+3. The summary cap made it worse: `summary` allowed 1,500 characters and this resume's "Professional Summary" is 2,414 (twelve lines). With the cap in the tool schema the model stopped after the summary (1,092 output tokens against 6,286 for the PDF of the same resume).
+4. Not caused by PR #21 or #22: neither touched the resume reading. The owner's other resume (DOCX and PDF) reads fine before and after.
+
+**Built**
+5. `ai/schema.ts` `unswallowed`, run first inside `repairToSchema`: each `<parameter name="k">` inside a text field starts field `k`; the text before it is the field's own value; what follows is parsed as JSON. Only fields the schema names and the answer lacks are filled.
+6. `parsing/extract.ts`: `summary` takes 8,000 characters. The cross-check still decides what the document keeps.
+7. `services/resumeParse.ts`: a reading with no job, no school and no summary now fails at the parse (`resume_parse.empty`, reason `unclear`). It is never stored as `ready`.
+8. The server's reason reaches the screen: `repos/http/uploads.ts` carries the parse's reason, `unreadableReason` (shared queries) returns the server's line unless the file itself was unreadable, and the two web upload screens use it. Mobile still shows its own line.
+9. §269's uncommitted `fitDocument` work in this folder is kept and included.
+
+**Measured, local, real model**
+10. Before the fix: the DOCX read as 0 jobs, 0 schools, "empty". After: 4 jobs (12, 11, 12, 12 bullets kept), 2 schools, 11 skill lines, fits the format. Its PDF, and the owner's other resume as DOCX and PDF, also read correctly.
+
+**Open**
+11. A summary longer than a stored line (600 characters) is left out of the document, and the list of what was left out says "not in your file word for word", which is the wrong reason. Both real resumes lose their summary this way on upload.
+12. §269's rule that a field left out becomes `[]` is still there. Item 7 is what stops it from producing an empty resume; other stages that rely on a required list were not audited.
+13. A role keeps 12 bullets on upload; these resumes have up to 26 in one role. The rest are listed as left out.
+14. Not deployed. The integration parse suite was not run.

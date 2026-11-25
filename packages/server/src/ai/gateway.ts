@@ -4,7 +4,7 @@ import { withSpan } from '../observability/tracing';
 import { estimateTokens, fitToBudget } from './budget';
 import { assertNoContact, redactContact } from './pii';
 import { costMicros, type AiSettings, type RouteStep } from './routing';
-import { describeIssues, strictJsonSchema } from './schema';
+import { describeIssues, repairToSchema, strictJsonSchema } from './schema';
 import type { AiTrace, TraceRow } from './trace';
 import { LlmError, type LlmProvider, type LlmRequest, type LlmResponse, type ProviderName, type SystemBlock } from './types';
 import { checkDeadline, currentDeadline } from '../pipeline/deadline';
@@ -117,6 +117,7 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
         }
       : undefined;
     const route = await settings.routeFor(call.stage);
+    const jsonSchema = mode.schema ? strictJsonSchema(mode.schema) : undefined;
     const prices = await settings.prices();
     let last: LlmError = new LlmError('unavailable', `No provider is configured for stage "${call.stage}".`, false);
     let attempts = 0;
@@ -133,7 +134,7 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
         temperature: step.temperature,
         system: call.system.map((block, i) => ({ ...block, cache: block.cache ?? i === call.system.length - 1 })),
         messages: [{ role: 'user', content }],
-        output: mode.schema ? { name: mode.name!, description: mode.description!, schema: strictJsonSchema(mode.schema) } : undefined,
+        output: jsonSchema ? { name: mode.name!, description: mode.description!, schema: jsonSchema } : undefined,
       };
 
       let corrective = false;
@@ -169,15 +170,17 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
             continue;
           }
           let value: unknown = response.text;
-          if (mode.schema) {
-            const parsed = mode.schema.safeParse(response.data);
+          if (mode.schema && jsonSchema) {
+            // The tool schema is not enforced on the wire: mend a slip before judging the answer (§269).
+            const data = repairToSchema(jsonSchema, response.data);
+            const parsed = mode.schema.safeParse(data);
             if (!parsed.success) {
               if (corrective) throw new LlmError('invalid_output', `The answer did not match the schema: ${describeIssues(parsed.error)}`, false);
               corrective = true;
               request.messages = [
                 ...request.messages,
-                { role: 'assistant', content: JSON.stringify(response.data ?? null) },
-                { role: 'user', content: `That answer did not match the schema: ${describeIssues(parsed.error)}. Call the tool again with a corrected answer.` },
+                { role: 'assistant', content: JSON.stringify(data ?? null) },
+                { role: 'user', content: `That answer did not match the schema: ${describeIssues(parsed.error)}. Call the tool again with the whole answer, every field filled as before, corrected where listed; never only the corrected part.` },
               ];
               await trace.record({ ...base(call, provider, step, tag, truncated), ...usage(response, prices, step), latency_ms: Date.now() - started, outcome: 'invalid_output', error_code: 'schema' });
               continue;
@@ -206,7 +209,8 @@ export function createAiGateway(options: GatewayOptions): AiGateway {
           await new Promise((resolve) => setTimeout(resolve, delay(attempt)));
         }
       }
-      log.warn({ event: 'ai.failover', stage: call.stage, from: provider.name, failure: last.failure }, 'ai provider failed; trying the next');
+      // The reason (schema paths, never document text) so a refused answer can be traced from the logs.
+      log.warn({ event: 'ai.failover', stage: call.stage, from: provider.name, failure: last.failure, reason: last.message.slice(0, 600) }, 'ai provider failed; trying the next');
     }
     // Every provider in the route is out (not a refusal or a bad answer): the banner should say so.
     if (OUTAGES.has(last.failure) && (call.context.tag ?? 'product') !== 'eval') options.onAvailability?.(false);

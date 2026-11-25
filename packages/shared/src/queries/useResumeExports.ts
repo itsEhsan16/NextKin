@@ -101,3 +101,14 @@ export function useImportResume() {
 export function isUnreadableFileError(error: unknown): boolean {
   return error instanceof Error && (error as { code?: unknown }).code === 'UNREADABLE_FILE';
 }
+
+/**
+ * The server's own words for why a resume could not be read, when the fault was not the file's
+ * (owner, 2026-11-25). Null for a file with no text or one that cannot be opened: the screen's own
+ * line about selectable text is right for those.
+ */
+export function unreadableReason(error: unknown): string | null {
+  if (!isUnreadableFileError(error)) return null;
+  const reason = ((error as { details?: unknown }).details as { reason?: unknown } | null)?.reason;
+  return typeof reason === 'string' && reason !== 'unreadable' && (error as Error).message ? (error as Error).message : null;
+}

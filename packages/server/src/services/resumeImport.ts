@@ -1,8 +1,8 @@
 import type { Resume } from '@nextkin/shared/models/resume';
-import { canonicalResumeSchema } from '@nextkin/shared/schemas/resumeContent';
 
 import type { Database, Identity } from '../db/database';
 import { AppError, errors } from '../http/errors';
+import { fitDocument, isEmptyResume } from '../parsing/fitDocument';
 import { resumeCard } from './resumeRead';
 import { writeResumeVersion } from './versions';
 
@@ -31,9 +31,10 @@ export async function createResumeFromParse(db: Database, identity: Identity, pa
       if (made) return made;
     }
     if (parse.status !== 'ready') throw errors.conflict('This resume has not finished reading.');
-    const doc = canonicalResumeSchema.safeParse(parse.document);
-    // Read before uploads kept their document, or nothing in it was a resume: say so plainly.
-    if (!doc.success || (doc.data.roles.length === 0 && doc.data.education.length === 0 && !doc.data.summary)) {
+    // Fitted to the format (a parse stored before §269 may not be); then, if nothing in it is a
+    // resume, or it was read before uploads kept their document, say so plainly.
+    const doc = fitDocument(parse.document);
+    if (!doc.ok || isEmptyResume(doc.doc)) {
       throw new AppError('UNREADABLE_FILE', 'We couldn’t find a resume to use in this file. Try uploading it again, or another file.');
     }
 
@@ -44,7 +45,7 @@ export async function createResumeFromParse(db: Database, identity: Identity, pa
       .values({ user_id: identity.userId, title, doc_type: 'resume', source: 'uploaded', is_base: !base })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await writeResumeVersion(tx, { userId: identity.userId, resumeId: resume.id, jdId: null, doc: doc.data, note: `Uploaded ${parse.file_name}`.slice(0, 300), createdBy: 'upload' });
+    await writeResumeVersion(tx, { userId: identity.userId, resumeId: resume.id, jdId: null, doc: doc.doc, note: `Uploaded ${parse.file_name}`.slice(0, 300), createdBy: 'upload' });
     await tx.updateTable('resume_parses').set({ resume_id: resume.id }).where('id', '=', parse.id).execute();
     return resumeCard(tx, resume.id);
   });

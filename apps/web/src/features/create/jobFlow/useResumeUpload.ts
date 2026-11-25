@@ -1,6 +1,11 @@
 'use client';
 
-import { isConsentRequired, isUnreadableFileError, useImportResume } from '@nextkin/shared/queries';
+import {
+  isConsentRequired,
+  isUnreadableFileError,
+  unreadableReason,
+  useImportResume,
+} from '@nextkin/shared/queries';
 import { useState } from 'react';
 
 import { readSummary, resumeFileProblem } from '@/features/onboarding/resumeUpload';
@@ -50,7 +55,7 @@ export function useResumeUpload(onRead: (resumeId: string) => void) {
     ? isConsentRequired(importResume.error)
       ? NEEDS_CONSENT
       : isUnreadableFileError(importResume.error)
-        ? UNREADABLE
+        ? (unreadableReason(importResume.error) ?? UNREADABLE)
         : FAILED
     : problem;
   return { pick, name, summary, reading: importResume.isPending, error };
