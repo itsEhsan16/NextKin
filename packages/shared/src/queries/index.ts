@@ -171,6 +171,7 @@ export {
 } from './useResumeContent';
 export {
   isUnreadableFileError,
+  unreadableReason,
   useConfirmAccuracy,
   useExportResume,
   useImportResume,

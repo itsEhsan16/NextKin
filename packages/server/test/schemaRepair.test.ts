@@ -57,3 +57,47 @@ describe('repairToSchema on the resume extraction', () => {
     expect(repairToSchema(json, undefined)).toBeUndefined();
   });
 });
+
+// Owner, 2026-11-25: a resume whose long summary swallowed the job history. Every upload of that
+// file read as a resume with no jobs and was refused as "no resume in this file".
+describe('a text field that swallowed the fields after it', () => {
+  const roles = [role({ company: 'Northgate Health', bullets: ['Built the claims service'] }), role({ company: 'Brightleaf', start: '2019-08', end: '2022-11', current: false })];
+  const swallowed = (after = '') => {
+    const rest: Record<string, unknown> = base({ summary: `Eight years building backend services.">\n<parameter name="roles">${JSON.stringify(roles)}${after}` });
+    delete rest.roles;
+    return rest;
+  };
+
+  it('gives each swallowed field back, parsed, and the text its own value', () => {
+    const answer = swallowed();
+    expect(extractionSchema.safeParse(answer).success).toBe(false);
+    const fixed = extractionSchema.parse(repairToSchema(json, answer));
+    expect(fixed.summary).toBe('Eight years building backend services.');
+    expect(fixed.roles.map((r) => r.company)).toEqual(['Northgate Health', 'Brightleaf']);
+    expect(fixed.roles[0]?.bullets).toEqual(['Built the claims service']);
+  });
+
+  it('reads several swallowed fields, with or without their closing tags', () => {
+    const answer = swallowed(`</parameter>\n<parameter name="skills">["Java","Kotlin"]</parameter>`);
+    const withoutSkills = { ...answer };
+    delete withoutSkills.skills;
+    const fixed = extractionSchema.parse(repairToSchema(json, withoutSkills));
+    expect(fixed.roles).toHaveLength(2);
+    expect(fixed.skills).toEqual(['Java', 'Kotlin']);
+  });
+
+  it('never overwrites a field the answer already has, or one the schema does not name', () => {
+    const kept = [role({ company: 'Sent Properly' })];
+    const answer = { ...swallowed(`</parameter>\n<parameter name="salary">"100k"`), roles: kept };
+    const fixed = repairToSchema(json, answer) as { roles: unknown; summary: string; salary?: unknown };
+    expect(fixed.roles).toEqual(kept);
+    expect(fixed.salary).toBeUndefined();
+    // Nothing was taken out of the text, so the text is left as it came.
+    expect(fixed.summary).toContain('<parameter name="roles">');
+  });
+
+  it('leaves ordinary text alone, angle brackets and all', () => {
+    const answer = base({ summary: 'Wrote <parameter> docs and a List<String> helper; score > 90.' });
+    expect(repairToSchema(json, answer)).toEqual(answer);
+  });
+});

@@ -22,7 +22,10 @@ const line = z.string().min(1).max(4000);
 export const extractionSchema = z.object({
   headline: z.string().max(200).nullable(),
   /** The summary or profile paragraph, as written (toreview §110.4). */
-  summary: z.string().max(1500).nullable().default(null),
+  // Generous, like a line (owner, 2026-11-25): a "Professional Summary" written as a dozen lines
+  // runs past 2,400 characters, and at 1,500 the schema refused the whole upload. The cross-check
+  // decides what the document keeps.
+  summary: z.string().max(8000).nullable().default(null),
   roles: z
     .array(
       z.object({

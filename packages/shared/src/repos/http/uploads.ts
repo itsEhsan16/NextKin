@@ -70,6 +70,8 @@ export async function waitForScan(http: HttpClient, uploadId: string, options?: 
 export async function parseResume(http: HttpClient, uploadId: string, options?: { everyMs?: number; timeoutMs?: number }): Promise<ResumeParse> {
   const started = resumeParseSchema.parse(await http.request('/resume-parse', { body: { uploadId } }));
   const done = await poll(async () => resumeParseSchema.parse(await http.request(`/resume-parse/${started.id}`)), (p) => p.status === 'ready' || p.status === 'failed', options);
-  if (done.status === 'failed') throw new ApiError(done.errorCode === 'provider' ? 'UNAVAILABLE' : 'UNREADABLE_FILE', done.error ?? UNREADABLE, 422);
+  // The server's own reason travels with the error (owner, 2026-11-25): a read that failed on our
+  // side was shown as "upload a file with selectable text", which was not the problem.
+  if (done.status === 'failed') throw new ApiError(done.errorCode === 'provider' ? 'UNAVAILABLE' : 'UNREADABLE_FILE', done.error ?? UNREADABLE, 422, { reason: done.errorCode ?? null });
   return done;
 }

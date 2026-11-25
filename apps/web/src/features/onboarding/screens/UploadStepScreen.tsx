@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { textLink } from '@/ui/textLink';
 import { cn } from '@/lib/cn';
-import { isUnreadableFileError, useImportResume } from '@nextkin/shared/queries';
+import { isUnreadableFileError, unreadableReason, useImportResume } from '@nextkin/shared/queries';
 import { useState } from 'react';
 
 import { useGuardedRouter } from '@/navigation/guardedRouter';
@@ -62,7 +62,9 @@ export function UploadStepScreen() {
     : importResume.isError
       ? {
           status: 'failed',
-          message: isUnreadableFileError(importResume.error) ? UNREADABLE : FAILED,
+          message: isUnreadableFileError(importResume.error)
+            ? (unreadableReason(importResume.error) ?? UNREADABLE)
+            : FAILED,
         }
       : resumeFile && resumeSummary
         ? { status: 'read', summary: resumeSummary }

@@ -40,8 +40,48 @@ function close(node: unknown): JsonSchema {
  *   out. Nothing is invented: every value kept is the model's own. The zod schema still decides.
  */
 export function repairToSchema(schema: JsonSchema, value: unknown): unknown {
-  const out = repair(schema as SchemaNode, value);
+  const out = repair(schema as SchemaNode, unswallowed(schema as SchemaNode, value));
   return out === DROP ? value : out;
+}
+
+/**
+ * A tool answer in which one long text field swallowed the fields after it (owner, 2026-11-25).
+ * A resume with a 2,400-character summary came back as `{ headline, summary }` and nothing else:
+ * the summary's text ran on with `">` and `<parameter name="roles">[…]`, the whole job history
+ * inside the string, and no `roles` field. Read as it stood, that was a resume with no jobs, and
+ * every upload of that file was refused as "no resume in this file".
+ *
+ * Each `<parameter name="k">` found inside a text field starts field `k`: the text before the
+ * first one is the field's own value, and what follows each marker is that field's value, parsed as
+ * JSON when it is JSON. Only fields the schema names and the answer lacks are filled, so a document
+ * that happens to contain such a tag cannot overwrite anything the model sent properly.
+ */
+const SWALLOWED = /(?:"\s*>|<\/parameter>)?\s*<parameter name="([A-Za-z_]\w*)">/;
+export function unswallowed(schema: SchemaNode, value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !schema.properties) return value;
+  let out: Record<string, unknown> | undefined;
+  for (const [key, text] of Object.entries(value)) {
+    if (typeof text !== 'string' || !SWALLOWED.test(text)) continue;
+    const parts = text.split(SWALLOWED);
+    const found: [string, unknown][] = [];
+    for (let i = 1; i + 1 < parts.length; i += 2) {
+      const name = parts[i]!;
+      if (!(name in schema.properties) || name in (value as Record<string, unknown>)) continue;
+      const raw = parts[i + 1]!.replace(/<\/parameter>\s*$/, '').trim();
+      let parsed: unknown = raw;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        // Not JSON: the field's value is the text itself.
+      }
+      found.push([name, parsed]);
+    }
+    if (found.length === 0) continue;
+    out ??= { ...(value as Record<string, unknown>) };
+    out[key] = parts[0];
+    for (const [name, parsed] of found) if (!(name in out)) out[name] = parsed;
+  }
+  return out ?? value;
 }
 
 interface SchemaNode {
@@ -76,7 +116,8 @@ function repairString(node: SchemaNode, value: string): string | typeof DROP {
       s = inner;
     }
   }
-  if (node.minLength !== undefined && s.length < node.minLength) return DROP;
+  // Measured trimmed: a schema that trims (most do) refuses a blank string too.
+  if (node.minLength !== undefined && s.trim().length < node.minLength) return DROP;
   return s;
 }
 

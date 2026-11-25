@@ -9,6 +9,7 @@ import { AppError, errors } from '../http/errors';
 import type { Logger } from '../observability/logger';
 import type { OcrPort } from '../ocr/tesseract';
 import { toGrayPng } from '../ocr/png';
+import { fitDocument, isEmptyResume } from '../parsing/fitDocument';
 import { enqueue } from '../outbox/outbox';
 import { crossCheck, extractResume } from '../parsing/extract';
 import { splitHeader } from '../parsing/header';
@@ -204,7 +205,22 @@ export async function runParse(deps: ParseRunDeps, message: { parseId: string; u
     const extraction = await extractResume(deps.gateway, body, { userId: message.userId, correlationId: message.correlationId });
     await setStatus(deps.db, identity, message.parseId, 'verifying');
     const checked = crossCheck(extraction, text);
-    const verified = { ...checked, document: { ...checked.document, ...(header ? { header } : {}), ...(headline && !checked.document.headline ? { headline } : {}) } };
+    const assembled = { ...checked.document, ...(header ? { header } : {}), ...(headline && !checked.document.headline ? { headline } : {}) };
+    // Fitted to the stored format here, so a file that read fine is never refused at import (§269).
+    const fitted = fitDocument(assembled);
+    // A read with no job, no school and no summary is not a resume read (owner, 2026-11-25). It
+    // used to be stored as ready and refused a step later as "no resume in this file"; it fails
+    // here, with the reason on the record.
+    if (fitted.ok && isEmptyResume(fitted.doc)) {
+      deps.log.warn({ event: 'resume_parse.empty', textChars: text.length, rejected: checked.rejected.length }, 'the reading held no job, school or summary');
+      return fail('unclear', FAILURE.unclear);
+    }
+    if (!fitted.ok || isEmptyResume(fitted.doc)) {
+      deps.log.warn({ event: 'resume_parse.unusable', reason: fitted.ok ? 'empty' : fitted.issues.slice(0, 600), roles: checked.document.roles.length, education: checked.document.education.length, rejected: checked.rejected.length }, 'parsed resume does not fit the format');
+    } else if (fitted.repaired) {
+      deps.log.info({ event: 'resume_parse.fitted' }, 'parsed resume trimmed to the format');
+    }
+    const verified = { ...checked, document: fitted.ok ? fitted.doc : assembled };
     const findings = { kind: analysis.kind, pages: analysis.facts.pages, ocr: analysis.images.length > 0, hidden: analysis.hidden, rejected: verified.rejected, flagged: verified.flagged, ...(analysis.facts.layout ? { layout: analysis.facts.layout } : {}) };
     await setStatus(deps.db, identity, message.parseId, 'ready', { draft: JSON.stringify(verified.draft), document: JSON.stringify(verified.document), findings: JSON.stringify(findings), finished_at: sql`now()` });
     deps.log.info({ event: 'resume_parse.finished', outcome: 'ready', kind: analysis.kind, ocr: findings.ocr, hidden: analysis.hidden.length, rejected: verified.rejected.length }, 'resume parsed');
