@@ -70,6 +70,17 @@ describe('the stack side of a skill line (toreview §170)', () => {
   });
 });
 
+describe('a keyword with no room for a new line (owner, 2026-11-25)', () => {
+  it('joins a line that is already there when the resume has twelve, so none is left for "Also"', () => {
+    const twelve = Array.from({ length: 12 }, (_, i) => ({ label: `Line ${i}`, names: [`skill ${i}`] }));
+    const added = Array.from({ length: ADDED_PER_LINE + 3 }, (_, i) => `brand new keyword ${i}`);
+    const placed = placeInGroups(twelve, added, TAXONOMY);
+    expect(placed).toHaveLength(12);
+    const listed = placed.flatMap((g) => g.names);
+    expect(added.every((k) => listed.includes(k))).toBe(true);
+  });
+});
+
 describe('tidying skill lines (toreview §170)', () => {
   it('merges lines with the same label and lists each skill once', () => {
     const tidy = tidyGroups(

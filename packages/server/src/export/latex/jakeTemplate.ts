@@ -68,9 +68,12 @@ export function preambleOf(density: LatexDensity, paper: LatexResume['paper'], s
     style.sectionFormat,
     `\\titlespacing*{\\section}{0pt}{${r.sectionBefore}}{${r.sectionAfter}}`,
     '\\newlist{rentries}{itemize}{3}',
-    `\\setlist[rentries]{label={},leftmargin=0.15in,topsep=0pt,partopsep=0pt,parsep=0pt,itemsep=${r.entrySep}}`,
+    // An entry stays whole across a page break (owner, 2026-11-25: a club's name was left at the
+    // foot of page 1 with its role and bullet on page 2). No break before a list's first item, nor
+    // after an entry's header lines; the spacing is unchanged.
+    `\\setlist[rentries]{label={},leftmargin=0.15in,topsep=0pt,partopsep=0pt,parsep=0pt,itemsep=${r.entrySep},beginpenalty=10000}`,
     '\\newlist{rbullets}{itemize}{3}',
-    `\\setlist[rbullets]{label={\\textbullet},leftmargin=0.15in,topsep=${r.listTop},partopsep=0pt,parsep=0pt,itemsep=${r.itemSep}}`,
+    `\\setlist[rbullets]{label={\\textbullet},leftmargin=0.15in,topsep=${r.listTop},partopsep=0pt,parsep=0pt,itemsep=${r.itemSep},beginpenalty=10000}`,
     '\\newlist{rlines}{itemize}{3}',
     `\\setlist[rlines]{label={},leftmargin=0.15in,topsep=0pt,partopsep=0pt,parsep=0pt,itemsep=${r.itemSep}}`,
     `\\newcommand{\\rSep}{${style.sep}}`,
@@ -78,12 +81,12 @@ export function preambleOf(density: LatexDensity, paper: LatexResume['paper'], s
     `\\newcommand{\\rHeadline}[1]{${style.headline}}`,
     ...style.headerEnvironment,
     '\\newcommand{\\rPara}[1]{{#1\\par}}',
-    '\\newcommand{\\rTech}[1]{{#1\\par}}',
+    '\\newcommand{\\rTech}[1]{{#1\\par}\\nobreak}',
     // No table (toreview §130): filll glue outranks \raggedright's fil, so the right part sits flush
     // right on the same line and the text layer reads it after the left part.
     '\\newcommand{\\rRight}{\\hspace{0pt plus 1filll}}',
-    '\\newcommand{\\rHead}[2]{{#1\\rRight #2\\par}}',
-    '\\newcommand{\\rHeadSub}[4]{{#1\\rRight #2\\par}{#3\\rRight #4\\par}}',
+    '\\newcommand{\\rHead}[2]{{#1\\rRight #2\\par}\\nobreak}',
+    '\\newcommand{\\rHeadSub}[4]{{#1\\rRight #2\\par}\\nobreak{#3\\rRight #4\\par}\\nobreak}',
     `\\AtBeginDocument{${r.body}}`,
     '\\begin{document}',
     '',

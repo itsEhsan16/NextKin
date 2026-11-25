@@ -10,6 +10,7 @@ import { nextStepsOf, TAILOR_PATH } from '@nextkin/shared/scoring/fixPlan';
 import { jobMatchOf, keywordsFrom } from '@nextkin/shared/scoring/tailorComparison';
 import { scoringDocumentOf } from '@nextkin/shared/scoring/canonical';
 import { scoreDocument, type DocumentScore, type ScoringJd } from '@nextkin/shared/scoring/report';
+import { holdsWorth, worthOf, type Worth } from '@nextkin/shared/scoring/worth';
 import { canonicalResumeSchema, type CanonicalResumeJson } from '@nextkin/shared/schemas/resumeContent';
 
 import type { Tx } from '../../db/database';
@@ -48,7 +49,22 @@ export const scoreAgainst = (args: { document: CanonicalResumeJson; facts: Profi
     ...(args.path ? { path: args.path } : {}),
   });
 
-export const scoringJdOfStage = (jd: StageJd): ScoringJd => {
+/**
+ * What a document is worth by that same measure, for comparing two versions of it: the page fit
+ * asks before it leaves anything out (owner, 2026-11-25). No fixes, no path: cheap to ask often.
+ */
+export const worthAgainst = (args: { document: CanonicalResumeJson; facts: ProfileFacts; contact: ContactPresence; jd: ScoringJd | null; asOf: PartialDate }): Worth =>
+  worthOf({ document: scoringDocumentOf(args.document, args.contact), format: PARSE_SAFE_TEMPLATE, asOf: args.asOf, ...(args.jd ? { jd: args.jd } : {}), profile: profileDocument(args.facts, args.contact) });
+
+/** The check a page fit runs on each thing it would leave out: worth no less than `document` is now. */
+export function worthGuard(args: { document: CanonicalResumeJson; facts: ProfileFacts; contact: ContactPresence; jd: StageJd | null; asOf: PartialDate }): (after: CanonicalResumeJson) => boolean {
+  const jd = args.jd ? scoringJdOfStage(args.jd) : null;
+  const worth = (document: CanonicalResumeJson) => worthAgainst({ document, facts: args.facts, contact: args.contact, jd, asOf: args.asOf });
+  const before = worth(args.document);
+  return (after) => holdsWorth(before, worth(after));
+}
+
+export const scoringJdOfStage =(jd: StageJd): ScoringJd => {
   const soft = new Set(jd.softSkills ?? []);
   return {
     requiredSkills: jd.requiredSkills,

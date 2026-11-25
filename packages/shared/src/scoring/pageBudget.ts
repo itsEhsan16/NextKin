@@ -2,12 +2,14 @@ import type { CanonicalResumeJson } from '../schemas/resumeContent';
 
 /**
  * How many pages a resume should fit on (toreview §111.1, owner 2026-10-19: "For fresher one page
- * is perfect, while experienced resume can go above one"). Under five years of dated experience
- * the target is one page; from five years it is the original's page count when known, at most two.
+ * is perfect, while experienced resume can go above one"). Under three years of dated experience
+ * the target is one page; from three years it is the original's page count when known, at most two.
+ * The line was five years until 2026-11-25: a resume with 58 months across two employers was cut
+ * from 34 bullets to 13 to make one page.
  * Pure: the month it is counted at is passed in. The basis travels with the number (G17).
  */
 
-export const EXPERIENCED_MONTHS = 60;
+export const EXPERIENCED_MONTHS = 36;
 export const MAX_PAGES = 2;
 
 export interface PageBudget {
@@ -43,7 +45,7 @@ export function experienceMonths(doc: Pick<CanonicalResumeJson, 'roles'>, asOf: 
 export function pageBudget(doc: Pick<CanonicalResumeJson, 'roles'>, asOf: { year: number; month: number }, sourcePages?: number | null): PageBudget {
   const months = experienceMonths(doc, asOf);
   const years = Math.floor(months / 12);
-  if (months < EXPERIENCED_MONTHS) return { pages: 1, months, basis: `Fitted to 1 page: under 5 years of experience (${years === 0 ? 'under a year' : `${years} year${years === 1 ? '' : 's'}`})` };
+  if (months < EXPERIENCED_MONTHS) return { pages: 1, months, basis: `Fitted to 1 page: under 3 years of experience (${years === 0 ? 'under a year' : `${years} year${years === 1 ? '' : 's'}`})` };
   const pages = sourcePages && sourcePages >= 1 ? (Math.min(sourcePages, MAX_PAGES) as 1 | 2) : MAX_PAGES;
   return { pages, months, basis: sourcePages ? `Kept to ${pages} page${pages === 1 ? '' : 's'}, as the original: ${years} years of experience` : `Up to ${MAX_PAGES} pages: ${years} years of experience` };
 }

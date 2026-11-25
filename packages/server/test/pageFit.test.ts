@@ -42,7 +42,7 @@ function measure(perPage: number): Measure & { calls: number } {
 }
 
 const fit = (perPage: number, mayTrim = true, m = measure(perPage)) =>
-  fitToPages({ doc: DOC, budget: 1, mayTrim, order: dropOrder(DOC, new Set(['now']), ['React', 'Go']), measure: m, compiled: true });
+  fitToPages({ doc: DOC, budget: 1, mayTrim, order: () => dropOrder(DOC, new Set(['now']), ['React', 'Go']).map((id) => ({ kind: 'bullet', in: 'role', id })), measure: m, compiled: true });
 
 describe('fitting compiled pages', () => {
   it('drops nothing when the resume already fits, at the template’s own spacing', async () => {

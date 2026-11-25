@@ -187,10 +187,10 @@ describe('a tailored run (toreview §110.3)', () => {
     expect(run.outcome).toBe('completed');
     // The run holds no contact (G5): the fit measures with a stand-in name and contact line.
     expect(sources.length).toBeGreaterThan(0);
-    expect(sources.every((tex) => tex.includes('Your Name') && tex.includes('name@example.com'))).toBe(true);
+    expect(sources.every((tex) => tex.includes('Applying Candidate') && tex.includes('name@example.com'))).toBe(true);
 
     const generation = await generations.getGeneration(db, identity, run.generationId);
-    expect(generation.tailor).toMatchObject({ pages: 1, pageBasis: expect.stringMatching(/^Fitted to 1 page: under 5 years/) });
+    expect(generation.tailor).toMatchObject({ pages: 1, pageBasis: expect.stringMatching(/^Fitted to 1 page: under 3 years/) });
     expect(generation.tailor?.changes).toEqual(expect.arrayContaining([{ label: 'Kept 3 of 6 bullets in Backend Engineer · Lumen Pay', left: false }]));
     const saved = await db.withUser(identity, async (tx) => ({
       version: await tx.selectFrom('resume_versions').select(['id', 'content']).where('generation_id', '=', run.generationId).executeTakeFirstOrThrow(),

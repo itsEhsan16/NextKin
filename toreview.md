@@ -19301,3 +19301,73 @@ Eight popups rebuilt to the boards: "Where did you use …?", "Add the result", 
 **Not verified**
 14. Checked by eye in the browser pane at 800px wide against the boards (all six showcase popups); consent and profile sync were not opened live. Phone width and the app's dark theme were not checked by eye.
 15. `ResumeEditor.test.tsx` failed once in the full `pnpm test` run and passed alone (jest contention under load).
+
+
+## §267 — Page fit that adds and removes, and never lowers the score (owner, 2026-11-25)
+
+The owner sent real downloads. Six tailored copies of a graduate's resume all ran two to eight lines onto page 2. A 58-month resume was cut from 34 bullets to 13 to make one page. Instruction: "it should be able to remove and add things", and "don't make things worse" for the score.
+
+**What was wrong**
+1. The tailor adds up to 100 accepted keywords to Skills, but the fit could only drop role bullets, three kept on a recent role. A graduate with one three-bullet internship had nothing removable, so the fit gave up.
+2. With many accepted keywords and the job's skills moved first, the resume's own skills fell past the 60 cut. Two copies lost Python, React and PostgreSQL while their projects still named them.
+3. Under 60 months counted as a fresher: one page, trimmed without being asked.
+4. The PDF could break a page between an entry's name line and its role line.
+5. A measured result could say its unit twice ("100,000 records data records").
+
+**What was built**
+6. **Score guard** (`pageFit.ts` `safeRemovals`, `persist.ts` `worthGuard`, `shared/scoring/worth.ts`): every item the fit would leave out is scored first with `scoreCore`. It goes only when the score in basis points and the count of keywords shown are both no lower. D-25 is untouched: accepted keywords are never candidates.
+7. **More that may go**, in order: own skills the job does not ask for and no line of the page names; bullets under extra-section entries naming no job skill; then role and project bullets (no job skill first, no number before a number, oldest first). Floors: three on a recent role, one on an older role, two on a project.
+8. Skills or extra-section lines are given back when leaving them out freed no room.
+9. When one page cannot be reached safely, every line stays and the page basis reads "Kept every line: 1 page could not be reached without lowering the score". The "Fit to one page" button answers `cannot_fit` in that case, with new wording.
+10. **Own-skill cap** (`tailorMerge.ts`): the 60 counts the resume's own skills only.
+11. **Page rule** (`pageBudget.ts`): one page under 3 years of dated experience, was 5. From 3 years, the original's page count, at most two.
+12. **PDF** (`jakeTemplate.ts`): `beginpenalty=10000` on entry and bullet lists and `\nobreak` after entry header lines.
+13. **Skill lines** (`skillGroups.ts`): at the 12-line cap a keyword joins the overflow line or its own line, where it used to be left for the renderer's "Also" line.
+14. **Doubled unit** (`models/tailor.ts` `figureLine`): the amount drops its unit noun when the next three words of the line say it.
+
+**Judgement calls made without the owner**
+15. The 3-year line is my number. The owner approved the plan that named it, but the choice between 2, 3 and 4 years was not discussed.
+16. The floor of two bullets per project is mine.
+17. Planned and then dropped: removing duplicate skills ("databases" on the Databases line, "user research" twice). The score counts a keyword from the Skills list and counts repeat mentions, so removing either could lower it.
+18. Giving skills back (item 8) is not re-scored. It only restores content.
+
+**Left alone, still open**
+19. Traits and activities listed as skills ("curiosity", "Passion for learning", "hackathons", "case competitions"). The job reading offers them and the score counts them. Fixing this means changing what the JD reading offers, and the rubric with it.
+20. Mixed verb tense inside one role, and the same result phrase on two bullets of one role.
+21. A resume re-tailored from an already tailored copy carries that copy's skill lines forward.
+
+**Changed after the real compile (2026-11-25, same day)**
+22. The first version removed all four certification lines and offered "React.js" as unused though a project said "React". Now: nothing in a certifications, awards, honours, publications or patents section is ever a candidate, a section's own lines are never candidates, and a skill counts as used when the page names it under any spelling the taxonomy knows.
+23. Two last-resort steps were added at the end of the order: a project down to its one best line, then a whole extra-section entry that names none of the job's skills.
+24. The stand-in name used to measure a resume with no header of its own was "Your Name". A real compile showed a name with letters below the line (g, p, y) sets the header a hair taller, and that hair was one line of the page. The stand-in is now "Applying Candidate", so the measure errs toward fitting.
+
+**Verified against the sealed compiler (Docker, rebuilt `nextkin-latex:local`)**
+25. A synthetic graduate resume shaped like the owner's downloads (37 own skills, 55 accepted keywords, one 3-bullet internship, three projects, four certification lines, one club entry): two pages at every spacing before; one page after. Score 10000 basis points and 56 of 56 keywords before and after. Left out: 18 own skills, 3 project bullets, the club entry. Certifications kept. The whole fit, scoring included, took about 12 seconds with 25 candidates.
+26. The keep-together change compiles, and held an extra section's heading, name and role line on one page.
+27. `fitP14` and `tailorP14` pass (7 tests). `tailorP14` now expects "under 3 years" and the new stand-in name.
+
+**Failing in integration, not caused by this work**
+28. `renders.int.test.ts` "previewed without any export gate": expects letter paper, gets A4 (the paper follows the user's location).
+29. `renders.int.test.ts` "tightens the spacing": its stand-in compiler looks for `left=0.55in`, which the template has not written since it moved to `margin=0.6in`.
+30. `latexCompile.int.test.ts` "broken source": expects "Undefined control sequence"; the sealed bundle has no `size10.clo`, so the 10pt test source fails earlier.
+31. That same renders test builds its fresher from a role starting 2024-01. In January 2027 that is 36 months, which the new rule counts as experienced.
+
+**Dry run on six real two-page tailored versions (local database, read-only, 2026-11-25)**
+32a. Six of the owner's own tailored resumes that rendered to two pages, each with its ready job description, were put through the new fit with the sealed compiler and the real score. Nothing was written to the database.
+32b. All six reached one page. Score and matched keywords were identical before and after on every one (for example 9418 points and 36 keywords; 9048 and 56). Left out, by resume: 26 skills; 6 bullets; 4 bullets; 3 bullets and 6 skills; 4 bullets; 5 bullets. The guard refused 5 of 101 candidates. About 12 to 13 seconds each.
+32c. One resume lost 26 of its 50 own skills to reach the page. Score-neutral, but a large cut: a cap on how many own skills one fit may leave out is worth the owner's view.
+
+**One real tailored run, AI and compiler (2026-11-25, after the owner put a new key in `.env`)**
+32d. The owner's base resume and a real job description (Full-stack Developer, AI & Workflow Automation: 56 required, 27 preferred skills) were copied to a throwaway user, tailored with every one of the 68 missing keywords accepted, and the user was deleted afterwards. The run completed in 68 seconds.
+32e. Result: one page (the base tailored to two before). Score 37 to 86. Job match 17 of 85 to 85 of 85. Page basis "Fitted to 1 page: under 3 years of experience (1 year)". Certifications and Workshops kept. The extracurricular entry kept its name and role and lost its bullet.
+32f. Own content that is not in the result: 28 of 49 own skills, 4 of 7 role bullets, 1 of 3 project bullets. The run's change list says the role was rewritten 7 to 3, so how many of those four the writer dropped and how many the fit dropped is not known from this run.
+32g. The plan projected 88 and the run scored 86. The guard compares the document just before the fit with the document after it, so the fit cannot be the cause; the cause was not looked for.
+32h. Seen on the page, not from this work: accepted keywords spill into "Methods & Domain Knowledge (2)", "(3)" and "(4)" lines, the last with three names; the Skills section is 17 lines; brand names (Blinkit, Zepto, Nykaa) are listed as skills. About four lines at the foot of the page are empty, because a removal frees two lines at a time.
+
+**Still not verified**
+32. The owner's six Product Manager downloads came from the demo and are not in the local database, so that exact job was not rerun. One run is one sample: the model's output varies.
+33. The page count of existing users' resumes was not compared before and after the keep-together change. Keeping entries whole can move a page break earlier.
+34. A project heading can touch its date when the stack line is long ("PostgreSQLMay 2026" in the sample). It was there before this work.
+
+**The cost, for the owner to weigh**
+35. One page for a graduate with 55 or more accepted keywords is reached only by leaving out much of their own content (item 25). The alternative is to let Skills grow less: fewer accepted keywords, or a keyword line budget, which D-25 rules out today.
