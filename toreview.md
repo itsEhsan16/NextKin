@@ -19425,3 +19425,34 @@ After the §267 deploy the owner re-tailored one resume for one job. Jobscan gav
 29. Two real runs after the change: both roles went 12 + 12 to 8 + 8 (was 6 + 5 or 6 + 6), score 90, 37 of 37 keywords, every phrase held, two pages ("Up to 2 pages: 4 years of experience").
 30. Seen in those runs, not fixed: with every keyword accepted, some are worked into lines where they read oddly ("issue tracking around JavaScript Test Frameworks"). That is the accept-all case under D-25.
 31. The golden eval ran only on the reference model (inside the unit suite). A live `pnpm eval` on the longer cap was not run.
+
+## §269 — Resume uploads refused as "couldn't find a resume" on the demo (owner, 2026-11-25)
+
+The owner's resume, as PDF and as DOCX, was refused on app.nextkin.ai with "We couldn’t find a
+resume in this file". The demo's worker logs show the file was read; the AI's extraction answer
+(`resume_extract`, Haiku 5.5 through OpenRouter) failed the server's schema check, then failed the
+one corrective retry, ~23 s in, so the parse ended `unclear` and the app called it unreadable. Other
+resumes parsed fine the same day, so it was something in this resume's answer.
+
+1. **Fix: the gateway mends small slips before judging an answer** (`ai/schema.ts`
+   `repairToSchema`, used in `ai/gateway.ts` for every structured stage). The tool schema is not
+   enforced on the wire (`messages.ts`), so the model can send a list as a JSON string, run past a
+   list cap, write `2021-03-15` or "Present" where a month is asked, or leave out an empty field.
+   Each is now mended from the same JSON schema the model was given; nothing is invented. A list past
+   its cap keeps its first items (e.g. a 5th "extra section" is dropped instead of the whole resume);
+   a list item missing a required value (a role with no company) is left out. Judgement call: losing
+   the tail of an over-long list beats refusing the file. Tests: `test/schemaRepair.test.ts`.
+2. **Not verified against the owner's file.** The worker never logged which field failed, and the
+   demo database can't be queried from this laptop (no Session Manager plugin; `pg` is bundled in the
+   image). The repair covers the common slips, not a proven cause. The failover log line now carries
+   `reason` (schema paths only, never document text), so if it still fails after the deploy the
+   worker log says exactly why.
+3. **Other demo errors in the last 24 h:** one `auth` failure each on `assistant_classify` and
+   `jd_extract` (OpenRouter), before 2026-11-24 22:24 UTC; every AI call since succeeded. No action.
+4. **Not deployed yet.** Needs a commit, PR, merge and `cdk deploy`.
+5. **OpenRouter logs (owner's screenshot, 2026-11-25) rule out the balance.** The 09:24 IST upload
+   was two calls: 9,363 in / 6,269 out (a full answer, under the 8,000 cap, so not cut off), then the
+   corrective retry, 15,514 in / 497 out. The first answer failed the schema; the retry sent back
+   only a scrap of the answer, which failed again. Each call cost under half a cent, so the $0.78
+   balance was not the cause (it still needs a top-up). Second fix: the corrective message now asks
+   for the whole answer, never only the corrected part (`ai/gateway.ts`).
