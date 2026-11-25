@@ -107,6 +107,16 @@ export function isUnreadableFileError(error: unknown): boolean {
  * (owner, 2026-11-25). Null for a file with no text or one that cannot be opened: the screen's own
  * line about selectable text is right for those.
  */
+/**
+ * The server's own words when reading a resume stopped on our side: it took too long, or the
+ * reading service was not reachable (owner, 2026-11-25). The screens said "something went wrong"
+ * for these, which told the person nothing about trying again.
+ */
+export function readStalledReason(error: unknown): string | null {
+  const failed = error instanceof Error && (error as { code?: unknown }).code === 'UNAVAILABLE';
+  return failed && error.message ? error.message : null;
+}
+
 export function unreadableReason(error: unknown): string | null {
   if (!isUnreadableFileError(error)) return null;
   const reason = ((error as { details?: unknown }).details as { reason?: unknown } | null)?.reason;

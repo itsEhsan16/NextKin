@@ -106,6 +106,24 @@ const fromJsonString = (value: unknown, open: string): unknown => {
   }
 };
 
+/**
+ * The fields an answer left out, when it left out most of them (owner, 2026-11-26). The fast model
+ * now and then stops a tool call after its first field or two: a one-page resume came back as
+ * `{ summary, headline }` in 86 tokens, the repair below read every missing list as "none", and a
+ * resume with no job, school or skill was filed as read. The same request asked again answered in
+ * full. One or two lists left out still mean "none"; more than half of the fields missing means the
+ * answer was not finished, and the gateway asks once more before taking it.
+ */
+export function unfinished(schema: JsonSchema, value: unknown): string[] {
+  const node = schema as SchemaNode;
+  if (!node.properties) return [];
+  const names = Object.keys(node.properties);
+  const whole = unswallowed(node, fromJsonString(value, '{'));
+  if (!whole || typeof whole !== 'object' || Array.isArray(whole)) return [];
+  const missing = names.filter((name) => !(name in whole));
+  return missing.length * 2 > names.length ? missing : [];
+}
+
 function repairString(node: SchemaNode, value: string): string | typeof DROP {
   let s = node.maxLength !== undefined && value.length > node.maxLength ? value.slice(0, node.maxLength) : value;
   if (node.pattern) {

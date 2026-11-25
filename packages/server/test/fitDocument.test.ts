@@ -33,7 +33,7 @@ describe('fitDocument', () => {
     expect(result.ok).toBe(false);
   });
 
-  it('knows a document with no role, school or summary is empty', () => {
+  it('knows a document with no role, school or project is empty, summary or not', () => {
     const result = fitDocument(doc({ roles: [] }));
     expect(result.ok && isEmptyResume(result.doc)).toBe(true);
   });

@@ -89,7 +89,7 @@ export async function sweepStuckParses(db: Database, timeoutSeconds: number, que
       .limit(500)
       .execute(),
   );
-  let failed = 0;
+  let failed = await sweepWaitingParses(db, queueTimeoutSeconds, log);
   for (const { id, user_id } of stuck) {
     try {
       const done = await db.withUser({ userId: user_id, role: 'user' }, (tx) =>
@@ -108,6 +108,54 @@ export async function sweepStuckParses(db: Database, timeoutSeconds: number, que
   return failed;
 }
 
+/**
+ * Reads still waiting for a scan (owner, 2026-11-25). The lock in `startParse` stops new ones being
+ * stranded; this is the net under it, and what frees any stranded before it. A read whose upload is
+ * clean is started; one whose upload was refused fails with that; one whose scan never reported
+ * within the queue's time is given up on. Nothing used to look at these at all: the screen waited
+ * two minutes and said something went wrong. Returns how many it failed.
+ */
+async function sweepWaitingParses(db: Database, queueTimeoutSeconds: number, log?: Pick<Logger, 'warn'>): Promise<number> {
+  const waiting = await db.withSystem('resume parses: find parses waiting on a finished scan', (tx) =>
+    tx
+      .selectFrom('resume_parses as p')
+      .innerJoin('uploads as u', 'u.id', 'p.upload_id')
+      .select(['p.id', 'p.user_id'])
+      .where('p.status', '=', 'waiting_scan')
+      .where(sql<boolean>`(u.status in ('clean', 'infected', 'failed', 'deleted') or p.created_at < now() - make_interval(secs => ${queueTimeoutSeconds}))`)
+      .orderBy('p.created_at')
+      .limit(500)
+      .execute(),
+  );
+  let failed = 0;
+  for (const { id, user_id } of waiting) {
+    try {
+      const outcome = await db.withUser({ userId: user_id, role: 'user' }, async (tx) => {
+        // Under the same lock the scan and `startParse` take, so none of the three acts on a stale view.
+        const row = await tx.selectFrom('resume_parses as p').innerJoin('uploads as u', 'u.id', 'p.upload_id').select(['p.status', 'u.status as upload_status']).where('p.id', '=', id).forUpdate().executeTakeFirst();
+        if (!row || row.status !== 'waiting_scan') return 'gone' as const;
+        if (row.upload_status === 'clean') {
+          await tx.updateTable('resume_parses').set({ status: 'queued' }).where('id', '=', id).execute();
+          await enqueue(tx, { queue: 'generation-standard', groupId: generationGroup(user_id, id), type: 'resume.parse', payload: { parseId: id, userId: user_id }, correlationId: null });
+          return 'released' as const;
+        }
+        const refused = row.upload_status === 'infected' || row.upload_status === 'failed' || row.upload_status === 'deleted';
+        await tx
+          .updateTable('resume_parses')
+          .set({ status: 'failed', error_code: refused ? 'unreadable' : 'timed_out', error_message: refused ? FAILURE.unreadable : FAILURE.timed_out, finished_at: sql`now()` })
+          .where('id', '=', id)
+          .execute();
+        return 'failed' as const;
+      });
+      if (outcome === 'failed') failed++;
+      if (outcome !== 'gone') log?.warn({ event: 'resume_parse.unstuck', outcome }, 'a read left waiting for its scan was dealt with');
+    } catch (error) {
+      log?.warn({ event: 'resume_parse.sweep_row_failed', errorName: error instanceof Error ? error.name : typeof error }, 'could not deal with a waiting parse; skipped');
+    }
+  }
+  return failed;
+}
+
 export const toParse = (row: ParseRow): ResumeParse => ({
   id: row.id,
   uploadId: row.upload_id,
@@ -121,7 +169,12 @@ export const toParse = (row: ParseRow): ResumeParse => ({
 export async function startParse(db: Database, identity: Identity, uploadId: string, correlationId: string | null): Promise<ResumeParse> {
   return db.withUser(identity, async (tx) => {
     await requireAiConsent(tx, identity.userId); // P12-12: the parse reads the resume with a model
-    const upload = /^[0-9a-f-]{36}$/i.test(uploadId) ? await tx.selectFrom('uploads').selectAll().where('id', '=', uploadId).executeTakeFirst() : undefined;
+    // The upload's row is locked while this decides (owner, 2026-11-25). The scan writes its verdict
+    // to the same row and then starts whatever read is waiting on it; read unlocked, the two could
+    // each miss the other: this stored a read as waiting for a scan that had just finished, and the
+    // scan had looked for waiting reads a moment before there was one. On the demo two uploads in
+    // seven hung that way. Locked, whichever comes second sees what the first did.
+    const upload = /^[0-9a-f-]{36}$/i.test(uploadId) ? await tx.selectFrom('uploads').selectAll().where('id', '=', uploadId).forUpdate().executeTakeFirst() : undefined;
     if (!upload) throw errors.notFound('upload');
     if (upload.purpose !== 'resume') throw errors.validation({ uploadId: 'not a resume upload' }, 'That upload is not a resume.');
     if (upload.status === 'infected' || upload.status === 'failed' || upload.status === 'deleted') throw new AppError('UNREADABLE_FILE', FAILURE.unreadable);
@@ -208,11 +261,11 @@ export async function runParse(deps: ParseRunDeps, message: { parseId: string; u
     const assembled = { ...checked.document, ...(header ? { header } : {}), ...(headline && !checked.document.headline ? { headline } : {}) };
     // Fitted to the stored format here, so a file that read fine is never refused at import (§269).
     const fitted = fitDocument(assembled);
-    // A read with no job, no school and no summary is not a resume read (owner, 2026-11-25). It
+    // A read with no job, no school and no project is not a resume read (owner, 2026-11-25). It
     // used to be stored as ready and refused a step later as "no resume in this file"; it fails
     // here, with the reason on the record.
     if (fitted.ok && isEmptyResume(fitted.doc)) {
-      deps.log.warn({ event: 'resume_parse.empty', textChars: text.length, rejected: checked.rejected.length }, 'the reading held no job, school or summary');
+      deps.log.warn({ event: 'resume_parse.empty', textChars: text.length, rejected: checked.rejected.length }, 'the reading held no job, school or project');
       return fail('unclear', FAILURE.unclear);
     }
     if (!fitted.ok || isEmptyResume(fitted.doc)) {

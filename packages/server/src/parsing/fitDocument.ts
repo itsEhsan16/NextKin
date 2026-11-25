@@ -24,5 +24,9 @@ export function fitDocument(document: unknown): FittedDocument {
   return { ok: false, issues: describeIssues(fixed.error) };
 }
 
-/** A document with nothing a resume is made of: no role, no school and no summary. */
-export const isEmptyResume = (doc: CanonicalResumeJson): boolean => doc.roles.length === 0 && doc.education.length === 0 && !doc.summary;
+/**
+ * A document with nothing a resume is made of: no role, no school and no project. A summary or a
+ * skill list on its own is not one (owner, 2026-11-26): a read that kept only the summary was
+ * stored as a finished resume.
+ */
+export const isEmptyResume = (doc: CanonicalResumeJson): boolean => doc.roles.length === 0 && doc.education.length === 0 && doc.projects.length === 0;

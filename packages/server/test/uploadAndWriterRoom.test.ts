@@ -6,6 +6,7 @@ import { toParams, withoutThinking } from '../src/ai/providers/messages';
 import { type AiSettings, type RouteStep } from '../src/ai/routing';
 import { createMemoryTrace } from '../src/ai/trace';
 import type { LlmRequest } from '../src/ai/types';
+import { unfinished, strictJsonSchema } from '../src/ai/schema';
 import { createLogger } from '../src/observability/logger';
 import { analyzeDocx, xmlText } from '../src/parsing/docx';
 import { crossCheck, extractionSchema, type ExtractionInput } from '../src/parsing/extract';
@@ -135,5 +136,43 @@ describe('what an upload keeps', () => {
   it('each skill once, when the list and a line both name it', () => {
     const { document } = crossCheck(extraction({ skills: ['Docker', 'Java'] }), SOURCE);
     expect(document.skills.map((s) => s.name)).toEqual(['Docker', 'Java', 'AWS', 'Kubernetes', 'Spring Boot']);
+  });
+});
+
+describe('an answer that stopped after a field or two', () => {
+  const full = { headline: null, summary: 'Engineer.', roles: [], education: [], certifications: [], skills: ['Java'], skillGroups: [] };
+  const gateway = (script: Parameters<typeof createFakeProvider>[0]) => {
+    const fake = createFakeProvider(script);
+    const step: RouteStep = { provider: 'claude', model: 'claude-haiku-5-5', maxTokens: 100, inputBudgetTokens: 1000 };
+    const settings: AiSettings = { routeFor: async () => [step], prices: async () => ({ version: 1, models: {} }) };
+    const gw = createAiGateway({ settings, providers: { resolve: () => fake, isDeveloperKey: () => false }, trace: createMemoryTrace(), log, developer: 'd', dailyCapUsd: 2, retryDelayMs: () => 0 });
+    const ask = () => gw.extract({ stage: 'resume_extract', system: [{ text: 's' }], input: {}, context: { userId: 'u1' }, schema: extractionSchema, name: 'resume', description: 'd' });
+    return { fake, ask };
+  };
+
+  it('is asked again, the same way, and the full answer is the one kept', async () => {
+    const { fake, ask } = gateway({ script: (_request, n) => ({ data: n === 1 ? { summary: 'Engineer.', headline: null } : full }) });
+    const { data } = await ask();
+    expect(fake.calls).toHaveLength(2);
+    expect(fake.calls[1]?.messages).toHaveLength(1);
+    expect(data.skills).toEqual(['Java']);
+  });
+
+  it('is taken as the answer when it comes back the same twice', async () => {
+    const { fake, ask } = gateway({ script: () => ({ data: { summary: 'Engineer.', headline: null } }) });
+    const { data } = await ask();
+    expect(fake.calls).toHaveLength(2);
+    expect(data.roles).toEqual([]);
+  });
+
+  it('a list or two left out still means none, with no second call', async () => {
+    const most = Object.fromEntries(Object.entries(full).filter(([key]) => key !== 'certifications' && key !== 'skillGroups'));
+    const { fake, ask } = gateway({ script: () => ({ data: most }) });
+    await ask();
+    expect(fake.calls).toHaveLength(1);
+    const schema = strictJsonSchema(extractionSchema);
+    expect(unfinished(schema, most)).toEqual([]);
+    // Fields a long text swallowed are found first, and are not counted as missing.
+    expect(unfinished(schema, { headline: null, summary: 'S"><parameter name="roles">[]</parameter><parameter name="education">[]</parameter><parameter name="skills">[]' }).length).toBe(0);
   });
 });

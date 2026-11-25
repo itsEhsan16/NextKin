@@ -19528,3 +19528,43 @@ After §270's deploy the same resume uploaded, then its tailor failed with "The 
 16. Whether every screen shows a 2,400-character summary well (web and mobile editors, the PDF, where it prints as one paragraph) was not looked at.
 17. Thinking off was tried only through OpenRouter. The direct Claude API and Bedrock were not.
 18. The integration parse suite was not run. Not committed, not deployed; a deploy needs `task seed-reference` for routing v11.
+
+**Deployed to the AWS demo (2026-11-25)**
+19. `main` at 159e321 (PR #24 merged) was deployed with `cdk deploy` (587 seconds, images only), then `task seed-reference` (exit 0, accounts untouched) for routing v11. All four services finished rolling out, `app.nextkin.ai/api/v1/health/deep` answers ok, and the worker logged no errors in its first minutes.
+20. Not checked on the demo: no resume was uploaded and no tailor was run there after the deploy.
+
+## §272 — Uploads that hung at random, an unfinished AI answer, and a check of the whole flow (owner, 2026-11-26)
+
+The owner's upload failed with "Something went wrong reading your resume", then worked minutes later, and they asked whether fixes were being made one resume at a time. Branch `fix/upload-hang-and-flow-check`.
+
+**What was wrong**
+1. The hang had nothing to do with the file. On the demo, 2 of 7 uploads in seven minutes (15:00:32 and 15:03:00 UTC, 2026-11-25) were polled for two minutes and given up on; the worker scanned both clean and never read either. `startParse` and the scan handler ran at the same moment on the same upload: each looked before the other had saved, the read was stored as waiting for a scan that was already done, and nothing ever started it. Older than this week's deploys.
+2. Found by the new check, not by a report: the fast model now and then stops a tool call after a field or two (`{ summary, headline }`, 86 tokens, for a one-page resume). The repair from §269 read every missing list as "none", and a resume with no job, school or skill was stored as read and filed. The identical request asked again answered in full; thinking off, low effort and Sonnet all answered in full too, so no setting causes it.
+
+**What changed**
+3. `startParse` reads the upload row `FOR UPDATE`, so it and the scan run one after the other (`services/resumeParse.ts`).
+4. `sweepStuckParses` now also covers reads left waiting: started when the upload is clean, failed when the upload was refused, timed out past the queue timeout. Logged as `resume_parse.unstuck`.
+5. The upload screens show the poll's own line ("This is taking longer than it should…") in place of the generic one (`readStalledReason`, web job flow and onboarding).
+6. An answer missing more than half of its fields is asked once more, the same way (`unfinished` in `ai/schema.ts`, the gateway logs `ai.unfinished`). The same answer twice is taken as it stands.
+7. A read with no job, school or project is not a resume, summary or not (`isEmptyResume`); it fails as unclear.
+8. `pnpm check:flow` (`packages/server/evals/checkFlow.ts`, `flowResumes.ts`): three invented resumes (graduate, mid, a long senior one), each as DOCX and PDF, uploaded four times with the scan and the read racing, read by the real model, filed, then tailored against two jobs with every keyword accepted. `--quick` skips tailoring. Exit 1 on any failure.
+
+**Verified**
+9. `parseScanRace.int.test.ts`: on the old code 3 of 60 rounds stuck; with the lock, none in four runs. The sweep's four cases pass.
+10. `pnpm check:flow`: 26 of 26 (2026-11-26, local stack, live OpenRouter key). Before items 6–7 the quick run was 17 of 18, failing on `graduate.docx`.
+11. `pnpm typecheck && pnpm lint && pnpm test` green. Integration: the race test, `uploadsApi` (15 of 15, with the local ClamAV container started) and the eight P14 suites pass.
+
+**Judgement calls**
+12. The check runs against the local stack, not the demo as the plan said: the demo's sign-in cannot be driven by a script. It uses the real storage, database, model and LaTeX service, and a stand-in scanner.
+13. "More than half the fields missing" is my line for an unfinished answer; a list or two left out still means none. One extra call when it trips.
+14. A file with only a summary and skills is now refused as unclear. Before, it was accepted.
+15. The JD upload path was not given the same lock: not looked at closely enough to say it has the same shape (plan step 4, still open).
+
+**Seen and left**
+16. `senior.docx` against the Java job came out at one page of an allowed two, with 6/5/7/3 bullets from 12/11/12/12 stored (score 81 to 96, 42 of 43 keywords). The PDF of the same resume against the QA job kept 6/11/12/3 on two pages. The check passes both, since it only tests pages at or under the budget. Whether the first is the over-trimming §267 set out to stop has not been looked at.
+17. A stored role keeps 12 bullets; the senior file's roles have 17 and 22. Known (§271), unchanged.
+
+**Not verified**
+18. Not committed, not deployed. Nothing was run on the demo; the two reads stuck there are expected to be failed by the sweep after a deploy (they are past the timeout), not revived.
+19. The unfinished answer was not seen again in the two check runs after item 6, so the retry is proven by unit test only, not live.
+20. The timeout line was not looked at in a browser.
